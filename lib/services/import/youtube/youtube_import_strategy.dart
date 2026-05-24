@@ -8,8 +8,10 @@
 /// 5. Falling back to user-assisted import if needed
 library;
 
+import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -124,8 +126,19 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
       // where that transcript came from — has to be wired in here.
       final videoUrl =
           metadata?.watchUrl ?? 'https://www.youtube.com/watch?v=$videoId';
+      // BUT-1045: persist the raw transcript alongside the URL so the
+      // re-extract flow (BUT-940) can re-run the LLM step offline,
+      // without a second YouTube transcript fetch.
+      final artefact = SourceArtefact(
+        type: SourceArtefactType.youtubeTranscript,
+        payload: transcriptResult.transcript!,
+        fetchedAt: clock.now(),
+      );
       return ImportSuccess(
-        recipe: success.recipe.copyWith(sourceUrl: videoUrl),
+        recipe: success.recipe.copyWith(
+          sourceUrl: videoUrl,
+          sourceArtefact: artefact,
+        ),
         confidence: success.confidence,
         pipeline: 'youtube',
         tier: 1,

@@ -12,6 +12,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -150,6 +151,15 @@ class RecipeCore with JsonSerializableMixin {
   String mealType;
 
   String? sourceUrl;
+
+  /// BUT-1045: the raw source artefact this recipe was extracted from
+  /// (transcript, caption, pasted text, OCR output, or just the URL).
+  /// Persisted so the import pipeline can be re-run offline without
+  /// re-fetching — unblocks BUT-940 "Re-extract from source".
+  ///
+  /// Nullable: recipes created before this field shipped will be null
+  /// and simply won't show the re-extract affordance.
+  SourceArtefact? sourceArtefact;
 
   List<String> imageUrls;
 
@@ -317,6 +327,7 @@ class RecipeCore with JsonSerializableMixin {
     this.rating,
     required this.mealType,
     this.sourceUrl,
+    this.sourceArtefact,
     List<String>? imageUrls,
     this.thumbnailUrl,
     DateTime? createdAt,
@@ -379,6 +390,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? sourceArtefact = _sentinel,
     List<String>? imageUrls,
     Object? thumbnailUrl = _sentinel,
     DateTime? updatedAt,
@@ -448,6 +460,9 @@ class RecipeCore with JsonSerializableMixin {
       rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
+      sourceArtefact: sourceArtefact == _sentinel
+          ? this.sourceArtefact
+          : sourceArtefact as SourceArtefact?,
       imageUrls: imageUrls ?? this.imageUrls,
       thumbnailUrl: thumbnailUrl == _sentinel
           ? this.thumbnailUrl
@@ -546,6 +561,7 @@ class RecipeCore with JsonSerializableMixin {
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
+        'sourceArtefact': sourceArtefact?.toJson(),
         'imageUrls': imageUrls,
         'thumbnailUrl': thumbnailUrl,
         'createdAt': createdAt.toIso8601String(),
@@ -588,6 +604,7 @@ class RecipeCore with JsonSerializableMixin {
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
+        'sourceArtefact': sourceArtefact?.toJson(),
         'imageUrls': imageUrls,
         'thumbnailUrl': thumbnailUrl,
         'createdAt': Timestamp.fromDate(createdAt),
@@ -670,6 +687,10 @@ class RecipeCore with JsonSerializableMixin {
       mealType: utils.SerializationUtils.safeString(json, 'mealType',
           defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
+      sourceArtefact: json['sourceArtefact'] is Map<String, dynamic>
+          ? SourceArtefact.fromJson(
+              json['sourceArtefact'] as Map<String, dynamic>)
+          : null,
       imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
       thumbnailUrl:
           utils.SerializationUtils.safeNullableString(json, 'thumbnailUrl'),
@@ -856,6 +877,10 @@ class RecipeCore with JsonSerializableMixin {
       mealType: utils.SerializationUtils.safeString(data, 'mealType',
           defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
+      sourceArtefact: data['sourceArtefact'] is Map<String, dynamic>
+          ? SourceArtefact.fromJson(
+              data['sourceArtefact'] as Map<String, dynamic>)
+          : null,
       imageUrls: utils.SerializationUtils.safeStringList(data, 'imageUrls'),
       thumbnailUrl:
           utils.SerializationUtils.safeNullableString(data, 'thumbnailUrl'),
@@ -1363,6 +1388,7 @@ class Recipe {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? sourceArtefact = _sentinel,
     List<String>? imageUrls,
     Object? createdBy = _sentinel,
     bool? isPublic,
@@ -1394,6 +1420,7 @@ class Recipe {
         rating: rating,
         mealType: mealType,
         sourceUrl: sourceUrl,
+        sourceArtefact: sourceArtefact,
         imageUrls: imageUrls,
         createdBy: createdBy,
         isPublic: isPublic,

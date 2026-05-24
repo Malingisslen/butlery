@@ -9,10 +9,12 @@ library;
 
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -201,8 +203,17 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
           // back to the original. LLM-extracted recipes don't carry source
           // — has to be wired in here on the success path.
           final llmRecipe = (llmResult as ImportSuccess).recipe;
+          // BUT-1045: persist the caption payload for offline re-extract.
+          final artefact = SourceArtefact(
+            type: SourceArtefactType.tiktokCaption,
+            payload: caption,
+            fetchedAt: clock.now(),
+          );
           return ImportSuccess(
-            recipe: llmRecipe.copyWith(sourceUrl: input),
+            recipe: llmRecipe.copyWith(
+              sourceUrl: input,
+              sourceArtefact: artefact,
+            ),
             confidence: 0.7,
             pipeline: 'tiktok',
             tier: 2,
@@ -230,8 +241,17 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
     if (llmResult.isSuccess) {
       // BUT-980: persist TikTok video URL (caption-LLM tier-3 path).
       final llmRecipe = (llmResult as ImportSuccess).recipe;
+      // BUT-1045: persist the caption payload (tier-3 caption-LLM path).
+      final artefact = SourceArtefact(
+        type: SourceArtefactType.tiktokCaption,
+        payload: caption,
+        fetchedAt: clock.now(),
+      );
       return ImportSuccess(
-        recipe: llmRecipe.copyWith(sourceUrl: input),
+        recipe: llmRecipe.copyWith(
+          sourceUrl: input,
+          sourceArtefact: artefact,
+        ),
         confidence: 0.65,
         pipeline: 'tiktok',
         tier: 3,
