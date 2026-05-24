@@ -21934,6 +21934,12 @@ abstract class AppLocalizations {
   /// **'Ta bort foto'**
   String get cookSnapDelete;
 
+  /// Snackbar message shown for 7s after the user confirms cook-snap delete (BUT-937). Undo button cancels the delete; timeout commits it.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden raderas — ångra?'**
+  String get cookSnapDeletedUndoMessage;
+
   /// No description provided for @cookSnapReport.
   ///
   /// In sv, this message translates to:

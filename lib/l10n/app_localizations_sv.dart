@@ -12980,6 +12980,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapDelete => 'Ta bort foto';
 
   @override
+  String get cookSnapDeletedUndoMessage => 'Bilden raderas — ångra?';
+
+  @override
   String get cookSnapReport => 'Rapportera foto';
 
   @override

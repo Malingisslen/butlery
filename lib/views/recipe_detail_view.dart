@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_shared_widgets.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_tablet_content.dart';
@@ -667,7 +668,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             currentUserId: currentUserId,
             error: vm.error,
             onAdd: () => _showAddSnapSheet(context, vm),
-            onDelete: (snapId) => vm.deleteSnap(snapId),
+            onDelete: (snapId) => _deleteCookSnapWithUndo(snapId, vm),
             onReport: (snap) => ReportContentDialog.show(
               context: context,
               contentType: ContentType.cookSnap,
@@ -686,6 +687,39 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     if (source != null) {
       vm.addSnap(source: source);
     }
+  }
+
+  /// BUT-937: confirm-dialog + 7s snackbar undo mirroring the comment
+  /// pattern shipped in BUT-943 (recipe_detail_comments.dart:300-338).
+  /// Snap stays visible during the window (no optimistic removal);
+  /// timeout commits the delete, Undo tap short-circuits it.
+  Future<void> _deleteCookSnapWithUndo(
+      String snapId, CookSnapViewModel vm) async {
+    final confirmed = await CommonDialogActions.showDeleteConfirmation(
+      context: context,
+      itemName: '', // The dialog already says "Delete photo"; no identifier.
+      itemType: 'foto',
+      icon: Icons.photo_outlined,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    var undone = false;
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.cookSnapDeletedUndoMessage),
+        duration: const Duration(seconds: 7),
+        action: SnackBarAction(
+          label: context.l10n.commonUndo,
+          onPressed: () => undone = true,
+        ),
+      ),
+    );
+    await controller.closed;
+    if (undone || !mounted) return;
+
+    await vm.deleteSnap(snapId);
   }
 
   Future<void> _printRecipe(Recipe recipe) async {

@@ -12952,6 +12952,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookSnapDelete => 'Delete photo';
 
   @override
+  String get cookSnapDeletedUndoMessage => 'Photo will be deleted — undo?';
+
+  @override
   String get cookSnapReport => 'Report photo';
 
   @override

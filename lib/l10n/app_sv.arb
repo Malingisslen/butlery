@@ -8756,6 +8756,10 @@
   "cookSnapErrorUpload": "Kunde inte ladda upp foto",
   "cookSnapErrorDelete": "Kunde inte ta bort foto",
   "cookSnapDelete": "Ta bort foto",
+  "cookSnapDeletedUndoMessage": "Bilden raderas — ångra?",
+  "@cookSnapDeletedUndoMessage": {
+    "description": "Snackbar message shown for 7s after the user confirms cook-snap delete (BUT-937). Undo button cancels the delete; timeout commits it."
+  },
   "cookSnapReport": "Rapportera foto",
 
   "collectionInsightsTitle": "Min samling",

@@ -8742,6 +8742,7 @@
   "cookSnapErrorUpload": "Could not upload photo",
   "cookSnapErrorDelete": "Could not delete photo",
   "cookSnapDelete": "Delete photo",
+  "cookSnapDeletedUndoMessage": "Photo will be deleted — undo?",
   "cookSnapReport": "Report photo",
 
   "collectionInsightsTitle": "My collection",
