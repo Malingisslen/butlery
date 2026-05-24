@@ -12837,6 +12837,18 @@ abstract class AppLocalizations {
   /// **'Profilbild för {displayName}'**
   String a11yProfileImage(String displayName);
 
+  /// BUT-902: screen-reader label for the avatar online-status indicator when the user is online.
+  ///
+  /// In sv, this message translates to:
+  /// **'Online'**
+  String get a11yStatusOnline;
+
+  /// BUT-902: screen-reader label for the avatar online-status indicator when the user is offline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Offline'**
+  String get a11yStatusOffline;
+
   /// No description provided for @a11yChangeProfileImage.
   ///
   /// In sv, this message translates to:

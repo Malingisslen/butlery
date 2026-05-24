@@ -7543,6 +7543,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get a11yStatusOnline => 'Online';
+
+  @override
+  String get a11yStatusOffline => 'Offline';
+
+  @override
   String get a11yChangeProfileImage => 'Ändra profilbild';
 
   @override

@@ -75,22 +75,37 @@ class UserAvatarWidgets {
         );
 
         // Status indicator
+        // BUT-902 (WCAG 1.4.1): combine colour with shape (filled vs hollow
+        // circle) so red/green colour-blind users have a non-colour signal
+        // for online vs offline. Wrapped in Semantics so screen readers
+        // announce "Online" / "Offline".
         if (showStatus) {
+          final statusSize = avatarSize * 0.25;
           avatarWidget = Stack(
             children: [
               avatarWidget,
               Positioned(
                 right: 0,
                 bottom: 0,
-                child: Container(
-                  width: avatarSize * 0.25,
-                  height: avatarSize * 0.25,
-                  // Square per design system — no rounded edges on badges.
-                  decoration: BoxDecoration(
-                    color: isOnline ? bc.success : cs.outline,
-                    border: Border.all(
+                child: Semantics(
+                  label: isOnline
+                      ? context.l10n.a11yStatusOnline
+                      : context.l10n.a11yStatusOffline,
+                  excludeSemantics: true,
+                  child: Container(
+                    width: statusSize,
+                    height: statusSize,
+                    decoration: BoxDecoration(
                       color: cs.surfaceContainerHighest,
-                      width: AppDimensions.borderWidthThin,
+                      border: Border.all(
+                        color: cs.surfaceContainerHighest,
+                        width: AppDimensions.borderWidthThin,
+                      ),
+                    ),
+                    child: Icon(
+                      isOnline ? Icons.circle : Icons.circle_outlined,
+                      size: statusSize,
+                      color: isOnline ? bc.success : cs.outline,
                     ),
                   ),
                 ),
@@ -187,7 +202,11 @@ class UserAvatarWidgets {
     );
   }
 
-  /// Status indicator
+  /// Standalone online-status indicator.
+  ///
+  /// BUT-902 (WCAG 1.4.1): combine colour with shape — filled circle for
+  /// online, outlined circle for offline. Wrapped in Semantics so screen
+  /// readers announce the status.
   static Widget statusIndicator({
     required bool isOnline,
     double? size,
@@ -197,15 +216,15 @@ class UserAvatarWidgets {
         final cs = Theme.of(context).colorScheme;
         final bc = context.butleryColors;
         final indicatorSize = size ?? AppDimensions.iconSizeM;
-        return Container(
-          width: indicatorSize,
-          height: indicatorSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
+        return Semantics(
+          label: isOnline
+              ? context.l10n.a11yStatusOnline
+              : context.l10n.a11yStatusOffline,
+          excludeSemantics: true,
+          child: Icon(
+            isOnline ? Icons.circle : Icons.circle_outlined,
+            size: indicatorSize,
             color: isOnline ? bc.success : cs.outline,
-            border: Border.all(
-                color: cs.surfaceContainerHighest,
-                width: AppDimensions.borderWidthThin),
           ),
         );
       },

@@ -5048,6 +5048,14 @@
       }
     }
   },
+  "a11yStatusOnline": "Online",
+  "@a11yStatusOnline": {
+    "description": "BUT-902: screen-reader label for the avatar online-status indicator when the user is online."
+  },
+  "a11yStatusOffline": "Offline",
+  "@a11yStatusOffline": {
+    "description": "BUT-902: screen-reader label for the avatar online-status indicator when the user is offline."
+  },
   "a11yChangeProfileImage": "Ändra profilbild",
   "a11yShoppingList": "Inköpslista: {name}",
   "@a11yShoppingList": {
