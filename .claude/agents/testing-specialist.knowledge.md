@@ -1570,3 +1570,124 @@ replace the structural assertion with a behavioural one.
 - `test/unit/repositories/firebase_cook_snap_repository_test.dart` (7 failing tests)
 - `lib/core/utils/serialization_utils.dart` `parseDateTimeValue` (the relevant fall-through)
 
+
+### 2026-05-24 — LlmEnhancementService intent-test coverage [Pattern discovered]
+Added 41 intent tests for `lib/services/import/llm/llm_enhancement_service.dart`
+(file at `test/unit/services/import/llm/llm_enhancement_service_test.dart`).
+Mocking pattern that worked cleanly for an LLM-wrapping orchestrator:
+
+- `_FakeLlmService extends Fake implements LlmService` with per-method
+  configurable `Response?` field + optional `Throw?` field + `int calls`
+  counter + `last*Param` capture fields. Lets each test set behaviour and
+  assert invocations without mocktail's `when()/verify()` chains (which
+  fail silently when a `Mock` has a concrete `@override` body — see
+  testing-specialist.md DO-NOT list).
+- `_FakeRateLimiter` records every `seenOperations` for assertions like
+  "the canEnhance gate must NOT consume a rate-limit slot."
+- Key gotcha: `LlmService.ocrRecipeImage` signature uses **optional**
+  `imageBytes`/`imageUrl` (one-of-two assertion runtime-enforced). Fake
+  override must match the optional signature exactly or analyzer trips
+  `invalid_override`. Caller in `LlmEnhancementService.extractFromImage`
+  always supplies bytes, but the underlying signature isn't `required`.
+- No `AppLocale.initialize()` needed for these tests — fallback Swedish
+  copy is fine because we never assert on the localized message strings,
+  only on `ImportErrorCode` enum + server-provided `error` passthrough.
+
+Behaviours that catch real bug classes (not just coverage padding):
+- canEnhance gate runs BEFORE rate-limit check (else garbage burns budget).
+- LlmException.isRateLimited routes to `llmQuotaExceeded` not generic
+  `parsingFailed` — UI copy regression risk.
+- Non-LlmException `catch (e)` block surfaces unknown + technicalDetails;
+  if someone tightens the catch to LlmException-only, StateError crashes
+  propagate to caller (bug class: silent test if assertion is just
+  "doesn't throw").
+- `extractFromTranscript` falls back to `ImportNeedsAssistance` (not
+  `ImportFailure`) so the user keeps the transcript — easy regression
+  if someone "simplifies" by unifying with HTML failure path.
+- `extractFromImage` raw-text-only response threads the original image
+  bytes through to the assistance UI — UI shows the photo alongside the
+  text. Lost bytes = blank assist screen.
+
+### 2026-05-24 — RecipeParserService unit tests + HtmlSanitizer surprise [Pattern discovered]
+Wrote 18 intent-driven tests for `RecipeParserService` covering: ParseResult
+factory contracts, parseFromUrl security gate, parseFromText graceful
+failure (empty/whitespace/garbage), happy-path RuleBased parse with Swedish
+recipe fixture, useLlm cost gate (stub LlmService callCount==0), userMessage
+threading, and construction isolation (no Firebase / no ServiceLocator).
+
+**Sanitizer trap caught**: `HtmlSanitizer.check()` does NOT flag raw
+`<script>...</script>` as critical — that's silently stripped by
+`sanitize()`. Only `data:text/html`, null bytes (`\x00`), and >5MB content
+trigger `hasCriticalIssues=true`. A test using `<script>` to verify the
+security gate would never trip the gate and instead fall through to
+"Could not extract." Use `\x00` or `data:text/html,` payloads instead.
+
+**Testability friction noted (not fixed)**:
+- `init()` requires `ServiceLocator.get<OfflineService>()` → can't exercise
+  cache path in unit tests. Cache code paths (BUT-369 ParseEventLogger
+  lesson region) need integration-test coverage.
+- `_tiers` is built in the ctor with no injection seam — can't swap in
+  mock tiers. Tests must use real RuleBased + (stub) LlmService and feed
+  text shaped to drive specific tier paths. A `tiers:` ctor parameter
+  would unlock direct orchestration tests for `_runTiers` / quality-
+  threshold short-circuit / selective-enhancement / `_pickUserMessage`
+  priority logic.
+
+**LlmService stub pattern**: `implements LlmService` + `noSuchMethod` —
+same pattern as `llm_tier_test.dart`. Tracks `structureCallCount` and
+`parseIngredientCallCount` so tests can assert the LLM gate (cost
+guarantee). Critical for the cost-guard test: a regression that drops
+`useLlm: false` on the floor would burn LLM budget silently.
+
+### 2026-05-24 — `import_rate_limiter_test.dart` patterns [Pattern discovered]
+27 tests, all green, for `lib/services/import/import_rate_limiter.dart`
+(rate limiter with per-minute/hour/day + LLM type + USD cost caps,
+Firestore-persisted via transaction).
+
+Three patterns worth reusing for any time-windowed / Firestore-persisted
+unit test:
+
+1. **`withClock(Clock.fixed(_t0), () => sut.method())` per call, not
+   globally.** Each `checkLimit` / `recordUsage` gets its own
+   `Clock.fixed(_t0 + Duration(...))` wrapping. This lets one test land on
+   59.999s AND 60.000s boundaries in the same `test()` without `fakeAsync`.
+   Pin the off-by-one of `_isInWindow` (strict `<`) by asserting BOTH sides
+   of the boundary in one test.
+
+2. **FakeFirebaseFirestore round-trips `DateTime` to local-zone**. If your
+   production code uses `clock.now()` (which is local), anchor your `_t0`
+   with `DateTime(...)`, NOT `DateTime.utc(...)`. Otherwise the
+   round-tripped read returns a local-zone DateTime offset from your UTC
+   seed by the host's TZ → `now.difference(windowStart)` blows out → window
+   appears expired → false greens. Cost me 4 failing tests on first run.
+
+3. **30s in-memory cache invalidation testing.** The limiter caches
+   `_cachedUsage` for 30s, invalidated only by `recordUsage`. To test the
+   raw window math (independent of cache) when re-seeding mid-test,
+   construct a fresh limiter (`ImportRateLimiter(firestoreRepository:
+   sameRepo, authRepository: sameAuth)`). Same Firestore + same auth =
+   continuity of state, but a virgin cache. The dedicated cache-invalidation
+   test then uses the SAME limiter across recordUsage+checkLimit cycles to
+   prove the invalidation contract — if recordUsage forgot to null the
+   cache, users would blow caps for 30s.
+
+**Fail-closed test pattern**: `class _ThrowingFirestoreRepository extends
+FirestoreRepository` with `@override FirebaseFirestore get firestore =>
+throw StateError(...)`. Cleaner than mocking the repo (FirestoreRepository
+isn't an interface — its `firestore` is a concrete getter). The override
+forces every code path through the catch branch.
+
+**MockAuthRepository surface**: `auth.setAuthState(userId: null)` is the
+existing seam for unauthenticated-state tests — uses configured `_currentUserId`
+not a stubbed `when()`. No `when(() => auth.currentUserId)` needed.
+
+**Cost cap boundary contract**: The limiter uses `>` (not `>=`) for cost
+caps, so 0.47 + 0.03 = 0.50 IS allowed and 0.48 + 0.03 = 0.51 IS denied.
+This is the opposite of the import-count cap which uses `>=`. Pin both
+in tests so a refactor that "unifies" the comparison silently shrinks
+the cost cap by one unit.
+
+No production bugs found — limiter's contract held under all 27 assertions
+(boundary, multi-counter independence, cost-vs-count semantic split,
+fail-closed). The `case null: break` in `_checkLlmLimits` correctly
+falls through to the cost gate; both sides verified.
