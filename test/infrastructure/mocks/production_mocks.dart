@@ -3535,23 +3535,50 @@ class MockRemoteMessage extends Mock implements RemoteMessage {}
 /// Mock implementation of RemoteNotification (FCM)
 class MockRemoteNotification extends Mock implements RemoteNotification {}
 
-/// ✅ FIXED: Complete FirebaseMessaging mock implementation - PHASE 4B SUCCESS!
-/// Mock implementation of FirebaseMessaging with complete interface
+/// Mock implementation of FirebaseMessaging with composable state.
+///
+/// BUT-1008: previously every interesting failure path needed a bespoke
+/// subclass (_NullTokenMessaging, _ThrowingTopicMessaging, etc.). Now
+/// `setFirebaseMessagingState` exposes the failure flags directly so a
+/// single instance can compose them (e.g. null token AND throwing topic
+/// AND throwing settings — no subclass required).
 class MockFirebaseMessaging extends Mock implements FirebaseMessaging {
   // Configuration state
   String? _token = 'test-fcm-token-123';
   AuthorizationStatus _authorizationStatus = AuthorizationStatus.authorized;
   Stream<String> _tokenRefreshStream = const Stream.empty();
+  bool _throwOnSubscribe = false;
+  bool _throwOnUnsubscribe = false;
+  bool _throwOnSettings = false;
 
-  /// Configure FCM messaging state for testing
+  /// Configure FCM messaging state for testing.
+  ///
+  /// Pass `token: null` (with `clearToken: true`) to simulate the
+  /// permission-denied / non-iOS-non-Android path where `getToken` returns
+  /// null. The `clearToken` flag is required because `token: null` alone is
+  /// indistinguishable from "not provided" in nullable named params.
+  ///
+  /// The `throwOn*` flags simulate transient FCM SDK failures — e.g.
+  /// network blip during topic subscribe, or settings query throwing.
   void setFirebaseMessagingState({
     String? token,
+    bool clearToken = false,
     AuthorizationStatus? authorizationStatus,
     Stream<String>? tokenRefreshStream,
+    bool? throwOnSubscribe,
+    bool? throwOnUnsubscribe,
+    bool? throwOnSettings,
   }) {
-    if (token != null) _token = token;
+    if (clearToken) {
+      _token = null;
+    } else if (token != null) {
+      _token = token;
+    }
     if (authorizationStatus != null) _authorizationStatus = authorizationStatus;
     if (tokenRefreshStream != null) _tokenRefreshStream = tokenRefreshStream;
+    if (throwOnSubscribe != null) _throwOnSubscribe = throwOnSubscribe;
+    if (throwOnUnsubscribe != null) _throwOnUnsubscribe = throwOnUnsubscribe;
+    if (throwOnSettings != null) _throwOnSettings = throwOnSettings;
   }
 
   // Core token methods
@@ -3578,18 +3605,25 @@ class MockFirebaseMessaging extends Mock implements FirebaseMessaging {
 
   @override
   Future<NotificationSettings> getNotificationSettings() async {
+    if (_throwOnSettings) {
+      throw Exception('Simulated getNotificationSettings failure (BUT-1008)');
+    }
     return MockNotificationSettings(authorizationStatus: _authorizationStatus);
   }
 
   // Topic subscription methods
   @override
   Future<void> subscribeToTopic(String topic) async {
-    // Mock implementation
+    if (_throwOnSubscribe) {
+      throw Exception('Simulated subscribeToTopic failure (BUT-1008)');
+    }
   }
 
   @override
   Future<void> unsubscribeFromTopic(String topic) async {
-    // Mock implementation
+    if (_throwOnUnsubscribe) {
+      throw Exception('Simulated unsubscribeFromTopic failure (BUT-1008)');
+    }
   }
 
   // Message handling

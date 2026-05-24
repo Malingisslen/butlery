@@ -32,10 +32,14 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 /// MockFirebaseMessaging variant that records subscribe/unsubscribe/getToken
 /// calls — used to verify the injected mock receives the production calls.
 ///
-/// Note: [MockFirebaseMessaging] in production_mocks.dart uses concrete
-/// `@override` methods, so `when()/thenAnswer()` on it does NOT intercept.
-/// Tests that need custom behavior subclass it directly (the pattern in
-/// this file).
+/// Per BUT-1008, behaviour failure flags (null token, throwing topic /
+/// settings) now live on `MockFirebaseMessaging.setFirebaseMessagingState`
+/// — see the call sites below. This subclass remains because *recording*
+/// is orthogonal to *throwing*: mocktail's `verify()` can record but only
+/// works against methods that aren't concretely overridden. Until the
+/// production mock drops its overrides entirely, a recording subclass is
+/// still the easiest path for "I want to assert exactly which topics the
+/// service subscribed to".
 class _RecordingMessaging extends MockFirebaseMessaging {
   final List<String> subscribedTopics = <String>[];
   final List<String> unsubscribedTopics = <String>[];
@@ -55,36 +59,6 @@ class _RecordingMessaging extends MockFirebaseMessaging {
   @override
   Future<void> unsubscribeFromTopic(String topic) async {
     unsubscribedTopics.add(topic);
-  }
-}
-
-/// Messaging mock whose [getToken] returns null — drives the "SDK returns
-/// null" branch of [FCMService.getToken].
-class _NullTokenMessaging extends MockFirebaseMessaging {
-  @override
-  Future<String?> getToken({String? vapidKey}) async => null;
-}
-
-/// Messaging mock whose topic-subscribe AND unsubscribe calls throw — drives
-/// the safeExecute error-handling branches symmetrically.
-class _ThrowingTopicMessaging extends MockFirebaseMessaging {
-  @override
-  Future<void> subscribeToTopic(String topic) async {
-    throw Exception('FCM unavailable');
-  }
-
-  @override
-  Future<void> unsubscribeFromTopic(String topic) async {
-    throw Exception('FCM unavailable');
-  }
-}
-
-/// Messaging mock whose [getNotificationSettings] throws — drives the
-/// catch-and-return-false branch of [FCMService.areNotificationsEnabled].
-class _ThrowingSettingsMessaging extends MockFirebaseMessaging {
-  @override
-  Future<NotificationSettings> getNotificationSettings() async {
-    throw Exception('Settings unavailable');
   }
 }
 
@@ -146,7 +120,10 @@ void main() {
       });
 
       test('should return null when SDK returns null', () async {
-        service = FCMService(messaging: _NullTokenMessaging());
+        // BUT-1008: composable flag, no subclass needed.
+        final m = MockFirebaseMessaging()
+          ..setFirebaseMessagingState(clearToken: true);
+        service = FCMService(messaging: m);
 
         final token = await service.getToken();
 
@@ -175,7 +152,13 @@ void main() {
 
       test('subscribeToTopic catches errors (proves safeExecute swallowed)',
           () async {
-        service = FCMService(messaging: _ThrowingTopicMessaging());
+        // BUT-1008: composable throw flags replace _ThrowingTopicMessaging.
+        final m = MockFirebaseMessaging()
+          ..setFirebaseMessagingState(
+            throwOnSubscribe: true,
+            throwOnUnsubscribe: true,
+          );
+        service = FCMService(messaging: m);
 
         // safeExecute swallowed the throw. Stronger than 'completes': after
         // the error, a follow-up call must still resolve normally — proving
@@ -186,7 +169,12 @@ void main() {
 
       test('unsubscribeFromTopic catches errors (parity with subscribe)',
           () async {
-        service = FCMService(messaging: _ThrowingTopicMessaging());
+        final m = MockFirebaseMessaging()
+          ..setFirebaseMessagingState(
+            throwOnSubscribe: true,
+            throwOnUnsubscribe: true,
+          );
+        service = FCMService(messaging: m);
 
         await service.unsubscribeFromTopic('topic_a');
         await service.unsubscribeFromTopic('topic_b');
@@ -302,7 +290,10 @@ void main() {
       });
 
       test('areNotificationsEnabled returns false on error', () async {
-        service = FCMService(messaging: _ThrowingSettingsMessaging());
+        // BUT-1008: composable throw flag replaces _ThrowingSettingsMessaging.
+        final m = MockFirebaseMessaging()
+          ..setFirebaseMessagingState(throwOnSettings: true);
+        service = FCMService(messaging: m);
 
         final enabled = await service.areNotificationsEnabled();
 
@@ -315,7 +306,9 @@ void main() {
       // existing `areNotificationsEnabled returns false on error` covers the
       // wrapping behaviour; this one pins the underlying contract directly.
       test('getNotificationSettings rethrows on error', () async {
-        service = FCMService(messaging: _ThrowingSettingsMessaging());
+        final m = MockFirebaseMessaging()
+          ..setFirebaseMessagingState(throwOnSettings: true);
+        service = FCMService(messaging: m);
 
         await expectLater(
           service.getNotificationSettings(),
