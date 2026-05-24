@@ -16,6 +16,12 @@ abstract class NotificationHistoryRepository {
 
   Future<void> markNotificationOpened(String notificationId);
 
+  /// BUT-952: bulk mark every unread notification for [userId] as opened.
+  /// Returns the number of docs updated. Uses batched writes (chunks of
+  /// 500 per Firestore batch limit). Caller must verify the authenticated
+  /// uid matches [userId].
+  Future<int> markAllAsOpenedForUser(String userId);
+
   /// Fetches notification history for a user, ordered by sentAt descending.
   /// Uses cursor-based pagination via [before].
   Future<List<NotificationHistoryEntry>> getHistory(

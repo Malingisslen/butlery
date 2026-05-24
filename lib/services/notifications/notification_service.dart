@@ -653,6 +653,12 @@ class NotificationService extends BaseService {
     await _historyRepository.markNotificationOpened(notificationId);
   }
 
+  /// BUT-952: bulk mark every unread notification for the current user
+  /// as opened. Returns the number of notifications updated.
+  Future<int> markAllHistoryNotificationsOpened() async {
+    return _historyRepository.markAllAsOpenedForUser(_userId);
+  }
+
   /// Handles consent changes for FCMTokenManager-scoped cleanup (BUT-754).
   /// Sibling to FCMService._onConsentChanged which handles SDK + Firestore
   /// + memory; this one handles SecureStorage on revoke.

@@ -1,41 +1,48 @@
 # Sprint Backlog
 
-## Sprint: iter-59 — BUT-937 cook-snap delete undo — 2026-05-24 (Sun)
+## Sprint: iter-60 — BUT-952 mark-all-as-read service primitive + overflow action — 2026-05-24 (Sun)
 
-Theme: Mirror BUT-943 snackbar-undo pattern (already shipped for comments). Plan-fil FÖRST.
+Theme: Bulk-mark notifications as read. Sub-fix 1 of 2 from ticket (overflow + service); sub-fix 2 (long-press selection mode) deferred — UX. Plan-fil FÖRST.
 
 ### Step 0 — premise verification
 
-- Ticket says "Soft-delete via #9" (= BUT-907 trash EPIC, multi-week, not yet shipped).
-- Snackbar-undo pattern from BUT-943 (`recipe_detail_comments.dart:316-330`) is the working alternative — already established. Same shape for photo-delete (BUT-932).
-- Current state: `recipe_detail_view.dart:670` wires `onDelete: (snapId) => vm.deleteSnap(snapId)` directly to the destructive call. No confirmation, no undo.
+- Ticket cites `notifications_viewmodel.dart:68 markAsOpened()` as single-id only — confirmed (line 68-86, single notificationId).
+- No `markAllAsOpened` on `NotificationHistoryRepository` interface (line 17 has only single `markNotificationOpened`).
+- `notifications_view.dart` overflow location — need to check.
 
 ### Design choices
 
-- **Apply BUT-943's pattern exactly**: confirm-delete dialog → 7s snackbar with Undo action → if untapped, commit the delete.
-- **Wire at the callsite** (`recipe_detail_view.dart:670`), not in the ViewModel — keep VM's `deleteSnap(snapId)` pure. View owns the snackbar lifecycle.
-- **No optimistic removal**: snap stays visible during the 7s window, matching comment-delete behavior.
-- **New l10n key**: `cookSnapDeletedUndoMessage`.
+- **Repo primitive**: add `markAllAsOpenedForUser(String userId)` to `NotificationHistoryRepository` + Firebase impl. Batched WriteBatch with `where('userId', isEqualTo: userId).where('opened', isEqualTo: false)` query, ~500-doc chunks via existing `firestore_batch_utils`.
+- **Service-layer pass-through**: `NotificationService.markAllHistoryNotificationsOpened()` → delegates to repo.
+- **VM method**: `notifications_viewmodel.markAllAsOpened()` does optimistic local update on `_entries` + fire-and-forget service call.
+- **Overflow action**: add to notifications_view app-bar overflow.
+- **Skip dialog**: low-stakes mark-as-read (vs delete) — no confirmation needed; matches "mark all read" UX in other apps.
+- **Skip "Dismiss" sub-fix + long-press selection mode**: ticket calls out as separate concern (UX for selection mode). File follow-up.
+- **l10n**: new `notificationsMarkAllRead` (sv + en).
 
 ### Ship this sprint
 
-- [ ] **A1. ARB**: add `cookSnapDeletedUndoMessage` (sv + en).
-- [ ] **A2. gen-l10n**: regenerate.
-- [ ] **A3. recipe_detail_view.dart**: wrap the `onDelete` callback in a new private `_deleteCookSnapWithUndo(snapId, vm)` method that mirrors `_deleteComment` from `recipe_detail_comments.dart:300-338`.
+- [ ] **A1. Repo interface + impl**: `markAllAsOpenedForUser(String userId)` — batched update.
+- [ ] **A2. Service**: `markAllHistoryNotificationsOpened()` pass-through.
+- [ ] **A3. VM**: `markAllAsOpened()` — optimistic + service call.
+- [ ] **A4. View**: overflow `PopupMenuButton` action in `notifications_view.dart`.
+- [ ] **A5. ARB**: `notificationsMarkAllRead`.
+- [ ] **A6. gen-l10n**.
+- [ ] **A7. Follow-up**: file BUT-XXXX for long-press selection mode + dismiss action.
 
 ### Acceptance
 
-- [ ] Tap delete on own cook snap → confirm dialog → tap confirm → 7s snackbar with Undo.
-- [ ] Undo tap within 7s → snap stays.
-- [ ] Snackbar dismissed → commit delete.
+- [ ] Tap overflow → "Mark all as read" → all unread → read with single batched write.
+- [ ] Local list updates immediately (optimistic).
+- [ ] `flutter analyze` clean.
 
 ### Post-Sprint Steps
 
-- [ ] Commit + push
-- [ ] Stäng BUT-937 i Linear → Done
+- [ ] Commit + push (firebase-backend-security gate may trigger on repo change)
+- [ ] Stäng BUT-952 i Linear → Done (partial: bulk-read done, long-press selection in follow-up)
 
 ---
 
-## Archived iter-58 (commit `9f5670e26`) — 2026-05-24 (Sun)
+## Archived iter-59 (commit `a891ee724`) — 2026-05-24 (Sun)
 
-BUT-895 LoadingIndicator semantic label. Wrapper-level fix benefits 50+ callsites. +60 / -22. BUT-895 → Done.
+BUT-937 cook-snap delete undo. Snackbar pattern mirror nr 3 (after BUT-932 + BUT-943). +69 / -19. BUT-937 → Done.

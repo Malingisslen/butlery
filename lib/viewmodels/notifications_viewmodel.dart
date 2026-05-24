@@ -64,6 +64,27 @@ class NotificationsViewModel extends BaseViewModel {
     await loadHistory();
   }
 
+  /// BUT-952: mark every unread entry as opened. Optimistic local update
+  /// followed by a fire-and-forget batched-write service call. Returns
+  /// the number of entries marked (0 if everything was already read).
+  Future<int> markAllAsOpened() async {
+    final unread = _entries.where((e) => !e.opened).toList();
+    if (unread.isEmpty) return 0;
+
+    final now = clock.now();
+    _entries = _entries
+        .map((e) => e.opened ? e : e.copyWith(opened: true, openedAt: now))
+        .toList();
+    notifyListeners();
+
+    try {
+      return await _notificationService.markAllHistoryNotificationsOpened();
+    } catch (e) {
+      AppLogger.warning('Failed to mark all notifications opened: $e');
+      return unread.length;
+    }
+  }
+
   /// Marks a notification as opened with optimistic local update.
   void markAsOpened(String notificationId) {
     final index =

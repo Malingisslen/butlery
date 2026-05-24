@@ -12898,6 +12898,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsErrorLoad => 'Could not load notifications';
 
   @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
   String get allergenIncludeUnknownTitle => 'Show unknown allergen status';
 
   @override

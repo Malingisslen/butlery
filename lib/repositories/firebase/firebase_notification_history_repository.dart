@@ -145,6 +145,40 @@ class FirebaseNotificationHistoryRepository
   }
 
   @override
+  Future<int> markAllAsOpenedForUser(String userId) async {
+    // Owner-only — caller must be marking their own notifications.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+
+    final snapshot = await collection
+        .where('userId', isEqualTo: userId)
+        .where('opened', isEqualTo: false)
+        .get();
+    if (snapshot.docs.isEmpty) return 0;
+
+    // Chunk into 500-op batches (Firestore limit).
+    final timestamp = timestampProvider.serverTimestamp();
+    for (var i = 0; i < snapshot.docs.length; i += 500) {
+      final end =
+          (i + 500 < snapshot.docs.length) ? i + 500 : snapshot.docs.length;
+      final batch = firestore.batch();
+      for (final doc in snapshot.docs.sublist(i, end)) {
+        batch.update(doc.reference, {
+          'opened': true,
+          'openedAt': timestamp,
+        });
+      }
+      await batch.commit();
+    }
+    AppLogger.info(
+        'Marked ${snapshot.docs.length} notifications as opened for user $userId');
+    return snapshot.docs.length;
+  }
+
+  @override
   Future<int> deleteAllByUser(String userId) async {
     // GDPR cascade: caller must be deleting their own data.
     await validateOwnership(

@@ -21832,6 +21832,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte ladda aviseringar'**
   String get notificationsErrorLoad;
 
+  /// Notifications view app-bar overflow action — bulk-marks every unread notification as read (BUT-952).
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla som lästa'**
+  String get notificationsMarkAllRead;
+
   /// No description provided for @allergenIncludeUnknownTitle.
   ///
   /// In sv, this message translates to:

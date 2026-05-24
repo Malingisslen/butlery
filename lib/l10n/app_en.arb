@@ -8717,6 +8717,7 @@
   "notificationsTitle": "Notifications",
   "notificationsEmpty": "No notifications yet",
   "notificationsErrorLoad": "Could not load notifications",
+  "notificationsMarkAllRead": "Mark all as read",
 
   "allergenIncludeUnknownTitle": "Show unknown allergen status",
   "allergenIncludeUnknownSubtitle": "Include recipes with unknown allergen status in menu suggestions",

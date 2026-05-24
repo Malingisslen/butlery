@@ -29,10 +29,29 @@ class _NotificationsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<NotificationsViewModel>();
+    final hasUnread = vm.entries.any((e) => !e.opened);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.notificationsTitle),
+        actions: [
+          // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
+          // the action would be a no-op and shouldn't suggest otherwise.
+          PopupMenuButton<String>(
+            enabled: hasUnread,
+            onSelected: (value) {
+              if (value == 'mark_all_read') {
+                vm.markAllAsOpened();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'mark_all_read',
+                child: Text(context.l10n.notificationsMarkAllRead),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(

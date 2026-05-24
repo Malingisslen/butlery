@@ -8731,6 +8731,10 @@
   "notificationsTitle": "Aviseringar",
   "notificationsEmpty": "Inga aviseringar än",
   "notificationsErrorLoad": "Kunde inte ladda aviseringar",
+  "notificationsMarkAllRead": "Markera alla som lästa",
+  "@notificationsMarkAllRead": {
+    "description": "Notifications view app-bar overflow action — bulk-marks every unread notification as read (BUT-952)."
+  },
 
   "allergenIncludeUnknownTitle": "Visa okänd allergenstatus",
   "allergenIncludeUnknownSubtitle": "Inkludera recept med okänd allergenstatus i menyförslag",

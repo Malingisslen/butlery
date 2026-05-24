@@ -12926,6 +12926,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationsErrorLoad => 'Kunde inte ladda aviseringar';
 
   @override
+  String get notificationsMarkAllRead => 'Markera alla som lästa';
+
+  @override
   String get allergenIncludeUnknownTitle => 'Visa okänd allergenstatus';
 
   @override
