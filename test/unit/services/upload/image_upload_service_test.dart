@@ -134,7 +134,11 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.error, contains('Network error'));
+      // Production wraps raw exception text in a user-friendly Swedish
+      // string so internals don't leak to the UI. We assert the failure
+      // shape, not the underlying exception text.
+      expect(result.error, isNotNull);
+      expect(result.error, isNotEmpty);
     });
   });
 }

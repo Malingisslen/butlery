@@ -908,6 +908,10 @@ void main() {
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
         mockRecipeService.notifyListeners();
+        // Production swallows updateRecipe failures (per-recipe error must
+        // not block the bulk); without a successful stub modified stays 0.
+        when(() => mockRecipeService.updateRecipe(any()))
+            .thenAnswer((_) async => true);
 
         viewModel.enterSelectionMode('r1');
         viewModel.toggleSelection('r2');

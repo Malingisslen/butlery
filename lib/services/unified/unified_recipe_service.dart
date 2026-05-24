@@ -920,6 +920,82 @@ class UnifiedRecipeService
     return await _getRecipeRepository().findBySourceUrl(url);
   }
 
+  /// BUT-989: link two recipes symmetrically. Adds [bId] to A's
+  /// `relatedRecipeIds` and [aId] to B's. Idempotent — re-linking an
+  /// already-linked pair is a no-op (returns true without writes).
+  ///
+  /// Not truly atomic: two sequential write ops. Partial-failure
+  /// recovery: if the second update fails, A points at B but B doesn't
+  /// point back. The next link/unlink cycle on either side normalises
+  /// the asymmetry. For tighter atomicity (banking-grade), promote to
+  /// a Cloud Function — open as a follow-up if real-user inconsistency
+  /// shows up.
+  ///
+  /// Returns true on full success, false on any write failure.
+  Future<bool> linkRecipes(String aId, String bId) async {
+    if (aId == bId) return false; // can't link a recipe to itself
+    final a = getRecipeById(aId);
+    final b = getRecipeById(bId);
+    if (a == null || b == null) return false;
+
+    final aRelated = a.core.relatedRecipeIds ?? const <String>[];
+    final bRelated = b.core.relatedRecipeIds ?? const <String>[];
+
+    final aAlready = aRelated.contains(bId);
+    final bAlready = bRelated.contains(aId);
+    if (aAlready && bAlready) return true; // already symmetric, no-op
+
+    if (!aAlready) {
+      final updatedA = a.copyWith(
+        relatedRecipeIds: [...aRelated, bId],
+      );
+      final aResult = await personal.updateUnifiedRecipe(updatedA);
+      if (aResult.isFailure) return false;
+    }
+    if (!bAlready) {
+      final updatedB = b.copyWith(
+        relatedRecipeIds: [...bRelated, aId],
+      );
+      final bResult = await personal.updateUnifiedRecipe(updatedB);
+      if (bResult.isFailure) return false;
+    }
+    return true;
+  }
+
+  /// BUT-989: unlink two recipes symmetrically. Removes [bId] from A's
+  /// `relatedRecipeIds` and [aId] from B's. Idempotent — unlinking an
+  /// already-unlinked pair returns true without writes. Same
+  /// partial-failure caveat as [linkRecipes].
+  Future<bool> unlinkRecipes(String aId, String bId) async {
+    if (aId == bId) return false;
+    final a = getRecipeById(aId);
+    final b = getRecipeById(bId);
+    if (a == null || b == null) return false;
+
+    final aRelated = a.core.relatedRecipeIds ?? const <String>[];
+    final bRelated = b.core.relatedRecipeIds ?? const <String>[];
+
+    final aLinks = aRelated.contains(bId);
+    final bLinks = bRelated.contains(aId);
+    if (!aLinks && !bLinks) return true; // already unlinked, no-op
+
+    if (aLinks) {
+      final updatedA = a.copyWith(
+        relatedRecipeIds: aRelated.where((id) => id != bId).toList(),
+      );
+      final aResult = await personal.updateUnifiedRecipe(updatedA);
+      if (aResult.isFailure) return false;
+    }
+    if (bLinks) {
+      final updatedB = b.copyWith(
+        relatedRecipeIds: bRelated.where((id) => id != aId).toList(),
+      );
+      final bResult = await personal.updateUnifiedRecipe(updatedB);
+      if (bResult.isFailure) return false;
+    }
+    return true;
+  }
+
   /// Find recipes by title for duplicate detection during import.
   Future<List<Recipe>> findByTitle(String title) async {
     return await _getRecipeRepository().findByTitle(title);

@@ -282,7 +282,14 @@ void main() {
       });
 
       test('should reject friend request', () async {
-        // Arrange - use state-based configuration (ultrathink gold standard)
+        // Arrange - use state-based configuration (ultrathink gold standard).
+        // The request must actually be in incomingRequests — production
+        // rejectFriendRequest does a firstWhere(...) and throws otherwise.
+        mockFriendsService.setFriendsState(
+          incomingRequests: [testFriendRequest],
+          isInitialized: true,
+          management: mockManagement,
+        );
         mockManagement.setManagementState(friends: []);
 
         // Act

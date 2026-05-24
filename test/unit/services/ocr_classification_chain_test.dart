@@ -18,6 +18,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -41,6 +42,13 @@ OCRResult _failureWithClassification(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  // PhotoImportViewModel.<init> kicks off OCRUsageTracker.loadFromPersistence,
+  // which calls SharedPreferences.getInstance — without a mock the platform
+  // channel throws MissingPluginException after the test completes.
+  setUpAll(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   group('OCRExtractionService.classifyProviderErrorsForTesting', () {
     test('empty error map → generic', () {

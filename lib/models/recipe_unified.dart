@@ -152,6 +152,17 @@ class RecipeCore with JsonSerializableMixin {
 
   String? sourceUrl;
 
+  /// BUT-989: ids of recipes related to this one (variations, "used in"
+  /// references, base components). Symmetric — if A.relatedRecipeIds
+  /// contains B, then B.relatedRecipeIds should contain A. The
+  /// `RecipeRelationsService.link/unlink` API maintains symmetry via
+  /// batched writes; do not mutate this list directly.
+  ///
+  /// Nullable: recipes created before this field shipped have null and
+  /// readers should treat that as "no relations". Empty list and null
+  /// are interchangeable for display purposes.
+  List<String>? relatedRecipeIds;
+
   /// BUT-1045: the raw source artefact this recipe was extracted from
   /// (transcript, caption, pasted text, OCR output, or just the URL).
   /// Persisted so the import pipeline can be re-run offline without
@@ -327,6 +338,7 @@ class RecipeCore with JsonSerializableMixin {
     this.rating,
     required this.mealType,
     this.sourceUrl,
+    this.relatedRecipeIds,
     this.sourceArtefact,
     List<String>? imageUrls,
     this.thumbnailUrl,
@@ -390,6 +402,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? relatedRecipeIds = _sentinel,
     Object? sourceArtefact = _sentinel,
     List<String>? imageUrls,
     Object? thumbnailUrl = _sentinel,
@@ -460,6 +473,9 @@ class RecipeCore with JsonSerializableMixin {
       rating: rating == _sentinel ? this.rating : rating as double?,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl == _sentinel ? this.sourceUrl : sourceUrl as String?,
+      relatedRecipeIds: relatedRecipeIds == _sentinel
+          ? this.relatedRecipeIds
+          : (relatedRecipeIds as List?)?.cast<String>(),
       sourceArtefact: sourceArtefact == _sentinel
           ? this.sourceArtefact
           : sourceArtefact as SourceArtefact?,
@@ -561,6 +577,7 @@ class RecipeCore with JsonSerializableMixin {
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
+        'relatedRecipeIds': relatedRecipeIds,
         'sourceArtefact': sourceArtefact?.toJson(),
         'imageUrls': imageUrls,
         'thumbnailUrl': thumbnailUrl,
@@ -604,6 +621,7 @@ class RecipeCore with JsonSerializableMixin {
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
+        'relatedRecipeIds': relatedRecipeIds,
         'sourceArtefact': sourceArtefact?.toJson(),
         'imageUrls': imageUrls,
         'thumbnailUrl': thumbnailUrl,
@@ -687,6 +705,9 @@ class RecipeCore with JsonSerializableMixin {
       mealType: utils.SerializationUtils.safeString(json, 'mealType',
           defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
+      relatedRecipeIds: json['relatedRecipeIds'] is List
+          ? List<String>.from(json['relatedRecipeIds'] as List)
+          : null,
       sourceArtefact: json['sourceArtefact'] is Map<String, dynamic>
           ? SourceArtefact.fromJson(
               json['sourceArtefact'] as Map<String, dynamic>)
@@ -877,6 +898,9 @@ class RecipeCore with JsonSerializableMixin {
       mealType: utils.SerializationUtils.safeString(data, 'mealType',
           defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
+      relatedRecipeIds: data['relatedRecipeIds'] is List
+          ? List<String>.from(data['relatedRecipeIds'] as List)
+          : null,
       sourceArtefact: data['sourceArtefact'] is Map<String, dynamic>
           ? SourceArtefact.fromJson(
               data['sourceArtefact'] as Map<String, dynamic>)
@@ -1388,6 +1412,7 @@ class Recipe {
     Object? rating = _sentinel,
     String? mealType,
     Object? sourceUrl = _sentinel,
+    Object? relatedRecipeIds = _sentinel,
     Object? sourceArtefact = _sentinel,
     List<String>? imageUrls,
     Object? createdBy = _sentinel,
@@ -1420,6 +1445,7 @@ class Recipe {
         rating: rating,
         mealType: mealType,
         sourceUrl: sourceUrl,
+        relatedRecipeIds: relatedRecipeIds,
         sourceArtefact: sourceArtefact,
         imageUrls: imageUrls,
         createdBy: createdBy,
