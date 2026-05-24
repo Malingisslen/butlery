@@ -19,6 +19,8 @@
 /// NotificationService.
 library;
 
+import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flutter_test/flutter_test.dart';
@@ -91,12 +93,35 @@ class _RecordingMessaging extends MockFirebaseMessaging {
 /// registered via [addListener] and exposes [fire] to synchronously
 /// invoke it. mocktail's bare `Mock implements ConsentService` can't
 /// fire its captured callback — this records + replays.
+///
+/// BUT-1054: [holdNextConsent] / [completeHeldConsent] add a one-shot
+/// gate so tests can park the in-flight `_onConsentChanged` mid-await
+/// and probe the mutex's re-entry behaviour deterministically.
 class _RecordingConsent extends Mock implements ConsentService {
   VoidCallback? _listener;
   bool _hasConsent = false;
+  Completer<bool>? _heldConsent;
 
   /// Toggles what subsequent `hasConsent()` calls return.
   void setConsent(bool value) => _hasConsent = value;
+
+  /// Makes the NEXT `hasConsent()` call return a Future that doesn't
+  /// resolve until [completeHeldConsent] is called. Subsequent calls
+  /// resume the synchronous path. Used to keep the production handler
+  /// parked mid-await for mutex testing.
+  void holdNextConsent(bool valueOnComplete) {
+    _heldConsent = Completer<bool>();
+    _hasConsent = valueOnComplete;
+  }
+
+  void completeHeldConsent() {
+    final c = _heldConsent;
+    if (c == null || c.isCompleted) {
+      throw StateError('No held consent to complete');
+    }
+    _heldConsent = null;
+    c.complete(_hasConsent);
+  }
 
   /// Invokes the captured listener (the production `_onConsentChanged`).
   Future<void> fire() async {
@@ -121,7 +146,11 @@ class _RecordingConsent extends Mock implements ConsentService {
   }
 
   @override
-  Future<bool> hasConsent(ConsentPurpose purpose) async => _hasConsent;
+  Future<bool> hasConsent(ConsentPurpose purpose) {
+    final held = _heldConsent;
+    if (held != null) return held.future;
+    return Future.value(_hasConsent);
+  }
 }
 
 void main() {
@@ -509,6 +538,34 @@ void main() {
         // fresh SDK call — the cache is empty, not stale.
         await service.getToken();
         expect(recording.getTokenCalls, greaterThan(0));
+      });
+
+      test('re-entry while handler in-flight is debounced (BUT-1054)',
+          () async {
+        final recording = _RecordingMessaging()
+          ..setFirebaseMessagingState(token: 'tok');
+        service = FCMService(messaging: recording);
+        final consent = _RecordingConsent();
+
+        await service.bindUserContext(consentService: consent);
+
+        // First fire: park hasConsent() mid-await so _consentChangeInProgress
+        // is true when the second fire arrives.
+        consent.holdNextConsent(true);
+        final firstFire = consent.fire();
+
+        // Second fire while the first is parked. The mutex must
+        // short-circuit this one — no second requestPermission call.
+        await consent.fire();
+        expect(recording.requestPermissionCalls, 0,
+            reason: 'first fire still parked; second must short-circuit');
+
+        // Release the parked Future. First fire resumes, does its work.
+        consent.completeHeldConsent();
+        await firstFire;
+
+        // Only the first fire's work ran. Second fire was debounced.
+        expect(recording.requestPermissionCalls, 1);
       });
 
       test('token-refresh handler bypasses cache (test seam)', () async {
