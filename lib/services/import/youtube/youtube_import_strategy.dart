@@ -118,8 +118,14 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (llmResult.isSuccess) {
       // Add YouTube-specific metadata
       final success = llmResult as ImportSuccess;
+      // BUT-980: persist the YouTube watch URL on the recipe so the detail
+      // view can offer a "View original" link back to the source video.
+      // The LLM extracts the recipe from the transcript and doesn't know
+      // where that transcript came from — has to be wired in here.
+      final videoUrl =
+          metadata?.watchUrl ?? 'https://www.youtube.com/watch?v=$videoId';
       return ImportSuccess(
-        recipe: success.recipe,
+        recipe: success.recipe.copyWith(sourceUrl: videoUrl),
         confidence: success.confidence,
         pipeline: 'youtube',
         tier: 1,

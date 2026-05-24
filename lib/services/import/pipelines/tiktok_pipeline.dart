@@ -197,8 +197,12 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
         );
 
         if (llmResult.isSuccess) {
+          // BUT-980: persist TikTok video URL so the detail view can link
+          // back to the original. LLM-extracted recipes don't carry source
+          // — has to be wired in here on the success path.
+          final llmRecipe = (llmResult as ImportSuccess).recipe;
           return ImportSuccess(
-            recipe: (llmResult as ImportSuccess).recipe,
+            recipe: llmRecipe.copyWith(sourceUrl: input),
             confidence: 0.7,
             pipeline: 'tiktok',
             tier: 2,
@@ -224,8 +228,10 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
     );
 
     if (llmResult.isSuccess) {
+      // BUT-980: persist TikTok video URL (caption-LLM tier-3 path).
+      final llmRecipe = (llmResult as ImportSuccess).recipe;
       return ImportSuccess(
-        recipe: (llmResult as ImportSuccess).recipe,
+        recipe: llmRecipe.copyWith(sourceUrl: input),
         confidence: 0.65,
         pipeline: 'tiktok',
         tier: 3,
