@@ -265,6 +265,16 @@ class LoadingStateBuilder<T> extends StatelessWidget {
           actionLabel: emptyActionLabel,
           onAction: onEmptyAction,
         );
+      case EmptyStateVariant.noNotifications:
+        return StateWidget.noNotifications(
+          actionLabel: emptyActionLabel,
+          onAction: onEmptyAction,
+        );
+      case EmptyStateVariant.noComments:
+        return StateWidget.noComments(
+          actionLabel: emptyActionLabel,
+          onAction: onEmptyAction,
+        );
       case EmptyStateVariant.noCategories:
       case EmptyStateVariant.noImages:
       case EmptyStateVariant.noTargets:

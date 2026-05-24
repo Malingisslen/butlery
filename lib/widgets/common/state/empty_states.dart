@@ -210,6 +210,26 @@ class EmptyStates {
           subtitle: l10n.emptyNoTagsSubtitle,
           actionIcon: AdaptiveIcons.add,
         );
+      case EmptyStateVariant.noNotifications:
+        // BUT-986: branded illustration instead of generic bell icon.
+        // PeaPod chosen for the quiet/at-rest connotation.
+        return _EmptyStateConfig(
+          icon: Icons.notifications_none,
+          illustration: VegetableType.peaPod,
+          title: l10n.notificationsEmpty,
+          subtitle: null,
+          actionIcon: null,
+        );
+      case EmptyStateVariant.noComments:
+        // BUT-986: branded illustration; mushroom matches the "be the first to
+        // comment" tone (small, inviting).
+        return _EmptyStateConfig(
+          icon: Icons.comment_outlined,
+          illustration: VegetableType.mushroom,
+          title: l10n.socialNoCommentsYet,
+          subtitle: l10n.socialBeFirstToComment,
+          actionIcon: null,
+        );
       case EmptyStateVariant.noGroups:
         return _EmptyStateConfig(
           icon: Icons.group_outlined,

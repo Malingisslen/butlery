@@ -234,13 +234,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       );
     }
     if (vm.comments.isEmpty) {
+      // BUT-986: branded mushroom illustration; title + subtitle come from
+      // the variant config.
       return Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: StateWidget.empty(
-          title: context.l10n.socialNoCommentsYet,
-          subtitle: context.l10n.socialBeFirstToComment,
-          icon: Icons.comment_outlined,
-        ),
+        child: StateWidget.noComments(),
       );
     }
 

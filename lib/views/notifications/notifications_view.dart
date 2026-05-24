@@ -56,10 +56,8 @@ class _NotificationsContent extends StatelessWidget {
     }
 
     if (vm.isEmpty) {
-      return StateWidget.empty(
-        title: context.l10n.notificationsEmpty,
-        icon: Icons.notifications_none,
-      );
+      // BUT-986: branded peaPod illustration; title comes from the variant.
+      return StateWidget.noNotifications();
     }
 
     return RefreshIndicator(

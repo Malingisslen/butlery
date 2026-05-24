@@ -224,6 +224,34 @@ class StateWidget extends StatelessWidget {
     );
   }
 
+  /// BUT-986: branded empty state for notifications. Uses the peaPod
+  /// illustration via [EmptyStateVariant.noNotifications].
+  factory StateWidget.noNotifications({
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return StateWidget(
+      type: StateType.empty,
+      actionLabel: actionLabel,
+      onAction: onAction,
+      emptyVariant: EmptyStateVariant.noNotifications,
+    );
+  }
+
+  /// BUT-986: branded empty state for comment threads. Uses the mushroom
+  /// illustration via [EmptyStateVariant.noComments].
+  factory StateWidget.noComments({
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return StateWidget(
+      type: StateType.empty,
+      actionLabel: actionLabel,
+      onAction: onAction,
+      emptyVariant: EmptyStateVariant.noComments,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (type) {

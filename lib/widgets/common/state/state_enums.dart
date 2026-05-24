@@ -26,6 +26,8 @@ enum EmptyStateVariant {
   noSavedMenus,
   noSharedShoppingLists,
   noTags,
+  noNotifications,
+  noComments,
   noGroups,
   noConversations,
   generic,
