@@ -155,16 +155,6 @@ void main() {
     TestFirebaseCoreHostApi.setUp(_MockFirebaseHostApi());
     await Firebase.initializeApp();
 
-    // Production code unconditionally calls FirebaseCrashlytics.log()
-    // from AppLogger.error, and the try/catch in _logToCrashlytics can't
-    // catch a MissingPluginException thrown across an async gap on the
-    // platform channel. Stub the channel so all Crashlytics calls become
-    // no-op futures.
-    const crashlyticsChannel =
-        MethodChannel('plugins.flutter.io/firebase_crashlytics');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(crashlyticsChannel, (call) async => null);
-
     // FirebaseAuthRepository's constructor reads
     // FirebaseAuth.instance.currentUser, which triggers the auth pigeon
     // BasicMessageChannels (one per method). With no native impl, those
@@ -245,14 +235,7 @@ void main() {
     group('Initial state', () {
       /// Proves: a freshly-constructed service is in the Loading state so
       /// UI doesn't flash an empty list before init completes.
-      /// SKIP: UnifiedMenuService constructor eagerly instantiates
-      /// FirebaseSharedMenuRepository → FirebaseAuth.instance, which hits an
-      /// unmocked platform channel. Setting this up would require mocking
-      /// FirebaseAuthHostApi pigeon channels — disproportionate to a
-      /// loading-state smoke test that adds 5 hit lines. Flagged in friction
-      /// notes at top of file.
-      test('starts in MenuStateLoading before initialize',
-          skip: 'platform-channel: FirebaseAuth unmocked', () {
+      test('starts in MenuStateLoading before initialize', () {
         expect(service.currentState, isA<MenuStateLoading>());
         expect(service.isInitialized, isFalse);
         expect(service.isLoading, isFalse);
@@ -263,8 +246,7 @@ void main() {
       /// Proves: menus getter returns an unmodifiable list — if a caller
       /// tries to mutate it, the contract should reject it instead of
       /// silently corrupting service state.
-      test('menus getter returns an unmodifiable view',
-          skip: 'platform-channel: FirebaseAuth unmocked', () {
+      test('menus getter returns an unmodifiable view', () {
         expect(
           () => service.menus.add(SharedMenu.create(
             sharedByUserId: 'x',
@@ -431,13 +413,7 @@ void main() {
       /// Proves: createMenu requires authentication. Without auth, no
       /// Firestore write happens and the call surfaces null. A bug where
       /// the auth check was removed would silently create orphan docs.
-      /// SKIP: throws traverse safeExecute → AppLogger → Crashlytics platform
-      /// channel which is unmocked in unit tests. Behaviour is covered
-      /// indirectly by the happy-path tests that prove writes only happen
-      /// with auth.
-      test('throws when no authenticated user',
-          skip: 'platform-channel: Crashlytics unmocked on throw path',
-          () async {
+      test('throws when no authenticated user', () async {
         permissionService.setPermissionState(
           currentUserId: null,
           userDisplayName: null,

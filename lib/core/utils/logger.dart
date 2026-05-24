@@ -38,6 +38,7 @@
 /// AppLogger.persistence('Cache synchronized');
 /// ```
 
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -208,29 +209,37 @@ class AppLogger {
     );
   }
 
+  /// Calls into Crashlytics safely. Absorbs both the SYNC failure (instance
+  /// getter throws when Firebase isn't initialized) AND the ASYNC failure
+  /// (Future rejects with MissingPluginException in unit tests, platform
+  /// channel errors in production). Without the async branch, errors
+  /// escape the sync try/catch across the await gap and become unhandled
+  /// zone errors. Web is gated here (Crashlytics not supported on web).
+  static void _safeCrashlytics(FutureOr<void> Function() op) {
+    if (kIsWeb) return;
+    try {
+      final result = op();
+      if (result is Future) result.catchError((_) {});
+    } catch (_) {
+      // Sync: Firebase not initialized — instance getter threw.
+    }
+  }
+
   /// Logs message and error to Firebase Crashlytics (safe to call even if not initialized)
   static void _logToCrashlytics(
     String message,
     Object? error,
     StackTrace? stackTrace,
   ) {
-    // Crashlytics not supported on web
-    if (kIsWeb) return;
-
-    try {
-      final sanitized = _sanitizeForCrashlytics(message);
-      FirebaseCrashlytics.instance.log(sanitized);
-
-      if (error != null) {
-        FirebaseCrashlytics.instance.recordError(
-          error,
-          stackTrace,
-          reason: sanitized,
-          fatal: false,
-        );
-      }
-    } catch (e) {
-      // Silently fail if Crashlytics not initialized
+    final sanitized = _sanitizeForCrashlytics(message);
+    _safeCrashlytics(() => FirebaseCrashlytics.instance.log(sanitized));
+    if (error != null) {
+      _safeCrashlytics(() => FirebaseCrashlytics.instance.recordError(
+            error,
+            stackTrace,
+            reason: sanitized,
+            fatal: false,
+          ));
     }
   }
 
@@ -353,12 +362,8 @@ class AppLogger {
   /// AppLogger.setUserIdentifier(user.uid);
   /// ```
   static void setUserIdentifier(String userId) {
-    if (kIsWeb) return; // Crashlytics not supported on web
-    try {
-      FirebaseCrashlytics.instance.setUserIdentifier(userId);
-    } catch (e) {
-      // Silently fail if Crashlytics not initialized
-    }
+    _safeCrashlytics(
+        () => FirebaseCrashlytics.instance.setUserIdentifier(userId));
   }
 
   /// Clears user identifier in Crashlytics when user logs out.
@@ -370,12 +375,7 @@ class AppLogger {
   /// AppLogger.clearUserIdentifier();
   /// ```
   static void clearUserIdentifier() {
-    if (kIsWeb) return; // Crashlytics not supported on web
-    try {
-      FirebaseCrashlytics.instance.setUserIdentifier('');
-    } catch (e) {
-      // Silently fail if Crashlytics not initialized
-    }
+    _safeCrashlytics(() => FirebaseCrashlytics.instance.setUserIdentifier(''));
   }
 
   /// Sets a custom key-value pair in Crashlytics for additional crash context.
@@ -390,22 +390,14 @@ class AppLogger {
   /// AppLogger.setCrashlyticsKey('app_version', packageInfo.version);
   /// ```
   static void setCrashlyticsKey(String key, Object value) {
-    if (kIsWeb) return; // Crashlytics not supported on web
-    try {
-      if (value is String) {
-        FirebaseCrashlytics.instance.setCustomKey(key, value);
-      } else if (value is int) {
-        FirebaseCrashlytics.instance.setCustomKey(key, value);
-      } else if (value is double) {
-        FirebaseCrashlytics.instance.setCustomKey(key, value);
-      } else if (value is bool) {
-        FirebaseCrashlytics.instance.setCustomKey(key, value);
-      } else {
-        FirebaseCrashlytics.instance.setCustomKey(key, value.toString());
-      }
-    } catch (e) {
-      // Silently fail if Crashlytics not initialized
-    }
+    _safeCrashlytics(() {
+      final crashlytics = FirebaseCrashlytics.instance;
+      if (value is String) return crashlytics.setCustomKey(key, value);
+      if (value is int) return crashlytics.setCustomKey(key, value);
+      if (value is double) return crashlytics.setCustomKey(key, value);
+      if (value is bool) return crashlytics.setCustomKey(key, value);
+      return crashlytics.setCustomKey(key, value.toString());
+    });
   }
 
   /// Logs analytics events with structured data for operational metrics.

@@ -81,13 +81,16 @@ class AppMonitoringService {
       // Determine if this is a fatal error
       final isFatal = severity == ErrorSeverity.critical;
 
-      // Record the error
-      _crashlytics.recordError(
-        error,
-        stackTrace ?? StackTrace.current,
-        reason: '$category (${severity.name})',
-        fatal: isFatal,
-      );
+      // Record the error (async; absorb platform-channel failures so they
+      // don't escape the sync try/catch as unhandled errors).
+      _crashlytics
+          .recordError(
+            error,
+            stackTrace ?? StackTrace.current,
+            reason: '$category (${severity.name})',
+            fatal: isFatal,
+          )
+          .catchError((_) {});
 
       // Increment error counter
       _metricCounters['error_count'] =
@@ -149,7 +152,7 @@ class AppMonitoringService {
     if (kIsWeb) return;
 
     try {
-      _crashlytics.setCustomKey(key, value);
+      _crashlytics.setCustomKey(key, value).catchError((_) {});
     } catch (e) {
       AppLogger.warning('Failed to set user property $key: $e');
     }
@@ -174,7 +177,8 @@ class AppMonitoringService {
           ? data.entries.map((e) => '${e.key}=${e.value}').join(', ')
           : '';
       _crashlytics
-          .log('$message ${dataString.isNotEmpty ? "[$dataString]" : ""}');
+          .log('$message ${dataString.isNotEmpty ? "[$dataString]" : ""}')
+          .catchError((_) {});
     } catch (e) {
       AppLogger.warning('Failed to log breadcrumb: $e');
     }

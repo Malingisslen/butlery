@@ -1,45 +1,40 @@
 # Sprint Backlog
 
-## Sprint: iter-63 — BUT-1069 watchResource error propagation — 2026-05-25 (Mon)
+## Sprint: iter-64 — BUT-1059 AppLogger async error handling — 2026-05-25 (Mon)
 
-Theme: Bug fix — `RealtimeSyncService.watchResource` swallows downstream errors via `.handleError` terminator. UI's `StreamBuilder` never sees `documentNotFound` or `firestoreError` → stale data forever. P3 backend.
+Theme: Bug fix — `AppLogger._logToCrashlytics` wraps `FirebaseCrashlytics.instance.log(...)` and `.recordError(...)` (both `Future`-returning) in a SYNC `try/catch`. Async exceptions escape the catch as unhandled. P3 backend.
 
 ### Step 0 — premise verification
 
-- Ticket body matches `lib/services/realtime_sync_service.dart:186-193` exactly. `.handleError` records to side-channel `_errorController` (errorStream) but swallows from main stream.
-- Two pin'd-bug tests in `test/unit/services/realtime_sync_service_test.dart`:
-  - line 175-199 "missing document is routed through errorStream, not propagated"
-  - line 211-... "malformed payload surfaces as firestoreError via errorStream"
-- Both tests assert the BUG behavior with explicit "intentionally swallows the propagation" docstring.
-- Classification: **fits** — implement as written, with the dual-fire approach (side-channel + propagate).
+- Ticket body matches `lib/core/utils/logger.dart:212-235` exactly. Sync try wraps two async calls.
+- `kIsWeb` short-circuit on line 218 stays unchanged (Crashlytics not supported on web).
+- The sync catch DOES catch errors from constructing `FirebaseCrashlytics.instance` (e.g. uninitialized Firebase throws synchronously), so we keep the outer try/catch + add per-future `.catchError`.
+- Classification: **fits** — implement as written.
 
 ### Design choices
 
-- **Replace `.handleError` with `StreamTransformer.fromHandlers`** so we can both:
-  1. Record on `_errorController` (preserve existing side-channel for callers that watch errorStream)
-  2. Re-emit via `sink.addError(error, stackTrace)` to the main stream
-- **Don't wrap as a new SyncError** in propagation path — the upstream `.map` already wrapped parse failures + missing-doc as typed `SyncError`. Re-wrapping would double-shell. Pass through as-is.
-- **Test updates**: flip both pin'd tests to assert error ALSO reaches the main stream subscriber (not just the side-channel). Remove the "not propagated" / "intentionally swallows" docstrings.
-- **No callers to update.** Existing callers using `StreamBuilder.builder` with `snapshot.hasError` will start working correctly. Callers using `errorStream.listen` continue to work (additive change).
+- **Chain `.catchError((_) {})` on each Future** — minimal change, both async exceptions absorbed. Doesn't introduce `dart:async` import (uses Future method).
+- **Keep the outer sync try/catch** — handles the synchronous "Firebase not initialized → instance throws" path.
+- **No `unawaited(...)` wrap** — the discarded-future analyzer lint is not enabled in this project (verified by no existing `discarded_futures` overrides in `analysis_options.yaml`). If it does fire, add `// ignore_for_file: discarded_futures` rather than restructure.
+- **No tests to flip.** This fix is invisible to existing tests (those that mock the Crashlytics channel still work; those that don't were failing — they're not in the current suite per the discovered-by note).
 
 ### Ship this sprint
 
-- [ ] **A1. Fix watchResource error propagation** — `lib/services/realtime_sync_service.dart:186-193`: swap `.handleError` for `.transform(StreamTransformer.fromHandlers(handleError: ...))` that records side-channel + re-emits via `sink.addError`. (BUT-1069)
-- [ ] **A2. Flip 2 pin'd-bug tests** — `test/unit/services/realtime_sync_service_test.dart` lines 165-199 + 201-...: update to assert error propagates to main stream AND surfaces on errorStream. (BUT-1069)
+- [ ] **A1. Fix AppLogger._logToCrashlytics** — `lib/core/utils/logger.dart:220-234`: chain `.catchError((_) {})` on both `log()` and `recordError()` futures so async errors are absorbed. (BUT-1059)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test test/unit/services/realtime_sync_service_test.dart` passes (flipped tests now assert correct behavior).
-- [ ] errorStream still receives the error (side-channel preserved).
+- [ ] `flutter test` for files that touch AppLogger.error from non-Crashlytics-mocked contexts no longer fails with MissingPluginException escape.
+- [ ] Outer sync try/catch retained for the "Firebase not initialized" path.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1069 with commit hash
+- [ ] Close BUT-1059 with commit hash
 
 ---
 
-## Archived iter-62 (commit `538bef887`) — 2026-05-25 (Mon)
+## Archived iter-63 (commit `6eb6c4455`) — 2026-05-25 (Mon)
 
-BUT-1068 P2 fix — three shared-content VMs (recipe/menu/shopping) dismiss/restore closures forward coordinator bool instead of always-true. 5 closures, +36 / −45. BUT-1081 filed for sibling test gap.
+BUT-1069 P3 fix — `RealtimeSyncService.watchResource` now propagates errors to BOTH main stream + errorStream side-channel via `StreamTransformer.fromHandlers`. +67 / −56. 25/25 tests pass. BUT-1082 filed for wrapper-channel verification.
