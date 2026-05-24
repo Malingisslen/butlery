@@ -22834,6 +22834,24 @@ abstract class AppLocalizations {
   /// **'Betyg: {rating}'**
   String recipeRatingSemantics(String rating);
 
+  /// BUT-909: tooltip/semantics for the private-visibility icon on a recipe card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Privat'**
+  String get recipeVisibilityPrivate;
+
+  /// BUT-909: tooltip/semantics for the collaborative-visibility icon on a recipe card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delas med samarbetspartners'**
+  String get recipeVisibilityCollaborative;
+
+  /// BUT-909: tooltip/semantics for the public-visibility icon on a recipe card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Offentligt'**
+  String get recipeVisibilityPublic;
+
   /// Semantics label for the menu recipe row tap target.
   ///
   /// In sv, this message translates to:

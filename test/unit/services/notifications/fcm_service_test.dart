@@ -308,6 +308,20 @@ void main() {
 
         expect(enabled, isFalse);
       });
+
+      // BUT-1007: areNotificationsEnabled swallows errors, but
+      // getNotificationSettings itself must surface them so callers that need
+      // to distinguish "denied" from "settings query failed" can do so. The
+      // existing `areNotificationsEnabled returns false on error` covers the
+      // wrapping behaviour; this one pins the underlying contract directly.
+      test('getNotificationSettings rethrows on error', () async {
+        service = FCMService(messaging: _ThrowingSettingsMessaging());
+
+        await expectLater(
+          service.getNotificationSettings(),
+          throwsA(isA<Exception>()),
+        );
+      });
     });
 
     group('Lifecycle', () {

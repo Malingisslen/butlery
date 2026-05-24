@@ -9223,6 +9223,18 @@
       }
     }
   },
+  "recipeVisibilityPrivate": "Private",
+  "@recipeVisibilityPrivate": {
+    "description": "BUT-909: tooltip/semantics for the private-visibility icon on a recipe card (only the owner can see this recipe)."
+  },
+  "recipeVisibilityCollaborative": "Shared with collaborators",
+  "@recipeVisibilityCollaborative": {
+    "description": "BUT-909: tooltip/semantics for the collaborative-visibility icon on a recipe card (recipe is shared with a set of friends/groups for joint editing)."
+  },
+  "recipeVisibilityPublic": "Public",
+  "@recipeVisibilityPublic": {
+    "description": "BUT-909: tooltip/semantics for the public-visibility icon on a recipe card (recipe is discoverable by anyone)."
+  },
   "a11yMenuRecipeOpen": "{title}, tap to open the recipe",
   "@a11yMenuRecipeOpen": {
     "description": "Semantics label for the menu recipe row tap target.",

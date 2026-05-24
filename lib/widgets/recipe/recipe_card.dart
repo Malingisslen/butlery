@@ -168,6 +168,7 @@ class RecipeCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(child: _buildTitle(context)),
+                      _buildVisibilityIcon(context),
                       if (onFavoriteToggle != null)
                         _buildFavoriteButton(context),
                       if (showContextMenu) _buildContextMenuButton(context),
@@ -247,6 +248,7 @@ class RecipeCard extends StatelessWidget {
                   Expanded(
                       child: _buildTitle(context,
                           style: AppTextStyles.titleMedium)),
+                  _buildVisibilityIcon(context),
                   if (onFavoriteToggle != null) _buildFavoriteButton(context),
                 ],
               ),
@@ -274,6 +276,7 @@ class RecipeCard extends StatelessWidget {
         Row(
           children: [
             Expanded(child: _buildTitle(context)),
+            _buildVisibilityIcon(context),
             if (onFavoriteToggle != null) _buildFavoriteButton(context),
           ],
         ),
@@ -329,6 +332,44 @@ class RecipeCard extends StatelessWidget {
       style: style ?? AppTextStyles.recipeCardTitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  /// BUT-909: small visibility icon (lock / world / friends) shown beside the
+  /// title so the user can tell a recipe's audience without opening the detail
+  /// view. Collaborative wins over `isPublic` — a collab recipe is always
+  /// scoped to its members regardless of the public flag.
+  Widget _buildVisibilityIcon(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final (IconData icon, String label) = switch (recipe) {
+      Recipe(isCollaborative: true) => (
+          Icons.people_outline,
+          context.l10n.recipeVisibilityCollaborative,
+        ),
+      Recipe(isPublic: true) => (
+          Icons.public,
+          context.l10n.recipeVisibilityPublic,
+        ),
+      _ => (
+          Icons.lock_outline,
+          context.l10n.recipeVisibilityPrivate,
+        ),
+    };
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingXs),
+      child: Tooltip(
+        message: label,
+        child: Semantics(
+          label: label,
+          excludeSemantics: true,
+          child: Icon(
+            icon,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant
+                .withValues(alpha: AppDimensions.opacityMediumLight),
+          ),
+        ),
+      ),
     );
   }
 

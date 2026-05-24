@@ -9227,6 +9227,18 @@
       }
     }
   },
+  "recipeVisibilityPrivate": "Privat",
+  "@recipeVisibilityPrivate": {
+    "description": "BUT-909: tooltip/semantics for the private-visibility icon on a recipe card."
+  },
+  "recipeVisibilityCollaborative": "Delas med samarbetspartners",
+  "@recipeVisibilityCollaborative": {
+    "description": "BUT-909: tooltip/semantics for the collaborative-visibility icon on a recipe card."
+  },
+  "recipeVisibilityPublic": "Offentligt",
+  "@recipeVisibilityPublic": {
+    "description": "BUT-909: tooltip/semantics for the public-visibility icon on a recipe card."
+  },
   "a11yMenuRecipeOpen": "{title}, tryck för att öppna receptet",
   "@a11yMenuRecipeOpen": {
     "description": "Semantics label for the menu recipe row tap target.",

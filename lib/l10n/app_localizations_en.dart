@@ -13490,6 +13490,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recipeVisibilityPrivate => 'Private';
+
+  @override
+  String get recipeVisibilityCollaborative => 'Shared with collaborators';
+
+  @override
+  String get recipeVisibilityPublic => 'Public';
+
+  @override
   String a11yMenuRecipeOpen(String title) {
     return '$title, tap to open the recipe';
   }

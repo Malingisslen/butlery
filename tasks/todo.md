@@ -1,27 +1,25 @@
 # Sprint Backlog
 
-## Sprint: wave-17 — Settings UX + bulk recipe→menu + backend hygiene — 2026-05-23 (Sa)
+## Sprint: wave-18 — Visibility + perf + FCM coverage — 2026-05-23 (Sa)
 
-Theme: 8 tickets across three batches. Settings/account UX visibility (BUT-913, 958, 932), bulk recipe→menu suite completion (BUT-1029→1013, 1014), backend hygiene (BUT-995 prompt caching, BUT-970 dead-code decision). Wave-16 verified closed in Linear by parallel session.
+Theme: Scope cut after Step 0 surfaced two stale ticket premises (BUT-1030 cites wrong class, BUT-1031 cites wrong file) and confirmed the heavier items (A1 sync-conflict banner ~2-3 days, B2 multi-file UI sweep, C1 heavy mock setup) are too broad for this session. Shipping the 3 bounded items + deferring the 5 heavier ones into Linear with re-verified scope. Wave-17 verified all 8/8 Done in Linear at sprint start.
 
-### Batch A — Settings/Account UX (`flutter-developer`)
-- [ ] **A1. BUT-913 (High)** — Surface Sign-out + Delete-Account in Settings UI (GDPR). `lib/views/settings/settings_view.dart` + new account section. Delete-Account calls server-side `requestAccountDeletion` CF.
-- [ ] **A2. BUT-958 (High)** — Sync conflict resolution visible to user. New `sync_conflict_banner.dart` widget + wire to `offline_sync_manager.dart`.
-- [ ] **A3. BUT-932 (Medium)** — Recipe photo deletion undo. SnackBar-with-Ångra pattern in `recipe_edit_form.dart` + viewmodel snapshot.
+### Ship this sprint
+- [ ] **A2. BUT-909 (High)** — Visibility icons on recipe cards. `lib/widgets/recipe/recipe_card.dart` + lock/world/friends icons + l10n tooltips.
+- [ ] **B1. BUT-951 (Medium)** — `ListView.builder` for ingredients + instructions in recipe detail; same for shopping_list_content.
+- [ ] **C3. BUT-1007 (Medium)** — FCMService consent-change + token-refresh stream tests.
 
-### Batch B — Bulk recipe→menu suite (`flutter-developer`, sequenced)
-- [ ] **B1. BUT-1029 (Medium)** — SlotPickerDialog widget (prereq for B2). `lib/widgets/menu/slot_picker_dialog.dart` + 5–6 l10n keys.
-- [ ] **B2. BUT-1013 (High)** — Bulk add-to-menu on selection. Uses B1. `selection_app_bar.dart` + `bulkAddRecipesToMenuSlots` on menu VM with undo.
-- [ ] **B3. BUT-1014 (Medium)** — Bulk export selected recipes (clipboard markdown + file JSON). `selection_app_bar.dart` + `recipe_export_service.dart`.
-
-### Batch C — Backend hygiene
-- [ ] **C1. BUT-995 (High)** — Adopt prompt caching on LLM calls (`cloud-functions-specialist`). `functions/src/llm/` Anthropic `cache_control: ephemeral` wrap.
-- [ ] **C2. BUT-970 (High)** — Wire or delete `backup_service.dart` (`flutter-developer`). Decision in commit message.
+### Deferred (file follow-up tickets with scope captured in Phase 3)
+- [~] **A1. BUT-1031 (High)** — Sync-conflict banner. **Plan-stale:** cited `realtime_sync_service.dart:315-347` doesn't exist; real instrumentation site is `lib/services/realtime/conflict_resolution_module.dart:49-81`. Updated scope: emit on `resolveConflict<T>`, but realistically 2-3 days work — defer.
+- [~] **A3. BUT-953 (Medium)** — heirloom wiring. Bounded but half-day, defer to keep this sprint small.
+- [~] **B2. BUT-1004 (Medium)** — IngredientCategorizer. Multi-file UI sweep (8+ callsites for category constant rename). Defer.
+- [~] **C1. BUT-1033 (Medium)** — RecipePersistenceManager save-flow test. Heavy mock setup needed (full RecipeFormState bootstrapping). Defer.
+- [~] **C2. BUT-1030 (Medium)** — **Plan-stale:** ticket cites `MockUnifiedRecipeService.updateRecipe at line 2400-2405` — but line 2400 is `MockRecipeServiceAdapter` (different class). `MockUnifiedRecipeService` has no `updateRecipe` override at all; real mutation gap is on `personal.updateUnifiedRecipe` via injected `_personalOperations`. Re-scope before picking next sprint.
 
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos` clean across all changed files
 - [ ] `dart format --set-exit-if-changed lib test` clean
-- [ ] Tier-2 reviews: `code-reviewer` + `testing-specialist` + `firebase-backend-security` (A1+C2 touch auth/account)
+- [ ] Tier-2 reviews: `code-reviewer` + `testing-specialist` + `firebase-backend-security` (A1, A3 touch services)
 - [ ] File follow-ups in Linear (anything deferred / reviewer findings / test gaps)
 - [ ] Commit + push to main
 - [ ] Close Linear tickets to Done
@@ -29,29 +27,35 @@ Theme: 8 tickets across three batches. Settings/account UX visibility (BUT-913, 
 
 ---
 
+## Archived wave-17 (commit 27e8ee6df) — 2026-05-23 (Sa)
+
+Theme: 8 tickets across Settings UX, bulk recipe→menu, photo-delete undo. Parallel-session pattern: `todo.md` showed unchecked, Linear showed all Done — wave-17 actually shipped. Two structural deferrals re-filed during sprint (BUT-1031 for BUT-958 realtime, BUT-1032 for BUT-995 Vertex caching) + two polish follow-ups (BUT-1033, BUT-1034).
+
+### Batch A — Settings/Account UX
+- [x] **BUT-913 (High)** — Surface Sign-out + Delete-Account in Settings UI (GDPR).
+- [~] **BUT-958 (High)** — Sync conflict resolution: deferred → BUT-1031 (realtime path risk).
+- [x] **BUT-932 (Medium)** — Recipe photo deletion undo.
+
+### Batch B — Bulk recipe→menu suite
+- [x] **BUT-1029 (Medium)** — SlotPickerDialog widget.
+- [x] **BUT-1013 (High)** — Bulk add-to-menu on selection.
+- [x] **BUT-1014 (Medium)** — Bulk export selected recipes.
+
+### Batch C — Backend hygiene
+- [~] **BUT-995 (High)** — Prompt caching: deferred → BUT-1032 (Vertex Gemini context caching, larger surface).
+- [x] **BUT-970 (High)** — Wire backup_service into Settings → Konto.
+
 ## Archived wave-16 (commit ae7cc297e + tier-2 follow-ups) — 2026-05-23 (Sa)
 
-Theme: 2 High tickets + 1 obsoletion. Wave-15 was found 8/8 Done in Linear at sprint start (parallel session shipped without checking off `todo.md`). BUT-1013 was deferred mid-sprint after Step 0 verification revealed the prereq picker dialog doesn't exist; filed BUT-1029 for the prereq.
-
-### Batch A — Recipe-list bulk tag (`flutter-developer`)
-- [x] **A1. BUT-1012 (High)** — `lib/views/mina_recept/selection_app_bar.dart` + `lib/viewmodels/recipe_list_viewmodel.dart`: new bulk-tag IconButton + inline `_BulkTagPicker` modal sheet + `bulkApplyPersonalTag` (merge, skip already-tagged) + `undoBulkApplyPersonalTag` with per-recipe snapshot. l10n: 5 new bulk-tag keys (sv + en + generated). Tests: 5 new VM unit tests covering modified-count, already-tagged skip, empty selection, undo safety.
-
-### Batch B — Image upload size reduction (`flutter-developer`)
-- [x] **B1. BUT-992 (High)** — `lib/services/image_picker_service.dart`: defaults `2400→1600`, `quality 90→80` across `pickImage`, `pickMultipleImages`, `cropImage.compressQuality`. Existing tests updated + 2 regression-guard assertions added that the new literals are passed through.
-
-### Batch C — Obsoletion housekeeping
-- [x] **BUT-938** — closed as obsolete (multi-image carousel already shipped via `UniversalImageManager.recipeDetail` at `recipe_detail_content.dart:560-567`).
-
-### Mid-sprint scope changes
-- [~] **BUT-1013** — deferred. Plan-stale: ticket assumed a single-recipe slot picker existed for reuse, but no such picker exists. Filed prereq BUT-1029 (SlotPickerDialog widget), blocked BUT-1013 on it. Re-picked in wave-17.
+Theme: 2 High tickets + 1 obsoletion. BUT-1012 bulk-tag, BUT-992 image compression. BUT-1013 deferred → wave-17 (after BUT-1029 prereq).
 
 ## Archived wave-15 (parallel-session ships) — 2026-05-23 (Sa)
 
-wave-15 — 8 tickets planned (BUT-1022, 1026, 1020, 1015, 1017, 1019, 1018, 1027). Parallel session shipped 8/8 at 2026-05-23T17:59 without checking off this file. Lesson re-reinforced: Linear state is authoritative; local `todo.md` lies when two sessions run concurrently.
+wave-15 — 8 tickets planned (BUT-1022, 1026, 1020, 1015, 1017, 1019, 1018, 1027). Parallel session shipped 8/8.
 
 ## Archived wave-14 (parallel-session ships) — 2026-05-23 (Sa)
 
-wave-14 — 7 planned, 5 shipped by parallel session (BUT-1024, 1025, 1021, 1023, 1016). Carry-over BUT-1022 + BUT-1026 absorbed into wave-15.
+wave-14 — 7 planned, 5 shipped by parallel session (BUT-1024, 1025, 1021, 1023, 1016).
 
 ## Archived wave-13 (commits 3fc2d1edc + 66a786479 + 3f7d40412) — 2026-05-22 (Fr)
 
@@ -63,7 +67,7 @@ wave-12 — 7 done + 2 deferred.
 
 ## Archived wave-11 (commits 7551c14c2 + bca2f5bc7) — 2026-05-22 (Fr)
 
-wave-11 — BUT-788 server-side account-deletion. New `requestAccountDeletion` CF. Follow-ups BUT-1009/1010/1011.
+wave-11 — BUT-788 server-side account-deletion.
 
 ## Archived wave-10 (commit 826dceed1) — 2026-05-22 (Fr)
 

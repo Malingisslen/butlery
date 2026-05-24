@@ -168,92 +168,101 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             child: _buildPortionScaler(context),
           ),
 
-          // Ingredient rows with dividers
-          ...scaledIngredients.asMap().entries.map((entry) {
-            final index = entry.key;
-            final ingredient = entry.value;
-            final parsed = IngredientParser.parseIngredient(ingredient);
-            final isAllergen = _isAllergenIngredient(parsed.name);
-
-            return Column(
-              children: [
-                if (index > 0)
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: cs.surfaceContainerHigh,
-                  ),
-                Semantics(
-                  label: context.l10n.a11yShowSubstitutionsFor(parsed.name),
-                  button: true,
-                  child: InkWell(
-                    onTap: () => _showSubstitutionSheet(context, parsed.name),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingModerate),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Quantity + unit column
-                          SizedBox(
-                            width: 70,
-                            child: Text(
-                              parsed.unit.isNotEmpty
-                                  ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                                  : parsed.quantity > 0
-                                      ? _formatQuantity(parsed.quantity)
-                                      : '',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: cs.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              textAlign: TextAlign.end,
-                            ),
-                          ),
-                          const SizedBox(width: AppDimensions.spacingXl),
-                          // Ingredient name (tap for substitutions)
-                          Expanded(
-                            child: Row(
-                              children: [
-                                if (isAllergen)
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.only(
-                                      end: AppDimensions.spacingXs,
-                                    ),
-                                    child: Icon(
-                                      Icons.warning_amber,
-                                      size: AppDimensions.iconSizeS,
-                                      color: cs.error,
-                                    ),
-                                  ),
-                                Expanded(
-                                  child: Text(
-                                    parsed.name,
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color:
-                                          isAllergen ? cs.error : cs.onSurface,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.swap_horiz,
-                            size: AppDimensions.iconSizeS,
-                            color: cs.onSurfaceVariant.withValues(
-                                alpha: AppDimensions.opacityMediumLight),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
+          // BUT-951: ingredient rows via ListView.builder. shrinkWrap +
+          // NeverScrollable because the outer scaffold owns the scroll. Saves
+          // a layout pass per row vs the eager Column children list — most
+          // recipes are short so the win is modest, but for long-ingredient
+          // baking recipes (50+ items) it's measurable on lower-end Android.
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: scaledIngredients.length,
+            itemBuilder: (context, index) =>
+                _buildIngredientRow(context, index),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildIngredientRow(BuildContext context, int index) {
+    final cs = Theme.of(context).colorScheme;
+    final ingredient = scaledIngredients[index];
+    final parsed = IngredientParser.parseIngredient(ingredient);
+    final isAllergen = _isAllergenIngredient(parsed.name);
+
+    return Column(
+      children: [
+        if (index > 0)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: cs.surfaceContainerHigh,
+          ),
+        Semantics(
+          label: context.l10n.a11yShowSubstitutionsFor(parsed.name),
+          button: true,
+          child: InkWell(
+            onTap: () => _showSubstitutionSheet(context, parsed.name),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingModerate),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      parsed.unit.isNotEmpty
+                          ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                          : parsed.quantity > 0
+                              ? _formatQuantity(parsed.quantity)
+                              : '',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: cs.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingXl),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (isAllergen)
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              end: AppDimensions.spacingXs,
+                            ),
+                            child: Icon(
+                              Icons.warning_amber,
+                              size: AppDimensions.iconSizeS,
+                              color: cs.error,
+                            ),
+                          ),
+                        Expanded(
+                          child: Text(
+                            parsed.name,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: isAllergen ? cs.error : cs.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.swap_horiz,
+                    size: AppDimensions.iconSizeS,
+                    color: cs.onSurfaceVariant
+                        .withValues(alpha: AppDimensions.opacityMediumLight),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -276,57 +285,58 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: instructions.asMap().entries.map((entry) {
-          final index = entry.key;
-          final instruction = entry.value;
-          final isCompleted = _completedSteps.contains(index);
+      // BUT-951: instructions via ListView.builder, mirrors ingredients change.
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: instructions.length,
+        itemBuilder: (context, index) =>
+            _buildInstructionRow(context, index, instructions),
+      ),
+    );
+  }
 
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom:
-                  index < instructions.length - 1 ? AppDimensions.spacingMd : 0,
+  Widget _buildInstructionRow(
+      BuildContext context, int index, List<String> instructions) {
+    final cs = Theme.of(context).colorScheme;
+    final instruction = instructions[index];
+    final isCompleted = _completedSteps.contains(index);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: index < instructions.length - 1 ? AppDimensions.spacingMd : 0,
+      ),
+      child: Semantics(
+        label: context.l10n.a11yToggleStepDone(index + 1),
+        button: true,
+        toggled: isCompleted,
+        child: InkWell(
+          onTap: () => _toggleStepCompletion(index),
+          borderRadius: BorderRadius.zero,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingXs,
             ),
-            child: Semantics(
-              label: context.l10n.a11yToggleStepDone(index + 1),
-              button: true,
-              toggled: isCompleted,
-              child: InkWell(
-                onTap: () => _toggleStepCompletion(index),
-                borderRadius: BorderRadius.zero,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingXs,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Checkable step indicator
-                      _buildStepCheckbox(context, index + 1, isCompleted),
-                      const SizedBox(width: AppDimensions.spacingMd),
-
-                      // Instruction text
-                      Expanded(
-                        child: Text(
-                          instruction,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            color: isCompleted
-                                ? cs.onSurfaceVariant
-                                : cs.onSurface,
-                            decoration: isCompleted
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                          ),
-                        ),
-                      ),
-                    ],
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStepCheckbox(context, index + 1, isCompleted),
+                const SizedBox(width: AppDimensions.spacingMd),
+                Expanded(
+                  child: Text(
+                    instruction,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
+                      decoration: isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          );
-        }).toList(),
+          ),
+        ),
       ),
     );
   }

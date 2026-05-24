@@ -13522,6 +13522,15 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get recipeVisibilityPrivate => 'Privat';
+
+  @override
+  String get recipeVisibilityCollaborative => 'Delas med samarbetspartners';
+
+  @override
+  String get recipeVisibilityPublic => 'Offentligt';
+
+  @override
   String a11yMenuRecipeOpen(String title) {
     return '$title, tryck för att öppna receptet';
   }
