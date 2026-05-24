@@ -1903,3 +1903,148 @@ setUpAll(() async {
 **No production bugs found in the menu service logic itself** — _loadMenus dedup (skip realtime menus where `ownerId == userId`), the corrupt-doc-skip in the realtime loop, and the unauth short-circuit on every repo-backed method all held. The state machine in `_emitState` correctly emits Loading-vs-Error-vs-Data based on `_isInitialized` / `_error` / `_menus.isEmpty`.
 
 **Test output cosmetic note:** flutter reports `+23 ~3: All tests passed!` — the `~3` count is "passed with handled platform-exception noise during teardown", not skips. The headline "All tests passed!" is authoritative.
+
+### 2026-05-24 — RealtimeSyncService intent tests + parser-too-lenient finding [Pattern discovered]
+
+**File:** `test/unit/services/realtime_sync_service_test.dart` (25 tests, all green).
+
+**Wiring pattern for services that wrap a `FirestoreRepository` + `AuthRepository`:**
+- Construct a **local** `FakeFirebaseFirestore` (NOT the singleton) so the
+  doc-stream events don't leak across tests. The singleton's auto-reset
+  fires between tests but the in-flight snapshot stream is non-trivially
+  attached to the old instance.
+- Wrap it in a real production `FirestoreRepository(firestore: fake)` —
+  there's no need for `FakeFirestoreRepository` when the helpers you exercise
+  (`getDocument`, `setDocument`, `collection`, `doc`) are already trivially
+  proxied. Going direct exercises the same code path the production service
+  uses.
+- For auth, use a local `class _MockAuthRepository extends Mock implements AuthRepository {}`
+  with `when(() => mockAuth.currentUserId).thenReturn(...)` and
+  `when(() => mockAuth.authStateChanges()).thenAnswer((_) => controller.stream)`.
+  The shared `MockAuthRepository` in `production_mocks.dart` has concrete
+  `@override` getters for `currentUserId` — those bypass mocktail's `when()`
+  stubbing silently. (This is the EXACT antipattern called out in the agent file.)
+- Seed resources via `fake.collection('realtime_resources').doc(id).set(resource.toFirestore())`
+  to drive `watchResource` / `fetchLatestResource` / `deleteResource` through
+  the real parser path.
+
+**Production observations flagged (no production code changed):**
+
+1. `RealtimeSyncService.watchResource` swallows downstream errors via
+   `.handleError((error) => _handleError(...))` (lines 186-193). Consequence:
+   a UI widget that does `StreamBuilder(stream: service.watchResource(id))`
+   will never see `documentNotFound` or `firestoreError` — both go to
+   `errorStream` instead. Subscribers MUST listen to both streams, or use a
+   merged ViewModel. This is a real UX trap: a deleted resource silently
+   shows the last cached state with no error indication.
+
+2. Resource parser is extremely lenient — missing `createdAt`/`lastEditedAt`
+   fall back to `clock.now()`, missing strings to empty, unknown types to
+   `recipe`. The only payload shape that actually throws is a `participants`
+   map with non-string values (the `as String?` cast). Practically, a
+   garbage Firestore doc parses into a default-shaped `RealtimeRecipe` and
+   gets cached. Worth flagging if data-quality issues surface in prod logs.
+
+3. `_activeListeners` is populated only by code paths not exercised by
+   `watchResource`'s public stream (which returns a transformed `Stream`,
+   not a subscription); the map is therefore always empty in normal usage.
+   `isResourceWatched(id)` will return false even mid-watch. Either dead
+   code, or there's an undocumented secondary subscribe path. Worth a
+   debugger-agent pass.
+
+**Helper-not-yet-extracted:** the `_buildResource` + `_seed` pair in this
+file is reusable for any future test of the realtime stack. If a second test
+needs it, lift to `test/infrastructure/factories/realtime_resource_factory.dart`.
+
+---
+
+### 2026-05-24 — SharedRecipeViewModel test scaffolding + caught dismiss-result-ignored bug
+
+**Trigger:** Bug found + Pattern discovered.
+
+**Scaffolding pattern for VMs whose base class calls `ServiceLocator.get<PermissionService>()` and `ServiceLocator.tryGet<UnifiedFriendsService>()` at construction:**
+
+```dart
+setUpAll(() async {
+  await BaseUnitTest.setupUnitWithProductionLocator();  // bridges prod ServiceLocator → GetIt
+});
+setUp(() async {
+  await TestServiceLocator.initialize();
+  permissionService = FakePermissionService()..setPermissionState(currentUserId: 'uid', isAuthenticated: true);
+  friendsService = MockUnifiedFriendsService()..setFriendsState(blockedUsers: <String>{});
+  TestServiceLocator.registerMock<PermissionService>(permissionService);
+  TestServiceLocator.registerMock<UnifiedFriendsService>(friendsService);
+  // ...register coordinator too if VM uses ServiceLocator.get<X>() fallback in default ctor
+});
+```
+
+Key insight: the production `ServiceLocator` (DIContainer wrapper) and the test `ServiceLocator` share `GetIt.instance`. So `TestServiceLocator.registerMock<T>(mock)` makes the mock visible to BOTH. You can construct the VM with explicit deps (`SharedRecipeViewModel(socialRecipeCoordinator: coord)`) and still satisfy base-class lookups via the locator.
+
+**Production bug caught: `dismissSharedRecipe` ignores coordinator boolean result**
+
+File: `lib/viewmodels/shared_content/shared_recipe_viewmodel.dart` lines 215-218.
+
+```dart
+() async {
+  await _socialRecipeCoordinator.dismissSharedRecipe(sharedRecipe.id);
+  return true;  // BUG: throws away the bool, always reports success
+}
+```
+
+When the coordinator returns `false` (silent failure — common when permission rules reject a write without raising), the VM:
+1. Returns `true` to the caller.
+2. Calls `removeContent(sharedRecipe)` → item disappears from UI.
+3. Firestore still has the item → next refresh resurrects it (jank).
+
+**Fix shape:** `final result = await _socialRecipeCoordinator.dismissSharedRecipe(sharedRecipe.id); return result;`
+
+Pinned with a `BUG:` test that asserts current (buggy) behaviour so a fix is an intentional flip. Reported for Linear ticket. Same pattern likely exists in sibling shared_menu_viewmodel / shared_shopping_viewmodel — worth a follow-up sweep.
+
+**Doc-comment gotcha:** `unintended_html_in_doc_comment` lint fires on `Foo<Bar>` in `///` comments. Wrap in backticks: `` `Foo<Bar>` ``.
+
+### 2026-05-24 — UrlImportStrategy intent-test sprint, batch 3 [Pattern discovered + Bug-finding]
+
+**Pattern: `InternetAddress.lookup` short-circuits on IP literals.**
+For unit tests of code that goes through `HttpContentFetcher` (or any
+`http` client gated by `InternetAddress.lookup`), use IP-literal URLs
+(`http://8.8.8.8/recipe`). The lookup returns the IP itself without
+hitting real DNS, so the tests stay hermetic without needing a `dnsLookup`
+stub. Verified via a one-off `dart` run.
+
+**Pattern: TextImportStrategy is intentionally lenient.**
+`TextImportStrategy.import` never returns `ImportResult.assistance` —
+it always either succeeds (with optional warnings) or fails on empty
+input. This means UrlImportStrategy's Tier 5 (`_tryHtmlTextParse`) will
+"succeed" on any non-empty HTML body. To reach Tier 7 (user assistance)
+in tests you cannot just feed prose — you'd have to feed empty/short HTML
+that fails the bestHtml length guard. I pinned the actual behaviour
+("long prose → Tier 5 success with quality warning") rather than the
+documented-looking-but-wrong intuition ("long prose → Tier 7 assistance").
+
+**Bug-finding policy hits (file follow-up tickets):**
+
+1. **No `dnsLookup` seam on `UrlImportStrategy`** —
+   `lib/services/import/url_import_strategy.dart:32-39`. The ctor
+   accepts `httpClient` and `webScraperFactory` but constructs
+   `HttpContentFetcher` internally with the real `InternetAddress.lookup`.
+   Effect: cannot test the DNS-rebinding gate end-to-end through the
+   strategy. The gate IS tested in `HttpContentFetcher` tests, so this
+   is a testability friction rather than a security gap — but it
+   should grow a `dnsLookup` parameter to round it out. Suggested fix:
+   add `Future<List<InternetAddress>> Function(String)? dnsLookup` to
+   the ctor and forward it.
+
+2. **Non-Recipe JSON-LD silently downgraded to lenient text parse** —
+   when a page has `@type=Article` JSON-LD, Tier 2 skips it correctly,
+   but Tier 5 (`TextImportStrategy`) then produces a "recipe" anyway.
+   The UI only sees `extraction_method=html_text_parse` + a "quality
+   may vary" warning — there's no signal that the page explicitly
+   declared itself as something else. Not a hard bug, but worth a
+   product-side decision: should we hard-fail when structured data
+   exists but isn't Recipe? File a ticket for product discussion.
+
+3. **Tier numbering inconsistency** —
+   `_tryHtmlTextParse` writes `'tier': 3` to metadata, but the source
+   comments label it "Tier 5". `_createUserAssistedResult` writes
+   `'tier': 5` but the source comments label it "Tier 7". Cosmetic but
+   confusing — pick one numbering and stick with it.

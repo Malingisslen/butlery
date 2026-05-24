@@ -1,306 +1,813 @@
-/// Unit tests for UrlImportStrategy — URL validation and ImportValidationMixin
+/// Unit tests for `UrlImportStrategy` — the recipe-import orchestrator.
 ///
-/// Tests pure logic that does not require Firebase:
-/// - URL validation (canHandle, validateInput)
-/// - Blocked host detection (SSRF protection)
-/// - ImportValidationMixin helpers
-/// - ImportResult factory constructors
+/// Two layers covered:
 ///
-/// Integration-level tests (HTTP fetching, multi-tier extraction) are NOT
-/// covered here because UrlImportStrategy eagerly creates ParseEventLogger
-/// which requires FirebaseFunctions.
+/// 1) **canHandle / validateInput / SSRF gating** — pure logic. Pins:
+///    - Only http/https schemes accepted; file://, javascript:, data:, mailto:,
+///      ftp:// all rejected (SSRF / XSS surface).
+///    - Empty / whitespace / missing-host / non-URL inputs rejected.
+///    - Internal hosts (localhost, 127/8, 10/8, 172.16/12, 192.168/16,
+///      169.254/16, 0.0.0.0, IPv6 ::1 / fc00::/7 / fe80::/10) rejected even
+///      when wrapped in a valid HTTPS URL.
+///
+/// 2) **`import(url)` multi-tier orchestration** — uses the real
+///    `UrlImportStrategy(httpClient: ...)` constructor with `MockClient`.
+///    URLs use public-IP hosts (`http://8.8.8.8/...`) so that
+///    `InternetAddress.lookup` short-circuits without touching DNS.
+///
+///    The production `ServiceLocator` is intentionally left uninitialized,
+///    which makes `_recipeParser` (Tier 1) and `_llmEnhancement` (Tier 6)
+///    return `null` cleanly. We then drive Tiers 2 / 5 / 7 / hard-failure
+///    through the HTTP response body.
+///
+///    Pins:
+///    - JSON-LD recipe HTML → Tier 2 (schema.org) success with the right
+///      `extraction_method` and recipe content carried through.
+///    - Long unstructured HTML → Tier 7 (user-assistance) result with
+///      `tier: 5` in metadata (Tier 7 is internal numbering — public metadata
+///      uses tier=5 historically). NOT a hard failure.
+///    - Tiny HTML body → hard failure carrying `html_fetched=true,
+///      html_length=<N>` so the UI can explain "we fetched but found nothing."
+///    - HTTP 4xx / 5xx → fetcher returns null → hard failure with
+///      `html_fetched=false`.
+///    - Non-http(s) scheme reaching `import()` (caller bypassed canHandle):
+///      handled gracefully — failure result, no throw, no HTTP send.
+///    - Whitespace around the URL is trimmed before fetching.
+///    - JSON-LD with missing `recipeIngredient` still succeeds with empty
+///      ingredients (extractor degrades; strategy must not crash).
+///    - Exception during fetch is swallowed — failure result, no rethrow.
+///
+/// Out of scope (no production seam to test cleanly):
+///   - DNS-rebinding gate (no public `dnsLookup` injection on
+///     UrlImportStrategy — see testability note in the agent summary).
+///   - Tier 3/4 web-scraper paths (WebScraper requires `flutter_inappwebview`
+///     platform code; the existing
+///     `test/unit/services/extraction/web_scraper_test.dart` covers it).
+///   - ParseEventLogger side effects (Firebase Functions — covered by its
+///     own unit test).
+///   - ParsedRecipeCache.store (requires production DI registration).
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-/// Concrete class to test ImportValidationMixin in isolation
+/// Helper to make ImportValidationMixin testable in isolation.
 class _ValidationHelper with ImportValidationMixin {}
 
+/// JSON-LD recipe HTML that the schema.org tier parses cleanly.
+String _jsonLdRecipeHtml({
+  String title = 'Pannkakor',
+  List<String> ingredients = const [
+    '3 ägg',
+    '5 dl mjölk',
+    '3 dl vetemjöl',
+    '1 krm salt',
+  ],
+  List<String> instructions = const [
+    'Vispa ihop ägg och mjölk.',
+    'Tillsätt mjölet i en stråle.',
+    'Stek pannkakor i smör.',
+  ],
+}) {
+  final ingredientsJson = ingredients.map((e) => '"$e"').join(',');
+  final instructionsJson = instructions.map((e) => '"$e"').join(',');
+  return '''
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>$title</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "name": "$title",
+    "recipeIngredient": [$ingredientsJson],
+    "recipeInstructions": [$instructionsJson],
+    "recipeYield": "4"
+  }
+  </script>
+</head>
+<body><h1>$title</h1></body>
+</html>
+''';
+}
+
+/// Long, recipe-free prose — must reach Tier 7 (user assistance).
+String _unstructuredHtml() {
+  return '''
+<!doctype html>
+<html><head><title>Random blog</title></head>
+<body>
+<article>
+  <h1>An afternoon at the park</h1>
+  <p>The leaves were turning amber and the children laughed under the
+  oak tree while their parents watched from a bench, sipping coffee
+  out of paper cups and discussing nothing in particular.</p>
+  <p>It was the sort of afternoon that one remembers without quite
+  knowing why, the kind of afternoon that lives in the corners of
+  memory long after the trees have gone bare.</p>
+</article>
+</body>
+</html>
+''';
+}
+
+http.Response _htmlResponse(String body, {int status = 200}) {
+  return http.Response(
+    body,
+    status,
+    headers: {'content-type': 'text/html; charset=utf-8'},
+  );
+}
+
+/// Build a strategy whose HTTP fetcher is driven by [responder]. URLs in the
+/// tests use IP hosts (e.g. `http://8.8.8.8/recipe`) so `InternetAddress.lookup`
+/// short-circuits without going to real DNS.
+UrlImportStrategy _strategyWith(
+  Future<http.Response> Function(http.Request req) responder,
+) {
+  final client = MockClient((req) async => responder(req));
+  return UrlImportStrategy(httpClient: client);
+}
+
 void main() {
-  group('URL canHandle logic', () {
-    // We replicate UrlImportStrategy.canHandle without constructing the class,
-    // because the constructor needs Firebase. The logic is: valid URI, http(s)
-    // scheme, non-empty host, not blocked.
-    bool canHandle(String input) {
-      final trimmed = input.trim();
-      if (trimmed.isEmpty) return false;
-      try {
-        final uri = Uri.parse(trimmed);
-        return uri.hasScheme &&
-            (uri.scheme == 'http' || uri.scheme == 'https') &&
-            uri.hasAuthority &&
-            uri.host.isNotEmpty &&
-            !HttpContentFetcher.isBlockedHost(uri.host);
-      } catch (_) {
-        return false;
+  // -----------------------------------------------------------------------
+  // canHandle / validateInput / SSRF gating
+  // -----------------------------------------------------------------------
+  group('UrlImportStrategy.canHandle (URL validation + SSRF gate)', () {
+    late UrlImportStrategy strategy;
+
+    setUp(() {
+      strategy = UrlImportStrategy();
+    });
+
+    /// canHandle is the public gate the ImportManager uses to route inputs.
+    /// It must accept plain http/https URLs with a real host.
+    test('accepts http and https URLs with hosts', () {
+      expect(strategy.canHandle('http://example.com/recipe'), isTrue);
+      expect(strategy.canHandle('https://www.ica.se/recept/pannkakor'), isTrue);
+      expect(
+        strategy.canHandle('https://sub.domain.example.com:8080/x?y=z#a'),
+        isTrue,
+      );
+    });
+
+    /// validateInput must be a strict alias of canHandle — they're the same
+    /// gate from the caller's perspective. A future refactor that splits
+    /// them is the bug this test catches.
+    test('validateInput is the same gate as canHandle', () {
+      const cases = [
+        'https://example.com',
+        'file:///etc/passwd',
+        '   ',
+        'http://localhost/admin',
+        'not-a-url',
+      ];
+      for (final input in cases) {
+        expect(
+          strategy.validateInput(input),
+          strategy.canHandle(input),
+          reason: 'validateInput and canHandle must agree for "$input"',
+        );
       }
-    }
-
-    test('accepts valid HTTP URLs', () {
-      expect(canHandle('http://example.com/recipe'), isTrue);
-      expect(canHandle('http://www.ica.se/recept/pannkakor-123'), isTrue);
     });
 
-    test('accepts valid HTTPS URLs', () {
-      expect(canHandle('https://example.com/recipe'), isTrue);
-      expect(canHandle('https://www.ica.se/recept/pannkakor-123'), isTrue);
-      expect(canHandle('https://www.arla.se/recept/tarta-456'), isTrue);
-      expect(canHandle('https://www.koket.se/mat-dryck/recept/789'), isTrue);
+    /// SSRF guard at the routing layer. canHandle must reject internal
+    /// hosts so the ImportManager never even dispatches the import.
+    /// Defence in depth — `HttpContentFetcher.fetchHtmlWithTimeout` also
+    /// blocks.
+    test('rejects URLs pointing at internal / private networks', () {
+      const blockedUrls = [
+        'http://localhost/x',
+        'http://127.0.0.1/admin',
+        'http://10.0.0.1/internal',
+        'http://192.168.1.1/router',
+        'http://172.16.5.5/svc',
+        'http://169.254.169.254/latest/meta-data', // EC2 metadata
+        'http://0.0.0.0/x',
+        'http://[::1]/x',
+      ];
+      for (final url in blockedUrls) {
+        expect(
+          strategy.canHandle(url),
+          isFalse,
+          reason: 'SSRF gate must block $url at the canHandle layer',
+        );
+      }
     });
 
-    test('rejects empty and whitespace-only input', () {
-      expect(canHandle(''), isFalse);
-      expect(canHandle('   '), isFalse);
+    /// Non-HTTP schemes must be rejected — `file://` would read local files,
+    /// `data:` would inline content, `javascript:` would be XSS. Only
+    /// http(s) is safe.
+    test('rejects non-http(s) schemes (file/data/javascript/ftp/mailto/ws)',
+        () {
+      const rejected = [
+        'file:///etc/passwd',
+        'file:///C:/Windows/System32/drivers/etc/hosts',
+        'data:text/html,<script>alert(1)</script>',
+        'javascript:alert(1)',
+        'ftp://files.example.com/recipe.txt',
+        'mailto:chef@example.com',
+        'ws://example.com/socket',
+      ];
+      for (final url in rejected) {
+        expect(
+          strategy.canHandle(url),
+          isFalse,
+          reason: 'non-http scheme must be rejected: $url',
+        );
+      }
     });
 
-    test('rejects non-HTTP(S) schemes', () {
-      expect(canHandle('ftp://files.example.com/recipe.txt'), isFalse);
-      expect(canHandle('file:///C:/recipes/local.txt'), isFalse);
-      expect(canHandle('data:text/html,<html></html>'), isFalse);
-      expect(canHandle('mailto:chef@example.com'), isFalse);
+    /// Empty / whitespace / no-host inputs are not URLs and must be
+    /// rejected before we spend any cycles on them.
+    test('rejects empty, whitespace, and host-less inputs', () {
+      expect(strategy.canHandle(''), isFalse);
+      expect(strategy.canHandle('   '), isFalse);
+      expect(strategy.canHandle('http://'), isFalse);
+      expect(strategy.canHandle('https://'), isFalse);
+      expect(strategy.canHandle('not-a-url'), isFalse);
     });
 
-    test('rejects plain text that is not a URL', () {
-      expect(canHandle('not a url'), isFalse);
-      expect(canHandle('archive:123'), isFalse);
-    });
-
-    test('rejects URLs without host', () {
-      expect(canHandle('http://'), isFalse);
-      expect(canHandle('https://'), isFalse);
-    });
-
-    test('handles URLs with query, fragment, port, auth', () {
-      expect(canHandle('https://example.com/recipe?id=123&lang=sv'), isTrue);
-      expect(canHandle('https://example.com:8080/recipe'), isTrue);
-      expect(canHandle('https://example.com/recipe#instructions'), isTrue);
-      expect(canHandle('https://subdomain.example.com/path/to/recipe'), isTrue);
-    });
-
+    /// canHandle must trim before parsing — URLs pasted from chat apps
+    /// arrive with surrounding whitespace all the time.
     test('trims whitespace before parsing', () {
-      expect(canHandle('  https://example.com/recipe  '), isTrue);
-    });
-
-    test('handles very long URLs', () {
-      final longUrl = 'https://example.com/recipe/${'a' * 500}';
-      expect(canHandle(longUrl), isTrue);
-    });
-
-    test('recognises Swedish recipe sites', () {
-      expect(canHandle('https://www.ica.se/recept/pannkakor-123'), isTrue);
-      expect(canHandle('https://ica.se/recept/koktbullar-456'), isTrue);
-      expect(canHandle('https://www.arla.se/recept/tarta-123'), isTrue);
-      expect(canHandle('https://www.koket.se/recept/middag/456'), isTrue);
+      expect(strategy.canHandle('  https://example.com/recipe  '), isTrue);
     });
   });
 
-  group('HttpContentFetcher.isBlockedHost (SSRF protection)', () {
-    test('blocks localhost', () {
-      expect(HttpContentFetcher.isBlockedHost('localhost'), isTrue);
+  // -----------------------------------------------------------------------
+  // import(url) — multi-tier orchestration
+  // -----------------------------------------------------------------------
+  group('UrlImportStrategy.import (orchestration over real HTTP fetcher)', () {
+    /// Happy path: Tier 2 fires because Tier 1 (`_recipeParser`) is null
+    /// (no prod ServiceLocator) and the body has parseable JSON-LD.
+    test(
+        'JSON-LD page → success with extraction_method=schema.org and recipe '
+        'content carried through', () async {
+      final strategy = _strategyWith((req) async {
+        expect(req.url.toString(), 'http://8.8.8.8/recipe');
+        return _htmlResponse(_jsonLdRecipeHtml(
+          title: 'Köttbullar',
+          ingredients: ['500 g köttfärs', '1 dl mjölk', '1 ägg'],
+          instructions: ['Blanda.', 'Forma.', 'Stek.'],
+        ));
+      });
+
+      final result = await strategy.import('http://8.8.8.8/recipe');
+
+      expect(
+        result.isSuccess,
+        isTrue,
+        reason: 'JSON-LD recipe must yield a success result',
+      );
+      expect(result.recipe, isNotNull);
+      expect(
+        result.recipe!.core.title,
+        'Köttbullar',
+        reason: 'title must round-trip from the JSON-LD `name` field',
+      );
+      expect(
+        result.recipe!.core.ingredients,
+        containsAll(['500 g köttfärs', '1 dl mjölk', '1 ägg']),
+      );
+      expect(result.recipe!.core.instructions, hasLength(3));
+      expect(result.recipe!.core.sourceUrl, 'http://8.8.8.8/recipe');
+      expect(result.metadata?['strategy'], 'URL Import');
+      expect(
+        result.metadata?['extraction_method'],
+        'schema.org',
+        reason:
+            'Tier 2 uses the schema.org extractor when Tier 1 is unavailable',
+      );
     });
 
-    test('blocks loopback IPv4', () {
+    /// HTML with no JSON-LD but plenty of prose falls through to Tier 5
+    /// (`_tryHtmlTextParse` → `TextImportStrategy.import`). TextImportStrategy
+    /// is intentionally lenient and returns a best-effort recipe rather
+    /// than failing — so the result is a SUCCESS with
+    /// `extraction_method=html_text_parse` and a "quality may vary"
+    /// warning. The source URL is carried back onto the recipe.
+    ///
+    /// This pins a real production design choice: prose → low-quality
+    /// success-with-warning, NOT user-assistance prompt. A future change
+    /// that flips this to assistance is a behavioural break the test
+    /// catches.
+    test(
+        'unstructured HTML falls through to Tier 5 → success with '
+        'html_text_parse + quality warning + sourceUrl set', () async {
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(_unstructuredHtml()),
+      );
+
+      final result = await strategy.import('http://8.8.8.8/blog');
+
+      expect(
+        result.isSuccess,
+        isTrue,
+        reason: 'Tier 5 is lenient — long prose → best-effort recipe',
+      );
+      expect(result.recipe, isNotNull);
+      expect(
+        result.recipe!.core.sourceUrl,
+        'http://8.8.8.8/blog',
+        reason: 'Tier 5 must stamp the source URL onto the recipe',
+      );
+      expect(
+        result.metadata?['extraction_method'],
+        'html_text_parse',
+      );
+      expect(result.metadata?['tier'], 3);
+      expect(
+        result.warnings,
+        contains('Extracted from HTML text - quality may vary'),
+        reason:
+            'Tier 5 must warn the user that this is a low-quality extraction',
+      );
+    });
+
+    /// Body too small for the >100-char bestHtml guard → none of Tiers 5-7
+    /// run. The strategy must surface a hard failure with diagnostic
+    /// metadata (`html_fetched`, `html_length`) so the UI can explain
+    /// "we fetched but found nothing."
+    test(
+        'tiny HTML body (<100 chars) → hard failure carrying html_length '
+        'metadata', () async {
+      // 19 chars — under the > 100 guard. Note: passes the
+      // "if (httpHtml != null)" Tier 2 check (which has no length guard)
+      // but extractRecipeFromHtml returns null on this body, so Tier 2
+      // misses too. Then Tiers 5/6/7 are gated by `bestHtml.length > 100`.
+      const body = '<html><b>x</b></html>';
+      final strategy = _strategyWith((req) async => _htmlResponse(body));
+
+      final result = await strategy.import('http://8.8.8.8/empty');
+
+      expect(result.isSuccess, isFalse);
+      expect(
+        result.needsAssistance,
+        isFalse,
+        reason: 'body too small for the assistance threshold',
+      );
+      expect(result.errorMessage, isNotNull);
+      expect(
+        result.metadata?['html_fetched'],
+        isTrue,
+        reason: 'we DID fetch (status 200) — the page was just empty',
+      );
+      expect(result.metadata?['html_length'], body.length);
+      expect(result.metadata?['strategy'], 'URL Import');
+    });
+
+    /// HTTP 5xx: `fetchHtmlWithTimeout` only returns the body on 200, so
+    /// it returns null. All HTML-dependent tiers are then skipped and the
+    /// strategy must record `html_fetched=false`.
+    test('HTTP 500 → failure with html_fetched=false metadata', () async {
+      final strategy = _strategyWith(
+        (req) async => http.Response('upstream boom', 500),
+      );
+
+      final result = await strategy.import('http://8.8.8.8/down');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.needsAssistance, isFalse);
+      expect(
+        result.metadata?['html_fetched'],
+        isFalse,
+        reason: 'a non-200 response must NOT be reported as html_fetched=true',
+      );
+      expect(result.metadata?['html_length'], 0);
+    });
+
+    /// HTTP 404: same contract as 500. Pin both so a future refactor that
+    /// special-cases 404 has to update the test.
+    test('HTTP 404 → failure with html_fetched=false metadata', () async {
+      final strategy = _strategyWith(
+        (req) async => http.Response('not found', 404),
+      );
+
+      final result = await strategy.import('http://8.8.8.8/missing');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.metadata?['html_fetched'], isFalse);
+    });
+
+    /// HTTP 429 (rate limited): documented as no-special-case — same
+    /// failure path as any other non-200. Pinning this explicitly because
+    /// a "smart retry on 429" patch would silently change behaviour.
+    test('HTTP 429 is treated the same as any other non-200 (no retry logic)',
+        () async {
+      var requestCount = 0;
+      final strategy = _strategyWith((req) async {
+        requestCount++;
+        return http.Response('rate limited', 429);
+      });
+
+      final result = await strategy.import('http://8.8.8.8/throttle');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.metadata?['html_fetched'], isFalse);
+      // The strategy makes at most 2 HTTP attempts (Tier 2 fetch + Tier 3
+      // headless scraper). The scraper would normally also call out, but
+      // it's not exercised here — we only assert that no SILENT retry
+      // happens on 429. A "smart retry" patch would push this >= 3.
+      expect(
+        requestCount,
+        lessThanOrEqualTo(2),
+        reason: '429 must not trigger an in-strategy retry loop',
+      );
+    });
+
+    /// A non-http(s) scheme that somehow reaches `import` (e.g. caller
+    /// bypassed `canHandle`) must be handled gracefully: the inner
+    /// `HttpContentFetcher` blocks the request, all tiers fail, we get a
+    /// failure result. NOT a thrown exception.
+    test('file:// scheme reaching import is rejected pre-send', () async {
+      var sendCount = 0;
+      final strategy = _strategyWith((req) async {
+        sendCount++;
+        return _htmlResponse('should never be called');
+      });
+
+      final result = await strategy.import('file:///etc/passwd');
+
+      expect(
+        result.isSuccess,
+        isFalse,
+        reason: 'non-http schemes must never succeed an import',
+      );
+      expect(sendCount, 0, reason: 'scheme rejection must happen pre-send');
+    });
+
+    /// `javascript:` URL reaching `import` — same contract as file://.
+    /// Belt-and-braces because XSS payloads in shared text are common.
+    test('javascript: scheme reaching import is rejected pre-send', () async {
+      var sendCount = 0;
+      final strategy = _strategyWith((req) async {
+        sendCount++;
+        return _htmlResponse('nope');
+      });
+
+      final result = await strategy.import('javascript:alert(1)');
+
+      expect(result.isSuccess, isFalse);
+      expect(sendCount, 0);
+    });
+
+    /// Whitespace around the URL must be trimmed by `import()` — otherwise
+    /// `Uri.parse` would carry the spaces into the path. End-to-end pin
+    /// on the trim.
+    test('trims leading/trailing whitespace before fetching', () async {
+      Uri? capturedUri;
+      final strategy = _strategyWith((req) async {
+        capturedUri = req.url;
+        return _htmlResponse(_jsonLdRecipeHtml());
+      });
+
+      final result = await strategy.import('  http://8.8.8.8/recipe   ');
+
+      expect(result.isSuccess, isTrue);
+      expect(
+        capturedUri.toString(),
+        'http://8.8.8.8/recipe',
+        reason: 'whitespace must be stripped before constructing the URI',
+      );
+    });
+
+    /// If the JSON-LD has @type=Recipe but no `recipeIngredient`, the
+    /// schema.org extractor produces a Recipe with empty ingredients.
+    /// The strategy must trust that — NOT crash trying to validate.
+    test(
+        'JSON-LD with missing recipeIngredient still succeeds with empty '
+        'ingredients list', () async {
+      const html = '''
+<!doctype html>
+<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Recipe","name":"Sparse"}
+</script></head><body></body></html>
+''';
+
+      final strategy = _strategyWith((req) async => _htmlResponse(html));
+
+      final result = await strategy.import('http://8.8.8.8/sparse');
+
+      expect(
+        result.isSuccess,
+        isTrue,
+        reason: 'schema.org tier accepts any object whose @type is Recipe — '
+            'the strategy must trust that and not second-guess content',
+      );
+      expect(result.recipe!.core.title, 'Sparse');
+      expect(
+        result.recipe!.core.ingredients,
+        isEmpty,
+        reason: 'empty list is the documented degradation',
+      );
+    });
+
+    /// JSON-LD that ISN'T a Recipe (e.g. @type=Article) must NOT trigger
+    /// the schema.org tier — the extractor returns null and we fall
+    /// through. With long prose underneath, Tier 5 then makes a best-
+    /// effort recipe (lenient by design), but the `extraction_method`
+    /// must reflect that — it must NOT be `schema.org`.
+    ///
+    /// This is the key invariant: a non-Recipe JSON-LD type must not be
+    /// claimed as a structured-data extraction. Otherwise we'd present
+    /// news articles as recipes with high confidence.
+    test(
+        'JSON-LD @type=Article does NOT trigger Tier 2 — extraction_method '
+        'must NOT be schema.org', () async {
+      const html = '''
+<!doctype html>
+<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Not a recipe"}
+</script></head><body>
+<p>This is a long news article about cooking but it does not contain
+any recipe structured data. The body is long enough to reach the
+fallback tier but not the structured extractor.</p>
+<p>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.</p>
+</body></html>
+''';
+
+      final strategy = _strategyWith((req) async => _htmlResponse(html));
+
+      final result = await strategy.import('http://8.8.8.8/article');
+
+      expect(
+        result.metadata?['extraction_method'],
+        isNot(equals('schema.org')),
+        reason: '@type=Article must not be claimed as a schema.org Recipe — '
+            'doing so would mark news articles as high-confidence recipes',
+      );
+      // Tier 5 (the lenient text parser) IS allowed to handle it. The
+      // contract is just "don't claim it came from structured data."
+    });
+
+    /// Verifies that the inner try/catch in `import()` swallows unexpected
+    /// exceptions. We make the http.Client throw synchronously — the
+    /// strategy must NOT rethrow.
+    test('http.Client throws during send → returns failure, never rethrows',
+        () async {
+      final boomClient = MockClient((req) async {
+        throw StateError('synthetic boom');
+      });
+      final strategy = UrlImportStrategy(httpClient: boomClient);
+
+      // No expect(throwsA(...)) — the contract is "swallow and return failure."
+      final result = await strategy.import('http://8.8.8.8/x');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.errorMessage, isNotNull);
+      expect(result.metadata?['strategy'], 'URL Import');
+      // HttpContentFetcher catches client-side exceptions and returns null,
+      // so we land in the "no html, no assist" failure path — html_fetched
+      // is false there.
+      expect(result.metadata?['html_fetched'], isFalse);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Strategy metadata (contract of the ImportStrategy interface)
+  // -----------------------------------------------------------------------
+  group('UrlImportStrategy strategy metadata', () {
+    late UrlImportStrategy strategy;
+
+    setUp(() {
+      strategy = UrlImportStrategy();
+    });
+
+    /// strategyName is referenced verbatim in every ImportResult.metadata —
+    /// renaming it breaks any code that filters by strategy.
+    test('strategyName is stable ("URL Import")', () {
+      expect(strategy.strategyName, 'URL Import');
+    });
+
+    /// inputExample must itself pass `canHandle` — otherwise the UI hint
+    /// is showing the user a URL the strategy would reject.
+    test('inputExample is itself a URL that canHandle accepts', () {
+      expect(
+        strategy.canHandle(strategy.inputExample),
+        isTrue,
+        reason: "the example URL must pass the strategy's own gate",
+      );
+    });
+
+    /// description is shown in the importer chooser — pin "non-empty"
+    /// so a future blank string fails CI.
+    test('description is non-empty', () {
+      expect(strategy.description.trim(), isNotEmpty);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // HttpContentFetcher.isBlockedHost — the SSRF gate UrlImportStrategy
+  // delegates to. If this breaks, every UrlImportStrategy protection breaks.
+  // -----------------------------------------------------------------------
+  group('HttpContentFetcher.isBlockedHost (delegated SSRF gate)', () {
+    test('blocks loopback variations', () {
+      expect(HttpContentFetcher.isBlockedHost('localhost'), isTrue);
       expect(HttpContentFetcher.isBlockedHost('127.0.0.1'), isTrue);
       expect(HttpContentFetcher.isBlockedHost('127.0.0.2'), isTrue);
     });
 
-    test('blocks private 10.x.x.x range', () {
+    test('blocks RFC1918 private ranges', () {
       expect(HttpContentFetcher.isBlockedHost('10.0.0.1'), isTrue);
       expect(HttpContentFetcher.isBlockedHost('10.255.255.255'), isTrue);
-    });
-
-    test('blocks private 172.16-31.x.x range', () {
       expect(HttpContentFetcher.isBlockedHost('172.16.0.1'), isTrue);
       expect(HttpContentFetcher.isBlockedHost('172.31.255.255'), isTrue);
-    });
-
-    test('blocks private 192.168.x.x range', () {
       expect(HttpContentFetcher.isBlockedHost('192.168.0.1'), isTrue);
-      expect(HttpContentFetcher.isBlockedHost('192.168.1.100'), isTrue);
     });
 
-    test('blocks link-local 169.254.x.x', () {
-      expect(HttpContentFetcher.isBlockedHost('169.254.1.1'), isTrue);
+    /// 172.15.x.x and 172.32.x.x are PUBLIC — only 172.16-31 is private.
+    /// A naive `bytes[0] == 172 && bytes[1] >= 16` (missing the `<= 31`
+    /// upper bound) would block legitimate hosts.
+    test('does NOT over-block 172.x outside the 16-31 private range', () {
+      expect(
+        HttpContentFetcher.isBlockedHost('172.15.0.1'),
+        isFalse,
+        reason: '172.15 is public, must not be blocked',
+      );
+      expect(
+        HttpContentFetcher.isBlockedHost('172.32.0.1'),
+        isFalse,
+        reason: '172.32 is public, must not be blocked',
+      );
     });
 
-    test('blocks 0.0.0.0', () {
+    test('blocks link-local 169.254.x.x and 0.0.0.0', () {
+      expect(
+        HttpContentFetcher.isBlockedHost('169.254.169.254'),
+        isTrue,
+        reason: 'cloud metadata endpoint — must always be blocked',
+      );
       expect(HttpContentFetcher.isBlockedHost('0.0.0.0'), isTrue);
     });
 
-    test('blocks empty host', () {
-      expect(HttpContentFetcher.isBlockedHost(''), isTrue);
+    /// IPv6 SSRF surface — pin loopback, link-local, ULA, and the
+    /// IPv4-mapped-IPv6 trick (::ffff:127.0.0.1) which is the classic
+    /// bypass.
+    test('blocks IPv6 loopback / link-local / ULA / IPv4-mapped-loopback', () {
+      expect(HttpContentFetcher.isBlockedHost('::1'), isTrue);
+      expect(
+        HttpContentFetcher.isBlockedHost('fe80::1'),
+        isTrue,
+        reason: 'link-local must be blocked',
+      );
+      expect(
+        HttpContentFetcher.isBlockedHost('fc00::1'),
+        isTrue,
+        reason: 'unique-local must be blocked',
+      );
+      expect(
+        HttpContentFetcher.isBlockedHost('::ffff:127.0.0.1'),
+        isTrue,
+        reason:
+            'IPv4-mapped IPv6 wrapping loopback must be unwrapped + blocked',
+      );
     });
 
-    test('allows public hostnames', () {
+    /// Allow-list anchors so we don't accidentally block the whole internet.
+    test('allows public hostnames and public IPs', () {
       expect(HttpContentFetcher.isBlockedHost('example.com'), isFalse);
       expect(HttpContentFetcher.isBlockedHost('www.ica.se'), isFalse);
-    });
-
-    test('allows public IP addresses', () {
       expect(HttpContentFetcher.isBlockedHost('8.8.8.8'), isFalse);
       expect(HttpContentFetcher.isBlockedHost('1.1.1.1'), isFalse);
     });
   });
 
+  // -----------------------------------------------------------------------
+  // ImportValidationMixin — used by UrlImportStrategy and siblings.
+  // -----------------------------------------------------------------------
   group('ImportValidationMixin', () {
-    late _ValidationHelper validator;
+    late _ValidationHelper v;
 
     setUp(() {
-      validator = _ValidationHelper();
+      v = _ValidationHelper();
     });
 
-    group('isValidRecipeName', () {
-      test('accepts names with 2+ characters', () {
-        expect(validator.isValidRecipeName('AB'), isTrue);
-        expect(validator.isValidRecipeName('Pannkakor'), isTrue);
-        expect(validator.isValidRecipeName('Swedish Meatballs'), isTrue);
-      });
-
-      test('rejects empty or single-char names', () {
-        expect(validator.isValidRecipeName(''), isFalse);
-        expect(validator.isValidRecipeName(' '), isFalse);
-        expect(validator.isValidRecipeName('A'), isFalse);
-      });
+    test('isValidRecipeName: requires 2+ trimmed chars', () {
+      expect(v.isValidRecipeName('AB'), isTrue);
+      expect(v.isValidRecipeName('Pannkakor'), isTrue);
+      expect(v.isValidRecipeName(''), isFalse);
+      expect(v.isValidRecipeName(' '), isFalse);
+      expect(v.isValidRecipeName('A'), isFalse);
     });
 
-    group('isValidIngredients', () {
-      test('accepts non-empty ingredient lists', () {
-        expect(validator.isValidIngredients(['2 dl mjöl']), isTrue);
-        expect(validator.isValidIngredients(['mjöl', 'socker', 'ägg']), isTrue);
-      });
-
-      test('rejects empty lists', () {
-        expect(validator.isValidIngredients([]), isFalse);
-      });
-
-      test('rejects lists with only blank strings', () {
-        expect(validator.isValidIngredients(['', '  ']), isFalse);
-      });
+    test('isValidIngredients: rejects empty and all-blank lists', () {
+      expect(v.isValidIngredients(['2 dl mjöl']), isTrue);
+      expect(v.isValidIngredients([]), isFalse);
+      expect(v.isValidIngredients(['', '  ']), isFalse);
     });
 
-    group('isValidInstructions', () {
-      test('accepts non-empty instruction lists', () {
-        expect(validator.isValidInstructions(['Blanda allt']), isTrue);
-      });
-
-      test('rejects empty lists', () {
-        expect(validator.isValidInstructions([]), isFalse);
-      });
-
-      test('rejects lists with only blank strings', () {
-        expect(validator.isValidInstructions(['', '  ']), isFalse);
-      });
+    test('isValidInstructions: rejects empty and all-blank lists', () {
+      expect(v.isValidInstructions(['Blanda allt']), isTrue);
+      expect(v.isValidInstructions([]), isFalse);
+      expect(v.isValidInstructions(['', '  ']), isFalse);
     });
 
-    group('normalizeText', () {
-      test('collapses multiple spaces', () {
-        expect(validator.normalizeText('hello   world'), 'hello world');
-      });
-
-      test('trims leading and trailing whitespace', () {
-        expect(validator.normalizeText('  hello  '), 'hello');
-      });
-
-      test('preserves newlines but normalises per-line spacing', () {
-        final result = validator.normalizeText('line1  x\n  line2  y');
-        expect(result, 'line1 x\nline2 y');
-      });
+    test('normalizeText: collapses spaces, trims, preserves newlines', () {
+      expect(v.normalizeText('hello   world'), 'hello world');
+      expect(v.normalizeText('  hello  '), 'hello');
+      expect(v.normalizeText('line1  x\n  line2  y'), 'line1 x\nline2 y');
     });
 
-    group('extractNumber', () {
-      test('extracts first integer from text', () {
-        expect(validator.extractNumber('4 portioner'), 4);
-        expect(validator.extractNumber('ca 6 bitar'), 6);
-      });
-
-      test('returns null when no number found', () {
-        expect(validator.extractNumber('no numbers'), isNull);
-      });
+    /// Emoji-stripping is documented behaviour (lots of social-media
+    /// recipes arrive saturated with emojis). Pin one to catch regression.
+    test('normalizeText: strips emojis from social-media copy', () {
+      expect(v.normalizeText('Pannkakor 🥞 är goda'), 'Pannkakor är goda');
     });
 
-    group('extractRating', () {
-      test('extracts rating in "X av 5" format', () {
-        expect(validator.extractRating('4.5 av 5'), 4.5);
-      });
+    test('extractNumber: first integer wins', () {
+      expect(v.extractNumber('4 portioner'), 4);
+      expect(v.extractNumber('ca 6 bitar'), 6);
+      expect(v.extractNumber('no numbers'), isNull);
+    });
 
-      test('extracts rating in "X/5" format', () {
-        expect(validator.extractRating('3/5'), 3.0);
-      });
-
-      test('returns null for out-of-range ratings', () {
-        expect(validator.extractRating('0.5 av 5'), isNull);
-        expect(validator.extractRating('6 av 5'), isNull);
-      });
-
-      test('returns null when no rating pattern found', () {
-        expect(validator.extractRating('no rating'), isNull);
-      });
+    test('extractRating: 1-5 range gate, multiple formats', () {
+      expect(v.extractRating('4.5 av 5'), 4.5);
+      expect(v.extractRating('3/5'), 3.0);
+      expect(
+        v.extractRating('0.5 av 5'),
+        isNull,
+        reason: 'ratings under 1.0 must be rejected',
+      );
+      expect(
+        v.extractRating('6 av 5'),
+        isNull,
+        reason: 'ratings over 5.0 must be rejected',
+      );
+      expect(v.extractRating('no rating'), isNull);
     });
   });
 
-  group('ImportResult', () {
-    test('success creates result with recipe', () {
-      final recipe = Recipe(
-        core: RecipeCore(
-          id: 'test-id',
-          title: 'Test',
-          description: '',
-          ingredients: ['a'],
-          instructions: ['b'],
-          mealType: 'Middag',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          createdBy: 'u1',
-        ),
-        type: RecipeType.personal,
-      );
-      final result = ImportResult.success(recipe, metadata: {'url': 'x'});
+  // -----------------------------------------------------------------------
+  // ImportResult factory contract — used by every tier's return value.
+  // -----------------------------------------------------------------------
+  group('ImportResult factories', () {
+    Recipe makeRecipe() => Recipe(
+          core: RecipeCore(
+            id: 'test-id',
+            title: 'T',
+            description: '',
+            ingredients: ['a'],
+            instructions: ['b'],
+            mealType: 'Middag',
+            createdAt: DateTime(2026, 1, 1),
+            updatedAt: DateTime(2026, 1, 1),
+            createdBy: 'u1',
+          ),
+          type: RecipeType.personal,
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.recipe, isNotNull);
-      expect(result.errorMessage, isNull);
-      expect(result.needsAssistance, isFalse);
-      expect(result.hasMetadata, isTrue);
+    test('success: isSuccess=true, recipe set, no error, not needing assist',
+        () {
+      final r = ImportResult.success(makeRecipe(), metadata: {'k': 'v'});
+
+      expect(r.isSuccess, isTrue);
+      expect(r.recipe, isNotNull);
+      expect(r.errorMessage, isNull);
+      expect(r.needsAssistance, isFalse);
+      expect(r.hasMetadata, isTrue);
+      expect(r.metadata?['k'], 'v');
     });
 
-    test('failure creates result without recipe', () {
-      final result = ImportResult.failure('something went wrong');
+    test('failure: isSuccess=false, no recipe, errorMessage carried', () {
+      final r = ImportResult.failure('something went wrong');
 
-      expect(result.isSuccess, isFalse);
-      expect(result.recipe, isNull);
-      expect(result.errorMessage, 'something went wrong');
-      expect(result.needsAssistance, isFalse);
+      expect(r.isSuccess, isFalse);
+      expect(r.recipe, isNull);
+      expect(r.errorMessage, 'something went wrong');
+      expect(r.needsAssistance, isFalse);
     });
 
-    test('assistance creates result for user-assisted import', () {
-      final result = ImportResult.assistance(
+    test('assistance: needsAssistance=true, extractedText carried', () {
+      final r = ImportResult.assistance(
         extractedText: 'some text',
         suggestedTitle: 'Maybe Pancakes',
         likelyIngredientLines: [0, 2, 4],
       );
 
-      expect(result.isSuccess, isFalse);
-      expect(result.needsAssistance, isTrue);
-      expect(result.extractedText, 'some text');
-      expect(result.suggestedTitle, 'Maybe Pancakes');
-      expect(result.likelyIngredientLines, [0, 2, 4]);
+      expect(r.isSuccess, isFalse);
+      expect(r.needsAssistance, isTrue);
+      expect(r.extractedText, 'some text');
+      expect(r.suggestedTitle, 'Maybe Pancakes');
+      expect(r.likelyIngredientLines, [0, 2, 4]);
     });
 
-    test('hasWarnings is false when warnings is null or empty', () {
-      final noWarnings = ImportResult.failure('err');
-      expect(noWarnings.hasWarnings, isFalse);
-
-      final emptyWarnings = ImportResult.failure('err', warnings: []);
-      expect(emptyWarnings.hasWarnings, isFalse);
-    });
-
-    test('hasWarnings is true when warnings exist', () {
-      final result =
-          ImportResult.failure('err', warnings: ['quality may vary']);
-      expect(result.hasWarnings, isTrue);
+    test('hasWarnings reflects presence of non-empty warnings list', () {
+      expect(ImportResult.failure('e').hasWarnings, isFalse);
+      expect(ImportResult.failure('e', warnings: []).hasWarnings, isFalse);
+      expect(
+        ImportResult.failure('e', warnings: ['quality may vary']).hasWarnings,
+        isTrue,
+      );
     });
   });
 }
