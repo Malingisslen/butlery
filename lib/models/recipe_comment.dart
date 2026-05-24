@@ -43,6 +43,18 @@ class RecipeComment {
   /// or unshared. Empty list = unshared / personal recipe.
   final List<String> sharedWithUserIds;
 
+  /// BUT-983: optional image attachments on the comment. Capped at
+  /// [maxImageUrls] (3) — enforced via assertion at construction time
+  /// AND via Storage / Firestore rules server-side. Empty list = text-
+  /// only comment (the historical default; backward-compat is just an
+  /// absent / empty array).
+  final List<String> imageUrls;
+
+  /// BUT-983 cap. Comment composers must surface the limit in the UI
+  /// before this assertion fires (defence-in-depth, not the primary
+  /// guardrail).
+  static const int maxImageUrls = 3;
+
   RecipeComment({
     required this.id,
     required this.recipeId,
@@ -59,7 +71,13 @@ class RecipeComment {
     this.reactions = const {},
     this.recipeOwnerId,
     this.sharedWithUserIds = const [],
-  }) : createdAt = createdAt ?? clock.now();
+    this.imageUrls = const [],
+  })  : createdAt = createdAt ?? clock.now(),
+        assert(
+          imageUrls.length <= maxImageUrls,
+          'RecipeComment.imageUrls cap exceeded: ${imageUrls.length} > $maxImageUrls. '
+          'Composer UI must enforce the limit before reaching the model.',
+        );
 
   factory RecipeComment.create({
     required String recipeId,
@@ -70,6 +88,7 @@ class RecipeComment {
     String? parentCommentId,
     String? recipeOwnerId,
     List<String> sharedWithUserIds = const [],
+    List<String> imageUrls = const [],
   }) {
     return RecipeComment(
       id: const Uuid().v4(),
@@ -82,6 +101,7 @@ class RecipeComment {
       parentCommentId: parentCommentId,
       recipeOwnerId: recipeOwnerId,
       sharedWithUserIds: sharedWithUserIds,
+      imageUrls: imageUrls,
     );
   }
 
@@ -97,6 +117,7 @@ class RecipeComment {
     int? replyCount,
     bool? isDeleted,
     Map<String, List<String>>? reactions,
+    List<String>? imageUrls,
   }) {
     return RecipeComment(
       id: id,
@@ -112,6 +133,9 @@ class RecipeComment {
       replyCount: replyCount ?? this.replyCount,
       isDeleted: isDeleted ?? this.isDeleted,
       reactions: reactions ?? this.reactions,
+      recipeOwnerId: recipeOwnerId,
+      sharedWithUserIds: sharedWithUserIds,
+      imageUrls: imageUrls ?? this.imageUrls,
     );
   }
 
@@ -188,6 +212,10 @@ class RecipeComment {
       // only read.
       if (recipeOwnerId != null) 'recipeOwnerId': recipeOwnerId,
       'sharedWithUserIds': sharedWithUserIds,
+      // BUT-983: only emit when populated to keep legacy text-only
+      // docs untouched. Empty list is interchangeable with absence on
+      // reads.
+      if (imageUrls.isNotEmpty) 'imageUrls': imageUrls,
     };
   }
 
@@ -218,6 +246,7 @@ class RecipeComment {
           SerializationUtils.safeNullableString(data, 'recipeOwnerId'),
       sharedWithUserIds:
           SerializationUtils.safeStringList(data, 'sharedWithUserIds'),
+      imageUrls: SerializationUtils.safeStringList(data, 'imageUrls'),
     );
   }
 
@@ -237,6 +266,7 @@ class RecipeComment {
       'replyCount': replyCount,
       'isDeleted': isDeleted,
       'reactions': reactions,
+      if (imageUrls.isNotEmpty) 'imageUrls': imageUrls,
     };
   }
 
@@ -261,6 +291,7 @@ class RecipeComment {
       isDeleted: SerializationUtils.safeBool(json, 'isDeleted'),
       reactions:
           SerializationUtils.safeStringListMap(json, 'reactions') ?? const {},
+      imageUrls: SerializationUtils.safeStringList(json, 'imageUrls'),
     );
   }
 
