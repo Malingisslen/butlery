@@ -7426,6 +7426,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yShowPassword => 'Visa lösenord';
 
   @override
+  String get a11yLoading => 'Laddar';
+
+  @override
   String get a11yNavigationLandmark => 'Huvudnavigering';
 
   @override

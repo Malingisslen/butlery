@@ -7416,6 +7416,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yShowPassword => 'Show password';
 
   @override
+  String get a11yLoading => 'Loading';
+
+  @override
   String get a11yNavigationLandmark => 'Main navigation';
 
   @override

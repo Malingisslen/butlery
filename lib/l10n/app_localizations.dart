@@ -12663,6 +12663,12 @@ abstract class AppLocalizations {
   /// **'Visa lösenord'**
   String get a11yShowPassword;
 
+  /// Default screen-reader announcement on LoadingIndicator (BUT-895). LiveRegion so it fires when the spinner appears/disappears.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar'**
+  String get a11yLoading;
+
   /// BUT-557: Screen-reader landmark label for the bottom/rail navigation region (WCAG 1.3.1).
   ///
   /// In sv, this message translates to:

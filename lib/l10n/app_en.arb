@@ -4945,6 +4945,7 @@
   "commonAdding": "Adding...",
   "a11yHidePassword": "Hide password",
   "a11yShowPassword": "Show password",
+  "a11yLoading": "Loading",
   "a11yNavigationLandmark": "Main navigation",
   "@a11yNavigationLandmark": {
     "description": "BUT-557: Screen-reader landmark label for the bottom/rail navigation region (WCAG 1.3.1)."

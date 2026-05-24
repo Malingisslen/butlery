@@ -1,44 +1,42 @@
 # Sprint Backlog
 
-## Sprint: iter-57 — BUT-896 form field labelText — STEP 0 RESCOPE — 2026-05-24 (Sun)
+## Sprint: iter-58 — BUT-895 a11y label on LoadingIndicator — 2026-05-24 (Sun)
 
-Theme: A11y bug. Plan-fil FÖRST per discipline.
+Theme: A11y screen-reader fix. **Wrapper-level fix** beats site-by-site migration. Plan-fil FÖRST.
 
 ### Step 0 — premise verification
 
-Ticket lists 2 sites:
-1. **comment composer in `recipe_detail_comments.dart`**: verified `recipe_detail_comments.dart:347-353` — `TextField` in edit-comment dialog uses `InputDecoration(hintText: ...)` only. Bug confirmed.
-2. **`auth_view.dart` password-reset field**: ticket says "bare TextField with no decoration". Verified `auth_view.dart:633-640` — actually **already** has `InputDecoration(labelText: ..., hintText: ...)`. Premise stale. No action needed.
-
-l10n: `commentEditHint` exists but is the hint text. Need a separate `commentEditLabel` for the persistent label. Inline option: add ARB key. Alternative: reuse existing `commentEditHint` as both label and hint (acceptable since the dialog title already says "Edit comment" — label = "Comment" is redundant; hint may be more useful).
-
-Best UX: label = "Comment" (persistent identity, screen reader anchor); hint = existing `commentEditHint` (placeholder guidance). Need new l10n key `commentLabel`.
+- Ticket lists 7+ sites without `Semantics(label:)`.
+- Verified `lib/widgets/common/indicators/loading_indicator.dart`: NO `Semantics` wrapping — bug confirmed at source.
+- No `a11yLoading` key in ARB; ticket text is aspirational on that key.
+- Ticket explicitly proposes wrapper: "Better: create a `BranderedLoader` widget that bakes this in, and migrate offenders." Iter 46 + iter 51 already migrated 29 sites to `LoadingIndicator` (the canonical wrapper). Adding Semantics to LoadingIndicator = single-source fix that benefits all 50+ existing callsites.
 
 ### Design choices
 
-- Add `commentLabel` to both ARB files: en "Comment", sv "Kommentar".
-- Run `flutter gen-l10n`.
-- Switch comment-edit-dialog's InputDecoration to `labelText: commentLabel + hintText: commentEditHint`.
+- **Wrap in `LoadingIndicator.build()` not site-by-site**. All `LoadingIndicator(...)` callsites instantly become a11y-compliant.
+- **Add `semanticLabel` param** with `String?` default `null`. If null, falls back to `context.l10n.a11yLoading` ("Loading" / "Laddar"). Allows specific contexts to override with more meaningful text.
+- **New l10n key**: `a11yLoading` — short, reused everywhere.
+- **`liveRegion: true`**: tells screen reader to announce when loading appears/disappears. Improves UX for async state changes.
 
 ### Ship this sprint
 
-- [ ] **A1. ARB**: add `commentLabel` in sv + en.
-- [ ] **A2. gen-l10n**: regenerate localizations.
-- [ ] **A3. recipe_detail_comments.dart**: add `labelText: context.l10n.commentLabel` to edit-dialog InputDecoration.
-- [ ] **A4. Verify Linear**: comment on BUT-896 that auth_view part of premise was stale; only fix comment composer.
+- [ ] **A1. ARB**: add `a11yLoading` to sv + en.
+- [ ] **A2. gen-l10n**: regenerate.
+- [ ] **A3. LoadingIndicator**: add optional `semanticLabel` param + wrap build output in `Semantics(label, liveRegion, child)`.
 
 ### Acceptance
 
-- [ ] Screen reader announces "Comment" when focus enters the edit dialog field.
+- [ ] All `LoadingIndicator` callsites get Semantics for free.
+- [ ] Optional override `LoadingIndicator(semanticLabel: 'Loading recipes')` works.
 - [ ] `flutter analyze` clean.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Stäng BUT-896 i Linear → Done with rescope note
+- [ ] Stäng BUT-895 i Linear → Done
 
 ---
 
-## Archived iter-56 (commit `2b4e9e8c0`) — 2026-05-24 (Sun)
+## Archived iter-57 (commit `11f31967d`) — 2026-05-24 (Sun)
 
-BUT-898 cooking-mode title fontScale. Single-line copyWith fix. +17 / -15. BUT-898 → Done.
+BUT-896 comment-edit labelText. +40 / -13. BUT-896 → Done. Step 0 caught auth_view-site as stale.
