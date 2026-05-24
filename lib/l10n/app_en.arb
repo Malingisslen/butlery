@@ -3990,6 +3990,27 @@
       }
     }
   },
+  "groupRemoveMultipleConfirm": "Remove {count} members from {group}?",
+  "@groupRemoveMultipleConfirm": {
+    "description": "BUT-997.",
+    "placeholders": {
+      "count": { "type": "int" },
+      "group": { "type": "String" }
+    }
+  },
+  "groupMembersRemoved": "{count} members removed",
+  "@groupMembersRemoved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "groupMembersPartiallyRemoved": "{removed} members removed — could not remove: {failedNames}",
+  "@groupMembersPartiallyRemoved": {
+    "placeholders": {
+      "removed": { "type": "int" },
+      "failedNames": { "type": "String" }
+    }
+  },
   "groupOwner": "Owner",
   "groupRemoveFromGroup": "Remove from group",
   "groupRemoveMember": "Remove member",

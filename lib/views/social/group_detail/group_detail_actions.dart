@@ -52,6 +52,80 @@ class GroupDetailActions {
     );
   }
 
+  /// BUT-997: bulk-remove multiple members from a group in one confirmation
+  /// step. Loops the existing per-member service call client-side — no
+  /// batched endpoint is needed because `removeFriendFromCategory` is
+  /// idempotent and its Cloud Function side-effects (audit log entry,
+  /// notification) are intentionally fire-per-removal.
+  ///
+  /// Returns the count of removals that actually landed. Partial failures
+  /// don't abort the loop — each member's outcome is independent so a
+  /// permission-denied on one shouldn't strand the rest. A trailing snackbar
+  /// summarises "removed N of M" and includes the failed names if any.
+  ///
+  /// UI integration (long-press selection mode, bulk-remove button) is
+  /// tracked in the BUT-997 follow-up ticket.
+  static Future<int> removeMultipleMembers(
+    BuildContext context,
+    List<UserProfile> members,
+    FriendCategory group,
+  ) async {
+    if (members.isEmpty) return 0;
+
+    final shouldRemove = await CommonDialogActions.showActionConfirmation(
+      context: context,
+      title: context.l10n.groupRemoveMember,
+      message:
+          context.l10n.groupRemoveMultipleConfirm(members.length, group.name),
+      confirmText: context.l10n.commonRemove,
+      icon: Icons.person_remove,
+      isDangerous: true,
+    );
+    if (shouldRemove != true) return 0;
+
+    final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
+    var removed = 0;
+    final failed = <String>[];
+    for (final member in members) {
+      try {
+        final success = await categoriesService.categories
+            .removeFriendFromCategory(member.uid, group.id);
+        if (success) {
+          removed++;
+        } else {
+          failed.add(member.displayName);
+        }
+      } catch (_) {
+        failed.add(member.displayName);
+      }
+    }
+
+    if (context.mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      if (failed.isEmpty) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.groupMembersRemoved(removed)),
+            backgroundColor: context.butleryColors.success,
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              context.l10n
+                  .groupMembersPartiallyRemoved(removed, failed.join(', ')),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+
+    if (removed > 0) GroupEventBus.memberRemoved();
+    return removed;
+  }
+
   /// Remove member from group
   static Future<bool> removeMember(
     BuildContext context,

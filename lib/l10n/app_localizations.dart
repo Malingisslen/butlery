@@ -10869,6 +10869,24 @@ abstract class AppLocalizations {
   /// **'{name} har tagits bort'**
   String groupMemberRemoved(String name);
 
+  /// BUT-997: confirm-dialog text for bulk-remove of group members.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {count} medlemmar från {group}?'**
+  String groupRemoveMultipleConfirm(int count, String group);
+
+  /// BUT-997: success snackbar after bulk-remove.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} medlemmar har tagits bort'**
+  String groupMembersRemoved(int count);
+
+  /// BUT-997: partial-failure snackbar when bulk-remove couldn't remove every selected member.
+  ///
+  /// In sv, this message translates to:
+  /// **'{removed} medlemmar borttagna — kunde inte ta bort: {failedNames}'**
+  String groupMembersPartiallyRemoved(int removed, String failedNames);
+
   /// No description provided for @groupOwner.
   ///
   /// In sv, this message translates to:

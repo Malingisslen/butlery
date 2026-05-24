@@ -6310,6 +6310,21 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String groupRemoveMultipleConfirm(int count, String group) {
+    return 'Ta bort $count medlemmar från $group?';
+  }
+
+  @override
+  String groupMembersRemoved(int count) {
+    return '$count medlemmar har tagits bort';
+  }
+
+  @override
+  String groupMembersPartiallyRemoved(int removed, String failedNames) {
+    return '$removed medlemmar borttagna — kunde inte ta bort: $failedNames';
+  }
+
+  @override
   String get groupOwner => 'Ägare';
 
   @override

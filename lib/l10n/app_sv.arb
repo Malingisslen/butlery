@@ -3996,6 +3996,29 @@
       }
     }
   },
+  "groupRemoveMultipleConfirm": "Ta bort {count} medlemmar från {group}?",
+  "@groupRemoveMultipleConfirm": {
+    "description": "BUT-997: confirm-dialog text for bulk-remove of group members.",
+    "placeholders": {
+      "count": { "type": "int" },
+      "group": { "type": "String" }
+    }
+  },
+  "groupMembersRemoved": "{count} medlemmar har tagits bort",
+  "@groupMembersRemoved": {
+    "description": "BUT-997: success snackbar after bulk-remove.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "groupMembersPartiallyRemoved": "{removed} medlemmar borttagna — kunde inte ta bort: {failedNames}",
+  "@groupMembersPartiallyRemoved": {
+    "description": "BUT-997: partial-failure snackbar when bulk-remove couldn't remove every selected member.",
+    "placeholders": {
+      "removed": { "type": "int" },
+      "failedNames": { "type": "String" }
+    }
+  },
   "groupOwner": "Ägare",
   "groupRemoveFromGroup": "Ta bort från grupp",
   "groupRemoveMember": "Ta bort medlem",
