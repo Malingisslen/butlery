@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -277,11 +278,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             suffixIcon: _isChecking
                 ? const Padding(
                     padding: EdgeInsets.all(AppDimensions.paddingM),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    child: LoadingIndicator(size: 20, strokeWidth: 2),
                   )
                 : null,
           ),
@@ -353,13 +350,10 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
         FilledButton(
           onPressed: _isSaving || _isChecking ? null : _save,
           child: _isSaving
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
+              ? LoadingIndicator(
+                  size: 20,
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 )
               : Text(_isEditing
                   ? context.l10n.commonSave

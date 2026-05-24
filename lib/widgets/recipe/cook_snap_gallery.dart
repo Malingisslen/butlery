@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/cook_snap.dart';
@@ -64,11 +65,7 @@ class CookSnapGallery extends StatelessWidget {
                 ),
               ),
               if (isUploading)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                const LoadingIndicator(size: 20, strokeWidth: 2)
               else
                 IconButton(
                   icon: const Icon(Icons.add_a_photo),
@@ -85,11 +82,7 @@ class CookSnapGallery extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
             child: Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+              child: LoadingIndicator(size: 24, strokeWidth: 2),
             ),
           )
         else if (error != null)

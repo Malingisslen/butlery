@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
@@ -413,13 +414,10 @@ class _SendButton extends StatelessWidget {
           decoration: BoxDecoration(color: bg),
           alignment: Alignment.center,
           child: isLoading
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(cs.surface),
-                  ),
+              ? LoadingIndicator(
+                  size: 20,
+                  strokeWidth: 2,
+                  color: cs.surface,
                 )
               : Text(
                   context.l10n.pingComposeSend,

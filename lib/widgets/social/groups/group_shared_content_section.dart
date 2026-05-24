@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
@@ -272,7 +273,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(AppDimensions.paddingXl),
-                      child: CircularProgressIndicator(),
+                      child: LoadingIndicator(),
                     ),
                   );
                 }

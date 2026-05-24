@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -549,11 +550,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
         FilledButton(
           onPressed: _isSaving ? null : _save,
           child: _isSaving
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const LoadingIndicator(size: 20, strokeWidth: 2)
               : Text(_isEditing
                   ? context.l10n.commonSave
                   : context.l10n.commonCreate),

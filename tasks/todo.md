@@ -1,48 +1,48 @@
 # Sprint Backlog
 
-## Sprint: iter-50 — BUT-919 persist group-creation form draft — 2026-05-24 (Sun)
+## Sprint: iter-51 — BUT-885 partial — tagging/social/recipe widget CPI migration — 2026-05-24 (Sun)
 
-Theme: Fourth application of draft-persistence pattern. JSON-payload variant — first multi-field form in the series. Plan-fil FÖRST per discipline.
+Theme: Phase 4 ticket är "residual sites + arch-test". Plockar tagging/social/recipe-widgets-delen denna iter; lämnar bredare residual (image-overlays = BUT-884 territory; views/onboarding/auth = Phase-5-shape) + arch-test till separat commit.
 
 ### Step 0 — premise verification
 
-- BUT-919 ticket valid: `lib/widgets/social/groups/create_group_dialog.dart:27-117` — name/description/emoji/selectedFriendIds all in-memory via `_CreateGroupDialogState`.
-- Two consumers exist: `CreateGroupDialog` (StatefulWidget — own state, not VM-backed) and `CreateGroupViewModel` (parallel path, less wired). The dialog is the actively-used surface (`friends_list_view.dart` opens it via `SocialGroupComponents.showCreateGroupDialog`). Targeting the dialog.
-- Pattern variant: this is a **multi-field form** — name + description + emoji + friend IDs Set. Serialize as JSON map, not single string.
+- BUT-885 archived 2026-05-22 but Backlog premise still valid: `grep CircularProgressIndicator(` shows **65 files** in lib/ — Phase 1+2 closed buttons/dialogs only.
+- Phase 4 ticket scope: "residual tagging/social/recipe widget files (everything not covered by Phase 1-3)". Targeted:
+  - `lib/widgets/tagging/` — 4 sites (3 files): personal_tag_edit_dialog (2), personal_tag_rule_dialog (1), personal_tag_selector (1)
+  - `lib/widgets/social/` — 3 sites: ping_compose_sheet (1), groups/group_shared_content_section (1), groups/shared/group_dialog_components (1)
+  - `lib/widgets/recipe/` — 4 sites: cook_snap_gallery (2), ingredient_substitution_sheet (1), heirloom_section (1)
+- Total: **11 sites across 9 files**.
 
 ### Design choices
 
-- **Storage shape**: single SharedPreferences key `group_creation_draft_v1`, value = `jsonEncode({'name': ..., 'description': ..., 'emoji': ..., 'friendIds': [...]})`.
-- **No persist when `preSelectedMembers` passed**: external callers (e.g. "create group from these friends" flow) pre-seed selection. Honor the caller's intent — fresh form, don't load saved.
-- **Clear on successful create**: when `Navigator.pop(createdCategory)` happens with non-null result, drop the draft. Don't clear on cancel — user may want to resume.
-- **Eager save on each field change**: name/description via `onChanged`, emoji via `onEmojiSelected`, friends via `_onFriendSelectionChanged`. Each calls `_saveDraft()` which re-serializes the whole map (no per-field key proliferation).
-- **Load triggers setState** to reflect controllers + selection state. Use a `_isInitialized` flag to avoid re-loading on rebuild.
+- **Same constructor strategy as iter-46 (BUT-883)**: base `LoadingIndicator(size:, strokeWidth:, color:)`, NOT `.small()`. Padding inflation breaks inline icon-slots.
+- **Pure mechanical replace** — read each site for strokeWidth + size context, swap with matching params.
+- **Imports**: each touched file gets `loading_indicator.dart` import added if missing.
+- **Arch-test deferred**: ticket asks for one but adding the regex+allowlist guard to `test/architecture/architecture_test.dart` would inflate this iter; file BUT-XXX follow-up.
+- **Other 56 files of CPI**: 9 image/upload-progress files = BUT-884 (Phase 3) territory; the rest are views/widgets that belong to either Phase 3 (image) or a future Phase 5 (broad residual sweep). Leaving them out keeps this iter focused.
 
 ### Ship this sprint
 
-- [ ] **A1. BUT-919** — Persist group-creation form draft.
-  - Add `_draftPrefsKey = 'group_creation_draft_v1'` const + 3 helpers (`_loadDraft`, `_saveDraft`, `_clearDraft`).
-  - `initState`: if `widget.preSelectedMembers == null` → post-frame async load.
-  - `_loadDraft`: parse JSON, set `_nameController.text`, `_descriptionController.text`, `_selectedEmoji`, `_selectedFriendIds`. setState to reflect. Friends list reconstruction will be lazy (resolution to UserProfile happens via `_selectedFriendIds`-driven UI; `_selectedFriends` repopulates on next selection change OR via friends-service lookup if time permits — simpler: store IDs only, re-resolve on demand from FriendsService).
-  - Wire all 4 mutators (`_nameController` listener via `addListener`, `_descriptionController` listener, `setState`-blocks for emoji + friend selection) to call `_saveDraft()`.
-  - `_createGroup` success path (after `Navigator.pop(createdCategory)`): `await _clearDraft()`.
-  - Dispose: controller-only.
+- [ ] **A1. BUT-885 partial** — Migrate 11 tagging/social/recipe widget CPI sites.
+  - For each site: read strokeWidth/size from existing SizedBox/CPI wrapper, replace with `LoadingIndicator(...)` preserving dimensions.
+  - Add `loading_indicator.dart` import per touched file.
+- [ ] **A2. Follow-up Linear** — File BUT-XXX for "arch-test guard for new CPI introductions" with the regex+allowlist pattern.
 
 ### Acceptance
 
-- [ ] User fills name + selects 8 friends → backgrounds app → returns to dialog → all data restored.
-- [ ] User completes create → dialog opens again later → blank form.
-- [ ] User cancels dialog without create → opens dialog again → draft restored.
-- [ ] Caller passes `preSelectedMembers` → draft NOT loaded (pre-selection wins).
+- [ ] `grep CircularProgressIndicator\\b lib/widgets/{tagging,social,recipe}` returns zero hits.
+- [ ] `flutter analyze` clean.
+- [ ] No visual change to spinner dimensions (strokeWidth/size match per call site).
 
 ### Post-Sprint Steps
 
 - [ ] `flutter analyze` clean
 - [ ] Commit + push
-- [ ] Stäng BUT-919 i Linear → Done
+- [ ] Update BUT-885 — partial completion comment; leave In Progress for residual + arch-test
+- [ ] File the arch-test follow-up
 
 ---
 
-## Archived iter-49 (commit `feb2622ba`) — 2026-05-24 (Sun)
+## Archived iter-50 (commit `744624eb9`) — 2026-05-24 (Sun)
 
-BUT-911 URL-import draft persist (3rd application of pattern). Single global key `url_import_draft_v1`. +80 / -25. BUT-911 → Done.
+BUT-919 group-creation draft persist. First multi-field JSON-payload variant. +121 / -26. BUT-919 → Done. Draft-pattern now 4/5 forms; BUT-910 photo-import remains (needs on-disk staging, out of pattern scope).
