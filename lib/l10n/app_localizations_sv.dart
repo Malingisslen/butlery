@@ -175,6 +175,19 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get bulkAddToMenuOverflowedAction => 'Lägg de resterande nästa vecka';
+
+  @override
+  String bulkAddToMenuSuccessNextWeek(int count) {
+    return '$count recept lades till nästa vecka';
+  }
+
+  @override
+  String bulkAddToMenuOverflowedTwoWeeks(int remaining) {
+    return 'Resten ryms inte i nästa vecka heller — $remaining recept utan plats';
+  }
+
+  @override
   String get bulkExport => 'Exportera valda';
 
   @override

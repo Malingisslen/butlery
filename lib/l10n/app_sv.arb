@@ -84,6 +84,24 @@
       "requested": { "type": "int" }
     }
   },
+  "bulkAddToMenuOverflowedAction": "Lägg de resterande nästa vecka",
+  "@bulkAddToMenuOverflowedAction": {
+    "description": "BUT-1034: action button on overflow snackbar to cascade remaining recipes to next week."
+  },
+  "bulkAddToMenuSuccessNextWeek": "{count} recept lades till nästa vecka",
+  "@bulkAddToMenuSuccessNextWeek": {
+    "description": "BUT-1034: success snackbar after cascading overflow recipes into the following week.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkAddToMenuOverflowedTwoWeeks": "Resten ryms inte i nästa vecka heller — {remaining} recept utan plats",
+  "@bulkAddToMenuOverflowedTwoWeeks": {
+    "description": "BUT-1034: snackbar when cascading to next week still leaves recipes unplaced (recursion guard fires here).",
+    "placeholders": {
+      "remaining": { "type": "int" }
+    }
+  },
   "bulkExport": "Exportera valda",
   "@bulkExport": {
     "description": "BUT-1014: selection-app-bar tooltip for bulk-export action."

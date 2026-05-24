@@ -416,6 +416,24 @@ abstract class AppLocalizations {
   /// **'{added} av {requested} lades till — resten ryms inte i veckan'**
   String bulkAddToMenuOverflowed(int added, int requested);
 
+  /// BUT-1034: action button on overflow snackbar to cascade remaining recipes to next week.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg de resterande nästa vecka'**
+  String get bulkAddToMenuOverflowedAction;
+
+  /// BUT-1034: success snackbar after cascading overflow recipes into the following week.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept lades till nästa vecka'**
+  String bulkAddToMenuSuccessNextWeek(int count);
+
+  /// BUT-1034: snackbar when cascading to next week still leaves recipes unplaced (recursion guard fires here).
+  ///
+  /// In sv, this message translates to:
+  /// **'Resten ryms inte i nästa vecka heller — {remaining} recept utan plats'**
+  String bulkAddToMenuOverflowedTwoWeeks(int remaining);
+
   /// BUT-1014: selection-app-bar tooltip for bulk-export action.
   ///
   /// In sv, this message translates to:

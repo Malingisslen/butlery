@@ -81,6 +81,22 @@
       "requested": { "type": "int" }
     }
   },
+  "bulkAddToMenuOverflowedAction": "Put the rest in next week",
+  "@bulkAddToMenuOverflowedAction": {
+    "description": "BUT-1034."
+  },
+  "bulkAddToMenuSuccessNextWeek": "{count} recipes added to next week",
+  "@bulkAddToMenuSuccessNextWeek": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkAddToMenuOverflowedTwoWeeks": "The rest doesn't fit next week either — {remaining} recipes still without a slot",
+  "@bulkAddToMenuOverflowedTwoWeeks": {
+    "placeholders": {
+      "remaining": { "type": "int" }
+    }
+  },
   "bulkExport": "Export selected",
   "@bulkExport": {
     "description": "BUT-1014."

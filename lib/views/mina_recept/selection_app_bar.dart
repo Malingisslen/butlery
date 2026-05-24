@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -159,6 +160,11 @@ Future<void> _openBulkShareDialog(
 /// receives a (weekStart, day, slot) triple, distributes selected recipes
 /// across slots via `WeeklyMenuPlanService.bulkAssignRecipes`, and surfaces
 /// added/overflow counts via snackbar. Selection mode exits on success.
+///
+/// BUT-1034: on overflow the snackbar gets an action button that cascades
+/// the remaining recipes into the following week (single hop, no recursion
+/// past 2 weeks — the recursion guard means the action button is only
+/// offered on the first overflow, never on a second-week overflow).
 Future<void> _openBulkAddToMenu(
   BuildContext context,
   RecipeListViewModel viewModel,
@@ -169,34 +175,81 @@ Future<void> _openBulkAddToMenu(
   final selection = await showSlotPickerDialog(context);
   if (selection == null || !context.mounted) return;
 
+  await _runBulkAddToMenu(
+    context,
+    viewModel,
+    recipes: recipes,
+    weekStart: selection.weekStart,
+    startDay: selection.day,
+    slot: selection.slot,
+    isCascade: false,
+  );
+}
+
+/// BUT-1034: shared bulk-add runner used by both the initial call and the
+/// snackbar-triggered next-week cascade. `isCascade=true` disables the
+/// action button on a follow-up overflow (recursion guard, 2-week cap) and
+/// swaps in cascade-specific snackbar copy.
+Future<void> _runBulkAddToMenu(
+  BuildContext context,
+  RecipeListViewModel viewModel, {
+  required List<Recipe> recipes,
+  required DateTime weekStart,
+  required DayOfWeek startDay,
+  required MealSlot slot,
+  required bool isCascade,
+}) async {
   try {
     final service = ServiceLocator.get<WeeklyMenuPlanService>();
     final result = await service.bulkAssignRecipes(
-      weekStart: selection.weekStart,
-      startDay: selection.day,
-      slot: selection.slot,
+      weekStart: weekStart,
+      startDay: startDay,
+      slot: slot,
       recipes: recipes,
     );
 
     if (!context.mounted) return;
-    viewModel.clearSelection();
+    if (!isCascade) viewModel.clearSelection();
 
     if (result.overflowed > 0) {
-      SnackBarUtils.showInfo(
-        context,
-        context.l10n.bulkAddToMenuOverflowed(
-          result.added,
-          recipes.length,
-        ),
-      );
+      if (isCascade) {
+        // Second-week overflow: surface the unplaced count without offering
+        // a third week — the user already opted into the cascade once.
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.bulkAddToMenuOverflowedTwoWeeks(result.overflowed),
+        );
+      } else {
+        // First-week overflow: offer the cascade. The remaining recipes are
+        // `recipes.sublist(result.added)` because bulkAssignRecipes processes
+        // the list in order (verified in weekly_menu_plan_service.dart:247).
+        final remaining = recipes.sublist(result.added);
+        final nextWeek = weekStart.add(const Duration(days: 7));
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.bulkAddToMenuOverflowed(result.added, recipes.length),
+          actionLabel: context.l10n.bulkAddToMenuOverflowedAction,
+          onAction: () => _runBulkAddToMenu(
+            context,
+            viewModel,
+            recipes: remaining,
+            weekStart: nextWeek,
+            startDay: DayOfWeek.mon,
+            slot: slot,
+            isCascade: true,
+          ),
+        );
+      }
     } else {
       SnackBarUtils.showSuccess(
         context,
-        context.l10n.bulkAddToMenuSuccess(
-          result.added,
-          selection.slot.displayLabel,
-          selection.day.displayLabel,
-        ),
+        isCascade
+            ? context.l10n.bulkAddToMenuSuccessNextWeek(result.added)
+            : context.l10n.bulkAddToMenuSuccess(
+                result.added,
+                slot.displayLabel,
+                startDay.displayLabel,
+              ),
       );
     }
   } catch (e) {

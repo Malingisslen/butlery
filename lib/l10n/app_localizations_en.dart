@@ -175,6 +175,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get bulkAddToMenuOverflowedAction => 'Put the rest in next week';
+
+  @override
+  String bulkAddToMenuSuccessNextWeek(int count) {
+    return '$count recipes added to next week';
+  }
+
+  @override
+  String bulkAddToMenuOverflowedTwoWeeks(int remaining) {
+    return 'The rest doesn\'t fit next week either — $remaining recipes still without a slot';
+  }
+
+  @override
   String get bulkExport => 'Export selected';
 
   @override
