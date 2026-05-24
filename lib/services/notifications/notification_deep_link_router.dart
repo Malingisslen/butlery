@@ -216,11 +216,11 @@ class NotificationDeepLinkRouter {
     switch (route) {
       case NotificationRoutes.recipe:
         if (_isNonEmpty(targetId)) {
-          // Recipe detail uses Routes.receptDetalj. The screen accepts
+          // Recipe detail uses Routes.recipeDetail. The screen accepts
           // either a Recipe object or a recipe-id string under the 'id'
           // key — we pass the data map verbatim and let the route handler
           // decide which path to take.
-          navigator.pushNamed(Routes.receptDetalj, arguments: data);
+          navigator.pushNamed(Routes.recipeDetail, arguments: data);
         } else {
           // Without an id we can't resolve a recipe — go home rather than
           // pushing a broken detail screen.
@@ -232,7 +232,7 @@ class NotificationDeepLinkRouter {
           // Reuse the recipe detail route; the receiving widget reads
           // `scrollToComments` from arguments to auto-expand the thread.
           navigator.pushNamed(
-            Routes.receptDetalj,
+            Routes.recipeDetail,
             arguments: <String, dynamic>{
               'id': targetId,
               'scrollToComments': true,

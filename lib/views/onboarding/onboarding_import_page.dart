@@ -227,7 +227,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
         // Standalone page (not inside the wizard) — nothing to mark.
       }
       Navigator.of(context).pushNamed(
-        Routes.skrivSjalv,
+        Routes.manualEntry,
         arguments: {'recipe': result.recipe},
       );
     }

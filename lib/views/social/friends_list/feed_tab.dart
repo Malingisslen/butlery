@@ -361,7 +361,7 @@ class FeedTab {
       final recipe = await recipeRepo.read(recipeId);
       if (recipe != null && context.mounted) {
         Navigator.of(context).pushNamed(
-          Routes.receptDetalj,
+          Routes.recipeDetail,
           arguments: recipe,
         );
       }

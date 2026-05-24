@@ -698,7 +698,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.edit:
         _actions.editRecipe(context);
       case _MenuAction.fork:
-        Navigator.pushNamed(context, Routes.skrivSjalv, arguments: {
+        Navigator.pushNamed(context, Routes.manualEntry, arguments: {
           'initialRecipe': recipe.copyWith(
             title: context.l10n.recipeDuplicateTitle(recipe.title),
           ),

@@ -172,7 +172,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                     colorScheme: colorScheme,
                                     onPasteText: () => _handlePaste(viewModel),
                                     onManualAdd: () => Navigator.pushNamed(
-                                        context, Routes.skrivSjalv),
+                                        context, Routes.manualEntry),
                                   ),
                                 ],
 
@@ -478,7 +478,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       switch (result.choice) {
         case DuplicateMergeChoice.keepExisting:
           Navigator.of(context).pushReplacementNamed(
-            Routes.receptDetalj,
+            Routes.recipeDetail,
             arguments: matches.first.id,
           );
           return false;
@@ -500,7 +500,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             SnackBarUtils.showSuccess(
                 context, context.l10n.duplicateMergeSuccess);
             Navigator.of(context).pushReplacementNamed(
-              Routes.receptDetalj,
+              Routes.recipeDetail,
               arguments: matches.first.id,
             );
           }
@@ -516,7 +516,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             SnackBarUtils.showSuccess(
                 context, context.l10n.duplicateMergeSuccess);
             Navigator.of(context).pushReplacementNamed(
-              Routes.receptDetalj,
+              Routes.recipeDetail,
               arguments: matches.first.id,
             );
           }
@@ -531,7 +531,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   void _navigateToRecipeEditor(BuildContext context, Recipe recipe) {
     // Navigate to recipe editor with the imported recipe
     Navigator.of(context).pushReplacementNamed(
-      Routes.skrivSjalv,
+      Routes.manualEntry,
       arguments: {
         'initialRecipe': recipe,
         'isTemplate': true,

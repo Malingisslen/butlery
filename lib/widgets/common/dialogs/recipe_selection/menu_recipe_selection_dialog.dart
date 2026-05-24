@@ -107,7 +107,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
       return StateWidget.noRecipes(
         onAction: () {
           Navigator.pop(context);
-          Navigator.pushNamed(context, Routes.laggTill);
+          Navigator.pushNamed(context, Routes.addRecipe);
         },
       );
     }

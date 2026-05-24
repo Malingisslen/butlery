@@ -11,8 +11,10 @@ class Routes {
   /// Onboarding wizard route
   static const String onboarding = '/onboarding';
 
-  /// Add recipe route
-  static const String laggTill = '/laggTill';
+  /// Add recipe route. URL value kept as-is to preserve existing deep
+  /// links and analytics paths; only the Dart identifier was renamed
+  /// from Swedish (laggTill) to English (BUT-967).
+  static const String addRecipe = '/laggTill';
 
   /// URL import route
   static const String importViaUrl = '/importViaUrl';
@@ -23,8 +25,8 @@ class Routes {
   /// Quick capture route (title-only recipe save)
   static const String quickCapture = '/quickCapture';
 
-  /// Manual recipe creation route
-  static const String skrivSjalv = '/skrivSjalv';
+  /// Manual recipe creation route. URL value kept (BUT-967).
+  static const String manualEntry = '/skrivSjalv';
 
   /// Social media import route
   static const String franSocialaMedier = '/franSocialaMedier';
@@ -38,11 +40,11 @@ class Routes {
   /// Smart import route (unified URL/text import)
   static const String smartImport = '/smartImport';
 
-  /// Recipe detail route
-  static const String receptDetalj = '/receptDetalj';
+  /// Recipe detail route. URL value kept (BUT-967).
+  static const String recipeDetail = '/receptDetalj';
 
-  /// Recipe editing route
-  static const String redigeraRecept = '/redigeraRecept';
+  /// Recipe editing route. URL value kept (BUT-967).
+  static const String editRecipe = '/redigeraRecept';
 
   /// Shared recipe reception route
   static const String receiveShare = '/receiveShare';
@@ -108,16 +110,16 @@ class Routes {
 
   /// Routes requiring authentication
   static const Set<String> authenticatedRoutes = {
-    laggTill,
+    addRecipe,
     importViaUrl,
     photoImport,
     quickCapture,
-    skrivSjalv,
+    manualEntry,
     franSocialaMedier,
     importFranArkiv,
     smartImport,
-    receptDetalj,
-    redigeraRecept,
+    recipeDetail,
+    editRecipe,
     receiveShare,
     veckomeny,
     realtimeMenu,
@@ -152,7 +154,7 @@ class Routes {
     importViaUrl,
     photoImport,
     quickCapture,
-    skrivSjalv,
+    manualEntry,
     franSocialaMedier,
     importFranArkiv,
     smartImport,
@@ -238,16 +240,16 @@ class Routes {
     onboarding,
 
     // Recipe management
-    laggTill,
+    addRecipe,
     importViaUrl,
     photoImport,
     quickCapture,
-    skrivSjalv,
+    manualEntry,
     franSocialaMedier,
     importFranArkiv,
     smartImport,
-    receptDetalj,
-    redigeraRecept,
+    recipeDetail,
+    editRecipe,
     receiveShare,
 
     // Menu & Shopping
@@ -315,15 +317,15 @@ class Routes {
 
     buffer.writeln('\nRECIPE ROUTES:');
     for (final route in [
-      laggTill,
+      addRecipe,
       importViaUrl,
       photoImport,
       quickCapture,
-      skrivSjalv,
+      manualEntry,
       franSocialaMedier,
       importFranArkiv,
-      receptDetalj,
-      redigeraRecept,
+      recipeDetail,
+      editRecipe,
       receiveShare
     ]) {
       buffer.writeln('  $route');

@@ -140,8 +140,7 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
         context.l10n.quickCaptureSaved,
         actionLabel: context.l10n.quickCaptureEditAction,
         onAction: () {
-          Navigator.pushNamed(context, Routes.redigeraRecept,
-              arguments: recipe);
+          Navigator.pushNamed(context, Routes.editRecipe, arguments: recipe);
         },
       );
     } else if (vm.error != null) {

@@ -28,7 +28,7 @@ class MinaReceptDiscoveryShelves extends StatelessWidget {
   final SeasonalHeroService seasonalHeroService;
 
   void _navigateToRecipe(BuildContext context, Recipe recipe) {
-    Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+    Navigator.pushNamed(context, Routes.recipeDetail, arguments: recipe);
   }
 
   @override

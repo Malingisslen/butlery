@@ -125,7 +125,7 @@ void main() {
 
       expect(nav.calls, hasLength(1));
       expect(nav.calls.single.kind, 'push');
-      expect(nav.calls.single.route, Routes.receptDetalj);
+      expect(nav.calls.single.route, Routes.recipeDetail);
       final args = nav.calls.single.arguments as Map<String, String?>;
       expect(args['id'], 'abc123');
 
@@ -141,7 +141,7 @@ void main() {
           '/comment_thread', {'id': 'r1', 'notificationType': 'comment'});
       await Future<void>.delayed(Duration.zero);
 
-      expect(nav.calls.single.route, Routes.receptDetalj);
+      expect(nav.calls.single.route, Routes.recipeDetail);
       final args = nav.calls.single.arguments as Map<String, dynamic>;
       expect(args['id'], 'r1');
       expect(args['scrollToComments'], isTrue);
@@ -294,7 +294,7 @@ void main() {
       expect(calls.single.notificationType, 'recipe_shared');
       expect(calls.single.route, '/recipe');
       // Navigation still happened.
-      expect(nav.calls.single.route, Routes.receptDetalj);
+      expect(nav.calls.single.route, Routes.recipeDetail);
     });
 
     test('skips server-side recording when notificationId is missing',
@@ -324,7 +324,7 @@ void main() {
 
       expect(calls, isEmpty);
       // Navigation still happened — analytics path unaffected.
-      expect(nav.calls.single.route, Routes.receptDetalj);
+      expect(nav.calls.single.route, Routes.recipeDetail);
     });
 
     test('navigates even when recordOpened throws', () async {
@@ -355,7 +355,7 @@ void main() {
         'notificationType': 'recipe_shared',
       });
       // Navigation is synchronous — assert immediately.
-      expect(nav.calls.single.route, Routes.receptDetalj);
+      expect(nav.calls.single.route, Routes.recipeDetail);
 
       // Drain the rejected Future so .catchError fires before the test
       // ends. Two microtasks: one for the seam, one for the catchError.

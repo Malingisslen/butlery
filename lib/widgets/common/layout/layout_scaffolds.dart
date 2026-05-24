@@ -177,7 +177,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
                     icon: Icons.edit,
                     color: cs.primary,
                     size: buttonSize,
-                    onTap: () => navigate(Routes.skrivSjalv)),
+                    onTap: () => navigate(Routes.manualEntry)),
               ],
             ),
             const SizedBox(height: spacing),

@@ -172,7 +172,7 @@ abstract final class RecipeDetailSharedWidgets {
             child: TextButton(
               onPressed: () => Navigator.pushNamed(
                 context,
-                Routes.redigeraRecept,
+                Routes.editRecipe,
                 arguments: recipe,
               ),
               child: Text(context.l10n.commonEdit),

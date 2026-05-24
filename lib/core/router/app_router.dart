@@ -89,11 +89,11 @@ import 'package:butlery/models/shared_menu.dart';
 /// **Usage Examples:**
 /// ```dart
 /// // Navigate to a route
-/// AppRouter.navigateTo(context, Routes.laggTill);
+/// AppRouter.navigateTo(context, Routes.addRecipe);
 /// // Navigate with arguments
 /// AppRouter.navigateTo(
 ///   context,
-///   Routes.receptDetalj,
+///   Routes.recipeDetail,
 ///   arguments: recipe
 /// );
 /// // Navigate and replace current route
@@ -165,7 +165,7 @@ class AppRouter {
           return _buildRoute(const OnboardingView(), settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.laggTill:
+        case Routes.addRecipe:
           return _buildRoute(const LaggTillReceptView(), settings,
               Routes.getAnimationType(routeName));
 
@@ -173,7 +173,7 @@ class AppRouter {
           return _buildRoute(const QuickCaptureView(), settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.skrivSjalv:
+        case Routes.manualEntry:
           // Handle arguments for template or initial recipe
           final arguments = settings.arguments;
           if (arguments is Map<String, dynamic>) {
@@ -213,7 +213,7 @@ class AppRouter {
               settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.receptDetalj:
+        case Routes.recipeDetail:
           final arguments = settings.arguments;
           Recipe? recipe;
           bool scrollToComments = false;
@@ -234,7 +234,7 @@ class AppRouter {
               settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.redigeraRecept:
+        case Routes.editRecipe:
           final recipe = settings.arguments as Recipe?;
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for edit view');

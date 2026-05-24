@@ -233,7 +233,7 @@ class DeepLinkHandler {
       final recipe = await recipeRepo.read(recipeId);
       if (recipe != null && context.mounted) {
         Navigator.of(context).pushNamed(
-          Routes.receptDetalj,
+          Routes.recipeDetail,
           arguments: recipe,
         );
       }
@@ -311,7 +311,7 @@ class DeepLinkHandler {
   ) {
     final url = params['url'];
     if (url != null && url.isNotEmpty) {
-      Navigator.of(context).pushNamed(Routes.laggTill, arguments: url);
+      Navigator.of(context).pushNamed(Routes.addRecipe, arguments: url);
     }
   }
 

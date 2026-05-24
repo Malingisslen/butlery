@@ -110,7 +110,7 @@ class RecipeManagementHandler {
     try {
       final result = await Navigator.pushNamed(
         context,
-        Routes.redigeraRecept,
+        Routes.editRecipe,
         arguments: viewModel.recipe,
       );
 

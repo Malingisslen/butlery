@@ -165,6 +165,6 @@ class CookingSessionCard extends StatelessWidget {
     final service = ServiceLocator.tryGet<UnifiedRecipeService>();
     final recipe = service?.getRecipeById(session.recipeId);
     if (recipe == null) return;
-    Navigator.pushNamed(context, Routes.receptDetalj, arguments: recipe);
+    Navigator.pushNamed(context, Routes.recipeDetail, arguments: recipe);
   }
 }

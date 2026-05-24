@@ -444,7 +444,7 @@ class _CompletenessSection extends StatelessWidget {
             backgroundColor: cs.errorContainer,
             side: BorderSide.none,
             shape: const RoundedRectangleBorder(),
-            onPressed: () => Navigator.pushNamed(context, Routes.redigeraRecept,
+            onPressed: () => Navigator.pushNamed(context, Routes.editRecipe,
                 arguments: recipe),
           );
         },

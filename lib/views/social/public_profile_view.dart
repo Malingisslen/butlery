@@ -315,7 +315,7 @@ class _PublicRecipeCard extends StatelessWidget {
           child: InkWell(
             onTap: () {
               Navigator.of(context).pushNamed(
-                Routes.receptDetalj,
+                Routes.recipeDetail,
                 arguments: recipe,
               );
             },

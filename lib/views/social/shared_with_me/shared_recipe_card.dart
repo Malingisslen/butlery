@@ -43,7 +43,7 @@ class SharedRecipeCard {
             // Use contentSnapshot which provides minimal recipe from denormalized fields
             Navigator.pushNamed(
               context,
-              Routes.receptDetalj,
+              Routes.recipeDetail,
               arguments: sharedRecipe.contentSnapshot,
             );
           },
@@ -236,7 +236,7 @@ class SharedRecipeCard {
               }
               Navigator.pushNamed(
                 context,
-                Routes.receptDetalj,
+                Routes.recipeDetail,
                 arguments: sharedRecipe.contentSnapshot,
               );
             },

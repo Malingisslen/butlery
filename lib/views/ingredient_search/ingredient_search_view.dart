@@ -180,7 +180,7 @@ class _IngredientSearchContent extends StatelessWidget {
           ),
           onTap: () => Navigator.pushNamed(
             context,
-            Routes.receptDetalj,
+            Routes.recipeDetail,
             arguments: result.recipe,
           ),
         ),

@@ -32,7 +32,7 @@ class MinaReceptEmptyState extends StatelessWidget {
 
     if (!isNewUser) {
       return StateWidget.noRecipes(
-        onAction: () => Navigator.pushNamed(context, Routes.laggTill),
+        onAction: () => Navigator.pushNamed(context, Routes.addRecipe),
       );
     }
 
@@ -88,7 +88,7 @@ class MinaReceptEmptyState extends StatelessWidget {
               button: true,
               child: TextButton(
                 key: const ValueKey('test-mina-recept-add-recipe'),
-                onPressed: () => Navigator.pushNamed(context, Routes.laggTill),
+                onPressed: () => Navigator.pushNamed(context, Routes.addRecipe),
                 child: Text(context.l10n.emptyStateOtherOptions),
               ),
             ),

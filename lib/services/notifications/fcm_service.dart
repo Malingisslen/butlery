@@ -545,7 +545,7 @@ class FCMService extends BaseService {
       final arguments = scrollToComments
           ? <String, dynamic>{'recipe': recipe, 'scrollToComments': true}
           : recipe;
-      navigator.pushNamed(Routes.receptDetalj, arguments: arguments);
+      navigator.pushNamed(Routes.recipeDetail, arguments: arguments);
     }
   }
 
@@ -561,7 +561,7 @@ class FCMService extends BaseService {
         final recipeRepo = ServiceLocator.get<RecipeRepository>();
         final recipe = await recipeRepo.read(resourceId);
         if (recipe != null) {
-          navigator.pushNamed(Routes.receptDetalj, arguments: recipe);
+          navigator.pushNamed(Routes.recipeDetail, arguments: recipe);
         }
         break;
       case 'menu':

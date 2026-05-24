@@ -64,7 +64,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
           : () async {
               await Navigator.pushNamed(
                 context,
-                Routes.receptDetalj,
+                Routes.recipeDetail,
                 arguments: recipe,
               );
             },
@@ -109,7 +109,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
             label: context.l10n.a11ySwipeEditAction,
           ): () => Navigator.pushNamed(
                 context,
-                Routes.redigeraRecept,
+                Routes.editRecipe,
                 arguments: recipe,
               ),
           CustomSemanticsAction(
@@ -143,7 +143,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
             } else if (direction == DismissDirection.startToEnd) {
               Navigator.pushNamed(
                 context,
-                Routes.redigeraRecept,
+                Routes.editRecipe,
                 arguments: recipe,
               );
               return false;

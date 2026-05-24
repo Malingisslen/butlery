@@ -117,7 +117,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
       return StateWidget.noRecipes(
         onAction: () {
           Navigator.pop(context);
-          Navigator.pushNamed(context, Routes.laggTill);
+          Navigator.pushNamed(context, Routes.addRecipe);
         },
       );
     }
