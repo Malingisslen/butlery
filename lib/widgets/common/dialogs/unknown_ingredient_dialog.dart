@@ -129,35 +129,27 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
         ),
       ),
       actions: [
-        // Skip button
         TextButton(
           onPressed: _isSaving ? null : _skipCurrent,
           child: Text(
               _isLast ? context.l10n.commonSkipAll : context.l10n.commonSkip),
         ),
-        // Navigation/Save buttons
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!_isFirst)
-              TextButton(
-                onPressed: _isSaving ? null : _previous,
-                child: Text(context.l10n.commonPrevious),
-              ),
-            const SizedBox(width: AppDimensions.spacingSm),
-            FilledButton(
-              onPressed: _isSaving ? null : _saveAndNext,
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(_isLast
-                      ? context.l10n.commonSaveAndClose
-                      : context.l10n.commonSaveAndNext),
-            ),
-          ],
+        if (!_isFirst)
+          TextButton(
+            onPressed: _isSaving ? null : _previous,
+            child: Text(context.l10n.commonPrevious),
+          ),
+        FilledButton(
+          onPressed: _isSaving ? null : _saveAndNext,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(_isLast
+                  ? context.l10n.commonSaveAndClose
+                  : context.l10n.commonSaveAndNext),
         ),
       ],
     );

@@ -7,34 +7,6 @@
 /// with non-empty properties AND a userId AND a registered TaggingService,
 /// it calls `taggingService.saveUserIngredient`; otherwise the save path
 /// short-circuits to skip-and-advance.
-///
-/// ## KNOWN PRODUCTION BUG (surfaced by this suite, NOT fixed here)
-///
-/// `UnknownIngredientDialog` puts a `Row(mainAxisSize: min)` directly
-/// inside `AlertDialog.actions`. AlertDialog wraps actions in
-/// `OverflowBar` → IntrinsicWidth, which forces infinite-width
-/// constraints on the unbounded `FilledButton`/`TextButton` children of
-/// the Row. This trips a `BoxConstraints forces an infinite width`
-/// assertion on every layout pass — and as a result the action buttons
-/// have NO SIZE in the rendered tree.
-///
-/// Consequence in tests: `tester.tap(find.text('Hoppa över'))` etc. raise
-/// `Cannot hit test a render box with no size` because the buttons are
-/// not interactive. Consequence in the app (debug build): the dialog
-/// throws on layout and the buttons are unusable. Release builds may
-/// limp along silently.
-///
-/// Fix candidates (NOT applied here):
-///   - Replace the Row with `IntrinsicWidth(child: Row(...))`.
-///   - Spread the conditional Previous + SizedBox + FilledButton directly
-///     into the actions list and let OverflowBar lay them out.
-///   - Use `OverflowBar(spacing: ...)` explicitly.
-///
-/// As a result, this suite covers the rendering surface only (which
-/// drains the framework's layout assertions via `tester.takeException()`).
-/// The interaction tests (skip/previous/save) are written but skipped
-/// with `skip: _knownLayoutBugPreventsInteraction` so they automatically
-/// run once the production widget is fixed.
 library;
 
 import 'package:flutter/material.dart';
@@ -43,11 +15,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/unknown_ingredient_dialog.dart';
-
-// Flip this to `false` once the production layout bug is fixed so the
-// interaction tests start running. `testWidgets.skip` only accepts bool.
-// The reason is documented in this file's header (search "PRODUCTION BUG").
-const bool _knownLayoutBugPreventsInteraction = true;
 
 Widget _wrap(Widget child) => MaterialApp(
       theme: AppTheme.lightTheme,
@@ -82,22 +49,14 @@ Widget _trigger({
   );
 }
 
-/// Drain framework exceptions caused by the known layout bug so subsequent
-/// assertions can run. Safe to call repeatedly.
-void _drainKnownLayoutBug(WidgetTester tester) {
-  while (tester.takeException() != null) {}
-}
-
 Future<void> _open(WidgetTester tester) async {
   await tester.tap(find.text('Show'));
   await tester.pumpAndSettle();
-  _drainKnownLayoutBug(tester);
 }
 
 Future<void> _tapAndSettle(WidgetTester tester, Finder finder) async {
   await tester.tap(finder);
   await tester.pumpAndSettle();
-  _drainKnownLayoutBug(tester);
 }
 
 void main() {
@@ -226,41 +185,6 @@ void main() {
     });
   });
 
-  group('UnknownIngredientDialog production bug witness', () {
-    testWidgets(
-        'opening the dialog produces a "BoxConstraints forces an infinite width" framework error',
-        (tester) async {
-      // This test is the canary: it FAILS once the production bug is fixed
-      // (no exception → expect on null fails). At that point delete this
-      // test AND remove the `skip:` markers from the interaction tests
-      // below so they start running.
-      await tester.pumpWidget(_wrap(_trigger(
-        ingredients: const ['shiitake'],
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
-
-      // takeException returns a wrapper ("Multiple exceptions (N) were
-      // detected...") because the layout error cascades into many follow-on
-      // assertions. We just verify that *some* framework exception fired —
-      // when the production widget is fixed this will be null and the
-      // assertion below fails, prompting removal of the `skip:` markers
-      // on the interaction tests.
-      final exception = tester.takeException();
-      expect(
-        exception,
-        isNotNull,
-        reason:
-            'No framework error during layout — the AlertDialog.actions Row '
-            'bug appears fixed. Remove `_knownLayoutBugPreventsInteraction` '
-            'skip from the interaction tests and delete this witness test.',
-      );
-
-      // Drain remaining cascade so the test tearDown doesn't rethrow.
-      _drainKnownLayoutBug(tester);
-    });
-  });
-
   group('UnknownIngredientDialog navigation', () {
     testWidgets('tapping "Hoppa över" advances to the next ingredient',
         (tester) async {
@@ -276,7 +200,7 @@ void main() {
 
       expect(find.text('tahini'), findsOneWidget);
       expect(find.text('Okänd ingrediens 2/2'), findsOneWidget);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
 
     testWidgets('"Föregående" appears on page 2 and steps back to page 1',
         (tester) async {
@@ -293,7 +217,7 @@ void main() {
       expect(find.text('shiitake'), findsOneWidget);
       expect(find.text('Okänd ingrediens 1/2'), findsOneWidget);
       expect(find.text('Föregående'), findsNothing);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
 
     testWidgets(
         'tapping "Spara och nästa" with NO selected chips behaves as skip and advances',
@@ -307,7 +231,7 @@ void main() {
 
       expect(find.text('tahini'), findsOneWidget);
       expect(find.text('Okänd ingrediens 2/2'), findsOneWidget);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
   });
 
   group('UnknownIngredientDialog FilterChip toggling', () {
@@ -332,7 +256,7 @@ void main() {
 
       await _tapAndSettle(tester, find.text('Gluten'));
       expect(glutenChip().selected, isFalse);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
 
     testWidgets(
         'selections on page 1 are preserved when returning via Föregående',
@@ -363,7 +287,7 @@ void main() {
         ),
       );
       expect(shiitakeGluten.selected, isTrue);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
   });
 
   group('UnknownIngredientDialog completion', () {
@@ -381,7 +305,7 @@ void main() {
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(result, isFalse);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
 
     testWidgets('onComplete callback is invoked when the dialog closes',
         (tester) async {
@@ -395,7 +319,7 @@ void main() {
       await _tapAndSettle(tester, find.text('Hoppa över alla'));
 
       expect(completed, 1);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
 
     testWidgets(
         'tapping "Spara och stäng" with non-empty selections AND null userId closes with anyDefined=true',
@@ -416,7 +340,7 @@ void main() {
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(result, isTrue);
-    }, skip: _knownLayoutBugPreventsInteraction);
+    });
   });
 
   // SKIP (separate from the layout-bug skip): paths that require a

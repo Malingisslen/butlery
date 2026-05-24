@@ -1,5 +1,32 @@
 # Sprint Backlog
 
+## Sprint: wave-19 — RecipePersistenceManager save-flow test — 2026-05-24 (Sun) — autonomous /loop iter 3
+
+Theme: Pivoted from BUT-953 mid-iter. Step 0 on BUT-953 revealed the save flow does `Navigator.pushNamed('/franSocialaMedier', arguments: viewModel.ocrText)` — only the OCR string transits; PhotoImportViewModel dies on navigation. Wiring `uploadHeirloomImage` requires architectural decisions (pre-nav upload, persistent state service, or restructure) that don't fit a single autonomous iter. Documented assessment as Linear comment on BUT-953.
+
+Picking BUT-1033 instead: pure test work, scope defined, and the iter-2 BUT-1030 fix (mock-mutation helpers) is the enabler — `RecipePersistenceManager`'s `commitPendingStorageDeletes` integration is exactly the kind of save-flow assertion that now-observable mock state unlocks.
+
+### Ship this sprint
+
+- [ ] **A1. BUT-1033 (Medium, test-gap)** — RecipePersistenceManager test for `commitPendingStorageDeletes` save-flow integration. File: `test/unit/viewmodels/recipe_form/recipe_persistence_manager_test.dart` (or wherever existing tests live). Use the BUT-1030 helpers (`applyRecipeWriteToState` from `MockUnifiedRecipeService`) to assert the save flow calls `_imageManager.commitPendingStorageDeletes()` after a successful write.
+
+### Skipped this iter (left open in Linear, explained per-ticket)
+
+- [~] **BUT-1031 (High)** — Sync-conflict banner. 2-3 days work per wave-18 deferral note; needs multi-iter strategy.
+- [~] **BUT-953 (Medium, Bug)** — Heirloom wiring. Step 0 assessment posted as Linear comment; needs dedicated heirloom wave with architectural scope-cut decision.
+- [~] **BUT-1004 (Medium)** — IngredientCategorizer multi-file sweep (8+ callsites). Skip for risk.
+
+### Post-Sprint Steps
+
+- [ ] `dart analyze --fatal-infos` on changed files
+- [ ] Run new test: `flutter test test/unit/viewmodels/recipe_form/recipe_persistence_manager_test.dart`
+- [ ] Tier-2: `code-reviewer` (no lib/ touched → testing-specialist skipped)
+- [ ] `/code-review high` (simplify marker)
+- [ ] Commit + push to main
+- [ ] Close BUT-1033 in Linear to Done
+
+---
+
 ## Archived wave-18 (commit c5abf24b7) — 2026-05-24 (Sun)
 
 Theme: 3 bounded ship-items + 5 deferred (scope captured as Linear comments). Stale-premise cleanup on BUT-1030 / BUT-1031 surfaced via Step 0.
