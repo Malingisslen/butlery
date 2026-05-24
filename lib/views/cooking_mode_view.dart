@@ -143,6 +143,10 @@ class _CookingModeContent extends StatelessWidget {
               style: AppTextStyles.headerTitle.copyWith(
                 color: cs.onPrimary,
                 letterSpacing: 1,
+                // BUT-898: scale with the cooking-mode font-scale toggle
+                // so the title matches step text + instruction body
+                // (lines 560 + 586). WCAG 1.4.4 (Resize Text).
+                fontSize: AppTextStyles.headerTitle.fontSize! * vm.fontScale,
               ),
               overflow: TextOverflow.ellipsis,
             ),
