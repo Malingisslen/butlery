@@ -51,6 +51,7 @@ import 'package:provider/provider.dart';
 
 // Production code imports
 import 'package:butlery/views/social/shared_with_me_view.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 // Test infrastructure imports - Following Phase 1-2 Gold Standard
@@ -259,13 +260,14 @@ void main() {
         // Test loading state display
         expect(find.byType(SharedWithMeView), findsOneWidget);
 
-        // Look for loading indicators
-        final progressIndicators = find.byType(CircularProgressIndicator);
-        if (progressIndicators.evaluate().isNotEmpty) {
-          print('     ✅ Loading state indicators present');
-        }
-
-        print('🎉 LOADING STATE: Management Validated');
+        // BUT-891: assert the loading indicator actually rendered. The
+        // previous if/print branch never failed — it observed without
+        // asserting. LoadingIndicator is the canonical widget; raw CPI
+        // is allowed as legacy fallback while migration completes.
+        final hasLoading = tester.any(find.byType(LoadingIndicator)) ||
+            tester.any(find.byType(CircularProgressIndicator));
+        expect(hasLoading, isTrue,
+            reason: 'Loading state should display a progress indicator');
       });
 
       testWidgets('❌ Error State Management', (WidgetTester tester) async {

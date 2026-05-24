@@ -1,48 +1,46 @@
 # Sprint Backlog
 
-## Sprint: iter-51 — BUT-885 partial — tagging/social/recipe widget CPI migration — 2026-05-24 (Sun)
+## Sprint: iter-52 — BUT-891 update CPI assertions to LoadingIndicator — 2026-05-24 (Sun)
 
-Theme: Phase 4 ticket är "residual sites + arch-test". Plockar tagging/social/recipe-widgets-delen denna iter; lämnar bredare residual (image-overlays = BUT-884 territory; views/onboarding/auth = Phase-5-shape) + arch-test till separat commit.
+Theme: iOS-platform-coupling latent bug. Tests assert `CircularProgressIndicator` against views/helpers that render `LoadingIndicator` → `AdaptiveActivityIndicator` → CPI on Linux/Android only. Pass-by-coincidence on current CI matrix, fail on iOS. Plan-fil FÖRST per discipline.
 
 ### Step 0 — premise verification
 
-- BUT-885 archived 2026-05-22 but Backlog premise still valid: `grep CircularProgressIndicator(` shows **65 files** in lib/ — Phase 1+2 closed buttons/dialogs only.
-- Phase 4 ticket scope: "residual tagging/social/recipe widget files (everything not covered by Phase 1-3)". Targeted:
-  - `lib/widgets/tagging/` — 4 sites (3 files): personal_tag_edit_dialog (2), personal_tag_rule_dialog (1), personal_tag_selector (1)
-  - `lib/widgets/social/` — 3 sites: ping_compose_sheet (1), groups/group_shared_content_section (1), groups/shared/group_dialog_components (1)
-  - `lib/widgets/recipe/` — 4 sites: cook_snap_gallery (2), ingredient_substitution_sheet (1), heirloom_section (1)
-- Total: **11 sites across 9 files**.
+All 5 sites in ticket verified at the exact lines:
+- `test/views/social/group_detail_view_test.dart:99` — `find.byType(CircularProgressIndicator), findsOneWidget`
+- `test/views/social/group_detail_view_test.dart:415` — same
+- `test/views/social/shared_with_me_view_test.dart:263-266` — print-only no-op branch (asserts nothing)
+- `test/views/helpers/view_test_helpers.dart:368` — `expectLoadingState` helper
+- `test/views/helpers/view_test_helpers.dart:401` — `expectContentState` helper
 
 ### Design choices
 
-- **Same constructor strategy as iter-46 (BUT-883)**: base `LoadingIndicator(size:, strokeWidth:, color:)`, NOT `.small()`. Padding inflation breaks inline icon-slots.
-- **Pure mechanical replace** — read each site for strokeWidth + size context, swap with matching params.
-- **Imports**: each touched file gets `loading_indicator.dart` import added if missing.
-- **Arch-test deferred**: ticket asks for one but adding the regex+allowlist guard to `test/architecture/architecture_test.dart` would inflate this iter; file BUT-XXX follow-up.
-- **Other 56 files of CPI**: 9 image/upload-progress files = BUT-884 (Phase 3) territory; the rest are views/widgets that belong to either Phase 3 (image) or a future Phase 5 (broad residual sweep). Leaving them out keeps this iter focused.
+- **Site 1+2 (group_detail_view_test)**: replace `find.byType(CircularProgressIndicator)` → `find.byType(LoadingIndicator)`. Add import.
+- **Site 3 (shared_with_me_view_test)**: per ticket "either flip to LoadingIndicator + assert, or delete". The print-only branch is observation-without-assertion which means it never fails. Flip to a real assertion. Add import.
+- **Site 4+5 (view_test_helpers)**: per ticket "prefer LoadingIndicator as primary check with CPI as tolerated legacy fallback". Update both helpers to look for either widget — tolerates the still-raw-CPI legitimate sites (lib/widgets/common/indicators/) without forcing wholesale migration first. Add import.
+- **No other test files need touching**: ticket explicitly lists 5 out-of-scope tests that legitimately target widget primitives still rendering raw CPI.
 
 ### Ship this sprint
 
-- [ ] **A1. BUT-885 partial** — Migrate 11 tagging/social/recipe widget CPI sites.
-  - For each site: read strokeWidth/size from existing SizedBox/CPI wrapper, replace with `LoadingIndicator(...)` preserving dimensions.
-  - Add `loading_indicator.dart` import per touched file.
-- [ ] **A2. Follow-up Linear** — File BUT-XXX for "arch-test guard for new CPI introductions" with the regex+allowlist pattern.
+- [ ] **A1. group_detail_view_test.dart** — 2 sites swap CPI → LoadingIndicator + import.
+- [ ] **A2. shared_with_me_view_test.dart** — convert print-only branch to real assertion + import.
+- [ ] **A3. view_test_helpers.dart** — both helpers updated to find either widget + import.
+- [ ] **A4. Spot-check** — grep `test/` for stragglers; report.
 
 ### Acceptance
 
-- [ ] `grep CircularProgressIndicator\\b lib/widgets/{tagging,social,recipe}` returns zero hits.
+- [ ] `flutter test test/views/social/group_detail_view_test.dart` passes.
+- [ ] `flutter test test/views/social/shared_with_me_view_test.dart` passes.
 - [ ] `flutter analyze` clean.
-- [ ] No visual change to spinner dimensions (strokeWidth/size match per call site).
+- [ ] No `find.byType(CircularProgressIndicator)` assertions on migrated views remain (out-of-scope files preserved per ticket).
 
 ### Post-Sprint Steps
 
-- [ ] `flutter analyze` clean
 - [ ] Commit + push
-- [ ] Update BUT-885 — partial completion comment; leave In Progress for residual + arch-test
-- [ ] File the arch-test follow-up
+- [ ] Stäng BUT-891 i Linear → Done
 
 ---
 
-## Archived iter-50 (commit `744624eb9`) — 2026-05-24 (Sun)
+## Archived iter-51 (commit `8d7bc683b`) — 2026-05-24 (Sun)
 
-BUT-919 group-creation draft persist. First multi-field JSON-payload variant. +121 / -26. BUT-919 → Done. Draft-pattern now 4/5 forms; BUT-910 photo-import remains (needs on-disk staging, out of pattern scope).
+BUT-885 partial — 11 CPI sites in tagging/social/recipe widgets migrated to LoadingIndicator. +57 / -80. BUT-885 still In Progress (Phase 5 broad-sweep + arch-test = BUT-1066).

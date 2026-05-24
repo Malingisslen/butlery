@@ -20,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Production imports - NEVER assume, always check production code first
 import 'package:butlery/views/social/group_detail_view.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 // Test infrastructure imports - using centralized system
 import '../../infrastructure/di/test_service_locator.dart';
@@ -96,7 +97,7 @@ void main() {
         await tester.pump(); // Allow initState
 
         // Should show loading state initially during data loading
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(LoadingIndicator), findsOneWidget);
         expect(find.text('Laddar gruppinformation...'), findsOneWidget);
       });
 
@@ -412,7 +413,7 @@ void main() {
         await tester.pump(); // Allow initial loading state
 
         // Should show loading state initially
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(LoadingIndicator), findsOneWidget);
         expect(find.text('Laddar gruppinformation...'), findsOneWidget);
         expect(find.text('Laddar...'), findsOneWidget);
       });

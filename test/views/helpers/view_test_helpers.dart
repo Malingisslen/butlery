@@ -40,6 +40,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
+
 // Import existing test infrastructure
 import '../../infrastructure/helpers/base_widget_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -364,9 +366,17 @@ class ViewTestHelpers extends BaseWidgetTest {
   }
 
   /// Expect loading state to be displayed.
+  ///
+  /// BUT-891: prefers `LoadingIndicator` (the canonical wrapper) but
+  /// tolerates raw `CircularProgressIndicator` as legacy fallback —
+  /// `lib/widgets/common/indicators/` still renders raw CPI internally
+  /// and some primitive widget tests legitimately assert on it. Forcing
+  /// LoadingIndicator-only would force wholesale migration before this
+  /// helper becomes usable on migrated views.
   static void expectLoadingState(WidgetTester tester) {
-    expect(find.byType(CircularProgressIndicator), findsOneWidget,
-        reason: 'Loading state not displayed');
+    final hasLoading = tester.any(find.byType(LoadingIndicator)) ||
+        tester.any(find.byType(CircularProgressIndicator));
+    expect(hasLoading, isTrue, reason: 'Loading state not displayed');
   }
 
   /// Expect error state to be displayed.
@@ -397,7 +407,12 @@ class ViewTestHelpers extends BaseWidgetTest {
   }
 
   /// Expect content state to be displayed (no loading, no error).
+  ///
+  /// BUT-891: checks for both `LoadingIndicator` AND raw CPI to catch
+  /// content-state in either rendering path.
   static void expectContentState(WidgetTester tester) {
+    expect(find.byType(LoadingIndicator), findsNothing,
+        reason: 'LoadingIndicator still visible in content state');
     expect(find.byType(CircularProgressIndicator), findsNothing,
         reason: 'Loading indicator still visible in content state');
 
