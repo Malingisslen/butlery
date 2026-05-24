@@ -8687,6 +8687,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotSaveRecipe => 'Kunde inte spara recept';
 
   @override
+  String errorShareCapReached(int max) {
+    return 'Receptet har redan delats med max antal användare ($max)';
+  }
+
+  @override
   String get errorNoGroupMembersFound => 'Inga gruppmedlemmar hittades';
 
   @override

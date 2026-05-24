@@ -5604,6 +5604,16 @@
   "errorRecipeNeedsInstruction": "Recept måste ha minst en instruktion",
   "errorNoPermissionToShare": "Du har inte behörighet att dela detta recept",
   "errorCouldNotSaveRecipe": "Kunde inte spara recept",
+  "errorShareCapReached": "Receptet har redan delats med max antal användare ({max})",
+  "@errorShareCapReached": {
+    "description": "Shown when a share would exceed Recipe.maxSharesPerRecipe (BUT-955).",
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "200"
+      }
+    }
+  },
   "errorNoGroupMembersFound": "Inga gruppmedlemmar hittades",
   "errorRecipeNotShared": "Receptet är inte delat",
   "errorOnlyOwnerCanUnshare": "Endast ägaren kan sluta dela receptet",

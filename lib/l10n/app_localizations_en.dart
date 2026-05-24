@@ -8672,6 +8672,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotSaveRecipe => 'Could not save recipe';
 
   @override
+  String errorShareCapReached(int max) {
+    return 'Recipe is already shared with the maximum number of users ($max)';
+  }
+
+  @override
   String get errorNoGroupMembersFound => 'No group members found';
 
   @override

@@ -5596,6 +5596,7 @@
   "errorRecipeNeedsInstruction": "Recipe must have at least one instruction",
   "errorNoPermissionToShare": "You do not have permission to share this recipe",
   "errorCouldNotSaveRecipe": "Could not save recipe",
+  "errorShareCapReached": "Recipe is already shared with the maximum number of users ({max})",
   "errorNoGroupMembersFound": "No group members found",
   "errorRecipeNotShared": "The recipe is not shared",
   "errorOnlyOwnerCanUnshare": "Only the owner can stop sharing the recipe",

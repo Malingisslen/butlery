@@ -82,7 +82,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         AppLogger.warning(
             'Share denied: recipe $recipeId would have ${projected.length} '
             'shares (cap: ${Recipe.maxSharesPerRecipe})');
-        _setError(AppLocale.current.errorCouldNotSaveRecipe);
+        _setError(
+            AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe));
         return false;
       }
 

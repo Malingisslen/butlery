@@ -14889,6 +14889,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte spara recept'**
   String get errorCouldNotSaveRecipe;
 
+  /// Shown when a share would exceed Recipe.maxSharesPerRecipe (BUT-955).
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet har redan delats med max antal användare ({max})'**
+  String errorShareCapReached(int max);
+
   /// No description provided for @errorNoGroupMembersFound.
   ///
   /// In sv, this message translates to:
