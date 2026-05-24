@@ -125,14 +125,14 @@ void main() {
       verify(() => mockImageManager.commitPendingStorageDeletes()).called(1);
     });
 
-    test('failure: does NOT commit deletes when recipe write fails',
-        () async {
+    test('failure: does NOT commit deletes when recipe write fails', () async {
       // addUnifiedRecipe returns failure → recipe_persistence_manager
       // throws inside safeExecute, which catches and returns null. Line 229
       // (commit) is *past* the throw site, so it must never run — otherwise
       // the user loses Storage bytes they didn't intend to delete.
       when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-          (_) async => RecipeOperationResult.failure('simulated firestore error'));
+          (_) async =>
+              RecipeOperationResult.failure('simulated firestore error'));
 
       final result = await manager.saveRecipe(
         isCollaborative: false,

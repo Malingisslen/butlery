@@ -674,5 +674,78 @@ void main() {
         expect(find.text('-10 min'), findsNothing);
       });
     });
+
+    // BUT-1036: pin the three-branch visibility-icon switch in
+    // `_buildVisibilityIcon`. The switch arms (`isCollaborative` →
+    // people_outline, `isPublic` → public, default → lock_outline) plus
+    // the "collab wins over public" precedence are a domain invariant —
+    // a future refactor that reorders the arms or drops the precedence
+    // comment must be caught here.
+    group('Visibility icon (BUT-909 / BUT-1036)', () {
+      testWidgets(
+          'collaborative recipe with isPublic=true also → people_outline only '
+          '(collab precedence wins)', (tester) async {
+        final collabAndPublic = RecipeFactory.build(
+          id: 'collab_public',
+          type: RecipeType.collaborative,
+          isPublic: true,
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(recipe: collabAndPublic),
+            ),
+          ),
+        );
+
+        expect(find.byIcon(Icons.people_outline), findsOneWidget);
+        expect(find.byIcon(Icons.public), findsNothing);
+        expect(find.byIcon(Icons.lock_outline), findsNothing);
+      });
+
+      testWidgets('public-only personal recipe → public icon only',
+          (tester) async {
+        final publicOnly = RecipeFactory.build(
+          id: 'public_only',
+          isPublic: true,
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(recipe: publicOnly),
+            ),
+          ),
+        );
+
+        expect(find.byIcon(Icons.public), findsOneWidget);
+        expect(find.byIcon(Icons.people_outline), findsNothing);
+        expect(find.byIcon(Icons.lock_outline), findsNothing);
+      });
+
+      testWidgets('private personal recipe → lock_outline (default arm)',
+          (tester) async {
+        final private = RecipeFactory.build(
+          id: 'private',
+          isPublic: false,
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(recipe: private),
+            ),
+          ),
+        );
+
+        expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+        expect(find.byIcon(Icons.people_outline), findsNothing);
+        expect(find.byIcon(Icons.public), findsNothing);
+      });
+    });
   });
 }
