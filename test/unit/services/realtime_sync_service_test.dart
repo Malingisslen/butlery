@@ -162,28 +162,23 @@ void main() {
       expect(service.getCachedResource<RealtimeRecipe>('res_1')!.id, 'res_1');
     });
 
-    /// Proves: a missing document routes the error through the central
-    /// `_handleError` pipeline (errorStream + lastError) rather than
-    /// propagating to the stream subscriber. This is the production
-    /// contract — the `.handleError((error) => _handleError(...))` on the
-    /// stream intentionally swallows the propagation.
-    ///
-    /// NOTE: this also surfaces a production design tension — UI code that
-    /// subscribes to `watchResource(id)` will never see the documentNotFound
-    /// error directly; it must ALSO subscribe to errorStream. Flagged in
-    /// the report.
-    test('missing document is routed through errorStream, not propagated',
+    /// Missing-doc errors propagate to BOTH the stream subscriber (so a
+    /// `StreamBuilder` sees `ConnectionState.error` and rebuilds with a
+    /// fresh error widget instead of stale data) AND the central
+    /// errorStream side-channel (so callers that want a global error log
+    /// still get it). Fixed by BUT-1069: `.handleError` (which swallowed)
+    /// replaced by a transformer that records side-channel + re-emits via
+    /// sink.addError.
+    test('missing document propagates to main stream AND errorStream',
         () async {
       final captured = <SyncError>[];
       final sub = service.errorStream.listen(captured.add);
+      final mainStreamErrors = <Object>[];
 
-      // Subscribe long enough for the snapshot to arrive AND error pipeline
-      // to fire, then cancel.
       final streamSub = service
           .watchResource<RealtimeRecipe>('does-not-exist')
-          .listen((_) {}, onError: (_) {});
+          .listen((_) {}, onError: mainStreamErrors.add);
 
-      // Give the snapshot + error pipeline time to fire.
       for (var i = 0; i < 10 && captured.isEmpty; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 20));
       }
@@ -192,23 +187,29 @@ void main() {
       await sub.cancel();
 
       expect(captured, isNotEmpty,
-          reason: 'Missing doc should have surfaced via errorStream');
+          reason: 'Missing doc should surface via errorStream side-channel');
       expect(captured.first.type, SyncErrorType.firestoreError);
       expect(captured.first.resourceId, 'does-not-exist');
       expect(service.lastError, isNotNull);
+
+      expect(mainStreamErrors, isNotEmpty,
+          reason: 'Missing doc must also propagate to stream subscriber');
+      expect(mainStreamErrors.first, isA<SyncError>());
+      expect((mainStreamErrors.first as SyncError).type,
+          SyncErrorType.documentNotFound);
     });
 
-    /// Proves: a malformed `participants` map (wrong inner value type)
-    /// triggers the parser's cast failure path and is translated into a
-    /// `firestoreError` SyncError via the error pipeline — not propagated
-    /// as a raw `TypeError` that would crash the stream subscriber.
+    /// A malformed `participants` map (wrong inner value type) trips the
+    /// parser's cast failure path and is translated into a `firestoreError`
+    /// SyncError. Post-BUT-1069, that SyncError surfaces on BOTH the
+    /// stream subscriber and the errorStream — so a `StreamBuilder` no
+    /// longer sees stale data after a payload schema change.
     ///
     /// Note: the production parser is very defensive (missing dates fall
     /// back to clock.now, missing strings to empty, etc.), so this test
     /// targets one of the few payload shapes that actually trips a cast
-    /// (`permissionString as String?` when the value is an int). Flagged
-    /// in the report as a separate "parser too lenient" finding.
-    test('malformed payload surfaces as firestoreError via errorStream',
+    /// (`permissionString as String?` when the value is an int).
+    test('malformed payload surfaces as firestoreError on both channels',
         () async {
       await fake.collection('realtime_resources').doc('bad').set({
         'type': 'recipe',
@@ -225,10 +226,11 @@ void main() {
 
       final captured = <SyncError>[];
       final errSub = service.errorStream.listen(captured.add);
+      final mainStreamErrors = <Object>[];
 
       final streamSub = service
           .watchResource<RealtimeRecipe>('bad')
-          .listen((_) {}, onError: (_) {});
+          .listen((_) {}, onError: mainStreamErrors.add);
 
       for (var i = 0; i < 10 && captured.isEmpty; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 20));
@@ -238,9 +240,15 @@ void main() {
       await errSub.cancel();
 
       expect(captured, isNotEmpty,
-          reason: 'A cast failure in the parser must reach errorStream');
+          reason: 'A cast failure must reach errorStream');
       expect(captured.first.type, SyncErrorType.firestoreError);
       expect(captured.first.resourceId, 'bad');
+
+      expect(mainStreamErrors, isNotEmpty,
+          reason: 'Cast failure must also propagate to stream subscriber');
+      expect(mainStreamErrors.first, isA<SyncError>());
+      expect((mainStreamErrors.first as SyncError).type,
+          SyncErrorType.firestoreError);
     });
   });
 

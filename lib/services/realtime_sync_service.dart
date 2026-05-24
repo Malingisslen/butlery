@@ -183,14 +183,19 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
           originalError: e,
         );
       }
-    }).handleError((error) {
-      _handleError(
-        SyncErrorType.firestoreError,
-        AppLocale.current.syncErrorWatchingResource(resourceId),
-        resourceId: resourceId,
-        originalError: error,
-      );
-    });
+    }).transform(
+      StreamTransformer<T, T>.fromHandlers(
+        handleError: (error, stackTrace, sink) {
+          _handleError(
+            SyncErrorType.firestoreError,
+            AppLocale.current.syncErrorWatchingResource(resourceId),
+            resourceId: resourceId,
+            originalError: error,
+          );
+          sink.addError(error, stackTrace);
+        },
+      ),
+    );
   }
 
   /// Update a resource with conflict resolution

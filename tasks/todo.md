@@ -1,47 +1,45 @@
 # Sprint Backlog
 
-## Sprint: iter-62 — BUT-1068 dismissSharedRecipe + sibling VM sweep — 2026-05-25 (Mon)
+## Sprint: iter-63 — BUT-1069 watchResource error propagation — 2026-05-25 (Mon)
 
-Theme: Bug fix — three shared-content VMs silently swallow coordinator `bool` results, lying to the UI on partial failure. P2 social/recipe.
+Theme: Bug fix — `RealtimeSyncService.watchResource` swallows downstream errors via `.handleError` terminator. UI's `StreamBuilder` never sees `documentNotFound` or `firestoreError` → stale data forever. P3 backend.
 
 ### Step 0 — premise verification
 
-- BUT-1068 ticket body matches current `shared_recipe_viewmodel.dart:212-227` exactly. `executeOperation` closure does `await ...; return true;` — coordinator's bool is discarded.
-- Ticket calls out sibling VMs: `shared_menu_viewmodel.dart` (dismissSharedMenu line 207 + restoreSharedMenu line 226) and `shared_shopping_viewmodel.dart` (dismissSharedShoppingList line 228 + restoreSharedShoppingList line 248) — verified, same pattern present.
-- Test `test/unit/viewmodels/shared_content/shared_recipe_viewmodel_test.dart:243-265` explicitly pins the bug + says "flip when fixed". Test for `dismissSharedRecipe` only; siblings have no equivalent test (filing as gap if not added inline).
-- Coordinator returns: SocialRecipeCoordinator.dismissSharedRecipe returns `bool` (false on no-uid / on caught exception).
-- Classification: **fits** — implement as written + extend to sibling VMs.
+- Ticket body matches `lib/services/realtime_sync_service.dart:186-193` exactly. `.handleError` records to side-channel `_errorController` (errorStream) but swallows from main stream.
+- Two pin'd-bug tests in `test/unit/services/realtime_sync_service_test.dart`:
+  - line 175-199 "missing document is routed through errorStream, not propagated"
+  - line 211-... "malformed payload surfaces as firestoreError via errorStream"
+- Both tests assert the BUG behavior with explicit "intentionally swallows the propagation" docstring.
+- Classification: **fits** — implement as written, with the dual-fire approach (side-channel + propagate).
 
 ### Design choices
 
-- **Closure forwards bool, not always-true.** Change `await coord.xxx(...); return true;` → `return await coord.xxx(...);`.
-- **Local state mutation already gated** on `result == true` outside the closure (line 221). So removing the always-true means the gate now correctly skips removal on coordinator-false. No new code needed for the "do NOT mutate on false" requirement — it falls out of fixing the closure.
-- **Sweep all 6 sites across 3 VMs**: dismissSharedRecipe, dismissSharedMenu, restoreSharedMenu (undismiss in recipe is fine — already forwards), dismissSharedShoppingList, restoreSharedShoppingList.
-- **Test flip**: invert the BUG assertion in `shared_recipe_viewmodel_test.dart` lines 259-263 + remove the "flip when fixed" reason notes.
-- **No new tests for siblings this iter** — file as follow-up ticket. Pattern parity is the contract; if recipe-VM is right, menu+shopping are right via identical fix.
+- **Replace `.handleError` with `StreamTransformer.fromHandlers`** so we can both:
+  1. Record on `_errorController` (preserve existing side-channel for callers that watch errorStream)
+  2. Re-emit via `sink.addError(error, stackTrace)` to the main stream
+- **Don't wrap as a new SyncError** in propagation path — the upstream `.map` already wrapped parse failures + missing-doc as typed `SyncError`. Re-wrapping would double-shell. Pass through as-is.
+- **Test updates**: flip both pin'd tests to assert error ALSO reaches the main stream subscriber (not just the side-channel). Remove the "not propagated" / "intentionally swallows" docstrings.
+- **No callers to update.** Existing callers using `StreamBuilder.builder` with `snapshot.hasError` will start working correctly. Callers using `errorStream.listen` continue to work (additive change).
 
 ### Ship this sprint
 
-- [ ] **A1. Fix shared_recipe_viewmodel.dart** — forward coordinator bool from `dismissSharedRecipe` closure (line 215-218). (BUT-1068)
-- [ ] **A2. Fix shared_menu_viewmodel.dart** — same pattern in dismiss + restore (lines 207, 226). (BUT-1068 sibling)
-- [ ] **A3. Fix shared_shopping_viewmodel.dart** — same pattern in dismiss + restore (lines 228, 248). (BUT-1068 sibling)
-- [ ] **A4. Flip pin'd-bug test** — `shared_recipe_viewmodel_test.dart:243-265` invert assertions, remove flip-when-fixed reason text. (BUT-1068)
+- [ ] **A1. Fix watchResource error propagation** — `lib/services/realtime_sync_service.dart:186-193`: swap `.handleError` for `.transform(StreamTransformer.fromHandlers(handleError: ...))` that records side-channel + re-emits via `sink.addError`. (BUT-1069)
+- [ ] **A2. Flip 2 pin'd-bug tests** — `test/unit/services/realtime_sync_service_test.dart` lines 165-199 + 201-...: update to assert error propagates to main stream AND surfaces on errorStream. (BUT-1069)
 
 ### Acceptance
 
-- [ ] `grep -E "await _.*Coordinator.*\\n.*return true" lib/viewmodels/shared_content/` → 0 hits in dismiss/restore closures (allowed in markAsViewed where the coordinator method returns void or already-viewed short-circuit).
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test test/unit/viewmodels/shared_content/shared_recipe_viewmodel_test.dart` passes (flipped test now green for the correct behavior).
-- [ ] Sibling test gap filed as follow-up Linear ticket.
+- [ ] `flutter test test/unit/services/realtime_sync_service_test.dart` passes (flipped tests now assert correct behavior).
+- [ ] errorStream still receives the error (side-channel preserved).
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1068 with commit hash
-- [ ] File follow-up: "Add pin'd-bug tests for shared_menu + shared_shopping dismiss/restore bool-forwarding"
+- [ ] Close BUT-1069 with commit hash
 
 ---
 
-## Archived iter-61 (commit `2927ec7f0`) — 2026-05-25 (Mon)
+## Archived iter-62 (commit `538bef887`) — 2026-05-25 (Mon)
 
-BUT-885 Phase 5 partial — CPI → LoadingIndicator sweep across 15 view files (22 sites). +73 / −139. BUT-885 stays In Progress (Phase 6 widgets/ still residual ~36 files). Linear comment blocked by archived flag — needs UI un-archive.
+BUT-1068 P2 fix — three shared-content VMs (recipe/menu/shopping) dismiss/restore closures forward coordinator bool instead of always-true. 5 closures, +36 / −45. BUT-1081 filed for sibling test gap.
