@@ -133,27 +133,33 @@ class SmartUnitConverter {
 
       // SVENSKA ENHETER (befintliga konverteringar)
 
+      // BUT-899: all thresholds compare `quantity.abs()` so a negative
+      // input (which shouldn't happen — see BUT-444 validator) doesn't
+      // silently short-circuit at the comparison. Output preserves the
+      // sign via the division. Last-line-of-defense behaviour matches
+      // the `g` branch which already did this.
+
       // Volym: ml → cl → dl → liter
       case 'ml':
-        if (quantity >= 1000) {
+        if (quantity.abs() >= 1000) {
           return ConvertedMeasurement(quantity / 1000, 'l');
-        } else if (quantity >= 100) {
+        } else if (quantity.abs() >= 100) {
           return ConvertedMeasurement(quantity / 100, 'dl');
-        } else if (quantity >= 10) {
+        } else if (quantity.abs() >= 10) {
           return ConvertedMeasurement(quantity / 10, 'cl');
         }
         break;
 
       case 'cl':
-        if (quantity >= 100) {
+        if (quantity.abs() >= 100) {
           return ConvertedMeasurement(quantity / 100, 'l');
-        } else if (quantity >= 10) {
+        } else if (quantity.abs() >= 10) {
           return ConvertedMeasurement(quantity / 10, 'dl');
         }
         break;
 
       case 'dl':
-        if (quantity >= 10) {
+        if (quantity.abs() >= 10) {
           return ConvertedMeasurement(quantity / 10, 'l');
         }
         break;
@@ -166,31 +172,31 @@ class SmartUnitConverter {
         break;
 
       case 'mg':
-        if (quantity >= 1000) {
+        if (quantity.abs() >= 1000) {
           return ConvertedMeasurement(quantity / 1000, 'g');
         }
         break;
 
       // Teskedar/matskedar → dl (ungefärliga konverteringar)
       case 'krm':
-        if (quantity >= 5) {
+        if (quantity.abs() >= 5) {
           // 5 krm ≈ 1 tsk
           return ConvertedMeasurement(quantity / 5, 'tsk');
         }
         break;
 
       case 'tsk':
-        if (quantity >= 15) {
+        if (quantity.abs() >= 15) {
           // 15 tsk = 1 dl (fallback for large amounts)
           return ConvertedMeasurement(quantity / 15, 'dl');
-        } else if (quantity >= 3) {
+        } else if (quantity.abs() >= 3) {
           // 3 tsk = 1 msk
           return ConvertedMeasurement(quantity / 3, 'msk');
         }
         break;
 
       case 'msk':
-        if (quantity >= 5) {
+        if (quantity.abs() >= 5) {
           // 5 msk ≈ 1 dl
           return ConvertedMeasurement(quantity / 5, 'dl');
         }

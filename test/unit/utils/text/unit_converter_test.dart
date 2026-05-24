@@ -461,6 +461,61 @@ void main() {
         expect(measurement.unit, equals('dl'));
       });
 
+      test(
+          'BUT-899: negative volume quantities convert symmetrically '
+          'to mass', () {
+        // The gram branch always normalised with .abs() so -500g → -0.5kg
+        // (sign preserved, threshold crossed). The volume branches did
+        // not, so -500ml stayed -500ml. This test pins the now-consistent
+        // behaviour across all volume + spoon branches.
+
+        // Volume: ml → l
+        var result = SmartUnitConverter.convertToReadableUnit(-1500.0, 'ml');
+        expect(result.quantity, equals(-1.5));
+        expect(result.unit, equals('l'));
+
+        // Volume: ml → dl
+        result = SmartUnitConverter.convertToReadableUnit(-300.0, 'ml');
+        expect(result.quantity, equals(-3.0));
+        expect(result.unit, equals('dl'));
+
+        // Volume: cl → l
+        result = SmartUnitConverter.convertToReadableUnit(-200.0, 'cl');
+        expect(result.quantity, equals(-2.0));
+        expect(result.unit, equals('l'));
+
+        // Volume: dl → l
+        result = SmartUnitConverter.convertToReadableUnit(-20.0, 'dl');
+        expect(result.quantity, equals(-2.0));
+        expect(result.unit, equals('l'));
+
+        // Mass: mg → g
+        result = SmartUnitConverter.convertToReadableUnit(-2000.0, 'mg');
+        expect(result.quantity, equals(-2.0));
+        expect(result.unit, equals('g'));
+
+        // Spoons: tsk → msk
+        result = SmartUnitConverter.convertToReadableUnit(-6.0, 'tsk');
+        expect(result.quantity, equals(-2.0));
+        expect(result.unit, equals('msk'));
+
+        // Spoons: msk → dl
+        result = SmartUnitConverter.convertToReadableUnit(-10.0, 'msk');
+        expect(result.quantity, equals(-2.0));
+        expect(result.unit, equals('dl'));
+
+        // krm → tsk
+        result = SmartUnitConverter.convertToReadableUnit(-10.0, 'krm');
+        expect(result.quantity, equals(-2.0));
+        expect(result.unit, equals('tsk'));
+
+        // Re-pin the canonical g → kg case to make the symmetry explicit.
+        // Note: threshold is `abs() >= 1000`, so -1500 g → -1.5 kg.
+        result = SmartUnitConverter.convertToReadableUnit(-1500.0, 'g');
+        expect(result.quantity, equals(-1.5));
+        expect(result.unit, equals('kg'));
+      });
+
       test('should format toString with Swedish fractions', () {
         var measurement = ConvertedMeasurement(0.5, 'dl');
         expect(measurement.toString(), contains('½'));
