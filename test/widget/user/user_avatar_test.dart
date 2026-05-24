@@ -11,11 +11,9 @@ void main() {
       testWidgets('renders with initials when no image URL',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Anna Andersson',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Anna Andersson',
             ),
           ),
         );
@@ -31,12 +29,10 @@ void main() {
       testWidgets('renders with image when URL provided',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Erik Eriksson',
-                imageUrl: 'https://example.com/avatar.jpg',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Erik Eriksson',
+              imageUrl: 'https://example.com/avatar.jpg',
             ),
           ),
         );
@@ -51,11 +47,9 @@ void main() {
       testWidgets('handles single word names correctly',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Magnus',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Magnus',
             ),
           ),
         );
@@ -66,11 +60,9 @@ void main() {
 
       testWidgets('handles single letter names', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'A',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'A',
             ),
           ),
         );
@@ -82,11 +74,9 @@ void main() {
       testWidgets('handles empty name with fallback',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: '',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: '',
             ),
           ),
         );
@@ -98,11 +88,9 @@ void main() {
       testWidgets('handles names with extra spaces',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: '  Johan   Johansson  ',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: '  Johan   Johansson  ',
             ),
           ),
         );
@@ -115,12 +103,10 @@ void main() {
     group('Size Variants', () {
       testWidgets('renders small size correctly', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Test User',
-                size: ImageSize.small,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Test User',
+              size: ImageSize.small,
             ),
           ),
         );
@@ -132,12 +118,10 @@ void main() {
 
       testWidgets('renders medium size correctly', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Test User',
-                size: ImageSize.medium,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Test User',
+              size: ImageSize.medium,
             ),
           ),
         );
@@ -147,12 +131,10 @@ void main() {
 
       testWidgets('renders large size correctly', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Test User',
-                size: ImageSize.large,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Test User',
+              size: ImageSize.large,
             ),
           ),
         );
@@ -163,12 +145,10 @@ void main() {
       testWidgets('renders extra large size correctly',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Test User',
-                size: ImageSize.extraLarge,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Test User',
+              size: ImageSize.extraLarge,
             ),
           ),
         );
@@ -180,13 +160,11 @@ void main() {
     group('Status Indicator', () {
       testWidgets('shows online status indicator', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Online User',
-                showStatus: true,
-                isOnline: true,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Online User',
+              showStatus: true,
+              isOnline: true,
             ),
           ),
         );
@@ -194,20 +172,25 @@ void main() {
         // Should have Stack for status overlay (might have multiple stacks in tree)
         expect(find.byType(Stack), findsWidgets);
 
-        // Should have Positioned widget for status dot
-        expect(find.byType(Positioned), findsOneWidget);
+        // Should have Positioned widget for status dot (scoped to avatar subtree —
+        // Scaffold itself contributes Positioned widgets at the outer level).
+        expect(
+          find.descendant(
+            of: find.byType(UserAvatar),
+            matching: find.byType(Positioned),
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgets('shows offline status indicator',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Offline User',
-                showStatus: true,
-                isOnline: false,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Offline User',
+              showStatus: true,
+              isOnline: false,
             ),
           ),
         );
@@ -215,26 +198,37 @@ void main() {
         // Should have Stack for status overlay (might have multiple stacks in tree)
         expect(find.byType(Stack), findsWidgets);
 
-        // Should have Positioned widget for status dot
-        expect(find.byType(Positioned), findsOneWidget);
+        // Should have Positioned widget for status dot (scoped to avatar subtree).
+        expect(
+          find.descendant(
+            of: find.byType(UserAvatar),
+            matching: find.byType(Positioned),
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgets('does not show status when disabled',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'No Status User',
-                showStatus: false,
-                isOnline: true,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'No Status User',
+              showStatus: false,
+              isOnline: true,
             ),
           ),
         );
 
         // Should not have Positioned widget for status dot when status is disabled
-        expect(find.byType(Positioned), findsNothing);
+        // (scoped to avatar subtree — Scaffold contributes Positioned at outer level).
+        expect(
+          find.descendant(
+            of: find.byType(UserAvatar),
+            matching: find.byType(Positioned),
+          ),
+          findsNothing,
+        );
       });
     });
 
@@ -265,11 +259,9 @@ void main() {
       testWidgets('no InkWell when onTap not provided',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Non-tappable User',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Non-tappable User',
             ),
           ),
         );
@@ -283,12 +275,10 @@ void main() {
       testWidgets('applies custom background color',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Styled User',
-                backgroundColor: Colors.red,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Styled User',
+              backgroundColor: Colors.red,
             ),
           ),
         );
@@ -299,12 +289,10 @@ void main() {
 
       testWidgets('applies custom text color', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Colored Text',
-                textColor: Colors.yellow,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Colored Text',
+              textColor: Colors.yellow,
             ),
           ),
         );
@@ -316,13 +304,11 @@ void main() {
 
       testWidgets('applies custom border', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Bordered User',
-                borderColor: Colors.blue,
-                borderWidth: 3.0,
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Bordered User',
+              borderColor: Colors.blue,
+              borderWidth: 3.0,
             ),
           ),
         );
@@ -336,11 +322,9 @@ void main() {
       testWidgets('handles Swedish characters in names',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Åsa Öberg',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Åsa Öberg',
             ),
           ),
         );
@@ -352,11 +336,9 @@ void main() {
       testWidgets('handles mixed case Swedish names',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'björn älg',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'björn älg',
             ),
           ),
         );
@@ -369,12 +351,10 @@ void main() {
     group('Edge Cases', () {
       testWidgets('handles very long names', (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName:
-                    'Anna-Maria Elisabeth von Schwarzenberg-Hohenzollern',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName:
+                  'Anna-Maria Elisabeth von Schwarzenberg-Hohenzollern',
             ),
           ),
         );
@@ -386,11 +366,9 @@ void main() {
       testWidgets('handles names with special characters',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Jean-Pierre O\'Connor',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Jean-Pierre O\'Connor',
             ),
           ),
         );
@@ -402,12 +380,10 @@ void main() {
       testWidgets('handles empty image URL same as null',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Empty URL User',
-                imageUrl: '',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Empty URL User',
+              imageUrl: '',
             ),
           ),
         );
@@ -421,11 +397,9 @@ void main() {
       testWidgets('renders square avatar container (Butlery design language)',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: UserAvatar(
-                displayName: 'Shape Test',
-              ),
+          createLocalizedTestApp(
+            child: const UserAvatar(
+              displayName: 'Shape Test',
             ),
           ),
         );

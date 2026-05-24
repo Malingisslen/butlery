@@ -1467,3 +1467,35 @@ flaky, and not actually proving anything the constructor test doesn't.
 so `dispose` is never invoked. Looks like leftover boilerplate from a
 StatefulWidget extraction. Safe to delete; doesn't affect behaviour.
 
+### 2026-05-24 — Scaffold contributes Positioned widgets; scope structural finders to subject (Pattern discovered / Bug found)
+
+**Trigger:** CI red on `test/widget/user/user_avatar_test.dart`. Root cause was
+that `lib/widgets/user/user_avatar_widgets.dart` started calling
+`context.l10n.a11yProfileImage(...)` (BUT-908 a11y fix) in the non-tappable
+branch. Tests used bare `const MaterialApp(home: Scaffold(body: UserAvatar(...)))`
+with no l10n delegates → `context.l10n` null → all 23 raw-wrapped tests crashed.
+
+**Primary fix:** swap every `const MaterialApp(home: Scaffold(...))` for
+`createLocalizedTestApp(child: ...)` from
+`test/infrastructure/helpers/widget_test_app.dart`. Helper provides Swedish
+locale + all 4 l10n delegates + `AppTheme.lightTheme` + auto-wraps in Scaffold.
+
+**Secondary bug surfaced by the wrapper swap:** three Status Indicator tests
+asserted `find.byType(Positioned), findsOneWidget` / `findsNothing`. Once we
+gave the test a real Scaffold (instead of a bare body), Flutter's own Scaffold
+layout contributes its own `Positioned` widgets at the outer level, so the
+finder matched 2 instead of 1. The original assertion was already brittle —
+it was structurally testing "exactly one Positioned in the whole tree" instead
+of "exactly one Positioned inside the avatar." Fix: scope with
+`find.descendant(of: find.byType(UserAvatar), matching: find.byType(Positioned))`.
+
+**Reusable rule:** when migrating any test from a bare `MaterialApp` wrapper to
+`createLocalizedTestApp` (or any wrapper that introduces a Scaffold/Stack/etc.),
+audit all `find.byType(Positioned | Stack | ConstrainedBox | DefaultTextStyle)`
+calls. Any structural finder that wasn't scoped to the subject widget will start
+matching framework chrome. Either scope with `find.descendant(of: ...)`, or
+replace the structural assertion with a behavioural one.
+
+**Files:**
+- `test/widget/user/user_avatar_test.dart` — 25/25 pass, analyze clean.
+
