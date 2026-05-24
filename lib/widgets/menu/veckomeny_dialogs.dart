@@ -156,7 +156,7 @@ class VeckomenyDialogs {
       menu: viewModel.menu,
       onListSelected: () {
         Navigator.pop(context);
-        Navigator.pushNamed(context, Routes.inkopslista);
+        Navigator.pushNamed(context, Routes.shoppingList);
       },
     );
   }

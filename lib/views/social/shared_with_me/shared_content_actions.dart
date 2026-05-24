@@ -241,7 +241,7 @@ class SharedContentActions {
           await AppRouter.navigateTo(
             context,
             Routes
-                .inkopslista, // Use main shopping interface for collaborative lists
+                .shoppingList, // Use main shopping interface for collaborative lists
           );
         }
       } catch (e) {
@@ -253,7 +253,7 @@ class SharedContentActions {
           if (context.mounted) {
             await AppRouter.navigateTo(
               context,
-              Routes.inkopslista,
+              Routes.shoppingList,
             );
           }
 

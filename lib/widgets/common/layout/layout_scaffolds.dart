@@ -196,7 +196,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
                     icon: Icons.archive,
                     color: cs.secondary,
                     size: buttonSize,
-                    onTap: () => navigate(Routes.importFranArkiv)),
+                    onTap: () => navigate(Routes.importFromArchive)),
               ],
             ),
           ],

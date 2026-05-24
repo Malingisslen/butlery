@@ -242,7 +242,7 @@ class RecipeShoppingHandler {
 
         if (shouldNavigate == true && context.mounted) {
           // Navigate to shopping view
-          Navigator.pushNamed(context, Routes.inkopslista);
+          Navigator.pushNamed(context, Routes.shoppingList);
         }
       } else {
         SnackBarUtils.showError(

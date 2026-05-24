@@ -29,7 +29,7 @@ class ExtractionDeferredModule implements DeferredModule {
         Routes.smartImport,
         Routes.photoImport,
         Routes.fileImport,
-        Routes.importFranArkiv,
+        Routes.importFromArchive,
       };
 
   @override
@@ -68,7 +68,7 @@ class ExtractionDeferredModule implements DeferredModule {
       case Routes.fileImport:
         return file_import.FileImportView();
 
-      case Routes.importFranArkiv:
+      case Routes.importFromArchive:
         return arkiv_import.ImporteraFranArkivView();
 
       default:

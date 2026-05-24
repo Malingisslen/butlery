@@ -190,7 +190,7 @@ class AppRouter {
           return _buildRoute(const SkrivSjalvReceptView(), settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.franSocialaMedier:
+        case Routes.fromSocialMedia:
           // Handle different argument types
           final arguments = settings.arguments;
           String? initialText;
@@ -255,7 +255,7 @@ class AppRouter {
               settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.veckomeny:
+        case Routes.weeklyMenu:
           final menu = settings.arguments as SharedMenu?;
           if (menu != null) {
             return _buildRoute(vecko.VeckomenyView(sharedMenu: menu), settings,
@@ -272,7 +272,7 @@ class AppRouter {
           return _buildRoute(const vecko.VeckomenyView(), settings,
               Routes.getAnimationType(routeName));
 
-        case Routes.inkopslista:
+        case Routes.shoppingList:
           return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 2),
               settings, Routes.getAnimationType(routeName));
 

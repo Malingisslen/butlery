@@ -28,11 +28,11 @@ class Routes {
   /// Manual recipe creation route. URL value kept (BUT-967).
   static const String manualEntry = '/skrivSjalv';
 
-  /// Social media import route
-  static const String franSocialaMedier = '/franSocialaMedier';
+  /// Social media import route. URL value kept (BUT-967).
+  static const String fromSocialMedia = '/franSocialaMedier';
 
-  /// Archive import route
-  static const String importFranArkiv = '/importFranArkiv';
+  /// Archive import route. URL value kept (BUT-967).
+  static const String importFromArchive = '/importFranArkiv';
 
   /// File import route (CSV/Excel)
   static const String fileImport = '/fileImport';
@@ -49,14 +49,14 @@ class Routes {
   /// Shared recipe reception route
   static const String receiveShare = '/receiveShare';
 
-  /// Weekly menu route
-  static const String veckomeny = '/veckomeny';
+  /// Weekly menu route. URL value kept (BUT-967).
+  static const String weeklyMenu = '/veckomeny';
 
   /// Collaborative realtime menu route
   static const String realtimeMenu = '/realtime-menu';
 
-  /// Unified shopping list route
-  static const String inkopslista = '/inkopslista';
+  /// Unified shopping list route. URL value kept (BUT-967).
+  static const String shoppingList = '/inkopslista';
 
   // Social routes
   static const String profileEdit = '/profile/edit';
@@ -105,7 +105,7 @@ class Routes {
   // Route aliases
   static const Map<String, String> aliases = {
     '/home': home, // Explicit hem-alias
-    '/shopping': inkopslista, // Alias for unified shopping
+    '/shopping': shoppingList, // Alias for unified shopping
   };
 
   /// Routes requiring authentication
@@ -115,15 +115,15 @@ class Routes {
     photoImport,
     quickCapture,
     manualEntry,
-    franSocialaMedier,
-    importFranArkiv,
+    fromSocialMedia,
+    importFromArchive,
     smartImport,
     recipeDetail,
     editRecipe,
     receiveShare,
-    veckomeny,
+    weeklyMenu,
     realtimeMenu,
-    inkopslista,
+    shoppingList,
     ingredientSearch,
     profileEdit,
     friends,
@@ -155,8 +155,8 @@ class Routes {
     photoImport,
     quickCapture,
     manualEntry,
-    franSocialaMedier,
-    importFranArkiv,
+    fromSocialMedia,
+    importFromArchive,
     smartImport,
     receiveShare,
   };
@@ -166,7 +166,7 @@ class Routes {
     termsOfService,
     privacyPolicy,
     communityGuidelines,
-    inkopslista,
+    shoppingList,
     profileEdit,
     friends,
     friendRequests,
@@ -245,17 +245,17 @@ class Routes {
     photoImport,
     quickCapture,
     manualEntry,
-    franSocialaMedier,
-    importFranArkiv,
+    fromSocialMedia,
+    importFromArchive,
     smartImport,
     recipeDetail,
     editRecipe,
     receiveShare,
 
     // Menu & Shopping
-    veckomeny,
+    weeklyMenu,
     realtimeMenu,
-    inkopslista,
+    shoppingList,
 
     // Cooking
     cookingMode,
@@ -322,8 +322,8 @@ class Routes {
       photoImport,
       quickCapture,
       manualEntry,
-      franSocialaMedier,
-      importFranArkiv,
+      fromSocialMedia,
+      importFromArchive,
       recipeDetail,
       editRecipe,
       receiveShare
@@ -332,8 +332,8 @@ class Routes {
     }
 
     buffer.writeln('\nSHOPPING ROUTES:');
-    buffer.writeln('  $veckomeny');
-    buffer.writeln('  $inkopslista');
+    buffer.writeln('  $weeklyMenu');
+    buffer.writeln('  $shoppingList');
 
     buffer.writeln('\nSOCIAL ROUTES:');
     for (final route in [
