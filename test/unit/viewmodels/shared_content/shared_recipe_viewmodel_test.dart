@@ -231,17 +231,11 @@ void main() {
       vm.dispose();
     });
 
-    /// PINS A PRODUCTION BUG (file: lib/viewmodels/shared_content/
-    /// shared_recipe_viewmodel.dart lines 215-218): the inner closure
-    /// discards the bool returned by coordinator.dismissSharedRecipe and
-    /// always `return true;`. So a coordinator that returns false
-    /// (e.g. silent permission denial) is still reported as success and the
-    /// item IS removed locally — UI lies, Firestore still has the item.
-    ///
-    /// This test pins the CURRENT (buggy) behaviour so a fix is an
-    /// intentional change. When the bug is fixed, invert these expects.
-    test(
-        'BUG: ignores coordinator=false result, still reports success + removes locally',
+    /// Coordinator-false → VM forwards false AND does NOT mutate the local
+    /// list. Prevents "UI lies, Firestore still has the item" — the case
+    /// where another user revoked permission between page load and dismiss.
+    /// Fixed by BUT-1068: closure now returns coordinator's bool directly.
+    test('returns false and preserves item when coordinator returns false',
         () async {
       final r = _recipe(id: 'd2');
       when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
@@ -254,13 +248,8 @@ void main() {
 
       final ok = await vm.dismissSharedRecipe(r);
 
-      // Current behaviour: success reported and local list mutated even
-      // though the repo write was rejected.
-      expect(ok, isTrue,
-          reason: 'Pins production bug; flip to isFalse once the inner closure '
-              'forwards the coordinator result.');
-      expect(vm.content, isEmpty,
-          reason: 'Pins production bug; flip to ["d2"] once fixed.');
+      expect(ok, isFalse);
+      expect(vm.content.map((r) => r.id), ['d2']);
       vm.dispose();
     });
 

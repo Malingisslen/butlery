@@ -213,8 +213,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final result = await executeOperation(
       'Dismiss recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        await _socialRecipeCoordinator.dismissSharedRecipe(sharedRecipe.id);
-        return true;
+        return await _socialRecipeCoordinator
+            .dismissSharedRecipe(sharedRecipe.id);
       },
     );
 

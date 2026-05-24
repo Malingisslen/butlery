@@ -204,8 +204,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     final result = await executeOperation(
       'Dismiss menu "${getContentTitle(sharedMenu)}"',
       () async {
-        await _socialMenuCoordinator.dismissSharedMenu(sharedMenu.id);
-        return true;
+        return await _socialMenuCoordinator.dismissSharedMenu(sharedMenu.id);
       },
     );
 
@@ -222,8 +221,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     final result = await executeOperation(
       'Restore menu "${getContentTitle(sharedMenu)}"',
       () async {
-        await _socialMenuCoordinator.restoreSharedMenu(sharedMenu.id);
-        return true;
+        return await _socialMenuCoordinator.restoreSharedMenu(sharedMenu.id);
       },
     );
 

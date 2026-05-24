@@ -223,9 +223,8 @@ class SharedShoppingViewModel
     final result = await executeOperation(
       'Dismiss shopping list "${getContentTitle(sharedList)}"',
       () async {
-        await _socialShoppingCoordinator
+        return await _socialShoppingCoordinator
             .dismissSharedShoppingList(sharedList.id);
-        return true;
       },
     );
 
@@ -243,9 +242,8 @@ class SharedShoppingViewModel
     final result = await executeOperation(
       'Restore shopping list "${getContentTitle(sharedList)}"',
       () async {
-        await _socialShoppingCoordinator
+        return await _socialShoppingCoordinator
             .restoreSharedShoppingList(sharedList.id);
-        return true;
       },
     );
 
