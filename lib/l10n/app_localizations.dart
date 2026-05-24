@@ -368,6 +368,12 @@ abstract class AppLocalizations {
   /// **'Lägg till bild'**
   String get imageAddImage;
 
+  /// BUT-943: snackbar shown after own-comment deletion; pairs with commonUndo action button. Mirrors imageRemovedUndoMessage pattern.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar borttagen'**
+  String get commentDeletedUndoMessage;
+
   /// BUT-932: snackbar shown after image deletion; pairs with commonUndo action button.
   ///
   /// In sv, this message translates to:

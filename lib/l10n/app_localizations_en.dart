@@ -145,6 +145,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageAddImage => 'Add image';
 
   @override
+  String get commentDeletedUndoMessage => 'Comment deleted';
+
+  @override
   String get imageRemovedUndoMessage => 'Photo removed';
 
   @override

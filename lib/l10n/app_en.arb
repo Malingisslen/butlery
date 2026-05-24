@@ -46,6 +46,10 @@
   "navExitAppConfirmation": "Are you sure you want to exit the app?",
   "navExit": "Exit",
   "imageAddImage": "Add image",
+  "commentDeletedUndoMessage": "Comment deleted",
+  "@commentDeletedUndoMessage": {
+    "description": "BUT-943."
+  },
   "imageRemovedUndoMessage": "Photo removed",
   "@imageRemovedUndoMessage": {
     "description": "BUT-932: snackbar shown after image deletion; pairs with commonUndo action button."

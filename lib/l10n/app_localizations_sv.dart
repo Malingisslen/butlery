@@ -145,6 +145,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageAddImage => 'Lägg till bild';
 
   @override
+  String get commentDeletedUndoMessage => 'Kommentar borttagen';
+
+  @override
   String get imageRemovedUndoMessage => 'Foto borttaget';
 
   @override

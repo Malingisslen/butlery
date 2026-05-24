@@ -46,6 +46,10 @@
   "navExitAppConfirmation": "Vill du verkligen avsluta appen?",
   "navExit": "Avsluta",
   "imageAddImage": "Lägg till bild",
+  "commentDeletedUndoMessage": "Kommentar borttagen",
+  "@commentDeletedUndoMessage": {
+    "description": "BUT-943: snackbar shown after own-comment deletion; pairs with commonUndo action button. Mirrors imageRemovedUndoMessage pattern."
+  },
   "imageRemovedUndoMessage": "Foto borttaget",
   "@imageRemovedUndoMessage": {
     "description": "BUT-932: snackbar shown after image deletion; pairs with commonUndo action button."

@@ -309,6 +309,26 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
     if (confirmed != true || !mounted) return;
 
+    // BUT-943: 7-second snackbar undo. Defer the actual service call until
+    // the snackbar closes — undo tap short-circuits, timeout commits the
+    // delete. Comment stays visible during the window (no optimistic
+    // removal), which doubles as a "deleting…" indicator without extra UI.
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    var undone = false;
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.commentDeletedUndoMessage),
+        duration: const Duration(seconds: 7),
+        action: SnackBarAction(
+          label: context.l10n.commonUndo,
+          onPressed: () => undone = true,
+        ),
+      ),
+    );
+    await controller.closed;
+    if (undone || !mounted) return;
+
     try {
       await vm.deleteComment(widget.recipe.id, comment.id);
     } catch (e) {
