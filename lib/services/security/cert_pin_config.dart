@@ -38,37 +38,37 @@ class CertPinConfig {
     // for `*.algolianet.com` and `*.algolia.net` — both should be pinned in
     // the same op when the real fingerprints land.
     'butlery-app-dsn.algolia.net': <String>[
-      // TODO(BUT-427-ops): leaf cert SHA-256 fingerprint
-      // TODO(BUT-427-ops): backup cert SHA-256 fingerprint
+      // TODO(BUT-427-ops, by 2026-Q3): leaf cert SHA-256 fingerprint
+      // TODO(BUT-427-ops, by 2026-Q3): backup cert SHA-256 fingerprint
     ],
     'butlery-app.algolia.net': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
 
     // OCR.space — primary OCR HTTP fallback.
     'api.ocr.space': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
 
     // Google Vision API — secondary OCR HTTP fallback.
     'vision.googleapis.com': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
 
     // Recipe URL scraping — pin the public sites we explicitly support.
     // Sites not listed fall through to platform trust (still safer than no
     // pinning because most attacks target high-value endpoints).
     'www.ica.se': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
     'www.koket.se': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
     'www.arla.se': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
     'www.recept.se': <String>[
-      // TODO(BUT-427-ops): leaf + backup
+      // TODO(BUT-427-ops, by 2026-Q3): leaf + backup
     ],
   };
 
