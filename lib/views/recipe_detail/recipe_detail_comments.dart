@@ -349,6 +349,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           autofocus: true,
           maxLines: 4,
           decoration: InputDecoration(
+            // BUT-896: persistent label so screen-reader users still
+            // have field identity once the placeholder disappears.
+            labelText: context.l10n.commentLabel,
             hintText: context.l10n.commentEditHint,
           ),
         ),

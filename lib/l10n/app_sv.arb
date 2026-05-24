@@ -8272,6 +8272,10 @@
   },
   "commentDeleteError": "Kunde inte ta bort kommentaren",
   "commentEditHint": "Redigera din kommentar",
+  "commentLabel": "Kommentar",
+  "@commentLabel": {
+    "description": "Persistent label on the comment-edit dialog TextField (BUT-896 a11y). Screen readers anchor focus on this; hint is the placeholder."
+  },
   "commentEditError": "Kunde inte uppdatera kommentaren",
   "commentEdited": "Kommentar uppdaterad",
   "commentReact": "Reagera",

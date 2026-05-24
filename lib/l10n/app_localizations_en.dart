@@ -12062,6 +12062,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentEditHint => 'Edit your comment';
 
   @override
+  String get commentLabel => 'Comment';
+
+  @override
   String get commentEditError => 'Could not update the comment';
 
   @override

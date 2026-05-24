@@ -1,37 +1,44 @@
 # Sprint Backlog
 
-## Sprint: iter-56 — BUT-898 cooking-mode title fontScale — 2026-05-24 (Sun)
+## Sprint: iter-57 — BUT-896 form field labelText — STEP 0 RESCOPE — 2026-05-24 (Sun)
 
-Theme: Trivial WCAG 1.4.4 bug fix. Plan-fil FÖRST per discipline.
+Theme: A11y bug. Plan-fil FÖRST per discipline.
 
 ### Step 0 — premise verification
 
-- `lib/views/cooking_mode_view.dart:143` — title uses `AppTextStyles.headerTitle.copyWith(color: ..., letterSpacing: 1)`. No fontSize multiplier.
-- Lines 560, 586 — body content multiplies `AppTextStyles.X.fontSize! * vm.fontScale`. Pattern confirmed.
-- Bug real: 1.25× user font-scale → step text scales, title doesn't. WCAG violation.
+Ticket lists 2 sites:
+1. **comment composer in `recipe_detail_comments.dart`**: verified `recipe_detail_comments.dart:347-353` — `TextField` in edit-comment dialog uses `InputDecoration(hintText: ...)` only. Bug confirmed.
+2. **`auth_view.dart` password-reset field**: ticket says "bare TextField with no decoration". Verified `auth_view.dart:633-640` — actually **already** has `InputDecoration(labelText: ..., hintText: ...)`. Premise stale. No action needed.
+
+l10n: `commentEditHint` exists but is the hint text. Need a separate `commentEditLabel` for the persistent label. Inline option: add ARB key. Alternative: reuse existing `commentEditHint` as both label and hint (acceptable since the dialog title already says "Edit comment" — label = "Comment" is redundant; hint may be more useful).
+
+Best UX: label = "Comment" (persistent identity, screen reader anchor); hint = existing `commentEditHint` (placeholder guidance). Need new l10n key `commentLabel`.
 
 ### Design choices
 
-- Apply the same `fontSize! * vm.fontScale` multiplier to the title. Pattern is established.
-- `AppTextStyles.headerTitle` must have `fontSize` (assume non-null per the body sites; verify).
-- Test: hard to widget-test without spinning up the whole cooking-mode VM; covered by existing visual smoke + the body sites' pattern is the implicit pin.
+- Add `commentLabel` to both ARB files: en "Comment", sv "Kommentar".
+- Run `flutter gen-l10n`.
+- Switch comment-edit-dialog's InputDecoration to `labelText: commentLabel + hintText: commentEditHint`.
 
 ### Ship this sprint
 
-- [ ] **A1. BUT-898** — Apply `fontSize: AppTextStyles.headerTitle.fontSize! * vm.fontScale` in title's copyWith.
+- [ ] **A1. ARB**: add `commentLabel` in sv + en.
+- [ ] **A2. gen-l10n**: regenerate localizations.
+- [ ] **A3. recipe_detail_comments.dart**: add `labelText: context.l10n.commentLabel` to edit-dialog InputDecoration.
+- [ ] **A4. Verify Linear**: comment on BUT-896 that auth_view part of premise was stale; only fix comment composer.
 
 ### Acceptance
 
+- [ ] Screen reader announces "Comment" when focus enters the edit dialog field.
 - [ ] `flutter analyze` clean.
-- [ ] Title scales 1× / 1.25× / 1.5× along with body text.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Stäng BUT-898 i Linear → Done
+- [ ] Stäng BUT-896 i Linear → Done with rescope note
 
 ---
 
-## Archived iter-55 (commit `1249b01f6`) — 2026-05-24 (Sun)
+## Archived iter-56 (commit `2b4e9e8c0`) — 2026-05-24 (Sun)
 
-BUT-899 unit-converter negative-quantity consistency. 8 thresholds + 1 new test (9 sub-cases). +88 / -36. BUT-899 → Done.
+BUT-898 cooking-mode title fontScale. Single-line copyWith fix. +17 / -15. BUT-898 → Done.

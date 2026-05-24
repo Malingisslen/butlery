@@ -12088,6 +12088,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commentEditHint => 'Redigera din kommentar';
 
   @override
+  String get commentLabel => 'Kommentar';
+
+  @override
   String get commentEditError => 'Kunde inte uppdatera kommentaren';
 
   @override

@@ -8243,6 +8243,7 @@
   },
   "commentDeleteError": "Could not delete the comment",
   "commentEditHint": "Edit your comment",
+  "commentLabel": "Comment",
   "commentEditError": "Could not update the comment",
   "commentEdited": "Comment updated",
   "commentReact": "React",

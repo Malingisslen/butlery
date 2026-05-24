@@ -20332,6 +20332,12 @@ abstract class AppLocalizations {
   /// **'Redigera din kommentar'**
   String get commentEditHint;
 
+  /// Persistent label on the comment-edit dialog TextField (BUT-896 a11y). Screen readers anchor focus on this; hint is the placeholder.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar'**
+  String get commentLabel;
+
   /// No description provided for @commentEditError.
   ///
   /// In sv, this message translates to:
