@@ -1,6 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
@@ -72,26 +69,19 @@ class SocialEventsTracker extends BaseTracker {
   /// user) pair. Distinct from [fireOnceMilestone] because this is a
   /// funnel-entry event with no user-property side-effect — once you've
   /// entered the funnel you've entered, no "hasStartedSocialOnboarding"
-  /// property to set. Returns true if fired, false if previously fired,
-  /// userId missing, consent denied, or prefs unavailable.
+  /// property to set.
+  ///
+  /// BUT-1052: now a 5-line wrapper over [fireOnceWithKey]. The SharedPreferences
+  /// + consent + dedupe-key machinery lives in BaseTracker.
   Future<bool> logSocialOnboardingStartedIfFirstEntry({
     required String? userId,
     required String entryPoint,
-  }) async {
-    if (userId == null || userId.isEmpty) return false;
-    if (!await hasAnalyticsConsent()) return false;
-    SharedPreferences prefs;
-    try {
-      prefs = await SharedPreferences.getInstance();
-    } catch (e) {
-      AppLogger.warning('socialOnboarding tracker: prefs unavailable ($e)');
-      return false;
-    }
-    final key = '$_socialOnboardingPrefsPrefix$userId';
-    if (prefs.getBool(key) == true) return false;
-    await logSocialOnboardingStarted(entryPoint: entryPoint);
-    await prefs.setBool(key, true);
-    return true;
+  }) {
+    return fireOnceWithKey(
+      userId: userId,
+      prefsPrefix: _socialOnboardingPrefsPrefix,
+      onFire: () => logSocialOnboardingStarted(entryPoint: entryPoint),
+    );
   }
 
   /// Log friend request accepted

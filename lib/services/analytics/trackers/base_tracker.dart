@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:flutter/foundation.dart' show protected;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
@@ -53,32 +54,28 @@ abstract class BaseTracker {
     return true;
   }
 
-  /// Once-per-user activation-milestone primitive. Mirrors the BUT-584 firstShare
-  /// pattern; used by every `logFirst*IfMilestone` method across the trackers
-  /// (firstShare/firstSearch on recipe; firstFriend/firstComment/firstGroup on
-  /// social; firstMealPlan on menu).
+  /// BUT-1052: once-per-(install,user) primitive shared by every fire-once
+  /// flow in the tracker package. Encapsulates the three things every such
+  /// flow needs: consent check, SharedPreferences key check, and the dedupe
+  /// write. [onFire] runs the domain-specific `repository.logEvent(...)`;
+  /// [onFireUserProperty] is optional for flows that ALSO set a user
+  /// property (activation-milestones do; funnel-entry events don't).
   ///
-  /// Dedupes via a SharedPreferences flag keyed by `'$prefsPrefix$userId'` —
-  /// survives app restarts, no Firestore write. The uid suffix means household
-  /// devices (where two users share one device) each get their own milestone
-  /// fire when each user signs in.
+  /// Dedupe key: `'$prefsPrefix$userId'`. Persists across restarts; the uid
+  /// suffix means household devices (where two users share one device) each
+  /// get their own fire when each user signs in.
   ///
-  /// `extraParams` lets callsites add their domain-specific payload
-  /// (e.g. `share_method`, `recipe_count_at_time`). `minutes_since_signup` is
-  /// auto-added when `joinedAt` is provided — never guessed when null.
+  /// Returns true if fired, false if skipped (no userId, no consent, prefs
+  /// unavailable, or key already set).
   ///
-  /// Returns true if the milestone fired, false if skipped (no userId, no
-  /// consent, prefs unavailable, or already activated).
-  ///
-  /// Subclasses-only — call from concrete `logFirst*IfMilestone` wrappers; do
-  /// not call this directly from outside the trackers package.
-  Future<bool> fireOnceMilestone({
+  /// Subclasses-only — direct external callers use the typed wrappers
+  /// (`fireOnceMilestone`, `logSocialOnboardingStartedIfFirstEntry`, etc.).
+  @protected
+  Future<bool> fireOnceWithKey({
     required String? userId,
     required String prefsPrefix,
-    required String eventName,
-    required String userPropertyName,
-    DateTime? joinedAt,
-    Map<String, Object> extraParams = const <String, Object>{},
+    required Future<void> Function() onFire,
+    Future<void> Function()? onFireUserProperty,
   }) async {
     if (userId == null || userId.isEmpty) return false;
     if (!await hasAnalyticsConsent()) return false;
@@ -89,16 +86,50 @@ abstract class BaseTracker {
     final key = '$prefsPrefix$userId';
     if (prefs.getBool(key) == true) return false;
 
-    final params = <String, Object>{...extraParams};
-    if (joinedAt != null) {
-      params['minutes_since_signup'] =
-          clock.now().difference(joinedAt).inMinutes;
+    await onFire();
+    if (onFireUserProperty != null) {
+      await onFireUserProperty();
     }
-
-    await repository.logEvent(name: eventName, parameters: params);
-    await repository.setUserProperty(name: userPropertyName, value: 'true');
     await prefs.setBool(key, true);
     return true;
+  }
+
+  /// Once-per-user activation-milestone primitive. Mirrors the BUT-584 firstShare
+  /// pattern; used by every `logFirst*IfMilestone` method across the trackers
+  /// (firstShare/firstSearch on recipe; firstFriend/firstComment/firstGroup on
+  /// social; firstMealPlan on menu).
+  ///
+  /// BUT-1052: now a thin wrapper around [fireOnceWithKey]. It supplies the
+  /// milestone-shaped onFire/onFireUserProperty callbacks; the consent +
+  /// prefs + dedupe-key machinery lives in fireOnceWithKey.
+  ///
+  /// `extraParams` lets callsites add their domain-specific payload
+  /// (e.g. `share_method`, `recipe_count_at_time`). `minutes_since_signup` is
+  /// auto-added when `joinedAt` is provided — never guessed when null.
+  ///
+  /// Returns true if the milestone fired, false if skipped.
+  Future<bool> fireOnceMilestone({
+    required String? userId,
+    required String prefsPrefix,
+    required String eventName,
+    required String userPropertyName,
+    DateTime? joinedAt,
+    Map<String, Object> extraParams = const <String, Object>{},
+  }) {
+    return fireOnceWithKey(
+      userId: userId,
+      prefsPrefix: prefsPrefix,
+      onFire: () async {
+        final params = <String, Object>{...extraParams};
+        if (joinedAt != null) {
+          params['minutes_since_signup'] =
+              clock.now().difference(joinedAt).inMinutes;
+        }
+        await repository.logEvent(name: eventName, parameters: params);
+      },
+      onFireUserProperty: () =>
+          repository.setUserProperty(name: userPropertyName, value: 'true'),
+    );
   }
 
   Future<SharedPreferences?> _tryGetPrefs() async {
