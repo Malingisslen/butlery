@@ -25,6 +25,40 @@ class SocialEventsTracker extends BaseTracker {
     );
   }
 
+  /// BUT-939: friend search executed (network search, not cache hit).
+  ///
+  /// `queryLength` is captured instead of the raw query — we want the
+  /// funnel signal ("user is actively searching") without storing the
+  /// search terms in telemetry. `resultCount` distinguishes "found
+  /// matches" from "search returned empty" — both are search events but
+  /// the empty-result rate is the more actionable funnel metric.
+  Future<void> logFriendSearchPerformed({
+    required int queryLength,
+    required int resultCount,
+  }) async {
+    await logEvent(
+      name: AnalyticsEvents.friendSearchPerformed,
+      parameters: {
+        'query_length': queryLength,
+        'result_count': resultCount,
+      },
+    );
+  }
+
+  /// BUT-939: user entered the social-onboarding flow (first meaningful
+  /// open of the friends/groups surface).
+  ///
+  /// `entryPoint` lets us split funnel drop-off by source — onboarding
+  /// step N, bottom-nav tap, deep-link, etc.
+  Future<void> logSocialOnboardingStarted({String? entryPoint}) async {
+    await logEvent(
+      name: AnalyticsEvents.socialOnboardingStarted,
+      parameters: {
+        if (entryPoint != null) 'entry_point': entryPoint,
+      },
+    );
+  }
+
   /// Log friend request accepted
   Future<void> logFriendRequestAccepted({required String senderId}) async {
     await logEvent(

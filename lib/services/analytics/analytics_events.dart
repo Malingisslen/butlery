@@ -96,6 +96,9 @@ abstract final class AnalyticsEvents {
   static const friendRequestRejected = 'friend_request_rejected';
   static const friendRequestCancelled = 'friend_request_cancelled';
   static const friendRemoved = 'friend_removed';
+  // BUT-939: social-funnel instrumentation.
+  static const friendSearchPerformed = 'friend_search_performed';
+  static const socialOnboardingStarted = 'social_onboarding_started';
   static const userBlocked = 'user_blocked';
   static const userUnblocked = 'user_unblocked';
   static const messageSent = 'message_sent';

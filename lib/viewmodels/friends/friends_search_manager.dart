@@ -7,7 +7,9 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/mixins/debounce_mixin.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -96,6 +98,16 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
 
       AppLogger.info(
           '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results');
+
+      // BUT-939: log only on actual network search (cache hits don't
+      // qualify — they don't reflect user intent re-engaging the funnel).
+      // tryGet so a missing analytics service can't break the search flow.
+      ServiceLocator.tryGet<AnalyticsService>()
+          ?.social
+          .logFriendSearchPerformed(
+            queryLength: _searchQuery.length,
+            resultCount: results.length,
+          );
     } catch (e) {
       if (_isDisposed) return;
 
