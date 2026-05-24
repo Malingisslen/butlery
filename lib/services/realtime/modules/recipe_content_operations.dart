@@ -81,7 +81,7 @@ class RecipeContentOperations {
       );
     }
 
-    AppLogger.info('📝 Updating basic info for recipe: ${recipe.title}');
+    AppLogger.info('📝 Updating basic info for recipe: ${recipe.id}');
 
     return recipe.updateBasicInfo(
       title: title,
@@ -419,7 +419,7 @@ class RecipeContentOperations {
     RealtimeRecipe recipe, {
     required String newOwnerId,
   }) {
-    AppLogger.info('📋 Creating personal copy of: ${recipe.title}');
+    AppLogger.info('📋 Creating personal copy of: ${recipe.id}');
     return recipe.createPersonalCopy(newOwnerId: newOwnerId);
   }
 

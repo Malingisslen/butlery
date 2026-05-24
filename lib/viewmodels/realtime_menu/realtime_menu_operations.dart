@@ -28,7 +28,7 @@ class RealtimeMenuOperations {
     required String categoryName,
     required Recipe recipe,
   }) async {
-    AppLogger.info('➕ Adding recipe to $categoryName: ${recipe.title}');
+    AppLogger.info('➕ Adding recipe to $categoryName: ${recipe.id}');
 
     // Apply optimistic update
     _optimisticManager.applyChange(categoryName, (recipes) {
@@ -42,7 +42,7 @@ class RealtimeMenuOperations {
         recipe: recipe,
       );
 
-      AppLogger.success('✅ Recipe added to $categoryName: ${recipe.title}');
+      AppLogger.success('✅ Recipe added to $categoryName: ${recipe.id}');
     } catch (e) {
       AppLogger.error('❌ Failed to add recipe to $categoryName', e);
       _optimisticManager.rollback();
@@ -62,7 +62,7 @@ class RealtimeMenuOperations {
     }
 
     final recipe = currentRecipes[recipeIndex];
-    AppLogger.info('➖ Removing recipe from $categoryName: ${recipe.title}');
+    AppLogger.info('➖ Removing recipe from $categoryName: ${recipe.id}');
 
     // Apply optimistic update
     _optimisticManager.applyChange(categoryName, (recipes) {
@@ -153,7 +153,7 @@ class RealtimeMenuOperations {
     }
 
     final recipe = currentRecipes[fromIndex];
-    AppLogger.info('🔄 Reordering recipe in $categoryName: ${recipe.title}');
+    AppLogger.info('🔄 Reordering recipe in $categoryName: ${recipe.id}');
 
     // Apply optimistic update
     _optimisticManager.applyChange(categoryName, (recipes) {

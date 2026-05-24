@@ -197,7 +197,7 @@ class RetaggingScheduler with StreamManagementMixin {
 
       if (tagResult == null) {
         _recordFailure(recipe.id);
-        AppLogger.warning('⚠️ Retagging returned null for: ${recipe.title}');
+        AppLogger.warning('⚠️ Retagging returned null for: ${recipe.id}');
         return false;
       }
 
@@ -233,7 +233,7 @@ class RetaggingScheduler with StreamManagementMixin {
       return true;
     } catch (e) {
       _recordFailure(recipe.id);
-      AppLogger.warning('⚠️ Failed to retag "${recipe.title}": $e');
+      AppLogger.warning('⚠️ Failed to retag "${recipe.id}": $e');
       return false;
     }
   }

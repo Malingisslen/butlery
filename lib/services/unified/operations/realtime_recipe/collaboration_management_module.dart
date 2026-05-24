@@ -451,7 +451,7 @@ class CollaborationManagementModule {
       // Remove user from collaboration
       await removeCollaborators(recipeId, [currentUserId]);
 
-      AppLogger.success('Left collaboration for recipe: ${recipe.title}');
+      AppLogger.success('Left collaboration for recipe: ${recipe.id}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to leave collaboration', e);

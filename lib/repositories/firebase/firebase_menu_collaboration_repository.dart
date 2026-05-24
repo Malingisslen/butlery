@@ -187,7 +187,7 @@ class FirebaseMenuCollaborationRepository
         'lastUpdatedByDisplayName': userDisplayName,
       });
 
-      AppLogger.success('Added recipe "${recipe.title}" to collaborative menu');
+      AppLogger.success('Added recipe "${recipe.id}" to collaborative menu');
       return true;
     } catch (e, stackTrace) {
       AppLogger.error(

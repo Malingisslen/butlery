@@ -702,18 +702,18 @@ class PersonalRecipeModule with StreamManagementMixin {
       }
 
       if (success) {
-        AppLogger.success('✅ [Web] $operation completed for: ${recipe.title}');
+        AppLogger.success('✅ [Web] $operation completed for: ${recipe.id}');
         _syncStatus[recipe.id] = RecipeSyncStatus.synced;
         // HIGH-11: Record sync timestamp for verification
         _lastSyncedAt[recipe.id] = clock.now();
         return true;
       } else {
-        AppLogger.error('❌ [Web] $operation failed for: ${recipe.title}');
+        AppLogger.error('❌ [Web] $operation failed for: ${recipe.id}');
         _syncStatus[recipe.id] = RecipeSyncStatus.failed;
         return false;
       }
     } catch (e) {
-      AppLogger.error('❌ [Web] $operation error for ${recipe.title}: $e');
+      AppLogger.error('❌ [Web] $operation error for ${recipe.id}: $e');
       _syncStatus[recipe.id] = RecipeSyncStatus.failed;
       return false;
     }
@@ -905,7 +905,7 @@ class PersonalRecipeModule with StreamManagementMixin {
       // CRIT-7: Notify UI that tagging failed
       _onTaggingFailed?.call(recipe.title);
     } catch (e) {
-      AppLogger.warning('⚠️ Tagging failed for "${recipe.title}": $e');
+      AppLogger.warning('⚠️ Tagging failed for "${recipe.id}": $e');
       // CRIT-7: Notify UI that tagging failed
       _onTaggingFailed?.call(recipe.title);
     }

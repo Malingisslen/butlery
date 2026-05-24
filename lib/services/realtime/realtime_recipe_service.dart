@@ -60,7 +60,7 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     _clearError();
 
     try {
-      AppLogger.info('🍳 Skapar realtidsrecept från: ${recipe.title}');
+      AppLogger.info('🍳 Skapar realtidsrecept från: ${recipe.id}');
 
       // Create RealtimeRecipe from existing recipe
       final realtimeRecipe = RealtimeRecipe.fromRecipe(

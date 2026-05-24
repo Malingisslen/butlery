@@ -77,7 +77,7 @@ class RealtimeEditingModule {
       // Convert to realtime recipe if needed
       await _convertToRealtimeRecipe(recipe!);
 
-      AppLogger.info('Started realtime editing for recipe: ${recipe.title}');
+      AppLogger.info('Started realtime editing for recipe: ${recipe.id}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to start realtime editing', e);
@@ -150,7 +150,7 @@ class RealtimeEditingModule {
       // Update through realtime sync service (handles conflict resolution)
       // await _realtimeSyncService!.updateResource(updatedRealtimeRecipe);
 
-      AppLogger.info('Made realtime edit to recipe: ${recipe.title}');
+      AppLogger.info('Made realtime edit to recipe: ${recipe.id}');
       return true;
     } catch (e) {
       AppLogger.error('Failed to make realtime edit', e);

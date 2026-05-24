@@ -214,7 +214,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
             );
             if (success != null) successCount++;
           } catch (e) {
-            AppLogger.error('Failed to import recipe "${recipe.title}"', e);
+            AppLogger.error('Failed to import recipe "${recipe.id}"', e);
           }
         }
       }

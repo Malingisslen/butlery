@@ -133,7 +133,7 @@ class _FileImportViewState extends State<FileImportView> {
             _state = _state.copyWith(importedCount: _state.importedCount + 1);
           });
         } catch (e) {
-          AppLogger.error('Failed to import recipe: ${recipe.title}', e);
+          AppLogger.error('Failed to import recipe: ${recipe.id}', e);
           if (!mounted) return;
           setState(() {
             _state = _state.copyWith(failedCount: _state.failedCount + 1);

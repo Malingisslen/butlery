@@ -136,7 +136,7 @@ class OfflineSyncManager {
             recipe = Recipe.fromJson(json);
 
             if (offlineRecipe.needsSync) {
-              AppLogger.info('📤 Synkar recept: ${recipe.title}');
+              AppLogger.info('📤 Synkar recept: ${recipe.id}');
 
               // Use retry logic for Firebase operations
               await RetryHelper.retryFirebaseOperation(() async {
@@ -152,7 +152,7 @@ class OfflineSyncManager {
               // Remove from sync queue
               await _syncQueueDao.dequeue(item.id);
               successCount++;
-              AppLogger.success('✅ Synkade recept: ${recipe.title}');
+              AppLogger.success('✅ Synkade recept: ${recipe.id}');
             } else {
               // Recipe no longer needs sync - remove from queue
               await _syncQueueDao.dequeue(item.id);
