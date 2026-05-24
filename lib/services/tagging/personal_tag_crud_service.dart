@@ -87,10 +87,7 @@ class PersonalTagCrudService extends BaseService {
     );
   }
 
-  Future<List<PersonalTag>> getAllTags({
-    required void Function() ensureStreams,
-  }) async {
-    ensureStreams();
+  Future<List<PersonalTag>> getAllTags() async {
     return await getCachedOrExecute(
           tagsCacheKey,
           () => _tagRepository.getAllSorted(),
@@ -346,10 +343,7 @@ class PersonalTagCrudService extends BaseService {
     );
   }
 
-  Future<List<PersonalTagGroup>> getAllGroups({
-    required void Function() ensureStreams,
-  }) async {
-    ensureStreams();
+  Future<List<PersonalTagGroup>> getAllGroups() async {
     return await getCachedOrExecute(
           groupsCacheKey,
           () => _groupRepository.getAllSorted(),

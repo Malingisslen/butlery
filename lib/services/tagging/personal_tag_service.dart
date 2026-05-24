@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -27,13 +25,6 @@ export 'package:butlery/services/tagging/personal_tag_types.dart';
 class PersonalTagService extends BaseService {
   final PersonalTagCrudService _crud;
   final PersonalTagRuleEvaluator _evaluator;
-  final FirebasePersonalTagRepository _tagRepository;
-  final FirebasePersonalTagGroupRepository _groupRepository;
-
-  StreamSubscription? _tagStreamSub;
-  StreamSubscription? _groupStreamSub;
-  bool _streamsInitialized = false;
-  int? _cachedTagVersion;
 
   PersonalTagService({
     required PersonalTagCrudService crudService,
@@ -41,9 +32,7 @@ class PersonalTagService extends BaseService {
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
   })  : _crud = crudService,
-        _evaluator = ruleEvaluator,
-        _tagRepository = tagRepository,
-        _groupRepository = groupRepository;
+        _evaluator = ruleEvaluator;
 
   @override
   String get serviceName => 'PersonalTagService';
@@ -54,8 +43,7 @@ class PersonalTagService extends BaseService {
 
   Future<PersonalTag?> getTag(String tagId) => _crud.getTag(tagId);
 
-  Future<List<PersonalTag>> getAllTags() =>
-      _crud.getAllTags(ensureStreams: _ensureStreams);
+  Future<List<PersonalTag>> getAllTags() => _crud.getAllTags();
 
   Future<void> updateTag(PersonalTag tag) => _crud.updateTag(tag);
 
@@ -67,10 +55,7 @@ class PersonalTagService extends BaseService {
   Future<int> bulkDeleteTags(List<String> tagIds) =>
       _crud.bulkDeleteTags(tagIds);
 
-  Stream<List<PersonalTag>> watchTags() {
-    _ensureStreams();
-    return _crud.watchTags();
-  }
+  Stream<List<PersonalTag>> watchTags() => _crud.watchTags();
 
   Future<bool> tagNameExists(String name, {String? excludeId}) =>
       _crud.tagNameExists(name, excludeId: excludeId);
@@ -98,17 +83,13 @@ class PersonalTagService extends BaseService {
 
   Future<PersonalTagGroup?> getGroup(String groupId) => _crud.getGroup(groupId);
 
-  Future<List<PersonalTagGroup>> getAllGroups() =>
-      _crud.getAllGroups(ensureStreams: _ensureStreams);
+  Future<List<PersonalTagGroup>> getAllGroups() => _crud.getAllGroups();
 
   Future<void> updateGroup(PersonalTagGroup group) => _crud.updateGroup(group);
 
   Future<void> deleteGroup(String groupId) => _crud.deleteGroup(groupId);
 
-  Stream<List<PersonalTagGroup>> watchGroups() {
-    _ensureStreams();
-    return _crud.watchGroups();
-  }
+  Stream<List<PersonalTagGroup>> watchGroups() => _crud.watchGroups();
 
   Future<int> getNextGroupSortOrder() => _crud.getNextGroupSortOrder();
 
@@ -255,22 +236,17 @@ class PersonalTagService extends BaseService {
     );
   }
 
-  /// Gets the current tag version as epoch milliseconds.
-  /// Cached and invalidated when tags change via stream subscription.
+  /// Gets the current tag version as epoch milliseconds (max updatedAt
+  /// across all tags). BUT-998: no per-call memoization needed — the
+  /// underlying `getAllTags()` is itself cached via `getCachedOrExecute`
+  /// (5-min TTL, invalidated on every CRUD mutation), so this reduces to
+  /// a small in-memory reduce on the cached list.
   Future<int> getCurrentTagVersion() async {
-    if (_cachedTagVersion != null) return _cachedTagVersion!;
-
     final tags = await getAllTags();
     if (tags.isEmpty) return 0;
-
-    DateTime latest = tags.first.updatedAt;
-    for (final tag in tags.skip(1)) {
-      if (tag.updatedAt.isAfter(latest)) {
-        latest = tag.updatedAt;
-      }
-    }
-    _cachedTagVersion = latest.millisecondsSinceEpoch;
-    return _cachedTagVersion!;
+    return tags
+        .map((t) => t.updatedAt.millisecondsSinceEpoch)
+        .reduce((a, b) => a > b ? a : b);
   }
 
   /// Checks if a recipe has stale personal tags.
@@ -324,37 +300,14 @@ class PersonalTagService extends BaseService {
 
   @override
   Future<void> onInitialize() async {
-    AppLogger.info('PersonalTagService ready (streams deferred until auth)');
+    AppLogger.info('PersonalTagService ready');
   }
 
-  void _ensureStreams() {
-    if (_streamsInitialized) return;
-    try {
-      _tagStreamSub = _tagRepository.watchAllSorted().listen((_) {
-        _crud.clearCache(PersonalTagCrudService.tagsCacheKey);
-        _cachedTagVersion = null;
-      });
-      _groupStreamSub = _groupRepository.watchAllSorted().listen((_) {
-        _crud.clearCache(PersonalTagCrudService.groupsCacheKey);
-      });
-      _streamsInitialized = true;
-    } catch (e) {
-      // Clean up partial subscriptions to prevent leaks on retry
-      _tagStreamSub?.cancel();
-      _tagStreamSub = null;
-      _groupStreamSub?.cancel();
-      _groupStreamSub = null;
-      AppLogger.warning('PersonalTagService stream setup deferred: $e');
-    }
-  }
-
+  /// BUT-998: clears the in-memory tag/group cache (e.g. on logout). The
+  /// snapshot-based cache-invalidation listener that lived here pre-BUT-998
+  /// was redundant — every CRUD path already calls `_crud.clearCache(...)`
+  /// at the write site, so the live listener was double work.
   void resetForLogout() {
-    _tagStreamSub?.cancel();
-    _tagStreamSub = null;
-    _groupStreamSub?.cancel();
-    _groupStreamSub = null;
-    _streamsInitialized = false;
-    _cachedTagVersion = null;
     _crud.clearAllCache();
   }
 
