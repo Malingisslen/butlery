@@ -61,6 +61,12 @@ class PersonalTagService extends BaseService {
 
   Future<void> deleteTag(String tagId) => _crud.deleteTag(tagId);
 
+  /// BUT-994: bulk-delete N tags. Chunks at 100 per batch (Firestore 500-op
+  /// safety margin). Returns total tags deleted. Per-recipe cascade is
+  /// atomic per chunk — either every removal in a chunk lands or none.
+  Future<int> bulkDeleteTags(List<String> tagIds) =>
+      _crud.bulkDeleteTags(tagIds);
+
   Stream<List<PersonalTag>> watchTags() {
     _ensureStreams();
     return _crud.watchTags();

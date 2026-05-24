@@ -183,6 +183,58 @@ class PersonalTagCrudService extends BaseService {
     );
   }
 
+  /// BUT-994: bulk-delete multiple tags in one atomic batch — each tag's
+  /// recipe-cascade pulls + the tag-doc deletes share the same WriteBatch,
+  /// so either every cascade lands or none do.
+  ///
+  /// Chunks at 100 tags per batch as a safety margin under the Firestore
+  /// 500-op limit (each tag may cascade to many recipes; 100 tags × ~4
+  /// cascaded recipes each = ~400 ops, comfortably under 500).
+  ///
+  /// Returns total tag count deleted across all chunks. Per-tag cascade
+  /// counts are logged but not surfaced — the caller wanted a bulk-clean,
+  /// not a per-tag audit.
+  Future<int> bulkDeleteTags(List<String> tagIds) async {
+    if (tagIds.isEmpty) return 0;
+    final result = await executeServiceOperation<int>(
+      () async {
+        const chunkSize = 100;
+        final recipeRepo = _getFirebaseRecipeRepository();
+        var totalDeleted = 0;
+        var totalCascaded = 0;
+
+        for (var i = 0; i < tagIds.length; i += chunkSize) {
+          final chunk = tagIds.sublist(
+            i,
+            i + chunkSize > tagIds.length ? tagIds.length : i + chunkSize,
+          );
+          final batch = _tagRepository.newWriteBatch();
+          for (final tagId in chunk) {
+            if (recipeRepo != null) {
+              totalCascaded +=
+                  await recipeRepo.addRemovePersonalTagFromRecipesToBatch(
+                batch,
+                tagId,
+              );
+            }
+            _tagRepository.addDeleteToBatch(batch, tagId);
+          }
+          await batch.commit();
+          totalDeleted += chunk.length;
+        }
+
+        clearCache(tagsCacheKey);
+        AppLogger.info(
+          'Bulk-deleted $totalDeleted tags; cascaded to $totalCascaded recipe rows',
+        );
+        return totalDeleted;
+      },
+      operationName: 'Bulk-delete personal tags',
+      requiresAuth: true,
+    );
+    return result ?? 0;
+  }
+
   Stream<List<PersonalTag>> watchTags() {
     return _tagRepository.watchAllSorted();
   }
