@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -125,7 +126,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator(),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               context.l10n.dialogLoadingMenus,

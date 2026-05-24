@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ActionButtons - Utility action buttons with loading support
@@ -33,12 +34,9 @@ class ActionButtons {
           if (isLoading)
             const Padding(
               padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
-              child: SizedBox(
-                width: AppDimensions.iconSizeS,
-                height: AppDimensions.iconSizeS,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+              child: LoadingIndicator(
+                size: AppDimensions.iconSizeS,
+                strokeWidth: 2,
               ),
             )
           else if (icon != null)
@@ -152,13 +150,10 @@ class ActionButtons {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
-                SizedBox(
-                  width: AppDimensions.iconSizeM,
-                  height: AppDimensions.iconSizeM,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
+                LoadingIndicator(
+                  size: AppDimensions.iconSizeM,
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 )
               else
                 Icon(icon, size: AppDimensions.iconSizeXl),
@@ -206,13 +201,10 @@ class ActionButtons {
         child: ElevatedButton.icon(
           onPressed: isLoading ? null : onPressed,
           icon: isLoading
-              ? SizedBox(
-                  width: AppDimensions.iconSizeAction,
-                  height: AppDimensions.iconSizeAction,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
+              ? LoadingIndicator(
+                  size: AppDimensions.iconSizeAction,
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 )
               : Icon(icon,
                   size: AppDimensions.iconSizeXl,
@@ -310,12 +302,9 @@ class ActionButtons {
           if (isLoading)
             const Padding(
               padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
-              child: SizedBox(
-                width: AppDimensions.iconSizeS,
-                height: AppDimensions.iconSizeS,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+              child: LoadingIndicator(
+                size: AppDimensions.iconSizeS,
+                strokeWidth: 2,
               ),
             )
           else if (icon != null)

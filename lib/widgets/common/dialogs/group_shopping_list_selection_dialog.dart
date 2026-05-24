@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -97,7 +98,7 @@ class _GroupShoppingListSelectionDialogState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator(),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               context.l10n.shoppingLoadingLists,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -142,11 +143,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
         FilledButton(
           onPressed: _isSaving ? null : _saveAndNext,
           child: _isSaving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const LoadingIndicator(size: 16, strokeWidth: 2)
               : Text(_isLast
                   ? context.l10n.commonSaveAndClose
                   : context.l10n.commonSaveAndNext),

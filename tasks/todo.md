@@ -1,28 +1,36 @@
 # Sprint Backlog
 
-## Sprint: iter-32 — Trivial autonom-batch (BUT-965/967/955/969/1046/984) — 2026-05-24 (Sun)
+## Sprint: iter-46 — BUT-883 CPI Phase 2 codemod — 2026-05-24 (Sun)
 
-Theme: Backlog-svep avslöjade jag missade ~50 tickets (filtrerade fel på priority). Plockar 6 trivial-autonoma med noll UX-risk för att bryta loopen ur "well är tom"-läget. Större tickets (BUT-995 prompt-cache, BUT-440 repo-refactor, BUT-804 LLM-hardening) lämnas till nästa iter eftersom de kräver längre läs-pass.
+Theme: Retroactive plan after user pushback ("Men nu skippar du ju planning stagen eller?"). Iter 32 had the same correction; I drifted again across iters 33–45 by jumping straight to implementation. Re-anchoring on `/sprint-execute` Phase 1.
+
+### Step 0 — premise verification
+
+BUT-883 ticket is `archivedAt`-flaggad i Linear (2026-05-22) men premissen håller: `grep CircularProgressIndicator` i `lib/widgets/common/buttons/` (4 hits) + `lib/widgets/common/dialogs/` (14 hits) = 18 callsites. Phase 2 inte gjord; archive-flagga betyder "ut ur aktiv sprint", inte "klar".
 
 ### Ship this sprint
 
-- [ ] **A1. BUT-965 (Low, Bug)** — `FieldValue.serverTimestamp()` på cook snaps writes (lokal `DateTime.now()` ersätts). Read first → klassifiera Step 0.
-- [ ] **A2. BUT-967 (Low, tech-debt)** — Rename svenska route-konstanter till engelska. Search `route` constants på svenska. Mekanisk rename.
-- [ ] **A3. BUT-955 (Medium, Bug)** — Cap-guard på `sharedWithUserIds` (storleksgräns + tydligt fel). 1 fil.
-- [ ] **A4. BUT-969 (Low, tech-debt)** — Ersätt `Map`-access med typade modeller i `account_deletion`-services (2 filer).
-- [ ] **A5. BUT-1046 (Low, analytics)** — Wire `logSocialOnboardingStarted` vid social-tab entry-point. 1 callsite.
-- [ ] **A6. BUT-984 (Low, idea)** — Tråda `AppLocale` till `structureRecipe` + OCR Cloud Functions (param threading).
+- [x] **A1. BUT-883** — Migrate inline button + dialog spinners to `LoadingIndicator`.
+  - `lib/widgets/common/buttons/action_buttons.dart` — 4 sites (`SizedBox + CPI strokeWidth:2` → `LoadingIndicator(size:..., strokeWidth:2)`).
+  - `lib/widgets/common/dialogs/base_dialog.dart` — 5 sites (mix of sized button-icon spinners + bare centered CPI).
+  - 8 more dialog files — bare CPI or sized button-icon spinners.
+  - Import `loading_indicator.dart` added per file via sed.
+  - Used base constructor `LoadingIndicator(size, strokeWidth)` not `.small()` to avoid the built-in padding inflating button layouts.
 
 ### Post-Sprint Steps
 
-- [ ] `dart analyze --fatal-infos` på ändrade filer
-- [ ] Tier-2: `code-reviewer` (auto-trigger), `testing-specialist` om lib/ ändras
-- [ ] `/code-review high` (simplify-marker)
-- [ ] Commit + push till main
-- [ ] Stäng BUT-XXX i Linear → Done
+- [x] `flutter analyze` — No issues found.
+- [ ] Tier-2: `code-reviewer` (auto-trigger), `testing-specialist` if any test asserts on `CircularProgressIndicator` byType.
+- [ ] `/code-review high` (simplify marker).
+- [ ] Commit + push.
+- [ ] Stäng BUT-883 i Linear → Done.
+
+### Why no follow-up filed
+
+Phase 3+ (BUT-884, BUT-885) are separate Linear tickets covering different file groups (settings views, remaining lib/ usage). No new follow-up needed beyond those already-tracked tickets.
 
 ---
 
-## Archived iter-31 (2026-05-24) — BUT-1002 assessment-only, ingen kod
+## Archived iter-45 (commit `c61b810bc`) — 2026-05-24 (Sun)
 
-Lämnade BUT-1002 i Backlog med detaljerad Linear-kommentar varför contact-import inte är autonomt säker även i pre-prod (GDPR Art. 9, hash-schema, permission-strings, rate-limit, CF-endpoint kräver design-pass).
+PII audit: stripped `recipe.title` from 21 non-DEBUG AppLogger sites across lib/. DEBUG sites kept intact (dev-only, no prod Cloud Logging shipment). BUT-804 HIGH-AI2 fully closed.

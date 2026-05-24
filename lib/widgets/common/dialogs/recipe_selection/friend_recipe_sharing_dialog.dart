@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -73,16 +74,12 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                       ? SizedBox(
                           width: AppDimensions.iconSizeAction,
                           height: AppDimensions.iconSizeAction,
-                          child: SizedBox(
-                            width: AppDimensions.iconSizeS,
-                            height: AppDimensions.iconSizeS,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest),
-                            ),
+                          child: LoadingIndicator(
+                            size: AppDimensions.iconSizeS,
+                            strokeWidth: 2,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                           ),
                         )
                       : const Icon(Icons.share),

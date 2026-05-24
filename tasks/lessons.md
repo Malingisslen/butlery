@@ -10,6 +10,16 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 <!-- Format: ### [Category] Title -->
 <!-- Date | Trigger | Rule | Example -->
 
+### [Workflow] /sprint-execute Phase 1 plan-write is non-optional, even mid-streak
+- **Date**: 2026-05-24
+- **Trigger**: Iter 46 of an autonomous /loop session (~14 closes deep). User: "Men nu skippar du ju planning stagen eller?" After iter-2 correction in same session, I drifted again: iters 33–45 jumped straight to implementation without writing `tasks/todo.md` first. The Step 0 + plan write to `tasks/todo.md` was happening only in my head, not on disk.
+- **Rule**:
+  1. `/sprint-execute` Phase 1 ALWAYS writes the plan to `tasks/todo.md` before any code. This is not optional, even for "obviously trivial" tickets.
+  2. Streak/momentum is not a license to skip discipline. A 14-iter streak is exactly when discipline matters most — drift compounds.
+  3. The plan-file is also the durable audit trail. Mental plans evaporate; `tasks/todo.md` survives context compactions, parallel sessions, and future-Claude re-reads.
+- **Example**: Iter 46 BUT-883 codemod — wrote retroactive plan to `tasks/todo.md` after pushback. For iter 47+: plan-file FIRST, then implementation, even for 1-file changes.
+- **Files**: `tasks/todo.md` (always), `lessons.md` (this entry)
+
 ### [Workflow] Bash `cd` persists across calls — use absolute paths for greps
 - **Date**: 2026-05-04
 - **Trigger**: During BUT-555 sembast audit, my `grep -rn "sembast" lib/` returned zero matches even though `lib/core/cache/cache_dao_stub.dart` clearly imports `package:sembast_web/sembast_web.dart`. Reason: the previous Bash call ran `cd functions && npm run build`, so the shell session was inside `functions/` when the grep ran — `lib/` resolved to `functions/lib/`, which doesn't contain those files. I almost dropped the deps thinking they were dead.

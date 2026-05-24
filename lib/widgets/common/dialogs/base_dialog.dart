@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
 abstract class BaseDialog<T> extends StatefulWidget {
@@ -105,14 +106,10 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           foregroundColor: cs.surfaceContainerHighest,
         ),
         icon: _isLoading
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(cs.surfaceContainerHighest),
-                ),
+            ? LoadingIndicator(
+                size: 16,
+                strokeWidth: 2,
+                color: cs.surfaceContainerHighest,
               )
             : Icon(widget.primaryActionIcon ?? Icons.delete),
         label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
@@ -122,14 +119,10 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         onPressed: _isLoading ? null : _onPrimaryAction,
         style: FilledButton.styleFrom(backgroundColor: buttonColor),
         icon: _isLoading
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(cs.surfaceContainerHighest),
-                ),
+            ? LoadingIndicator(
+                size: 16,
+                strokeWidth: 2,
+                color: cs.surfaceContainerHighest,
               )
             : Icon(widget.primaryActionIcon ?? Icons.check),
         label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
@@ -406,13 +399,10 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
         onPressed: isLoading ? null : _performAction,
         style: actionStyle,
         icon: isLoading
-            ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: cs.surfaceContainerHighest,
-                ),
+            ? LoadingIndicator(
+                size: 16,
+                strokeWidth: 2,
+                color: cs.surfaceContainerHighest,
               )
             : widget.actionButtonIcon,
         label:
@@ -422,11 +412,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
       return FilledButton.icon(
         onPressed: isLoading ? null : _performAction,
         icon: isLoading
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+            ? const LoadingIndicator(size: 16, strokeWidth: 2)
             : widget.actionButtonIcon,
         label:
             Text(isLoading ? loadingText : widget.actionButtonLabel(context)),
@@ -504,7 +490,7 @@ class LoadingDialog extends StatelessWidget {
       child: AlertDialog(
         content: Row(
           children: [
-            const CircularProgressIndicator(),
+            const LoadingIndicator(),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(child: Text(message)),
           ],

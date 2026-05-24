@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -133,7 +134,7 @@ class _ShoppingListSelectionDialogState
             const SizedBox(height: AppDimensions.spacingL),
             if (_isLoading)
               const Center(
-                child: CircularProgressIndicator(),
+                child: LoadingIndicator(),
               )
             else ...[
               // Create new list option
