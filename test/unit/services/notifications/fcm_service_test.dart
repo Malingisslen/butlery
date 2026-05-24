@@ -20,9 +20,12 @@
 library;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
 
 import '../../../test_support/base_unit_test.dart';
@@ -44,6 +47,8 @@ class _RecordingMessaging extends MockFirebaseMessaging {
   final List<String> subscribedTopics = <String>[];
   final List<String> unsubscribedTopics = <String>[];
   int getTokenCalls = 0;
+  int requestPermissionCalls = 0;
+  int deleteTokenCalls = 0;
 
   @override
   Future<String?> getToken({String? vapidKey}) async {
@@ -60,6 +65,63 @@ class _RecordingMessaging extends MockFirebaseMessaging {
   Future<void> unsubscribeFromTopic(String topic) async {
     unsubscribedTopics.add(topic);
   }
+
+  @override
+  Future<NotificationSettings> requestPermission({
+    bool alert = true,
+    bool announcement = false,
+    bool badge = true,
+    bool carPlay = false,
+    bool criticalAlert = false,
+    bool provisional = false,
+    bool sound = true,
+    bool providesAppNotificationSettings = false,
+  }) async {
+    requestPermissionCalls++;
+    return super.requestPermission();
+  }
+
+  @override
+  Future<void> deleteToken() async {
+    deleteTokenCalls++;
+  }
+}
+
+/// BUT-1035: ConsentService test double that captures the listener
+/// registered via [addListener] and exposes [fire] to synchronously
+/// invoke it. mocktail's bare `Mock implements ConsentService` can't
+/// fire its captured callback — this records + replays.
+class _RecordingConsent extends Mock implements ConsentService {
+  VoidCallback? _listener;
+  bool _hasConsent = false;
+
+  /// Toggles what subsequent `hasConsent()` calls return.
+  void setConsent(bool value) => _hasConsent = value;
+
+  /// Invokes the captured listener (the production `_onConsentChanged`).
+  Future<void> fire() async {
+    final cb = _listener;
+    if (cb == null) {
+      throw StateError('No listener captured — call addListener first');
+    }
+    cb();
+    // _onConsentChanged is async; yield to let microtasks resolve before
+    // the test asserts on side effects.
+    await Future<void>.delayed(Duration.zero);
+  }
+
+  @override
+  void addListener(VoidCallback listener) {
+    _listener = listener;
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    if (identical(_listener, listener)) _listener = null;
+  }
+
+  @override
+  Future<bool> hasConsent(ConsentPurpose purpose) async => _hasConsent;
 }
 
 void main() {
@@ -402,6 +464,70 @@ void main() {
           onMessageOpenedApp: (_) {},
         );
         // Nothing to verify on a null consent; the assertion is "no throw."
+      });
+    });
+
+    group('Consent change handler (BUT-1035)', () {
+      test('grant path requests permissions + refreshes token', () async {
+        final recording = _RecordingMessaging()
+          ..setFirebaseMessagingState(token: 'fresh-token');
+        service = FCMService(messaging: recording);
+        final consent = _RecordingConsent()..setConsent(false);
+
+        await service.bindUserContext(consentService: consent);
+        // Pre-fire: no work done.
+        expect(recording.requestPermissionCalls, 0);
+
+        // Flip to granted and fire.
+        consent.setConsent(true);
+        await consent.fire();
+
+        // Permission requested once, token retrieved.
+        expect(recording.requestPermissionCalls, 1);
+        expect(await service.getToken(), 'fresh-token');
+      });
+
+      test('revoke path deletes SDK token + clears cached value', () async {
+        final recording = _RecordingMessaging()
+          ..setFirebaseMessagingState(token: 'live-token');
+        service = FCMService(messaging: recording);
+        final consent = _RecordingConsent()..setConsent(true);
+
+        // Seed: grant first so revoke has a state to undo.
+        await service.bindUserContext(consentService: consent);
+        await consent.fire();
+        expect(recording.requestPermissionCalls, 1);
+        // Pre-revoke: token cached.
+        expect(await service.getToken(), 'live-token');
+
+        // Now revoke.
+        consent.setConsent(false);
+        await consent.fire();
+
+        expect(recording.deleteTokenCalls, 1);
+        // After revoke, _currentToken is null. Next getToken triggers a
+        // fresh SDK call — the cache is empty, not stale.
+        await service.getToken();
+        expect(recording.getTokenCalls, greaterThan(0));
+      });
+
+      test('token-refresh handler bypasses cache (test seam)', () async {
+        final recording = _RecordingMessaging()
+          ..setFirebaseMessagingState(token: 'stale-token');
+        service = FCMService(messaging: recording);
+
+        // Seed: cache the initial token.
+        await service.getToken();
+        final initialCalls = recording.getTokenCalls;
+
+        // Token-refresh stream fires — production code assigns
+        // _currentToken = token directly without going through getToken.
+        await service.handleTokenRefreshForTest('rotated-token');
+
+        // Subsequent getToken returns the rotated value without SDK call.
+        expect(await service.getToken(), 'rotated-token');
+        expect(recording.getTokenCalls, initialCalls,
+            reason: 'token-refresh path must not re-query the SDK');
       });
     });
 

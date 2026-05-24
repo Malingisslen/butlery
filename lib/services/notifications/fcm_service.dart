@@ -413,6 +413,13 @@ class FCMService extends BaseService {
     }
   }
 
+  /// BUT-1035 test seam: exercises the token-refresh-stream handler
+  /// without running [initialize] (which touches static FirebaseMessaging
+  /// streams that the SDK doesn't expose for mocking).
+  @visibleForTesting
+  Future<void> handleTokenRefreshForTest(String token) =>
+      _onTokenRefresh(token);
+
   Future<void> _onTokenRefresh(String token) async {
     try {
       AppLogger.info(
