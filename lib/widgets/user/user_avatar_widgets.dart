@@ -112,7 +112,16 @@ class UserAvatarWidgets {
                   ),
                 ),
               )
-            : avatarWidget;
+            // BUT-908: also label the non-tappable avatar so screen readers
+            // announce the person's name instead of a generic "image".
+            // image:true + excludeSemantics:true keeps the inner Container
+            // from leaking a duplicate "image" announcement.
+            : Semantics(
+                label: context.l10n.a11yProfileImage(displayName),
+                image: true,
+                excludeSemantics: true,
+                child: avatarWidget,
+              );
       },
     );
   }
