@@ -74,6 +74,74 @@ class WeeklyMenuPlanService extends BaseService {
     );
   }
 
+  /// BUT-996: copy every entry from [fromWeekStart] into [toWeekStart].
+  ///
+  /// Additive, not destructive — entries already on the destination week
+  /// are preserved. Matches the user mental model "use last week as a
+  /// starting point, then tweak", and means a misclick can't wipe a
+  /// half-built menu the user already started for next week.
+  ///
+  /// Duplicate detection: an entry is skipped if the destination already
+  /// has an entry with the same (day, slot, recipeId) triple. Lets the
+  /// caller invoke copyWeek twice safely without inflating the plan with
+  /// dupes.
+  ///
+  /// Each copied entry gets a fresh UUID via `WeeklyMenuPlanEntry.create`
+  /// so the two weeks share recipes-by-id but never share an entry-id.
+  ///
+  /// Returns the count of entries actually copied (0 if source missing /
+  /// empty, source == dest, or every entry already exists in dest).
+  Future<int> copyWeek({
+    required DateTime fromWeekStart,
+    required DateTime toWeekStart,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) return 0;
+    final normalizedFrom = IsoWeekUtils.weekStartOf(fromWeekStart);
+    final normalizedTo = IsoWeekUtils.weekStartOf(toWeekStart);
+    if (normalizedFrom == normalizedTo) return 0;
+
+    final result = await executeServiceOperation<int>(
+      () async {
+        final source = await _repository.fetchForWeek(
+          userId: userId,
+          weekStart: normalizedFrom,
+        );
+        if (source == null || source.entries.isEmpty) return 0;
+
+        final destFetched = await _repository.fetchForWeek(
+          userId: userId,
+          weekStart: normalizedTo,
+        );
+        var dest = destFetched ??
+            WeeklyMenuPlan.empty(userId: userId, date: normalizedTo);
+
+        final newEntries = <WeeklyMenuPlanEntry>[];
+        for (final src in source.entries) {
+          final duplicate = dest.entries.any((e) =>
+              e.day == src.day &&
+              e.slot == src.slot &&
+              e.recipeId == src.recipeId);
+          if (duplicate) continue;
+          newEntries.add(WeeklyMenuPlanEntry.create(
+            day: src.day,
+            slot: src.slot,
+            recipeId: src.recipeId,
+            recipeTitle: src.recipeTitle,
+            recipeImageUrl: src.recipeImageUrl,
+          ));
+        }
+        if (newEntries.isEmpty) return 0;
+
+        dest = dest.copyWith(entries: [...dest.entries, ...newEntries]);
+        await _repository.save(dest);
+        return newEntries.length;
+      },
+      operationName: 'copyWeek',
+    );
+    return result ?? 0;
+  }
+
   /// BUT-893: scrub [recipeId] from every weekly plan owned by the current
   /// user. Returns the number of plans actually changed. Safe to call on a
   /// recipe that was never on any plan (returns 0). Designed to be invoked
