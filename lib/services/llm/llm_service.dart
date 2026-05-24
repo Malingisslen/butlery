@@ -123,8 +123,11 @@ class LlmService extends BaseService {
     );
 
     if (response.success) {
+      // BUT-804 HIGH-AI2: do NOT log recipe.title — user recipes can carry
+      // personal/health context (e.g. "Anna's gluten-free diet plan",
+      // "post-chemo soft food"). Log just the cost signal.
       AppLogger.info(
-        'LlmService: Successfully extracted "${response.recipe?.title}" '
+        'LlmService: Successfully extracted recipe '
         '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
       );
     }
@@ -192,8 +195,9 @@ class LlmService extends BaseService {
     );
 
     if (response.success) {
+      // BUT-804 HIGH-AI2: see structureRecipe — no recipe.title in logs.
       AppLogger.info(
-        'LlmService: Successfully extracted "${response.recipe?.title}" from image '
+        'LlmService: Successfully extracted recipe from image '
         '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
       );
     } else if (response.rawText != null) {

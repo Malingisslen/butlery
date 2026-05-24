@@ -51,7 +51,11 @@ class QuantityParser {
   /// - Decimal numbers: "2,5" → 2.5, "3.14" → 3.14
   /// - Whole numbers: "400" → 400.0
   ///
-  /// Unicode fraction map covering all common fraction characters.
+  /// Unicode fraction map covering all common vulgar-fraction characters.
+  /// BUT-804 HIGH-AI7: extended with ⅙ ⅚ ⅐ ⅑ ⅒ ⅘ — the previously-missing
+  /// entries from the Unicode "Number Forms" block (U+2150–U+215E).
+  /// Without these, ingredient lines like "⅙ tsk salt" parsed as 1.0
+  /// (the parse() fallback) instead of 0.1667.
   static const _unicodeFractions = {
     '½': 0.5,
     '¼': 0.25,
@@ -65,6 +69,12 @@ class QuantityParser {
     '⅕': 0.2,
     '⅖': 0.4,
     '⅗': 0.6,
+    '⅘': 0.8,
+    '⅙': 1 / 6,
+    '⅚': 5 / 6,
+    '⅐': 1 / 7,
+    '⅑': 1 / 9,
+    '⅒': 0.1,
   };
 
   static final _asciiFractionPattern = RegExp(r'^\d+/\d+$|^\d+\s+\d+/\d+$');
