@@ -1,49 +1,48 @@
 # Sprint Backlog
 
-## Sprint: iter-47 — BUT-917 persist comment-composer draft — 2026-05-24 (Sun)
+## Sprint: iter-48 — BUT-915 persist text-import draft — 2026-05-24 (Sun)
 
-Theme: Plan-fil FÖRST per iter-46 lessons-entry. Picked BUT-917 (Medium-priority, autonomous-safe, single-form scope).
+Theme: Mirror BUT-917 draft-pattern (iter-47) onto the text-import flow. Plan-fil FÖRST per iter-46 lessons.
 
 ### Step 0 — premise verification
 
-- BUT-917 ticket fortfarande giltig: `comment_form_widget.dart:78-92` har `TextField(onChanged: socialViewModel.updateNewCommentText)` — state är memory-only via `SocialCommentsManager._newCommentText`. Confirmed at line 23 + 145-148 of `lib/viewmodels/social_recipe/social_comments_manager.dart`.
-- Ticket föreslår "via AutoSaveManager (#1)" — referrerar till BUT-904 (Reusable AutoSaveManager EPIC). Den är INTE shipped. Autonomt-scope-säkert: använd `SharedPreferences` direkt i denna form, file follow-up att consolidera när BUT-904 landar.
-- Per-recipe draft key (per ticket): `comment_draft_v1_<recipeId>`.
+- BUT-915 ticket valid: `lib/viewmodels/text_import_viewmodel.dart` exposes `updateInputText` + state is memory-only via `ImportBaseViewModel.inputText`.
+- The actual VIEW is `lib/views/fran_sociala_medier_view.dart` (text-import surfaces as the "från sociala medier" import flow — single consumer of `TextImportViewModel` confirmed via grep).
+- View is already StatefulWidget with `_textController` lifecycle (initState + dispose) — clean seam for persistence hooks.
 
 ### Design choices
 
-- **Widget shape**: `CommentFormWidget` är StatelessWidget. Konvertera till StatefulWidget för att äga `TextEditingController` lifecycle (initState init + dispose) + load-on-mount/save-on-change/clear-on-post-success hooks.
-- **No debounce**: comments are short (typically < 200 chars), write volume per recipe is low — eager save på varje keystroke är acceptabelt.
-- **Don't namespace by userId**: SharedPreferences clears on logout per existing app convention. Per-recipe key is sufficient.
-- **Reply state separate**: `_replyToCommentId` är inte persisted — om reply-target försvinner mellan sessioner är det inte värt att försöka återupprätta. Draft text följer dock med, så user kan paste-in-igen.
+- **Key**: single global `text_import_draft_v1`. Unlike comment-draft (per-recipe), text-import is a CREATE flow with one-at-a-time user intent. No multi-instance concern.
+- **What to persist**: `inputText` only. Per ticket also mentions `parsedRecipe` but that's parser-output (cheap to regenerate from inputText) and more complex to serialize. File follow-up if real-user "lost-parsed-result" pain materializes.
+- **Don't persist when initialText provided**: if the user came from URL-import sharing a snippet, the `initialText` widget arg takes precedence over any saved draft — they're starting fresh content.
+- **Clear-on-success**: when `parseText()` succeeds + navigation to SkrivSjalv happens, the user has explicitly moved past the input stage. Drop the prefs key there.
 
 ### Ship this sprint
 
-- [ ] **A1. BUT-917** — Persist comment-composer draft per recipe.
-  - Convert `CommentFormWidget` Stateless→Stateful + own `TextEditingController`.
-  - `initState`: async load prefs key `comment_draft_v1_<recipeId>`, om non-empty: set controller.text + sync `socialViewModel.updateNewCommentText(savedText)` så send-knappen aktiveras direkt.
-  - `onChanged`: pipe to both `socialViewModel.updateNewCommentText` AND `SharedPreferences.setString(key, value)`.
-  - Post-success path (after `await socialViewModel.postComment(recipeId)`): `controller.clear()` + `SharedPreferences.remove(key)`.
-  - Dispose: `controller.dispose()` (DON'T clear prefs — draft survives widget teardown).
-- [ ] **A2. Tests** — Add widget-test or unit-test pinning the draft load→edit→post-clear cycle. Mock SharedPreferences via `SharedPreferences.setMockInitialValues({})` pattern already used in `social_events_tracker_milestone_test.dart`.
+- [ ] **A1. BUT-915** — Persist text-import inputText.
+  - Add `_draftPrefsKey = 'text_import_draft_v1'` const + 3 helper methods (`_loadDraft`, `_saveDraft`, `_clearDraft`) mirroring `comment_form_widget.dart`.
+  - `initState` post-frame callback: if `initialText` is null/empty, async-load prefs. If non-empty: set `_textController.text` + `viewModel.updateInputText(saved)`.
+  - `onChanged` on the text field: existing `viewModel.updateInputText` PLUS new `_saveDraft(text)` call (eager save, no debounce — pasted recipes are larger than comments but write volume is still low per second).
+  - `_parseAndNavigate` success path: `_clearDraft()` before the `Navigator.push`.
+  - Dispose: controller-only; don't clear prefs.
 
 ### Acceptance
 
-- [ ] User types comment → navigates away → returns → draft text in field.
-- [ ] User posts comment → returns later → field empty (draft cleared on success).
-- [ ] Two recipes open: drafts isolated per `recipeId`.
+- [ ] User pastes long recipe text → backgrounds app → returns → text in field.
+- [ ] User parses + navigates to edit-view → returns to social-media-import later → field empty.
+- [ ] Sharing snippet via URL-import passes initialText → draft NOT loaded (initialText wins).
 
 ### Post-Sprint Steps
 
 - [ ] `flutter analyze` clean
-- [ ] Tier-2: `code-reviewer` + `testing-specialist` (lib/ + new test)
+- [ ] Tier-2: `code-reviewer`
 - [ ] `/code-review high` (simplify marker)
 - [ ] Commit + push
-- [ ] Stäng BUT-917 i Linear → Done
-- [ ] File BUT-XXX follow-up: migrate this form to `AutoSaveManager` (BUT-904) when that EPIC lands
+- [ ] Stäng BUT-915 i Linear → Done
+- [ ] File follow-up if `parsedRecipe` persistence becomes needed (currently YAGNI — text re-parses fast)
 
 ---
 
-## Archived iter-46 (commit `a1c2d658d`) — 2026-05-24 (Sun)
+## Archived iter-47 (commit `ae4b25143`) — 2026-05-24 (Sun)
 
-BUT-883 CPI Phase 2: 18 sites of inline `SizedBox + CircularProgressIndicator` migrated to `LoadingIndicator` across `lib/widgets/common/buttons/action_buttons.dart` + 9 dialog files. Used base constructor (not `.small()` — padding inflation issue). +91 / -103 net delta. BUT-883 → Done.
+BUT-917 comment-composer draft persist. `CommentFormWidget` Stateless→Stateful + per-recipe `comment_draft_v1_<recipeId>` SharedPreferences. Load/save/clear lifecycle. Bonus: caught leftover CPI site on send button. +138 / -43. BUT-917 → Done. BUT-1058 filed for widget test.
