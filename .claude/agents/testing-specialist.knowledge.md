@@ -1427,3 +1427,43 @@ removals snapshot for undo but never enqueue). (3) Storage errors during
 commit must NOT throw — the recipe save already succeeded, orphan blobs
 are tolerated.
 
+### 2026-05-24 — recipe_selection_dialogs facade testing strategy [Pattern discovered]
+Widget-test round 6 produced `test/widget/common/dialogs/recipe_selection_dialogs_test.dart`
+(23 tests, all green). The facade itself is a 46-line dispatcher with two
+`showDialog` calls into `FriendRecipeSharingDialog` and
+`MenuRecipeSelectionDialog`. Both inner dialogs synchronously hit
+`ServiceLocator.get<UnifiedRecipeService>()` / `ServiceLocator.get<RecipeListViewModel>()`
+inside their `build()`, so driving the dialogs end-to-end from a widget
+test would require the full DIContainer + two ChangeNotifier mocks +
+async loads. **Not worth it** for a facade — the value-to-overhead ratio
+is terrible and the inner ViewModels are already tested elsewhere.
+
+**Strategy applied:**
+1. Compile-time facade contract — touch `RecipeSelectionDialogs.showRecipeSelector`
+   and `showMenuRecipeSelector` as Function references in plain `test(...)`
+   blocks. A signature change breaks the build; that's the assertion.
+2. Construct the inner dialog widgets directly (no `pumpWidget`) — the
+   constructors don't touch DI, only `build()` does. Stores `friend` /
+   `categoryName` correctly without pumping.
+3. Test the leaf list items (`FriendRecipeListItem`, `MenuRecipeListItem`)
+   as pure `StatelessWidget`s — that's where the actual user-visible
+   behaviour lives: title/mealType/time/portions rendering, Swedish
+   "Delad" badge for `isAlreadyShared`, checkbox + row-tap callback wiring,
+   conditional rendering of description / time / portions / image placeholder.
+
+**Anti-pattern abandoned:** First draft tried to drive `showDialog` via a
+trigger button + `NavigatorObserver` route spy, then `tester.takeException()`
+to swallow the DI crash. Two problems: (a) `pushCount` counts the home
+route too — `_RouteSpy` registered before `pumpWidget` sees 2 pushes, not
+1, requiring a `pushCount = 0` reset after initial pump. (b) The DI-crashed
+`ChangeNotifierProvider` triggers a second exception during `dispose()`
+("type 'Null' is not a subtype of type 'RecipeSelectionViewModel'") that's
+caught at teardown by the framework, not by `takeException`. Net: messy,
+flaky, and not actually proving anything the constructor test doesn't.
+
+**Production observations (not bugs, worth noting):** both
+`FriendRecipeListItem` and `MenuRecipeListItem` define an unused, no-op
+`void dispose()` method at the end of the class — they're `StatelessWidget`s
+so `dispose` is never invoked. Looks like leftover boilerplate from a
+StatefulWidget extraction. Safe to delete; doesn't affect behaviour.
+

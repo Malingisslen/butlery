@@ -972,17 +972,20 @@ void main() {
       });
 
       test(
-          'undoBulkApplyPersonalTag is safe after an apply and the second '
-          'undo on the consumed snapshot is also safe', () async {
-        // Note: this test does NOT prove restoration semantics. The shared
-        // `MockUnifiedRecipeService.updateRecipe` is a concrete @override
-        // returning true without mutating its internal _recipes list, so
-        // `getRecipeById` during undo returns the original pre-apply state
-        // and the restore call is a no-op end-to-end. What this test proves
-        // is the snapshot lifecycle: first undo runs cleanly, second undo
-        // on the cleared snapshot is also a no-op (no null deref). A real
-        // restoration test needs a mock that mutates on updateRecipe — see
-        // BUT-1030 follow-up.
+          'undoBulkApplyPersonalTag restores prior personalTagIds + '
+          'personalTags, and a second undo on the consumed snapshot is a '
+          'safe no-op', () async {
+        // BUT-1030: wire updateRecipe to mutate mock state so restoration
+        // semantics become observable. Without this stub, the production
+        // `try/catch (_)` in bulkApplyPersonalTag swallows MissingStubError
+        // and the snapshot ends up empty — making the undo a vacuous no-op.
+        when(() => mockRecipeService.updateRecipe(any()))
+            .thenAnswer((invocation) async {
+          final r = invocation.positionalArguments[0] as Recipe;
+          mockRecipeService.applyRecipeWriteToState(r);
+          return true;
+        });
+
         final recipes = [
           RecipeFactory.build(id: 'r1', personalTagIds: []),
           RecipeFactory.build(id: 'r2', personalTagIds: []),
@@ -993,13 +996,29 @@ void main() {
         viewModel.enterSelectionMode('r1');
         viewModel.toggleSelection('r2');
 
-        await viewModel.bulkApplyPersonalTag(
+        final modified = await viewModel.bulkApplyPersonalTag(
           tagId: 'quick',
           tagName: 'Quick',
         );
 
+        List<String> tagIdsOf(String id) =>
+            mockRecipeService.getRecipeById(id)!.core.personalTagIds ??
+            const <String>[];
+
+        // Apply landed on both recipes.
+        expect(modified, 2);
+        expect(tagIdsOf('r1'), contains('quick'));
+        expect(tagIdsOf('r2'), contains('quick'));
+
         await viewModel.undoBulkApplyPersonalTag();
+
+        // Undo restored both recipes to their empty-tag prior state.
+        expect(tagIdsOf('r1'), isEmpty);
+        expect(tagIdsOf('r2'), isEmpty);
+
+        // Second undo on the cleared snapshot is a safe no-op.
         await viewModel.undoBulkApplyPersonalTag();
+        expect(tagIdsOf('r1'), isEmpty);
       });
     });
 

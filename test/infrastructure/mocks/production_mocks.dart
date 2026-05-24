@@ -990,6 +990,26 @@ class MockUnifiedRecipeService extends Mock
     if (personalOperations != null) _personalOperations = personalOperations;
   }
 
+  /// Test-time mock-equivalent of a Firestore listener firing a write.
+  /// Use from a `when()` stub when a test needs state-after-write
+  /// assertions; otherwise `updateRecipe` is a mocktail no-op.
+  void applyRecipeWriteToState(Recipe recipe) {
+    final i = _recipes.indexWhere((r) => r.id == recipe.id);
+    _recipes = i >= 0
+        ? (List<Recipe>.of(_recipes)..[i] = recipe)
+        : <Recipe>[..._recipes, recipe];
+    notifyListeners();
+  }
+
+  /// Paired with [applyRecipeWriteToState] for delete flows. No-op when
+  /// the id isn't present, so callers don't get spurious notifications.
+  void removeRecipeFromState(String recipeId) {
+    final next = _recipes.where((r) => r.id != recipeId).toList();
+    if (next.length == _recipes.length) return;
+    _recipes = next;
+    notifyListeners();
+  }
+
   final _mockSocial = FakeSocialRecipeOperations();
   final _mockRealtime = MockRealtimeRecipeOperations();
 
