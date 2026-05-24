@@ -7,6 +7,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 /// GroupDetailAppBar - App bar component
@@ -29,11 +30,7 @@ class GroupDetailAppBar {
         if (isLoading)
           const Padding(
             padding: EdgeInsets.all(AppDimensions.paddingL),
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: LoadingIndicator(size: 20, strokeWidth: 2),
           )
         else
           IconButton(

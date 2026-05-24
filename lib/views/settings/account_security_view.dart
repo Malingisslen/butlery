@@ -6,6 +6,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 class AccountSecurityView extends StatefulWidget {
   const AccountSecurityView({super.key});
@@ -214,11 +215,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           child: FilledButton(
             onPressed: _viewModel.isLoading ? null : _handleChangePassword,
             child: _viewModel.isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const LoadingIndicator(size: 20, strokeWidth: 2)
                 : Text(context.l10n.accountSecurityChangePassword),
           ),
         ),
@@ -292,11 +289,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           child: FilledButton(
             onPressed: _viewModel.isLoading ? null : _handleChangeEmail,
             child: _viewModel.isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const LoadingIndicator(size: 20, strokeWidth: 2)
                 : Text(context.l10n.accountSecurityChangeEmail),
           ),
         ),

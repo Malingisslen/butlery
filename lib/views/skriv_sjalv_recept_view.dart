@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/first_recipe_celebration_overlay.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -330,11 +331,8 @@ class _SkrivSjalvReceptViewContentState
               const Padding(
                 padding:
                     EdgeInsetsDirectional.only(end: AppDimensions.paddingM),
-                child: SizedBox(
-                  width: AppDimensions.iconSizeS,
-                  height: AppDimensions.iconSizeS,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                child: LoadingIndicator(
+                    size: AppDimensions.iconSizeS, strokeWidth: 2),
               )
             else if (viewModel.hasRecentAutoSave)
               Padding(

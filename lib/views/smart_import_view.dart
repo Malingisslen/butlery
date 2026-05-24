@@ -20,6 +20,7 @@ import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
@@ -772,15 +773,10 @@ class _ActionSection extends StatelessWidget {
             onPressed:
                 viewModel.canImport && !viewModel.isImporting ? onImport : null,
             icon: viewModel.isImporting
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(
-                        theme.colorScheme.onPrimary,
-                      ),
-                    ),
+                ? LoadingIndicator(
+                    size: 18,
+                    strokeWidth: 2,
+                    color: theme.colorScheme.onPrimary,
                   )
                 : const Icon(Icons.download),
             label: Text(viewModel.isImporting

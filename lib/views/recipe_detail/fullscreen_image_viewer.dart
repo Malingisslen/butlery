@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Fullscreen image viewer for recipe images
 /// This widget provides a full-screen image viewing experience with:
@@ -123,7 +124,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                         fit: BoxFit.contain,
                         memCacheWidth: cacheWidth,
                         placeholder: (_, __) => Center(
-                          child: CircularProgressIndicator(
+                          child: LoadingIndicator(
                             color: cs.surfaceContainerHighest,
                           ),
                         ),

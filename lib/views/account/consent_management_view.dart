@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -396,13 +397,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         ),
       ),
       child: viewModel.isSaving
-          ? SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(cs.onPrimary),
-              ),
+          ? LoadingIndicator(
+              size: 20,
+              strokeWidth: 2,
+              color: cs.onPrimary,
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,

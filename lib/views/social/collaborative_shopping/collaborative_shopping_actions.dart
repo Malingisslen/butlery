@@ -9,6 +9,7 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -155,11 +156,8 @@ class CollaborativeShoppingActions extends BaseActionHandler
         suffixIcon: viewModel.isAddingItem
             ? const Padding(
                 padding: EdgeInsets.all(AppDimensions.spacingS),
-                child: SizedBox(
-                  width: AppDimensions.iconSizeS,
-                  height: AppDimensions.iconSizeS,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                child: LoadingIndicator(
+                    size: AppDimensions.iconSizeS, strokeWidth: 2),
               )
             : null,
       ),

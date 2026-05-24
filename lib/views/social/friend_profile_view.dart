@@ -21,6 +21,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -217,12 +218,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                           ? null
                                           : () => _startConversation(context),
                                       icon: _isStartingConversation
-                                          ? const SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(
-                                                  strokeWidth: 2),
-                                            )
+                                          ? const LoadingIndicator(
+                                              size: 16, strokeWidth: 2)
                                           : const Icon(Icons.message),
                                       label:
                                           Text(context.l10n.socialSendMessage),

@@ -27,6 +27,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -232,11 +233,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                       padding: EdgeInsetsDirectional.only(
                           end: AppDimensions.spacingL),
                       child: Center(
-                        child: SizedBox(
-                          width: AppDimensions.iconSizeS,
-                          height: AppDimensions.iconSizeS,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
+                        child: LoadingIndicator(
+                            size: AppDimensions.iconSizeS, strokeWidth: 2),
                       ),
                     );
                   } else if (hasRecentAutoSave) {

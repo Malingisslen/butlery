@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   const OnboardingImportPage({super.key});
@@ -117,13 +118,10 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
                   ? () => _handleImport(viewModel)
                   : null,
               icon: viewModel.isImporting
-                  ? SizedBox(
-                      width: AppDimensions.iconSizeS,
-                      height: AppDimensions.iconSizeS,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: cs.onPrimary,
-                      ),
+                  ? LoadingIndicator(
+                      size: AppDimensions.iconSizeS,
+                      strokeWidth: 2,
+                      color: cs.onPrimary,
                     )
                   : const Icon(Icons.download),
               label: Text(viewModel.isImporting

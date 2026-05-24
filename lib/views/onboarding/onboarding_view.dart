@@ -15,6 +15,7 @@ import 'package:butlery/views/onboarding/onboarding_welcome_page.dart';
 import 'package:butlery/views/onboarding/onboarding_allergen_page.dart';
 import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 import 'package:butlery/views/onboarding/onboarding_import_page.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 class OnboardingView extends StatelessWidget {
   /// When non-null, the wizard jumps to this page index on first frame
@@ -229,13 +230,10 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                           .withValues(alpha: AppDimensions.opacityHalf),
                     ),
                     child: viewModel.isCompleting
-                        ? SizedBox(
-                            width: AppDimensions.iconSizeM,
-                            height: AppDimensions.iconSizeM,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: cs.surfaceContainerHighest,
-                            ),
+                        ? LoadingIndicator(
+                            size: AppDimensions.iconSizeM,
+                            strokeWidth: 2,
+                            color: cs.surfaceContainerHighest,
                           )
                         : Text(
                             viewModel.isLastPage

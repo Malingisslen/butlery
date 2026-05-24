@@ -23,6 +23,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
@@ -270,7 +271,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   placeholder: (context, url) => ColoredBox(
                                     color: cs.surfaceContainerHighest,
                                     child: const Center(
-                                      child: CircularProgressIndicator(),
+                                      child: LoadingIndicator(),
                                     ),
                                   ),
                                   errorWidget: (context, url, error) {

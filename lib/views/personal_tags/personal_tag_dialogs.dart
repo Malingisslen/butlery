@@ -28,6 +28,7 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
@@ -328,11 +329,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonCreate),
               ),
             ],
@@ -396,11 +393,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonCreate),
               ),
             ],
@@ -480,11 +473,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonSave),
               ),
             ],
@@ -550,11 +539,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonDelete),
               ),
             ],
@@ -711,11 +696,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonCreate),
               ),
             ],
@@ -780,11 +761,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonSave),
               ),
             ],
@@ -840,11 +817,7 @@ abstract final class PersonalTagDialogs {
                         }
                       },
                 child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const LoadingIndicator(size: 16, strokeWidth: 2)
                     : Text(context.l10n.commonDelete),
               ),
             ],
