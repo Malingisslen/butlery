@@ -32,7 +32,11 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+
+import 'package:clock/clock.dart';
+
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/heic_converter.dart';
@@ -240,9 +244,20 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
         );
       }
 
-      // Step 5: Return success with comprehensive metadata and warnings
+      // Step 5: Return success with comprehensive metadata and warnings.
+      // BUT-922: override the text-strategy's textPaste artefact with the
+      // photoOcr artefact so re-extract knows to feed the OCR output
+      // (re-OCR'ing the original image would need raw bytes which we
+      // don't store — see source_artefact.dart docstring).
+      final recipeWithArtefact = textResult.recipe!.copyWith(
+        sourceArtefact: SourceArtefact(
+          type: SourceArtefactType.photoOcr,
+          payload: ocrResult.text,
+          fetchedAt: clock.now(),
+        ),
+      );
       return ImportResult.success(
-        textResult.recipe!,
+        recipeWithArtefact,
         warnings: _buildWarnings(
           ocrResult: ocrResult,
           textResult: textResult,

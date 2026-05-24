@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
@@ -50,13 +51,23 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       final normalized = normalizeText(input);
       final preprocessed = TextImportNormalizer.preprocessText(normalized);
 
-      final recipe = _parseTextToRecipe(preprocessed);
+      final parsed = _parseTextToRecipe(preprocessed);
 
-      if (recipe == null) {
+      if (parsed == null) {
         return ImportResult.failure(
           'Could not parse recipe from text. Please check the format.',
         );
       }
+
+      // BUT-922: persist the original pasted text as the source artefact
+      // so re-extract can reparse without asking the user to repaste.
+      final recipe = parsed.copyWith(
+        sourceArtefact: SourceArtefact(
+          type: SourceArtefactType.textPaste,
+          payload: input,
+          fetchedAt: clock.now(),
+        ),
+      );
 
       final warnings = <String>[];
       if (!isValidRecipeName(recipe.title)) {

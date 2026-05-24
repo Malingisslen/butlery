@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
@@ -226,7 +227,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;
 
-    final recipe = textResult.recipe!.copyWith(sourceUrl: url);
+    final recipe = textResult.recipe!.copyWith(
+      sourceUrl: url,
+      sourceArtefact: SourceArtefact(
+        type: SourceArtefactType.url,
+        payload: url,
+        fetchedAt: clock.now(),
+      ),
+    );
     return ImportResult.success(
       recipe,
       warnings: [
@@ -250,7 +258,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;
 
-    final recipe = textResult.recipe!.copyWith(sourceUrl: url);
+    final recipe = textResult.recipe!.copyWith(
+      sourceUrl: url,
+      sourceArtefact: SourceArtefact(
+        type: SourceArtefactType.url,
+        payload: url,
+        fetchedAt: clock.now(),
+      ),
+    );
     return ImportResult.success(
       recipe,
       warnings: [
@@ -349,6 +364,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         mealType: 'Middag',
         imageUrls: parsed.imageUrl != null ? [parsed.imageUrl!] : [],
         sourceUrl: url,
+        sourceArtefact: SourceArtefact(
+          type: SourceArtefactType.url,
+          payload: url,
+          fetchedAt: clock.now(),
+        ),
         createdAt: clock.now(),
         updatedAt: clock.now(),
         createdBy: '',
