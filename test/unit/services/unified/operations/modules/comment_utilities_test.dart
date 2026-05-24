@@ -529,10 +529,14 @@ void main() {
           CommentUtilities.getCommentAge(now.subtract(Duration(days: 2))),
           equals('2d'),
         );
-        expect(
-          CommentUtilities.getCommentAge(now.subtract(Duration(days: 45))),
-          equals('1mån'),
+        // BUT-1047: ContextualTimeFormatter.compact promotes past 7d to
+        // DateFormat.MMMd. Assert promotion happened (not the legacy
+        // "1mån") + contains a month-name letter run.
+        final aged = CommentUtilities.getCommentAge(
+          now.subtract(Duration(days: 45)),
         );
+        expect(aged, isNot(equals('1mån')));
+        expect(aged, matches(RegExp(r'[A-Za-z]{3}')));
       });
 
       test('should generate comment permalink', () {

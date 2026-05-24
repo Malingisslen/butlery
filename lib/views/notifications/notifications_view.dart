@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -129,7 +129,7 @@ class _NotificationTile extends StatelessWidget {
             )
           : null,
       trailing: Text(
-        TimeAgoFormatter.compact(entry.sentAt),
+        ContextualTimeFormatter.compact(entry.sentAt),
         style: AppTextStyles.bodySmall.copyWith(
           color: cs.onSurfaceVariant,
         ),

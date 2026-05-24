@@ -333,7 +333,12 @@ void main() {
         );
         expect(comment.timeAgoText, equals('3 dagar sedan'));
 
-        // Weeks
+        // BUT-1047: past 7-day window, ContextualTimeFormatter.standard
+        // promotes to absolute date (yMMMd). The "2 veckor sedan" branch
+        // belongs to the legacy TimeAgoFormatter behaviour; pin the new
+        // promoted-date contract here instead — exact match is fragile
+        // (locale + clock-dependent), so assert the promoted-format shape
+        // (4-digit year + comma).
         comment = RecipeComment(
           id: 'comment_123',
           recipeId: 'recipe_456',
@@ -342,7 +347,9 @@ void main() {
           text: 'Test',
           createdAt: DateTime.now().subtract(Duration(days: 14)),
         );
-        expect(comment.timeAgoText, equals('2 veckor sedan'));
+        expect(comment.timeAgoText, isNot(contains('sedan')));
+        expect(comment.timeAgoText, matches(RegExp(r'\d{4}$')));
+        expect(comment.timeAgoText, contains(','));
       });
 
       test('should check top-level vs reply status', () {

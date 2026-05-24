@@ -362,7 +362,7 @@ void main() {
         });
       });
 
-      test('should display weeks for older requests', () {
+      test('should promote to absolute date past 7-day window (BUT-1047)', () {
         _atFixedClock(() {
           final request = FriendRequest(
             id: 'req_123',
@@ -371,7 +371,11 @@ void main() {
             sentAt: clock.now().subtract(Duration(days: 14)),
           );
 
-          expect(request.timeAgoText, equals('2 veckor sedan'));
+          // ContextualTimeFormatter.standard promotes past 7d to yMMMd.
+          // Assert promotion happened (no relative suffix) + 4-digit year
+          // present, without pinning the exact locale string.
+          expect(request.timeAgoText, isNot(contains('sedan')));
+          expect(request.timeAgoText, matches(RegExp(r'\d{4}')));
         });
       });
 

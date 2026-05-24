@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/content_report.dart';
@@ -106,7 +106,6 @@ class _ReportTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final localeName = Localizations.localeOf(context).toLanguageTag();
-    final dateFmt = DateFormat.yMMMd(localeName);
 
     return ListTile(
       leading: Icon(_iconForType(report.contentType)),
@@ -116,7 +115,8 @@ class _ReportTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        dateFmt.format(report.createdAt.toLocal()),
+        ContextualTimeFormatter.dateTime(report.createdAt.toLocal(),
+            localeName: localeName),
         style: AppTextStyles.bodySmall,
       ),
       trailing: _StatusBadge(status: report.status, l10n: l10n),

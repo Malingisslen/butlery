@@ -2,7 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -178,12 +178,13 @@ class RecipeComment {
   /// Returns true if the user can edit this comment (is author and comment not deleted).
   bool canBeEditedBy(String userId) => authorId == userId && !isDeleted;
 
-  /// Gets user-friendly Swedish text for how long ago the comment was created.
-  /// Provides localized time-ago display optimized for Swedish users with natural
-  /// language formatting for improved user experience and temporal context.
-  /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
+  /// Localized time-since-created text for comment cards.
+  /// Recent (≤7d): Swedish relative format ('Nu', '5 min sedan',
+  /// '2 tim sedan', '3 dagar sedan'). Older: promoted to absolute date
+  /// ('14 maj 2026') so stale-content rendering stays useful across the
+  /// app (BUT-961 / BUT-1047).
   String get timeAgoText {
-    return TimeAgoFormatter.standard(createdAt);
+    return ContextualTimeFormatter.standard(createdAt);
   }
 
   /// Data persistence and serialization methods for Firestore and caching integration.

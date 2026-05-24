@@ -1,6 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
@@ -212,7 +212,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
   @override
   String get timeAgoText {
-    return TimeAgoFormatter.standard(sharedAt);
+    return ContextualTimeFormatter.standard(sharedAt);
   }
 
   @override

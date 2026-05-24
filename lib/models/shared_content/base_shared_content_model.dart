@@ -1,6 +1,6 @@
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 
 /// Abstract base class for all shared content models providing common functionality.
 abstract class BaseSharedContentModel<TContent> {
@@ -45,7 +45,7 @@ abstract class BaseSharedContentModel<TContent> {
 
   /// Localized text for how long ago the content was shared.
   String get timeAgoText {
-    return TimeAgoFormatter.standard(sharedAt);
+    return ContextualTimeFormatter.standard(sharedAt);
   }
 
   /// Common Firestore fields for all content types.

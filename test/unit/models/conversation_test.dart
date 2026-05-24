@@ -576,11 +576,15 @@ void main() {
         );
         expect(conv.formattedLastActivity, equals('3d'));
 
-        // Days (compact format uses days up to 30)
+        // BUT-1047: ContextualTimeFormatter.compact promotes past 7d to
+        // DateFormat.MMMd (e.g. "Apr 22" / "22 apr"). Assert promotion
+        // happened (not the legacy "14d") + contains a month-name letter
+        // run.
         conv = conversation.copyWith(
           updatedAt: now.subtract(Duration(days: 14)),
         );
-        expect(conv.formattedLastActivity, equals('14d'));
+        expect(conv.formattedLastActivity, isNot(equals('14d')));
+        expect(conv.formattedLastActivity, matches(RegExp(r'[A-Za-z]{3}')));
       });
     });
 

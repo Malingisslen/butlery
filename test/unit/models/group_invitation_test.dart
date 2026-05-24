@@ -369,7 +369,11 @@ void main() {
             sentAt: clock.now().subtract(const Duration(days: 14)),
           );
 
-          expect(invitation.timeAgoText, equals('2 veckor sedan'));
+          // BUT-1047: ContextualTimeFormatter.standard promotes past 7d
+          // to yMMMd. Assert promotion happened (no relative suffix) +
+          // 4-digit year present.
+          expect(invitation.timeAgoText, isNot(contains('sedan')));
+          expect(invitation.timeAgoText, matches(RegExp(r'\d{4}')));
         });
       });
     });

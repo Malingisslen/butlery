@@ -7,7 +7,7 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -180,7 +180,7 @@ class GroupInvitation with JsonSerializableMixin {
   /// language formatting for improved user experience and temporal context.
   /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
   String get timeAgoText {
-    return TimeAgoFormatter.standard(sentAt);
+    return ContextualTimeFormatter.standard(sentAt);
   }
 
   /// Gets user-friendly Swedish text for remaining time until expiration.

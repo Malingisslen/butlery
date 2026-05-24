@@ -152,8 +152,10 @@ jobs:
       # Hard local coverage floor. Codecov is the primary gate, but if the
       # token is unavailable (outage, rotated secret) the dashboard fails
       # open. This step fails the build locally so regressions can't sneak
-      # in. Floors are intentionally loose until we've logged ~5 runs and
-      # can tighten to observed-baseline-minus-2pp.
+      # in. BUT-494: overall floor aligned to the documented Codecov target
+      # of 60% (see "60% target" comment above) so the two gates agree.
+      # Per-area floors stay at their interim values until ~5 CI runs are
+      # observed for baseline-minus-2pp tightening.
       - name: Enforce coverage floors
         if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: |
@@ -173,7 +175,7 @@ jobs:
             awk -v v="$1" -v f="$2" 'BEGIN { exit !(v+0 < f+0) }'
           }
 
-          OVERALL_FLOOR=55.0
+          OVERALL_FLOOR=60.0
           OVERALL_PCT=$(parse_pct coverage/lcov_filtered.info)
           if [ -z "$OVERALL_PCT" ]; then
             echo "::warning::Could not parse overall filtered coverage"

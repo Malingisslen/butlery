@@ -2,7 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -95,7 +95,7 @@ class FriendRequest with JsonSerializableMixin {
   bool get isExpired => isPending && clock.now().isAfter(expiresAt);
 
   String get timeAgoText {
-    return TimeAgoFormatter.standard(sentAt);
+    return ContextualTimeFormatter.standard(sentAt);
   }
 
   Map<String, dynamic> toFirestore() {

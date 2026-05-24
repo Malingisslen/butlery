@@ -2,7 +2,7 @@
 
 import 'dart:async';
 // Firebase imports removed - using repository pattern
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -359,7 +359,7 @@ class CommentUtilities {
 
   /// Get comment age in human readable format
   static String getCommentAge(DateTime createdAt) =>
-      TimeAgoFormatter.compact(createdAt);
+      ContextualTimeFormatter.compact(createdAt);
 
   /// Generate comment permalink
   static String generateCommentPermalink({

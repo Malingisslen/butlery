@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/social/ping.dart';
@@ -414,6 +414,6 @@ class _FeedRow extends StatelessWidget {
 
   String _relativeLabel(DateTime at) {
     final clamped = at.isAfter(clock.now()) ? clock.now() : at;
-    return TimeAgoFormatter.standard(clamped);
+    return ContextualTimeFormatter.standard(clamped);
   }
 }

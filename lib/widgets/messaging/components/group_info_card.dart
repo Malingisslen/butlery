@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -28,7 +28,7 @@ class GroupInfoCard extends StatelessWidget {
     // Hardcoding 'sv_SE' previously rendered "15 jan 2026" for English users.
     final localeName = Localizations.localeOf(context).toString();
     final createdDateStr = createdAt != null
-        ? DateFormat.yMMMd(localeName).add_Hm().format(createdAt!)
+        ? ContextualTimeFormatter.dateTime(createdAt!, localeName: localeName)
         : context.l10n.commonUnknown;
 
     return CardContent.standard(

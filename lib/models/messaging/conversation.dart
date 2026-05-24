@@ -58,7 +58,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:uuid/uuid.dart';
 
@@ -414,7 +414,7 @@ class Conversation {
   /// abbreviated format (m, h, d, w) for space-efficient activity indicators.
   String get formattedLastActivity {
     final lastActivity = lastMessage?.sentAt ?? updatedAt;
-    return TimeAgoFormatter.compact(lastActivity);
+    return ContextualTimeFormatter.compact(lastActivity);
   }
 
   /// Standard object methods for debugging, comparison, and identity management.
