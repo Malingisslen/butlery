@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/linkified_text.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
@@ -378,8 +379,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
 
                 const SizedBox(height: AppDimensions.spacingS),
 
-                // Comment content
-                Text(
+                // Comment content — BUT-962: linkify HTTP/HTTPS URLs.
+                LinkifiedText.from(
                   comment.text,
                   style: AppTextStyles.bodyLarge,
                 ),
