@@ -38,11 +38,17 @@ class StructureRecipeRequest {
   /// Source URL for reference
   final String? sourceUrl;
 
+  /// BUT-984: canonical user locale (e.g. `sv`, `en`) so the server can
+  /// nudge the model toward the user's UI language. Additive — older
+  /// server versions ignore it.
+  final String? locale;
+
   const StructureRecipeRequest({
     required this.text,
     this.partialData,
     this.mode = StructureMode.extract,
     this.sourceUrl,
+    this.locale,
   });
 
   Map<String, dynamic> toJson() {
@@ -51,6 +57,7 @@ class StructureRecipeRequest {
       if (partialData != null) 'partialData': partialData,
       'mode': mode.name,
       if (sourceUrl != null) 'sourceUrl': sourceUrl,
+      if (locale != null) 'locale': locale,
     };
   }
 }
@@ -69,11 +76,16 @@ class OcrRecipeImageRequest {
   /// Additional context (e.g., recipe title from filename)
   final String? context;
 
+  /// BUT-984: canonical user locale (e.g. `sv`, `en`) for output-language
+  /// nudging. Additive — older server versions ignore it.
+  final String? locale;
+
   const OcrRecipeImageRequest({
     this.imageBase64,
     this.imageUrl,
     this.mimeType,
     this.context,
+    this.locale,
   }) : assert(imageBase64 != null || imageUrl != null,
             'Either imageBase64 or imageUrl must be provided');
 
@@ -82,11 +94,13 @@ class OcrRecipeImageRequest {
     Uint8List bytes, {
     String? mimeType,
     String? context,
+    String? locale,
   }) {
     return OcrRecipeImageRequest(
       imageBase64: _encodeBase64(bytes),
       mimeType: mimeType ?? _detectMimeType(bytes),
       context: context,
+      locale: locale,
     );
   }
 
@@ -94,10 +108,12 @@ class OcrRecipeImageRequest {
   factory OcrRecipeImageRequest.fromUrl(
     String url, {
     String? context,
+    String? locale,
   }) {
     return OcrRecipeImageRequest(
       imageUrl: url,
       context: context,
+      locale: locale,
     );
   }
 
@@ -107,6 +123,7 @@ class OcrRecipeImageRequest {
       if (imageUrl != null) 'imageUrl': imageUrl,
       if (mimeType != null) 'mimeType': mimeType,
       if (context != null) 'context': context,
+      if (locale != null) 'locale': locale,
     };
   }
 

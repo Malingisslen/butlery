@@ -105,6 +105,9 @@ class LlmService extends BaseService {
       mode: mode,
       partialData: partialData,
       sourceUrl: sourceUrl,
+      // BUT-984: ride the active UI locale so the CF prompt can nudge
+      // output language. Additive payload — older CF versions ignore it.
+      locale: AppLocale.current.localeName,
     );
 
     final response = await _executeLlmCall(
@@ -155,6 +158,9 @@ class LlmService extends BaseService {
     );
 
     final operation = ImportOperation.withLlm('llm', LlmOperationType.vision);
+    // BUT-984: thread active UI locale into the CF payload. Additive —
+    // older CF versions ignore it.
+    final locale = AppLocale.current.localeName;
 
     final OcrRecipeImageRequest request;
     if (imageBytes != null) {
@@ -162,11 +168,13 @@ class LlmService extends BaseService {
         imageBytes,
         mimeType: mimeType,
         context: context,
+        locale: locale,
       );
     } else {
       request = OcrRecipeImageRequest.fromUrl(
         imageUrl!,
         context: context,
+        locale: locale,
       );
     }
 
@@ -223,6 +231,10 @@ class LlmService extends BaseService {
     final request = StructureRecipeRequest(
       text: lines.join('\n'),
       mode: StructureMode.ingredientLines,
+      // BUT-984: locale on ingredient-line parsing too — keeps Swedish
+      // ingredient names canonical instead of getting translated by the
+      // model's English bias.
+      locale: AppLocale.current.localeName,
     );
 
     final response = await _executeLlmCall(

@@ -43,6 +43,16 @@ void main() {
         StructureMode.extract,
       );
     });
+
+    test('toJson includes locale when set (BUT-984)', () {
+      const r = StructureRecipeRequest(text: 't', locale: 'sv');
+      expect(r.toJson()['locale'], 'sv');
+    });
+
+    test('toJson omits locale when null (backward compat)', () {
+      const r = StructureRecipeRequest(text: 't');
+      expect(r.toJson().containsKey('locale'), isFalse);
+    });
   });
 
   group('OcrRecipeImageRequest', () {
@@ -84,6 +94,21 @@ void main() {
       expect(json.containsKey('imageBase64'), isFalse);
       expect(json.containsKey('mimeType'), isFalse);
       expect(json.containsKey('context'), isFalse);
+      expect(json.containsKey('locale'), isFalse);
+    });
+
+    test('fromUrl threads locale into payload (BUT-984)', () {
+      final r = OcrRecipeImageRequest.fromUrl('u', locale: 'en');
+      expect(r.locale, 'en');
+      expect(r.toJson()['locale'], 'en');
+    });
+
+    test('fromBytes threads locale into payload (BUT-984)', () {
+      final r = OcrRecipeImageRequest.fromBytes(
+        Uint8List.fromList([0xFF, 0xD8, 0xFF]),
+        locale: 'sv',
+      );
+      expect(r.toJson()['locale'], 'sv');
     });
 
     test('base64 encoder produces a 4-char-per-3-byte-block output', () {
