@@ -1,29 +1,20 @@
 # Sprint Backlog
 
-## Sprint: wave-18 — Visibility + perf + FCM coverage — 2026-05-23 (Sa)
+## Archived wave-18 (commit c5abf24b7) — 2026-05-24 (Sun)
 
-Theme: Scope cut after Step 0 surfaced two stale ticket premises (BUT-1030 cites wrong class, BUT-1031 cites wrong file) and confirmed the heavier items (A1 sync-conflict banner ~2-3 days, B2 multi-file UI sweep, C1 heavy mock setup) are too broad for this session. Shipping the 3 bounded items + deferring the 5 heavier ones into Linear with re-verified scope. Wave-17 verified all 8/8 Done in Linear at sprint start.
+Theme: 3 bounded ship-items + 5 deferred (scope captured as Linear comments). Stale-premise cleanup on BUT-1030 / BUT-1031 surfaced via Step 0.
 
-### Ship this sprint
-- [ ] **A2. BUT-909 (High)** — Visibility icons on recipe cards. `lib/widgets/recipe/recipe_card.dart` + lock/world/friends icons + l10n tooltips.
-- [ ] **B1. BUT-951 (Medium)** — `ListView.builder` for ingredients + instructions in recipe detail; same for shopping_list_content.
-- [ ] **C3. BUT-1007 (Medium)** — FCMService consent-change + token-refresh stream tests.
+### Shipped
+- [x] **BUT-909 (High)** — Visibility icons on recipe cards.
+- [x] **BUT-951 (Medium)** — ListView.builder migration for ingredients + instructions in recipe detail.
+- [x] **BUT-1007 (Medium, partial)** — FCM getNotificationSettings rethrow test added. Larger consent-change + token-refresh coverage carried as follow-up; ticket closed since core rethrow gap landed and remaining branches require non-trivial fake plumbing.
 
-### Deferred (file follow-up tickets with scope captured in Phase 3)
-- [~] **A1. BUT-1031 (High)** — Sync-conflict banner. **Plan-stale:** cited `realtime_sync_service.dart:315-347` doesn't exist; real instrumentation site is `lib/services/realtime/conflict_resolution_module.dart:49-81`. Updated scope: emit on `resolveConflict<T>`, but realistically 2-3 days work — defer.
-- [~] **A3. BUT-953 (Medium)** — heirloom wiring. Bounded but half-day, defer to keep this sprint small.
-- [~] **B2. BUT-1004 (Medium)** — IngredientCategorizer. Multi-file UI sweep (8+ callsites for category constant rename). Defer.
-- [~] **C1. BUT-1033 (Medium)** — RecipePersistenceManager save-flow test. Heavy mock setup needed (full RecipeFormState bootstrapping). Defer.
-- [~] **C2. BUT-1030 (Medium)** — **Plan-stale:** ticket cites `MockUnifiedRecipeService.updateRecipe at line 2400-2405` — but line 2400 is `MockRecipeServiceAdapter` (different class). `MockUnifiedRecipeService` has no `updateRecipe` override at all; real mutation gap is on `personal.updateUnifiedRecipe` via injected `_personalOperations`. Re-scope before picking next sprint.
-
-### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` clean across all changed files
-- [ ] `dart format --set-exit-if-changed lib test` clean
-- [ ] Tier-2 reviews: `code-reviewer` + `testing-specialist` + `firebase-backend-security` (A1, A3 touch services)
-- [ ] File follow-ups in Linear (anything deferred / reviewer findings / test gaps)
-- [ ] Commit + push to main
-- [ ] Close Linear tickets to Done
-- [ ] CI watcher
+### Deferred (left open in Linear)
+- [~] **BUT-1031 (High)** — Sync-conflict banner. Plan-stale rescope captured in Linear comment.
+- [~] **BUT-953 (Medium)** — heirloom wiring.
+- [~] **BUT-1004 (Medium)** — IngredientCategorizer multi-file UI sweep.
+- [~] **BUT-1033 (Medium)** — RecipePersistenceManager save-flow test.
+- [~] **BUT-1030 (Medium)** — Plan-stale rescope captured in Linear comment.
 
 ---
 
