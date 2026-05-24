@@ -9657,6 +9657,24 @@ abstract class AppLocalizations {
   /// **'När dina vänner lagar mat eller delar recept dyker det upp här.'**
   String get feedEmptyDescription;
 
+  /// No description provided for @feedEmptyNoFriendsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till vänner för att komma igång'**
+  String get feedEmptyNoFriendsTitle;
+
+  /// No description provided for @feedEmptyNoFriendsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'När du följer vänner ser du deras matlagning och delade recept här.'**
+  String get feedEmptyNoFriendsSubtitle;
+
+  /// No description provided for @feedEmptyNoFriendsCta.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hitta vänner'**
+  String get feedEmptyNoFriendsCta;
+
   /// No description provided for @feedInviteFriends.
   ///
   /// In sv, this message translates to:

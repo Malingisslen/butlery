@@ -5591,6 +5591,16 @@ class AppLocalizationsSv extends AppLocalizations {
       'När dina vänner lagar mat eller delar recept dyker det upp här.';
 
   @override
+  String get feedEmptyNoFriendsTitle => 'Lägg till vänner för att komma igång';
+
+  @override
+  String get feedEmptyNoFriendsSubtitle =>
+      'När du följer vänner ser du deras matlagning och delade recept här.';
+
+  @override
+  String get feedEmptyNoFriendsCta => 'Hitta vänner';
+
+  @override
   String get feedInviteFriends => 'Bjud in vänner';
 
   @override

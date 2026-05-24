@@ -303,7 +303,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     Expanded(
                       child: switch (_currentTabIndex) {
                         0 => FeedTab.build(
-                            context, context.watch<ActivityFeedViewModel>()),
+                            context,
+                            context.watch<ActivityFeedViewModel>(),
+                            hasFriends: viewModel.friendsCount > 0,
+                            onAddFriendsCta: () => _tabController.animateTo(1),
+                          ),
                         1 => _buildFriendsTab(viewModel),
                         2 => _buildGroupsTab(friendsService, viewModel),
                         3 => _buildDiscoveryTab(viewModel),

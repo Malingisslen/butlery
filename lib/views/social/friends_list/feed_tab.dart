@@ -17,10 +17,17 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Activity feed tab in the friends view.
 class FeedTab {
+  /// BUT-981: [hasFriends] differentiates the two empty-state cases. When the
+  /// user has no friends yet, we show a "find friends" CTA that invokes
+  /// [onAddFriendsCta] (typically a tab-controller switch to the friends tab).
+  /// When the user has friends but no activity yet, we keep the generic "quiet
+  /// so far" copy with no CTA.
   static Widget build(
     BuildContext context,
-    ActivityFeedViewModel viewModel,
-  ) {
+    ActivityFeedViewModel viewModel, {
+    bool hasFriends = true,
+    VoidCallback? onAddFriendsCta,
+  }) {
     return LoadingStateBuilder<List<ActivityEvent>>(
       isLoading: viewModel.isLoading,
       error: viewModel.error,
@@ -28,8 +35,14 @@ class FeedTab {
           ? null
           : viewModel.filteredEvents,
       loadingMessage: context.l10n.socialFeed,
-      emptyTitle: context.l10n.feedEmpty,
-      emptySubtitle: context.l10n.feedEmptyDescription,
+      emptyTitle: hasFriends
+          ? context.l10n.feedEmpty
+          : context.l10n.feedEmptyNoFriendsTitle,
+      emptySubtitle: hasFriends
+          ? context.l10n.feedEmptyDescription
+          : context.l10n.feedEmptyNoFriendsSubtitle,
+      emptyActionLabel: hasFriends ? null : context.l10n.feedEmptyNoFriendsCta,
+      onEmptyAction: hasFriends ? null : onAddFriendsCta,
       emptyIcon: Icons.groups_outlined,
       builder: (context, events) => Column(
         children: [

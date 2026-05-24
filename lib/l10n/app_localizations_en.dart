@@ -5591,6 +5591,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'When your friends cook or share recipes, it will show up here.';
 
   @override
+  String get feedEmptyNoFriendsTitle => 'Add friends to get started';
+
+  @override
+  String get feedEmptyNoFriendsSubtitle =>
+      'When you follow friends, you\'ll see their cooking and shared recipes here.';
+
+  @override
+  String get feedEmptyNoFriendsCta => 'Find friends';
+
+  @override
   String get feedInviteFriends => 'Invite friends';
 
   @override
