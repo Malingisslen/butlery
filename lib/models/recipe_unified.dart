@@ -1151,8 +1151,10 @@ class Recipe {
 
   /// BUT-955: hard cap on per-recipe share count. At ~36 bytes per UUID the
   /// 1MB Firestore doc limit is reached around 27k shares; capping at 200
-  /// leaves plenty of headroom for other fields and matches realistic
-  /// social-graph reach. Subcollection migration is deferred until needed.
+  /// leaves plenty of headroom for other fields. The 200 value tracks
+  /// Dunbar's number (~150 stable social relationships) plus a margin —
+  /// realistic friend-reach for a personal cooking app, not a viral feed.
+  /// Subcollection migration is deferred until a real user hits the cap.
   static const int maxSharesPerRecipe = 200;
 
   const Recipe({

@@ -16,6 +16,12 @@ class CookSnap {
   final String photoUrl;
   final String? thumbnailUrl;
   final String? caption;
+
+  /// Optimistic client time. Server timestamp is authoritative — see
+  /// `FirebaseCookSnapRepository.addCookSnap`, which overwrites this
+  /// field with `FieldValue.serverTimestamp()` at the write boundary
+  /// (BUT-965). The in-memory value here is what the immediate UI
+  /// displays; subsequent reads resolve to the server-set time.
   final DateTime createdAt;
 
   CookSnap({

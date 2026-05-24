@@ -129,8 +129,10 @@ class RecipeSharingManager {
         ...memberIds,
       };
       if (projected.length > Recipe.maxSharesPerRecipe) {
-        AppLogger.error(
-            '❌ Share denied: recipe $recipeId would have ${projected.length} '
+        // BUT-804 polish: user-input validation, not internal error —
+        // warning is the right level; error pollutes prod dashboards.
+        AppLogger.warning(
+            'Share denied: recipe $recipeId would have ${projected.length} '
             'shares (cap: ${Recipe.maxSharesPerRecipe})');
         return null;
       }
