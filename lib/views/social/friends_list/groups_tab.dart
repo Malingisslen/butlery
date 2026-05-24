@@ -91,17 +91,18 @@ class GroupsTab {
             ),
           ],
 
-          // Empty state
+          // Empty state — BUT-979: branded illustration + first-touch copy
+          // via the noGroups variant. Old `groupNoGroupsYet` /
+          // `groupNoGroupsDescription` keys stay in the arb files for any
+          // unrelated callers but this widget now flows the friendlier
+          // `emptyNoGroupsTitle` ("Matlagning tillsammans, enklare").
           if (groups.isEmpty && pendingInvitations.isEmpty) ...[
             SliverFillRemaining(
-              child: StateWidget.empty(
-                title: context.l10n.groupNoGroupsYet,
-                subtitle: context.l10n.groupNoGroupsDescription,
-                icon: Icons.groups_outlined,
+              child: StateWidget.noGroups(
                 actionLabel: onCreateGroup != null
                     ? context.l10n.groupCreateGroup
                     : null,
-                onAction: onCreateGroup,
+                onCreateGroup: onCreateGroup,
               ),
             ),
           ],

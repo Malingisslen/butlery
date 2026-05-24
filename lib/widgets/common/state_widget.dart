@@ -252,6 +252,22 @@ class StateWidget extends StatelessWidget {
     );
   }
 
+  /// BUT-979: branded empty state for the groups tab. Uses the peaPod
+  /// illustration via [EmptyStateVariant.noGroups]. Pass [onCreateGroup]
+  /// to wire the "Create group" CTA — when null the action button is
+  /// omitted (display-only mode).
+  factory StateWidget.noGroups({
+    String? actionLabel,
+    VoidCallback? onCreateGroup,
+  }) {
+    return StateWidget(
+      type: StateType.empty,
+      actionLabel: actionLabel,
+      onAction: onCreateGroup,
+      emptyVariant: EmptyStateVariant.noGroups,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (type) {

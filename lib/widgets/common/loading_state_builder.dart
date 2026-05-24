@@ -275,13 +275,17 @@ class LoadingStateBuilder<T> extends StatelessWidget {
           actionLabel: emptyActionLabel,
           onAction: onEmptyAction,
         );
+      case EmptyStateVariant.noGroups:
+        return StateWidget.noGroups(
+          actionLabel: emptyActionLabel,
+          onCreateGroup: onEmptyAction,
+        );
       case EmptyStateVariant.noCategories:
       case EmptyStateVariant.noImages:
       case EmptyStateVariant.noTargets:
       case EmptyStateVariant.noSavedMenus:
       case EmptyStateVariant.noSharedShoppingLists:
       case EmptyStateVariant.noTags:
-      case EmptyStateVariant.noGroups:
       case EmptyStateVariant.noConversations:
       case EmptyStateVariant.generic:
         // Note: _buildPredefinedEmptyState is called from build() which has context

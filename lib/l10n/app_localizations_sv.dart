@@ -547,11 +547,11 @@ class AppLocalizationsSv extends AppLocalizations {
       'Personliga taggar används för att ordna receptsamlingen.';
 
   @override
-  String get emptyNoGroupsTitle => 'Inga grupper ännu';
+  String get emptyNoGroupsTitle => 'Matlagning tillsammans, enklare';
 
   @override
   String get emptyNoGroupsSubtitle =>
-      'Skapa en grupp för att dela recept och planera måltider tillsammans.';
+      'Skapa en grupp för att dela veckomenyer och inköpslistor med vänner eller familj — alla ser samma plan och kan checka av varor under tiden.';
 
   @override
   String get emptyNoConversationsTitle => 'Inga konversationer ännu';

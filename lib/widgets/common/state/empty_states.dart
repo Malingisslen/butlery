@@ -231,8 +231,11 @@ class EmptyStates {
           actionIcon: null,
         );
       case EmptyStateVariant.noGroups:
+        // BUT-979: branded peaPod illustration (matches noNotifications;
+        // the "pod of peas together" reads as collaborative grouping).
         return _EmptyStateConfig(
           icon: Icons.group_outlined,
+          illustration: VegetableType.peaPod,
           title: l10n.emptyNoGroupsTitle,
           subtitle: l10n.emptyNoGroupsSubtitle,
           actionIcon: AdaptiveIcons.add,

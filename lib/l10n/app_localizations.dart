@@ -1013,13 +1013,13 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoGroupsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Inga grupper ännu'**
+  /// **'Matlagning tillsammans, enklare'**
   String get emptyNoGroupsTitle;
 
   /// No description provided for @emptyNoGroupsSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Skapa en grupp för att dela recept och planera måltider tillsammans.'**
+  /// **'Skapa en grupp för att dela veckomenyer och inköpslistor med vänner eller familj — alla ser samma plan och kan checka av varor under tiden.'**
   String get emptyNoGroupsSubtitle;
 
   /// No description provided for @emptyNoConversationsTitle.

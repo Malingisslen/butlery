@@ -549,11 +549,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Personal tags serve to arrange the collection as one prefers.';
 
   @override
-  String get emptyNoGroupsTitle => 'No groups yet';
+  String get emptyNoGroupsTitle => 'Group cooking, simpler';
 
   @override
   String get emptyNoGroupsSubtitle =>
-      'Create a group to share recipes and plan meals together.';
+      'Create a group to share weekly menus and shopping lists with friends or family — everyone sees the same plan and can check off items as they go.';
 
   @override
   String get emptyNoConversationsTitle => 'No conversations yet';
