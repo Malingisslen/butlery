@@ -369,9 +369,14 @@ void main() {
       expect(find.byType(StateWidget), findsOneWidget);
     });
 
-    testWidgets('generic + other variants → Builder fallback to generic empty',
+    testWidgets(
+        'every EmptyStateVariant renders a StateWidget without crashing',
         (tester) async {
-      // These all fall into the default switch arm → generic StateWidget.empty.
+      // Several of these variants (noGroups, noConversations, noNotifications,
+      // noComments) gained branded titles via BUT-979/BUT-986 and no longer
+      // fall through to the generic title. We assert structural presence —
+      // each variant must produce a StateWidget — not title text, which is
+      // brittle to l10n / branding changes.
       for (final v in [
         EmptyStateVariant.noCategories,
         EmptyStateVariant.noImages,
@@ -384,8 +389,8 @@ void main() {
         EmptyStateVariant.generic,
       ]) {
         await pumpWithVariant(tester, v);
-        expect(find.text('Inget innehåll'), findsOneWidget,
-            reason: 'variant=$v should render generic empty title');
+        expect(find.byType(StateWidget), findsOneWidget,
+            reason: 'variant=$v should produce one StateWidget');
       }
     });
 

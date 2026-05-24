@@ -47,25 +47,15 @@ Widget wrap(Widget child, {bool disableAnimations = false}) {
   );
 }
 
-/// The online dot is the only widget in the tree whose `decoration` is a
-/// [BoxDecoration] with the brand forestGreen as the fill — unique enough to
-/// be a reliable finder across both plain Containers and DecoratedBoxes.
-/// Production now resolves the colour from `colorScheme.primary`; under the
-/// `AppTheme.lightTheme` installed by `wrap()` that's the same hex as
-/// `AppColors.forestGreen`, so the literal comparison still holds.
+/// The online dot. Post-BUT-902 the indicator is a filled `Icons.circle`
+/// rendered in `ButleryColors.success` (= forestGreen under the light theme),
+/// wrapped in a Semantics(label: "Online"). The outer Container's colour
+/// changed from a forestGreen fill to `surfaceContainerHighest` (ring
+/// background), so the previous BoxDecoration-by-colour heuristic no longer
+/// matches. We find by the Icon directly.
 Finder findOnlineDot() {
-  return find.byWidgetPredicate((w) {
-    BoxDecoration? decoration;
-    if (w is Container) {
-      final d = w.decoration;
-      if (d is BoxDecoration) decoration = d;
-    } else if (w is DecoratedBox) {
-      final d = w.decoration;
-      if (d is BoxDecoration) decoration = d;
-    }
-    if (decoration == null) return false;
-    return decoration.color == AppColors.forestGreen;
-  });
+  return find.byWidgetPredicate((w) =>
+      w is Icon && w.icon == Icons.circle && w.color == AppColors.forestGreen);
 }
 
 void main() {
