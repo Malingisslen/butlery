@@ -7911,17 +7911,17 @@ abstract class AppLocalizations {
   /// **'Sista dag att rösta'**
   String get menuVoteDeadline;
 
-  /// No description provided for @menuVoteWinner.
+  /// Banner shown when a recipe has been voted as the winner in a menu poll.
   ///
   /// In sv, this message translates to:
   /// **'Vinnare: {recipeName}'**
-  String menuVoteWinner(Object recipeName);
+  String menuVoteWinner(String recipeName);
 
-  /// No description provided for @menuVoteCount.
+  /// Vote counter under a poll option; supports Swedish + English plural rules.
   ///
   /// In sv, this message translates to:
   /// **'{count, plural, =0{Inga röster} =1{1 röst} other{{count} röster}}'**
-  String menuVoteCount(num count);
+  String menuVoteCount(int count);
 
   /// No description provided for @menuVoteExpired.
   ///

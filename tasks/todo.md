@@ -1,46 +1,44 @@
 # Sprint Backlog
 
-## Sprint: iter-52 — BUT-891 update CPI assertions to LoadingIndicator — 2026-05-24 (Sun)
+## Sprint: iter-53 — BUT-704 ARB @key descriptions — STEP 0 RESCOPE — 2026-05-24 (Sun)
 
-Theme: iOS-platform-coupling latent bug. Tests assert `CircularProgressIndicator` against views/helpers that render `LoadingIndicator` → `AdaptiveActivityIndicator` → CPI on Linux/Android only. Pass-by-coincidence on current CI matrix, fail on iOS. Plan-fil FÖRST per discipline.
+Theme: Ticket original premise stale. Plan-fil FÖRST per discipline.
 
-### Step 0 — premise verification
+### Step 0 — premise verification (significant rescope)
 
-All 5 sites in ticket verified at the exact lines:
-- `test/views/social/group_detail_view_test.dart:99` — `find.byType(CircularProgressIndicator), findsOneWidget`
-- `test/views/social/group_detail_view_test.dart:415` — same
-- `test/views/social/shared_with_me_view_test.dart:263-266` — print-only no-op branch (asserts nothing)
-- `test/views/helpers/view_test_helpers.dart:368` — `expectLoadingState` helper
-- `test/views/helpers/view_test_helpers.dart:401` — `expectContentState` helper
+- Ticket claims ARB files have **no** `@key` metadata. Verified 2026-05-24:
+  - `lib/l10n/app_en.arb`: 3868 keys, **854 @meta blocks**, **750 placeholders metadata blocks** out of 753 placeholder-strings.
+  - `lib/l10n/app_sv.arb`: matching counts.
+- The "no metadata" framing is wrong — coverage is ~22% across all keys but **99.6% for placeholder-strings specifically** (which is where translator-context matters most).
+- **Only 3 placeholder-strings lack `@meta` placeholders blocks:**
+  - `menuVoteWinner`: `Winner: {recipeName}` (string placeholder)
+  - `menuVoteCount`: `{count, plural, =0{No votes} =1{1 vote} other{{count} votes}}` (plural with int)
+  - `errorShareCapReached`: `Recipe is already shared with the maximum number of users ({max})` (int) — **note**: my iter-40 (sv added @meta inline, en didn't — see commit `14806f107`). Fix is: add the missing `@errorShareCapReached` block to `app_en.arb` (parallel structure to sv).
 
 ### Design choices
 
-- **Site 1+2 (group_detail_view_test)**: replace `find.byType(CircularProgressIndicator)` → `find.byType(LoadingIndicator)`. Add import.
-- **Site 3 (shared_with_me_view_test)**: per ticket "either flip to LoadingIndicator + assert, or delete". The print-only branch is observation-without-assertion which means it never fails. Flip to a real assertion. Add import.
-- **Site 4+5 (view_test_helpers)**: per ticket "prefer LoadingIndicator as primary check with CPI as tolerated legacy fallback". Update both helpers to look for either widget — tolerates the still-raw-CPI legitimate sites (lib/widgets/common/indicators/) without forcing wholesale migration first. Add import.
-- **No other test files need touching**: ticket explicitly lists 5 out-of-scope tests that legitimately target widget primitives still rendering raw CPI.
+- Fix the 3 missing-meta cases. That closes the load-bearing gap (translators-without-context-for-placeholders).
+- Don't backfill descriptions for the 3014 non-placeholder strings without @meta — that's the 2-day scope the ticket originally projected. Close BUT-704 noting actual remaining gap is the description coverage, not placeholder typing.
+- File BUT-XXX follow-up for "full description coverage" if/when translation work actually starts.
 
 ### Ship this sprint
 
-- [ ] **A1. group_detail_view_test.dart** — 2 sites swap CPI → LoadingIndicator + import.
-- [ ] **A2. shared_with_me_view_test.dart** — convert print-only branch to real assertion + import.
-- [ ] **A3. view_test_helpers.dart** — both helpers updated to find either widget + import.
-- [ ] **A4. Spot-check** — grep `test/` for stragglers; report.
+- [ ] **A1. BUT-704 partial** — Add 3 missing `@meta` placeholder blocks in both ARB files (sv+en parallel structure).
+- [ ] **A2. `flutter gen-l10n`** — regenerate to validate JSON structure.
+- [ ] **A3. File follow-up** — BUT-XXX for "full description-coverage backfill across remaining ~3000 keys" (deferred until translation starts).
 
 ### Acceptance
 
-- [ ] `flutter test test/views/social/group_detail_view_test.dart` passes.
-- [ ] `flutter test test/views/social/shared_with_me_view_test.dart` passes.
-- [ ] `flutter analyze` clean.
-- [ ] No `find.byType(CircularProgressIndicator)` assertions on migrated views remain (out-of-scope files preserved per ticket).
+- [ ] `Found 0 placeholder strings without @meta` (the check script returns clean).
+- [ ] `flutter gen-l10n` succeeds + `flutter analyze` clean.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Stäng BUT-891 i Linear → Done
+- [ ] Stäng BUT-704 i Linear → Done with "premise rescoped per Step 0" comment
 
 ---
 
-## Archived iter-51 (commit `8d7bc683b`) — 2026-05-24 (Sun)
+## Archived iter-52 (commit `623896697`) — 2026-05-24 (Sun)
 
-BUT-885 partial — 11 CPI sites in tagging/social/recipe widgets migrated to LoadingIndicator. +57 / -80. BUT-885 still In Progress (Phase 5 broad-sweep + arch-test = BUT-1066).
+BUT-891 CPI assertion update. 5 sites across 3 test files migrated from `find.byType(CircularProgressIndicator)` → `LoadingIndicator` (with "tolerate raw CPI legacy" pattern in shared helpers). iOS-platform-coupling latent bug closed. +51 / -35. BUT-891 → Done.

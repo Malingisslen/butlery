@@ -2924,7 +2924,25 @@
   "menuVoteResolved": "Omröstning avgjord",
   "menuVoteDeadline": "Sista dag att rösta",
   "menuVoteWinner": "Vinnare: {recipeName}",
+  "@menuVoteWinner": {
+    "description": "Banner shown when a recipe has been voted as the winner in a menu poll.",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "example": "Pannkakor"
+      }
+    }
+  },
   "menuVoteCount": "{count, plural, =0{Inga röster} =1{1 röst} other{{count} röster}}",
+  "@menuVoteCount": {
+    "description": "Vote counter under a poll option; supports Swedish + English plural rules.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "menuVoteExpired": "Omröstningen har gått ut",
   "menuVoteNoAlternatives": "Inga förslag ännu",
   "invitationCheckConnectionAndRetry": "Kontrollera din internetanslutning och försök igen.",

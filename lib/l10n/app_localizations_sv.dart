@@ -4575,12 +4575,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuVoteDeadline => 'Sista dag att rösta';
 
   @override
-  String menuVoteWinner(Object recipeName) {
+  String menuVoteWinner(String recipeName) {
     return 'Vinnare: $recipeName';
   }
 
   @override
-  String menuVoteCount(num count) {
+  String menuVoteCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
