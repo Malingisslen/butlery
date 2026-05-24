@@ -191,6 +191,44 @@ void main() {
             )).called(1);
       });
 
+      test('rejects share when projected size would exceed cap (BUT-955)',
+          () async {
+        // Stage a collaborative recipe already at cap: 200 distinct members.
+        // Adding the owner (user_123) via the set union puts the projected
+        // size at 201, then the new member pushes it to 202 — over the
+        // Recipe.maxSharesPerRecipe ceiling. Cap-guard must short-circuit
+        // before any createCollaborativeRecipe call.
+        final atCapMembers = <String, ResourcePermission>{
+          for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
+        };
+        final atCapRecipe = Recipe(
+          core: testCollaborativeRecipe.core,
+          type: RecipeType.collaborative,
+          socialData: RecipeSocialData(
+            ownerId: 'user_123',
+            ownerDisplayName: 'Recipe Owner',
+            memberPermissions: atCapMembers,
+            allowGuestViewing: false,
+            allowMemberInvites: true,
+          ),
+        );
+        mockParentService.setRecipeState(
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Current User',
+          recipes: [atCapRecipe],
+          isInitialized: true,
+        );
+
+        final newId = await sharingManager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['new-member-1'],
+          memberDisplayNames: {'new-member-1': 'New Member'},
+        );
+
+        expect(newId, isNull, reason: 'cap-guard must reject');
+        expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
+      });
+
       test('should fail when recipe not found', () async {
         // Act
         final newId = await sharingManager.shareRecipe(

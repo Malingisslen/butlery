@@ -198,6 +198,26 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     );
   }
 
+  /// BUT-955: defense-in-depth cap on the share-set size of a Recipe document.
+  /// All service-layer share entry points should fail-fast with a localized
+  /// error before reaching this guard — but multiple writer paths
+  /// (addMemberToRecipe, addMember, addCollaborators, repo.addCollaborator,
+  /// shareRecipe, shareRecipeWithUsers) feed update/create, and capping at
+  /// every callsite is bypass-prone. This is the chokepoint that closes
+  /// the bug for real: every Firestore write goes through here.
+  void _enforceShareCap(Recipe entity) {
+    final members = entity.socialData?.memberPermissions;
+    if (members == null) return;
+    final ownerCount = entity.socialData?.ownerId != null ? 1 : 0;
+    final total = members.length + ownerCount;
+    if (total > Recipe.maxSharesPerRecipe) {
+      throw StateError(
+        'Recipe ${entity.id} would exceed share cap: '
+        '$total > ${Recipe.maxSharesPerRecipe}',
+      );
+    }
+  }
+
   @override
   Future<Recipe> create(Recipe entity) async {
     return await FirebasePerformanceService.traceOperation(
@@ -205,6 +225,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       (trace) async {
         // Validate user owns the recipe they're creating
         final currentUser = requireCurrentUserId();
+
+        // BUT-955: cap-guard before validation work.
+        _enforceShareCap(entity);
 
         // For personal recipes, createdBy should match current user
         final ownerId = (entity.socialData?.ownerId ?? entity.createdBy)
@@ -261,6 +284,11 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       (trace) async {
         // Validate user owns the recipe they're updating
         final currentUser = requireCurrentUserId();
+
+        // BUT-955: cap-guard before read+validation. Catches every writer
+        // path that builds an over-cap Recipe and calls update, including
+        // addCollaborator, addMemberToRecipe, addCollaborators, etc.
+        _enforceShareCap(entity);
 
         // First check if recipe exists and user owns it
         final existing = await read(entity.id);

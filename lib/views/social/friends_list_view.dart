@@ -17,6 +17,8 @@ import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 // Import focused components
@@ -46,6 +48,21 @@ class _FriendsListViewState extends State<FriendsListView> {
     _vm = ServiceLocator.get<FriendsViewModel>();
     _feedVm = ServiceLocator.get<ActivityFeedViewModel>();
     _feedVm.loadFeed();
+    _fireSocialOnboardingIfFirstEntry();
+  }
+
+  /// BUT-1046: once-per-install funnel-entry signal. Fire-and-forget so the
+  /// analytics path never blocks the friends view from rendering. The
+  /// tracker no-ops on repeated entries via SharedPreferences dedupe.
+  void _fireSocialOnboardingIfFirstEntry() {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    if (userId == null) return;
+    ServiceLocator.get<AnalyticsService>()
+        .social
+        .logSocialOnboardingStartedIfFirstEntry(
+          userId: userId,
+          entryPoint: 'friends_tab',
+        );
   }
 
   @override

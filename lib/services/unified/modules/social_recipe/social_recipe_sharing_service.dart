@@ -72,6 +72,20 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         return false;
       }
 
+      // BUT-955: cap-guard. Existing members + owner + new userIds (deduped)
+      // must fit under the Recipe.maxSharesPerRecipe ceiling. Computed against
+      // the union so re-share calls don't double-count existing members.
+      final existing =
+          recipe.socialData?.memberPermissions?.keys.toSet() ?? <String>{};
+      final projected = {currentUserId, ...existing, ...userIds};
+      if (projected.length > Recipe.maxSharesPerRecipe) {
+        AppLogger.warning(
+            'Share denied: recipe $recipeId would have ${projected.length} '
+            'shares (cap: ${Recipe.maxSharesPerRecipe})');
+        _setError(AppLocale.current.errorCouldNotSaveRecipe);
+        return false;
+      }
+
       // 2. Converting to collaborative recipe if needed
       Recipe updatedRecipe;
       if (!recipe.isCollaborative) {

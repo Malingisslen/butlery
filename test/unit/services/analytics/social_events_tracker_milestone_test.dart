@@ -273,6 +273,72 @@ void main() {
       });
     });
 
+    group('logSocialOnboardingStartedIfFirstEntry (BUT-1046)', () {
+      test('fires once and writes the prefs key on first call', () async {
+        final fired = await tracker.logSocialOnboardingStartedIfFirstEntry(
+          userId: 'user-1',
+          entryPoint: 'friends_tab',
+        );
+
+        expect(fired, isTrue);
+        final captured = verify(() => repo.logEvent(
+              name: 'social_onboarding_started',
+              parameters: captureAny(named: 'parameters'),
+            )).captured.single as Map<String, Object>;
+        expect(captured['entry_point'], equals('friends_tab'));
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('social_onboarding_started_v1_user-1'), isTrue);
+      });
+
+      test('does NOT re-fire on second entry for same user', () async {
+        final first = await tracker.logSocialOnboardingStartedIfFirstEntry(
+          userId: 'user-2',
+          entryPoint: 'friends_tab',
+        );
+        expect(first, isTrue);
+
+        clearInteractions(repo);
+        final second = await tracker.logSocialOnboardingStartedIfFirstEntry(
+          userId: 'user-2',
+          entryPoint: 'feed_empty_cta',
+        );
+        expect(second, isFalse);
+
+        verifyNever(() => repo.logEvent(
+              name: 'social_onboarding_started',
+              parameters: any(named: 'parameters'),
+            ));
+      });
+
+      test('does NOT fire without userId or consent', () async {
+        // Null + empty user.
+        final firedNull = await tracker.logSocialOnboardingStartedIfFirstEntry(
+          userId: null,
+          entryPoint: 'friends_tab',
+        );
+        final firedEmpty = await tracker.logSocialOnboardingStartedIfFirstEntry(
+          userId: '',
+          entryPoint: 'friends_tab',
+        );
+        expect(firedNull, isFalse);
+        expect(firedEmpty, isFalse);
+
+        // No-consent path.
+        when(() => consent.hasConsent(any())).thenAnswer((_) async => false);
+        final firedNoConsent =
+            await tracker.logSocialOnboardingStartedIfFirstEntry(
+          userId: 'user-noconsent',
+          entryPoint: 'friends_tab',
+        );
+        expect(firedNoConsent, isFalse);
+        verifyNever(() => repo.logEvent(
+              name: 'social_onboarding_started',
+              parameters: any(named: 'parameters'),
+            ));
+      });
+    });
+
     test(
         'milestones use independent prefs keys — friend does not satisfy comment',
         () async {

@@ -1,3 +1,6 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics/trackers/base_tracker.dart';
 
@@ -10,6 +13,12 @@ class SocialEventsTracker extends BaseTracker {
   static const String _firstFriendPrefsPrefix = 'has_friend_v1_';
   static const String _firstCommentPrefsPrefix = 'has_commented_v1_';
   static const String _firstGroupPrefsPrefix = 'has_group_v1_';
+
+  /// BUT-1046: dedupe key for the social-onboarding funnel-entry event. Same
+  /// `prefix + uid` shape as the milestone prefixes so household devices
+  /// each track per-user.
+  static const String _socialOnboardingPrefsPrefix =
+      'social_onboarding_started_v1_';
 
   /// Log friend request sent
   Future<void> logFriendRequestSent({
@@ -57,6 +66,32 @@ class SocialEventsTracker extends BaseTracker {
         if (entryPoint != null) 'entry_point': entryPoint,
       },
     );
+  }
+
+  /// BUT-1046: fires [logSocialOnboardingStarted] at most once per (install,
+  /// user) pair. Distinct from [fireOnceMilestone] because this is a
+  /// funnel-entry event with no user-property side-effect — once you've
+  /// entered the funnel you've entered, no "hasStartedSocialOnboarding"
+  /// property to set. Returns true if fired, false if previously fired,
+  /// userId missing, consent denied, or prefs unavailable.
+  Future<bool> logSocialOnboardingStartedIfFirstEntry({
+    required String? userId,
+    required String entryPoint,
+  }) async {
+    if (userId == null || userId.isEmpty) return false;
+    if (!await hasAnalyticsConsent()) return false;
+    SharedPreferences prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (e) {
+      AppLogger.warning('socialOnboarding tracker: prefs unavailable ($e)');
+      return false;
+    }
+    final key = '$_socialOnboardingPrefsPrefix$userId';
+    if (prefs.getBool(key) == true) return false;
+    await logSocialOnboardingStarted(entryPoint: entryPoint);
+    await prefs.setBool(key, true);
+    return true;
   }
 
   /// Log friend request accepted

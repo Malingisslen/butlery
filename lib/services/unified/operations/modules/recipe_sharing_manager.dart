@@ -117,6 +117,24 @@ class RecipeSharingManager {
         }
       }
 
+      // BUT-955: cap-guard. Union of (owner + existing members + new members)
+      // must fit under Recipe.maxSharesPerRecipe to keep the doc under 1MB.
+      final ownerId = _getCurrentUserId();
+      final existingMembers =
+          recipeToShare.socialData?.memberPermissions?.keys.toSet() ??
+              <String>{};
+      final projected = <String>{
+        if (ownerId != null) ownerId,
+        ...existingMembers,
+        ...memberIds,
+      };
+      if (projected.length > Recipe.maxSharesPerRecipe) {
+        AppLogger.error(
+            '❌ Share denied: recipe $recipeId would have ${projected.length} '
+            'shares (cap: ${Recipe.maxSharesPerRecipe})');
+        return null;
+      }
+
       String finalRecipeId;
 
       if (isAlreadyCollaborative) {

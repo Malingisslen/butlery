@@ -1499,3 +1499,74 @@ replace the structural assertion with a behavioural one.
 **Files:**
 - `test/widget/user/user_avatar_test.dart` — 25/25 pass, analyze clean.
 
+### 2026-05-24 — `FieldValue.serverTimestamp()` in toFirestore breaks FakeFirebaseFirestore + round-trip tests [Bug found / Pattern discovered]
+
+**Trigger:** BUT-965 iter-32 review of `cook_snap.dart`. Production swapped
+`'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore()` (a real
+`Timestamp`) for `'createdAt': FieldValue.serverTimestamp()` (a sentinel).
+
+**Two failure modes confirmed by running the suite:**
+
+1. **Pure-model round-trip tests fail with `clock.now()` substitution.**
+   `cook_snap_test.dart` `serialization toFirestore + fromMap round-trip`
+   passes `original.toFirestore()` straight into `CookSnap.fromMap`. The
+   sentinel falls through every `parseDateTimeValue` branch (not DateTime /
+   String / int / "Timestamp" runtimeType / `{seconds, nanoseconds}` Map),
+   returns `null`, and `?? clock.now()` substitutes today's date. Assertion
+   on the original 2026-01-01 timestamp explodes:
+   `Expected: <2026-01-01 10:00:00.000Z> Actual: <2026-05-24 ...>`.
+
+2. **`FakeFirebaseFirestore` write fails with a type-cast on the sentinel.**
+   `firebase_cook_snap_repository_test.dart` writes via
+   `fakeFirestore.collection('cook_snaps').doc(snap.id).set(snap.toFirestore())`
+   and gets `type 'MethodChannelFieldValue' is not a subtype of type
+   'MockFieldValuePlatform' in type cast` at
+   `fake_cloud_firestore .../mock_document_reference.dart:171`. 7 of 8
+   tests in this file fail this way. The fake's sentinel adapter only
+   handles its own internal FieldValue platform; the one minted by
+   `cloud_firestore` itself isn't accepted.
+
+**Reusable rules:**
+- The moment a model's `toFirestore()` starts emitting
+  `FieldValue.serverTimestamp()` (or any other `FieldValue.*` sentinel),
+  three test classes break:
+  - **Pure-model round-trip tests** — fix by injecting `Timestamp.now()` /
+    a `TestTimestampProvider`, or move the serverTimestamp call out of
+    the model and into the repository layer (cleaner separation —
+    `toFirestore()` returns a real value, repo overwrites the createdAt
+    field with the sentinel right before `.set()`).
+  - **`FakeFirebaseFirestore` repo tests** — they cannot write the
+    sentinel at all (different FieldValue platform). Either move the
+    test to the emulator lane (`firestoreForLane()` + `emulatorOnlySkip`)
+    or hoist the sentinel out of the model so the fake only ever sees
+    real Timestamps.
+  - **Snapshot/seed helpers** that call `toFirestore()` to seed fake docs
+    (the pattern in `seedSnaps` above) — same fix as above.
+
+- **Pre-commit checklist when reviewing a model that adopts
+  `FieldValue.*`:** grep for every `<Model>.fromMap` / `<Model>.toFirestore`
+  call in `test/` *before* approving. If any test passes the output of
+  `toFirestore()` to `fromMap` or to a fake Firestore, that test must be
+  updated in the same commit.
+
+**Action taken on iter-32:**
+- Flagged `test/unit/models/cook_snap_test.dart` (1 broken assertion) and
+  `test/unit/repositories/firebase_cook_snap_repository_test.dart`
+  (7 broken tests) as MUST-FIX before commit.
+- Recommended `logSocialOnboardingStartedIfFirstEntry` dedupe test be
+  added now (cheap — existing milestone test scaffolding in
+  `social_events_tracker_milestone_test.dart` is ready-made for it).
+- Recommended `RecipeSharingManager.shareRecipe` cap-guard test be added
+  now (slots into existing group, ~10 lines).
+- Recommended `SocialRecipeSharingService.shareRecipeWithUsers` cap-guard
+  test as a follow-up — service has zero existing direct test coverage so
+  this would mean standing up new test scaffolding (BaseService +
+  UserContextMixin + AppLocale dependencies); inflating scope beyond the
+  iter.
+
+**Files:**
+- `lib/models/cook_snap.dart` (production change)
+- `test/unit/models/cook_snap_test.dart` (1 failing test)
+- `test/unit/repositories/firebase_cook_snap_repository_test.dart` (7 failing tests)
+- `lib/core/utils/serialization_utils.dart` `parseDateTimeValue` (the relevant fall-through)
+

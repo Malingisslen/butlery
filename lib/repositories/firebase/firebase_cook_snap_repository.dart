@@ -135,7 +135,14 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Future<CookSnap> addCookSnap(CookSnap snap) async {
     requireCurrentUserId();
-    await collection.doc(snap.id).set(toFirestore(snap));
+    // BUT-965: server-authoritative createdAt. Model produces an optimistic
+    // client timestamp (needed for unit-test determinism + immediate UI);
+    // we override at the write boundary so the persisted value defends
+    // against client-clock skew/manipulation. In-memory snap keeps the
+    // optimistic time — the next read resolves to the server value.
+    final data = toFirestore(snap);
+    data['createdAt'] = FieldValue.serverTimestamp();
+    await collection.doc(snap.id).set(data);
     return snap;
   }
 

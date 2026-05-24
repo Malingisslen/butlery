@@ -1149,6 +1149,12 @@ class Recipe {
   final RecipeRealtimeData? realtimeData;
   final RecipeOfflineData? offlineData;
 
+  /// BUT-955: hard cap on per-recipe share count. At ~36 bytes per UUID the
+  /// 1MB Firestore doc limit is reached around 27k shares; capping at 200
+  /// leaves plenty of headroom for other fields and matches realistic
+  /// social-graph reach. Subcollection migration is deferred until needed.
+  static const int maxSharesPerRecipe = 200;
+
   const Recipe({
     required this.core,
     required this.type,
