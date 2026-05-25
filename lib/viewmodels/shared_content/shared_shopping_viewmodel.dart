@@ -114,19 +114,10 @@ class SharedShoppingViewModel
     int limit = 25,
     Object? startAfter,
   }) async {
-    final userId = currentUserId;
-    if (userId == null) {
-      throw Exception('No authenticated user found');
-    }
-
-    AppLogger.info(
-        '🔄 Loading shared shopping lists (pagination not used for MVP)');
-    // Use existing coordinator method - pagination not needed for MVP
-    final shoppingLists =
-        await _socialShoppingCoordinator.getSharedShoppingListsForUser(userId);
-
-    AppLogger.info('✅ Loaded ${shoppingLists.length} shared shopping lists');
-    return shoppingLists;
+    // Route through the filtered path so dismissed/blocked filters + status
+    // cache preload run on every load. Mirrors sibling SharedRecipeViewModel.
+    // (BUT-1085 — previous custom override bypassed all three.)
+    return loadContentFromRepository();
   }
 
   @override

@@ -73,7 +73,7 @@ class SocialMenuCoordinator
   @override
   String get serviceName => 'SocialMenuCoordinator';
 
-  late final FirebaseSharedMenuRepository _sharedMenuRepository;
+  late final BaseSharedContentRepository<SharedMenu> _sharedMenuRepository;
   final Future<Map<String, List<Recipe>>?> Function(String) _getMenu;
   final Future<String?> Function(Map<String, List<Recipe>>) _saveMenu;
 
@@ -93,10 +93,12 @@ class SocialMenuCoordinator
     required super.notifyListeners,
     required Future<Map<String, List<Recipe>>?> Function(String) getMenu,
     required Future<String?> Function(Map<String, List<Recipe>>) saveMenu,
+    BaseSharedContentRepository<SharedMenu>? sharedMenuRepository,
     JsonCacheHelper? cacheHelper,
   })  : _getMenu = getMenu,
         _saveMenu = saveMenu {
-    _sharedMenuRepository = FirebaseSharedMenuRepository();
+    _sharedMenuRepository =
+        sharedMenuRepository ?? FirebaseSharedMenuRepository();
 
     AppLogger.info(
         '✅ SocialMenuCoordinator initialized for menu sharing and collaboration');
@@ -231,65 +233,73 @@ class SocialMenuCoordinator
     required String sharedMenuId,
     String? newTitle,
   }) async {
-    // Get the shared menu to check if it's collaborative
-    final sharedMenu = await _sharedMenuRepository.read(sharedMenuId);
-    if (sharedMenu == null) {
-      AppLogger.error('Shared menu not found: $sharedMenuId');
-      return null;
-    }
-
-    // Check if this is a collaborative menu with a realtime session
-    if (sharedMenu.realtimeMenuId != null) {
-      AppLogger.info(
-          '📡 Joining collaborative menu session: ${sharedMenu.realtimeMenuId}');
-
-      // Add user as participant to the realtime menu (Bug fix: without this, the menu doesn't appear in saved menus)
-      try {
-        final realtimeMenuService = ServiceLocator.get<RealtimeMenuService>();
-        await realtimeMenuService.addParticipant(
-          resourceId: sharedMenu.realtimeMenuId!,
-          userId: currentUserId!,
-          userDisplayName: currentUserDisplayName ?? '?',
-          permission: ResourcePermission.editor,
-        );
-        AppLogger.success('✅ Added user as participant to realtime menu');
-      } catch (e) {
-        AppLogger.error('Failed to add participant to realtime menu: $e');
-        // Continue anyway - the user can still view the menu via shared link
+    try {
+      // Get the shared menu to check if it's collaborative
+      final sharedMenu = await _sharedMenuRepository.read(sharedMenuId);
+      if (sharedMenu == null) {
+        AppLogger.error('Shared menu not found: $sharedMenuId');
+        return null;
       }
 
-      // Mark as joined in the shared menu
-      await _sharedMenuRepository.markAsImportedOrJoined(
-          sharedMenuId, currentUserId!);
-      AppLogger.success(
-          '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}');
-      return MenuJoinResult(
-        menuId: sharedMenu.realtimeMenuId!,
-        isCollaborative: true,
+      // Check if this is a collaborative menu with a realtime session
+      if (sharedMenu.realtimeMenuId != null) {
+        AppLogger.info(
+            '📡 Joining collaborative menu session: ${sharedMenu.realtimeMenuId}');
+
+        // Add user as participant to the realtime menu (Bug fix: without this, the menu doesn't appear in saved menus)
+        try {
+          final realtimeMenuService = ServiceLocator.get<RealtimeMenuService>();
+          await realtimeMenuService.addParticipant(
+            resourceId: sharedMenu.realtimeMenuId!,
+            userId: currentUserId!,
+            userDisplayName: currentUserDisplayName ?? '?',
+            permission: ResourcePermission.editor,
+          );
+          AppLogger.success('✅ Added user as participant to realtime menu');
+        } catch (e) {
+          AppLogger.error('Failed to add participant to realtime menu: $e');
+          // Continue anyway - the user can still view the menu via shared link
+        }
+
+        // Mark as joined in the shared menu
+        await _sharedMenuRepository.markAsImportedOrJoined(
+            sharedMenuId, currentUserId!);
+        AppLogger.success(
+            '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}');
+        return MenuJoinResult(
+          menuId: sharedMenu.realtimeMenuId!,
+          isCollaborative: true,
+        );
+      }
+
+      // Static menu import - create an actual copy (like GitHub fork)
+      AppLogger.info('📥 Importing static menu $sharedMenuId');
+
+      // Use UnifiedMenuService.importSharedMenu for proper import with all data
+      final menuService = ServiceLocator.get<UnifiedMenuService>();
+      final importResult = await menuService.importSharedMenu(
+        sharedMenuId: sharedMenuId,
+        newTitle: newTitle,
       );
-    }
 
-    // Static menu import - create an actual copy (like GitHub fork)
-    AppLogger.info('📥 Importing static menu $sharedMenuId');
+      if (importResult == null) {
+        AppLogger.error('Failed to import menu via UnifiedMenuService');
+        return null;
+      }
 
-    // Use UnifiedMenuService.importSharedMenu for proper import with all data
-    final menuService = ServiceLocator.get<UnifiedMenuService>();
-    final importResult = await menuService.importSharedMenu(
-      sharedMenuId: sharedMenuId,
-      newTitle: newTitle,
-    );
+      AppLogger.success('✅ Menu imported successfully: ${importResult.menuId}');
 
-    if (importResult == null) {
-      AppLogger.error('Failed to import menu via UnifiedMenuService');
+      return MenuJoinResult(
+        menuId: importResult.menuId,
+        isCollaborative: importResult.isCollaborative,
+      );
+    } catch (e) {
+      // Auth-expired / permission-denied / offline → surface a sanitised
+      // banner instead of letting the throw escape to the UI.
+      AppLogger.error('Failed to join shared menu: $e');
+      setError(sanitizeErrorForUser(e));
       return null;
     }
-
-    AppLogger.success('✅ Menu imported successfully: ${importResult.menuId}');
-
-    return MenuJoinResult(
-      menuId: importResult.menuId,
-      isCollaborative: importResult.isCollaborative,
-    );
   }
 
   /// Trigger copy-on-write when user attempts to edit shared menu

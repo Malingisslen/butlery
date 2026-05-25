@@ -166,19 +166,17 @@ void main() {
       vm.dispose();
     });
 
-    /// PINS CURRENT BUGGY BEHAVIOUR — see BUT-1069 (filed alongside this batch).
-    ///
-    /// The base's `loadContent()` calls `loadContentWithPagination()`, NOT
-    /// `loadContentFromRepository()`. In the SIBLING `SharedRecipeViewModel`,
-    /// `loadContentWithPagination` delegates to `loadContentFromRepository`
-    /// (so the dismissed/blocked filter applies). In THIS VM
-    /// (`SharedShoppingViewModel` lines 112-130), the override re-implements
-    /// pagination WITHOUT the filter — dismissed lists leak into `content`.
-    ///
-    /// When the production bug is fixed (`loadContentWithPagination` should
-    /// delegate to `loadContentFromRepository` like the sibling does), flip
-    /// this test's `expect` to `['v']` and the next test similarly.
-    test('PINS BUG: dismissed lists are NOT filtered (BUT-1069)', () async {
+    /// REGRESSION GUARD — was a real production bug (BUT-1085, originally
+    /// pinned under BUT-1069). The base's `loadContent()` calls
+    /// `loadContentWithPagination()`, NOT `loadContentFromRepository()`. The
+    /// previous custom override re-implemented pagination WITHOUT the
+    /// dismissed/blocked filter — dismissed lists leaked into `content`. The
+    /// fix in iter-77 routes `loadContentWithPagination` through
+    /// `loadContentFromRepository`, mirroring the sibling
+    /// `SharedRecipeViewModel:110-117`. If a future refactor reintroduces the
+    /// custom override, this test fails with `['v','d']`.
+    test('dismissed lists ARE filtered out (BUT-1085 / BUT-1069 regression)',
+        () async {
       final visible = _list(id: 'v');
       final dismissed = _list(id: 'd');
       when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
@@ -188,17 +186,18 @@ void main() {
       final vm = makeVm();
       await vm.loadContent();
 
-      // BUG: both lists are present; dismissed filter is never invoked.
-      // EXPECTED (post-fix): ['v'].
-      expect(vm.content.map((l) => l.id), ['v', 'd']);
+      // Post-fix: dismissed filter runs through the filtered repository path.
+      expect(vm.content.map((l) => l.id), ['v']);
       vm.dispose();
     });
 
-    /// PINS CURRENT BUGGY BEHAVIOUR — see BUT-1069.
-    /// Same root cause as above: blocked-user filter is in
-    /// `loadContentFromRepository`, but the base goes through
-    /// `loadContentWithPagination`, which bypasses it.
-    test('PINS BUG: blocked-user content is NOT filtered (BUT-1069)', () async {
+    /// REGRESSION GUARD — see above (BUT-1085 / BUT-1069). Same root cause:
+    /// the blocked-user filter is in `loadContentFromRepository`. Now that
+    /// the base goes through `loadContentWithPagination` which delegates to
+    /// `loadContentFromRepository`, the filter applies.
+    test(
+        'blocked-user content IS filtered out (BUT-1085 / BUT-1069 regression)',
+        () async {
       final fromBlocked = _list(id: 'b', sharedBy: 'uid-blocked');
       final fromFriend = _list(id: 'f', sharedBy: 'uid-friend');
       when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
@@ -209,18 +208,18 @@ void main() {
 
       await vm.loadContent();
 
-      // BUG: blocked sender's list still appears.
-      // EXPECTED (post-fix): ['f'].
-      expect(vm.content.map((l) => l.id), ['b', 'f']);
+      // Post-fix: blocked sender's list is filtered.
+      expect(vm.content.map((l) => l.id), ['f']);
       vm.dispose();
     });
 
-    /// PINS CURRENT BUGGY BEHAVIOUR — see BUT-1069.
+    /// REGRESSION GUARD — see above (BUT-1085 / BUT-1069).
     /// `loadStatusForAllShoppingLists` is called inside
-    /// `loadContentFromRepository`, but that method is unused by the base
-    /// → status cache is never warmed → `isShoppingListDismissed/Viewed/
-    /// Imported` all return false-stale on first load.
-    test('PINS BUG: status cache is NOT pre-loaded (BUT-1069)', () async {
+    /// `loadContentFromRepository`; previously bypassed because the base went
+    /// through the custom pagination override. Now warmed on every load.
+    test(
+        'status cache IS pre-loaded on load '
+        '(BUT-1085 / BUT-1069 regression)', () async {
       final l1 = _list(id: 'l1');
       when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
           .thenAnswer((_) async => [l1]);
@@ -228,10 +227,10 @@ void main() {
       final vm = makeVm();
       await vm.loadContent();
 
-      // BUG: never called.
-      // EXPECTED (post-fix): called once with [l1] and _kCurrentUid.
-      verifyNever(
-          () => coordinator.loadStatusForAllShoppingLists(any(), any()));
+      // Post-fix: called once with the loaded lists and the current uid.
+      verify(() =>
+              coordinator.loadStatusForAllShoppingLists([l1], _kCurrentUid))
+          .called(1);
       vm.dispose();
     });
   });

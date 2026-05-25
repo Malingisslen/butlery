@@ -74,6 +74,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app_prov;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 
@@ -137,6 +138,17 @@ class _MockFirebaseHostApi extends Fake implements TestFirebaseCoreHostApi {
   }
 }
 
+/// Test double: overrides `read()` to throw on every call. The constructor
+/// itself doesn't touch Firebase, so this is safe to instantiate without any
+/// fake-firestore plumbing. Used to prove `joinSharedMenu`'s outer try-catch
+/// (BUT-1090 fix) actually swallows repo throws.
+class _ThrowingSharedMenuRepository extends FirebaseSharedMenuRepository {
+  @override
+  Future<SharedMenu?> read(String id) async {
+    throw Exception('simulated repo failure for BUT-1090 catch test');
+  }
+}
+
 // -------------------- Test fixtures --------------------------------------
 
 Recipe _makeRecipe({
@@ -185,7 +197,6 @@ void main() {
     late String? currentUserId;
     late String? currentUserDisplayName;
     late int notifyCount;
-    // ignore: unused_local_variable
     late String? lastError;
     late List<Map<String, List<Recipe>>> savedMenus;
     String? saveResult; // Programmable saveMenu return.
@@ -674,30 +685,55 @@ void main() {
     // joinSharedMenu — PINS A REAL PRODUCTION BUG
     // ---------------------------------------------------------------------
     group('joinSharedMenu', () {
-      /// **PINS A REAL BUG**: unlike `getSharedMenuById` and the legacy
-      /// `importSharedMenu`, `joinSharedMenu` has NO try-catch around
-      /// `_sharedMenuRepository.read()` (production line 234). When the
-      /// repo throws (which it does on auth failure, permission denial,
-      /// or network error), the exception escapes uncaught into the UI.
-      /// Every other contract method on this coordinator swallows-to-null;
-      /// this one doesn't.
+      /// HAPPY NOT-FOUND PATH. `read('does-not-exist')` against the
+      /// fake-firestore-backed default repo resolves to `null`, hitting the
+      /// early `if (sharedMenu == null) return null;` guard. Pins that
+      /// behaviour independently of the outer catch.
+      test('unknown id → null (early not-found short-circuit)', () async {
+        final out =
+            await coordinator.joinSharedMenu(sharedMenuId: 'does-not-exist');
+        expect(out, isNull);
+        expect(lastError, isNull, reason: 'no catch, no banner');
+      });
+
+      /// REGRESSION GUARD — was a real production bug (BUT-1090). Unlike
+      /// `getSharedMenuById` and the legacy `importSharedMenu`,
+      /// `joinSharedMenu` previously had NO try-catch around
+      /// `_sharedMenuRepository.read()`. When the repo threw (auth failure,
+      /// permission denial, network error), the exception escaped uncaught
+      /// into the UI. The iter-77 fix wraps the whole method body in
+      /// try-catch, mirroring the legacy `importSharedMenu` shape.
       ///
-      /// This test passes TODAY (asserting the bug exists). When the bug
-      /// is fixed by wrapping the call in try-catch, this test will fail
-      /// and should be flipped to `expect(out, isNull)` to verify the fix.
-      /// Cross-reference: same shape as BUT-1086 (missing guard around a
-      /// repo round-trip) and the BUT-1087 inconsistency around _error
-      /// propagation. File as a new ticket.
+      /// This test exercises the new catch directly via an injected fake
+      /// repo that throws on every `read()`. Without the outer catch, the
+      /// `await throwingCoord.joinSharedMenu(...)` line would throw and
+      /// fail the test. The assertion proves: (a) the throw is swallowed
+      /// → null returned, and (b) `setError(sanitised)` ran → caller can
+      /// surface a banner instead of crashing.
       test(
-          'unhandled repo throw escapes (current bug — should swallow to null)',
-          () async {
-        await expectLater(
-          () async =>
-              await coordinator.joinSharedMenu(sharedMenuId: 'does-not-exist'),
-          throwsA(anything),
-          reason: 'BUG: joinSharedMenu lacks try-catch; throw escapes. '
-              'When fixed, flip to expect(result, isNull).',
+          'repo throw is swallowed → null AND setError called '
+          '(BUT-1090 regression)', () async {
+        final throwingCoord = SocialMenuCoordinator(
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (e) => lastError = e,
+          notifyListeners: () => notifyCount++,
+          getMenu: (id) async => menuStore[id],
+          saveMenu: (menu) async {
+            savedMenus.add(menu);
+            return saveResult;
+          },
+          sharedMenuRepository: _ThrowingSharedMenuRepository(),
         );
+        addTearDown(() async => await throwingCoord.dispose());
+
+        final out =
+            await throwingCoord.joinSharedMenu(sharedMenuId: 'whatever');
+
+        expect(out, isNull,
+            reason: 'outer try-catch must route throw to null return');
+        expect(lastError, isNotNull,
+            reason: 'sanitised error must be surfaced via setError');
       });
     });
 

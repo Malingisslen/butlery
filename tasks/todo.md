@@ -1,44 +1,49 @@
 # Sprint Backlog
 
-## Sprint: iter-76 — BUT-1094 setError on swallow catches — 2026-05-25 (Mon)
+## Sprint: iter-77 — BUT-1085 + BUT-1090 ticket-then-flip pair — 2026-05-25 (Mon)
 
-Theme: Banner-UX consistency fix. `BaseSocialCoordinator.markAsViewed` + `getUnreadCount` and 2 sites in `SocialMenuCoordinator` log + swallow without calling `_setError(...)`. UI gates banner on `hasError` → some failure paths surface, others silent. P4 social Bug.
-
-### Step 0 — premise verification
-
-- Confirmed via grep: 6 catches in `base_social_coordinator.dart` already follow the `_setError(sanitizeErrorForUser(e))` convention; the 2 outliers (markAsViewed line 408, getUnreadCount line 424) only AppLogger.
-- `SocialMenuCoordinator.getSharedMenusForUser` (line 362) + `getSharedMenuById` (line 377) — same swallow.
-- `SocialShoppingCoordinator.getSharedShoppingListsForUser` (line 339) — same pattern. Adding to scope to maintain symmetry across 3 coordinators (per CLAUDE.md "third repetition" rule).
-- Recipe coord doesn't have getSharedRecipesForUser at coord level (different layering via SocialRecipeService — that's BUT-1087's separate ticket).
-- `social_menu_coordinator_test.dart` captures `lastError` via setError callback (line 189, 220, 228) but never asserts on it. Tests won't break.
-- Classification: **fits + scope-expanded** to include shopping for consistency.
-
-### Design choices
-
-- **5 edits**: add `_setError(sanitizeErrorForUser(e))` (in base) or `setError(sanitizeErrorForUser(e))` (in subclasses, via base's public setError method line 457) after the AppLogger.error line.
-- **No new tests** in this commit — existing tests still pass (no assertion currently checks `lastError == null` on swallow). Adding pin'd tests for the fixed behavior would be a separate test-hardening iter.
-- **Skip BUT-1087 defect 2** (clear-on-success): out of scope; needs a `_resetError()` helper at every public mutator entry. Different commit.
-- **Don't refactor to a helper** like `_logAndCaptureError` — only 5 sites, 2 lines each. Premature abstraction.
+Theme: Two P2 High social-bug fixes with pre-existing PINS BUG tests. Same "ticket-then-flip" shape as `fee1147ae` (BUT-1094) and `907268f0b` (BUT-1089) — production fix + test assertion flip in one commit. Skipping BUT-1086 (sign-out race) because the fix requires a product decision (A/B/C) and a cross-repo transaction surface; commented + left open.
 
 ### Ship this sprint
 
-- [ ] **A1. Base coordinator: markAsViewed + getUnreadCount** — `lib/services/unified/modules/social_coordination/base_social_coordinator.dart:408,424`. (BUT-1094)
-- [ ] **A2. Menu coordinator: getSharedMenusForUser + getSharedMenuById** — `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:362,377`. (BUT-1094)
-- [ ] **A3. Shopping coordinator: getSharedShoppingListsForUser** — `lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart:339`. (BUT-1094 scope expansion)
+- [ ] **A1. SharedShoppingViewModel: route loadContentWithPagination through filtered path** — `lib/viewmodels/shared_content/shared_shopping_viewmodel.dart:112-130`. Replace override body with `return loadContentFromRepository();`. (BUT-1085)
+- [ ] **A2. Flip 3 PINS BUG tests** — `test/unit/viewmodels/shared_content/shared_shopping_viewmodel_test.dart:181,201,223`. Dismissed `['v','d']`→`['v']`, blocked `['b','f']`→`['f']`, `verifyNever`→`verify(...).called(1)`. Update test comments to add BUT-1085 ref alongside BUT-1069. (BUT-1085)
+- [ ] **B1. SocialMenuCoordinator: wrap joinSharedMenu in try-catch** — `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:230-293`. Mirror legacy `importSharedMenu` shape: `try { ... } catch (e) { AppLogger.error(...); setError(sanitizeErrorForUser(e)); return null; }`. (BUT-1090)
+- [ ] **B2. Flip joinSharedMenu test** — `test/unit/services/unified/modules/social_menu/social_menu_coordinator_test.dart:691-701`. `throwsA(anything)` → `expect(out, isNull)` + assert `lastError` was set. (BUT-1090)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1085** verified: `loadContentWithPagination` override (lines 112-130) bypasses `loadContentFromRepository`'s 3 filtering steps. Sibling `SharedRecipeViewModel:110-117` delegates correctly. 3 `PINS BUG` tests in shared_shopping_viewmodel_test.dart pre-pin the bug.
+- **BUT-1090** verified: `joinSharedMenu` body (lines 234-293) has zero outer try-catch. Only the inner `addParticipant` call (lines 247-259) is wrapped. Repository's `read()` throw escapes. Test at line 691 pins via `throwsA(anything)`.
+
+### ★ Risky-ticket plan — BUT-1085 ──────────────────
+Classification: **fits** (no premise drift; bug exists at named lines; pinning tests already aligned)
+Files: `lib/viewmodels/shared_content/shared_shopping_viewmodel.dart` (12 lines deleted, 3 added) + test (3 assertion flips + comment updates)
+Blast radius: This is the production path for `BaseSharedContentViewModel.loadContent()`. After fix, dismissed/blocked filtering will activate for ALL existing shopping-list loads. Sibling VM verifies this is the correct shape. No callers depend on the bypass.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+### ★ Risky-ticket plan — BUT-1090 ──────────────────
+Classification: **fits** (bug exists at named lines; legacy `importSharedMenu` is the canonical pattern in the same file)
+Files: `lib/services/unified/modules/social_menu/social_menu_coordinator.dart` (wrap ~60-line method body) + test (1 assertion flip)
+Blast radius: Method-local. Existing inner try-catch around `addParticipant` continues to work. After fix, callers (UI) see `null` + a banner-eligible error instead of an uncaught throw. Already-imported / standard happy paths return the same `MenuJoinResult`.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test test/unit/services/unified/modules/social_menu/` passes (existing 30 tests).
-- [ ] No new banner-firing on happy paths (visual sanity — only swallow paths now setError).
+- [ ] `flutter test test/unit/viewmodels/shared_content/shared_shopping_viewmodel_test.dart` passes.
+- [ ] `flutter test test/unit/services/unified/modules/social_menu/social_menu_coordinator_test.dart` passes.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1094
+- [ ] Close BUT-1085 + BUT-1090
+- [ ] BUT-1086 stays open (deferred — see comment posted 2026-05-25)
 
 ---
 
-## Archived iter-75 (commit `76732592f` — message hijacked by parallel race) — 2026-05-25 (Mon)
+## Archived iter-76 (commit `fee1147ae` — BUT-1094 setError on swallow catches) — 2026-05-25 (Mon)
 
-BUT-1081 closed obsolete (parallel `3225954f6` already shipped sibling tests). BUT-1082 docs-only re-scope — 3 docstring touches noting wrappers don't forward errorStream. BUT-1112 filed as trigger-based follow-up.
+3-coordinator setError consistency fix shipped. All acceptance criteria met.
