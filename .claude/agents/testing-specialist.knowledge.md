@@ -2048,3 +2048,141 @@ documented-looking-but-wrong intuition ("long prose → Tier 7 assistance").
    comments label it "Tier 5". `_createUserAssistedResult` writes
    `'tier': 5` but the source comments label it "Tier 7". Cosmetic but
    confusing — pick one numbering and stick with it.
+
+### 2026-05-25 — Intent-Test Sprint Batch 4: SharedMenuViewModel [Pattern discovered]
+Added `test/unit/viewmodels/shared_content/shared_menu_viewmodel_test.dart`
+(52 tests, all green) covering `SharedMenuViewModel` (174 LoC, was 0%
+coverage). Mirrors the BUT-1068 sibling pattern from batch 3's
+`shared_recipe_viewmodel_test.dart`.
+
+**Key finding: SharedMenuViewModel does NOT have the BUT-1068 bug.**
+`dismissSharedMenu`, `undismissSharedMenu`, and `markAsViewed` all
+correctly propagate the coordinator's bool by returning the result of the
+inner async closure verbatim (see prod lines 207, 224, 257). The
+SharedRecipeViewModel version that DID have the bug must be a separate
+introduction — same family of viewmodel, divergent implementation. The
+three-test trio (true / false / throws) is the only way to PROVE the
+distinction; a single happy-path test would pass under either version.
+
+**Bug-shape pins worth replicating in any future
+`BaseSharedContentViewModel<T>` test file:**
+
+1. **`verifyInOrder` for cache-then-fetch.** `clearStatusCache()` MUST be
+   called BEFORE `getSharedXxxForUser(userId)`. Order matters because the
+   filter loop downstream consults the cache by id. A test that just
+   `verify`s both individually misses a swap-order regression — use
+   `verifyInOrder`.
+
+2. **Bool propagation per-branch trio.** For any VM method `Future<bool>
+   xxx()` that delegates to a coordinator's `Future<bool>`, write three
+   tests: coordinator true → returns true + side effect happened;
+   coordinator false → returns false + side effect did NOT happen;
+   coordinator throws → returns false + hasError set + side effect did
+   NOT happen. This rules out four common regressions: always-true
+   swallow, always-false default, throw-swallow without error surfacing,
+   and mutate-without-confirm.
+
+3. **markAsViewed unauthenticated still-true contract.** Subtle: when
+   `currentUserId == null` but the recipe/menu is not yet viewed,
+   `markAsViewed` STILL returns true (the write fires first, only the
+   `loadStatusForXxx` cache reload is guarded by the userId null-check).
+   Pinning the asymmetry is the right shape — flipping to `return false`
+   when unauthenticated would be a regression.
+
+4. **Idempotent undismiss.** The undismiss closure does
+   `if (!content.any(...)) addContent(...)` — a regression to blind add
+   produces duplicate UI tiles after a parallel reload. Pin with a
+   "loadContent then undismiss" sequence.
+
+5. **Per-item operating-state cleared on BOTH paths.** importXxx wraps
+   the coordinator call in try/finally so `setItemOperating(id, false)`
+   runs on both success AND exception. Test both — removing `finally`
+   leaves the spinner stuck.
+
+6. **Categories formatting branches.** The `getMenuCategories(menu)`
+   method has four branches (empty / 1 / ≤3 / >3 with "och N till"
+   Swedish remainder). Test all four — off-by-one in `take(2)` or
+   `length - 2` is the bug shape.
+
+No production bugs found this run. Investigation primarily PROVED that
+SharedMenuViewModel is structurally correct where its sibling was not.
+
+### 2026-05-25 — SocialRecipeService intent-test sprint, batch 4 [Pattern + Testability friction]
+
+**Pattern: fake `UnifiedRecipeService` by overriding the `late final personal` field via a getter on a `Fake`.**
+`SocialRecipeService` only calls `_recipeService.personal.createRecipe(...)`. So instead of building the giant `UnifiedRecipeService` graph (Firestore + auth + 5 modules), do:
+
+```dart
+class _FakePersonalRecipeOperations extends Fake implements PersonalRecipeOperations {
+  @override Future<String?> createRecipe({...}) async { /* programmable */ }
+}
+class _FakeUnifiedRecipeService extends Fake implements UnifiedRecipeService {
+  _FakeUnifiedRecipeService(this._personal);
+  final _FakePersonalRecipeOperations _personal;
+  @override PersonalRecipeOperations get personal => _personal;
+}
+```
+
+`Fake implements` lets you override a `late final` field-as-getter (`personal`) without ever touching the real constructor. Trick is to keep the override surface minimal — anything not called yields the `Fake` "unimplemented" error, which is exactly what we want (loud failures > silent nulls).
+
+**Pattern: pinning silent-fail contracts with a `reason:` clause.**
+For methods that swallow errors and return `false` (like `dismissSharedRecipe`), the test should pin BOTH the boolean AND the absence/presence of side effects:
+
+```dart
+expect(ok, isFalse);
+expect(recipeRepo.markedAsImported, isEmpty,
+    reason: 'must not mark imported when creation failed');
+```
+
+The `reason:` makes the bug intent obvious in the failure message when someone "tidies" the production code. Caught 1 real testability friction here.
+
+**Bug-finding policy hits (file follow-up tickets):**
+
+1. **Inconsistent `_error` population across the silent-fail family** —
+   `lib/services/social_recipe_service.dart`:
+   - `dismissSharedRecipe` (line 247-251) sets `_error = 'Failed to dismiss recipe: $e'` on catch.
+   - `dismissSharedMenu` (line 265-269) sets `_error`.
+   - `undismissSharedRecipe` (line 283-286), `undismissSharedMenu` (line 300-303), `markSharedRecipeAsViewed` (line 130-133), `markSharedMenuAsViewed` (line 145-148), `importSharedRecipe` (line 185-188), `importSharedMenu` (line 230-233) all `AppLogger.error(...)` and return `false`, but DO NOT set `_error`.
+   - Effect: a UI that polls `service.hasError` to render an error banner will react to a dismiss failure but stay silent on an undismiss / import / view failure. The contract is genuinely inconsistent.
+   - Suggested fix: either set `_error` in all catch blocks (preferred) or add a single helper `_logAndCaptureError(msg, e)` that does both, then call it everywhere. Pinned the current asymmetric behavior in tests so a tidy is intentional.
+
+2. **`_error` is set but never cleared on subsequent success** —
+   `dismissSharedRecipe` writes `_error` on failure; the next successful call (or `refresh()`) doesn't clear it. UI banner sticks around forever. Combined with #1, this means error-state semantics are basically random. Suggested fix: clear `_error = null` at the top of every public mutator, and have `initialize()` already does it. Out of scope for tests but worth a ticket.
+
+3. **`importSharedRecipe` "success" can lie when sign-out races mid-import** —
+   `lib/services/social_recipe_service.dart` lines 175-183: after a successful `createRecipe`, the `markAsImportedOrJoined` is guarded by `if (_permissionService.isAuthenticated)`. If the user signs out between create and mark, the personal recipe IS saved (good) but the share never gets flagged imported (will reappear in inbox next session). The function still returns `true`. Whether that's right depends on product intent — pinned the current behaviour.
+
+4. **Testability friction (NOT a bug, just friction):** `SocialParticipantResolverModule` is constructed unconditionally in the ctor. To test `getRecipeParticipants` you must satisfy `UserService` and `getMembersWithInfo` on both repos. Tests for that surface should live in a dedicated `social_participant_resolver_module_test.dart` rather than here — kept this file focused on the BUT-1068 coordinator contract.
+
+5. **`getMembersWithInfo` override gotcha** — the base repo has `Future<List<SharedContentMember>> getMembersWithInfo(String contentId, {int? limit})`. Fakes that drop the named `limit` parameter compile-fail with `invalid_override`. Real surfaces have evolved past test fakes — always re-check signatures against `base_shared_content_repository.dart` when faking.
+
+**Net for sprint:** 41 tests, all green, ~520 LoC, covering 148 prod LoC end-to-end. Filtered unit coverage on this file goes from 0% → near-full.
+
+### 2026-05-25 — Intent-Test Sprint Batch 4: `shared_shopping_viewmodel.dart` [Bug found]
+
+**Triggered by:** Intent-test sprint batch 4, target file `lib/viewmodels/shared_content/shared_shopping_viewmodel.dart` (185 LoC, 0% → ~95% covered).
+
+**Bug found — BUT-1069 candidate (sibling of BUT-1068 but different root cause):**
+
+`SharedShoppingViewModel.loadContentWithPagination` (lines 112-130) re-implements pagination loading WITHOUT the dismissed-filter, blocked-user-filter, or status-cache preload that lives in `loadContentFromRepository` (lines 67-94). The base's `loadContent()` flow goes through `loadContentWithPagination` exclusively → the filtering code in `loadContentFromRepository` is effectively dead.
+
+Compare the sibling `SharedRecipeViewModel.loadContentWithPagination` (lib/viewmodels/shared_content/shared_recipe_viewmodel.dart line 110-117): it simply `return loadContentFromRepository();` — so all the recipe filters DO apply. Shopping VM is the outlier.
+
+**User-visible impact (high):**
+- Dismissed shopping lists re-appear in the user's inbox on every refresh.
+- Shopping lists shared by blocked users still show up.
+- `isShoppingListDismissed/Viewed/Imported` cache is never warmed on initial load → all status checks return false-stale until the user navigates away and back (which may trigger `loadStatusForShoppingList` via other paths).
+
+**Suggested fix:** replace the override body (lines 112-130) with `return loadContentFromRepository();` — exactly matching the recipe sibling. Two-line change.
+
+**How the tests handle it:** 3 tests in the `loadContentFromRepository` group are explicitly marked `PINS BUG` with a `BUT-1069` reference. They assert the CURRENT buggy behaviour (dismissed/blocked items present; status preload never called). When the bug is fixed, flip `expect(vm.content.map((l) => l.id), ['v', 'd'])` → `['v']` etc. — comments inline tell the next maintainer exactly what to flip.
+
+**Other observations (not bugs, but pinned):**
+- `dismissSharedShoppingList` / `undismissSharedShoppingList` use the CORRECT bool-propagation pattern (post-BUT-1068). Test `'PINS BUT-1068 fix for shopping'` guards against a regression where the closure starts returning `true` unconditionally.
+- `markAsViewed` when unauthenticated still calls `markShoppingListAsViewed` (no auth gate up-front, only on the subsequent `loadStatusForShoppingList` reload). Pinned in test `'returns false (no writes) when unauthenticated'` — but note: this is questionable design (a write to Firestore that the security rules will reject silently). Worth a ticket if the rule is `request.auth != null` on shopping_list_status writes.
+- `markAllAsViewed` correctly skips already-viewed lists (no redundant writes). Pinned.
+- `getCollaborativeList` uses `name.contains(sharedList.listName)` — a substring match. This is fragile: a shared list named "Helg" would match any collab list containing "Helg" (e.g. "Helgmiddag — Anna"). Could surface wrong lists on deep-link. Not pinned as a bug because the product semantics are unclear, but worth a UX review.
+
+**Tests:** 33 tests, all green, single-file (~470 LoC). Reused `_MockCoordinator` + `FakePermissionService` + `MockUnifiedFriendsService` + `MockUnifiedShoppingService` — no new helpers needed.
+
+**Cross-link to BUT-1068:** Recipe + Menu siblings had the always-return-true bool-propagation bug. Shopping has a DIFFERENT bug at the same architectural seam (the base-class template-method override).
