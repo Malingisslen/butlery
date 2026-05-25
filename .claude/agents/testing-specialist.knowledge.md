@@ -2662,3 +2662,105 @@ actually owns — even when that's narrower than the brief implies.
 - The `import()` legacy adapter's `_convertToLegacyResult` switch is private. We exercise four of five arms via the public `import()` driving canned `importV2` results through the orchestration; the `ImportPartial` arm has no production code path that produces it from this strategy, so it's intentionally untested (would require synthetic invocation).
 
 **Time:** ~25 min wall-clock. 24 tests in ~1 second.
+
+---
+
+### 2026-05-25 — Intent-Test Sprint Batch 10 (image_upload_coordinator)
+
+**Trigger:** Writing tests for `lib/viewmodels/recipe_form/image_management/image_upload_coordinator.dart` (136 LOC, 3.7% coverage entering batch).
+
+**Pattern reuse:**
+- AppLocale defaults to Swedish at static init (`AppLocalizationsSv()`) — no test setup required for `AppLocale.current.errorGeneric` style calls. No need for `setupUnit()` here either; the file has no Firebase / DI dependencies.
+- `class _MockStorageService extends Mock implements StorageService {}` works cleanly. Sibling test file `image_upload_service_test.dart` uses the same single-line pattern (don't bother with `production_mocks.dart` MockStorageService — it has no behaviour configured anyway).
+- `registerFallbackValue(_FakeFile())` is required because `verifyNever(() => storage.uploadRecipeImage(any(), any()))` needs a fallback for the `File` positional. `class _FakeFile extends Fake implements File {}` suffices.
+
+**Tests:** 26 tests, all pass on first run (~1s wall-clock). Cleanly format + analyze.
+
+**Production findings (pinned in test file's library doc):**
+1. `canBulkRetry` / `canBulkCancel` thresholds are `> 1` (strict), so the singular failure/active case has no bulk path. Pinned both directions.
+2. `_setError(AppLocale.current.errorGeneric)` swallows the underlying exception text — fatal-batch failures collapse to a generic "Ett fel uppstod". Cross-references existing batch-9 BUT-1118 family findings.
+3. The `disposed`/`uploadsCanceled` flags are passed BY VALUE at method entry. If the parent VM flips its `_disposed` mid-flight without calling `dispose()` on the coordinator, the per-file cancellation checks see stale `false`. Only the explicit `dispose()` path (which iterates `_activeUploads` and calls `.cancel()`) actually stops in-flight uploads. A "soft cancel" via bool-flip is silently ignored.
+
+**Testability gaps:** None. The file's three callbacks (`notifyListeners`, `setError`, `checkCompletionEvents`) are constructor-injected — a clean seam pattern other coordinators in the codebase should copy.
+
+**Time:** ~20 min wall-clock.
+
+### 2026-05-25 — Intent-Test Sprint Batch 10: site_config_tier [Pattern discovered]
+
+**Target:** `lib/services/parsing/tiers/site_config_tier.dart` (Tier 2 of recipe parser cascade, 136 LOC, 0.7% → ~95% coverage).
+
+**Wrote:** 42 intent tests in `test/unit/services/parsing/tiers/site_config_tier_test.dart`, all pass in ~1 second. Bugs found: 0.
+
+**Pattern (lifted from batch 9 schema_org_tier):** the `_RecordingStrategy extends IngredientParsingStrategy` + `parseLines` override is the cleanest way to stub the CRF asset-loading dependency without mocktail. Records what the tier handed off (lines + ocrCorrection flag), echoes back as ParsedIngredients to keep the tier's `ingredients.value!.isNotEmpty` gate happy. Has a `failOnNext` flag to simulate strategy-side failure paths.
+
+**SiteConfigTier-specific test seams (worth documenting for future tier work):**
+- **`preloadedConfig` parameter** = the test injection seam. Wins over `configLoader`. Use it for happy paths; use `configLoader: (domain) async => ...` when you want to assert what domain the tier asked for.
+- **`context.parsedDocument` is mutable cache.** Pre-populating it with a *different* document is the cleanest way to prove the tier reads from cache rather than re-parsing raw HTML. Don't reach for mocktail.
+- **`clock.now()` is used for `metadata.timestamp`** — wrap in `withClock(Clock.fixed(...))` to pin. Pinning this caught no bug here but is a guard against future refactor to `DateTime.now()`.
+
+**Failure-mode tests that earned their keep:**
+- `isSupported: false` with selectors present → must skip (admin kill-switch). Easy to silently invert.
+- `0 portions` → fallback to default (defends `num > 0` guard against off-by-one).
+- `9999 portions` → falls back (defends `kMaxPortions` cap).
+- Invalid CSS selector `:::not valid:::` → no throw, falls back. A `try { querySelector } catch` swallow regression would surface only here.
+- Non-http image URL (relative path, `javascript:`) → rejected. The `startsWith('http')` guard is load-bearing.
+- Strategy returns failed → tier returns `noData` (not success-with-no-ingredients).
+
+**No production bugs found.** SiteConfigTier is well-defended: explicit gates on `hasSelectors`, `isSupported`, ingredient minimum, max portions, http-URL prefix. The `try/catch` around `querySelector` correctly logs and continues. Fallback selector logic is symmetric across title/ingredients/instructions.
+
+**Testability note:** The tier is already exemplary for test injection — `configLoader` function + `preloadedConfig` field + `ingredientStrategy` constructor param means no singletons to patch. Other tiers without this pattern (rule-based, llm) should crib from it. The two-channel config loading (preload vs loader) is a clean way to keep production code simple while giving tests a direct seam.
+
+**Time:** ~12 min wall-clock. 42 tests in ~1 second. Coverage estimate: 0.7% → ~95% on this file.
+
+### 2026-05-25 — GlobalRecipeCache (intent-test sprint, batch 10) [Pattern discovered]
+
+Wrote 25 intent-gated tests for `lib/services/import/cache/global_recipe_cache.dart`
+(98 LOC, 0% → ~100%). All green first run, analyze + format clean. No production
+bugs found.
+
+**Key infrastructure pattern for `BaseService` subclasses with `requiresAuth: true`:**
+You don't need the full `TestServiceLocator.initialize()` machinery if the only
+DI surface you need is `AuthRepository`. The minimal three-line bootstrap works:
+
+```dart
+final getIt = GetIt.instance;
+if (getIt.isRegistered<AuthRepository>()) await getIt.reset();
+getIt.registerSingleton<AuthRepository>(mockAuthRepo);
+ServiceLocator.initialize(DIContainer()); // production bridge
+```
+
+For more complex services that resolve other deps from ServiceLocator inside their
+operations, use the heavier `TestServiceLocator.initialize()` + `registerMock` flow
+as in `block_enforcement_test.dart`.
+
+**Cache testability pattern (worth cribbing):** GlobalRecipeCache takes
+`UrlNormalizer` and `ContentFingerprint` via constructor — so tests use the REAL
+implementations, not mocks. Result: a URL-normalization regression (e.g. dropping
+trailing-slash stripping) breaks the cache-collision tests here too, catching the
+bug at the right layer. Constructor-inject pure-compute collaborators rather than
+ServiceLocator-resolving them.
+
+**Expiration testing — pin `clock` AND seed `cachedAt` as `Timestamp`:**
+Production's `CacheEntry.toFirestore()` writes `FieldValue.serverTimestamp()`,
+which `FakeFirebaseFirestore` resolves opaquely. To test the exact T-ε / T+ε
+boundary, write docs directly to the fake with `Timestamp.fromDate(...)` for
+`cachedAt`, and wrap the assertion in `withClock(Clock.fixed(now), () async {...})`
+— `CacheEntry.isExpired` reads `clock.now()`, so this gives you per-millisecond
+control. Don't try to round-trip through `cache.save()` for expiration tests; the
+serverTimestamp masking will tank reproducibility.
+
+**Merge:false overwrite test pattern:** When production sets a doc with
+`SetOptions(merge: false)`, write a v1 with an extra `legacyField`, save v2
+without it, then assert `recipe.containsKey('legacyField')` is `false`. If
+someone flips it to `merge:true`, that field will survive and the test fails.
+This is more durable than asserting on specific fields of v2 alone.
+
+**URL-key collapse coverage in ONE test:** Looping a list of cosmetic URL
+variants (tracking params, www., trailing slash, scheme case, fragment, query
+order) through the same seeded doc proves they all hash to the same key. The
+`reason:` in `expect` reports which specific variant broke, so when a future
+normalization regression hits, the failure is diagnostic.
+
+**Time:** ~10 min wall-clock. 25 tests in <1 second. Coverage estimate:
+0% → ~100% on this file.
+
