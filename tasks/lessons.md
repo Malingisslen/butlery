@@ -41,6 +41,16 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 - **Example**: BUT-760 ticket said "use App Attest with DeviceCheck fallback." Without Step 0, I would have implemented that blindly even if 0.4.0's API or current security recommendations made it wrong. Step 0 forces a current code-read + (if external claims are made) a Context7 verification before coding.
 - **Files**: `memory/feedback_ticket_premise_verification.md`, `memory/feedback_solo_no_scope_gate.md`, `.claude/commands/sprint-execute.md` (rewritten), `.claude/commands/triage.md` (deleted), `.claude/commands/commit.md` (updated reference), `.claude/hooks/setup-morning-brief.sh` (updated reference).
 
+### [Workflow] Verify Edit succeeded before committing — never trust the commit-message claim
+- **Date**: 2026-05-25
+- **Trigger**: Iter 73 (BUT-1084). Called `Edit` on `.claude/agents/testing-specialist.knowledge.md` without a prior `Read`. The Edit tool returned `tool_use_error: File has not been read yet`, but I had batched it with `git add … && git commit …` in the same Bash chain. Git happily committed only the `tasks/todo.md` change. Pushed commit `96146b05f` had a body claiming the sanitizer entry was appended, but it wasn't. Caught it on post-commit diff inspection.
+- **Rule**:
+  1. After an `Edit` that errors, STOP. Don't proceed to commit-and-push assuming the file changed. The error message is canonical.
+  2. Never batch `Edit` + `git add` + `git commit` in a single Bash chain — the Edit's success/failure is invisible until you read the tool response, by which point the commit has already happened.
+  3. Always Read first if the harness hasn't tracked the file yet. The Read-before-Edit harness rule exists exactly to prevent this class of "tool said no, I didn't notice" failure.
+  4. Honesty over completion (CLAUDE.md #10): if a commit claims X happened and X didn't, push a fix-up commit immediately rather than pretending it's done.
+- **Example**: Recovery — push `8ebb36be5` "actually append BUT-1061 sanitizer entry (BUT-1084 fix-up)" referencing the bad commit. Don't `--amend` or rewrite history (CLAUDE.md never-amend rule).
+
 ### [Workflow] Stop hook — don't fix errors from other sessions
 - **Date**: 2026-04-08
 - **Trigger**: Stop hook fired with analyze errors on files not modified in this session. I correctly identified them as pre-existing (commit 0dc221f03) but started fixing them anyway.
