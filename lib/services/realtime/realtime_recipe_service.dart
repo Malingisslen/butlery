@@ -89,7 +89,13 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     }
   }
 
-  /// Watch realtime recipe with live updates
+  /// Watch realtime recipe with live updates.
+  ///
+  /// The returned stream carries data plus main-stream errors (per BUT-1069
+  /// — missing/malformed docs surface as `ConnectionState.error` in a
+  /// `StreamBuilder`). It does NOT re-emit the underlying service's
+  /// `errorStream` side-channel; for global error logging subscribe to
+  /// `RealtimeSyncService.errorStream` directly. See BUT-1082.
   Stream<RealtimeRecipe> watchRealtimeRecipe(String resourceId) {
     AppLogger.info('👀 Startar watching av realtidsrecept: $resourceId');
 

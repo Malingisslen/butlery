@@ -25,7 +25,15 @@ class RealtimeWatchingModule {
   })  : _getRecipes = getRecipes,
         _realtimeSyncService = realtimeSyncService;
 
-  /// Watch a recipe for real-time updates
+  /// Watch a recipe for real-time updates.
+  ///
+  /// The returned stream carries data plus main-stream errors. The
+  /// underlying `RealtimeSyncService.errorStream` side-channel is NOT
+  /// re-exposed here (BUT-1082 docs-only re-scope: no production consumer
+  /// exists yet, so wrapper-forwarding plumbing was deferred). If you
+  /// need global error logging, subscribe to `RealtimeSyncService.errorStream`
+  /// directly on the injected service. Falls back to periodic polling
+  /// when `_realtimeSyncService` is null.
   Stream<Recipe> watchRecipe(String recipeId) {
     if (_realtimeSyncService == null) {
       AppLogger.warning(
