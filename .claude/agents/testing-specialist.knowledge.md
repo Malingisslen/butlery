@@ -2241,3 +2241,77 @@ Intent-Test Sprint batch 5. `test/unit/services/unified/modules/social_menu/soci
 **Pattern:** for coordinator/service classes that hardwire a Firebase repo in their constructor, the established workaround is the dual-mock setup (Firebase Core host + pigeon binary handlers) lifted from `test/unit/services/unified/unified_menu_service_test.dart` lines 72-178. Test the *pure-logic* methods (validation, status cache, content-building, model construction) directly without seeding firestore; test repo-touching methods only for their early-exit branches (not-found, unauthenticated). For full repo-round-trip coverage, an emulator-lane test is the correct tool.
 
 **createImportedContent placeholder pinned:** `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:173` returns `recipe` unchanged with a `// Placeholder` comment. Imported menus keep ALL of the sender's attribution-less recipes verbatim — inconsistent with `createStaticCopyForOwner` (line 522-538) which DOES add `(Min kopia)` suffixes. Test deliberately pins the current placeholder behavior so any future "fix" is explicit and visible.
+
+### 2026-05-25 — SocialShoppingCoordinator: BUT-1090 NOT reproduced, BUT-1094 family confirmed [Pattern discovered]
+Intent-Test Sprint batch 6. `test/unit/services/unified/modules/social_shopping/social_shopping_coordinator_test.dart` (50 tests, all green). Third member of the social-coordinator family. Findings:
+
+1. **BUT-1090 anti-regression**: `joinSharedShoppingList` (lines 273-322) CORRECTLY wraps `_sharedShoppingRepository.read()` in try-catch and sets error on throw. The buggy shape from `SocialMenuCoordinator.joinSharedMenu` (BUT-1090, missing try-catch) is NOT present here — so this coordinator is the reference pattern that SocialMenuCoordinator should be fixed against. Pinned via `expect(out, isNull); expect(lastError, isNotNull);` so a future refactor that removes the try-catch breaks the test.
+
+2. **BUT-1094 family — confirmed in this file (REPORTED)**: `getSharedShoppingListsForUser` (line 332), `loadStatusForShoppingList` (line 349), AND the inherited base methods `markAsViewed` (base 408) + `getUnreadCount` (base 425) swallow repo errors and return empty/0/false WITHOUT calling `setError`. Internal inconsistency: `joinSharedShoppingList` and `getJoinedShoppingLists` in the SAME file DO call setError. Tests pin the broken-and-correct contracts side-by-side so the inconsistency is visible.
+
+3. **BUT-1095 family — better but not fixed (REPORTED)**: `_sharedShoppingRepository = ServiceLocator.get<FirebaseSharedShoppingRepository>()` at line 113. Goes through ServiceLocator (mockable via GetIt — much cleaner than SocialMenuCoordinator's direct `FirebaseSharedMenuRepository()`), but still no constructor seam. The `ShoppingListServiceAdapter` ALSO defaults to `ServiceLocator.get<UnifiedShoppingService>()` (line 61).
+
+**Test scaffolding pattern (better than menu coordinator)**: Because the coordinator goes through ServiceLocator instead of direct instantiation, NO Firebase Core mock or pigeon binary handlers needed. Setup is just:
+```dart
+production.ServiceLocator.initialize(DIContainer());
+final mockRepo = _MockSharedShoppingRepo();
+GetIt.instance.registerSingleton<FirebaseSharedShoppingRepository>(mockRepo);
+```
+Plus a `_FakeServiceAdapter` wrapping a `_NoopShoppingService extends Mock implements UnifiedShoppingService` so we don't drag in the full service graph. This is the pattern any future ServiceLocator-via-GetIt coordinator should use.
+
+**Save-through is documented no-op**: `ShoppingListServiceAdapter.saveShoppingList` (lines 72-76) logs and returns `shoppingList.id` WITHOUT actually saving anything. Comment justifies it ("shopping uses direct collaboration, not save-through-coordinator") — pinned as the contract so anyone wiring this up later sees it intentional, not a bug.
+
+**Issue #015 contract pinned**: `createImportedContent` and `getOriginalContentFromShared` BOTH return `UnifiedShoppingList.collaborative(... items: [])` regardless of the source itemCount. Items live in a Firestore subcollection now and the caller must load them via `repository.getItems()`. Tests pin items.isEmpty even when sharedContent.itemCount is 42, so a future change that re-inlines items has to update both the production code and these tests.
+
+### 2026-05-25 — PresenceService RTDB mocking patterns [Pattern discovered]
+
+**File:** `test/unit/services/presence_service_test.dart` (29 tests, all green,
+covers 190-LOC `lib/services/presence_service.dart` from 0%).
+
+**RTDB has no fake_cloud_firestore equivalent in this pubspec.** The pattern
+established by `test/integration/firebase/repositories/firebase_cooking_session_repository_test.dart`
+is the way: mocktail stubs for `FirebaseDatabase`, `DatabaseReference`,
+`OnDisconnect`, `DatabaseEvent`, `DataSnapshot`. Bundled into a `_DbHarness`
+helper that wires per-path refs lazily (`refFor(path)`) so tests can either
+do one-shot reads (`setGet`) or stream pumping (`attachOnValue`).
+
+**`FirebaseOptions` is mockable via its public const ctor**, not via Mock —
+just pass `databaseURL: null` to test the bail-out guard. Pair with a
+`_MockFirebaseApp` whose `.options` returns the real `FirebaseOptions`.
+
+**mocktail gotcha — `verifyInOrder` + `verify(captureAny)` are mutually
+hostile across mocks.** When verifyInOrder matches calls across mocks, it
+advances a global cursor; a subsequent `verify(() => mockX.method(captureAny()))`
+finds zero calls even though the call happened. Workaround used here:
+SKIP `verifyInOrder` and verify each call individually via
+`verify(() => mock.method(captureAny())).captured.single`. Document order
+as "structurally enforced by source" if the call chain is syntactic (e.g.
+`ref.onDisconnect().set(...)` cannot syntactically execute `set` before
+`onDisconnect`). Don't try to mix the two styles on the same mocks —
+spent 4 iterations chasing a false "disconnect.set was never called"
+error before realising verifyInOrder had silently consumed it.
+
+**`WidgetsBinding.instance.addObserver(this)`** in production code needs
+`TestWidgetsFlutterBinding.ensureInitialized()` in test `main()` —
+otherwise initialize() throws on the binding lookup. PresenceService is
+a `WidgetsBindingObserver`, so this is mandatory.
+
+**Testability friction (production design observation, not a fix):**
+- `PresenceService.dispose()` overrides `BaseService.dispose` but never
+  calls `super.dispose()` — `onDispose()` hook is unreachable. Currently
+  no harm because all cleanup is inline, but easy to footgun next time
+  someone adds an `onDispose` override.
+- `didChangeAppLifecycleState` (lines 332-353) fires-and-forgets the
+  `set(...)` futures (no `await`, no try/catch). If RTDB throws on
+  background, the unhandled async error escapes to the zone. Compare
+  to `dispose()` which wraps in try/catch — inconsistent.
+- `dispose()` writes offline THEN cancels onDisconnect inside the SAME
+  try-block (lines 172-178). If `set` throws, `cancel()` never runs —
+  the onDisconnect handler stays armed across sessions. Either split
+  into two try/catches or use a try/finally.
+- `_cleanupStaleTypingIndicators` (line 373) does `data() as Map<String, dynamic>`
+  without null check. fake_cloud_firestore happens not to return null
+  when exists==true, but production Firestore can in edge cases.
+
+None of these are blocking bugs and all are flagged per the
+"REPORT, don't fix" policy.
