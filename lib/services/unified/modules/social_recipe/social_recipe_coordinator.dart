@@ -2,7 +2,6 @@
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -535,77 +534,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       return sharedRecipeId; // Return collaborative version ID
     } catch (e) {
       AppLogger.error('Failed to trigger copy-on-write: $e');
-      return null;
-    }
-  }
-
-  /// Legacy import method (GitHub fork style) - creates immediate copy with attribution for backward compatibility.
-  @Deprecated('Use joinSharedRecipe for true copy-on-write behavior')
-  Future<String?> importSharedRecipe({
-    required String sharedRecipeId,
-    String? newTitle,
-  }) async {
-    AppLogger.warning(
-        '⚠️ Using legacy import mode - consider using joinSharedRecipe for true copy-on-write');
-
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      AppLogger.error('Cannot import recipe: No authenticated user');
-      return null;
-    }
-
-    try {
-      AppLogger.info(
-          '📥 Importing shared recipe $sharedRecipeId (legacy mode)');
-
-      final sharedRecipe =
-          await _sharedRecipeRepository.getSharedRecipe(sharedRecipeId);
-      if (sharedRecipe == null) {
-        AppLogger.error('Shared recipe not found: $sharedRecipeId');
-        return null;
-      }
-
-      // For V1 shares with full snapshot, use createImportRecipe.
-      // For V2 shares without snapshot, use contentSnapshot (minimal recipe from metadata).
-      Recipe importedRecipe;
-      if (sharedRecipe.hasFullSnapshot) {
-        final imported =
-            sharedRecipe.createImportRecipe(newOwnerId: currentUserId);
-        if (imported == null) {
-          AppLogger.error('Failed to create imported recipe from snapshot');
-          return null;
-        }
-        importedRecipe = imported;
-      } else {
-        // V2 shares: Use contentSnapshot (minimal recipe from denormalized fields)
-        final contentRecipe = sharedRecipe.contentSnapshot;
-        final attributionText = AppLocale.current
-            .recipeAttributionText(sharedRecipe.sharedByDisplayName);
-        // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
-        importedRecipe = contentRecipe.copyWith(
-          sourceUrl: attributionText,
-          personalTagIds: [],
-        );
-      }
-
-      final finalRecipe = newTitle != null
-          ? importedRecipe.copyWith(title: newTitle)
-          : importedRecipe;
-
-      final recipeId = await _serviceAdapter.createRecipe(finalRecipe);
-      if (recipeId == null) {
-        AppLogger.error('Failed to save imported recipe');
-        return null;
-      }
-
-      await _sharedRecipeRepository.markAsImported(
-          sharedRecipeId, currentUserId);
-
-      AppLogger.success(
-          ' Recipe imported successfully with attribution (legacy mode)');
-      return recipeId;
-    } catch (e) {
-      AppLogger.error('Failed to import shared recipe: $e');
       return null;
     }
   }
