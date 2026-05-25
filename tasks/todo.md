@@ -1,44 +1,37 @@
 # Sprint Backlog
 
-## Sprint: iter-67 — BUT-1072 drop dead _activeListeners — 2026-05-25 (Mon)
+## Sprint: iter-68 — BUT-1060 drop stale dispose() on StatelessWidget — 2026-05-25 (Mon)
 
-Theme: Tech-debt cleanup — `_activeListeners` map in `RealtimeSyncService` is never populated. `isResourceWatched` lies (always false), `_closeAllListeners` is a no-op, `_closeListener` in deleteResource does nothing. P4 backend tech-debt.
+Theme: Pure-cleanup tech-debt — two stale `dispose()` methods on StatelessWidgets (`FriendRecipeListItem`, `MenuRecipeListItem`). Bodies are commented-out leftovers from a `StatefulWidget → StatelessWidget` refactor; framework never calls them. P4.
 
 ### Step 0 — premise verification
 
-- Ticket matches `lib/services/realtime_sync_service.dart` lines 53, 76, 104, 300, 355-367, 421-423, 427 exactly.
-- Verified: `watchResource` returns `docRef.snapshots()` transformed, never `.listen(...)` storing a subscription. Map is structurally dead.
-- Test at line 592 "isResourceWatched is false for never-watched ids" pins the dead-API contract — must delete.
-- Only external "users" of the dead API: testing-specialist.knowledge.md + a docs analysis file. No production code outside this file references them.
-- Ticket presents two options: (A) delete dead code or (B) populate properly. **Option A** chosen — matches current behavior (consumer-owned subscriptions), Option B would change semantics.
-- Classification: **fits** — implement Option A.
+- Ticket points at `lib/widgets/common/dialogs/recipe_selection_dialogs.dart` — actual path is `lib/widgets/common/dialogs/recipe_selection/{menu,friend}_recipe_*_dialog.dart` (file split since ticket was written).
+- Confirmed dead: `menu_recipe_selection_dialog.dart:361-365` + `friend_recipe_sharing_dialog.dart:420-424`. Both classes declare `extends StatelessWidget`. Methods have no `@override`, no real body — just 3 comment lines.
+- No tests call `.dispose()` on these widgets (grep clean).
+- Classification: **fits** (paths slightly stale, behavior matches).
 
 ### Design choices
 
-- **Delete**: `_activeListeners` field, `activeListenersCount` getter, `_closeListener` method, `_closeAllListeners` method, `isResourceWatched` method.
-- **Delete callers**: `_closeAllListeners()` in `onUserLoggedOut` callback and `onDispose`; `_closeListener(resourceId)` in `deleteResource`.
-- **Drop `StreamSubscription`/`DocumentSnapshot` imports** if unused after deletion.
-- **Update test**: remove `isResourceWatched` test, update test file's header docstring on lines 19-20 to drop the "_activeListeners visibility" claim.
-- **Don't touch `_cachedResources.clear()`** in onUserLoggedOut/onDispose — that's a real cache, not dead.
+- Pure deletion. No tests to update.
 
 ### Ship this sprint
 
-- [ ] **A1. Delete dead `_activeListeners` code** — `lib/services/realtime_sync_service.dart`: field + 5 methods + 3 callers. (BUT-1072)
-- [ ] **A2. Update tests** — `test/unit/services/realtime_sync_service_test.dart`: remove isResourceWatched test, fix header docstring. (BUT-1072)
+- [ ] **A1. Delete dead dispose() from MenuRecipeListItem** — `lib/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart:361-365`. (BUT-1060)
+- [ ] **A2. Delete dead dispose() from FriendRecipeListItem** — `lib/widgets/common/dialogs/recipe_selection/friend_recipe_sharing_dialog.dart:420-424`. (BUT-1060)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test test/unit/services/realtime_sync_service_test.dart` passes (24 tests, was 25).
-- [ ] `grep _activeListeners lib/` → 0 hits.
+- [ ] `grep "void dispose" lib/widgets/common/dialogs/recipe_selection/` → 1 hit (the legitimate StatefulWidget dispose at menu_recipe_selection_dialog.dart:42).
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1072 with commit hash
+- [ ] Close BUT-1060
 
 ---
 
-## Archived iter-66 (commit `291194ca2`) — 2026-05-25 (Mon)
+## Archived iter-67 (commit `2c01f6917`) — 2026-05-25 (Mon)
 
-BUT-1071 P4 fix — RealtimeRecipe.fromMap throws FormatException on missing required (ownerId, createdAt, lastEditedAt, lastEditedBy). Added requiredString/requiredDateTime to SerializationUtils. +125 / −24. 55/55 + 25/25 tests pass. BUT-1089 filed for sibling model parity.
+BUT-1072 P4 — dropped dead `_activeListeners` infrastructure from RealtimeSyncService. -58 / +36. 24/24 tests pass.

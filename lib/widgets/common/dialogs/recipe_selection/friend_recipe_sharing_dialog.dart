@@ -416,10 +416,4 @@ class FriendRecipeListItem extends StatelessWidget {
       ),
     );
   }
-
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions
-    // Dispose of resources    super.dispose();
-  }
 }
