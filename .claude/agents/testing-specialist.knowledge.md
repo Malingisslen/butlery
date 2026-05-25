@@ -2558,3 +2558,107 @@ This pattern is reusable for ANY plugin that uses `PlatformInterface`
 (connectivity_plus, path_provider, etc.). The `MockPlatformInterfaceMixin`
 satisfies `PlatformInterface.verify(...)` without needing the private
 token.
+
+### 2026-05-25 — SchemaOrgTier intent tests + dollar-sign string literal gotcha [Pattern discovered]
+
+Wrote `test/unit/services/parsing/tiers/schema_org_tier_test.dart` (50 tests,
+all green) for the Tier 1 JSON-LD parser. Coverage approach:
+
+- **HTML fixture builder**: a tiny `htmlWithJsonLd(jsonLdLiteral)` helper
+  wraps any JSON-LD blob in a minimal `<html><script type="application/ld+json">…</script></html>`
+  page. Combined with `ParsingContext.fromUrl`, this exercises the real
+  `extractRecipeFromHtmlDetailed` extraction path end-to-end without
+  needing fixture files on disk. Sanitizer preserves `application/ld+json`
+  script tags via `preserveWhen`, so the JSON-LD survives sanitization.
+
+- **`_RecordingStrategy extends IngredientParsingStrategy`**: subclassed
+  `parseLines` to record what lines the tier handed off, instead of
+  relying on the regex fallback. This pins the contract ("what reaches
+  the strategy") rather than the strategy's own output. Strategy stub
+  pattern is reusable for any tier that delegates ingredient parsing.
+
+- **Dollar-sign in `test(...)` description**: Dart interprets `$` inside
+  single-quoted strings as interpolation. Test name like
+  `'strips price annotations like ($0.18) before handoff'` fails to parse
+  (`Expected an identifier`). Fix: use a raw string — `r'...'`. This
+  bites any test that asserts on currency/regex/template-style content.
+
+- **Tier-result failure-reason taxonomy is observable contract**: tests
+  pin that "no JSON-LD at all" → `TierFailureReason.noData` and
+  "JSON-LD present but no Recipe" → `TierFailureReason.parseError`. The
+  orchestrator routes on these reasons, so swapping them silently would
+  break the cascade (BUT-1070 family). Future tier tests should pin the
+  specific `failureReason`, not just `success == false`.
+
+- **Cross-ref BUT-1070 (Article→Recipe silent downgrade)**: the test
+  `returns parseError when JSON-LD has structured data but no Recipe`
+  is the regression guard. If the extractor ever starts accepting
+  non-Recipe `@type` values, this test will flip.
+
+No production bugs found; the tier's defensive guards (sub-minute
+`totalTime` rejection, `> 0 && <= kMaxPortions` portions cap,
+`startsWith('http')` image filter) all behave correctly under
+adversarial JSON-LD.
+
+---
+
+### 2026-05-25 — Sprint-brief vs production-reality mismatch (intent gate calibration)
+
+**Trigger:** Batch 9 of the Intent-Test Sprint shipped a brief describing
+`UploadQueueManager` as an "async upload queue with concurrency limits,
+retry semantics, cancellation mid-upload, disposal mid-upload" — language
+suggesting Futures, isolates, in-flight cancellation, etc. The actual
+file (`lib/services/upload/upload_queue_manager.dart`, 250 LOC) is a
+pure synchronous `Map<String, ImageUploadStatus>` state wrapper with
+zero Futures, zero Timers, zero parallelism, zero retry execution.
+Async behaviour lives in `ImageUploadService` + `UploadRetryManager`.
+
+**Lesson:** Read the production file before trusting the brief's
+behavioural description. Writing "concurrency limit off-by-one" tests
+against a class that owns no concurrency would have been a Rule 3
+violation (mocking/asserting behaviour the file doesn't own) and would
+have failed the intent gate. Tests must pin the contract the file
+actually owns — even when that's narrower than the brief implies.
+
+**What to do:**
+1. Open the target file, count Futures/Timers/Streams.
+2. If the brief talks about behaviour you don't see, write a SCOPE NOTE
+   in the test file's library-doc explaining what the file does/doesn't
+   own and why the brief's bug terrain doesn't apply. This makes the
+   intent reviewable for the next agent.
+3. Cover what the file actually owns at the contract level — getters,
+   setters, filter partitions, summary arithmetic, defensive copies.
+
+**Bonus findings while doing this on UploadQueueManager:**
+- `addCompletedUpload` silently overwrites existing entries while
+  `addUpload` warns + no-ops (API asymmetry).
+- `getSummary()['uploading']` actually equals `activeUploads.length`
+  which includes `state == retrying` — mislabeled key.
+- `updateStatus(path, newStatus)` replaces wholesale (no merge); call
+  sites must remember to carry `file:` through every status transition
+  or `validUploads` silently drops the entry.
+
+### 2026-05-25 — YouTubeImportStrategy intent tests (sprint batch 9) [Pattern + bugs flagged]
+
+**File:** `lib/services/import/youtube/youtube_import_strategy.dart` (102 LoC, 0% → covered)
+**Tests:** `test/unit/services/import/youtube/youtube_import_strategy_test.dart` — 24 tests, all passing.
+
+**Mocking pattern that worked cleanly:**
+`YouTubeTranscriptService` is NOT final and has no required deps you can't satisfy. Easiest seam: **subclass** it (`class _FakeTranscriptService extends YouTubeTranscriptService`) and override the four public methods the strategy actually calls (`extractVideoId`, `isYouTubeUrl`, `fetchVideoMetadata`, `fetchTranscript`). All HTTP stays inert. Avoids the "extends Mock with @override bodies" anti-pattern because we're subclassing a CONCRETE class, not a Mock. For `LlmEnhancementService` use `extends Fake implements LlmEnhancementService` with FIFO `responses` queue — sibling of `_FakeLlmEnhancement` in instagram_pipeline_test.
+
+**Bugs flagged (do NOT fix in this batch — sprint policy is report-only):**
+
+- **BUG-1 — Case-sensitive video ID regex (BUT-1092 sibling)** — `lib/services/import/youtube/youtube_transcript_service.dart:20-32`. All six `RegExp` patterns lack `caseSensitive: false`. `YouTube.com/watch?v=dQw4w9WgXcQ` (capital Y, capital T) is rejected by `canHandle`. Same shape as BUT-1092 (tiktok) and the BUT-1092 sibling pinned in instagram_pipeline_test. **Fix:** add `, caseSensitive: false` to each of the six patterns. Test pins CURRENT (broken) behaviour so the fix flips a single expectation.
+
+- **BUG-2 — `inputExample` is not self-consistent** — `lib/services/import/youtube/youtube_import_strategy.dart:35`. Value is `'https://www.youtube.com/watch?v=VIDEO_ID'`. The literal `VIDEO_ID` is 8 chars; the regex requires `[A-Za-z0-9_-]{11}`. Result: `canHandle(inputExample)` returns false, breaking the self-consistency invariant other pipelines follow (instagram_pipeline + url_import_strategy both pass this). Minor (UI placeholder), but inconsistent. **Fix:** swap to a real 11-char ID or `<11_CHAR_ID>` placeholder that hits the alphabet class. Test pins current behaviour.
+
+**Bugs NOT found (verified absent):**
+- BUT-980/BUT-1045 sourceUrl + sourceArtefact wiring IS present (lib/services/import/youtube/youtube_import_strategy.dart:122-141). Pinned with dedicated tests that fail if the wiring drops — including `withClock` to prove `fetchedAt` comes from `package:clock` not `DateTime.now()`.
+- The "no transcript ⇒ no LLM call" cost contract IS upheld — pinned with `llm.seenTranscripts.isEmpty` on the Tier-3 path.
+- Whitespace-only transcripts are correctly treated as empty (no LLM call) via `transcriptResult.isEmpty` which trims.
+
+**Production testability gaps (flagged for sprint backlog, not fixed):**
+- `YouTubeTranscriptService` has no factory/interface — subclass override works but a clean `abstract class IYouTubeTranscriptService` would be cleaner and let `Mock` patterns work directly. Same pattern as the instagram_pipeline WebScraper-not-injectable gap noted in batch 8.
+- The `import()` legacy adapter's `_convertToLegacyResult` switch is private. We exercise four of five arms via the public `import()` driving canned `importV2` results through the orchestration; the `ImportPartial` arm has no production code path that produces it from this strategy, so it's intentionally untested (would require synthetic invocation).
+
+**Time:** ~25 min wall-clock. 24 tests in ~1 second.
