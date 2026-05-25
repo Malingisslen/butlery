@@ -1,40 +1,43 @@
 # Sprint Backlog
 
-## Sprint: iter-71 — BUT-1076 align tier metadata — 2026-05-25 (Mon)
+## Sprint: iter-72 — BUT-1089 sibling fromMap hardening — 2026-05-25 (Mon)
 
-Theme: Analytics-observability fix — `UrlImportStrategy` writes `'tier': 3` for `_tryHtmlTextParse` (commented as Tier 5) and `'tier': 5` for `_createUserAssistedResult` (commented as Tier 7). Mismatch. P4 analytics/import/Bug.
+Theme: Apply BUT-1071's fail-loud hardening to `RealtimeMenuFactory.parseRepositoryData` + `parseJsonData`. Asymmetry creates corruption-disguise risk (recipes reject what menus quietly accept). P4 backend Bug.
 
 ### Step 0 — premise verification
 
-- Ticket points at file lines 264 + 282; actual lines are 279 (tier:3 in `_tryHtmlTextParse`) and 297 (tier:5 in `_createUserAssistedResult`).
-- Source comments at lines 138-141 + 158 + 252-282 confirm "Tier 5" / "Tier 7" naming.
-- Test `test/unit/services/import/url_import_strategy_test.dart:327` asserts `tier: 3` — must flip to 5. Header docstring lines 27-28 acknowledges the mismatch as "historical" — re-write.
-- Per ticket: align metadata to the comment-named numbers (Option: 5 and 7).
-- Live analytics dashboards: none in this solo-dev repo to audit. If any post-hoc analytics breaks, easy to map old `tier=3,5` to new `tier=5,7`.
-- Classification: **fits**.
+- `RealtimeMenuFactory.parseRepositoryData` (line 79) and `parseJsonData` (line 119) use `safeString`/`safeRequiredDateTime` for `ownerId`/`createdAt`/`lastEditedAt`/`lastEditedBy` — same silent-default pattern BUT-1071 fixed in RealtimeRecipe.
+- **Re-scope (plan-stale, Step 0):** Original ticket scope included `RealtimeResource.parseFirestoreMetadata`. Grep confirms zero production callers — it's a test-only helper with an explicit "should handle missing fields" test. Hardening it would break tests for zero production benefit. **Skipped + filed separately as candidate-for-deletion.**
+- Existing happy-path tests in `realtime_menu_factory_test.dart` (lines 192-213, 215-240, etc.) all include the 4 required fields. Won't break.
+- Classification: **fits with scope narrowing**.
 
 ### Design choices
 
-- Two single-line metadata changes.
-- Update one test assertion + one docstring block.
+- Use the same `SerializationUtils.requiredString` and `requiredDateTime` introduced in BUT-1071. No new helpers.
+- Apply to 4 fields in both methods: `ownerId`, `createdAt`, `lastEditedAt`, `lastEditedBy`. Display-name fields stay soft (same as recipe contract).
+- Add 5 new tests mirroring BUT-1071 (1 happy-path + 4 missing-required) for each method = 10 new tests total. Borderline — collapse to 5 by parameterizing both methods over `validData(method)` if it stays readable.
+- **Don't touch `parseRequiredDateTimeValue` line 104** in parseRepositoryData — that's the misnamed util again. The hardening swap replaces it.
 
 ### Ship this sprint
 
-- [ ] **A1. Align url_import_strategy.dart tier metadata** — `lib/services/import/url_import_strategy.dart:279,297`: `3→5`, `5→7`. (BUT-1076)
-- [ ] **A2. Update tests** — `test/.../url_import_strategy_test.dart:27-28 docstring + :327 assertion`. (BUT-1076)
+- [ ] **A1. Harden parseRepositoryData** — `lib/models/realtime/realtime_menu_factory.dart:99-107`: swap 4 silent-default calls to `requiredString` / `requiredDateTime`. (BUT-1089)
+- [ ] **A2. Harden parseJsonData** — same file, lines 138-145, same 4 fields. (BUT-1089)
+- [ ] **A3. Add tests** — `test/unit/models/realtime_menu_factory_test.dart`: 4-8 new tests covering missing-required cases for both parser variants. (BUT-1089)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test url_import_strategy_test.dart` passes.
+- [ ] `flutter test realtime_menu_factory_test.dart` passes.
+- [ ] Existing recipe-fromMap tests still pass (sanity).
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1076
+- [ ] Close BUT-1089
+- [ ] File follow-up for `RealtimeResource.parseFirestoreMetadata` deletion (or wire-up decision)
 
 ---
 
-## Archived iter-70 (commit `927f808f0`) — 2026-05-25 (Mon)
+## Archived iter-71 (commit `f5286fba1`) — 2026-05-25 (Mon)
 
-BUT-1097 P4 — deleted now-zero-caller `@Deprecated SocialRecipeCoordinator.importSharedRecipe`. -90 / +13. Analyze clean.
+BUT-1076 P4 — aligned UrlImportStrategy tier metadata to source-comment names (3→5, 5→7). +24 / −18. 38/38 tests pass.

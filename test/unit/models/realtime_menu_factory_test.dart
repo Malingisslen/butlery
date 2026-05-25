@@ -313,6 +313,92 @@ void main() {
             result['participants'] as Map<String, ResourcePermission>;
         expect(participants, isEmpty);
       });
+
+      // BUT-1089: parseJsonData must throw on missing truly-required
+      // fields instead of silently defaulting to clock.now()/empty. A
+      // corrupted cache entry should NOT re-materialize as a "freshly
+      // edited" menu.
+      Map<String, dynamic> validJsonData() => {
+            'ownerId': 'u_1',
+            'ownerDisplayName': 'Anna',
+            'createdAt': '2026-01-01T00:00:00.000',
+            'lastEditedAt': '2026-01-02T00:00:00.000',
+            'lastEditedBy': 'u_1',
+            'lastEditedByDisplayName': 'Anna',
+            'createdForDate': '2026-01-03T00:00:00.000',
+            'menuTitle': 'Test',
+          };
+
+      test('parseJsonData throws on missing ownerId (BUT-1089)', () {
+        final data = validJsonData()..remove('ownerId');
+        expect(() => RealtimeMenuFactory.parseJsonData(data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('parseJsonData throws on missing createdAt (BUT-1089)', () {
+        final data = validJsonData()..remove('createdAt');
+        expect(() => RealtimeMenuFactory.parseJsonData(data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('parseJsonData throws on missing lastEditedBy (BUT-1089)', () {
+        final data = validJsonData()..remove('lastEditedBy');
+        expect(() => RealtimeMenuFactory.parseJsonData(data),
+            throwsA(isA<FormatException>()));
+      });
+    });
+
+    group('parseRepositoryData hardening', () {
+      // BUT-1089: same fail-loud contract as parseJsonData, for the
+      // Firestore-payload variant. Mirrors RealtimeRecipe.fromMap fix
+      // (BUT-1071) so corrupted docs can't silently parse.
+      Map<String, dynamic> validRepoData() => {
+            'ownerId': 'u_1',
+            'ownerDisplayName': 'Anna',
+            'createdAt': DateTime(2026, 1, 1),
+            'lastEditedAt': DateTime(2026, 1, 2),
+            'lastEditedBy': 'u_1',
+            'lastEditedByDisplayName': 'Anna',
+            'createdForDate': Timestamp.fromDate(DateTime(2026, 1, 3)),
+            'menuTitle': 'Test',
+          };
+
+      test('throws on missing ownerId', () {
+        final data = validRepoData()..remove('ownerId');
+        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('throws on empty ownerId', () {
+        final data = validRepoData()..['ownerId'] = '';
+        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('throws on missing createdAt', () {
+        final data = validRepoData()..remove('createdAt');
+        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('throws on missing lastEditedAt', () {
+        final data = validRepoData()..remove('lastEditedAt');
+        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('throws on missing lastEditedBy', () {
+        final data = validRepoData()..remove('lastEditedBy');
+        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('soft-defaults ownerDisplayName (BUT-1089: display-name stays soft)',
+          () {
+        final data = validRepoData()..remove('ownerDisplayName');
+        final result = RealtimeMenuFactory.parseRepositoryData('m_x', data);
+        expect(result['ownerDisplayName'], isEmpty);
+      });
     });
 
     group('createCopyParameters', () {

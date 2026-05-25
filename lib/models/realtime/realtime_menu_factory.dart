@@ -94,17 +94,19 @@ class RealtimeMenuFactory {
     // Parse menu data - repositories should provide clean data
     final menuData = RealtimeMenuData.fromFirestore(data);
 
+    // BUT-1089: ownerId/createdAt/lastEditedAt/lastEditedBy are
+    // truly-required — a corrupted Firestore doc must throw at parse time,
+    // not be silently defaulted to clock.now()/empty (which would disguise
+    // it as a freshly-edited menu). Display names stay soft.
     return {
       'id': id,
-      'ownerId': SerializationUtils.safeString(data, 'ownerId'),
+      'ownerId': SerializationUtils.requiredString(data, 'ownerId'),
       'ownerDisplayName':
           SerializationUtils.safeString(data, 'ownerDisplayName'),
       'participants': participants,
-      'createdAt':
-          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
-      'lastEditedAt':
-          SerializationUtils.parseRequiredDateTimeValue(data['lastEditedAt']),
-      'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
+      'createdAt': SerializationUtils.requiredDateTime(data, 'createdAt'),
+      'lastEditedAt': SerializationUtils.requiredDateTime(data, 'lastEditedAt'),
+      'lastEditedBy': SerializationUtils.requiredString(data, 'lastEditedBy'),
       'lastEditedByDisplayName':
           SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
@@ -133,16 +135,18 @@ class RealtimeMenuFactory {
     // Parse menu data
     final menuData = RealtimeMenuData.fromJson(json);
 
+    // BUT-1089: same fail-loud contract as parseRepositoryData. JSON
+    // payloads come from cache restore; a corrupted cache entry must throw
+    // here rather than re-materialize as a fake "freshly-edited" menu.
     return {
       'id': SerializationUtils.safeString(json, 'id'),
-      'ownerId': SerializationUtils.safeString(json, 'ownerId'),
+      'ownerId': SerializationUtils.requiredString(json, 'ownerId'),
       'ownerDisplayName':
           SerializationUtils.safeString(json, 'ownerDisplayName'),
       'participants': participants,
-      'createdAt': SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
-      'lastEditedAt':
-          SerializationUtils.safeRequiredDateTime(json, 'lastEditedAt'),
-      'lastEditedBy': SerializationUtils.safeString(json, 'lastEditedBy'),
+      'createdAt': SerializationUtils.requiredDateTime(json, 'createdAt'),
+      'lastEditedAt': SerializationUtils.requiredDateTime(json, 'lastEditedAt'),
+      'lastEditedBy': SerializationUtils.requiredString(json, 'lastEditedBy'),
       'lastEditedByDisplayName':
           SerializationUtils.safeString(json, 'lastEditedByDisplayName'),
       'editCount': SerializationUtils.safeInt(json, 'editCount'),
