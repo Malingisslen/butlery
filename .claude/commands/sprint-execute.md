@@ -79,22 +79,33 @@ requires_plan_mode = (
 
 ### If the gate fires
 
-1. Call `EnterPlanMode` with a per-ticket plan that mirrors what went to `tasks/todo.md` for THIS ticket, plus:
-   - The Step 0 classification (fits / premise-gone / plan-stale)
-   - The specific files about to be touched + line ranges
-   - The blast radius (callers, sibling sites, test impact)
-   - Any product-intent uncertainty flags
-2. Wait for `ExitPlanMode` approval (the two-call gate per `feedback_plan_review_gate.md` — first call blocks + writes a marker, second deletes the marker + allows).
-3. On approval: proceed to Phase 2 for this ticket.
-4. On rejection or terse follow-up ("no, also do X"): re-enter plan mode with the revised scope. Per `memory/feedback_plan_review_gate.md`, don't bail after the first block.
+**Do NOT call `EnterPlanMode`.** The autonomous loop must not halt. Instead, write a richer plan for THIS ticket — both to disk and to chat — then proceed.
+
+1. **Expand the file-plan** for this ticket in `tasks/todo.md` beyond the standard structure. Add explicit sub-sections (under the ticket's bullet):
+   - **Step 0 classification** (fits / premise-gone / plan-stale + the reasoning)
+   - **Files touched** (path + line range per site)
+   - **Blast radius** (callers grepped, sibling sites checked, test impact)
+   - **Product-intent flags** (anything uncertain about user-facing intent — flag but do NOT halt)
+   - **Rollback shape** (one sentence on how to undo if it goes wrong)
+2. **Echo a summary block in chat** before the first Edit:
+   ```
+   ★ Risky-ticket plan ─ BUT-XXXX ──────────────────
+   Classification: <fits/plan-stale/premise-gone>
+   Files: <list>
+   Blast radius: <one-line>
+   Proceeding automatically (no approval gate).
+   ─────────────────────────────────────────────────
+   ```
+   This forces a moment of visible commitment that's hard to drift from, without halting the loop.
+3. **Proceed to Phase 2** for this ticket immediately. No `EnterPlanMode`, no approval wait.
 
 ### If the gate doesn't fire
 
-Skip directly to Phase 2 for this ticket. The file-plan in `tasks/todo.md` is sufficient audit trail for mechanical work.
+Skip the expansion. The standard file-plan section in `tasks/todo.md` is sufficient audit trail for mechanical work. Proceed directly to Phase 2.
 
-### Sticky exceptions (in a /loop session)
+### Discipline (no halt, but no excuses)
 
-In an autonomous `/loop /sprint-execute` session, calling `EnterPlanMode` halts the loop until the user approves. That's the intended trade-off — risky work pauses for human judgment. Don't try to work around it.
+The point of Phase 1.5 is to write a BETTER plan for risky tickets, not to ask for approval. If the expanded-plan echo reveals scope confusion or product-intent uncertainty AFTER it's written, the right move is to file a follow-up Linear ticket capturing the uncertainty and proceed with the narrower-but-correct scope — not to halt the loop.
 
 ## Phase 2 — Execution
 
