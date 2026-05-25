@@ -24,8 +24,9 @@
 ///    - JSON-LD recipe HTML → Tier 2 (schema.org) success with the right
 ///      `extraction_method` and recipe content carried through.
 ///    - Long unstructured HTML → Tier 7 (user-assistance) result with
-///      `tier: 5` in metadata (Tier 7 is internal numbering — public metadata
-///      uses tier=5 historically). NOT a hard failure.
+///      `tier: 7` in metadata (aligned to the Tier 7 source comment by
+///      BUT-1076 — previously emitted `tier: 5` due to a numbering drift).
+///      NOT a hard failure.
 ///    - Tiny HTML body → hard failure carrying `html_fetched=true,
 ///      html_length=<N>` so the UI can explain "we fetched but found nothing."
 ///    - HTTP 4xx / 5xx → fetcher returns null → hard failure with
@@ -324,7 +325,7 @@ void main() {
         result.metadata?['extraction_method'],
         'html_text_parse',
       );
-      expect(result.metadata?['tier'], 3);
+      expect(result.metadata?['tier'], 5);
       expect(
         result.warnings,
         contains('Extracted from HTML text - quality may vary'),

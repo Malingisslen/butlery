@@ -1,37 +1,40 @@
 # Sprint Backlog
 
-## Sprint: iter-70 — BUT-1097 delete deprecated importSharedRecipe — 2026-05-25 (Mon)
+## Sprint: iter-71 — BUT-1076 align tier metadata — 2026-05-25 (Mon)
 
-Theme: BUT-1073 follow-up. `SocialRecipeCoordinator.importSharedRecipe` (~70 lines, `@Deprecated`) had its last would-be caller deleted in iter-69. Drop the method. P4 backend/tech-debt.
+Theme: Analytics-observability fix — `UrlImportStrategy` writes `'tier': 3` for `_tryHtmlTextParse` (commented as Tier 5) and `'tier': 5` for `_createUserAssistedResult` (commented as Tier 7). Mismatch. P4 analytics/import/Bug.
 
 ### Step 0 — premise verification
 
-- Method at `lib/services/unified/modules/social_recipe/social_recipe_coordinator.dart:542-611`.
-- Already `@Deprecated('Use joinSharedRecipe for true copy-on-write behavior')`.
-- Grep for `importSharedRecipe`: zero hits as a coordinator-method call. Only callers are ViewModel methods (different class) and SocialRecipeService.importSharedRecipe (different class, returns `bool`).
-- Classification: **fits** — pure deletion.
+- Ticket points at file lines 264 + 282; actual lines are 279 (tier:3 in `_tryHtmlTextParse`) and 297 (tier:5 in `_createUserAssistedResult`).
+- Source comments at lines 138-141 + 158 + 252-282 confirm "Tier 5" / "Tier 7" naming.
+- Test `test/unit/services/import/url_import_strategy_test.dart:327` asserts `tier: 3` — must flip to 5. Header docstring lines 27-28 acknowledges the mismatch as "historical" — re-write.
+- Per ticket: align metadata to the comment-named numbers (Option: 5 and 7).
+- Live analytics dashboards: none in this solo-dev repo to audit. If any post-hoc analytics breaks, easy to map old `tier=3,5` to new `tier=5,7`.
+- Classification: **fits**.
 
 ### Design choices
 
-- Delete the whole `@Deprecated` block (lines 542-611).
-- Run analyze to surface any helper-orphans (would indicate code that was used only by this method); file or fix as appropriate.
+- Two single-line metadata changes.
+- Update one test assertion + one docstring block.
 
 ### Ship this sprint
 
-- [ ] **A1. Delete coordinator.importSharedRecipe** — `lib/services/unified/modules/social_recipe/social_recipe_coordinator.dart:542-611`. (BUT-1097)
+- [ ] **A1. Align url_import_strategy.dart tier metadata** — `lib/services/import/url_import_strategy.dart:279,297`: `3→5`, `5→7`. (BUT-1076)
+- [ ] **A2. Update tests** — `test/.../url_import_strategy_test.dart:27-28 docstring + :327 assertion`. (BUT-1076)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `grep "importSharedRecipe" lib/services/unified/modules/social_recipe/` → 0 hits.
+- [ ] `flutter test url_import_strategy_test.dart` passes.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1097
+- [ ] Close BUT-1076
 
 ---
 
-## Archived iter-69 (commit `c4cdd1eb8`) — 2026-05-25 (Mon)
+## Archived iter-70 (commit `927f808f0`) — 2026-05-25 (Mon)
 
-BUT-1073 P4 — dropped dead `legacyMode` parameter from SharedRecipeViewModel.importSharedRecipe. -45 / +35. 32/32 tests pass. BUT-1097 filed for coordinator-method deletion (this sprint).
+BUT-1097 P4 — deleted now-zero-caller `@Deprecated SocialRecipeCoordinator.importSharedRecipe`. -90 / +13. Analyze clean.

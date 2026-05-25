@@ -276,7 +276,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'strategy': strategyName,
         'extraction_method': 'html_text_parse',
         'url': url,
-        'tier': 3
+        // BUT-1076: was 3, now matches the Tier 5 source comment.
+        'tier': 5
       },
     );
   }
@@ -294,7 +295,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       extractedText: plainText,
       suggestedTitle: suggestedTitle,
       likelyIngredientLines: likelyIngredients,
-      metadata: {'strategy': strategyName, 'url': url, 'tier': 5},
+      // BUT-1076: tier was 5, now matches the Tier 7 source comment.
+      metadata: {'strategy': strategyName, 'url': url, 'tier': 7},
     );
   }
 
