@@ -16,8 +16,8 @@
 /// - undismissSharedRecipe re-adds locally, but is idempotent on dup id.
 /// - markAsViewed short-circuits when already viewed (no repo write).
 /// - markAsViewed reloads cache + notifies after successful write.
-/// - importSharedRecipe legacyMode==true and ==false both call joinSharedRecipe
-///   (pins the documented "no-op legacy branch" — see file lines 180-192).
+/// - importSharedRecipe delegates to coordinator.joinSharedRecipe and
+///   surfaces errors as null + hasError.
 /// - unreadCount respects showImported (imported items don't count when hidden).
 /// - importableRecipes excludes own-shared content (sharedByUserId == userId).
 /// - canEditRecipe contract per (owner / collaboration flag / cow-triggered).
@@ -383,14 +383,11 @@ void main() {
   });
 
   group('importSharedRecipe', () {
-    /// The legacyMode flag is documented as "GitHub fork-style" import — but
-    /// inspecting the implementation (lib/viewmodels/shared_content/
-    /// shared_recipe_viewmodel.dart:180-192) reveals BOTH branches call
-    /// joinSharedRecipe with the same args. This test PINS that observed
-    /// behaviour. If the dead branch is ever wired to a real legacy import,
-    /// this test must be updated deliberately.
-    test('legacyMode=true and legacyMode=false both call joinSharedRecipe',
-        () async {
+    /// Happy path: VM delegates to `coordinator.joinSharedRecipe` with the
+    /// recipe id + optional new title, returning the coordinator's new id.
+    /// BUT-1073 removed the dead `legacyMode` parameter that previously
+    /// branched to the same call site.
+    test('delegates to joinSharedRecipe with id + newTitle', () async {
       final r = _recipe(id: 'i1', title: 'pasta');
       when(() => coordinator.joinSharedRecipe(
             sharedRecipeId: any(named: 'sharedRecipeId'),
@@ -398,14 +395,11 @@ void main() {
           )).thenAnswer((_) async => 'new-id');
 
       final vm = makeVm();
-      await vm.importSharedRecipe(r, legacyMode: false, newTitle: 'A');
-      await vm.importSharedRecipe(r, legacyMode: true, newTitle: 'B');
+      final id = await vm.importSharedRecipe(r, newTitle: 'A');
 
+      expect(id, 'new-id');
       verify(() =>
               coordinator.joinSharedRecipe(sharedRecipeId: 'i1', newTitle: 'A'))
-          .called(1);
-      verify(() =>
-              coordinator.joinSharedRecipe(sharedRecipeId: 'i1', newTitle: 'B'))
           .called(1);
       vm.dispose();
     });

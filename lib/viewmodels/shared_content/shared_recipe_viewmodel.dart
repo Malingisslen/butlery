@@ -169,27 +169,18 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     );
   }
 
-  /// Import shared recipe using copy-on-write pattern
-  /// For new copy-on-write behavior, this joins as viewer until first edit.
-  /// For legacy compatibility, creates immediate copy with attribution.
+  /// Import shared recipe using copy-on-write pattern: joins as viewer
+  /// until the first edit, at which point the coordinator creates the
+  /// owning copy.
   Future<String?> importSharedRecipe(SharedRecipe sharedRecipe,
-      {String? newTitle, bool legacyMode = false}) async {
+      {String? newTitle}) async {
     return await executeOperation(
       'Import recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        if (legacyMode) {
-          // Legacy GitHub fork-style import
-          return await _socialRecipeCoordinator.joinSharedRecipe(
-            sharedRecipeId: sharedRecipe.id,
-            newTitle: newTitle,
-          );
-        } else {
-          // New copy-on-write behavior - join as viewer
-          return await _socialRecipeCoordinator.joinSharedRecipe(
-            sharedRecipeId: sharedRecipe.id,
-            newTitle: newTitle,
-          );
-        }
+        return await _socialRecipeCoordinator.joinSharedRecipe(
+          sharedRecipeId: sharedRecipe.id,
+          newTitle: newTitle,
+        );
       },
     );
   }
