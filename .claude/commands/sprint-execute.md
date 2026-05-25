@@ -53,7 +53,48 @@ Archive any prior sprint below a `---` separator.
 
 **Linear state transition:** for each BUT-XXX in the new plan, transition state to "Todo" (resolve state UUIDs once via `list_issue_statuses`, then `save_issue` per ticket). Skip silently if Linear MCP unavailable.
 
-**Do not pause for user approval of scope.** Per `feedback_solo_no_scope_gate.md`, the rubber-stamp gate was deleted. Proceed straight to Phase 2.
+**Do not pause for user approval of scope.** Per `feedback_solo_no_scope_gate.md`, the rubber-stamp "approve my picks" gate was deleted. Proceed straight to Phase 1.5. (Note: this is different from the per-ticket plan-mode gate in Phase 1.5 — that one fires on risky tickets specifically, not on the sprint as a whole.)
+
+## Phase 1.5 — Risk-gated plan mode (hybrid)
+
+**Why:** the file-plan in `tasks/todo.md` is durable but easy to drift from mid-iter (iter-46 lesson — wrote plan then jumped scope). For genuinely risky tickets — cross-cutting bugs, security surface, base classes that propagate through inheritance — `EnterPlanMode`'s forcing function (blocks Edit/Write/Bash until approval) prevents the batched-footgun class of error (iter-73 lesson). Mechanical cleanup doesn't benefit from the halt; routing P3/P4 tech-debt through plan mode wastes the autonomous loop. This phase splits the difference.
+
+### Per-ticket risk score
+
+For each ticket in the sprint, compute a binary `requires_plan_mode` flag:
+
+```
+requires_plan_mode = (
+  priority <= 2  # Urgent or High
+  OR (labels contains 'Bug' AND labels contains any of: backend, security, social, recipe, menu, shopping, account)
+  OR (labels contains 'security')
+  OR (estimated file-touch >= 3 AND ticket spans multiple modules — not a sweep within one dir)
+)
+```
+
+**Skip the gate explicitly when:**
+- Priority is Low (4) AND labels are pure `tech-debt` / `Improvement` / `test-gap` / `dependency`.
+- Mechanical-rename, dead-code-deletion, single-line-fix patterns (e.g. BUT-1060 stale-dispose, BUT-1076 tier-rename, BUT-1097 deprecated-method-delete).
+- Doc-only commits.
+
+### If the gate fires
+
+1. Call `EnterPlanMode` with a per-ticket plan that mirrors what went to `tasks/todo.md` for THIS ticket, plus:
+   - The Step 0 classification (fits / premise-gone / plan-stale)
+   - The specific files about to be touched + line ranges
+   - The blast radius (callers, sibling sites, test impact)
+   - Any product-intent uncertainty flags
+2. Wait for `ExitPlanMode` approval (the two-call gate per `feedback_plan_review_gate.md` — first call blocks + writes a marker, second deletes the marker + allows).
+3. On approval: proceed to Phase 2 for this ticket.
+4. On rejection or terse follow-up ("no, also do X"): re-enter plan mode with the revised scope. Per `memory/feedback_plan_review_gate.md`, don't bail after the first block.
+
+### If the gate doesn't fire
+
+Skip directly to Phase 2 for this ticket. The file-plan in `tasks/todo.md` is sufficient audit trail for mechanical work.
+
+### Sticky exceptions (in a /loop session)
+
+In an autonomous `/loop /sprint-execute` session, calling `EnterPlanMode` halts the loop until the user approves. That's the intended trade-off — risky work pauses for human judgment. Don't try to work around it.
 
 ## Phase 2 — Execution
 
