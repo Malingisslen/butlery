@@ -16,8 +16,9 @@
 /// - Cache: getCachedResource returns null for unknown ids; cached value is
 ///   the local pre-write copy after a successful updateResource.
 /// - fetchLatestResource: returns null (does not throw) on parser failure.
-/// - dispose(): cancels listeners (tested via _activeListeners visibility via
-///   isResourceWatched + close-on-delete invariant) and clears the cache.
+/// - dispose(): clears the cache (consumer code owns the stream
+///   subscriptions returned by watchResource; the service does not track
+///   them).
 /// - Error pipeline: _handleError writes to errorStream and stores lastError;
 ///   clearError nulls it and notifies listeners.
 library;
@@ -583,14 +584,6 @@ void main() {
     /// Proves: cache lookup is null-safe for unseen ids — does not throw.
     test('getCachedResource returns null for unknown id', () {
       expect(service.getCachedResource<RealtimeRecipe>('nope'), isNull);
-    });
-
-    /// Proves: `isResourceWatched` reflects the absence of an active
-    /// listener. (Watching via Stream.first auto-cancels, so this never
-    /// registers in _activeListeners — which is itself an interesting
-    /// production observation flagged in the report.)
-    test('isResourceWatched is false for never-watched ids', () {
-      expect(service.isResourceWatched('never'), isFalse);
     });
 
     /// Proves: `refreshAllResources` does NOT throw and DOES notify

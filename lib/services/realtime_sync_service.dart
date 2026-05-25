@@ -2,7 +2,6 @@
 /// Provides realtime document streams, intelligent conflict resolution, and connection management.
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -50,7 +49,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   late final StreamController<bool> _connectionController;
   // ignore: close_sinks - Disposed in onDispose() via disposeStreamResources()
   late final StreamController<SyncError> _errorController;
-  final Map<String, StreamSubscription<DocumentSnapshot>> _activeListeners = {};
 
   /// BUT-779: bounded so power-user sessions don't grow this map linearly
   /// with activity. 200 covers typical sessions (50-100 resources observed)
@@ -73,7 +71,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       onConnectionStateChanged: (_) {},
       notifyListeners: () => notifyListeners(),
       onUserLoggedOut: () {
-        _closeAllListeners();
         _cachedResources.clear();
       },
     );
@@ -99,9 +96,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
   /// Stream for synchronization errors
   Stream<SyncError> get errorStream => _errorController.stream;
-
-  /// Number of active listeners (for debugging)
-  int get activeListenersCount => _activeListeners.length;
 
   /// Current user
   String? get _currentUserId => _authRepository.currentUserId;
@@ -296,9 +290,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       _cachedResources.remove(resourceId);
       _conflictModule.removeTracking(resourceId);
 
-      // Close active listener
-      await _closeListener(resourceId);
-
       AppLogger.success('✅ Resurs borttagen: $resourceId');
     } catch (e) {
       AppLogger.error('❌ Kunde inte ta bort resurs $resourceId', e);
@@ -349,21 +340,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
           '🛡️ Väljer remote version vid conflict resolution-fel');
       return remote;
     }
-  }
-
-  /// Close specific listener
-  Future<void> _closeListener(String resourceId) async {
-    final subscription = _activeListeners.remove(resourceId);
-    await subscription?.cancel();
-  }
-
-  /// Close all active listeners
-  void _closeAllListeners() {
-    for (final subscription in _activeListeners.values) {
-      subscription.cancel();
-    }
-    _activeListeners.clear();
-    AppLogger.info('🔒 Alla listeners stängda');
   }
 
   /// Hantera fel och notifiera lyssnare
@@ -417,14 +393,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// Check if resource is actively watched
-  bool isResourceWatched(String resourceId) {
-    return _activeListeners.containsKey(resourceId);
-  }
-
   @override
   Future<void> onDispose() async {
-    _closeAllListeners();
     await disposeStreamResources(); // StreamManagementMixin handles controllers and subscriptions
     _cachedResources.clear();
     _conflictModule.clearTracking();

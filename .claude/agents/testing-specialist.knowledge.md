@@ -2186,3 +2186,16 @@ Compare the sibling `SharedRecipeViewModel.loadContentWithPagination` (lib/viewm
 **Tests:** 33 tests, all green, single-file (~470 LoC). Reused `_MockCoordinator` + `FakePermissionService` + `MockUnifiedFriendsService` + `MockUnifiedShoppingService` — no new helpers needed.
 
 **Cross-link to BUT-1068:** Recipe + Menu siblings had the always-return-true bool-propagation bug. Shopping has a DIFFERENT bug at the same architectural seam (the base-class template-method override).
+
+
+---
+
+### 2026-05-25 — BUT-1072: `_activeListeners` was dead code, removed
+
+**Trigger:** Pattern resolved (supersedes 2026-04 entry #3 above).
+
+The earlier knowledge entry flagged `_activeListeners` as suspicious dead code in `RealtimeSyncService`. iter-67 confirmed and removed it: the field, 5 internal methods, and 3 callers (including the no-op `_closeListener` invocation inside `deleteResource`). One test that pinned `isResourceWatched` returning false-always was deleted in the same pass — the test was encoding a quirk of the dead code path, not a behavior anyone relied on.
+
+**Lesson:** when a knowledge entry says "either dead code or there is an undocumented secondary subscribe path," prefer a deletion-PR over a pinning-test. A test that pins `isResourceWatched(id) == false` mid-watch was protecting a bug-shaped contract; once the field is gone, the test goes too. The 4 remaining `deleteResource` tests (`unauthed`, `editor not owner`, `owner happy path with cache purge`, `documentNotFound`) still encode meaningful intent — auth gate, stricter-than-edit permission check (BUT-369 analogue), cache purge invariant, typed-error surface. None depended on `_closeListener` running.
+
+**No grep hits** for any of the removed symbols (`_activeListeners`, `activeListenersCount`, `isResourceWatched`, `_closeListener`, `_closeAllListeners`) anywhere under `test/`.

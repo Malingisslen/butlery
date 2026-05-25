@@ -1,42 +1,44 @@
 # Sprint Backlog
 
-## Sprint: iter-66 — BUT-1071 fromMap fail-loud on missing required — 2026-05-25 (Mon)
+## Sprint: iter-67 — BUT-1072 drop dead _activeListeners — 2026-05-25 (Mon)
 
-Theme: Data hygiene bug — `RealtimeRecipe.fromMap` silently defaults missing required fields. `safeRequiredDateTime` is a misnomer — it falls back to `clock.now()`. P4 backend.
+Theme: Tech-debt cleanup — `_activeListeners` map in `RealtimeSyncService` is never populated. `isResourceWatched` lies (always false), `_closeAllListeners` is a no-op, `_closeListener` in deleteResource does nothing. P4 backend tech-debt.
 
 ### Step 0 — premise verification
 
-- Ticket matches `lib/models/realtime/realtime_recipe.dart:334-376` (fromMap) and `lib/core/utils/serialization_utils.dart:127-130` (safeRequiredDateTime — misleadingly named, defaults to clock.now()).
-- Truly-required fields in a real document: `ownerId`, `createdAt`, `lastEditedAt`, `lastEditedBy`. Display-name fields are softer (UI only).
-- BUT-1069 (iter-63) already propagates parse exceptions to stream subscribers — exception path infrastructure exists; we just need to USE it.
-- Classification: **fits** — implement as written.
+- Ticket matches `lib/services/realtime_sync_service.dart` lines 53, 76, 104, 300, 355-367, 421-423, 427 exactly.
+- Verified: `watchResource` returns `docRef.snapshots()` transformed, never `.listen(...)` storing a subscription. Map is structurally dead.
+- Test at line 592 "isResourceWatched is false for never-watched ids" pins the dead-API contract — must delete.
+- Only external "users" of the dead API: testing-specialist.knowledge.md + a docs analysis file. No production code outside this file references them.
+- Ticket presents two options: (A) delete dead code or (B) populate properly. **Option A** chosen — matches current behavior (consumer-owned subscriptions), Option B would change semantics.
+- Classification: **fits** — implement Option A.
 
 ### Design choices
 
-- **Add strict variants to SerializationUtils**: `requiredString` and `requiredDateTime` that throw `FormatException` on missing/empty. Leave existing `safe*` family alone (they're used in 100+ places).
-- **Apply to the 4 truly-required fields in fromMap**: ownerId, createdAt, lastEditedAt, lastEditedBy. Display names stay soft (empty-string default OK).
-- **Don't rename `safeRequiredDateTime`** — it's the misnomer cause but renaming is high-blast-radius. The ticket scope is fixing fromMap, not refactoring serialization util naming.
-- **Tests**: add 4 new tests covering each required-field absence + 1 success case. Strict-variant utility tests can be inline if minimal.
+- **Delete**: `_activeListeners` field, `activeListenersCount` getter, `_closeListener` method, `_closeAllListeners` method, `isResourceWatched` method.
+- **Delete callers**: `_closeAllListeners()` in `onUserLoggedOut` callback and `onDispose`; `_closeListener(resourceId)` in `deleteResource`.
+- **Drop `StreamSubscription`/`DocumentSnapshot` imports** if unused after deletion.
+- **Update test**: remove `isResourceWatched` test, update test file's header docstring on lines 19-20 to drop the "_activeListeners visibility" claim.
+- **Don't touch `_cachedResources.clear()`** in onUserLoggedOut/onDispose — that's a real cache, not dead.
 
 ### Ship this sprint
 
-- [ ] **A1. Add strict required-field parsers** — `lib/core/utils/serialization_utils.dart`: add `requiredString(map, key)` (throws on null/empty) and `requiredDateTime(map, key)` (throws on null/unparseable). (BUT-1071)
-- [ ] **A2. Use strict variants in RealtimeRecipe.fromMap** — `lib/models/realtime/realtime_recipe.dart:355-376`: replace silent defaults for ownerId, createdAt, lastEditedAt, lastEditedBy. (BUT-1071)
-- [ ] **A3. Tests** — add fromMap tests covering each required-field absence (throws `FormatException`) + happy path. (BUT-1071)
+- [ ] **A1. Delete dead `_activeListeners` code** — `lib/services/realtime_sync_service.dart`: field + 5 methods + 3 callers. (BUT-1072)
+- [ ] **A2. Update tests** — `test/unit/services/realtime_sync_service_test.dart`: remove isResourceWatched test, fix header docstring. (BUT-1072)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] New tests pass; existing `realtime_sync_service_test.dart` (25 tests) still pass.
-- [ ] Display-name fields remain soft (empty-string default).
+- [ ] `flutter test test/unit/services/realtime_sync_service_test.dart` passes (24 tests, was 25).
+- [ ] `grep _activeListeners lib/` → 0 hits.
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1071 with commit hash
+- [ ] Close BUT-1072 with commit hash
 
 ---
 
-## Archived iter-65 (commit `578bf72c5`) — 2026-05-25 (Mon)
+## Archived iter-66 (commit `291194ca2`) — 2026-05-25 (Mon)
 
-BUT-1061 P3 fix — HtmlSanitizer.check() surfaces non-JSON-LD `<script>` tags as warning (not critical per re-scope to avoid breaking URL imports). Tightened regex prevents `data-note="application/ld+json"` bypass. +102 / −21. 80/80 tests pass. BUT-1084 filed for knowledge-file append.
+BUT-1071 P4 fix — RealtimeRecipe.fromMap throws FormatException on missing required (ownerId, createdAt, lastEditedAt, lastEditedBy). Added requiredString/requiredDateTime to SerializationUtils. +125 / −24. 55/55 + 25/25 tests pass. BUT-1089 filed for sibling model parity.
