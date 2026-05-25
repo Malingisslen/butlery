@@ -902,24 +902,20 @@ void main() {
         expect(notifyCount, 1);
       });
 
-      /// **PINS BUT-1094**: on throw, `markAsViewed` returns false but
-      /// does NOT call `setError`. Production line 408 catches without
-      /// surfacing — every OTHER catch in this file calls setError. This
-      /// test pins the CURRENT bug; when fixed (by adding
-      /// `_setError(sanitizeErrorForUser(e))` inside the catch), flip the
-      /// `errors, isEmpty` assertion to `errors, isNotEmpty`.
-      test('BUG (BUT-1094): throw → false but errors is EMPTY (no setError)',
-          () async {
+      /// **BUT-1094 FIX VERIFIED** (commit fee1147ae): on throw,
+      /// `markAsViewed` returns false AND calls `setError` consistently
+      /// with every other catch in the file. The bug-pin assertion has
+      /// been flipped to assert the fixed behaviour.
+      test('throw → false AND errors is populated (BUT-1094 fix)', () async {
         when(() => mockRepo.markAsViewed(any(), any()))
             .thenThrow(Exception('forbidden'));
 
         final ok = await coordinator.markAsViewed('sc-1');
 
         expect(ok, isFalse);
-        expect(errors, isEmpty,
-            reason: 'BUT-1094: production line 408 swallows without setError. '
-                'When fixed, flip to expect(errors, isNotEmpty).');
-        expect(notifyCount, 0, reason: 'No notify on the error path either.');
+        expect(errors, isNotEmpty,
+            reason: 'BUT-1094 fix: production line 408 must call setError.');
+        expect(notifyCount, 0, reason: 'No notify on the error path.');
       });
     });
 
@@ -948,20 +944,17 @@ void main() {
         expect(count, 7);
       });
 
-      /// **PINS BUT-1094**: throw → 0 but no setError. Same shape as
-      /// `markAsViewed`. Production line 425 silently swallows. When
-      /// fixed, flip the assertion.
-      test('BUG (BUT-1094): throw → 0 but errors is EMPTY (no setError)',
-          () async {
+      /// **BUT-1094 FIX VERIFIED** (commit fee1147ae): throw → 0 AND
+      /// errors populated, matching the markAsViewed fix.
+      test('throw → 0 AND errors is populated (BUT-1094 fix)', () async {
         when(() => mockRepo.getUnreadCountForUser(any()))
             .thenThrow(Exception('forbidden'));
 
         final count = await coordinator.getUnreadCount();
 
         expect(count, 0);
-        expect(errors, isEmpty,
-            reason: 'BUT-1094: production line 425 swallows without setError. '
-                'When fixed, flip to expect(errors, isNotEmpty).');
+        expect(errors, isNotEmpty,
+            reason: 'BUT-1094 fix: production line 425 must call setError.');
       });
     });
 
