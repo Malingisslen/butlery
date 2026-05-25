@@ -2340,3 +2340,78 @@ decoy. The tightened regex anchors the lookahead on the `type=` attribute
 specifically, so the decoy still trips the warning. See
 `html_sanitizer_test.dart:does NOT bypass via fake JSON-LD in unrelated
 attribute (BUT-1061)`.
+
+### 2026-05-25 — Intent-Test Sprint Batch 7: shopping_item_management_module [Pattern discovered]
+Pattern: when a module is a thin CRUD layer with its own optimistic-update/rollback
+orchestration, the cheapest way to pin all 4 contract dimensions (add/update/remove/
+toggle-bought) is constructor-injection of a `Fake` repository with **per-method
+`Object?` error switches** (e.g. `throwOnAddItem`, `throwOnUpdateItem`,
+`throwOnRemoveItemsBatch`). Arming the failure on one method exercises the
+rollback branch for that operation without touching the others — keeps each
+rollback test surgically scoped.
+
+Also: when the production code calls `ServiceLocator.get<X>()` at runtime
+(not constructor injection), the bridge is one line — register the mock via
+`TestServiceLocator.registerMock<X>(mock)` and then
+`app_provider.ServiceLocator.initialize(mocks.MockDIContainer())`. The
+`MockDIContainer` in production_mocks.dart forwards lookups to
+TestServiceLocator. Works for any module that has the same lazy-lookup
+shape (e.g. `_autoCategorize` → `IngredientLookupService`).
+
+Counter-pattern noticed: `UnifiedShoppingList.copyWith` does NOT include `id`
+in its parameter list — building a list with a specific `id` requires the
+full constructor, not the `.personal(...)` factory + copyWith. If you find
+yourself wanting `copyWith(id: ...)`, switch to the constructor.
+
+24/24 tests green on first run; one full file, zero analyzer warnings.
+
+### 2026-05-25 — Intent-Test Sprint Batch 7: shopping_social_share_module [Pattern + Bug-finding]
+
+**File:** `test/unit/services/unified/operations/modules/shopping_social_share_module_test.dart`
+(36 tests, all green; 188 prod LoC → ~95% covered).
+
+**Pattern: bare `FakeFirebaseFirestore()` + `FakePermissionService` (no `TestServiceLocator.initialize()`).**
+The sibling `social_menu_operations_test.dart` SKIPs every `FieldValue.serverTimestamp` happy-path test because `TestServiceLocator.initialize()` installs `MockFieldValuePlatform` which fights the real pigeon `MethodChannelFieldValue`. **Skip TestServiceLocator entirely** when the module is constructor-injected (this one takes `firestore` + `permissionService` directly). Bare fake_cloud_firestore 4.x handles `serverTimestamp()` in batches cleanly when no MockFieldValuePlatform is registered. This unlocks ~12 happy-path tests the menu coordinator can't write.
+
+**Gotcha: `FakePermissionService.setPermissionState` forces `_isAuthenticated = true` if `currentUser` was set on a prior call.** Production_mocks.dart:1448-1452: when `_currentUser != null`, the helper unconditionally sets `_isAuthenticated = true`, ignoring any subsequent `isAuthenticated: false`. So you **cannot toggle a previously-authenticated fake back to unauth in place** — must construct a fresh `FakePermissionService()` for unauthenticated paths. Pattern used here: `_unauthModule(firestore)` helper that builds a fresh module with an empty-state perms instance. Avoids 5 false-positive failures the in-place toggle would give.
+
+**Edge case worth knowing**: to hit the SECOND auth gate (production_mocks shape `if (!isAuthenticated) return; if (currentUser == null) return;`), use `FakePermissionService()..setPermissionState(isAuthenticated: true)` with NO `currentUserId` and NO `currentUser`. The currentUser getter returns null only when both `_currentUser` and `_currentUserId` are null — and `_isAuthenticated` is read directly without that gate. This lets you test the narrow "auth flag flipped before profile loaded" race.
+
+**Pattern: pin the set-dedup contract via overlapping groups.** `shareWithGroups` accumulates members in `final allMemberIds = <String>{}`. Seed two groups with one shared member (Anna in both gA and gB), then assert Anna gets EXACTLY ONE received_lists doc. Without the `Set`, the same doc ref hits `batch.set` twice — idempotent in Firestore today but a real bug if anyone ever switches to `.create()` (would throw `already-exists`).
+
+**Pattern: pin permission boundaries with FLIP-DETECTION.** For `importSharedShoppingList`, the gate is `if (!sharedWithUserIds.contains(currentUserId)) return null;`. A single character flip (`!` removed) would let strangers import any shared list they know the id of. Test pre-seeds the would-be received pointer with `isImported: false`, runs import as non-recipient, then asserts BOTH `out == null` AND `after.data()!['isImported'] == false`. The second assertion is the FLIP DETECTOR — return-null-without-write is the only correct shape; return-null-but-still-write is the silent bug.
+
+**Bugs found (REPORTED, not fixed):**
+
+1. **BUG — `importSharedShoppingList` throws-and-swallows on missing received pointer** (`lib/services/unified/operations/modules/shopping_social_share_module.dart:343-351`). The `.update()` call has no pre-existence check; a missing received_lists doc throws `FirebaseException(not-found)` which the outer catch swallows, returning null. Indistinguishable from "shared list not found" or "permission denied" from the caller's perspective. **Fix:** swap `.update()` for `.set(..., SetOptions(merge: true))`, OR check existence first. Pinned via `'no received pointer to .update() → null (swallowed by catch)'` test.
+
+2. **Cosmetic — missing-name fallback is the literal `?` character** (lines 54, 263, 264, 301). A list with no `name` field renders a card titled `?`. Fix: localize a "Namnlös lista" string. Pinned via `'missing list name → title defaults to literal "?"'`.
+
+3. **Cross-link to BUT-1085 — `getShoppingListsSharedWithMe` doesn't double-check `sharedWithUserIds`** (lines 211-279). The access check is implicit (you have a received_lists pointer only if someone sent it). If Firestore rules ever loosen on the received_lists subcollection, a malicious user could self-create a pointer for any sharedListId and see strangers' shared lists. Defense-in-depth: add `if (!sharedWithUserIds.contains(currentUserId)) continue;` inside the inbox build loop. Not pinned (assumes rules are correct), but flagged.
+
+4. **No notification side-effect today** (DELIBERATE — pinned). Module writes zero docs to `user_notifications`. If a future PR adds notification-on-share, the `'does NOT write a user_notifications doc as side effect'` test will catch it and force the author to consider whether the write should be inside the `batch` (atomic with the share) or after `batch.commit()` (partial-failure tolerable).
+
+**Helper introduced this session:** `_unauthModule(firestore)` — pattern worth lifting if any future test needs to toggle a `FakePermissionService` to unauthenticated. The in-place toggle quirk is genuinely surprising; the one-liner helper makes intent obvious AND sidesteps the bug.
+
+### 2026-05-25 — Intent-Test Sprint Batch 7: BaseSocialCoordinator (abstract base) [Pattern + Bug-pin]
+
+**File:** `test/unit/services/unified/modules/social_coordination/base_social_coordinator_test.dart` (38 tests, all green; 126 LoC of abstract base class → ~95% covered). This is the base extended by `SocialRecipeService`, `SocialMenuCoordinator`, and `SocialShoppingCoordinator` — pinning here covers contracts across all three.
+
+**Pattern: testing an abstract base via a private `_TestX extends BaseX` subclass.**
+The base couldn't be instantiated directly; subclassing it in a test file (a) supplies the abstract method bodies as programmable hooks (`saveImportedContentResult = 'foo';`, `triggerCowOverride = (s,e,c) => null;`), (b) exposes recording state (`updateSharedContentCalls`) for verification, and (c) keeps the test fixture small (~80 LoC including doc comments). The generic params `<TContent, TSharedContent>` were satisfied with two private POJOs (`_TestContent`, `_TestShared`) — no need to use real domain models.
+
+**Pattern: bypass MockUserService when chaining `when()` calls.**
+`MockUserService extends Mock implements UserService` in production_mocks.dart:1613 throws intermittent "Bad state: No method stub was called from within `when()`" and "argument matcher... not used as an immediate argument to Symbol('currentUserProfile')" errors when you chain multiple `when()` calls in the same `setUp`. The mocktail invocation registry appears to get poisoned across the two getter+method stubs. **Workaround:** hand-roll `class _FakeUserService extends Fake implements UserService` with concrete `currentUserProfile` getter + `getUserProfiles()` method as plain fields. ~12 LoC, zero mocktail interaction, completely deterministic. Note: this is the "Fake vs Mock" decision tree from the existing knowledge file applied — when you need to STUB more than two methods on a Mock and they're stable behaviour rather than verifiable interactions, Fake is the right answer.
+
+**Gotcha: `cloud_firestore` re-exports a `Type` class** (`cloud_firestore-6.3.0/lib/src/pipeline_expression.dart:43`) that shadows `dart:core.Type`. A test that uses `Map<Type, Object>` somewhere (e.g. a DI stub) will fail with `map_key_type_not_assignable`. **Workaround:** avoid `Type` as a map key entirely — use `String` keys or, for a single-binding DI shim, just a typed field (`final UserService userService;`). The `hide Type` import dance doesn't work cleanly because fake_cloud_firestore doesn't re-export the symbol but cloud_firestore does, and importing both for hide-aliasing produces unused-import warnings.
+
+**Pattern: PIN-the-current-bug tests, with the flip instruction inline.**
+For BUT-1094 (root cause: `markAsViewed` line 408 + `getUnreadCount` line 425 swallow throws without `_setError`), the tests assert `expect(errors, isEmpty)` with a `reason:` string explicitly telling the future reader "When fixed, flip to `expect(errors, isNotEmpty)`". This is better than skipping the test or weakening the assertion — it pins the regression baseline AND tells the next maintainer exactly what to change. Same pattern used in batch 5 for `joinSharedMenu`.
+
+**Bugs found (REPORTED, not fixed):**
+
+1. **BUT-1094 (CONFIRMED root cause in base)** — `markAsViewed` and `getUnreadCount` catch+log+return-sentinel WITHOUT calling `_setError(sanitizeErrorForUser(e))`. Every OTHER catch in the same file does. A two-line fix in `lib/services/unified/modules/social_coordination/base_social_coordinator.dart:408` and `:425` would close the bug across all three coordinators (recipe/menu/shopping) simultaneously.
+
+2. **No `_disposed` gate** — `BaseService.dispose()` doesn't set a flag and `BaseSocialCoordinator` doesn't override `onDispose`. An in-flight repo call that resolves AFTER `dispose()` still calls `_notifyListeners()` and `_setError()` on the parent ViewModel. Today the ViewModels guard `notifyListeners()` independently so this doesn't surface, but the test `'in-flight markAsDismissed resolving after dispose still calls notify'` pins the current contract — if any ViewModel ever asserts "called notifyListeners after dispose", this is the first place to look.
+
+3. **Notification placeholders** (`sendInvitationNotifications`, `sendSharingNotifications`) are TODO no-ops at lines 430-436 and 439-445. Pinned via `'sendInvitationNotifications resolves quietly'` so a future real implementation surfaces in CI as a failing canary forcing the author to update the test contract explicitly.
