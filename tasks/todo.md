@@ -1,48 +1,44 @@
 # Sprint Backlog
 
-## Sprint: iter-75 — BUT-1081 obsolete + BUT-1082 docs-only re-scope — 2026-05-25 (Mon)
+## Sprint: iter-76 — BUT-1094 setError on swallow catches — 2026-05-25 (Mon)
 
-Theme: Two-ticket sprint. BUT-1081 closed as obsolete (parallel-session commit `3225954f6` already added the requested sibling test files). BUT-1082 re-scoped to docs-only after Step 0 found zero production callers of the wrapper-forwarding contract.
+Theme: Banner-UX consistency fix. `BaseSocialCoordinator.markAsViewed` + `getUnreadCount` and 2 sites in `SocialMenuCoordinator` log + swallow without calling `_setError(...)`. UI gates banner on `hasError` → some failure paths surface, others silent. P4 social Bug.
 
 ### Step 0 — premise verification
 
-**BUT-1081**: Both `test/unit/viewmodels/shared_content/shared_menu_viewmodel_test.dart` (994 lines) and `shared_shopping_viewmodel_test.dart` (743 lines) already exist with the exact contract the ticket called for. Added in commit `3225954f6` "intent-test sprint batch 4 — sibling shared-content VMs + coordinator (126 tests)" by a parallel session. **Premise gone** → close, skip implementation.
-
-**BUT-1082**: Grep `\.errorStream` in `lib/` returns ZERO production callers. The wrappers' inability to re-expose `RealtimeSyncService.errorStream` therefore breaks nothing in production. The ticket's prescribed fix (add forwarding getters) is speculative plumbing for hypothetical future consumers. CLAUDE.md says: don't design for hypothetical future requirements.
-
-**Re-scope**: switch to option (b) from the original ticket ("document the contract change loudly"):
-- Add doc comments on the two wrapper `watch*` methods noting that the returned stream carries data + main-stream errors only, NOT the side-channel.
-- Update `RealtimeSyncService.errorStream` docstring to call out the wrapper-non-forwarding contract.
-- File a single trigger-based follow-up: "when a production consumer of errorStream is added, decide whether to forward through wrappers".
-
-Classification: **plan-stale + re-scoped inline** per Step 0.
+- Confirmed via grep: 6 catches in `base_social_coordinator.dart` already follow the `_setError(sanitizeErrorForUser(e))` convention; the 2 outliers (markAsViewed line 408, getUnreadCount line 424) only AppLogger.
+- `SocialMenuCoordinator.getSharedMenusForUser` (line 362) + `getSharedMenuById` (line 377) — same swallow.
+- `SocialShoppingCoordinator.getSharedShoppingListsForUser` (line 339) — same pattern. Adding to scope to maintain symmetry across 3 coordinators (per CLAUDE.md "third repetition" rule).
+- Recipe coord doesn't have getSharedRecipesForUser at coord level (different layering via SocialRecipeService — that's BUT-1087's separate ticket).
+- `social_menu_coordinator_test.dart` captures `lastError` via setError callback (line 189, 220, 228) but never asserts on it. Tests won't break.
+- Classification: **fits + scope-expanded** to include shopping for consistency.
 
 ### Design choices
 
-- Doc-only changes. No new code paths, no new tests (nothing to pin since no consumer exists).
-- Three docstring touches:
-  1. `RealtimeRecipeService.watchRealtimeRecipe` — note side-channel limitation
-  2. `realtime_watching_module.watchRecipe` — same
-  3. `RealtimeSyncService.errorStream` getter — call out wrapper non-forwarding
+- **5 edits**: add `_setError(sanitizeErrorForUser(e))` (in base) or `setError(sanitizeErrorForUser(e))` (in subclasses, via base's public setError method line 457) after the AppLogger.error line.
+- **No new tests** in this commit — existing tests still pass (no assertion currently checks `lastError == null` on swallow). Adding pin'd tests for the fixed behavior would be a separate test-hardening iter.
+- **Skip BUT-1087 defect 2** (clear-on-success): out of scope; needs a `_resetError()` helper at every public mutator entry. Different commit.
+- **Don't refactor to a helper** like `_logAndCaptureError` — only 5 sites, 2 lines each. Premature abstraction.
 
 ### Ship this sprint
 
-- [x] **A1 (obsoleted). BUT-1081** — closed without code change; resolving commit `3225954f6`.
-- [ ] **A2. Document wrapper errorStream boundary** — 3 docstring updates across `realtime_sync_service.dart`, `realtime_recipe_service.dart`, `realtime_watching_module.dart`. (BUT-1082)
+- [ ] **A1. Base coordinator: markAsViewed + getUnreadCount** — `lib/services/unified/modules/social_coordination/base_social_coordinator.dart:408,424`. (BUT-1094)
+- [ ] **A2. Menu coordinator: getSharedMenusForUser + getSharedMenuById** — `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:362,377`. (BUT-1094)
+- [ ] **A3. Shopping coordinator: getSharedShoppingListsForUser** — `lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart:339`. (BUT-1094 scope expansion)
 
 ### Acceptance
 
-- [ ] `flutter analyze` clean (doc-only changes can't break this, but verify).
-- [ ] No new tests required — nothing to pin.
+- [ ] `flutter analyze` clean.
+- [ ] `flutter test test/unit/services/unified/modules/social_menu/` passes (existing 30 tests).
+- [ ] No new banner-firing on happy paths (visual sanity — only swallow paths now setError).
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1082 with re-scope note
-- [ ] File trigger-based follow-up: "Forward errorStream through realtime wrappers when first consumer arrives"
+- [ ] Close BUT-1094
 
 ---
 
-## Archived iter-74 (commit `3fee0e11a`) — 2026-05-25 (Mon)
+## Archived iter-75 (commit `76732592f` — message hijacked by parallel race) — 2026-05-25 (Mon)
 
-BUT-1083 P3 — added test/unit/core/utils/logger_test.dart (8 tests) pinning async-absorption + PII-redaction contracts. +160 / −12.
+BUT-1081 closed obsolete (parallel `3225954f6` already shipped sibling tests). BUT-1082 docs-only re-scope — 3 docstring touches noting wrappers don't forward errorStream. BUT-1112 filed as trigger-based follow-up.

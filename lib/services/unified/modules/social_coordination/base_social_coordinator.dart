@@ -405,7 +405,10 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       _notifyListeners();
       return true;
     } catch (e) {
+      // BUT-1094: populate _error so the UI's hasError-gated banner
+      // surfaces this failure consistently with dismiss/restore/import.
       AppLogger.error('Failed to mark shared $contentTypeName as viewed: $e');
+      _setError(sanitizeErrorForUser(e));
       return false;
     }
   }
@@ -421,7 +424,9 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     try {
       return await sharedRepository.getUnreadCountForUser(currentUserId);
     } catch (e) {
+      // BUT-1094: populate _error so failed inbox counts surface in the UI.
       AppLogger.error('Failed to get unread $contentTypeName count: $e');
+      _setError(sanitizeErrorForUser(e));
       return 0;
     }
   }

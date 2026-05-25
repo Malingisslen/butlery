@@ -41,6 +41,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -359,8 +360,10 @@ class SocialMenuCoordinator
       AppLogger.info('📥 Loading shared menus for user ${userId.maskedUserId}');
       return await _sharedMenuRepository.getSharedContentForUser(userId);
     } catch (e) {
+      // BUT-1094: surface inbox-load failures via the shared error banner.
       AppLogger.error(
           'Failed to load shared menus for user ${userId.maskedUserId}', e);
+      setError(sanitizeErrorForUser(e));
       return [];
     }
   }
@@ -374,7 +377,9 @@ class SocialMenuCoordinator
       AppLogger.info('📥 Loading shared menu by ID: $menuId');
       return await _sharedMenuRepository.read(menuId);
     } catch (e) {
+      // BUT-1094: surface deep-link load failures consistently.
       AppLogger.error('Failed to load shared menu $menuId', e);
+      setError(sanitizeErrorForUser(e));
       return null;
     }
   }

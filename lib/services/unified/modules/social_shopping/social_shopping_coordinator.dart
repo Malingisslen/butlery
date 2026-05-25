@@ -336,9 +336,11 @@ class SocialShoppingCoordinator
           '📥 Loading shared shopping lists for user ${userId.maskedUserId}');
       return await _sharedShoppingRepository.getSharedContentForUser(userId);
     } catch (e) {
+      // BUT-1094: surface inbox-load failures via the shared error banner.
       AppLogger.error(
           'Failed to load shared shopping lists for user ${userId.maskedUserId}',
           e);
+      setError(sanitizeErrorForUser(e));
       return [];
     }
   }
