@@ -2415,3 +2415,146 @@ For BUT-1094 (root cause: `markAsViewed` line 408 + `getUnreadCount` line 425 sw
 2. **No `_disposed` gate** — `BaseService.dispose()` doesn't set a flag and `BaseSocialCoordinator` doesn't override `onDispose`. An in-flight repo call that resolves AFTER `dispose()` still calls `_notifyListeners()` and `_setError()` on the parent ViewModel. Today the ViewModels guard `notifyListeners()` independently so this doesn't surface, but the test `'in-flight markAsDismissed resolving after dispose still calls notify'` pins the current contract — if any ViewModel ever asserts "called notifyListeners after dispose", this is the first place to look.
 
 3. **Notification placeholders** (`sendInvitationNotifications`, `sendSharingNotifications`) are TODO no-ops at lines 430-436 and 439-445. Pinned via `'sendInvitationNotifications resolves quietly'` so a future real implementation surfaces in CI as a failing canary forcing the author to update the test contract explicitly.
+
+### 2026-05-25 — InstagramPipeline tests + BUT-1092 sibling bug confirmed [Bug found / Pattern discovered]
+
+**File:** `test/unit/services/import/pipelines/instagram_pipeline_test.dart` (22 tests, all green).
+
+**Bug confirmed (sibling of BUT-1092):** `lib/services/import/pipelines/instagram_pipeline.dart` lines 22-26 have the *exact* case-sensitivity bug pattern that BUT-1092 documented in `tiktok_pipeline.dart`. The host quick-check uses `url.toLowerCase().contains('instagram.com')` (line 49) — passes for `Instagram.com` — but the four RegExp patterns in `_instagramPatterns` lack `caseSensitive: false`, so mixed-case URLs match the substring guard and then silently fail the regex, returning `canHandle == false`. Impact: any Instagram URL the user shares from a source that capitalizes the host (some share-extension renderings do) is rejected before any extraction is attempted, with no diagnostic to the user. **One-line fix:** add `caseSensitive: false` to each RegExp constructor on lines 22-26. Test `'PINNED CURRENT BEHAVIOUR — mixed-case host Instagram.com is currently REJECTED'` is the canary — when prod is fixed, flip the `expect(..., isFalse)` to `isTrue` and rename.
+
+**Pattern: production design gap, flagged but not fixed.** `InstagramPipeline` constructs `WebScraper()` inline inside `importV2()` (line 73) with no injection seam — unlike `TikTokPipeline`, which accepts an injected `http.Client`. This blocks any unit test that wants to drive emoji-LLM / caption-LLM / rate-limit / fallback-boundary paths. The test file flags this in the library doc-comment so a future contributor knows why happy-path coverage is omitted. The lesson: when test coverage for a file is unusually shallow, the test file's doc-comment should say *why* (untestable seam) rather than silently leaving coverage holes that look like neglect.
+
+**Pattern: drive `ImportNeedsScreenshot` path naturally via missing platform channel.** In a Flutter unit test, `flutter_inappwebview` throws `MissingPluginException` on `HeadlessInAppWebView.run()` because no channel is registered. `WebScraper` catches this in its outer try/catch and returns `ExtractionResult(success: false)` → pipeline's caption check is null → returns `ImportNeedsScreenshot`. This means the no-caption / screenshot path is the ONE `importV2` branch you CAN exercise without faking WebScraper. Use it to pin: (a) platform name is exact ("Instagram"), (b) URL is round-tripped, (c) LLM is never called (cost contract), (d) two consecutive calls don't hang (proves the `finally { scraper.dispose(); }` releases the WebView each time). Requires `TestWidgetsFlutterBinding.ensureInitialized()` to register the binding; otherwise the channel call throws before WebScraper's catch can run.
+
+### 2026-05-25 — common_dialog_actions intent tests + hardcoded-itemType bug [Bug found]
+Added `test/unit/core/utils/common_dialog_actions_test.dart` (29 tests, all green)
+for the dialog-helper factory (`lib/core/utils/common_dialog_actions.dart`,
+127 LoC, was 0% coverage). Batch 8 of the Intent-Test Sprint.
+
+**Production bug surfaced (NOT fixed in this batch):**
+`lib/core/utils/common_dialog_actions.dart:46,60,74` —
+`showRecipeDeleteConfirmation` / `showGroupDeleteConfirmation` /
+`showShoppingListDeleteConfirmation` each pass a **hardcoded Swedish
+itemType string** (`'recept'`, `'grupp'`, `'inköpslista'`) into the
+generic `showDeleteConfirmation`, which composes it verbatim into the
+dialog title: `'$deleteText $itemType?'` → "Ta bort recept?". When the
+app runs in English locale, `deleteText` is localized but `itemType`
+isn't, producing "Delete recept?". Same bug class as BUT-1088. Test
+that surfaces it: `english locale → recipe delete title still leaks
+Swedish 'recept'` — it asserts the BROKEN behaviour today (so passes)
+with a `reason:` documenting the fix.
+
+**Patterns reused that paid off:**
+
+1. **`_triggerButton<T>` helper** lifted from
+   `test/widget/common/dialogs/confirmation_dialogs_test.dart`. Standard
+   trigger-button-into-Builder pattern lets you `await` the dialog's
+   future and assert on the resolved value. Don't reinvent.
+
+2. **Three pop-semantics: `true` / `false` / `null` are different.**
+   `_ActionConfirmationDialog` (lines 282-336) pops with explicit `false`
+   from cancel. `_DeleteConfirmationDialog` via BaseDialog pops with `null`
+   from cancel (no args). Barrier-tap always pops `null`. Sentinel
+   pre-init (`bool? sentinel = true`) + `resolved` flag distinguishes
+   "callback fired with null" from "callback never fired."
+
+3. **Color-invariant assertion via Builder + late capture:**
+   `late ColorScheme cs; Builder(builder: (ctx) { cs = Theme.of(ctx)...;
+   return _triggerButton(...); })` — captures the live theme so
+   `expect(bg, cs.error)` is theme-tweak-proof. Same pattern for
+   `context.butleryColors.success` / `.warning`. Avoids hardcoded
+   `AppColors.X` (DO-NOT-WRITE pattern).
+
+4. **`FilledButton.icon` ≠ `find.widgetWithText(FilledButton, ...)`.**
+   The BaseDialog primary button uses `FilledButton.icon`, which wraps
+   the label in a private `_FilledButtonWithIconChild`. `widgetWithText`
+   may not match. Fall back to `find.text(...)` when the surrounding
+   sentence in the title is provably different. Verify with
+   `expect(find.text('X'), findsOneWidget)` first to confirm uniqueness.
+
+5. **Split confirm/cancel into separate testWidgets.** Doing both in
+   one test by pumping the same widget twice (open, confirm, open
+   again, cancel) leaks a route from the first dialog and the second
+   `tap('Open')` hits the modal barrier instead of the button. Costs
+   the test framework a hit-test warning. Cleaner: two tests, one
+   fresh pump each.
+
+**Bug-class checklist this file proved useful for (record for next dialog
+test):** confirm→true, cancel→correct-sentinel (null vs false depending on
+implementation), barrier-tap→null, warning-section-renders-iff-provided,
+domain-helpers-don't-cross-leak-warnings-with-each-other,
+isDangerous-overrides-confirmColor, recipient-overflow-boundary (length 3
+vs 4), info-dialog-await-resolves-on-OK.
+
+### 2026-05-25 — onnx_ner_service (BERT NER ONNX wrapper) [Pattern discovered]
+
+Intent-Test Sprint Batch 8: `lib/services/parsing/ner/onnx_ner_service.dart`
+(127 LOC, 1.6%→full unit coverage of the public contract). 19 tests, all
+green. Key patterns surfaced for testing ONNX-runtime-backed services:
+
+1. **OnnxRuntime is a single constructor seam.** The `OnnxRuntime?` ctor
+   parameter lets you subclass-and-override `createSession` to drive the
+   initialize-failure branch with zero platform setup. Two tiny helpers
+   (`_ThrowingOnnxRuntime`, `_CountingOnnxRuntime`) cover 4 unhappy-path
+   tests cheaply.
+2. **End-to-end inference needs the platform interface.** `OrtValue.fromList`
+   and `OrtSession.run` call straight into `FlutterOnnxruntimePlatform.instance`,
+   so subclassing `OnnxRuntime` alone is NOT enough for the inference path.
+   Solution: `class _ScriptedOnnxPlatform extends FlutterOnnxruntimePlatform
+   with MockPlatformInterfaceMixin` and assign to `.instance` via a
+   `_withPlatform(...)` helper that restores the previous instance in a
+   `try/finally`. Implement just `createSession`, `createOrtValue`,
+   `runInference`, `getOrtValueData`, `releaseOrtValue`, `closeSession`.
+3. **Imports trip lints.** Need both `// ignore: implementation_imports`
+   for `package:flutter_onnxruntime/src/flutter_onnxruntime_platform_interface.dart`
+   (the public `flutter_onnxruntime.dart` does NOT export the platform
+   interface) AND `// ignore: depend_on_referenced_packages` for
+   `package:plugin_platform_interface/plugin_platform_interface.dart`
+   (transitive). Don't add either as a direct dep — they're stable
+   transitive deps via flutter_onnxruntime.
+4. **Logit scripting works in a queue.** `_ScriptedOnnxPlatform.scriptedLogits`
+   is a queue of flat double lists consumed one-per-runInference call. To
+   test BIO mapping, place a peak at `firstSubwordPos * numLabels + labelIdx`
+   where `firstSubwordPos = 1` (position 0 is [CLS]). To test chunking,
+   script TWO entries for a 40-input batch (`_maxBatchSize = 32`).
+5. **The high-value ML test is "label index mapping through the SERVICE's
+   ordering, not BioLabel.values."** The service has its own `_labels` const
+   list (O at index 0, bQty at 1, ..., bSize at 8) that must match the
+   training script's LABELS ordering. The Dart enum declares bQty at index
+   0 and other at 8 — entirely different. A test that asserts "argmax of a
+   peak at logit index 4 → BioLabel.bName" catches the classic "labels
+   list re-ordered without updating training script" bug. Without this
+   test the service would silently produce garbage predictions.
+6. **Chunk boundary test caught nothing this round, but the assertion
+   shape (recording `runShapes` and asserting `[[32, 128], [8, 128]]`)
+   is the right one — an off-by-one in `(chunkStart + _maxBatchSize).clamp`
+   would flip it to `[[33, 128], [7, 128]]` or `[[32, 128], [32, 128]]`.
+7. **Inference-throws → return-nulls is the parsing pipeline contract.**
+   The CRF fallback depends on NER returning null for failed lines, not
+   throwing. `predictBatch` wraps the whole chunk in try/catch and returns
+   `null` for every input in the failed chunk — assertion: 2 inputs in,
+   `[null, null]` out, no rethrow.
+
+Testability friction observed (NOT fixed, flagged for future):
+- `_extractPrediction` accepts `firstSubwordMap: Map<int, int?>` but
+  `tokenized.firstSubwordIndices` is typed `Map<int, int>` (the field's
+  values are non-null by construction). The nullable parameter type is
+  defensive but inconsistent with the call site. Cosmetic, not a bug.
+- The 6 "if not initialized → return null/list-of-nulls" branches at the
+  top of `predict`/`predictBatch` could be collapsed into a single
+  `_guardAvailable<T>()` helper, but the current shape is easier to test
+  in isolation. Leave alone.
+
+Helper to remember for the next ONNX/ML service test:
+```dart
+Future<T> _withPlatform<T>(
+  _ScriptedPlatform p, Future<T> Function() body) async {
+  final prev = SomePlatform.instance;
+  SomePlatform.instance = p;
+  try { return await body(); } finally { SomePlatform.instance = prev; }
+}
+```
+This pattern is reusable for ANY plugin that uses `PlatformInterface`
+(connectivity_plus, path_provider, etc.). The `MockPlatformInterfaceMixin`
+satisfies `PlatformInterface.verify(...)` without needing the private
+token.
