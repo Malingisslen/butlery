@@ -352,19 +352,20 @@ class RealtimeRecipe extends RealtimeResource {
         ? SerializationUtils.safeStringList(data, 'participantIds')
         : participants.keys.toList();
 
+    // BUT-1071: ownerId, createdAt, lastEditedAt, lastEditedBy are truly
+    // required — a Firestore doc missing them is corrupted, not a freshly
+    // edited recipe. Throwing here propagates to watchResource subscribers
+    // (per BUT-1069 fix) so callers see the error instead of cached defaults.
+    // Display-name fields stay soft (empty is acceptable for UI fallback).
     return RealtimeRecipe(
       id: id,
-      ownerId: SerializationUtils.safeString(data, 'ownerId'),
+      ownerId: SerializationUtils.requiredString(data, 'ownerId'),
       ownerDisplayName: SerializationUtils.safeString(data, 'ownerDisplayName'),
       participants: participants,
       participantIds: participantIds,
-      createdAt: data['createdAt'] is DateTime
-          ? data['createdAt'] as DateTime
-          : SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
-      lastEditedAt: data['lastEditedAt'] is DateTime
-          ? data['lastEditedAt'] as DateTime
-          : SerializationUtils.safeRequiredDateTime(data, 'lastEditedAt'),
-      lastEditedBy: SerializationUtils.safeString(data, 'lastEditedBy'),
+      createdAt: SerializationUtils.requiredDateTime(data, 'createdAt'),
+      lastEditedAt: SerializationUtils.requiredDateTime(data, 'lastEditedAt'),
+      lastEditedBy: SerializationUtils.requiredString(data, 'lastEditedBy'),
       lastEditedByDisplayName:
           SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
       editCount: SerializationUtils.safeInt(data, 'editCount'),

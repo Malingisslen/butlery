@@ -1,41 +1,42 @@
 # Sprint Backlog
 
-## Sprint: iter-65 — BUT-1061 HtmlSanitizer flag script tags — 2026-05-25 (Mon)
+## Sprint: iter-66 — BUT-1071 fromMap fail-loud on missing required — 2026-05-25 (Mon)
 
-Theme: Security gate fix — `HtmlSanitizer.check()` only flags 3 critical patterns (data:text/html, null byte, >5MB). Raw `<script>` tags are silent-strip via `sanitize()`. RecipeParserService spends parse cycles + possibly LLM calls on injection content. P3 parsing/security.
+Theme: Data hygiene bug — `RealtimeRecipe.fromMap` silently defaults missing required fields. `safeRequiredDateTime` is a misnomer — it falls back to `clock.now()`. P4 backend.
 
 ### Step 0 — premise verification
 
-- Ticket matches `lib/services/parsing/sanitizers/html_sanitizer.dart:55-111` (check method) and `:117-148` (sanitize). Comment on line 18-19 even acknowledges the gap: "<script> ... should NOT be checked here — they appear in normal HTML."
-- `sanitize()` already correctly preserves `<script type="application/ld+json">` via `preserveWhen` (line 144-146). The same exemption applies to the new check() flag.
-- Test at `test/unit/services/parsing/sanitizers/html_sanitizer_test.dart:569` explicitly pins the current "don't flag" behavior with reason "Script tags are stripped by sanitize(), not rejected by check()" — needs flipping.
+- Ticket matches `lib/models/realtime/realtime_recipe.dart:334-376` (fromMap) and `lib/core/utils/serialization_utils.dart:127-130` (safeRequiredDateTime — misleadingly named, defaults to clock.now()).
+- Truly-required fields in a real document: `ownerId`, `createdAt`, `lastEditedAt`, `lastEditedBy`. Display-name fields are softer (UI only).
+- BUT-1069 (iter-63) already propagates parse exceptions to stream subscribers — exception path infrastructure exists; we just need to USE it.
 - Classification: **fits** — implement as written.
 
 ### Design choices
 
-- **Regex with negative lookahead**: `RegExp(r'<script\b(?![^>]*application/ld\+json)', caseSensitive: false)` flags `<script>` and `<script type="text/javascript">` but NOT `<script type="application/ld+json">`. Single-pass; no second regex needed.
-- **Add to `_scriptPatterns` list** (same place as the existing `data:text/html` pattern). One regex, same severity (critical), same emit pattern.
-- **Update comment on line 18-19** — the assertion that `<script>` "should NOT be checked" is now wrong; replace with the JSON-LD-exemption rationale.
-- **Test changes**: flip the pin'd "should not flag script tags" → "flags non-JSON-LD script tags as critical". Add a sibling test that JSON-LD scripts are NOT flagged (allowed).
+- **Add strict variants to SerializationUtils**: `requiredString` and `requiredDateTime` that throw `FormatException` on missing/empty. Leave existing `safe*` family alone (they're used in 100+ places).
+- **Apply to the 4 truly-required fields in fromMap**: ownerId, createdAt, lastEditedAt, lastEditedBy. Display names stay soft (empty-string default OK).
+- **Don't rename `safeRequiredDateTime`** — it's the misnomer cause but renaming is high-blast-radius. The ticket scope is fixing fromMap, not refactoring serialization util naming.
+- **Tests**: add 4 new tests covering each required-field absence + 1 success case. Strict-variant utility tests can be inline if minimal.
 
 ### Ship this sprint
 
-- [ ] **A1. Flag non-JSON-LD `<script>` in check()** — `lib/services/parsing/sanitizers/html_sanitizer.dart:20-22`: add `<script\b(?![^>]*application/ld\+json)` regex to `_scriptPatterns`; update the comment on lines 17-19. (BUT-1061)
-- [ ] **A2. Flip pin'd test + add JSON-LD-allowed test** — `test/.../html_sanitizer_test.dart:569`. (BUT-1061)
+- [ ] **A1. Add strict required-field parsers** — `lib/core/utils/serialization_utils.dart`: add `requiredString(map, key)` (throws on null/empty) and `requiredDateTime(map, key)` (throws on null/unparseable). (BUT-1071)
+- [ ] **A2. Use strict variants in RealtimeRecipe.fromMap** — `lib/models/realtime/realtime_recipe.dart:355-376`: replace silent defaults for ownerId, createdAt, lastEditedAt, lastEditedBy. (BUT-1071)
+- [ ] **A3. Tests** — add fromMap tests covering each required-field absence (throws `FormatException`) + happy path. (BUT-1071)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test test/unit/services/parsing/sanitizers/html_sanitizer_test.dart` passes (flipped test + new JSON-LD test green).
-- [ ] No regression in `sanitize()` behavior (still strips, still preserves JSON-LD).
+- [ ] New tests pass; existing `realtime_sync_service_test.dart` (25 tests) still pass.
+- [ ] Display-name fields remain soft (empty-string default).
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1061 with commit hash
+- [ ] Close BUT-1071 with commit hash
 
 ---
 
-## Archived iter-64 (commit `3f887621c`) — 2026-05-25 (Mon)
+## Archived iter-65 (commit `578bf72c5`) — 2026-05-25 (Mon)
 
-BUT-1059 P3 fix — sync try/catch couldn't catch async Crashlytics futures. Extracted `_safeCrashlytics` helper, applied to 7 sites across 2 files, removed now-obsolete test scaffold. +69 / −102. 26/26 unified_menu tests pass. BUT-1083 filed for logger_test.dart gap.
+BUT-1061 P3 fix — HtmlSanitizer.check() surfaces non-JSON-LD `<script>` tags as warning (not critical per re-scope to avoid breaking URL imports). Tightened regex prevents `data-note="application/ld+json"` bypass. +102 / −21. 80/80 tests pass. BUT-1084 filed for knowledge-file append.

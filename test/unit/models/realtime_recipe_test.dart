@@ -209,6 +209,8 @@ void main() {
             'user_123': 'owner',
             'user_456': 'editor',
           },
+          'createdAt': DateTime(2026, 1, 1),
+          'lastEditedAt': DateTime(2026, 1, 2),
           'lastEditedBy': 'user_456',
           'lastEditedByDisplayName': 'Erik Eriksson',
           'editCount': 3,
@@ -248,6 +250,8 @@ void main() {
         final data = {
           'ownerId': 'user_123',
           'ownerDisplayName': 'Anna Andersson',
+          'createdAt': DateTime(2026, 1, 1),
+          'lastEditedAt': DateTime(2026, 1, 2),
           'lastEditedBy': 'user_123',
           'lastEditedByDisplayName': 'Anna Andersson',
           'title': 'Direct Title',
@@ -261,6 +265,72 @@ void main() {
 
         expect(realtimeRecipe.recipe.title, equals('Direct Title'));
         expect(realtimeRecipe.recipe.description, equals('Direct Description'));
+      });
+
+      // BUT-1071: fromMap fails loud on truly-required missing fields
+      // instead of defaulting to clock.now() / empty string. A corrupted
+      // doc should NOT silently parse as a freshly-edited recipe.
+      Map<String, dynamic> validData() => {
+            'ownerId': 'user_123',
+            'ownerDisplayName': 'Anna',
+            'createdAt': DateTime(2026, 1, 1),
+            'lastEditedAt': DateTime(2026, 1, 2),
+            'lastEditedBy': 'user_123',
+            'lastEditedByDisplayName': 'Anna',
+            'recipe': {
+              'title': 'Köttbullar',
+              'description': '',
+              'ingredients': <String>[],
+              'instructions': <String>[],
+              'mealType': 'middag',
+            },
+          };
+
+      test('fromMap throws on missing ownerId (BUT-1071)', () {
+        final data = validData()..remove('ownerId');
+
+        expect(() => RealtimeRecipe.fromMap('rt_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('fromMap throws on missing createdAt (BUT-1071)', () {
+        final data = validData()..remove('createdAt');
+
+        expect(() => RealtimeRecipe.fromMap('rt_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('fromMap throws on missing lastEditedAt (BUT-1071)', () {
+        final data = validData()..remove('lastEditedAt');
+
+        expect(() => RealtimeRecipe.fromMap('rt_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('fromMap throws on missing lastEditedBy (BUT-1071)', () {
+        final data = validData()..remove('lastEditedBy');
+
+        expect(() => RealtimeRecipe.fromMap('rt_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('fromMap throws on empty-string ownerId (BUT-1071)', () {
+        // Empty string is just as wrong as null — a corrupted doc would
+        // be defaulted by safeString and indistinguishable from real data.
+        final data = validData()..['ownerId'] = '';
+
+        expect(() => RealtimeRecipe.fromMap('rt_x', data),
+            throwsA(isA<FormatException>()));
+      });
+
+      test('fromMap accepts soft-default for ownerDisplayName (BUT-1071)', () {
+        // Display names are UI-only; empty is acceptable as a fallback,
+        // not corruption. Strict gate only applies to truly-required fields.
+        final data = validData()..remove('ownerDisplayName');
+
+        final rt = RealtimeRecipe.fromMap('rt_x', data);
+
+        expect(rt.ownerDisplayName, isEmpty);
       });
     });
 

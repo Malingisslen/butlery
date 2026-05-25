@@ -129,6 +129,35 @@ class SerializationUtils {
     return parseDateTimeValue(map[key]) ?? defaultValue ?? clock.now();
   }
 
+  /// Strict variant: throws [FormatException] when the field is missing,
+  /// null, or unparseable. Use for fields where a missing value should
+  /// fail-loud (BUT-1071) rather than be silently defaulted to `clock.now()`,
+  /// which can disguise corrupted documents as freshly-edited resources.
+  static DateTime requiredDateTime(Map<String, dynamic> map, String key) {
+    final raw = map[key];
+    final parsed = parseDateTimeValue(raw);
+    if (parsed == null) {
+      throw FormatException(
+          'Required DateTime field "$key" missing or unparseable', raw);
+    }
+    return parsed;
+  }
+
+  /// Strict variant: throws [FormatException] when the field is missing,
+  /// null, or empty. Use for fields where the empty-string default would
+  /// disguise corruption (BUT-1071): ownerId, lastEditedBy, etc.
+  static String requiredString(Map<String, dynamic> map, String key) {
+    final raw = map[key];
+    if (raw == null) {
+      throw FormatException('Required String field "$key" missing', raw);
+    }
+    final str = raw is String ? raw : raw.toString();
+    if (str.isEmpty) {
+      throw FormatException('Required String field "$key" is empty', raw);
+    }
+    return str;
+  }
+
   static dynamic serializeDateTime(DateTime? dateTime) {
     return dateTime?.toIso8601String();
   }
