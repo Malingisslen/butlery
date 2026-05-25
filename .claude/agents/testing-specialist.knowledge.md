@@ -2315,3 +2315,28 @@ a `WidgetsBindingObserver`, so this is mandatory.
 
 None of these are blocking bugs and all are flagged per the
 "REPORT, don't fix" policy.
+
+### 2026-05-25 — HtmlSanitizer.check() now surfaces non-JSON-LD `<script>` tags [Pattern discovered]
+
+BUT-1061 fix. `HtmlSanitizer.check()` now surfaces non-JSON-LD `<script>`
+tags as `IssueSeverity.warning` (deliberately not critical, to avoid
+breaking the URL-import happy path where real recipe sites carry inline
+analytics scripts).
+
+**Implication for test fixtures:** any new test whose HTML fixture uses
+raw `<script>` for "harmless inline JS" will see a non-empty
+`result.issues[]` containing a `scriptInjection` warning. Two ways to
+avoid surprise:
+
+- **Preferred** — write the assertion as `expect(result.hasCriticalIssues, isFalse)`
+  rather than `expect(result.issues, isEmpty)`. The intent is usually
+  "the security gate didn't reject", not "no warnings at all".
+- **Alternative** — wrap the script in `<script type="application/ld+json">`,
+  which `sanitize()` preserves and `check()` does NOT flag (the
+  type-anchored negative-lookahead in `_scriptTagPattern` exempts it).
+
+Adversarial bypass NOT to use: a `<script data-note="application/ld+json">`
+decoy. The tightened regex anchors the lookahead on the `type=` attribute
+specifically, so the decoy still trips the warning. See
+`html_sanitizer_test.dart:does NOT bypass via fake JSON-LD in unrelated
+attribute (BUT-1061)`.
