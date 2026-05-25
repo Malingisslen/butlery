@@ -1,40 +1,41 @@
 # Sprint Backlog
 
-## Sprint: iter-64 — BUT-1059 AppLogger async error handling — 2026-05-25 (Mon)
+## Sprint: iter-65 — BUT-1061 HtmlSanitizer flag script tags — 2026-05-25 (Mon)
 
-Theme: Bug fix — `AppLogger._logToCrashlytics` wraps `FirebaseCrashlytics.instance.log(...)` and `.recordError(...)` (both `Future`-returning) in a SYNC `try/catch`. Async exceptions escape the catch as unhandled. P3 backend.
+Theme: Security gate fix — `HtmlSanitizer.check()` only flags 3 critical patterns (data:text/html, null byte, >5MB). Raw `<script>` tags are silent-strip via `sanitize()`. RecipeParserService spends parse cycles + possibly LLM calls on injection content. P3 parsing/security.
 
 ### Step 0 — premise verification
 
-- Ticket body matches `lib/core/utils/logger.dart:212-235` exactly. Sync try wraps two async calls.
-- `kIsWeb` short-circuit on line 218 stays unchanged (Crashlytics not supported on web).
-- The sync catch DOES catch errors from constructing `FirebaseCrashlytics.instance` (e.g. uninitialized Firebase throws synchronously), so we keep the outer try/catch + add per-future `.catchError`.
+- Ticket matches `lib/services/parsing/sanitizers/html_sanitizer.dart:55-111` (check method) and `:117-148` (sanitize). Comment on line 18-19 even acknowledges the gap: "<script> ... should NOT be checked here — they appear in normal HTML."
+- `sanitize()` already correctly preserves `<script type="application/ld+json">` via `preserveWhen` (line 144-146). The same exemption applies to the new check() flag.
+- Test at `test/unit/services/parsing/sanitizers/html_sanitizer_test.dart:569` explicitly pins the current "don't flag" behavior with reason "Script tags are stripped by sanitize(), not rejected by check()" — needs flipping.
 - Classification: **fits** — implement as written.
 
 ### Design choices
 
-- **Chain `.catchError((_) {})` on each Future** — minimal change, both async exceptions absorbed. Doesn't introduce `dart:async` import (uses Future method).
-- **Keep the outer sync try/catch** — handles the synchronous "Firebase not initialized → instance throws" path.
-- **No `unawaited(...)` wrap** — the discarded-future analyzer lint is not enabled in this project (verified by no existing `discarded_futures` overrides in `analysis_options.yaml`). If it does fire, add `// ignore_for_file: discarded_futures` rather than restructure.
-- **No tests to flip.** This fix is invisible to existing tests (those that mock the Crashlytics channel still work; those that don't were failing — they're not in the current suite per the discovered-by note).
+- **Regex with negative lookahead**: `RegExp(r'<script\b(?![^>]*application/ld\+json)', caseSensitive: false)` flags `<script>` and `<script type="text/javascript">` but NOT `<script type="application/ld+json">`. Single-pass; no second regex needed.
+- **Add to `_scriptPatterns` list** (same place as the existing `data:text/html` pattern). One regex, same severity (critical), same emit pattern.
+- **Update comment on line 18-19** — the assertion that `<script>` "should NOT be checked" is now wrong; replace with the JSON-LD-exemption rationale.
+- **Test changes**: flip the pin'd "should not flag script tags" → "flags non-JSON-LD script tags as critical". Add a sibling test that JSON-LD scripts are NOT flagged (allowed).
 
 ### Ship this sprint
 
-- [ ] **A1. Fix AppLogger._logToCrashlytics** — `lib/core/utils/logger.dart:220-234`: chain `.catchError((_) {})` on both `log()` and `recordError()` futures so async errors are absorbed. (BUT-1059)
+- [ ] **A1. Flag non-JSON-LD `<script>` in check()** — `lib/services/parsing/sanitizers/html_sanitizer.dart:20-22`: add `<script\b(?![^>]*application/ld\+json)` regex to `_scriptPatterns`; update the comment on lines 17-19. (BUT-1061)
+- [ ] **A2. Flip pin'd test + add JSON-LD-allowed test** — `test/.../html_sanitizer_test.dart:569`. (BUT-1061)
 
 ### Acceptance
 
 - [ ] `flutter analyze` clean.
-- [ ] `flutter test` for files that touch AppLogger.error from non-Crashlytics-mocked contexts no longer fails with MissingPluginException escape.
-- [ ] Outer sync try/catch retained for the "Firebase not initialized" path.
+- [ ] `flutter test test/unit/services/parsing/sanitizers/html_sanitizer_test.dart` passes (flipped test + new JSON-LD test green).
+- [ ] No regression in `sanitize()` behavior (still strips, still preserves JSON-LD).
 
 ### Post-Sprint Steps
 
 - [ ] Commit + push
-- [ ] Close BUT-1059 with commit hash
+- [ ] Close BUT-1061 with commit hash
 
 ---
 
-## Archived iter-63 (commit `6eb6c4455`) — 2026-05-25 (Mon)
+## Archived iter-64 (commit `3f887621c`) — 2026-05-25 (Mon)
 
-BUT-1069 P3 fix — `RealtimeSyncService.watchResource` now propagates errors to BOTH main stream + errorStream side-channel via `StreamTransformer.fromHandlers`. +67 / −56. 25/25 tests pass. BUT-1082 filed for wrapper-channel verification.
+BUT-1059 P3 fix — sync try/catch couldn't catch async Crashlytics futures. Extracted `_safeCrashlytics` helper, applied to 7 sites across 2 files, removed now-obsolete test scaffold. +69 / −102. 26/26 unified_menu tests pass. BUT-1083 filed for logger_test.dart gap.

@@ -14,12 +14,27 @@ class HtmlSanitizer {
 
   HtmlSanitizer._();
 
-  /// Pattern for detecting script injection attempts that sanitize() cannot handle.
-  /// Note: <script>, javascript:, expression(), vbscript: are all stripped by
-  /// sanitize() and should NOT be checked here — they appear in normal HTML.
+  /// Patterns that warrant rejecting content at the security gate instead
+  /// of relying on `sanitize()` to silently strip them. `data:text/html`
+  /// embeds executable URIs with no legitimate use in recipe content —
+  /// always critical.
   static final _scriptPatterns = [
     RegExp(r'data:\s*text/html', caseSensitive: false),
   ];
+
+  /// `<script>` tags warrant surfacing as a WARNING (not critical) so the
+  /// security gate logs them without aborting the import. Critical would
+  /// regress URL imports — real recipe sites carry analytics/ad scripts
+  /// inline. JSON-LD structured data (`application/ld+json`) is exempted
+  /// entirely since `sanitize()`'s `preserveWhen` keeps it for schema.org
+  /// extraction. The `type=` prefix in the lookahead prevents the
+  /// `<script data-note="application/ld+json">alert(1)</script>` bypass:
+  /// only a real `type=` attribute carrying `application/ld+json` exempts
+  /// the tag.
+  static final _scriptTagPattern = RegExp(
+    r'''<script\b(?![^>]*\btype\s*=\s*["']?application/ld\+json)''',
+    caseSensitive: false,
+  );
 
   /// Pattern for detecting potentially malicious URLs.
   static final _suspiciousUrlPatterns = [
@@ -55,7 +70,7 @@ class HtmlSanitizer {
   SanitizationResult check(String content) {
     final issues = <SanitizationIssue>[];
 
-    // Check for script injection
+    // Check for critical script-injection patterns (data:text/html etc.)
     for (final pattern in _scriptPatterns) {
       final matches = pattern.allMatches(content);
       for (final match in matches) {
@@ -66,6 +81,19 @@ class HtmlSanitizer {
           severity: IssueSeverity.critical,
         ));
       }
+    }
+
+    // Surface non-JSON-LD <script> tags as warnings. sanitize() still
+    // strips them, but the warning lets callers audit/log instead of the
+    // tags vanishing silently.
+    for (final match in _scriptTagPattern.allMatches(content)) {
+      issues.add(SanitizationIssue(
+        type: IssueType.scriptInjection,
+        description:
+            'Non-JSON-LD script tag present (will be stripped by sanitize)',
+        position: match.start,
+        severity: IssueSeverity.warning,
+      ));
     }
 
     // Check for homoglyphs

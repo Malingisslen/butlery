@@ -566,12 +566,64 @@ void main() {
         expect(result.issues, isEmpty);
       });
 
-      test('should not flag script tags (handled by sanitize())', () {
+      test('surfaces non-JSON-LD script tags as warning (BUT-1061)', () {
+        // Warning, not critical, because real recipe sites carry inline
+        // analytics scripts — critical severity would abort the URL-import
+        // happy path. Warning lets callers audit while keeping imports green.
         final result = sanitizer.check('<script>alert("xss")</script>');
 
+        expect(result.hasCriticalIssues, isFalse,
+            reason: 'Script tags must not abort URL imports');
         expect(result.isClean, isTrue,
+            reason: 'Warnings alone do not fail the security gate');
+        expect(
+            result.issues.any((i) =>
+                i.type == IssueType.scriptInjection &&
+                i.severity == IssueSeverity.warning),
+            isTrue,
+            reason: 'Script presence must be surfaced for audit');
+      });
+
+      test('surfaces <script type="text/javascript"> as warning (BUT-1061)',
+          () {
+        final result = sanitizer
+            .check('<script type="text/javascript">window.x=1</script>');
+
+        expect(result.hasCriticalIssues, isFalse);
+        expect(
+            result.issues.any((i) =>
+                i.type == IssueType.scriptInjection &&
+                i.severity == IssueSeverity.warning),
+            isTrue);
+      });
+
+      test('does NOT surface JSON-LD script blocks (BUT-1061)', () {
+        // schema.org structured data is a legitimate recipe artefact —
+        // sanitize() preserves these blocks for the parser to extract.
+        final result = sanitizer.check(
+            '<script type="application/ld+json">{"@type":"Recipe"}</script>');
+
+        expect(result.hasCriticalIssues, isFalse);
+        expect(result.isClean, isTrue);
+        expect(result.issues.where((i) => i.type == IssueType.scriptInjection),
+            isEmpty,
+            reason: 'JSON-LD must not generate a warning');
+      });
+
+      test('does NOT bypass via fake JSON-LD in unrelated attribute (BUT-1061)',
+          () {
+        // Tightened regex: only a real `type=` attribute exempts the tag.
+        // A `data-note="application/ld+json"` decoy must still trip the warning.
+        final result = sanitizer
+            .check('<script data-note="application/ld+json">alert(1)</script>');
+
+        expect(
+            result.issues.any((i) =>
+                i.type == IssueType.scriptInjection &&
+                i.severity == IssueSeverity.warning),
+            isTrue,
             reason:
-                'Script tags are stripped by sanitize(), not rejected by check()');
+                'Lookahead must anchor on `type=` to avoid attribute bypass');
       });
 
       test('should return warning for homoglyphs (not critical)', () {
