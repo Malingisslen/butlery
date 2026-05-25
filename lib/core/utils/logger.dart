@@ -209,6 +209,12 @@ class AppLogger {
     );
   }
 
+  /// Test-only wrapper around `_sanitizeForCrashlytics` so logger_test.dart
+  /// can pin the PII-redaction contract without a Crashlytics channel mock.
+  @visibleForTesting
+  static String sanitizeForCrashlyticsForTesting(String message) =>
+      _sanitizeForCrashlytics(message);
+
   /// Calls into Crashlytics safely. Absorbs both the SYNC failure (instance
   /// getter throws when Firebase isn't initialized) AND the ASYNC failure
   /// (Future rejects with MissingPluginException in unit tests, platform
