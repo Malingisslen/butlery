@@ -717,20 +717,17 @@ void main() {
 
       /// Permission-denied / offline → empty list, no rethrow. The
       /// shared-content tab must render empty state on transient errors.
-      /// BUG FAMILY (BUT-1094): error swallowed without calling setError —
-      /// see file header.
-      test('repo throw → empty list, no rethrow (and silently no error set)',
-          () async {
+      /// BUT-1094 fix (commit fee1147ae): error is now ALSO surfaced via
+      /// setError so the UI can show a banner.
+      test('repo throw → empty list + setError (BUT-1094 fix)', () async {
         when(() => mockRepo.getSharedContentForUser(any()))
             .thenThrow(Exception('permission-denied'));
 
         final out = await coordinator.getSharedShoppingListsForUser('uid-1');
 
         expect(out, isEmpty);
-        // BUT-1094 family: error swallow without _error population.
-        // Pin the current behaviour so a fix is explicit.
-        expect(lastError, isNull,
-            reason: 'BUT-1094 family: setError NOT called on swallow');
+        expect(lastError, isNotNull,
+            reason: 'BUT-1094 fix: setError now populated on swallow');
       });
     });
 
@@ -978,18 +975,18 @@ void main() {
         expect(out, 7);
       });
 
-      /// getUnreadCount on throw → 0 (silent). Pinning the BUT-1094-family
-      /// behaviour so a fix is explicit.
-      test('getUnreadShoppingListCount on throw → 0, no setError', () async {
+      /// getUnreadCount on throw → 0 AND setError populated (BUT-1094 fix
+      /// at base_social_coordinator.dart:425, commit fee1147ae).
+      test('getUnreadShoppingListCount on throw → 0 + setError (BUT-1094 fix)',
+          () async {
         when(() => mockRepo.getUnreadCountForUser(any()))
             .thenThrow(Exception('boom'));
 
         final out = await coordinator.getUnreadShoppingListCount();
 
         expect(out, 0);
-        expect(lastError, isNull,
-            reason: 'BUT-1094 family: base getUnreadCount swallows '
-                'without setError');
+        expect(lastError, isNotNull,
+            reason: 'BUT-1094 fix: base getUnreadCount now calls setError');
       });
     });
   });
