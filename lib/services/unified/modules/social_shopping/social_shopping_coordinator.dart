@@ -348,15 +348,20 @@ class SocialShoppingCoordinator
   /// Load status for a shopping list from repository and cache it
   /// Phase 3 Session 2: Status caching method for ViewModel migration.
   /// Loads viewed, imported, and dismissed status from repository and caches locally.
+  /// BUT-1125: The three Firestore reads run in parallel via [Future.wait] —
+  /// they're independent reads with no shared mutable state, so this is a
+  /// ~3x latency reduction per call without changing the read count.
   Future<void> loadStatusForShoppingList(
       String shoppingListId, String userId) async {
     try {
-      final viewed =
-          await _sharedShoppingRepository.hasViewed(shoppingListId, userId);
-      final imported =
-          await _sharedShoppingRepository.hasEngaged(shoppingListId, userId);
-      final dismissed =
-          await _sharedShoppingRepository.hasDismissed(shoppingListId, userId);
+      final results = await Future.wait([
+        _sharedShoppingRepository.hasViewed(shoppingListId, userId),
+        _sharedShoppingRepository.hasEngaged(shoppingListId, userId),
+        _sharedShoppingRepository.hasDismissed(shoppingListId, userId),
+      ]);
+      final viewed = results[0];
+      final imported = results[1];
+      final dismissed = results[2];
 
       _viewedStatusCache[shoppingListId] = viewed;
       _importedStatusCache[shoppingListId] = imported;
@@ -370,11 +375,14 @@ class SocialShoppingCoordinator
   /// Load status for all shopping lists in bulk
   /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
   /// Loads status for multiple shopping lists to populate cache efficiently.
+  /// BUT-1125: All per-list status loads run concurrently via [Future.wait]
+  /// instead of awaiting each sequentially. For N=20 lists this changes
+  /// 60 sequential round-trips into one parallel batch (read count unchanged).
   Future<void> loadStatusForAllShoppingLists(
       List<SharedShoppingList> shoppingLists, String userId) async {
-    for (final shoppingList in shoppingLists) {
-      await loadStatusForShoppingList(shoppingList.id, userId);
-    }
+    await Future.wait(
+      shoppingLists.map((l) => loadStatusForShoppingList(l.id, userId)),
+    );
   }
 
   /// Check if shopping list is dismissed using cache

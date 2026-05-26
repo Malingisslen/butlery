@@ -58,6 +58,18 @@
 /// test happy-path emoji/caption-LLM flows here because exercising them
 /// would require a real WebScraper succeeding, which is impossible in a
 /// pure unit test without rewriting production for testability.
+///
+/// **BUT-1114 (deferred test):** the production fix landed — tier-2 LLM
+/// success now wires `sourceUrl` + `SourceArtefact(type: instagramCaption,
+/// payload: caption, fetchedAt: clock.now())` onto the LLM-returned recipe,
+/// mirroring the BUT-980/BUT-1045 invariant on `tiktok_pipeline`. The
+/// happy-path pin (that asserts the wiring on a real LLM success result)
+/// is NOT added here because there is no WebScraper injection seam — we
+/// cannot drive `captionText != null` from a pure unit test. Once a seam
+/// is introduced, add a regression test in this file: feed a fake
+/// successful LLM response and assert the returned recipe carries
+/// `sourceUrl == input` and `sourceArtefact.type == instagramCaption`
+/// with `payload == captionText`.
 library;
 
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';

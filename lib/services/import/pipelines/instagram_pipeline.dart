@@ -7,8 +7,11 @@
 /// 4. Request user screenshot (free)
 library;
 
+import 'package:clock/clock.dart';
+
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/extraction/platform_detector.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -107,8 +110,22 @@ class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
     );
 
     if (llmResult.isSuccess) {
+      // BUT-1114: persist Instagram post URL + raw caption so the detail view
+      // can link back to the original and offline re-extract can replay.
+      // Mirrors the BUT-980/BUT-1045 wiring on tiktok_pipeline's tier-2/3
+      // success paths — LLM-extracted recipes don't carry source, has to be
+      // wired in here.
+      final llmRecipe = (llmResult as ImportSuccess).recipe;
+      final artefact = SourceArtefact(
+        type: SourceArtefactType.instagramCaption,
+        payload: captionText,
+        fetchedAt: clock.now(),
+      );
       return ImportSuccess(
-        recipe: (llmResult as ImportSuccess).recipe,
+        recipe: llmRecipe.copyWith(
+          sourceUrl: input,
+          sourceArtefact: artefact,
+        ),
         confidence: 0.65,
         pipeline: 'instagram',
         tier: 2,

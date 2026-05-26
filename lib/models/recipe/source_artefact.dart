@@ -24,6 +24,10 @@ enum SourceArtefactType {
   /// `payload` is the raw caption string.
   tiktokCaption,
 
+  /// Instagram caption text (the post / reel caption extracted via
+  /// WebScraper). `payload` is the raw caption string.
+  instagramCaption,
+
   /// User-pasted plain text. `payload` is the original pasted text
   /// (pre-LLM-extraction).
   textPaste,

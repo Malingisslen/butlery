@@ -1,6 +1,45 @@
 # Sprint Backlog
 
-## Sprint: iter-79 — Shopping share defense-in-depth + Presence error hygiene + Legacy setError — 2026-05-26 (Tue)
+## Sprint: iter-80 — Parallel-agent execution (3 independent clusters) — 2026-05-26 (Tue)
+
+Theme: Three P3 tickets dispatched simultaneously to 3 general-purpose agents. Each cluster touches an independent file tree so there's no merge collision. Orchestrating session does the unified commit.
+
+### Ship this sprint
+
+#### Agent A — SocialRecipeService error-state refactor (BUT-1087)
+- [ ] **A1. Extract `_setErrorFromException(String message, Object e)` helper + call from every catch block in `social_recipe_service.dart`** (lines 130, 145, 185, 230, 283, 300 cited).
+- [ ] **A2. Clear `_error = null` at the entry of each public mutator** (or via `_resetError()` helper at method top).
+- [ ] **A3. Flip pinning tests in `social_recipe_service_test.dart`** — undismiss/markAsViewed/import false returns now ALSO populate `service.error`. Add test for "success after failure clears error".
+
+#### Agent B — InstagramPipeline tier-2 source provenance (BUT-1114)
+- [ ] **B1. Add `instagramCaption` enum value to `SourceArtefactType`** in `lib/models/recipe/source_artefact.dart`.
+- [ ] **B2. In `instagram_pipeline.dart` tier-2 success path: copyWith sourceUrl=input + SourceArtefact(type: instagramCaption, payload: caption)**. Mirror the tiktok_pipeline shape.
+- [ ] **B3. Adjust instagram_pipeline_test.dart docstring** to reflect that BUT-1114 is fixed (production-level — full pin requires WebScraper injection seam, deferred).
+
+#### Agent C — SocialShoppingCoordinator perf parallelize (BUT-1125)
+- [ ] **C1. `loadStatusForShoppingList`: collapse 3 sequential awaits via `Future.wait([hasViewed, hasEngaged, hasDismissed])`**.
+- [ ] **C2. `loadStatusForAllShoppingLists`: parallelise via `Future.wait(shoppingLists.map(...))`**.
+- [ ] **C3. Update / add test verifying the parallel-fetch contract** — assert all 3 stat reads are issued before any await on the next list item.
+
+### Step 0 — premise verification
+
+Delegated to each agent's first phase. Each agent must read current code state, classify fits/premise-gone/plan-stale, and report classification before implementing.
+
+### Acceptance
+
+- [ ] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
+- [ ] Each agent reports its touched test files pass.
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
+- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1087, BUT-1114, BUT-1125 in Linear.
+
+---
+
+## Archived iter-79 (commit `0f339ad43` — BUT-1107 + BUT-1108 + BUT-1098 + BUT-1100 + BUT-1124) — 2026-05-26 (Tue)
 
 Theme: Five small mechanical-fit P3 Bug tickets. Two batches with cross-cluster discipline (BUT-1108 = security label, triggers Phase 1.5 expansion). Deferred: BUT-1087 (service-wide refactor — bigger than ticket-then-flip shape), BUT-1106 (Firestore transaction redesign — needs careful blast-radius review).
 

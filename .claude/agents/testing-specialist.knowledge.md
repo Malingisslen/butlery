@@ -3039,3 +3039,27 @@ Added `test/unit/services/unified/modules/social_recipe/social_recipe_sharing_se
 **Pitfall avoided in this batch:**
 
 The two BUT-1098 tests look superficially redundant ("cancel still runs when set throws — for dispose AND for resetForLogout"). They are NOT redundant: production splits the try/catch in BOTH methods, and either could silently regress. Keep them separate. Mirroring tests for mirrored production code is a feature, not duplication.
+
+### 2026-05-26 — BUT-1087: error-clear-on-success contract for stateful services
+
+**Trigger:** Review of iter-80 social_recipe_service test changes after agent flipped failure-path assertions from "no error set" to "sanitized error set".
+
+**Pattern:** When a stateful service (ChangeNotifier with `_error` field) adds an entry-point `_resetError()` to every public mutator AND a sanitized `_captureAndLog` for every catch block, the test suite needs THREE shapes of assertion to pin the full contract:
+
+1. **Failure populates `_error`** — `expect(service.hasError, isTrue)` after a known-throwing repo call.
+2. **Sanitized content where deterministic** — when the raw exception string contains a sanitizer keyword (`permission`, `network`, `timeout`, `unauthenticated`, `not found`, `500`), assert `service.error` contains the localized substring (e.g., `'behörighet'` for permission → `errorPermissionDenied`). For generic exceptions that fall through to `errorGeneric`, asserting `isNotNull` is the strongest defensible claim — the localized fallback string isn't a stable contract.
+3. **Successful retry clears `_error`** — use TWO DIFFERENT mutators on the SAME service instance. Method-A fails (populates error) → Method-B succeeds (must reset). Same-method retry only proves intra-method reset, not the cross-mutator entry-point invariant.
+
+**Why both-method shape matters:** A bug where only one mutator forgot to call `_resetError()` would slip past a same-method retry test. The cross-mutator pair pins that EVERY mutator resets on entry, not just the one tested.
+
+**Sanitizer routing pin (do NOT skip):** The string content assertion (`contains('behörighet')`) is what proves the test exercises the sanitizer, not just any non-null error string. Without it, swapping `sanitizeErrorForUser(e)` for `_error = 'something'` would still pass.
+
+**Reference:** `lib/services/social_recipe_service.dart` (`_resetError()` + `_captureAndLog` pattern), `lib/core/utils/error_sanitizer.dart` (routing), `test/unit/services/social_recipe_service_test.dart` lines ~660+ (cleared-on-success).
+
+### 2026-05-26 — Future.wait refactor: when existing `verify(...).called(N)` is sufficient
+
+**Trigger:** Reviewing iter-80 social_shopping_coordinator parallelism refactor (sequential `await` → `Future.wait`).
+
+**Rule:** When production swaps sequential await for `Future.wait` over independent reads with no shared mutable state, the observable contract is unchanged: same call count, same cache state, same return value, same end-state. Existing `verify(() => repo.foo()).called(N)` + cache-state assertions ALREADY pin this. Adding a parallelism assertion (counter-based, ordering-based) requires significant test infrastructure for marginal value AND risks pinning implementation details (which would break if anyone reverted to sequential for debugging).
+
+**Ordering concern check:** Before declaring "no new test needed", confirm the existing tests assert SET semantics ("all three lists cached", `verify().called(3)`) and not SEQUENCE semantics (`verifyInOrder`, asserts that A finishes before B). If sequence semantics exist, `Future.wait` may break them and a new test is warranted. In iter-80, the coord tests asserted set semantics only — safe.

@@ -20,8 +20,10 @@
 /// - getVisibleSharedRecipes / getVisibleSharedMenus: pass-through after
 ///   `initialize()` loads from repo.
 /// - initialize() unauthenticated → empty lists, no repo calls, no throw.
-/// - Bug-finding policy: `dismiss*` writes `_error` on failure but
-///   `markAsViewed`, `undismiss*`, `importShared*` do not. Pinned.
+/// - Error contract (BUT-1087): EVERY catch block populates `_error` with a
+///   sanitized user-friendly message via `_captureAndLog`. `_error` is reset
+///   at the entry-point of every public mutator so a successful retry after
+///   a failure visibly clears the banner. Pinned below.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -424,20 +426,24 @@ void main() {
     /// Pinned contract: repo throwing is caught → false. The shared-recipe
     /// viewmodel removes-from-UI based on `true`; this contract is what
     /// keeps a failed dismiss from being silently swallowed by the UI.
+    /// Error message is the sanitized localized string, not the raw cause.
     test(
-        'repo throws permission-denied → returns false, sets error, no rethrow',
+        'repo throws permission-denied → returns false, sets sanitized error, no rethrow',
         () async {
       recipeRepo.throwOnMarkAsDismissed = Exception('permission-denied');
 
       final ok = await service.dismissSharedRecipe('sr-1');
 
       expect(ok, isFalse);
-      expect(service.error, contains('Failed to dismiss recipe'));
-      expect(service.error, contains('permission-denied'));
+      expect(service.hasError, isTrue);
+      // Sanitized Swedish copy for the 'permission' branch — see
+      // error_sanitizer.dart → AppLocale.current.errorPermissionDenied.
+      expect(service.error, contains('behörighet'));
     });
 
     /// Same shape but for a network error — proves the catch is exception-
-    /// type-agnostic (not only Firebase ones).
+    /// type-agnostic (not only Firebase ones). Sanitizer routes "network"
+    /// substrings to the localized network error string.
     test('repo throws generic network error → returns false, no rethrow',
         () async {
       recipeRepo.throwOnMarkAsDismissed = StateError('network');
@@ -467,13 +473,16 @@ void main() {
       expect(service.error, contains('not authenticated'));
     });
 
-    test('repo throws → returns false, no rethrow, error set', () async {
+    test('repo throws → returns false, no rethrow, sanitized error set',
+        () async {
       menuRepo.throwOnMarkAsDismissed = Exception('boom');
 
       final ok = await service.dismissSharedMenu('sm-1');
 
       expect(ok, isFalse);
-      expect(service.error, contains('Failed to dismiss menu'));
+      expect(service.hasError, isTrue);
+      // Generic exception → errorGeneric Swedish fallback.
+      expect(service.error, isNotNull);
     });
   });
 
@@ -491,17 +500,16 @@ void main() {
       expect(recipeRepo.undismissed, isEmpty);
     });
 
-    /// Pinned: `undismiss*` swallows throws to false but — unlike
-    /// `dismiss*` — does NOT populate `service.error`. Either inconsistency
-    /// is fine (it's the contract); the test pins it so a future tidy-up
-    /// is intentional.
-    test('recipe: repo throws → false, error NOT set (current contract)',
-        () async {
+    /// BUT-1087: undismiss failures now surface via `service.error` just
+    /// like dismiss failures. Previously asymmetric — UI banners gated on
+    /// `hasError` would stay silent on restore failures.
+    test('recipe: repo throws → false, sanitized error IS set', () async {
       recipeRepo.throwOnUndismiss = Exception('boom');
       final ok = await service.undismissSharedRecipe('sr-1');
       expect(ok, isFalse);
-      expect(service.hasError, isFalse,
-          reason: 'undismiss does not surface errors via service.error');
+      expect(service.hasError, isTrue,
+          reason: 'undismiss must surface errors via service.error');
+      expect(service.error, isNotNull);
     });
 
     test('menu: authenticated success → true, forwards uid', () async {
@@ -517,11 +525,13 @@ void main() {
       expect(menuRepo.undismissed, isEmpty);
     });
 
-    test('menu: repo throws → false, error NOT set', () async {
+    test('menu: repo throws → false, sanitized error IS set (BUT-1087)',
+        () async {
       menuRepo.throwOnUndismiss = Exception('boom');
       final ok = await service.undismissSharedMenu('sm-1');
       expect(ok, isFalse);
-      expect(service.hasError, isFalse);
+      expect(service.hasError, isTrue);
+      expect(service.error, isNotNull);
     });
   });
 
@@ -533,10 +543,12 @@ void main() {
       expect(recipeRepo.markedAsViewed, [('sr-1', 'viewer-uid')]);
     });
 
-    test('recipe: repo throws → false, no rethrow', () async {
+    test('recipe: repo throws → false, sanitized error IS set (BUT-1087)',
+        () async {
       recipeRepo.throwOnMarkAsViewed = Exception('boom');
       final ok = await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
       expect(ok, isFalse);
+      expect(service.hasError, isTrue);
     });
 
     test('menu: happy path forwards exact (id, userId) and returns true',
@@ -546,10 +558,12 @@ void main() {
       expect(menuRepo.markedAsViewed, [('sm-1', 'viewer-uid')]);
     });
 
-    test('menu: repo throws → false, no rethrow', () async {
+    test('menu: repo throws → false, sanitized error IS set (BUT-1087)',
+        () async {
       menuRepo.throwOnMarkAsViewed = Exception('boom');
       final ok = await service.markSharedMenuAsViewed('sm-1', 'viewer-uid');
       expect(ok, isFalse);
+      expect(service.hasError, isTrue);
     });
   });
 
@@ -638,13 +652,42 @@ void main() {
     });
 
     /// Proves delegate throw is caught → false. No rethrow into UI code.
-    test('createRecipe throws → returns false, no rethrow', () async {
+    /// BUT-1087: error surfaces via service.error (previously silent).
+    test('createRecipe throws → returns false, sanitized error IS set',
+        () async {
       personalOps.createRecipeImpl = (_) => throw Exception('disk full');
 
       final ok = await service.importSharedRecipe('sr-1');
 
       expect(ok, isFalse);
       expect(recipeRepo.markedAsImported, isEmpty);
+      expect(service.hasError, isTrue);
+      expect(service.error, isNotNull);
+    });
+
+    /// BUT-1087: `_error` must be cleared at the entry-point of every public
+    /// mutator so a successful retry visibly clears the banner. Without
+    /// this, the UI banner stays stuck after a failure even when the next
+    /// call succeeds.
+    test('error from prior failure is cleared on subsequent successful call',
+        () async {
+      // 1. First call: dismiss fails → error populated.
+      recipeRepo.throwOnMarkAsDismissed = Exception('boom');
+      final firstResult = await service.dismissSharedRecipe('sr-1');
+      expect(firstResult, isFalse);
+      expect(service.hasError, isTrue,
+          reason: 'precondition: failure must populate error');
+
+      // 2. Second call: a different successful mutator should reset error.
+      recipeRepo.throwOnMarkAsDismissed = null; // clear the configured throw
+      final secondResult =
+          await service.markSharedRecipeAsViewed('sr-1', 'viewer-uid');
+
+      expect(secondResult, isTrue);
+      expect(service.hasError, isFalse,
+          reason:
+              'BUT-1087: a successful mutator must clear stale error from prior failures');
+      expect(service.error, isNull);
     });
 
     /// Proves the mark-as-imported step is guarded by authentication — if

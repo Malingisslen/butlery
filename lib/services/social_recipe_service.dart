@@ -11,6 +11,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -68,6 +69,23 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   // For compatibility with old code
   List<SharedRecipe> get sharedWithMe => sharedRecipes;
 
+  /// Clears `_error` at the entry-point of every public mutator. UI banners
+  /// gated on [hasError] stay stale until the next initialize() otherwise — a
+  /// successful retry after a failure should visibly clear the banner.
+  /// (BUT-1087)
+  void _resetError() {
+    _error = null;
+  }
+
+  /// Captures the sanitized error message into [_error] and logs the raw
+  /// cause. Replaces the previous inconsistency where only dismiss* methods
+  /// populated [_error] and every other catch block silently logged.
+  /// (BUT-1087)
+  void _captureAndLog(String message, Object e) {
+    AppLogger.error(message, e);
+    _error = sanitizeErrorForUser(e);
+  }
+
   /// Initialize the service and load shared content
   Future<void> initialize() async {
     try {
@@ -122,13 +140,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   /// Note (Issue #014): Repository handles status tracking in subcollections.
   /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedRecipeAsViewed(String recipeId, String userId) async {
+    _resetError();
     try {
       await _sharedRecipeRepository.markAsViewed(recipeId, userId);
       // Status tracking now handled by repository subcollections (Issue #014)
       // Optionally refresh to get updated viewCount, or rely on next load
       return true;
     } catch (e) {
-      AppLogger.error('Failed to mark recipe as viewed', e);
+      _captureAndLog('Failed to mark recipe as viewed', e);
       return false;
     }
   }
@@ -137,19 +156,21 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   /// Note (Issue #014): Repository handles status tracking in subcollections.
   /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedMenuAsViewed(String menuId, String userId) async {
+    _resetError();
     try {
       await _sharedMenuRepository.markAsViewed(menuId, userId);
       // Status tracking now handled by repository subcollections (Issue #014)
       // Optionally refresh to get updated viewCount, or rely on next load
       return true;
     } catch (e) {
-      AppLogger.error('Failed to mark menu as viewed', e);
+      _captureAndLog('Failed to mark menu as viewed', e);
       return false;
     }
   }
 
   /// Import shared recipe into user's personal collection
   Future<bool> importSharedRecipe(String recipeId) async {
+    _resetError();
     try {
       final sharedRecipe =
           _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
@@ -183,13 +204,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       }
       return false;
     } catch (e) {
-      AppLogger.error('Failed to import shared recipe', e);
+      _captureAndLog('Failed to import shared recipe', e);
       return false;
     }
   }
 
   // Import shared menu
   Future<bool> importSharedMenu(String menuId) async {
+    _resetError();
     try {
       final sharedMenu = _sharedMenus.where((m) => m.id == menuId).firstOrNull;
       if (sharedMenu == null) return false;
@@ -228,13 +250,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       AppLogger.success('Menu imported: $successCount/$totalCount recipes');
       return true;
     } catch (e) {
-      AppLogger.error('Failed to import shared menu', e);
+      _captureAndLog('Failed to import shared menu', e);
       return false;
     }
   }
 
   // Dismiss shared recipe
   Future<bool> dismissSharedRecipe(String recipeId) async {
+    _resetError();
     try {
       if (!_permissionService.isAuthenticated) {
         _error = 'User not authenticated';
@@ -245,14 +268,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       AppLogger.info('Recipe dismissed');
       return true;
     } catch (e) {
-      _error = 'Failed to dismiss recipe: $e';
-      AppLogger.error('Failed to dismiss shared recipe', e);
+      _captureAndLog('Failed to dismiss shared recipe', e);
       return false;
     }
   }
 
   // Dismiss shared menu
   Future<bool> dismissSharedMenu(String menuId) async {
+    _resetError();
     try {
       if (!_permissionService.isAuthenticated) {
         _error = 'User not authenticated';
@@ -263,14 +286,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       AppLogger.info('Menu dismissed');
       return true;
     } catch (e) {
-      _error = 'Failed to dismiss menu: $e';
-      AppLogger.error('Failed to dismiss shared menu', e);
+      _captureAndLog('Failed to dismiss shared menu', e);
       return false;
     }
   }
 
   // Undismiss shared recipe
   Future<bool> undismissSharedRecipe(String recipeId) async {
+    _resetError();
     try {
       if (!_permissionService.isAuthenticated) {
         AppLogger.error('User not authenticated');
@@ -281,13 +304,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       AppLogger.info('Recipe restored');
       return true;
     } catch (e) {
-      AppLogger.error('Failed to restore shared recipe', e);
+      _captureAndLog('Failed to restore shared recipe', e);
       return false;
     }
   }
 
   // Undismiss shared menu
   Future<bool> undismissSharedMenu(String menuId) async {
+    _resetError();
     try {
       if (!_permissionService.isAuthenticated) {
         AppLogger.error('User not authenticated');
@@ -298,7 +322,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       AppLogger.info('Menu restored');
       return true;
     } catch (e) {
-      AppLogger.error('Failed to restore shared menu', e);
+      _captureAndLog('Failed to restore shared menu', e);
       return false;
     }
   }
