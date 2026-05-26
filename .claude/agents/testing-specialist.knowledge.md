@@ -2764,3 +2764,125 @@ normalization regression hits, the failure is diagnostic.
 **Time:** ~10 min wall-clock. 25 tests in <1 second. Coverage estimate:
 0% → ~100% on this file.
 
+
+---
+
+### 2026-05-26 — ResponsiveBuilder family (BUT-Intent-Sprint batch 11)
+
+**Trigger:** writing intent-tests for `lib/core/responsive/responsive_builder.dart`.
+
+**Pattern: dual width-source widgets (LayoutBuilder vs MediaQuery).**
+`ResponsiveBuilder` and `ResponsiveBuilderFull` resolve the breakpoint
+from `LayoutBuilder` constraints, but their *children* — `ResponsivePadding`,
+`ResponsiveSpacing`, `ResponsiveUtils.*`, `ResponsiveVisibility` — read
+`Breakpoints.is*(context)` which goes through `MediaQuery.of(context).size`.
+For both to agree in tests, set `tester.view.physicalSize` (with
+`devicePixelRatio = 1.0`) rather than wrapping in a manual `MediaQuery`
+override — that way LayoutBuilder constraints and MediaQuery size match.
+
+**Pattern: orientation by physicalSize ratio.**
+`OrientationBuilder` derives orientation from the surface's width:height
+ratio, so to test landscape mobile use width=400, height=200 — there is no
+direct orientation toggle on `tester.view`.
+
+**Pattern: breakpoint boundary off-by-one guards.**
+Always pin exactly 600 and 1024 (and 599 / 1023) for any responsive widget.
+The semantics are `width < 600` = mobile, `>= 600` = tablet, `>= 1024` =
+desktop — a flipped `<=` would silently shift one device class. Same on
+desktopLarge=1920 if exercised.
+
+**Pattern: passive accessor widgets.**
+`ResponsiveSpacing.getSpacing(context)` is a method on a `StatelessWidget`
+whose `build()` returns `child` unchanged — it's effectively a function
+parked on a widget. Test by pumping a `Builder` that calls
+`ResponsiveSpacing(...).getSpacing(ctx)` inline. Don't test that build()
+"wraps in a SpacingPadding" — there is no such wrapper.
+
+**Anti-pattern caught: sed across multi-line function calls.**
+When renaming a local helper from `_at` to `at`, single-line sed missed
+calls where the open-paren was followed by a newline (`_at(\n  tester,`).
+Re-run analyze after any rename — don't trust sed for cross-line patterns.
+
+**Time:** ~12 min. 52 tests, all green on first run. No production bugs
+discovered — the file's fallback cascade and boundary logic are correct.
+Coverage 0% → ~100% on this file.
+
+
+### 2026-05-26 — DialogFactory tests + CircularProgressIndicator pump pattern [Pattern discovered]
+Wrote 31 intent tests for `lib/core/dialogs/dialog_factory.dart` (Batch 11, Intent-Test Sprint).
+
+**Critical helper pattern for loading dialogs**: `pumpAndSettle()` HANGS on dialogs
+that contain `CircularProgressIndicator` (perpetual animation never settles, hits the
+10s timeout). Use this two-pump pattern instead:
+
+```dart
+await tester.tap(find.text("Open"));
+await tester.pump(); // start showDialog future
+await tester.pump(const Duration(milliseconds: 300)); // run open animation
+```
+
+First hit cost ~30s of three timeouts cascading. Save future me the round-trip.
+
+**Bugs surfaced (not fixed, documented in test library doc):**
+* `dialog_factory.dart:94, :242` — `TextEditingController` allocated per call,
+  never disposed. Real leak in `showFeedback` + `showTextInput`. Fix: wrap
+  in a small StatefulWidget that disposes in dispose().
+* `dialog_factory.dart:204-226` — `showDeleteConfirmation.itemType` is a raw
+  String. English locale renders Swedish words verbatim ("remove X from recept?").
+  Same family as BUT-1115 (CommonDialogActions) and BUT-1088. Surfaced by
+  "english locale → itemType leaks Swedish word verbatim" test.
+* `dialog_factory.dart:60-79` (style nit) — dual-purpose `dangerColor` local
+  is confusing; rename to `effectiveConfirmColor`.
+
+**Time:** ~15 min. 31 tests, 28 green on first run, 3 fixed by the pump pattern
+above. Coverage 0% → ~100% on this 109-LoC file.
+
+### 2026-05-26 — ApplicationBootstrap singleton test pattern [Pattern discovered]
+
+**Trigger:** Intent-Test Sprint Batch 11 — `lib/core/bootstrap/application_bootstrap.dart` (495 LoC, was 0% coverage).
+
+**Pattern: full-reset between tests for the bootstrap singleton triple.**
+`ApplicationBootstrap`, `DIContainer`, and `ServiceLocator` are all
+process-wide singletons (private `_internal` constructors). State leaks across
+tests unless you tear down ALL THREE:
+
+```dart
+Future<void> _fullReset() async {
+  await ApplicationBootstrap().reset();   // also resets DIContainer via internal call
+  ServiceLocator.reset();                  // clears the static _container reference
+  await GetIt.instance.reset();            // belt + suspenders; ApplicationBootstrap.reset already does this transitively
+}
+```
+
+Call from BOTH `setUp` and `tearDown`. Without this, a test that sets
+`_isInitialized = true` poisons every test that runs after it.
+
+**Pattern: zero-module + fake-stages walks the full bootstrap path without Firebase.**
+`ApplicationBootstrap.initialize(stages: [fakeStage])` (no `modules:` argument)
+runs all four steps including `ServiceLocator.initialize`, but skips the
+Firebase-heavy validation block because `_diContainer.hasUserScope == false`
+on cold start. This was the unlock for testing this file without a Firebase
+emulator. The `BootstrapStage` interface is small enough (6 members) that
+implementing it directly with a `_RecordingStage` test double is trivial — no
+Mocktail needed.
+
+**Bug/wart found (not fixed):** validate-failure error context is lossy.
+A non-optional stage whose `validate()` returns `false` throws
+`BootstrapException('execution', cause: BootstrapException('validation', ...))`.
+The outer `_executeStage` try/catch (lines 403-417) re-wraps the inner
+validation throw as an 'execution' BootstrapException, with the inner
+preserved as `cause`. Crashlytics will surface the OUTER operation tag, so
+"a stage failed validate" and "a stage threw inside execute" look identical in
+the dashboard. Suggested fix: in `_executeStage`, check
+`if (e is BootstrapException) rethrow;` before the wrap, so the inner
+'validation' tag survives. Filed as a test-discovered nit, not a P1.
+
+**Production design issue (flagged):** `_validateStageRequirements` (lines
+420-430) iterates `stage.requiredModules` but only logs in `kDebugMode` — it
+NEVER actually checks the module is registered. The `BootstrapStage.requiredModules`
+contract is therefore documentation-only. Either remove the API or wire it to
+`_diContainer.isRegistered<T>()`. Untested by design — no behaviour to assert
+against.
+
+**Time:** ~25 min. 21 tests, 20 green on first run, 1 corrected to match the
+actual (slightly wart-y) validate-failure wrapping contract.

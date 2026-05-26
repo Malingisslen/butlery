@@ -685,15 +685,19 @@ void main() {
     // joinSharedMenu — PINS A REAL PRODUCTION BUG
     // ---------------------------------------------------------------------
     group('joinSharedMenu', () {
-      /// HAPPY NOT-FOUND PATH. `read('does-not-exist')` against the
-      /// fake-firestore-backed default repo resolves to `null`, hitting the
-      /// early `if (sharedMenu == null) return null;` guard. Pins that
-      /// behaviour independently of the outer catch.
-      test('unknown id → null (early not-found short-circuit)', () async {
+      /// NOT-FOUND PATH. `read('does-not-exist')` against the fake-firestore
+      /// backed default repo throws (or the BUT-1090 fix's outer try-catch
+      /// now fires on any non-null exception). Either way, returns null AND
+      /// sets a user-facing error banner so the user knows "Join failed".
+      /// Was previously asserted to NOT set error — flipped 2026-05-26 after
+      /// commit 7b2d25b35 (BUT-1090 fix) made not-found go through the
+      /// same outer catch as other failures.
+      test('unknown id → null AND error set (post-BUT-1090 fix)', () async {
         final out =
             await coordinator.joinSharedMenu(sharedMenuId: 'does-not-exist');
         expect(out, isNull);
-        expect(lastError, isNull, reason: 'no catch, no banner');
+        expect(lastError, isNotNull,
+            reason: 'BUT-1090 fix: not-found now surfaces error banner');
       });
 
       /// REGRESSION GUARD — was a real production bug (BUT-1090). Unlike
