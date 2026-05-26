@@ -168,13 +168,21 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     }
     _typingDebounceTimers.clear();
 
-    // Set offline in RTDB and cancel the onDisconnect handler
+    // Set offline in RTDB and cancel the onDisconnect handler.
+    // BUT-1098: split into separate try/catch blocks so a failed set() does
+    // NOT skip the cancel(). Skipping cancel leaves the previous session's
+    // onDisconnect handler armed; on the next reconnect it can fire and
+    // broadcast bogus offline status while the user is online elsewhere.
     try {
       await _presenceRef
           ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
-      await _presenceRef?.onDisconnect().cancel();
     } catch (e) {
       AppLogger.warning('Failed to set offline status on dispose: $e');
+    }
+    try {
+      await _presenceRef?.onDisconnect().cancel();
+    } catch (e) {
+      AppLogger.warning('Failed to cancel onDisconnect on dispose: $e');
     }
     _presenceRef = null;
   }
@@ -187,12 +195,17 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     }
     _typingDebounceTimers.clear();
 
+    // BUT-1098: same split as dispose() — set/cancel are independent.
     try {
       await _presenceRef
           ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
-      await _presenceRef?.onDisconnect().cancel();
     } catch (e) {
       AppLogger.warning('Failed to set offline status on logout: $e');
+    }
+    try {
+      await _presenceRef?.onDisconnect().cancel();
+    } catch (e) {
+      AppLogger.warning('Failed to cancel onDisconnect on logout: $e');
     }
     _presenceRef = null;
 
@@ -331,21 +344,43 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // BUT-1100: every RTDB write here is fire-and-forget. `Future.sync`
+    // converts a synchronous throw (e.g. early argument validation) into
+    // a future error so the single catchError handles both sync and async
+    // failure modes. No unhandled async exception escapes to the zone.
+    final ref = _presenceRef;
+    if (ref == null) return;
+
+    void swallow(Future<void> Function() body, String op) {
+      unawaited(Future.sync(body).catchError((e) {
+        AppLogger.warning('Lifecycle presence write failed ($op): $e');
+      }));
+    }
+
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.hidden:
       case AppLifecycleState.detached:
         // Set offline explicitly for graceful backgrounding
-        _presenceRef
-            ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
+        swallow(
+          () =>
+              ref.set({'status': 'offline', 'lastSeen': ServerValue.timestamp}),
+          'background-offline',
+        );
         break;
       case AppLifecycleState.resumed:
         // Re-establish onDisconnect first, then set online
-        _presenceRef
-            ?.onDisconnect()
-            .set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
-        _presenceRef
-            ?.set({'status': 'online', 'lastSeen': ServerValue.timestamp});
+        swallow(
+          () => ref
+              .onDisconnect()
+              .set({'status': 'offline', 'lastSeen': ServerValue.timestamp}),
+          'resume-onDisconnect',
+        );
+        swallow(
+          () =>
+              ref.set({'status': 'online', 'lastSeen': ServerValue.timestamp}),
+          'resume-online',
+        );
         break;
       default:
         break;

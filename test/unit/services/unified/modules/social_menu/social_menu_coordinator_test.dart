@@ -756,6 +756,40 @@ void main() {
         expect(out, isNull);
         expect(savedMenus, isEmpty);
       });
+
+      /// BUT-1124: legacy importSharedMenu's catch used to log and swallow
+      /// without surfacing through `setError`. That diverged from every
+      /// other catch in the file (e.g. joinSharedMenu after iter-77) and
+      /// meant the UI banner stayed silent on legacy-path failures.
+      ///
+      /// After fix: the catch routes through `setError(sanitizeErrorForUser(e))`
+      /// so the caller sees a banner-eligible message.
+      test(
+          'BUT-1124: repo throw is swallowed → null AND setError called '
+          '(legacy path)', () async {
+        final throwingCoord = SocialMenuCoordinator(
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (e) => lastError = e,
+          notifyListeners: () => notifyCount++,
+          getMenu: (id) async => menuStore[id],
+          saveMenu: (menu) async {
+            savedMenus.add(menu);
+            return saveResult;
+          },
+          sharedMenuRepository: _ThrowingSharedMenuRepository(),
+        );
+        addTearDown(() async => await throwingCoord.dispose());
+
+        final out =
+            // ignore: deprecated_member_use_from_same_package
+            await throwingCoord.importSharedMenu(sharedMenuId: 'whatever');
+
+        expect(out, isNull,
+            reason: 'legacy catch must route throw to null return');
+        expect(lastError, isNotNull,
+            reason: 'BUT-1124: sanitised error must be surfaced via setError');
+      });
     });
 
     // ---------------------------------------------------------------------

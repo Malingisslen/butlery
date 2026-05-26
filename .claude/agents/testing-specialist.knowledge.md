@@ -3013,3 +3013,29 @@ Added `test/unit/services/unified/modules/social_recipe/social_recipe_sharing_se
 - [[BUT-1086]] sign-out race: NOT exercised here because the service has no equivalent "two-phase write with auth check in the middle" — auth is checked once at the top of each method. If the user signs out between auth-check and `saveRecipe`, the save still succeeds with the captured uid (Firebase will reject via rules; service catches the throw → false). Probably worth a follow-up emulator-lane test to confirm rules cover this.
 - [[BUT-1087]] inconsistent `_error`: does NOT recur. Every `return false` path in this file is preceded by a `_setError(AppLocale.current.errorXxx)` call. (The exception: the `_resolveGroupMembers` catch returns empty map without setting error — but that's fine because the caller treats empty-map as "no members" and sets its own error.)
 
+
+---
+
+## 2026-05-26 — iter-79 review (BUT-1098 / BUT-1100 / BUT-1107 / BUT-1108 / BUT-1124)
+
+**Trigger:** reviewed five-ticket sprint batch; all assertions cleanly tied to user-visible behaviour.
+
+**Patterns confirmed good (replicate):**
+
+1. **"Independence after partial failure" mocktail pattern** — when production splits a single try/catch into two, the test stubs the FIRST call to throw and verifies the SECOND call still ran exactly once. Always pair with `clearInteractions(ref)` + `clearInteractions(disconnect)` AFTER `setUp()`'s initialize() so the verify count starts fresh. Without `clearInteractions`, the `verify(...).called(1)` would include the initialize-time interactions and silently pass even if dispose-time cancel never fired. (BUT-1098 example, `presence_service_test.dart` lines 436–470.)
+
+2. **Unhandled-async-exception swallow proof** — `await expectLater(Future<void>.delayed(Duration.zero), completes)` after triggering a void method that fires-and-forgets. If the production `Future.sync(body).catchError(...)` wrap is removed, the unhandled error surfaces through the test zone and fails. Honest because it doesn't assert on internal catch state — it asserts on whether the zone stays clean. (BUT-1100 example, `presence_service_test.dart` lines 503–520.) NOTE the production fix needs both `Future.sync(...)` AND `.catchError(...)` — `unawaited(future.catchError)` alone catches only async errors; mocktail's `thenThrow` is synchronous.
+
+3. **Defense-in-depth gate proven by seeding the dangerous shape** — to prove that "X is checked even when Y passes", seed Y in its valid form and X in its invalid form, then assert the result is empty/null. (BUT-1108 example, `shopping_social_share_module_test.dart` lines 757–795: valid received-pointer + missing sharedWithUserIds membership.) The orphan-pointer test (line 799) stays distinct because it exercises the inverse (missing shared doc, valid pointer membership) — two failure modes, two tests, no overlap.
+
+4. **Flipping a pinned-bug test when the bug is FIXED** — old name `'no received pointer to .update() → null (swallowed by catch)'`, new name `'BUT-1107: no received pointer → import succeeds (set creates pointer)'`. Asserts the FULL new contract: returns the listId AND the pointer doc exists AND `isImported: true` is set. No watered-down version like "doesn't crash" — three concrete state assertions. (BUT-1107 example, `shopping_social_share_module_test.dart` lines 953–982.)
+
+5. **Symmetry-anchored coverage extension** — BUT-1124 test is shape-identical to the BUT-1090 joinSharedMenu test that already exists in the same file (same `_ThrowingSharedMenuRepository` fake, same coordinator-constructor pattern, same dual `expect(out, isNull)` + `expect(lastError, isNotNull)`). Reusing the existing fake keeps the test surface small and ensures the legacy path is held to the same contract as the canonical one.
+
+**Fake design note for future reuse:**
+
+`_ThrowingSharedMenuRepository extends FirebaseSharedMenuRepository` with only `@override read(...)` body. The parent constructor takes all-optional named params (verified in `firebase_shared_menu_repository.dart:70`), so instantiating with no args is safe AND does not touch Firebase at construction time. This is the right shape for "fake that throws on the one method we care about". Do NOT add other method overrides unless a future test exercises them — keeps the failure mode tight.
+
+**Pitfall avoided in this batch:**
+
+The two BUT-1098 tests look superficially redundant ("cancel still runs when set throws — for dispose AND for resetForLogout"). They are NOT redundant: production splits the try/catch in BOTH methods, and either could silently regress. Keep them separate. Mirroring tests for mirrored production code is a feature, not duplication.

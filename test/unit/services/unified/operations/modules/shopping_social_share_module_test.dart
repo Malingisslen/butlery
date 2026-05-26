@@ -754,6 +754,46 @@ void main() {
       );
     });
 
+    /// BUT-1108: defense-in-depth — even when the recipient has a valid
+    /// received_lists pointer, the shared doc's canonical sharedWithUserIds
+    /// must include the recipient. Without this gate, a Firestore-rules
+    /// regression that allowed self-creating pointers would expose other
+    /// users' shopping lists. Belt-and-suspenders pattern.
+    test(
+        'BUT-1108: shared doc without me in sharedWithUserIds is filtered out '
+        '(even with a valid received pointer)', () async {
+      // Seed a shared doc shared ONLY with someone else — not the current user.
+      await firestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc('stranger-list')
+          .set({
+        'contentType': 'shopping_list',
+        'title': 'Privata listan',
+        'sharedByDisplayName': 'Bob',
+        'sharedByUserId': 'bob-uid',
+        'isActive': true,
+        'sharedWithUserIds': ['other-user'], // _me NOT in this list
+      });
+
+      // But somehow the current user has a received_lists pointer for it
+      // (e.g. cleanup race, rules regression, or manual injection).
+      await firestore
+          .collection(FirestoreCollections.userSharedShoppingLists)
+          .doc(_me)
+          .collection(FirestoreCollections.receivedLists)
+          .doc('stranger-list')
+          .set({
+        'sharedListId': 'stranger-list',
+        'isViewed': false,
+        'isImported': false,
+      });
+
+      final out = await module.getShoppingListsSharedWithMe();
+      expect(out, isEmpty,
+          reason: 'BUT-1108: defense-in-depth — pointer alone must not '
+              'grant inbox visibility');
+    });
+
     /// Orphan pointer (received_lists references a sharedListId that no
     /// longer exists in shared_content): silently skipped, no exception.
     test('orphan pointer (missing shared doc) is silently skipped', () async {
@@ -910,10 +950,12 @@ void main() {
       expect(after.data()!['isImported'], isTrue);
     });
 
-    /// BUG-2: import w/o a pre-existing received pointer throws
-    /// internally → caught → returns null. Cosmetic but worth pinning
-    /// so the failure mode stays consistent.
-    test('no received pointer to .update() → null (swallowed by catch)',
+    /// BUT-1107 fix: import without a pre-existing received pointer now
+    /// succeeds — `set(..., merge:true)` creates the pointer instead of
+    /// throwing not-found on `.update()`. The inbox-cleanup race no longer
+    /// surfaces as a useless "import failed".
+    test(
+        'BUT-1107: no received pointer → import succeeds (set creates pointer)',
         () async {
       await firestore
           .collection(FirestoreCollections.sharedContent)
@@ -926,12 +968,18 @@ void main() {
       // Intentionally NO received_lists pointer seeded.
 
       final out = await module.importSharedShoppingList('s1');
-      expect(
-        out,
-        isNull,
-        reason:
-            'update() on missing doc throws; catch returns null. Pinned per BUG-2.',
-      );
+      expect(out, 's1',
+          reason: 'BUT-1107: import survives missing pointer via set+merge');
+
+      // Pointer must now exist with the imported flag set.
+      final after = await firestore
+          .collection(FirestoreCollections.userSharedShoppingLists)
+          .doc(_me)
+          .collection(FirestoreCollections.receivedLists)
+          .doc('s1')
+          .get();
+      expect(after.exists, isTrue);
+      expect(after.data()!['isImported'], isTrue);
     });
   });
 

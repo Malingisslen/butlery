@@ -255,6 +255,15 @@ class ShoppingSocialShareModule {
         final listData = allListDocs[sharedListId];
         final receivedData = receivedListData[sharedListId];
 
+        // BUT-1108: defense-in-depth — verify the current user is in the
+        // canonical sharedWithUserIds. The implicit access via received_lists
+        // pointer is no longer the only gate; if Firestore rules ever loosen
+        // on pointer writes, this prevents cross-user inbox leakage.
+        final sharedWithUserIds =
+            (listData?['sharedWithUserIds'] as List?)?.cast<String>() ??
+                const <String>[];
+        if (!sharedWithUserIds.contains(currentUserId)) continue;
+
         if (listData != null &&
             receivedData != null &&
             listData['isActive'] == true) {
@@ -339,16 +348,19 @@ class ShoppingSocialShareModule {
         return null;
       }
 
-      // Mark as imported in user's received lists
+      // Mark as imported in user's received lists.
+      // BUT-1107: `set(..., merge:true)` creates the pointer if it's missing
+      // (inbox cleanup race) instead of throwing not-found on `.update()` and
+      // collapsing to a useless "import failed" message.
       await _firestore
           .collection(FirestoreCollections.userSharedShoppingLists)
           .doc(currentUserId)
           .collection(FirestoreCollections.receivedLists)
           .doc(sharedListId)
-          .update({
+          .set({
         'isImported': true,
         'importedAt': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
 
       AppLogger.success('✅ Shopping list imported successfully');
       return sharedListId;

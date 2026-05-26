@@ -52,6 +52,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleState;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -432,6 +433,39 @@ void main() {
       await expectLater(service.dispose(), completes);
     });
 
+    /// BUT-1098: a thrown `set(offline)` MUST NOT prevent
+    /// `onDisconnect.cancel()` from running. Otherwise the previous
+    /// session's onDisconnect handler stays armed and the next reconnect
+    /// fires bogus offline status while the user is online elsewhere.
+    test('BUT-1098 dispose: cancel still runs even when set() throws',
+        () async {
+      final ref = harness.refs['presence/u1']!;
+      final disconnect = harness.disconnects[ref]!;
+      clearInteractions(ref);
+      clearInteractions(disconnect);
+      when(() => ref.set(any())).thenThrow(StateError('offline'));
+
+      await service.dispose();
+
+      verify(() => disconnect.cancel()).called(1);
+    });
+
+    /// BUT-1098 sibling: same independence guarantee on the
+    /// resetForLogout path. Set failure does not strand the onDisconnect
+    /// handler.
+    test('BUT-1098 resetForLogout: cancel still runs even when set() throws',
+        () async {
+      final ref = harness.refs['presence/u1']!;
+      final disconnect = harness.disconnects[ref]!;
+      clearInteractions(ref);
+      clearInteractions(disconnect);
+      when(() => ref.set(any())).thenThrow(StateError('offline'));
+
+      await service.resetForLogout();
+
+      verify(() => disconnect.cancel()).called(1);
+    });
+
     /// resetForLogout: same offline write, same cancel, then must NULL
     /// the internal _presenceRef. A re-login should re-resolve the path
     /// — otherwise a logout-then-login-as-different-user keeps writing
@@ -454,6 +488,35 @@ void main() {
       await service.dispose();
       verifyNever(() => ref.set(any()));
       verifyNever(() => disconnect.cancel());
+    });
+
+    /// BUT-1100: didChangeAppLifecycleState fires RTDB writes
+    /// fire-and-forget. After the fix, each write is wrapped in
+    /// `catchError` so a transient RTDB failure does NOT escape as an
+    /// unhandled async exception (Crashlytics noise). This test stubs
+    /// `ref.set` to throw, drives the lifecycle callback, and asserts
+    /// that pending microtasks complete without surfacing the error to
+    /// the surrounding zone.
+    test(
+        'BUT-1100 paused lifecycle: set() throw is swallowed '
+        '(no unhandled async exception)', () async {
+      final ref = harness.refs['presence/u1']!;
+      // initialize() ran in setUp() and already called ref.set(online).
+      // Clear those interactions so the verify below counts only the
+      // lifecycle-triggered call.
+      clearInteractions(ref);
+      when(() => ref.set(any())).thenThrow(StateError('rtdb-blip'));
+
+      // No await — didChangeAppLifecycleState is void. After the fix the
+      // fire-and-forget future is caught internally.
+      service.didChangeAppLifecycleState(AppLifecycleState.paused);
+
+      // Drain microtasks. If catchError wasn't wired, the unhandled error
+      // would surface here. The `completes` matcher proves no zone-error
+      // escapes the test scope.
+      await expectLater(Future<void>.delayed(Duration.zero), completes);
+      // The set() call itself was attempted (proves the wiring fires).
+      verify(() => ref.set(any())).called(1);
     });
   });
 

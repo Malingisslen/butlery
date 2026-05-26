@@ -352,7 +352,12 @@ class SocialMenuCoordinator
           '✅ Menu imported successfully with attribution (legacy mode)');
       return menuId;
     } catch (e) {
+      // BUT-1124: surface failures through the shared error banner. Mirrors
+      // the BUT-1094 fix on the non-legacy paths and the canonical pattern
+      // in BaseSocialCoordinator. Legacy path is `@deprecated` but stays
+      // active until removed, so silent swallows would mislead users.
       AppLogger.error('Failed to import shared menu: $e');
+      setError(sanitizeErrorForUser(e));
       return null;
     }
   }
