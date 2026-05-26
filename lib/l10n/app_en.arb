@@ -6723,6 +6723,14 @@
       }
     }
   },
+  "uploadStatusAllCancelled": "All {cancelled} uploads cancelled",
+  "@uploadStatusAllCancelled": {
+    "placeholders": {
+      "cancelled": {
+        "type": "int"
+      }
+    }
+  },
   "uploadProgressWithTime": "{progress}% done - {time} remaining",
   "@uploadProgressWithTime": {
     "placeholders": {

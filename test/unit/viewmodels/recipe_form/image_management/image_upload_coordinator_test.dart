@@ -35,15 +35,20 @@
 ///     `canBulkRetry` / `canBulkCancel` thresholds (>1, NOT >=1).
 ///   * `dispose` cancels every in-flight operation and clears tracking.
 ///
-/// Production findings surfaced (NOT fixed here — see report):
+/// Production findings surfaced:
 ///   1. `canBulkRetry` / `canBulkCancel` thresholds are `> 1` not `>= 1`.
 ///      So with exactly ONE failed (or active) upload, the bulk UI hides —
 ///      this is *intentional* per the inline comment, but the singular case
 ///      then has no bulk path. Pinned to lock the contract.
-///   2. `_setError(AppLocale.current.errorGeneric)` swallows the underlying
-///      exception text for any fatal-batch failure. If a Future.wait fails
-///      with a specific cause the user sees only "Ett fel uppstod" — that's
-///      load-bearing UX info lost.
+///   2. [FIXED — BUT-1128] Fatal-batch catch now routes through
+///      `sanitizeErrorForUser(e)` instead of collapsing to `errorGeneric`.
+///      The catch path itself is structurally hard to trigger from a unit
+///      test (per-file catch absorbs storage errors; `Future.wait` with
+///      `eagerError: false` absorbs the rest). The sanitizer's behavior is
+///      proven by `test/unit/core/utils/error_sanitizer_test.dart`, and the
+///      per-file isolation test below (`thrown storage exception is caught
+///      per-file`) asserts the per-file path does NOT touch `errorsSet`,
+///      pinning the boundary.
 ///   3. The `disposed` and `uploadsCanceled` flags are passed BY VALUE at
 ///      the start of `uploadPendingImagesInBackground`. If the caller flips
 ///      its own `_disposed` to true mid-flight, the coordinator's per-file
@@ -52,9 +57,8 @@
 ///      which `dispose()` does drive, so the actual disposal path works,
 ///      but a "soft cancel" call site that just flips the bool without
 ///      calling dispose would NOT actually stop in-flight uploads.
-///      Cross-references the batch-9 BUT-1118 family: the queue manager's
-///      `addCompletedUpload` no-guard means a late upload completion after
-///      a fake "cancel" could still mutate the queue here too.
+///      [FIXED — BUT-1118] The queue manager's `addCompletedUpload` now
+///      guards against the late-completion case.
 
 library;
 

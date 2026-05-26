@@ -161,28 +161,35 @@ void main() {
       expect(mgr.persistableUrls, ['https://x/y.jpg']);
     });
 
-    /// FINDING #1: addCompletedUpload silently overwrites an existing
-    /// entry, unlike addUpload which warns+no-ops. This test PINS the
-    /// current behaviour so any intentional change shows up as a test
-    /// failure rather than slipping in silently.
+    /// BUT-1118 fix: addCompletedUpload now matches addUpload's contract —
+    /// existing keys are preserved with a warning, not overwritten. Prevents
+    /// the retry-race where a late completion event would silently mark an
+    /// in-flight upload as done.
     test(
-        'asymmetry-with-addUpload: silently overwrites existing entry (pinning current behaviour)',
-        () {
+        'BUT-1118: existing entry is preserved (no-op + warning), '
+        'matching addUpload guard contract', () {
       mgr.addUpload(filePath: '/x.jpg', file: _f('/x.jpg'));
       mgr.updateStatus(
         '/x.jpg',
-        _statusWith(state: ImageUploadState.uploading, progress: 0.4),
+        _statusWith(
+          state: ImageUploadState.uploading,
+          progress: 0.4,
+          file: _f('/x.jpg'),
+        ),
       );
 
       mgr.addCompletedUpload(filePath: '/x.jpg', url: 'https://x/x.jpg');
 
-      // The previously-uploading entry has been erased — the file handle
-      // is gone, the progress jumped to 1.0, and the state is completed.
+      // The previously-uploading entry is preserved — file handle intact,
+      // progress unchanged, state still uploading.
       final status = mgr.getStatus('/x.jpg')!;
-      expect(status.state, ImageUploadState.completed);
-      expect(status.file, isNull);
-      expect(status.progress, 1.0);
-      expect(status.url, 'https://x/x.jpg');
+      expect(status.state, ImageUploadState.uploading,
+          reason: 'in-flight state must not be clobbered');
+      expect(status.file, isNotNull,
+          reason: 'file handle must survive a duplicate completion event');
+      expect(status.progress, 0.4);
+      expect(status.url, isNull,
+          reason: 'late URL must not be applied to the in-flight entry');
     });
   });
 

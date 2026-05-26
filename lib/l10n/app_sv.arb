@@ -6755,6 +6755,14 @@
       }
     }
   },
+  "uploadStatusAllCancelled": "Alla {cancelled} uppladdningar avbrutna",
+  "@uploadStatusAllCancelled": {
+    "placeholders": {
+      "cancelled": {
+        "type": "int"
+      }
+    }
+  },
   "uploadProgressWithTime": "{progress}% klart - {time} kvar",
   "@uploadProgressWithTime": {
     "placeholders": {

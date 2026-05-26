@@ -10339,6 +10339,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String uploadStatusAllCancelled(int cancelled) {
+    return 'All $cancelled uploads cancelled';
+  }
+
+  @override
   String uploadProgressWithTime(int progress, String time) {
     return '$progress% done - $time remaining';
   }

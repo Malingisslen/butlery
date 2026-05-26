@@ -17643,6 +17643,12 @@ abstract class AppLocalizations {
   /// **'Alla {total} bilder uppladdade framgångsrikt'**
   String uploadStatusAllSuccess(int total);
 
+  /// No description provided for @uploadStatusAllCancelled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla {cancelled} uppladdningar avbrutna'**
+  String uploadStatusAllCancelled(int cancelled);
+
   /// No description provided for @uploadProgressWithTime.
   ///
   /// In sv, this message translates to:

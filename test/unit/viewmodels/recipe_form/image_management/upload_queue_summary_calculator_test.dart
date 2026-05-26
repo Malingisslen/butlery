@@ -439,11 +439,23 @@ void main() {
       expect(text.toLowerCase(), contains('framgångsrikt'));
     });
 
-    /// All-cancelled is a silent state today — pin current behaviour so
-    /// a future fix (showing "all cancelled") deliberately updates the
-    /// test rather than slipping in unnoticed.
-    test('all-cancelled (no pending/active/completed/failed) returns empty',
-        () {
+    /// BUT-1102 fix: all-cancelled queue surfaces a dedicated message
+    /// instead of rendering blank UI. `cancelled` is now threaded through
+    /// the function signature as a named param.
+    test('BUT-1102: all-cancelled queue surfaces a dedicated status text', () {
+      final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
+          0, 0, 0, 0, /*total*/ 2, 0.0,
+          cancelled: 2);
+      expect(text, isNotEmpty,
+          reason: 'must surface a status string, not render blank UI');
+      expect(text, contains('2'),
+          reason: 'count of cancelled items belongs in the message');
+    });
+
+    /// Defensive: without `cancelled` (default 0), behaviour matches the
+    /// pre-fix empty-string return — preserves source-compat for any caller
+    /// that hasn't been updated to pass the new param.
+    test('all-zero counters with no cancelled still returns empty', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
           0, 0, 0, 0, /*total*/ 2, 0.0);
       expect(text, '');

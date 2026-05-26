@@ -52,16 +52,17 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
   @override
   String get inputExample => 'https://www.tiktok.com/@user/video/123456789';
 
-  /// TikTok URL patterns.
+  /// TikTok URL patterns. `caseSensitive: false` because share-sheets and
+  /// iOS Safari often emit mixed-case hosts (BUT-1092).
   static final _tiktokPatterns = [
     // Standard: tiktok.com/@user/video/ID
-    RegExp(r'tiktok\.com/@[^/]+/video/(\d+)'),
+    RegExp(r'tiktok\.com/@[^/]+/video/(\d+)', caseSensitive: false),
     // Short: vm.tiktok.com/XXX
-    RegExp(r'vm\.tiktok\.com/([A-Za-z0-9]+)'),
+    RegExp(r'vm\.tiktok\.com/([A-Za-z0-9]+)', caseSensitive: false),
     // Mobile: m.tiktok.com/v/ID
-    RegExp(r'm\.tiktok\.com/v/(\d+)'),
+    RegExp(r'm\.tiktok\.com/v/(\d+)', caseSensitive: false),
     // Web player: tiktok.com/embed/ID
-    RegExp(r'tiktok\.com/embed/(\d+)'),
+    RegExp(r'tiktok\.com/embed/(\d+)', caseSensitive: false),
   ];
 
   /// Swedish cooking-related emojis for ingredient detection.

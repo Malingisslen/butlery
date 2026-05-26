@@ -54,11 +54,22 @@ class UploadQueueManager {
         '🗂️ QUEUE: Added upload for $filePath (queue size: ${_queue.length})');
   }
 
-  /// Add completed upload (with URL) to queue
+  /// Add completed upload (with URL) to queue.
+  ///
+  /// BUT-1118: guards against the retry-race case where a late completion
+  /// event arrives for a path that has been re-queued. Without the guard
+  /// the in-flight entry was silently erased (file handle dropped, progress
+  /// jumps to 1.0, UI shows "done" while a request is still in flight).
   void addCompletedUpload({
     required String filePath,
     required String url,
   }) {
+    if (_queue.containsKey(filePath)) {
+      AppLogger.warning(
+          '🗂️ QUEUE: addCompletedUpload: key already exists, skipping: $filePath');
+      return;
+    }
+
     _queue[filePath] = ImageUploadStatus(
       url: url,
       state: ImageUploadState.completed,

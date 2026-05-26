@@ -10363,6 +10363,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String uploadStatusAllCancelled(int cancelled) {
+    return 'Alla $cancelled uppladdningar avbrutna';
+  }
+
+  @override
   String uploadProgressWithTime(int progress, String time) {
     return '$progress% klart - $time kvar';
   }

@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Coordinates bulk image upload operations with thread-safe cancellation support.
 /// **Responsibilities:**
@@ -118,8 +118,12 @@ class ImageUploadCoordinator {
           '✅ Completed ${successfulUrls.length}/$total uploads successfully');
       return successfulUrls;
     } catch (e) {
+      // BUT-1128: surface the actual cause (network / auth / timeout / quota)
+      // via the sanitizer instead of collapsing every fatal-batch failure to
+      // "Ett fel uppstod". The per-file path already records typed errors;
+      // this is the global sink and was the only lossy one.
       AppLogger.error('❌ Fatal error during upload: $e');
-      _setError(AppLocale.current.errorGeneric);
+      _setError(sanitizeErrorForUser(e));
       return uploadedUrls;
     } finally {
       operationGroup.dispose();

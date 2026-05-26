@@ -2886,3 +2886,27 @@ against.
 
 **Time:** ~25 min. 21 tests, 20 green on first run, 1 corrected to match the
 actual (slightly wart-y) validate-failure wrapping contract.
+
+### 2026-05-26 — Ticket-then-flip sprint integrity review (iter-78) [Review pattern]
+
+**Trigger:** Sprint iter-78 — seven tickets, six PINS BUG tests flipped + one docstring update (BUT-1128). User asked to verify intent integrity of the flips.
+
+**Findings — all flips are clean.**
+
+1. **BUT-1092 / BUT-1113 / BUT-1116 (mixed-case host trio).** Production added `caseSensitive: false` to each `RegExp` in `_tiktokPatterns`, `_instagramPatterns`, and `_videoIdPatterns`. Tests flipped `isFalse → isTrue` on `canHandle('https://www.TikTok.com/...')` etc. Assertion is the *only* one that changes when the regex flag is the difference (verified by the sibling lowercase-variant test in `youtube_import_strategy_test.dart` that proves cause-and-effect). Intent preserved.
+
+2. **BUT-1091 (typosquat host anchors).** Production added `^https?://(?:www\.|m\.)?` prefix to each YouTube pattern. The CHARACTERIZATION test correctly flipped four `equals(_vid) → isNull` assertions covering: missing protocol (`iyoutube.com/...`), wrong host (`evilyoutube.com`, `anything-youtube.com`), and subdomain over-match (`random.youtube.com`). Each negative case maps directly to a specific anchor in the new regex — there's no slack. Good.
+
+3. **BUT-1116 sibling-hunt test deliberately uses `YouTubeTranscriptService()` (real service, not the fake) — required because the fake doesn't carry the production regex. This is the right choice and the comment makes it explicit. Don't refactor to the fake or the test goes vacuous.
+
+4. **BUT-1118 (`addCompletedUpload` guard).** Production now early-returns when `_queue.containsKey(filePath)`. Test sequence is `addUpload → updateStatus(uploading, 0.4) → addCompletedUpload`. The assertion flip from "silently overwrites (state=completed, file=null, progress=1.0, url set)" to "preserves entry (state=uploading, file=isNotNull, progress=0.4, url=isNull)" matches the guard behaviour exactly. Adding `file: _f('/x.jpg')` to `_statusWith` is necessary — otherwise the `status.file, isNotNull` assertion would just be testing that the *first* `addUpload` set a file, not that the late `addCompletedUpload` left it alone. Good catch.
+
+5. **BUT-1102 (cancelled queue surface).** Production added optional `cancelled: 0` param + new else-if branch that fires only when `cancelled > 0 && active == 0 && pending == 0 && failed == 0 && completed == 0`. Test 1 flip `equals('') → isNotEmpty + contains('2')` pins the new branch. Test 2 (defensive: zero cancelled returns empty) genuinely pins the source-compat contract because the new branch's `cancelled > 0` guard would fall through to `''` for the old 6-arg call shape. Not a no-op — it pins the negative case of the new condition. Good.
+
+6. **BUT-1128 (docstring-only).** Production swapped `_setError(AppLocale.current.errorGeneric)` → `_setError(sanitizeErrorForUser(e))` in the fatal-batch catch of `image_upload_coordinator.dart`. The docstring update is defensible: the per-file try/catch absorbs `StorageService` errors (and the existing test `thrown storage exception is caught per-file` already pins that boundary), and `Future.wait(eagerError: false)` absorbs the rest, so reaching the outer catch from a unit test would require a deliberate `Future.error` injected past both guards — which is not how the production surface composes. The sanitizer's behaviour is covered by `test/unit/core/utils/error_sanitizer_test.dart`. **Acceptable as-is.** If a future regression makes the outer catch reachable through a normal call path (e.g. someone removes the per-file try/catch), the existing per-file isolation test will fail first, surfacing the boundary breach before the sanitizer routing matters.
+
+**Pattern: when flipping a CHARACTERIZATION test, verify cause-and-effect with a sibling test.** The BUT-1116 group keeps a lowercase-variant test (`'lowercase variant of the same URL is accepted (proves cause)'`) right next to the mixed-case flip. If only the mixed-case `isTrue` is asserted and the lowercase one is dropped, a regression that breaks BOTH (e.g. the regex itself is broken) would silently pass the mixed-case assertion. Keep paired positive-control assertions when the fix is a flag-toggle.
+
+**Pattern: docstring-only updates are valid when the surface is genuinely untestable AND a sibling test pins the boundary.** Don't reflexively demand a new test for every fix. If (a) the catch path can't be reached without a deliberate test-only seam, (b) the routing logic (here: `sanitizeErrorForUser`) has its own unit test, and (c) an existing test pins the boundary that would have to break for the untestable path to become live, a docstring update plus the existing coverage is the right call. Cite all three when defending.
+
+**Time:** ~15 min review. Zero findings requiring code changes.

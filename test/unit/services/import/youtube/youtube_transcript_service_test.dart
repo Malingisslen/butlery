@@ -199,11 +199,10 @@ void main() {
       }
     });
 
-    /// Non-YouTube hosts and malformed inputs must return null. NOTE: the
-    /// production regex is intentionally permissive on host boundaries — a
-    /// hostname *ending* in `youtube.com` (e.g. `iyoutube.com`,
-    /// `evil-youtube.com`) WILL match. See BUG-1 in the agent report; this
-    /// test pins the currently-safe set only.
+    /// Non-YouTube hosts and malformed inputs must return null. After BUT-1091
+    /// (host-anchored regex), typosquats like `iyoutube.com` and
+    /// `evil-youtube.com` also return null — see the CHARACTERIZATION test
+    /// below for those.
     test('returns null for non-YouTube hosts and malformed inputs', () {
       const nonMatching = [
         'https://vimeo.com/123456789',
@@ -223,21 +222,20 @@ void main() {
       }
     });
 
-    /// CHARACTERIZATION TEST documenting BUG-1 (host-boundary regex). When
-    /// production tightens the host anchors (`^https?://(?:www\.|m\.)?` and
-    /// equivalents), flip these expectations and the test still pins the
-    /// behaviour. See agent report.
-    test('CHARACTERIZATION: permissive host regex over-matches typosquats', () {
-      // Today these wrongly succeed because the regex is host-suffix-based.
-      expect(svc.extractVideoId('iyoutube.com/watch?v=$_vid'), _vid);
-      expect(svc.extractVideoId('https://evilyoutube.com/watch?v=$_vid'), _vid);
+    /// BUT-1091 fix: host-anchored regex rejects typosquats. The patterns
+    /// now require `^https?://(?:www\.|m\.)?` (or `^https?://youtu\.be/`)
+    /// so any hostname *ending* in `youtube.com` no longer matches.
+    test('BUT-1091: host-anchored regex rejects typosquats', () {
+      // Missing protocol → fails the `^https?://` anchor.
+      expect(svc.extractVideoId('iyoutube.com/watch?v=$_vid'), isNull);
+      // Wrong host (only `youtube.com` or `youtu.be` allowed).
       expect(
-          svc.extractVideoId('https://anything-youtube.com/embed/$_vid'), _vid);
-      // Subdomain over-match: technically YouTube doesn't run on
-      // sub.youtube.com but the regex doesn't care — pinning the current
-      // behaviour.
-      expect(
-          svc.extractVideoId('https://random.youtube.com/watch?v=$_vid'), _vid);
+          svc.extractVideoId('https://evilyoutube.com/watch?v=$_vid'), isNull);
+      expect(svc.extractVideoId('https://anything-youtube.com/embed/$_vid'),
+          isNull);
+      // Subdomain over-match: only `www.` or `m.` allowed before youtube.com.
+      expect(svc.extractVideoId('https://random.youtube.com/watch?v=$_vid'),
+          isNull);
     });
 
     /// Length is strict at 11 for the bare-ID pattern. A 10-char or 12-char

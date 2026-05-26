@@ -17,18 +17,34 @@ import 'package:butlery/services/import/youtube/youtube_models.dart';
 /// Service to fetch YouTube video transcripts and metadata.
 class YouTubeTranscriptService with ErrorHandlingMixin {
   /// Patterns for extracting video IDs from various YouTube URL formats.
+  ///
+  /// All host-anchored patterns require `^https?://(?:www\.|m\.)?` (BUT-1091)
+  /// so typosquats like `iyoutube.com/watch?...` and `evilyoutube.com/...`
+  /// cannot match. `caseSensitive: false` accepts mixed-case hosts from
+  /// share-sheets / iOS Safari (BUT-1116).
   static final _videoIdPatterns = [
     // Standard watch URL: youtube.com/watch?v=VIDEO_ID
-    RegExp(r'youtube\.com/watch\?.*v=([A-Za-z0-9_-]{11})'),
-    // Short URL: youtu.be/VIDEO_ID
-    RegExp(r'youtu\.be/([A-Za-z0-9_-]{11})'),
+    RegExp(
+        r'^https?://(?:www\.|m\.)?youtube\.com/watch\?.*v=([A-Za-z0-9_-]{11})',
+        caseSensitive: false),
+    // Short URL: youtu.be/VIDEO_ID (also accepts `www.youtu.be/` — rare but
+    // legitimate; `www.youtu.be` resolves and 301-redirects to youtu.be).
+    RegExp(r'^https?://(?:www\.)?youtu\.be/([A-Za-z0-9_-]{11})',
+        caseSensitive: false),
     // Shorts: youtube.com/shorts/VIDEO_ID
-    RegExp(r'youtube\.com/shorts/([A-Za-z0-9_-]{11})'),
+    RegExp(r'^https?://(?:www\.|m\.)?youtube\.com/shorts/([A-Za-z0-9_-]{11})',
+        caseSensitive: false),
     // Embed: youtube.com/embed/VIDEO_ID
-    RegExp(r'youtube\.com/embed/([A-Za-z0-9_-]{11})'),
+    RegExp(r'^https?://(?:www\.|m\.)?youtube\.com/embed/([A-Za-z0-9_-]{11})',
+        caseSensitive: false),
     // Live: youtube.com/live/VIDEO_ID
-    RegExp(r'youtube\.com/live/([A-Za-z0-9_-]{11})'),
-    // Just the video ID
+    RegExp(r'^https?://(?:www\.|m\.)?youtube\.com/live/([A-Za-z0-9_-]{11})',
+        caseSensitive: false),
+    // Just the video ID. BUT-1091 trade-off: this pattern still matches any
+    // 11-char `[A-Za-z0-9_-]` string. Acceptable because the only caller path
+    // that hits `canHandle` with a bare ID is direct user input after they've
+    // already picked "YouTube import" — the typosquat surface lives on the
+    // URL patterns above, which are now host-anchored.
     RegExp(r'^([A-Za-z0-9_-]{11})$'),
   ];
 

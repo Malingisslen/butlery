@@ -786,25 +786,16 @@ void main() {
   });
 
   // =========================================================================
-  // 7) BUT-1092 sibling — case-sensitive URL pattern hunt
+  // 7) BUT-1116 fix — mixed-case host accepted
   // =========================================================================
-  group('BUT-1092 sibling: case-sensitive URL pattern hunt', () {
-    /// The video-ID regexes in YouTubeTranscriptService have NO
-    /// `caseSensitive: false` flag (see lib/services/import/youtube/
-    /// youtube_transcript_service.dart:20-32). Result: a shared URL
-    /// with an uppercase host like `YouTube.com` would fail extraction.
-    ///
-    /// This is the same bug class as BUT-1092 in tiktok_pipeline and the
-    /// BUT-1092-sibling in instagram_pipeline. Pinning the CURRENT
-    /// behaviour so a fix flips the expectation.
-    ///
-    /// Fix (one-liner per pattern, when triaged):
-    /// add `, caseSensitive: false` to each RegExp in `_videoIdPatterns`
-    /// (lib/services/import/youtube/youtube_transcript_service.dart:20-32).
+  group('BUT-1116 fix: case-insensitive URL pattern', () {
+    /// After BUT-1116 fix, each RegExp in `_videoIdPatterns` carries
+    /// `caseSensitive: false`, so shared URLs with uppercase host letters
+    /// extract correctly. Same fix as BUT-1092 (tiktok) and BUT-1113
+    /// (instagram).
     test(
-        'PINNED CURRENT BEHAVIOUR — mixed-case host `YouTube.com` is '
-        'currently REJECTED (case-sensitive regex bug, same shape as BUT-1092)',
-        () {
+        'BUT-1116: mixed-case host `YouTube.com` is accepted '
+        '(case-insensitive regex)', () {
       // Real transcript service — NOT the fake. We want production parsing.
       final realStrategy = YouTubeImportStrategy(
         transcriptService: YouTubeTranscriptService(),
@@ -814,9 +805,8 @@ void main() {
 
       expect(
         realStrategy.canHandle(mixedCase),
-        isFalse,
-        reason: 'Same case-sensitivity bug class as BUT-1092 (tiktok). When '
-            'production is fixed, flip this expectation to isTrue.',
+        isTrue,
+        reason: 'BUT-1116: case-insensitive host must be accepted',
       );
     });
 

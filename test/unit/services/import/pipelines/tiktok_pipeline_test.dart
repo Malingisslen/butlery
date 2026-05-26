@@ -236,22 +236,15 @@ void main() {
     });
 
     test(
-        'BUG (pinned): mixed-case host TikTok.com is REJECTED because the '
-        'regex is case-sensitive even though the substring-check is '
-        'lowercased', () {
-      // Production bug: lowerUrl.contains('tiktok.com') passes for
-      // "TikTok.com" (true) — so the early-return is skipped — but then the
-      // regex `tiktok\.com/@[^/]+/video/(\d+)` is matched against the
-      // ORIGINAL URL (case-sensitive) and misses, so canHandle returns
-      // false. Result: any URL the user shares with any uppercase letters
-      // in the host fails extraction silently.
-      //
-      // Pinning current behavior; FIX should be `caseSensitive: false` on
-      // the regexes in `_tiktokPatterns`.
+        'BUT-1092 fix: mixed-case host TikTok.com is accepted '
+        '(case-insensitive regex)', () {
+      // After BUT-1092 fix: each pattern in `_tiktokPatterns` carries
+      // `caseSensitive: false`, so shared URLs with uppercase host letters
+      // (iOS Safari / share-sheets normalise to mixed case) extract
+      // correctly. Previously rejected silently.
       const url = 'https://www.TikTok.com/@chefanna/video/7123456789012345678';
-      expect(pipeline.canHandle(url), isFalse,
-          reason: 'Currently rejected — file as a real bug. When '
-              'production is fixed, flip this expectation.');
+      expect(pipeline.canHandle(url), isTrue,
+          reason: 'BUT-1092: case-insensitive host must be accepted');
     });
 
     test('rejects non-tiktok hosts even if URL is well-formed', () {

@@ -240,27 +240,16 @@ void main() {
   // =========================================================================
   group('BUT-1092 sibling: mixed-case host regex case-sensitivity', () {
     test(
-        'PINNED CURRENT BEHAVIOUR — mixed-case host `Instagram.com` is '
-        'currently REJECTED (case-sensitive regex bug, same shape as '
-        'BUT-1092 in tiktok_pipeline)', () {
-      // The host-substring guard does `url.toLowerCase().contains('instagram.com')`
-      // — that passes for "Instagram.com" — but the four RegExp patterns in
-      // `_instagramPatterns` have NO `caseSensitive: false`, so they only
-      // match if the URL is already lowercase. Result: any shared URL with
-      // an uppercase letter in the host fails silently.
-      //
-      // Fix (one-line, when triaged): add `caseSensitive: false` to each
-      // RegExp in `_instagramPatterns` (lib/services/import/pipelines/
-      // instagram_pipeline.dart lines 22-26).
-      //
-      // When production is fixed, flip this expectation to isTrue and update
-      // the test name. Until then, pinning rejects so a fix is detectable
-      // by a test failure (it would suddenly start accepting these URLs).
+        'BUT-1113 fix: mixed-case host `Instagram.com` is accepted '
+        '(case-insensitive regex)', () {
+      // After BUT-1113 fix: each pattern in `_instagramPatterns` carries
+      // `caseSensitive: false`, so shared URLs with uppercase host letters
+      // extract correctly. Same shape as BUT-1092 in tiktok_pipeline.
       const url = 'https://www.Instagram.com/p/ABC123/';
       expect(
         pipeline.canHandle(url),
-        isFalse,
-        reason: 'Same case-sensitivity bug class as BUT-1092 (TikTok).',
+        isTrue,
+        reason: 'BUT-1113: case-insensitive host must be accepted',
       );
     });
 

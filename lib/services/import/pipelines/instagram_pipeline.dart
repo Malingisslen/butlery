@@ -18,11 +18,13 @@ import 'package:butlery/services/import/models/import_result_v2.dart';
 class InstagramPipeline extends ImportStrategy with ImportValidationMixin {
   final LlmEnhancementService _llmService;
 
+  /// `caseSensitive: false` because share-sheets and iOS Safari often emit
+  /// mixed-case hosts (BUT-1113).
   static final _instagramPatterns = [
-    RegExp(r'instagram\.com/p/([A-Za-z0-9_-]+)'),
-    RegExp(r'instagram\.com/reel/([A-Za-z0-9_-]+)'),
-    RegExp(r'instagr\.am/p/([A-Za-z0-9_-]+)'),
-    RegExp(r'instagram\.com/([A-Za-z0-9_.]+)/p/'),
+    RegExp(r'instagram\.com/p/([A-Za-z0-9_-]+)', caseSensitive: false),
+    RegExp(r'instagram\.com/reel/([A-Za-z0-9_-]+)', caseSensitive: false),
+    RegExp(r'instagr\.am/p/([A-Za-z0-9_-]+)', caseSensitive: false),
+    RegExp(r'instagram\.com/([A-Za-z0-9_.]+)/p/', caseSensitive: false),
   ];
 
   InstagramPipeline({required LlmEnhancementService llmService})

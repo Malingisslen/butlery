@@ -121,7 +121,8 @@ class UploadQueueSummaryCalculator {
 
       // Formatted display data
       'statusText': getEnhancedQueueStatusText(
-          pending, active, completed, failed, total, overallProgress),
+          pending, active, completed, failed, total, overallProgress,
+          cancelled: cancelled),
       'progressText':
           getProgressDisplayText(overallProgress, estimatedTimeRemaining),
       'speedText': getSpeedDisplayText(averageSpeedBytesPerSecond),
@@ -130,9 +131,14 @@ class UploadQueueSummaryCalculator {
     };
   }
 
-  /// Enhanced queue status text with progress information
+  /// Enhanced queue status text with progress information.
+  ///
+  /// BUT-1102: `cancelled` is now threaded through so an all-cancelled queue
+  /// surfaces a dedicated message instead of rendering blank UI. Optional
+  /// for source compatibility with older call sites that didn't pass it.
   static String getEnhancedQueueStatusText(int pending, int active,
-      int completed, int failed, int total, double overallProgress) {
+      int completed, int failed, int total, double overallProgress,
+      {int cancelled = 0}) {
     if (total == 0) return '';
 
     final progressPercent = (overallProgress * 100).round();
@@ -152,6 +158,13 @@ class UploadQueueSummaryCalculator {
       return l.uploadStatusAllFailed(failed, total);
     } else if (completed == total && total > 0) {
       return l.uploadStatusAllSuccess(total);
+    } else if (cancelled > 0 &&
+        active == 0 &&
+        pending == 0 &&
+        failed == 0 &&
+        completed == 0) {
+      // BUT-1102: all-cancelled — UI was blank prior to this branch.
+      return l.uploadStatusAllCancelled(cancelled);
     } else {
       return '';
     }
