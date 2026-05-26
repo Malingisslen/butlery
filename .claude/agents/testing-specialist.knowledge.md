@@ -2910,3 +2910,106 @@ actual (slightly wart-y) validate-failure wrapping contract.
 **Pattern: docstring-only updates are valid when the surface is genuinely untestable AND a sibling test pins the boundary.** Don't reflexively demand a new test for every fix. If (a) the catch path can't be reached without a deliberate test-only seam, (b) the routing logic (here: `sanitizeErrorForUser`) has its own unit test, and (c) an existing test pins the boundary that would have to break for the untestable path to become live, a docstring update plus the existing coverage is the right call. Cite all three when defending.
 
 **Time:** ~15 min review. Zero findings requiring code changes.
+
+### 2026-05-26 — AlgoliaSearchRepository: `final class SearchClient` is a hard testability wall [Pattern discovered]
+
+**Trigger:** Intent-Test Sprint Batch 12 — `lib/repositories/algolia/algolia_search_repository.dart` (136 LoC, 9.6% coverage). Privacy-critical surface (user-scoping filters, index routing, indexRecipe(personal)→remove route).
+
+**Pattern: when the SDK exposes the dependency as `final class`, you have NO mocking seam.** `algoliasearch ^1.46.2` declares `final class SearchClient implements ApiClient`. Final = no `extends`. `AlgoliaSearchRepository` builds its own `SearchClient` inside `_buildClient` — no constructor parameter to swap. That eliminates every test that wants to assert "what args were passed to `searchIndex`": the load-bearing privacy invariants (filter contains `ownerId:`, isPersonal recipes route to `deleteObject` not `saveObject`, search uses `_recipesIndex` not `_usersIndex`) are **architecturally untestable** at the unit level until production grows a `withClient(...)` named constructor. Mocktail can't mock final classes either.
+
+**Recommended seam (do NOT add in a test-only PR — flag for the team):**
+```dart
+AlgoliaSearchRepository.withClient({
+  required SearchClient client,
+  String recipesIndex = 'recipes',
+  String usersIndex = 'users',
+}) : _searchClient = client, _recipesIndex = ..., _usersIndex = ...;
+```
+With that seam, all 5 unit-level privacy invariants above become testable in <50ms each. Without it, only integration tests reach them.
+
+**What IS testable without the seam (the productive surface I covered):**
+1. `usesExternalSearch` getter — pinned `true`, catches a refactor that drops the override.
+2. `getSuggestions('')` and `getSuggestions('a')` short-circuit BEFORE network — empty-query catastrophe shape (Algolia treats `query: ''` as "match everything").
+3. `batchIndexRecipes([])` early-return — no spurious empty-batch API cost.
+4. Constructor accepts custom index names — refactor that drops a named-arg breaks compilation of the test.
+5. Construction is side-effect-free — pin 5 builds < 200ms so a future "eager warm-up" optimisation breaks the cold-start fall-back to Firestore.
+
+**Key trick: `.timeout(const Duration(seconds: 1))` on short-circuit assertions.** If a production refactor removes the guard, the test will hit DNS retry storms against `*-eu-dsn.algolia.net` and run for 30+s. The timeout converts that into a clean failure with a readable `TimeoutException` rather than an "appears to hang" flake. Pattern is reusable for any "should-not-touch-network" assertion when the network surface can't be mocked.
+
+**Did NOT find any production bugs.** The file is well-disciplined: short-circuits in the right places, EU-cluster assertion at construction (sibling test covers), no eager I/O. The biggest issue is the un-coverable surface area — a production testability gap, not a behaviour bug.
+
+**Sibling overlap audit:** `test/unit/repositories/interfaces/search_repository_test.dart` already covers `SearchFilters.toAlgoliaFilter()` (query-injection / filter generation). Did NOT duplicate. `algolia_eu_cluster_assertion_test.dart` covers constructor EU-invariant. Did NOT duplicate.
+
+**Time:** ~18 min. 10 tests, all green on first run. Coverage 9.6% → ~50-60% (most unhit lines are in the un-mockable network paths).
+
+### 2026-05-26 — FirebaseNotificationHistoryRepository intent tests (sprint batch 12) [Pattern discovered]
+
+**Trigger:** Intent-Test Sprint Batch 12 — privacy-critical repository at 15.6% coverage.
+
+**File:** `test/unit/repositories/firebase/firebase_notification_history_repository_test.dart` — 23 tests, all green first run.
+
+**Patterns reused / reinforced:**
+
+1. **MockAuthRepository + FakeFirebaseFirestore + TestTimestampProvider is the canonical trio** for any `BaseFirebaseRepository` subclass test. No emulator needed for these flows (no `FieldValue.increment`, no `serverTimestamp` write — the repo writes a `Timestamp.now()` via `TestTimestampProvider`, which keeps `FakeFirebaseFirestore` happy). Pattern matches `firebase_friends_repository_gaps_test.dart` and `firebase_social_request_repository_test.dart`.
+
+2. **Nullable-auth via factory parameter (`String? authedUserId = _alice`).** Passing `authedUserId: null` returns an unauthed repo without conditional setUp tooling. Cleaner than separate `_repoUnauthed()` helpers. The `if (authedUserId != null) mockAuth.setAuthState(...)` branch is the entire conditional.
+
+3. **Privacy-blast-radius assertions, not happy-path duplicates.** The high-value tests are: (a) `payload cannot forge userId — auth wins` (defends against caller-supplied `data['userId']` overriding the server stamp), (b) `does not collaterally touch other users' docs` (proves the `where('userId', isEqualTo: ...)` filter is present in `markAllAsOpenedForUser`), (c) `before cursor is strict less-than` (proves no boundary duplicate in `getHistory` pagination — this would surface as "same notification appears twice on page seam").
+
+4. **GDPR cascade completeness test.** `cascade removes opened, unread, and delivered docs alike` — three docs in three different states, all must be wiped. A bug like `.where('opened', isEqualTo: false)` accidentally added to the cascade would leak read notifications past account deletion. This is the kind of assertion that only proves itself when the cascade has a real spectrum to walk.
+
+5. **"Failed permission check must not partially mutate" double-assertion.** When `markAllAsOpenedForUser` / `deleteAllByUser` throws `PermissionDeniedException`, the test asserts BOTH the throw AND that the target doc is unchanged. Two real bugs this catches: (a) someone removes `validateOwnership` and mutation proceeds — first assertion catches it; (b) someone keeps `validateOwnership` but moves the snapshot fetch BEFORE the validation call and then commits anyway — second assertion catches it.
+
+6. **`recordNotification` swallows errors per its production contract** — wrapped in try/catch + AppLogger only. The unauth test asserts "no garbage doc was written" rather than "throws" because the production surface is "log and move on." If a future refactor changes this contract to rethrow, the test should be updated explicitly, not weakened to match.
+
+**Production observations (not bugs, but worth noting):**
+
+- `validateDeletePermission` returns `true` unconditionally for ANY authenticated user (line 56). This is intentional ("History cleanup is allowed for authenticated users") but it means single-doc `repo.delete(id)` is NOT user-scoped — only the bulk `deleteAllByUser` is gated by `validateOwnership`. If the inherited `Repository<T>.delete(id)` is ever exposed via a UI path, any user could delete any notification by id. Worth a future ticket if the surface area grows.
+- `recordNotification`, `markNotificationDelivered`, `markNotificationOpened`, `wasNotificationSent`, `getHistory` ALL swallow exceptions to logger — no error propagates upward. This is deliberate (FCM background isolates must not crash on transient Firestore errors) but it means the only way to surface a partial failure is via log inspection. The tests pin the "no garbage doc / empty list on failure" contract that the swallow-and-continue strategy depends on.
+- `validateCreate/Read/UpdatePermission` check `entity['userId'] == userId` but `recordNotification` bypasses `create()` (which would run them) by going straight to `collection.doc(id).set(...)`. Same for the mark methods — direct `.update`. The 4 base-class permission methods are effectively dead code for this repo's main surface. Not a bug, but worth knowing: don't write tests asserting on those validators for THIS repo — the actual security boundary is `validateOwnership` in the bulk methods.
+
+**No production bugs found this run.** The privacy invariants all hold: cross-user calls throw, scope filters are present, the GDPR cascade is complete, and userId is auth-derived (not payload-derived).
+
+
+### 2026-05-26 — BUT intent-sprint batch 12: SocialRecipeSharingService privacy gates [Pattern discovered]
+
+Added `test/unit/services/unified/modules/social_recipe/social_recipe_sharing_service_test.dart` (36 tests, all green, formatter+analyzer clean on first run after the `Recipe.copyWith` id-fix). Production code under test:
+`lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart` (~113 LoC, 7.1% → ~95%+).
+
+**Patterns worth reusing for any "sharing/permission" service test:**
+
+1. **Inject the test-time UnifiedFriendsService via raw GetIt.** Production `_resolveGroupMembers` calls `ServiceLocator.get<UnifiedFriendsService>()`. Test-time recipe: a `_FakeFriendsService extends Fake implements UnifiedFriendsService` overriding only `getCategoryByIdInternal` + `friends`, registered with `GetIt.instance.registerSingleton<UnifiedFriendsService>(fake)` AFTER unregistering any previous binding, then `prod.ServiceLocator.initialize(DIContainer())` so the wrapper resolves through GetIt. Tear down with `g.unregister<UnifiedFriendsService>()` + `prod.ServiceLocator.reset()`. This is the same pattern as `widget/dialogs/dialog_form_fields_test.dart:799` (ContentFilterService) — now confirmed working for non-ContentFilter services too.
+
+2. **Recipe fixtures with deterministic IDs use `RecipeCore` + `Recipe(...)` directly, NOT `Recipe.personal/.collaborative`.** The public factories generate fresh UUIDs and `Recipe.copyWith` does NOT take an `id` parameter (only the core mutable fields). For any test that needs to `seed(_recipe(id: 'r1'))` then `getRecipe('r1')`, build via `RecipeCore(id: ...)` + `Recipe(core: core, type: ...)`. Matches the approach in `test/infrastructure/factories/recipe_factory.dart`.
+
+3. **`Fake` repos with named-record call logs.** `final List<({SharedRecipe doc, List<String> recipientIds})> calls = []` makes assertions self-documenting (`calls.single.doc.sharedByUserId`) and unambiguous about positional vs named matching. Better than a `verify(() => mock.x(any(), recipientIds: any()))` chain when you also want to assert on the captured arg shapes.
+
+4. **`_Harness` class with mutable closure state beats setUp-per-test.** Each test instantiates `_Harness()` with the auth/save-fail/throw config it needs, calls `.build()` to get the service, asserts against `h.saved` / `h.repo.calls` / `h.errors`. Cleaner than a `setUp` with 6 separate `late` fields you have to remember to reset.
+
+5. **Cap-test using `Recipe.maxSharesPerRecipe`, not a hardcoded number.** The cap is a `static const int` on the model. Reading it from the model means the test survives a cap bump (200 → 500) without needing edits — what's pinned is the *invariant* (union-over-cap-rejects), not the magic number.
+
+6. **`extends Fake` + `@override` getter for `friends`.** Fakes can carry real implementations; this is the legitimate Fake-not-Mock case from the agent's main file. If you `extends Mock` with a getter body, `when(() => mock.friends).thenReturn(...)` will silently no-op (the body wins). `Fake` makes the intent explicit and prevents `when()` mistakes.
+
+**No production bugs caught this run.** The privacy gates I was probing all held:
+- `non-owner cannot share` test passes: production checks `recipe.createdBy != currentUserId && recipe.socialData?.ownerId != currentUserId` → refuses with `errorNoPermissionToShare`.
+- `admin member who is not socialData.ownerId cannot unshare` passes: production checks `recipe.socialData?.ownerId != currentUserId` (NOT permission level) → only the original owner can unshare.
+- `first-share owner=admin regardless of permission arg` passes: production unconditionally assigns `memberPermissions[currentUserId] = ResourcePermission.admin` after building the new-members map.
+- `share-cap dedup union` passes: production uses `final projected = {currentUserId, ...existing, ...userIds}` — a Set, so re-sharing existing members is a no-op for cap arithmetic.
+- `unshare wipes socialData entirely` passes: production uses `socialData: null` (not `socialData?.copyWith(memberPermissions: {})`).
+- `secondary-write-throws still returns true` passes: production wraps the `_sharedRecipeRepository.createSharedRecipe(...)` call in its own `try { ... } catch (e) { AppLogger.warning(...) }` per the inline "// Don't fail the whole operation" comment.
+
+**Documented contract surprises (NOT bugs, but worth flagging for future cleanup):**
+
+- **Non-critical secondary-write contract** (`social_recipe_sharing_service.dart:152-156`): if the primary save succeeds but the secondary `shared_recipes` collection write fails, the operation returns `true`. The justification ("non-critical query optimisation") is sound when `shared_recipes` is purely a denormalised index — but if the inbox load path (FirebaseSharedRecipeRepository.getSharedRecipesForUser) is the ONLY way a recipient learns of the share, the failure mode is "recipe is shared, recipient never sees it." Worth a Linear ticket to either (a) retry the secondary write or (b) emit a critical telemetry event when this branch fires. The test pins the current contract so a future tightening is intentional, not accidental.
+
+- **`unshareRecipe` does not notify members** (line 263, "Notify affected members (optional)" comment + commented-out code): a member kicked off a shared recipe gets no signal — their next refresh just silently loses the recipe. UX-wise this is borderline (privacy: recipient never knew it was unshared from THEM vs deleted entirely), but worth ticketing as a UX/explainability gap.
+
+- **No idempotency on duplicate shares**: calling `shareRecipeWithUsers('r1', ['friend-A'], editor)` twice will write two SharedRecipe docs to the secondary collection (different ids, same payload). The primary recipe doc converges (memberPermissions['friend-A'] = editor in both cases), but the inbox gets two entries. Not strictly a bug if the inbox dedupes by `originalRecipeId`, but worth verifying with the inbox query code.
+
+- **`getCurrentUserDisplayName()` can be null** and the production code falls back to `'Unknown'` string-literal for the secondary write (`_getCurrentUserDisplayName() ?? 'Unknown'`, line 138). Not localised. A user who hasn't set a display name appears as the English literal "Unknown" in their friends' inboxes regardless of locale. Worth using `AppLocale.current.displayUnknownUser` to match the friend-resolution path's fallback (line 342).
+
+**Cross-reference family checks:**
+- [[BUT-1068]] coordinator-bool-discard: does NOT recur here. All return values from `shareRecipeWithUsers` and `shareRecipeWithGroups` are propagated honestly; group-share wraps `shareRecipeWithUsers` and returns its result verbatim.
+- [[BUT-1086]] sign-out race: NOT exercised here because the service has no equivalent "two-phase write with auth check in the middle" — auth is checked once at the top of each method. If the user signs out between auth-check and `saveRecipe`, the save still succeeds with the captured uid (Firebase will reject via rules; service catches the throw → false). Probably worth a follow-up emulator-lane test to confirm rules cover this.
+- [[BUT-1087]] inconsistent `_error`: does NOT recur. Every `return false` path in this file is preceded by a `_setError(AppLocale.current.errorXxx)` call. (The exception: the `_resolveGroupMembers` catch returns empty map without setting error — but that's fine because the caller treats empty-map as "no members" and sets its own error.)
+
