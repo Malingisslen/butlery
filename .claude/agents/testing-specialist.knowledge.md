@@ -3214,3 +3214,27 @@ For `BackupService.importFromFile` this verified title, description,
 ingredients, instructions, imageUrls, mealType, portions, timeMinutes,
 rating, personalTagIds all survive. sourceUrl gets a separate test because
 it's intentionally rewritten (origin-tracking invariant).
+
+
+---
+
+## 2026-05-27 — iter-81 review: FakeAuthRepository migration audit
+
+**Trigger**: 65-file `MockAuthRepository` -> `FakeAuthRepository` (Mock -> Fake) rename for BUT-1074.
+
+**Audit pattern that works**: for every file that holds an instance of a renamed Fake, grep for `when\(\(\) => <var>\.` against any variable typed-or-assigned to the Fake. Mocktail `when()` against `Fake` is a runtime error (not silent), so a missed migration surfaces immediately as a test failure rather than a silently-no-op stub. Result of the audit: zero call sites — the only `when()` against a `FakeAuthRepository`-shaped variable was `mock_configurator.dart::configureAuthStateStream` which is now `@Deprecated` and has zero callers in the tree.
+
+**Reusable grep recipe** (POSIX bash):
+```
+for f in $(git grep -l "FakeXxx" test/); do
+  vars=$(grep -oE "(late\s+)?FakeXxx\s+\w+" "$f" | grep -oE "\w+$" | sort -u)
+  for v in $vars; do
+    grep -nE "when\(\(\)\s*=>\s*${v}\." "$f"
+  done
+done
+```
+Run this on any future `extends Mock` -> `extends Fake` rename before declaring done.
+
+**Local `_MockAuthRepository extends Mock` + `_AuthStateHelper` extension pattern is the right migration shape for the call-sites that genuinely need stubbing**: keeps the old `mock.setAuthState(user: x)` ergonomic call site while routing through `when(() => currentUser).thenReturn(x)`. Seen in `test/unit/services/{auth_service,user_service}_test.dart`. Replicate for the next rename.
+
+**Leftover for follow-up**: `mock_configurator.dart::configureAuthStateStream` is `@Deprecated` with zero callers — its body still calls `when()` against a `dynamic mock` arg. Delete in the next test-infrastructure cleanup pass.
