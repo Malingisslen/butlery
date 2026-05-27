@@ -136,7 +136,8 @@ Future<String> _seedOwnedMenu(
     'totalRecipeCount': 0,
     'categories': <String>['Middag'],
     'allowCollaboration': false,
-    'sharedAt': DateTime.now().toIso8601String(),
+    // Fixed timestamp — see scripts/check_test_real_time.sh policy.
+    'sharedAt': DateTime(2026, 1, 1).toIso8601String(),
     'viewCount': 0,
     'engagementCount': 0,
     'dismissalCount': 0,

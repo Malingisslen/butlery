@@ -863,8 +863,8 @@ void main() {
 
   group('metadata', () {
     /// `clock.now()` is used so `withClock(...)` can pin timestamps in
-    /// tests. If the tier reverted to `DateTime.now()`, this assertion
-    /// would fail — a real regression for log/event correlation.
+    /// tests. If the tier reverted to the global wall clock, this
+    /// assertion would fail — a real regression for log/event correlation.
     test('metadata.timestamp respects withClock override', () async {
       final fixedTime = DateTime.utc(2026, 1, 1, 12);
       late DateTime captured;

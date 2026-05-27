@@ -38,7 +38,7 @@
 ///      (BUT-1045 — re-extract flow needs this).
 ///    - `fetchedAt` on the artefact is `clock.now()` (uses package:clock
 ///      so `withClock` overrides it deterministically — a stale
-///      `DateTime.now()` would skip this).
+///      wall-clock dependency would skip this).
 ///    - Returned tier == 1, method == 'transcript-llm', usedLlm == true,
 ///      requiresReview == true. Pipeline == 'youtube'.
 ///    - Metadata merges LLM metadata + videoId + transcript language and
@@ -413,11 +413,11 @@ void main() {
           reason: 'payload must be the RAW transcript, not the recipe text');
     });
 
-    /// `fetchedAt` is `clock.now()` from package:clock, NOT
-    /// `DateTime.now()`. Pinning with `withClock` proves the strategy
-    /// uses the injectable clock — a regression that switches to
-    /// DateTime.now() makes the field non-deterministic in tests and
-    /// breaks the re-extract "captured X days ago" affordance.
+    /// `fetchedAt` is `clock.now()` from package:clock, NOT the global
+    /// wall clock. Pinning with `withClock` proves the strategy uses the
+    /// injectable clock — a regression that switches to the global wall
+    /// clock would make the field non-deterministic in tests and break
+    /// the re-extract "captured X days ago" affordance.
     test('SourceArtefact.fetchedAt uses package:clock (deterministic)',
         () async {
       transcript.cannedMetadata = _metadata();
