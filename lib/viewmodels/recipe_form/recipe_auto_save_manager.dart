@@ -79,6 +79,20 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       clock.now().difference(_lastAutoSaveTime!).inSeconds < 10;
   String? get currentDraftId => _currentDraftId;
 
+  /// BUT-1136 test seam: lets tests assert that a pending debounce timer
+  /// survives a `scheduleAutoSave(..., skipIfBusy: true)` call while a
+  /// prior save is in flight (instead of being silently cancelled).
+  @visibleForTesting
+  bool get hasPendingAutoSaveTimer => _autoSaveTimer?.isActive ?? false;
+
+  /// BUT-1136 test seam: lets tests flip `_isAutoSaving` to simulate a
+  /// save in flight without relying on the fragile `saveNow()` mid-await
+  /// state (which would also cancel the pending timer via its own
+  /// `_autoSaveTimer?.cancel()` prelude).
+  @visibleForTesting
+  // ignore: avoid_setters_without_getters
+  set debugIsAutoSaving(bool value) => _isAutoSaving = value;
+
   /// Initialize auto-save manager and check for existing drafts
   /// [isTemplate] - If true, disables auto-save for template-based forms until first significant edit
   Future<void> initialize({bool isTemplate = false}) async {
@@ -97,14 +111,17 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// [skipIfBusy] - Skip scheduling if other operations are in progress
   void scheduleAutoSave(Map<String, dynamic> formData,
       {bool isQuickSave = false, bool skipIfBusy = false}) {
-    _autoSaveTimer?.cancel();
-
-    // RACE CONDITION GUARD: Skip if already auto-saving to prevent conflicts
+    // BUT-1136: guard BEFORE cancel — when skipIfBusy returns early, the
+    // existing debounce timer survives so the queued edit eventually fires
+    // when the in-flight save completes. The pre-fix order silently dropped
+    // the queued timer.
     if (_isAutoSaving && skipIfBusy) {
       AppLogger.debug(
-          '🔄 AUTO_SAVE: Skipping schedule - auto-save already in progress');
+          '🔄 AUTO_SAVE: Skipping schedule - auto-save already in progress (existing timer preserved)');
       return;
     }
+
+    _autoSaveTimer?.cancel();
 
     // Use quick save for critical changes (title, description)
     final delay = isQuickSave ? _quickAutoSaveDelay : _autoSaveDelay;

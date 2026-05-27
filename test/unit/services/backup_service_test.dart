@@ -18,10 +18,10 @@
 /// - sourceUrl on every imported recipe is rewritten to the localised
 ///   `Importerat från backup <date>` string (origin-tracking invariant)
 /// - exportDate is parsed from the backup envelope into ImportResult.exportDate
-/// - DISCOVERED BUG (data inconsistency): export writes `user_id` but import
-///   reads `user_email` — exportEmail will always be null for backups made
-///   by the current exporter. Pinned by `imported backup made by exporter has
-///   null exportEmail (regression sentinel for user_email-vs-user_id mismatch)`.
+/// - BUT-1137 FIXED: export now writes BOTH `user_id` and `user_email`,
+///   importer reads `user_email`; the round-trip preserves the address.
+///   Pinned by `exportEmail round-trips from user_email field (BUT-1137)`.
+///   Legacy backups (pre-1137) without `user_email` are tolerated.
 library;
 
 import 'dart:convert';
@@ -99,18 +99,24 @@ class _FakeFilePickerPlatform extends FilePickerPlatform {
 
 /// Builds the current-format envelope (matches what `exportToFile()` would
 /// emit so import tests round-trip what export produces).
+///
+/// BUT-1137: exporter now writes BOTH `user_id` and `user_email`, so the
+/// canonical test envelope mirrors that. Tests that want to simulate a
+/// legacy backup (pre-1137) can pass `omitUserEmail: true`.
 Map<String, dynamic> _backupEnvelope({
   required List<Recipe> recipes,
   String? exportedAt,
   String? userEmail,
   String version = '1.0',
+  bool omitUserEmail = false,
 }) {
+  final resolvedEmail = userEmail ?? 'exporter@example.com';
   return {
     'butlery_backup': {
       'version': version,
       'exported_at': exportedAt ?? clock.now().toIso8601String(),
       'user_id': 'exporter-uid',
-      if (userEmail != null) 'user_email': userEmail,
+      if (!omitUserEmail) 'user_email': resolvedEmail,
       'recipe_count': recipes.length,
       'recipes': recipes.map((r) => r.toJson()).toList(),
     },
@@ -570,18 +576,13 @@ void main() {
           equals(DateTime.utc(2025, 1, 14, 10, 30)));
     });
 
-    /// DISCOVERED BUG (regression sentinel):
-    /// Export writes `user_id`, but Import reads `user_email`. So a backup
-    /// made by the CURRENT exporter will always yield `exportEmail = null`
-    /// on import. Pinning this guarantees that if someone fixes the
-    /// asymmetry, they'll have to update this test (and we'll know the bug
-    /// is fixed). If someone reverses the fix accidentally, the test still
-    /// passes — so this is a documentation test, not a defence.
-    ///
-    /// The asymmetry itself is a real data-inconsistency bug. Reported in
-    /// commit summary.
-    test('exportEmail comes from user_email field, not user_id (asymmetry)',
-        () async {
+    /// BUT-1137 FIXED: exporter now writes BOTH `user_id` and `user_email`,
+    /// so a backup made by the current exporter round-trips its email
+    /// through `ImportResult.exportEmail`. Pre-fix the exporter only wrote
+    /// `user_id` while the importer only read `user_email`, so the field
+    /// was always null on round-trip — making the "exporterad av <email>"
+    /// UI permanently blank.
+    test('exportEmail round-trips from user_email field (BUT-1137)', () async {
       final withEmail = _backupEnvelope(
         recipes: [RecipeFactory.build()],
         userEmail: 'alice@example.com',
@@ -595,16 +596,33 @@ void main() {
         recipes: [],
         personalOperations: mockPersonalOps,
       );
+      // Default envelope mirrors what the post-1137 exporter emits
+      // (includes user_email). The round-trip must surface that email.
       final envelopeAsExporterEmits = _backupEnvelope(
         recipes: [RecipeFactory.build(title: 'Different Title')],
-        // userEmail intentionally omitted — matches what exportToFile() writes
       );
       fakeFilePicker.respondWithBytes(_utf8Bytes(envelopeAsExporterEmits));
       final fromRealExporterResult = await service.importFromFile();
 
-      expect(fromRealExporterResult.exportEmail, isNull,
-          reason: 'BUG: exporter writes only user_id, importer only reads '
-              'user_email → exportEmail always null for round-trip backups');
+      expect(fromRealExporterResult.exportEmail, equals('exporter@example.com'),
+          reason: 'BUT-1137: post-fix exporter writes user_email, importer '
+              'reads it — round-trip preserves the address');
+    });
+
+    /// Backward compatibility sentinel: legacy backups produced BEFORE
+    /// BUT-1137 omitted `user_email`. The importer must still tolerate
+    /// the missing field (exportEmail goes to null, not a crash).
+    test('exportEmail tolerates legacy backups missing user_email', () async {
+      final legacyEnvelope = _backupEnvelope(
+        recipes: [RecipeFactory.build(title: 'Legacy backup')],
+        omitUserEmail: true,
+      );
+      fakeFilePicker.respondWithBytes(_utf8Bytes(legacyEnvelope));
+
+      final result = await service.importFromFile();
+
+      expect(result.exportEmail, isNull,
+          reason: 'pre-1137 backups had no user_email — import must not crash');
     });
 
     /// Empty `recipes` array is structurally valid (a backup with zero

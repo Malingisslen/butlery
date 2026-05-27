@@ -750,6 +750,67 @@ void main() {
     });
   });
 
+  group('BUT-1136: timer survives skipIfBusy guard', () {
+    /// BUT-1136 race-pin: when a debounce timer is pending AND a save is
+    /// in flight, calling `scheduleAutoSave(skipIfBusy: true)` must NOT
+    /// cancel the queued timer. Pre-fix: `_autoSaveTimer?.cancel()` ran
+    /// before the guard, so the queued edit was silently dropped — the
+    /// in-flight save's success path doesn't re-trigger anything, so the
+    /// next debounce only existed if the user typed again. Post-fix: the
+    /// guard runs first, returns early, and the pending timer survives.
+    ///
+    /// We need the test seam (`debugIsAutoSaving`) because driving this
+    /// scenario via real `saveNow()` would itself cancel the queued
+    /// timer (saveNow's own `_autoSaveTimer?.cancel()` prelude), masking
+    /// the bug. The seam isolates the exact line under test.
+    test('skipIfBusy=true preserves the pending timer when busy', () {
+      final manager = RecipeFormAutoSaveManager();
+      addTearDown(manager.dispose);
+
+      // Step 1: schedule a normal debounce — pending timer is now active.
+      manager.scheduleAutoSave(_formWith(
+        title: 'queued edit',
+        ingredients: const ['x'],
+      ));
+      expect(manager.hasPendingAutoSaveTimer, isTrue,
+          reason: 'precondition: debounce timer should be active');
+
+      // Step 2: simulate a save going in flight (e.g. saveNow racing the
+      // debounce).
+      manager.debugIsAutoSaving = true;
+
+      // Step 3: caller schedules ANOTHER edit with skipIfBusy=true while
+      // the save is in flight.
+      manager.scheduleAutoSave(
+        _formWith(title: 'concurrent edit', ingredients: const ['y']),
+        skipIfBusy: true,
+      );
+
+      // Post-fix invariant: the original queued timer must still be
+      // active. Pre-fix, this would be false because the cancel ran
+      // before the guard.
+      expect(manager.hasPendingAutoSaveTimer, isTrue,
+          reason: 'BUT-1136: guard-first order must preserve queued timer');
+    });
+
+    /// Companion: when NOT busy, skipIfBusy=true still proceeds with the
+    /// normal cancel+reschedule flow. Catches a regression that
+    /// over-corrects by ignoring the schedule entirely when skipIfBusy is
+    /// set.
+    test('skipIfBusy=true still schedules when not busy', () {
+      final manager = RecipeFormAutoSaveManager();
+      addTearDown(manager.dispose);
+
+      manager.scheduleAutoSave(
+        _formWith(title: 'first', ingredients: const ['x']),
+        skipIfBusy: true,
+      );
+
+      expect(manager.hasPendingAutoSaveTimer, isTrue,
+          reason: 'no in-flight save → normal scheduling proceeds');
+    });
+  });
+
   group('clearCurrentDraft', () {
     /// Proves: `clearCurrentDraft()` is `Future<void>` (BUT-1138 — was `void`
     /// firing an unawaited delete) and nulls the in-memory pointer after the

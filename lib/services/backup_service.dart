@@ -33,6 +33,7 @@ class BackupService extends BaseService {
           'version': '1.0',
           'exported_at': clock.now().toIso8601String(),
           'user_id': FirebaseAuthRepository().currentUser?.uid,
+          'user_email': FirebaseAuthRepository().currentUser?.email,
           'recipe_count': recipes.length,
           'recipes': recipes.map((r) => r.toJson()).toList(),
         },
