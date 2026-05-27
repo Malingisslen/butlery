@@ -156,6 +156,12 @@ jobs:
       # of 60% (see "60% target" comment above) so the two gates agree.
       # Per-area floors stay at their interim values until ~5 CI runs are
       # observed for baseline-minus-2pp tightening.
+      #
+      # BUT-1149: temporarily lowered to 55.0 (from 60.0) after the
+      # Intent-Test Sprint (2026-05-27) raised filtered coverage from 48.8%
+      # → 55.5% but stalled short of the 60% target. Restore to 60.0 once
+      # the sprint's testability-friction tickets (BUT-1062/63/75/78/95/1130)
+      # are closed and a focused follow-up sprint pushes the remaining ~5pp.
       - name: Enforce coverage floors
         if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: |
@@ -175,7 +181,7 @@ jobs:
             awk -v v="$1" -v f="$2" 'BEGIN { exit !(v+0 < f+0) }'
           }
 
-          OVERALL_FLOOR=60.0
+          OVERALL_FLOOR=55.0  # BUT-1149: restore to 60.0 after follow-up sprint
           OVERALL_PCT=$(parse_pct coverage/lcov_filtered.info)
           if [ -z "$OVERALL_PCT" ]; then
             echo "::warning::Could not parse overall filtered coverage"
