@@ -1,6 +1,30 @@
 # Sprint Backlog
 
-## Sprint: iter-90 — Cache-behaviour tests unlocked by BUT-1063 seam (BUT-1141) — 2026-05-27 (Wed)
+## Sprint: iter-91 — Document shared cache circuit-breaker (BUT-1150) — 2026-05-27 (Wed)
+
+Theme: Tiny pure-doc commit. Closes BUT-1150 design-clarity question by documenting the shared read+write circuit-breaker as intentional. Rationale: the breaker protects the underlying Drift channel, so any I/O success (read OR write) genuinely indicates channel health. The pathological scenario (schema migration breaks read deserialization but not writes) is vanishingly rare — flag for telemetry-driven escalation rather than preemptive refactor.
+
+No Phase 1.5 expansion (P4 + pure `parsing`/`tech-debt`/`Improvement` labels).
+
+### Ship this sprint
+
+- [x] **A1. BUT-1150: document shared-breaker rationale** — 9-line doc comment on `_cacheCircuitBreaker` field at `recipe_parser_service.dart:151-155`. References BUT-1150 for the design discussion. (BUT-1150)
+
+### Acceptance
+
+- [x] `flutter analyze --fatal-infos` clean on touched file.
+- [x] No test changes needed (doc-only).
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session commits + pushes.
+- [ ] Close BUT-1150 in Linear.
+
+---
+
+## Archived iter-90 (commit `f125ab9e1` — BUT-1141) — 2026-05-27 (Wed)
+
+Theme: Single P3 Medium test-gap. 5 cache-behaviour tests using the `cache:` ctor seam shipped in iter-81 (BUT-1063). Test-only, no production change. Pure coverage gain.
 
 Theme: Single P3 Medium test-gap. 5 cache-behaviour tests using the `cache:` ctor seam shipped in iter-81 (BUT-1063). Test-only, no production change. Pure coverage gain.
 

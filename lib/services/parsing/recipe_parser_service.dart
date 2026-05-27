@@ -149,6 +149,15 @@ class RecipeParserService extends BaseService {
   final RecipeMerger _merger = RecipeMerger();
 
   /// Circuit breaker for cache operations (P1-3).
+  ///
+  /// Shared between read (`_checkCache`) and write (`_cacheResult`) paths.
+  /// This is intentional: the breaker protects the underlying Drift channel —
+  /// if EITHER reads or writes succeed, the channel is healthy and the counter
+  /// resets. The pathological scenario (a schema migration that breaks read
+  /// deserialization but leaves writes working) is vanishingly rare and would
+  /// silently bypass the breaker's protection on the read path. If telemetry
+  /// ever surfaces that pattern, split into `_cacheReadBreaker` /
+  /// `_cacheWriteBreaker`. See BUT-1150 for the design discussion.
   final CircuitBreaker _cacheCircuitBreaker = CircuitBreaker(
     failureThreshold: 3,
     resetTime: const Duration(minutes: 2),
