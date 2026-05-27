@@ -150,11 +150,11 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `adaptive_icon.dart` | 652 | Platform-adaptive icon widget |
 | `di_container.dart` | 569 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 640 | DI registrations for content layer |
-| `edit_recipe_view.dart` | 639 | Recipe editing screen |
-| `user_profile_edit_view.dart` | 634 | User profile editing screen |
+| `edit_recipe_view.dart` | 668 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28) |
+| `user_profile_edit_view.dart` | 816 | User profile editing screen (drifted +182 from 634 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
 | `ocr_extraction_service.dart` | 634 | OCR-based recipe image extraction |
-| `auth_view.dart` | 631 | Login/signup screen |
-| `smart_import_view.dart` | 620 | Smart import orchestration screen |
+| `auth_view.dart` | 692 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
+| `smart_import_view.dart` | 803 | Smart import orchestration screen (drifted +183 from 620 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
 | `recipe_form_viewmodel.dart` | 615 | Recipe form VM — delegates to 6 managers |
 | `personal_tag_selector.dart` | 606 | Tag picker widget |
 | `adaptive_navigation.dart` | 580 | Bottom nav / side nav adaptive widget |
@@ -171,8 +171,8 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `menu_viewmodel.dart` | 534 | Weekly menu VM |
 | `receive_share_view.dart` | 533 | Incoming share intent handler |
 | `shopping_member_management_dialog.dart` | 526 | Shopping list member management dialog |
-| `photo_import_view.dart` | 524 | Photo import screen |
-| `photo_import_viewmodel.dart` | 520 | Photo import VM |
+| `photo_import_view.dart` | 674 | Photo import screen (drifted +150 from 524 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
+| `photo_import_viewmodel.dart` | 721 | Photo import VM (drifted +201 from 520 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
 | `social_invitation_components.dart` | 520 | Social invitation UI components |
 | `social_facade.dart` | 517 | Social UI facade widget |
 | `friend_category_manager.dart` | 517 | Friend category management widget |
@@ -184,9 +184,9 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `notification_preferences_view.dart` | 513 | Notification preferences settings screen — category toggles + quiet hours |
 | `smart_import_viewmodel.dart` | 611 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 604 | Shopping list UI — drag/reorder, categories, collaborative |
-| `cooking_mode_view.dart` | 585 | Full cooking mode screen — timer, steps, landscape layout |
+| `cooking_mode_view.dart` | 688 | Full cooking mode screen — timer, steps, landscape layout (drifted +103 from 585 — BUT-550 reconciled 2026-05-28) |
 | `unified_shopping_viewmodel.dart` | 557 | Shopping list VM — personal + collaborative, sync |
-| `recipe_query_viewmodel.dart` | 600 | Recipe search/filter/sort VM with history |
+| `recipe_query_viewmodel.dart` | 610 | Recipe search/filter/sort VM with history (drifted +10 from 600 — BUT-550 reconciled 2026-05-28) |
 | `menu_content_widgets.dart` | 597 | Menu display widgets — recipe slots, voting, actions |
 
 ## Categories
