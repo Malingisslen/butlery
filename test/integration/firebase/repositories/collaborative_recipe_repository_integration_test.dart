@@ -16,7 +16,7 @@ import '../../../test_support/test_data_isolator.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/firestore_singleton.dart';
 import '../../../infrastructure/mocks/production_mocks.dart'
-    show MockAuthRepository;
+    show FakeAuthRepository;
 
 void main() {
   group('Collaborative Recipe Repository Integration', () {
@@ -25,7 +25,7 @@ void main() {
     late MockUser testUser;
     late MockUser testUser2;
     late MockFirebaseAuth mockAuth;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -54,7 +54,7 @@ void main() {
       mockAuth = MockFirebaseAuth(mockUser: testUser);
 
       // Create mock auth repository with test user
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockAuthRepository.setAuthState(
         user: testUser,
         userId: testUser.uid,

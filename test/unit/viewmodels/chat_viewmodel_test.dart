@@ -140,7 +140,7 @@ void main() {
   group('ChatViewModel', () {
     late ChatViewModel viewModel;
     late MockMessagingService mockMessagingService;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late MockPresenceService mockPresenceService;
     // ignore: close_sinks
     late StreamController<List<Message>> messagesStreamController;
@@ -163,7 +163,7 @@ void main() {
 
       // Create mocks
       mockMessagingService = MockMessagingService();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockPresenceService = MockPresenceService();
       messagesStreamController = StreamController<List<Message>>.broadcast();
 

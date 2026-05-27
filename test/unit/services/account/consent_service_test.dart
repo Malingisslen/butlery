@@ -21,7 +21,7 @@ class MockFirebaseConsentRepository extends Mock
 void main() {
   group('ConsentService - GDPR Consent Management', () {
     late ConsentService service;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late MockFirebaseConsentRepository mockConsentRepository;
 
     // Test data
@@ -62,7 +62,7 @@ void main() {
 
     setUp(() {
       // Create mocks
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockConsentRepository = MockFirebaseConsentRepository();
 
       // Configure mock auth
@@ -796,12 +796,12 @@ void main() {
   // BUT-751: shared analytics-consent gate.
   group('hasAnalyticsConsent (GetIt helper) - BUT-751', () {
     late GetIt container;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late MockFirebaseConsentRepository mockConsentRepository;
 
     setUp(() {
       container = GetIt.asNewInstance();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockAuthRepository.setAuthState(userId: 'gate-user');
       mockConsentRepository = MockFirebaseConsentRepository();
     });

@@ -49,7 +49,7 @@ FirebaseSharedShoppingRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _userId,
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
     user: FakeUser(uid: authedUserId, displayName: 'A'),
     userId: authedUserId,

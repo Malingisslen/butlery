@@ -52,7 +52,7 @@ void main() {
 
       repository = FirebaseMessagingRepository(
         firestore: fakeFirestore,
-        authRepository: MockAuthRepository()
+        authRepository: FakeAuthRepository()
           ..setAuthState(
             userId: testUserId,
             user: mockAuth.currentUser,

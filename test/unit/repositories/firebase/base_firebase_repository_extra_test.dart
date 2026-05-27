@@ -94,7 +94,7 @@ _ItemRepo _repo(
   FakeFirebaseFirestore firestore, {
   String? authedUserId = 'alice',
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   if (authedUserId != null) {
     mockAuth.setAuthState(
       user: FakeUser(uid: authedUserId),

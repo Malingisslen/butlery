@@ -137,7 +137,7 @@ void main() {
   group('ConversationsViewModel', () {
     late ConversationsViewModel viewModel;
     late MockMessagingService mockMessagingService;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late StreamController<List<Conversation>> conversationsStreamController;
     const testUserId = 'test-user-123';
 
@@ -196,7 +196,7 @@ void main() {
 
       // Create mocks
       mockMessagingService = MockMessagingService();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       conversationsStreamController =
           StreamController<List<Conversation>>.broadcast();
 

@@ -56,7 +56,7 @@ FirebaseNotificationHistoryRepository _repo(
   FakeFirebaseFirestore firestore, {
   String? authedUserId = _alice,
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   if (authedUserId != null) {
     mockAuth.setAuthState(
       user: FakeUser(uid: authedUserId),

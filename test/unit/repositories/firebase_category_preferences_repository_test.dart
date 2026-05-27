@@ -22,7 +22,7 @@ void main() {
   group('FirebaseCategoryPreferencesRepository (BUT-442)', () {
     late FirebaseCategoryPreferencesRepository repository;
     late FakeFirebaseFirestore firestore;
-    late MockAuthRepository auth;
+    late FakeAuthRepository auth;
 
     const userId = 'user-abc';
 
@@ -32,7 +32,7 @@ void main() {
 
     setUp(() {
       firestore = FakeFirebaseFirestore();
-      auth = MockAuthRepository();
+      auth = FakeAuthRepository();
       auth.setAuthState(
         user: FakeUser(uid: userId),
         userId: userId,

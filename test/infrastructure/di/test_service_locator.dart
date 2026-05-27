@@ -124,7 +124,7 @@ class TestServiceLocator {
       // Get all registered mocks and reset their states
       if (ServiceLocator._getIt.isRegistered<AuthRepository>()) {
         final authRepo = ServiceLocator._getIt.get<AuthRepository>();
-        if (authRepo is MockAuthRepository) {
+        if (authRepo is FakeAuthRepository) {
           authRepo.setAuthState(userId: null, user: null);
         }
       }

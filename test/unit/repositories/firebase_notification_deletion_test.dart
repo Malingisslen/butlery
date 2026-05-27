@@ -32,7 +32,7 @@ const _strangerUid = 'stranger-uid';
 void main() {
   group('FirebaseNotificationsRepository — GDPR cascade', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late FirebaseNotificationsRepository repo;
 
     setUpAll(() async {
@@ -41,7 +41,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
       repo = FirebaseNotificationsRepository(
         firestore: fakeFirestore,
@@ -148,7 +148,7 @@ void main() {
 
   group('FirebaseNotificationHistoryRepository.deleteAllByUser', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late FirebaseNotificationHistoryRepository repo;
 
     setUpAll(() async {
@@ -157,7 +157,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
       repo = FirebaseNotificationHistoryRepository(
         firestore: fakeFirestore,
@@ -209,7 +209,7 @@ void main() {
 
   group('FirebaseNotificationBatchRepository.deleteAllByUser', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late FirebaseNotificationBatchRepository repo;
 
     setUpAll(() async {
@@ -218,7 +218,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
       repo = FirebaseNotificationBatchRepository(
         firestore: fakeFirestore,
@@ -275,7 +275,7 @@ void main() {
 
   group('FirebaseDeviceRepository.deleteAllByUser (user_fcm_tokens)', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late FirebaseDeviceRepository repo;
 
     setUpAll(() async {
@@ -284,7 +284,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
       repo = FirebaseDeviceRepository(
         firestore: fakeFirestore,
@@ -337,7 +337,7 @@ void main() {
 
   group('FirebaseMessagingRepository.deleteAllMessagesForUser', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late FirebaseMessagingRepository repo;
 
     setUpAll(() async {
@@ -346,7 +346,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
       repo = FirebaseMessagingRepository(
         firestore: fakeFirestore,
@@ -431,7 +431,7 @@ void main() {
 
   group('CollaborativeRecipeRepository.deleteAllByUser (realtime_recipes)', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late CollaborativeRecipeRepository repo;
 
     setUpAll(() async {
@@ -440,7 +440,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: _ownerUid, isAuthenticated: true);
       repo = CollaborativeRecipeRepository(
         firestore: fakeFirestore,

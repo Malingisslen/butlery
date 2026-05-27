@@ -80,7 +80,7 @@ void main() {
 
       test('should accept dependency injection', () {
         final customFirestore = FakeFirestoreRepository();
-        final customAuth = MockAuthRepository();
+        final customAuth = FakeAuthRepository();
 
         // Act
         final service = OfflineService(

@@ -19,7 +19,7 @@ void main() {
   group('CollaborativeRecipeRepository Mock Tests', () {
     late CollaborativeRecipeRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
 
     const testUserId = 'test-user-123';
 
@@ -32,7 +32,7 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
 
       // Create mock auth repository with test user
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockAuthRepository.setAuthState(
         userId: testUserId,
         isAuthenticated: true,

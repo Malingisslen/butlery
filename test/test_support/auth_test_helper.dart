@@ -4,12 +4,18 @@
 /// to ensure proper auth context and prevent auth-related test failures.
 library;
 
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart'
     as firebase_auth_mocks;
 import 'package:mocktail/mocktail.dart';
-import '../infrastructure/mocks/production_mocks.dart';
 import '../infrastructure/factories/mock_factory.dart';
+
+/// Local mocktail subclass for tests that need to stub `signIn`, `signOut`,
+/// `authStateChanges`, etc. The production `FakeAuthRepository` in
+/// production_mocks.dart extends [Fake] and cannot be used with `when()`
+/// (BUT-1074).
+class _MockAuthRepository extends Mock implements AuthRepository {}
 
 /// Helper class for standardized authentication setup in tests
 class AuthTestHelper {
@@ -28,7 +34,7 @@ class AuthTestHelper {
   static const String defaultAvatarUrl = 'https://example.com/avatar.jpg';
 
   /// Create a standard authenticated mock auth repository
-  static MockAuthRepository createAuthenticatedAuthRepository({
+  static AuthRepository createAuthenticatedAuthRepository({
     String? userId,
     String? email,
     String? displayName,
@@ -43,36 +49,34 @@ class AuthTestHelper {
       emailVerified: isEmailVerified,
     );
 
-    final mockAuthRepo = MockAuthRepository();
-    mockAuthRepo.setAuthState(
-      user: mockUser,
-      userId: userId ?? defaultUserId,
-      isAuthenticated: true,
-    );
+    final mockAuthRepo = _MockAuthRepository();
+
+    // Stub state-style getters via mocktail (no concrete overrides shadow
+    // these on _MockAuthRepository, unlike the pre-BUT-1074 mock).
+    when(() => mockAuthRepo.currentUser).thenReturn(mockUser);
+    when(() => mockAuthRepo.currentUserId).thenReturn(userId ?? defaultUserId);
+    when(() => mockAuthRepo.getCurrentUser()).thenReturn(mockUser);
 
     // Setup common auth methods
     when(() => mockAuthRepo.authStateChanges())
         .thenAnswer((_) => Stream.value(mockUser));
 
     when(() => mockAuthRepo.signOut()).thenAnswer((_) async {
-      mockAuthRepo.setAuthState(
-        user: null,
-        userId: null,
-        isAuthenticated: false,
-      );
+      when(() => mockAuthRepo.currentUser).thenReturn(null);
+      when(() => mockAuthRepo.currentUserId).thenReturn(null);
+      when(() => mockAuthRepo.getCurrentUser()).thenReturn(null);
     });
 
     return mockAuthRepo;
   }
 
   /// Create an unauthenticated mock auth repository
-  static MockAuthRepository createUnauthenticatedAuthRepository() {
-    final mockAuthRepo = MockAuthRepository();
-    mockAuthRepo.setAuthState(
-      user: null,
-      userId: null,
-      isAuthenticated: false,
-    );
+  static AuthRepository createUnauthenticatedAuthRepository() {
+    final mockAuthRepo = _MockAuthRepository();
+
+    when(() => mockAuthRepo.currentUser).thenReturn(null);
+    when(() => mockAuthRepo.currentUserId).thenReturn(null);
+    when(() => mockAuthRepo.getCurrentUser()).thenReturn(null);
 
     // Setup auth state stream
     when(() => mockAuthRepo.authStateChanges())
@@ -148,16 +152,15 @@ class AuthTestHelper {
   }
 
   /// Setup auth error scenario
-  static MockAuthRepository setupAuthError({
+  static AuthRepository setupAuthError({
     required String errorCode,
     String? errorMessage,
   }) {
-    final mockAuthRepo = MockAuthRepository();
-    mockAuthRepo.setAuthState(
-      user: null,
-      userId: null,
-      isAuthenticated: false,
-    );
+    final mockAuthRepo = _MockAuthRepository();
+
+    when(() => mockAuthRepo.currentUser).thenReturn(null);
+    when(() => mockAuthRepo.currentUserId).thenReturn(null);
+    when(() => mockAuthRepo.getCurrentUser()).thenReturn(null);
 
     // Setup to throw error on sign in
     when(() => mockAuthRepo.signIn(
@@ -182,7 +185,7 @@ class AuthTestHelper {
 
   /// Verify common auth operations were called
   static void verifyAuthOperations({
-    required MockAuthRepository authRepository,
+    required AuthRepository authRepository,
     bool? signInCalled,
     bool? signOutCalled,
     bool? createUserCalled,
@@ -217,7 +220,7 @@ class AuthTestHelper {
 /// Context object containing auth setup for a test
 class AuthTestContext {
   final User? user;
-  final MockAuthRepository authRepository;
+  final AuthRepository authRepository;
   final String? userId;
   final String? email;
   final String? displayName;

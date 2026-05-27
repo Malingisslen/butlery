@@ -35,7 +35,7 @@ SharedShoppingViewRepository _viewRepo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
     user: FakeUser(uid: authedUserId),
     userId: authedUserId,
@@ -51,7 +51,7 @@ SharedShoppingDismissalRepository _dismissRepo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
     user: FakeUser(uid: authedUserId),
     userId: authedUserId,

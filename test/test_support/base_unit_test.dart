@@ -22,18 +22,21 @@ import '../infrastructure/mocks/firestore_singleton.dart';
 /// - Common assertion patterns
 /// - Automatic mock registration
 abstract class BaseUnitTest extends BaseTest {
-  /// List of mocks to automatically reset between tests
-  static final List<Mock> _registeredMocks = [];
+  /// List of mocks/fakes to automatically reset between tests.
+  ///
+  /// Holds [Object] (not [Mock]) so callers can mix mocktail mocks and
+  /// fakes that extend [Fake] (e.g. `FakeAuthRepository` post-BUT-1074).
+  static final List<Object> _registeredMocks = [];
 
-  /// Register a mock for automatic reset between tests
-  static void registerMock(Mock mock) {
+  /// Register a mock or fake for automatic reset between tests
+  static void registerMock(Object mock) {
     if (!_registeredMocks.contains(mock)) {
       _registeredMocks.add(mock);
     }
   }
 
-  /// Register multiple mocks at once
-  static void registerMocks(List<Mock> mocks) {
+  /// Register multiple mocks/fakes at once
+  static void registerMocks(List<Object> mocks) {
     for (final mock in mocks) {
       registerMock(mock);
     }

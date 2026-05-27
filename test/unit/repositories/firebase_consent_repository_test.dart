@@ -19,7 +19,7 @@ void main() {
   group('FirebaseConsentRepository - GDPR Compliance', () {
     late FirebaseConsentRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     setUpAll(() async {
@@ -31,7 +31,7 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
 
       // Create mocks
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser(uid: 'test-user-123'); // Match test user ID
 
       // Setup default auth state

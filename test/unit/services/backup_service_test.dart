@@ -1,104 +1,188 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+/// Intent-driven unit tests for [BackupService] — Batch 13 of Intent-Test Sprint.
+///
+/// Behaviours covered:
+/// - exportToFile guards on empty recipe list before touching the file system
+/// - exportToFile fails gracefully when Firebase auth is not initialised
+///   (production never throws to the caller)
+/// - importFromFile returns ImportResult.cancelled() when user dismisses picker
+/// - importFromFile rejects null-bytes file, foreign-JSON envelopes, and
+///   accepts both 'butlery_backup' (current) and 'butlery_export' (legacy) envelopes
+/// - Duplicate detection is case-insensitive on recipe title and dedup-snapshot is
+///   re-read from the service on every iteration (so live-updates affect import flow)
+/// - Round-trip integrity: a recipe exported via toJson and re-read via
+///   Recipe.fromJson preserves title, description, portions, timeMinutes,
+///   rating, ingredients, instructions, imageUrls, personalTagIds, mealType
+/// - Partial failure isolation: a malformed recipe mid-list does NOT roll back
+///   already-imported recipes (NO transactional rollback — bug if it ever
+///   silently appears)
+/// - sourceUrl on every imported recipe is rewritten to the localised
+///   `Importerat från backup <date>` string (origin-tracking invariant)
+/// - exportDate is parsed from the backup envelope into ImportResult.exportDate
+/// - DISCOVERED BUG (data inconsistency): export writes `user_id` but import
+///   reads `user_email` — exportEmail will always be null for backups made
+///   by the current exporter. Pinned by `imported backup made by exporter has
+///   null exportEmail (regression sentinel for user_email-vs-user_id mismatch)`.
+library;
+
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import 'package:butlery/models/recipe_unified.dart';
-import '../../infrastructure/factories/recipe_factory.dart';
+import 'package:clock/clock.dart';
+import 'package:file_picker/file_picker.dart';
+// ignore: implementation_imports
+import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
+import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../test_support/base_unit_test.dart';
-import '../../infrastructure/di/test_service_locator.dart';
-import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart'
-    as prod_locator;
 
-// ============= USING CENTRALIZED MOCKS =============
-// Removed local mock classes:
-// - MockPlatformFile (now in production_mocks.dart)
-// - MockFilePickerResult (now in production_mocks.dart)
+/// Programmable FilePicker platform that lets a test answer the next
+/// `FilePicker.pickFiles(...)` call with cancellation, an error, a payload of
+/// raw bytes, or a payload missing bytes.
+class _FakeFilePickerPlatform extends FilePickerPlatform {
+  FilePickerResult? _next;
+  Object? _throws;
 
-// Platform overrides for testing
-class TestPlatform {
-  static bool isAndroid = false;
-  static bool isIOS = false;
-  static bool isLinux = false;
-  static bool isMacOS = false;
-  static bool isWindows = false;
-
-  static void setAndroid() {
-    isAndroid = true;
-    isIOS = false;
-    isLinux = false;
-    isMacOS = false;
-    isWindows = false;
+  void respondWithCancellation() {
+    _next = null;
+    _throws = null;
   }
 
-  static void setIOS() {
-    isAndroid = false;
-    isIOS = true;
-    isLinux = false;
-    isMacOS = false;
-    isWindows = false;
+  void respondWithBytes(Uint8List bytes, {String name = 'backup.json'}) {
+    _next = FilePickerResult([
+      PlatformFile(name: name, size: bytes.lengthInBytes, bytes: bytes),
+    ]);
+    _throws = null;
   }
 
-  static void setUnsupported() {
-    isAndroid = false;
-    isIOS = false;
-    isLinux = true;
-    isMacOS = false;
-    isWindows = false;
+  void respondWithNullBytes({String name = 'backup.json'}) {
+    _next = FilePickerResult([
+      PlatformFile(name: name, size: 0, bytes: null),
+    ]);
+    _throws = null;
   }
+
+  void respondWithThrow(Object error) {
+    _throws = error;
+    _next = null;
+  }
+
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    int compressionQuality = 0,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+    bool cancelUploadOnWindowBlur = true,
+  }) async {
+    if (_throws != null) throw _throws!;
+    return _next;
+  }
+}
+
+/// Builds the current-format envelope (matches what `exportToFile()` would
+/// emit so import tests round-trip what export produces).
+Map<String, dynamic> _backupEnvelope({
+  required List<Recipe> recipes,
+  String? exportedAt,
+  String? userEmail,
+  String version = '1.0',
+}) {
+  return {
+    'butlery_backup': {
+      'version': version,
+      'exported_at': exportedAt ?? clock.now().toIso8601String(),
+      'user_id': 'exporter-uid',
+      if (userEmail != null) 'user_email': userEmail,
+      'recipe_count': recipes.length,
+      'recipes': recipes.map((r) => r.toJson()).toList(),
+    },
+  };
+}
+
+Uint8List _utf8Bytes(Map<String, dynamic> json) {
+  return Uint8List.fromList(utf8.encode(jsonEncode(json)));
 }
 
 void main() {
   late BackupService service;
   late MockUnifiedRecipeService mockRecipeService;
   late MockFirebaseAuthRepository mockAuthRepo;
-  late User mockUser;
-  late MockPersonalRecipeOperations mockPersonalOperations;
+  late MockPersonalRecipeOperations mockPersonalOps;
+  late _FakeFilePickerPlatform fakeFilePicker;
+  late FilePickerPlatform originalFilePickerPlatform;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
-    // TestServiceLocator initialization and fallback values are handled by BaseUnitTest.setupUnit()
+    registerFallbackValue(<String>[]);
   });
 
   setUp(() async {
-    // Re-initialize TestServiceLocator for each test since tearDown resets it
     await TestServiceLocator.initialize();
-
-    // ULTRATHINK FIX: Bridge production ServiceLocator to test mocks
-    // This solves "ServiceLocator not initialized" errors when production code
-    // calls ServiceLocator.get() but only TestServiceLocator was initialized
-    final productionContainer = DIContainer();
-    prod_locator.ServiceLocator.initialize(productionContainer);
+    prod.ServiceLocator.initialize(DIContainer());
 
     mockRecipeService = MockUnifiedRecipeService();
     mockAuthRepo = MockFirebaseAuthRepository();
-    mockUser = MockFactory.createMockUser(
-      uid: 'test-user-id',
-      email: 'test@example.com',
-    );
-    mockPersonalOperations = MockPersonalRecipeOperations();
+    mockPersonalOps = MockPersonalRecipeOperations();
 
-    // Register mocks with TestServiceLocator
-    TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
-    TestServiceLocator.registerMock<FirebaseAuthRepository>(mockAuthRepo);
-
-    // Configure mocks using state methods
     mockAuthRepo.setAuthState(
-      user: mockUser,
-      userId: 'test-user-id',
+      user: MockFactory.createMockUser(
+        uid: 'test-uid',
+        email: 'test@example.com',
+      ),
+      userId: 'test-uid',
     );
     mockRecipeService.setRecipeState(
       recipes: [],
-      personalOperations: mockPersonalOperations,
+      personalOperations: mockPersonalOps,
     );
+
+    TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
+    TestServiceLocator.registerMock<FirebaseAuthRepository>(mockAuthRepo);
+
+    // Default: createRecipe returns a fake id so the loop counts a success.
+    when(() => mockPersonalOps.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        )).thenAnswer((_) async => 'new-id');
+
+    // Swap the file_picker platform with a programmable fake so tests can
+    // drive the picker without a real native channel.
+    originalFilePickerPlatform = FilePickerPlatform.instance;
+    fakeFilePicker = _FakeFilePickerPlatform();
+    FilePickerPlatform.instance = fakeFilePicker;
 
     service = BackupService();
   });
 
   tearDown(() async {
+    FilePickerPlatform.instance = originalFilePickerPlatform;
     await TestServiceLocator.reset();
     BaseUnitTest.resetMocks();
   });
@@ -107,526 +191,512 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  group('BackupService', () {
-    group('Export Operations', () {
-      test('should return error when no recipes to export', () async {
-        // Arrange
-        mockRecipeService.setRecipeState(recipes: []);
+  group('exportToFile — guards before touching the file system', () {
+    /// Empty recipe list short-circuits with the Swedish "no recipes" message
+    /// and never tries to allocate a file path or Firebase auth — proves the
+    /// early-return is in front of the platform branch.
+    test('returns localized error when recipe service has no recipes',
+        () async {
+      mockRecipeService.setRecipeState(recipes: []);
 
-        // Act
-        // The BackupService uses the real ServiceLocator, not our test mock
-        // So it will fail when trying to get UnifiedRecipeService
-        final result = await service.exportToFile();
+      final result = await service.exportToFile();
 
-        // Assert
-        expect(result.success, isFalse);
-        // The service returns a specific error message when no recipes are available
-        expect(result.message, equals('Inga recept att exportera'));
-        expect(result.filePath, isNull);
-        expect(result.recipeCount, isNull);
-      });
-
-      test('should create JSON with correct structure', () async {
-        // Arrange
-        final recipes = RecipeFactory.buildList(count: 3);
-        mockRecipeService.setRecipeState(recipes: recipes);
-
-        // Act
-        // Since we can't easily mock file system operations,
-        // we'll test the JSON structure creation logic
-        final jsonData = {
-          'butlery_backup': {
-            'version': '1.0',
-            'exported_at': DateTime.now().toIso8601String(),
-            'user_email': 'test@example.com',
-            'recipe_count': recipes.length,
-            'recipes': recipes.map((r) => r.toJson()).toList(),
-          },
-        };
-
-        // Assert
-        expect(jsonData['butlery_backup'], isNotNull);
-        expect(jsonData['butlery_backup']!['version'], equals('1.0'));
-        expect(jsonData['butlery_backup']!['recipe_count'], equals(3));
-        expect(jsonData['butlery_backup']!['user_email'],
-            equals('test@example.com'));
-        expect(jsonData['butlery_backup']!['recipes'], isList);
-        expect(
-            (jsonData['butlery_backup']!['recipes'] as List).length, equals(3));
-      });
-
-      test('should generate filename with timestamp', () async {
-        // Arrange
-        final timestamp = DateTime.now();
-
-        // Act
-        final expectedFilename =
-            'butlery_backup_${timestamp.year}${timestamp.month.toString().padLeft(2, '0')}${timestamp.day.toString().padLeft(2, '0')}_${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}.json';
-
-        // Assert
-        // Verify filename format
-        expect(expectedFilename, contains('butlery_backup_'));
-        expect(expectedFilename, endsWith('.json'));
-        expect(expectedFilename.length, greaterThan(20));
-      });
-
-      test('should return error for unsupported platform', () async {
-        // Arrange
-        final recipes = RecipeFactory.buildList(count: 2);
-        mockRecipeService.setRecipeState(recipes: recipes);
-
-        // Act
-        // Mock unsupported platform (would need Platform mock in real implementation)
-        // For this test, we verify the error message structure
-        final errorResult = BackupResult.error('Plattformen stöds inte');
-
-        // Assert
-        expect(errorResult.success, isFalse);
-        expect(errorResult.message, equals('Plattformen stöds inte'));
-      });
-
-      test('should handle export exceptions', () async {
-        // Arrange
-        // Can't throw on getter with configuration, set empty recipes
-        mockRecipeService.setRecipeState(recipes: []);
-
-        // Act
-        final result = await service.exportToFile();
-
-        // Assert
-        expect(result.success, isFalse);
-        // When there are no recipes, the service returns a specific message
-        expect(result.message, equals('Inga recept att exportera'));
-      });
-
-      test('should include user email in export metadata', () async {
-        // Arrange
-        // Create a user with specific email
-        final userWithEmail = MockFactory.createMockUser(
-          uid: 'test-user-id',
-          email: 'user@test.com',
-        );
-        mockAuthRepo.setAuthState(
-          user: userWithEmail,
-          userId: 'test-user-id',
-        );
-
-        final recipes = RecipeFactory.buildList(count: 1);
-        mockRecipeService.setRecipeState(recipes: recipes);
-
-        // Act
-        // Test metadata structure
-        final metadata = {
-          'user_email': 'user@test.com',
-          'exported_at': DateTime.now().toIso8601String(),
-        };
-
-        // Assert
-        expect(metadata['user_email'], equals('user@test.com'));
-        expect(metadata['exported_at'], isNotNull);
-      });
-
-      test('should handle null user email gracefully', () async {
-        // Arrange
-        // Create a user with null email
-        final userWithoutEmail = MockFactory.createMockUser(
-          uid: 'test-user-id',
-          email: null,
-        );
-        mockAuthRepo.setAuthState(
-          user: userWithoutEmail,
-          userId: 'test-user-id',
-        );
-
-        final recipes = RecipeFactory.buildList(count: 1);
-        mockRecipeService.setRecipeState(recipes: recipes);
-
-        // Act
-        // Test that null email doesn't break export
-        final jsonData = {
-          'butlery_backup': {
-            'user_email': null,
-            'recipe_count': 1,
-          },
-        };
-
-        // Assert
-        expect(jsonData['butlery_backup']!['user_email'], isNull);
-        expect(jsonData['butlery_backup']!['recipe_count'], equals(1));
-      });
+      expect(result.success, isFalse);
+      expect(result.message, equals('Inga recept att exportera'));
+      expect(result.filePath, isNull);
+      expect(result.recipeCount, isNull);
     });
 
-    group('Import Operations', () {
-      test('should return cancelled when user cancels file picker', () async {
-        // Arrange
-        // Mock file picker cancellation
+    /// Production constructs `FirebaseAuthRepository()` directly inside
+    /// exportToFile. In a unit-test context Firebase isn't initialised, so
+    /// the constructor throws — but the outer try/catch must convert that
+    /// into a [BackupResult.error], NOT propagate. Pins "export never throws
+    /// to caller" so a future refactor that drops the try/catch is caught.
+    test('returns BackupResult.error instead of throwing on Firebase failure',
+        () async {
+      mockRecipeService.setRecipeState(
+        recipes: RecipeFactory.buildList(count: 2),
+      );
 
-        // Act
-        final result = ImportResult.cancelled();
+      final result = await service.exportToFile();
 
-        // Assert
-        expect(result.success, isFalse);
-        expect(result.cancelled, isTrue);
-        expect(result.totalRecipes, equals(0));
-        expect(result.successCount, equals(0));
-      });
+      // We assert structurally — the message is localised and includes the
+      // wrapped exception, so we check the success flag is false and the
+      // failure path is engaged (no filePath populated).
+      expect(result.success, isFalse);
+      expect(result.filePath, isNull);
+      expect(result.message, isNotEmpty);
+    });
+  });
 
-      test('should validate backup file format', () async {
-        // Arrange
-        final invalidJson = {'some_other_format': {}};
+  group('importFromFile — file-picker boundary conditions', () {
+    /// User dismisses the picker → ImportResult.cancelled() with cancelled=true
+    /// and success=false. NOT an error result — must be distinguishable so
+    /// the UI can show a no-op snackbar vs an error banner.
+    test('returns cancelled (not error) when user dismisses picker', () async {
+      fakeFilePicker.respondWithCancellation();
 
-        // Act
-        // Test format validation
-        final hasValidFormat = invalidJson.containsKey('butlery_backup') ||
-            invalidJson.containsKey('butlery_export');
+      final result = await service.importFromFile();
 
-        // Assert
-        expect(hasValidFormat, isFalse);
-      });
-
-      test('should support legacy export format', () async {
-        // Arrange
-        final legacyJson = {
-          'butlery_export': {
-            'recipes': [],
-            'exported_at': DateTime.now().toIso8601String(),
-          },
-        };
-
-        // Act
-        // Test legacy format support
-        final hasValidFormat = legacyJson.containsKey('butlery_backup') ||
-            legacyJson.containsKey('butlery_export');
-
-        // Assert
-        expect(hasValidFormat, isTrue);
-        expect(legacyJson['butlery_export']!['recipes'], isList);
-      });
-
-      test('should detect duplicate recipes by title', () async {
-        // Arrange
-        final existingRecipes = [
-          RecipeFactory.build(title: 'Pasta Carbonara'),
-          RecipeFactory.build(title: 'Pizza Margherita'),
-        ];
-
-        final importRecipe = RecipeFactory.build(title: 'Pasta Carbonara');
-
-        mockRecipeService.setRecipeState(recipes: existingRecipes);
-
-        // Act
-        // Test duplicate detection
-        final alreadyExists = existingRecipes.any(
-          (r) => r.title.toLowerCase() == importRecipe.title.toLowerCase(),
-        );
-
-        // Assert
-        expect(alreadyExists, isTrue);
-      });
-
-      test('should create new recipe with import metadata', () async {
-        // Arrange
-        final importRecipe = RecipeFactory.build(
-          title: 'Imported Recipe',
-          description: 'From backup',
-        );
-
-        // Act
-        // Test new recipe creation with metadata
-        final newRecipe = Recipe(
-          core: RecipeCore(
-            id: '', // New ID will be generated
-            title: importRecipe.title,
-            description: importRecipe.description,
-            ingredients: importRecipe.ingredients,
-            instructions: importRecipe.instructions,
-            imageUrls: importRecipe.imageUrls,
-            mealType: importRecipe.mealType,
-            portions: importRecipe.portions,
-            timeMinutes: importRecipe.timeMinutes,
-            rating: importRecipe.rating,
-            personalTagIds: importRecipe.personalTagIds,
-            sourceUrl: 'Importerat från backup',
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            createdBy: '',
-          ),
-          type: RecipeType.personal,
-        );
-
-        expect(newRecipe.title, equals('Imported Recipe'));
-        expect(newRecipe.description, equals('From backup'));
-        expect(newRecipe.sourceUrl, contains('Importerat från backup'));
-        expect(newRecipe.type, equals(RecipeType.personal));
-      });
-
-      test('should handle import errors gracefully', () async {
-        final errorResult = ImportResult.error('Invalid JSON format');
-
-        expect(errorResult.success, isFalse);
-        expect(errorResult.errorMessage, equals('Invalid JSON format'));
-        expect(errorResult.cancelled, isFalse);
-      });
-
-      test('should track import statistics', () async {
-        final importResult = ImportResult(
-          success: true,
-          totalRecipes: 10,
-          successCount: 7,
-          skipCount: 3,
-          exportDate: DateTime.now(),
-          exportEmail: 'original@user.com',
-          errors: ['Error 1', 'Error 2'],
-          skippedTitles: ['Duplicate 1', 'Duplicate 2', 'Duplicate 3'],
-        );
-
-        expect(importResult.success, isTrue);
-        expect(importResult.totalRecipes, equals(10));
-        expect(importResult.successCount, equals(7));
-        expect(importResult.skipCount, equals(3));
-        expect(importResult.errors.length, equals(2));
-        expect(importResult.skippedTitles.length, equals(3));
-        expect(importResult.exportEmail, equals('original@user.com'));
-      });
-
-      test('should parse export metadata from backup', () async {
-        final exportDate = DateTime.now().subtract(Duration(days: 7));
-        final backupData = {
-          'exported_at': exportDate.toIso8601String(),
-          'user_email': 'backup@user.com',
-          'recipe_count': 5,
-        };
-
-        // Test metadata parsing
-        final parsedDate = DateTime.parse(backupData['exported_at'] as String);
-
-        expect(parsedDate.year, equals(exportDate.year));
-        expect(parsedDate.month, equals(exportDate.month));
-        expect(parsedDate.day, equals(exportDate.day));
-        expect(backupData['user_email'], equals('backup@user.com'));
-        expect(backupData['recipe_count'], equals(5));
-      });
-
-      test('should handle malformed recipe data during import', () async {
-        final malformedRecipeJson = {
-          'title': null, // Missing required field
-          'description': 'Test',
-        };
-
-        // Test error handling for malformed data
-        try {
-          Recipe.fromJson(malformedRecipeJson);
-          fail('Should throw exception for malformed data');
-        } catch (e) {
-          expect(e, isNotNull);
-        }
-      });
-
-      test('should preserve recipe properties during import', () async {
-        final originalRecipe = RecipeFactory.build(
-          title: 'Preserved Recipe',
-          description: 'All properties preserved',
-          portions: 6,
-          timeMinutes: 45,
-          rating: 4.8,
-          personalTagIds: ['italian', 'pasta', 'vegetarian'],
-        );
-
-        final recipeJson = originalRecipe.toJson();
-        final importedRecipe = Recipe.fromJson(recipeJson);
-
-        expect(importedRecipe.title, equals(originalRecipe.title));
-        expect(importedRecipe.description, equals(originalRecipe.description));
-        expect(importedRecipe.portions, equals(originalRecipe.portions));
-        expect(importedRecipe.timeMinutes, equals(originalRecipe.timeMinutes));
-        expect(importedRecipe.rating, equals(originalRecipe.rating));
-        expect(importedRecipe.personalTagIds,
-            equals(originalRecipe.personalTagIds));
-      });
+      expect(result.cancelled, isTrue);
+      expect(result.success, isFalse);
+      expect(result.errorMessage, isNull,
+          reason: 'cancellation is not an error');
     });
 
-    group('Date Formatting', () {
-      test('should format date in Swedish', () {
-        final testDate = DateTime(2024, 3, 15); // March 15, 2024
+    /// PlatformFile arrived but with null bytes (e.g. cloud-provider import
+    /// that didn't materialise) → must not crash, must return a readable
+    /// error to the user.
+    test('returns error (not crash) when picked file has null bytes', () async {
+      fakeFilePicker.respondWithNullBytes();
 
-        // Test the date formatting logic
-        final months = [
-          'januari',
-          'februari',
-          'mars',
-          'april',
-          'maj',
-          'juni',
-          'juli',
-          'augusti',
-          'september',
-          'oktober',
-          'november',
-          'december',
-        ];
-        final formatted =
-            '${testDate.day} ${months[testDate.month - 1]} ${testDate.year}';
+      final result = await service.importFromFile();
 
-        expect(formatted, equals('15 mars 2024'));
-      });
-
-      test('should handle all months correctly', () {
-        final months = [
-          'januari',
-          'februari',
-          'mars',
-          'april',
-          'maj',
-          'juni',
-          'juli',
-          'augusti',
-          'september',
-          'oktober',
-          'november',
-          'december',
-        ];
-
-        for (int i = 1; i <= 12; i++) {
-          DateTime(2024, i, 1);
-          final formatted = '1 ${months[i - 1]} 2024';
-          expect(formatted, contains(months[i - 1]));
-        }
-      });
-
-      test('should handle edge cases in date formatting', () {
-        // Test first day of year
-        final newYear = DateTime(2024, 1, 1);
-        final months = [
-          'januari',
-          'februari',
-          'mars',
-          'april',
-          'maj',
-          'juni',
-          'juli',
-          'augusti',
-          'september',
-          'oktober',
-          'november',
-          'december',
-        ];
-        final formattedNewYear =
-            '${newYear.day} ${months[newYear.month - 1]} ${newYear.year}';
-        expect(formattedNewYear, equals('1 januari 2024'));
-
-        // Test last day of year
-        final newYearsEve = DateTime(2024, 12, 31);
-        final formattedNYE =
-            '${newYearsEve.day} ${months[newYearsEve.month - 1]} ${newYearsEve.year}';
-        expect(formattedNYE, equals('31 december 2024'));
-      });
+      expect(result.success, isFalse);
+      expect(result.cancelled, isFalse);
+      expect(result.errorMessage, equals('Kunde inte läsa filen'));
     });
 
-    group('Result Classes', () {
-      test('BackupResult.success should set correct properties', () {
-        final result = BackupResult.success(
-          message: 'Backup completed',
-          filePath: '/path/to/backup.json',
-          recipeCount: 25,
-        );
+    /// File-picker itself throws (permission denied, etc.) — outer try/catch
+    /// must wrap it into the localised "Import failed" error, not propagate.
+    test('wraps unexpected file-picker exception in localised error', () async {
+      fakeFilePicker.respondWithThrow(StateError('disk on fire'));
 
-        expect(result.success, isTrue);
-        expect(result.message, equals('Backup completed'));
-        expect(result.filePath, equals('/path/to/backup.json'));
-        expect(result.recipeCount, equals(25));
+      final result = await service.importFromFile();
+
+      expect(result.success, isFalse);
+      expect(result.errorMessage, contains('Import misslyckades'));
+      expect(result.errorMessage, contains('disk on fire'));
+    });
+  });
+
+  group('importFromFile — envelope validation', () {
+    /// Foreign JSON top-level (no `butlery_backup` AND no `butlery_export`)
+    /// → reject with "Ogiltig backup-fil". Pins the "we only import our own
+    /// format" contract.
+    test('rejects JSON missing both butlery_backup and butlery_export keys',
+        () async {
+      final foreign = {
+        'some_other_app': {'recipes': []},
+      };
+      fakeFilePicker.respondWithBytes(_utf8Bytes(foreign));
+
+      final result = await service.importFromFile();
+
+      expect(result.success, isFalse);
+      expect(result.errorMessage, contains('Ogiltig backup-fil'));
+    });
+
+    /// Backward-compat: the legacy `butlery_export` wrapper must still be
+    /// accepted (users running the old build shipped backups with that key).
+    /// Bug if a future refactor removes the OR branch silently.
+    test(
+        'accepts legacy butlery_export envelope as equivalent to butlery_backup',
+        () async {
+      final legacy = {
+        'butlery_export': {
+          'version': '0.9',
+          'exported_at': DateTime(2024, 6, 1).toIso8601String(),
+          'recipes': [RecipeFactory.build(title: 'Legacy Pasta').toJson()],
+        },
+      };
+      fakeFilePicker.respondWithBytes(_utf8Bytes(legacy));
+
+      final result = await service.importFromFile();
+
+      expect(result.totalRecipes, equals(1));
+      expect(result.successCount, equals(1));
+      expect(result.exportDate, equals(DateTime(2024, 6, 1)));
+    });
+
+    /// Current `butlery_backup` envelope succeeds (sanity for the
+    /// happy-path branch that does the work).
+    test('accepts current butlery_backup envelope and counts successes',
+        () async {
+      final recipes = RecipeFactory.buildList(count: 3, titlePrefix: 'Unique');
+      fakeFilePicker.respondWithBytes(_utf8Bytes(_backupEnvelope(
+        recipes: recipes,
+        exportedAt: DateTime(2025, 1, 15).toIso8601String(),
+      )));
+
+      final result = await service.importFromFile();
+
+      expect(result.totalRecipes, equals(3));
+      expect(result.successCount, equals(3));
+      expect(result.skipCount, equals(0));
+      expect(result.exportDate, equals(DateTime(2025, 1, 15)));
+    });
+  });
+
+  group('importFromFile — duplicate detection contract', () {
+    /// Duplicate detection compares titles lowercased. "PASTA carbonara"
+    /// in the backup must collide with "Pasta Carbonara" already in the
+    /// library — pin case-insensitivity so a "ToLower" removal breaks the test.
+    test('detects duplicates by case-insensitive title match', () async {
+      final existing = RecipeFactory.build(title: 'Pasta Carbonara');
+      mockRecipeService.setRecipeState(
+        recipes: [existing],
+        personalOperations: mockPersonalOps,
+      );
+
+      final incoming = RecipeFactory.build(title: 'PASTA CARBONARA');
+      fakeFilePicker
+          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [incoming])));
+
+      final result = await service.importFromFile();
+
+      expect(result.totalRecipes, equals(1));
+      expect(result.successCount, equals(0));
+      expect(result.skipCount, equals(1));
+      expect(result.skippedTitles, equals(['PASTA CARBONARA']));
+      verifyNever(() => mockPersonalOps.createRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+          ));
+    });
+
+    /// Empty existing library + N unique titles in backup → all imported.
+    /// Pins the happy path of the dedup branch (no false-positive collisions).
+    test('imports all when no titles collide with existing library', () async {
+      final recipes = [
+        RecipeFactory.build(title: 'Köttbullar'),
+        RecipeFactory.build(title: 'Janssons frestelse'),
+      ];
+      fakeFilePicker
+          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: recipes)));
+
+      final result = await service.importFromFile();
+
+      expect(result.successCount, equals(2));
+      expect(result.skipCount, equals(0));
+    });
+  });
+
+  group('importFromFile — partial-failure isolation', () {
+    /// Recipe 2-of-3 has malformed JSON shape. Production logs the error,
+    /// adds it to `errors`, increments skipCount, and CONTINUES with the
+    /// rest. Recipes 1 and 3 must still be imported. Pins "no
+    /// transactional rollback" — a future refactor that decides "all-or-
+    /// nothing" would break this test, which forces an explicit decision.
+    test('continues importing remaining recipes when one is malformed',
+        () async {
+      final good1 = RecipeFactory.build(title: 'Good One').toJson();
+      // Malformed: `core` is non-Map; RecipeCore.fromJson cast will throw.
+      final bad = {'core': 'not-a-map', 'type': 0};
+      final good2 = RecipeFactory.build(title: 'Good Two').toJson();
+
+      final envelope = {
+        'butlery_backup': {
+          'version': '1.0',
+          'exported_at': DateTime(2025, 5, 1).toIso8601String(),
+          'recipes': [good1, bad, good2],
+        },
+      };
+      fakeFilePicker.respondWithBytes(_utf8Bytes(envelope));
+
+      final result = await service.importFromFile();
+
+      expect(result.totalRecipes, equals(3));
+      expect(result.successCount, equals(2),
+          reason: 'good recipes either side of the malformed entry must still '
+              'be imported (no rollback)');
+      expect(result.skipCount, equals(1));
+      expect(result.errors.length, equals(1));
+      expect(result.errors.first, contains('Okänt recept'),
+          reason: 'malformed entry without a `title` field uses the localised '
+              'fallback label');
+    });
+
+    /// One of the createRecipe calls throws (Firestore quota, network…).
+    /// The exception must be captured per-recipe and NOT abort the import
+    /// loop — pin per-recipe error isolation at the repository boundary.
+    ///
+    /// DISCOVERED BUG: the error message uses `recipeJson['title']` to
+    /// label which recipe failed, but Recipe.toJson() nests `title` under
+    /// `core.title`. Top-level `title` is always null, so every per-recipe
+    /// error reads the generic "Okänt recept" label — users importing a
+    /// 200-recipe backup get N identical "Okänt recept: ..." lines and
+    /// can't tell which recipe to retry. Pinned below for regression.
+    test('isolates per-recipe repository failures into errors list', () async {
+      final recipes = [
+        RecipeFactory.build(title: 'Will Succeed'),
+        RecipeFactory.build(title: 'Will Fail'),
+      ];
+
+      when(() => mockPersonalOps.createRecipe(
+            title: 'Will Fail',
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+          )).thenThrow(StateError('quota exceeded'));
+
+      fakeFilePicker
+          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: recipes)));
+
+      final result = await service.importFromFile();
+
+      expect(result.successCount, equals(1));
+      expect(result.skipCount, equals(1));
+      expect(result.errors.length, equals(1));
+      expect(result.errors.first, contains('quota exceeded'),
+          reason: 'raw exception must surface for diagnostics');
+      // BUG: title is "Okänt recept" instead of "Will Fail" because
+      // recipeJson['title'] looks at the top level — Recipe.toJson() puts
+      // it under core.title. If a future fix changes this, update the test.
+      expect(result.errors.first, contains('Okänt recept'),
+          reason: 'PIN BUG: title fallback wins because recipeJson[\'title\']'
+              ' is null (Recipe.toJson nests title under core.title)');
+    });
+  });
+
+  group('importFromFile — round-trip integrity', () {
+    /// A recipe carried through toJson → fromJson must preserve every
+    /// user-facing field that BackupService forwards to createRecipe.
+    /// This is the GDPR-critical contract: no silent data loss in the
+    /// export/import boundary.
+    test('preserves all forwarded fields end-to-end via createRecipe',
+        () async {
+      final source = RecipeFactory.build(
+        title: 'Köttbullar med potatismos',
+        description: 'Klassiska svenska köttbullar',
+        ingredients: ['500g köttfärs', '1 dl ströbröd', '2 dl mjölk'],
+        instructions: ['Stek', 'Servera'],
+        imageUrls: ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
+        mealType: 'Middag',
+        portions: 6,
+        timeMinutes: 45,
+        rating: 4.8,
+        personalTagIds: ['svensk', 'middag', 'köttbullar'],
+      );
+      fakeFilePicker
+          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [source])));
+
+      await service.importFromFile();
+
+      final captured = verify(() => mockPersonalOps.createRecipe(
+            title: captureAny(named: 'title'),
+            description: captureAny(named: 'description'),
+            ingredients: captureAny(named: 'ingredients'),
+            instructions: captureAny(named: 'instructions'),
+            imageUrls: captureAny(named: 'imageUrls'),
+            mealType: captureAny(named: 'mealType'),
+            portions: captureAny(named: 'portions'),
+            timeMinutes: captureAny(named: 'timeMinutes'),
+            rating: captureAny(named: 'rating'),
+            personalTagIds: captureAny(named: 'personalTagIds'),
+            sourceUrl: captureAny(named: 'sourceUrl'),
+          )).captured;
+
+      expect(captured[0], equals('Köttbullar med potatismos'));
+      expect(captured[1], equals('Klassiska svenska köttbullar'));
+      expect(captured[2],
+          equals(['500g köttfärs', '1 dl ströbröd', '2 dl mjölk']));
+      expect(captured[3], equals(['Stek', 'Servera']));
+      expect(captured[4],
+          equals(['https://example.com/a.jpg', 'https://example.com/b.jpg']));
+      expect(captured[5], equals('Middag'));
+      expect(captured[6], equals(6));
+      expect(captured[7], equals(45));
+      expect(captured[8], equals(4.8));
+      expect(captured[9], equals(['svensk', 'middag', 'köttbullar']));
+      // sourceUrl is rewritten — covered by its own dedicated test.
+    });
+
+    /// Imported recipes get their `sourceUrl` rewritten to the Swedish
+    /// "Importerat från backup <day month year>" string built from
+    /// clock.now(). Pins the origin-tracking invariant so a user can later
+    /// see which recipes came from a backup vs the web/manual entry.
+    test('rewrites sourceUrl to "Importerat från backup <date>"', () async {
+      final fixedNow = DateTime(2025, 3, 15);
+      final recipe = RecipeFactory.build(
+        title: 'Original Source',
+        sourceUrl: 'https://example.com/original',
+      );
+      fakeFilePicker
+          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [recipe])));
+
+      await withClock(Clock.fixed(fixedNow), () async {
+        await service.importFromFile();
       });
 
-      test('BackupResult.error should set correct properties', () {
-        final result = BackupResult.error('Something went wrong');
+      final captured = verify(() => mockPersonalOps.createRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: captureAny(named: 'sourceUrl'),
+          )).captured;
 
-        expect(result.success, isFalse);
-        expect(result.message, equals('Something went wrong'));
-        expect(result.filePath, isNull);
-        expect(result.recipeCount, isNull);
-      });
+      expect(captured.single, equals('Importerat från backup 15 mars 2025'));
+    });
+  });
 
-      test('ImportResult.cancelled should set correct properties', () {
-        final result = ImportResult.cancelled();
+  group('importFromFile — metadata parsing', () {
+    /// `exported_at` ISO8601 must round-trip into ImportResult.exportDate.
+    /// Pins the export-timestamp contract so a UI showing "exporterad 14
+    /// januari 2025" stays accurate.
+    test('parses exported_at ISO8601 into ImportResult.exportDate', () async {
+      final envelope = _backupEnvelope(
+        recipes: [RecipeFactory.build()],
+        exportedAt: DateTime.utc(2025, 1, 14, 10, 30).toIso8601String(),
+      );
+      fakeFilePicker.respondWithBytes(_utf8Bytes(envelope));
 
-        expect(result.success, isFalse);
-        expect(result.cancelled, isTrue);
-        expect(result.totalRecipes, equals(0));
-        expect(result.successCount, equals(0));
-        expect(result.skipCount, equals(0));
-        expect(result.errors, isEmpty);
-        expect(result.skippedTitles, isEmpty);
-        expect(result.errorMessage, isNull);
-      });
+      final result = await service.importFromFile();
 
-      test('ImportResult.error should set correct properties', () {
-        final result = ImportResult.error('File not readable');
+      expect(result.exportDate, isNotNull);
+      expect(result.exportDate!.toUtc(),
+          equals(DateTime.utc(2025, 1, 14, 10, 30)));
+    });
 
-        expect(result.success, isFalse);
-        expect(result.cancelled, isFalse);
-        expect(result.errorMessage, equals('File not readable'));
-        expect(result.totalRecipes, equals(0));
-        expect(result.successCount, equals(0));
-      });
+    /// DISCOVERED BUG (regression sentinel):
+    /// Export writes `user_id`, but Import reads `user_email`. So a backup
+    /// made by the CURRENT exporter will always yield `exportEmail = null`
+    /// on import. Pinning this guarantees that if someone fixes the
+    /// asymmetry, they'll have to update this test (and we'll know the bug
+    /// is fixed). If someone reverses the fix accidentally, the test still
+    /// passes — so this is a documentation test, not a defence.
+    ///
+    /// The asymmetry itself is a real data-inconsistency bug. Reported in
+    /// commit summary.
+    test('exportEmail comes from user_email field, not user_id (asymmetry)',
+        () async {
+      final withEmail = _backupEnvelope(
+        recipes: [RecipeFactory.build()],
+        userEmail: 'alice@example.com',
+      );
+      fakeFilePicker.respondWithBytes(_utf8Bytes(withEmail));
+      final withEmailResult = await service.importFromFile();
+      expect(withEmailResult.exportEmail, equals('alice@example.com'));
 
-      test('ImportResult with partial success should track all statistics', () {
-        final result = ImportResult(
-          success: true,
-          totalRecipes: 20,
-          successCount: 15,
-          skipCount: 5,
-          exportDate: DateTime(2024, 1, 15),
-          exportEmail: 'exporter@test.com',
-          errors: ['Error importing recipe X', 'Invalid data for recipe Y'],
-          skippedTitles: [
-            'Duplicate 1',
-            'Duplicate 2',
-            'Duplicate 3',
-            'Invalid 1',
-            'Invalid 2'
-          ],
-        );
+      // Reset fake for second call.
+      mockRecipeService.setRecipeState(
+        recipes: [],
+        personalOperations: mockPersonalOps,
+      );
+      final envelopeAsExporterEmits = _backupEnvelope(
+        recipes: [RecipeFactory.build(title: 'Different Title')],
+        // userEmail intentionally omitted — matches what exportToFile() writes
+      );
+      fakeFilePicker.respondWithBytes(_utf8Bytes(envelopeAsExporterEmits));
+      final fromRealExporterResult = await service.importFromFile();
 
-        expect(result.success, isTrue);
-        expect(result.totalRecipes, equals(20));
-        expect(result.successCount, equals(15));
-        expect(result.skipCount, equals(5));
-        expect(result.errors.length, equals(2));
-        expect(result.skippedTitles.length, equals(5));
-        expect(result.exportDate?.year, equals(2024));
-        expect(result.exportDate?.month, equals(1));
-        expect(result.exportDate?.day, equals(15));
-        expect(result.exportEmail, equals('exporter@test.com'));
-      });
+      expect(fromRealExporterResult.exportEmail, isNull,
+          reason: 'BUG: exporter writes only user_id, importer only reads '
+              'user_email → exportEmail always null for round-trip backups');
+    });
 
-      test('BackupResult const constructor should work correctly', () {
-        const result = BackupResult(
-          success: true,
-          message: 'Test message',
-          filePath: '/test/path',
-          recipeCount: 10,
-        );
+    /// Empty `recipes` array is structurally valid (a backup with zero
+    /// recipes) — must not crash, returns totals all zero. Pins
+    /// "empty list != malformed file".
+    test('handles backup with empty recipes list as zero-success import',
+        () async {
+      fakeFilePicker.respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [])));
 
-        expect(result.success, isTrue);
-        expect(result.message, equals('Test message'));
-        expect(result.filePath, equals('/test/path'));
-        expect(result.recipeCount, equals(10));
-      });
+      final result = await service.importFromFile();
 
-      test('ImportResult const constructor with defaults should work correctly',
-          () {
-        const result = ImportResult();
+      expect(result.success, isTrue);
+      expect(result.totalRecipes, equals(0));
+      expect(result.successCount, equals(0));
+      expect(result.skipCount, equals(0));
+      expect(result.errors, isEmpty);
+    });
+  });
 
-        expect(result.success, isTrue);
-        expect(result.cancelled, isFalse);
-        expect(result.totalRecipes, equals(0));
-        expect(result.successCount, equals(0));
-        expect(result.skipCount, equals(0));
-        expect(result.errors, isEmpty);
-        expect(result.skippedTitles, isEmpty);
-        expect(result.exportDate, isNull);
-        expect(result.exportEmail, isNull);
-        expect(result.errorMessage, isNull);
-      });
+  group('importFromFile — PII scoping', () {
+    /// Recipes from the picked file are imported as-is into the CURRENT
+    /// user's library via `personal.createRecipe`. The picked file's
+    /// `user_id` is metadata; the new recipe is created with `createdBy: ''`
+    /// (the service fills in the calling user). Pins that we never write
+    /// the source backup's user_id as the owner of the imported recipe —
+    /// would be a cross-user data leak.
+    test('does not propagate backup file user_id to created recipes', () async {
+      final foreign = RecipeFactory.build(
+        title: 'From Alice',
+        createdBy: 'alice-uid', // foreign owner in source backup
+      );
+      fakeFilePicker
+          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [foreign])));
+
+      await service.importFromFile();
+
+      // The call to createRecipe doesn't expose createdBy as a named arg.
+      // PersonalRecipeOperations.createRecipe owns assignment of createdBy
+      // from the auth context. Verify we DID call createRecipe (i.e. went
+      // through the import path) without forwarding alien identity. The
+      // absence of a createdBy named parameter in `createRecipe` is itself
+      // the structural guarantee.
+      verify(() => mockPersonalOps.createRecipe(
+            title: 'From Alice',
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+          )).called(1);
+    });
+  });
+
+  group('result classes — public contract sanity', () {
+    /// `ImportResult.cancelled()` must be distinguishable from
+    /// `ImportResult.error(...)` so the UI can branch on intent.
+    test('cancelled and error are distinct ImportResult shapes', () {
+      final cancelled = ImportResult.cancelled();
+      final errored = ImportResult.error('boom');
+
+      expect(cancelled.cancelled, isTrue);
+      expect(cancelled.errorMessage, isNull);
+      expect(errored.cancelled, isFalse);
+      expect(errored.errorMessage, equals('boom'));
+      expect(cancelled.success, isFalse);
+      expect(errored.success, isFalse);
+    });
+
+    /// BackupResult.success populates filePath + recipeCount; .error leaves
+    /// them null. Lets a UI safely render "saved to <path>" only when both
+    /// fields are non-null.
+    test('BackupResult.success vs .error populate optional fields distinctly',
+        () {
+      final ok = BackupResult.success(
+        message: 'Saved',
+        filePath: '/tmp/x.json',
+        recipeCount: 7,
+      );
+      final fail = BackupResult.error('Disk full');
+
+      expect(ok.success, isTrue);
+      expect(ok.filePath, equals('/tmp/x.json'));
+      expect(ok.recipeCount, equals(7));
+      expect(fail.success, isFalse);
+      expect(fail.filePath, isNull);
+      expect(fail.recipeCount, isNull);
     });
   });
 }

@@ -11,7 +11,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 void main() {
   group('PermissionService', () {
     late PermissionService permissionService;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late User mockUser;
 
     setUpAll(() async {

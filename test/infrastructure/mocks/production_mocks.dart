@@ -127,11 +127,20 @@ import 'package:share_plus/share_plus.dart';
 
 // ============= REPOSITORY MOCKS =============
 
-/// Mock implementation of AuthRepository with configuration support
+/// Fake implementation of AuthRepository with configuration support.
 ///
-/// Uses super.noSuchMethod for all methods to allow proper Mocktail stubbing.
-/// Configuration methods set internal state for getters only.
-class MockAuthRepository extends Mock implements AuthRepository {
+/// Extends [Fake] (not [Mock]) on purpose: the previous `extends Mock`
+/// version exposed concrete `@override` getters for `currentUser` /
+/// `currentUserId`, which silently swallowed `when(() => mock.currentUserId)
+/// .thenReturn(...)` stubs — production code read the field-backed concrete
+/// getter, not the stubbed value (BUT-1074, BUT-368/369 antipattern).
+///
+/// Tests configure state via [setAuthState]. Tests that need mocktail
+/// `when(...).thenAnswer(...)` for other methods (e.g. `signIn`,
+/// `authStateChanges`) should declare a local
+/// `class _MockAuthRepository extends Mock implements AuthRepository {}`
+/// rather than trying to stub on this fake.
+class FakeAuthRepository extends Fake implements AuthRepository {
   // Configuration state
   User? _currentUser;
   String? _currentUserId;
@@ -156,7 +165,9 @@ class MockAuthRepository extends Mock implements AuthRepository {
   @override
   User? getCurrentUser() => _currentUser;
 
-  // Other methods left without implementation so tests can stub via when().
+  // Other AuthRepository methods are intentionally unimplemented; calls
+  // throw via Fake.noSuchMethod, surfacing tests that depend on behavior
+  // this fake doesn't model.
 }
 
 /// Mock implementation of RecipeRepository

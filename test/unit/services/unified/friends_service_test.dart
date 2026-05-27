@@ -16,7 +16,7 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('Friends Service', () {
     late MockFriendsRepository mockRepository;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -27,7 +27,7 @@ void main() {
 
       // Create mocks
       mockRepository = MockFriendsRepository();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
 
       // Configure auth state
       mockAuthRepository.setAuthState(userId: 'test_user_123');

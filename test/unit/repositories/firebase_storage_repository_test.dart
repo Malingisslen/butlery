@@ -13,7 +13,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
-// production_mocks supplies MockAuthRepository / MockFile / MockUuid / FakeUser.
+// production_mocks supplies FakeAuthRepository / MockFile / MockUuid / FakeUser.
 // The Firebase Storage SDK mocks now come from firebase_storage_mocks (above).
 import '../../infrastructure/mocks/production_mocks.dart';
 
@@ -22,7 +22,7 @@ void main() {
     late FirebaseStorageRepository repository;
     late MockFirebaseStorage mockStorage;
     late MockUuid mockUuid;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
 
     const testUserId = 'test-user-123';
 
@@ -35,7 +35,7 @@ void main() {
 
       mockStorage = MockFirebaseStorage();
       mockUuid = MockUuid();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
 
       mockAuthRepository.setAuthState(
         user: FakeUser(uid: testUserId),

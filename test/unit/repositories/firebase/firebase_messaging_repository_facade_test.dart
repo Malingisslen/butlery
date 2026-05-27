@@ -23,7 +23,7 @@ FirebaseMessagingRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = 'alice',
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
     user: FakeUser(uid: authedUserId),
     userId: authedUserId,

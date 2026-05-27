@@ -83,6 +83,12 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   late final MenuService _menuService;
   late final FirebaseSharedMenuRepository _sharedMenuRepository;
 
+  // Optional test seams — when provided, override the ServiceLocator lookup
+  // inside methods that would otherwise resolve these lazily. Production
+  // wiring leaves these null so behaviour is unchanged.
+  final UserService? _userServiceOverride;
+  final RealtimeMenuService? _realtimeMenuServiceOverride;
+
   // Operations modules
   CollaborativeMenuOperations? _collaborative;
 
@@ -125,16 +131,23 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
 
   UnifiedMenuService({
     FirestoreRepository? firestoreRepository,
+    FirebaseSharedMenuRepository? sharedMenuRepository,
+    MenuService? menuService,
+    UserService? userService,
+    RealtimeMenuService? realtimeMenuService,
   })  : _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
         _firestore =
             (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
-                .firestore {
-    // Initialize core menu service immediately
-    _menuService = MenuService();
+                .firestore,
+        _userServiceOverride = userService,
+        _realtimeMenuServiceOverride = realtimeMenuService {
+    // Initialize core menu service (override-aware for testability)
+    _menuService = menuService ?? MenuService();
 
-    // Initialize SharedMenu repository
-    _sharedMenuRepository = FirebaseSharedMenuRepository();
+    // Initialize SharedMenu repository (override-aware for testability)
+    _sharedMenuRepository =
+        sharedMenuRepository ?? FirebaseSharedMenuRepository();
 
     AppLogger.info(
         '✅ UnifiedMenuService created - collaborative operations will initialize on first use');
@@ -421,7 +434,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
             '📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users');
 
         // Get current user's display name
-        final userService = ServiceLocator.get<UserService>();
+        final userService =
+            _userServiceOverride ?? ServiceLocator.get<UserService>();
         final currentUserProfile = userService.currentUserProfile;
         if (currentUserProfile == null) {
           AppLogger.error(
@@ -433,7 +447,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         String? realtimeMenuId;
         if (allowCollaboration) {
           AppLogger.info('🔄 Creating RealtimeMenu for collaborative editing');
-          final realtimeMenuService = ServiceLocator.get<RealtimeMenuService>();
+          final realtimeMenuService = _realtimeMenuServiceOverride ??
+              ServiceLocator.get<RealtimeMenuService>();
           final realtimeMenu = await realtimeMenuService.createRealtimeMenu(
             menuTitle: menuTitle,
             menuSnapshot: menuSnapshot,

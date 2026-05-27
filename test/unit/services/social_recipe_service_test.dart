@@ -40,7 +40,7 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 
-// -------------------- Fakes (no MockAuthRepository antipattern, BUT-1074) --
+// -------------------- Fakes (no FakeAuthRepository antipattern, BUT-1074) --
 
 class _FakePermissionService extends Fake implements PermissionService {
   String? _uid;

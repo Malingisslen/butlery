@@ -82,13 +82,13 @@ void main() {
   group('ImportRateLimiter', () {
     late FakeFirebaseFirestore firestore;
     late FirestoreRepository firestoreRepo;
-    late MockAuthRepository auth;
+    late FakeAuthRepository auth;
     late ImportRateLimiter limiter;
 
     setUp(() {
       firestore = FakeFirebaseFirestore();
       firestoreRepo = FirestoreRepository(firestore: firestore);
-      auth = MockAuthRepository();
+      auth = FakeAuthRepository();
       auth.setAuthState(userId: _uid);
       limiter = ImportRateLimiter(
         firestoreRepository: firestoreRepo,

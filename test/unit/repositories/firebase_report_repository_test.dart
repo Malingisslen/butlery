@@ -23,7 +23,7 @@ import '../../test_support/base_unit_test.dart';
 void main() {
   group('FirebaseReportRepository', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuth;
+    late FakeAuthRepository mockAuth;
     late FirebaseReportRepository repository;
 
     const reporterId = 'reporter-uid-1';
@@ -32,7 +32,7 @@ void main() {
     setUp(() async {
       await BaseUnitTest.setupUnit();
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuth = MockAuthRepository();
+      mockAuth = FakeAuthRepository();
       mockAuth.setAuthState(userId: reporterId, isAuthenticated: true);
       repository = FirebaseReportRepository(
         firestore: fakeFirestore,

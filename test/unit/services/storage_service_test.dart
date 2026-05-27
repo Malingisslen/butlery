@@ -48,7 +48,7 @@ void main() {
       // The production ServiceLocator resolves from the same GetIt.instance that
       // TestServiceLocator registered mocks into.
       final authRepo =
-          GetIt.instance.get<AuthRepository>() as MockAuthRepository;
+          GetIt.instance.get<AuthRepository>() as FakeAuthRepository;
       authRepo.setAuthState(userId: 'test_user_123');
 
       // Register OfflineService mock so requiresNetwork check passes.

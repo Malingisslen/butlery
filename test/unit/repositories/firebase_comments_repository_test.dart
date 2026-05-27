@@ -20,7 +20,7 @@ void main() {
   group('FirebaseCommentsRepository - Comment System', () {
     late FirebaseCommentsRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     setUpAll(() async {
@@ -32,7 +32,7 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
 
       // Create mocks
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser(uid: 'user-123', displayName: 'Test User');
 
       // Setup default auth state

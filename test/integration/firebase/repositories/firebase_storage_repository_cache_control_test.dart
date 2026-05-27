@@ -19,7 +19,7 @@ void main() {
     late FirebaseStorageRepository repository;
     late MockFirebaseStorage mockStorage;
     late MockUuid mockUuid;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
 
     const testUserId = 'test-user-heir';
 
@@ -32,7 +32,7 @@ void main() {
 
       mockStorage = MockFirebaseStorage();
       mockUuid = MockUuid();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
 
       mockAuthRepository.setAuthState(
         user: FakeUser(uid: testUserId),

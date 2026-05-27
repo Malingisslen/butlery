@@ -16,7 +16,7 @@ import 'package:butlery/services/permission_service.dart';
 class MockConfigurator {
   /// Configure authentication state for auth repository mock
   static void configureAuth({
-    required MockAuthRepository mock,
+    required FakeAuthRepository mock,
     String? userId,
     User? user,
     bool isAuthenticated = false,
@@ -30,7 +30,7 @@ class MockConfigurator {
 
   /// Configure authenticated user state
   static void configureAuthenticatedUser({
-    required MockAuthRepository mock,
+    required FakeAuthRepository mock,
     String userId = 'test_user_123',
     String email = 'test@example.com',
     String displayName = 'Test User',
@@ -49,7 +49,7 @@ class MockConfigurator {
   }
 
   /// Configure unauthenticated state
-  static void configureUnauthenticated(MockAuthRepository mock) {
+  static void configureUnauthenticated(FakeAuthRepository mock) {
     mock.setAuthState(
       user: null,
       userId: null,
@@ -86,7 +86,7 @@ class MockConfigurator {
   /// Configure permission service mock
   static void configurePermissionService({
     required PermissionService service,
-    required MockAuthRepository authMock,
+    required FakeAuthRepository authMock,
     String? userId,
     String? displayName,
   }) {
@@ -117,9 +117,17 @@ class MockConfigurator {
     }
   }
 
-  /// Configure mock for async auth state changes stream
+  /// Configure mock for async auth state changes stream.
+  ///
+  /// NOTE: [FakeAuthRepository] (post-BUT-1074) extends [Fake] and cannot
+  /// be used with mocktail's `when(...)`. Tests that need to stub
+  /// `authStateChanges()` should declare a local
+  /// `class _MockAuthRepository extends Mock implements AuthRepository {}`
+  /// and call `when(...)` on that instance directly.
+  @Deprecated('Use a local _MockAuthRepository (extends Mock) directly; '
+      'FakeAuthRepository cannot be stubbed with when().')
   static void configureAuthStateStream({
-    required MockAuthRepository mock,
+    required dynamic mock,
     User? user,
   }) {
     when(() => mock.authStateChanges()).thenAnswer(
@@ -138,9 +146,9 @@ class MockConfigurator {
   }
 
   /// Reset all mock states to defaults
-  static void resetAllMocks(List<Mock> mocks) {
+  static void resetAllMocks(List<Object> mocks) {
     for (final mock in mocks) {
-      if (mock is MockAuthRepository) {
+      if (mock is FakeAuthRepository) {
         configureUnauthenticated(mock);
       } else if (mock is MockRecipeRepository) {
         mock.setRecipes([]);
@@ -155,7 +163,7 @@ class MockConfigurator {
 }
 
 /// Extension methods for convenient mock configuration
-extension MockAuthRepositoryExtensions on MockAuthRepository {
+extension MockAuthRepositoryExtensions on FakeAuthRepository {
   /// Quick configure as authenticated
   void asAuthenticated({
     String userId = 'test_user_123',

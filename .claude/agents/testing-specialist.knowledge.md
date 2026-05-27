@@ -3063,3 +3063,154 @@ The two BUT-1098 tests look superficially redundant ("cancel still runs when set
 **Rule:** When production swaps sequential await for `Future.wait` over independent reads with no shared mutable state, the observable contract is unchanged: same call count, same cache state, same return value, same end-state. Existing `verify(() => repo.foo()).called(N)` + cache-state assertions ALREADY pin this. Adding a parallelism assertion (counter-based, ordering-based) requires significant test infrastructure for marginal value AND risks pinning implementation details (which would break if anyone reverted to sequential for debugging).
 
 **Ordering concern check:** Before declaring "no new test needed", confirm the existing tests assert SET semantics ("all three lists cached", `verify().called(3)`) and not SEQUENCE semantics (`verifyInOrder`, asserts that A finishes before B). If sequence semantics exist, `Future.wait` may break them and a new test is warranted. In iter-80, the coord tests asserted set semantics only — safe.
+
+### 2026-05-27 — fakeAsync + SharedPreferences = friction; use real timing instead
+
+**Trigger:** Intent-Test Sprint Batch 13 (`RecipeFormAutoSaveManager`). First attempt used `fakeAsync((async) async { ... }())` to drive debounce timers AND await `SharedPreferences.getInstance()` inside the body. Compilation failure: `fakeAsync` accepts only sync callbacks, and the `() async {}()` IIFE returns `Future<void>` instead of `void`.
+
+**Rule:** When the SUT (a) reads time via a `Timer` AND (b) awaits a real `Future` from `SharedPreferences` (or any plugin whose mock channel returns real futures), **don't use `fakeAsync`**. The plugin's microtasks won't pump under fakeAsync's zone, and you can't mix `await` syntax into the fakeAsync body anyway.
+
+**Pattern that works:**
+```dart
+Future<void> _settle(Duration d) async {
+  await Future<void>.delayed(d + const Duration(milliseconds: 100));
+}
+
+// Usage
+manager.scheduleAutoSave(form);
+await _settle(const Duration(seconds: 3));  // real wait past the debounce
+final prefs = await SharedPreferences.getInstance();
+expect(prefs.getString(...), isNotNull);
+```
+
+Mark these tests with `timeout: const Timeout(Duration(seconds: 15))` to be explicit they wait real time.
+
+**When you DO still want fakeAsync:** the SUT uses time but not plugins (e.g. pure aggregation calculator with a `clock.now()` reference). Then `withClock(Clock.fixed(t0), () { fakeAsync((async) { ... }); })` works cleanly.
+
+### 2026-05-27 — Auto-save bug terrain: skipIfBusy timer cancellation
+
+**Trigger:** Intent-Test Sprint Batch 13 (`RecipeFormAutoSaveManager.scheduleAutoSave`).
+
+**Production finding:** `scheduleAutoSave` calls `_autoSaveTimer?.cancel()` BEFORE the `skipIfBusy && _isAutoSaving` guard. Net effect: if the user is typing while a save is in flight (with `skipIfBusy: true`), the new schedule is correctly dropped — but ANY previously-queued debounce timer (from before the in-flight save started) is also cancelled, even though it represents an edit the in-flight save doesn't know about. The post-in-flight edit only persists when the NEXT keystroke comes in.
+
+**Rule for tests:** When testing `skipIfBusy`-style guards, write at least two intents:
+1. The new schedule is dropped (positive guard behaviour).
+2. Any previously-queued debounce isn't silently lost — OR document that it IS, as a known limitation.
+
+This pattern (cancel-then-guard) is common in debouncing code. Always check the cancel-vs-guard ordering.
+
+### 2026-05-27 — `clearCurrentDraft` synchronous pointer + async delete is a race seam
+
+**Trigger:** Intent-Test Sprint Batch 13 (`RecipeFormAutoSaveManager.clearCurrentDraft`).
+
+**Production finding:** `clearCurrentDraft()` does `deleteDraft(_currentDraftId!);` (unawaited) then `_currentDraftId = null;`. If the consumer does `clearCurrentDraft(); manager.saveNow(form);`, the save races the delete:
+- saveNow generates a new draftId (since pointer is null)
+- saveNow writes a new metadata entry
+- the in-flight deleteDraft's metadata write completes AFTER the new save, removing nothing — but if timing differs across platforms, the new metadata entry could be lost.
+
+**Test pattern:** assert the synchronous contract (`currentDraftId == null` after clear), but flag the race in the test file's library doc as a finding. Don't write a test that REQUIRES the race to manifest — its timing isn't deterministic without a `Completer`-injected seam in production.
+
+
+### 2026-05-27 — Sprint-13 ReportService — trust/safety patterns
+
+**Trigger:** Writing unit tests for `lib/services/moderation/report_service.dart`.
+
+**Pattern: capture-and-assert on the persisted ContentReport for identity-spoof guards.**
+Service-layer construction of `ContentReport` mixes auth-derived (`reporterId`)
+and caller-supplied fields. Use `captureAny()` + `captured.single as ContentReport`
+to assert `report.reporterId == authUid` regardless of what the caller passed.
+This catches the bug class "service trusts a caller-supplied reporterId"
+which would compromise the moderation audit trail.
+
+**Pattern: pin createdAt via `withClock(Clock.fixed(...), ...)`.**
+`ReportService.submitReport` calls `clock.now()` inside the construction.
+Wrap the call in `withClock(Clock.fixed(pinned), () async { ... })` and assert
+on the captured `report.createdAt`. No `fakeAsync` needed for one-shot timestamps.
+
+**Pattern: assert side-effect absence on no-op paths.**
+For idempotent operations (`closeReport` on already-closed, `advanceReportStatus`
+past closed, unauth attempts), seed a sentinel field on the doc and assert it
+survived. Pure `verifyNever(...)` on a Firestore-backed primitive isn't enough
+when production uses `executeServiceOperation(requiresAuth)` — the call path
+goes through fakeFirestore, not the mock — so doc-state assertion is what
+catches a regression.
+
+**Pattern: registerFallbackValue for ContentReport.**
+`when(() => mockRepo.submitReport(any()))` needs a fallback for non-primitive
+arg types. `class _FakeContentReport extends Fake implements ContentReport {}`
++ `registerFallbackValue(_FakeContentReport())` in `setUpAll`.
+
+**Pattern: ContentType routing tests = one test per enum case.**
+For `_resolveContentRef`-style switch dispatch, one test per `ContentType` is
+correct (not over-specifying — the routing IS the contract since rules are
+path-specific). Don't compress these into a single parameterized test —
+named tests give better failure attribution.
+
+**Helper noted: `BaseUnitTest.setupUnitWithProductionLocator()`.**
+Use this (not bare `setupUnit()`) when the SUT runs through `BaseService.executeServiceOperation(requiresAuth: true)`. It registers the shared `FakeAuthRepository` accessible via `ServiceLocator.get<AuthRepository>() as FakeAuthRepository`. Cast it once in `setUp` and call `fakeAuth.setAuthState(userId: ...)` per test.
+
+### 2026-05-27 — backup_service intent-sprint batch 13 [Bug found] [Pattern discovered]
+
+**Bug found (data-loss adjacent, GDPR-relevant — needs ticket):**
+
+1. **`BackupService` user_id/user_email asymmetry**: export writes `user_id`
+   to the envelope but import reads `user_email`. So a backup created by
+   the current build always yields `ImportResult.exportEmail == null` —
+   the "imported by user@x.com on date Y" UI breadcrumb is silently
+   broken for every round-trip. Locations:
+   - export: `lib/services/backup_service.dart:35` writes `'user_id': ...uid`
+   - import: `lib/services/backup_service.dart:245` reads `backupData['user_email']`
+   Fix is one-line in the export to also write `user_email: currentUser?.email`.
+
+2. **`BackupService` per-recipe error label always reads "Okänt recept"**:
+   the catch in the import loop falls back to `recipeJson['title'] ??
+   AppLocale.current.backupUnknownRecipe`, but Recipe.toJson() nests
+   `title` under `core.title` — top-level `recipeJson['title']` is always
+   null. Users importing a 200-recipe backup get N identical
+   "Okänt recept: <error>" lines and can't tell which recipe failed.
+   Location: `lib/services/backup_service.dart:235`. Fix:
+   `recipeJson['core']?['title'] ?? recipeJson['title'] ?? AppLocale.current.backupUnknownRecipe`.
+
+**Pattern discovered — file_picker platform substitution in unit tests:**
+
+Drive `FilePicker.pickFiles(...)` from a unit test by writing a programmable
+subclass of `FilePickerPlatform` and replacing the static `instance`:
+
+```dart
+// ignore: implementation_imports
+import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
+
+class _FakeFilePickerPlatform extends FilePickerPlatform {
+  FilePickerResult? _next;
+  Object? _throws;
+  void respondWithBytes(Uint8List bytes) { _next = FilePickerResult([PlatformFile(name: 'x', size: bytes.lengthInBytes, bytes: bytes)]); }
+  void respondWithCancellation() { _next = null; }
+  void respondWithThrow(Object e) { _throws = e; }
+  @override Future<FilePickerResult?> pickFiles({...all named params...}) async {
+    if (_throws != null) throw _throws!;
+    return _next;
+  }
+}
+
+// In setUp:
+final original = FilePickerPlatform.instance;
+FilePickerPlatform.instance = _FakeFilePickerPlatform();
+// In tearDown:
+FilePickerPlatform.instance = original;
+```
+
+Key gotcha: `extends FilePickerPlatform` (not `implements` + `MockPlatformInterfaceMixin`)
+— the `super()` constructor inherits the private `_token`, so
+`PlatformInterface.verifyToken` passes. Using `implements` requires importing
+`plugin_platform_interface` directly which is only a transitive dep and
+triggers `depend_on_referenced_packages` errors.
+
+**Pattern reinforced — round-trip integrity tests for serialization boundaries:**
+For any "export to JSON → import from JSON" pipeline, capture every field
+forwarded to the import-side repository call via `captureAny(named: '...')`
+and assert each captured arg equals the source recipe's field. One test
+catches every field that's silently dropped on either leg of the round trip.
+For `BackupService.importFromFile` this verified title, description,
+ingredients, instructions, imageUrls, mealType, portions, timeMinutes,
+rating, personalTagIds all survive. sourceUrl gets a separate test because
+it's intentionally rewritten (origin-tracking invariant).

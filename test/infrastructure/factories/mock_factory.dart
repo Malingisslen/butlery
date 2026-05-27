@@ -43,13 +43,19 @@ class MockFactory {
 
   // ============= REPOSITORIES =============
 
-  /// Create mock auth repository with proper typing
-  static production.MockAuthRepository createAuthRepository({
+  /// Create fake auth repository with proper typing.
+  ///
+  /// Returns a [production.FakeAuthRepository] — tests that need mocktail
+  /// stubbing on other methods (e.g. `signIn`, `signOut`,
+  /// `authStateChanges`) should declare a local
+  /// `class _MockAuthRepository extends Mock implements AuthRepository {}`
+  /// instead (see BUT-1074).
+  static production.FakeAuthRepository createAuthRepository({
     bool isAuthenticated = false,
     String? userId,
     User? user,
   }) {
-    final mock = production.MockAuthRepository();
+    final mock = production.FakeAuthRepository();
     mock.setAuthState(
       isAuthenticated: isAuthenticated,
       userId: userId,

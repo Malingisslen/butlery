@@ -23,7 +23,7 @@ import '../../test_support/base_unit_test.dart';
 void main() {
   group('FirebaseCookSnapRepository — friends-aware queries', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late FirebaseCookSnapRepository repo;
 
     setUpAll(() async {
@@ -32,7 +32,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockAuthRepository.setAuthState(userId: 'viewer-uid');
       repo = FirebaseCookSnapRepository(
         firestore: fakeFirestore,

@@ -54,7 +54,7 @@ void main() {
     late MockRecipeDao mockRecipeDao;
     late MockSyncQueueDao mockSyncQueueDao;
     late FakeFirestoreRepository mockFirestoreRepo;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeFirebaseFirestore fakeFirestore;
 
     bool syncStateChanged = false;
@@ -74,7 +74,7 @@ void main() {
       // dispatch).
       mockFirestoreRepo = FakeFirestoreRepository(firestore: fakeFirestore);
       mockAuthRepo =
-          TestServiceLocator.get<AuthRepository>() as MockAuthRepository;
+          TestServiceLocator.get<AuthRepository>() as FakeAuthRepository;
 
       // Wire up database DAOs
       when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);

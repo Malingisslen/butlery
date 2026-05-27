@@ -169,7 +169,7 @@ void main() {
     late TestFirebaseRepository repository;
     late UserScopedTestRepository userScopedRepository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -181,7 +181,7 @@ void main() {
 
       // Setup fake Firestore and mock auth
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
 
       // Configure auth state
       mockAuthRepository.setAuthState(userId: 'test_user_123');

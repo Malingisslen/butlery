@@ -1,3 +1,4 @@
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,11 +14,32 @@ import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
+/// Local mocktail subclass — the production [FakeAuthRepository] extends
+/// [Fake] (BUT-1074) and cannot be used with `when(...)`.
+class _MockAuthRepository extends Mock implements AuthRepository {}
+
+/// Convenience translator that maps the old `setAuthState(...)` API onto
+/// the new local mocktail-based [_MockAuthRepository]. Stubs the
+/// `currentUser` / `currentUserId` / `getCurrentUser` getters directly via
+/// `when(...)` so test code can keep its existing call sites.
+extension _AuthStateHelper on _MockAuthRepository {
+  void setAuthState({
+    User? user,
+    String? userId,
+    bool isAuthenticated = false,
+  }) {
+    final effectiveUserId = userId ?? user?.uid;
+    when(() => currentUser).thenReturn(user);
+    when(() => currentUserId).thenReturn(effectiveUserId);
+    when(() => getCurrentUser()).thenReturn(user);
+  }
+}
+
 void main() {
   group('UserService', () {
     late UserService userService;
     late MockUserRepository mockUserRepository;
-    late MockAuthRepository mockAuthRepository;
+    late _MockAuthRepository mockAuthRepository;
     late User mockUser;
     late UserProfile testProfile;
 
@@ -45,7 +67,7 @@ void main() {
 
       // Create mock dependencies
       mockUserRepository = MockFactory.createUserRepository();
-      mockAuthRepository = MockFactory.createAuthRepository();
+      mockAuthRepository = _MockAuthRepository();
 
       // Create mock user
       mockUser = MockFactory.createMockUser(

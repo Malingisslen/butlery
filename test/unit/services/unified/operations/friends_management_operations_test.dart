@@ -55,9 +55,9 @@ void main() {
       production.ServiceLocator.reset();
       production.ServiceLocator.initialize(MockDIContainer());
 
-      // executeServiceOperation requires auth: configure MockAuthRepository
+      // executeServiceOperation requires auth: configure FakeAuthRepository
       final authRepo =
-          TestServiceLocator.get<AuthRepository>() as MockAuthRepository;
+          TestServiceLocator.get<AuthRepository>() as FakeAuthRepository;
       authRepo.setAuthState(userId: 'current_user', isAuthenticated: true);
 
       mockParentService = MockUnifiedFriendsService();

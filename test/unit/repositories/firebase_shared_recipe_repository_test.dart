@@ -25,7 +25,7 @@ void main() {
   group('FirebaseSharedRecipeRepository - Subcollection Architecture', () {
     late FirebaseSharedRecipeRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     // Test data
@@ -42,7 +42,7 @@ void main() {
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
 
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser(uid: testUserId, displayName: 'Test User');
 
       mockAuthRepo.setAuthState(

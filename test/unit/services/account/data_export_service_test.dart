@@ -149,7 +149,7 @@ class _SuccessThenTransientFirebaseFunctions extends Fake
 void main() {
   group('DataExportService - GDPR Data Export', () {
     late DataExportService service;
-    late MockAuthRepository mockAuthRepository;
+    late FakeAuthRepository mockAuthRepository;
     late MockUser mockUser;
     late FakeFirebaseFirestore fakeFirestore;
     late MockFirestoreRepository mockFirestoreRepository;
@@ -164,7 +164,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository = FakeAuthRepository();
       mockUser = MockUser();
       mockFirestoreRepository = MockFirestoreRepository();
 

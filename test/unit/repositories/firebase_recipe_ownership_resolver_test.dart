@@ -158,7 +158,7 @@ void main() {
   group('FirebaseCommentsRepository.addComment with resolver wired', () {
     late FirebaseCommentsRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     setUpAll(() async {
@@ -167,7 +167,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser(uid: 'author-uid', displayName: 'Author');
       mockAuthRepo.setAuthState(
         user: mockUser,

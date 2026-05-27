@@ -38,7 +38,7 @@ _TestStorageRepo _repo(
   MockFirebaseStorage storage, {
   String? authedUserId = 'alice',
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   if (authedUserId != null) {
     mockAuth.setAuthState(
       user: FakeUser(uid: authedUserId),

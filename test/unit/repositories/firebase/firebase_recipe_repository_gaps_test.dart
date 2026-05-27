@@ -6,7 +6,7 @@
 /// - canRead / canWrite / canDelete (permission decision matrix)
 /// - validateUpdatePermission collaborative-recipe branches
 ///
-/// Pattern: lightweight FakeFirebaseFirestore + MockAuthRepository, no
+/// Pattern: lightweight FakeFirebaseFirestore + FakeAuthRepository, no
 /// global ServiceLocator (matches conversation_mutation_module_test.dart).
 library;
 
@@ -28,7 +28,7 @@ FirebaseRecipeRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
     user: FakeUser(uid: authedUserId),
     userId: authedUserId,
@@ -116,7 +116,7 @@ void main() {
 
     test('returns 0 when not authenticated', () async {
       final firestore = FakeFirebaseFirestore();
-      final mockAuth = MockAuthRepository();
+      final mockAuth = FakeAuthRepository();
       // No setAuthState → currentUserId is null
       final repo = FirebaseRecipeRepository(
         firestore: firestore,
@@ -150,7 +150,7 @@ void main() {
 
     test('returns false when not authenticated', () async {
       final firestore = FakeFirebaseFirestore();
-      final mockAuth = MockAuthRepository();
+      final mockAuth = FakeAuthRepository();
       final repo = FirebaseRecipeRepository(
         firestore: firestore,
         authRepository: mockAuth,

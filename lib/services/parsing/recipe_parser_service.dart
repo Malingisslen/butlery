@@ -169,10 +169,12 @@ class RecipeParserService extends BaseService {
     LlmService? llmService,
     IngredientParsingStrategy? ingredientStrategy,
     NeuralLineClassifier? neuralLineClassifier,
+    LocalRecipeCache? cache,
   })  : _getCurrentUserId = getCurrentUserId,
         _siteConfigRepository = siteConfigRepository,
         _llmService = llmService,
-        _neuralLineClassifier = neuralLineClassifier {
+        _neuralLineClassifier = neuralLineClassifier,
+        _cacheField = cache {
     // Shared strategy: CRF when weights available, regex fallback
     final strategy = ingredientStrategy ?? IngredientParsingStrategy();
     _ingredientStrategy = strategy;
@@ -193,13 +195,16 @@ class RecipeParserService extends BaseService {
 
   /// Initialize the parser service.
   Future<void> init() async {
-    // Create cache with CacheDao from OfflineService
-    final offlineService = ServiceLocator.get<OfflineService>();
-    _cacheField = LocalRecipeCache(
-      getCurrentUserId: _getCurrentUserId,
-      parserVersion: parserVersion,
-      cacheDao: offlineService.database.cacheDao,
-    );
+    // Create cache with CacheDao from OfflineService, unless a cache was
+    // injected via the constructor (test seam — see BUT-1063).
+    if (_cacheField == null) {
+      final offlineService = ServiceLocator.get<OfflineService>();
+      _cacheField = LocalRecipeCache(
+        getCurrentUserId: _getCurrentUserId,
+        parserVersion: parserVersion,
+        cacheDao: offlineService.database.cacheDao,
+      );
+    }
     await _cache.init();
 
     // Ensure default site configs exist (non-blocking)

@@ -45,7 +45,7 @@ ShoppingRepositoryRoutingModule _routing(
 }) {
   return ShoppingRepositoryRoutingModule(
     firestore: firestore,
-    authRepository: MockAuthRepository(),
+    authRepository: FakeAuthRepository(),
     sharedListsRef: firestore.collection(_sharedPath),
     requireCurrentUserId: () => currentUid ?? _userId,
     validateRequiredFields: ({

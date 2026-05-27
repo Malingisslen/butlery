@@ -123,7 +123,7 @@ void main() {
   group('MessagingService', () {
     late MessagingService messagingService;
     late MockMessagingRepository mockMessagingRepo;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late User mockUser;
 
     setUpAll(() async {
@@ -149,7 +149,7 @@ void main() {
 
     setUp(() {
       mockMessagingRepo = MockMessagingRepository();
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
 
       // Create mock user with proper configuration
       mockUser = MockFactory.createMockUser(

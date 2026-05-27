@@ -20,7 +20,7 @@ void main() {
   group('FirebaseRatingsRepository - Rating System', () {
     late FirebaseRatingsRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     setUpAll(() async {
@@ -32,7 +32,7 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
 
       // Create mocks
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser(uid: 'user-123');
 
       // Setup default auth state

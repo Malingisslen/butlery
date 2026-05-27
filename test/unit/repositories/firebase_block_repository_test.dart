@@ -18,7 +18,7 @@ void main() {
   group('FirebaseBlockRepository', () {
     late FirebaseBlockRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -26,7 +26,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockAuthRepo.setAuthState(
         user: FakeUser(uid: 'user-123'),
         userId: 'user-123',

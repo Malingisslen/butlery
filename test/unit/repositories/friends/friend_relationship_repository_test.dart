@@ -19,7 +19,7 @@ void main() {
   group('FriendRelationshipRepository - Mutual Friendships & Discovery', () {
     late FriendRelationshipRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     // Test data
@@ -36,7 +36,7 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
 
       // Create mocks
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser(uid: testUserId, displayName: 'Test User');
 
       // Setup default auth state

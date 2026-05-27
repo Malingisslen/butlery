@@ -24,7 +24,7 @@ void main() {
   group('FirebaseRecipeRepository pagination (BUT-484)', () {
     late FirebaseRecipeRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    late MockAuthRepository mockAuthRepo;
+    late FakeAuthRepository mockAuthRepo;
     late FakeUser mockUser;
 
     const userId = 'test-user-pagination';
@@ -35,7 +35,7 @@ void main() {
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
-      mockAuthRepo = MockAuthRepository();
+      mockAuthRepo = FakeAuthRepository();
       mockUser = FakeUser();
       mockAuthRepo.setAuthState(
         user: mockUser,

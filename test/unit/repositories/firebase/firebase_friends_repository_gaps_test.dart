@@ -3,7 +3,7 @@
 /// The existing test/unit/repositories/firebase_friends_repository_test.dart
 /// covers permission validation thoroughly but skips the delegated request
 /// + invitation paths because they go through TestServiceLocator setup. This
-/// file uses the lightweight FakeFirebaseFirestore + MockAuthRepository
+/// file uses the lightweight FakeFirebaseFirestore + FakeAuthRepository
 /// pattern and targets the still-uncovered chunks:
 ///
 /// - `acceptFriendRequest` (the atomic transaction at lines 124-220 of SUT)
@@ -38,7 +38,7 @@ FirebaseFriendsRepository _repo(
   FakeFirebaseFirestore firestore, {
   String authedUserId = _alice,
 }) {
-  final mockAuth = MockAuthRepository();
+  final mockAuth = FakeAuthRepository();
   mockAuth.setAuthState(
     user: FakeUser(uid: authedUserId),
     userId: authedUserId,
