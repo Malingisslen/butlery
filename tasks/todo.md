@@ -7,27 +7,27 @@ Theme: Three independent testability tickets dispatched to 3 parallel agents. Al
 ### Ship this sprint
 
 #### Agent A — BUT-1063 RecipeParserService cache ctor seam
-- [ ] Add `cache:` ctor param to `RecipeParserService` accepting a `LocalRecipeCache` interface (or expose the existing DAO via `@visibleForTesting` ctor).
-- [ ] Unlocks ~5 cache-behaviour unit tests in `recipe_parser_service_test.dart`.
+- [x] Add `cache:` ctor param to `RecipeParserService` accepting a `LocalRecipeCache` interface (or expose the existing DAO via `@visibleForTesting` ctor).
+- [x] Unlocks ~5 cache-behaviour unit tests in `recipe_parser_service_test.dart`.
 
 #### Agent B — BUT-1062 UnifiedMenuService DI seam
-- [ ] Add ctor params: `sharedMenuRepository`, `menuService`, `userService`, `realtimeMenuService` — each with default factory falling back to ServiceLocator/production. Mirrors the existing `firestoreRepository` pattern.
-- [ ] Unlocks ~5 currently-skipped tests in `unified_menu_service_test.dart`. No new tests required this sprint — the DI seam is the deliverable.
+- [x] Add ctor params: `sharedMenuRepository`, `menuService`, `userService`, `realtimeMenuService` — each with default factory falling back to ServiceLocator/production. Mirrors the existing `firestoreRepository` pattern.
+- [x] Unlocks ~5 currently-skipped tests in `unified_menu_service_test.dart`. No new tests required this sprint — the DI seam is the deliverable.
 
 #### Agent C — BUT-1074 MockAuthRepository rename to FakeAuthRepository
-- [ ] Rename `MockAuthRepository` → `FakeAuthRepository` and switch from `extends Mock` to `extends Fake implements AuthRepository` in `test/infrastructure/mocks/production_mocks.dart`.
-- [ ] Audit all callers (grep `MockAuthRepository`); update any caller that was relying on `when()` (those tests were already broken — the `when()` was silently overridden by the concrete @override getters).
+- [x] Rename `MockAuthRepository` → `FakeAuthRepository` and switch from `extends Mock` to `extends Fake implements AuthRepository` in `test/infrastructure/mocks/production_mocks.dart`.
+- [x] Audit all callers (grep `MockAuthRepository`); update any caller that was relying on `when()` (those tests were already broken — the `when()` was silently overridden by the concrete @override getters).
 
 ### Acceptance
 
-- [ ] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
-- [ ] Each agent reports its touched tests pass (or, for BUT-1062, that existing tests still pass — no new tests required).
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
-- [ ] Tier-2 reviewers clean.
+- [x] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
+- [x] Each agent reports its touched tests pass (or, for BUT-1062, that existing tests still pass — no new tests required).
+- [x] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
+- [x] Tier-2 reviewers clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified commit + push.
+- [x] Orchestrating session does unified commit + push. (commit `503a05567`)
 - [ ] Close BUT-1063, BUT-1062, BUT-1074 in Linear.
 
 ---
