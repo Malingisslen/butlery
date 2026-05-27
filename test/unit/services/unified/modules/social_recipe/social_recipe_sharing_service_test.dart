@@ -549,6 +549,39 @@ void main() {
           reason: 'UI should still be notified of the successful primary save');
     });
 
+    /// BUT-1131: when the secondary `shared_recipes` write throws, the
+    /// catch block must surface a sanitised, non-empty error message to
+    /// the UI via setError — silent failure means the user has no signal
+    /// to retry if the recipient can't find the shared recipe in their
+    /// inbox. The primary write still wins (returns true) but the error
+    /// channel is populated so a UI can prompt "share may not be visible,
+    /// try again".
+    test('secondary write throws → setError called with sanitised message',
+        () async {
+      final h = _Harness();
+      h.seed(_personal(id: 'r1'));
+      h.repo.throwOnCreate =
+          Exception('shared_recipes write denied: permission-denied');
+      final svc = h.build();
+
+      final ok = await svc.shareRecipeWithUsers(
+          'r1', ['friend-A'], ResourcePermission.editor);
+
+      expect(ok, isTrue,
+          reason: 'BUT-1131: primary save succeeded — return true');
+      expect(h.errors, isNotEmpty,
+          reason: 'BUT-1131: secondary failure must surface via setError');
+      final lastErr = h.errors.last;
+      expect(lastErr, isNotEmpty);
+      // Must NOT leak the raw exception text — must be the localised key
+      // (sanitised, user-facing).
+      expect(lastErr, isNot(contains('permission-denied')),
+          reason:
+              'raw exception text must not leak into the user-facing error');
+      expect(lastErr, isNot(contains('Exception:')),
+          reason: 'raw exception prefix must not leak');
+    });
+
     /// Throwing saveRecipe is caught at the outer try → false, error set.
     test('saveRecipe throws → false, error set, no rethrow', () async {
       final h = _Harness()..setThrowOnSave(Exception('disk full'));

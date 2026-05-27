@@ -140,6 +140,42 @@ class RecipeServiceAdapter {
           .collection(FirestoreCollections.recipeSocialStats)
           .doc(recipeId)
           .delete();
+
+      // BUT-894: Delete shared_content recipe records pointing at this
+      // recipe (paginated). Otherwise recipients keep a dead reference
+      // in their inbox after the owner deletes the source recipe.
+      // Each shared_content doc may have a `members` subcollection
+      // (FirestoreCollections.members) — drain it before deleting the
+      // parent so we don't leave orphaned member docs that would still
+      // surface via collectionGroup queries.
+      final sharedQuery = firestore
+          .collection(FirestoreCollections.sharedContent)
+          .where('originalRecipeId', isEqualTo: recipeId)
+          .limit(450);
+      snapshot = await sharedQuery.get();
+      while (snapshot.docs.isNotEmpty) {
+        for (final doc in snapshot.docs) {
+          // Drain members subcollection (soft-cascade — best effort).
+          final memberDocs = await doc.reference
+              .collection(FirestoreCollections.members)
+              .limit(450)
+              .get();
+          if (memberDocs.docs.isNotEmpty) {
+            final memberBatch = firestore.batch();
+            for (final m in memberDocs.docs) {
+              memberBatch.delete(m.reference);
+            }
+            await memberBatch.commit();
+          }
+        }
+        final batch = firestore.batch();
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+        if (snapshot.docs.length < 450) break;
+        snapshot = await sharedQuery.get();
+      }
     } catch (e) {
       // Log but don't fail the recipe deletion for cleanup errors
       AppLogger.warning('⚠️ Partial cleanup failure for recipe $recipeId: $e');

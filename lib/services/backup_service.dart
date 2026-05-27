@@ -231,8 +231,15 @@ class BackupService extends BaseService {
           successCount++;
         } catch (e) {
           skipCount++;
-          errors.add(
-              '${recipeJson['title'] ?? AppLocale.current.backupUnknownRecipe}: $e');
+          // BUT-1139: read nested `core.title` first (current Recipe.toJson()
+          // shape), fall back to top-level `title` for any future flatter
+          // shape, then to the generic label as a last resort.
+          final coreMap = recipeJson['core'];
+          final coreTitle = (coreMap is Map) ? coreMap['title'] : null;
+          final label = coreTitle ??
+              recipeJson['title'] ??
+              AppLocale.current.backupUnknownRecipe;
+          errors.add('$label: $e');
         }
       }
 

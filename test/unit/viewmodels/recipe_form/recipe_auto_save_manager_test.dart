@@ -33,12 +33,13 @@
 ///   * `DraftMetadata` JSON round-trip with malformed/missing fields
 ///     defaults gracefully (via SerializationUtils + orEmpty/orZero).
 ///
-/// Production findings surfaced (NOT fixed here — see summary):
-///   * `clearCurrentDraft()` fires an unawaited `deleteDraft()` future
-///     and nulls `_currentDraftId` synchronously. If the caller does
-///     `clear(); save();` back-to-back, the save races the delete and
-///     a stale draft may resurrect under a NEW id while the OLD
-///     payload key is still being deleted.
+/// Production findings surfaced (BUT-1138 FIXED iter-82):
+///   * `clearCurrentDraft()` was `void` firing an unawaited
+///     `deleteDraft()` future and nulling `_currentDraftId`
+///     synchronously. A caller doing `clear(); save();` back-to-back
+///     raced the save against the delete and a stale draft could
+///     resurrect under a NEW id while the OLD payload key was still
+///     being deleted. Now `Future<void>` and awaits the delete.
 ///   * `scheduleAutoSave` cancels the timer even when `skipIfBusy`
 ///     would have aborted the new schedule. Net effect: a queued,
 ///     debounced edit BEFORE the in-flight save is silently dropped
@@ -750,10 +751,12 @@ void main() {
   });
 
   group('clearCurrentDraft', () {
-    /// Proves: clearCurrentDraft drops the in-memory pointer
-    /// synchronously even though the delete is fire-and-forget.
-    /// Contract: after clearing, currentDraftId reads null.
-    test('synchronously nulls currentDraftId', () async {
+    /// Proves: `clearCurrentDraft()` is `Future<void>` (BUT-1138 — was `void`
+    /// firing an unawaited delete) and nulls the in-memory pointer after the
+    /// delete completes. Contract: awaiting the call leaves currentDraftId
+    /// null.
+    test('after awaiting, currentDraftId is null and payload is gone',
+        () async {
       final manager = RecipeFormAutoSaveManager();
       addTearDown(manager.dispose);
 
@@ -761,11 +764,76 @@ void main() {
         title: 'a',
         ingredients: const ['x'],
       ));
-      expect(manager.currentDraftId, isNotNull);
+      final draftId = manager.currentDraftId;
+      expect(draftId, isNotNull);
 
-      manager.clearCurrentDraft();
+      await manager.clearCurrentDraft();
+
       expect(manager.currentDraftId, isNull,
-          reason: 'pointer must be cleared synchronously');
+          reason: 'pointer must be cleared after awaiting');
+
+      // Verify the per-draft payload key is also gone — confirms the delete
+      // actually ran (not just the pointer nulled).
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('$_draftPrefix$draftId'), isNull,
+          reason: 'payload must be deleted, not orphaned');
+    });
+
+    /// BUT-1138 race-pin: `clearCurrentDraft(); saveNow(...)` chained
+    /// back-to-back. Before the fix, the synchronous-null + unawaited
+    /// delete let `saveNow`'s metadata write race the just-issued
+    /// `deleteDraft` metadata write; in some orderings the freshly saved
+    /// draft was clobbered. After the fix, awaiting `clearCurrentDraft`
+    /// guarantees the prior draft's metadata is gone BEFORE the new
+    /// save's metadata is written — so the metadata index ends up with
+    /// exactly one entry (the freshly saved one), and it is NOT the
+    /// cleared draftId.
+    test('chained clearCurrentDraft + saveNow does not race', () async {
+      final manager = RecipeFormAutoSaveManager();
+      addTearDown(manager.dispose);
+
+      // First save establishes a draft id.
+      await manager.saveNow(_formWith(
+        title: 'first',
+        ingredients: const ['x'],
+      ));
+      final firstId = manager.currentDraftId;
+      expect(firstId, isNotNull);
+
+      // The contested sequence: caller clears the just-saved draft and
+      // immediately starts a NEW draft via saveNow. Insert a 2ms wait so
+      // the new draftId (derived from `clock.now().millisecondsSinceEpoch`)
+      // is guaranteed to differ from the first one — without this the
+      // test would flake on the benign collision when both saves land in
+      // the same millisecond, which is not what BUT-1138 pins.
+      await manager.clearCurrentDraft();
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+      await manager.saveNow(_formWith(
+        title: 'second',
+        ingredients: const ['y'],
+      ));
+
+      final secondId = manager.currentDraftId;
+      expect(secondId, isNotNull, reason: 'second save must mint a fresh id');
+      expect(secondId, isNot(firstId),
+          reason: 'second save must NOT reuse the cleared id');
+
+      // Metadata index: exactly one entry, the new draft. No ghost of the
+      // cleared draft (would be present if the delete lost the race).
+      final prefs = await SharedPreferences.getInstance();
+      final metaJson = prefs.getString(_draftsKey);
+      expect(metaJson, isNotNull,
+          reason: 'second save must have written metadata');
+      final entries = jsonDecode(metaJson!) as List;
+      expect(entries.length, 1,
+          reason: 'cleared draft must not coexist with the new draft');
+      expect(entries.first['draftId'], secondId,
+          reason: 'the surviving entry must be the new draft');
+
+      // And the OLD draft's payload key is gone — confirms the await
+      // completed before the new write started.
+      expect(prefs.getString('$_draftPrefix$firstId'), isNull,
+          reason: 'cleared draft payload must be gone');
     });
   });
 }

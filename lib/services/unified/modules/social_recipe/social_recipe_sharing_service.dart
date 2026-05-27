@@ -150,9 +150,16 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
         AppLogger.debug('✅ Recipe also written to shared_recipes collection');
       } catch (e) {
-        AppLogger.warning(
+        // BUT-1131: secondary `shared_recipes` write failed AFTER the primary
+        // recipe save succeeded. Bump severity warning → error (this is rare
+        // and worth investigating in logs) and surface a sanitised message
+        // via setError so the UI can prompt the user to retry if the
+        // recipient can't find the share. We still return `true` because the
+        // primary write succeeded — rules-based access works without the
+        // secondary doc; it's only a query-optimisation.
+        AppLogger.error(
             'Failed to write to shared_recipes collection (non-critical): $e');
-        // Don't fail the whole operation if this secondary write fails
+        _setError(AppLocale.current.errorSharedRecipeMayNotBeVisible);
       }
 
       // Notify UI of changes

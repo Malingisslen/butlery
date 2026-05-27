@@ -8690,6 +8690,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorCouldNotSaveRecipe => 'Kunde inte spara recept';
 
   @override
+  String get errorSharedRecipeMayNotBeVisible =>
+      'Receptet delades, men mottagaren kanske inte ser det. Försök igen om de inte hittar det.';
+
+  @override
   String errorShareCapReached(int max) {
     return 'Receptet har redan delats med max antal användare ($max)';
   }

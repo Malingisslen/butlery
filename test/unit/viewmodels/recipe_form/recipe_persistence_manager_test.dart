@@ -77,7 +77,7 @@ void main() {
     when(() => mockState.setSaving(any())).thenAnswer((_) {});
     when(() => mockState.setError(any())).thenAnswer((_) {});
     when(() => mockState.clearError()).thenAnswer((_) {});
-    when(() => mockState.clearCurrentDraft()).thenAnswer((_) {});
+    when(() => mockState.clearCurrentDraft()).thenAnswer((_) async {});
 
     // Create-new-recipe branch (isEditing = false → uuid-generated id).
     when(() => mockState.isEditing).thenReturn(false);

@@ -8675,6 +8675,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotSaveRecipe => 'Could not save recipe';
 
   @override
+  String get errorSharedRecipeMayNotBeVisible =>
+      'Recipe was shared, but the recipient may not see it. Try again if they can\'t find it.';
+
+  @override
   String errorShareCapReached(int max) {
     return 'Recipe is already shared with the maximum number of users ($max)';
   }

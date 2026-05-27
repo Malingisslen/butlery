@@ -660,8 +660,11 @@ class RecipeFormState extends ChangeNotifier {
   }
 
   /// Clear current draft after successful save
-  void clearCurrentDraft() {
-    _autoSaveManager.clearCurrentDraft();
+  ///
+  /// BUT-1138: forwards to async `_autoSaveManager.clearCurrentDraft()` so
+  /// the underlying SharedPreferences delete can be awaited by callers.
+  Future<void> clearCurrentDraft() {
+    return _autoSaveManager.clearCurrentDraft();
   }
 
   /// Get available drafts for recovery

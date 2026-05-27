@@ -14895,6 +14895,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte spara recept'**
   String get errorCouldNotSaveRecipe;
 
+  /// BUT-1131: shown when the primary recipe-share write succeeds but the secondary shared_recipes write fails. The share works via rules, but the recipient's inbox query may miss it until retry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet delades, men mottagaren kanske inte ser det. Försök igen om de inte hittar det.'**
+  String get errorSharedRecipeMayNotBeVisible;
+
   /// Shown when a share would exceed Recipe.maxSharesPerRecipe (BUT-955).
   ///
   /// In sv, this message translates to:

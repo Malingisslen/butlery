@@ -384,9 +384,18 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   }
 
   /// Clear current draft after successful save
-  void clearCurrentDraft() {
+  ///
+  /// BUT-1138: Made async + awaits the underlying `deleteDraft` so callers
+  /// that chain `clearCurrentDraft(); saveNow(...)` don't race the metadata
+  /// delete against the next save's metadata write. Previously the delete
+  /// was fire-and-forget and the synchronous null of `_currentDraftId`
+  /// allowed `_performAutoSave` to mint a new draft id while the prior
+  /// delete was still in flight — and if the delete completed AFTER the
+  /// new metadata index write, the fresh entry got clobbered.
+  Future<void> clearCurrentDraft() async {
     if (_currentDraftId != null) {
-      deleteDraft(_currentDraftId!);
+      final idToDelete = _currentDraftId!;
+      await deleteDraft(idToDelete);
       _currentDraftId = null;
     }
   }

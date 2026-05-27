@@ -252,7 +252,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         }
       } else {
         if (!_disposed) {
-          _state.clearCurrentDraft();
+          // BUT-1138: await the draft cleanup so the delete completes
+          // before any follow-up scheduled save can race against it.
+          await _state.clearCurrentDraft();
           AppLogger.info(
               '✅ Save operation completed successfully: ${result.id}');
           _trackParsingCorrectionsInBackground(result);
@@ -317,7 +319,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         _state.setError(AppLocale.current.errorCouldNotForkRecipe);
       } else {
         if (!_disposed) {
-          _state.clearCurrentDraft();
+          // BUT-1138: await draft cleanup — same race as the save path.
+          await _state.clearCurrentDraft();
         }
       }
 

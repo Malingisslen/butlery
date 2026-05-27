@@ -5626,6 +5626,10 @@
   "errorRecipeNeedsInstruction": "Recept måste ha minst en instruktion",
   "errorNoPermissionToShare": "Du har inte behörighet att dela detta recept",
   "errorCouldNotSaveRecipe": "Kunde inte spara recept",
+  "errorSharedRecipeMayNotBeVisible": "Receptet delades, men mottagaren kanske inte ser det. Försök igen om de inte hittar det.",
+  "@errorSharedRecipeMayNotBeVisible": {
+    "description": "BUT-1131: shown when the primary recipe-share write succeeds but the secondary shared_recipes write fails. The share works via rules, but the recipient's inbox query may miss it until retry."
+  },
   "errorShareCapReached": "Receptet har redan delats med max antal användare ({max})",
   "@errorShareCapReached": {
     "description": "Shown when a share would exceed Recipe.maxSharesPerRecipe (BUT-955).",

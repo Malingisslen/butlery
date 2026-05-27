@@ -5615,6 +5615,10 @@
   "errorRecipeNeedsInstruction": "Recipe must have at least one instruction",
   "errorNoPermissionToShare": "You do not have permission to share this recipe",
   "errorCouldNotSaveRecipe": "Could not save recipe",
+  "errorSharedRecipeMayNotBeVisible": "Recipe was shared, but the recipient may not see it. Try again if they can't find it.",
+  "@errorSharedRecipeMayNotBeVisible": {
+    "description": "BUT-1131: shown when the primary recipe-share write succeeds but the secondary shared_recipes write fails. The share works via rules, but the recipient's inbox query may miss it until retry."
+  },
   "errorShareCapReached": "Recipe is already shared with the maximum number of users ({max})",
   "@errorShareCapReached": {
     "description": "Shown when a share would exceed Recipe.maxSharesPerRecipe (BUT-955).",

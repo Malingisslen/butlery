@@ -9,11 +9,13 @@
 /// - Stream operations
 library;
 
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Production imports
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
@@ -23,6 +25,8 @@ import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
+
+class _MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
 void main() {
   group('RecipeServiceAdapter', () {
@@ -381,6 +385,66 @@ void main() {
         expect(result, equals(comments));
         verify(() => mockCommentsRepository.getCommentsStream(recipeId))
             .called(1);
+      });
+
+      test('BUT-894: deleteRecipe drains orphan shared_content records',
+          () async {
+        // Arrange: real adapter wired with a FakeFirebaseFirestore via a
+        // mocked FirestoreRepository, plus a stubbed RecipeRepository.
+        final fakeFirestore = FakeFirebaseFirestore();
+        final firestoreRepo = _MockFirestoreRepository();
+        when(() => firestoreRepo.firestore).thenReturn(fakeFirestore);
+
+        const recipeId = 'recipe-orphan-1';
+        final localRecipeRepo = MockRecipeRepository();
+        when(() => localRecipeRepo.read(any())).thenAnswer((_) async => null);
+        when(() => localRecipeRepo.delete(any())).thenAnswer((_) async {});
+
+        final orphanAdapter = RecipeServiceAdapter(
+          recipeRepository: localRecipeRepo,
+          firestoreRepository: firestoreRepo,
+        );
+
+        // Seed a shared_content doc pointing at recipeId — what BUT-894
+        // calls a recipient's dead inbox entry after owner deletes the
+        // source recipe.
+        final sharedRef = await fakeFirestore.collection('shared_content').add({
+          'originalRecipeId': recipeId,
+          'sharedByUserId': 'owner-1',
+          'recipeTitle': 'Soon-orphan',
+        });
+        // Member doc in the subcollection (drained by the soft-cascade).
+        await sharedRef.collection('members').doc('user-A').set({
+          'userId': 'user-A',
+          'role': 'viewer',
+        });
+
+        // Sanity: doc exists before delete.
+        final beforeQuery = await fakeFirestore
+            .collection('shared_content')
+            .where('originalRecipeId', isEqualTo: recipeId)
+            .get();
+        expect(beforeQuery.docs.length, 1,
+            reason: 'seed shared_content record must be present');
+
+        // Act
+        final result = await orphanAdapter.deleteRecipe(recipeId);
+
+        // Assert: adapter reports success and the shared_content record
+        // (plus its members subcollection) is gone.
+        expect(result, isTrue);
+        verify(() => localRecipeRepo.delete(recipeId)).called(1);
+
+        final afterQuery = await fakeFirestore
+            .collection('shared_content')
+            .where('originalRecipeId', isEqualTo: recipeId)
+            .get();
+        expect(afterQuery.docs, isEmpty,
+            reason: 'orphan shared_content must be deleted by BUT-894 cascade');
+
+        final memberDocs = await sharedRef.collection('members').get();
+        expect(memberDocs.docs, isEmpty,
+            reason: 'members subcollection must be drained before parent doc');
       });
 
       test('should get rating statistics stream', () async {

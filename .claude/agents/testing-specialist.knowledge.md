@@ -3422,3 +3422,26 @@ error recovery + member-count retry logic both behave as intended.
   (URL building) belongs in DeepLinkService tests, not here.
 
 **Result:** 35 tests, all passing. Format + analyze clean.
+
+---
+
+## 2026-05-27 — iter-82 review: epoch-millisecond draftId collision is test-fixture, not production race (BUT-1138)
+
+**Trigger:** Reviewing `recipe_auto_save_manager_test.dart` race-pin test where author inserted `Future.delayed(2ms)` between `clearCurrentDraft()` and `saveNow()`. Concern: does the millisecond-based draftId (`'draft_${clock.now().millisecondsSinceEpoch}'` at `recipe_auto_save_manager.dart:137`) hide a real production race where two saves in the same ms collide?
+
+**Verdict — test-fixture disambiguator, NOT a production bug:**
+- After the BUT-1138 fix, `clearCurrentDraft()` is now `Future<void>` and awaits the underlying `deleteDraft` which awaits a `SharedPreferences.remove` platform-channel hop. In real-world Flutter on real `SharedPreferences`, that hop measures in single-digit ms (often >5ms) — well above the 1ms granularity.
+- In tests, `SharedPreferences.setMockInitialValues({})` uses the in-memory plugin which resolves synchronously after a microtask. That's the only environment where the millisecond clock can repeat between two awaited `saveNow` calls. Hence the explicit `Future.delayed(2ms)`.
+- The test author called out the rationale in the comment ("Insert a 2ms wait so the new draftId... is guaranteed to differ"). This is honest scaffolding, not a masked bug.
+
+**Rule:** When a test inserts a small `Future.delayed` to disambiguate epoch-derived ids, check whether production has the same temporal granularity. If production has real I/O between the calls, the test wait is fixture-only. If production can chain the same-ms calls synchronously, file a follow-up to add randomness to the id (`_random.nextInt(10000)` style). Don't file blindly.
+
+**Reusable pattern — pinning async-await contract changes in tests:**
+When converting a `void` method to `Future<void>` (signature widening), update mock stubs from `thenAnswer((_) {})` to `thenAnswer((_) async {})`. The old form returns `null` cast to `Future`, which fails at the first `await`. See `recipe_persistence_manager_test.dart` line 80 for the correct shape.
+
+**Distinguishing string-shape assertions from sanitisation-path assertions (BUT-1131):**
+The test pins `expect(lastErr, isNot(contains('permission-denied')))`. This is a **string-shape assertion of a hardcoded localised key** (`AppLocale.current.errorSharedRecipeMayNotBeVisible`), NOT a test of a `sanitizeErrorForUser` helper (no such call exists in this code path). The test is still meaningful: it catches a regression where a future refactor accidentally does `_setError(e.toString())`. Document the actual mechanism in the test comment ("must be the localised key", which the comment does say) instead of overstating it as "via sanitiseErrorForUser path".
+
+**Cascade-delete test coverage scoping (BUT-894):**
+Production `_cleanupRecipeReferences` in `recipe_service_adapter.dart` drains: `recipeComments`, `recipeRatings`, `recipeSocialStats`, `sharedContent` parent + `members` subcollection. It does NOT drain `engagements`/`views`/`dismissals` — neither do those collections exist in the production schema (grep confirms zero references). Test correctly mirrors production. Never write tests for "subcollections that might exist someday"; pin the production contract as it stands, file a follow-up if you find a real orphan path.
+
