@@ -117,24 +117,6 @@ class MockConfigurator {
     }
   }
 
-  /// Configure mock for async auth state changes stream.
-  ///
-  /// NOTE: [FakeAuthRepository] (post-BUT-1074) extends [Fake] and cannot
-  /// be used with mocktail's `when(...)`. Tests that need to stub
-  /// `authStateChanges()` should declare a local
-  /// `class _MockAuthRepository extends Mock implements AuthRepository {}`
-  /// and call `when(...)` on that instance directly.
-  @Deprecated('Use a local _MockAuthRepository (extends Mock) directly; '
-      'FakeAuthRepository cannot be stubbed with when().')
-  static void configureAuthStateStream({
-    required dynamic mock,
-    User? user,
-  }) {
-    when(() => mock.authStateChanges()).thenAnswer(
-      (_) => Stream.value(user),
-    );
-  }
-
   /// Configure mock for successful async operations
   static void configureAsyncSuccess<T>({
     required Mock mock,

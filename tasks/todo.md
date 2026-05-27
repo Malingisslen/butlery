@@ -1,6 +1,40 @@
 # Sprint Backlog
 
-## Sprint: iter-88 — ImageUploadCoordinator soft-cancel fresh-read (BUT-1129) — 2026-05-27 (Wed)
+## Sprint: iter-89 — Delete dead @Deprecated configureAuthStateStream (BUT-1143) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low pure-cleanup. Pivot from P4 Bug well (BUT-1132 needs deeper scope — Firestore deterministic doc ID or check-then-write w/ idempotent addMember).
+
+BUT-1143 was filed by iter-81 wrap-up as a follow-up after the BUT-1074 rename made `configureAuthStateStream` Fake-incompatible. The ticket suggested "1 sprint of telemetry watch" before deletion, but the testing-specialist's audit at file-time confirmed zero callers via grep — and the method is `@Deprecated` with a clear migration note. The watch was over-cautious; the static audit is sufficient.
+
+No Phase 1.5 expansion (P4 + pure `tech-debt`/`test-gap` labels — explicitly skipped per the rule).
+
+### Ship this sprint
+
+#### Agent — Delete dead method (direct edit, no agent needed)
+
+- [ ] **A1. Delete `MockConfigurator.configureAuthStateStream`** — `test/test_support/mock_configurator.dart:120-136`. Remove the entire method + its 7-line docstring + `@Deprecated` annotation. Confirm via grep that no other file references it (verified: only the knowledge-file doc references it, that's fine to leave). (BUT-1143)
+- [ ] **A2. Verify** — `dart analyze --fatal-infos` clean. Full unit suite still green. (BUT-1143)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1143** verified: `mock_configurator.dart:120-136` has the method as described. Grep across `test/` and `lib/` returns zero non-doc references. The method is already `@Deprecated` with a migration note to the local `_MockAuthRepository extends Mock` pattern.
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean.
+- [ ] `flutter test test/unit/` still passes (no behavior change — method had no callers).
+- [ ] Tier-2 reviewers clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does commit + push.
+- [ ] Close BUT-1143 in Linear.
+
+---
+
+## Archived iter-88 (commit `b12b40e3e` — BUT-1129) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low Bug. **Plan-stale rescope** — original ticket proposed `this.disposed` field reads, but `disposed`/`uploadsCanceled` are params, not fields. Re-scoped inline to callback-based fresh-read. Linear ticket body updated.
 
 Theme: Single P4 Low Bug. **Plan-stale rescope** — original ticket proposed `this.disposed` field reads, but `disposed`/`uploadsCanceled` are params, not fields. Re-scoped inline to callback-based fresh-read. Linear ticket body updated.
 
