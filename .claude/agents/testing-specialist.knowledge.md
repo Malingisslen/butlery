@@ -3542,3 +3542,98 @@ Two patterns worth pinning:
    whitespace-normalization invariant, assert against the smallest illegal
    run (2 consecutive spaces), not the human-eyeball-noticeable run (3+).
 
+  
+### 2026-05-27 — Verified iter-88 (BUT-1129 closure rescope) tests (Pattern discovered)
+
+**Trigger:** A production refactor swapped a captured-by-value bool parameter
+(`disposed: bool`, `uploadsCanceled: bool`) for a fresh-read closure
+(`isDisposedNow: bool Function()`, `isUploadsCanceledNow: bool Function()`)
+so per-file cancellation checks observe live caller state across `await`
+boundaries. Tests must pin the mid-flight flip behaviour, not just rewire
+13 vanilla call-sites to the new signature.
+
+**Race-window test recipe (`image_upload_coordinator_test.dart`
+`BUT-1129: mid-flight soft-cancel` group):**
+
+```dart
+bool disposedFlag = false;
+
+when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+  (_) => Future.delayed(
+    const Duration(milliseconds: 50),                 // suspends inside the await
+    () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+  ),
+);
+
+final futureUrls = h.coordinator.uploadPendingImagesInBackground(
+  [fileA], 'r-1',
+  imageStates: {'/a.jpg': _pending()},
+  isDisposedNow: () => disposedFlag,                  // closure, not value
+  isUploadsCanceledNow: () => false,
+);
+
+disposedFlag = true;                                  // flip BETWEEN sync return and await
+
+final urls = await futureUrls;
+expect(urls, isEmpty,
+    reason: 'mid-flight disposedFlag flip must short-circuit the post-upload guard');
+```
+
+**Why this is not a tautology:**
+
+1. Pre-flight guard runs synchronously with `disposedFlag = false` → passes.
+2. Method awaits the stubbed 50ms Future → control returns to test (no
+   timers fire yet because Dart is single-threaded and the test hasn't
+   re-entered the event loop).
+3. `disposedFlag = true` runs synchronously.
+4. `await futureUrls` re-enters the event loop, the 50ms timer fires,
+   storage Future resolves, and the post-upload guard
+   (`if (isDisposedNow() || isUploadsCanceledNow()) return null;`)
+   re-reads `disposedFlag` and sees `true`.
+5. **Old captured-by-value contract** → guard sees stale `false` → URL
+   returned → `urls == ['https://x/a.jpg']` → assertion FAILS.
+   **New closure contract** → guard sees fresh `true` → null returned →
+   `urls == []` → assertion PASSES.
+
+The single-threaded event loop guarantees the flip happens before the
+guard re-runs — not flaky, no `fakeAsync` needed because the test only
+cares about the order of the flip vs. the await-resumption, not the
+exact tick count.
+
+**Rule for closure-fresh-read refactors:**
+
+- Tests that pass `() => true` / `() => false` at construction-time for
+  pre-flight guards are unchanged in semantics from `disposed: true /
+  false` — they're mechanical rewires and OK to leave as plain
+  closures-over-constants.
+- The new contract MUST be pinned by at least one test that:
+  (a) stubs the inner await with a delayed Future,
+  (b) starts the operation,
+  (c) flips a mutable bool synchronously between the sync return and
+      the awaited Future,
+  (d) asserts the post-await guard observes the new value.
+- If the captured-by-value contract were still in place, this test
+  would fail. That's the gate — never accept a closure-rescope without
+  one test in this exact shape.
+
+**Symmetric coverage matters:** when there are two parallel flags
+(`isDisposedNow` + `isUploadsCanceledNow`), write the mid-flight test
+twice — once per flag, with the other held at `() => false`. The
+"caller flipped dispose" path (often triggered by widget unmount) and
+the "user pressed cancel" path (often triggered by an explicit button)
+are different call sites and either could regress independently.
+
+**Rewire audit checklist for the existing call-sites:**
+
+- For each call-site that previously passed `disposed: false,
+  uploadsCanceled: false`: confirm the test never asserts mid-flight
+  flip semantics (it can't — there's no flip in the test body). Pure
+  mechanical rewire to `() => false, () => false` is safe.
+- For call-sites that pass `disposed: true` or `uploadsCanceled: true`:
+  these are pre-flight short-circuit tests. The bool is constant for
+  the entire call lifetime, so `() => true` / `() => false` is
+  semantically identical to the old contract. Also safe.
+- If you find a call-site that DID previously assert "the bool was
+  flipped mid-flight and the upload still completed" — that test was
+  pinning the BUG. Delete or invert the assertion; do not just rewire
+  the signature.

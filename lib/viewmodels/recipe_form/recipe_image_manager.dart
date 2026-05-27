@@ -1211,8 +1211,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       pendingImages,
       recipeId,
       imageStates: _imageStates,
-      disposed: _disposed,
-      uploadsCanceled: _uploadsCanceled,
+      isDisposedNow: () => _disposed,
+      isUploadsCanceledNow: () => _uploadsCanceled,
       onProgress: onProgress,
     );
   }

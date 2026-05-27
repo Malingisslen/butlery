@@ -49,14 +49,14 @@
 ///      per-file isolation test below (`thrown storage exception is caught
 ///      per-file`) asserts the per-file path does NOT touch `errorsSet`,
 ///      pinning the boundary.
-///   3. The `disposed` and `uploadsCanceled` flags are passed BY VALUE at
-///      the start of `uploadPendingImagesInBackground`. If the caller flips
-///      its own `_disposed` to true mid-flight, the coordinator's per-file
-///      cancellation checks STILL see the stale `false`. Cancellation
-///      cooperation is therefore only via `_activeUploads[].cancel()` —
-///      which `dispose()` does drive, so the actual disposal path works,
-///      but a "soft cancel" call site that just flips the bool without
-///      calling dispose would NOT actually stop in-flight uploads.
+///   3. [FIXED — BUT-1129] The `disposed` and `uploadsCanceled` flags were
+///      originally passed BY VALUE at the start of
+///      `uploadPendingImagesInBackground`. A mid-flight flip on the caller's
+///      bool was invisible to the per-file cancellation checks. They are now
+///      `bool Function()` closures so every check re-reads live caller state
+///      — soft-cancel (just flipping the bool, no `dispose()`) now actually
+///      short-circuits in-flight uploads. Pinned by the mid-flight test
+///      below.
 ///      [FIXED — BUT-1118] The queue manager's `addCompletedUpload` now
 ///      guards against the late-completion case.
 
@@ -112,8 +112,8 @@ void main() {
         [file],
         'recipe-1',
         imageStates: {'/a.jpg': _pending()},
-        disposed: true,
-        uploadsCanceled: false,
+        isDisposedNow: () => true,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(result, isEmpty);
@@ -131,8 +131,8 @@ void main() {
         [file],
         'recipe-1',
         imageStates: {'/a.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: true,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => true,
       );
 
       expect(result, isEmpty);
@@ -149,8 +149,8 @@ void main() {
         [],
         'recipe-1',
         imageStates: {},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(result, isEmpty);
@@ -184,8 +184,8 @@ void main() {
         [fileA, fileB],
         'r-1',
         imageStates: imageStates,
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(
@@ -220,8 +220,8 @@ void main() {
         [fileA, fileB],
         'r-1',
         imageStates: {'/a.jpg': _pending(), '/b.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(h.coordinator.thumbnailUrls, {
@@ -246,8 +246,8 @@ void main() {
         [fileA],
         'r-1',
         imageStates: {'/a.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
       expect(h.coordinator.thumbnailUrls, isNotEmpty);
 
@@ -260,8 +260,8 @@ void main() {
         [fileB],
         'r-1',
         imageStates: {'/b.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       // Old thumbnail must be gone; new batch had no thumbnail.
@@ -284,8 +284,8 @@ void main() {
         [fileA],
         'r-1',
         imageStates: {'/a.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(
@@ -313,8 +313,8 @@ void main() {
         [fileA, fileB],
         'r-1',
         imageStates: {'/a.jpg': _pending(), '/b.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
         onProgress: (c, t) => progressLog.add((c, t)),
       );
 
@@ -341,8 +341,8 @@ void main() {
         [fileA],
         'r-1',
         imageStates: {'/a.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       // At minimum the finally-block notify must fire.
@@ -372,8 +372,8 @@ void main() {
         [fileA, fileB],
         'r-1',
         imageStates: imageStates,
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(result, ['https://x/b.jpg']);
@@ -404,8 +404,8 @@ void main() {
         [fileA, fileB],
         'r-1',
         imageStates: imageStates,
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(result, ['https://x/b.jpg']);
@@ -434,8 +434,8 @@ void main() {
         [fileA],
         'r-1',
         imageStates: imageStates,
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(result, isEmpty);
@@ -461,8 +461,8 @@ void main() {
         [fileA],
         'r-1',
         imageStates: imageStates,
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(result, ['https://x/a.jpg']);
@@ -710,6 +710,84 @@ void main() {
     });
   });
 
+  group('BUT-1129: mid-flight soft-cancel (fresh-read closure semantics)', () {
+    /// BUT-1129: the caller's `_disposed` bool can flip AFTER the batch
+    /// starts but BEFORE the in-flight storage Future resolves. Under the
+    /// old captured-by-value behaviour the per-file cancellation checks
+    /// would still see the stale `false` and happily return the URL.
+    /// With the callback closures, every check re-reads live caller state
+    /// → the post-upload guard short-circuits and the URL is dropped.
+    test(
+        'BUT-1129: mid-flight isDisposedNow flip short-circuits in-progress uploads',
+        () async {
+      final h = _Harness();
+      final fileA = File('/a.jpg');
+      bool disposedFlag = false;
+
+      // Slow upload — gives us a window to flip the flag mid-flight.
+      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 50),
+          () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+        ),
+      );
+
+      final futureUrls = h.coordinator.uploadPendingImagesInBackground(
+        [fileA],
+        'r-1',
+        imageStates: {'/a.jpg': _pending()},
+        isDisposedNow: () => disposedFlag,
+        isUploadsCanceledNow: () => false,
+      );
+
+      // Flip BEFORE the storage Future resolves. The pre-flight check
+      // already passed, but the post-upload check must now observe `true`.
+      disposedFlag = true;
+
+      final urls = await futureUrls;
+
+      // Old behaviour (captured-by-value): would return ['https://x/a.jpg'].
+      // New behaviour (closure fresh-read): post-upload guard fires → empty.
+      expect(urls, isEmpty,
+          reason:
+              'mid-flight disposedFlag flip must short-circuit the post-upload guard');
+    });
+
+    /// Symmetric case for the uploadsCanceled flag — same fresh-read
+    /// contract via `isUploadsCanceledNow`. The user-initiated cancel path
+    /// is the more common trigger than dispose.
+    test(
+        'BUT-1129: mid-flight isUploadsCanceledNow flip short-circuits in-progress uploads',
+        () async {
+      final h = _Harness();
+      final fileA = File('/a.jpg');
+      bool canceledFlag = false;
+
+      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 50),
+          () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+        ),
+      );
+
+      final futureUrls = h.coordinator.uploadPendingImagesInBackground(
+        [fileA],
+        'r-1',
+        imageStates: {'/a.jpg': _pending()},
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => canceledFlag,
+      );
+
+      canceledFlag = true;
+
+      final urls = await futureUrls;
+
+      expect(urls, isEmpty,
+          reason:
+              'mid-flight canceledFlag flip must short-circuit the post-upload guard');
+    });
+  });
+
   group('dispose', () {
     /// dispose() on a fresh coordinator is a safe no-op. Guards against
     /// an NPE on the empty-set iteration of `_activeUploads`.
@@ -732,8 +810,8 @@ void main() {
         [fileA],
         'r-1',
         imageStates: {'/a.jpg': _pending()},
-        disposed: false,
-        uploadsCanceled: false,
+        isDisposedNow: () => false,
+        isUploadsCanceledNow: () => false,
       );
 
       expect(() => h.coordinator.dispose(), returnsNormally);

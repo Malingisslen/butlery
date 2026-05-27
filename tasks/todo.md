@@ -1,6 +1,64 @@
 # Sprint Backlog
 
-## Sprint: iter-87 — SocialMenuCoordinator imported-menu attribution (BUT-1093) — 2026-05-27 (Wed)
+## Sprint: iter-88 — ImageUploadCoordinator soft-cancel fresh-read (BUT-1129) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low Bug. **Plan-stale rescope** — original ticket proposed `this.disposed` field reads, but `disposed`/`uploadsCanceled` are params, not fields. Re-scoped inline to callback-based fresh-read. Linear ticket body updated.
+
+Phase 1.5 doesn't fire (P4 + plain `Bug` label, no area-label combo). Plan-stale rescope handled in Step 0 + Linear ticket edit per the established pattern.
+
+### Ship this sprint
+
+#### Agent — Soft-cancel fresh-read in ImageUploadCoordinator
+
+- [x] **A1. BUT-1129: replace value-passed bool with callback** — `lib/viewmodels/recipe_form/image_management/image_upload_coordinator.dart`. Change `uploadPendingImagesInBackground` (line 60) and `_uploadSingleImageWithTracking` (line 145) params:
+  - `required bool disposed` → `required bool Function() isDisposedNow`
+  - `required bool uploadsCanceled` → `required bool Function() isUploadsCanceledNow`
+  
+  Update all 5 cancellation-check sites to call the closures:
+  - `image_upload_coordinator.dart:68` outer guard
+  - `image_upload_coordinator.dart:157` single pre-upload check
+  - `image_upload_coordinator.dart:167` notifyListeners guard
+  - `image_upload_coordinator.dart:173` single state-update check
+  - `image_upload_coordinator.dart:182` single post-upload check
+  - `image_upload_coordinator.dart:219` catch-block state-update guard
+  
+  Update internal call site at `image_upload_coordinator.dart:101-102` (the inner `_uploadSingleImageWithTracking` invocation) to forward the closures.
+  
+  Update caller in `lib/viewmodels/recipe_form/recipe_image_manager.dart:1214-1215`:
+  - `disposed: _disposed` → `isDisposedNow: () => _disposed`
+  - `uploadsCanceled: _uploadsCanceled` → `isUploadsCanceledNow: () => _uploadsCanceled`
+  
+  (BUT-1129)
+
+- [x] **A2. Add BUT-1129 mid-flight soft-cancel test** — `test/unit/viewmodels/recipe_form/image_management/image_upload_coordinator_test.dart`. Pin the now-correct behaviour: 
+  - Stub a slow `StorageService.uploadRecipeImage` (e.g. delayed Future)
+  - Start `uploadPendingImagesInBackground` with `isDisposedNow: () => disposedFlag` where `disposedFlag` is a local `bool` variable
+  - Flip `disposedFlag = true` while uploads are in flight
+  - Assert the returned list of URLs is empty (uploads short-circuited)
+  
+  This test would have failed with the old captured-by-value behaviour (mid-flight flip would have been invisible). (BUT-1129)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1129 PLAN STALE**: `image_upload_coordinator.dart:60-67, 145-152` — `disposed`/`uploadsCanceled` are passed-in parameters, NOT fields on ImageUploadCoordinator. Ticket's `this.disposed` fix doesn't apply. Re-scoped to callback-based fresh-read; Linear ticket body updated to reflect new plan.
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
+- [ ] Touched test file passes (incl. new mid-flight soft-cancel test).
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [ ] Tier-2 reviewers clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1129 in Linear.
+
+---
+
+## Archived iter-87 (commit `7d37c88ba` — BUT-1093) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low Bug — mirror-existing-pattern fix. Phase 1.5 expansion fires (menu+social+Bug) — richer plan inline, no halt. The remaining easy P4 Bug well is empty; this is the last clean ticket-then-flip fit. The rest (BUT-1132/1129/897) need larger scope changes.
 
 Theme: Single P4 Low Bug — mirror-existing-pattern fix. Phase 1.5 expansion fires (menu+social+Bug) — richer plan inline, no halt. The remaining easy P4 Bug well is empty; this is the last clean ticket-then-flip fit. The rest (BUT-1132/1129/897) need larger scope changes.
 

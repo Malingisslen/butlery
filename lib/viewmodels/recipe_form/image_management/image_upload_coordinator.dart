@@ -61,11 +61,14 @@ class ImageUploadCoordinator {
     List<File> pendingImages,
     String recipeId, {
     required Map<String, ImageUploadStatus> imageStates,
-    required bool disposed,
-    required bool uploadsCanceled,
+    required bool Function() isDisposedNow,
+    required bool Function() isUploadsCanceledNow,
     Function(int completed, int total)? onProgress,
   }) async {
-    if (disposed || uploadsCanceled) {
+    // BUT-1129: closures re-read live caller state on every check so a
+    // mid-flight soft-cancel (caller flips its `_disposed` / `_uploadsCanceled`
+    // bool without calling `dispose()`) actually short-circuits in-flight work.
+    if (isDisposedNow() || isUploadsCanceledNow()) {
       AppLogger.info(
           '☁️ Upload canceled - manager disposed or uploads canceled');
       return [];
@@ -98,8 +101,8 @@ class ImageUploadCoordinator {
             file,
             recipeId,
             imageStates,
-            disposed: disposed,
-            uploadsCanceled: uploadsCanceled,
+            isDisposedNow: isDisposedNow,
+            isUploadsCanceledNow: isUploadsCanceledNow,
             onComplete: () {},
           ),
         );
@@ -146,15 +149,15 @@ class ImageUploadCoordinator {
     File file,
     String recipeId,
     Map<String, ImageUploadStatus> imageStates, {
-    required bool disposed,
-    required bool uploadsCanceled,
+    required bool Function() isDisposedNow,
+    required bool Function() isUploadsCanceledNow,
     VoidCallback? onComplete,
   }) async {
     final filePath = file.path;
 
     try {
       // CRITICAL FIX: Check cancellation before each operation
-      if (disposed || uploadsCanceled) {
+      if (isDisposedNow() || isUploadsCanceledNow()) {
         AppLogger.info('☁️ Upload canceled for ${file.path}');
         return null;
       }
@@ -164,13 +167,13 @@ class ImageUploadCoordinator {
         imageStates[filePath] =
             imageStates[filePath]!.copyWith(state: ImageUploadState.uploading);
 
-        if (!disposed) {
+        if (!isDisposedNow()) {
           _notifyListeners();
         }
       }
 
       // CRITICAL FIX: Check cancellation before actual upload
-      if (disposed || uploadsCanceled) {
+      if (isDisposedNow() || isUploadsCanceledNow()) {
         AppLogger.info(
             '☁️ Upload canceled during state update for ${file.path}');
         return null;
@@ -179,7 +182,7 @@ class ImageUploadCoordinator {
       final result = await _storageService.uploadRecipeImage(file, recipeId);
 
       // CRITICAL FIX: Check cancellation after upload completes
-      if (disposed || uploadsCanceled) {
+      if (isDisposedNow() || isUploadsCanceledNow()) {
         AppLogger.info(
             '☁️ Upload canceled after completion for ${file.path} - ignoring result');
         return null;
@@ -216,7 +219,9 @@ class ImageUploadCoordinator {
       }
     } catch (e) {
       // Update state to failed with error
-      if (imageStates.containsKey(filePath) && !disposed && !uploadsCanceled) {
+      if (imageStates.containsKey(filePath) &&
+          !isDisposedNow() &&
+          !isUploadsCanceledNow()) {
         imageStates[filePath] = imageStates[filePath]!
             .copyWith(state: ImageUploadState.failed, error: e.toString());
       }
