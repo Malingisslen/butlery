@@ -1,6 +1,43 @@
 # Sprint Backlog
 
-## Sprint: iter-83 — Import surface: structured rate-limit + non-Recipe JSON-LD warning — 2026-05-27 (Wed)
+## Sprint: iter-84 — SmartImportViewModel P4 Low-Bug sweep — 2026-05-27 (Wed)
+
+Theme: Three P4 Low Bugs all in `lib/viewmodels/smart_import_viewmodel.dart`, dispatched to a single agent. Same file, no merge collision risk. All mechanical fits. P3 Bug well dried after iter-83 — graduating to P4 batches; the priority just reflects user-visible impact, the shape is identical. No Phase 1.5 expansion (`import` not in expansion-trigger label list).
+
+### Ship this sprint
+
+#### Agent — SmartImportViewModel hygiene
+
+- [x] **A1. BUT-1145: reorder pattern matches in `_localizeImportError`** — `lib/viewmodels/smart_import_viewmodel.dart:466-502`. The "could not save" and "could not read" specifics must run BEFORE the generic `_isNetworkError(lower)` so that `"could not save: network unreachable"` gets labelled as a save failure, not a network error. Move lines 488-493 (the `'could not read'` + `'could not save'` blocks) ABOVE line 479 (`_isNetworkError(lower)`). (BUT-1145)
+- [x] **A2. Add BUT-1145 pinning test** — `test/unit/viewmodels/smart_import_viewmodel_test.dart`. Test: stub `ImportManager.autoImport` to return `ImportManagerResult.failure('could not save: network unreachable')`. Drive `vm.startUrlImport(...)`. Assert the surfaced error string equals `AppLocale.current.importErrorCouldNotSaveRecipe` (NOT `importErrorCouldNotReachPage`). (BUT-1145)
+- [x] **A3. BUT-1146: reset `_lastStepBeforeError` in `triggerManualImport`** — `lib/viewmodels/smart_import_viewmodel.dart:451-461`. Add `_lastStepBeforeError = 0;` before the `_setPhase(ImportPhase.needsHelp)` call. Reason: `needsHelp` is a user-initiated state with no "prior step that failed" — leaking the previous import's last-step into the progress strip is meaningless. (BUT-1146)
+- [x] **A4. Add BUT-1146 pinning test** — `test/unit/viewmodels/smart_import_viewmodel_test.dart`. Test: drive a successful import to set `_lastStepBeforeError = 3` (via the `creating` phase), then call `vm.triggerManualImport()`, assert `vm.currentStep == 0` (or whatever the contract for `needsHelp` step should be — read the `currentStep` getter to confirm). (BUT-1146)
+- [x] **A5. BUT-1147: short-circuit `_loadPendingImport` when user already typed** — `lib/viewmodels/smart_import_viewmodel.dart:534-550`. After the `isDisposed` check (line 537) and after reading the persisted URL (line 538), add `if (_input.isNotEmpty) return;` BEFORE setting `_hasPendingImport = true`. Effect: if the user typed before prefs resolved, neither the flag nor `notifyListeners()` fires. (BUT-1147)
+- [x] **A6. Add BUT-1147 pinning test** — `test/unit/viewmodels/smart_import_viewmodel_test.dart`. Test: stub `SharedPreferences` to return a pending URL with a delay. Construct VM (fires `_loadPendingImport` in init). Before the delay completes, drive `vm.input = "https://user-typed.com"`. Wait for prefs to resolve. Assert `vm.hasPendingImport == false`. (BUT-1147)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1145** verified: `smart_import_viewmodel.dart:479` runs `_isNetworkError(lower)` (matches "network" substring) BEFORE line 491 `'could not save'`. `"could not save: network unreachable"` correctly reproduces the bug.
+- **BUT-1146** verified: `triggerManualImport()` at line 451 calls `_setPhase(ImportPhase.needsHelp)`. `_setPhase` at lines 508-510 only sets `_lastStepBeforeError` for `fetching/analyzing/creating` — `needsHelp` leaves whatever value was there.
+- **BUT-1147** verified: `_loadPendingImport()` at lines 540-545: `_hasPendingImport = true` + `notifyListeners()` fire unconditionally; the `_input.isEmpty` guard only protects `_input` overwrite, not the banner flag.
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched lib file.
+- [ ] Touched test file passes.
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1145 + BUT-1146 + BUT-1147 in Linear.
+
+---
+
+## Archived iter-83 (commit `ca66e0fce` — BUT-1144 + BUT-1070) — 2026-05-27 (Wed)
+
+Theme: Two P3 import-area Bug tickets, single agent (small clean batch). Both are ticket-then-flip shape. No Phase 1.5 expansion — `import`/`parsing` aren't in the expansion-trigger label list. BUT-953 (heirloom wiring) considered but deferred — it's feature-completion work with product decisions, half-day scope, doesn't fit ticket-then-flip.
 
 Theme: Two P3 import-area Bug tickets, single agent (small clean batch). Both are ticket-then-flip shape. No Phase 1.5 expansion — `import`/`parsing` aren't in the expansion-trigger label list. BUT-953 (heirloom wiring) considered but deferred — it's feature-completion work with product decisions, half-day scope, doesn't fit ticket-then-flip.
 

@@ -451,6 +451,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   void triggerManualImport() {
     if (!canImport) return;
 
+    // BUT-1146: needsHelp is a user-initiated state with no "prior step that
+    // failed" — clear any stale step from a previous import so the progress
+    // strip doesn't show a meaningless leftover number.
+    _lastStepBeforeError = 0;
     _setPhase(ImportPhase.needsHelp);
     final helpResult = ImportNeedsUserHelp(
       extractedText: _input.trim(),
@@ -476,6 +480,16 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     if (lower.contains('no recipe found')) {
       return l10n.importErrorNoRecipeFound;
     }
+    // BUT-1145: specific 'could not read' / 'could not save' checks must run
+    // BEFORE the generic network heuristic. Otherwise a message like
+    // "could not save: network unreachable" gets mis-labelled as a network
+    // error and the user is told the wrong thing.
+    if (lower.contains('could not read') || lower.contains('ocr')) {
+      return l10n.importErrorCouldNotReadImage;
+    }
+    if (lower.contains('could not save')) {
+      return l10n.importErrorCouldNotSaveRecipe;
+    }
     if (_isNetworkError(lower)) {
       return l10n.importErrorCouldNotReachPage;
     }
@@ -484,12 +498,6 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     }
     if (lower.contains('login required') || lower.contains('authentication')) {
       return l10n.importErrorLoginRequired;
-    }
-    if (lower.contains('could not read') || lower.contains('ocr')) {
-      return l10n.importErrorCouldNotReadImage;
-    }
-    if (lower.contains('could not save')) {
-      return l10n.importErrorCouldNotSaveRecipe;
     }
     if (lower.contains('cancelled') || lower.contains('canceled')) {
       return l10n.importErrorCancelled;
@@ -537,11 +545,12 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       if (isDisposed) return;
       final url = prefs.getString(_pendingImportKey);
       if (url != null && url.isNotEmpty) {
+        // BUT-1147: if the user already typed before prefs resolved, don't
+        // flip the banner flag or notify — their input is the source of truth.
+        if (_input.isNotEmpty) return;
         _hasPendingImport = true;
-        if (_input.isEmpty) {
-          _input = url;
-          _detection = _inputDetector.detect(url);
-        }
+        _input = url;
+        _detection = _inputDetector.detect(url);
         notifyListeners();
       }
     } catch (e) {

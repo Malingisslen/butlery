@@ -1019,4 +1019,120 @@ void main() {
       tracker.dispose();
     });
   });
+
+  group('_localizeImportError pattern ordering — BUT-1145', () {
+    /// BUT-1145: A message like "could not save: network unreachable" matches
+    /// BOTH the generic network heuristic (contains "network") AND the
+    /// specific "could not save" branch. The specific branch must win,
+    /// otherwise users see "could not reach the page" when the real problem
+    /// is a save failure that happens to mention the word "network".
+    test(
+        'failure containing "could not save" + network word maps to '
+        'importErrorCouldNotSaveRecipe (not the network error)', () async {
+      when(() =>
+          mockImportManager.autoImport(any(),
+              onProgress: any(named: 'onProgress'))).thenAnswer((_) async =>
+          ImportManagerResult.failure('could not save: network unreachable'));
+      viewModel.updateInput('https://example.com/recipe');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      // Swedish copy: "Kunde inte spara receptet" — NOT a network error.
+      expect(r.message, 'Kunde inte spara receptet',
+          reason:
+              'specific "could not save" pattern must precede the generic network heuristic');
+    });
+
+    /// Same shape for "could not read" + network word — the OCR/read branch
+    /// must win over the network branch.
+    test(
+        'failure containing "could not read" + network word maps to '
+        'importErrorCouldNotReadImage', () async {
+      when(() => mockImportManager.autoImport(any(),
+              onProgress: any(named: 'onProgress')))
+          .thenAnswer((_) async => ImportManagerResult.failure(
+              'could not read image: network timeout fetching OCR backend'));
+      viewModel.updateInput('https://example.com/recipe');
+
+      final r = (await viewModel.startImport()) as ImportFailed;
+
+      expect(r.message, 'Kunde inte läsa texten i bilden',
+          reason:
+              'specific "could not read" pattern must precede the generic network heuristic');
+    });
+  });
+
+  group('triggerManualImport — _lastStepBeforeError reset — BUT-1146', () {
+    /// BUT-1146: triggerManualImport switches to needsHelp, which is a
+    /// user-initiated state — there's no "step that failed". Previously
+    /// _lastStepBeforeError leaked from the previous in-flight import (e.g.
+    /// 3 if the user had reached the creating phase), and the currentStep
+    /// getter — which reads _lastStepBeforeError when phase=needsHelp —
+    /// surfaced that stale number to the progress strip. Manual import
+    /// must reset the step counter to 0.
+    test(
+        'after import reaches creating phase, triggerManualImport resets '
+        'currentStep to 0', () async {
+      // Drive an import up to the creating phase via the progress callback so
+      // _lastStepBeforeError = 3 (per _setPhase).
+      void Function(String)? progress;
+      final completer = Completer<ImportManagerResult>();
+      when(() => mockImportManager.autoImport(any(),
+          onProgress: any(named: 'onProgress'))).thenAnswer((inv) {
+        progress = inv.namedArguments[#onProgress] as void Function(String);
+        return completer.future;
+      });
+      viewModel.updateInput('https://example.com/recipe');
+      // ignore: unawaited_futures
+      viewModel.startImport();
+      await Future<void>.delayed(Duration.zero);
+      progress!('creating');
+      expect(viewModel.currentStep, 3,
+          reason: 'sanity: creating phase = step 3');
+
+      // Let the import complete cleanly (we just need the phase to leave
+      // creating; needsHelp transitions through the existing tests too).
+      completer.complete(
+          ImportManagerResult.success(RecipeFactory.build(), strategy: 'url'));
+      await Future<void>.delayed(Duration.zero);
+
+      // Now trigger manual import: the stale "3" must not leak into the
+      // needsHelp step display.
+      viewModel.triggerManualImport();
+
+      expect(viewModel.phase, ImportPhase.needsHelp);
+      expect(viewModel.currentStep, 0,
+          reason:
+              'needsHelp is a user-initiated state — no prior step should leak');
+    });
+  });
+
+  group('_loadPendingImport short-circuit — BUT-1147', () {
+    /// BUT-1147: If the user types into the input field before prefs has
+    /// finished resolving the persisted pending URL, _loadPendingImport must
+    /// short-circuit — neither flip hasPendingImport (which shows a "retry
+    /// previous import" banner over fresh typing) nor notify listeners.
+    test(
+        'user types before prefs resolves → hasPendingImport stays false, '
+        'input is not overwritten', () async {
+      SharedPreferences.setMockInitialValues(
+          {_pendingKey: 'https://example.com/persisted'});
+      final vm = SmartImportViewModel(importManager: mockImportManager);
+
+      // BEFORE the SharedPreferences future resolves, the user types
+      // something into the input field.
+      vm.updateInput('https://user-typed.com/recipe');
+
+      // Now let the pending-import microtasks drain.
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(vm.hasPendingImport, isFalse,
+          reason: 'banner must not flip on top of fresh user input');
+      expect(vm.input, 'https://user-typed.com/recipe',
+          reason: 'user typing must not be overwritten by persisted URL');
+
+      vm.dispose();
+    });
+  });
 }
