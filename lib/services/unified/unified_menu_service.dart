@@ -89,6 +89,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   final UserService? _userServiceOverride;
   final RealtimeMenuService? _realtimeMenuServiceOverride;
   final MenuCollaborationRepository? _menuCollaborationRepositoryOverride;
+  final PermissionService? _permissionServiceOverride;
 
   // Operations modules
   CollaborativeMenuOperations? _collaborative;
@@ -137,6 +138,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     UserService? userService,
     RealtimeMenuService? realtimeMenuService,
     MenuCollaborationRepository? menuCollaborationRepository,
+    PermissionService? permissionService,
   })  : _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
         _firestore =
@@ -144,7 +146,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
                 .firestore,
         _userServiceOverride = userService,
         _realtimeMenuServiceOverride = realtimeMenuService,
-        _menuCollaborationRepositoryOverride = menuCollaborationRepository {
+        _menuCollaborationRepositoryOverride = menuCollaborationRepository,
+        _permissionServiceOverride = permissionService {
     // Initialize core menu service (override-aware for testability)
     _menuService = menuService ?? MenuService();
 
@@ -661,15 +664,13 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   String? get error => _error;
   bool get hasError => _error != null;
 
-  // From FirebaseServiceMixin
-  // BUT-1142 follow-up: these getters come from FirebaseServiceMixin and
-  // can't be overridden via ctor param — would require a mixin-level
-  // refactor or making them virtual via a getter-callback shape.
-  // See BUT-1153 for the deferred work.
+  // BUT-1153: PermissionService getters now override-aware for tests.
   String? get currentUserId =>
-      ServiceLocator.get<PermissionService>().currentUserId;
+      (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
+          .currentUserId;
   String? get currentUserDisplayName =>
-      ServiceLocator.get<PermissionService>().currentUserDisplayName;
+      (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
+          .currentUserDisplayName;
   void resetForLogout() {
     _menus.clear();
     _isInitialized = false;

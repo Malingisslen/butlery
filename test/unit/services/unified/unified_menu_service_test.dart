@@ -748,6 +748,36 @@ void main() {
     });
 
     // ---------------------------------------------------------------------
+    // BUT-1153: PermissionService DI seam (currentUserId/DisplayName getters)
+    // ---------------------------------------------------------------------
+    group('BUT-1153: PermissionService DI seam', () {
+      /// Proves: when a PermissionService is passed via the ctor seam,
+      /// the `currentUserId` and `currentUserDisplayName` getters consult
+      /// the override rather than the ServiceLocator. Matches the BUT-1142
+      /// pattern; sealed the last remaining ServiceLocator-lookup hole.
+      test('currentUserId + currentUserDisplayName use ctor override', () {
+        final fakePerms = _FakePermissionService(
+          userId: 'override-user-123',
+          displayName: 'Override User',
+        );
+        final overrideService = UnifiedMenuService(
+          firestoreRepository: firestoreRepo,
+          permissionService: fakePerms,
+        );
+
+        try {
+          expect(overrideService.currentUserId, equals('override-user-123'),
+              reason: 'override path was not used — ctor seam is broken');
+          expect(
+              overrideService.currentUserDisplayName, equals('Override User'),
+              reason: 'displayName override path was not used');
+        } finally {
+          overrideService.dispose();
+        }
+      });
+    });
+
+    // ---------------------------------------------------------------------
     // dispose
     // ---------------------------------------------------------------------
     group('dispose', () {
@@ -815,4 +845,20 @@ class _ThrowingMenuCollaborationRepository extends Fake
     throw StateError(
         'ServiceLocator path used — ctor override seam is broken (BUT-1142).');
   }
+}
+
+/// Minimal PermissionService fake for BUT-1153 — exposes the two getters
+/// the UnifiedMenuService consults (`currentUserId`/`currentUserDisplayName`).
+/// Unused methods inherit Fake's noSuchMethod so any accidental path
+/// surfaces immediately.
+class _FakePermissionService extends Fake implements PermissionService {
+  _FakePermissionService({this.userId, this.displayName});
+  final String? userId;
+  final String? displayName;
+
+  @override
+  String? get currentUserId => userId;
+
+  @override
+  String? get currentUserDisplayName => displayName;
 }
