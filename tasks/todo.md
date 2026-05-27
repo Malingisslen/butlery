@@ -1,6 +1,44 @@
 # Sprint Backlog
 
-## Sprint: iter-82 — P3 Bug batch: race + diagnostic + silent-throw hygiene — 2026-05-27 (Wed)
+## Sprint: iter-83 — Import surface: structured rate-limit + non-Recipe JSON-LD warning — 2026-05-27 (Wed)
+
+Theme: Two P3 import-area Bug tickets, single agent (small clean batch). Both are ticket-then-flip shape. No Phase 1.5 expansion — `import`/`parsing` aren't in the expansion-trigger label list. BUT-953 (heirloom wiring) considered but deferred — it's feature-completion work with product decisions, half-day scope, doesn't fit ticket-then-flip.
+
+### Ship this sprint
+
+#### Agent — Import surface fixes
+
+- [x] **A1. ImportManagerResult: add `rateLimit(RateLimitDenied)` factory + `rateLimitDenied` field** — `lib/services/import/import_manager_result.dart`. New named ctor `ImportManagerResult.rateLimit(RateLimitDenied details)` with `isSuccess=false`, `errorMessage = details.message`, `strategy = 'rate_limited'`, and new field `RateLimitDenied? rateLimitDenied`. Existing `.success`/`.failure`/`.assistance` constructors initialise the field to `null`. (BUT-1144)
+- [x] **A2. ImportManager: route rate-limit hit through the new factory** — `lib/services/import/import_manager.dart` around line 204 (and any other `strategy: 'rate_limited'` sites — grep for them). Replace `ImportManagerResult.failure('Importgräns nådd...', strategy: 'rate_limited')` with `ImportManagerResult.rateLimit(rateLimitDenied)` where `rateLimitDenied` is the structured `RateLimitDenied` returned by `rateLimiter.checkLimit(...)`. If checkLimit's current return shape doesn't surface `RateLimitDenied` to this caller, thread it through (read the rate-limiter API). (BUT-1144)
+- [x] **A3. SmartImportViewModel: prefer structured rateLimitDenied over string-match synthesis** — `lib/viewmodels/smart_import_viewmodel.dart:330-350`. New shape: if `result.rateLimitDenied != null`, use it verbatim in `ImportRateLimited(...)`. Keep the existing string-match block as a fallback for back-compat — surrounding `if (result.rateLimitDenied != null) { use verbatim } else if (errorMessage contains rate-limit-words) { existing synth }`. (BUT-1144)
+- [x] **A4. BUT-1144 pinning test flip** — `test/unit/viewmodels/smart_import_viewmodel_test.dart` (added in iter-81 batch-14 commit `d44509d3b`). Find the test that pins the current "always shows 1 hour retry" synth behaviour. Flip it: when ImportManager returns an `ImportManagerResult.rateLimit(...)` with `retryAfter: Duration(minutes: 5), limitType: perHour, suggestedAction: skipLlm`, the VM's resulting `ImportRateLimited` MUST carry those exact values (no synth override). (BUT-1144)
+- [x] **A5. UrlImportStrategy._tryHtmlTextParse: detect non-Recipe JSON-LD + add strong warning** — `lib/services/import/url_import_strategy.dart:252-...`. Before invoking `TextImportStrategy.import`, parse JSON-LD scripts in the HTML. If any have `@type` set AND none of the values are `Recipe` (treating both string and list-of-string), prepend a strong warning to the resulting `ImportResult.warnings`: Swedish "Denna sida verkar vara en nyhetsartikel. Det extraherade innehållet kanske inte är ett riktigt recept." / English "This page appears to be a news article. The extracted content may not be a recipe." (option B from the ticket — keep extraction behaviour, escalate user signal). Add l10n keys `warningUrlImportNotARecipe` to both ARBs + @meta and use `AppLocale.current.warningUrlImportNotARecipe`. (BUT-1070)
+- [x] **A6. BUT-1070 test flip** — `test/unit/services/import/url_import_strategy_test.dart:524`. Existing test "JSON-LD @type=Article does NOT trigger Tier 2" already asserts extraction_method is NOT schema.org. Extend it: now also assert `result.warnings` contains the new "news article" warning string (or its l10n key path). (BUT-1070)
+- [x] **A7. Run `flutter gen-l10n`** after A5 ARB additions.
+
+### Step 0 — premise verification (done)
+
+- **BUT-1144** verified: `smart_import_viewmodel.dart:330-350` — VM string-matches `errorMessage` for 'rate limit'/'kvot'/'gräns', then synthesises new `RateLimitDenied(retryAfter: 1h, limitType: perDay, suggestedAction: useUserAssisted)`. `ImportManager.basicImport` at line ~204 returns `ImportManagerResult.failure('Importgräns nådd...', strategy: 'rate_limited')` after dropping the `RateLimitDenied` from `_rateLimiter`. The structured details ARE produced but never plumbed through.
+- **BUT-1070** verified: `url_import_strategy.dart:252` `_tryHtmlTextParse` runs unconditionally if `bestHtml.length > 100`. No JSON-LD inspection happens at the tier-5 boundary. Existing pinning test at `url_import_strategy_test.dart:524` asserts current "extraction_method is NOT schema.org" behaviour but no warning-shape assertion. Picking option B from the ticket's 3 options — keep behavior, escalate warning copy.
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
+- [ ] Touched test files pass.
+- [ ] `flutter gen-l10n` succeeded after A5 ARB additions.
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1144 + BUT-1070 in Linear.
+
+---
+
+## Archived iter-82 (commit `3ea1a5253` — BUT-1138 + BUT-894 + BUT-1139 + BUT-1131) — 2026-05-27 (Wed)
+
+Theme: Four P3 Bug tickets dispatched to 2 parallel agents. All small mechanical-fit shape (ticket-then-flip). Same proven pattern as iter-78/79/80. Phase 1.5 expansion fires on BUT-1131 and BUT-894 (Bug+social+recipe combo) — richer plan documented inline, no halt.
 
 Theme: Four P3 Bug tickets dispatched to 2 parallel agents. All small mechanical-fit shape (ticket-then-flip). Same proven pattern as iter-78/79/80. Phase 1.5 expansion fires on BUT-1131 and BUT-894 (Bug+social+recipe combo) — richer plan documented inline, no halt.
 

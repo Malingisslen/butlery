@@ -6287,6 +6287,10 @@
   "backupCouldNotReadFile": "Could not read the file",
   "backupInvalidFile": "Invalid backup file - not from Butlery",
   "backupUnknownRecipe": "Unknown recipe",
+  "warningUrlImportNotARecipe": "This page appears to be a news article. The extracted content may not be a recipe.",
+  "@warningUrlImportNotARecipe": {
+    "description": "BUT-1070: shown when the URL importer falls back to plain-text extraction on a page whose JSON-LD declares a non-Recipe @type (Article, NewsArticle, BlogPosting, etc.). The extraction still runs but the result is unlikely to be a real recipe."
+  },
   "backupImportedFromBackup": "Imported from backup {date}",
   "@backupImportedFromBackup": {
     "placeholders": {

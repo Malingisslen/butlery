@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +11,7 @@ import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
@@ -253,6 +256,12 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final plainText = HtmlSanitizer.stripToPlainText(html);
     if (plainText.length <= 100) return null;
 
+    // BUT-1070: if the page has JSON-LD structured data but no Recipe @type,
+    // it's almost certainly a news article / blog post the schema.org tier
+    // already rejected. Surface a strong warning so the user understands
+    // the result is unlikely to be a real recipe.
+    final nonRecipeJsonLdDetected = _hasOnlyNonRecipeJsonLd(html);
+
     final textStrategy = TextImportStrategy();
     final textResult = await textStrategy.import(plainText);
 
@@ -269,6 +278,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     return ImportResult.success(
       recipe,
       warnings: [
+        if (nonRecipeJsonLdDetected)
+          AppLocale.current.warningUrlImportNotARecipe,
         ...?(textResult.warnings),
         'Extracted from HTML text - quality may vary'
       ],
@@ -280,6 +291,61 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'tier': 5
       },
     );
+  }
+
+  /// BUT-1070: returns true iff the HTML has at least one `<script
+  /// type="application/ld+json">` block with an `@type` and NONE of the
+  /// discovered `@type` values match `Recipe`. Used to escalate the
+  /// "this is probably a news article" signal in the text-fallback tier.
+  bool _hasOnlyNonRecipeJsonLd(String html) {
+    final blocks = RegExp(
+      r'<script[^>]*type=["\x27]application/ld\+json["\x27][^>]*>(.*?)</script>',
+      caseSensitive: false,
+      dotAll: true,
+    ).allMatches(html);
+
+    var sawAnyType = false;
+    var sawRecipe = false;
+
+    for (final match in blocks) {
+      final body = match.group(1)?.trim();
+      if (body == null || body.isEmpty) continue;
+
+      dynamic decoded;
+      try {
+        decoded = jsonDecode(body);
+      } catch (_) {
+        continue;
+      }
+
+      void inspect(dynamic node) {
+        if (node is List) {
+          for (final item in node) {
+            inspect(item);
+          }
+        } else if (node is Map) {
+          final type = node['@type'];
+          if (type is String) {
+            sawAnyType = true;
+            if (type == 'Recipe') sawRecipe = true;
+          } else if (type is List) {
+            for (final t in type) {
+              if (t is String) {
+                sawAnyType = true;
+                if (t == 'Recipe') sawRecipe = true;
+              }
+            }
+          }
+          // Walk @graph too — many sites nest items under it.
+          final graph = node['@graph'];
+          if (graph != null) inspect(graph);
+        }
+      }
+
+      inspect(decoded);
+    }
+
+    return sawAnyType && !sawRecipe;
   }
 
   ImportResult? _createUserAssistedResult(String html, String url) {

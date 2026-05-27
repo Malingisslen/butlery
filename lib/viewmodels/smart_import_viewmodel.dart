@@ -327,15 +327,25 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return helpResult;
     }
 
-    // Check for rate limit errors
+    // BUT-1144: structured rate-limit denial — prefer the limiter's real
+    // retryAfter / limitType / suggestedAction over the legacy string-match
+    // synthesis below.
+    if (!result.isSuccess && result.rateLimitDenied != null) {
+      _setPhase(ImportPhase.error);
+      final limitedResult = ImportRateLimited(result.rateLimitDenied!);
+      _lastResult = limitedResult;
+      return limitedResult;
+    }
+
+    // Fallback: legacy string-match path for any error that didn't surface
+    // structured details (kept for back-compat with non-rate-limiter paths
+    // that bubble up a Swedish/English rate-limit phrase in errorMessage).
     if (!result.isSuccess && result.errorMessage != null) {
       final errorLower = result.errorMessage!.toLowerCase();
       if (errorLower.contains('rate limit') ||
           errorLower.contains('kvot') ||
           errorLower.contains('gräns')) {
         _setPhase(ImportPhase.error);
-        // For now, create a basic rate limit result
-        // In production, this would come from the actual rate limiter
         final rateLimitResult = RateLimitDenied(
           limitType: LimitType.perDay,
           message:

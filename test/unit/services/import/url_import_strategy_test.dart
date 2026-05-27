@@ -549,6 +549,21 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       );
       // Tier 5 (the lenient text parser) IS allowed to handle it. The
       // contract is just "don't claim it came from structured data."
+
+      // BUT-1070: when text-fallback fires on a page whose only JSON-LD is
+      // a non-Recipe @type, prepend a strong "this is probably a news
+      // article" warning so the user knows the result is suspect.
+      expect(
+        result.warnings,
+        isNotNull,
+        reason: 'BUT-1070: non-Recipe JSON-LD must surface a user warning',
+      );
+      expect(
+        result.warnings!.any((w) => w.contains('nyhetsartikel')),
+        isTrue,
+        reason: 'BUT-1070: warning must mention "nyhetsartikel" so the user '
+            'understands the page was an article, not a recipe',
+      );
     });
 
     /// Verifies that the inner try/catch in `import()` swallows unexpected

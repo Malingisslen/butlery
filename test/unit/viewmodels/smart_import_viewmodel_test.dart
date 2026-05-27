@@ -21,9 +21,12 @@
 /// - dispose: in-flight startImport completes without notifying / no crash
 ///
 /// Bugs hunt focus (per sprint brief BUT-1092/1113/1114/1116/1117):
-/// - rate-limit string detection: the VM swallows manager's RateLimit-typed
-///   denial and re-fabricates a RateLimitDenied with a HARD-CODED 1h retryAfter
-///   regardless of the actual window. Pinned as a contract loss.
+/// - rate-limit string detection (legacy fallback): the VM used to swallow
+///   manager's RateLimit-typed denial and re-fabricate a RateLimitDenied with
+///   HARD-CODED 1h retryAfter. BUT-1144 fixed this by adding
+///   ImportManagerResult.rateLimit(RateLimitDenied) — when the manager
+///   surfaces structured details the VM MUST use them verbatim. The
+///   string-match path remains as a back-compat fallback. Pinned both ways.
 /// - localizeImportError pattern order: "could not save" check comes *after*
 ///   network check; a "network save failed" message gets the network label.
 ///   Asserted explicitly.
@@ -41,6 +44,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
+import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/import_progress_tracker.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 
@@ -455,8 +459,9 @@ void main() {
     }
 
     /// The denial structure must carry a non-empty message so the dialog has
-    /// something to show. (Bug terrain: hard-coded retryAfter; we don't assert
-    /// the exact value but pin the fields the UI reads.)
+    /// something to show. The legacy string-match fallback still synthesises
+    /// retryAfter/limitType/suggestedAction defaults — that's intentional
+    /// back-compat for non-structured manager paths.
     test('rate-limit denial includes the original error message', () async {
       when(() => mockImportManager.autoImport(any(),
               onProgress: any(named: 'onProgress')))
@@ -468,6 +473,39 @@ void main() {
 
       expect(r.rateLimitResult.message, 'rate limit reached');
       expect(r.rateLimitResult.retryAfter.inSeconds, greaterThan(0));
+    });
+
+    /// BUT-1144: when the manager returns a structured
+    /// `ImportManagerResult.rateLimit(RateLimitDenied(...))`, the VM MUST
+    /// pass those exact values through to `ImportRateLimited.rateLimitResult`.
+    /// Previously the VM ignored structure and synthesised
+    /// `(perDay, 1h, useUserAssisted)` from a string match — silently
+    /// throwing away the limiter's real window.
+    test(
+        'BUT-1144: structured rateLimit result passes retryAfter / limitType / '
+        'suggestedAction through verbatim (no synth override)', () async {
+      const denied = RateLimitDenied(
+        limitType: LimitType.perHour,
+        message: 'Per-hour limit reached, try again in 5 minutes',
+        retryAfter: Duration(minutes: 5),
+        suggestedAction: FallbackAction.skipLlm,
+      );
+      when(() => mockImportManager.autoImport(any(),
+              onProgress: any(named: 'onProgress')))
+          .thenAnswer((_) async => ImportManagerResult.rateLimit(denied));
+      viewModel.updateInput('https://example.com');
+
+      final r = (await viewModel.startImport()) as ImportRateLimited;
+
+      expect(r.rateLimitResult.retryAfter, const Duration(minutes: 5),
+          reason: 'real window must reach the UI, not the legacy 1h default');
+      expect(r.rateLimitResult.limitType, LimitType.perHour,
+          reason: 'real limit type must reach the UI, not perDay default');
+      expect(r.rateLimitResult.suggestedAction, FallbackAction.skipLlm,
+          reason:
+              'real fallback must reach the UI, not useUserAssisted default');
+      expect(r.rateLimitResult.message,
+          'Per-hour limit reached, try again in 5 minutes');
     });
   });
 

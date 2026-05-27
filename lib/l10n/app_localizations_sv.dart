@@ -9848,6 +9848,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get backupUnknownRecipe => 'Okänt recept';
 
   @override
+  String get warningUrlImportNotARecipe =>
+      'Denna sida verkar vara en nyhetsartikel. Det extraherade innehållet kanske inte är ett riktigt recept.';
+
+  @override
   String backupImportedFromBackup(String date) {
     return 'Importerat från backup $date';
   }

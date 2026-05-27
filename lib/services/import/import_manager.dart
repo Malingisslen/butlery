@@ -200,11 +200,10 @@ class ImportManager {
       final operation = ImportOperation.basic('auto');
       if (rateLimiter != null) {
         final limitResult = await rateLimiter.checkLimit(operation);
-        if (!limitResult.isAllowed) {
-          return ImportManagerResult.failure(
-            'Importgräns nådd. Försök igen senare.',
-            strategy: 'rate_limited',
-          );
+        if (limitResult is RateLimitDenied) {
+          // BUT-1144: surface the structured denial so the VM can render
+          // the real retryAfter / limitType / suggestedAction.
+          return ImportManagerResult.rateLimit(limitResult);
         }
       }
 

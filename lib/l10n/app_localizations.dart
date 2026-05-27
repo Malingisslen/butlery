@@ -16833,6 +16833,12 @@ abstract class AppLocalizations {
   /// **'Okänt recept'**
   String get backupUnknownRecipe;
 
+  /// BUT-1070: shown when the URL importer falls back to plain-text extraction on a page whose JSON-LD declares a non-Recipe @type (Article, NewsArticle, BlogPosting, etc.). The extraction still runs but the result is unlikely to be a real recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Denna sida verkar vara en nyhetsartikel. Det extraherade innehållet kanske inte är ett riktigt recept.'**
+  String get warningUrlImportNotARecipe;
+
   /// No description provided for @backupImportedFromBackup.
   ///
   /// In sv, this message translates to:

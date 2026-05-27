@@ -9825,6 +9825,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupUnknownRecipe => 'Unknown recipe';
 
   @override
+  String get warningUrlImportNotARecipe =>
+      'This page appears to be a news article. The extracted content may not be a recipe.';
+
+  @override
   String backupImportedFromBackup(String date) {
     return 'Imported from backup $date';
   }
