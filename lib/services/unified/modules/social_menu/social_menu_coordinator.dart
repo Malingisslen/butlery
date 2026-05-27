@@ -171,9 +171,13 @@ class SocialMenuCoordinator
     final attributedMenu = <String, List<Recipe>>{};
     importedMenu.forEach((category, recipes) {
       attributedMenu[category] = recipes.map((recipe) {
-        // Create copy of recipe with attribution (simplified for now)
-        // Note: The actual copyWith implementation depends on Recipe model
-        return recipe; // Placeholder - needs actual Recipe.copyWith implementation
+        // BUT-1093: mirror createStaticCopyForOwner attribution pattern.
+        // Title-only attribution (category names stay original for imports —
+        // unlike full static copies which also suffix the category).
+        return recipe.copyWith(
+          title: '${recipe.title} (Min kopia)',
+          lastCookedAt: null,
+        );
       }).toList();
     });
 

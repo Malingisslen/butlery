@@ -20,10 +20,10 @@
 /// - `createSharedContentModel`: pulls `allowCollaboration` and `menuTitle`
 ///   from `additionalData`; defaults `allowCollaboration` to false when missing;
 ///   falls back to computed title when `menuTitle` is null.
-/// - `createImportedContent`: returns a fresh map (no aliasing) — currently
-///   the recipes inside are NOT actually attributed (production has an
-///   inline TODO placeholder at line 173). This test PINS that current
-///   contract so any future "fix" is explicit.
+/// - `createImportedContent`: returns a fresh map (no aliasing); imported
+///   recipes get the "(Min kopia)" title suffix and a cleared
+///   `lastCookedAt` (BUT-1093). Category names stay unchanged — only
+///   `createStaticCopyForOwner` suffixes categories too.
 /// - `getOriginalContentFromShared`: pass-through to `menuSnapshot`.
 /// - `triggerCopyOnWriteForContent`: returns same object when editingUserId
 ///   equals sharedByUserId (no CoW on self-edit); returns updated object
@@ -57,11 +57,11 @@
 ///   Same as the existing `unified_menu_service_test.dart` workaround.
 ///   Suggested fix: accept `FirebaseSharedMenuRepository? sharedMenuRepository`
 ///   in the constructor with `?? FirebaseSharedMenuRepository()` default.
-/// - **createImportedContent placeholder**: production line 173 returns
-///   `recipe` unchanged with a `// Placeholder` comment. Imported menus
-///   keep ALL of the sender's attribution-less recipes verbatim — which
-///   means a "(Min kopia)" suffix never appears here despite being part
-///   of `createStaticCopyForOwner`. Inconsistent with the recipe path.
+/// - **BUT-1093 (RESOLVED)**: production line 173 previously returned
+///   `recipe` unchanged with a `// Placeholder` comment. Now mirrors the
+///   `createStaticCopyForOwner` attribution pattern: title gets
+///   "(Min kopia)" suffix and `lastCookedAt` is cleared. Category names
+///   stay original (imports preserve menu structure, unlike full forks).
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -157,14 +157,17 @@ Recipe _makeRecipe({
   List<String> ingredients = const ['ägg', 'mjöl'],
   List<String> instructions = const ['rör', 'stek'],
   String mealType = 'Middag',
+  DateTime? lastCookedAt,
 }) {
-  return Recipe.personal(
+  final base = Recipe.personal(
     title: title,
     description: description,
     ingredients: ingredients,
     instructions: instructions,
     mealType: mealType,
   );
+  if (lastCookedAt == null) return base;
+  return base.copyWith(lastCookedAt: lastCookedAt);
 }
 
 void main() {
@@ -552,13 +555,17 @@ void main() {
         expect(imported['Tis'], hasLength(2));
       });
 
-      /// PINNED CURRENT BEHAVIOUR: production line 173 has a TODO
-      /// placeholder — recipes are passed through unchanged with NO
-      /// attribution. If/when that placeholder is filled in, this test
-      /// becomes the canary; rewrite it to assert on the new contract
-      /// rather than weakening it silently.
-      test('recipes are passed through verbatim (NO attribution yet)', () {
-        final original = _makeRecipe(title: 'Köttbullar', description: 'X');
+      /// BUT-1093: imported recipes get title-only attribution
+      /// ("(Min kopia)" suffix) and have their cooking history reset.
+      /// Category names stay original — unlike `createStaticCopyForOwner`
+      /// which also suffixes categories, imports keep the menu layout.
+      test('attributes recipe titles with (Min kopia) and clears lastCookedAt',
+          () {
+        final original = _makeRecipe(
+          title: 'Köttbullar',
+          description: 'X',
+          lastCookedAt: DateTime(2025, 1, 1),
+        );
         final shared = SharedMenu(
           id: 'sm-1',
           sharedByUserId: 'sender',
@@ -574,9 +581,17 @@ void main() {
           newOwnerId: 'me-uid',
         );
 
-        expect(imported['Mån']!.single.title, 'Köttbullar');
-        expect(imported['Mån']!.single.description, 'X',
-            reason: 'production placeholder: no attribution added (TODO)');
+        final importedRecipe = imported['Mån']!.single;
+        expect(importedRecipe.title, endsWith('(Min kopia)'),
+            reason: 'BUT-1093: title gets "(Min kopia)" attribution suffix');
+        expect(importedRecipe.title, 'Köttbullar (Min kopia)');
+        expect(importedRecipe.lastCookedAt, isNull,
+            reason: 'BUT-1093: cooking history reset on import');
+        expect(importedRecipe.description, 'X',
+            reason: 'non-title fields preserved verbatim');
+        expect(imported.keys.toSet(), {'Mån'},
+            reason:
+                'category names unchanged — only static copies suffix categories');
       });
     });
 

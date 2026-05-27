@@ -1,6 +1,46 @@
 # Sprint Backlog
 
-## Sprint: iter-86 — i18n + content-quality P4 polish (4 tickets) — 2026-05-27 (Wed)
+## Sprint: iter-87 — SocialMenuCoordinator imported-menu attribution (BUT-1093) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low Bug — mirror-existing-pattern fix. Phase 1.5 expansion fires (menu+social+Bug) — richer plan inline, no halt. The remaining easy P4 Bug well is empty; this is the last clean ticket-then-flip fit. The rest (BUT-1132/1129/897) need larger scope changes.
+
+### Ship this sprint
+
+#### Agent — SocialMenuCoordinator imported-menu attribution
+
+- [x] **A1. BUT-1093: replace placeholder in `createImportedContent` forEach with real copyWith** — `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:160-183`. The forEach body currently returns the recipe verbatim with a `// Placeholder` comment. Mirror the pattern from `createStaticCopyForOwner` at lines 542-554: apply `recipe.copyWith(title: '${recipe.title} (Min kopia)', lastCookedAt: null)`. Keep the category names as-is (don't mirror the "$category (Min kopia)" category-suffix from createStaticCopyForOwner — that's a different pattern for static copies, not imports). (BUT-1093)
+- [x] **A2. BUT-1093 test flip** — `test/unit/services/unified/modules/social_menu/social_menu_coordinator_test.dart`. Find the test that pins the placeholder behavior (likely asserts the recipe title is unchanged after `createImportedContent`). Flip: assert the imported recipe's title ends with "(Min kopia)" AND `lastCookedAt == null`. (BUT-1093)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1093** verified: `social_menu_coordinator.dart:160-183` — `createImportedContent` has `return recipe; // Placeholder - needs actual Recipe.copyWith implementation` on line 176. The mirror pattern at lines 542-554 (`createStaticCopyForOwner`) uses `recipe.copyWith(title: '${recipe.title} (Min kopia)', lastCookedAt: null)`.
+
+### ★ Risky-ticket plan — BUT-1093 ──────────────────
+Classification: **fits** (menu+social+Bug — mirror-existing-pattern fix, smallest possible blast radius)
+Files: `lib/services/unified/modules/social_menu/social_menu_coordinator.dart` (1 forEach body, ~5 lines) + 1 test flip.
+Blast radius: any user who imports a shared menu via the `createImportedContent` path (the new copy-on-write `joinSharedMenu` flow) will now see recipe titles suffixed with "(Min kopia)" and reset `lastCookedAt`. The legacy `importSharedMenu` path already did this via `SharedMenu.createImportMenu` — this fix brings the new path into alignment. UI-visible change: imported menus now show "(Min kopia)" on each recipe title.
+Product-intent flags: NONE. The ticket explicitly states this is the intended behavior; the placeholder was a known TODO from the BaseSocialCoordinator template extraction.
+Rollback: revert the forEach body to `return recipe;`. No schema, no data effect — only newly-imported menus get the new title shape.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched lib file.
+- [ ] Touched test file passes.
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [ ] Tier-2 reviewers clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1093 in Linear.
+
+---
+
+## Archived iter-86 (commit `38a961ec9` — BUT-1117 + BUT-1115 + BUT-1109 + BUT-1096) — 2026-05-27 (Wed)
+
+Theme: Four P4 Low Bugs across 4 unrelated files. Single agent. All ticket-then-flip mechanical fits. BUT-1109 triggers Phase 1.5 expansion (shopping+Bug combo) but the fix is a tiny i18n change — richer plan documented inline, no halt.
 
 Theme: Four P4 Low Bugs across 4 unrelated files. Single agent. All ticket-then-flip mechanical fits. BUT-1109 triggers Phase 1.5 expansion (shopping+Bug combo) but the fix is a tiny i18n change — richer plan documented inline, no halt.
 
