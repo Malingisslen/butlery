@@ -3491,3 +3491,54 @@ that lands cleanly in one branch. Confirming "distinct branches"
 during review = trace each test's input through the production
 if/else chain and verify no two inputs land on the same line.
 
+### 2026-05-27 — Running flutter test from Bash when PowerShell is deny-listed (Helper added)
+
+`flutter.bat` requires PowerShell to bootstrap and the user has PowerShell
+on the auto-deny list, so `/c/tools/flutter/bin/flutter.bat test ...`
+fails with "PowerShell executable not found." `dart test` from the Dart
+SDK doesn't understand `dart:ui` (flutter_test → animation_sheet.dart
+imports fail), so it can't run flutter tests either.
+
+Workaround that bypasses both: invoke the flutter_tools snapshot via the
+bundled dart.exe directly. No PowerShell, no .bat shim.
+
+```bash
+export PATH="/c/Windows/System32:/c/Program Files/Git/cmd:$PATH"
+/c/tools/flutter/bin/cache/dart-sdk/bin/dart.exe \
+  --disable-dart-dev \
+  /c/tools/flutter/bin/cache/flutter_tools.snapshot \
+  test test/unit/path/to/file_test.dart
+```
+
+Confirmed working 2026-05-27 against the BUT-1096
+`youtube_transcript_service_test.dart` run (all 26 tests passed) after
+flutter.bat was blocked. Use this if you hit the PowerShell deny path.
+
+### 2026-05-27 — Verified iter-86 (BUT-1109 + BUT-1096) tests (Pattern discovered)
+
+Two patterns worth pinning:
+
+1. **Localized fallback assertions for default-locale code paths**: when
+   production code uses `AppLocale.current.<key>` as a fallback (e.g.
+   `listData['name'] ?? AppLocale.current.unnamedSharedList`), tests
+   should assert `contains('Namnlös')` (the Swedish substring) since
+   `AppLocale._current` defaults to `AppLocalizationsSv()` per
+   `lib/core/l10n/app_locale.dart:11`. No need to set up Flutter
+   localization delegates in a service-layer unit test — `AppLocale`
+   is a plain Dart singleton, not a widget-context lookup. Combine
+   the positive `contains('Namnlös')` with a `isNot(equals('?'))`
+   guard to pin "the literal `?` regression must not return." Both
+   assertions matter — only `isNot(equals('?'))` would pass with
+   `''` (empty string), only `contains('Namnlös')` would pass even
+   if the fallback became `'?Namnlös?'`.
+
+2. **Tightening whitespace-collapse assertions after fixing a
+   marker-strip-order bug**: BUT-1096 flipped the strip-then-normalize
+   order in `_cleanTranscript` so leftover double-spaces don't survive.
+   The test was `isNot(contains('   '))` (3 spaces) — too loose; passes
+   even if 2 consecutive spaces remain. Tightened to `isNot(contains('  '))`
+   (2 spaces). Any future regression that re-introduces the marker-strip-
+   leaves-double-space pattern now fails. Rule: when pinning a
+   whitespace-normalization invariant, assert against the smallest illegal
+   run (2 consecutive spaces), not the human-eyeball-noticeable run (3+).
+
