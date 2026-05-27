@@ -88,6 +88,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   // wiring leaves these null so behaviour is unchanged.
   final UserService? _userServiceOverride;
   final RealtimeMenuService? _realtimeMenuServiceOverride;
+  final MenuCollaborationRepository? _menuCollaborationRepositoryOverride;
 
   // Operations modules
   CollaborativeMenuOperations? _collaborative;
@@ -135,13 +136,15 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     MenuService? menuService,
     UserService? userService,
     RealtimeMenuService? realtimeMenuService,
+    MenuCollaborationRepository? menuCollaborationRepository,
   })  : _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
         _firestore =
             (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
                 .firestore,
         _userServiceOverride = userService,
-        _realtimeMenuServiceOverride = realtimeMenuService {
+        _realtimeMenuServiceOverride = realtimeMenuService,
+        _menuCollaborationRepositoryOverride = menuCollaborationRepository {
     // Initialize core menu service (override-aware for testability)
     _menuService = menuService ?? MenuService();
 
@@ -158,7 +161,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     AppLogger.debug('Initializing collaborative menu operations');
     return CollaborativeMenuOperations(
       notifyListeners: triggerNotification,
-      repository: ServiceLocator.get<MenuCollaborationRepository>(),
+      repository: _menuCollaborationRepositoryOverride ??
+          ServiceLocator.get<MenuCollaborationRepository>(),
     );
   }
 
@@ -658,6 +662,10 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   bool get hasError => _error != null;
 
   // From FirebaseServiceMixin
+  // BUT-1142 follow-up: these getters come from FirebaseServiceMixin and
+  // can't be overridden via ctor param — would require a mixin-level
+  // refactor or making them virtual via a getter-callback shape.
+  // See BUT-1153 for the deferred work.
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
