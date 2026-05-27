@@ -60,6 +60,14 @@
       ]
     },
     {
+      "collectionGroup": "shared_content",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedByUserId", "order": "ASCENDING" },
+        { "fieldPath": "originalRecipeId", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "shared_shopping_lists",
       "queryScope": "COLLECTION",
       "fields": [

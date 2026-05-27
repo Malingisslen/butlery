@@ -3637,3 +3637,44 @@ are different call sites and either could regress independently.
   flipped mid-flight and the upload still completed" — that test was
   pinning the BUG. Delete or invert the assertion; do not just rewire
   the signature.
+
+---
+
+### 2026-05-28 — BUT-1132: probe-query tests for repo branches blocked by infra limits
+
+**Trigger:** When the production change being tested lives behind a
+FakeFirestore-incompatible call (FieldValue.increment/arrayUnion in
+addMember, etc.), the e2e test for the new code path skips. The agent
+added a second "probe" test that exercises only the query mechanics
+(the `where().where().limit(1).get()` chain) against a pre-seeded doc.
+
+**Verdict:** The probe is necessary but not sufficient. It validates
+that the query *can* find a pre-seeded matching doc. It does NOT
+validate the `if (existingQuery.docs.isNotEmpty)` branch, the
+`existingId` return, or the addMember loop on the existing-id path.
+If a future refactor removes the branch (e.g. always calls
+`createSharedContent`), the probe still passes — and the skipped e2e
+catches nothing.
+
+**Rule:** When you ship a "query-only probe" because the e2e is
+skipped, also:
+1. Comment on the test (or in skip reason) that the probe does not
+   cover the post-query branch.
+2. File a follow-up to convert to emulator-lane (`emulatorOnlySkip`,
+   `firestoreForLane()`) so the e2e actually runs on CI. FakeFirestore's
+   FieldValue/MockFieldValuePlatform conflict is a known
+   infrastructure gap — emulator lane is the supported workaround for
+   exactly this case.
+3. If the production branch is small enough, consider extracting it
+   into a pure helper (e.g. `_pickExistingOrNew(existingQuery, ...)`)
+   and unit-testing the helper directly. Better than nothing when
+   neither FakeFirestore nor emulator lane works.
+
+**Recorder-style fakes can't pin dedup:** `_FakeSharedRecipeRepo` in
+`social_recipe_sharing_service_test.dart` is a call-recorder
+(`extends Fake` + a `List<calls>` + always returns `sharedRecipe.id`).
+It cannot simulate the repo deduping two identical calls — and the
+service layer doesn't dedup either (forwards both calls; dedup is
+repo-internal). So no service-layer test exists or can exist that
+pins "two share calls → one repo invocation"; that contract lives
+entirely at the repository layer and must be tested there.

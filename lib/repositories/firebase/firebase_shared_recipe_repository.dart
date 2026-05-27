@@ -192,6 +192,25 @@ class FirebaseSharedRecipeRepository
       throw ArgumentError('Must specify at least one recipient');
     }
 
+    // BUT-1132: idempotent share — check for existing shared_recipes doc with
+    // same (sharedByUserId, originalRecipeId). If found, reuse + addMember new
+    // recipients (addMember is idempotent at member-doc level via .set()).
+    final existingQuery = await getCollectionRef()
+        .where('sharedByUserId', isEqualTo: sharedRecipe.sharedByUserId)
+        .where('originalRecipeId', isEqualTo: sharedRecipe.originalRecipeId)
+        .limit(1)
+        .get();
+
+    if (existingQuery.docs.isNotEmpty) {
+      final existingId = existingQuery.docs.first.id;
+      await Future.wait(
+        recipientIds.map((id) => addMember(existingId, id, addedBy: uid)),
+      );
+      AppLogger.info(
+          '♻️ Reusing existing shared recipe $existingId (idempotent)');
+      return existingId;
+    }
+
     // Create the shared recipe document (seed creator in sharedToUserIds to avoid extra write)
     final recipeId = await createSharedContent(sharedRecipe,
         initialSharedToUserIds: [sharedRecipe.sharedByUserId]);

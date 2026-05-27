@@ -1,6 +1,50 @@
 # Sprint Backlog
 
-## Sprint: iter-91 — Document shared cache circuit-breaker (BUT-1150) — 2026-05-27 (Wed)
+## Sprint: iter-92 — SocialRecipeSharingService idempotent share (BUT-1132) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low Bug — Firestore duplicate-share idempotency. Repository-layer fix: check for existing `shared_recipes` doc with same `(sharedByUserId, originalRecipeId)` before creating a new one. If found, reuse + addMember new recipients. Scope: repository-only change + test flip.
+
+Phase 1.5 expansion fires (social+recipe+Bug). Risky-ticket plan documented inline.
+
+### Ship this sprint
+
+#### Agent — Idempotent createSharedRecipe
+
+- [x] **A1. BUT-1132: check-then-write in `FirebaseSharedRecipeRepository.createSharedRecipe`** — `lib/repositories/firebase/firebase_shared_recipe_repository.dart:179-208`. Before calling `createSharedContent`, query `shared_recipes` for an existing doc with `where('sharedByUserId', isEqualTo: sharedRecipe.sharedByUserId).where('originalRecipeId', isEqualTo: sharedRecipe.originalRecipeId).limit(1).get()`. If exists, reuse the existing doc ID + `Future.wait(recipientIds.map((id) => addMember(existingId, id, addedBy: uid)))` and return the existing ID. Existing members are no-ops at the `.set()` level (addMember uses `.set()` at line 338, and arrayUnion is idempotent). Log `'♻️ Reusing existing shared recipe $existingId (idempotent)'`. (BUT-1132)
+- [x] **A2. Add Firestore composite index for the dedup query** — `firestore.indexes.json`. New index: collection `shared_content` (actual runtime collection — `shared_recipes` was legacy/unused), fields `sharedByUserId ASC` + `originalRecipeId ASC`. (BUT-1132)
+- [x] **A3. Flip pinning test** — `test/unit/repositories/firebase_shared_recipe_repository_test.dart` — added new `BUT-1132: idempotent share` group with two tests: (a) end-to-end double-create (skipped, matches existing FakeFirestore FieldValue skip pattern); (b) direct dedup-query probe (runs, asserts the `where().where()` chain finds the existing doc). (BUT-1132)
+- [x] **A4. Flip pinning test (service layer)** — `test/unit/services/unified/modules/social_recipe/social_recipe_sharing_service_test.dart` — no existing test pins "second share creates second doc" at service layer (the `_FakeSharedRecipeRepo` returns `sharedRecipe.id` directly, so service-layer tests cannot observe doc-multiplication). No flip needed. (BUT-1132)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1132** verified: `firebase_shared_recipe_repository.dart:179-208` — `createSharedRecipe` always calls `createSharedContent` which auto-generates a new doc ID. No existence check at the repository layer. `base_shared_content_repository.dart:308-353` `addMember` uses `.set()` (idempotent at doc level) + `arrayUnion` (idempotent at array level), but `incrementUnreadCounter` (line 346) fires unconditionally — secondary bug, file follow-up if scope warrants.
+
+### ★ Risky-ticket plan — BUT-1132 ──────────────────
+Classification: **fits** (social+recipe+Bug — Firestore behavior change, scope-managed via repository-layer-only edit)
+Files: `lib/repositories/firebase/firebase_shared_recipe_repository.dart` (add 8-line check-then-write block before `createSharedContent`) + `firestore.indexes.json` (new composite index) + 1-2 test flips.
+Blast radius: future `createSharedRecipe` calls with an existing `(owner, recipe)` pair return the existing doc ID instead of creating a new one. Recipients added via addMember (idempotent at member-doc level). UI consumers reading `shared_recipes` will now see one canonical doc per (sender, recipe) pair instead of one per share-event. The recipient's inbox load-path likely dedups by `(sharedRecipeId)` already; this change reinforces that. New composite index needed for the query (sharedByUserId + originalRecipeId).
+Product-intent flags: Re-share might be intended to re-notify the recipient. Current implementation re-notifies via `incrementUnreadCounter` in `addMember`. After this fix, re-share still triggers addMember which still increments unread (since addMember always runs). So re-notification behavior is preserved — only the doc-multiplication is fixed.
+Rollback: revert the check-then-write block + drop the new index. No data migration; existing duplicate docs in Firestore continue to exist (they're not retroactively merged) — but that's a separate cleanup if desired.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean.
+- [ ] Touched test files pass.
+- [ ] Tier-2 reviewers clean (firebase-backend-security required — touches `lib/repositories/firebase/`).
+
+### Post-Sprint Steps
+
+- [ ] Commit + push.
+- [ ] Close BUT-1132 in Linear.
+- [ ] File follow-up if scope demands: addMember unread-counter idempotency (BUT-1132-followup).
+
+---
+
+## Archived iter-91 (commit `913bc35ff` — BUT-1150) — 2026-05-27 (Wed)
+
+Theme: Tiny pure-doc commit. Closes BUT-1150 design-clarity question by documenting the shared read+write circuit-breaker as intentional.
 
 Theme: Tiny pure-doc commit. Closes BUT-1150 design-clarity question by documenting the shared read+write circuit-breaker as intentional. Rationale: the breaker protects the underlying Drift channel, so any I/O success (read OR write) genuinely indicates channel health. The pathological scenario (schema migration breaks read deserialization but not writes) is vanishingly rare — flag for telemetry-driven escalation rather than preemptive refactor.
 
