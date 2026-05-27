@@ -1,6 +1,50 @@
 # Sprint Backlog
 
-## Sprint: iter-89 — Delete dead @Deprecated configureAuthStateStream (BUT-1143) — 2026-05-27 (Wed)
+## Sprint: iter-90 — Cache-behaviour tests unlocked by BUT-1063 seam (BUT-1141) — 2026-05-27 (Wed)
+
+Theme: Single P3 Medium test-gap. 5 cache-behaviour tests using the `cache:` ctor seam shipped in iter-81 (BUT-1063). Test-only, no production change. Pure coverage gain.
+
+No Phase 1.5 expansion (P3 + `parsing`/`test-gap` labels, no Bug or area-trigger combo).
+
+### Ship this sprint
+
+#### Agent — Author FakeLocalRecipeCache + 5 behaviour tests
+
+- [x] **A1. Author `FakeLocalRecipeCache` test helper** — place in `test/unit/services/parsing/_fake_local_recipe_cache.dart` (or inline at top of the test file if simpler). Must:
+  - Extend or implement the same shape as `LocalRecipeCache` (subclass + override, or implements + manual stub). Methods: `init()`, `get({urlHash, contentHash, source})`, `set({urlHash, contentHash, source, recipe})`, plus the version-aware key generation if needed.
+  - Record all `get` and `set` calls (counters + last-args) for assertions.
+  - Support configurable behaviour:
+    - `setStoredRecipe(ParsedRecipe?)` — what `get` returns
+    - `throwOnGet = true` — `get` throws
+    - `throwOnSet = true` — `set` throws
+  - The fake can hold a single `ParsedRecipe?` and a single `parserVersion` (model the version-mismatch invalidation by mimicking the key check)
+- [x] **A2. Test 1 — init() with injected cache skips OfflineService lookup** — register a stub `OfflineService` in `ServiceLocator` that throws on any access (or simply do NOT register it). Construct `RecipeParserService` with `cache: FakeLocalRecipeCache()`. Call `init()`. Assert no exception thrown + the injected fake's `initCallCount == 1`. (BUT-1141)
+- [x] **A3. Test 2 — Cache HIT short-circuits tier pipeline** — seed fake with `setStoredRecipe(testParsedRecipe)`. Call `parseFromUrl(url: ..., htmlContent: ..., useCache: true)`. Assert `result.success`, `result.fromCache == true`, fake's `getCallCount == 1`, fake's `setCallCount == 0`. (BUT-1141)
+- [x] **A4. Test 3 — Cache MISS writes parsed result to cache** — fake returns null on `get`. Call `parseFromUrl(...)`. Assert tier pipeline runs (result NOT from cache: `result.fromCache == false`), fake's `setCallCount == 1`, fake's `lastSetRecipe` equals the parsed result. (BUT-1141)
+- [x] **A5. Test 4 — Parser-version mismatch causes cache miss + re-parse** — configure the fake so `get` returns null when the stored `parserVersion` differs from the service's current version (mimic `LocalRecipeCache`'s version-aware key generation). Construct service with `parserVersion: 'v2'`. Pre-populate fake with a stored recipe at `parserVersion: 'v1'`. Drive `parseFromUrl`. Assert tier pipeline ran (NOT from cache) AND fake's `setCallCount == 1` (new entry written with v2). (BUT-1141)
+- [x] **A6. Test 5 — Circuit breaker opens after N consecutive cache read failures, bypasses subsequent reads** — fake throws `Exception('cache failure')` on `get`. Drive `parseFromUrl` 3 times (failureThreshold=3 per `recipe_parser_service.dart:152-155`). On the 4th call, assert fake's `getCallCount == 3` (NOT 4) — the circuit-breaker.isOpen guard at `_checkCache:714` short-circuited the call. (BUT-1141)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1141** verified: `recipe_parser_service.dart:166-194` ctor accepts `LocalRecipeCache? cache` param (shipped in iter-81 commit `503a0556`). `init()` at line 197-208 conditionally creates production cache only when `_cacheField == null`. `_checkCache` at line 713-732 wraps `cache.get(...)` in `_cacheCircuitBreaker` (failureThreshold=3, resetTime=2min, lines 152-155). `_cacheResult` at line 736-... similarly wraps `cache.set(...)`. `LocalRecipeCache` API (`lib/services/parsing/cache/local_recipe_cache.dart`) — methods: `init()`, `get({urlHash, contentHash, source})`, `set({urlHash, contentHash, source, recipe})`, plus internal `generateCacheKey()` with parserVersion in the hash.
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched test files.
+- [ ] All 5 new tests pass.
+- [ ] Existing `recipe_parser_service_test.dart` tests still pass.
+- [ ] Tier-2 reviewers clean (testing-specialist must approve — `lib/**/*.dart` is NOT touched, but test-quality review is still valuable for new test infrastructure).
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does commit + push.
+- [ ] Close BUT-1141 in Linear.
+
+---
+
+## Archived iter-89 (commit `e5d163fcd` — BUT-1143) — 2026-05-27 (Wed)
+
+Theme: Single P4 Low pure-cleanup. Pivot from P4 Bug well (BUT-1132 needs deeper scope — Firestore deterministic doc ID or check-then-write w/ idempotent addMember).
 
 Theme: Single P4 Low pure-cleanup. Pivot from P4 Bug well (BUT-1132 needs deeper scope — Firestore deterministic doc ID or check-then-write w/ idempotent addMember).
 

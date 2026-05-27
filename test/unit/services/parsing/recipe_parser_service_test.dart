@@ -34,6 +34,8 @@ import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 
+import '_fake_local_recipe_cache.dart';
+
 /// Manual stub for [LlmService]. Mirrors the pattern in
 /// `llm_tier_test.dart`. We never want the parser to reach this in tests
 /// where `useLlm: false`; tests assert `callCount == 0` to prove the gate.
@@ -476,6 +478,180 @@ void main() {
       // which we don't expose here, but the metadata is independent of
       // user id, so this asserts the API contract: dynamic userId works.
       expect(result2.success, isTrue);
+    });
+  });
+
+  group('BUT-1141: cache-behaviour tests using injected cache seam', () {
+    // A minimal schema.org Recipe HTML — drives SchemaOrgTier to a success
+    // without needing the LLM, so we can observe cache writes deterministically.
+    const validSchemaOrgHtml = '''
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Recipe","name":"Test Recipe",
+"recipeIngredient":["3 dl vetemjöl","2 dl mjölk","1 ägg"],
+"recipeInstructions":["Blanda mjöl och mjölk.","Tillsätt äggen.","Stek i het panna."],
+"recipeYield":"4","totalTime":"PT30M"}
+</script>
+</head><body>recipe content</body></html>
+''';
+
+    ParsedRecipe buildCachedRecipe() => ParsedRecipe.empty(
+          metadata: ParseMetadata(
+            source: ImportSource.url,
+            parserVersion: '2.0.0',
+            timestamp: DateTime(2026, 1, 1),
+            totalParseTime: Duration.zero,
+            tierResults: const [],
+          ),
+        );
+
+    /// Proves: when a cache is injected via the BUT-1063 ctor seam,
+    /// `init()` MUST NOT call `ServiceLocator.get<OfflineService>()`. The
+    /// test runs with no ServiceLocator setup at all — if the lookup
+    /// happened, GetIt would throw `Object/factory with type OfflineService
+    /// is not registered`. A green test = the seam wins over the locator.
+    test(
+        'init() with injected cache skips ServiceLocator OfflineService lookup',
+        () async {
+      final fake = FakeLocalRecipeCache();
+      final service = RecipeParserService(
+        getCurrentUserId: () => 'test-user',
+        cache: fake,
+      );
+
+      await service.init();
+
+      expect(fake.initCallCount, 1,
+          reason: 'Injected cache.init() must be invoked exactly once');
+    });
+
+    /// Proves: a populated cache short-circuits the tier pipeline. The
+    /// result must carry `fromCache: true` (analytics depends on this) and
+    /// the cache `set` must NOT fire on a hit (writing back would double
+    /// I/O on every hit).
+    test(
+        'cache HIT short-circuits tier pipeline (no tier exec, fromCache=true)',
+        () async {
+      final cached = buildCachedRecipe();
+      final fake = FakeLocalRecipeCache()..storedRecipe = cached;
+      final service = RecipeParserService(
+        getCurrentUserId: () => 'test-user',
+        cache: fake,
+      );
+      await service.init();
+
+      final result = await service.parseFromUrl(
+        url: 'https://example.com/r/1',
+        htmlContent: validSchemaOrgHtml,
+      );
+
+      expect(result.success, isTrue);
+      expect(result.fromCache, isTrue,
+          reason: 'A cache hit must surface fromCache=true to the caller');
+      expect(result.recipe, same(cached),
+          reason: 'The cached object must be returned by identity, '
+              'not re-parsed');
+      expect(fake.getCallCount, 1);
+      expect(fake.setCallCount, 0,
+          reason: 'A hit must not write back to the cache');
+    });
+
+    /// Proves: cache miss → tier pipeline runs → the parsed result is
+    /// written back. Without the write-back, every parse would repeat the
+    /// expensive tier chain forever.
+    test('cache MISS triggers tier pipeline + writes parsed result back',
+        () async {
+      final fake = FakeLocalRecipeCache(); // storedRecipe null → miss
+      final service = RecipeParserService(
+        getCurrentUserId: () => 'test-user',
+        cache: fake,
+      );
+      await service.init();
+
+      final result = await service.parseFromUrl(
+        url: 'https://example.com/r/1',
+        htmlContent: validSchemaOrgHtml,
+      );
+
+      expect(result.success, isTrue,
+          reason: 'SchemaOrg JSON-LD should parse end-to-end');
+      expect(result.fromCache, isFalse,
+          reason: 'Fresh tier parse must report fromCache=false');
+      expect(fake.getCallCount, 1, reason: 'Cache must be consulted first');
+      expect(fake.setCallCount, 1, reason: 'Fresh result must be cached');
+      expect(fake.lastSetRecipe, isNotNull);
+      expect(fake.lastSetRecipe, same(result.recipe),
+          reason: 'The cached recipe must be the same object we returned');
+    });
+
+    /// Proves: when the cache entry was written by an older parser version,
+    /// `get` returns null (production `LocalRecipeCache.get` deletes the
+    /// stale entry and returns null). The tier pipeline runs again and
+    /// writes a fresh entry at the current version. Without this guard,
+    /// users would be served stale parses across parser upgrades.
+    test(
+        'parser-version mismatch invalidates cache entry (re-parse + new write)',
+        () async {
+      final fake = FakeLocalRecipeCache()
+        ..storedRecipe = buildCachedRecipe()
+        ..storedVersion = 'old-v0'; // != service's '2.0.0' → simulated miss
+
+      final service = RecipeParserService(
+        getCurrentUserId: () => 'test-user',
+        cache: fake,
+      );
+      await service.init();
+
+      final result = await service.parseFromUrl(
+        url: 'https://example.com/r/1',
+        htmlContent: validSchemaOrgHtml,
+      );
+
+      expect(result.success, isTrue);
+      expect(result.fromCache, isFalse,
+          reason: 'Stale-version entry must NOT count as a cache hit');
+      expect(fake.getCallCount, 1);
+      expect(fake.setCallCount, 1,
+          reason: 'A fresh entry at the current version must be written');
+    });
+
+    /// Proves: after 3 consecutive cache read failures, the circuit
+    /// breaker (failureThreshold=3 at recipe_parser_service.dart:152-155)
+    /// trips. The 4th `parseFromUrl` call must SHORT-CIRCUIT the cache
+    /// — `_checkCache:714` returns null when `isOpen` without invoking
+    /// `cache.get`. So `getCallCount` stays at 3, not 4.
+    ///
+    /// This is the cost-and-latency guarantee: when the cache layer is
+    /// broken, we don't keep paying the failure cost on every parse.
+    ///
+    /// Why non-parseable HTML + useLlm:false: a successful tier parse
+    /// would trigger `_cacheResult` which records a SUCCESS on the same
+    /// shared breaker and resets the failure count. We want pure read
+    /// failures here, so we use content that all rule-based tiers reject.
+    test('circuit-breaker opens after 3 cache-read failures, 4th call bypasses',
+        () async {
+      final fake = FakeLocalRecipeCache()..throwOnGet = true;
+      final service = RecipeParserService(
+        getCurrentUserId: () => 'test-user',
+        cache: fake,
+      );
+      await service.init();
+
+      const garbageHtml =
+          '<html><body>nothing structured here at all just prose</body></html>';
+
+      for (var i = 0; i < 4; i++) {
+        await service.parseFromUrl(
+          url: 'https://example.com/r/$i',
+          htmlContent: garbageHtml,
+          useLlm: false,
+        );
+      }
+
+      expect(fake.getCallCount, 3,
+          reason:
+              '4th call should short-circuit at _cacheCircuitBreaker.isOpen '
+              'guard — failureThreshold is 3');
     });
   });
 }
