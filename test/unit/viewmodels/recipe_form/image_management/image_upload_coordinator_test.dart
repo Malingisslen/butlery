@@ -664,10 +664,11 @@ void main() {
       expect(summary['total'], 5);
     });
 
-    /// canBulkRetry threshold pinned: > 1, NOT >= 1. With ONE failure the
-    /// bulk-retry UI must be hidden (the user can tap-retry the single
-    /// failed tile directly). Two or more → bulk UI shows.
-    test('canBulkRetry is true only when failed > 1 (not >= 1)', () {
+    /// BUT-1127: canBulkRetry threshold is `>= 1`, not `> 1`. A queue with
+    /// exactly one failure must still expose the bulk-retry affordance —
+    /// withholding it on the single-item state was a UX gap.
+    test('BUT-1127: canBulkRetry is true when failed >= 1 (single included)',
+        () {
       final h = _Harness();
 
       final oneFailed = h.coordinator.getUploadManagementSummary(
@@ -676,7 +677,7 @@ void main() {
         activeUploads: {},
       );
       expect(oneFailed['hasRetryableFailures'], isTrue);
-      expect(oneFailed['canBulkRetry'], isFalse);
+      expect(oneFailed['canBulkRetry'], isTrue);
 
       final twoFailed = h.coordinator.getUploadManagementSummary(
         imageStates: {},
@@ -686,9 +687,10 @@ void main() {
       expect(twoFailed['canBulkRetry'], isTrue);
     });
 
-    /// canBulkCancel threshold pinned: > 1, NOT >= 1. Same rationale —
-    /// single active upload uses the per-tile cancel control.
-    test('canBulkCancel is true only when active > 1 (not >= 1)', () {
+    /// BUT-1127: canBulkCancel threshold is `>= 1`, not `> 1`. A single
+    /// in-flight upload must still expose the bulk-cancel affordance.
+    test('BUT-1127: canBulkCancel is true when active >= 1 (single included)',
+        () {
       final h = _Harness();
 
       final oneActive = h.coordinator.getUploadManagementSummary(
@@ -697,7 +699,7 @@ void main() {
         activeUploads: {'/a.jpg': _pending()},
       );
       expect(oneActive['hasActiveUploads'], isTrue);
-      expect(oneActive['canBulkCancel'], isFalse);
+      expect(oneActive['canBulkCancel'], isTrue);
 
       final twoActive = h.coordinator.getUploadManagementSummary(
         imageStates: {},

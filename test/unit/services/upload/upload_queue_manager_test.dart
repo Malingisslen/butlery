@@ -542,11 +542,13 @@ void main() {
       expect(s['hasRetryable'], isFalse);
     });
 
-    /// FINDING #2 pin: the 'uploading' summary key actually reports
-    /// activeUploads.length — which includes the `retrying` state — so
-    /// a queue of 1 uploading + 1 retrying reports `uploading: 2`,
-    /// not 1. This documents current behaviour for downstream consumers.
-    test('uploading-key includes retrying entries (current behaviour pinned)',
+    /// BUT-1119: summary['uploading'] is strictly uploading, not
+    /// uploading+retrying. Retrying entries get their own counter, and
+    /// 'active' is the in-flight alias (uploading + retrying). A queue
+    /// of 1 uploading + 1 retrying reports `uploading: 1`, `retrying: 1`,
+    /// `active: 2`.
+    test(
+        "BUT-1119: summary['uploading'] is strictly uploading, not uploading+retrying",
         () {
       mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
       mgr.updateStatus(
@@ -564,7 +566,8 @@ void main() {
       );
 
       final s = mgr.getSummary();
-      expect(s['uploading'], 2);
+      expect(s['uploading'], 1);
+      expect(s['retrying'], 1);
       expect(s['active'], 2);
     });
   });

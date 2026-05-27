@@ -431,6 +431,21 @@ void main() {
       expect(text.toLowerCase(), contains('misslyckades'));
     });
 
+    /// BUT-1103: denominator in the all-failed template is `failed`, not
+    /// `total`. With 3 failed + 2 cancelled + 0 completed (total=5) the
+    /// message must read "3 av 3" (Swedish) — cancellations didn't attempt,
+    /// so they don't belong in the "tried" count.
+    test('BUT-1103: all-failed denominator excludes cancellations', () {
+      final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
+          0, 0, 0, /*failed*/ 3, /*total*/ 5, 0.0,
+          cancelled: 2);
+      expect(text, contains('3 av 3'),
+          reason:
+              'denominator must drop cancellations so the user sees "3 av 3", not "3 av 5"');
+      expect(text, isNot(contains('av 5')),
+          reason: 'cancelled items must not inflate the denominator');
+    });
+
     /// All success.
     test('completed == total routes to all-success template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
@@ -518,6 +533,40 @@ void main() {
       // 200 KB/s
       final text = UploadQueueSummaryCalculator.getSpeedDisplayText(200 * 1024);
       expect(text, '200 KB/s');
+    });
+  });
+
+  group('BUT-1104: getSpeedDisplayText sub-1 KB/s resolution', () {
+    /// 500 B/s = 0.488 KB/s — must preserve sub-KB resolution as "0.5 KB/s"
+    /// instead of rounding away to "0 KB/s" (the pre-fix bug).
+    test('500 B/s renders as "0.5 KB/s" (was "0 KB/s")', () {
+      expect(
+        UploadQueueSummaryCalculator.getSpeedDisplayText(500),
+        '0.5 KB/s',
+      );
+    });
+
+    /// Whole-KB rendering is unchanged by the sub-1 KB fix — 2048 B/s
+    /// stays as "2 KB/s" with no decimal.
+    test('2048 B/s renders as "2 KB/s" (whole-KB branch unchanged)', () {
+      expect(
+        UploadQueueSummaryCalculator.getSpeedDisplayText(2048),
+        '2 KB/s',
+      );
+    });
+
+    /// Zero stays an empty string — the no-data guard above the fix
+    /// is untouched.
+    test('0 B/s still renders as empty string (no-data guard unchanged)', () {
+      expect(UploadQueueSummaryCalculator.getSpeedDisplayText(0), '');
+    });
+
+    /// MB branch is untouched — 1.5 MB/s still renders as "1.5 MB/s".
+    test('1.5 MB/s renders as "1.5 MB/s" (MB branch unchanged)', () {
+      expect(
+        UploadQueueSummaryCalculator.getSpeedDisplayText(1024 * 1024 * 1.5),
+        '1.5 MB/s',
+      );
     });
   });
 

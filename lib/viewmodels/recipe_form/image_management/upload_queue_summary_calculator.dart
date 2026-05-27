@@ -155,7 +155,9 @@ class UploadQueueSummaryCalculator {
     } else if (failed > 0 && completed > 0) {
       return l.uploadStatusPartialFailure(completed, total, failed);
     } else if (failed > 0) {
-      return l.uploadStatusAllFailed(failed, total);
+      // BUT-1103: denominator is `failed` (not `total`) — cancellations
+      // didn't attempt, so they don't belong in the "tried" count.
+      return l.uploadStatusAllFailed(failed, failed);
     } else if (completed == total && total > 0) {
       return l.uploadStatusAllSuccess(total);
     } else if (cancelled > 0 &&
@@ -195,7 +197,12 @@ class UploadQueueSummaryCalculator {
       return '${mbPerSecond.toStringAsFixed(1)} MB/s';
     } else {
       final kbPerSecond = bytesPerSecond / 1024;
-      return '${kbPerSecond.toStringAsFixed(0)} KB/s';
+      // BUT-1104: preserve sub-KB resolution so 500 B/s shows as 0.5 KB/s, not 0.
+      if (kbPerSecond < 1.0) {
+        return '${kbPerSecond.toStringAsFixed(1)} KB/s';
+      } else {
+        return '${kbPerSecond.toStringAsFixed(0)} KB/s';
+      }
     }
   }
 

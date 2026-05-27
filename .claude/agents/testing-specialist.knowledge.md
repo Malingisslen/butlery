@@ -3445,3 +3445,49 @@ The test pins `expect(lastErr, isNot(contains('permission-denied')))`. This is a
 **Cascade-delete test coverage scoping (BUT-894):**
 Production `_cleanupRecipeReferences` in `recipe_service_adapter.dart` drains: `recipeComments`, `recipeRatings`, `recipeSocialStats`, `sharedContent` parent + `members` subcollection. It does NOT drain `engagements`/`views`/`dismissals` — neither do those collections exist in the production schema (grep confirms zero references). Test correctly mirrors production. Never write tests for "subcollections that might exist someday"; pin the production contract as it stands, file a follow-up if you find a real orphan path.
 
+
+### 2026-05-27 — iter-85 P4 upload-subsystem flips verified
+
+**Trigger:** Pattern discovered + Bug-flip review pattern.
+
+Reviewed 4 ticket-then-flip test changes in the upload subsystem (BUT-1119,
+BUT-1127, BUT-1103, BUT-1104). All clean. Reusable patterns extracted:
+
+**Verifying a state-seeding test for a multi-state summary:**
+When a test asserts `summary['stateA'] == N`, trace the seeding code two
+steps: (1) does the seed actually transition the item into stateA?
+(2) does the summary computation derive `stateA` from a method that
+filters by exactly that state, not a union? For BUT-1119: `addUpload`
+adds in `pending`, then `updateStatus` overwrites with the target state
+(line 90 — direct map assignment, no merge). `getSummary` derives
+`uploading` from `getByState(uploading).length` and `retrying` from
+`getByState(retrying).length` — distinct queries, not subset of `active`.
+This is why the test can meaningfully assert all three counters.
+
+**Genuine bug-flip vs trivial post-fix pass — the boundary case test:**
+When a fix changes `> N` to `>= N`, the bug-flip test must seed exactly
+`N` items (the boundary). Seeding `N+1` items passes both before and
+after the fix — it's a regression guard, not a bug-flip. BUT-1127 does
+this right: `failedUploads` has exactly 1 entry for the boundary case
+AND a `twoFailed` case in the same test for regression coverage. Pattern:
+**one boundary assertion + one regression assertion in the same test
+block** maximises evidence per LoC.
+
+**Localisation-template denominator assertion:**
+When a fix changes a denominator in a localisation call (e.g.
+`l.foo(numerator, total)` → `l.foo(numerator, numerator)`), the test
+must (a) assert the rendered string contains the new denominator AND
+(b) assert it does NOT contain the old denominator. Asserting only
+"contains '3 av 3'" is satisfied by both `"3 av 3"` and `"3 av 35"`.
+BUT-1103 does both: `contains('3 av 3')` + `isNot(contains('av 5'))`.
+The `isNot` clause is the load-bearing one.
+
+**Branch-coverage test set for a piecewise function:**
+For a piecewise function with N branches, write N tests, each
+exercising one branch's distinguishing input. Don't write tests that
+straddle branches. BUT-1104's `getSpeedDisplayText` has 4 branches
+(zero-guard, sub-KB, whole-KB, MB) — 4 tests, each picks an input
+that lands cleanly in one branch. Confirming "distinct branches"
+during review = trace each test's input through the production
+if/else chain and verify no two inputs land on the same line.
+

@@ -323,8 +323,10 @@ class ImageUploadCoordinator {
       'total': total,
       'hasRetryableFailures': failed > 0,
       'hasActiveUploads': active > 0,
-      'canBulkRetry': failed > 1, // Show bulk retry only for multiple failures
-      'canBulkCancel': active > 1, // Show bulk cancel only for multiple active
+      // BUT-1127: show bulk retry whenever there's something to retry.
+      'canBulkRetry': failed >= 1,
+      // BUT-1127: show bulk cancel whenever there's something in-flight to cancel.
+      'canBulkCancel': active >= 1,
     };
   }
 

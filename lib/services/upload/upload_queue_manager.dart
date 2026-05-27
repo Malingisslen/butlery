@@ -209,7 +209,10 @@ class UploadQueueManager {
   /// Get queue summary for UI display
   Map<String, dynamic> getSummary() {
     final pending = pendingUploads.length;
-    final uploading = activeUploads.length;
+    // BUT-1119: 'uploading' is strictly the uploading state; 'retrying' is
+    // tracked separately so summary consumers don't conflate the two.
+    final uploading = getByState(ImageUploadState.uploading).length;
+    final retrying = getByState(ImageUploadState.retrying).length;
     final completed = completedUploads.length;
     final failed = failedUploads.length;
     final total = _queue.length;
@@ -217,11 +220,13 @@ class UploadQueueManager {
     return {
       'pending': pending,
       'uploading': uploading,
-      'active': uploading, // Alias for uploading
+      'retrying': retrying,
+      'active':
+          activeUploads.length, // Alias for uploading + retrying (in-flight)
       'completed': completed,
       'failed': failed,
       'total': total,
-      'hasActive': uploading > 0,
+      'hasActive': activeUploads.isNotEmpty,
       'hasRetryable': retriableFailedUploads.isNotEmpty,
       'completionRate': total > 0 ? (completed / total * 100).round() : 0,
     };

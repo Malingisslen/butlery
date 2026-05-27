@@ -1,6 +1,46 @@
 # Sprint Backlog
 
-## Sprint: iter-84 — SmartImportViewModel P4 Low-Bug sweep — 2026-05-27 (Wed)
+## Sprint: iter-85 — Upload subsystem P4 Low-Bug sweep — 2026-05-27 (Wed)
+
+Theme: Four P4 Low Bugs across the upload subsystem (3 sibling files). Single agent. Same `Bug` shape as iter-84, ticket-then-flip. No Phase 1.5 expansion (all P4 + plain `Bug` label, no area-label combo).
+
+### Ship this sprint
+
+#### Agent — Upload subsystem fixes
+
+- [x] **A1. BUT-1119: UploadQueueManager.getSummary['uploading'] honest count** — `lib/services/upload/upload_queue_manager.dart:212`. Change `final uploading = activeUploads.length;` to `final uploading = getByState(ImageUploadState.uploading).length;`. Keep `'active'` key set to `activeUploads.length` (alias for in-flight = uploading+retrying). Add new `'retrying'` key = `getByState(ImageUploadState.retrying).length`. So the summary now has honest semantics: `uploading` = strictly uploading, `retrying` = strictly retrying, `active` = both. (BUT-1119)
+- [x] **A2. BUT-1119 pinning test** — `test/unit/services/upload/upload_queue_manager_test.dart`. New test: seed queue with 1 uploading + 1 retrying. Assert `summary['uploading'] == 1` (NOT 2), `summary['retrying'] == 1`, `summary['active'] == 2` (unchanged). (BUT-1119)
+- [x] **A3. BUT-1127: ImageUploadCoordinator bulk buttons on single-item state** — `lib/viewmodels/recipe_form/image_management/image_upload_coordinator.dart:326-327`. Change `failed > 1` → `failed >= 1` and `active > 1` → `active >= 1` for `canBulkRetry` / `canBulkCancel`. Option A from the ticket — UX consistency over single-vs-bulk distinction. (BUT-1127)
+- [x] **A4. BUT-1127 pinning test flip** — `test/unit/viewmodels/recipe_form/image_management/image_upload_coordinator_test.dart`. Existing tests pin both branches at `> 1`. Flip the assertions to `>= 1`: a queue with 1 failed should now have `canBulkRetry == true`; a queue with 1 active should have `canBulkCancel == true`. (BUT-1127)
+- [x] **A5. BUT-1103: UploadQueueSummaryCalculator denominator** — `lib/viewmodels/recipe_form/image_management/upload_queue_summary_calculator.dart:158`. Change `return l.uploadStatusAllFailed(failed, total);` to `return l.uploadStatusAllFailed(failed, failed);`. This branch fires when `completed == 0` AND `failed > 0` — denominator should be the count of items that actually attempted, i.e. just `failed` (cancellations didn't attempt). (BUT-1103)
+- [x] **A6. BUT-1103 pinning test flip** — `test/unit/viewmodels/recipe_form/image_management/upload_queue_summary_calculator_test.dart`. Existing test pins `uploadStatusAllFailed(3, 5)` (with cancellations inflating total). Flip to expect `uploadStatusAllFailed(3, 3)` and verify the resulting string no longer says "3 av 5" but rather "3 av 3" (or whichever Swedish form `uploadStatusAllFailed(3, 3)` produces). (BUT-1103)
+- [x] **A7. BUT-1104: getSpeedDisplayText sub-1 KB/s precision** — `lib/viewmodels/recipe_form/image_management/upload_queue_summary_calculator.dart:190-200`. In the `< 1.0 MB/s` branch, change the KB formatting to use `toStringAsFixed(1)` when `kbPerSecond < 1.0` (sub-KB cases) so 500 B/s shows as "0.5 KB/s" not "0 KB/s". Keep `toStringAsFixed(0)` for `kbPerSecond >= 1.0` (whole-KB cases). (BUT-1104)
+- [x] **A8. BUT-1104 pinning test** — same test file. New test: `getSpeedDisplayText(500)` returns "0.5 KB/s" (not "0 KB/s"). `getSpeedDisplayText(2048)` returns "2 KB/s" (whole KB unchanged). `getSpeedDisplayText(0)` returns '' (no-data unchanged). (BUT-1104)
+
+### Step 0 — premise verification (done)
+
+- **BUT-1119** verified: `upload_queue_manager.dart:166-170` `activeUploads` getter explicitly includes both `uploading` AND `retrying`. Line 212 `final uploading = activeUploads.length` — over-counts.
+- **BUT-1127** verified: `image_upload_coordinator.dart:326-327` `canBulkRetry: failed > 1` and `canBulkCancel: active > 1`. Comment confirms intent ("multiple"); matches ticket.
+- **BUT-1103** verified: `upload_queue_summary_calculator.dart:155-158` — `uploadStatusAllFailed(failed, total)` fires when `failed > 0 && completed > 0` is false. `total` includes cancelled items, inflating denominator.
+- **BUT-1104** verified: `upload_queue_summary_calculator.dart:190-200` — `(500/1024).toStringAsFixed(0) == "0"`. The KB-branch always uses `toStringAsFixed(0)`.
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
+- [ ] Touched test files pass.
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1119 + BUT-1127 + BUT-1103 + BUT-1104 in Linear.
+
+---
+
+## Archived iter-84 (commit `0e85b8786` — BUT-1145 + BUT-1146 + BUT-1147) — 2026-05-27 (Wed)
+
+Theme: Three P4 Low Bugs all in `lib/viewmodels/smart_import_viewmodel.dart`, dispatched to a single agent. Same file, no merge collision risk. All mechanical fits. P3 Bug well dried after iter-83 — graduating to P4 batches; the priority just reflects user-visible impact, the shape is identical. No Phase 1.5 expansion (`import` not in expansion-trigger label list).
 
 Theme: Three P4 Low Bugs all in `lib/viewmodels/smart_import_viewmodel.dart`, dispatched to a single agent. Same file, no merge collision risk. All mechanical fits. P3 Bug well dried after iter-83 — graduating to P4 batches; the priority just reflects user-visible impact, the shape is identical. No Phase 1.5 expansion (`import` not in expansion-trigger label list).
 
