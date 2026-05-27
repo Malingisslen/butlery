@@ -420,12 +420,10 @@ void main() {
     /// The exception must be captured per-recipe and NOT abort the import
     /// loop — pin per-recipe error isolation at the repository boundary.
     ///
-    /// DISCOVERED BUG: the error message uses `recipeJson['title']` to
-    /// label which recipe failed, but Recipe.toJson() nests `title` under
-    /// `core.title`. Top-level `title` is always null, so every per-recipe
-    /// error reads the generic "Okänt recept" label — users importing a
-    /// 200-recipe backup get N identical "Okänt recept: ..." lines and
-    /// can't tell which recipe to retry. Pinned below for regression.
+    /// BUT-1139 fix: the error message now sources the recipe title from
+    /// `core.title` (current nested shape) with a fallback to top-level
+    /// `title`, so users importing a 200-recipe backup see WHICH recipe
+    /// failed instead of N identical "Okänt recept" lines.
     test('isolates per-recipe repository failures into errors list', () async {
       final recipes = [
         RecipeFactory.build(title: 'Will Succeed'),
@@ -456,12 +454,13 @@ void main() {
       expect(result.errors.length, equals(1));
       expect(result.errors.first, contains('quota exceeded'),
           reason: 'raw exception must surface for diagnostics');
-      // BUG: title is "Okänt recept" instead of "Will Fail" because
-      // recipeJson['title'] looks at the top level — Recipe.toJson() puts
-      // it under core.title. If a future fix changes this, update the test.
-      expect(result.errors.first, contains('Okänt recept'),
-          reason: 'PIN BUG: title fallback wins because recipeJson[\'title\']'
-              ' is null (Recipe.toJson nests title under core.title)');
+      // BUT-1139: error message now contains the REAL recipe title
+      // (sourced from core.title) so users know which entry failed.
+      expect(result.errors.first, contains('Will Fail'),
+          reason: 'BUT-1139 fix: per-recipe error label resolves via '
+              'core.title (nested) instead of top-level title');
+      expect(result.errors.first, isNot(contains('Okänt recept')),
+          reason: 'fallback label must NOT win when a real title is available');
     });
   });
 

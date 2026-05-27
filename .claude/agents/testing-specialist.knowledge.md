@@ -3238,3 +3238,187 @@ Run this on any future `extends Mock` -> `extends Fake` rename before declaring 
 **Local `_MockAuthRepository extends Mock` + `_AuthStateHelper` extension pattern is the right migration shape for the call-sites that genuinely need stubbing**: keeps the old `mock.setAuthState(user: x)` ergonomic call site while routing through `when(() => currentUser).thenReturn(x)`. Seen in `test/unit/services/{auth_service,user_service}_test.dart`. Replicate for the next rename.
 
 **Leftover for follow-up**: `mock_configurator.dart::configureAuthStateStream` is `@Deprecated` with zero callers — its body still calls `when()` against a `dynamic mock` arg. Delete in the next test-infrastructure cleanup pass.
+
+### 2026-05-27 — Collaboration module owner-gate + race + atomicity pinning [Pattern discovered]
+Batch 14 of Intent-Test Sprint. `CollaborationManagementModule` (236 LOC,
+was 14% covered → 41 tests, all green) is a high-security write-side surface:
+membership management, permission upgrades, ownership transfer.
+
+Pattern that proved most valuable: **single-update atomicity pins**. The
+`transferOwnership` test uses `verify(...).captured` with
+`expect(captured.length, 1)` plus assertions on the single captured `Recipe`
+arg — this catches a refactor that splits "demote old owner" and "promote
+new owner" into two writes (which would create a window where both/neither
+holds owner). Same pattern for `addCollaborators` to pin fresh-read-before-
+write: stub `repo.read` to return a recipe with a *different* membership
+than the local snapshot, then assert the captured update merges from the
+fresh read (race-resistance vs sibling axis BUT-1108).
+
+Tactical notes for future siblings:
+- `MockRecipeRepository.read/update` are pure mocktail mocks (no concrete
+  override) — stub them per-test with `when(...).thenAnswer(...)`.
+- `MockUnifiedRecipeService.createCollaborativeRecipe` IS overridden (spy
+  pattern). Use `setCollaborativeState(shouldSucceed: true/false)` and read
+  `createCollaborativeRecipeCalls` instead of mocktail `verify()`.
+- `MockDIContainer()` + `app_provider.ServiceLocator.initialize(...)` is the
+  bridge so `ServiceLocator.get<PermissionService>()` inside the module
+  resolves to the test's `FakePermissionService`.
+- `registerFallbackValue(RecipeBuilder().build())` is required for
+  `verify(() => repo.update(any()))` / `captureAny()`.
+- Privilege-escalation surface worth pinning: `updateMemberPermissions`
+  maps string `'admin'` → `ResourcePermission.owner` (not `.admin`).
+  Test #28 freezes this so a silent change in mapping causes a CI failure.
+
+No production bugs caught — module's owner-gate, fresh-read, and atomic-
+write contracts all hold. Module's testability is good; only minor friction
+was the `ServiceLocator.get<>()` lookups inside methods (vs constructor
+injection) requiring the production-bridge dance.
+
+### 2026-05-27 — SmartImportViewModel orchestration tests [Pattern discovered]
+Batch 14 of the Intent-Test Sprint extended `smart_import_viewmodel_test.dart`
+from 28 → 69 tests (all passing). Covered the orchestration contract above
+ImportManager: phase state machine, error localization (10 English→Swedish
+mappings), rate-limit-phrase detection (3 Swedish/English variants),
+assistance-result propagation (sourceUrl/extractedText/ingredient hints),
+retryWithoutLlm options forwarding, manual import escape hatch,
+SharedPreferences pending-import persistence (rehydrate on construction,
+retry reads persisted URL not edited _input, dismiss/success clears).
+
+Patterns worth reusing for any async ViewModel with a long-running mocked
+collaborator:
+
+1. **Pin in-flight phase via `Completer<T>`, not `Future.delayed(seconds)`.**
+   Initial draft used `Future.delayed(Duration(seconds: 30))` to simulate an
+   in-flight import. The test that asserted `isImporting` between two
+   `startImport()` calls flaked because nothing kept the phase latched. A
+   `Completer<ImportManagerResult>` held open with `hang.future` works
+   deterministically and lets the test complete the future at the end for
+   clean teardown (no leaked timers, no `tearDown` race).
+
+2. **Disposed-VM tearDown guard.** Tests that exercise dispose-during-await
+   need `tearDown(() { if (!viewModel.isDisposed) viewModel.dispose(); })`.
+   The default `viewModel.dispose()` in tearDown throws
+   `debugAssertNotDisposed` if the test already disposed. This is a sibling
+   pattern for any test group that touches lifecycle.
+
+3. **SharedPreferences mock initial values per setUp.**
+   `SharedPreferences.setMockInitialValues({})` in `setUp()` (not just
+   `setUpAll`) — otherwise persisted state leaks across tests because
+   SharedPreferences' singleton cache is module-scoped.
+
+4. **`unawaited_futures` lint vs intentional fire-and-forget.** When a test
+   intentionally doesn't await a future (to inspect intermediate state), use
+   `// ignore: unawaited_futures` rather than assigning to `_ = ` or `.ignore()`
+   — both forms lose the future reference for cleanup. Pair with a
+   `Completer` so the test can complete it later for clean teardown.
+
+5. **Parameterized tests via `for` + closure.** Writing 10 separate `test()`
+   calls for each localization mapping would have bloated the file. A
+   `cases.forEach((english, swedish) { test('"$english" → "$swedish"', ...) })`
+   loop generates them, and the test name carries both sides of the mapping
+   into the test runner output so a regression report names the exact pair
+   that broke. Reusable for any "input→output table" contract.
+
+Bugs/contract surprises spotted (NOT fixed — flagged for the user):
+
+- **`smart_import_viewmodel.dart:339-345`**: Rate-limit response synthesis is
+  lossy — `_handleImportResult` discards the actual `RateLimitDenied` if the
+  manager produced one (the only path it inspects is `result.errorMessage`)
+  and re-fabricates one with `retryAfter: const Duration(hours: 1)`,
+  `limitType: LimitType.perDay`, `suggestedAction: FallbackAction.useUserAssisted`
+  — all hard-coded. Impact: the rate-limit dialog can show "try in 1 hour"
+  even when the actual window is 1 minute or 1 day; the suggested fallback
+  is always `useUserAssisted` regardless of the actual limit. Fix:
+  `ImportManagerResult` needs a typed `RateLimitDenied?` field (or
+  `ImportManagerResult.rateLimit(RateLimitDenied)`) and the VM should
+  surface it verbatim.
+
+- **`smart_import_viewmodel.dart:478-483`**: `_localizeImportError` checks
+  `'could not save'` AFTER `_isNetworkError(lower)` and after `'could not read'`.
+  A backend message like "could not save: network unreachable" gets
+  classified as a network error (`importErrorCouldNotReachPage`), not as
+  a save failure. Low impact (the network branch IS the underlying cause)
+  but the surfaced Swedish string mis-attributes the failure stage.
+
+- **`smart_import_viewmodel.dart:441-451`**: `triggerManualImport` sets
+  `_phase = ImportPhase.needsHelp` directly via `_setPhase` but the
+  `currentStep` getter falls back to `_lastStepBeforeError` when phase is
+  `needsHelp` — and `_lastStepBeforeError` is never set on this path (it
+  stays at whatever the previous import left it: 0 if first time, 3 if
+  prior success). Impact: the manual-import dialog renders an arbitrary
+  step number in the progress strip. Low severity (cosmetic), but a
+  representative example of "two state fields that should be one".
+
+- **`smart_import_viewmodel.dart:524-540`**: `_loadPendingImport` calls
+  `_inputDetector.detect(url)` then `notifyListeners()` BEFORE checking if
+  `_input.isEmpty`. If the user has already typed something into the input
+  field by the time SharedPreferences resolves (race), the persisted URL
+  silently overwrites the user's typed text. Mitigated by the `if
+  (_input.isEmpty)` guard around `_input = url` but the side-effect of
+  setting `_hasPendingImport = true` + `notifyListeners()` happens
+  unconditionally — the rebuild may flash the "pending import" banner
+  briefly even when the user has decisively typed a fresh URL. Low impact
+  visually, but worth a `_input.isEmpty` guard around `_hasPendingImport`
+  too if we want a clean "user-typed wins" semantic.
+
+No reused-pattern conflicts, no new helpers needed. The existing 28
+clipboard/tracker tests in the file were preserved unchanged — additive
+expansion rather than rewrite.
+
+---
+
+### 2026-05-27 — `friends_internal_operations.dart` (sprint batch 14)
+Trigger: 4.7% → ~95% coverage on the friends-ops facade.
+
+**Triggers/patterns to reuse:**
+- Production code reads `ServiceLocator.get<FriendsRepository>()` and
+  `ServiceLocator.get<UserService>()` INSIDE method bodies (not constructor-
+  injected). Pattern: use `BaseUnitTest.setupUnitWithProductionLocator()` so
+  both `prod.ServiceLocator` and `TestServiceLocator` share GetIt, then
+  `TestServiceLocator.registerMock<T>(localMock)` inside the inner setUp of
+  the affected group to swap the auto-registered default.
+- `MockUserService` from `production_mocks.dart` does NOT stub
+  `currentUserProfile`. Use a LOCAL `class _MockUserService extends Mock
+  implements UserService {}` and `when(() => svc.currentUserProfile)
+  .thenReturn(...)` instead — matches the documented workaround in
+  `base_social_coordinator_test.dart`.
+- `FakeAuthRepository.setAuthState(userId: ...)` does NOT populate
+  `currentUser` (only `currentUserId`). Production code that reads
+  `_authRepository.currentUser?.uid` will see null. Either pass a real
+  `User` via `MockFactory.createMockUser(uid: ...)` OR roll a tiny local
+  `class _MockUser extends Mock implements User { String get uid => _uid }`.
+- `_FakeStateManager extends Fake implements FriendsStateManager` — avoids
+  ChangeNotifier wiring. Override only the surfaces the SUT calls; capture
+  mutations into typed records (`List<({String id, FriendCategory c})>`)
+  for clean assertions without `verify(...).captured` plumbing.
+- Privilege-escalation guard test pattern: pass a category whose `ownerId`
+  ≠ current user, then `verify(addSelfToCategory).called(1)` +
+  `verifyNever(saveCategory(any(), any()))`. Catches the bug class where
+  a member could overwrite the entire category doc client-side.
+- BUG-016 recovery (assertion-error + re-fetch verify): use
+  `when(...).thenAnswer((_) async { saveCalls++; throw Exception('FIRESTORE
+  INTERNAL ASSERTION FAILED'); })` — must return `Future<void>` so use
+  `async` body. Pair with a `getCategory` stub that returns the verified
+  doc to exercise the happy recovery path; return a doc with wrong member
+  count to exercise the retry-save path.
+- Invitation-status enum-to-string is `status.toString().split('.').last`
+  → `'accepted'`, not `'GroupInvitationStatus.accepted'`. Pin this in a
+  test — wire-format stability matters for cross-client compat.
+
+**Production bugs spotted:** none in the file under test. The
+`syncCategoryToFirebaseInternal` privilege routing is sound; assertion-
+error recovery + member-count retry logic both behave as intended.
+
+**Testability friction:**
+- Three `ServiceLocator.get<T>()` lookups inside method bodies
+  (`FriendsRepository`, `UserService`, `PermissionService`) make this
+  facade harder to test in isolation than constructor-injected services.
+  Would benefit from a constructor-injection refactor — but the production-
+  bridge pattern keeps tests working without touching production.
+- `createInvitationLinkInternal` reaches into the static
+  `DeepLinkService.generateShortUrl` which itself calls
+  `ServiceLocator.get<PermissionService>().isAuthenticated`. Hard to unit-
+  test in isolation; skipped this method since the meaningful behaviour
+  (URL building) belongs in DeepLinkService tests, not here.
+
+**Result:** 35 tests, all passing. Format + analyze clean.
