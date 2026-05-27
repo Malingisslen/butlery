@@ -13874,4 +13874,16 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get dialogUrlHint => 'https://exempel.se';
+
+  @override
+  String get itemTypeRecipe => 'recept';
+
+  @override
+  String get itemTypeGroup => 'grupp';
+
+  @override
+  String get itemTypeShoppingList => 'inköpslista';
+
+  @override
+  String get unnamedSharedList => '(Namnlös lista)';
 }

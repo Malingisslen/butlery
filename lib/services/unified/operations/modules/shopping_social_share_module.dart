@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Module handling social shopping list sharing with friends and groups.
 /// Provides complete social sharing functionality with Firebase integration.
@@ -51,7 +52,10 @@ class ShoppingSocialShareModule {
       }
 
       final listData = listDoc.data()!;
-      final listTitle = listData['name'] ?? '?';
+      // BUT-1109: localized fallback for missing/malformed list name. Reaches
+      // recipients only via legacy/malformed data — normal share flow always
+      // sets `name`. Replaces the literal '?' character.
+      final listTitle = listData['name'] ?? AppLocale.current.unnamedSharedList;
 
       // Prepare shared list data for Firebase
       final sharedListData = {
@@ -269,8 +273,13 @@ class ShoppingSocialShareModule {
             listData['isActive'] == true) {
           sharedLists.add({
             'id': sharedListId,
-            'title': listData['title'] ?? '?',
-            'sharedByDisplayName': listData['sharedByDisplayName'] ?? '?',
+            // BUT-1109: localized fallback for missing title — was literal '?'.
+            'title': listData['title'] ?? AppLocale.current.unnamedSharedList,
+            // BUT-1109: reuse the existing shoppingUnknownUser key (Swedish:
+            // "Okänd användare") for a missing displayName — semantically a
+            // person, not a list, so unnamedSharedList would be wrong here.
+            'sharedByDisplayName': listData['sharedByDisplayName'] ??
+                AppLocale.current.shoppingUnknownUser,
             'sharedByAvatarUrl': listData['sharedByAvatarUrl'],
             'sharedAt': receivedData['sharedAt'],
             'description': listData['description'],
@@ -307,7 +316,8 @@ class ShoppingSocialShareModule {
         final data = doc.data();
         return {
           'id': doc.id,
-          'title': data['title'] ?? '?',
+          // BUT-1109: localized fallback for missing title — was literal '?'.
+          'title': data['title'] ?? AppLocale.current.unnamedSharedList,
           'sharedAt': data['sharedAt'],
           'sharedWithCount': (data['sharedWithUserIds'] as List?)?.length ?? 0,
           'description': data['description'],

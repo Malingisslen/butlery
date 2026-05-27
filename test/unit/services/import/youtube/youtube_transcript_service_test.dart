@@ -639,14 +639,13 @@ void main() {
       expect(t, contains('hej'));
       expect(t, contains('välkomna'));
       expect(t, contains('receptet'));
-      // NOTE: BUG-2 — `_cleanTranscript` normalizes whitespace BEFORE
-      // stripping `[musik]`/`[applåder]` markers, leaving double-spaces
-      // where markers used to be. Pinning current behaviour; fix would
-      // re-collapse whitespace AFTER the marker strips. The test below
-      // asserts no triple-spaces (which would indicate a different bug).
-      expect(t, isNot(contains('   ')),
-          reason: 'three or more consecutive spaces would indicate a different '
-              'bug than BUG-2 (which produces only double-spaces)');
+      // BUT-1096 fix: `_cleanTranscript` now strips `[musik]`/`[applåder]`
+      // markers BEFORE normalizing whitespace, so no double-spaces are left
+      // where markers used to be. Tightened from `'   '` (3-space) to `'  '`
+      // (2-space) — the previous looser assertion let the bug through.
+      expect(t, isNot(contains('  ')),
+          reason: 'BUT-1096: any two-or-more consecutive spaces indicate the '
+              'marker-strip-vs-whitespace-normalize order has regressed');
       svc.dispose();
     });
 

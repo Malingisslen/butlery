@@ -434,10 +434,13 @@ void main() {
       expect(sharedDocs.first.data()['description'], isNull);
     });
 
-    /// Missing `name` field → title falls back to the literal '?'. Pinned
-    /// as current behaviour (BUG-4 in the doc header). A future tidy
-    /// should probably use a localized "(Namnlös lista)" string.
-    test('missing list name → title defaults to literal "?"', () async {
+    /// BUT-1109 fix: missing `name` field → title falls back to the
+    /// localized "(Namnlös lista)" / "(Unnamed list)" string instead of
+    /// the literal '?' character. Default test locale is Swedish (the app
+    /// default), so the Swedish form is asserted.
+    test(
+        'BUT-1109: missing list name renders localized fallback, not literal "?"',
+        () async {
       // Seed a list with NO `name` field.
       await firestore
           .collection(FirestoreCollections.users)
@@ -452,7 +455,12 @@ void main() {
       );
       expect(ok, isTrue);
       final sharedDocs = await _allShared(firestore);
-      expect(sharedDocs.first.data()['title'], '?');
+      final title = sharedDocs.first.data()['title'] as String;
+      expect(title, contains('Namnlös'),
+          reason: 'BUT-1109: Swedish localized fallback should be used '
+              '(default app locale)');
+      expect(title, isNot(equals('?')),
+          reason: 'BUT-1109: must no longer surface the literal "?" character');
     });
 
     /// Verifies the module does NOT write to `user_notifications` — the

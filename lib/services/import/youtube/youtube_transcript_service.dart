@@ -416,14 +416,16 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
   /// Clean up transcript text.
   String _cleanTranscript(String text) {
     return text
-        // Normalize whitespace
-        .replaceAll(RegExp(r'\s+'), ' ')
-        // Remove music/sound indicators
+        // BUT-1096: remove music/sound indicators FIRST so leftover spaces
+        // get collapsed by the whitespace normalization below. Previous
+        // order (normalize → strip) left double-spaces where markers used
+        // to be.
         .replaceAll(RegExp(r'\[musik\]', caseSensitive: false), '')
         .replaceAll(RegExp(r'\[music\]', caseSensitive: false), '')
         .replaceAll(RegExp(r'\[applåder\]', caseSensitive: false), '')
         .replaceAll(RegExp(r'\[applause\]', caseSensitive: false), '')
-        // Clean up
+        // Normalize whitespace AFTER marker strip.
+        .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
   }
 

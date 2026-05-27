@@ -23349,6 +23349,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'https://exempel.se'**
   String get dialogUrlHint;
+
+  /// BUT-1115: lowercase noun for 'recipe' interpolated into delete-confirmation titles (e.g. 'Ta bort recept?').
+  ///
+  /// In sv, this message translates to:
+  /// **'recept'**
+  String get itemTypeRecipe;
+
+  /// BUT-1115: lowercase noun for 'group' interpolated into delete-confirmation titles (e.g. 'Ta bort grupp?').
+  ///
+  /// In sv, this message translates to:
+  /// **'grupp'**
+  String get itemTypeGroup;
+
+  /// BUT-1115: lowercase noun for 'shopping list' interpolated into delete-confirmation titles (e.g. 'Ta bort inköpslista?').
+  ///
+  /// In sv, this message translates to:
+  /// **'inköpslista'**
+  String get itemTypeShoppingList;
+
+  /// BUT-1109: localized fallback shown when a shared shopping list lacks a name (legacy/malformed data). Replaces the literal '?' character.
+  ///
+  /// In sv, this message translates to:
+  /// **'(Namnlös lista)'**
+  String get unnamedSharedList;
 }
 
 class _AppLocalizationsDelegate

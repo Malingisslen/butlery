@@ -294,14 +294,13 @@ void main() {
           findsOneWidget);
     });
 
-    /// SURFACES PRODUCTION BUG (see library doc): English locale should
-    /// localize "recept" → "recipe" but the production code hardcodes the
-    /// Swedish word. This test EXPECTS the broken behaviour today (so it
-    /// passes), but the `reason:` documents the bug so a future
-    /// l10n-fix PR will flip this assertion to the corrected expectation.
+    /// BUT-1115 fix: English locale now properly localizes the itemType
+    /// to "recipe" rather than leaking the Swedish "recept" string. The
+    /// dialog title in English is "Delete recipe?". Same bug class as
+    /// BUT-1088 (hardcoded Swedish in nominally-localized helpers).
     testWidgets(
-        'english locale → recipe delete title still leaks Swedish "recept" '
-        '(documents BUT-style hardcoded-string bug)', (tester) async {
+        'english locale → recipe delete title is fully localized (BUT-1115)',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         _triggerButton<bool?>(
           openDialog: (ctx) => CommonDialogActions.showRecipeDeleteConfirmation(
@@ -315,19 +314,15 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // Today's broken behaviour: title is "Delete recept?" in English.
-      // Once the production code properly localizes the itemType (e.g.
-      // via context.l10n.itemTypeRecipe), flip the matcher to expect
-      // "Delete recipe?" and the broken-locale leak will surface.
       expect(
-        find.text('Delete recept?'),
+        find.text('Delete recipe?'),
         findsOneWidget,
-        reason: 'lib/core/utils/common_dialog_actions.dart:46 passes the '
-            'literal Swedish string \'recept\' as itemType, which lands in '
-            'the dialog title verbatim regardless of locale. Same bug class '
-            'as BUT-1088 (hardcoded Swedish in nominally-localized helpers). '
-            'Fix: thread a localized itemType through the public helper.',
+        reason: 'BUT-1115: itemType is now sourced from '
+            'context.l10n.itemTypeRecipe so the English locale renders '
+            '"Delete recipe?" instead of the Swedish-leaking "Delete recept?".',
       );
+      // Negative: the previously-leaking Swedish literal must NOT appear.
+      expect(find.text('Delete recept?'), findsNothing);
     });
   });
 

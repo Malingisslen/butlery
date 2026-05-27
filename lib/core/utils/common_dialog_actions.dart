@@ -43,7 +43,7 @@ class CommonDialogActions {
     return await showDeleteConfirmation(
       context: context,
       itemName: recipeName,
-      itemType: 'recept',
+      itemType: context.l10n.itemTypeRecipe,
       warningMessage: context.l10n.recipeDeleteWarning,
       icon: AdaptiveIcons.restaurant,
     );
@@ -57,7 +57,7 @@ class CommonDialogActions {
     return await showDeleteConfirmation(
       context: context,
       itemName: groupName,
-      itemType: 'grupp',
+      itemType: context.l10n.itemTypeGroup,
       warningMessage: context.l10n.groupDeleteWarning,
       icon: AdaptiveIcons.group,
     );
@@ -71,7 +71,7 @@ class CommonDialogActions {
     return await showDeleteConfirmation(
       context: context,
       itemName: listName,
-      itemType: 'inköpslista',
+      itemType: context.l10n.itemTypeShoppingList,
       warningMessage: context.l10n.shoppingListDeleteWarning,
       icon: AdaptiveIcons.cart,
     );

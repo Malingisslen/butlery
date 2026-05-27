@@ -1,6 +1,57 @@
 # Sprint Backlog
 
-## Sprint: iter-85 — Upload subsystem P4 Low-Bug sweep — 2026-05-27 (Wed)
+## Sprint: iter-86 — i18n + content-quality P4 polish (4 tickets) — 2026-05-27 (Wed)
+
+Theme: Four P4 Low Bugs across 4 unrelated files. Single agent. All ticket-then-flip mechanical fits. BUT-1109 triggers Phase 1.5 expansion (shopping+Bug combo) but the fix is a tiny i18n change — richer plan documented inline, no halt.
+
+### Ship this sprint
+
+#### Agent — i18n + content-quality polish
+
+- [x] **A1. BUT-1117: YouTube inputExample uses real video ID** — `lib/services/import/youtube/youtube_import_strategy.dart:35`. Change `'https://www.youtube.com/watch?v=VIDEO_ID'` to `'https://www.youtube.com/watch?v=dQw4w9WgXcQ'`. The 8-char placeholder fails the strategy's own 11-char video-ID regex. (BUT-1117)
+- [x] **A2. BUT-1117 self-consistency test** — `test/unit/services/import/youtube/youtube_import_strategy_test.dart`. New test: `expect(strategy.canHandle(strategy.inputExample), isTrue, reason: 'BUT-1117: inputExample must satisfy canHandle')`. (BUT-1117)
+- [x] **A3. BUT-1115: l10n the delete-confirmation itemTypes** — `lib/core/utils/common_dialog_actions.dart:46,60,74`. Replace literals: `'recept'` → `context.l10n.itemTypeRecipe`, `'grupp'` → `context.l10n.itemTypeGroup`, `'inköpslista'` → `context.l10n.itemTypeShoppingList`. Add 3 new keys to `app_sv.arb` + `app_en.arb` + @meta. (BUT-1115)
+- [x] **A4. BUT-1115 test flip** — `test/unit/core/utils/common_dialog_actions_test.dart`. Find the existing test `'english locale → recipe delete title still leaks Swedish "recept"'` that asserts the BROKEN behaviour. Flip it: in English locale the title should contain "recipe" (NOT "recept"). (BUT-1115)
+- [x] **A5. BUT-1109: l10n the shopping-list missing-name fallback** — `lib/services/unified/operations/modules/shopping_social_share_module.dart`. Four sites: lines 54, 272, 273, 310 (the ticket cites old line numbers — actual current lines from grep) — replace `?? '?'` with `?? AppLocale.current.shoppingListUnnamed` (or `?? AppLocale.current.unnamedSharedList` — pick the more semantically correct key name). Add the key to both ARBs + @meta. Swedish: "(Namnlös lista)". English: "(Unnamed list)". (BUT-1109)
+- [x] **A6. BUT-1109 pinning test** — find or create a test for `shopping_social_share_module` (test path: `test/unit/services/unified/operations/modules/shopping_social_share_module_test.dart`). Seed a shopping list with no `name` field. Assert the resulting title contains the localised "Namnlös lista" / "Unnamed list" string (NOT a literal `?`). (BUT-1109)
+- [x] **A7. BUT-1096: YouTube transcript no double-spaces after marker strip** — `lib/services/import/youtube/youtube_transcript_service.dart:417-428`. Reorder `_cleanTranscript` so the marker stripping runs FIRST, then the whitespace normalization. Current order: normalize→strip→trim (leaves double-spaces). New order: strip→normalize→trim. (BUT-1096)
+- [x] **A8. BUT-1096 test flip** — `test/unit/services/import/youtube/youtube_transcript_service_test.dart`. Find the existing test that asserts `isNot(contains('   '))` (3 spaces). Tighten to `isNot(contains('  '))` (2 spaces). (BUT-1096)
+- [x] **A9. Run `flutter gen-l10n`** after A3 + A5 ARB additions.
+
+### Step 0 — premise verification (done)
+
+- **BUT-1117** verified: `youtube_import_strategy.dart:35` literal `VIDEO_ID` (8 chars). The video-ID regex in `youtube_transcript_service.dart` requires exactly 11 chars.
+- **BUT-1115** verified: `common_dialog_actions.dart:46,60,74` hardcode `'recept'`, `'grupp'`, `'inköpslista'`.
+- **BUT-1109** verified: `shopping_social_share_module.dart` has 4 sites of `?? '?'` fallback at lines 54, 272, 273, 310 (line numbers shifted slightly from ticket — same shape).
+- **BUT-1096** verified: `_cleanTranscript` at line 417-428 normalizes whitespace at line 420 BEFORE stripping markers at lines 422-425. Markers like `[musik] ` become `''` but the trailing space remains, producing double-spaces.
+
+### ★ Risky-ticket plan — BUT-1109 ──────────────────
+Classification: **fits** (shopping+Bug — i18n fallback string, smallest possible blast radius)
+Files: `lib/services/unified/operations/modules/shopping_social_share_module.dart` (4 fallback sites — same `?? '?'` shape) + `lib/l10n/app_sv.arb` + `lib/l10n/app_en.arb` + 1 new test.
+Blast radius: any path that creates a "shared list" card via this module without a `name` field now shows the localised fallback instead of `?`. UI is purely cosmetic — no consumer relies on the literal `?` character. Confirmed via grep: no `'?'` equality check exists anywhere in the consumer paths.
+Product-intent flags: ticket says this is only reachable for "legacy/malformed data" — the normal share flow always sets `name`. Localizing keeps the fallback honest for the corner case.
+Rollback: revert the 4 `?? '?'` lines + new ARB keys. No schema effect, no behavior change for healthy data.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
+- [ ] Touched test files pass.
+- [ ] `flutter gen-l10n` succeeded after A3 + A5 ARB additions.
+- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [ ] Tier-2 reviewers clean.
+
+### Post-Sprint Steps
+
+- [ ] Orchestrating session does unified `git add` + commit + push.
+- [ ] Close BUT-1117 + BUT-1115 + BUT-1109 + BUT-1096 in Linear.
+
+---
+
+## Archived iter-85 (commit `91c22fca3` — BUT-1119 + BUT-1127 + BUT-1103 + BUT-1104) — 2026-05-27 (Wed)
+
+Theme: Four P4 Low Bugs across the upload subsystem (3 sibling files). Single agent. Same `Bug` shape as iter-84, ticket-then-flip. No Phase 1.5 expansion (all P4 + plain `Bug` label, no area-label combo).
 
 Theme: Four P4 Low Bugs across the upload subsystem (3 sibling files). Single agent. Same `Bug` shape as iter-84, ticket-then-flip. No Phase 1.5 expansion (all P4 + plain `Bug` label, no area-label combo).
 

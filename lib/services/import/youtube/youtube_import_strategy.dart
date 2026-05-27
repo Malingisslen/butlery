@@ -32,7 +32,7 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
       'Importera recept från YouTube-videor genom att analysera undertextningen';
 
   @override
-  String get inputExample => 'https://www.youtube.com/watch?v=VIDEO_ID';
+  String get inputExample => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
   final YouTubeTranscriptService _transcriptService;
   final LlmEnhancementService _llmService;

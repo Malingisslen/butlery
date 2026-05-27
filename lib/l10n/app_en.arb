@@ -9782,5 +9782,21 @@
   "dialogUrlHint": "https://example.com",
   "@dialogUrlHint": {
     "description": "Default hint showing example URL format inside generic URL fields."
+  },
+  "itemTypeRecipe": "recipe",
+  "@itemTypeRecipe": {
+    "description": "BUT-1115: lowercase noun for 'recipe' interpolated into delete-confirmation titles."
+  },
+  "itemTypeGroup": "group",
+  "@itemTypeGroup": {
+    "description": "BUT-1115: lowercase noun for 'group' interpolated into delete-confirmation titles."
+  },
+  "itemTypeShoppingList": "shopping list",
+  "@itemTypeShoppingList": {
+    "description": "BUT-1115: lowercase noun for 'shopping list' interpolated into delete-confirmation titles."
+  },
+  "unnamedSharedList": "(Unnamed list)",
+  "@unnamedSharedList": {
+    "description": "BUT-1109: localized fallback shown when a shared shopping list lacks a name (legacy/malformed data)."
   }
 }

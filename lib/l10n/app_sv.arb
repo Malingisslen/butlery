@@ -9802,5 +9802,21 @@
   "dialogUrlHint": "https://exempel.se",
   "@dialogUrlHint": {
     "description": "Default hint showing example URL format inside generic URL fields."
+  },
+  "itemTypeRecipe": "recept",
+  "@itemTypeRecipe": {
+    "description": "BUT-1115: lowercase noun for 'recipe' interpolated into delete-confirmation titles (e.g. 'Ta bort recept?')."
+  },
+  "itemTypeGroup": "grupp",
+  "@itemTypeGroup": {
+    "description": "BUT-1115: lowercase noun for 'group' interpolated into delete-confirmation titles (e.g. 'Ta bort grupp?')."
+  },
+  "itemTypeShoppingList": "inköpslista",
+  "@itemTypeShoppingList": {
+    "description": "BUT-1115: lowercase noun for 'shopping list' interpolated into delete-confirmation titles (e.g. 'Ta bort inköpslista?')."
+  },
+  "unnamedSharedList": "(Namnlös lista)",
+  "@unnamedSharedList": {
+    "description": "BUT-1109: localized fallback shown when a shared shopping list lacks a name (legacy/malformed data). Replaces the literal '?' character."
   }
 }

@@ -250,31 +250,24 @@ void main() {
       expect(strategy.description, contains('YouTube'));
     });
 
-    /// inputExample is the placeholder shown to the user. It contains the
-    /// literal `VIDEO_ID` token (8 chars, not 11) so it does NOT pass the
-    /// strategy's own `canHandle` gate.
-    ///
-    /// **Production design issue (flagged, not fixed):** the placeholder
-    /// is documentation-shaped, not a real example URL. Most other
-    /// pipelines' `inputExample` round-trips through `canHandle`. The
-    /// `VIDEO_ID` substring is human-readable but breaks the
-    /// self-consistency invariant other strategies follow. If a future
-    /// patch swaps it for a real 11-char ID, flip this expectation.
+    /// BUT-1117 fix: inputExample is now a real 11-char video ID and must
+    /// satisfy the strategy's own `canHandle` gate. Other strategies share
+    /// this self-consistency invariant — a placeholder the strategy would
+    /// reject is a contract bug (and a UX bug: users see a "valid" example
+    /// the importer can't actually parse).
     test(
-        'PINNED CURRENT BEHAVIOUR — inputExample contains the literal '
-        '"VIDEO_ID" placeholder and is NOT self-consistent with canHandle', () {
+        'inputExample self-consistency — BUT-1117: real video ID satisfies '
+        'canHandle', () {
       final realStrategy = YouTubeImportStrategy(
         transcriptService: YouTubeTranscriptService(),
         llmService: llm,
       );
-      expect(realStrategy.inputExample, contains('VIDEO_ID'),
-          reason: 'documentation-shaped placeholder, not a real video ID');
       expect(
         realStrategy.canHandle(realStrategy.inputExample),
-        isFalse,
-        reason: 'self-consistency gap: VIDEO_ID is 8 chars, regex requires '
-            '11-char [A-Za-z0-9_-]. If production swaps in a real example '
-            "(e.g. 'dQw4w9WgXcQ') flip this expectation to isTrue.",
+        isTrue,
+        reason: 'BUT-1117: inputExample must satisfy canHandle — placeholder '
+            'must be a real 11-char video ID, not a documentation token like '
+            "'VIDEO_ID'.",
       );
     });
 
