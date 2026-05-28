@@ -57,6 +57,16 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 - **Rule**: FIRST check: did this session modify the erroring files? If NO → these belong to a parallel session. Do NOT touch them. Tell the user they're pre-existing and move on. Only fix errors in files THIS session actually changed.
 - **Example**: `recipe_service_adapter_test.dart` had errors calling non-existent methods. Git status was clean at session start, we only chatted. Correct response: "These are pre-existing from another session, not fixing them."
 
+### [Workflow] Workflow `args` can arrive as a STRING — a stringified dryRun ran a full sprint to main
+- **Date**: 2026-05-28
+- **Trigger**: User asked for a `dryRun` of the `sprint-execute-parallel` workflow. I invoked `Workflow({args: {"dryRun": true}})` but the value reached the script as the JSON *string* `'{"dryRun": true}'`, not an object. `args.dryRun` was therefore `undefined`, `DRY_RUN` was `false`, the early-return gate was skipped, and the FULL pipeline ran: 7 tickets implemented, commit `631fceec4` pushed to main, 11 Linear tickets closed. A "preview" became a live ship.
+- **Rule**:
+  1. The Workflow tool warns "a stringified list reaches the script as one string" — defend against it. Parse `args` if `typeof args === 'string'` before reading any flag. Use strict equality for booleans (`x === true || x === 'true'`), never bare truthiness on a flag whose absence is dangerous.
+  2. Any workflow that pushes/commits MUST have a clean-tree precondition (`git status --porcelain`) and abort if dirty — `git add -A` otherwise bundles unrelated in-flight work into the sprint commit (here it swept the pre-existing iter-98 changes into iter-99's commit, closing tickets BUT-1031/953/1004 that weren't in scope).
+  3. A `dryRun` flag must gate ALL side effects (file writes, Linear transitions), not just the final implementation phase. "Preview" means read-only.
+  4. For a destructive/outward-facing workflow, prefer fail-safe defaults: an unparseable or missing flag should bias toward NOT shipping, not toward shipping.
+- **Example**: Hardened `.claude/workflows/sprint-execute-parallel.js` — defensive `args` parse, Phase 0 clean-tree abort (override via `allowDirty`), and read-only dry-run. See `memory/feedback_workflow_args_stringification.md`.
+
 ---
 
 ## Archived
