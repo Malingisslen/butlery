@@ -2,11 +2,19 @@
 
 // lib/viewmodels/import_base_viewmodel.dart
 
+import 'package:clock/clock.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 abstract class ImportBaseViewModel extends BaseViewModel
     with AsyncOperationMixin {
@@ -101,12 +109,83 @@ abstract class ImportBaseViewModel extends BaseViewModel
 
     return await executeAsyncVoid(
       () async {
+        // BUT-953: if PhotoImportView stashed a heirloom draft before
+        // navigating here, upload the scan + attach metadata before save.
+        // Upload failure blocks the save so the user sees the error instead
+        // of a false success toast.
+        await _attachHeirloomIfPending();
+
         final result = await _importManager.saveImportedRecipe(_parsedRecipe!);
         if (!result.isSuccess) {
           throw Exception(result.errorMessage ?? 'Failed to save recipe');
         }
       },
     );
+  }
+
+  /// BUT-953: consume any pending heirloom draft, upload the image, attach
+  /// the resulting [HeirloomMetadata] to [_parsedRecipe]. Throws on upload
+  /// failure so the surrounding `executeAsyncVoid` surfaces the error.
+  ///
+  /// On any failure (auth, upload), the draft is **restored** to the bridge
+  /// so the user's next save attempt can retry without re-filling the form.
+  /// `ServiceLocator.get<HeirloomBridge>` (not `tryGet`) so missing DI fails
+  /// loud in dev — the bridge is the whole BUT-953 wiring contract.
+  Future<void> _attachHeirloomIfPending() async {
+    final bridge = ServiceLocator.get<HeirloomBridge>();
+    if (!bridge.hasPending) return;
+    final draft = bridge.consumeDraft();
+    if (draft == null) return;
+
+    try {
+      final permission = ServiceLocator.get<PermissionService>();
+      // Mirror BUT-1086: re-check auth AND uid together so a sign-out
+      // mid-import surfaces the right error instead of a Storage rules deny.
+      if (!permission.isAuthenticated || permission.currentUserId == null) {
+        throw Exception(AppLocale.current.errorAuthentication);
+      }
+      final userId = permission.currentUserId!;
+
+      final storage = ServiceLocator.get<StorageRepository>();
+      final recipeId = _parsedRecipe!.id;
+      final digest =
+          sha256.convert(draft.imageBytes).toString().substring(0, 16);
+      final path = 'users/$userId/recipes/$recipeId/heirloom/$digest.jpg';
+
+      final url = await storage.uploadImageData(
+        imageData: draft.imageBytes,
+        userId: userId,
+        path: path,
+        // Content-addressed → safe to cache for a year.
+        cacheControl: 'public, max-age=31536000, immutable',
+        metadata: {
+          'purpose': 'heirloom',
+          'recipeId': recipeId,
+        },
+      );
+
+      if (url == null) {
+        AppLogger.warning('Heirloom upload returned null URL for $recipeId');
+        throw Exception(AppLocale.current.errorGeneric);
+      }
+
+      final metadata = HeirloomMetadata(
+        sourceImageUrl: url,
+        writerName: draft.writerName,
+        year: draft.year,
+        note: draft.note,
+        addedAt: clock.now(),
+        addedByUserId: userId,
+      );
+
+      _parsedRecipe = _parsedRecipe!.copyWith(heirloom: metadata);
+      notifyListeners();
+    } catch (_) {
+      // Restore the draft so the user's next save attempt retries instead
+      // of silently saving without the heirloom they entered.
+      bridge.setDraft(draft);
+      rethrow;
+    }
   }
 
   @protected

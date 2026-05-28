@@ -321,29 +321,43 @@ abstract class BaseSharedContentRepository<T>
     }
 
     try {
+      final memberRef = getCollectionRef()
+          .doc(contentId)
+          .collection(FirestoreCollections.members)
+          .doc(userId);
+
+      // BUT-1152: re-adding an existing member must not reset their original
+      // addedAt nor re-fire the unread counter (which would double-count).
+      // Read existing membership first and treat re-add as an idempotent
+      // metadata update.
+      final existing = await memberRef.get();
+      final isNewMember = !existing.exists;
+      final addedAt = isNewMember
+          ? clock.now().toUtc()
+          : SharedContentMember.fromFirestore(existing.data()!).addedAt;
+
       final member = SharedContentMember(
         userId: userId,
         // V1-QP-001: Use provided displayName or fallback for legacy callers
         displayName: displayName ?? 'Användare',
         avatarUrl: avatarUrl,
-        addedAt: clock.now().toUtc(),
+        addedAt: addedAt,
         addedBy: addedBy,
         role: role,
       );
 
-      await getCollectionRef()
-          .doc(contentId)
-          .collection(FirestoreCollections.members)
-          .doc(userId)
-          .set(member.toFirestore());
+      await memberRef.set(member.toFirestore());
 
       // Maintain denormalized sharedToUserIds for group queries
       await getCollectionRef().doc(contentId).update({
         'sharedToUserIds': FieldValue.arrayUnion([userId]),
       });
 
-      // Increment unread counter for the new member
-      await incrementUnreadCounter(userId);
+      // Only bump the unread counter for genuinely new members — re-adds
+      // would otherwise inflate the recipient's unread badge.
+      if (isNewMember) {
+        await incrementUnreadCounter(userId);
+      }
 
       AppLogger.success(
           '✅ Added user $userId as member to $contentTypeName $contentId');

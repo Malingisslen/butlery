@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -121,6 +123,7 @@ class _PhotoImportViewContent extends StatelessWidget {
     PhotoImportViewModel viewModel,
   ) {
     if (viewModel.hasOcrResult) {
+      _stashHeirloomDraftIfActive(viewModel);
       Navigator.pushNamed(
         context,
         '/franSocialaMedier',
@@ -129,11 +132,30 @@ class _PhotoImportViewContent extends StatelessWidget {
     }
   }
 
+  /// BUT-953: capture the heirloom form into the bridge so the save flow on
+  /// `/franSocialaMedier` can upload + attach metadata to the parsed recipe.
+  /// No-op when heirloom is off or no image is present.
+  void _stashHeirloomDraftIfActive(PhotoImportViewModel viewModel) {
+    if (!viewModel.isHeirloom || !viewModel.hasImage) return;
+    final bytes = viewModel.imageBytes;
+    if (bytes == null) return;
+    final bridge = ServiceLocator.get<HeirloomBridge>();
+    bridge.setDraft(HeirloomDraft(
+      imageBytes: bytes,
+      writerName: viewModel.heirloomWriterName.isEmpty
+          ? null
+          : viewModel.heirloomWriterName,
+      year: viewModel.heirloomYear,
+      note: viewModel.heirloomNote.isEmpty ? null : viewModel.heirloomNote,
+    ));
+  }
+
   /// Navigation escape route for OCR failures (Issue #029).
   void _navigateToManualEntry(
     BuildContext context,
     PhotoImportViewModel viewModel,
   ) {
+    _stashHeirloomDraftIfActive(viewModel);
     // Navigate even without OCR success - critical escape route
     Navigator.pushNamed(
       context,

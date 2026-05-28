@@ -76,6 +76,26 @@ class _MockFirebaseApp extends Mock implements FirebaseApp {}
 
 class _MockAuthRepository extends Mock implements auth.AuthRepository {}
 
+/// BUT-1099: subclass that records whether the BaseService onDispose() hook
+/// fired. PresenceService.dispose() must chain `super.dispose()`, which is
+/// the only thing that invokes onDispose(). Without the chain this flag
+/// stays false even after dispose() returns.
+class _OnDisposeSpyPresenceService extends PresenceService {
+  bool onDisposeCalled = false;
+
+  _OnDisposeSpyPresenceService({
+    required super.firestoreRepository,
+    required super.authRepository,
+    required super.database,
+  });
+
+  @override
+  Future<void> onDispose() async {
+    onDisposeCalled = true;
+    await super.onDispose();
+  }
+}
+
 /// Locally-mocked FirebaseOptions because `FirebaseOptions` is sealed in
 /// firebase_core but has a public const constructor we can use directly.
 FirebaseOptions _options({String? databaseURL}) => FirebaseOptions(
@@ -423,6 +443,27 @@ void main() {
       verify(() => disconnect.cancel()).called(1);
     });
 
+    /// BUT-1099: dispose() MUST chain super.dispose() so the BaseService
+    /// onDispose() lifecycle hook actually runs. A subclass override of
+    /// dispose() that forgets the super-call silently strands every base
+    /// cleanup path. We prove the chain by spying onDispose().
+    test('BUT-1099 dispose chains super.dispose() so onDispose() fires',
+        () async {
+      final spy = _OnDisposeSpyPresenceService(
+        firestoreRepository: FirestoreRepository(firestore: firestore),
+        authRepository: authRepo,
+        database: harness.db,
+      );
+      await spy.initialize();
+      expect(spy.onDisposeCalled, isFalse,
+          reason: 'onDispose must not fire before dispose()');
+
+      await spy.dispose();
+
+      expect(spy.onDisposeCalled, isTrue,
+          reason: 'super.dispose() must invoke the onDispose() hook');
+    });
+
     /// dispose() must swallow RTDB errors — a network blip on shutdown
     /// must not crash the app or leave the BaseService in an undisposed
     /// state.
@@ -488,6 +529,52 @@ void main() {
       await service.dispose();
       verifyNever(() => ref.set(any()));
       verifyNever(() => disconnect.cancel());
+    });
+
+    /// BUT-1101: the periodic stale-typing cleanup reads the current user's
+    /// presence doc and previously did a non-null cast
+    /// `snapshot.data() as Map<String, dynamic>`. A doc that exists but
+    /// carries no usable typing data must NOT crash the cleanup timer. We
+    /// drive a service inside a fakeAsync zone (so its Timer.periodic is
+    /// controlled), seed an existing presence doc with NO typingIn field,
+    /// elapse one cleanup interval, and assert the cleanup ran without
+    /// throwing and left the doc untouched (no spurious field deletions).
+    test(
+        'BUT-1101 periodic cleanup over a doc with no typingIn does not '
+        'throw and touches nothing', () {
+      fakeAsync((async) {
+        final h = _DbHarness();
+        final ar = _MockAuthRepository();
+        when(() => ar.currentUser).thenReturn(MockUser(uid: 'u1'));
+        final fs = FakeFirebaseFirestore();
+        final s = _buildService(harness: h, authRepo: ar, firestore: fs);
+
+        // Existing doc, status only — the exact shape the guard must
+        // tolerate (no typingIn map, would previously feed the bad cast).
+        fs.collection('presence').doc('u1').set({'status': 'online'});
+        async.flushMicrotasks();
+
+        s.initialize();
+        async.flushMicrotasks();
+
+        // Elapse one full cleanup interval (30s) to fire the periodic timer.
+        async.elapse(const Duration(seconds: 31));
+        async.flushMicrotasks();
+
+        // Re-read: the doc must be intact — cleanup found no typingIn and
+        // performed no update, and crucially did not throw inside the timer.
+        DocumentSnapshot<Map<String, dynamic>>? doc;
+        fs.collection('presence').doc('u1').get().then((d) => doc = d);
+        async.flushMicrotasks();
+
+        expect(doc, isNotNull);
+        expect(doc!.exists, isTrue);
+        expect(doc!.data(), {'status': 'online'},
+            reason: 'cleanup must not mutate a doc that has no typingIn');
+
+        s.dispose();
+        async.flushMicrotasks();
+      });
     });
 
     /// BUT-1100: didChangeAppLifecycleState fires RTDB writes

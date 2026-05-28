@@ -79,13 +79,29 @@ class UploadQueueManager {
     AppLogger.info('🗂️ QUEUE: Added completed upload for $filePath');
   }
 
-  /// Update upload status in queue
+  /// Update upload status in queue.
+  ///
+  /// BUT-1120: replaces the entry wholesale (it does NOT merge onto the
+  /// existing status), so the caller is responsible for carrying `file`/`url`
+  /// through every transition — normally by building `newStatus` from
+  /// `currentStatus.copyWith(...)`. To make that contract fail loud instead of
+  /// silently dropping the entry out of `validUploads`/display logic, we assert
+  /// the incoming status is displayable (has a `file` or a `url`). A non-
+  /// displayable status almost always means a caller built it from scratch and
+  /// forgot to thread the file handle through.
   void updateStatus(String filePath, ImageUploadStatus newStatus) {
     if (!_queue.containsKey(filePath)) {
       AppLogger.warning(
           '🗂️ QUEUE: Cannot update non-existent upload $filePath');
       return;
     }
+
+    assert(
+      newStatus.isDisplayable,
+      'updateStatus($filePath): newStatus is not displayable (no file/url). '
+      'updateStatus replaces wholesale — build the next status from '
+      'getStatus($filePath)!.copyWith(...) so the file handle survives.',
+    );
 
     _queue[filePath] = newStatus;
     AppLogger.debug(

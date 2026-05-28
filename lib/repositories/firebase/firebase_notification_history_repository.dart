@@ -52,8 +52,23 @@ class FirebaseNotificationHistoryRepository
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      true; // History cleanup is allowed for authenticated users
+      String userId, String resourceId) async {
+    // BUT-1133: history docs carry a per-doc `userId` owner. Deletion must
+    // be owner-scoped — an authenticated user must not be able to delete
+    // another user's notification (privacy / GDPR). A missing doc denies.
+    final doc = await collection.doc(resourceId).get();
+    final granted = doc.exists && doc.data()?['userId'] == userId;
+
+    await logPermissionCheck(
+      userId: userId,
+      resource: '$collectionName/$resourceId',
+      operation: 'delete',
+      granted: granted,
+      auditRepository: auditRepository,
+    );
+
+    return granted;
+  }
 
   String get _userId => requireCurrentUserId();
 

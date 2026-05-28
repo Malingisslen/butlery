@@ -81,10 +81,25 @@ class ShoppingCategory {
   static const String canned = 'canned';
   static const String dryGoods = 'dry_goods';
 
-  /// All valid category constants for iteration
+  /// BUT-1004: fine-grained splits introduced alongside the legacy aliases.
+  /// New categorizer output routes to these; legacy `meatFish`/`fruitVeg`
+  /// constants stay valid so old Firestore docs still render through the
+  /// switches in [displayName] and the shopping UI.
+  static const String meat = 'meat';
+  static const String fish = 'fish';
+  static const String fruit = 'fruit';
+  static const String veg = 'veg';
+
+  /// All valid category constants for iteration. New fine-grained buckets
+  /// come first in the section they live in (Swedish store walk) so dropdowns
+  /// prefer the modern split. Legacy aggregate keys remain for back-compat.
   static const List<String> all = [
+    fruit,
+    veg,
     fruitVeg,
     dairy,
+    meat,
+    fish,
     meatFish,
     breadGrain,
     dryGoods,
@@ -108,10 +123,18 @@ class ShoppingCategory {
   static String displayName(String category) {
     final l = AppLocale.current;
     switch (category) {
+      case fruit:
+        return l.categoryFruit;
+      case veg:
+        return l.categoryVeg;
       case fruitVeg:
         return l.categoryFruitVeg;
       case dairy:
         return l.categoryDairy;
+      case meat:
+        return l.categoryMeat;
+      case fish:
+        return l.categoryFish;
       case meatFish:
         return l.categoryMeatFish;
       case breadGrain:

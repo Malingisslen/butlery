@@ -289,6 +289,53 @@ void main() {
       expect(counter.data()?['unreadSharedShoppingLists'], 1);
     });
 
+    /// BUT-1152: re-adding an existing member must be idempotent w.r.t.
+    /// the unread counter and must preserve the original addedAt. Before
+    /// the fix, a second addMember overwrote addedAt with `now` and fired
+    /// incrementUnreadCounter again — inflating the recipient's badge and
+    /// reordering the member list. This pins both invariants.
+    test('addMember on existing member preserves addedAt + skips counter bump',
+        () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      await _seedDoc(firestore, _list());
+
+      await repo.addMember(_listId, 'friend-1',
+          addedBy: _userId, displayName: 'Bob', role: 'viewer');
+
+      final firstAddedAt = (await firestore
+              .collection('shared_content')
+              .doc(_listId)
+              .collection('members')
+              .doc('friend-1')
+              .get())
+          .data()?['addedAt'];
+
+      // Re-add the same member (e.g. role bump / re-share).
+      await repo.addMember(_listId, 'friend-1',
+          addedBy: _userId, displayName: 'Bob', role: 'editor');
+
+      final memberDoc = await firestore
+          .collection('shared_content')
+          .doc(_listId)
+          .collection('members')
+          .doc('friend-1')
+          .get();
+      expect(memberDoc.data()?['addedAt'], firstAddedAt,
+          reason: 'original addedAt must survive a re-add');
+      expect(memberDoc.data()?['role'], 'editor',
+          reason: 'metadata (role) still updates on re-add');
+
+      final counter = await firestore
+          .collection('users')
+          .doc('friend-1')
+          .collection('counters')
+          .doc('shared_content')
+          .get();
+      expect(counter.data()?['unreadSharedShoppingLists'], 1,
+          reason: 're-add must NOT bump the unread counter a second time');
+    });
+
     test('addMember rejects when current user is not owner', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore, authedUserId: _otherUserId);

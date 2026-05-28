@@ -3678,3 +3678,114 @@ service layer doesn't dedup either (forwards both calls; dedup is
 repo-internal). So no service-layer test exists or can exist that
 pins "two share calls → one repo invocation"; that contract lives
 entirely at the repository layer and must be tested there.
+
+### 2026-05-28 — iter-98 working-tree sprint review (BUT-953/1004/1031/1099/1101/1106/1110/1120/1133/1152) [Pattern discovered + coverage gaps]
+Reviewed a 10-ticket working-tree diff (~17 lib files, 9 test files). Ran all
+affected tests: 10/10 (conflict+heirloom+categorizer batch) + 204/204 (repo/
+service batch) green. Strong, intent-first coverage on most tickets. Patterns
+and gaps worth not losing:
+
+1. **HeirloomBridge one-shot handoff — exemplary VM test (BUT-953).**
+   `import_base_viewmodel_heirloom_test.dart` (4 tests) pins the real bug the
+   ticket fixed (uploadHeirloomImage had zero callers; metadata silently
+   dropped). The four paths are exactly the right cut: upload OK → metadata
+   stitched + bridge drained; upload-null → save BLOCKED + error + draft
+   RESTORED (`bridge.hasPending` true, so retry doesn't lose the form);
+   auth-null → no upload attempted (regression guard against moving the auth
+   check after the storage call); no-draft → normal save, no upload. The
+   draft-restore-on-failure assertion is the load-bearing one — it pins
+   user-visible retry behaviour, not plumbing. `FakePermissionService` from
+   TestServiceLocator + local register/unregister of `StorageRepository` +
+   `HeirloomBridge` (with the documented "if a third user appears, promote to
+   TestServiceLocator" note) is the right scoping discipline.
+
+2. **ConflictResolutionModule emission — clean per-branch test (BUT-1031).**
+   `conflict_resolution_module_test.dart` (5 tests) covers all four resolver
+   branches (local/remote × editCount/timestamp) + the optional-sink null
+   case. The deliberate **non-emission on the catch branch** (resolver crash
+   ≠ "your edit was overwritten") is documented in production but NOT pinned
+   by a test — see gap below. `onConflict: emitted.add` capturing into a
+   `List<ConflictEvent>` is the right shape for a fire-callback contract.
+
+3. **Tripwire-flip discipline reused (BUT-1110).** `base_social_coordinator_test`
+   flipped two dispose-mid-await assertions from "fires through (no _disposed
+   gate)" to "suppresses notify/setError" and rewrote the file-header
+   contract prose in the same diff. Added the error-half test (setError
+   suppressed after dispose). Same pattern as the BUT-746/747 GDPR tripwires.
+
+4. **AssertionError-as-contract (BUT-1120).** `upload_queue_manager_test`
+   added a test that `updateStatus` with a non-displayable status (neither
+   file nor url) on an *existing* key throws `AssertionError`, while a
+   *missing* key stays a silent no-op (guard order: missing-key check before
+   the assert). The helper `_statusWith` was updated to default a placeholder
+   file so existing tests stay focused on their field-under-test — and the
+   new assert test constructs `ImageUploadStatus` directly to bypass that
+   default. Good seam awareness.
+
+5. **Owner-scoped delete privacy test (BUT-1133).** `firebase_notification_
+   history_repository_test` added 3 tests: stranger-can't-delete (+ doc
+   survives), owner-can-delete, missing-doc-denies. This is the same
+   privacy-critical shape as the BUT-369 `FirebaseShoppingRepository` delete
+   bypass — "always returned true" → owner-only. The missing-doc-denies case
+   is the subtle one (no doc → no ownership claim, deny rather than allow).
+
+6. **Idempotent re-add (BUT-1152).** `base_shared_content_repository_test`
+   pins addedAt-preserved + role-still-updates + counter-NOT-bumped on re-add.
+   Read-existing-first then treat re-add as idempotent metadata update. The
+   counter assertion (`unreadSharedShoppingLists == 1` after two adds) is the
+   anti-double-count invariant.
+
+**Coverage gaps found (filed as findings, not blockers):**
+
+- **ConflictBanner widget (BUT-1031) has ZERO test.** New 146-line stateful
+  widget in `lib/widgets/realtime/conflict_banner.dart` with real behaviour:
+  subscribes to `conflictStream`, filters by `filterDocId`, renders/dismisses
+  a banner, shows the secondary "View" action only when `onViewChange != null`.
+  All theme-resolved (`context.butleryColors.warning` / `onWarningContainer`)
+  + uses two new l10n keys (`conflictBannerMessage`, `a11yConflictBannerDismiss`).
+  This is a DO-WRITE widget test (Swedish locale via `createLocalizedTestApp`,
+  fake stream via a registered `RealtimeSyncService` mock). HIGH gap — it's
+  the only user-visible surface of the whole BUT-1031 feature and it's
+  untested.
+
+- **RealtimeSyncService.conflictStream wiring (BUT-1031) untested.** The
+  module-level emission is tested, but the end-to-end (module `onConflict`
+  → `_conflictController.add` → `conflictStream`) has no test, and the
+  `isClosed` guard before `.add` is the kind of post-dispose race worth one
+  test. MEDIUM.
+
+- **Resolver catch-branch non-emission (BUT-1031) untested.** Production
+  comment explicitly says "do NOT emit a ConflictEvent here" on resolver
+  crash, but no test forces `getLatestResource`/resolver to throw and asserts
+  `emitted.isEmpty`. The current test's `getLatestResource` throws
+  UnimplementedError but resolveConflict doesn't call it on the happy path,
+  so the catch branch is never exercised. A future refactor that "helpfully"
+  emits on error would show the user a misleading "your edit was overwritten"
+  banner. MEDIUM — would need a RealtimeRecipe whose property access throws,
+  or a resolver path that genuinely enters catch.
+
+- **IngredientCategorizer new keywords mostly untested (BUT-1004).** The
+  golden corpus (`cases.json`) only has 10 cases and exercises 1 keyword per
+  new bucket (lök→veg, kycklingfilé→meat, äpple→fruit, lax→fish, olivolja→
+  dry_goods). The diff added ~20 NEW keywords with no coverage: fish
+  (torsk/sill/makrill/tonfisk), veg (broccoli/blomkål/zucchini/spenat), fruit
+  (päron/druva/apelsin/jordgubb/hallon/blåbär), oils (rapsolja/solrosolja).
+  A keyword typo or a rule-order regression (e.g. a fruit keyword shadowed by
+  a veg rule) would pass the golden snapshot. MEDIUM — add cases.json entries
+  or a direct `IngredientCategorizer` unit test iterating the new tokens.
+  Note the rule-ORDER risk specifically: oils are checked before dry-goods
+  ('olja' substring) and meat before fish — these orderings are correctness-
+  load-bearing and only `olivolja` pins one of them.
+
+- **ShoppingCategory.displayName + .all for new buckets (BUT-1004) untested.**
+  `unified_shopping_item_test.dart` doesn't assert displayName for fruit/veg/
+  meat/fish (the new Swedish labels Frukt/Grönsaker/Kött/Fisk) nor the
+  reordered `all` list. A missing switch case would fall to the default and
+  show a raw key to the user. LOW-MEDIUM — these resolve via AppLocale so a
+  localized-app or `AppLocale` override is needed; cheap to add.
+
+No production bugs caught this run — every ticket's test was either present
+and correct, or the gap is in a new surface (widget/wiring) rather than a
+regression in covered code. The HeirloomBridge, BUT-1133 delete-scope, and
+BUT-1152 idempotent-re-add tests are the strongest of the batch and would
+each catch a real regression.

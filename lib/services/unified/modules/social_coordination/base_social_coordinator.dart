@@ -41,8 +41,13 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
   // Core dependencies
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
-  final void Function(String) _setError;
-  final void Function() _notifyListeners;
+  final void Function(String) _rawSetError;
+  final void Function() _rawNotifyListeners;
+
+  // BUT-1110: guards against a slow Firestore round-trip resolving after the
+  // coordinator (and its parent ViewModel) is disposed. Without this, the late
+  // continuation would call notifyListeners()/setError on a dead ViewModel.
+  bool _disposed = false;
 
   BaseSocialCoordinator({
     required String? Function() getCurrentUserId,
@@ -51,10 +56,28 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     required void Function() notifyListeners,
   })  : _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _setError = setError,
-        _notifyListeners = notifyListeners {
+        _rawSetError = setError,
+        _rawNotifyListeners = notifyListeners {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
+  }
+
+  @override
+  Future<void> onDispose() async {
+    _disposed = true;
+    await super.onDispose();
+  }
+
+  /// Notify listeners unless disposed (BUT-1110).
+  void _notifyListeners() {
+    if (_disposed) return;
+    _rawNotifyListeners();
+  }
+
+  /// Surface an error unless disposed (BUT-1110).
+  void _setError(String message) {
+    if (_disposed) return;
+    _rawSetError(message);
   }
 
   /// Content type name for logging (e.g., 'recipe', 'menu', 'shopping_list')

@@ -2,22 +2,22 @@
   {
     "id": "ci-001",
     "input": "lök",
-    "expected": "fruit_veg",
+    "expected": "veg",
     "tolerance": "exact",
-    "notes": "Common Swedish vegetable — high-frequency lookup. BUT-1004 will split into 'grönsaker'."
+    "notes": "BUT-1004: split fruit_veg → veg."
   },
   {
     "id": "ci-002",
     "input": "vitlök",
-    "expected": "fruit_veg",
+    "expected": "veg",
     "tolerance": "exact"
   },
   {
     "id": "ci-003",
     "input": "kycklingfilé",
-    "expected": "meat_fish",
+    "expected": "meat",
     "tolerance": "exact",
-    "notes": "BUT-1004 will split into 'kött'."
+    "notes": "BUT-1004: split meat_fish → meat."
   },
   {
     "id": "ci-004",
@@ -41,23 +41,23 @@
   {
     "id": "ci-007",
     "input": "äpple",
-    "expected": "fruit_veg",
+    "expected": "fruit",
     "tolerance": "exact",
-    "notes": "BUT-1004 will split into 'frukt'."
+    "notes": "BUT-1004: split fruit_veg → fruit."
   },
   {
     "id": "ci-008",
     "input": "lax",
-    "expected": "meat_fish",
+    "expected": "fish",
     "tolerance": "exact",
-    "notes": "BUT-1004 will split into 'fisk'."
+    "notes": "BUT-1004: split meat_fish → fish."
   },
   {
     "id": "ci-009",
     "input": "olivolja",
-    "expected": "other",
+    "expected": "dry_goods",
     "tolerance": "exact",
-    "notes": "Categorizer has no rule for 'olja' — falls to 'other'. BUT-1004 should route oils to dry_goods/pantry."
+    "notes": "BUT-1004: oils now route to dry_goods (was 'other')."
   },
   {
     "id": "ci-010",

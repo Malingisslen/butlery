@@ -7821,6 +7821,28 @@ class AppLocalizationsSv extends AppLocalizations {
   String get categoryDryGoods => 'Torrvaror';
 
   @override
+  String get categoryMeat => 'Kött';
+
+  @override
+  String get categoryFish => 'Fisk';
+
+  @override
+  String get categoryFruit => 'Frukt';
+
+  @override
+  String get categoryVeg => 'Grönsaker';
+
+  @override
+  String get conflictBannerMessage =>
+      'Synkroniseringskonflikt löst — den senaste ändringen sparades';
+
+  @override
+  String get conflictBannerDismiss => 'Stäng';
+
+  @override
+  String get a11yConflictBannerDismiss => 'Stäng konfliktnotis';
+
+  @override
   String get privacyEmailSubject => 'Integritetsfråga';
 
   @override

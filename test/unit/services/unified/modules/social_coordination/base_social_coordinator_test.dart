@@ -37,10 +37,10 @@
 /// - **Helpers `currentUserId` / `currentUserDisplayName`**: re-read the
 ///   provider on every access — they are NOT cached. A regression here
 ///   would freeze the UI on a stale user after sign-out/sign-in.
-/// - **Dispose-mid-await safety**: an in-flight `createInvitation` whose
-///   repo `addMember` resolves after `dispose()` does NOT throw and does
-///   NOT touch setError/notify (the coordinator has no internal _disposed
-///   gate, so this PINS that current contract). Flagged for follow-up.
+/// - **Dispose-mid-await safety (BUT-1110 fixed)**: an in-flight operation
+///   whose repo call resolves after `dispose()` does NOT touch setError/notify.
+///   The coordinator now sets a `_disposed` flag in its `onDispose()` override
+///   and short-circuits `_notifyListeners()` / `_setError()` when disposed.
 ///
 /// Bug-finding cross-references (REPORTED, not fixed here):
 /// - **BUT-1094 (inconsistent `_error` population)** — root cause lives here.
@@ -55,13 +55,12 @@
 ///   error handling INTO the subclass would surface as `getReceivedInvitations`,
 ///   `dismissSharedContent` etc. starting to leak exceptions — which this
 ///   test would catch.
-/// - **No `_disposed` gate**: `BaseService.dispose()` doesn't set a flag;
-///   `BaseSocialCoordinator` doesn't override `onDispose`. So a slow Firestore
-///   call that resolves after dispose still calls `_notifyListeners()` and
-///   `_setError()` on a disposed parent ViewModel. Documented in the
-///   dispose-mid-await test as a current-contract pin, not yet a bug
-///   (ViewModels guard `notifyListeners()` independently). Worth a ticket
-///   if it ever surfaces a "called notifyListeners after dispose" assert.
+/// - **`_disposed` gate (BUT-1110, FIXED)**: `BaseService.dispose()` doesn't
+///   set a flag, so `BaseSocialCoordinator` now overrides `onDispose()` to set
+///   its own `_disposed` flag and short-circuit `_notifyListeners()` /
+///   `_setError()`. A slow Firestore call that resolves after dispose no longer
+///   calls notify/setError on a disposed parent ViewModel. Pinned in the
+///   dispose-mid-await tests.
 library;
 
 import 'dart:async';
@@ -986,14 +985,14 @@ void main() {
     // Dispose-mid-await safety — pin CURRENT contract
     // -------------------------------------------------------------------------
     group('Dispose mid-await', () {
-      /// Pin (NOT YET A BUG, just documented): the coordinator has no
-      /// internal `_disposed` flag. A repo call that resolves AFTER
-      /// `dispose()` still calls the constructor callbacks (notify +
-      /// setError). ViewModels are expected to guard `notifyListeners()`
-      /// independently; if that ever fails, this test pins the current
-      /// behaviour as the regression baseline.
+      /// **BUT-1110 FIX VERIFIED**: the coordinator now sets an internal
+      /// `_disposed` flag in its `onDispose()` override and short-circuits
+      /// `_notifyListeners()` / `_setError()` when disposed. A repo call that
+      /// resolves AFTER `dispose()` completes the in-flight future as normal
+      /// (the success boolean still reflects what the repo did) but must NOT
+      /// call notify on the dead parent ViewModel.
       test(
-          'in-flight markAsDismissed resolving after dispose still calls notify',
+          'in-flight markAsDismissed resolving after dispose suppresses notify',
           () async {
         final completer = Completer<void>();
         when(() => mockRepo.markAsDismissed(any(), any()))
@@ -1004,11 +1003,31 @@ void main() {
         completer.complete();
 
         final ok = await inFlight;
-        // CURRENT CONTRACT: dispose does not gate the callbacks.
+        // The repo write succeeded, so the operation still reports true...
         expect(ok, isTrue);
-        expect(notifyCount, 1,
+        // ...but the post-dispose notify is suppressed by the _disposed gate.
+        expect(notifyCount, 0,
             reason:
-                'No _disposed gate — fires through. Flag if ViewModels assert.');
+                'BUT-1110 fix: _disposed gate suppresses notify after dispose.');
+      });
+
+      /// Pin the error half of the BUT-1110 gate: a throw that surfaces after
+      /// dispose must NOT call setError on the disposed parent either.
+      test('in-flight failure resolving after dispose suppresses setError',
+          () async {
+        final completer = Completer<void>();
+        when(() => mockRepo.markAsDismissed(any(), any()))
+            .thenAnswer((_) => completer.future);
+
+        final inFlight = coordinator.dismissSharedContent('sc-1');
+        await coordinator.dispose();
+        completer.completeError(Exception('forbidden'));
+
+        final ok = await inFlight;
+        expect(ok, isFalse);
+        expect(errors, isEmpty,
+            reason:
+                'BUT-1110 fix: _disposed gate suppresses setError after dispose.');
       });
     });
   });

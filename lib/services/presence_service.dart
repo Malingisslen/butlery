@@ -185,6 +185,11 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       AppLogger.warning('Failed to cancel onDisconnect on dispose: $e');
     }
     _presenceRef = null;
+
+    // BUT-1099: chain to BaseService.dispose() so the onDispose() hook and
+    // standardized disposal logging actually run. Without this the base
+    // lifecycle never fires for this service.
+    await super.dispose();
   }
 
   Future<void> resetForLogout() async {
@@ -405,7 +410,12 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
           .get();
 
       if (!snapshot.exists) return;
-      final data = snapshot.data() as Map<String, dynamic>;
+      // BUT-1101: a doc can report exists==true yet carry null data (race
+      // between existence check and read, or a tombstoned doc). The previous
+      // non-null cast `as Map<String, dynamic>` threw on that case;
+      // data() is already Map<String, dynamic>?, so null-guard and bail.
+      final data = snapshot.data();
+      if (data == null) return;
       final typingIn = data['typingIn'] as Map<String, dynamic>?;
       if (typingIn == null || typingIn.isEmpty) return;
 

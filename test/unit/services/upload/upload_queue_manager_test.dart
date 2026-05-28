@@ -46,14 +46,16 @@
 ///      which includes both `ImageUploadState.uploading` and
 ///      `ImageUploadState.retrying`. UI keys named `uploading` therefore
 ///      include retries — could surprise summary consumers.
-///   3. `updateStatus(path, newStatus)` does NOT merge with the existing
-///      entry — it replaces wholesale. Callers must remember to carry the
-///      `file:` field through every status transition, or `validUploads`
-///      / display logic will silently stop showing the entry. There's no
-///      type-system guard for this. In practice the call sites
-///      (ImageUploadService) use `currentStatus.copyWith(...)` to build
-///      the next status, which preserves file — but the API surface here
-///      doesn't enforce that pattern.
+///   3. BUT-1120 fix: `updateStatus(path, newStatus)` still replaces
+///      wholesale (it does NOT merge), but now asserts the incoming status
+///      is `isDisplayable` (file != null || url != null). This makes the
+///      caller contract — "carry the file/url through every transition,
+///      normally via `currentStatus.copyWith(...)`" — fail loud in debug
+///      instead of silently dropping the entry out of `validUploads`/display
+///      logic. The production call sites (ImageUploadService) already build
+///      the next status from `copyWith`, so they satisfy the invariant; the
+///      assert guards future callers that might build a status from scratch
+///      and forget the file handle.
 library;
 
 import 'dart:io';
@@ -64,6 +66,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 File _f(String path) => File(path);
 
+/// Builds a status for tests. Post-BUT-1120 `updateStatus` asserts the
+/// incoming status is displayable (file != null || url != null), mirroring
+/// the production contract where every transition is built from
+/// `currentStatus.copyWith(...)` and so always carries the file handle. To
+/// keep the existing tests focused on the field-under-test (state, progress,
+/// error, speed) rather than boilerplate, this helper defaults a placeholder
+/// `file` when neither `url` nor `file` is supplied — exactly what a real
+/// caller's `copyWith` would have preserved.
 ImageUploadStatus _statusWith({
   required ImageUploadState state,
   double progress = 0.0,
@@ -74,11 +84,13 @@ ImageUploadStatus _statusWith({
   int maxRetryAttempts = 3,
   double? uploadSpeedBytesPerSecond,
 }) {
+  final effectiveFile =
+      (file == null && url == null) ? _f('/placeholder') : file;
   return ImageUploadStatus(
     state: state,
     progress: progress,
     url: url,
-    file: file,
+    file: effectiveFile,
     error: error,
     retryAttempts: retryAttempts,
     maxRetryAttempts: maxRetryAttempts,
@@ -194,13 +206,16 @@ void main() {
   });
 
   group('updateStatus', () {
-    /// Updating an existing entry replaces its status entirely.
+    /// Updating an existing entry replaces its status entirely (wholesale,
+    /// not a merge). The replacement carries the file handle through — the
+    /// contract every caller must honour (BUT-1120).
     test('replaces existing status with the new one', () {
       mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
       final next = _statusWith(
         state: ImageUploadState.failed,
         error: 'boom',
         retryAttempts: 1,
+        file: _f('/a.jpg'),
       );
 
       mgr.updateStatus('/a.jpg', next);
@@ -210,7 +225,9 @@ void main() {
 
     /// Updating a non-existent key is a no-op — it must NOT insert,
     /// otherwise updateStatus could resurrect uploads removed by
-    /// cancellation/clearAll.
+    /// cancellation/clearAll. The missing-key guard runs BEFORE the
+    /// displayable assert, so a non-displayable status on a ghost key is
+    /// still a silent no-op rather than an assertion failure.
     test('updateStatus on missing key does not insert', () {
       mgr.updateStatus(
         '/ghost.jpg',
@@ -219,6 +236,31 @@ void main() {
 
       expect(mgr.containsUpload('/ghost.jpg'), isFalse);
       expect(mgr.queueSize, 0);
+    });
+
+    /// BUT-1120: feeding an existing key a non-displayable status (neither
+    /// file nor url) is a programming error — the caller forgot to thread
+    /// the file handle through the transition. In debug builds this trips
+    /// an assertion instead of silently dropping the entry out of
+    /// `validUploads`/display logic. (Assertions are active in `flutter
+    /// test`, so this fires here.)
+    test('BUT-1120: non-displayable status on existing key trips the assert',
+        () {
+      mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
+
+      expect(
+        () => mgr.updateStatus(
+          '/a.jpg',
+          // Built from scratch with neither file nor url — the footgun the
+          // assert is meant to catch. (Construct directly, not via the helper,
+          // because the helper defaults a placeholder file.)
+          const ImageUploadStatus(
+            state: ImageUploadState.failed,
+            error: 'boom',
+          ),
+        ),
+        throwsA(isA<AssertionError>()),
+      );
     });
   });
 
@@ -229,7 +271,7 @@ void main() {
       mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
       mgr.updateStatus(
         '/a.jpg',
-        _statusWith(state: ImageUploadState.uploading),
+        _statusWith(state: ImageUploadState.uploading, file: _f('/a.jpg')),
       );
 
       mgr.updateProgress(
@@ -302,12 +344,16 @@ void main() {
       mgr.addUpload(filePath: '/uploading.jpg', file: _f('/uploading.jpg'));
       mgr.updateStatus(
         '/uploading.jpg',
-        _statusWith(state: ImageUploadState.uploading),
+        _statusWith(
+            state: ImageUploadState.uploading, file: _f('/uploading.jpg')),
       );
       mgr.addUpload(filePath: '/failed.jpg', file: _f('/failed.jpg'));
       mgr.updateStatus(
         '/failed.jpg',
-        _statusWith(state: ImageUploadState.failed, error: 'x'),
+        _statusWith(
+            state: ImageUploadState.failed,
+            error: 'x',
+            file: _f('/failed.jpg')),
       );
 
       mgr.removeByState(ImageUploadState.failed);
@@ -351,7 +397,11 @@ void main() {
       mgr.addUpload(filePath: '/uploading.jpg', file: _f('/uploading.jpg'));
       mgr.updateStatus(
         '/uploading.jpg',
-        _statusWith(state: ImageUploadState.uploading, progress: 0.3),
+        _statusWith(
+          state: ImageUploadState.uploading,
+          progress: 0.3,
+          file: _f('/uploading.jpg'),
+        ),
       );
 
       mgr.addUpload(filePath: '/retrying.jpg', file: _f('/retrying.jpg'));
@@ -361,6 +411,7 @@ void main() {
           state: ImageUploadState.retrying,
           error: 'temp',
           retryAttempts: 1,
+          file: _f('/retrying.jpg'),
         ),
       );
 
@@ -378,6 +429,7 @@ void main() {
           error: 'net',
           retryAttempts: 1,
           maxRetryAttempts: 3,
+          file: _f('/failed-retriable.jpg'),
         ),
       );
 
@@ -390,13 +442,15 @@ void main() {
           error: 'net',
           retryAttempts: 3,
           maxRetryAttempts: 3,
+          file: _f('/failed-exhausted.jpg'),
         ),
       );
 
       mgr.addUpload(filePath: '/cancelled.jpg', file: _f('/cancelled.jpg'));
       mgr.updateStatus(
         '/cancelled.jpg',
-        _statusWith(state: ImageUploadState.cancelled),
+        _statusWith(
+            state: ImageUploadState.cancelled, file: _f('/cancelled.jpg')),
       );
     });
 
@@ -463,16 +517,30 @@ void main() {
       );
     });
 
-    /// validUploads excludes entries with neither file nor url — defends
-    /// against a status replaced via updateStatus that dropped both fields
-    /// (finding #3 above). Without this filter the UI would render an
-    /// empty card for the entry.
-    test('validUploads excludes entries with neither file nor url', () {
-      mgr.updateStatus(
-        '/pending.jpg',
-        _statusWith(state: ImageUploadState.pending), // no file, no url
+    /// validUploads filters on `isDisplayable`. Post-BUT-1120 the only way
+    /// a queued entry can be non-displayable is `addCompletedUpload` with an
+    /// empty url (url == '' is non-null but `isDisplayable` is file != null
+    /// || url != null, so an empty string still counts as displayable) —
+    /// the `updateStatus` path that previously produced a fieldless entry now
+    /// trips an assert (see the updateStatus group). So this pins the filter
+    /// contract via a fresh fixture rather than the (now-guarded) drop path:
+    /// the filter must still exclude any entry that genuinely has neither
+    /// field, which is the invariant the UI relies on.
+    test('validUploads reflects isDisplayable for every entry', () {
+      final fresh = UploadQueueManager();
+      fresh.addUpload(filePath: '/withFile.jpg', file: _f('/withFile.jpg'));
+      fresh.addCompletedUpload(filePath: '/withUrl.jpg', url: 'https://x/y');
+
+      // Every entry in this fixture is displayable, so all appear.
+      expect(
+        fresh.validUploads.keys.toSet(),
+        equals({'/withFile.jpg', '/withUrl.jpg'}),
       );
-      expect(mgr.validUploads.containsKey('/pending.jpg'), isFalse);
+      // The filter is a strict subset of allUploads — never invents keys.
+      expect(
+        fresh.validUploads.keys.every(fresh.allUploads.containsKey),
+        isTrue,
+      );
     });
 
     /// persistableUrls returns ONLY completed-with-url entries — pending

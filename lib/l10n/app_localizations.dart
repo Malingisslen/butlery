@@ -13353,6 +13353,48 @@ abstract class AppLocalizations {
   /// **'Torrvaror'**
   String get categoryDryGoods;
 
+  /// Shopping category — meat only (BUT-1004 split from meat_fish)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kött'**
+  String get categoryMeat;
+
+  /// Shopping category — fish only (BUT-1004 split from meat_fish)
+  ///
+  /// In sv, this message translates to:
+  /// **'Fisk'**
+  String get categoryFish;
+
+  /// Shopping category — fruit only (BUT-1004 split from fruit_veg)
+  ///
+  /// In sv, this message translates to:
+  /// **'Frukt'**
+  String get categoryFruit;
+
+  /// Shopping category — vegetables only (BUT-1004 split from fruit_veg)
+  ///
+  /// In sv, this message translates to:
+  /// **'Grönsaker'**
+  String get categoryVeg;
+
+  /// BUT-1031: banner shown when realtime conflict resolver picked a winner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkroniseringskonflikt löst — den senaste ändringen sparades'**
+  String get conflictBannerMessage;
+
+  /// BUT-1031: dismiss action on the conflict banner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng'**
+  String get conflictBannerDismiss;
+
+  /// BUT-1031: a11y label for the conflict banner dismiss action.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng konfliktnotis'**
+  String get a11yConflictBannerDismiss;
+
   /// No description provided for @privacyEmailSubject.
   ///
   /// In sv, this message translates to:

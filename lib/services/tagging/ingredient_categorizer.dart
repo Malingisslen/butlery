@@ -10,16 +10,18 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 ///
 /// Rule order matters: the first matching rule wins. Dairy is checked
 /// before dry goods so that `mjölk` resolves to dairy rather than
-/// matching the `mjöl` substring in the dry-goods rule.
+/// matching the `mjöl` substring in the dry-goods rule. Oils are checked
+/// before dry-goods so `olivolja` does not fall through to `other`.
+///
+/// BUT-1004: meat/fish and fruit/veg are now resolved to the fine-grained
+/// `meat`/`fish` and `fruit`/`veg` buckets. The legacy `meatFish`/`fruitVeg`
+/// constants remain for back-compat with stored documents but are no longer
+/// produced by this routine.
 class IngredientCategorizer {
   const IngredientCategorizer._();
 
   /// Returns a [ShoppingCategory] constant for [ingredientName],
   /// or [ShoppingCategory.other] when no rule matches.
-  ///
-  /// Categorization is best-effort and intentionally coarse — see
-  /// `BUT-1004` for the planned enhancement (Swedish-localized labels,
-  /// meat/fish split, fruit/veg split, oils → pantry).
   static String categorize(String ingredientName) {
     final name = ingredientName.toLowerCase().trim();
 
@@ -33,19 +35,43 @@ class IngredientCategorizer {
       return ShoppingCategory.dairy;
     }
 
+    // BUT-1004: meat-only — fish split into its own bucket below.
     if (name.contains('kött') ||
         name.contains('fläsk') ||
         name.contains('nöt') ||
         name.contains('kyckling') ||
-        name.contains('fisk') ||
-        name.contains('lax') ||
-        name.contains('räk') ||
         name.contains('korv') ||
         name.contains('bacon') ||
         name.contains('skinka')) {
-      return ShoppingCategory.meatFish;
+      return ShoppingCategory.meat;
     }
 
+    // BUT-1004: fish-only.
+    if (name.contains('fisk') ||
+        name.contains('lax') ||
+        name.contains('räk') ||
+        name.contains('torsk') ||
+        name.contains('sill') ||
+        name.contains('makrill') ||
+        name.contains('tonfisk')) {
+      return ShoppingCategory.fish;
+    }
+
+    // BUT-1004: fruit-only — separated from veg below.
+    if (name.contains('äpple') ||
+        name.contains('banan') ||
+        name.contains('citron') ||
+        name.contains('lime') ||
+        name.contains('päron') ||
+        name.contains('druva') ||
+        name.contains('apelsin') ||
+        name.contains('jordgubb') ||
+        name.contains('hallon') ||
+        name.contains('blåbär')) {
+      return ShoppingCategory.fruit;
+    }
+
+    // BUT-1004: veg-only.
     if (name.contains('tomat') ||
         name.contains('lök') ||
         name.contains('vitlök') ||
@@ -54,11 +80,21 @@ class IngredientCategorizer {
         name.contains('gurka') ||
         name.contains('paprika') ||
         name.contains('sallad') ||
-        name.contains('äpple') ||
-        name.contains('banan') ||
-        name.contains('citron') ||
-        name.contains('lime')) {
-      return ShoppingCategory.fruitVeg;
+        name.contains('broccoli') ||
+        name.contains('blomkål') ||
+        name.contains('zucchini') ||
+        name.contains('spenat')) {
+      return ShoppingCategory.veg;
+    }
+
+    // BUT-1004: oils route to dry_goods/pantry so they no longer fall
+    // through to `other`. Checked BEFORE the dry-goods rule because the
+    // substring 'olja' is the canonical token for cooking oils.
+    if (name.contains('olja') ||
+        name.contains('rapsolja') ||
+        name.contains('olivolja') ||
+        name.contains('solrosolja')) {
+      return ShoppingCategory.dryGoods;
     }
 
     if (name.contains('mjöl') ||

@@ -56,6 +56,7 @@ import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
@@ -165,6 +166,12 @@ class UIModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
+      // BUT-953: HeirloomBridge — singleton handoff slot between PhotoImportView
+      // and the save flow in ImportBaseViewModel. Registered here because
+      // both producer (photo VM) and consumer (text VM via base) live in this
+      // module's dependency graph.
+      container.registerLazySingleton<HeirloomBridge>(() => HeirloomBridge());
+
       // Auth ViewModel - Auth service dependency
       container.registerFactory<AuthViewModel>(
         () => AuthViewModel(

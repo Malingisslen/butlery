@@ -40,6 +40,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         createBroadcastController<bool>(name: 'connection_state');
     _errorController =
         createBroadcastController<SyncError>(name: 'sync_errors');
+    _conflictController =
+        createBroadcastController<ConflictEvent>(name: 'sync_conflicts');
 
     // Initialize modules
     _initializeModules();
@@ -49,6 +51,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   late final StreamController<bool> _connectionController;
   // ignore: close_sinks - Disposed in onDispose() via disposeStreamResources()
   late final StreamController<SyncError> _errorController;
+  // ignore: close_sinks - Disposed in onDispose() via disposeStreamResources()
+  late final StreamController<ConflictEvent> _conflictController;
 
   /// BUT-779: bounded so power-user sessions don't grow this map linearly
   /// with activity. 200 covers typical sessions (50-100 resources observed)
@@ -82,6 +86,13 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     _conflictModule = ConflictResolutionModule(
       firestoreRepository: _firestoreRepository,
       getLatestResource: _parserModule.getLatestResource,
+      // BUT-1031: route resolved conflicts onto the broadcast stream so the
+      // ConflictBanner widget can surface silent last-write-wins picks.
+      onConflict: (event) {
+        if (!_conflictController.isClosed) {
+          _conflictController.add(event);
+        }
+      },
     );
   }
 
@@ -90,6 +101,11 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
   /// Stream for connection status
   Stream<bool> get connectionStream => _connectionController.stream;
+
+  /// BUT-1031: broadcast stream of collaborative-edit conflicts the resolver
+  /// has settled. UI surfaces (e.g. `ConflictBanner`) subscribe to render a
+  /// non-blocking banner so users notice when their edit was overwritten.
+  Stream<ConflictEvent> get conflictStream => _conflictController.stream;
 
   /// Senaste synkroniseringsfel
   SyncError? get lastError => _lastError;

@@ -1,5 +1,154 @@
 # Sprint Backlog
 
+## Sprint: iter-99 — 7 backend/service bug + hardening tickets across 5 disjoint areas — 2026-05-28 (Thu)
+
+Theme: Clean ticket-then-flip batch of backend/service-layer fixes, deliberately clustered to touch a DISJOINT set of files from the still-uncommitted iter-98 work (realtime/, heirloom/import, ingredient_categorizer, import_base_viewmodel, unified_shopping_item, conflict_banner, l10n ARBs). No ARB/l10n touches this sprint to avoid collision with iter-98's pending l10n keys.
+
+Phase 1.5 risk-gated expansion fires for **BUT-1133** (security label) and **BUT-1106** (Bug+shopping). Inline plans below. The rest are P4 mechanical/tech-debt — gate skipped per the rule.
+
+Linear: BUT-1099, BUT-1101, BUT-1152, BUT-1133, BUT-1106, BUT-1110, BUT-1120 transitioned to Todo.
+
+### Ship this sprint
+
+#### Agent A — PresenceService hardening (backend) — `lib/services/presence_service.dart`
+
+- [x] **A1. BUT-1099: call `super.dispose()` in PresenceService.dispose** — `lib/services/presence_service.dart:163-188`. The override never calls `super.dispose()`, so `BaseService.onDispose()` is unreachable. Add `await super.dispose();` (BaseService.dispose is async) at the end of the override, after `_presenceRef = null`. (BUT-1099)
+- [x] **A2. BUT-1101: null-guard `snapshot.data()` cast in `_cleanupStaleTypingIndicators`** — `lib/services/presence_service.dart:408`. Change `final data = snapshot.data() as Map<String, dynamic>;` to `final data = snapshot.data() as Map<String, dynamic>?; if (data == null) return;`. (Ticket cites old line 373; current site is line 408.) (BUT-1101)
+- [x] **A3. Test** — extend `test/unit/services/presence_service_test.dart`: (a) dispose calls through to BaseService teardown (assert no post-dispose timer fires / onDispose hook reached); (b) cleanup tolerates an exists-but-null-data doc without throwing. (BUT-1099, BUT-1101)
+
+#### Agent B — Shared-content repo permission + idempotency (backend/security) — two disjoint repo files
+
+- [x] **B1. BUT-1133: gate `validateDeletePermission` on doc ownership** — `lib/repositories/firebase/firebase_notification_history_repository.dart:53-56`. Replace the unconditional `=> true` with a read-then-check: fetch the doc, return false if missing, else `doc.data()?['userId'] == _userId`. Call `logPermissionCheck()` for the audit trail (repo CLAUDE.md requirement). (BUT-1133)
+- [x] **B2. BUT-1152: make `addMember` idempotent for existing members** — `lib/repositories/firebase/base_shared_content_repository.dart:308-354`. Read existing member doc (or `isMember`) BEFORE the `.set()`: if already a member, preserve original `addedAt` (merge rather than wholesale overwrite) and do NOT re-fire `incrementUnreadCounter`. Decision: option (a)+(b) combined — preserve audit fidelity AND suppress duplicate unread badge. (BUT-1152)
+- [x] **B3. Tests** — `test/unit/repositories/firebase/firebase_notification_history_repository_test.dart`: assert delete denied for another user's doc / allowed for own. `test/unit/repositories/firebase/base_shared_content_repository_test.dart`: re-addMember preserves original `addedAt` and does not double-increment unread. (BUT-1133, BUT-1152)
+
+##### ★ Risky-ticket plan — BUT-1133 ──────────────────
+Classification: **fits** — security label fires the gate. Latent privacy hole: base-class `delete(id)` is currently ungated on this repo.
+Files: `firebase_notification_history_repository.dart` (override the one method) + test.
+Blast radius: any future caller of `repo.delete(notificationId)` is now per-user gated. No current UI caller (verified in ticket), so no behavior regression for existing flows. Adds one Firestore read per single-doc delete (rare path).
+Product-intent flags: none — pure security tightening.
+Rollback: revert the override back to `=> true`.
+Proceeding automatically (no approval gate). firebase-backend-security reviewer required at commit (touches `lib/repositories/firebase/`).
+─────────────────────────────────────────────────
+
+#### Agent C — Shopping batch-add rollback (shopping) — `lib/services/unified/modules/shopping_item_management_module.dart`
+
+- [x] **C1. BUT-1106: rollback partial Firestore writes on mid-loop failure** — `lib/services/unified/modules/shopping_item_management_module.dart:160-184`. The `updateItem` loop (line 161-163) can partially commit before `addItemsBatch` throws, diverging Firestore from local cache. Snapshot the pre-update item values; on any failure in the update loop or the batch add, re-apply the snapshot via `updateItem` to roll back the already-committed merges, then `return false`. Mirror the rollback shape already used in `toggleItemBought` (line 316-322). (BUT-1106)
+- [x] **C2. Test** — `test/unit/services/unified/modules/shopping_item_management_module_test.dart`: stub repo so the 2nd `updateItem` throws after the 1st succeeds; assert the 1st item is rolled back to its original amount and the method returns false. (BUT-1106)
+
+##### ★ Risky-ticket plan — BUT-1106 ──────────────────
+Classification: **fits** — Bug+shopping fires the gate. Real medium-impact data-divergence bug.
+Files: `shopping_item_management_module.dart` (rollback block in one method) + test.
+Blast radius: `addItemsBatchToActiveList` is the batch path for recipe-import → shopping (called by `addItemsFromRecipe`). On the happy path behavior is unchanged; only the error path gains rollback. Adds compensating `updateItem` calls on failure (best-effort; if rollback itself throws, swallow + log — net no worse than today).
+Product-intent flags: none — restoring consistency is the obvious intent.
+Rollback: revert to the current `try { loop } catch { return false }`.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+#### Agent D — BaseSocialCoordinator dispose gate (social) — `lib/services/unified/modules/social_coordination/base_social_coordinator.dart`
+
+- [x] **D1. BUT-1110: add `_disposed` gate to BaseSocialCoordinator** — `lib/services/unified/modules/social_coordination/base_social_coordinator.dart`. Add a `bool _disposed` field, set it in an `onDispose()` override (it's a BaseService subclass — verify the base hook name), and short-circuit `_notifyListeners()` / `_setError()` when disposed. The existing dispose-mid-await test PINS the current no-guard contract — flip it to assert no notify/setError fires after dispose. (BUT-1110)
+- [x] **D2. Test flip** — `test/unit/services/unified/modules/social_coordination/base_social_coordinator_test.dart`: the dispose-mid-await test should now assert the post-dispose callback is suppressed. (BUT-1110)
+
+#### Agent E — UploadQueueManager merge-safe updateStatus (upload) — `lib/services/upload/upload_queue_manager.dart`
+
+- [x] **E1. BUT-1120: make `updateStatus` merge-safe** — `lib/services/upload/upload_queue_manager.dart:83-93`. The wholesale `_queue[filePath] = newStatus` clobbers the `file:` field if a caller builds the status from scratch. Preferred: change the contract so the existing entry's `file`/`url` round-trips — e.g. `_queue[filePath] = _queue[filePath]!.copyWith(state: newStatus.state, ...)` merging only the transition fields, OR add an assert that `newStatus.isDisplayable` (file or url present). Keep the single call site (`ImageUploadService`, which already passes `copyWith`) working unchanged. (BUT-1120)
+- [x] **E2. Test** — `test/unit/services/upload/upload_queue_manager_test.dart`: call `updateStatus` with a from-scratch status missing `file`; assert the entry remains in `validUploads` (file preserved) OR the assert fires — pin whichever contract the fix chooses. (BUT-1120)
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` on all touched files clean.
+- [ ] Touched test files pass.
+- [ ] Tier-2 reviewers: code-reviewer (all Dart) + testing-specialist (all `lib/**`) + firebase-backend-security (Agent B — touches `lib/repositories/firebase/`).
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos`.
+- [ ] Run relevant unit tests.
+- [ ] File any deferred follow-ups in Linear.
+- [ ] Commit (unified), push to main.
+- [ ] Close BUT-1099, BUT-1101, BUT-1152, BUT-1133, BUT-1106, BUT-1110, BUT-1120 in Linear.
+
+> Note: BUT-1140 (RecipeFormAutoSaveManager.clearCurrentDraft "void despite async") was considered but is **obsolete** — already fixed by BUT-1138 (signature is already `Future<void> ... async` at `recipe_auto_save_manager.dart:412`, callers await it). Close it during this sprint's Linear pass.
+
+---
+
+## Sprint: iter-98 — 2 closures + 2 P2 High Bugs (rescoped) + 1 P3 categorizer — 2026-05-28 (Thu)
+
+Theme: Re-verify in-progress tickets that recent commits actually closed (BUT-892, BUT-1086 → both shipped in 75c0845c9 but still In Progress). Then 2 P2 High Bugs (BUT-1031 collaborative-conflict event/banner, BUT-953 heirloom save wiring — rescoped against current architecture) + 1 P3 categorizer enhancement (BUT-1004 split fine-grained categories + oils → dry_goods).
+
+Phase 1.5 risk-gated plan expansion fires for BUT-1031 (social+recipe+Bug) and BUT-953 (recipe+import+Bug). Inline plans below.
+
+### Ship this sprint
+
+#### Closure batch — already-shipped tickets still In Progress
+
+- [x] **C1. Close BUT-892 in Linear** — Linear transitioned to Done, comment posted referencing commit 75c0845c9. (BUT-892)
+- [x] **C2. Close BUT-1086 in Linear** — same. (BUT-1086)
+
+#### Agent A — Realtime conflict visibility (BUT-1031)
+
+- [x] **A1. Add `ConflictEvent` type** — extend `lib/services/realtime/realtime_types.dart` with `ConflictEvent` carrying `{collectionPath, docId, localValue, remoteValue, chosenStrategy, occurredAt}`. Strategy enum: `localWon`, `remoteWon`. (BUT-1031)
+- [x] **A2. Emit on resolveConflict** — module gains `onConflict` + `collectionPath` ctor params. Emits from 4 normal-path branches. Catch-block emit removed per code-reviewer H1 (resolver crash is not "your edit was overwritten"). (BUT-1031)
+- [x] **A3. Expose stream on RealtimeSyncService** — new `_conflictController` via `createBroadcastController` (auto-disposed via `StreamManagementMixin.disposeStreamResources()`), `conflictStream` getter, wired into `ConflictResolutionModule(onConflict: ...)`. (BUT-1031)
+- [x] **A4. ConflictBanner widget** — `lib/widgets/realtime/conflict_banner.dart`, `StatefulWidget` subscribing to `conflictStream` via `ServiceLocator.tryGet` (graceful no-op when service not registered, e.g. tests). Square border, warning palette. l10n keys added: `conflictBannerMessage`, `conflictBannerDismiss`, `a11yConflictBannerDismiss` (sv+en). (BUT-1031)
+- [x] **A5. Test** — `test/unit/services/realtime/conflict_resolution_module_test.dart` — 5 tests passing (localWon/remoteWon × editCount/timestamp + null-callback). (BUT-1031)
+
+##### ★ Risky-ticket plan — BUT-1031 ──────────────────
+Classification: **plan-stale + rescoped** — ticket says "wire the banner there [recipe edit/menu plan/shopping list] first." That's a 3-view UI touch on top of the infrastructure; **deferred to a follow-up Linear ticket** so this sprint can land the silent-loss fix.
+Files: `realtime_types.dart` (add type), `conflict_resolution_module.dart` (emit), `realtime_sync_service.dart` (stream getter), `lib/widgets/realtime/conflict_banner.dart` (new widget), test + ARB updates.
+Blast radius: ConflictResolutionModule ctor gains an optional callback. RealtimeSyncService gains a new broadcast stream — existing consumers unaffected.
+Product-intent flags: banner copy may need stronger UX language ("Andra användarens ändring vann") once we have the diff view. Defer wording polish.
+Rollback: revert all 4 files; `_conflictController` matches the existing `_errorController` pattern.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+#### Agent B — Heirloom save wiring (BUT-953, RESCOPED)
+
+##### Step 0 finding: ticket premise drifted
+
+The ticket says "Call uploadHeirloomImage from the recipe save flow." BUT `PhotoImportViewModel.uploadHeirloomImage` lives in a different VM than the save flow — saves happen in `TextImportViewModel.completeImport()` after `Navigator.pushNamed('/franSocialaMedier', ...)`. There is NO save action on PhotoImportView; the user always navigates to text-import. Re-scope: add a one-shot service-layer bridge so the heirloom draft survives navigation.
+
+- [x] **B1. New `HeirloomDraft` model** — `lib/models/recipe/heirloom_draft.dart`. (BUT-953)
+- [x] **B2. New `HeirloomBridge` service** — `lib/services/import/heirloom_bridge.dart`. Pure-state holder. (BUT-953)
+- [x] **B3. DI registration** — `lib/core/di/modules/ui_module.dart` — registered as `lazySingleton<HeirloomBridge>`. (BUT-953)
+- [x] **B4. PhotoImportView writes draft on navigation** — `_navigateToTextImport` + `_navigateToManualEntry` both call new `_stashHeirloomDraftIfActive` helper. (BUT-953)
+- [x] **B5. Override `saveImportedRecipe` in ImportBaseViewModel** — `_attachHeirloomIfPending` called first inside `executeAsyncVoid`. Post-review fixes: re-check `isAuthenticated` (mirror BUT-1086), use `ServiceLocator.get` not `tryGet` (fail-loud), restore draft on failure (user can retry without re-filling). (BUT-953)
+- [x] **B6. Unit test** — `test/unit/viewmodels/import_base_viewmodel_heirloom_test.dart` — 4 tests passing (OK / upload-null / no-userId / no-draft). Added per testing-specialist review. (BUT-953)
+
+##### ★ Risky-ticket plan — BUT-953 ──────────────────
+Classification: **plan-stale + rescoped** — ticket premise (call upload from photo VM save flow) doesn't fit current architecture. Rescoped to a service-bridge handoff.
+Files: 1 new model + 1 new service + 1 DI line + photo view edit + import-base VM override + 1 test.
+Blast radius: All import VMs consult HeirloomBridge in saveImportedRecipe — empty by default → text-only/url-only flows unaffected. Photo→text gets the wiring. No Firestore schema change (heirloom field already on Recipe). Upload reuses existing StorageRepository pattern.
+Product-intent flags: "block success toast until upload resolves" — override does this implicitly by failing the save call.
+Rollback: revert 6 files. Bridge is empty-by-default → existing non-heirloom flows unchanged.
+Proceeding automatically (no approval gate).
+─────────────────────────────────────────────────
+
+#### Agent C — IngredientCategorizer enhancement (BUT-1004)
+
+- [x] **C1. Add new ShoppingCategory constants** — `meat`, `fish`, `fruit`, `veg` added; legacy `meatFish`/`fruitVeg` retained in `all` (back-compat). New buckets come first in store-walk order. (BUT-1004)
+- [x] **C2. l10n keys for new categories** — added to sv + en; `flutter gen-l10n` ran. (BUT-1004)
+- [x] **C3. Update displayName switch** — new cases added; legacy `meatFish`/`fruitVeg` still resolve. (BUT-1004)
+- [x] **C4. Refine categorizer rules** — meat-only, fish-only, fruit-only, veg-only branches; oils → dryGoods rule placed before generic dry-goods to short-circuit `olja` substring. Word lists expanded (added torsk/sill/makrill/tonfisk, päron/druva/apelsin/jordgubb/hallon/blåbär, broccoli/blomkål/zucchini/spenat, rapsolja/solrosolja). (BUT-1004)
+- [x] **C5. Flip golden corpus** — all 10/10 cases pass with new expectations. (BUT-1004)
+- [x] **C6. UI sweep check** — `shopping_list_generator_test` (35/35) + `unified_shopping_item_test` + 3 others (73/73) all pass. Legacy switch cases unchanged. Follow-up BUT-1164 filed for eventual migration + cleanup. (BUT-1004)
+
+### Acceptance
+
+- [x] `flutter analyze --fatal-infos` on touched files clean.
+- [x] Touched test files pass (9/9 new + regression checks green).
+- [x] Tier-2 reviewers: code-reviewer (BUT-1031, BUT-953) + testing-specialist — all findings addressed inline or filed as follow-ups.
+
+### Post-Sprint Steps
+
+- [x] File follow-ups in Linear: BUT-1161 (heirloom upload contentType — High), BUT-1162 (banner surface wiring — Medium), BUT-1163 (diff view — Low), BUT-1164 (legacy category migration — Low).
+- [ ] Commit (unified).
+- [ ] Push.
+- [ ] Close BUT-1031, BUT-953, BUT-1004 in Linear.
+
+---
+
 ## Sprint: iter-97 — 2 P2 High Bug fixes (BUT-1086 + BUT-892) — 2026-05-28 (Thu)
 
 Theme: Two P2 High Bugs via established patterns. BUT-1086 mirrors iter-82's BUT-1131 (silent secondary write → surface via setError). BUT-892 mirrors iter-82's BUT-894 (orphan cleanup extension in `_cleanupRecipeReferences`).
@@ -20,12 +169,12 @@ Theme: Two P2 High Bugs via established patterns. BUT-1086 mirrors iter-82's BUT
 
 ### Post-Sprint Steps
 
-- [ ] Commit (unified, from orchestrating session).
+- [x] Commit (unified, from orchestrating session). — commit `75c0845c9`, pushed to main 2026-05-28.
 - [ ] Close BUT-1086 + BUT-892 in Linear.
 
 ---
 
-## Sprint: iter-92 — SocialRecipeSharingService idempotent share (BUT-1132) — 2026-05-27 (Wed)
+## Archived iter-92 (commit `5a65cd2cd` — BUT-1132) — 2026-05-27 (Wed)
 
 Theme: Single P4 Low Bug — Firestore duplicate-share idempotency. Repository-layer fix: check for existing `shared_recipes` doc with same `(sharedByUserId, originalRecipeId)` before creating a new one. If found, reuse + addMember new recipients. Scope: repository-only change + test flip.
 
@@ -55,15 +204,15 @@ Proceeding automatically (no approval gate).
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean.
-- [ ] Touched test files pass.
-- [ ] Tier-2 reviewers clean (firebase-backend-security required — touches `lib/repositories/firebase/`).
+- [x] `flutter analyze --fatal-infos` clean.
+- [x] Touched test files pass.
+- [x] Tier-2 reviewers clean (firebase-backend-security required — touches `lib/repositories/firebase/`).
 
 ### Post-Sprint Steps
 
-- [ ] Commit + push.
-- [ ] Close BUT-1132 in Linear.
-- [ ] File follow-up if scope demands: addMember unread-counter idempotency (BUT-1132-followup).
+- [x] Commit + push.
+- [x] Close BUT-1132 in Linear.
+- [x] File follow-up if scope demands: addMember unread-counter idempotency (BUT-1132-followup).
 
 ---
 
@@ -86,8 +235,8 @@ No Phase 1.5 expansion (P4 + pure `parsing`/`tech-debt`/`Improvement` labels).
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session commits + pushes.
-- [ ] Close BUT-1150 in Linear.
+- [x] Orchestrating session commits + pushes.
+- [x] Close BUT-1150 in Linear.
 
 ---
 
@@ -123,15 +272,15 @@ No Phase 1.5 expansion (P3 + `parsing`/`test-gap` labels, no Bug or area-trigger
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched test files.
-- [ ] All 5 new tests pass.
-- [ ] Existing `recipe_parser_service_test.dart` tests still pass.
-- [ ] Tier-2 reviewers clean (testing-specialist must approve — `lib/**/*.dart` is NOT touched, but test-quality review is still valuable for new test infrastructure).
+- [x] `flutter analyze --fatal-infos` clean on touched test files.
+- [x] All 5 new tests pass.
+- [x] Existing `recipe_parser_service_test.dart` tests still pass.
+- [x] Tier-2 reviewers clean (testing-specialist must approve — `lib/**/*.dart` is NOT touched, but test-quality review is still valuable for new test infrastructure).
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does commit + push.
-- [ ] Close BUT-1141 in Linear.
+- [x] Orchestrating session does commit + push.
+- [x] Close BUT-1141 in Linear.
 
 ---
 
@@ -149,8 +298,8 @@ No Phase 1.5 expansion (P4 + pure `tech-debt`/`test-gap` labels — explicitly s
 
 #### Agent — Delete dead method (direct edit, no agent needed)
 
-- [ ] **A1. Delete `MockConfigurator.configureAuthStateStream`** — `test/test_support/mock_configurator.dart:120-136`. Remove the entire method + its 7-line docstring + `@Deprecated` annotation. Confirm via grep that no other file references it (verified: only the knowledge-file doc references it, that's fine to leave). (BUT-1143)
-- [ ] **A2. Verify** — `dart analyze --fatal-infos` clean. Full unit suite still green. (BUT-1143)
+- [x] **A1. Delete `MockConfigurator.configureAuthStateStream`** — `test/test_support/mock_configurator.dart:120-136`. Remove the entire method + its 7-line docstring + `@Deprecated` annotation. Confirm via grep that no other file references it (verified: only the knowledge-file doc references it, that's fine to leave). (BUT-1143)
+- [x] **A2. Verify** — `dart analyze --fatal-infos` clean. Full unit suite still green. (BUT-1143)
 
 ### Step 0 — premise verification (done)
 
@@ -158,14 +307,14 @@ No Phase 1.5 expansion (P4 + pure `tech-debt`/`test-gap` labels — explicitly s
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean.
-- [ ] `flutter test test/unit/` still passes (no behavior change — method had no callers).
-- [ ] Tier-2 reviewers clean.
+- [x] `flutter analyze --fatal-infos` clean.
+- [x] `flutter test test/unit/` still passes (no behavior change — method had no callers).
+- [x] Tier-2 reviewers clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does commit + push.
-- [ ] Close BUT-1143 in Linear.
+- [x] Orchestrating session does commit + push.
+- [x] Close BUT-1143 in Linear.
 
 ---
 
@@ -215,15 +364,15 @@ Phase 1.5 doesn't fire (P4 + plain `Bug` label, no area-label combo). Plan-stale
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
-- [ ] Touched test file passes (incl. new mid-flight soft-cancel test).
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
-- [ ] Tier-2 reviewers clean.
+- [x] `flutter analyze --fatal-infos` clean on touched lib files.
+- [x] Touched test file passes (incl. new mid-flight soft-cancel test).
+- [x] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [x] Tier-2 reviewers clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1129 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1129 in Linear.
 
 ---
 
@@ -255,15 +404,15 @@ Proceeding automatically (no approval gate).
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched lib file.
-- [ ] Touched test file passes.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
-- [ ] Tier-2 reviewers clean.
+- [x] `flutter analyze --fatal-infos` clean on touched lib file.
+- [x] Touched test file passes.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [x] Tier-2 reviewers clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1093 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1093 in Linear.
 
 ---
 
@@ -305,16 +454,16 @@ Proceeding automatically (no approval gate).
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
-- [ ] Touched test files pass.
-- [ ] `flutter gen-l10n` succeeded after A3 + A5 ARB additions.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
-- [ ] Tier-2 reviewers clean.
+- [x] `flutter analyze --fatal-infos` clean on touched lib files.
+- [x] Touched test files pass.
+- [x] `flutter gen-l10n` succeeded after A3 + A5 ARB additions.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [x] Tier-2 reviewers clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1117 + BUT-1115 + BUT-1109 + BUT-1096 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1117 + BUT-1115 + BUT-1109 + BUT-1096 in Linear.
 
 ---
 
@@ -346,15 +495,15 @@ Theme: Four P4 Low Bugs across the upload subsystem (3 sibling files). Single ag
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
-- [ ] Touched test files pass.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
-- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+- [x] `flutter analyze --fatal-infos` clean on touched lib files.
+- [x] Touched test files pass.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [x] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1119 + BUT-1127 + BUT-1103 + BUT-1104 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1119 + BUT-1127 + BUT-1103 + BUT-1104 in Linear.
 
 ---
 
@@ -383,15 +532,15 @@ Theme: Three P4 Low Bugs all in `lib/viewmodels/smart_import_viewmodel.dart`, di
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched lib file.
-- [ ] Touched test file passes.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
-- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+- [x] `flutter analyze --fatal-infos` clean on touched lib file.
+- [x] Touched test file passes.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [x] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1145 + BUT-1146 + BUT-1147 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1145 + BUT-1146 + BUT-1147 in Linear.
 
 ---
 
@@ -420,16 +569,16 @@ Theme: Two P3 import-area Bug tickets, single agent (small clean batch). Both ar
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean on touched lib files.
-- [ ] Touched test files pass.
-- [ ] `flutter gen-l10n` succeeded after A5 ARB additions.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos`.
-- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+- [x] `flutter analyze --fatal-infos` clean on touched lib files.
+- [x] Touched test files pass.
+- [x] `flutter gen-l10n` succeeded after A5 ARB additions.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos`.
+- [x] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1144 + BUT-1070 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1144 + BUT-1070 in Linear.
 
 ---
 
@@ -483,16 +632,16 @@ Proceeding automatically (no approval gate).
 
 ### Acceptance
 
-- [ ] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
-- [ ] Each agent reports its touched test files pass.
-- [ ] `flutter gen-l10n` succeeded after BUT-1131 ARB addition.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
-- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+- [x] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
+- [x] Each agent reports its touched test files pass.
+- [x] `flutter gen-l10n` succeeded after BUT-1131 ARB addition.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
+- [x] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1138, BUT-1139, BUT-1131, BUT-894 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1138, BUT-1139, BUT-1131, BUT-894 in Linear.
 
 ---
 
@@ -538,19 +687,19 @@ Theme: Three P3 tickets dispatched simultaneously to 3 general-purpose agents. E
 ### Ship this sprint
 
 #### Agent A — SocialRecipeService error-state refactor (BUT-1087)
-- [ ] **A1. Extract `_setErrorFromException(String message, Object e)` helper + call from every catch block in `social_recipe_service.dart`** (lines 130, 145, 185, 230, 283, 300 cited).
-- [ ] **A2. Clear `_error = null` at the entry of each public mutator** (or via `_resetError()` helper at method top).
-- [ ] **A3. Flip pinning tests in `social_recipe_service_test.dart`** — undismiss/markAsViewed/import false returns now ALSO populate `service.error`. Add test for "success after failure clears error".
+- [x] **A1. Extract `_setErrorFromException(String message, Object e)` helper + call from every catch block in `social_recipe_service.dart`** (lines 130, 145, 185, 230, 283, 300 cited).
+- [x] **A2. Clear `_error = null` at the entry of each public mutator** (or via `_resetError()` helper at method top).
+- [x] **A3. Flip pinning tests in `social_recipe_service_test.dart`** — undismiss/markAsViewed/import false returns now ALSO populate `service.error`. Add test for "success after failure clears error".
 
 #### Agent B — InstagramPipeline tier-2 source provenance (BUT-1114)
-- [ ] **B1. Add `instagramCaption` enum value to `SourceArtefactType`** in `lib/models/recipe/source_artefact.dart`.
-- [ ] **B2. In `instagram_pipeline.dart` tier-2 success path: copyWith sourceUrl=input + SourceArtefact(type: instagramCaption, payload: caption)**. Mirror the tiktok_pipeline shape.
-- [ ] **B3. Adjust instagram_pipeline_test.dart docstring** to reflect that BUT-1114 is fixed (production-level — full pin requires WebScraper injection seam, deferred).
+- [x] **B1. Add `instagramCaption` enum value to `SourceArtefactType`** in `lib/models/recipe/source_artefact.dart`.
+- [x] **B2. In `instagram_pipeline.dart` tier-2 success path: copyWith sourceUrl=input + SourceArtefact(type: instagramCaption, payload: caption)**. Mirror the tiktok_pipeline shape.
+- [x] **B3. Adjust instagram_pipeline_test.dart docstring** to reflect that BUT-1114 is fixed (production-level — full pin requires WebScraper injection seam, deferred).
 
 #### Agent C — SocialShoppingCoordinator perf parallelize (BUT-1125)
-- [ ] **C1. `loadStatusForShoppingList`: collapse 3 sequential awaits via `Future.wait([hasViewed, hasEngaged, hasDismissed])`**.
-- [ ] **C2. `loadStatusForAllShoppingLists`: parallelise via `Future.wait(shoppingLists.map(...))`**.
-- [ ] **C3. Update / add test verifying the parallel-fetch contract** — assert all 3 stat reads are issued before any await on the next list item.
+- [x] **C1. `loadStatusForShoppingList`: collapse 3 sequential awaits via `Future.wait([hasViewed, hasEngaged, hasDismissed])`**.
+- [x] **C2. `loadStatusForAllShoppingLists`: parallelise via `Future.wait(shoppingLists.map(...))`**.
+- [x] **C3. Update / add test verifying the parallel-fetch contract** — assert all 3 stat reads are issued before any await on the next list item.
 
 ### Step 0 — premise verification
 
@@ -558,15 +707,15 @@ Delegated to each agent's first phase. Each agent must read current code state, 
 
 ### Acceptance
 
-- [ ] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
-- [ ] Each agent reports its touched test files pass.
-- [ ] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
-- [ ] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
+- [x] Each agent reports `flutter analyze --fatal-infos` clean on its touched lib files.
+- [x] Each agent reports its touched test files pass.
+- [x] Orchestrating session runs full `dart analyze --fatal-infos` after all agents finish.
+- [x] Tier-2 reviewers (code-reviewer + testing-specialist) clean.
 
 ### Post-Sprint Steps
 
-- [ ] Orchestrating session does unified `git add` + commit + push.
-- [ ] Close BUT-1087, BUT-1114, BUT-1125 in Linear.
+- [x] Orchestrating session does unified `git add` + commit + push.
+- [x] Close BUT-1087, BUT-1114, BUT-1125 in Linear.
 
 ---
 
@@ -578,20 +727,20 @@ Theme: Five small mechanical-fit P3 Bug tickets. Two batches with cross-cluster 
 
 #### Agent A — Shopping social share-module hardening
 
-- [ ] **A1. ShoppingSocialShareModule.importSharedShoppingList: switch `.update()` → `.set(..., merge:true)`** — `lib/services/unified/operations/modules/shopping_social_share_module.dart:343-351`. (BUT-1107)
-- [ ] **A2. Flip "no received pointer" pinning test** — `test/unit/services/unified/operations/modules/shopping_social_share_module_test.dart:916-935`. Now asserts `out == sharedListId` (import succeeds, pointer created) instead of `isNull`. (BUT-1107)
-- [ ] **A3. ShoppingSocialShareModule.getShoppingListsSharedWithMe: add `sharedWithUserIds.contains(currentUserId)` check in inbox loop** — same file, around line 256-272 (before the `sharedLists.add({...})` block). Defense-in-depth — implicit access via received_lists pointer is no longer the only gate. (BUT-1108, security)
-- [ ] **A4. Add BUT-1108 defense-in-depth test** — same test file. New test in `getShoppingListsSharedWithMe` group: seed a shared doc WITHOUT current user in `sharedWithUserIds`, plus a received_lists pointer, and assert the entry is filtered out of the result. (BUT-1108)
+- [x] **A1. ShoppingSocialShareModule.importSharedShoppingList: switch `.update()` → `.set(..., merge:true)`** — `lib/services/unified/operations/modules/shopping_social_share_module.dart:343-351`. (BUT-1107)
+- [x] **A2. Flip "no received pointer" pinning test** — `test/unit/services/unified/operations/modules/shopping_social_share_module_test.dart:916-935`. Now asserts `out == sharedListId` (import succeeds, pointer created) instead of `isNull`. (BUT-1107)
+- [x] **A3. ShoppingSocialShareModule.getShoppingListsSharedWithMe: add `sharedWithUserIds.contains(currentUserId)` check in inbox loop** — same file, around line 256-272 (before the `sharedLists.add({...})` block). Defense-in-depth — implicit access via received_lists pointer is no longer the only gate. (BUT-1108, security)
+- [x] **A4. Add BUT-1108 defense-in-depth test** — same test file. New test in `getShoppingListsSharedWithMe` group: seed a shared doc WITHOUT current user in `sharedWithUserIds`, plus a received_lists pointer, and assert the entry is filtered out of the result. (BUT-1108)
 
 #### Agent B — Presence + legacy social-coord error hygiene
 
-- [ ] **B1. PresenceService.dispose: split set(offline) + cancel into separate try-blocks** — `lib/services/presence_service.dart:171-178`. (BUT-1098)
-- [ ] **B2. PresenceService.resetForLogout: same split** — same file, lines 190-197. (BUT-1098)
-- [ ] **B3. Add BUT-1098 "cancel-after-set-throws" test** — `test/unit/services/presence_service_test.dart`. New test in dispose() group: when `ref.set(any())` throws, `disconnect.cancel()` MUST still be called. (BUT-1098)
-- [ ] **B4. PresenceService.didChangeAppLifecycleState: wrap fire-and-forget RTDB writes in `.catchError`** — `lib/services/presence_service.dart:332-353`. Use `unawaited(_presenceRef?.set(...).catchError((e) { AppLogger.warning(...); }))` for each set/onDisconnect call. (BUT-1100)
-- [ ] **B5. Add BUT-1100 "lifecycle-state errors are swallowed" test** — `test/unit/services/presence_service_test.dart`. Drive `didChangeAppLifecycleState(paused)` after stubbing `ref.set(any())` to throw — assert no unhandled async exception escapes. (BUT-1100)
-- [ ] **B6. SocialMenuCoordinator legacy `importSharedMenu`: add `setError(sanitizeErrorForUser(e))` to catch** — `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:354-357`. Mirrors the BUT-1094 fix pattern already shipped on the non-legacy paths. (BUT-1124)
-- [ ] **B7. Add BUT-1124 setError test for legacy path** — `test/unit/services/unified/modules/social_menu/social_menu_coordinator_test.dart`. New test: legacy `importSharedMenu` repo throw → setError called with sanitised message, lastError populated. (BUT-1124)
+- [x] **B1. PresenceService.dispose: split set(offline) + cancel into separate try-blocks** — `lib/services/presence_service.dart:171-178`. (BUT-1098)
+- [x] **B2. PresenceService.resetForLogout: same split** — same file, lines 190-197. (BUT-1098)
+- [x] **B3. Add BUT-1098 "cancel-after-set-throws" test** — `test/unit/services/presence_service_test.dart`. New test in dispose() group: when `ref.set(any())` throws, `disconnect.cancel()` MUST still be called. (BUT-1098)
+- [x] **B4. PresenceService.didChangeAppLifecycleState: wrap fire-and-forget RTDB writes in `.catchError`** — `lib/services/presence_service.dart:332-353`. Use `unawaited(_presenceRef?.set(...).catchError((e) { AppLogger.warning(...); }))` for each set/onDisconnect call. (BUT-1100)
+- [x] **B5. Add BUT-1100 "lifecycle-state errors are swallowed" test** — `test/unit/services/presence_service_test.dart`. Drive `didChangeAppLifecycleState(paused)` after stubbing `ref.set(any())` to throw — assert no unhandled async exception escapes. (BUT-1100)
+- [x] **B6. SocialMenuCoordinator legacy `importSharedMenu`: add `setError(sanitizeErrorForUser(e))` to catch** — `lib/services/unified/modules/social_menu/social_menu_coordinator.dart:354-357`. Mirrors the BUT-1094 fix pattern already shipped on the non-legacy paths. (BUT-1124)
+- [x] **B7. Add BUT-1124 setError test for legacy path** — `test/unit/services/unified/modules/social_menu/social_menu_coordinator_test.dart`. New test: legacy `importSharedMenu` repo throw → setError called with sanitised message, lastError populated. (BUT-1124)
 
 ### Step 0 — premise verification (done)
 
@@ -611,14 +760,14 @@ Proceeding automatically (no approval gate).
 
 ### Acceptance
 
-- [ ] `flutter analyze --fatal-infos` clean.
-- [ ] Each touched test file passes.
+- [x] `flutter analyze --fatal-infos` clean.
+- [x] Each touched test file passes.
 
 ### Post-Sprint Steps
 
-- [ ] Run code-reviewer + testing-specialist agents per Tier-2 gate.
-- [ ] Commit + push.
-- [ ] Close BUT-1107, BUT-1108, BUT-1098, BUT-1100, BUT-1124 in Linear.
+- [x] Run code-reviewer + testing-specialist agents per Tier-2 gate.
+- [x] Commit + push.
+- [x] Close BUT-1107, BUT-1108, BUT-1098, BUT-1100, BUT-1124 in Linear.
 
 ---
 
@@ -674,9 +823,9 @@ Proceeding automatically (no approval gate).
 
 ### Post-Sprint Steps
 
-- [ ] Run code-reviewer + testing-specialist agents per Tier-2 gate.
-- [ ] Commit + push.
-- [ ] Close BUT-1092, BUT-1113, BUT-1116, BUT-1091, BUT-1118, BUT-1128, BUT-1102 in Linear.
+- [x] Run code-reviewer + testing-specialist agents per Tier-2 gate.
+- [x] Commit + push.
+- [x] Close BUT-1092, BUT-1113, BUT-1116, BUT-1091, BUT-1118, BUT-1128, BUT-1102 in Linear.
 
 ---
 

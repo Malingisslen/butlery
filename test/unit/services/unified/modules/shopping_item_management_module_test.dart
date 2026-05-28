@@ -454,6 +454,39 @@ void main() {
       expect(notifyCalls, 1);
     });
 
+    /// Proves (BUT-1106): when a later repo call throws AFTER some merged
+    /// updates already committed, the committed merges are rolled back to
+    /// their original amounts and the method returns false. The bug-shape:
+    /// without rollback, Firebase keeps the partial summed merge while local
+    /// state stays unchanged and the caller sees failure — re-running the
+    /// batch would then double-sum the leaked merge.
+    test('rolls back committed merges when a later repo call throws', () async {
+      // One existing item that will be merged (update), plus the incoming
+      // batch also carries a brand-new item so addItemsBatch runs after the
+      // update commits. addItemsBatch is armed to throw.
+      final existing =
+          UnifiedShoppingItem(name: 'Mjölk', amount: 1, unit: 'dl');
+      lists.add(_seedList(id: 'L', items: [existing]));
+      activeListId = 'L';
+      fakeRepo.throwOnAddItemsBatch = StateError('boom');
+
+      final merge = UnifiedShoppingItem(name: 'Mjölk', amount: 2, unit: 'dl');
+      final fresh = UnifiedShoppingItem(name: 'Bröd', amount: 1);
+      final ok = await buildModule().addItemsBatchToActiveList([merge, fresh]);
+
+      expect(ok, isFalse);
+      // updateItem was called twice on the same id: first the summed merge
+      // (amount 3), then the rollback restoring the original amount (1).
+      expect(fakeRepo.updatedItems, hasLength(2));
+      expect(fakeRepo.updatedItems.first.amount, 3); // committed merge
+      expect(fakeRepo.updatedItems.last.id, existing.id);
+      expect(fakeRepo.updatedItems.last.amount, 1); // rolled back to original
+      // Local state untouched — never mutated on the failure path.
+      expect(lists.first.items, hasLength(1));
+      expect(lists.first.items.single.amount, 1);
+      expect(notifyCalls, 0);
+    });
+
     /// Proves: SAME NAME + DIFFERENT UNIT → no merge. A naive name-only
     /// dedup would silently collapse "1 dl mjölk" and "1 ml mjölk" into a
     /// single bogus row with garbage units.

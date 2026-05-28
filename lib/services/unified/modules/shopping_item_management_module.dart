@@ -157,14 +157,45 @@ class ShoppingItemManagementModule {
         }
       }
 
-      // Apply updates for merged items
-      for (final updated in itemsToUpdate) {
-        await repository.updateItem(activeListId, updated);
-      }
+      // Snapshot pre-update item values so committed merges can be rolled
+      // back if a later updateItem/addItemsBatch throws. Without this, a
+      // mid-loop failure leaves Firebase holding partial summed merges that
+      // don't match local state — re-running the batch would double-sum.
+      final preUpdateById = <String, UnifiedShoppingItem>{
+        for (final existing in existingItems)
+          if (itemsToUpdate.any((u) => u.id == existing.id))
+            existing.id: existing,
+      };
 
-      // Add genuinely new items
-      if (itemsToAdd.isNotEmpty) {
-        await repository.addItemsBatch(activeListId, itemsToAdd);
+      // Apply updates for merged items, tracking which committed so we can
+      // restore only those on a partial failure.
+      final committedUpdates = <UnifiedShoppingItem>[];
+      try {
+        for (final updated in itemsToUpdate) {
+          await repository.updateItem(activeListId, updated);
+          committedUpdates.add(updated);
+        }
+
+        // Add genuinely new items
+        if (itemsToAdd.isNotEmpty) {
+          await repository.addItemsBatch(activeListId, itemsToAdd);
+        }
+      } catch (e) {
+        // Roll back the merges that already committed to Firebase, restoring
+        // their original amounts. New items added via addItemsBatch are a
+        // single atomic batch op (all-or-nothing), so only updates can leak.
+        for (final committed in committedUpdates) {
+          final original = preUpdateById[committed.id];
+          if (original == null) continue;
+          try {
+            await repository.updateItem(activeListId, original);
+          } catch (_) {
+            // Best-effort rollback; original value is logged below.
+          }
+        }
+        AppLogger.error('Failed to add batch to active list (rolled back '
+            '${committedUpdates.length} committed merges): $e');
+        return false;
       }
 
       // Update local state

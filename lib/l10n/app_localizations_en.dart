@@ -7810,6 +7810,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryDryGoods => 'Dry Goods';
 
   @override
+  String get categoryMeat => 'Meat';
+
+  @override
+  String get categoryFish => 'Fish';
+
+  @override
+  String get categoryFruit => 'Fruit';
+
+  @override
+  String get categoryVeg => 'Vegetables';
+
+  @override
+  String get conflictBannerMessage =>
+      'Sync conflict resolved — the latest edit was saved';
+
+  @override
+  String get conflictBannerDismiss => 'Dismiss';
+
+  @override
+  String get a11yConflictBannerDismiss => 'Dismiss conflict notification';
+
+  @override
   String get privacyEmailSubject => 'Privacy inquiry';
 
   @override

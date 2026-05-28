@@ -585,4 +585,50 @@ void main() {
       );
     });
   });
+
+  group('validateDeletePermission — single-doc owner scope (BUT-1133)', () {
+    /// PRIVACY-CRITICAL: deleting a single notification via the base
+    /// `delete(id)` path must be owner-scoped. Before BUT-1133 the
+    /// override returned unconditional `true`, so any authenticated user
+    /// could delete any user's notification. This pins owner-only.
+    test('Alice cannot delete Bob-owned notification', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seed(firestore, id: 'b1', userId: _bob);
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      await expectLater(
+        repo.delete('b1'),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+
+      // The denied delete must not remove Bob's doc.
+      final stored = await _doc(firestore, 'b1');
+      expect(stored, isNotNull, reason: 'denied delete must not touch the doc');
+    });
+
+    /// Owner can delete their own notification through the base path.
+    test('Alice can delete her own notification', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seed(firestore, id: 'a1', userId: _alice);
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      await repo.delete('a1');
+
+      final stored = await _doc(firestore, 'a1');
+      expect(stored, isNull, reason: 'owner delete removes the doc');
+    });
+
+    /// A missing doc denies (no doc → no ownership claim). Prevents the
+    /// pre-BUT-1133 "always true" from masking a confused-deputy on a
+    /// non-existent id.
+    test('delete of a missing doc is denied, not silently allowed', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      await expectLater(
+        repo.delete('ghost'),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+    });
+  });
 }
