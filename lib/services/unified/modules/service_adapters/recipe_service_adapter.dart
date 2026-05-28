@@ -141,6 +141,26 @@ class RecipeServiceAdapter {
           .doc(recipeId)
           .delete();
 
+      // BUT-892: Delete cook_snaps records pointing at this recipe
+      // (paginated). Cook snaps by ANY user (including non-owners with
+      // share access) lose their parent recipe when the owner deletes it;
+      // without this cleanup the snap doc persists with a dangling
+      // recipeId reference.
+      final cookSnapQuery = firestore
+          .collection(FirestoreCollections.cookSnaps)
+          .where('recipeId', isEqualTo: recipeId)
+          .limit(450);
+      snapshot = await cookSnapQuery.get();
+      while (snapshot.docs.isNotEmpty) {
+        final batch = firestore.batch();
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+        if (snapshot.docs.length < 450) break;
+        snapshot = await cookSnapQuery.get();
+      }
+
       // BUT-894: Delete shared_content recipe records pointing at this
       // recipe (paginated). Otherwise recipients keep a dead reference
       // in their inbox after the owner deletes the source recipe.

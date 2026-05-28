@@ -8799,6 +8799,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorImportFailed => 'Import misslyckades';
 
   @override
+  String get errorImportPartialReSignIn =>
+      'Receptet sparades, men delningsstatus uppdaterades inte. Logga in igen och uppdatera för att rensa inkorgsposten.';
+
+  @override
   String get errorImportTimeout =>
       'Det här tar längre tid än vanligt. Försök igen, eller importera texten manuellt.';
 

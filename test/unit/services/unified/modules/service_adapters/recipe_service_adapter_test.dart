@@ -447,6 +447,55 @@ void main() {
             reason: 'members subcollection must be drained before parent doc');
       });
 
+      test('BUT-892: deleteRecipe drains orphan cook_snaps records', () async {
+        // Arrange: real adapter wired with a FakeFirebaseFirestore via a
+        // mocked FirestoreRepository, plus a stubbed RecipeRepository.
+        // Mirrors the BUT-894 pattern — cook_snaps by ANY user become
+        // orphans (dangling recipeId) when the owner deletes the recipe.
+        final fakeFirestore = FakeFirebaseFirestore();
+        final firestoreRepo = _MockFirestoreRepository();
+        when(() => firestoreRepo.firestore).thenReturn(fakeFirestore);
+
+        const recipeId = 'recipe-snap-orphan-1';
+        final localRecipeRepo = MockRecipeRepository();
+        when(() => localRecipeRepo.read(any())).thenAnswer((_) async => null);
+        when(() => localRecipeRepo.delete(any())).thenAnswer((_) async {});
+
+        final orphanAdapter = RecipeServiceAdapter(
+          recipeRepository: localRecipeRepo,
+          firestoreRepository: firestoreRepo,
+        );
+
+        // Seed a cook_snap doc by some user pointing at recipeId.
+        await fakeFirestore.collection('cook_snaps').add({
+          'recipeId': recipeId,
+          'userId': 'cook-user-A',
+          'imageUrl': 'https://x/snap.jpg',
+        });
+
+        // Sanity: doc exists before delete.
+        final beforeQuery = await fakeFirestore
+            .collection('cook_snaps')
+            .where('recipeId', isEqualTo: recipeId)
+            .get();
+        expect(beforeQuery.docs.length, 1,
+            reason: 'seed cook_snap record must be present');
+
+        // Act
+        final result = await orphanAdapter.deleteRecipe(recipeId);
+
+        // Assert: adapter reports success and the cook_snap record is gone.
+        expect(result, isTrue);
+        verify(() => localRecipeRepo.delete(recipeId)).called(1);
+
+        final afterQuery = await fakeFirestore
+            .collection('cook_snaps')
+            .where('recipeId', isEqualTo: recipeId)
+            .get();
+        expect(afterQuery.docs, isEmpty,
+            reason: 'orphan cook_snaps must be deleted by BUT-892 cascade');
+      });
+
       test('should get rating statistics stream', () async {
         // Arrange
         const recipeId = 'recipe-1';

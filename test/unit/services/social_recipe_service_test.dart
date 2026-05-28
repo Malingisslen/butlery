@@ -690,10 +690,13 @@ void main() {
       expect(service.error, isNull);
     });
 
-    /// Proves the mark-as-imported step is guarded by authentication — if
-    /// the user signed out mid-import, we still report the recipe was
-    /// created (which it was) but don't blow up on a `null!` deref.
-    test('success but user signed out mid-import → returns true, no mark call',
+    /// BUT-1086: When the user signs out mid-import we still return true
+    /// (the recipe IS saved) AND we skip the markAsImportedOrJoined call
+    /// (no `null!` deref). The NEW contract: surface a sanitized error so
+    /// the UI can prompt the user to re-sign-in and refresh, instead of
+    /// silently swallowing the half-done state.
+    test(
+        'BUT-1086: sign-out mid-import → returns true, no mark call, error surfaced',
         () async {
       personalOps.createRecipeImpl = (_) {
         permission.setUserId(null); // sign-out between create + mark
@@ -702,8 +705,14 @@ void main() {
 
       final ok = await service.importSharedRecipe('sr-1');
 
-      expect(ok, isTrue);
-      expect(recipeRepo.markedAsImported, isEmpty);
+      expect(ok, isTrue,
+          reason: 'primary write succeeded — must still report true');
+      expect(recipeRepo.markedAsImported, isEmpty,
+          reason: 'cannot mark as imported without authenticated uid');
+      expect(service.hasError, isTrue,
+          reason:
+              'BUT-1086: half-done state must surface so UI can prompt re-sign-in');
+      expect(service.error, isNotNull);
     });
   });
 

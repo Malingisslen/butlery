@@ -10,6 +10,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -198,6 +199,14 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
         if (_permissionService.isAuthenticated) {
           await _sharedRecipeRepository.markAsImportedOrJoined(
               recipeId, _permissionService.currentUserId!);
+        } else {
+          // BUT-1086: user signed out during the createRecipe await. The
+          // recipe IS saved but the share couldn't be flagged as imported.
+          // Surface this so UI can show a refresh prompt; the function
+          // still returns true because the primary write succeeded.
+          AppLogger.warning(
+              '⚠️ Sign-out detected mid-import — share status not updated for $recipeId');
+          _error = AppLocale.current.errorImportPartialReSignIn;
         }
         AppLogger.success('Recipe imported successfully');
         return true;

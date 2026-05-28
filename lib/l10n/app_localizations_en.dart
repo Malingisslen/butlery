@@ -8783,6 +8783,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorImportFailed => 'Import failed';
 
   @override
+  String get errorImportPartialReSignIn =>
+      'Recipe saved, but share status couldn\'t be updated. Sign in and refresh to clear the inbox entry.';
+
+  @override
   String get errorImportTimeout =>
       'This is taking longer than usual. Try again, or import the text manually.';
 

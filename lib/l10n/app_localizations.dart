@@ -15099,6 +15099,12 @@ abstract class AppLocalizations {
   /// **'Import misslyckades'**
   String get errorImportFailed;
 
+  /// BUT-1086: shown when the user signs out during importSharedRecipe — recipe is saved but the shared-recipe inbox entry could not be flagged as imported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet sparades, men delningsstatus uppdaterades inte. Logga in igen och uppdatera för att rensa inkorgsposten.'**
+  String get errorImportPartialReSignIn;
+
   /// No description provided for @errorImportTimeout.
   ///
   /// In sv, this message translates to:

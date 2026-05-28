@@ -5672,6 +5672,10 @@
   "errorRecipeMustHaveInstruction": "Receptet måste ha minst en instruktion",
   "errorImportConditionsNotMet": "Importvillkor inte uppfyllda",
   "errorImportFailed": "Import misslyckades",
+  "errorImportPartialReSignIn": "Receptet sparades, men delningsstatus uppdaterades inte. Logga in igen och uppdatera för att rensa inkorgsposten.",
+  "@errorImportPartialReSignIn": {
+    "description": "BUT-1086: shown when the user signs out during importSharedRecipe — recipe is saved but the shared-recipe inbox entry could not be flagged as imported."
+  },
   "errorImportTimeout": "Det här tar längre tid än vanligt. Försök igen, eller importera texten manuellt.",
   "errorNoRecipesSelected": "Inga recept valda",
   "errorEnterMenuDescription": "Ange vad du vill ha för meny",

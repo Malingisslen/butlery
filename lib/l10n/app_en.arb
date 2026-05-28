@@ -5661,6 +5661,10 @@
   "errorRecipeMustHaveInstruction": "Recipe must have at least one instruction",
   "errorImportConditionsNotMet": "Import conditions not met",
   "errorImportFailed": "Import failed",
+  "errorImportPartialReSignIn": "Recipe saved, but share status couldn't be updated. Sign in and refresh to clear the inbox entry.",
+  "@errorImportPartialReSignIn": {
+    "description": "BUT-1086: shown when the user signs out during importSharedRecipe — recipe is saved but the shared-recipe inbox entry could not be flagged as imported."
+  },
   "errorImportTimeout": "This is taking longer than usual. Try again, or import the text manually.",
   "errorNoRecipesSelected": "No recipes selected",
   "errorEnterMenuDescription": "Enter what kind of menu you want",

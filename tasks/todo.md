@@ -1,5 +1,30 @@
 # Sprint Backlog
 
+## Sprint: iter-97 — 2 P2 High Bug fixes (BUT-1086 + BUT-892) — 2026-05-28 (Thu)
+
+Theme: Two P2 High Bugs via established patterns. BUT-1086 mirrors iter-82's BUT-1131 (silent secondary write → surface via setError). BUT-892 mirrors iter-82's BUT-894 (orphan cleanup extension in `_cleanupRecipeReferences`).
+
+### Ship this sprint
+
+- [x] **A1. BUT-1086: surface sign-out-during-import via _error** — `lib/services/social_recipe_service.dart:175-210` (importSharedRecipe). When `createRecipe` succeeds but `_permissionService.isAuthenticated == false` at the re-check (mid-import sign-out), set `_error = AppLocale.current.errorImportPartialReSignIn` and log warning. Function still returns true (recipe IS saved); UI prompts re-sign-in to clear inbox. Added `import 'package:butlery/core/l10n/app_locale.dart';`. (BUT-1086)
+- [x] **A2. Flip BUT-1086 pinning test** — `test/unit/services/social_recipe_service_test.dart:696`. Test renamed to `BUT-1086: sign-out mid-import → returns true, no mark call, error surfaced`. New assertions: `ok=true`, `markedAsImported=empty`, `service.hasError=true`, `service.error!=null`. (BUT-1086)
+- [x] **A3. BUT-892: cook_snaps cleanup in _cleanupRecipeReferences** — `lib/services/unified/modules/service_adapters/recipe_service_adapter.dart:143-160` (inserted between social_stats delete and shared_content drain). New paginated loop on `FirestoreCollections.cookSnaps` (constant already exists at `firestore_collections.dart:47`) `where('recipeId', isEqualTo: recipeId).limit(450)`. (BUT-892)
+- [x] **A4. Add BUT-892 test** — `test/unit/services/unified/modules/service_adapters/recipe_service_adapter_test.dart:451-501`. Mirrors BUT-894 pattern: FakeFirebaseFirestore + mocked FirestoreRepository, seeds 1 cook_snap doc, calls `deleteRecipe`, asserts doc gone. Test name: `BUT-892: deleteRecipe drains orphan cook_snaps records`. (BUT-892)
+- [x] **A5. l10n key + gen-l10n** — Added `errorImportPartialReSignIn` to both `lib/l10n/app_sv.arb` and `lib/l10n/app_en.arb` (with `@meta` descriptions). Ran `flutter gen-l10n`; key regenerated in `lib/l10n/app_localizations*.dart`. (BUT-1086)
+
+### Acceptance
+
+- [x] `flutter analyze --fatal-infos` on touched lib files clean (`No issues found!`).
+- [x] Touched test files pass (61/61 in recipe_service_adapter_test + all in social_recipe_service_test).
+- [ ] Tier-2 reviewers (run from orchestrating session before commit).
+
+### Post-Sprint Steps
+
+- [ ] Commit (unified, from orchestrating session).
+- [ ] Close BUT-1086 + BUT-892 in Linear.
+
+---
+
 ## Sprint: iter-92 — SocialRecipeSharingService idempotent share (BUT-1132) — 2026-05-27 (Wed)
 
 Theme: Single P4 Low Bug — Firestore duplicate-share idempotency. Repository-layer fix: check for existing `shared_recipes` doc with same `(sharedByUserId, originalRecipeId)` before creating a new one. If found, reuse + addMember new recipients. Scope: repository-only change + test flip.
