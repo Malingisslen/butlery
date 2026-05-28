@@ -167,3 +167,18 @@ test/**/failures/
 # LLM golden corpus artifacts (written by test/golden/llm/*_test.dart to repo
 # root for the nightly workflow to upload — regenerated per run).
 /goldens-*.json
+
+# Transient .claude.json corruption-debug artifacts (cosmetic warning, resolved
+# per memory/claude_config_corrupted_warning.md). cfg-test/ holds copies of the
+# global .claude.json (userID, toolUsage, account data) — MUST NOT be committed.
+tools/cfg-test/
+tools/bisect-config.js
+tools/bytediff-config.js
+tools/diff-claude-config.js
+tools/extract-strings.js
+tools/inspect-claude-config.js
+tools/inspect-encoding.js
+tools/probe-config.js
+tools/probe-exe.js
+tools/probe-exe2.js
+tools/validate-claude-config.js

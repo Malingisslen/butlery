@@ -49,7 +49,8 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(touch .claude/state/code-review-done.marker .claude/state/testing-review-done.marker .claude/state/firebase-security-done.marker .claude/state/rules-tester-done.marker .claude/state/simplify-done.marker)",
-      "Bash(/c/tools/flutter/bin/dart test *)"
+      "Bash(/c/tools/flutter/bin/dart test *)",
+      "Workflow(sprint-execute-parallel)"
     ]
   }
 }
