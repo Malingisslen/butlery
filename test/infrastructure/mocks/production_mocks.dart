@@ -1455,9 +1455,13 @@ class FakePermissionService extends Fake implements PermissionService {
     _userDisplayName = userDisplayName;
     if (isAuthenticated != null) _isAuthenticated = isAuthenticated;
     if (currentUser != null) _currentUser = currentUser;
-    // If currentUser is set, derive authentication state and userId
+    // If currentUser is set, derive userId/displayName. Authentication is
+    // derived as true ONLY when the caller didn't pass an explicit
+    // isAuthenticated — an explicit `isAuthenticated: false` is honored as a
+    // force-override (BUT-1111) so a previously-authenticated fake can be
+    // toggled back to unauthenticated in place to exercise the unauth branch.
     if (_currentUser != null) {
-      _isAuthenticated = true;
+      if (isAuthenticated == null) _isAuthenticated = true;
       _currentUserId = _currentUser!.uid;
       _userDisplayName = _currentUser!.displayName;
     }

@@ -16,6 +16,11 @@
 - [~] **B1. BUT-520: migrate standalone ViewModels → `BaseViewModel`** — iter-103b: migrated `create_shared_list_viewmodel.dart` (raw ChangeNotifier hand-rolling `_error`/`_setError` with NO disposed-guard → `BaseViewModel`; fixes a latent disposed-notify bug; all 32 tests green unmodified). **Premise corrected** (Step 0): the ticket's "62 raw ChangeNotifier VMs" conflates 3 populations — 24 already use `StateNotifierMixin` (a *superset* of BaseViewModel incl. disposed-guarding + `executeNamedOperation`; migrating them = DOWNGRADE, do NOT), ~14 are tiny selection/state managers with no loading/error (BaseViewModel = no-op churn), only ~10 genuinely hand-roll loading/error (the real targets, several with operation-specific flags). EPIC stays open with the refined target list. (BUT-520, P4)
 - [x] **B2. BUT-1164: migrate legacy `meatFish`/`fruitVeg` shopping categories → fine-grained `meat`/`fish`/`fruit`/`veg`** — DONE (iter-103a, write-side slice). `ShoppingCategoryMapper` now emits fine-grained buckets (deterministic from group path, no data migration). Backfill of existing docs + legacy-constant removal deferred to BUT-1169 (needs telemetry + Cloud Function). (BUT-1164, P4)
 
+### iter-103c (continuation — backlog picks)
+
+- [x] **BUT-1111: `FakePermissionService.setPermissionState` auth toggle** — fix: honor explicit `isAuthenticated:false` even when `currentUser` is set (was unconditionally forced true). Added `fake_permission_service_test.dart` (4 tests pinning the toggle). Test-infra only. (BUT-1111, P4)
+- [~] **BUT-1122: loadMoreContent dead-code guardrail** — premise-gone (closed). The `supportsPagination` throw-gate superseded the duplicate-risk; guardrail tests already exist in `shared_shopping_viewmodel_test.dart:743-758`. No code change. (BUT-1122, P4)
+
 ### Post-Sprint Steps (for the implementing session)
 
 - [ ] Per-ticket Step 0 (read code; classify fits / premise-gone / plan-stale).
