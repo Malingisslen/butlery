@@ -1,5 +1,7 @@
 // test/unit/viewmodels/create_shared_list_viewmodel_test.dart
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
@@ -450,6 +452,53 @@ void main() {
       final analytics = viewModel.analyticsData;
 
       expect(analytics['menu_days_count'], equals(0));
+    });
+  });
+
+  group('CreateSharedListViewModel - Disposal Safety', () {
+    // BUT-520 migration guard: the headline behavioral benefit of moving onto
+    // BaseViewModel is that a createSharedList() resolving AFTER dispose() must
+    // not mutate state or notify a disposed VM. The old hand-rolled setError
+    // had no disposed guard; this test fails (uncaught error / late
+    // notification) if that guard is ever removed.
+    test('state mutation after dispose is safely ignored', () async {
+      // Local VM so tearDown's dispose of the shared `viewModel` stays valid.
+      final disposableVm = CreateSharedListViewModel(
+        shoppingService: mockShoppingService,
+        friendsService: mockFriendsService,
+      );
+
+      var notificationsAfterDispose = 0;
+      var disposed = false;
+      disposableVm.addListener(() {
+        if (disposed) notificationsAfterDispose++;
+      });
+
+      // Defer completion so we can dispose mid-flight, then resolve the gap.
+      final gate = Completer<String?>();
+      when(() => mockShoppingService.createCollaborativeList(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            memberIds: any(named: 'memberIds'),
+            memberDisplayNames: any(named: 'memberDisplayNames'),
+          )).thenAnswer((_) => gate.future);
+
+      disposableVm.updateTitle('List');
+      disposableVm.updateSelectedFriends(['friend_1']);
+
+      final pending = disposableVm.createSharedList();
+
+      disposableVm.dispose();
+      disposed = true;
+
+      // Resolve with null → VM's failure branch calls setError, which must
+      // no-op on the disposed VM rather than throw or notify.
+      gate.complete(null);
+      final result = await pending;
+
+      expect(result, isNull);
+      expect(notificationsAfterDispose, equals(0));
+      expect(disposableVm.isDisposed, isTrue);
     });
   });
 
