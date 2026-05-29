@@ -30,6 +30,12 @@
 
 - [x] **BUT-1075: BaseSharedContentViewModel injectable PermissionService + UnifiedFriendsService** — DONE (code complete, verified; commit pending a transient Bash-classifier outage). Added optional ctor params to the base VM (resolved via `?? ServiceLocator.get/tryGet`, behavior-identical) + super-parameter forwarding in the 3 subclasses (recipe/menu/shopping). `currentUserId` now reads the injected `_permissionService`. 2 injection-proof tests added (permissionService + friendsService each override the locator via distinct values). All 206 shared_content tests + 36 recipe-VM tests pass; analyze clean; both review agents clean. (BUT-1075, P4)
 
+### iter-103g (continuation — last clean autonomous pick)
+
+- [x] **BUT-1058: comment-draft persistence widget test** — DONE. Added `test/widget/recipe/comment_form_widget_test.dart` (4 tests): load-on-mount seeds TextField + syncs VM; save-on-edit persists per-keystroke; clear-on-post removes the draft key; per-recipe isolation (r2 ignores r1's draft, leaves it intact). Test-only, mocktail `_FakeSocialRecipeViewModel`, sv-locale wrap. 4/4 pass, analyze clean, reviewed clean (each test genuinely gating). (BUT-1058, P4)
+
+> **Autonomous-friendly backlog now exhausted.** Remaining Backlog is UI/visual (needs human visual verification), ops-blocked (prod access / CF deploy / store / MFA), large refactors/EPICs, or only-partially-clean (a clean half bundled with a UI/ops half). Next loop iterations should pace down or await direction on prioritizing UI/larger work.
+
 ### Post-Sprint Steps (for the implementing session)
 
 - [ ] Per-ticket Step 0 (read code; classify fits / premise-gone / plan-stale).
