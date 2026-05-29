@@ -8,8 +8,15 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/viewmodels/base_viewmodel.dart';
 
-class CreateSharedListViewModel extends ChangeNotifier {
+// BUT-520: migrated off raw ChangeNotifier onto BaseViewModel — loading/error
+// state and disposed-guarded notifyListeners now come from the base. Operation-
+// specific `isCreating` stays local (distinct UI semantics from generic
+// isLoading). The old hand-rolled _setError/_clearError did NOT guard the
+// disposed state, so a createSharedList() completing after dispose would notify
+// a disposed VM; the base's guards fix that.
+class CreateSharedListViewModel extends BaseViewModel {
   final UnifiedShoppingService _shoppingService;
   final UnifiedFriendsService _friendsService;
 
@@ -19,9 +26,8 @@ class CreateSharedListViewModel extends ChangeNotifier {
   List<String> _selectedFriendIds = [];
   Map<String, List<Recipe>>? _menu;
 
-  // UI state
+  // UI state — `isCreating` is operation-specific; `error`/loading come from BaseViewModel.
   bool _isCreating = false;
-  String? _error;
 
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
@@ -36,8 +42,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
   Map<String, List<Recipe>>? get menu => _menu;
 
   bool get isCreating => _isCreating;
-  String? get error => _error;
-  bool get hasError => _error != null;
   bool get isTitleValid => _title.trim().isNotEmpty;
   bool get hasFriendsSelected => _selectedFriendIds.isNotEmpty;
   bool get canCreate => isTitleValid && hasFriendsSelected && !_isCreating;
@@ -93,7 +97,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
   void updateTitle(String value) {
     if (_title != value) {
       _title = value;
-      _clearError();
+      clearError();
       notifyListeners();
       AppLogger.debug('📝 Titel uppdaterad: "$value"');
     }
@@ -102,7 +106,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
   void updateDescription(String value) {
     if (_description != value) {
       _description = value;
-      _clearError();
+      clearError();
       notifyListeners();
       AppLogger.debug('📝 Beskrivning uppdaterad');
     }
@@ -111,7 +115,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
   void updateSelectedFriends(List<String> friendIds) {
     if (!listEquals(_selectedFriendIds, friendIds)) {
       _selectedFriendIds = List.from(friendIds);
-      _clearError();
+      clearError();
       notifyListeners();
       AppLogger.info('👥 Vänner valda: ${friendIds.length}');
     }
@@ -121,25 +125,25 @@ class CreateSharedListViewModel extends ChangeNotifier {
     _title = '';
     _description = '';
     _selectedFriendIds.clear();
-    _clearError();
+    clearError();
     notifyListeners();
     AppLogger.info('🗑️ Formulär rensat');
   }
 
   Future<String?> createSharedList() async {
     if (!canCreate) {
-      _setError(AppLocale.current.errorFormIncomplete);
+      setError(AppLocale.current.errorFormIncomplete);
       return null;
     }
 
     // Verify that the user has a profile
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
-      _setError(AppLocale.current.errorMustCreateProfileFirst);
+      setError(AppLocale.current.errorMustCreateProfileFirst);
       return null;
     }
 
     _setCreating(true);
-    _clearError();
+    clearError();
 
     try {
       AppLogger.info(
@@ -172,13 +176,13 @@ class CreateSharedListViewModel extends ChangeNotifier {
       } else {
         final serviceError =
             _shoppingService.error ?? AppLocale.current.errorUnknown;
-        _setError(serviceError);
+        setError(serviceError);
         AppLogger.error('❌ Kunde inte skapa delad lista: $serviceError');
         return null;
       }
     } catch (e) {
       final errorMessage = AppLocale.current.createSharedListError('$e');
-      _setError(errorMessage);
+      setError(errorMessage);
       AppLogger.error('❌ Exception vid skapande av delad lista', e);
       return null;
     } finally {
@@ -192,37 +196,21 @@ class CreateSharedListViewModel extends ChangeNotifier {
     final friendsValid = hasFriendsSelected;
 
     if (!titleValid) {
-      _setError(AppLocale.current.errorTitleRequiredNotEmpty);
+      setError(AppLocale.current.errorTitleRequiredNotEmpty);
       return false;
     }
 
     if (!descriptionValid) {
-      _setError(AppLocale.current.errorDescriptionTooLong);
+      setError(AppLocale.current.errorDescriptionTooLong);
       return false;
     }
 
     if (!friendsValid) {
-      _setError(AppLocale.current.errorSelectAtLeastOneFriend);
+      setError(AppLocale.current.errorSelectAtLeastOneFriend);
       return false;
     }
 
     return true;
-  }
-
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    if (_error != null) {
-      _error = null;
-      notifyListeners();
-    }
-  }
-
-  void clearError() {
-    _clearError();
   }
 
   void _setCreating(bool creating) {
