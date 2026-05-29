@@ -74,8 +74,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/providers/application_provider.dart' as app_prov;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 
 import '../../../../../infrastructure/mocks/production_mocks.dart';
@@ -149,7 +151,54 @@ class _ThrowingSharedMenuRepository extends FirebaseSharedMenuRepository {
   }
 }
 
+/// Test double for the collaborative join branch (BUT-1121): `read()` returns
+/// a fixed collaborative menu (realtimeMenuId set) and `markAsImportedOrJoined`
+/// records that it ran, so the test can prove the join completed despite an
+/// addParticipant failure. Constructor touches no Firebase.
+class _CollaborativeSharedMenuRepository extends FirebaseSharedMenuRepository {
+  _CollaborativeSharedMenuRepository(this._menu);
+  final SharedMenu _menu;
+  bool markCalled = false;
+
+  @override
+  Future<SharedMenu?> read(String id) async => _menu;
+
+  @override
+  Future<void> markAsImportedOrJoined(String contentId, String userId) async {
+    markCalled = true;
+  }
+}
+
+/// RealtimeMenuService whose `addParticipant` always throws — exercises the
+/// INNER try-catch in `joinSharedMenu`'s collaborative branch (BUT-1121).
+/// Extends the shared MockRealtimeMenuService so every other method keeps its
+/// no-op behaviour.
+class _AddParticipantThrowsRealtimeMenuService extends MockRealtimeMenuService {
+  @override
+  Future<void> addParticipant({
+    required String resourceId,
+    required String userId,
+    required String userDisplayName,
+    ResourcePermission permission = ResourcePermission.viewer,
+  }) async {
+    throw Exception('simulated addParticipant failure (BUT-1121)');
+  }
+}
+
 // -------------------- Test fixtures --------------------------------------
+
+/// A collaborative shared menu (has a realtimeMenuId) — routes joinSharedMenu
+/// into the realtime/addParticipant branch rather than the static-import one.
+SharedMenu _collaborativeSharedMenu() => SharedMenu(
+      id: 'shared-collab-1',
+      sharedByUserId: 'owner-uid',
+      sharedByDisplayName: 'Owner',
+      menuTitle: 'Veckomeny',
+      menuSnapshot: {
+        'Måndag': [_makeRecipe()],
+      },
+      realtimeMenuId: 'rt-menu-1',
+    );
 
 Recipe _makeRecipe({
   String title = 'Pannkakor',
@@ -753,6 +802,51 @@ void main() {
             reason: 'outer try-catch must route throw to null return');
         expect(lastError, isNotNull,
             reason: 'sanitised error must be surfaced via setError');
+      });
+
+      /// BUT-1121 (BUT-1090 follow-up): the collaborative branch wraps
+      /// `addParticipant` in an INNER try-catch with "continue anyway"
+      /// semantics (BUT-980 recovery) — a participant-write failure must NOT
+      /// abort the join. A future "simplify" that deletes the inner catch
+      /// (assuming the outer one covers it) would silently downgrade a
+      /// recoverable participant-add failure into a TOTAL join failure
+      /// (outer catch → null + banner). This pins the independence: with
+      /// addParticipant throwing, the join still returns a collaborative
+      /// result, still marks the share joined, and sets NO error banner.
+      test(
+          'BUT-1121: addParticipant throw is swallowed by the inner catch — '
+          'join still succeeds collaboratively, no banner', () async {
+        final repo =
+            _CollaborativeSharedMenuRepository(_collaborativeSharedMenu());
+        TestServiceLocator.registerMock<RealtimeMenuService>(
+            _AddParticipantThrowsRealtimeMenuService());
+
+        final coord = SocialMenuCoordinator(
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (e) => lastError = e,
+          notifyListeners: () => notifyCount++,
+          getMenu: (id) async => menuStore[id],
+          saveMenu: (menu) async {
+            savedMenus.add(menu);
+            return saveResult;
+          },
+          sharedMenuRepository: repo,
+        );
+        addTearDown(() async => await coord.dispose());
+
+        final out = await coord.joinSharedMenu(sharedMenuId: 'shared-collab-1');
+
+        expect(out, isNotNull,
+            reason: 'inner catch must absorb the participant-add failure, '
+                'not let the outer catch abort the join');
+        expect(out!.isCollaborative, isTrue);
+        expect(out.menuId, 'rt-menu-1');
+        expect(lastError, isNull,
+            reason: 'addParticipant failure is recoverable — no banner');
+        expect(repo.markCalled, isTrue,
+            reason: 'join still marks the share joined despite the failed '
+                'participant write');
       });
     });
 

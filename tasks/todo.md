@@ -21,6 +21,11 @@
 - [x] **BUT-1111: `FakePermissionService.setPermissionState` auth toggle** — fix: honor explicit `isAuthenticated:false` even when `currentUser` is set (was unconditionally forced true). Added `fake_permission_service_test.dart` (4 tests pinning the toggle). Test-infra only. (BUT-1111, P4)
 - [~] **BUT-1122: loadMoreContent dead-code guardrail** — premise-gone (closed). The `supportsPagination` throw-gate superseded the duplicate-risk; guardrail tests already exist in `shared_shopping_viewmodel_test.dart:743-758`. No code change. (BUT-1122, P4)
 
+### iter-103d (continuation — backlog picks)
+
+- [x] **BUT-1121: joinSharedMenu inner addParticipant catch independence** — added test proving the inner "continue anyway" catch is independent of the outer catch: with `addParticipant` throwing, the collaborative join still returns a `MenuJoinResult` (isCollaborative, correct menuId), still marks the share joined, and sets NO error banner. New `_CollaborativeSharedMenuRepository` + `_AddParticipantThrowsRealtimeMenuService` test doubles. 33/33 pass, reviewed clean (mutation-verified). Test-only. (BUT-1121, P3)
+- [ ] **BUT-1123: joinSharedMenu all-failure-paths contract** — DEFERRED. read-throws path already covered; the additional markAsImportedOrJoined-throws + importSharedMenu-throws paths need more mock-stubbing surface (MockUnifiedMenuService + fallback values). The BUT-1121 infra (_CollaborativeSharedMenuRepository) makes it cheaper next iteration. (BUT-1123, P4)
+
 ### Post-Sprint Steps (for the implementing session)
 
 - [ ] Per-ticket Step 0 (read code; classify fits / premise-gone / plan-stale).
