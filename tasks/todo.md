@@ -8,12 +8,12 @@
 
 ### Batch A — backend / realtime (independent files)
 
-- [ ] **A1. BUT-1165: iter-99 review follow-ups** — apply the non-blocking code-reviewer / testing-specialist findings deferred from iter-99 (BUT-1099, 1101, 1133, 1152, 1106, 1110, …). `get_issue BUT-1165` for the full finding list; scattered across the iter-99 touched files. (BUT-1165, P3)
+- [x] **A1. BUT-1165: iter-99 review follow-ups** — RESOLVED (iter-103a). Umbrella's actionable notes were unrecoverable (sprint-scratch overwritten, no durable code markers). Spot-check confirmed all 6 areas shipped defensively with tests in `631fceec4`. Closed honestly + captured umbrella anti-pattern lesson. (BUT-1165, P3)
 - [x] **A2. BUT-472: audit `lib/services/unified/modules/realtime_session_manager.dart`** — DONE (iter-103a). Premise re-scoped: file is a stateless static helper; maps owned by `RealtimeRecipeModule`; dispose chain (`UnifiedRecipeService.dispose` → `module.dispose` → `RealtimeCacheManager.dispose`) is complete + tested at every layer. No leak. Added a module-level leak guard asserting `dispose()` leaves zero outstanding handles across all 3 maps. (BUT-472, P3)
 
 ### Batch B — tech-debt / data
 
-- [ ] **B1. BUT-520: migrate 3 standalone ViewModels from `ChangeNotifier` → `BaseViewModel`** — pick 3 simple standalone VMs (NOT the 6 heavy priority ones unless clean). Map loading/error/dispose to the base; verify no behavioural regression; update tests. (BUT-520, P4)
+- [~] **B1. BUT-520: migrate 3 standalone ViewModels from `ChangeNotifier` → `BaseViewModel`** — DEFERRED to next iteration (left in Todo, will be re-picked). Step 0 found the candidate VMs use `core/mixins/StateNotifierMixin` + `core/mixins/AsyncOperationMixin` with `executeNamedOperation(...)`, which has NO `BaseViewModel` equivalent — migration requires rewriting operation calls to `executeAsyncVoid` + per-VM test updates + behavioural verification (~1 day/VM per the ticket's own estimate). Doing 3 properly is a focused session of its own; cramming into this session's tail would risk regressions in heavily-used VMs. Honest defer over rushed migration. (BUT-520, P4)
 - [x] **B2. BUT-1164: migrate legacy `meatFish`/`fruitVeg` shopping categories → fine-grained `meat`/`fish`/`fruit`/`veg`** — DONE (iter-103a, write-side slice). `ShoppingCategoryMapper` now emits fine-grained buckets (deterministic from group path, no data migration). Backfill of existing docs + legacy-constant removal deferred to BUT-1169 (needs telemetry + Cloud Function). (BUT-1164, P4)
 
 ### Post-Sprint Steps (for the implementing session)

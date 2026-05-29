@@ -76,6 +76,12 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
   4. For a destructive/outward-facing workflow, prefer fail-safe defaults: an unparseable or missing flag should bias toward NOT shipping, not toward shipping.
 - **Example**: Hardened `.claude/workflows/sprint-execute-parallel.js` — defensive `args` parse, Phase 0 clean-tree abort (override via `allowDirty`), and read-only dry-run. See `memory/feedback_workflow_args_stringification.md`.
 
+### [Workflow] Umbrella "apply the deferred review notes" tickets lose their content
+- **Date**: 2026-05-29
+- **Trigger**: iter-103 inherited BUT-1165 — an umbrella ticket whose body said "the 10 non-blocking iter-99 review findings are captured here so they outlive sprint-scratch `tasks/todo.md`." But the actual notes were never copied into the ticket; only a pointer + the list of area names was. The next sprint overwrote `tasks/todo.md`, so the specific findings evaporated. No durable `TODO(BUT-XXXX)` markers existed in `lib/` either. The ticket became permanently unmeetable — its acceptance ("each finding fixed or tracked") referenced data that no longer exists.
+- **Rule**: A non-blocking reviewer finding must be filed as its **own discrete Linear ticket with the finding text in the body** at review time — never deferred into an umbrella that merely *points at* sprint-scratch. The sprint-execute follow-up rule already mandates this ("file a Linear ticket for every Tier-2 reviewer finding flagged follow-up"); the failure mode is creating ONE umbrella instead of N discrete tickets. If you ever inherit such an umbrella: spot-check the named areas for residual gaps, then close it honestly (areas verified / notes unrecoverable) rather than leaving an unmeetable ticket open or manufacturing fake findings to "complete" it.
+- **Example**: BUT-1165 closed Done with a verification verdict — the 3 robustness-critical areas (presence dispose, shopping batch rollback, social-coordinator `_disposed` gate) were confirmed shipped defensively with tests in `631fceec4`; the lost notes were documented as unrecoverable rather than fabricated.
+
 ---
 
 ## Archived

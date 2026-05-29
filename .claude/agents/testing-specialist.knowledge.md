@@ -4116,3 +4116,11 @@ existing behavior.
   `errorImportPartialReSignIn` Swedish copy (not just isNotNull), and it deliberately
   documents the recipe-vs-menu asymmetry (menu sign-out path surfaces no error) as a
   pinned-current-behavior test rather than papering over the gap. Good template.
+
+---
+
+### [Review] BUT-1164 mapper split + BUT-472 dispose leak guard — review (2026-05-29)
+- **Trigger:** Reviewed staged diff: `shopping_category_mapper` fine-grained buckets + `realtime_recipe_module` dispose leak guard.
+- **Pattern (good):** The "mapper never emits legacy aggregate buckets" guard test is a real domain invariant — it asserts the *negative* (`isNot(meatFish)`/`isNot(fruitVeg)`) across all group prefixes incl. `''`. This survives a refactor that re-adds an aggregate bucket by accident, which a positive-only per-case test would miss. Keep this style for "constant X must never resurface" guards.
+- **Pattern (good):** `getMemoryUsage()` reads live from the three private maps via the static `RealtimeCacheManager.getMemoryUsage` helper (no cached snapshot), so the dispose test asserts against ground truth. The precondition `hasPendingEdits('recipe_1') == true` reads the *same* `_pendingRealtimeEdits` map the post-dispose `pending_edits_count == 0` reads — so the precondition is genuinely load-bearing, not vacuous.
+- **Weakness (follow-up, non-blocking):** `conflict_timers_count == 0` is vacuously true in that test — `_conflictResolutionTimers` is only populated by `RealtimeConflictResolver` on a *remote conflicting snapshot*, which the happy-path flow (start + local edit + dispose) never triggers. Zero before, zero after. To make that third assertion load-bearing, the test would need to drive a conflict (concurrent remote write to the seeded doc) before dispose. Documented as follow-up; the headline claim (sessions + pending edits cleared) is proven.
