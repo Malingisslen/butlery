@@ -9,6 +9,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// A simple 3-step progress indicator for import operations.
 class ImportProgressWidget extends StatelessWidget {
@@ -163,13 +164,10 @@ class _StepIndicator extends StatelessWidget {
           ),
           child: Center(
             child: isLoading
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(colorScheme.onPrimary),
-                    ),
+                ? LoadingIndicator(
+                    size: 18,
+                    strokeWidth: 2,
+                    color: colorScheme.onPrimary,
                   )
                 : isComplete
                     ? Icon(

@@ -487,6 +487,97 @@ void main() {
       );
     });
 
+    // BUT-885: raw CircularProgressIndicator in lib/widgets/ bypasses the
+    // LoadingIndicator wrapper that adds platform-adaptive rendering (Cupertino
+    // on iOS), consistent sizing, and screen-reader live-region semantics.
+    // All new spinner usage in lib/widgets/ must go through LoadingIndicator.
+    //
+    // Exempt paths (they define the adaptation layer itself):
+    //   lib/widgets/common/indicators/ — LoadingIndicator + AdaptiveActivityIndicator
+    //   lib/widgets/common/state/      — canonical loading-state widgets
+    //   lib/widgets/common/loading/    — overlay/utility loading components
+    //
+    // Pre-existing violations are allow-listed inline. Each gets a follow-up
+    // in the long-tail migration tracked by BUT-885.
+    test(
+        'no raw CircularProgressIndicator in lib/widgets/ '
+        'outside common/{indicators,state,loading}/ '
+        '(use LoadingIndicator wrapper)', () {
+      // Exempt prefixes — the adapter + canonical state layer.
+      const exemptPrefixes = <String>[
+        'lib/widgets/common/indicators/',
+        'lib/widgets/common/state/',
+        'lib/widgets/common/loading/',
+      ];
+
+      // Pre-existing violations. Remove an entry here once the file is
+      // migrated — the test will fail if it's not actually clean. Do NOT add
+      // new entries; fix the file instead.
+      const allowList = <String>{
+        // long-tail wave (BUT-885 follow-up)
+        'lib/widgets/image/avatar_image_widget.dart',
+        'lib/widgets/image/editable_image_widget.dart',
+        'lib/widgets/image/image_components.dart',
+        'lib/widgets/image/components/upload_progress_widgets.dart',
+        'lib/widgets/image/simple_image_widget.dart',
+        'lib/widgets/image/components/image_grid_widgets.dart',
+        'lib/widgets/image/components/empty_image_state.dart',
+        'lib/widgets/common/feedback_form_dialog.dart',
+        'lib/widgets/common/friends/friend_category_manager.dart',
+        'lib/widgets/common/input/debounced_button.dart',
+        'lib/widgets/messaging/new_conversation_dialog.dart',
+        'lib/widgets/common/routing/deferred_route_loader.dart',
+        'lib/widgets/messaging/fullscreen_image_viewer.dart',
+        'lib/widgets/common/menu_persistence/menu_save_dialog.dart',
+        'lib/widgets/common/menu_persistence/menu_load_dialog.dart',
+        'lib/widgets/shopping/shopping_template_browser.dart',
+        'lib/widgets/common/service/service_widgets.dart',
+        'lib/widgets/messaging/builders/message_content_builder.dart',
+        'lib/widgets/common/share_dialog/share_dialog_states.dart',
+        'lib/widgets/common/social_components/invitation_states.dart',
+        'lib/widgets/common/social_components/social_avatar_components.dart',
+        'lib/widgets/common/social_components/social_builder_components.dart',
+        'lib/widgets/common/social_components/social_group_components.dart',
+        'lib/widgets/common/social/invitation_target_states.dart',
+        'lib/widgets/common/social/social_builders.dart',
+        'lib/widgets/common/scaffolds/form_scaffold.dart',
+        'lib/widgets/common/settings/blocked_users_section.dart',
+        'lib/widgets/common/profile/handlers/auth_action_handler.dart',
+      };
+
+      final pattern = RegExp(r'\bCircularProgressIndicator\s*\(');
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        if (!relPath.startsWith('lib/widgets/')) continue;
+
+        // Skip the exempt adapter/state/loading layers.
+        if (exemptPrefixes.any((p) => relPath.startsWith(p))) continue;
+
+        // Skip known pre-existing violations.
+        if (allowList.contains(relPath)) continue;
+
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Raw CircularProgressIndicator in lib/widgets/ bypasses '
+            'the LoadingIndicator wrapper (platform-adaptive, a11y, '
+            'consistent sizing). Use LoadingIndicator instead.\n'
+            'New violations:\n${violations.join('\n')}',
+      );
+    });
+
     test('widgets directory exists under lib', () {
       expect(
         Directory('lib/widgets').existsSync(),

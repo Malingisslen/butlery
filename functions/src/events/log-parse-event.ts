@@ -142,6 +142,9 @@ interface ParseEventData {
  *
  */
 export const logParseEvent = onCall(
+  // BUT-760: user-facing import-telemetry callable — App Check
+  // defense-in-depth. Inert until App Check flipped to Enforce in console.
+  { enforceAppCheck: true },
   async (request: CallableRequest<ParseEventData>) => {
     // Require authentication
     if (!request.auth) {

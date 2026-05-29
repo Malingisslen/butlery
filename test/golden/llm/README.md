@@ -10,6 +10,8 @@ test/golden/llm/
 ├── _golden_runner.dart          ← case loader + scoring contract (foundation only)
 ├── categorize_ingredient/
 │   └── cases.json               ← 10 seed cases (Swedish ingredient → category)
+├── adversarial/
+│   └── cases.json               ← 10 attack cases (injection / jailbreak / structural)
 ├── ner/
 │   └── cases.json               ← 5 seed cases (Swedish sentence → entity spans)
 ├── recipe_from_url/             ← deferred — see BUT-XXX (file follow-up)
@@ -40,6 +42,29 @@ Scoring tolerances:
 | `exact` | `==` after trim+lowercase | `categorize_ingredient` (label is a fixed enum) |
 | `similarity` | cosine-sim ≥ 0.85 between `expected` and actual | free-text fields (titles, instructions) |
 | `jaccard` | set-jaccard ≥ 0.80 between expected and actual span lists | `ner` (entity-span overlap) |
+
+## Adversarial corpus (BUT-804 / HIGH-AI4)
+
+`adversarial/cases.json` holds prompt-injection, jailbreak, and structural-attack
+inputs. It is scored against `IngredientCategorizer.categorize` — the one
+LLM-adjacent flow that is fully deterministic and bundled (no model, no Firebase,
+no platform channel), so it runs on every CI shard with zero API cost.
+
+The contract under test (`adversarial_test.dart`) is **safe schema output**: for
+every adversarial input the categorizer must (1) not throw, (2) return a member
+of `ShoppingCategory.all`, and (3) never echo the raw payload back as the
+category. Injection/jailbreak directives are inert against a rule engine; cases
+that embed a real ingredient (`lök`, `smör`, `lax`) still resolve to the correct
+bucket, proving the attack cannot redirect classification. The test will fail
+loudly the day a "smarter" (LLM-backed) categorizer starts echoing input or
+emitting free-form labels.
+
+Control-char attacks are stored as JSON `\uXXXX` escapes so the fixture stays
+text-safe on disk while `jsonDecode` materializes the real bytes at load time.
+
+The remaining HIGH-AI4 surface — adversarial corpora for the **model-driven**
+flows (OCR retry, recipe-from-URL, menu generation) — needs live API calls plus
+a cost guard and is tracked as an ops follow-up alongside AI1/AI5/AI6/AI8.
 
 ## Run locally
 

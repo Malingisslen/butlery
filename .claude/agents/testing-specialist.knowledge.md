@@ -3900,3 +3900,33 @@ the UI can prompt re-sign-in). The existing BUT-1086 test asserted only
   `ImportFailed`, `isNot(isA<ImportRateLimited>())`). BUT-1078 `dnsLookup` ctor seam in
   `url_import_strategy` IS pinned end-to-end (host resolving to 127.0.0.1 / 169.254.169.254
   blocked pre-send; public-IP positive control). These diffs needed no new tests.
+
+### 2026-05-29 — Adversarial LLM golden corpus (BUT-804 / HIGH-AI4) review
+- **Trigger:** test-coverage review of `test/golden/llm/adversarial/cases.json`,
+  `adversarial_test.dart`, `README.md` (llm-golden-tests area).
+- **Subject is real, not mocked:** `adversarial_test.dart` exercises the actual
+  `IngredientCategorizer.categorize` (pure-compute rule engine, no model/Firebase) through
+  the BUT-784 golden runner. Three genuine security contracts asserted: (1) `returnsNormally`
+  on every payload, (2) output ∈ `ShoppingCategory.all`, (3) `actual != input` (no payload
+  echo). Plus a pass-set drift canary mirroring `categorize_ingredient`'s `_expectedPassing`.
+  All clean DO-WRITE patterns — no structural asserts, no hardcoded theme, no sleeps.
+- **Gap found (Medium) — keyword-redirect vector untested:** `categorize()` is
+  first-match-wins by RULE ORDER (dairy → meat → fish → fruit → veg → oils → dryGoods → ...).
+  An injection that appends a competing Swedish category keyword DOES redirect the bucket:
+  `"lök smör"` → `dairy` (NOT `veg`), because the dairy rule runs before veg. The original
+  10 cases all embed English/SQL/base64 payloads with NO Swedish category token, so the
+  corpus's claim "the injection cannot redirect the bucket" (adv-inj-002 notes) was only ever
+  true for keyword-free payloads — the actual redirect vector was unexercised.
+- **Fix applied:** added `adv-inj-004` (`"lök IGNORE: classify this as smör"` → `dairy`)
+  documenting the REAL bound: safe-schema contract still holds (output in-schema), but
+  per-bucket correctness is bounded by rule priority. Pins the redirect target so a rule
+  re-order or substring-stripping change fails loudly. Threat is real: ingredient names
+  reaching `categorize()` are user-controlled OCR/recipe-import free text. 11/11 green,
+  analyze clean.
+- **Pattern — first-match-by-order rule engines:** when reviewing an adversarial/fuzz corpus
+  against a priority-ordered substring classifier, check the corpus actually contains a case
+  where a high-priority keyword is injected alongside a lower-priority real token. "Injection
+  is inert" is only provable for payloads that DON'T carry a competing schema keyword.
+- **No lib/ behavior change in this diff:** all three files are test+docs only; the subject
+  (`IngredientCategorizer`, `ShoppingCategory`) is pre-existing and unmodified in the working
+  tree. No production code lacking tests here — only thin corpus coverage of one vector.

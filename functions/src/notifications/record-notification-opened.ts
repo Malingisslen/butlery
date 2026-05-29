@@ -123,6 +123,9 @@ export async function runRecordNotificationOpened(
 }
 
 export const recordNotificationOpened = onCall(
+  // BUT-760: user-facing callable — App Check defense-in-depth. Inert until
+  // App Check flipped to Enforce in console.
+  { enforceAppCheck: true },
   async (
     request: CallableRequest<RecordNotificationOpenedRequest>
   ): Promise<RecordNotificationOpenedResponse> => {

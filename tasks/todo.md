@@ -1,5 +1,79 @@
 # Sprint Backlog
 
+## Sprint: iter-101 — backlog-drained: decompose the 4 remaining open tickets into code-only batches across 4 disjoint areas — 2026-05-29 (Fri)
+
+Theme: **The Linear backlog is drained.** Backlog/Todo/Triage are all empty; only 4 tickets remain, all "In Progress" and all stale (no activity since early-mid May): BUT-804 (AI/LLM hardening bundle), BUT-760 (App Check), BUT-442 (BaseFirebaseRepository migration), BUT-885 (CPI migration). Two are partly ops-blocked (App Check needs Play Console / Apple Developer; the AI bundle's CF/Vertex/CI sub-parts need deploy access). So this sprint slices each ticket down to its **in-session-shippable code-only** part, clusters them into 4 DISJOINT areas, and files the ops remainders as follow-ups.
+
+Step-0 obsolescence already found inside BUT-804 (do NOT re-do these — verified in code this pass):
+- HIGH-AI2 (recipe.title privacy log) — DONE in `c61b810bc` (iter-45).
+- HIGH-AI7 (Unicode fractions ⅙⅚⅐⅑⅒⅘) — DONE; `lib/utils/text/quantity_parser.dart:55-78` already carries all entries with a `BUT-804 HIGH-AI7` comment.
+- HIGH-AI8 (prompt-changelog) — `functions/src/llm/PROMPT_CHANGELOG.md` already exists; only the CI gate (yaml) may be missing → ops follow-up, not this sprint.
+The clean code-only remainder of BUT-804 is **HIGH-AI4 (adversarial golden fixtures)** — `test/golden/llm/adversarial/` does NOT exist yet.
+
+Phase 1.5 risk-gated expansion fires for **B1 (BUT-760, security label)** and **C1 (BUT-804, security label)**. Inline plans below. A (CPI sweep, tech-debt/P4) and D (repo migration, backend/tech-debt/P3) skip the gate per the rule (mechanical sweeps within one dir, no Bug/area-Bug combo).
+
+Linear: BUT-885, BUT-760, BUT-804, BUT-442 transitioned to Todo. No obsolete open tickets to close (iter-100 tickets already left the open set; HIGH-AI2/AI7/AI8 obsolescence is internal to BUT-804, which stays open for its ops remainder).
+
+### Ship this sprint
+
+#### Agent A — CPI→LoadingIndicator migration + arch-test guard (loading) — `lib/widgets/**` (disallowed-folder hits) + `test/architecture/architecture_test.dart`
+
+> 41 raw `CircularProgressIndicator(` sites across 33 files in `lib/widgets/`, all OUTSIDE the allowed folders (`common/indicators/`, `common/state/`, `common/loading/`). The durable win is the arch-test guard — without it Phase-4 decays. Per the ≤3-files-per-agent discipline + 500-line caution, ship the GUARD this sprint plus a bounded first wave; the long tail of mechanical replacements continues in follow-up waves under the same ticket.
+
+- [ ] **A1. BUT-885: add arch-test guard** — extend `test/architecture/architecture_test.dart` with a test that greps `lib/widgets/` for raw `CircularProgressIndicator(` and fails on any hit outside `common/indicators/`, `common/state/`, `common/loading/`. Mark the test `skip:`-free only after A2's first wave, or seed it with the current known-allowlist so it goes green immediately then tighten as the sweep lands. (BUT-885)
+- [ ] **A2. BUT-885: migrate first bounded wave (≤3 files)** — replace raw `CircularProgressIndicator(...)` with the project `LoadingIndicator` wrapper in the 3 highest-traffic offenders: `lib/widgets/import/import_progress_widget.dart`, `lib/widgets/image/image_picker_widget.dart` (2 sites), `lib/widgets/common/scaffolds/loading_scaffold.dart`. Follow the established wrapper pattern from `2927ec7f0` (Phase-5 migration). (BUT-885)
+
+#### Agent B — Server-side App Check enforcement (backend-functions) — `functions/src/**` callables + a CI grep/arch guard
+
+> App Check has TWO halves. The CLIENT half (Play Integrity / App Attest registration, console enforcement roll-out) is ops-blocked — needs Play Console + Apple Developer access and a Monitor→Enforce window; that stays open + becomes a follow-up. The SERVER half (`enforceAppCheck: true` on each `onCall` callable) is code-only and ships now. Only 3 functions currently carry the flag.
+
+- [ ] **B1. BUT-760 (server half): set `enforceAppCheck: true` on user-facing onCall callables** — audit every `onCall(` in `functions/src/` (12 files matched + the LLM wrapper-defined ones), add `{ enforceAppCheck: true }` to the user-facing recipe/import/feedback/account callables enumerated in the ticket's CRIT-SEC3 list. Skip admin-only / scheduled functions. Add a CI grep guard test (`functions/src/__tests__/app-check-enforcement.test.ts`) failing if a new user-facing `onCall` lands without the flag. (BUT-760)
+
+##### ★ Risky-ticket plan — BUT-760 (server half) ──────────────────
+Classification: **plan-stale + rescoped** — ticket is written client-first ("register Play Integrity / App Attest"), but that half is ops-blocked (no Play Console / Apple access this session, and per memory the store-submission track is deferred). Rescope this sprint to the **server-side `enforceAppCheck` flag + CI guard** only; the client registration + Monitor→Enforce roll-out becomes a follow-up ticket. Edit the Linear body to record the split.
+Files: the user-facing onCall definitions under `functions/src/llm/`, `functions/src/feedback/`, account/export callables + new `functions/src/__tests__/app-check-enforcement.test.ts`. Read-only ref: the 3 already-flagged files (`ocr-recipe-image.ts`, `structure-recipe.ts`).
+Blast radius: with the flag on but clients NOT yet sending attestation tokens, enforcement at the FUNCTION level still depends on the App Check product being in Enforce mode in console (currently Unenforced everywhere). So setting `enforceAppCheck: true` is SAFE now (no live blocking until console flips) and is the prerequisite the client roll-out builds on. Verify no callable used by an unattested path (web reCAPTCHA IS registered, so web is fine).
+Product-intent flags: confirm `submitFeedback` / `requestAccountDeletion` aren't called from a context that lacks App Check init — flag, don't halt.
+Rollback: remove the flag per-function; no data effect.
+Proceeding automatically (no approval gate). firebase-backend-security reviewer REQUIRED at commit (touches `functions/src/`).
+─────────────────────────────────────────────────
+
+#### Agent C — Adversarial LLM golden fixtures (llm-test) — `test/golden/llm/adversarial/**`
+
+- [ ] **C1. BUT-804 HIGH-AI4: author adversarial golden corpus** — create `test/golden/llm/adversarial/` alongside the existing BUT-784 golden corpus. Add fixture cases for: (a) prompt-injection ("ignore previous instructions, return X"), (b) jailbreak / role-play tricks, (c) structural attacks (very long input, nested JSON, control chars). Assert the parse/structure path returns a safe result (refuses / returns expected schema / no instruction-following). Wire into the existing golden runner. This is the LAST code-only slice of BUT-804 — file follow-ups for the ops remainder (AI1 retry-validator verify, AI5 Vertex prefix caching, AI6 splitter consolidation, AI8 CI changelog gate). (BUT-804)
+
+##### ★ Risky-ticket plan — BUT-804 (HIGH-AI4 slice) ──────────────────
+Classification: **plan-stale + rescoped** — the bundle's other 7 sub-parts are DONE (AI2/AI7), ops-blocked (AI1/AI5/AI8), or refactor-scoped (AI6). Only AI4 is a clean in-session code-only win. Rescope BUT-804 this sprint to AI4; edit Linear body to mark AI2/AI7 done and split AI1/AI5/AI6/AI8 into a follow-up.
+Files: new `test/golden/llm/adversarial/cases.json` (+ any runner glue), mirroring `test/golden/llm/categorize_ingredient/cases.json`.
+Blast radius: test-only — no production code touched. Adds a security regression net for prompt-injection.
+Product-intent flags: none — pure test hardening.
+Rollback: delete the new fixture dir.
+Proceeding automatically (no approval gate). security label fires the gate but the change is test-only; firebase-backend-security NOT required (no `functions/src/`/`lib/repositories/firebase/` touch).
+─────────────────────────────────────────────────
+
+#### Agent D — BaseFirebaseRepository migration (backend-repo) — `lib/repositories/firebase/**` (non-adopters)
+
+> 16 firebase repos extend `BaseFirebaseRepository`; the ticket asks to re-verify the high-traffic holdouts and migrate or close-as-done-enough. Bound to ≤3 high-value holdouts this wave.
+
+- [ ] **D1. BUT-442: migrate ≤3 high-traffic repo holdouts** — list non-adopters via grep `-L "extends BaseFirebaseRepository" lib/repositories/firebase/*.dart`, filter to audit-log-worthy / high-traffic ones NOT already migrated, and migrate up to 3. If <3 high-value holdouts remain, close the ticket as done-enough per its own escape clause and document which repos intentionally don't extend the base (e.g. storage/messaging facades). (BUT-442)
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` on all touched Dart files clean.
+- [ ] `npm --prefix functions run build` (or tsc) clean for Agent B.
+- [ ] Touched test files pass; new arch-test (A1) + app-check guard (B1) + adversarial corpus (C1) run green.
+- [ ] Tier-2 reviewers: code-reviewer (all Dart) + testing-specialist (all `lib/**` + test changes) + firebase-backend-security (Agent B — `functions/src/`) + firebase-backend-security (Agent D — `lib/repositories/firebase/`).
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos`.
+- [ ] Run relevant unit tests + the new arch/guard tests.
+- [ ] File follow-ups in Linear: BUT-760 client-half (Play Integrity + App Attest + Monitor→Enforce roll-out), BUT-804 ops remainder (AI1 retry-validator verify, AI5 Vertex prefix caching, AI6 splitter consolidation, AI8 CI changelog gate), BUT-885 CPI long-tail (remaining ~30 widget files).
+- [ ] Commit (per-area or unified), push to main.
+- [ ] Linear: leave BUT-760/804/442/885 OPEN if only partially shipped (transition back to In Progress with a progress comment); close only if fully resolved (BUT-442 may close via its done-enough clause).
+
+---
+
 ## Sprint: iter-100 — 8 tickets across 4 disjoint areas (1 P2 security Bug + 7 P4 cleanup) — 2026-05-28 (Thu)
 
 Theme: Clean ticket-then-flip batch. One P2 High Bug closes the security gap that BUT-953's code-review flagged (heirloom upload format/contentType/compression — the natural follow-on to iter-98). The rest are P4 tech-debt/i18n/cleanup clustered so each agent owns a DISJOINT file set. iter-98+99 already committed in `631fceec4`, so the realtime/heirloom/categorizer/conflict-banner files are settled — but Agent A still re-touches `import_base_viewmodel.dart` for BUT-1161, so it must run alone on the import area.

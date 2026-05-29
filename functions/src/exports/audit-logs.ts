@@ -65,17 +65,22 @@ export interface ExportAuditLogsResponse {
 
 /**
  * Callable that returns the calling user's `audit_logs` rows in pages.
- * Auth-required (the auth uid scopes the query). No App Check enforcement
- * here because the caller is running in an authenticated app context that
- * already passed App Check at sign-in; adding a second gate doesn't
- * meaningfully raise the bar against the threat models that matter for
- * Article 15 (the user is reading their own data).
+ * Auth-required (the auth uid scopes the query).
+ *
+ * BUT-760: enforceAppCheck added to bring this user-facing callable in line
+ * with the uniform App Check policy (the CI guard in
+ * `__tests__/app-check-enforcement.test.ts` requires it). App Check tokens
+ * are minted per-call, not session-scoped, so "passed App Check at sign-in"
+ * doesn't cover a later export request. Inert until App Check is flipped from
+ * Unenforced to Enforce in the console (mobile attestation roll-out — server
+ * half of BUT-760).
  */
 export const exportAuditLogs = onCall<ExportAuditLogsRequest>(
   {
     memory: "512MiB",
     timeoutSeconds: 60,
     cors: ["https://butlery.app", "https://www.butlery.app"],
+    enforceAppCheck: true,
   },
   async (request): Promise<ExportAuditLogsResponse> => {
     if (!request.auth) {

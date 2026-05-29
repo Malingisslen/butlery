@@ -186,6 +186,9 @@ export function validateAndPreparePayload(
 }
 
 export const logParseCorrection = onCall(
+  // BUT-760: user-facing import-telemetry callable — App Check
+  // defense-in-depth. Inert until App Check flipped to Enforce in console.
+  { enforceAppCheck: true },
   async (request: CallableRequest<ParseCorrectionData>) => {
     if (!request.auth) {
       throw new HttpsError(

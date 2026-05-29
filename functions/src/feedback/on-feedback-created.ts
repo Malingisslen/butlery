@@ -8,6 +8,11 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 
+// BUT-760: feedback ingestion is a Firestore onDocumentCreated trigger, not a
+// callable. App Check (`enforceAppCheck`) applies to onCall/onRequest only —
+// it does not exist for background triggers. The user-facing write that fans
+// out to this trigger goes through Firestore security rules + App Check on the
+// client SDK call, not here. Intentionally no enforceAppCheck on this function.
 export const onFeedbackCreated = onDocumentCreated(
   "feedback/{feedbackId}",
   async (event) => {

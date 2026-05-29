@@ -72,6 +72,9 @@ interface NotificationResponse {
  * automatically removed from the database.
  */
 export const sendNotification = onCall(
+  // BUT-760: user-facing callable — App Check defense-in-depth. Inert until
+  // App Check flipped to Enforce in console.
+  { enforceAppCheck: true },
   async (request: CallableRequest<NotificationRequest>): Promise<NotificationResponse> => {
     // Validate authentication
     if (!request.auth) {
@@ -467,6 +470,9 @@ function validateNotification(notification: NotificationRequest): string | null 
  * H14: Validates each notification before processing.
  */
 export const sendNotificationBatch = onCall(
+  // BUT-760: user-facing callable — App Check defense-in-depth. Inert until
+  // App Check flipped to Enforce in console.
+  { enforceAppCheck: true },
   async (
     request: CallableRequest<{ notifications: NotificationRequest[] }>
   ): Promise<{ results: NotificationResponse[] }> => {

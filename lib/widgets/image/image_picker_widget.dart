@@ -12,6 +12,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
 // Re-export removed - image_source_picker.dart was dead code
@@ -134,15 +135,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_isLoading) ...[
-                    SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          cs.primary,
-                        ),
-                      ),
+                    LoadingIndicator(
+                      size: 32,
+                      strokeWidth: 2,
+                      color: cs.primary,
                     ),
                     const SizedBox(
                         height: (AppDimensions.spacingSm +
@@ -255,9 +251,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     height: double.infinity,
                     placeholder: (context, url) => ColoredBox(
                       color: cs.surfaceContainerHighest,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      child: const Center(child: LoadingIndicator()),
                     ),
                     errorWidget: (context, url, error) => ColoredBox(
                       color: cs.surfaceContainerHighest,
