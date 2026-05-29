@@ -423,18 +423,41 @@ Steps:
 
 Return the ship summary.`
 
-const ship = await agent(shipPrompt, { label: 'ship', phase: 'Ship', schema: SHIP_SCHEMA })
+// Ship is wrapped: a StructuredOutput miss here used to throw and discard the
+// ENTIRE run (>1M tokens of completed+reviewed work) even though Ship's real
+// work — commit/push/Linear — happens via side effects, not the return value.
+// Catch it, then verify ground truth from git directly.
+let ship = null
+try {
+  ship = await agent(shipPrompt, { label: 'ship', phase: 'Ship', schema: SHIP_SCHEMA })
+} catch (e) {
+  log('⚠ Ship did not return structured output (' + String(e && e.message || e).slice(0, 120) + '). Its commit/push/Linear side effects may still have landed — verifying git state directly.')
+}
+
+// Ground-truth verification — a short, focused agent that only reads git state,
+// so the summary reflects reality even when Ship's self-report is missing.
+const verify = await agent(
+  `Report repo state after a sprint ship. Run \`git log -1 --format=%h%x20%s\`, \`git status --porcelain\`, and \`git rev-list --count @{u}..HEAD 2>/dev/null\`. Return JSON {headSha, headSubject, treeClean (porcelain empty), ahead (the count, 0 = pushed/in sync), pushed (ahead==0)}.`,
+  { label: 'verify-ship', phase: 'Ship', schema: { type: 'object', required: ['headSha', 'treeClean', 'pushed'], properties: { headSha: { type: 'string' }, headSubject: { type: 'string' }, treeClean: { type: 'boolean' }, ahead: { type: 'number' }, pushed: { type: 'boolean' } } } }
+) || {}
+
+const shipOk = !!(ship && ship.committed && ship.pushed) || (verify.treeClean === true && verify.pushed === true)
+if (!shipOk) {
+  log(`⚠ Ship incomplete — headSha=${verify.headSha || '?'} treeClean=${verify.treeClean} pushed=${verify.pushed}. The integrated+reviewed work is in the tree; finish the commit/push/Linear manually before the next sprint.`)
+}
 
 // ── Final summary ───────────────────────────────────────────────────────────
 return {
-  status: 'complete',
+  status: shipOk ? 'complete' : 'ship-incomplete',
   sprint: plan.sprintName,
   date: plan.date,
   tickets: { done: doneIds, obsolete: obsoleteIds, failed: [...failedIds, ...conflictBatches] },
   conflicts: integ.conflicts,
   review: { total: allFindings.length, blockingFixed: blocking.length },
-  commit: ship && ship.sha ? `${ship.sha} ${ship.subject || ''}` : null,
-  pushed: ship ? ship.pushed : false,
+  commit: verify.headSha ? `${verify.headSha} ${verify.headSubject || ''}` : (ship && ship.sha ? `${ship.sha} ${ship.subject || ''}` : null),
+  pushed: verify.pushed === true || (ship ? ship.pushed === true : false),
+  treeClean: verify.treeClean,
+  shipReportedStructuredOutput: !!ship,
   linearClosed: ship ? ship.closed : [],
   linearLeftOpen: ship ? ship.leftOpen : [],
   followUps: ship ? ship.followUps : [],
