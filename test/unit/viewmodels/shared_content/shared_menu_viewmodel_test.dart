@@ -543,9 +543,10 @@ void main() {
       vm.dispose();
     });
 
-    /// isCollaborative comes from the model mixin: it's true iff
-    /// (allowCollaboration && copyOnWriteTriggered). Non-owner with only
-    /// allowCollaboration=true (no cow trigger yet) MUST NOT edit.
+    /// isCollaborative comes from the model mixin (CopyOnWriteSupport):
+    /// `isCollaborative => copyOnWriteTriggered`. allowCollaboration is NOT
+    /// part of it. Non-owner with allowCollaboration=true but no cow-trigger
+    /// → isCollaborative=false → MUST NOT edit.
     test('non-owner with allowCollaboration but no cow-trigger cannot edit',
         () {
       final m = _menu(
@@ -556,6 +557,29 @@ void main() {
       );
       final vm = makeVm();
       expect(vm.canEditMenu(m), isFalse);
+      vm.dispose();
+    });
+
+    /// Discriminating case that pins the REAL mixin contract: copyOnWrite
+    /// triggered alone makes isCollaborative true even when allowCollaboration
+    /// is false. The previous suite never covered this — it passed only
+    /// because copyOnWriteTriggered=false made the false "allowCollaboration
+    /// AND cow" definition agree with the true "cow only" one. This would
+    /// catch a future change to canEditMenu that wrongly ANDed in
+    /// allowCollaboration.
+    test(
+        'non-owner with cow-trigger but allowCollaboration=false CAN edit '
+        '(isCollaborative == copyOnWriteTriggered)', () {
+      final m = _menu(
+        id: 'm',
+        sharedBy: 'uid-other',
+        allowCollaboration: false,
+        copyOnWriteTriggered: true,
+      );
+      expect(m.isCollaborative, isTrue,
+          reason: 'mixin: isCollaborative => copyOnWriteTriggered');
+      final vm = makeVm();
+      expect(vm.canEditMenu(m), isTrue);
       vm.dispose();
     });
 
@@ -691,7 +715,7 @@ void main() {
       vm.dispose();
     });
 
-    test('>3 categories: first two + "och N till" (Swedish remainder)', () {
+    test('>3 categories: first two + localized "N more" label', () {
       final vm = makeVm();
       final m = _menu(id: 'big', snapshot: {
         'Middag': [_recipe('a')],
@@ -700,7 +724,8 @@ void main() {
         'Snack': [_recipe('d')],
         'Dryck': [_recipe('e')],
       });
-      // 5 cats → first 2 + "och 3 till".
+      // 5 cats → "Middag, Lunch " + AppLocale.current.labelAndNMore(3).
+      // In the test locale (sv), labelAndNMore(3) == "och 3 till".
       expect(vm.getMenuCategories(m), 'Middag, Lunch och 3 till');
       vm.dispose();
     });
@@ -988,6 +1013,30 @@ void main() {
     test('is "menu" (pinning the subclass override)', () {
       final vm = makeVm();
       expect(vm.contentTypeName, 'menu');
+      vm.dispose();
+    });
+  });
+
+  group('supportsPagination / loadMoreContent', () {
+    /// SharedMenuViewModel does not implement real cursor-based pagination —
+    /// loadContentWithPagination delegates to loadContentFromRepository.
+    /// Callers that call loadMoreContent must discover this at runtime rather
+    /// than silently receiving empty or duplicate results. The UnsupportedError
+    /// makes the missing implementation loud.
+    test('supportsPagination is false (no real cursor implemented)', () {
+      final vm = makeVm();
+      expect(vm.supportsPagination, isFalse);
+      vm.dispose();
+    });
+
+    test(
+        'loadMoreContent throws UnsupportedError when supportsPagination=false',
+        () {
+      final vm = makeVm();
+      expect(
+        () => vm.loadMoreContent(),
+        throwsA(isA<UnsupportedError>()),
+      );
       vm.dispose();
     });
   });

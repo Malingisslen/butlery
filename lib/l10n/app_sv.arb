@@ -7426,6 +7426,14 @@
   "analysisContainsInstructions": "Innehåller instruktioner",
   "analysisNoInstructionsFound": "Inga instruktioner hittades",
   "labelNoCategories": "Inga kategorier",
+  "labelAndNMore": "och {count} till",
+  "@labelAndNMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "labelGroup": "Grupp",
   "labelYou": "Du",
   "validationSelectIngredient": "Välj minst en ingrediens",

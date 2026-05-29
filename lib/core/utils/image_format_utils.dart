@@ -96,6 +96,33 @@ class ImageFormatUtils {
     return mimeTypeFromExtension(path);
   }
 
+  /// File extension (without the leading dot) for an [ImageFormat]. Returns
+  /// `'jpg'` for [ImageFormat.unknown] so callers always get a usable suffix.
+  static String extensionFor(ImageFormat format) {
+    switch (format) {
+      case ImageFormat.jpeg:
+        return 'jpg';
+      case ImageFormat.png:
+        return 'png';
+      case ImageFormat.gif:
+        return 'gif';
+      case ImageFormat.webp:
+        return 'webp';
+      case ImageFormat.heic:
+        return 'heic';
+      case ImageFormat.unknown:
+        return 'jpg';
+    }
+  }
+
+  /// Derives a storage file extension from the actual image bytes, falling
+  /// back to `'jpg'` when the magic bytes don't match a known format. Used at
+  /// upload sites so the stored object's suffix matches its real content type
+  /// instead of hardcoding `.jpg` for arbitrary image bytes (BUT-1161).
+  static String extensionFromBytes(List<int> data) {
+    return extensionFor(detectFormat(data.take(12).toList()));
+  }
+
   /// Infers MIME type from file extension (fallback only).
   static String mimeTypeFromExtension(String path) {
     final lower = path.toLowerCase();

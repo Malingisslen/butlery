@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
@@ -36,9 +37,15 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   UrlImportStrategy({
     http.Client? httpClient,
     WebScraper Function()? webScraperFactory,
+    // BUT-1078: forward a DNS lookup seam to HttpContentFetcher so the
+    // DNS-rebinding gate can be driven end-to-end in tests (e.g. a hostname
+    // that resolves to 127.0.0.1). Defaults to InternetAddress.lookup in
+    // HttpContentFetcher when null.
+    Future<List<InternetAddress>> Function(String host)? dnsLookup,
   })  : _fetcher = HttpContentFetcher(
           httpClient: httpClient,
           webScraperFactory: webScraperFactory,
+          dnsLookup: dnsLookup,
         ),
         _llmFallback = LlmExtractionFallback();
 

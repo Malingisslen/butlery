@@ -24,27 +24,11 @@
 
 // lib/viewmodels/photo_import_viewmodel.dart
 
-import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
-import 'package:crypto/crypto.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/connectivity_check.dart';
-import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/models/recipe/heirloom_metadata.dart';
-import 'package:butlery/repositories/interfaces/storage_repository.dart';
-import 'package:butlery/services/permission_service.dart';
-
-/// BUT-410: Storage custom-metadata tag identifying heirloom uploads. If more
-/// upload purposes are added, promote this to an enum at the repository layer.
-const String _uploadPurposeHeirloom = 'heirloom';
-
-/// Content-addressed heirloom URLs are stable per byte-hash, so a year-long
-/// immutable cache is safe.
-const String _heirloomCacheControl = 'public, max-age=31536000, immutable';
 
 /// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
 /// Specializes in photo-based recipe importing from camera captures and gallery images through OCR technology,
@@ -295,89 +279,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     if (_heirloomNote == trimmed) return;
     _heirloomNote = trimmed;
     notifyListeners();
-  }
-
-  /// Upload the current image to Firebase Storage as an heirloom scan and
-  /// return the metadata record ready to attach to a Recipe.
-  ///
-  /// Returns null on failure — the error (offline / generic) is surfaced
-  /// through [BaseViewModel.setError] so the view renders the right banner.
-  ///
-  /// Design:
-  /// - Content-addressed path so re-uploads of the same bytes are idempotent
-  ///   and cache-busting works via a new URL when bytes change.
-  /// - `Cache-Control: public, max-age=31536000, immutable` — the URL is
-  ///   stable (bytes determine it), so caching for a year is safe.
-  Future<HeirloomMetadata?> uploadHeirloomImage(
-      {required String recipeId}) async {
-    final bytes = _imageBytes;
-    if (bytes == null) {
-      setError(AppLocale.current.errorNoImageToProcess);
-      return null;
-    }
-
-    final userId = ServiceLocator.get<PermissionService>().currentUserId;
-    if (userId == null) {
-      setError(AppLocale.current.errorAuthentication);
-      return null;
-    }
-
-    // Offline detection — if we can't reach the internet at all, flag the
-    // queued state so the view shows the "sparas när du är online igen"
-    // banner instead of a generic failure toast.
-    final online = await ConnectivityCheck.hasInternetConnection();
-    if (!online) {
-      if (!isDisposed) {
-        _isOfflineQueued = true;
-        notifyListeners();
-      }
-      return null;
-    }
-
-    if (!isDisposed && _isOfflineQueued) {
-      _isOfflineQueued = false;
-      notifyListeners();
-    }
-
-    HeirloomMetadata? result;
-    await executeAsyncVoid(() async {
-      final storage = ServiceLocator.get<StorageRepository>();
-
-      // Content-addressed filename — first 16 hex chars of SHA-256 keeps
-      // the path short while the collision surface stays negligible for
-      // per-user uploads (≪ 2^64 images per user).
-      final digest = sha256.convert(bytes).toString().substring(0, 16);
-      final path = 'users/$userId/recipes/$recipeId/heirloom/$digest.jpg';
-
-      final url = await storage.uploadImageData(
-        imageData: bytes,
-        userId: userId,
-        path: path,
-        cacheControl: _heirloomCacheControl,
-        metadata: {
-          'purpose': _uploadPurposeHeirloom,
-          'recipeId': recipeId,
-        },
-      );
-
-      if (url == null) {
-        throw Exception(AppLocale.current.errorGeneric);
-      }
-
-      result = HeirloomMetadata(
-        sourceImageUrl: url,
-        writerName: _heirloomWriterName.isEmpty ? null : _heirloomWriterName,
-        year: _heirloomYear,
-        note: _heirloomNote.isEmpty ? null : _heirloomNote,
-        addedAt: clock.now(),
-        addedByUserId: userId,
-      );
-    }, errorPrefix: AppLocale.current.errorGeneric);
-
-    if (result == null) {
-      AppLogger.warning('Heirloom upload returned no metadata');
-    }
-    return result;
   }
 
   /// Clears all photo and OCR data with comprehensive state cleanup and memory management.

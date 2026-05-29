@@ -37,6 +37,15 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 /// Abstract base ViewModel for shared content management.
 /// Provides common patterns for loading, filtering, state management,
 /// and operations while allowing content-specific customization.
+///
+/// **Deliberate exception to the `extends BaseViewModel` convention**
+/// (lib/viewmodels/CLAUDE.md): this family extends [ChangeNotifier] directly
+/// because it hand-rolls a richer state surface than BaseViewModel offers —
+/// per-item operating state ([_operatingItemIds]), cursor pagination, a
+/// memoized filtered-content cache, and a show-imported filter. Re-homing
+/// onto BaseViewModel's single isLoading/error pair would lose those.
+/// The one thing BaseViewModel gives for free that we MUST preserve is the
+/// post-dispose [notifyListeners] guard — replicated below via [_isDisposed].
 abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Content collection loaded from repositories
   List<TContent> _content = [];
@@ -52,6 +61,17 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Error message, null if no error
   String? _error;
+
+  /// Disposed flag — async work (loadContent, loadMoreContent, markAsViewed,
+  /// executeOperation) can complete after the widget is gone. This guards
+  /// every notifyListeners against the post-dispose "used after disposed"
+  /// crash. Mirrors BaseViewModel's override; this family stays on
+  /// ChangeNotifier directly (see class header) but must not lose the guard.
+  bool _isDisposed = false;
+
+  /// Whether this ViewModel has been disposed. Subclasses should check this
+  /// before any post-await state mutation.
+  bool get isDisposed => _isDisposed;
 
   /// Import/operation in progress indicator (global)
   bool _isOperating = false;
@@ -84,6 +104,13 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Content type name for logging (e.g., 'recipe', 'menu', 'shopping_list')
   String get contentTypeName;
+
+  /// Whether this ViewModel supports cursor-based pagination.
+  /// Subclasses that implement real pagination must override this to true.
+  /// [loadMoreContent] throws [UnsupportedError] when false, ensuring callers
+  /// discover the missing implementation at runtime rather than silently
+  /// receiving duplicate or empty results.
+  bool get supportsPagination => false;
 
   /// Load content from repository/service (initial load)
   Future<List<TContent>> loadContentFromRepository();
@@ -223,6 +250,14 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Load more content (pagination)
   Future<void> loadMoreContent() async {
+    if (!supportsPagination) {
+      throw UnsupportedError(
+        '$contentTypeName ViewModel does not support pagination. '
+        'Override supportsPagination to return true and implement '
+        'loadContentWithPagination with a real cursor.',
+      );
+    }
+
     // Don't load if already loading or no more content
     if (_isLoadingMore || !_hasMoreContent || _lastDocument == null) {
       AppLogger.info(
@@ -388,9 +423,22 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     }
   }
 
+  /// Guarded so async continuations that fire after [dispose] (in-flight
+  /// coordinator calls in loadContent / loadMoreContent / markAsViewed /
+  /// executeOperation) become no-ops instead of throwing "A
+  /// ChangeNotifier was used after being disposed." Mirrors the guard
+  /// BaseViewModel provides; this family intentionally stays on
+  /// ChangeNotifier (see class header).
+  @override
+  void notifyListeners() {
+    if (_isDisposed) return;
+    super.notifyListeners();
+  }
+
   @override
   void dispose() {
     AppLogger.info('Disposing ${contentTypeName}ViewModel');
+    _isDisposed = true;
     super.dispose();
   }
 }

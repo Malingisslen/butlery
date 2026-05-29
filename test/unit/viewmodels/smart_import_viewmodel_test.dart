@@ -437,42 +437,27 @@ void main() {
   });
 
   group('startImport — rate-limit branch', () {
-    /// Swedish "kvot"/"gräns" or English "rate limit" in errorMessage must
-    /// become an ImportRateLimited result so the RateLimitDialog opens.
-    /// Pin all three trigger words.
-    for (final phrase in [
-      'rate limit exceeded',
-      'Dagskvot uppnådd',
-      'Gräns nådd'
-    ]) {
-      test('detects rate-limit phrase "$phrase"', () async {
-        when(() => mockImportManager.autoImport(any(),
-                onProgress: any(named: 'onProgress')))
-            .thenAnswer((_) async => ImportManagerResult.failure(phrase));
-        viewModel.updateInput('https://example.com');
-
-        final r = await viewModel.startImport();
-
-        expect(r, isA<ImportRateLimited>(),
-            reason: 'phrase "$phrase" must trigger rate-limit branch');
-      });
-    }
-
-    /// The denial structure must carry a non-empty message so the dialog has
-    /// something to show. The legacy string-match fallback still synthesises
-    /// retryAfter/limitType/suggestedAction defaults — that's intentional
-    /// back-compat for non-structured manager paths.
-    test('rate-limit denial includes the original error message', () async {
+    /// BUT-1148: the legacy string-match fallback (which scanned errorMessage
+    /// for "rate limit"/"kvot"/"gräns" and synthesised hardcoded perDay/1h
+    /// defaults) was deleted — the ImportManager routes every denial through
+    /// the structured ImportManagerResult.rateLimit() path. A bare
+    /// errorMessage with a rate-limit phrase but no structured details now
+    /// falls through to the generic localized-failure path, NOT a rate-limit
+    /// dialog with fabricated values.
+    test(
+        'rate-limit phrase in a plain failure (no structured denial) → '
+        'generic ImportFailed, not ImportRateLimited', () async {
       when(() => mockImportManager.autoImport(any(),
               onProgress: any(named: 'onProgress')))
           .thenAnswer(
-              (_) async => ImportManagerResult.failure('rate limit reached'));
+              (_) async => ImportManagerResult.failure('rate limit exceeded'));
       viewModel.updateInput('https://example.com');
 
-      final r = (await viewModel.startImport()) as ImportRateLimited;
+      final r = await viewModel.startImport();
 
-      expect(r.rateLimitResult.message, 'rate limit reached');
-      expect(r.rateLimitResult.retryAfter.inSeconds, greaterThan(0));
+      expect(r, isA<ImportFailed>(),
+          reason: 'no structured denial → no fabricated rate-limit result');
+      expect(r, isNot(isA<ImportRateLimited>()));
     });
 
     /// BUT-1144: when the manager returns a structured

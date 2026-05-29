@@ -327,36 +327,16 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return helpResult;
     }
 
-    // BUT-1144: structured rate-limit denial — prefer the limiter's real
-    // retryAfter / limitType / suggestedAction over the legacy string-match
-    // synthesis below.
+    // BUT-1144: structured rate-limit denial — surfaces the limiter's real
+    // retryAfter / limitType / suggestedAction. The ImportManager routes every
+    // denial through ImportManagerResult.rateLimit(), so this is the only
+    // rate-limit path. (BUT-1148 removed the legacy string-match fallback that
+    // synthesised hardcoded perDay/1h defaults from the error message.)
     if (!result.isSuccess && result.rateLimitDenied != null) {
       _setPhase(ImportPhase.error);
       final limitedResult = ImportRateLimited(result.rateLimitDenied!);
       _lastResult = limitedResult;
       return limitedResult;
-    }
-
-    // Fallback: legacy string-match path for any error that didn't surface
-    // structured details (kept for back-compat with non-rate-limiter paths
-    // that bubble up a Swedish/English rate-limit phrase in errorMessage).
-    if (!result.isSuccess && result.errorMessage != null) {
-      final errorLower = result.errorMessage!.toLowerCase();
-      if (errorLower.contains('rate limit') ||
-          errorLower.contains('kvot') ||
-          errorLower.contains('gräns')) {
-        _setPhase(ImportPhase.error);
-        final rateLimitResult = RateLimitDenied(
-          limitType: LimitType.perDay,
-          message:
-              result.errorMessage ?? AppLocale.current.errorDailyQuotaReached,
-          retryAfter: const Duration(hours: 1),
-          suggestedAction: FallbackAction.useUserAssisted,
-        );
-        final limitedResult = ImportRateLimited(rateLimitResult);
-        _lastResult = limitedResult;
-        return limitedResult;
-      }
     }
 
     // Check for other errors

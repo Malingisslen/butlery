@@ -96,8 +96,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       await _loadSharedContent();
       AppLogger.info('✅ SocialRecipeService initialized');
     } catch (e) {
-      _error = 'Failed to initialize SocialRecipeService: $e';
-      AppLogger.error('❌ SocialRecipeService initialization failed', e);
+      _captureAndLog('Failed to initialize SocialRecipeService', e);
     } finally {
       _isLoading = false;
     }
@@ -107,20 +106,31 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     if (!_permissionService.isAuthenticated) return;
     final currentUserId = _permissionService.currentUserId!;
 
-    try {
-      _sharedRecipes =
-          await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
-      _sharedMenus =
-          await _sharedMenuRepository.getSharedMenusForUser(currentUserId);
-    } catch (e) {
-      AppLogger.error('Failed to load shared content', e);
-      _sharedRecipes = [];
-      _sharedMenus = [];
-    }
+    // Load into locals first; only commit on success. A transient failure
+    // (network blip, permission hiccup) must NOT blank the inbox by
+    // overwriting last-good data with empty lists. Rethrow so the caller's
+    // error handling (initialize/refresh) can populate _error → UI banner.
+    final recipes =
+        await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
+    final menus =
+        await _sharedMenuRepository.getSharedMenusForUser(currentUserId);
+    _sharedRecipes = recipes;
+    _sharedMenus = menus;
   }
 
+  /// Reloads shared content, mirroring [initialize]'s loading/error lifecycle
+  /// so a failed refresh surfaces via [hasError] instead of silently blanking
+  /// the inbox. (BUT-1087)
   Future<void> refresh() async {
-    await _loadSharedContent();
+    try {
+      _isLoading = true;
+      _resetError();
+      await _loadSharedContent();
+    } catch (e) {
+      _captureAndLog('Failed to refresh shared content', e);
+    } finally {
+      _isLoading = false;
+    }
   }
 
   // Get visible shared recipes (already filtered by repository - no dismissed items)
@@ -269,7 +279,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     _resetError();
     try {
       if (!_permissionService.isAuthenticated) {
-        _error = 'User not authenticated';
+        _error = AppLocale.current.errorAuthentication;
         return false;
       }
       await _sharedRecipeRepository.markAsDismissed(
@@ -287,7 +297,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     _resetError();
     try {
       if (!_permissionService.isAuthenticated) {
-        _error = 'User not authenticated';
+        _error = AppLocale.current.errorAuthentication;
         return false;
       }
       await _sharedMenuRepository.markAsDismissed(

@@ -3789,3 +3789,114 @@ and correct, or the gap is in a new surface (widget/wiring) rather than a
 regression in covered code. The HeirloomBridge, BUT-1133 delete-scope, and
 BUT-1152 idempotent-re-add tests are the strongest of the batch and would
 each catch a real regression.
+
+---
+
+### 2026-05-28 — SocialShoppingCoordinator save-through flip (BUT-1105)
+**Trigger:** Coverage review of social_shopping_coordinator.dart + its test after
+the working-tree diff flipped `ShoppingListServiceAdapter.saveShoppingList` from a
+silent no-op (`return shoppingList.id`) to `throw UnsupportedError`.
+
+**Pattern — "fail-loud no-op replacement" is a high-value, easily-tested change:**
+When a method that used to silently return a fake-success value becomes a thrower,
+the matching test must assert BOTH levels: (1) the direct call throws the right
+type (`throwsA(isA<UnsupportedError>())`), and (2) every wrapper that delegates to
+it PROPAGATES rather than swallows. This test got both right — the second test
+wires a real throwing adapter through `saveImportedContent` (not a stub), so it
+actually proves the wrapper doesn't catch-and-discard. That is the difference
+between pinning the contract and mocking away the subject.
+
+**Good docstring hygiene observed:** the old docstring's "save-through is a no-op,
+return-the-id contract" note was DELETED and replaced with the fail-loud note in
+the same diff. When behaviour inverts, the intent-doc must invert with it —
+otherwise the next reader trusts a stale "not a bug, but a foot-gun" comment.
+
+**Pre-existing gap (NOT introduced by this diff, flagged Medium):**
+`joinSharedShoppingList` happy path (markAsJoined → collaborative.addMember →
+notifyStateChanged, and the `shoppingListId == null` pre-migration warning branch)
+is untested. The file only covers unauth / not-found / repo-throw branches. The
+happy path needs `ServiceLocator.get<UnifiedShoppingService>()` to be stubbed
+(GetIt), which is why it was likely skipped — but that's the path that actually
+adds a collaborator. Worth a follow-up when touching that method.
+
+### 2026-05-28 — shared_content pagination guard + labelAndNMore localization (Pattern discovered)
+
+Reviewed BUT social sprint: `BaseSharedContentViewModel.supportsPagination`
+(new getter, default false) + `loadMoreContent()` now throws `UnsupportedError`
+when pagination is unimplemented; `SharedMenuViewModel.getMenuCategories` swapped
+a hardcoded Swedish `"och N till"` for `AppLocale.current.labelAndNMore(extras)`.
+
+- All three subclass test files (menu/recipe/shopping) already pin
+  `supportsPagination == false` AND assert `loadMoreContent()` throws
+  `UnsupportedError`. These catch the regression: if `supportsPagination`
+  returned true, `loadMoreContent` falls through to the `_lastDocument == null`
+  early-return and no longer throws → test fails. Sound mutation behaviour.
+- `getMenuCategories` ">3" test asserts the exact localized string
+  `'Middag, Lunch och 3 till'`, exercising the `labelAndNMore` swap end-to-end
+  (locale is pinned sv by test infra). This is the meaningful test for the diff.
+- **Fragile-pattern note**: the three `loadMoreContent throws` tests use a
+  *synchronous* test body with `expect(() => vm.loadMoreContent(), throwsA(...))`
+  on an `async` method. It passes today only because the throw precedes any
+  `await` (synchronous-in-future at method top). If the guard is ever moved
+  below an `await`, `throwsA` in a non-async test can mis-handle the rejected
+  Future. Robust form: `await expectLater(() => vm.loadMoreContent(), throwsA(...))`
+  in an `async` test. Prefer that going forward for async-throwing methods.
+- Thin spot (not a bug): empty-categories test asserts only `isNotEmpty` rather
+  than the pinned `labelNoCategories` value, and there's no length==4 boundary
+  case. Formula is linear so 5-cat case covers it; low value to add.
+
+### 2026-05-28 — SocialRecipeService: pin the SPECIFIC error string, not isNotNull (Weakened-assertion catch)
+
+Reviewing the iter-97 BUT-1086 change in `lib/services/social_recipe_service.dart`
+(sign-out mid-import surfaces `AppLocale.current.errorImportPartialReSignIn` so
+the UI can prompt re-sign-in). The existing BUT-1086 test asserted only
+`expect(service.error, isNotNull)`.
+
+- **Why that's too weak**: the entire user-visible point of BUT-1086 is the
+  *actionable* "your recipe was saved — log in again and refresh" copy. A
+  refactor that regressed `_error` to a generic sanitized failure message would
+  still pass `isNotNull`. Strengthened to
+  `expect(service.error, AppLocale.current.errorImportPartialReSignIn)`.
+  `AppLocale.current` resolves in a plain unit test (no createLocalizedTestApp
+  needed) — service-layer error strings can be pinned directly.
+- **Coverage gap found (Medium)**: `importSharedMenu` had NO test for the
+  sign-out-mid-import path. Unlike `importSharedRecipe` (which has an `else`
+  branch setting `errorImportPartialReSignIn`), the menu path's auth re-check is
+  a bare `if (isAuthenticated)` with NO `else` — so it silently skips the mark
+  and returns true with no error surfaced. Documented this asymmetry in a test
+  rather than "fixing" it (the BUT-1086 ticket only scoped the recipe path).
+  If the prompt should apply to menus too, that test is where the gap shows up.
+- Added a `mark-as-imported throws after saves → false + sanitized error` test
+  for `importSharedMenu`'s outer catch (recipes saved, mark fails) — previously
+  uncovered.
+- **Pattern**: when a diff's intent is "surface a SPECIFIC user-facing message",
+  pin that exact localized string. `isNotNull`/`isNotEmpty` on `service.error`
+  is a weakened assertion that can't distinguish the right prompt from a leaked
+  generic error. Result: 42 → 44 tests, all green, analyze clean.
+
+### 2026-05-28 — import sprint: BUT-1161 extension-derivation + duplicated upload sites
+- **Trigger:** test-coverage review of import-area diffs (image_format_utils, import_base_viewmodel, photo_import_viewmodel, smart_import_viewmodel, url_import_strategy).
+- **Gap found (High):** `ImageFormatUtils.extensionFor` / `extensionFromBytes` (new BUT-1161
+  public methods) had ZERO direct unit tests. They were exercised only indirectly via the
+  heirloom VM's PNG-path test. Added a focused `extensionFor`/`extensionFromBytes` group to
+  `test/unit/core/utils/image_format_utils_test.dart`.
+- **Load-bearing invariant the indirect test missed:** `extensionFor(ImageFormat.unknown)`
+  must return `'jpg'`, NOT the literal `'unknown'`. A `.unknown` storage suffix is the exact
+  mislabel BUT-1161 set out to fix. Pinned with `isNot('unknown')` plus a suffix↔MIME
+  round-trip via `mimeTypeFromExtension` for every known format.
+- **Second invariant:** `extensionFromBytes` uses `detectFormat(data.take(12).toList())`.
+  HEIC's brand fourcc lives at offset 8-11, so the 12-byte window is the minimum. Pinned a
+  HEIC (`mif1`) case asserting `'heic'` not `'jpg'` — a narrower `take()` would silently
+  misclassify every iPhone scan. Also pinned empty-bytes → `'jpg'` (no throw).
+- **Pattern — duplicated upload sites:** the BUT-1161 change landed identically in BOTH
+  `ImportBaseViewModel.saveImportedRecipe` AND `PhotoImportViewModel._uploadHeirloomScan`
+  (two separate content-addressed `users/.../$digest.$ext` builders). The heirloom test
+  (`import_base_viewmodel_heirloom_test.dart`) covers only the base-class path via a
+  synthetic `_TestImportViewModel` subclass — `PhotoImportViewModel`'s own path is unpinned.
+  When you see `sha256...substring(0,16)` + `extensionFromBytes` duplicated, check both
+  sites are covered, or flag the duplication for extraction.
+- **Good prior coverage observed (no action):** BUT-1148 legacy rate-limit-fallback removal
+  in `smart_import_viewmodel` IS pinned (test asserts a bare rate-limit phrase → generic
+  `ImportFailed`, `isNot(isA<ImportRateLimited>())`). BUT-1078 `dnsLookup` ctor seam in
+  `url_import_strategy` IS pinned end-to-end (host resolving to 127.0.0.1 / 169.254.169.254
+  blocked pre-send; public-IP positive control). These diffs needed no new tests.

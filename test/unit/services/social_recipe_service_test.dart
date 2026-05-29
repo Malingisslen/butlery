@@ -28,6 +28,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -420,7 +421,10 @@ void main() {
 
       expect(ok, isFalse);
       expect(recipeRepo.markedAsDismissed, isEmpty);
-      expect(service.error, contains('not authenticated'));
+      // Swedish localized auth error (errorAuthentication), not the old
+      // hardcoded English 'User not authenticated' — user-facing strings
+      // must be Swedish per CLAUDE.local.md.
+      expect(service.error, contains('Autentisering'));
     });
 
     /// Pinned contract: repo throwing is caught → false. The shared-recipe
@@ -470,7 +474,9 @@ void main() {
 
       expect(ok, isFalse);
       expect(menuRepo.markedAsDismissed, isEmpty);
-      expect(service.error, contains('not authenticated'));
+      // Swedish localized auth error (errorAuthentication), not the old
+      // hardcoded English 'User not authenticated'.
+      expect(service.error, contains('Autentisering'));
     });
 
     test('repo throws → returns false, no rethrow, sanitized error set',
@@ -712,7 +718,12 @@ void main() {
       expect(service.hasError, isTrue,
           reason:
               'BUT-1086: half-done state must surface so UI can prompt re-sign-in');
-      expect(service.error, isNotNull);
+      // Pin the SPECIFIC actionable re-sign-in copy, not just "some error".
+      // The whole point of BUT-1086 is that the UI shows a "log in again and
+      // refresh" prompt — a generic sanitized error would not tell the user
+      // their recipe was actually saved. Asserting only isNotNull would pass
+      // even if a refactor regressed this to a generic failure message.
+      expect(service.error, AppLocale.current.errorImportPartialReSignIn);
     });
   });
 
@@ -818,6 +829,69 @@ void main() {
 
       expect(ok, isFalse);
       expect(menuRepo.markedAsImported, isEmpty);
+    });
+
+    /// Documents the CURRENT menu-import contract when the user signs out
+    /// mid-import (after at least one recipe was saved): the recipes ARE
+    /// saved so it returns true, and the mark-as-imported is skipped because
+    /// the auth re-check fails — no `currentUserId!` deref crash.
+    ///
+    /// NOTE the asymmetry vs importSharedRecipe: the recipe path surfaces
+    /// `errorImportPartialReSignIn` via an `else` branch (BUT-1086); the menu
+    /// path has no such `else`, so it stays silent. This test pins the menu
+    /// path's actual behaviour. If the BUT-1086 prompt is meant to apply to
+    /// menus too, this is the test that will (correctly) flag the gap rather
+    /// than letting it pass unnoticed.
+    test(
+        'sign-out mid-import (after a save) → returns true, skips mark, no crash',
+        () async {
+      menuRepo.seedMenus = [
+        _makeSharedMenu(
+          id: 'sm-1',
+          snapshot: {
+            'Mån': [_makeRecipe(id: 'a', title: 'A')],
+          },
+        ),
+      ];
+      await service.initialize();
+
+      personalOps.createRecipeImpl = (_) {
+        permission.setUserId(null); // sign-out between create + mark
+        return 'new-id';
+      };
+
+      final ok = await service.importSharedMenu('sm-1');
+
+      expect(ok, isTrue,
+          reason: 'recipes were saved — primary write succeeded');
+      expect(menuRepo.markedAsImported, isEmpty,
+          reason: 'cannot mark imported without authenticated uid');
+    });
+
+    /// Pinned: if the post-save mark-as-imported throws, the outer catch
+    /// swallows it → false, sanitized error surfaced (BUT-1087). The recipes
+    /// were already created; returning false here is the documented (if
+    /// pessimistic) contract — what matters is that nothing rethrows into UI
+    /// code and the error is visible.
+    test('mark-as-imported throws after saves → false, sanitized error set',
+        () async {
+      menuRepo.seedMenus = [
+        _makeSharedMenu(
+          id: 'sm-1',
+          snapshot: {
+            'Mån': [_makeRecipe(id: 'a', title: 'A')],
+          },
+        ),
+      ];
+      await service.initialize();
+      personalOps.createRecipeImpl = (_) => 'created';
+      menuRepo.throwOnMarkAsImported = Exception('permission-denied');
+
+      final ok = await service.importSharedMenu('sm-1');
+
+      expect(ok, isFalse);
+      expect(service.hasError, isTrue);
+      expect(service.error, isNotNull);
     });
   });
 

@@ -57,6 +57,9 @@
 /// - `joinSharedShoppingList`: unauthenticated → null; not-found → null;
 ///   repo-throw IS caught (try-catch wraps the read) → null + error set
 ///   — opposite shape from the BUT-1090 bug in SocialMenuCoordinator.
+///   Happy path: found + non-null shoppingListId → markAsJoined AND
+///   addMember routed through the injected adapter; null shoppingListId
+///   skips addMember (pre-migration data).
 /// - `loadStatusForShoppingList`: caches viewed/imported/dismissed status
 ///   from repository calls; `is*` getters return cached values.
 /// - `isShoppingList{Viewed,Imported,Dismissed}`: cache miss → false.
@@ -81,24 +84,21 @@
 ///   pattern — `SocialMenuCoordinator.joinSharedMenu` should mirror it.
 ///   Pin the correct contract here so a regression is caught.
 ///
-/// - **BUT-1095 (hardwired repo in constructor) — APPLIES HERE TOO**:
-///   line 113: `_sharedShoppingRepository = ServiceLocator.get<FirebaseSharedShoppingRepository>();`.
-///   At least this one goes through ServiceLocator (mockable via GetIt) —
-///   slightly better than the SocialMenuCoordinator pattern of direct
-///   `FirebaseSharedShoppingRepository()` instantiation, but still no
-///   constructor seam. The `ShoppingListServiceAdapter` ALSO defaults
-///   to `ServiceLocator.get<UnifiedShoppingService>()` (line 61). File
-///   as BUT-1095-family: "missing constructor injection for shared repo
-///   means tests must touch ServiceLocator/GetIt".
+/// - **BUT-1095 (hardwired repo in constructor) — PARTIALLY ADDRESSED**:
+///   `_sharedShoppingRepository` still resolves via
+///   `ServiceLocator.get<FirebaseSharedShoppingRepository>()` in the
+///   constructor (mockable via GetIt). HOWEVER, the join flow's member-add
+///   no longer fetches `UnifiedShoppingService` inline — it now routes
+///   through the injected `ShoppingListServiceAdapter.addMember`, so the
+///   join happy path is exercisable with a fake adapter (no GetIt). The
+///   shared-repo constructor seam remains a follow-up.
 ///
-/// - **Save-through is a no-op (line 72–76)**:
-///   `ShoppingListServiceAdapter.saveShoppingList` logs and returns
-///   `shoppingList.id` WITHOUT saving anything. The comment says
-///   "shopping uses direct collaboration, not save-through-coordinator"
-///   — fine as documented behaviour, but this means `saveImportedContent`
-///   silently no-ops. Pinned: the contract is "return the id" rather
-///   than "actually save". Not a bug, but a foot-gun for anyone wiring
-///   it up later.
+/// - **Save-through throws UnsupportedError (BUT-1105 fix)**:
+///   `ShoppingListServiceAdapter.saveShoppingList` now throws [UnsupportedError]
+///   instead of silently returning the list id without persisting anything.
+///   Shopping lists use direct collaboration — callers must join via
+///   `joinSharedShoppingList`, not save a copy. The fail-loud contract is
+///   pinned in the `ShoppingListServiceAdapter.saveShoppingList` test group.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -122,8 +122,28 @@ class _MockSharedShoppingRepo extends Mock
 
 /// Fake adapter so we don't need the real UnifiedShoppingService chain
 /// when validating the coordinator's `_serviceAdapter` injection path.
+/// Records [addMember] calls so the join happy-path can assert the wiring
+/// reaches collaboration with the resolved listId + currentUserId.
 class _FakeServiceAdapter extends ShoppingListServiceAdapter {
   _FakeServiceAdapter() : super(shoppingService: _NoopShoppingService());
+
+  final List<({String listId, String userId, String userDisplayName})>
+      addMemberCalls = [];
+  bool addMemberResult = true;
+
+  @override
+  Future<bool> addMember({
+    required String listId,
+    required String userId,
+    required String userDisplayName,
+  }) async {
+    addMemberCalls.add((
+      listId: listId,
+      userId: userId,
+      userDisplayName: userDisplayName,
+    ));
+    return addMemberResult;
+  }
 }
 
 /// Tiny stub fulfilling the constructor's `lists` getter so the adapter
@@ -206,6 +226,7 @@ void main() {
     late int notifyCount;
     late String? lastError;
     late List<UnifiedShoppingList> savedLists;
+    late _FakeServiceAdapter fakeAdapter;
     String? saveResult;
 
     setUp(() async {
@@ -230,6 +251,7 @@ void main() {
       savedLists = [];
       saveResult = 'saved-list-id';
 
+      fakeAdapter = _FakeServiceAdapter();
       coordinator = SocialShoppingCoordinator(
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
@@ -240,7 +262,7 @@ void main() {
           savedLists.add(list);
           return saveResult;
         },
-        serviceAdapter: _FakeServiceAdapter(),
+        serviceAdapter: fakeAdapter,
       );
     });
 
@@ -680,6 +702,59 @@ void main() {
     });
 
     // ---------------------------------------------------------------------
+    // ShoppingListServiceAdapter.saveShoppingList — must fail loud (BUT-1105)
+    // ---------------------------------------------------------------------
+    group('ShoppingListServiceAdapter.saveShoppingList', () {
+      /// Pins the "fail loud" contract introduced in BUT-1105. Before this fix
+      /// the method silently returned the list id without persisting anything,
+      /// which meant callers that wired `saveShoppingList` expecting a real save
+      /// (e.g. through saveImportedContent) would get no error and no data.
+      ///
+      /// The intended behaviour is for shopping lists to use direct
+      /// collaboration — callers should join via [joinSharedShoppingList], not
+      /// save a copy. Throwing UnsupportedError makes a mis-wiring immediately
+      /// visible instead of silently discarding data.
+      test('saveShoppingList throws UnsupportedError (not a silent no-op)', () {
+        final adapter = _FakeServiceAdapter();
+        final list = _personalList();
+
+        expect(
+          () => adapter.saveShoppingList(list),
+          throwsA(isA<UnsupportedError>()),
+          reason: 'BUT-1105: save-through-adapter must fail loud; '
+              'shopping uses direct collaboration',
+        );
+      });
+
+      /// Pins that saveImportedContent (which delegates to the injected
+      /// saveShoppingList callback in the coordinator) propagates the error
+      /// rather than swallowing it. The coordinator is constructed with a
+      /// real-throwing callback here to mirror production wiring.
+      test(
+          'saveImportedContent propagates UnsupportedError from saveShoppingList',
+          () {
+        final throwingCoordinator = SocialShoppingCoordinator(
+          getCurrentUserId: () => 'me-uid',
+          getCurrentUserDisplayName: () => 'Anna',
+          setError: (_) {},
+          notifyListeners: () {},
+          getShoppingList: (_) async => null,
+          // Wired with the failing adapter path: calling saveShoppingList throws.
+          saveShoppingList: (list) =>
+              _FakeServiceAdapter().saveShoppingList(list),
+          serviceAdapter: _FakeServiceAdapter(),
+        );
+
+        expect(
+          () => throwingCoordinator.saveImportedContent(_personalList()),
+          throwsA(isA<UnsupportedError>()),
+          reason: 'saveImportedContent must not swallow — fail-loud '
+              'surfaces wiring bugs immediately',
+        );
+      });
+    });
+
+    // ---------------------------------------------------------------------
     // importSharedContent — shopping override routes to join
     // ---------------------------------------------------------------------
     group('importSharedContent (override)', () {
@@ -823,6 +898,53 @@ void main() {
         expect(lastError, isNotNull,
             reason:
                 'this path DOES set error (contrast getSharedShoppingListsForUser)');
+      });
+
+      /// **HAPPY PATH (BUT-1095 seam coverage)**: read() returns a shared
+      /// list with a non-null shoppingListId. The success branch must call
+      /// markAsJoined AND route addMember through the injected adapter with
+      /// the resolved listId + currentUserId. Before the adapter seam this
+      /// branch fetched UnifiedShoppingService inline, so it was dead in
+      /// coverage (every join test stubbed read() to null/throw).
+      test('found with shoppingListId → markAsJoined + addMember on adapter',
+          () async {
+        when(() => mockRepo.read('shared-1')).thenAnswer(
+            (_) async => _sharedList(id: 'shared-1', shoppingListId: 'live-7'));
+        when(() => mockRepo.markAsJoined('shared-1', 'me-uid'))
+            .thenAnswer((_) async {});
+
+        final out = await coordinator.joinSharedShoppingList(
+            sharedShoppingListId: 'shared-1');
+
+        expect(out, 'shared-1');
+        verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
+        expect(fakeAdapter.addMemberCalls, hasLength(1));
+        expect(fakeAdapter.addMemberCalls.single.listId, 'live-7',
+            reason: 'must resolve the live list id from shoppingListId');
+        expect(fakeAdapter.addMemberCalls.single.userId, 'me-uid',
+            reason: 'joining user is the current user');
+        expect(notifyCount, greaterThanOrEqualTo(1),
+            reason: 'success path notifies state change');
+      });
+
+      /// Pre-migration data: shoppingListId is null. markAsJoined still runs
+      /// (analytics), but addMember MUST be skipped — there is no live list
+      /// to attach to. A regression that fired addMember with a null/garbage
+      /// id would corrupt membership on the wrong list.
+      test('found but null shoppingListId → markAsJoined, NO addMember',
+          () async {
+        when(() => mockRepo.read('shared-1')).thenAnswer(
+            (_) async => _sharedList(id: 'shared-1', shoppingListId: null));
+        when(() => mockRepo.markAsJoined('shared-1', 'me-uid'))
+            .thenAnswer((_) async {});
+
+        final out = await coordinator.joinSharedShoppingList(
+            sharedShoppingListId: 'shared-1');
+
+        expect(out, 'shared-1');
+        verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
+        expect(fakeAdapter.addMemberCalls, isEmpty,
+            reason: 'no live list to attach to when shoppingListId is null');
       });
     });
 

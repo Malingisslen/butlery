@@ -38,9 +38,13 @@
 ///      ingredients (extractor degrades; strategy must not crash).
 ///    - Exception during fetch is swallowed — failure result, no rethrow.
 ///
+/// DNS-rebinding gate (BUT-1078):
+///   - `UrlImportStrategy` now accepts a `dnsLookup` ctor seam forwarded to
+///     `HttpContentFetcher`, so a hostname that passes the literal-IP SSRF
+///     gate but RESOLVES to a private/loopback address can be driven
+///     end-to-end. Pinned below: such a host is blocked pre-send.
+///
 /// Out of scope (no production seam to test cleanly):
-///   - DNS-rebinding gate (no public `dnsLookup` injection on
-///     UrlImportStrategy — see testability note in the agent summary).
 ///   - Tier 3/4 web-scraper paths (WebScraper requires `flutter_inappwebview`
 ///     platform code; the existing
 ///     `test/unit/services/extraction/web_scraper_test.dart` covers it).
@@ -48,6 +52,8 @@
 ///     own unit test).
 ///   - ParsedRecipeCache.store (requires production DI registration).
 library;
+
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -586,6 +592,80 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
       // so we land in the "no html, no assist" failure path — html_fetched
       // is false there.
       expect(result.metadata?['html_fetched'], isFalse);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // DNS-rebinding gate, driven end-to-end via the injected dnsLookup seam
+  // (BUT-1078). A hostname that passes the literal-IP SSRF check at
+  // canHandle() but RESOLVES to a private/loopback IP must be blocked before
+  // any HTTP send.
+  // -----------------------------------------------------------------------
+  group('UrlImportStrategy DNS-rebinding gate (dnsLookup seam — BUT-1078)', () {
+    /// A public-looking host that DNS-resolves to 127.0.0.1 is the classic
+    /// DNS-rebinding SSRF. canHandle() can't catch it (the host is not a
+    /// literal private IP), so the only defence is the post-resolution check
+    /// in HttpContentFetcher. This pins that the resolved-IP block fires and
+    /// no HTTP request is ever sent.
+    test('host resolving to 127.0.0.1 is blocked pre-send → failure', () async {
+      var sendCount = 0;
+      final client = MockClient((req) async {
+        sendCount++;
+        return _htmlResponse(_jsonLdRecipeHtml());
+      });
+      final strategy = UrlImportStrategy(
+        httpClient: client,
+        dnsLookup: (host) async => [InternetAddress('127.0.0.1')],
+      );
+
+      final result = await strategy.import('http://rebind.example.com/recipe');
+
+      expect(result.isSuccess, isFalse,
+          reason: 'a host resolving to loopback must never import');
+      expect(sendCount, 0,
+          reason: 'the DNS-rebinding block must fire before any HTTP send');
+      expect(result.metadata?['html_fetched'], isFalse);
+    });
+
+    /// Mirror case: a host resolving to a cloud-metadata link-local address
+    /// (169.254.169.254) — the highest-value SSRF target — must also be
+    /// blocked through the same seam.
+    test('host resolving to 169.254.169.254 (cloud metadata) is blocked',
+        () async {
+      var sendCount = 0;
+      final client = MockClient((req) async {
+        sendCount++;
+        return _htmlResponse(_jsonLdRecipeHtml());
+      });
+      final strategy = UrlImportStrategy(
+        httpClient: client,
+        dnsLookup: (host) async => [InternetAddress('169.254.169.254')],
+      );
+
+      final result = await strategy.import('http://metadata.example.com/x');
+
+      expect(result.isSuccess, isFalse);
+      expect(sendCount, 0);
+    });
+
+    /// Positive control: when the same host resolves to a PUBLIC IP, the
+    /// gate must let it through and the import succeeds. This proves the
+    /// block above is the resolution check firing, not the seam swallowing
+    /// every request.
+    test('host resolving to a public IP passes the gate and imports', () async {
+      final client = MockClient((req) async => _htmlResponse(_jsonLdRecipeHtml(
+            title: 'Våfflor',
+          )));
+      final strategy = UrlImportStrategy(
+        httpClient: client,
+        dnsLookup: (host) async => [InternetAddress('93.184.216.34')],
+      );
+
+      final result = await strategy.import('http://good.example.com/recipe');
+
+      expect(result.isSuccess, isTrue,
+          reason: 'a public-resolving host must import normally');
+      expect(result.recipe!.core.title, 'Våfflor');
     });
   });
 

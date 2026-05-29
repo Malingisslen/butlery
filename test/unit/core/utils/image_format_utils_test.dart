@@ -227,5 +227,113 @@ void main() {
         expect(ImageFormatUtils.detectMimeType(bytes), 'image/heic');
       });
     });
+
+    // BUT-1161 — storage suffix derivation. Upload sites used to hardcode
+    // `.jpg`; these methods make the stored object's suffix match its real
+    // content type so the storage layer's content-type fallback is right.
+    group('extensionFor (BUT-1161)', () {
+      /// Every enum value must map to a non-empty, usable file suffix.
+      /// JPEG maps to `jpg` (not `jpeg`) because that's the conventional
+      /// upload suffix; the storage MIME-from-extension path treats both
+      /// the same anyway.
+      test('maps each known format to its conventional suffix', () {
+        expect(ImageFormatUtils.extensionFor(ImageFormat.jpeg), 'jpg');
+        expect(ImageFormatUtils.extensionFor(ImageFormat.png), 'png');
+        expect(ImageFormatUtils.extensionFor(ImageFormat.gif), 'gif');
+        expect(ImageFormatUtils.extensionFor(ImageFormat.webp), 'webp');
+        expect(ImageFormatUtils.extensionFor(ImageFormat.heic), 'heic');
+      });
+
+      /// The load-bearing invariant: an unrecognized format must still
+      /// produce a usable suffix (`jpg`), NOT `unknown`. A `.unknown` suffix
+      /// on a storage path would drive the wrong content-type fallback and
+      /// is exactly the bug BUT-1161 set out to avoid. Storage paths must
+      /// never carry the literal enum name.
+      test('unknown format falls back to jpg, never the literal "unknown"', () {
+        expect(ImageFormatUtils.extensionFor(ImageFormat.unknown), 'jpg');
+        expect(
+          ImageFormatUtils.extensionFor(ImageFormat.unknown),
+          isNot('unknown'),
+        );
+      });
+
+      /// Suffix and MIME must agree for every known format — otherwise a
+      /// `.png` object would be stored with a JPEG content-type (or vice
+      /// versa). This cross-checks extensionFor against mimeTypeFromExtension,
+      /// the two halves of the round-trip storage relies on.
+      test('suffix round-trips to the matching MIME for every known format',
+          () {
+        const pairs = <ImageFormat, String>{
+          ImageFormat.jpeg: 'image/jpeg',
+          ImageFormat.png: 'image/png',
+          ImageFormat.gif: 'image/gif',
+          ImageFormat.webp: 'image/webp',
+          ImageFormat.heic: 'image/heic',
+        };
+        pairs.forEach((format, mime) {
+          final ext = ImageFormatUtils.extensionFor(format);
+          expect(
+            ImageFormatUtils.mimeTypeFromExtension('file.$ext'),
+            mime,
+            reason: 'a stored .$ext object must resolve back to $mime',
+          );
+        });
+      });
+    });
+
+    group('extensionFromBytes (BUT-1161)', () {
+      test('PNG bytes → png suffix', () {
+        final png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        expect(ImageFormatUtils.extensionFromBytes(png), 'png');
+      });
+
+      test('JPEG bytes → jpg suffix', () {
+        final jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10];
+        expect(ImageFormatUtils.extensionFromBytes(jpeg), 'jpg');
+      });
+
+      /// HEIC detection needs all 12 sniff bytes (brand fourcc lives at
+      /// offset 8-11). This pins that the internal `take(12)` window is wide
+      /// enough — a narrower take() would silently misclassify every iPhone
+      /// scan as unknown→jpg, re-introducing the exact mislabel BUT-1161 fixed.
+      test('HEIC bytes (brand at offset 8) → heic suffix, not jpg', () {
+        final heic = <int>[
+          0x00, 0x00, 0x00, 0x18, // box length
+          0x66, 0x74, 0x79, 0x70, // 'ftyp'
+          0x6D, 0x69, 0x66, 0x31, // 'mif1' — iPhone brand at offset 8-11
+        ];
+        expect(
+          ImageFormatUtils.extensionFromBytes(heic),
+          'heic',
+          reason: 'the 12-byte sniff window must reach the HEIC brand fourcc',
+        );
+      });
+
+      /// WebP also needs the full 12-byte window (RIFF....WEBP).
+      test('WebP bytes → webp suffix', () {
+        final webp = <int>[
+          0x52, 0x49, 0x46, 0x46, // RIFF
+          0x00, 0x00, 0x00, 0x00, // size
+          0x57, 0x45, 0x42, 0x50, // WEBP
+        ];
+        expect(ImageFormatUtils.extensionFromBytes(webp), 'webp');
+      });
+
+      /// Arbitrary/unrecognized bytes must degrade to jpg so the upload still
+      /// gets a usable suffix — the upload must never fail or produce a
+      /// `.unknown` path just because sniffing missed.
+      test('unrecognized bytes → jpg fallback', () {
+        expect(
+          ImageFormatUtils.extensionFromBytes([0x00, 0x01, 0x02, 0x03, 0x04]),
+          'jpg',
+        );
+      });
+
+      /// Empty bytes (e.g. a zero-length scan) must not throw and must still
+      /// return a usable suffix.
+      test('empty bytes → jpg fallback, no throw', () {
+        expect(ImageFormatUtils.extensionFromBytes(<int>[]), 'jpg');
+      });
+    });
   });
 }

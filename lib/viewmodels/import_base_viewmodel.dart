@@ -14,6 +14,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 abstract class ImportBaseViewModel extends BaseViewModel
@@ -150,7 +151,11 @@ abstract class ImportBaseViewModel extends BaseViewModel
       final recipeId = _parsedRecipe!.id;
       final digest =
           sha256.convert(draft.imageBytes).toString().substring(0, 16);
-      final path = 'users/$userId/recipes/$recipeId/heirloom/$digest.jpg';
+      // BUT-1161: derive the extension from the real image bytes instead of
+      // hardcoding .jpg — heirloom scans can be PNG/HEIC/WebP and a mismatched
+      // suffix drives the wrong content-type fallback in the storage layer.
+      final ext = ImageFormatUtils.extensionFromBytes(draft.imageBytes);
+      final path = 'users/$userId/recipes/$recipeId/heirloom/$digest.$ext';
 
       final url = await storage.uploadImageData(
         imageData: draft.imageBytes,

@@ -11126,6 +11126,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelNoCategories => 'No categories';
 
   @override
+  String labelAndNMore(int count) {
+    return 'and $count more';
+  }
+
+  @override
   String get labelGroup => 'Group';
 
   @override

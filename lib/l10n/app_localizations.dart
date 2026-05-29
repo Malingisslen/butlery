@@ -18879,6 +18879,12 @@ abstract class AppLocalizations {
   /// **'Inga kategorier'**
   String get labelNoCategories;
 
+  /// No description provided for @labelAndNMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'och {count} till'**
+  String labelAndNMore(int count);
+
   /// No description provided for @labelGroup.
   ///
   /// In sv, this message translates to:

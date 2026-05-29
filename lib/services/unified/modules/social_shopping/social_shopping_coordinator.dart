@@ -1,42 +1,7 @@
-/// Social Shopping Coordinator implementing standardized coordination patterns.
-/// This coordinator provides unified shopping list sharing and collaboration functionality
-/// following the established pattern from SocialRecipeCoordinator and SocialMenuCoordinator.
-/// It uses the BaseSocialCoordinator to provide consistent invitation system, join operations,
-/// and notification coordination for shopping list content.
-/// **Architecture Benefits:**
-/// - **Consistent API**: Unified operations matching other social coordinator patterns
-/// - **Standardized Coordination**: Common social coordination patterns across content types
-/// - **Shopping-Specific Logic**: Direct collaboration behavior for shopping lists (not copy-on-write)
-/// - **Service Integration**: Seamless integration with UnifiedShoppingService and focused services
-/// **Shopping List Coordination Features:**
-/// - **Shopping List Invitation System**: Swedish-style shopping list sharing with direct collaboration
-/// - **Direct Collaboration**: Real-time shared editing (different from copy-on-write used for recipes/menus)
-/// - **Join Operations**: Users join collaborative shopping lists instead of importing copies
-/// - **Analytics Integration**: Shopping list engagement tracking and user interaction metrics
-/// **Key Difference from Recipes/Menus:**
-/// Shopping lists use **direct collaboration** where all users edit the same list,
-/// while recipes and menus use **copy-on-write** where users import their own copies.
-/// **Usage Example:**
-/// ```dart
-/// final shoppingCoordinator = SocialShoppingCoordinator(
-///   getCurrentUserId: () => authService.currentUserId,
-///   getCurrentUserDisplayName: () => userProfile.displayName,
-///   setError: (error) => _error = error,
-///   notifyListeners: () => notifyListeners(),
-///   getShoppingListById: (id) => shoppingService.getListById(id),
-///   saveShoppingList: (list) => shoppingService.saveList(list),
-/// );
-/// // Create shopping list invitation
-/// final invitationId = await shoppingCoordinator.createShoppingListInvitation(
-///   shoppingListId: 'list_123',
-///   inviteeUserIds: ['user1', 'user2'],
-///   message: 'Vill ni hjälpa till med helgens inköp?',
-/// );
-/// // Join shared shopping list (direct collaboration)
-/// final success = await shoppingCoordinator.joinSharedShoppingList(
-///   sharedListId: 'shared_list_456',
-/// );
-/// ```
+/// Coordinates shopping-list sharing and collaboration on top of
+/// [BaseSocialCoordinator]. Unlike recipes/menus (copy-on-write), shopping
+/// lists use **direct collaboration**: callers join the original list rather
+/// than importing a copy. See the test header for usage examples.
 
 import 'dart:async';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -69,10 +34,31 @@ class ShoppingListServiceAdapter {
     }
   }
 
+  /// Adds a member to a collaborative shopping list. Routing the join flow
+  /// through this adapter seam (not a fresh `ServiceLocator.get`) keeps the
+  /// happy path mockable in tests.
+  Future<bool> addMember({
+    required String listId,
+    required String userId,
+    required String userDisplayName,
+  }) {
+    return _shoppingService.collaborative.addMember(
+      listId: listId,
+      userId: userId,
+      userDisplayName: userDisplayName,
+    );
+  }
+
+  /// Shopping lists use direct collaboration — callers join the original list
+  /// rather than importing a copy. Save-through-coordinator is unsupported and
+  /// fails loud: any call path reaching this is a wiring bug. Persist via
+  /// [UnifiedShoppingService] directly instead.
   Future<String?> saveShoppingList(UnifiedShoppingList shoppingList) async {
-    AppLogger.debug(
-        'saveShoppingList called for "${shoppingList.name}" — shopping uses direct collaboration, not save-through-coordinator');
-    return shoppingList.id;
+    throw UnsupportedError(
+      'ShoppingListServiceAdapter.saveShoppingList is not supported — '
+      'shopping lists use direct collaboration, not copy-on-write. '
+      'Use UnifiedShoppingService directly to persist lists.',
+    );
   }
 }
 
@@ -295,11 +281,10 @@ class SocialShoppingCoordinator
       await _sharedShoppingRepository.markAsJoined(
           sharedShoppingListId, currentUserId);
 
-      // Add the joining user to the original list's memberPermissions
+      // Routed through the injected adapter so the happy path is testable.
       final listId = sharedList.shoppingListId;
       if (listId != null) {
-        final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-        await shoppingService.collaborative.addMember(
+        await _serviceAdapter.addMember(
           listId: listId,
           userId: currentUserId,
           userDisplayName:

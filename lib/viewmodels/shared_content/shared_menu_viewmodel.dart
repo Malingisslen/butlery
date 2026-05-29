@@ -318,7 +318,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     if (menu.categories.length <= 3) {
       return menu.categories.join(', ');
     } else {
-      return '${menu.categories.take(2).join(', ')} och ${menu.categories.length - 2} till';
+      final extras = menu.categories.length - 2;
+      return '${menu.categories.take(2).join(', ')} ${AppLocale.current.labelAndNMore(extras)}';
     }
   }
 

@@ -1,5 +1,63 @@
 # Sprint Backlog
 
+## Sprint: iter-100 — 8 tickets across 4 disjoint areas (1 P2 security Bug + 7 P4 cleanup) — 2026-05-28 (Thu)
+
+Theme: Clean ticket-then-flip batch. One P2 High Bug closes the security gap that BUT-953's code-review flagged (heirloom upload format/contentType/compression — the natural follow-on to iter-98). The rest are P4 tech-debt/i18n/cleanup clustered so each agent owns a DISJOINT file set. iter-98+99 already committed in `631fceec4`, so the realtime/heirloom/categorizer/conflict-banner files are settled — but Agent A still re-touches `import_base_viewmodel.dart` for BUT-1161, so it must run alone on the import area.
+
+Phase 1.5 risk-gated expansion fires for **BUT-1161** only (P2 + Bug + security + import + recipe). Inline plan below. The other 7 are P4 mechanical/tech-debt/i18n — gate skipped per the rule.
+
+Linear: BUT-1161, BUT-1148, BUT-1078, BUT-1088, BUT-1126, BUT-1134, BUT-1105 transitioned to Todo. BUT-1095 NOT picked — obsolete (ctor seam already exists), close it this pass.
+
+### Ship this sprint
+
+#### Agent A — Import subsystem (import) — `lib/services/import/url_import_strategy.dart`, `lib/viewmodels/import_base_viewmodel.dart`, `lib/viewmodels/photo_import_viewmodel.dart`, `lib/viewmodels/smart_import_viewmodel.dart`
+
+- [ ] **A1. BUT-1161: heirloom upload — detect real image format + compress** — fix BOTH upload sites. `lib/viewmodels/import_base_viewmodel.dart:153` builds `users/$userId/recipes/$recipeId/heirloom/$digest.jpg` with a hardcoded `.jpg` while uploading arbitrary capture bytes (HEIC/PNG/WebP). Same in `lib/viewmodels/photo_import_viewmodel.dart` (`uploadHeirloomImage`, ~343-374). Use `lib/core/utils/image_format_utils.dart` (already used by storage repo) to detect format from magic bytes and use matching extension OR re-encode to JPEG; compress >2 MB before upload (mirror existing image-compression pipeline). Add a test: PNG byte-array round-trips to `.png` (or correct re-encoded JPEG). (BUT-1161)
+- [ ] **A2. BUT-1148: delete legacy string-match rate-limit fallback** — `lib/viewmodels/smart_import_viewmodel.dart:340-360` (the `errorLower.contains('rate limit'|'kvot'|'gräns')` block synthesising a `RateLimitDenied`). The structured `rateLimitDenied` branch shadows it for the only producer (ImportManager). Delete the block + the `'rate-limit denial includes the original error message'` legacy-path test in `test/unit/viewmodels/smart_import_viewmodel_test.dart` (~464-475). Structured rate-limit test must still pass. (BUT-1148)
+- [ ] **A3. BUT-1078: add `dnsLookup` ctor seam to UrlImportStrategy** — `lib/services/import/url_import_strategy.dart:36-41` accepts `httpClient` + `webScraperFactory` but constructs `HttpContentFetcher` with the real `InternetAddress.lookup`. Add `Future<List<InternetAddress>> Function(String)? dnsLookup` ctor param, forward to `HttpContentFetcher` (default `InternetAddress.lookup`). Add a test injecting a fake returning `127.0.0.1` to drive the DNS-rebinding gate end-to-end through the strategy. (BUT-1078)
+
+##### ★ Risky-ticket plan — BUT-1161 ──────────────────
+Classification: **fits** — P2 + Bug + security + import + recipe fires the gate. Real upload-integrity bug: `.jpg` suffix on non-JPEG bytes can fail `storage.rules` contentType gate or get quarantined by the CF magic-byte verifier; >10 MB scans rejected by `isWithinSizeLimit(10)`.
+Files: `lib/viewmodels/import_base_viewmodel.dart` (the `_attachHeirloomIfPending` path digest+upload block) + `lib/viewmodels/photo_import_viewmodel.dart` (`uploadHeirloomImage`) + `lib/core/utils/image_format_utils.dart` (read-only, reuse) + heirloom upload test.
+Blast radius: both heirloom upload paths change the stored extension/contentType + add a compression step. No Firestore schema change (heirloom field already on Recipe). Storage path becomes format-correct so it stops tripping the rules/CF gate — strictly fixes a currently-broken path. Verify the chosen approach (detect-vs-reencode) is consistent across both sites so the storage layout matches.
+Product-intent flags: if the heirloom viewer assumes JPEG-only display, prefer re-encode-to-JPEG over format-detect; check the consuming widget before choosing. Flag, do not halt.
+Rollback: revert both VM edits; `.jpg` hardcode returns. Bridge/draft wiring (iter-98) is untouched.
+Proceeding automatically (no approval gate). firebase-backend-security NOT required (no `lib/repositories/firebase/` or `functions/src/` touch); code-reviewer + testing-specialist required.
+─────────────────────────────────────────────────
+
+#### Agent B — Shared-content VMs + i18n (social) — `lib/viewmodels/shared_content/{base,shared_menu,shared_recipe,shared_shopping}_*.dart`, `lib/l10n/app_{sv,en}.arb`
+
+> Both tickets here touch `shared_menu_viewmodel.dart`; BUT-1126 also touches base + recipe + shopping siblings. Single agent to keep the file set conflict-free.
+
+- [ ] **B1. BUT-1088: i18n the `>2 categories` join in getMenuCategories** — `lib/viewmodels/shared_content/shared_menu_viewmodel.dart:321` hardcodes `' och ${count} till'` while the empty branch (line 315) correctly uses `AppLocale.current.labelNoCategories`. Add `"labelAndNMore": "och {count} till"` to `app_sv.arb` + `app_en.arb` (+ @meta), run `flutter gen-l10n`, switch the line to `AppLocale.current.labelAndNMore(extras)`. Update the test that pins the literal Swedish string. (BUT-1088)
+- [ ] **B2. BUT-1126: fail-loud pagination contract on SharedContent VMs** — `base_shared_content_viewmodel.dart` advertises `loadContentWithPagination(limit, startAfter)` but `shared_recipe_viewmodel.dart` + `shared_shopping_viewmodel.dart` (+ menu) ignore both args and return the full list. Apply option (b): add `bool get supportsPagination => false;` on the base; override `=> true` only in VMs that actually paginate; assert/fail-loud in `loadMoreContent` when pagination is requested without support. Update sibling tests. (BUT-1126)
+
+#### Agent C — SocialRecipeService init sanitizer (social-service) — `lib/services/social_recipe_service.dart`
+
+- [ ] **C1. BUT-1134: route initialize() error through sanitizer** — `lib/services/social_recipe_service.dart:99` still writes `_error = 'Failed to initialize SocialRecipeService: $e';` (raw, sanitizer-bypassing) while every mutator uses `_captureAndLog`. Replace with `_captureAndLog('Failed to initialize SocialRecipeService', e)`. Update any init-error-path assertion in `social_recipe_service_test.dart` to the sanitised contract. (BUT-1134)
+
+#### Agent D — Shopping coordinator no-op footgun (shopping) — `lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart`
+
+- [ ] **D1. BUT-1105: make saveShoppingList fail-loud instead of silent no-op** — `social_shopping_coordinator.dart:72-76` (`ShoppingListServiceAdapter.saveShoppingList`) logs + returns `shoppingList.id` without saving; `saveImportedContent` (line 187-188) delegates here and silently no-ops. Per ticket option: keep the documented "shopping uses direct collaboration" intent but throw `UnsupportedError` (with clear doc-comment) so callers fail immediately rather than believing a returned id means persisted. Add/adjust a test pinning the throw. (BUT-1105)
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` on all touched files clean.
+- [ ] `flutter gen-l10n` ran after B1 ARB additions.
+- [ ] Touched test files pass.
+- [ ] Tier-2 reviewers: code-reviewer (all Dart) + testing-specialist (all `lib/**`). No `lib/repositories/firebase/` / `functions/src/` touch → firebase-backend-security NOT triggered.
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos`.
+- [ ] Run relevant unit tests.
+- [ ] File any deferred follow-ups in Linear.
+- [ ] Commit (unified), push to main.
+- [ ] Close BUT-1161, BUT-1148, BUT-1078, BUT-1088, BUT-1126, BUT-1134, BUT-1105 in Linear.
+- [ ] Close BUT-1095 as obsolete — `social_menu_coordinator.dart:96` already has the `sharedMenuRepository` ctor seam (shipped via the menu DI-seam work, BUT-1142/1153). Premise gone.
+
+---
+
 ## Sprint: iter-99 — 7 backend/service bug + hardening tickets across 5 disjoint areas — 2026-05-28 (Thu)
 
 Theme: Clean ticket-then-flip batch of backend/service-layer fixes, deliberately clustered to touch a DISJOINT set of files from the still-uncommitted iter-98 work (realtime/, heirloom/import, ingredient_categorizer, import_base_viewmodel, unified_shopping_item, conflict_banner, l10n ARBs). No ARB/l10n touches this sprint to avoid collision with iter-98's pending l10n keys.

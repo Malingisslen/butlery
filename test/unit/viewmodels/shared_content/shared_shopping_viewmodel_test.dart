@@ -739,4 +739,23 @@ void main() {
       vm.dispose();
     });
   });
+
+  group('supportsPagination / loadMoreContent', () {
+    test('supportsPagination is false (no real cursor implemented)', () {
+      final vm = makeVm();
+      expect(vm.supportsPagination, isFalse);
+      vm.dispose();
+    });
+
+    test(
+        'loadMoreContent throws UnsupportedError when supportsPagination=false',
+        () {
+      final vm = makeVm();
+      expect(
+        () => vm.loadMoreContent(),
+        throwsA(isA<UnsupportedError>()),
+      );
+      vm.dispose();
+    });
+  });
 }

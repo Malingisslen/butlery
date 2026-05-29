@@ -11154,6 +11154,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get labelNoCategories => 'Inga kategorier';
 
   @override
+  String labelAndNMore(int count) {
+    return 'och $count till';
+  }
+
+  @override
   String get labelGroup => 'Grupp';
 
   @override

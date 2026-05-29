@@ -196,6 +196,37 @@ void main() {
       expect(bridge.hasPending, isTrue);
     });
 
+    test('BUT-1161: PNG draft uploads to a .png path (not hardcoded .jpg)',
+        () async {
+      // 8-byte PNG magic header + filler so ImageFormatUtils.detectFormat
+      // classifies these bytes as PNG, not JPEG.
+      final pngBytes = Uint8List.fromList(<int>[
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+        0x00, 0x00, 0x00, 0x0D, // filler beyond the 12-byte sniff window
+      ]);
+      bridge.setDraft(HeirloomDraft(imageBytes: pngBytes));
+      when(() => mockStorage.uploadImageData(
+            imageData: any(named: 'imageData'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            metadata: any(named: 'metadata'),
+            cacheControl: any(named: 'cacheControl'),
+          )).thenAnswer((_) async => 'https://storage/heirloom/abc.png');
+
+      final ok = await vm.saveImportedRecipe();
+
+      expect(ok, isTrue);
+      final captured = verify(() => mockStorage.uploadImageData(
+            imageData: any(named: 'imageData'),
+            userId: any(named: 'userId'),
+            path: captureAny(named: 'path'),
+            metadata: any(named: 'metadata'),
+            cacheControl: any(named: 'cacheControl'),
+          )).captured;
+      expect(captured.single, endsWith('.png'),
+          reason: 'PNG bytes must produce a .png suffix, not hardcoded .jpg');
+    });
+
     test('no pending draft → save proceeds normally with no upload', () async {
       // Bridge intentionally empty.
       final ok = await vm.saveImportedRecipe();

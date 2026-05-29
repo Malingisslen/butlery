@@ -7394,6 +7394,14 @@
   "analysisContainsInstructions": "Contains instructions",
   "analysisNoInstructionsFound": "No instructions found",
   "labelNoCategories": "No categories",
+  "labelAndNMore": "and {count} more",
+  "@labelAndNMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "labelGroup": "Group",
   "labelYou": "You",
   "validationSelectIngredient": "Select at least one ingredient",
