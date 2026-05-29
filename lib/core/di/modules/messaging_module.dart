@@ -24,6 +24,8 @@ import 'package:butlery/repositories/interfaces/notification_history_repository.
 import 'package:butlery/repositories/firebase/firebase_notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_notification_batch_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_analytics_repository.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_device_repository.dart';
 
@@ -75,6 +77,7 @@ class MessagingModule implements DIModule {
         NotificationsRepository, // Also provides notifications repository
         NotificationHistoryRepository,
         NotificationBatchRepository,
+        NotificationAnalyticsRepository,
         DeviceRepository,
         NotificationService,
         NotificationPermissionService,
@@ -164,6 +167,14 @@ class MessagingModule implements DIModule {
       container.registerLazySingleton<NotificationBatchRepository>(
         () => FirebaseNotificationBatchRepository(
           authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // BUT-504: notification analytics persistence (delivery + engagement),
+      // extracted so NotificationAnalyticsManager no longer holds Firestore.
+      container.registerLazySingleton<NotificationAnalyticsRepository>(
+        () => FirebaseNotificationAnalyticsRepository(
+          firestore: container<FirestoreRepository>().firestore,
         ),
       );
 

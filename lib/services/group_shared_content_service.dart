@@ -7,7 +7,7 @@ import 'package:butlery/services/permission_service.dart' as perm_service;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
 
 /// Model for shared content items displayed in group views
 class SharedContentItem {
@@ -73,13 +73,13 @@ class SharedContentItem {
 class GroupSharedContentService extends BaseService {
   @override
   String get serviceName => 'GroupSharedContentService';
-  final FirebaseFirestore _firestore;
+  final GroupSharedContentRepository _repository;
   final perm_service.PermissionService _permissionService;
 
   GroupSharedContentService({
-    required FirebaseFirestore firestore,
+    required GroupSharedContentRepository repository,
     required perm_service.PermissionService permissionService,
-  })  : _firestore = firestore,
+  })  : _repository = repository,
         _permissionService = permissionService;
 
   // -- Public get methods --
@@ -87,19 +87,17 @@ class GroupSharedContentService extends BaseService {
   Future<List<SharedContentItem>> getSharedShoppingLists(
     FriendCategory group,
   ) async {
-    return _getSharedContent(
-        group, FirestoreCollections.sharedContent, 'shopping_list');
+    return _getSharedContent(group, 'shopping_list');
   }
 
   Future<List<SharedContentItem>> getSharedMenus(FriendCategory group) async {
-    return _getSharedContent(group, FirestoreCollections.sharedContent, 'menu');
+    return _getSharedContent(group, 'menu');
   }
 
   Future<List<SharedContentItem>> getSharedRecipes(
     FriendCategory group,
   ) async {
-    return _getSharedContent(
-        group, FirestoreCollections.sharedContent, 'recipe');
+    return _getSharedContent(group, 'recipe');
   }
 
   /// Get all shared content for a group (combined)
@@ -124,25 +122,21 @@ class GroupSharedContentService extends BaseService {
   Stream<List<SharedContentItem>> streamSharedShoppingLists(
     FriendCategory group,
   ) {
-    return _streamSharedContent(
-        group, FirestoreCollections.sharedContent, 'shopping_list');
+    return _streamSharedContent(group, 'shopping_list');
   }
 
   Stream<List<SharedContentItem>> streamSharedMenus(FriendCategory group) {
-    return _streamSharedContent(
-        group, FirestoreCollections.sharedContent, 'menu');
+    return _streamSharedContent(group, 'menu');
   }
 
   Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) {
-    return _streamSharedContent(
-        group, FirestoreCollections.sharedContent, 'recipe');
+    return _streamSharedContent(group, 'recipe');
   }
 
   // -- Private helpers --
 
   Future<List<SharedContentItem>> _getSharedContent(
     FriendCategory group,
-    String collection,
     String contentType,
   ) async {
     try {
@@ -155,18 +149,14 @@ class GroupSharedContentService extends BaseService {
           '🔍 [${contentType.toUpperCase()}] Querying for group: ${group.name}');
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
-      // arrayContainsAny supports up to 30 values — sufficient for current group sizes
-      final snapshot = await _firestore
-          .collection(collection)
-          .where('contentType', isEqualTo: contentType)
-          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
-          .orderBy('sharedAt', descending: true)
-          .limit(20)
-          .get();
+      final docs = await _repository.getSharedContent(
+        memberIds: allMemberIds,
+        contentType: contentType,
+      );
 
-      AppLogger.debug('   Found ${snapshot.docs.length} $contentType items');
+      AppLogger.debug('   Found ${docs.length} $contentType items');
 
-      final items = snapshot.docs
+      final items = docs
           .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
           .toList();
 
@@ -183,21 +173,18 @@ class GroupSharedContentService extends BaseService {
 
   Stream<List<SharedContentItem>> _streamSharedContent(
     FriendCategory group,
-    String collection,
     String contentType,
   ) {
     try {
       final userId = _permissionService.currentUserId;
       if (userId == null) return Stream.value([]);
 
-      return _firestore
-          .collection(collection)
-          .where('contentType', isEqualTo: contentType)
-          .where('sharedToUserIds', arrayContainsAny: group.allMemberIds)
-          .orderBy('sharedAt', descending: true)
-          .limit(20)
-          .snapshots()
-          .map((snapshot) => snapshot.docs
+      return _repository
+          .streamSharedContent(
+            memberIds: group.allMemberIds,
+            contentType: contentType,
+          )
+          .map((docs) => docs
               .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
               .toList());
     } catch (e) {

@@ -4222,6 +4222,7 @@
   "shoppingClearPurchasedTitle": "Clear purchased items",
   "shoppingCouldNotAddMembers": "Could not add members",
   "shoppingCouldNotDeleteList": "Could not delete list",
+  "shoppingCouldNotLoadLists": "Could not load shopping lists",
   "shoppingCouldNotRemoveMember": "Could not remove member",
   "shoppingCouldNotRenameList": "Could not rename list",
   "shoppingCouldNotUpdatePermission": "Could not update permission",
@@ -8841,6 +8842,8 @@
   "weeklyMenuChipsHeading": "We understood:",
   "weeklyMenuChipsNotUnderstood": "We didn't understand:",
   "weeklyMenuChipsRefinePrompt": "Refine your prompt",
+  "weeklyMenuClearWeekAction": "Clear week",
+  "weeklyMenuClearedUndo": "Week cleared",
 
   "pantrySectionExpiring": "Expiring soon",
   "pantrySectionFridge": "Fridge",

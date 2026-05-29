@@ -4230,6 +4230,7 @@
   "shoppingClearPurchasedTitle": "Rensa köpta varor",
   "shoppingCouldNotAddMembers": "Kunde inte lägga till medlemmar",
   "shoppingCouldNotDeleteList": "Kunde inte ta bort lista",
+  "shoppingCouldNotLoadLists": "Kunde inte ladda inköpslistor",
   "shoppingCouldNotRemoveMember": "Kunde inte ta bort medlem",
   "shoppingCouldNotRenameList": "Kunde inte byta namn på lista",
   "shoppingCouldNotUpdatePermission": "Kunde inte uppdatera behörighet",
@@ -8861,6 +8862,8 @@
   "weeklyMenuChipsHeading": "Vi förstod:",
   "weeklyMenuChipsNotUnderstood": "Vi förstod inte:",
   "weeklyMenuChipsRefinePrompt": "Förfina prompten",
+  "weeklyMenuClearWeekAction": "Rensa veckan",
+  "weeklyMenuClearedUndo": "Veckan rensad",
 
   "pantrySectionExpiring": "Går ut snart",
   "pantrySectionFridge": "Kylskåp",

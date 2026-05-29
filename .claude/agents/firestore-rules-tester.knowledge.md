@@ -362,3 +362,51 @@ only gate". Comment IDs `M1`–`M5` recommended.
 
 Delete path requires its own allow + deny pair; read-only coverage misses
 the delete branch entirely.
+
+### 2026-05-28 — iter102-rules.test.ts created (shared_content list + notification expireAt)
+
+New test file `functions/src/__tests__/iter102-rules.test.ts` (14 tests),
+wired in as `test:rules:iter102` and appended to `test:rules:all`. Project id:
+`butlery-rules-iter102`. Covers the iter-102 sprint diff.
+
+Map rows to add:
+
+| `/shared_content/{contentId}` (list) | `iter102-rules.test.ts` | `test:rules:iter102` |
+| `/notification_delivery/{id}` (create) | `iter102-rules.test.ts` | `test:rules:iter102` |
+| `/notification_engagement/{id}` (create) | `iter102-rules.test.ts` | `test:rules:iter102` |
+
+Diff was three branches:
+1. `shared_content allow list` gained a recipient branch
+   (`auth.uid in resource.data.sharedToUserIds`).
+2/3. `notification_delivery` + `notification_engagement` create rules added
+   `expireAt` to their `keys().hasOnly([...])` allowlists (90-day TTL field).
+
+**`allow list` recipient-branch test pattern (reusable):** A `list` rule that
+gates on `auth.uid in resource.data.<arrayField>` is evaluated PER candidate
+document. To exercise it you MUST run a query whose `where(...)` filter
+guarantees every matched doc satisfies the rule — e.g.
+`.where("sharedToUserIds", "array-contains", uid)`. The critical leak-guard
+deny is: query for ANOTHER user's array value (`array-contains` other-uid) as
+the requester → must `assertFails` because the requester is neither sharer nor
+in those docs' arrays. Also pin: (a) unfiltered `.collection().get()` must
+DENY (proves the branch didn't make the collection openly listable), and
+(b) the pre-existing sharer branch still lists (regression guard).
+
+**`expireAt` / TTL allowlist test pattern:** When a field is added to a create
+rule's `keys().hasOnly([...])`, the coverage triad is: allow-with-field,
+allow-without-field (back-compat / subset since hasOnly permits subsets when no
+hasRequiredFields forces it), and deny-unknown-field (proves hasOnly was
+extended by one explicit key, not loosened). Plus the standard impersonation
+deny.
+
+**Subtlety — `in` on a missing field:** `shared_content` create does NOT
+require `sharedToUserIds` (only sharedByUserId/contentType/sharedAt). A doc may
+lack the field; `auth.uid in resource.data.sharedToUserIds` would CEL-error on
+such a doc, but since the recipient query filters by `array-contains` it only
+matches docs that have the field, so the live path is safe. Verdict: diff is
+SAFE.
+
+Local-run gap persists: Java still not on PATH (emulator hook fails with
+"Could not spawn java -version"). Type-checked instead with
+`npx tsc --noEmit ... iter102-rules.test.ts` (EXIT 0). CI is the verification
+path.

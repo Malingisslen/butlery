@@ -40,6 +40,8 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
+import 'package:butlery/repositories/interfaces/group_shared_content_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_group_shared_content_repository.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
@@ -85,6 +87,7 @@ class SocialModule implements DIModule {
         ConnectivityRepository,
         ConnectivityMonitoringService,
         SocialMenuOperations,
+        GroupSharedContentRepository,
         GroupSharedContentService,
         // Social coordinators for shared content (Issue #014)
         SocialRecipeCoordinator,
@@ -399,9 +402,14 @@ class SocialModule implements DIModule {
       );
 
       // Group shared content service for displaying shared content in groups
+      container.registerLazySingleton<GroupSharedContentRepository>(
+        () => FirebaseGroupSharedContentRepository(
+          firestore: container<FirestoreRepository>().firestore,
+        ),
+      );
       container.registerLazySingleton<GroupSharedContentService>(
         () => GroupSharedContentService(
-          firestore: container<FirestoreRepository>().firestore,
+          repository: container<GroupSharedContentRepository>(),
           permissionService: container<PermissionService>(),
         ),
       );

@@ -3849,6 +3849,9 @@ class MockRealtimeSyncService extends Mock
   // Configuration state
   final Map<String, RealtimeResource> _cache = {};
   final Map<String, StreamController<RealtimeResource>> _streamControllers = {};
+  // ignore: close_sinks - Closed in disposeStreams()
+  final StreamController<realtime.SyncError> _errorStreamController =
+      StreamController<realtime.SyncError>.broadcast();
   bool _isConnected = false;
   bool _isInitialized = false;
   realtime.SyncError? _lastError;
@@ -3874,6 +3877,9 @@ class MockRealtimeSyncService extends Mock
   /// Set error state for testing error scenarios
   void setError(realtime.SyncError? error) {
     _lastError = error;
+    if (error != null && !_errorStreamController.isClosed) {
+      _errorStreamController.add(error);
+    }
     notifyListeners();
   }
 
@@ -3898,6 +3904,9 @@ class MockRealtimeSyncService extends Mock
   }
 
   @override
+  Stream<realtime.SyncError> get errorStream => _errorStreamController.stream;
+
+  @override
   T? getCachedResource<T extends RealtimeResource>(String resourceId) {
     return _cache[resourceId] as T?;
   }
@@ -3913,6 +3922,9 @@ class MockRealtimeSyncService extends Mock
       controller.close();
     }
     _streamControllers.clear();
+    if (!_errorStreamController.isClosed) {
+      _errorStreamController.close();
+    }
   }
 
   // Override dispose to match BaseService signature

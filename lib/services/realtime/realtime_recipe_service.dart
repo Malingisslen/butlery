@@ -12,6 +12,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 // Focused modules
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
 import 'package:butlery/services/realtime/modules/recipe_participants.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
@@ -36,6 +37,12 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
   /// Latest recipe operation error
   RecipeOperationError? get lastError => _lastError;
+
+  /// Side-channel stream of synchronization errors from the underlying
+  /// RealtimeSyncService. Callers who need global error logging (e.g. a
+  /// top-level error banner) can subscribe here instead of reaching through
+  /// to the sync service directly. BUT-1112.
+  Stream<SyncError> get errorStream => _syncService.errorStream;
 
   /// Current user display name
   String get _currentUserDisplayName =>
@@ -93,9 +100,9 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   ///
   /// The returned stream carries data plus main-stream errors (per BUT-1069
   /// — missing/malformed docs surface as `ConnectionState.error` in a
-  /// `StreamBuilder`). It does NOT re-emit the underlying service's
-  /// `errorStream` side-channel; for global error logging subscribe to
-  /// `RealtimeSyncService.errorStream` directly. See BUT-1082.
+  /// `StreamBuilder`). For the global error side-channel subscribe to
+  /// [errorStream] on this service (which forwards
+  /// `RealtimeSyncService.errorStream`). See BUT-1082, BUT-1112.
   Stream<RealtimeRecipe> watchRealtimeRecipe(String resourceId) {
     AppLogger.info('👀 Startar watching av realtidsrecept: $resourceId');
 

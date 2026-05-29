@@ -383,6 +383,36 @@ void main() {
       final updated = service.clearWeek(existing);
       expect(updated.entries, isEmpty);
     });
+
+    test('restoreWeek REPLACES entries (does not merge with current)', () {
+      // The service half of the undo contract. A copyWith(entries:) that did
+      // entries.addAll(...) would silently double the plan on undo. Start from
+      // a plan that already holds entry A, restore snapshot [B], and assert the
+      // result is exactly [B] — A must be gone, not merged in.
+      final entryA = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: 'a',
+        recipeTitle: 'A',
+      );
+      final snapshotB = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.tue,
+        slot: MealSlot.lunch,
+        recipeId: 'b',
+        recipeTitle: 'B',
+      );
+      final current = _emptyPlan(mon).copyWith(entries: [entryA]);
+
+      final restored = service.restoreWeek(current, [snapshotB]);
+
+      expect(restored.entries, [snapshotB]);
+      expect(
+        restored.entries.any((e) => e.recipeId == 'a'),
+        isFalse,
+        reason: 'restoreWeek must replace, not merge — a merge would resurrect '
+            'the just-cleared entry A on undo.',
+      );
+    });
   });
 
   // BUT-1013: bulk-add semantics. The recipe-list selection bar now lets

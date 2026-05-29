@@ -3,6 +3,7 @@
 /// and real-time synchronization with Firebase.
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +16,7 @@ import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/operations/personal_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
@@ -271,6 +273,7 @@ class UnifiedShoppingService
 
   Future<void> initialize() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
     try {
       await Future.wait([
@@ -278,6 +281,13 @@ class UnifiedShoppingService
         _categoryPreferences.load(),
       ]);
       _startCollaborativeStream();
+    } catch (e) {
+      // Record the error so _emitState can surface a ShoppingStateError when
+      // there are no cached lists to fall back on. Without this the failure
+      // path silently emits an empty ShoppingStateData (lists:[], error:null)
+      // and the UI shows an empty list instead of an error state.
+      AppLogger.error('Failed to initialize shopping service', e);
+      _error = AppLocale.current.shoppingCouldNotLoadLists;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -293,17 +303,27 @@ class UnifiedShoppingService
         _lists.addAll(collabLists);
         notifyListeners();
       },
-      onError: (Object e, StackTrace _) =>
-          AppLogger.error('Collaborative list stream error', e),
+      onError: (Object e, StackTrace _) {
+        AppLogger.error('Collaborative list stream error', e);
+        // Surface to the UI when there is nothing cached to show. If personal
+        // lists are already loaded, data wins over the stale error (see
+        // _emitState), so this only flips to an error state on a cold failure.
+        _error = AppLocale.current.shoppingCouldNotLoadLists;
+        notifyListeners();
+      },
     );
   }
 
   /// Load lists - alias for initialize for compatibility
   Future<void> loadLists() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
     try {
       await _initialization.loadLists();
+    } catch (e) {
+      AppLogger.error('Failed to load shopping lists', e);
+      _error = AppLocale.current.shoppingCouldNotLoadLists;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -534,6 +554,16 @@ class UnifiedShoppingService
 
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  /// Test seam — injects an error string without going through any real
+  /// error-producing code path. Allows unit tests to exercise the
+  /// `_emitState` branch where `_error != null` but `_lists` is non-empty
+  /// (data wins over stale error).
+  @visibleForTesting
+  void setError(String? error) {
+    _error = error;
     notifyListeners();
   }
 

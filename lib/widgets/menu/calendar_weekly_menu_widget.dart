@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -111,6 +112,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           label: _formatWeekLabel(context, vm.currentWeekStart),
           onPrev: vm.previousWeek,
           onNext: vm.nextWeek,
+          onClearWeek: vm.hasEntries || vm.hasOverflow
+              ? () => _onClearWeek(context, vm)
+              : null,
         ),
         chipsWidget,
         if (vm.hasOverflow) OverflowTray(overflow: vm.overflow),
@@ -124,6 +128,21 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
             onTapRecipe: (id) => _navigateToRecipe(context, id),
           ),
       ],
+    );
+  }
+
+  Future<void> _onClearWeek(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+  ) async {
+    await vm.clearWeek();
+    if (!context.mounted) return;
+    SnackBarUtils.showSuccessWithAction(
+      context,
+      context.l10n.weeklyMenuClearedUndo,
+      actionLabel: context.l10n.commonUndo,
+      onAction: () => vm.undoClearWeek(),
+      duration: const Duration(seconds: 7),
     );
   }
 

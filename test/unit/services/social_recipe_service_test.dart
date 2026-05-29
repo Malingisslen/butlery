@@ -26,6 +26,8 @@
 ///   a failure visibly clears the banner. Pinned below.
 library;
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -78,11 +80,17 @@ class _FakeSharedRecipeRepository extends Fake
   Object? throwOnMarkAsImported;
   Object? throwOnGetSharedRecipesForUser;
 
+  /// Optional hook invoked while the fetch is in flight — lets a test observe
+  /// service state (e.g. isLoading) from inside the unresolved Future.
+  Future<void> Function()? onGetSharedRecipesForUser;
+
   @override
   Future<List<SharedRecipe>> getSharedRecipesForUser(String userId) async {
     if (throwOnGetSharedRecipesForUser != null) {
       throw throwOnGetSharedRecipesForUser!;
     }
+    final hook = onGetSharedRecipesForUser;
+    if (hook != null) await hook();
     return seedRecipes;
   }
 
@@ -831,20 +839,15 @@ void main() {
       expect(menuRepo.markedAsImported, isEmpty);
     });
 
-    /// Documents the CURRENT menu-import contract when the user signs out
-    /// mid-import (after at least one recipe was saved): the recipes ARE
-    /// saved so it returns true, and the mark-as-imported is skipped because
-    /// the auth re-check fails — no `currentUserId!` deref crash.
-    ///
-    /// NOTE the asymmetry vs importSharedRecipe: the recipe path surfaces
-    /// `errorImportPartialReSignIn` via an `else` branch (BUT-1086); the menu
-    /// path has no such `else`, so it stays silent. This test pins the menu
-    /// path's actual behaviour. If the BUT-1086 prompt is meant to apply to
-    /// menus too, this is the test that will (correctly) flag the gap rather
-    /// than letting it pass unnoticed.
+    /// BUT-1086 (symmetry with importSharedRecipe): when the user signs out
+    /// mid-import after at least one recipe was saved, the recipes ARE saved so
+    /// it returns true, the mark-as-imported is skipped (no `currentUserId!`
+    /// deref crash), AND the half-done state is surfaced via the SAME
+    /// re-sign-in copy the recipe path uses. The menu path previously had no
+    /// `else` branch and stayed silent — this test pins that the gap is closed.
     test(
-        'sign-out mid-import (after a save) → returns true, skips mark, no crash',
-        () async {
+        'BUT-1086: sign-out mid-import → returns true, skips mark, surfaces '
+        're-sign-in error', () async {
       menuRepo.seedMenus = [
         _makeSharedMenu(
           id: 'sm-1',
@@ -866,6 +869,11 @@ void main() {
           reason: 'recipes were saved — primary write succeeded');
       expect(menuRepo.markedAsImported, isEmpty,
           reason: 'cannot mark imported without authenticated uid');
+      expect(service.hasError, isTrue,
+          reason:
+              'BUT-1086: half-done menu import must surface so UI can prompt '
+              're-sign-in — matching the recipe path, no longer silent');
+      expect(service.error, AppLocale.current.errorImportPartialReSignIn);
     });
 
     /// Pinned: if the post-save mark-as-imported throws, the outer catch
@@ -969,6 +977,63 @@ void main() {
 
       final visible = service.getVisibleSharedMenus('me-uid');
       expect(visible.map((m) => m.id), ['a', 'b']);
+    });
+  });
+
+  group('notification contract (BUT-1135: intentional read-after-await)', () {
+    /// Pins the documented contract: callers await initialize() / refresh(),
+    /// then read state synchronously. The service does NOT extend
+    /// ChangeNotifier, so there are no reactive listeners to notify. This
+    /// test ensures the read-after-await pattern works correctly end-to-end
+    /// and catches any future regression where the synchronous read
+    /// accidentally precedes the async load (race condition).
+    test('state is immediately readable after initialize() completes',
+        () async {
+      recipeRepo.seedRecipes = [_makeSharedRecipe(id: 'sr-x')];
+      menuRepo.seedMenus = [_makeSharedMenu(id: 'sm-x')];
+
+      // Caller awaits — then reads synchronously, no listener needed.
+      await service.initialize();
+
+      expect(service.sharedRecipes.single.id, 'sr-x',
+          reason:
+              'read-after-await contract: state is stable immediately after '
+              'the Future completes');
+      expect(service.sharedMenus.single.id, 'sm-x');
+      expect(service.isLoading, isFalse);
+    });
+
+    /// The read-after-await contract has teeth only if `isLoading` actually
+    /// flips true WHILE the load is in flight — that is the signal a caller
+    /// uses to know it must await before reading. Without a ChangeNotifier,
+    /// `isLoading` is the ONLY in-flight observable; if a refactor forgot to
+    /// set it, a non-awaiting caller would read stale data with no way to
+    /// detect the load was still running. This pins that invariant by
+    /// observing state from inside the unresolved repo call.
+    test('isLoading is true mid-load and false after initialize completes',
+        () async {
+      final gate = Completer<void>();
+      var loadingDuringFetch = false;
+
+      recipeRepo.onGetSharedRecipesForUser = () async {
+        // We are now inside the in-flight load. The contract says a caller
+        // that peeked here (without awaiting) would see isLoading == true.
+        loadingDuringFetch = service.isLoading;
+        await gate.future;
+      };
+
+      final pending = service.initialize();
+      expect(service.isLoading, isTrue,
+          reason: 'isLoading must be true synchronously after the call starts');
+
+      gate.complete();
+      await pending;
+
+      expect(loadingDuringFetch, isTrue,
+          reason:
+              'isLoading must remain true throughout the in-flight repo fetch');
+      expect(service.isLoading, isFalse,
+          reason: 'isLoading must clear once the Future resolves');
     });
   });
 }

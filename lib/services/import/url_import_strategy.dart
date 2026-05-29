@@ -274,6 +274,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     if (!textResult.isSuccess || textResult.recipe == null) return null;
 
+    // BUT-1077: quality gate — fall through to Tier 7 (user-assisted) when
+    // the text parser found no recipe-like structure at all (no ingredients,
+    // no instructions). Pure prose blogs have no ingredients or instructions
+    // detected by TextImportStrategy, so presenting them as a "success with
+    // warnings" is worse UX than letting the user correct via Tier 7.
+    final r = textResult.recipe!;
+    if (r.core.ingredients.isEmpty && r.core.instructions.isEmpty) return null;
+
     final recipe = textResult.recipe!.copyWith(
       sourceUrl: url,
       sourceArtefact: SourceArtefact(

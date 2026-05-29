@@ -179,6 +179,10 @@ class RecipeParserService extends BaseService {
     IngredientParsingStrategy? ingredientStrategy,
     NeuralLineClassifier? neuralLineClassifier,
     LocalRecipeCache? cache,
+    // Test seam (BUT-1064): inject tiers directly to test orchestration logic
+    // without relying on production tier implementations. When null, the
+    // production factory builds the standard 4-tier stack.
+    List<ParsingTier>? tiers,
   })  : _getCurrentUserId = getCurrentUserId,
         _siteConfigRepository = siteConfigRepository,
         _llmService = llmService,
@@ -188,18 +192,19 @@ class RecipeParserService extends BaseService {
     final strategy = ingredientStrategy ?? IngredientParsingStrategy();
     _ingredientStrategy = strategy;
 
-    _tiers = [
-      SchemaOrgTier(ingredientStrategy: strategy),
-      SiteConfigTier(
-        configLoader: _siteConfigRepository?.getConfigIfExists,
-        ingredientStrategy: strategy,
-      ),
-      RuleBasedTier(
-        ingredientStrategy: strategy,
-        neuralClassifier: neuralLineClassifier,
-      ),
-      LlmTier(llmService: _llmService),
-    ];
+    _tiers = tiers ??
+        [
+          SchemaOrgTier(ingredientStrategy: strategy),
+          SiteConfigTier(
+            configLoader: _siteConfigRepository?.getConfigIfExists,
+            ingredientStrategy: strategy,
+          ),
+          RuleBasedTier(
+            ingredientStrategy: strategy,
+            neuralClassifier: neuralLineClassifier,
+          ),
+          LlmTier(llmService: _llmService),
+        ];
   }
 
   /// Initialize the parser service.

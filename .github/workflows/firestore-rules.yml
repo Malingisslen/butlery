@@ -17,6 +17,7 @@ on:
       - "functions/src/__tests__/cook-snaps-and-message-mod-rules.test.ts"
       - "functions/src/__tests__/menus-rules.test.ts"
       - "functions/src/__tests__/audit-logs-rules.test.ts"
+      - "functions/src/__tests__/iter102-rules.test.ts"
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/firestore-rules.yml"
@@ -32,6 +33,7 @@ on:
       - "functions/src/__tests__/cook-snaps-and-message-mod-rules.test.ts"
       - "functions/src/__tests__/menus-rules.test.ts"
       - "functions/src/__tests__/audit-logs-rules.test.ts"
+      - "functions/src/__tests__/iter102-rules.test.ts"
   workflow_dispatch:
 
 concurrency:

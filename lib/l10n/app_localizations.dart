@@ -11283,6 +11283,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte ta bort lista'**
   String get shoppingCouldNotDeleteList;
 
+  /// No description provided for @shoppingCouldNotLoadLists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda inköpslistor'**
+  String get shoppingCouldNotLoadLists;
+
   /// No description provided for @shoppingCouldNotRemoveMember.
   ///
   /// In sv, this message translates to:
@@ -22197,6 +22203,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Förfina prompten'**
   String get weeklyMenuChipsRefinePrompt;
+
+  /// No description provided for @weeklyMenuClearWeekAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rensa veckan'**
+  String get weeklyMenuClearWeekAction;
+
+  /// No description provided for @weeklyMenuClearedUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckan rensad'**
+  String get weeklyMenuClearedUndo;
 
   /// No description provided for @pantrySectionExpiring.
   ///

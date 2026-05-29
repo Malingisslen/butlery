@@ -1,5 +1,83 @@
 # Sprint Backlog
 
+## Sprint: iter-102 — 8 code-only tickets across 8 disjoint areas (1 P2 security + 2 P3 + 5 P4) — 2026-05-29 (Fri)
+
+Theme: **Backlog re-filled** — iter-101 drained In Progress and filed its ops-blocked remainders (BUT-1166 App Check client-half, BUT-1167 AI ops remainder) plus the code-only BUT-1168 (CPI long-tail) back into Backlog. This sprint deliberately AVOIDS the ops-blocked tickets (no Play Console / Apple Developer / deploy access this session, store-submission deferred per memory) and picks **8 in-session-shippable, code-only** tickets, each owning a DISJOINT file set so they parallelise cleanly across worktrees.
+
+The headline is **BUT-1130** (P2, security) — the AlgoliaSearchRepository `withClient` seam that makes the search privacy invariants (cross-user leak, personal-vs-public index routing, error-contract asymmetry) unit-verifiable for the first time. The rest are recently re-verified (2026-05-28) DI-seam / cleanup / UX-recovery tickets clustered so no two agents touch the same file.
+
+Phase 1.5 risk-gated expansion fires for **BUT-1130** (P2 + security) and **BUT-504** (3 distinct service modules — multi-module touch). Inline plans below. The other 6 are P3-idea / P4 tech-debt/test-gap with no Bug+area combo — gate skipped per the rule.
+
+Linear: BUT-1130, BUT-935, BUT-504, BUT-1064, BUT-1077, BUT-1112, BUT-1065, BUT-1135 transitioned to Todo. No obsolete open tickets (In Progress / Todo / Triage all empty before this pass; iter-101 tickets already closed).
+
+### Ship this sprint
+
+#### Agent A — Algolia search DI seam + privacy-invariant tests (search) — `lib/repositories/algolia/algolia_search_repository.dart`, `test/unit/repositories/algolia/algolia_search_repository_test.dart`
+
+- [ ] **A1. BUT-1130: add `withClient` ctor seam + assert privacy invariants** — add `AlgoliaSearchRepository.withClient({required SearchClient client, ...})` named ctor so a fake `SearchClient` can be injected. Then write tests that assert: (1) `searchRecipes` builds the `SearchForHits` request with the correct `ownerId` filter (cross-user leak guard), (2) `indexRecipe(isPersonal: true)` routes to `deleteObject` not `saveObject`, (3) searches hit `_recipesIndex` never `_usersIndex`, (4) searches return empty on failure while indexes rethrow. If `SearchClient` truly can't be faked even via the seam (final class), fall back to the thin `_AlgoliaClient` wrapper-interface alternative named in the ticket. (BUT-1130)
+
+##### ★ Risky-ticket plan — BUT-1130 ──────────────────
+Classification: **fits** — P2 + security fires the gate. The production code may already be correct; the gap is that the load-bearing privacy invariants ship UNVERIFIED. This adds a test seam + the tests, not a behavior change.
+Files: `lib/repositories/algolia/algolia_search_repository.dart` (add named ctor only — keep the default ctor's internal `SearchClient` construction intact) + `test/unit/repositories/algolia/algolia_search_repository_test.dart` (replace the doc-comment gap-marker with real injected-client tests). Read-only ref: `lib/repositories/algolia/algolia_pinning_interceptor.dart`.
+Blast radius: production callers use the default ctor unchanged; only tests use `withClient`. If the wrapper-interface fallback is needed, the field type changes from `SearchClient` to the interface — verify all internal call sites still compile. `algoliasearch ^1.46.2` declares `SearchClient` final, so confirm via Context7/pub whether a fake can `implements`/extend it before committing to the seam vs the wrapper approach.
+Product-intent flags: none — pure verifiability hardening of an existing privacy contract.
+Rollback: drop the `withClient` ctor + revert the test file to its gap-marker stub.
+Proceeding automatically (no approval gate). firebase-backend-security NOT triggered (path is `lib/repositories/algolia/`, not `lib/repositories/firebase/` or `functions/src/`); code-reviewer + testing-specialist required.
+─────────────────────────────────────────────────
+
+#### Agent B — Menu "Rensa veckan" undo (menu) — `lib/viewmodels/menu/weekly_menu_plan_viewmodel.dart`, `lib/services/menu/weekly_menu_plan_service.dart`, `lib/views/menu/weekly_menu_plan_view.dart`
+
+- [ ] **B1. BUT-935: add 7s snackbar undo to clearWeek** — `weekly_menu_plan_viewmodel.dart:174-191` (`clearWeek`) clears with no recovery. Capture `current.entries` (and `_overflow`) BEFORE the clear; expose a restore primitive on `weekly_menu_plan_service.dart` (`setWeekEntries`/`restoreWeek` — check what already exists near `clearWeek` at :418) and on the VM (`undoClearWeek`); wire a 7s undo SnackBar from the menu plan view that calls it. Mirror the established undo pattern (BUT-907 children / cook-snap delete `a891ee724`). Add a VM test: capture→clear→undo round-trips the entries. (BUT-935)
+
+#### Agent C — Layer-skipping cleanup: 3 service-layer Firestore callers (backend-services) — `lib/services/group_shared_content_service.dart`, `lib/services/cache/permission_cache_invalidator.dart`, `lib/services/notifications/modules/notification_analytics_manager.dart`
+
+- [ ] **C1. BUT-504: route 3 remaining direct-Firestore service callers through repos (or document the exception)** — (a) `group_shared_content_service.dart` (2 refs) → `GroupSharedContentRepository`; (b) `permission_cache_invalidator.dart` (2 refs) → verify whether cache-infra is a legitimate `cloud_firestore` exception per the services pattern; if yes, document it in code + close that bullet, else route through a repo; (c) `notification_analytics_manager.dart` (1 ref) → route through `FirebaseAnalyticsRepository` or equivalent. Three small per-file changes. Update/extend the relevant service tests. (BUT-504)
+
+##### ★ Risky-ticket plan — BUT-504 ──────────────────
+Classification: **fits** — gate fires on the multi-module clause (3 distinct service files across group-content / cache / notifications). Re-verified 2026-05-28: scope shrank 7→3 files; the listed direct refs still hold.
+Files: `lib/services/group_shared_content_service.dart`, `lib/services/cache/permission_cache_invalidator.dart`, `lib/services/notifications/modules/notification_analytics_manager.dart` + their tests. May need a repo method on `GroupSharedContentRepository` / `FirebaseAnalyticsRepository` — read those repos first.
+Blast radius: each service swaps a direct `FirebaseFirestore.instance` call for a repo call. The cache-invalidator bullet may resolve to a documented exception (no code change beyond a comment) — decide per the CLAUDE.md services pattern. No Firestore schema change. Verify the repo methods exist or add them with PermissionValidationMixin intact.
+Product-intent flags: none — architectural layer-discipline cleanup.
+Rollback: revert per-file; the direct calls return.
+Proceeding automatically (no approval gate). firebase-backend-security: these are `lib/services/` NOT `lib/services/{firebase|firestore|...}` — confirm against the hook's exact path pattern; if a touched service matches the firebase/firestore subpath, run the reviewer. code-reviewer + testing-specialist required regardless.
+─────────────────────────────────────────────────
+
+#### Agent D — RecipeParserService tiers: ctor seam (parsing) — `lib/services/parsing/recipe_parser_service.dart`, `test/unit/services/parsing/recipe_parser_service_test.dart`
+
+- [ ] **D1. BUT-1064: add `tiers:` (or `tierFactory:`) ctor param** — `recipe_parser_service.dart` builds `_tiers` in the ctor with no injection seam (mirror the `cache:` seam shipped in iter-81 / BUT-1063). Add a `tiers:` param defaulting to the production factory. Then add ~5-10 orchestration tests: `_runTiers` quality-threshold short-circuit asserted directly (not via LLM callCount), `_trySelectiveIngredientEnhancement` CRF→LLM splice, `_pickUserMessage` priority ordering, `_emitTierAnalytics` per tier. (BUT-1064)
+
+#### Agent E — UrlImportStrategy Tier 7 dead-code resolution (import) — `lib/services/import/url_import_strategy.dart`, `test/unit/services/import/url_import_strategy_test.dart`
+
+- [ ] **E1. BUT-1077: resolve dead Tier-7 user-assistance path** — Tier 5 (`_tryHtmlTextParse` / `TextImportStrategy.import`) returns null only on empty input, so Tier 7 (`_createUserAssistedResult`) never fires for URL imports. **Step-0 product-intent decision required:** either (if Tier 7 SHOULD fire for URL imports) gate Tier 5 on a quality threshold (detected ingredient/instruction count) so prose-only pages fall through to assistance, OR (if not) explicitly document in code that user-assistance is for non-URL strategies only and remove/guard the unreachable branch. Pin the chosen contract with a test. Flag the product-intent choice in the commit, don't halt. (BUT-1077)
+
+#### Agent F — Realtime errorStream wrapper forwarding (realtime) — `lib/services/realtime/realtime_recipe_service.dart`, `lib/services/unified/operations/realtime_recipe/realtime_watching_module.dart`, their tests
+
+- [ ] **F1. BUT-1112: forward errorStream through realtime wrappers** — (1) add `Stream<SyncError> get errorStream => _syncService.errorStream;` on `realtime_recipe_service.dart`; (2) same on `realtime_watching_module.dart` with nullable-safe `_realtimeSyncService?.errorStream ?? const Stream.empty()`; (3) wrapper-level tests asserting dual-channel (main-stream + side-channel) errors survive the wrapper. Note: the ticket's "trigger" is a first production consumer — Step 0 should confirm whether to ship the plumbing now or keep docs-only. Given it's a tiny, low-risk getter forward that closes a known contract gap, ship it. (BUT-1112)
+
+#### Agent G — UnifiedShoppingService test seam (shopping) — `lib/services/unified/unified_shopping_service.dart`, `test/unit/services/unified/unified_shopping_service_test.dart`
+
+- [ ] **G1. BUT-1065: add `@visibleForTesting setError` + positive-assertion test** — `unified_shopping_service.dart` has no seam to set `_error` directly, so the "error present + cached data present → emit `ShoppingStateData` not `ShoppingStateError`" branch in `_emitState` is verified only by inverse. Add `@visibleForTesting void setError(String? err)` (or a `@visibleForTesting` setter for `_error`), then add a test: set cached lists AND an error → assert `currentState` is `ShoppingStateData` (cached-data-wins-over-error). (BUT-1065)
+
+#### Agent H — SocialRecipeService reactive-error decision (social) — `lib/services/social_recipe_service.dart`, `test/unit/services/social_recipe_service_test.dart`
+
+- [ ] **H1. BUT-1135: decide + implement reactive-error contract** — `SocialRecipeService` captures/sanitises `_error` (BUT-1087) but never calls `notifyListeners()` (doesn't extend ChangeNotifier). **Step-0 decision required:** ChangeNotifier vs StateNotifierMixin vs leave-as-is (pure read-after-await). Preferred low-risk route: add `ChangeNotifierMixin`/`notifyListeners()` so a reactive `ListenableBuilder` binding becomes possible, and audit consumers (`mina_recept_view.dart`, viewmodels) that currently read `service.hasError`/`service.error` synchronously post-await to confirm they still work. If the audit shows migration risk outweighs the (Low) benefit, document "intentional read-after-await contract" in code and close. Pin the chosen contract with a test. (BUT-1135)
+
+### Acceptance
+
+- [ ] `flutter analyze --fatal-infos` on all touched Dart files clean.
+- [ ] Touched + new test files pass (A1 privacy-invariant tests, B1 undo round-trip, D1 orchestration tests, E1 tier contract, F1 dual-channel, G1 positive-assertion, H1 reactive contract).
+- [ ] Tier-2 reviewers: code-reviewer (all Dart) + testing-specialist (all `lib/**` + test changes). firebase-backend-security ONLY if a BUT-504 touched service matches the `lib/services/{firebase|firestore|auth|user|gdpr}` hook path — Agent C must check.
+
+### Post-Sprint Steps
+
+- [ ] Run `dart analyze --fatal-infos`.
+- [ ] Run relevant unit tests + the new seam tests.
+- [ ] File follow-ups in Linear for any deferred sub-scope (e.g. BUT-1135 consumer migration if left-as-is, BUT-1077 product-intent if the threshold approach needs UX wiring).
+- [ ] Commit (per-area or unified), push to main.
+- [ ] Close BUT-1130, BUT-935, BUT-504, BUT-1064, BUT-1077, BUT-1112, BUT-1065, BUT-1135 in Linear (leave open + back to In Progress with a progress comment any that only partially ship).
+
+---
+
 ## Sprint: iter-101 — backlog-drained: decompose the 4 remaining open tickets into code-only batches across 4 disjoint areas — 2026-05-29 (Fri)
 
 Theme: **The Linear backlog is drained.** Backlog/Todo/Triage are all empty; only 4 tickets remain, all "In Progress" and all stale (no activity since early-mid May): BUT-804 (AI/LLM hardening bundle), BUT-760 (App Check), BUT-442 (BaseFirebaseRepository migration), BUT-885 (CPI migration). Two are partly ops-blocked (App Check needs Play Console / Apple Developer; the AI bundle's CF/Vertex/CI sub-parts need deploy access). So this sprint slices each ticket down to its **in-session-shippable code-only** part, clusters them into 4 DISJOINT areas, and files the ops remainders as follow-ups.

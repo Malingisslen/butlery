@@ -4,7 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Notification analytics with delivery tracking and engagement metrics.
@@ -14,12 +14,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// await manager.recordNotificationOpened(id); final metrics = await manager.getUserEngagementSummary();
 /// ```
 class NotificationAnalyticsManager {
-  final FirebaseFirestore _firestore;
+  final NotificationAnalyticsRepository _repository;
   final String _userId;
-
-  // Collections for analytics data
-  static const String _deliveryCollection = 'notification_delivery';
-  static const String _engagementCollection = 'notification_engagement';
 
   // In-memory cache for recent events to batch writes
   final List<Map<String, dynamic>> _pendingEvents = [];
@@ -27,7 +23,9 @@ class NotificationAnalyticsManager {
 
   NotificationAnalyticsManager({
     required String userId,
-  })  : _firestore = ServiceLocator.get<FirestoreRepository>().firestore,
+    NotificationAnalyticsRepository? repository,
+  })  : _repository =
+            repository ?? ServiceLocator.get<NotificationAnalyticsRepository>(),
         _userId = userId;
 
   /// Record notification sent (call after FCM send attempt)
@@ -68,10 +66,7 @@ class NotificationAnalyticsManager {
     Map<String, dynamic>? deliveryMetadata,
   }) async {
     try {
-      await _firestore
-          .collection(_deliveryCollection)
-          .doc(notificationId)
-          .update({
+      await _repository.updateDelivery(notificationId, {
         'status': 'delivered',
         'deliveredAt': FieldValue.serverTimestamp(),
         'deliveryMetadata': deliveryMetadata ?? {},
@@ -90,10 +85,7 @@ class NotificationAnalyticsManager {
     String? errorMessage,
   }) async {
     try {
-      await _firestore
-          .collection(_deliveryCollection)
-          .doc(notificationId)
-          .update({
+      await _repository.updateDelivery(notificationId, {
         'status': 'failed',
         'failedAt': FieldValue.serverTimestamp(),
         'errorCode': errorCode,
@@ -123,13 +115,10 @@ class NotificationAnalyticsManager {
         'context': context ?? {},
       };
 
-      await _firestore.collection(_engagementCollection).add(engagementEvent);
+      await _repository.addEngagementEvent(engagementEvent);
 
       // Also update the delivery record
-      await _firestore
-          .collection(_deliveryCollection)
-          .doc(notificationId)
-          .update({
+      await _repository.updateDelivery(notificationId, {
         'opened': true,
         'openedAt': FieldValue.serverTimestamp(),
       });
@@ -156,7 +145,7 @@ class NotificationAnalyticsManager {
         'reason': dismissalReason,
       };
 
-      await _firestore.collection(_engagementCollection).add(engagementEvent);
+      await _repository.addEngagementEvent(engagementEvent);
 
       AppLogger.debug('📊 Recorded notification dismissed: $notificationId');
     } catch (e) {
@@ -182,7 +171,7 @@ class NotificationAnalyticsManager {
         'actionData': actionData ?? {},
       };
 
-      await _firestore.collection(_engagementCollection).add(engagementEvent);
+      await _repository.addEngagementEvent(engagementEvent);
 
       AppLogger.info(
           '📊 Recorded notification action taken: $notificationId ($actionId)');
@@ -198,22 +187,12 @@ class NotificationAnalyticsManager {
     try {
       final since = clock.now().subtract(period ?? const Duration(days: 30));
 
-      // Get delivery stats
-      final deliveryQuery = await _firestore
-          .collection(_deliveryCollection)
-          .where('targetUserId', isEqualTo: _userId)
-          .where('sentAt', isGreaterThan: Timestamp.fromDate(since))
-          .get();
+      final deliveryDocs =
+          await _repository.getDeliveriesForUser(_userId, since);
+      final engagementDocs =
+          await _repository.getEngagementsForUser(_userId, since);
 
-      // Get engagement stats
-      final engagementQuery = await _firestore
-          .collection(_engagementCollection)
-          .where('userId', isEqualTo: _userId)
-          .where('timestamp', isGreaterThan: Timestamp.fromDate(since))
-          .get();
-
-      return _calculateEngagementSummary(
-          deliveryQuery.docs, engagementQuery.docs);
+      return _calculateEngagementSummary(deliveryDocs, engagementDocs);
     } catch (e) {
       AppLogger.error('❌ Failed to get user engagement summary', e);
       return {};
@@ -261,14 +240,7 @@ class NotificationAnalyticsManager {
     if (_pendingEvents.isEmpty) return;
 
     try {
-      final batch = _firestore.batch();
-
-      for (final event in _pendingEvents) {
-        final docRef = _firestore.collection(_deliveryCollection).doc();
-        batch.set(docRef, event);
-      }
-
-      await batch.commit();
+      await _repository.addDeliveryEvents(_pendingEvents);
 
       AppLogger.debug('📊 Flushed ${_pendingEvents.length} analytics events');
       _pendingEvents.clear();

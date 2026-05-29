@@ -9,8 +9,11 @@
 /// Behaviours covered:
 /// 1.  `currentState` defaults to Loading until the first emission.
 /// 2.  `notifyListeners` emits `ShoppingStateData` carrying current lists.
-/// 3.  `_emitState` emits `ShoppingStateError` only when error AND lists empty
+/// 3a. `_emitState` emits `ShoppingStateError` only when error AND lists empty
 ///     (proves the "error with cached data → still Data state" branch).
+/// 3b. Positive-assertion: cached lists + error → `currentState` is
+///     `ShoppingStateData` (data wins over stale error) — uses
+///     `@visibleForTesting setError` seam (BUT-1065).
 /// 4.  `addItemToActiveList` returns `false` when no active list set, without
 ///     mutating local state.
 /// 5.  `addItemsBatch` empty list short-circuits to true and skips repo.
@@ -97,6 +100,8 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
 
   void emitCollab(List<UnifiedShoppingList> lists) =>
       _collabController.add(lists);
+
+  void emitCollabError(Object error) => _collabController.addError(error);
 
   Future<void> close() => _collabController.close();
 
@@ -333,6 +338,61 @@ void main() {
       expect(service.currentState, isA<ShoppingStateData>());
       // Sanity ref so the test name lines up with the asserted branch.
       expect(personal.name, 'X');
+    });
+
+    /// Proves: cached lists + error → `currentState` is `ShoppingStateData`,
+    /// not `ShoppingStateError`. This is the positive-assertion form of the
+    /// "data wins over stale error" contract (BUT-1065). Uses the
+    /// `@visibleForTesting setError` seam to inject an error directly without
+    /// triggering any real code path that also clears lists.
+    ///
+    /// The exact bug this catches: if `_emitState` is refactored to drop the
+    /// `_lists.isEmpty` guard (`if (_error != null)` instead of
+    /// `if (_error != null && _lists.isEmpty)`), this test will turn red while
+    /// the inverse-branch test above stays green.
+    test(
+        'cached lists + error emits ShoppingStateData (data wins over stale error)',
+        () async {
+      // Establish a non-empty local list so `_lists` is non-empty.
+      final listId = await service.createPersonalList('Cached List');
+      expect(listId, isNotNull);
+      expect(service.lists, hasLength(1));
+
+      // Inject an error via the test seam — simulates a background refresh
+      // failing after lists were already loaded.
+      service.setError('refresh failed');
+
+      // With lists present, state must still be Data (error exposed as the
+      // `.error` field on `ShoppingStateData`, not as `ShoppingStateError`).
+      final state = service.currentState;
+      expect(state, isA<ShoppingStateData>(),
+          reason: 'Data wins over stale error when _lists is non-empty. '
+              'Got: $state');
+      final data = state as ShoppingStateData;
+      expect(data.lists, hasLength(1));
+      expect(data.error, 'refresh failed');
+    });
+
+    /// Proves the ShoppingStateError branch is reachable from PRODUCTION, not
+    /// only via the @visibleForTesting setError seam. A collaborative-stream
+    /// failure with no cached lists must surface as ShoppingStateError so the
+    /// UI shows an error state — not an empty ShoppingStateData that renders a
+    /// misleading "no lists" screen. Before the fix the onError handler only
+    /// logged and never set _error, so this branch was dead in production.
+    test(
+        'collaborative stream error with no cached lists emits '
+        'ShoppingStateError', () async {
+      await service.initialize();
+      expect(service.lists, isEmpty);
+
+      fakeRepo.emitCollabError(StateError('collab stream boom'));
+      await Future<void>.delayed(Duration.zero);
+
+      final state = service.currentState;
+      expect(state, isA<ShoppingStateError>(),
+          reason: 'A cold collab-stream failure must surface as an error '
+              'state, not an empty data state. Got: $state');
+      expect(service.hasError, isTrue);
     });
   });
 

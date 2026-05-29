@@ -3930,3 +3930,189 @@ the UI can prompt re-sign-in). The existing BUT-1086 test asserted only
 - **No lib/ behavior change in this diff:** all three files are test+docs only; the subject
   (`IngredientCategorizer`, `ShoppingCategory`) is pre-existing and unmodified in the working
   tree. No production code lacking tests here — only thin corpus coverage of one vector.
+
+---
+
+### 2026-05-29 — Menu clear-week + undo review (sprint, menu area) [Bug flagged + coverage gaps]
+
+**Trigger:** Review of WeeklyMenuPlan clearWeek/undo feature (VM + service +
+calendar_header + calendar_weekly_menu_widget + l10n).
+
+**Bug flagged — undo drops overflow recipes.** `clearWeek()` (VM) wipes BOTH
+`_plan` entries and `_overflow` (`_overflow = const []`), and the clear button
+is enabled when `hasEntries || hasOverflow`. But `undoClearWeek()` only restores
+`plan.entries` via `_service.restoreWeek(current, snapshot)` — it never restores
+`_overflow`. So clearing a week that had overflow recipes then tapping "Ångra"
+silently loses the overflow tray. `_preClearEntries` snapshots only
+`current.entries`, never the overflow list. The VM undo tests (added this
+session) don't exercise an overflow-present scenario, so they pass while the
+data-loss bug stands. **Test that would catch it:** load plan with overflow,
+clearWeek, undoClearWeek, assert `viewModel.overflow` is restored.
+
+**Coverage gaps (untested new behavior):**
+1. `WeeklyMenuPlanService.restoreWeek` — new public method, ZERO tests.
+   service_test.dart matches only `clearWeek`. One line, but it's the undo
+   contract; a `copyWith(entries:)` swap to `addAll` regression goes unseen.
+2. `WeekNavHeader.onClearWeek` — new optional trash IconButton + its
+   conditional visibility (`onClearWeek != null`) and tooltip
+   (`weeklyMenuClearWeekAction`). `calendar_weekly_menu_widget_test.dart`
+   exists but was NOT touched; no test taps the button or asserts it's hidden
+   when the week is empty.
+3. `_onClearWeek` SnackBar undo wiring in calendar_weekly_menu_widget — the
+   `showSuccessWithAction(..., onAction: vm.undoClearWeek, duration: 7s)` glue
+   is untested. A widget test pumping the widget, tapping delete_sweep, tapping
+   the SnackBar "Ångra" action, and verifying restore would cover both the
+   button gate and the undo round-trip.
+
+**Pattern note:** the VM undo tests use `same(cleared)` / `same(restored)`
+identity asserts — acceptable here because the mock returns those exact
+instances; not brittle to refactor since the contract IS "VM stores what
+service returned".
+
+### [2026-05-29] Trigger: review of unified_shopping_service.dart + its unit test (shopping area)
+- **Diff was test-seam-only.** Sole lib/ change: a `@visibleForTesting void setError(String?)`
+  seam on `UnifiedShoppingService`, added so test 3b can drive the `_emitState` branch where
+  `_error != null && _lists.isNotEmpty` (data wins over stale error, BUT-1065) WITHOUT a real
+  error-producing path that also clears `_lists`. The matching test exists, asserts the real
+  contract (`currentState` stays `ShoppingStateData`, `.error` carried on the data state — not
+  a structural/topology assert), is green, analyze clean. This is the *correct* use of a test
+  seam: it isolates a branch that real code paths couple to a side effect (list-clearing).
+- **Anti-pattern caught (Medium) — name overpromises vs assertion.** The pre-existing test 3a
+  ("emits ShoppingStateError only when error AND lists empty") never sets an error; its body
+  only proves Data→Data and ends with a tautological `expect(personal.name, 'X')` sanity-ref
+  on a locally-built object. Now that the `setError` seam exists, 3a's negative branch
+  (lists EMPTY + error set ⇒ `ShoppingStateError`) is trivially exercisable and should be —
+  currently NO test pins the true-positive `ShoppingStateError` emission, so dropping the
+  error branch entirely from `_emitState` would only be half-caught.
+- **Pattern — when a test seam lands, audit its sibling negative-branch test.** Adding
+  `setError` made a previously-"can't reach this" branch reachable; the inverse test that was
+  written defensively-vague should be upgraded to actually use the new seam, otherwise you
+  have a seam exercising only the positive branch and a stale comment ("can't easily set")
+  still sitting in the negative one.
+- **Facade delegators don't need facade tests:** ~25 of the service's public methods are
+  one-line forwards to modules; module-level tests own those. No Medium finding for "untested
+  delegator" here — would be low-value getter-identity churn.
+
+### 2026-05-29 — AlgoliaSearchRepository BUT-1130 seam landed; closed the test-side gaps [Coverage follow-up + latent bug]
+
+**Trigger:** Coverage review of the BUT-1130 working-tree diff. The `withClient(...)` seam I recommended in the 2026-05-26 entry was implemented (production now wraps `final class SearchClient` behind a thin `abstract class AlgoliaClient` with `_DefaultAlgoliaClient` pass-through). The test rewrite correctly converted the old no-seam characterization tests into real behavioral seam tests — no weakened assertions, and it deleted two now-meaningless characterization tests ("empty index names construct — design gap", timeout-based empty-batch guard) and replaced them with `fake.batchCalls`/`fake.saveCalls` shape asserts. Good refactor.
+
+**Fake-vs-Mock note:** the test uses `class _FakeAlgoliaClient implements AlgoliaClient` with concrete recording bodies (`saveCalls`/`deleteCalls`/`searchRequests`/`batchCalls` lists). This is the correct Fake pattern (records + returns canned responses), NOT a Mock with `@override` bodies — exactly the DO-WRITE shape. Reusable spy template for any thin-SDK-wrapper seam.
+
+**Gaps the rewrite left (I filled all, 21 → 32 tests, green first run):**
+- `indexUser` / `removeUser` — zero coverage. Now pinned: route saveObject/deleteObject to the USERS index (inverse index-confusion shape) + rethrow-on-write contract.
+- `searchUsers` happy-path mapping (`UserSearchHit` fields) + search-swallow — only index/filter shape was pinned; the field mapping (`displayName`/`recipeCount`/`followerCount`) was untested.
+- `getSuggestions` happy path — the `index: 'recipes'` vs `'users'` fork (different index + different extracted attribute `title` vs `displayName`) and the empty-attribute filtering were untested. Only the short-circuit + swallow were covered.
+- `healthCheck` — zero coverage. Pinned true-on-success / false-on-failure (must NOT rethrow — the SearchModule fallback decision depends on it).
+
+**LATENT PRODUCTION BUG (flagged, not tested-around): `batchIndexRecipes` does not chunk.** The original (pre-BUT-1130) test header listed "batchIndexRecipes chunks at the Algolia 1000-op limit" as a load-bearing invariant; the rewrite silently dropped that line. Production (`algolia_search_repository.dart` ~330-357) maps ALL recipes into a single `BatchWriteParams` and one `_searchClient.batch(...)` call — no chunking. A full-library reindex (Cloud Function path) over the Algolia per-batch ceiling would 400/partial-fail. Did NOT write a test pinning the buggy single-batch behavior (would lock in the bug). Reported as a finding for production fix (chunk at ≤1000, mirror the Firestore 500-op batch pattern), then add a "splits a >1000 batch into N calls" test.
+
+## Discovered patterns
+
+### 2026-05-29 — errorStream side-channel getters need both branches tested (BUT-1112)
+**Trigger:** Review of realtime errorStream forwarding diff.
+- `RealtimeRecipeService.errorStream` (forwards `_syncService.errorStream`) was covered by the new "Dual-channel error forwarding (BUT-1112)" group in `realtime_recipe_service_test.dart`.
+- `RealtimeWatchingModule.errorStream` (`_realtimeSyncService?.errorStream ?? const Stream.empty()`) shipped with ZERO coverage — the watching-module test file existed but had no `errorStream` reference. Added an "Error side-channel (BUT-1112)" group covering BOTH branches: (1) forwards SyncError from injected service, (2) inert empty stream in polling-fallback (no service injected) — the null-coalescing branch. The empty-stream test asserts `forEach` completes without emitting, which would catch removal of the `?? const Stream.empty()` fallback (NPE) or an accidental unconditional empty stream.
+- Pattern: any new `Stream<X> get foo => svc?.foo ?? const Stream.empty()` getter is two behaviors — forward + fallback. Test both, or the fallback rots silently.
+- Helper note: `MockRealtimeSyncService.setError(e)` now pumps `e` onto `errorStream` (broadcast controller closed in `disposeStreams()`); use it to drive side-channel tests instead of `when(() => mock.errorStream)`.
+
+### 2026-05-29 — Mock-as-Fake note (MockRealtimeSyncService)
+`MockRealtimeSyncService extends Mock` carries concrete `@override` bodies (`setError`, `getCachedResource`, `errorStream`, `disposeStreams`). This is the BUT-368/369 anti-pattern (concrete bodies on a `Mock` block `when()` stubbing of those members). It's pre-existing and consistent across the class — it's effectively a hand-rolled fake. Acceptable here because callers drive it via its setter methods, not `when()`. Don't add `when(() => mock.errorStream)` — stub via `setError`. Flag for a future `extends Fake` rename if the class grows.
+
+### 2026-05-29 — `TierResult.success` overrides quality; stub `quality` args are decorative (Pattern discovered)
+Reviewing `recipe_parser_service_test.dart` (BUT-1064 tiers: seam). `TierResult.success({recipe})` computes `quality: recipe.overallQuality` — it does NOT take a quality arg. The test helper `successTierAt(name, q)` builds the recipe via `buildRecipeWithQuality(q)`, which only maps `q` to a **confidence bucket** (high≥0.85 / medium≥0.5 / low), not to the final quality. Measured mapping with the current field weights + empty ingredient list:
+- requested 0.30 → actual overallQuality 0.30 (coincidental)
+- requested 0.65 → actual **0.70** (medium bucket)
+- requested 0.85 / 0.90 → actual **1.0** (high bucket)
+
+Consequence: any test claiming to pin a threshold boundary (e.g. "tier quality exactly at threshold 0.65 terminates") is NOT testing the `>=` edge — the tier's real quality is 0.70, comfortably over. A `>=`→`>` regression survives. Lesson: when a stub's "quality" is recomputed downstream, assert the boundary against the *computed* value, or build a recipe whose `overallQuality` lands exactly on the edge. Don't trust the decorative arg name.
+
+### 2026-05-29 — `if (x != null) expect(...)` guards are weakened assertions (Pattern discovered)
+Same file: `_pickUserMessage` priority tests wrap the core assertion in `if (result.userMessage != null) { expect(...) }`. Probed empirically — `userMessage` IS non-null in those tests (failingTier sets a non-null failureReason → `_lastTierFailures` populated → message returned). The guard is therefore unnecessary and harmful: a regression that makes `_pickUserMessage` return null turns the test GREEN (assertion skipped) instead of red. Rule: if you can prove the guarded branch always runs, drop the guard and assert unconditionally. A conditional `expect` is a silent skip. Also flagged a tautology: `expect(a == null || b == false || b, isTrue)` where `b` and `b == false` are complementary — always true, can never fail; proves nothing beyond "no throw" (which the bare `await` already proves).
+
+### 2026-05-29 — BUT-504 repository-seam refactor: mocked-away subject (High)
+Trigger: review of BUT-504 backend-services refactor (extract typed repos from
+`GroupSharedContentService` + `NotificationAnalyticsManager`).
+
+- **Inline-fake-as-subject smell**: `test/unit/services/notifications/modules/notification_analytics_manager_test.dart`
+  never imports or instantiates the production `NotificationAnalyticsManager`.
+  It defines a parallel `NotificationAnalyticsService` *in the test file* and
+  tests THAT. The fake computes a different result shape (`engagement_score`,
+  `total_dismissed`) than the real manager's `_calculateEngagementSummary`
+  (`notifications_received`, `open_rate`, `engagement_rate`, `dismissal_rate`
+  — keyed off `action` names `opened`/`dismissed`/`action_taken`). The refactor
+  rewrote the real manager's persistence + aggregation; zero coverage moved.
+  This is the "mocks away the behavior it claims to verify" rule — 200+ green
+  lines proving nothing about production.
+- **Fix written**: `notification_analytics_manager_repository_test.dart` drives
+  the *real* manager through a `FakeNotificationAnalyticsRepository implements
+  NotificationAnalyticsRepository` backed by `FakeFirebaseFirestore` (so reads
+  return real `QueryDocumentSnapshot`s). Covers domain invariants the inline
+  fake missed: action-name aggregation + rate math, divide-by-zero guard when
+  nothing delivered, and the `_batchSize=10` buffer-then-flush boundary
+  (`recordNotificationSent` flushes exactly once at the 10th event, never at 9).
+- **Fake-over-FakeFirestore pattern for untyped-doc repos**: these BUT-504 repos
+  return raw `QueryDocumentSnapshot<Map>` (no domain model). To test a service
+  that consumes them without a real emulator, back the Fake with
+  `FakeFirebaseFirestore` and round-trip through it — the Fake strips
+  `FieldValue.serverTimestamp()` (not deserialisable) before `add`/`set`.
+- **Good refactor coverage (contrast)**: `group_shared_content_service_test.dart`
+  was updated correctly — it wires the *real* `FirebaseGroupSharedContentRepository`
+  over `FakeFirebaseFirestore` instead of mocking the new seam, so all the
+  arrayContainsAny / ordering / member-scoping behavior still runs end-to-end.
+  Repository extraction done right = swap the constructor arg, keep the behavior
+  assertions. `firebase_notification_analytics_repository_test.dart` is also a
+  proper collection-routing test (correct collections, window filtering, empty
+  no-op). The gap was only the *manager*, not its new repo.
+- Doc-only / wiring-only diffs in this batch (no test needed): `permission_cache_invalidator.dart`
+  (comment only), `social_module.dart` / `messaging_module.dart` (DI registration),
+  `lib/services/CLAUDE.md`, repo+interface files (covered by the new repo test).
+
+### 2026-05-29 — Boolean-gate branch coverage (AND vs OR), import area
+- **Trigger**: Reviewed BUT-1077 quality gate in `url_import_strategy.dart`:
+  `if (r.core.ingredients.isEmpty && r.core.instructions.isEmpty) return null;`
+  (Tier 5 → fall through to Tier 7 user-assist). The lockstep test update covered
+  both-empty (prose/Article → Tier 7) and both-present (→ Tier 5), but NO test
+  pinned the asymmetric branch.
+- **Pattern**: When a gate is a compound boolean (`A && B`, `A || B`), the
+  both-true and both-false cases do NOT distinguish `&&` from `||`. A mutation
+  `&&`→`||` survives unless a single-axis case (exactly one side true) is pinned.
+  Always add the one-axis test for compound gates.
+- **Concrete seam discovered**: `TextImportStrategy` (driven through
+  `UrlImportStrategy.import` with `MockClient`) produces `ingredients=0,
+  instructions=6` for an instructions-only Swedish page (numbered `<ol>` under
+  "Gör så här", no ingredient `<ul>`). That single-axis case passes the `&&`
+  gate. An ingredients-only page (no instructions section) instead parses to
+  empty/empty and falls to Tier 7 — so use the *instructions-only* shape to
+  exercise the asymmetric pass. Verified by `&&`→`||` mutation: only the new
+  test goes red; all pre-existing tests stay green.
+- **Helper note**: this file's `_strategyWith(responder)` + IP-host URLs
+  (`http://8.8.8.8/...`) short-circuit `InternetAddress.lookup`; reuse it for
+  any new tier-routing assertion rather than rolling a fresh MockClient.
+
+### 2026-05-29 — BUT-1135 SocialRecipeService notification contract (doc-only prod change)
+Trigger: review of `lib/services/social_recipe_service.dart` + its test where the
+only staged prod change was a doc comment (removed stale "with reactive state
+management", added a "Notification contract: read-after-await, NOT ChangeNotifier"
+block). Class signature unchanged (`with StreamManagementMixin, ErrorHandlingMixin`,
+never a ChangeNotifier). No notifyListeners was ever removed — purely documenting
+existing behavior.
+- Pattern: when a service documents "intentionally NOT a ChangeNotifier / callers
+  read-after-await", the ONLY in-flight observable is `isLoading`. A test that just
+  `await`s then reads post-state is a no-op duplicate of every existing happy-path
+  test — it cannot catch the regression the doc warns about. The teeth-bearing test
+  asserts `isLoading == true` SYNCHRONOUSLY after the call starts AND from inside the
+  unresolved repo Future (via a `Completer` gate + an `onGetSharedRecipesForUser`
+  hook on the fake repo). That fails if a refactor moves `_isLoading = true` after
+  the await or drops it — the exact way read-after-await silently breaks.
+- Helper added to the fake: `Future<void> Function()? onGetSharedRecipesForUser` —
+  an in-flight hook on `_FakeSharedRecipeRepository` to observe service state mid-load.
+  Reusable shape for any "loading-state transition" test against a fake repo.
+- The two LLM-drafted BUT-1135 tests were near-identical to the existing
+  `initialize / refresh` group; replaced one (refresh duplicate) with the isLoading
+  transition test per Phase 9 (delete autopilot test, add real-invariant test).
+- The existing file is otherwise strong: dismiss/import contracts pin the
+  current-uid-not-sharer-uid invariant, BUT-1086 sign-out-mid-import pins the exact
+  `errorImportPartialReSignIn` Swedish copy (not just isNotNull), and it deliberately
+  documents the recipe-vs-menu asymmetry (menu sign-out path surfaces no error) as a
+  pinned-current-behavior test rather than papering over the gap. Good template.

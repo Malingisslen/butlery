@@ -26,6 +26,13 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   bool _applyInFlight = false;
   ParsedMenuRequest? _lastParsedRequest;
 
+  // Snapshot kept for the 7-second undo window after clearWeek. Both the
+  // visible entries AND the overflow tray are captured so undo restores the
+  // full pre-clear state — clearWeek wipes both, so undo must restore both or
+  // the overflow recipes are lost permanently.
+  List<WeeklyMenuPlanEntry>? _preClearEntries;
+  List<Recipe>? _preClearOverflow;
+
   WeeklyMenuPlan? get plan => _plan;
   List<Recipe> get overflow => _overflow;
   ParsedMenuRequest? get lastParsedRequest => _lastParsedRequest;
@@ -171,12 +178,20 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   }
 
   /// Clear every entry from the visible week ("Rensa veckan" action).
+  ///
+  /// Snapshots both the current entries and the overflow tray before wiping so
+  /// [undoClearWeek] can restore the full state within the 7-second SnackBar
+  /// window. The overflow snapshot is required because clearWeek also wipes the
+  /// tray — without it, undo would silently lose the overflow recipes.
   Future<void> clearWeek() async {
     final current = _plan;
     if (current == null) return;
     if (current.isEmpty && _overflow.isEmpty) return;
     await executeAsyncVoid(
       () async {
+        // Capture snapshots before mutating so the undo path can restore both.
+        _preClearEntries = List.unmodifiable(current.entries);
+        _preClearOverflow = List.unmodifiable(_overflow);
         final cleared = _service.clearWeek(current);
         if (isDisposed) return;
         final entriesChanged = !identical(cleared, current);
@@ -187,6 +202,31 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         notifyListeners();
       },
       errorPrefix: 'Kunde inte rensa veckan',
+    );
+  }
+
+  /// Restore the entries and overflow tray present before the last [clearWeek]
+  /// call. No-op if no snapshot exists (undo window expired or never set).
+  Future<void> undoClearWeek() async {
+    final snapshot = _preClearEntries;
+    final overflowSnapshot = _preClearOverflow;
+    final current = _plan;
+    if (snapshot == null || current == null) return;
+    _preClearEntries = null;
+    _preClearOverflow = null;
+    await executeAsyncVoid(
+      () async {
+        final restored = _service.restoreWeek(current, snapshot);
+        if (isDisposed) return;
+        _plan = restored;
+        // Restore the tray too — clearWeek wiped it, so undo must bring it back
+        // or the overflow recipes vanish even though the user tapped "Ångra".
+        _overflow = overflowSnapshot ?? const [];
+        await _service.save(restored);
+        if (isDisposed) return;
+        notifyListeners();
+      },
+      errorPrefix: 'Kunde inte ångra rensningen',
     );
   }
 

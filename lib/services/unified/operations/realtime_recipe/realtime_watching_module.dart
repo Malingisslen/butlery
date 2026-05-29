@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
@@ -27,13 +28,10 @@ class RealtimeWatchingModule {
 
   /// Watch a recipe for real-time updates.
   ///
-  /// The returned stream carries data plus main-stream errors. The
-  /// underlying `RealtimeSyncService.errorStream` side-channel is NOT
-  /// re-exposed here (BUT-1082 docs-only re-scope: no production consumer
-  /// exists yet, so wrapper-forwarding plumbing was deferred). If you
-  /// need global error logging, subscribe to `RealtimeSyncService.errorStream`
-  /// directly on the injected service. Falls back to periodic polling
-  /// when `_realtimeSyncService` is null.
+  /// The returned stream carries data plus main-stream errors. For the
+  /// global error side-channel subscribe to [errorStream] on this module
+  /// (which forwards `RealtimeSyncService.errorStream`). Falls back to
+  /// periodic polling when `_realtimeSyncService` is null. BUT-1112.
   Stream<Recipe> watchRecipe(String recipeId) {
     if (_realtimeSyncService == null) {
       AppLogger.warning(
@@ -228,6 +226,12 @@ class RealtimeWatchingModule {
   /// Get connection status stream
   Stream<bool> get connectionStream =>
       _realtimeSyncService?.connectionStream ?? Stream.value(false);
+
+  /// Side-channel stream of synchronization errors from the underlying
+  /// RealtimeSyncService. Returns an empty stream when no service is
+  /// injected (polling-fallback mode has no sync errors). BUT-1112.
+  Stream<SyncError> get errorStream =>
+      _realtimeSyncService?.errorStream ?? const Stream.empty();
 
   /// Wait for connection to be established
   Future<bool> waitForConnection(

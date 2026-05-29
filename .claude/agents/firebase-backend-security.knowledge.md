@@ -2914,3 +2914,80 @@ The real risk is the opposite: if `setError` runs before `forceSignOut`'s `final
 - **Legacy `shared_recipes` index in firestore.indexes.json**: collection has no `match /shared_recipes/{}` block in rules (only `shared_content` and `shared_menus`). Index is inert — Firestore charges nothing for indexes on collections that are never written. Out-of-scope cleanup, safe to defer.
 - **Idempotent re-share audit semantics**: when reusing an existing doc, original `sharedAt` + recipe snapshot are intentionally preserved (re-share is treated as "add more recipients to existing share", not "new share event"). `addMember` calls `.set()` on `members/{userId}` which OVERWRITES `addedAt` for already-present members — this is a minor audit fidelity loss (re-add events stamp a new addedAt, losing the original join time). Acceptable for current product semantics but worth flagging if join-time becomes legally relevant (it isn't for GDPR — `sharedToUserIds` retention is the controlling state).
 - **`addMember` ownership check is enforced**: `addMember` re-reads the doc and throws `PermissionDeniedException` unless caller is creator. Idempotent path inherits this — non-owners can't piggyback on existing shares.
+
+### 2026-05-29 — BUT-504 service→repository extraction surfaced 4 latent shared_content/notification bugs
+
+BUT-504 extracted raw `FirebaseFirestore` use out of `GroupSharedContentService`
+and `NotificationAnalyticsManager` into two infrastructure-layer repositories
+(`FirebaseGroupSharedContentRepository`, `FirebaseNotificationAnalyticsRepository`).
+The refactor is behavior-faithful — it moved queries/writes verbatim — but
+reviewing the moved code path exposed pre-existing latent bugs worth recording:
+
+- **`shared_content` group query is blocked by the `list` rule (Critical/latent).**
+  The group view queries `where('sharedToUserIds', arrayContainsAny: memberIds)
+  .where('contentType', ==).orderBy('sharedAt').limit(20)`. But
+  `firestore.rules:543` is `allow list: if request.auth.uid ==
+  resource.data.sharedByUserId` — listing is restricted to the SHARER. A group
+  member who is a recipient (not the sharer) is denied the whole query. The
+  `get` rule (line 545) DOES allow `request.auth.uid in sharedToUserIds`, but
+  `get` ≠ `list`; Firestore evaluates query/list rules without honoring the
+  `sharedToUserIds` membership branch. Net effect: `getSharedRecipes` etc.
+  return `[]` silently (service swallows the permission-denied in `catch`).
+  **The new repo's docstring is WRONG** — it claims "the `sharedToUserIds
+  arrayContainsAny` clause only matches documents the querying user is shared
+  into, so the rules engine rejects any attempt to widen the member list."
+  The rules engine keys `list` off `sharedByUserId`, not `sharedToUserIds`.
+  Fix needs a `list` rule branch allowing `request.auth.uid in
+  resource.data.sharedToUserIds` (hand to firestore-rules-tester) + the
+  matching composite index below.
+
+- **Missing composite index for the group query (High/latent).** No index in
+  `firestore.indexes.json` covers `(contentType ASC, sharedToUserIds
+  ARRAY_CONTAINS, sharedAt DESC)`. The only `shared_content` index is
+  `(sharedByUserId, originalRecipeId)`. Even after the rule is fixed, the query
+  fails with failed-precondition until this index is added.
+
+- **`notification_delivery` / `notification_engagement` writes rejected by
+  `keys().hasOnly` (High/latent).** Every event the manager builds includes an
+  `expireAt: Timestamp` field (90-day TTL), but the create rules at
+  `firestore.rules:1940` and `:1963` enumerate an exhaustive `keys().hasOnly([
+  ...])` that does NOT list `expireAt`. So `addDeliveryEvents`,
+  `addEngagementEvent`, and the opened/dismissed/action writes are all
+  permission-denied. Errors are caught + logged, so analytics fails silently.
+  Fix: add `expireAt` to both `hasOnly` lists (and document the TTL policy —
+  TTL is configured via gcloud, not indexes; see the BUT-477 presence-TTL
+  entry above).
+
+- **Missing composite indexes for analytics reads (High/latent).**
+  `getDeliveriesForUser` = `where('targetUserId', ==) + where('sentAt', >)` and
+  `getEngagementsForUser` = `where('userId', ==) + where('timestamp', >)` each
+  pair an equality on one field with a range on a DIFFERENT field → requires a
+  composite index. Neither collection has any index in
+  `firestore.indexes.json`. `getUserEngagementSummary` returns `{}` on the
+  failed-precondition.
+
+**`fake_cloud_firestore` does NOT evaluate security rules or index
+requirements.** Both new unit tests (`group_shared_content_service_test.dart`,
+`firebase_notification_analytics_repository_test.dart`) pass green while the
+real-Firestore behavior is broken. This is the recurring false-confidence trap:
+a passing fake-firestore test proves query SHAPE, never rule-ALLOWED behavior or
+index presence. Rule/index correctness must be proven by firestore-rules-tester
+against the emulator.
+
+**Pattern note — infrastructure repos without PermissionValidationMixin are
+acceptable here.** Both new repos return raw `QueryDocumentSnapshot` maps and
+delegate authorization entirely to Firestore rules, mirroring `FirestoreRepository`
+(a documented non-`BaseFirebaseRepository`). That's a legitimate layering choice
+PROVIDED the rules actually enforce the boundary — which, per the first finding,
+they currently do NOT for the group query. The mixin would not have caught this;
+only rule/repo lockstep verification does. `permission_cache_invalidator.dart`
+keeping a direct `FirebaseFirestore` for snapshot-only cache eviction (no
+user-data read/write) is correctly documented as a non-adopter in
+`lib/services/CLAUDE.md`.
+
+**Data-source convention is respected.** `NotificationAnalyticsManager._userId`
+traces to `AuthRepository` (auth uid) and is used only as `senderId`/`userId`
+for permission pinning — correct per the convention (auth id for permission
+checks, not profile). `GroupSharedContentService` uses
+`permissionService.currentUserId` only as a null/auth gate, never as profile
+data. No mixing.

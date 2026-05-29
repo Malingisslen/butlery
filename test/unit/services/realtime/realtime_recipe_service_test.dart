@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
+import 'package:butlery/services/realtime/realtime_types.dart' as rt;
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -478,6 +479,71 @@ void main() {
         throwsA(isA<Exception>()),
       );
       expect(service.lastError, isNotNull);
+    });
+  });
+
+  group('Dual-channel error forwarding (BUT-1112)', () {
+    // Verifies that errors propagate via BOTH channels independently:
+    // main-stream (thrown inside watchRealtimeRecipe) AND side-channel
+    // (errorStream forwarded from RealtimeSyncService).
+
+    test('errorStream forwards SyncErrors from the underlying sync service',
+        () async {
+      // Set up a stream controller so we can deliver data and then an error
+      final streamController = StreamController<RealtimeRecipe>.broadcast();
+      when(() => mockSyncService.watchResource<RealtimeRecipe>('recipe_123'))
+          .thenAnswer((_) => streamController.stream);
+
+      // Subscribe to the side-channel before triggering the error
+      final errorFuture = service.errorStream.first;
+
+      // Emit a sync error on the underlying mock — this goes through
+      // errorStream, not the main recipe stream.
+      final syncError = rt.SyncError(
+        type: rt.SyncErrorType.firestoreError,
+        message: 'test error',
+        resourceId: 'recipe_123',
+      );
+      mockSyncService.setError(syncError);
+
+      final received = await errorFuture;
+      expect(received.type, equals(rt.SyncErrorType.firestoreError));
+      expect(received.resourceId, equals('recipe_123'));
+
+      streamController.close();
+    });
+
+    test('main-stream errors survive independently of the side-channel',
+        () async {
+      // Verifies that a thrown error on the watch stream surfaces to the
+      // caller without requiring subscription to errorStream.
+      final streamController = StreamController<RealtimeRecipe>.broadcast();
+      when(() => mockSyncService.watchResource<RealtimeRecipe>('recipe_456'))
+          .thenAnswer((_) => streamController.stream);
+
+      final stream = service.watchRealtimeRecipe('recipe_456');
+      Object? caughtError;
+      final errorFuture = stream.first.then<Object?>((_) => null).onError(
+        (e, _) {
+          caughtError = e;
+          return null;
+        },
+      );
+
+      streamController.addError(rt.SyncError(
+        type: rt.SyncErrorType.documentNotFound,
+        message: 'not found',
+        resourceId: 'recipe_456',
+      ));
+
+      await errorFuture;
+      expect(caughtError, isA<rt.SyncError>());
+      expect(
+        (caughtError as rt.SyncError).type,
+        equals(rt.SyncErrorType.documentNotFound),
+      );
+
+      streamController.close();
     });
   });
 }

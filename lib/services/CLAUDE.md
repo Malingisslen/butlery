@@ -15,6 +15,7 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/feature_flags/feature_flag_service.dart`
 - `lib/services/device_integrity_service.dart`
 - `lib/services/cache/permission_cache_service.dart`
+- `lib/services/cache/permission_cache_invalidator.dart` (BUT-504: cache infrastructure — subscribes to `cloud_firestore` snapshots directly to know *when* to evict keys; no user-data reads/writes, no permission decisions, so no typed repository)
 - `lib/services/theme/seasonal_accent_service.dart`
 - `lib/services/theme_service.dart` (only ChangeNotifier — needs UI rebuild signal)
 - `lib/services/performance/firebase_performance_service.dart`

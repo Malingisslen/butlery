@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_watching_module.dart';
+import 'package:butlery/services/realtime/realtime_types.dart' as rt;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import '../../../../../test_support/base_unit_test.dart';
@@ -304,6 +305,49 @@ void main() {
 
         // Cleanup
         await connectionController.close();
+      });
+    });
+
+    // BUT-1112: the module re-exposes the underlying RealtimeSyncService
+    // error side-channel so callers (e.g. a global error banner) can listen
+    // for sync failures without reaching through to the sync service.
+    group('Error side-channel (BUT-1112)', () {
+      test('errorStream forwards SyncErrors from the injected sync service',
+          () async {
+        // Intent: a SyncError emitted by the underlying service must reach a
+        // subscriber of the module's errorStream. Fails if the getter stops
+        // forwarding or returns a different (empty/own) stream.
+        final errorFuture = watchingModule.errorStream.first;
+
+        final syncError = rt.SyncError(
+          type: rt.SyncErrorType.firestoreError,
+          message: 'boom',
+          resourceId: 'recipe_1',
+        );
+        mockRealtimeSyncService.setError(syncError);
+
+        final received = await errorFuture;
+        expect(received.type, equals(rt.SyncErrorType.firestoreError));
+        expect(received.resourceId, equals('recipe_1'));
+      });
+
+      test(
+          'errorStream is an inert empty stream in polling-fallback mode '
+          '(no sync service injected)', () async {
+        // Intent: when constructed without a RealtimeSyncService the module
+        // runs in polling mode where there is no sync error source. A
+        // subscriber must complete (onDone) without an error and without
+        // hanging — not throw an NPE on the null service. Fails if the
+        // null-coalescing fallback is removed.
+        final pollingModule = RealtimeWatchingModule(
+          getRecipes: () => mockParentService.recipes,
+          // no realtimeSyncService
+        );
+
+        var emittedAny = false;
+        await pollingModule.errorStream.forEach((_) => emittedAny = true);
+
+        expect(emittedAny, isFalse);
       });
     });
 

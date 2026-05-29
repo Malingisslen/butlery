@@ -1,5 +1,24 @@
 /// Social recipe sharing service for collaborative cooking and meal planning.
-/// Manages recipe/menu sharing, importing, dismissal, and participant tracking with reactive state management.
+/// Manages recipe/menu sharing, importing, dismissal, and participant tracking.
+///
+/// ## Notification contract (BUT-1135)
+///
+/// This service intentionally does NOT extend [ChangeNotifier] and does NOT
+/// call `notifyListeners()`. All callers use the **read-after-await** pattern:
+///
+/// ```dart
+/// await socialRecipeService.initialize();   // or refresh()
+/// final recipes = socialRecipeService.sharedRecipes;  // synchronous read
+/// ```
+///
+/// Audited callers (2026-05-29):
+/// - [CollaborativeStatusViewModel] — calls `await` methods, reads result directly.
+/// - `CollaborativeParticipantsWidgets` — stateful widget, awaits then calls `setState`.
+/// - [MinaReceptView] — calls `refresh()` via a delegated ViewModel; doesn't listen.
+///
+/// If a future caller needs reactive binding (e.g. a Provider listening to
+/// state changes without an explicit `await`), add `with ChangeNotifier` and
+/// call `notifyListeners()` after every state mutation, then remove this comment.
 
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -265,6 +284,15 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       if (_permissionService.isAuthenticated) {
         await _sharedMenuRepository.markAsImportedOrJoined(
             menuId, _permissionService.currentUserId!);
+      } else {
+        // BUT-1086: user signed out during the createRecipe awaits. At least
+        // one recipe IS saved but the share couldn't be flagged as imported.
+        // Mirror importSharedRecipe: surface a re-sign-in prompt so the user
+        // knows the menu was only partially imported. Still returns true
+        // because the primary writes succeeded.
+        AppLogger.warning(
+            '⚠️ Sign-out detected mid-import — share status not updated for menu $menuId');
+        _error = AppLocale.current.errorImportPartialReSignIn;
       }
       AppLogger.success('Menu imported: $successCount/$totalCount recipes');
       return true;

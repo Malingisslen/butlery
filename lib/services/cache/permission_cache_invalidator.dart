@@ -12,6 +12,17 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// (like sharedRecipes, sharedMenus, etc.) and invalidates the permission cache
 /// when sharing permissions change.
 ///
+/// BUT-504: this class intentionally holds a [FirebaseFirestore] instance and
+/// subscribes directly to `cloud_firestore` snapshots rather than routing
+/// through a typed repository. It is cache *infrastructure* (a sibling of
+/// [PermissionCacheService], itself a documented `BaseService` non-adopter in
+/// `lib/services/CLAUDE.md`): it performs no reads/writes of user data and no
+/// permission decisions — it only watches the unified `shared_content`
+/// collection to know *when* to evict cache keys. A typed repository would add
+/// a model-mapping layer for documents this class never deserializes (it only
+/// reads `docChanges` ids), so the direct snapshot subscription is the correct
+/// layer here.
+///
 /// Usage:
 /// ```dart
 /// final invalidator = PermissionCacheInvalidator(

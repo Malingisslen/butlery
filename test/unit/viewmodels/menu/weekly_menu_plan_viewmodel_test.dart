@@ -627,6 +627,95 @@ void main() {
       });
     });
 
+    group('undoClearWeek', () {
+      test('restores the pre-clear entries, persists, and wipes the snapshot',
+          () async {
+        final entry = _entry(day: DayOfWeek.mon, slot: MealSlot.middag);
+        final populated = _plan(entries: [entry]);
+        when(() => mockService.getWeek(any()))
+            .thenAnswer((_) async => populated);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+
+        final cleared = populated.copyWith(entries: const []);
+        when(() => mockService.clearWeek(populated)).thenReturn(cleared);
+        await viewModel.clearWeek();
+        expect(viewModel.plan, same(cleared));
+
+        // Undo: service.restoreWeek should put the snapshot entries back.
+        final restored = cleared.copyWith(entries: [entry]);
+        when(() => mockService.restoreWeek(cleared, any()))
+            .thenReturn(restored);
+
+        await viewModel.undoClearWeek();
+
+        expect(viewModel.plan, same(restored));
+        verify(() => mockService.save(restored)).called(1);
+        // Snapshot must be consumed so a second undo is a no-op.
+        clearInteractions(mockService);
+        await viewModel.undoClearWeek();
+        verifyNever(() => mockService.restoreWeek(any(), any()));
+        verifyNever(() => mockService.save(any()));
+      });
+
+      test('is a no-op when called without a preceding clearWeek', () async {
+        final initial = _plan(entries: [
+          _entry(day: DayOfWeek.tue, slot: MealSlot.lunch),
+        ]);
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+
+        // No clearWeek called — snapshot is null.
+        await viewModel.undoClearWeek();
+
+        verifyNever(() => mockService.restoreWeek(any(), any()));
+        verifyNever(() => mockService.save(any()));
+      });
+
+      test(
+          'restores the overflow tray on undo (overflow-only clear is not '
+          'silently lost)', () async {
+        // Reproduces the data-loss bug: an empty plan with a populated
+        // overflow tray. clearWeek wipes the tray but service.save is NOT
+        // called (entries didn't change). Tapping Ångra must bring the tray
+        // back — the snapshot has to capture overflow, not just entries.
+        final emptyPlan = _plan();
+        when(() => mockService.getWeek(any()))
+            .thenAnswer((_) async => emptyPlan);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+
+        final overflowRecipe = _recipe(id: 'overflow-1', title: 'Extra');
+        when(() => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            )).thenReturn(
+          WeeklyMenuDistributionResult(
+              plan: emptyPlan, overflow: [overflowRecipe]),
+        );
+        await viewModel.applyGeneratedMenu(const {'middag': []});
+        expect(viewModel.overflow, [overflowRecipe]);
+
+        when(() => mockService.clearWeek(emptyPlan)).thenReturn(emptyPlan);
+        await viewModel.clearWeek();
+        expect(viewModel.overflow, isEmpty,
+            reason: 'clearWeek wipes the tray.');
+
+        // Undo. Plan is unchanged (still empty) but the tray must reappear.
+        when(() => mockService.restoreWeek(emptyPlan, any()))
+            .thenReturn(emptyPlan);
+        await viewModel.undoClearWeek();
+
+        expect(
+          viewModel.overflow,
+          [overflowRecipe],
+          reason: 'undoClearWeek must restore the overflow tray, not leave '
+              'the overflow recipes permanently lost.',
+        );
+      });
+    });
+
     group('assignFromOverflow', () {
       test('prunes the recipe from overflow after a successful assign',
           () async {

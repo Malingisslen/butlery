@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
+import 'package:butlery/repositories/firebase/firebase_group_shared_content_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import '../../infrastructure/factories/social_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -44,7 +45,8 @@ void main() {
       isAuthenticated: true,
     );
     service = GroupSharedContentService(
-      firestore: fakeFirestore,
+      repository:
+          FirebaseGroupSharedContentRepository(firestore: fakeFirestore),
       permissionService: mockPermissionService,
     );
   });

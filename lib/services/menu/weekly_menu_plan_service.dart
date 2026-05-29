@@ -420,6 +420,16 @@ class WeeklyMenuPlanService extends BaseService {
     return plan.copyWith(entries: const []);
   }
 
+  /// Restore [entries] onto [plan], replacing whatever is there now.
+  /// Used by the undo path after clearWeek: the VM snapshots the pre-clear
+  /// entries list and passes it here if the user taps "Ångra" within 7 s.
+  WeeklyMenuPlan restoreWeek(
+    WeeklyMenuPlan plan,
+    List<WeeklyMenuPlanEntry> entries,
+  ) {
+    return plan.copyWith(entries: entries);
+  }
+
   WeeklyMenuPlanEntry _entryFor({
     required DayOfWeek day,
     required MealSlot slot,

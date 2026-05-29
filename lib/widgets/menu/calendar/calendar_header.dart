@@ -21,22 +21,28 @@ class WeekNavHeader extends StatelessWidget {
   final VoidCallback onPrev;
   final VoidCallback onNext;
 
+  /// Optional "Rensa veckan" callback. When provided, a trash icon button
+  /// is shown on the trailing side so the user can clear the visible week.
+  final VoidCallback? onClearWeek;
+
   const WeekNavHeader({
     super.key,
     required this.label,
     required this.onPrev,
     required this.onNext,
+    this.onClearWeek,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        color: cs.surfaceContainerLow,
         border: Border(
           bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
@@ -45,7 +51,7 @@ class WeekNavHeader extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: cs.onPrimaryContainer,
             onPressed: onPrev,
             tooltip: context.l10n.weeklyMenuPrevWeek,
           ),
@@ -53,14 +59,21 @@ class WeekNavHeader extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.titleSmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
+                color: cs.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
           ),
+          if (onClearWeek != null)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_outlined),
+              color: cs.onPrimaryContainer,
+              onPressed: onClearWeek,
+              tooltip: context.l10n.weeklyMenuClearWeekAction,
+            ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: cs.onPrimaryContainer,
             onPressed: onNext,
             tooltip: context.l10n.weeklyMenuNextWeek,
           ),

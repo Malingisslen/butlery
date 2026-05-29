@@ -6565,6 +6565,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingCouldNotDeleteList => 'Kunde inte ta bort lista';
 
   @override
+  String get shoppingCouldNotLoadLists => 'Kunde inte ladda inköpslistor';
+
+  @override
   String get shoppingCouldNotRemoveMember => 'Kunde inte ta bort medlem';
 
   @override
@@ -13141,6 +13144,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get weeklyMenuChipsRefinePrompt => 'Förfina prompten';
+
+  @override
+  String get weeklyMenuClearWeekAction => 'Rensa veckan';
+
+  @override
+  String get weeklyMenuClearedUndo => 'Veckan rensad';
 
   @override
   String get pantrySectionExpiring => 'Går ut snart';

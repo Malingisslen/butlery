@@ -23,10 +23,12 @@
 ///    Pins:
 ///    - JSON-LD recipe HTML → Tier 2 (schema.org) success with the right
 ///      `extraction_method` and recipe content carried through.
-///    - Long unstructured HTML → Tier 7 (user-assistance) result with
-///      `tier: 7` in metadata (aligned to the Tier 7 source comment by
-///      BUT-1076 — previously emitted `tier: 5` due to a numbering drift).
-///      NOT a hard failure.
+///    - Long unstructured HTML (no detectable ingredients/instructions) →
+///      Tier 7 (user-assistance) result with `tier: 7` in metadata (BUT-1077:
+///      quality gate added so prose-only pages fall through to user-assist
+///      rather than becoming a low-quality Tier 5 success). NOT a hard failure.
+///    - HTML with detectable recipe structure (ingredients OR instructions) →
+///      Tier 5 success with `extraction_method=html_text_parse`.
 ///    - Tiny HTML body → hard failure carrying `html_fetched=true,
 ///      html_length=<N>` so the UI can explain "we fetched but found nothing."
 ///    - HTTP 4xx / 5xx → fetcher returns null → hard failure with
@@ -296,20 +298,18 @@ void main() {
       );
     });
 
-    /// HTML with no JSON-LD but plenty of prose falls through to Tier 5
-    /// (`_tryHtmlTextParse` → `TextImportStrategy.import`). TextImportStrategy
-    /// is intentionally lenient and returns a best-effort recipe rather
-    /// than failing — so the result is a SUCCESS with
-    /// `extraction_method=html_text_parse` and a "quality may vary"
-    /// warning. The source URL is carried back onto the recipe.
+    /// BUT-1077: pure prose (no ingredients, no instructions detectable) must
+    /// NOT produce a Tier 5 success — that would present a garbage recipe to
+    /// the user. The quality gate in `_tryHtmlTextParse` checks that
+    /// `TextImportStrategy` found at least one ingredient OR instruction;
+    /// pure blog prose has neither, so Tier 5 returns null and we fall
+    /// through to Tier 7 (user-assisted import).
     ///
-    /// This pins a real production design choice: prose → low-quality
-    /// success-with-warning, NOT user-assistance prompt. A future change
-    /// that flips this to assistance is a behavioural break the test
-    /// catches.
+    /// This pins the chosen product-intent contract: prose-only pages →
+    /// user-assistance, NOT a low-quality success-with-warnings.
     test(
-        'unstructured HTML falls through to Tier 5 → success with '
-        'html_text_parse + quality warning + sourceUrl set', () async {
+        'unstructured prose HTML (no recipe structure) → Tier 7 '
+        'user-assistance, NOT a Tier 5 low-quality success', () async {
       final strategy = _strategyWith(
         (req) async => _htmlResponse(_unstructuredHtml()),
       );
@@ -317,14 +317,62 @@ void main() {
       final result = await strategy.import('http://8.8.8.8/blog');
 
       expect(
+        result.needsAssistance,
+        isTrue,
+        reason: 'BUT-1077: prose with no ingredients/instructions must fall '
+            'through to Tier 7 (user-assisted), not be presented as a recipe',
+      );
+      expect(result.isSuccess, isFalse);
+      expect(result.extractedText, isNotNull);
+      expect(result.metadata?['tier'], 7);
+    });
+
+    /// BUT-1077: Tier 5 quality gate passes when there IS actual recipe
+    /// structure. A page with detectable ingredients or instructions must
+    /// still succeed at Tier 5 with `extraction_method=html_text_parse`.
+    test(
+        'HTML with detectable recipe structure reaches Tier 5 → success with '
+        'html_text_parse + quality warning + sourceUrl set', () async {
+      // This page has no JSON-LD but has clear ingredient lines with
+      // Swedish measurement units that RecipeSectionDetector recognises.
+      const recipeHtml = '''
+<!doctype html>
+<html><head><title>Pannkakor</title></head>
+<body>
+<h1>Pannkakor</h1>
+<h2>Ingredienser</h2>
+<ul>
+  <li>3 ägg</li>
+  <li>5 dl mjölk</li>
+  <li>3 dl vetemjöl</li>
+  <li>1 krm salt</li>
+  <li>2 msk smör</li>
+</ul>
+<h2>Gör så här</h2>
+<ol>
+  <li>Vispa ihop ägg och mjölk i en bunke.</li>
+  <li>Tillsätt vetemjöl och salt under omrörning tills smeten är slät.</li>
+  <li>Hetta upp smör i en stekpanna och stek pannkakor på medelvärme.</li>
+</ol>
+</body>
+</html>
+''';
+
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(recipeHtml),
+      );
+
+      final result = await strategy.import('http://8.8.8.8/pannkakor');
+
+      expect(
         result.isSuccess,
         isTrue,
-        reason: 'Tier 5 is lenient — long prose → best-effort recipe',
+        reason: 'page with ingredient/instruction structure must succeed',
       );
       expect(result.recipe, isNotNull);
       expect(
         result.recipe!.core.sourceUrl,
-        'http://8.8.8.8/blog',
+        'http://8.8.8.8/pannkakor',
         reason: 'Tier 5 must stamp the source URL onto the recipe',
       );
       expect(
@@ -338,6 +386,58 @@ void main() {
         reason:
             'Tier 5 must warn the user that this is a low-quality extraction',
       );
+    });
+
+    /// BUT-1077 boundary: the quality gate is
+    /// `ingredients.isEmpty && instructions.isEmpty` — an AND, not an OR.
+    /// A page with detectable INSTRUCTIONS but ZERO ingredients must STILL
+    /// pass the gate and reach Tier 5. This pins the asymmetric branch the
+    /// other Tier 5 tests miss (they all supply both axes): tightening the
+    /// gate to `||` (require BOTH) would silently demote instructions-only
+    /// pages to Tier 7, and only this test would go red.
+    test(
+        'BUT-1077: instructions-only page (zero ingredients) still passes the '
+        'AND gate → Tier 5 success, NOT Tier 7', () async {
+      // Numbered method steps with Swedish cooking verbs that
+      // TextImportStrategy recognises as instructions, and no ingredient
+      // list at all — so the parsed recipe has empty ingredients.
+      const instructionsOnlyHtml = '''
+<!doctype html>
+<html><head><title>Tillagning</title></head>
+<body>
+<h1>Hur man gör</h1>
+<h2>Gör så här</h2>
+<ol>
+  <li>Vispa ihop ägg och mjölk i en stor bunke tills det är slätt.</li>
+  <li>Tillsätt vetemjöl under omrörning och låt smeten vila i tio minuter.</li>
+  <li>Hetta upp smör i en stekpanna och stek pannkakorna på medelvärme.</li>
+</ol>
+</body>
+</html>
+''';
+
+      final strategy = _strategyWith(
+        (req) async => _htmlResponse(instructionsOnlyHtml),
+      );
+
+      final result = await strategy.import('http://8.8.8.8/instructions');
+
+      expect(
+        result.isSuccess,
+        isTrue,
+        reason: 'instructions present → the AND gate must NOT fall through; '
+            'an instructions-only page is a usable (if partial) recipe',
+      );
+      expect(result.needsAssistance, isFalse);
+      expect(result.metadata?['extraction_method'], 'html_text_parse');
+      expect(result.metadata?['tier'], 5);
+      expect(
+        result.recipe!.core.ingredients,
+        isEmpty,
+        reason: 'this page has no ingredient list — the gate passed on '
+            'instructions alone, proving the AND (not OR) semantics',
+      );
+      expect(result.recipe!.core.instructions, isNotEmpty);
     });
 
     /// Body too small for the >100-char bestHtml guard → none of Tiers 5-7
@@ -520,16 +620,18 @@ void main() {
 
     /// JSON-LD that ISN'T a Recipe (e.g. @type=Article) must NOT trigger
     /// the schema.org tier — the extractor returns null and we fall
-    /// through. With long prose underneath, Tier 5 then makes a best-
-    /// effort recipe (lenient by design), but the `extraction_method`
-    /// must reflect that — it must NOT be `schema.org`.
+    /// through. The body has only prose (no ingredients/instructions), so
+    /// BUT-1077's quality gate in Tier 5 kicks in and falls through to
+    /// Tier 7 (user-assisted import).
     ///
     /// This is the key invariant: a non-Recipe JSON-LD type must not be
     /// claimed as a structured-data extraction. Otherwise we'd present
-    /// news articles as recipes with high confidence.
+    /// news articles as recipes with high confidence. Tier 7 (user-
+    /// assistance) is the correct result — better than a low-quality
+    /// success-with-warnings.
     test(
-        'JSON-LD @type=Article does NOT trigger Tier 2 — extraction_method '
-        'must NOT be schema.org', () async {
+        'JSON-LD @type=Article does NOT trigger Tier 2; pure prose page '
+        'reaches Tier 7 (user-assisted) — never claims schema.org', () async {
       const html = '''
 <!doctype html>
 <html><head><script type="application/ld+json">
@@ -547,28 +649,77 @@ tempor incididunt ut labore et dolore magna aliqua.</p>
 
       final result = await strategy.import('http://8.8.8.8/article');
 
+      // Core invariant: schema.org tier must never claim a non-Recipe type.
       expect(
         result.metadata?['extraction_method'],
         isNot(equals('schema.org')),
         reason: '@type=Article must not be claimed as a schema.org Recipe — '
             'doing so would mark news articles as high-confidence recipes',
       );
-      // Tier 5 (the lenient text parser) IS allowed to handle it. The
-      // contract is just "don't claim it came from structured data."
 
-      // BUT-1070: when text-fallback fires on a page whose only JSON-LD is
-      // a non-Recipe @type, prepend a strong "this is probably a news
-      // article" warning so the user knows the result is suspect.
+      // BUT-1077: pure prose → Tier 5 quality gate fails (no ingredients,
+      // no instructions) → falls through to Tier 7 (user-assistance).
+      // Tier 7 is a clearer signal to the user than a low-quality success.
       expect(
-        result.warnings,
-        isNotNull,
-        reason: 'BUT-1070: non-Recipe JSON-LD must surface a user warning',
-      );
-      expect(
-        result.warnings!.any((w) => w.contains('nyhetsartikel')),
+        result.needsAssistance,
         isTrue,
-        reason: 'BUT-1070: warning must mention "nyhetsartikel" so the user '
-            'understands the page was an article, not a recipe',
+        reason: 'BUT-1077: article page with no recipe structure must reach '
+            'Tier 7 (user-assistance), not be presented as a recipe',
+      );
+      expect(result.isSuccess, isFalse);
+      expect(result.extractedText, isNotNull);
+      expect(result.metadata?['tier'], 7);
+    });
+
+    /// BUT-1070 companion: when Tier 5 DOES fire on a page with non-Recipe
+    /// JSON-LD (because there ARE detectable ingredients), the warning
+    /// must mention "nyhetsartikel" to flag the suspicious context.
+    test(
+        'BUT-1070: Tier 5 with non-Recipe JSON-LD fires nyhetsartikel warning '
+        'when ingredients ARE present', () async {
+      // This page has @type=Article JSON-LD (non-Recipe) but also contains
+      // Swedish ingredient lines that will pass Tier 5's quality gate.
+      const html = '''
+<!doctype html>
+<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Cooking tips"}
+</script></head><body>
+<h1>Cooking tips</h1>
+<h2>Ingredienser</h2>
+<ul>
+  <li>3 dl vetemjöl</li>
+  <li>2 msk smör</li>
+  <li>1 tsk bakpulver</li>
+  <li>5 dl mjölk</li>
+</ul>
+<h2>Gör så här</h2>
+<ol>
+  <li>Blanda vetemjöl och bakpulver i en bunke.</li>
+  <li>Tillsätt smält smör och mjölk under omrörning.</li>
+</ol>
+</body></html>
+''';
+
+      final strategy = _strategyWith((req) async => _htmlResponse(html));
+
+      final result = await strategy.import('http://8.8.8.8/cooking-article');
+
+      // Schema.org tier must still not fire for @type=Article.
+      expect(
+        result.metadata?['extraction_method'],
+        isNot(equals('schema.org')),
+      );
+
+      // Tier 5 fires because ingredients were found (quality gate passes).
+      expect(result.isSuccess, isTrue);
+      expect(result.metadata?['extraction_method'], 'html_text_parse');
+
+      // BUT-1070 warning must be present when non-Recipe JSON-LD was found.
+      expect(
+        result.warnings?.any((w) => w.contains('nyhetsartikel')),
+        isTrue,
+        reason: 'BUT-1070: Tier 5 on a non-Recipe JSON-LD page must warn '
+            '"nyhetsartikel" so the user knows the context is suspect',
       );
     });
 

@@ -540,8 +540,18 @@ service cloud.firestore {
     // ========================================
 
     match /shared_content/{contentId} {
-      allow list: if isAuthenticated()
-        && request.auth.uid == resource.data.sharedByUserId;
+      // List is permitted to the sharer OR a recipient. The recipient branch
+      // is required because the group shared-content query filters by
+      // `sharedToUserIds arrayContainsAny [...]` (recipients reading what was
+      // shared with them) — without it the entire query is permission-denied
+      // for every recipient (the normal case) and silently returns empty.
+      // The rules engine evaluates this per candidate document, so a recipient
+      // can only list documents whose sharedToUserIds actually contains their
+      // uid; it does not widen access to docs they were not shared into.
+      allow list: if isAuthenticated() && (
+        request.auth.uid == resource.data.sharedByUserId
+        || request.auth.uid in resource.data.sharedToUserIds
+      );
       allow get: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId
         || isSharedMember('shared_content', contentId)
@@ -1941,7 +1951,10 @@ service cloud.firestore {
           'notificationId', 'senderId', 'targetUserId', 'category',
           'type', 'status', 'sentAt', 'metadata',
           'delivered', 'deliveredAt', 'opened', 'openedAt',
-          'failedAt', 'errorCode', 'errorMessage', 'deliveryMetadata'
+          'failedAt', 'errorCode', 'errorMessage', 'deliveryMetadata',
+          // 90-day TTL field stamped by NotificationAnalyticsManager; the TTL
+          // policy itself is configured via gcloud, not in firestore.indexes.json.
+          'expireAt'
         ]);
       // Sender can update all mutable fields; target can only mark as opened
       allow update: if isAuthenticated()
@@ -1962,7 +1975,9 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.keys().hasOnly([
           'notificationId', 'userId', 'action', 'timestamp',
-          'context', 'actionId', 'actionData', 'reason'
+          'context', 'actionId', 'actionData', 'reason',
+          // 90-day TTL field stamped by NotificationAnalyticsManager.
+          'expireAt'
         ]);
       allow delete: if isAuthenticated()
         && resource.data.userId == request.auth.uid;
