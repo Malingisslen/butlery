@@ -4,6 +4,15 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 
 ---
 
+### [Workflow] Late-phase side-effect agents must be wrapped — a Ship schema miss discarded a 1.13M-token run
+- **Date**: 2026-05-29
+- **Trigger**: `sprint-execute-parallel` ran iter-100 fully (8 tickets implemented + integrated + per-batch reviewed), then the Ship agent finished its git/Linear Bash steps WITHOUT calling StructuredOutput. `await agent({schema})` threw after 2 nudges and the unwrapped throw discarded the entire run. Nothing committed.
+- **Rule**:
+  1. In a workflow, any late-phase agent whose real output is *side effects* (commit/push/Linear), not its return value, must be wrapped in try/catch so a StructuredOutput miss can't nuke all upstream work.
+  2. Follow it with a short focused **verify** agent that reads ground truth (`git log -1`, `git status --porcelain`, `git rev-list --count @{u}..HEAD`) and build the summary from that, not the agent's self-report. Return a recoverable status (`ship-incomplete`), never throw.
+  3. Salvage a post-integration crash instead of re-running (each attempt = ~1.13M tokens): work is in the tree (Phase 0 guaranteed clean start), so verify analyze + tests → touch markers (honest, review ran) → `git add -A` + commit + push → reconcile Linear by querying current state (don't trust the crashed Ship's partial writes) → clean orphan worktrees + leftover patches.
+- **Example**: Salvaged iter-100 → commit `43b3aadb3`, 7 tickets Done + BUT-1095 Canceled. Hardened the workflow (try/catch + verify-ship agent). See `memory/feedback_workflow_ship_resilience.md`.
+
 ## Active Lessons
 
 <!-- Entries added automatically after user corrections -->
