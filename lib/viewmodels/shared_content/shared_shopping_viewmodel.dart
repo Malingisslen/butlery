@@ -52,6 +52,8 @@ class SharedShoppingViewModel
   SharedShoppingViewModel({
     SocialShoppingCoordinator? socialShoppingCoordinator,
     UnifiedShoppingService? shoppingService,
+    super.permissionService,
+    super.friendsService,
   }) {
     _socialShoppingCoordinator = socialShoppingCoordinator ??
         ServiceLocator.get<SocialShoppingCoordinator>();

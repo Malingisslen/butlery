@@ -4131,3 +4131,30 @@ existing behavior.
 - **Pattern (good):** To drive a real async gap across dispose without `Future.delayed`: stub the service to return a `Completer.future` (a "gate"), call the async VM method, `dispose()` the VM, THEN `gate.complete(...)` and `await` the pending future. The completion lands on a disposed VM → exercises the guard. Assertion: a listener flag counts notifications fired *after* a `disposed=true` sentinel, and `expect(notificationsAfterDispose, 0)` + the awaited result not throwing. If the base override were removed, `super.notifyListeners()` on a disposed ChangeNotifier throws "A ChangeNotifier was used after being disposed", surfacing as an uncaught error through the failure branch → test fails. Real teeth.
 - **Gotcha:** the shared `viewModel` is disposed in `tearDown` unconditionally. A disposal test must NOT dispose that shared instance (double-`super.dispose()` on ChangeNotifier asserts-throws). Create a LOCAL `disposableVm` inside the test and dispose only that one; leave the shared fixture for tearDown.
 - **BaseViewModel ground truth (`lib/viewmodels/base_viewmodel.dart`):** `setLoading`/`setError`/`clearError`/`clearState` all `if (_isDisposed) return;`. `notifyListeners` overridden to `if (!_isDisposed) super.notifyListeners();`. `executeAsync` throws `StateError` if disposed at entry; `executeAsyncVoid` returns false. These are the guards any post-migration disposal test rests on.
+
+
+### 2026-05-29 — DI-seam injection tests: prove with a DISTINCT value, test BOTH super-params
+**Trigger:** Reviewed BUT-1075 — 4 shared_content VMs got optional injectable ctor params
+(`PermissionService` + `UnifiedFriendsService`) threaded via `super.permissionService` /
+`super.friendsService`, both defaulting to `ServiceLocator`. One injection test was added.
+**Patterns confirmed/added:**
+- **Distinct-value discrimination.** To prove a ctor seam wins over the locator, register the
+  locator-backed fake with value A in `setUp`, inject a *second* fake with value B, assert B.
+  If both used the same value the test passes even when the seam is broken. The existing test
+  used `injected-uid` vs locator `_kCurrentUid` ('uid-current') — correct.
+- **Test each super-param independently.** Two super-params added together (permission +
+  friends) are a copy-paste hazard: a slip (wrong field assignment, or a subclass omitting one
+  `super.x`) passes every existing test if only one param is exercised. The existing
+  blocked-users test (read-at-load-time) only proves the *locator* friendsService flows to
+  `blockedUsers` — it does NOT cover the new ctor param. Added a symmetric
+  `injected friendsService feeds blockedUsers` test (MockUnifiedFriendsService with a
+  non-empty block set vs locator's empty set). Worth it; not padding.
+- **Construction-time vs lazy resolution timing.** Base now captures
+  `_permissionService = ... ServiceLocator.get<PermissionService>()` AT CONSTRUCTION (was lazy
+  per-read). Safe for existing tests only because `registerMock` runs in `setUp` before any VM
+  is built. `friendsService.blockedUsers` stays lazy — preserving the "block after construct,
+  read at load" test. When reviewing eager-capture DI changes, check the locator is populated
+  before construction in the test lifecycle.
+- Backward-compat for optional-named-param + `?? ServiceLocator` defaults: existing `makeVm()`
+  callers pass neither → hit the `??` branch → identical behaviour. Reasoning is sound, no need
+  to re-run all 206.

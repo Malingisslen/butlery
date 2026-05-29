@@ -90,13 +90,29 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   bool _showImported = false;
 
   /// Blocked-user set from UnifiedFriendsService (optional dependency).
-  UnifiedFriendsService? _friendsService;
+  final UnifiedFriendsService? _friendsService;
+
+  /// Permission service for the current-user lookup. Injectable for tests
+  /// (BUT-1075); defaults to the production locator so callers are unchanged.
+  final PermissionService _permissionService;
 
   /// Users blocked by the current user. Content from these users should be filtered out.
   Set<String> get blockedUsers => _friendsService?.blockedUsers ?? {};
 
-  BaseSharedContentViewModel() {
-    _friendsService = ServiceLocator.tryGet<UnifiedFriendsService>();
+  /// BUT-1075: [permissionService] and [friendsService] are injectable so
+  /// shared-content VM tests no longer need the production-locator bridge just
+  /// to resolve these two collaborators. Both default to `ServiceLocator`
+  /// resolution, so production construction is unchanged. Mirrors
+  /// `FriendsViewModel`. PermissionService resolves the singleton reference at
+  /// construction (it is registered well before any VM is built); only
+  /// `currentUserId` reads from it lazily, preserving the prior timing.
+  BaseSharedContentViewModel({
+    PermissionService? permissionService,
+    UnifiedFriendsService? friendsService,
+  })  : _permissionService =
+            permissionService ?? ServiceLocator.get<PermissionService>(),
+        _friendsService =
+            friendsService ?? ServiceLocator.tryGet<UnifiedFriendsService>() {
     AppLogger.info('${contentTypeName}ViewModel initialized');
     // Don't auto-initialize - coordinator will trigger when ready
     // This prevents race condition where currentUserId is null at constructor time
@@ -134,8 +150,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   bool contentMatchesSearch(TContent content, String searchQuery);
 
   /// Get current user ID for operations
-  String? get currentUserId =>
-      ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId => _permissionService.currentUserId;
 
   /// Current search query
   String get searchQuery => _searchQuery;

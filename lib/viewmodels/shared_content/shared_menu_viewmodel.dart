@@ -44,6 +44,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
   SharedMenuViewModel({
     SocialMenuCoordinator? socialMenuCoordinator,
+    super.permissionService,
+    super.friendsService,
   }) {
     _socialMenuCoordinator =
         socialMenuCoordinator ?? ServiceLocator.get<SocialMenuCoordinator>();

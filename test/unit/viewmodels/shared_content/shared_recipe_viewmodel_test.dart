@@ -693,4 +693,47 @@ void main() {
       vm.dispose();
     });
   });
+
+  group('BUT-1075 constructor injection', () {
+    test('injected permissionService overrides the locator for currentUserId',
+        () {
+      // Distinct uid from the bridge-registered one (_kCurrentUid) to prove the
+      // ctor param wins over ServiceLocator resolution — a test can supply
+      // PermissionService directly instead of relying on the production-locator
+      // bridge just to make currentUserId resolve.
+      final injected = FakePermissionService();
+      injected.setPermissionState(
+        currentUserId: 'injected-uid',
+        isAuthenticated: true,
+      );
+
+      final vm = SharedRecipeViewModel(
+        socialRecipeCoordinator: coordinator,
+        permissionService: injected,
+      );
+
+      expect(vm.currentUserId, 'injected-uid',
+          reason: 'currentUserId must resolve from the injected '
+              'PermissionService, not the locator-registered $_kCurrentUid');
+      vm.dispose();
+    });
+
+    test('injected friendsService feeds blockedUsers, not the locator one', () {
+      // The locator-registered friendsService (setUp) has an empty block set.
+      // A distinct injected instance with a non-empty set proves the ctor
+      // param wins over ServiceLocator.tryGet for the blockedUsers read.
+      final injectedFriends = MockUnifiedFriendsService();
+      injectedFriends.setFriendsState(blockedUsers: {'blocked-via-injection'});
+
+      final vm = SharedRecipeViewModel(
+        socialRecipeCoordinator: coordinator,
+        friendsService: injectedFriends,
+      );
+
+      expect(vm.blockedUsers, {'blocked-via-injection'},
+          reason: 'blockedUsers must read the injected UnifiedFriendsService, '
+              'not the locator-registered one (empty set)');
+      vm.dispose();
+    });
+  });
 }

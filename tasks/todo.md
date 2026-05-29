@@ -26,6 +26,10 @@
 - [x] **BUT-1121: joinSharedMenu inner addParticipant catch independence** — added test proving the inner "continue anyway" catch is independent of the outer catch: with `addParticipant` throwing, the collaborative join still returns a `MenuJoinResult` (isCollaborative, correct menuId), still marks the share joined, and sets NO error banner. New `_CollaborativeSharedMenuRepository` + `_AddParticipantThrowsRealtimeMenuService` test doubles. 33/33 pass, reviewed clean (mutation-verified). Test-only. (BUT-1121, P3)
 - [x] **BUT-1123: joinSharedMenu all-failure-paths contract** — DONE (iter-103e). Added 2 tests pinning the remaining internal failure modes: markAsImportedOrJoined-throws (collaborative branch → outer catch → null+banner) and importSharedMenu-throws (static branch → outer catch → null+banner). read-throws already covered by the BUT-1090 regression test; addParticipant-inner-catch by BUT-1121. Both assert `lastError isNotNull` to distinguish a genuine caught throw from an accidental null. 35/35 pass, reviewed clean. (BUT-1123, P4)
 
+### iter-103f (continuation — backlog pick)
+
+- [x] **BUT-1075: BaseSharedContentViewModel injectable PermissionService + UnifiedFriendsService** — DONE (code complete, verified; commit pending a transient Bash-classifier outage). Added optional ctor params to the base VM (resolved via `?? ServiceLocator.get/tryGet`, behavior-identical) + super-parameter forwarding in the 3 subclasses (recipe/menu/shopping). `currentUserId` now reads the injected `_permissionService`. 2 injection-proof tests added (permissionService + friendsService each override the locator via distinct values). All 206 shared_content tests + 36 recipe-VM tests pass; analyze clean; both review agents clean. (BUT-1075, P4)
+
 ### Post-Sprint Steps (for the implementing session)
 
 - [ ] Per-ticket Step 0 (read code; classify fits / premise-gone / plan-stale).

@@ -43,6 +43,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 
   SharedRecipeViewModel({
     SocialRecipeCoordinator? socialRecipeCoordinator,
+    super.permissionService,
+    super.friendsService,
   }) {
     _socialRecipeCoordinator = socialRecipeCoordinator ??
         ServiceLocator.get<SocialRecipeCoordinator>();
