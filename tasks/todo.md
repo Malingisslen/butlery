@@ -24,7 +24,7 @@
 ### iter-103d (continuation — backlog picks)
 
 - [x] **BUT-1121: joinSharedMenu inner addParticipant catch independence** — added test proving the inner "continue anyway" catch is independent of the outer catch: with `addParticipant` throwing, the collaborative join still returns a `MenuJoinResult` (isCollaborative, correct menuId), still marks the share joined, and sets NO error banner. New `_CollaborativeSharedMenuRepository` + `_AddParticipantThrowsRealtimeMenuService` test doubles. 33/33 pass, reviewed clean (mutation-verified). Test-only. (BUT-1121, P3)
-- [ ] **BUT-1123: joinSharedMenu all-failure-paths contract** — DEFERRED. read-throws path already covered; the additional markAsImportedOrJoined-throws + importSharedMenu-throws paths need more mock-stubbing surface (MockUnifiedMenuService + fallback values). The BUT-1121 infra (_CollaborativeSharedMenuRepository) makes it cheaper next iteration. (BUT-1123, P4)
+- [x] **BUT-1123: joinSharedMenu all-failure-paths contract** — DONE (iter-103e). Added 2 tests pinning the remaining internal failure modes: markAsImportedOrJoined-throws (collaborative branch → outer catch → null+banner) and importSharedMenu-throws (static branch → outer catch → null+banner). read-throws already covered by the BUT-1090 regression test; addParticipant-inner-catch by BUT-1121. Both assert `lastError isNotNull` to distinguish a genuine caught throw from an accidental null. 35/35 pass, reviewed clean. (BUT-1123, P4)
 
 ### Post-Sprint Steps (for the implementing session)
 

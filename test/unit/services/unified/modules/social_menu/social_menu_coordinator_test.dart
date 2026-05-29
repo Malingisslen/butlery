@@ -70,6 +70,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart' as app_prov;
 import 'package:butlery/models/recipe_unified.dart';
@@ -78,6 +79,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 
 import '../../../../../infrastructure/mocks/production_mocks.dart';
@@ -156,8 +158,9 @@ class _ThrowingSharedMenuRepository extends FirebaseSharedMenuRepository {
 /// records that it ran, so the test can prove the join completed despite an
 /// addParticipant failure. Constructor touches no Firebase.
 class _CollaborativeSharedMenuRepository extends FirebaseSharedMenuRepository {
-  _CollaborativeSharedMenuRepository(this._menu);
+  _CollaborativeSharedMenuRepository(this._menu, {this.throwOnMark = false});
   final SharedMenu _menu;
+  final bool throwOnMark;
   bool markCalled = false;
 
   @override
@@ -165,6 +168,9 @@ class _CollaborativeSharedMenuRepository extends FirebaseSharedMenuRepository {
 
   @override
   Future<void> markAsImportedOrJoined(String contentId, String userId) async {
+    if (throwOnMark) {
+      throw Exception('simulated markAsImportedOrJoined failure (BUT-1123)');
+    }
     markCalled = true;
   }
 }
@@ -198,6 +204,18 @@ SharedMenu _collaborativeSharedMenu() => SharedMenu(
         'Måndag': [_makeRecipe()],
       },
       realtimeMenuId: 'rt-menu-1',
+    );
+
+/// A static shared menu (no realtimeMenuId) — routes joinSharedMenu into the
+/// UnifiedMenuService.importSharedMenu branch rather than the realtime one.
+SharedMenu _staticSharedMenu() => SharedMenu(
+      id: 'shared-static-1',
+      sharedByUserId: 'owner-uid',
+      sharedByDisplayName: 'Owner',
+      menuTitle: 'Statisk meny',
+      menuSnapshot: {
+        'Måndag': [_makeRecipe()],
+      },
     );
 
 Recipe _makeRecipe({
@@ -847,6 +865,85 @@ void main() {
         expect(repo.markCalled, isTrue,
             reason: 'join still marks the share joined despite the failed '
                 'participant write');
+      });
+
+      /// BUT-1123: joinSharedMenu is contractually "never propagates an
+      /// exception — callers rely on null-or-result". The read()-throws path
+      /// is pinned by the BUT-1090 regression test above; these two pin the
+      /// remaining internal failure modes so the contract holds end-to-end.
+      /// Downstream SharedMenuViewModel + the inbox tile depend on this — a
+      /// silent slip means an unresponsive tile that needs a session restart.
+      ///
+      /// markAsImportedOrJoined throws AFTER a successful read (collaborative
+      /// branch, addParticipant fine) → the OUTER catch must absorb it → null
+      /// + banner, no rethrow.
+      test(
+          'BUT-1123: markAsImportedOrJoined throw → null via outer catch, '
+          'no rethrow', () async {
+        final repo = _CollaborativeSharedMenuRepository(
+            _collaborativeSharedMenu(),
+            throwOnMark: true);
+        // addParticipant must NOT throw here, so the failure originates at the
+        // mark step (outer catch), not the inner participant catch.
+        TestServiceLocator.registerMock<RealtimeMenuService>(
+            MockRealtimeMenuService());
+
+        final coord = SocialMenuCoordinator(
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (e) => lastError = e,
+          notifyListeners: () => notifyCount++,
+          getMenu: (id) async => menuStore[id],
+          saveMenu: (menu) async {
+            savedMenus.add(menu);
+            return saveResult;
+          },
+          sharedMenuRepository: repo,
+        );
+        addTearDown(() async => await coord.dispose());
+
+        final out = await coord.joinSharedMenu(sharedMenuId: 'shared-collab-1');
+
+        expect(out, isNull,
+            reason: 'mark failure must route through the outer catch to null');
+        expect(lastError, isNotNull,
+            reason: 'outer catch surfaces a sanitised banner; no rethrow');
+      });
+
+      /// Static branch: read() returns a menu WITHOUT realtimeMenuId, so the
+      /// join delegates to UnifiedMenuService.importSharedMenu. If that throws,
+      /// the outer catch must absorb it → null + banner, no rethrow.
+      test(
+          'BUT-1123: importSharedMenu throw (static branch) → null via outer '
+          'catch, no rethrow', () async {
+        final repo = _CollaborativeSharedMenuRepository(_staticSharedMenu());
+        final menuService = MockUnifiedMenuService();
+        when(() => menuService.importSharedMenu(
+              sharedMenuId: any(named: 'sharedMenuId'),
+              newTitle: any(named: 'newTitle'),
+            )).thenThrow(Exception('simulated importSharedMenu failure'));
+        TestServiceLocator.registerMock<UnifiedMenuService>(menuService);
+
+        final coord = SocialMenuCoordinator(
+          getCurrentUserId: () => currentUserId,
+          getCurrentUserDisplayName: () => currentUserDisplayName,
+          setError: (e) => lastError = e,
+          notifyListeners: () => notifyCount++,
+          getMenu: (id) async => menuStore[id],
+          saveMenu: (menu) async {
+            savedMenus.add(menu);
+            return saveResult;
+          },
+          sharedMenuRepository: repo,
+        );
+        addTearDown(() async => await coord.dispose());
+
+        final out = await coord.joinSharedMenu(sharedMenuId: 'shared-static-1');
+
+        expect(out, isNull,
+            reason: 'static-import throw must route through the outer catch');
+        expect(lastError, isNotNull,
+            reason: 'outer catch surfaces a sanitised banner; no rethrow');
       });
     });
 
