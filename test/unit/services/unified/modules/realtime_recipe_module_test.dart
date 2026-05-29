@@ -304,6 +304,34 @@ void main() {
 
         expect(realtimeModule.activeEditingSessions, isEmpty);
       });
+
+      // BUT-472: leak guard. The module owns three handle maps
+      // (subscriptions, pending edits, conflict timers) that the static
+      // session/cache helpers operate on. Prior coverage only asserted the
+      // session map cleared; this proves dispose() leaves ZERO outstanding
+      // handles across all three — so a future refactor that forgets one
+      // map fails here instead of leaking for the whole session.
+      test('dispose leaves zero outstanding handles across all maps', () async {
+        await seedRealtimeDoc('recipe_1');
+        await seedRealtimeDoc(
+            'recipe_2', {'title': 'Recipe 2', 'description': 'Desc 2'});
+        await realtimeModule.startRealtimeEditing('recipe_1');
+        await realtimeModule.startRealtimeEditing('recipe_2');
+        // Enqueue a pending edit so the pending-edits map is non-empty,
+        // making the post-dispose zero assertion meaningful.
+        await realtimeModule.updateTitleRealtime('recipe_1', 'Edited');
+        expect(realtimeModule.hasPendingEdits('recipe_1'), isTrue,
+            reason: 'precondition: a pending edit exists before dispose');
+
+        await realtimeModule.dispose();
+
+        final usage = realtimeModule.getMemoryUsage();
+        expect(usage['active_sessions'], equals(0));
+        expect(usage['pending_edits_count'], equals(0));
+        expect(usage['conflict_timers_count'], equals(0));
+        expect(realtimeModule.activeEditingSessions, isEmpty);
+        expect(realtimeModule.hasPendingEdits('recipe_1'), isFalse);
+      });
     });
   });
 }
