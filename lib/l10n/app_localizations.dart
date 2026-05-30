@@ -10437,6 +10437,24 @@ abstract class AppLocalizations {
   /// **'Bjud in vänner'**
   String get socialInviteFriends;
 
+  /// Headline on the Friends-tab onboarding empty state (BUT-975)
+  ///
+  /// In sv, this message translates to:
+  /// **'Laga tillsammans med vänner'**
+  String get friendsEmptyHeadline;
+
+  /// Subtitle explaining why to add friends, on the Friends-tab empty state
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela recept, se vad dina vänner lagar och planera menyer ihop.'**
+  String get friendsEmptySubtitle;
+
+  /// Secondary CTA on the Friends-tab empty state — jumps to the Find Friends search tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Hitta vänner med användarnamn'**
+  String get friendsEmptyFindByUsername;
+
   /// No description provided for @socialInviteSubject.
   ///
   /// In sv, this message translates to:

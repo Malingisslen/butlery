@@ -6059,6 +6059,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialInviteFriends => 'Invite friends';
 
   @override
+  String get friendsEmptyHeadline => 'Cook together with friends';
+
+  @override
+  String get friendsEmptySubtitle =>
+      'Share recipes, see what your friends are cooking, and plan menus together.';
+
+  @override
+  String get friendsEmptyFindByUsername => 'Find friends by username';
+
+  @override
   String get socialInviteSubject => 'Join Butlery!';
 
   @override

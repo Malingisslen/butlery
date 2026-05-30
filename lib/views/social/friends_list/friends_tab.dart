@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/views/social/friends_list/friends_empty_state.dart';
 import 'package:butlery/views/social/friends_list/requests_tab.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -15,18 +16,19 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 class FriendsTab {
   static Widget build(
     BuildContext context,
-    FriendsViewModel viewModel,
-  ) {
+    FriendsViewModel viewModel, {
+    required VoidCallback onFindByUsername,
+  }) {
     return LoadingStateBuilder<List<UserProfile>>(
       isLoading: viewModel.isLoading,
       error: viewModel.error,
       data: viewModel.friends,
       loadingMessage: context.l10n.socialLoadingFriends,
-      emptyTitle: context.l10n.socialNoFriendsYet,
-      emptySubtitle: context.l10n.socialAddFriendsToGetStarted,
-      emptyIcon: Icons.people_outline,
-      emptyActionLabel: context.l10n.socialInviteFriends,
-      onEmptyAction: () => RequestsTab.shareInvitationLink(context, viewModel),
+      // BUT-975: branded first-touch onboarding instead of the generic state.
+      emptyBuilder: (context) => FriendsEmptyState(
+        onInvite: () => RequestsTab.shareInvitationLink(context, viewModel),
+        onFindByUsername: onFindByUsername,
+      ),
       builder: (context, friends) => RefreshIndicator(
         onRefresh: () async {
           await viewModel.refresh();

@@ -6062,6 +6062,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialInviteFriends => 'Bjud in vänner';
 
   @override
+  String get friendsEmptyHeadline => 'Laga tillsammans med vänner';
+
+  @override
+  String get friendsEmptySubtitle =>
+      'Dela recept, se vad dina vänner lagar och planera menyer ihop.';
+
+  @override
+  String get friendsEmptyFindByUsername => 'Hitta vänner med användarnamn';
+
+  @override
   String get socialInviteSubject => 'Gå med i Butlery!';
 
   @override

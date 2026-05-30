@@ -3851,6 +3851,18 @@
   "socialFindNewFriends": "Hitta nya vänner",
   "socialFindNewFriendsDescription": "Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.",
   "socialInviteFriends": "Bjud in vänner",
+  "friendsEmptyHeadline": "Laga tillsammans med vänner",
+  "@friendsEmptyHeadline": {
+    "description": "Headline on the Friends-tab onboarding empty state (BUT-975)"
+  },
+  "friendsEmptySubtitle": "Dela recept, se vad dina vänner lagar och planera menyer ihop.",
+  "@friendsEmptySubtitle": {
+    "description": "Subtitle explaining why to add friends, on the Friends-tab empty state"
+  },
+  "friendsEmptyFindByUsername": "Hitta vänner med användarnamn",
+  "@friendsEmptyFindByUsername": {
+    "description": "Secondary CTA on the Friends-tab empty state — jumps to the Find Friends search tab"
+  },
   "socialInviteSubject": "Gå med i Butlery!",
   "socialFriendRequestAccepted": "Vänskapsförfrågan accepterad!",
   "socialFriendRequestAcceptedFrom": "Vänskapsförfrågan från {name} accepterad!",

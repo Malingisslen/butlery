@@ -3845,6 +3845,18 @@
   "socialFindNewFriends": "Find new friends",
   "socialFindNewFriendsDescription": "Use the search field above to find people you want to be friends with. Search by name or username.",
   "socialInviteFriends": "Invite friends",
+  "friendsEmptyHeadline": "Cook together with friends",
+  "@friendsEmptyHeadline": {
+    "description": "Headline on the Friends-tab onboarding empty state (BUT-975)"
+  },
+  "friendsEmptySubtitle": "Share recipes, see what your friends are cooking, and plan menus together.",
+  "@friendsEmptySubtitle": {
+    "description": "Subtitle explaining why to add friends, on the Friends-tab empty state"
+  },
+  "friendsEmptyFindByUsername": "Find friends by username",
+  "@friendsEmptyFindByUsername": {
+    "description": "Secondary CTA on the Friends-tab empty state — jumps to the Find Friends search tab"
+  },
   "socialInviteSubject": "Join Butlery!",
   "socialFriendRequestAccepted": "Friend request accepted!",
   "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted!",

@@ -1,62 +1,39 @@
 # Sprint Backlog
 
-## Sprint: iter-104 — 2 clean code-only tech-debt tickets — 2026-05-30 (Sat)
+## Sprint: iter-106 — first tiered sprint (autonomy policy live) — 2026-05-30 (Sat)
 
-**Context:** iter-103 exhausted the obviously-clean backlog. Re-triaged the full 160-ticket
-backlog (both pages). Most remaining = UI-visual (needs human eyes), ops-blocked (CF deploy /
-store / MFA / prod access), dependency-upgrades blocked on the Dart SDK bump, or large EPICs.
-Found 2 genuinely code-only, verifiable-without-UI/ops picks. Both P4, neither risk-gated
-(no Bug/security label, single-module) → no Phase 1.5 expansion.
+**Policy:** new tier routing (see `.claude/commands/sprint-execute.md` + `memory/feedback_autonomy_tiers.md`).
+First run exercises the **Tier B** path end-to-end (build → HTML preview → In Review + notify).
+Clean Tier A pool is thin; Tier C deferred to a later iteration.
 
-### Batch A — arch-test guard (test-only, zero risk)
+### Agent B (UI) — social empty-state onboarding
 
-- [x] **A1. BUT-1066: extend CPI arch-guard to `lib/views/`** — `test/architecture/architecture_test.dart`.
-  Step 0: the `lib/widgets/` CPI guard ALREADY exists (BUT-885, `architecture_test.dart:502-579`).
-  `lib/views/` has **zero** `CircularProgressIndicator(` sites → add a sibling guard with a
-  **zero allowlist** (pure regression-prevention for the views layer). `lib/core/` (4 infra sites:
-  dialog_factory, snackbar_utils, application_provider, base_action_handler) is the infra layer —
-  out of this ticket's UI-layer scope. **plan-stale → rescoped.** (BUT-1066, P4)
+- [x] **B1. BUT-975: branded Friends-tab empty state** `[Tier B]` — Step 0: FITS. Current
+  `friends_tab.dart` uses generic `LoadingStateBuilder` empty params (icon + title + subtitle).
+  Replace with a custom `emptyBuilder` → new `FriendsEmptyState` widget mirroring
+  `MinaReceptEmptyState` (`mina_recept/empty_state_widgets.dart`):
+  - `VegetableIllustration(peaPod, 100)` branded illustration
+  - Headline `friendsEmptyHeadline` ("Laga tillsammans med vänner")
+  - Subtitle `friendsEmptySubtitle` (share recipes / see what they cook / plan menus)
+  - Primary CTA `socialInviteFriends` (reuse) → `RequestsTab.shareInvitationLink`
+  - Secondary CTA `friendsEmptyFindByUsername` → parent `_tabController.animateTo(3)` (Find Friends tab)
+  - Wire via new `onFindByUsername` param on `FriendsTab.build`; parent passes the tab-switch.
+  - 3 new ARB keys (sv+en) + `flutter gen-l10n`. Semantics on both CTAs.
+  - Tier B close-out: HTML preview + Chrome screenshot → main → **In Review** + PushNotification.
+  (BUT-975, P3)
 
-### Batch B — tagging performance (code + test)
-
-- [x] **B1. BUT-1055: migrate personal-tag display off always-on snapshot listener** —
-  `lib/services/tagging/personal_tag_crud_service.dart`, `personal_tag_service.dart`,
-  `lib/widgets/tagging/personal_tag_selector.dart`.
-  Step 0 correction: the ticket's "per-widget snapshot listener at personal_tag_selector.dart:512"
-  is stale — the `watchTags().listen` lives in `AutoPersonalTagDisplay` and is already a SINGLE
-  shared, ref-counted static subscription (not per-widget). Intent still valid: even one
-  `.snapshots()` listener stays open continuously whenever any tagged recipe card is visible.
-  Change: (1) add a `tagsMutated` broadcast `Stream<void>` to `PersonalTagCrudService`, emitted at
-  every `clearCache(tagsCacheKey)` site via a `_invalidateTagsCache()` helper; close the controller
-  in `onDispose`. (2) Re-export `tagsMutated` through the `PersonalTagService` facade. (3) Rewrite
-  `AutoPersonalTagDisplay._subscribe` to `getAllTags()` on first subscribe + a `tagsMutated`
-  subscription that re-fetches (cache was just cleared → fresh read) and notifies all listeners.
-  Preserve the shared-state + ref-count + "all instances see same data" invariant. (4) Add a
-  service test pinning: tagsMutated fires on CRUD mutation; getAllTags re-fetches after.
-  **plan-stale → rescoped.** (BUT-1055, P4)
-
-### Deferred (heavier — left in Backlog, NOT this sprint)
-
-- BUT-969 (P4) — typed models in account_deletion (GDPR cascade): code-only but security-sensitive,
-  needs 3 new models + strong tests + firebase-backend-security review. Own focused pass.
-- BUT-1044 (P4) — custom_lint package for un-disposed StreamSubscription: real infra setup
-  (custom_lint dep + analyzer plugin + CI wiring); rabbit-hole risk. Own pass.
-- BUT-581 (P4) — 224-site `?? ''` → `.orEmpty` codemod: blocked on reconciling two divergent
-  extensions (silent behavior-change risk). Large + risky.
+### Needs you (Tier D — flagged, not worked)
+- (none selected this iteration)
 
 ### Post-Sprint Steps
-
-- [ ] `dart analyze --fatal-infos` clean.
-- [ ] Run `flutter test test/architecture/architecture_test.dart` + the new tagging service test.
-- [ ] code-reviewer + testing-specialist on staged Dart (commit-gate hooks).
-- [ ] Commit (conventional; footer Co-Authored-By Claude Opus 4.8), push to main.
-- [ ] Close BUT-1066, BUT-1055 in Linear with the commit SHA + edit ticket bodies for the rescopes.
+- [ ] `dart analyze --fatal-infos` clean
+- [ ] Widget test (semantics + CTA wiring) + `flutter gen-l10n`
+- [ ] code-reviewer + testing-specialist on staged Dart
+- [ ] Commit, push to main
+- [ ] BUT-975 → In Review (9929b3b0…) + screenshot comment + PushNotification
 
 ---
 
-## Sprint: iter-103 — 4 code-only tech-debt tickets (SHIPPED) — 2026-05-29 (Fri)
-
-All of iter-103a–g shipped + closed — see git history (`0a265fed5`, `8fd2ee656`, `9b71e0546`,
-`0bb29128d`, `a7364fd2e`, `f1d63be31`). Closed: BUT-1165, BUT-472, BUT-1164, BUT-1111, BUT-1121,
-BUT-1123, BUT-1075, BUT-1058. BUT-520 + BUT-1122 left as `[~]` (EPIC refined / premise-gone).
-This file is sprint-scratch; the durable record is Linear + git.
+## Sprint: iter-104 — 2 clean code-only tech-debt tickets (SHIPPED) — 2026-05-30
+Shipped `b80aac380` (BUT-1055 + BUT-1066). iter-105 closed BUT-969 premise-gone. `a3c49bd67`
+added the autonomy-tier policy to sprint-execute. Durable record: Linear + git.

@@ -4182,3 +4182,25 @@ Findings (all PASS, no weakened assertions):
   acceptable approximation; a CircularProgressIndicator inside a string literal would false-positive
   but that's a non-issue in practice.
 No gaps found. No bug surfaced.
+
+### [Review] FriendsEmptyState empty-state widget tests (BUT-975)
+Date: 2026-05-30
+Trigger: Reviewing test/widget/social/friends_empty_state_test.dart (4 tests) vs lib/views/social/friends_list/friends_empty_state.dart.
+Findings:
+- WEAK ASSERTION (real gap): `expect(tester.getSemantics(find.text(...)), isNotNull)` does NOT
+  prove button semantics. With ensureSemantics() active, getSemantics walks to the nearest/merged
+  SemanticsNode and is effectively never null. Deleting the widget's `Semantics(button: true,
+  identifier: 'btn-...')` wrappers leaves the test green though that's the widget's whole a11y point.
+  Fix: `matchesSemantics(isButton: true, label: ...)` per CTA, or assert the `identifier:` via
+  matchesSemantics(identifier: 'btn-invite-friend') if those IDs are a downstream contract.
+  GENERAL RULE: `getSemantics(...) isNotNull` is a no-op assertion — always pair getSemantics with
+  matchesSemantics(...) checking concrete flags/labels/identifiers.
+- CTA wiring tests are SOUND: label Text is a descendant of a real tappable (ElevatedButton for
+  primary via ActionButtons.primaryButton, plain TextButton for secondary), so tap(find.text(...))
+  hits the button. Distinct counters catch callback-swap, null-onPressed, and secondary-stops-firing.
+- Headline/subtitle test goes through the real sv AppLocalizations delegate (not the widget's own
+  constant) so it catches missing/misreferenced ARB keys + broken sv translation — meaningful, not a
+  tautology. Caveat: full-sentence string match is a copy-edit tripwire (brittle-by-design).
+- NO flakiness from VegetableIllustration: it's Image.asset WITH an errorBuilder → failed asset load
+  in test binding renders a fallback Icon, never throws a FlutterError. Tests use pump() not
+  pumpAndSettle() so the async load never blocks. Image.asset + errorBuilder + pump() = safe pattern.

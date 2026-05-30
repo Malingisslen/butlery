@@ -363,8 +363,14 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
-    // Clean friends tab - existing friends only, no search
-    return FriendsTab.build(context, viewModel);
+    // Clean friends tab - existing friends only, no search.
+    // BUT-975: the empty-state "find by username" CTA jumps to the Find
+    // Friends tab (index 3).
+    return FriendsTab.build(
+      context,
+      viewModel,
+      onFindByUsername: () => _tabController.animateTo(3),
+    );
   }
 
   Widget _buildDiscoveryTab(FriendsViewModel viewModel) {
