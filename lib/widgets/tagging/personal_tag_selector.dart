@@ -474,6 +474,12 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
   /// triggers an on-demand `getAllTags()` re-fetch (served from the service's
   /// 5-min cache between mutations).
   static StreamSubscription<void>? _mutationSubscription;
+
+  /// BUT-1170: shared subscription to [PersonalTagService.instanceReady]. Lets
+  /// the static state re-bind [_mutationSubscription] to a fresh service
+  /// instance after a logout→login while cards stay mounted. Torn down with the
+  /// last subscriber.
+  static StreamSubscription<void>? _instanceReadySubscription;
   static List<PersonalTag> _sharedTags = [];
   static int _subscriberCount = 0;
 
@@ -506,31 +512,61 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
       _loaded = true;
     }
 
-    // Start the shared invalidation subscription if this is the first
-    // subscriber. The mutation signal re-fetches; we also kick off one
-    // initial fetch so the first mount populates without waiting for a write.
-    //
-    // Known limitation (pre-existing, same as the old watchTags() listener):
-    // this static subscription binds to the CURRENT service instance. If a
-    // logout/login happens while at least one tagged card stays mounted, the
-    // subscription keeps pointing at the old (disposed) controller and tag
-    // chips stop updating until every instance unmounts and the first one
-    // re-subscribes. Tracked as a follow-up — not a regression from BUT-1055.
-    if (_mutationSubscription == null) {
-      try {
-        final service = ServiceLocator.get<PersonalTagService>();
-        _mutationSubscription = service.tagsMutated.listen(
-          (_) => _refetchAndNotify(service),
-          onError: (error) {
-            AppLogger.debug('AutoPersonalTagDisplay: Mutation error: $error');
-            _notifyAll();
-          },
-        );
-        _refetchAndNotify(service); // initial load
-      } catch (e) {
-        AppLogger.debug('AutoPersonalTagDisplay: Failed to subscribe: $e');
-        _onTagsUpdated(); // Notify just this instance on setup failure
-      }
+    // BUT-1170: re-bind to a fresh service instance after a re-login. Set up
+    // once (first subscriber) and survives across logout/login because it
+    // listens to a static, class-level signal — not the instance that gets
+    // swapped. Torn down with the last subscriber in [_unsubscribe].
+    _instanceReadySubscription ??=
+        PersonalTagService.instanceReady.listen((_) => _onInstanceReady());
+
+    // Bind the shared invalidation subscription if this is the first subscriber
+    // (or if a prior logout dropped it). The mutation signal re-fetches; the
+    // bind also kicks off one initial fetch so the first mount populates without
+    // waiting for a write.
+    _bindMutationSubscription();
+  }
+
+  /// BUT-1055/BUT-1170: binds [_mutationSubscription] to the CURRENT service
+  /// instance's `tagsMutated` stream. Idempotent — no-ops if already bound.
+  /// The `onDone` handler drops the subscription when its controller closes on
+  /// logout, so [_onInstanceReady] can re-bind to the next login's instance.
+  static void _bindMutationSubscription() {
+    if (_mutationSubscription != null) return;
+    try {
+      final service = ServiceLocator.get<PersonalTagService>();
+      _mutationSubscription = service.tagsMutated.listen(
+        (_) => _refetchAndNotify(service),
+        onError: (error) {
+          AppLogger.debug('AutoPersonalTagDisplay: Mutation error: $error');
+          _notifyAll();
+        },
+        onDone: () {
+          // BUT-1170: the bound service was torn down (logout closed the crud
+          // `tagsMutated` controller). Drop the dead subscription and clear
+          // shared state; the next login re-binds via instanceReady.
+          _mutationSubscription = null;
+          _sharedTags = [];
+          _notifyAll();
+        },
+      );
+      _refetchAndNotify(service); // initial / re-bind load
+    } catch (e) {
+      // No live service yet (e.g. mid logout→login gap). Stay in the
+      // placeholder state; instanceReady will re-bind once login completes.
+      AppLogger.debug('AutoPersonalTagDisplay: Failed to subscribe: $e');
+      _notifyAll();
+    }
+  }
+
+  /// BUT-1170: a fresh user-scoped [PersonalTagService] finished initializing
+  /// (login). Re-bind the shared mutation subscription to it so mounted cards
+  /// resume updating without having to unmount first.
+  static void _onInstanceReady() {
+    _mutationSubscription?.cancel();
+    _mutationSubscription = null;
+    _sharedTags = [];
+    if (_subscriberCount > 0) {
+      _bindMutationSubscription();
     }
   }
 
@@ -565,10 +601,14 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
     _listeners.remove(_onTagsUpdated);
     _subscriberCount--;
 
-    // Cancel shared subscription when last subscriber disposes
+    // Cancel shared subscriptions when last subscriber disposes
     if (_subscriberCount <= 0) {
       _mutationSubscription?.cancel();
       _mutationSubscription = null;
+      // BUT-1170: also drop the instance-ready listener so we don't keep a
+      // dangling subscription open after every card is gone.
+      _instanceReadySubscription?.cancel();
+      _instanceReadySubscription = null;
       _sharedTags = [];
       _subscriberCount = 0;
       _listeners.clear(); // MED-10: Clear listeners list

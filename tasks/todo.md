@@ -1,38 +1,54 @@
 # Sprint Backlog
 
-## Sprint: iter-107 — Tier C refactor (file decomposition) — 2026-05-30 (Sat)
+## Sprint: iter-108 — Tier A bug fix (subscription lifecycle) — 2026-05-30 (Sat)
 
-### Agent C (refactor) — large-file decomposition
+Focused single-ticket sprint (context already large from iter-107; quality over count).
 
-- [x] **C1. BUT-1154 (1 of 4): decompose `photo_import_viewmodel.dart`** `[Tier C]` —
-  Step 0: PLAN-STALE — file was 622 lines, not 721 as ticket claimed (drifted down). Has an
-  875-line test suite = safe behavior-preserving refactor. Extracted the BUT-410 heirloom form
-  state → `lib/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart` (mixin on
-  ImportBaseViewModel — shares notifyListeners/isDisposed; all external access is via public
-  accessors so transparent). Trimmed WHAT-style doc bloat per code-style.md. 622 → **508**
-  (under the 520 baseline). 28 passing tests still pass; the 3 failing tests are PRE-EXISTING on
-  main (verified by reverting to HEAD — identical +28 −3), filed as a follow-up. ACCEPTED_LARGE_FILES.md
-  updated. (BUT-1154, P3 — ticket stays In Progress, 3 files remain)
+### Agent A — tagging subscription lifecycle
 
-### Remaining on BUT-1154 (future iterations)
-- `smart_import_view.dart` (803), `user_profile_edit_view.dart` (816), `photo_import_view.dart`
-  (674) — all VIEWS (Tier B/C — UI risk; decompose into sub-widgets, verify visually).
+- [x] **A1. BUT-1170: AutoPersonalTagDisplay static subscription goes stale across logout/login** `[Tier A]`
+  - **Step 0:** FITS. Confirmed the bug by reading the code. `_AutoPersonalTagDisplayState._mutationSubscription`
+    (static) binds to the CURRENT `PersonalTagService`/`PersonalTagCrudService` `tagsMutated` controller.
+    On logout, `PersonalTagCrudService` is fully disposed (DI `dispose: (s) => s.dispose()` → `onDispose` →
+    `_tagsMutatedController.close()`), so the static sub gets `onDone` (currently unhandled). On login,
+    `pushUserScope` → `_initializeUserScopedServices()` → fresh `PersonalTagService.onInitialize()`. New
+    mutations fire on the new controller → nothing listens → chips stop updating until all cards unmount.
+  - **Files touched:**
+    - `lib/services/tagging/personal_tag_service.dart` — add static `instanceReady` broadcast signal
+      (survives the GetIt instance-swap; instance streams die with the old controller), fire it in
+      `onInitialize()`.
+    - `lib/widgets/tagging/personal_tag_selector.dart` — handle `onDone` (drop stale sub on logout) +
+      subscribe to `PersonalTagService.instanceReady` (re-bind to fresh instance on login, refetch, notify).
+      Refactor binding into a static helper shared by `_subscribe()` and the re-bind path.
+    - `test/widget/widgets/tagging/auto_personal_tag_display_rebind_test.dart` — new test proving the
+      logout→login re-bind without unmount.
+  - **Blast radius:** widget shown on every tagged recipe card + the shared PersonalTagService facade.
+    Change is additive (new static signal) + a self-contained widget lifecycle fix. No public API removed.
+    The `instanceReady` static controller is app-lifetime (never closed) — legitimate global lifecycle
+    signal, same pattern as the existing static `_mutationSubscription`.
+  - **Rollback:** revert the two lib edits; the static signal is unused if the widget doesn't subscribe.
+  - **Optional acceptance bullet 3** (PersonalTagService DI → full `dispose()` instead of `resetForLogout()`):
+    deferring — PersonalTagService holds no controller of its own (crud does, already fully disposed), so
+    full-dispose vs resetForLogout is near-identical. Skipping keeps the diff focused; noted in commit.
 
 ### Post-Sprint Steps
-- [x] `dart analyze --fatal-infos` clean
-- [x] Full photo-import VM test suite (behavior preserved: +28 −3, 3 failures pre-existing on HEAD)
-- [x] code-reviewer + testing-specialist on staged Dart — both CLEAN to commit
-- [x] Added inline mixin test (5 tests, all green) pinning truncation/disposed/clear invariants
-- [x] Filed BUT-1171 (LOW) for the 3 leaky pre-existing tests (test-harness artifacts, not prod bugs)
-- [x] Commit (stage specific files — NOT `git add -A`), push to main
-- [x] BUT-1154 progress comment (1/4 done — stays In Progress)
+- [x] `dart analyze` clean on all 3 changed files
+- [x] New widget test green (logout→login re-bind + post-login mutation + privacy clear) + 38 existing service tests green
+- [x] code-reviewer + testing-specialist — both CLEAN; applied 2 nits (dart:async import order, explicit privacy assert); filed BUT-1172 (LOW) for 2 edge-case test gaps
+- [ ] Commit (stage specific files — NOT `git add -A`; `docs/cleanup/` + stash are not mine), push to main
+- [ ] BUT-1170 → Done (Tier A, test-proven)
+
+### Carried high-value (next fresh-context iterations — NOT this sprint)
+- **BUT-1155** (High, Bug) — CI views shard broken: 200+ failures + 10min hang. Whole-sprint Tier C job;
+  deserves fresh context for the failure triage + hang root-cause + matrix restore.
+- **BUT-1044** (tooling) — custom_lint for un-disposed StreamSubscription. Real analyzer-plugin setup work.
 
 ---
 
 ## Prior sprints (shipped)
 iter-104 `b80aac380` (BUT-1055+1066), iter-105 closed BUT-969 premise-gone, iter-106 `c03789f69`
-(BUT-975 Tier B → In Review), autonomy-tier policy `a3c49bd67`. Durable record: Linear + git.
+(BUT-975 Tier B → In Review), autonomy-tier policy `a3c49bd67`, iter-107 `d881cbf27` (BUT-1154 1/4 —
+photo_import VM heirloom mixin extraction, +5 tests, BUT-1171 follow-up filed). Durable record: Linear + git.
 
-> iter-107 note: a stray untracked file `notification_analytics_manager_repository_test.dart`
-> came from accidentally popping `stash@{0}` (sprint3-salvageable, still preserved in the stash).
-> Removed from the tree; recoverable via the stash. Do NOT `git add -A` blindly.
+> Tree hygiene: `docs/cleanup/deletable-files-report.md` is an untracked parallel-session/hook artifact —
+> not mine, leave it. `stash@{0}` (sprint3-salvageable) must stay preserved. Do NOT `git add -A` blindly.

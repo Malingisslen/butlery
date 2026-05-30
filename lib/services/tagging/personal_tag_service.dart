@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -36,6 +38,20 @@ class PersonalTagService extends BaseService {
 
   @override
   String get serviceName => 'PersonalTagService';
+
+  /// BUT-1170: fires once each time a fresh user-scoped instance finishes
+  /// initializing (i.e. on login, via [onInitialize]). Static — and therefore
+  /// class-level — so it survives the GetIt instance swap across a
+  /// logout→login cycle; an instance-level stream would die with the old
+  /// controller, which is the very staleness this signal exists to cure.
+  ///
+  /// Consumers that cache a subscription to a *specific* instance's
+  /// [tagsMutated] (notably [AutoPersonalTagDisplay], which holds it in static
+  /// state shared across recipe cards) listen here to re-bind to the live
+  /// instance after a re-login without having to unmount first.
+  static final StreamController<void> _instanceReadyController =
+      StreamController<void>.broadcast();
+  static Stream<void> get instanceReady => _instanceReadyController.stream;
 
   // -- Tag CRUD (delegated) --
 
@@ -306,6 +322,11 @@ class PersonalTagService extends BaseService {
   @override
   Future<void> onInitialize() async {
     AppLogger.info('PersonalTagService ready');
+    // BUT-1170: announce this fresh instance so widgets holding a static
+    // subscription to a previous instance's tagsMutated can re-bind.
+    if (!_instanceReadyController.isClosed) {
+      _instanceReadyController.add(null);
+    }
   }
 
   /// BUT-998: clears the in-memory tag/group cache (e.g. on logout). The

@@ -4267,3 +4267,51 @@ Trigger: Reviewing the heirloom-form-mixin extraction diff for commit readiness.
   produces "Expected true, Actual false" without any production defect. Recommendation: NOT worth a
   HIGH-priority bug ticket. Worth a LOW/cleanup ticket to rewrite these 3 to drive the VM's real pipeline
   (or delete the direct-mock-call ones outright — they prove nothing). Do not weaken/skip to go green.
+
+### [Review] BUT-1170 AutoPersonalTagDisplay re-bind across logout→login (static-state widget test)
+Date: 2026-05-30
+Trigger: Reviewing test/widget/widgets/tagging/auto_personal_tag_display_rebind_test.dart for commit readiness.
+Verdict: COMMIT-SAFE as-is. Intent-gated, authentic, isolated. One optional inline addition + 2 follow-ups.
+- INTENT-GATED — confirmed against production. Step 3's "Vegansk" assertion fails if `_onInstanceReady`
+  re-bind is removed. Trace: login #1 binds `_mutationSubscription` to svc1.tagsMutated; logout's
+  `ctrl1.close()` fires `onDone` → drops the sub + clears `_sharedTags` → card falls to placeholder
+  (`!_loaded || _sharedTags.isEmpty`). With the fix, `svc2.initialize()` → `onInitialize()` adds to the
+  static `_instanceReadyController`, the static `_instanceReadySubscription` runs `_onInstanceReady()`
+  (subscriberCount==1 since card never unmounts) → `_bindMutationSubscription()` re-fetches svc2.getAllTags
+  → "Vegansk". WITHOUT the fix the instanceReady listener never exists, so no re-bind fires and the card
+  is stuck on the placeholder → `find.text('Vegansk') findsNothing` → test RED. Not a trivial pass.
+- AUTHENTIC LOGIN PATH. `await svc2.initialize()` exactly mirrors prod: tagging_module.dart:217-219
+  (`if isRegistered<PersonalTagService> → await personalTagService.initialize()`) on user-scope init.
+  `BaseService.initialize()` (base_service.dart:42-46) is NOT idempotent-guarded — it always calls
+  `onInitialize()`, which fires instanceReady. So a fresh registered instance + initialize() is the real
+  trigger, faithfully reproduced.
+- AUTHENTIC LOGOUT PATH. Test's `ctrl1.close()` mirrors prod teardown: GetIt dispose hook on
+  PersonalTagCrudService (`dispose: (s) => s.dispose()`, tagging_module.dart:128) → CRUD `onDispose()`
+  closes `_tagsMutatedController` (personal_tag_crud_service.dart:63-65). PersonalTagService.tagsMutated
+  delegates to `_crud.tagsMutated`, so closing the controller fires `onDone` on the bound sub — exactly
+  what the prod `onDone` branch (`_mutationSubscription=null; _sharedTags=[]; _notifyAll()`) handles.
+- STATIC-STATE ISOLATION — SUFFICIENT, low bleed risk. `_AutoPersonalTagDisplayState` holds 5 static
+  members (`_mutationSubscription`/`_instanceReadySubscription`/`_sharedTags`/`_subscriberCount`/`_listeners`).
+  Final `pumpWidget(SizedBox)` unmounts → `_unsubscribe()` drives subscriberCount→0 → cancels both subs,
+  clears `_sharedTags`, resets count, clears `_listeners`. AND: this is the ONLY test in the suite that
+  mounts AutoPersonalTagDisplay (grep'd test/ — the only other hit is a comment in
+  personal_tag_service_test.dart:1116). So no concurrent-mount bleed today. CAVEAT: the static
+  `PersonalTagService._instanceReadyController` is process-global and NEVER closed; any future test that
+  also fires instanceReady while a card is mounted could cross-talk. Acceptable now; flag if a 2nd
+  mounting test appears.
+- PLACEHOLDER-SHIMMER FLUSH. The custom `flush()` (pump + pump(50ms)) instead of pumpAndSettle is correct
+  and necessary: `_PlaceholderTagChip` runs an infinite skeleton shimmer so pumpAndSettle never converges.
+  Reusable pattern for any widget with an always-animating loading state. NOT flake-prone here — no
+  DateTime.now / real-wait in play; the 50ms pump just drains the getAllTags microtask + setState.
+- OPTIONAL INLINE ADDITION (logout-WITHOUT-relogin): the `onDone` clear path is only asserted transitively
+  (the card has to leave "Vego" before "Vegansk" can appear, but no explicit `findsNothing` after logout
+  *before* login #2). Worth one extra assert right after the logout flush:
+  `expect(find.text('Vego'), findsNothing);` — pins that a logged-out user does NOT see the previous
+  user's tags (a privacy-adjacent invariant) independently of the re-bind succeeding. Cheap, strengthens
+  the test. Not a commit blocker.
+- FOLLOW-UP GAPS (file as LOW tickets, not blockers): (1) re-bind when NO card is mounted at login time
+  then a card mounts after — `_subscribeReady` path where `_subscriberCount==0` at instanceReady (the
+  `if (_subscriberCount > 0)` guard means `_onInstanceReady` no-ops, and the first `_subscribe()` does the
+  bind instead). (2) last-subscriber teardown of `_instanceReadySubscription` — assert that after unmount,
+  a subsequent instanceReady event does NOT throw / does NOT resurrect a binding (the BUT-1170 dangling-sub
+  cleanup at _unsubscribe:608-611). Both are edge invariants the current single happy-path test doesn't pin.
