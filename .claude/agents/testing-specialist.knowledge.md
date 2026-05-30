@@ -4204,3 +4204,66 @@ Findings:
 - NO flakiness from VegetableIllustration: it's Image.asset WITH an errorBuilder → failed asset load
   in test binding renders a fallback Icon, never throws a FlutterError. Tests use pump() not
   pumpAndSettle() so the async load never blocks. Image.asset + errorBuilder + pump() = safe pattern.
+
+### 2026-05-30 — HeirloomBridge ServiceLocator.get throws in tests that don't register it (BUT-1154 analysis)
+- Trigger: 3 pre-existing failures in `test/unit/viewmodels/photo_import_viewmodel_test.dart`
+  ("should save imported recipe", "should complete full import from camera/gallery"), all
+  `Expected: true, Actual: false` on `viewModel.saveImportedRecipe()`.
+- Root cause (test-environment, NOT production bug, NOT stale contract): `ImportBaseViewModel.saveImportedRecipe()`
+  → `_attachHeirloomIfPending()` calls `ServiceLocator.get<HeirloomBridge>()` (deliberately `get`, not
+  `tryGet`, so missing DI fails loud in dev — BUT-953 contract). `HeirloomBridge` is intentionally NOT in
+  `TestServiceLocator.initialize()` (its only consumer is the heirloom path; comment at
+  `import_base_viewmodel_heirloom_test.dart:68-71` says "promote to TestServiceLocator if a 3rd user appears").
+  The photo_import suite never registers it, so `get` throws, `executeAsyncVoid` swallows the throw and
+  returns `false` (and sets "Ett oväntat fel uppstod"). The behavior these tests assert (`saved == true`)
+  was correct before BUT-953 added the bridge call to the shared base `saveImportedRecipe` — the base
+  method's contract changed under the test, the test wasn't updated. So: pre-existing latent breakage
+  surfaced by a base-class change, manifesting as a DI-registration gap in this suite.
+- Fix for the follow-up ticket: in `photo_import_viewmodel_test.dart` setUp, register a real
+  `HeirloomBridge()` (empty → `hasPending == false` → `_attachHeirloomIfPending` early-returns, save
+  proceeds). Mirror the register/unregister guard from `import_base_viewmodel_heirloom_test.dart:72-83`.
+  Do NOT weaken the `expect(saved, isTrue)` assertion — it's the correct contract.
+- Coverage note: BUT-1154 extracted heirloom FORM state (`isHeirloom`, `heirloomWriterName`,
+  `heirloomYear`, `heirloomNote`, `isOfflineQueued`, `clearHeirloomForm`) into
+  `PhotoImportHeirloomFormMixin`. ZERO tests exercise these mixin members (grep'd all of test/) — they
+  were untested before the refactor too. The refactor did not reduce coverage; it exposed a gap. The
+  dedicated heirloom test covers the bridge/upload SAVE path (`ImportBaseViewModel` plumbing), not the
+  form-state getters/setters. Separate test-gap if we want the mixin covered.
+- Pattern: when a shared base-class method (`saveImportedRecipe`) grows a hard `ServiceLocator.get<T>()`
+  dependency, EVERY subclass suite that calls it must register T or the call throws-and-returns-false
+  silently via executeAsyncVoid. Audit sibling suites when adding a `get` (not `tryGet`) to a base method.
+
+### 2026-05-30 — BUT-1154 (iter-107 photo-import decomposition, 1 of 4) commit-gate review
+Trigger: Reviewing the heirloom-form-mixin extraction diff for commit readiness.
+- REFACTOR IS COMMIT-SAFE. `PhotoImportHeirloomFormMixin` is a pure move of BUT-410 form state out of
+  `PhotoImportViewModel`. The mixin is applied to the VM (`with PhotoImportHeirloomFormMixin`), so all
+  getters/setters/`clearHeirloomForm()` resolve transparently through the public VM API. No behavior
+  change. `flutter analyze` is the real gate here, not new tests — a move that preserves the public
+  surface needs no new tests to merge.
+- The diff's only test change is the HeirloomBridge register/unregister in setUp (lines 168-180) — this
+  applies the fix the PRIOR knowledge entry (above) recommended for the original 3 HeirloomBridge
+  failures. Good: the prior recommendation was actioned. Do NOT re-flag those.
+- COVERAGE GAP (pre-existing, NOT introduced by this refactor): the extracted mixin members
+  (`isHeirloom`/`heirloomWriterName`/`heirloomYear`/`heirloomNote`/`isOfflineQueued` setters + the
+  writerName>100 / note>200 TRUNCATION guards + `clearHeirloomForm()`) have ZERO direct test coverage.
+  The truncation guards are a real invariant (mirror `HeirloomMetadata`'s 100/200 construction limits)
+  and a one-line `substring` bug there would silently corrupt user attribution. Worth ~6 inline tests in
+  a new `test/unit/viewmodels/photo_import/photo_import_heirloom_form_mixin_test.dart` (construct the VM,
+  drive setters, assert truncation + disposed-guard + clearHeirloomForm reset). Cheap, behavioral, pins
+  an invariant the LLM-on-autopilot would miss. NOT a commit blocker for a 1-of-4 decomposition PR —
+  file as a follow-up or fold into iter-107 (4 of 4).
+- The 3 CURRENTLY-failing tests (auto-parse-failure-gracefully / save-failure / manual-import-after-
+  failed-auto-parse) are a DIFFERENT 3 from the prior HeirloomBridge trio (which this diff fixed). Read
+  on these: they are TEST-HARNESS ARTIFACTS, not production bugs. Evidence: (a) "auto-parse failure
+  gracefully" calls `mockImportManager.autoImport()` DIRECTLY in the test body and never routes through
+  the VM, then asserts on `viewModel` state the test never mutated — it mocks away the exact behavior it
+  claims to verify (classic anti-pattern). (b) The production paths they exercise (`_autoParseOcrText`
+  swallows parse exceptions by design; `saveImportedRecipe` returns false + sets `errorUnexpected` on
+  failure; `performImport` → `parseTextToRecipe` → `preserveOrSetParsedRecipe`) are all individually
+  correct and individually covered by the PASSING sibling tests (auto-parse success, save success, manual
+  import success). A real production bug would break the happy-path test too. (c) `TestablePhotoImportViewModel`
+  overrides `ocrText`/`hasOcrResult` to read `_testOcrText` but `performImport` reads the un-overridden
+  production `_ocrText` field — the test double's seam is leaky, which is exactly the kind of thing that
+  produces "Expected true, Actual false" without any production defect. Recommendation: NOT worth a
+  HIGH-priority bug ticket. Worth a LOW/cleanup ticket to rewrite these 3 to drive the VM's real pipeline
+  (or delete the direct-mock-call ones outright — they prove nothing). Do not weaken/skip to go green.

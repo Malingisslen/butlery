@@ -172,7 +172,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `receive_share_view.dart` | 533 | Incoming share intent handler |
 | `shopping_member_management_dialog.dart` | 526 | Shopping list member management dialog |
 | `photo_import_view.dart` | 674 | Photo import screen (drifted +150 from 524 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
-| `photo_import_viewmodel.dart` | 721 | Photo import VM (drifted +201 from 520 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
+| `photo_import_viewmodel.dart` | 508 | Photo import VM — OCR pipeline. BUT-1154 decomp (iter-107): heirloom form state → `photo_import/photo_import_heirloom_form_mixin.dart` + trimmed WHAT-style doc bloat. Now under the 520 baseline. |
 | `social_invitation_components.dart` | 520 | Social invitation UI components |
 | `social_facade.dart` | 517 | Social UI facade widget |
 | `friend_category_manager.dart` | 517 | Friend category management widget |

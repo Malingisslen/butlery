@@ -5,9 +5,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -165,6 +167,17 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
+
+      // BUT-953: saveImportedRecipe() on the shared base VM calls
+      // ServiceLocator.get<HeirloomBridge>() (fail-loud by design — not
+      // tryGet). It's intentionally not in TestServiceLocator (the bridge is
+      // its only consumer). Register an empty bridge here: no pending heirloom
+      // → _attachHeirloomIfPending early-returns → the save path proceeds.
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<HeirloomBridge>()) {
+        getIt.unregister<HeirloomBridge>();
+      }
+      getIt.registerSingleton<HeirloomBridge>(HeirloomBridge());
 
       // Create mocks
       mockImportManager = MockImportManager();

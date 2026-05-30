@@ -1,39 +1,38 @@
 # Sprint Backlog
 
-## Sprint: iter-106 — first tiered sprint (autonomy policy live) — 2026-05-30 (Sat)
+## Sprint: iter-107 — Tier C refactor (file decomposition) — 2026-05-30 (Sat)
 
-**Policy:** new tier routing (see `.claude/commands/sprint-execute.md` + `memory/feedback_autonomy_tiers.md`).
-First run exercises the **Tier B** path end-to-end (build → HTML preview → In Review + notify).
-Clean Tier A pool is thin; Tier C deferred to a later iteration.
+### Agent C (refactor) — large-file decomposition
 
-### Agent B (UI) — social empty-state onboarding
+- [x] **C1. BUT-1154 (1 of 4): decompose `photo_import_viewmodel.dart`** `[Tier C]` —
+  Step 0: PLAN-STALE — file was 622 lines, not 721 as ticket claimed (drifted down). Has an
+  875-line test suite = safe behavior-preserving refactor. Extracted the BUT-410 heirloom form
+  state → `lib/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart` (mixin on
+  ImportBaseViewModel — shares notifyListeners/isDisposed; all external access is via public
+  accessors so transparent). Trimmed WHAT-style doc bloat per code-style.md. 622 → **508**
+  (under the 520 baseline). 28 passing tests still pass; the 3 failing tests are PRE-EXISTING on
+  main (verified by reverting to HEAD — identical +28 −3), filed as a follow-up. ACCEPTED_LARGE_FILES.md
+  updated. (BUT-1154, P3 — ticket stays In Progress, 3 files remain)
 
-- [x] **B1. BUT-975: branded Friends-tab empty state** `[Tier B]` — Step 0: FITS. Current
-  `friends_tab.dart` uses generic `LoadingStateBuilder` empty params (icon + title + subtitle).
-  Replace with a custom `emptyBuilder` → new `FriendsEmptyState` widget mirroring
-  `MinaReceptEmptyState` (`mina_recept/empty_state_widgets.dart`):
-  - `VegetableIllustration(peaPod, 100)` branded illustration
-  - Headline `friendsEmptyHeadline` ("Laga tillsammans med vänner")
-  - Subtitle `friendsEmptySubtitle` (share recipes / see what they cook / plan menus)
-  - Primary CTA `socialInviteFriends` (reuse) → `RequestsTab.shareInvitationLink`
-  - Secondary CTA `friendsEmptyFindByUsername` → parent `_tabController.animateTo(3)` (Find Friends tab)
-  - Wire via new `onFindByUsername` param on `FriendsTab.build`; parent passes the tab-switch.
-  - 3 new ARB keys (sv+en) + `flutter gen-l10n`. Semantics on both CTAs.
-  - Tier B close-out: HTML preview + Chrome screenshot → main → **In Review** + PushNotification.
-  (BUT-975, P3)
-
-### Needs you (Tier D — flagged, not worked)
-- (none selected this iteration)
+### Remaining on BUT-1154 (future iterations)
+- `smart_import_view.dart` (803), `user_profile_edit_view.dart` (816), `photo_import_view.dart`
+  (674) — all VIEWS (Tier B/C — UI risk; decompose into sub-widgets, verify visually).
 
 ### Post-Sprint Steps
-- [ ] `dart analyze --fatal-infos` clean
-- [ ] Widget test (semantics + CTA wiring) + `flutter gen-l10n`
-- [ ] code-reviewer + testing-specialist on staged Dart
-- [ ] Commit, push to main
-- [ ] BUT-975 → In Review (9929b3b0…) + screenshot comment + PushNotification
+- [x] `dart analyze --fatal-infos` clean
+- [x] Full photo-import VM test suite (behavior preserved: +28 −3, 3 failures pre-existing on HEAD)
+- [x] code-reviewer + testing-specialist on staged Dart — both CLEAN to commit
+- [x] Added inline mixin test (5 tests, all green) pinning truncation/disposed/clear invariants
+- [x] Filed BUT-1171 (LOW) for the 3 leaky pre-existing tests (test-harness artifacts, not prod bugs)
+- [x] Commit (stage specific files — NOT `git add -A`), push to main
+- [x] BUT-1154 progress comment (1/4 done — stays In Progress)
 
 ---
 
-## Sprint: iter-104 — 2 clean code-only tech-debt tickets (SHIPPED) — 2026-05-30
-Shipped `b80aac380` (BUT-1055 + BUT-1066). iter-105 closed BUT-969 premise-gone. `a3c49bd67`
-added the autonomy-tier policy to sprint-execute. Durable record: Linear + git.
+## Prior sprints (shipped)
+iter-104 `b80aac380` (BUT-1055+1066), iter-105 closed BUT-969 premise-gone, iter-106 `c03789f69`
+(BUT-975 Tier B → In Review), autonomy-tier policy `a3c49bd67`. Durable record: Linear + git.
+
+> iter-107 note: a stray untracked file `notification_analytics_manager_repository_test.dart`
+> came from accidentally popping `stash@{0}` (sprint3-salvageable, still preserved in the stash).
+> Removed from the tree; recoverable via the stash. Do NOT `git add -A` blindly.

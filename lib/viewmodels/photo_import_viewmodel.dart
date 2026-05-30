@@ -27,20 +27,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-/// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
-/// Specializes in photo-based recipe importing from camera captures and gallery images through OCR technology,
-/// image processing, and intelligent text extraction. Extends ImportBaseViewModel to provide complete photo import
-/// functionality with OCR coordination, image processing, and recipe parsing workflow management.
-/// **Core Responsibilities:**
-/// - Advanced photo capture and processing with camera and gallery integration
-/// - OCR technology coordination with multi-engine support and fallback strategies
-/// - Image recognition and text extraction with orientation detection and clarity optimization
-/// - Automatic recipe parsing from OCR text with intelligent structure recognition
-/// - Swedish localized error messages and user feedback coordination
-class PhotoImportViewModel extends ImportBaseViewModel {
+/// Photo-import ViewModel: camera/gallery capture → multi-provider OCR →
+/// auto-parse to a Recipe. Extends [ImportBaseViewModel] for the shared
+/// import lifecycle; heirloom form state lives in
+/// [PhotoImportHeirloomFormMixin].
+class PhotoImportViewModel extends ImportBaseViewModel
+    with PhotoImportHeirloomFormMixin {
   /// Raw image bytes from selected photo for OCR processing and display.
   /// Stores captured or selected image data enabling OCR processing
   /// and image preview functionality throughout photo import workflow.
@@ -63,37 +59,8 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// Indicates reliability of extracted text for user confidence and retry decisions.
   double? _lastConfidence;
 
-  // ── BUT-410 heirloom form state ─────────────────────────────────────────
-  // Kept separate from OCR state because heirloom is an opt-in overlay on
-  // the same photo — toggling it shouldn't reset OCR progress and vice versa.
+  // BUT-410 heirloom form state lives in PhotoImportHeirloomFormMixin.
 
-  /// Whether the user has flagged this scan as an heirloom ("Farmors lapp").
-  bool _isHeirloom = false;
-
-  /// Writer attribution — bound to the writerName TextField. Max 100 chars
-  /// (enforced both at the field level and in HeirloomMetadata's ctor).
-  String _heirloomWriterName = '';
-
-  /// Year input parsed from the year TextField. Null until the user types
-  /// a valid 1800..currentYear value; parseable invalid values stay null.
-  int? _heirloomYear;
-
-  /// Short origin note — max 200 chars.
-  String _heirloomNote = '';
-
-  /// True when the device has no internet connection and the heirloom
-  /// upload is queued. Used by the view to show the offline banner.
-  bool _isOfflineQueued = false;
-
-  /// Initializes photo import ViewModel with comprehensive ImportManager integration and OCR preparation.
-  /// [importManager] ImportManager instance for photo import strategy coordination and recipe parsing
-  /// Establishes photo import infrastructure with ImportManager integration, enabling comprehensive
-  /// photo-to-recipe functionality with OCR processing, image handling, and unified state management.
-  /// **Initialization Process:**
-  /// - ImportManager integration for photo import strategy execution
-  /// - Universal OCR service preparation with multi-provider support
-  /// - Image handling setup with camera and gallery integration
-  /// - Recipe parsing coordination for OCR text processing
   PhotoImportViewModel({required super.importManager}) {
     _initializeOCRService();
   }
@@ -159,44 +126,12 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   @override
   String get importType => 'photo';
 
-  /// Captures photo from camera and processes with comprehensive OCR coordination.
-  /// Performs camera photo capture with automatic OCR processing including
-  /// image optimization, text extraction, and automatic recipe parsing coordination
-  /// with comprehensive error handling and state management.
-  /// **Camera Capture Process:**
-  /// - Camera interface activation through ImagePicker
-  /// - Image capture and bytes processing
-  /// - Automatic OCR processing with multi-engine support
-  /// - Intelligent recipe parsing from extracted text
-  /// - State coordination and UI notification
-  /// **Usage Example:**
-  /// ```dart
-  /// await photoImportViewModel.pickImageFromCamera();
-  /// if (photoImportViewModel.hasOcrResult) {
-  ///   final extractedText = photoImportViewModel.ocrText;
-  /// }
-  /// ```
+  /// Captures a photo from the camera and runs the OCR + auto-parse pipeline.
   Future<void> pickImageFromCamera() async {
     await _pickImageAndProcess(ImageSource.camera);
   }
 
-  /// Selects image from gallery and processes with comprehensive OCR coordination.
-  /// Performs gallery image selection with automatic OCR processing including
-  /// image optimization, text extraction, and automatic recipe parsing coordination
-  /// with comprehensive error handling and state management.
-  /// **Gallery Selection Process:**
-  /// - Gallery interface activation through ImagePicker
-  /// - Image selection and bytes processing
-  /// - Automatic OCR processing with multi-engine support
-  /// - Intelligent recipe parsing from extracted text
-  /// - State coordination and UI notification
-  /// **Usage Example:**
-  /// ```dart
-  /// await photoImportViewModel.pickImageFromGallery();
-  /// if (photoImportViewModel.hasImage) {
-  ///   // Image selected and OCR processing initiated
-  /// }
-  /// ```
+  /// Selects an image from the gallery and runs the OCR + auto-parse pipeline.
   Future<void> pickImageFromGallery() async {
     await _pickImageAndProcess(ImageSource.gallery);
   }
@@ -234,52 +169,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// Returns true if image data exists and retry is possible, false otherwise.
   bool get canRetryOcr => _imageBytes != null;
 
-  // ── BUT-410 heirloom getters/setters ────────────────────────────────────
-
-  /// Whether the user has marked this scan as an heirloom recipe.
-  bool get isHeirloom => _isHeirloom;
-
-  /// Writer attribution, as currently typed. Empty string = not provided.
-  String get heirloomWriterName => _heirloomWriterName;
-
-  /// Year parsed from the year field, or null if empty/invalid.
-  int? get heirloomYear => _heirloomYear;
-
-  /// Short origin note, as currently typed.
-  String get heirloomNote => _heirloomNote;
-
-  /// True while an heirloom upload is pending because the device is offline.
-  bool get isOfflineQueued => _isOfflineQueued;
-
-  set isHeirloom(bool value) {
-    if (isDisposed || _isHeirloom == value) return;
-    _isHeirloom = value;
-    notifyListeners();
-  }
-
-  set heirloomWriterName(String value) {
-    if (isDisposed) return;
-    // Guard against very long paste-ins — HeirloomMetadata enforces 100 at
-    // construction time, but we truncate here so the field stays usable.
-    final trimmed = value.length > 100 ? value.substring(0, 100) : value;
-    if (_heirloomWriterName == trimmed) return;
-    _heirloomWriterName = trimmed;
-    notifyListeners();
-  }
-
-  set heirloomYear(int? value) {
-    if (isDisposed || _heirloomYear == value) return;
-    _heirloomYear = value;
-    notifyListeners();
-  }
-
-  set heirloomNote(String value) {
-    if (isDisposed) return;
-    final trimmed = value.length > 200 ? value.substring(0, 200) : value;
-    if (_heirloomNote == trimmed) return;
-    _heirloomNote = trimmed;
-    notifyListeners();
-  }
+  // BUT-410 heirloom getters/setters live in PhotoImportHeirloomFormMixin.
 
   /// Clears all photo and OCR data with comprehensive state cleanup and memory management.
   /// Performs complete photo import state cleanup including image data, OCR results,
@@ -304,11 +194,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     _lastRecommendations = null;
     _lastConfidence = null;
     // Heirloom form clears with the photo — they belong to the same capture.
-    _isHeirloom = false;
-    _heirloomWriterName = '';
-    _heirloomYear = null;
-    _heirloomNote = '';
-    _isOfflineQueued = false;
+    clearHeirloomForm();
     clearImportData();
 
     // Also clear OCR cache for testing
