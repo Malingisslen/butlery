@@ -4158,3 +4158,27 @@ existing behavior.
 - Backward-compat for optional-named-param + `?? ServiceLocator` defaults: existing `makeVm()`
   callers pass neither → hit the `??` branch → identical behaviour. Reasoning is sound, no need
   to re-run all 206.
+
+### [Review] tagsMutated invalidation-signal contract tests (BUT-1055) + zero-allowlist arch guard (BUT-1066)
+Date: 2026-05-30
+Trigger: Reviewing staged tests in personal_tag_service_test.dart + architecture_test.dart.
+Findings (all PASS, no weakened assertions):
+- 3 tagsMutated tests genuinely gate the contract. Verified against
+  lib/services/tagging/personal_tag_crud_service.dart `_invalidateTagsCache()` (clearCache
+  BEFORE controller.add). "fires once on create", "does NOT fire on createGroup" (createGroup
+  only clears groupsCacheKey, never calls _invalidateTagsCache — confirmed line 357), and
+  "clears cache before firing" all fail under their inverse bug. The clears-before-firing test
+  is strongest: with the 5-min getCachedOrExecute window, a non-clearing invalidate makes the
+  2nd getAllTags a cache hit → both `['a','b']` assert AND `verify(getAllSorted).called(2)` fail.
+- `await Future<void>.delayed(Duration.zero)` flush IS sound, not flaky. broadcast
+  StreamController.add() schedules delivery as a microtask; Duration.zero is a Timer (macrotask)
+  which always drains all pending microtasks first → event guaranteed delivered before the expect.
+  Pattern is deterministic in dart's event loop; safe to reuse for broadcast-stream flush in unit
+  tests. (Did NOT need fakeAsync here — no DateTime.now / real wait in play.)
+- Zero-allowlist arch guard is NON-vacuous: dartFiles recursively scans lib/ (134 view files
+  present), relPathOf filters to lib/views/, regex `\bCircularProgressIndicator\s*\(` runs against
+  comment-stripped source. It asserts isEmpty over a populated set, so a new raw spinner under
+  lib/views/ breaks the build. Comment-strip uses block+line regex (same as sibling guards) —
+  acceptable approximation; a CircularProgressIndicator inside a string literal would false-positive
+  but that's a non-issue in practice.
+No gaps found. No bug surfaced.

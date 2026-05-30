@@ -1,51 +1,62 @@
 # Sprint Backlog
 
-## Sprint: iter-103 — 4 code-only tech-debt tickets (PLANNED, not yet implemented) — 2026-05-29 (Fri)
+## Sprint: iter-104 — 2 clean code-only tech-debt tickets — 2026-05-30 (Sat)
 
-**Status: PLANNED ONLY.** Selection done in a long session; implementation deferred to a fresh session for quality. All 4 transitioned to "Todo" in Linear. None are risk-gated (all P3/P4 tech-debt, no security/Bug → no Phase 1.5 expansion). Ops-blocked tickets (App Check client BUT-1166, AI ops BUT-1167, store/deploy/MFA) and EPICs were deliberately excluded.
+**Context:** iter-103 exhausted the obviously-clean backlog. Re-triaged the full 160-ticket
+backlog (both pages). Most remaining = UI-visual (needs human eyes), ops-blocked (CF deploy /
+store / MFA / prod access), dependency-upgrades blocked on the Dart SDK bump, or large EPICs.
+Found 2 genuinely code-only, verifiable-without-UI/ops picks. Both P4, neither risk-gated
+(no Bug/security label, single-module) → no Phase 1.5 expansion.
 
-**Fresh session: re-run Step 0 per ticket** (`get_issue` for the full description — the lines below are summaries; current code-read wins over ticket text).
+### Batch A — arch-test guard (test-only, zero risk)
 
-### Batch A — backend / realtime (independent files)
+- [x] **A1. BUT-1066: extend CPI arch-guard to `lib/views/`** — `test/architecture/architecture_test.dart`.
+  Step 0: the `lib/widgets/` CPI guard ALREADY exists (BUT-885, `architecture_test.dart:502-579`).
+  `lib/views/` has **zero** `CircularProgressIndicator(` sites → add a sibling guard with a
+  **zero allowlist** (pure regression-prevention for the views layer). `lib/core/` (4 infra sites:
+  dialog_factory, snackbar_utils, application_provider, base_action_handler) is the infra layer —
+  out of this ticket's UI-layer scope. **plan-stale → rescoped.** (BUT-1066, P4)
 
-- [x] **A1. BUT-1165: iter-99 review follow-ups** — RESOLVED (iter-103a). Umbrella's actionable notes were unrecoverable (sprint-scratch overwritten, no durable code markers). Spot-check confirmed all 6 areas shipped defensively with tests in `631fceec4`. Closed honestly + captured umbrella anti-pattern lesson. (BUT-1165, P3)
-- [x] **A2. BUT-472: audit `lib/services/unified/modules/realtime_session_manager.dart`** — DONE (iter-103a). Premise re-scoped: file is a stateless static helper; maps owned by `RealtimeRecipeModule`; dispose chain (`UnifiedRecipeService.dispose` → `module.dispose` → `RealtimeCacheManager.dispose`) is complete + tested at every layer. No leak. Added a module-level leak guard asserting `dispose()` leaves zero outstanding handles across all 3 maps. (BUT-472, P3)
+### Batch B — tagging performance (code + test)
 
-### Batch B — tech-debt / data
+- [x] **B1. BUT-1055: migrate personal-tag display off always-on snapshot listener** —
+  `lib/services/tagging/personal_tag_crud_service.dart`, `personal_tag_service.dart`,
+  `lib/widgets/tagging/personal_tag_selector.dart`.
+  Step 0 correction: the ticket's "per-widget snapshot listener at personal_tag_selector.dart:512"
+  is stale — the `watchTags().listen` lives in `AutoPersonalTagDisplay` and is already a SINGLE
+  shared, ref-counted static subscription (not per-widget). Intent still valid: even one
+  `.snapshots()` listener stays open continuously whenever any tagged recipe card is visible.
+  Change: (1) add a `tagsMutated` broadcast `Stream<void>` to `PersonalTagCrudService`, emitted at
+  every `clearCache(tagsCacheKey)` site via a `_invalidateTagsCache()` helper; close the controller
+  in `onDispose`. (2) Re-export `tagsMutated` through the `PersonalTagService` facade. (3) Rewrite
+  `AutoPersonalTagDisplay._subscribe` to `getAllTags()` on first subscribe + a `tagsMutated`
+  subscription that re-fetches (cache was just cleared → fresh read) and notifies all listeners.
+  Preserve the shared-state + ref-count + "all instances see same data" invariant. (4) Add a
+  service test pinning: tagsMutated fires on CRUD mutation; getAllTags re-fetches after.
+  **plan-stale → rescoped.** (BUT-1055, P4)
 
-- [~] **B1. BUT-520: migrate standalone ViewModels → `BaseViewModel`** — iter-103b: migrated `create_shared_list_viewmodel.dart` (raw ChangeNotifier hand-rolling `_error`/`_setError` with NO disposed-guard → `BaseViewModel`; fixes a latent disposed-notify bug; all 32 tests green unmodified). **Premise corrected** (Step 0): the ticket's "62 raw ChangeNotifier VMs" conflates 3 populations — 24 already use `StateNotifierMixin` (a *superset* of BaseViewModel incl. disposed-guarding + `executeNamedOperation`; migrating them = DOWNGRADE, do NOT), ~14 are tiny selection/state managers with no loading/error (BaseViewModel = no-op churn), only ~10 genuinely hand-roll loading/error (the real targets, several with operation-specific flags). EPIC stays open with the refined target list. (BUT-520, P4)
-- [x] **B2. BUT-1164: migrate legacy `meatFish`/`fruitVeg` shopping categories → fine-grained `meat`/`fish`/`fruit`/`veg`** — DONE (iter-103a, write-side slice). `ShoppingCategoryMapper` now emits fine-grained buckets (deterministic from group path, no data migration). Backfill of existing docs + legacy-constant removal deferred to BUT-1169 (needs telemetry + Cloud Function). (BUT-1164, P4)
+### Deferred (heavier — left in Backlog, NOT this sprint)
 
-### iter-103c (continuation — backlog picks)
+- BUT-969 (P4) — typed models in account_deletion (GDPR cascade): code-only but security-sensitive,
+  needs 3 new models + strong tests + firebase-backend-security review. Own focused pass.
+- BUT-1044 (P4) — custom_lint package for un-disposed StreamSubscription: real infra setup
+  (custom_lint dep + analyzer plugin + CI wiring); rabbit-hole risk. Own pass.
+- BUT-581 (P4) — 224-site `?? ''` → `.orEmpty` codemod: blocked on reconciling two divergent
+  extensions (silent behavior-change risk). Large + risky.
 
-- [x] **BUT-1111: `FakePermissionService.setPermissionState` auth toggle** — fix: honor explicit `isAuthenticated:false` even when `currentUser` is set (was unconditionally forced true). Added `fake_permission_service_test.dart` (4 tests pinning the toggle). Test-infra only. (BUT-1111, P4)
-- [~] **BUT-1122: loadMoreContent dead-code guardrail** — premise-gone (closed). The `supportsPagination` throw-gate superseded the duplicate-risk; guardrail tests already exist in `shared_shopping_viewmodel_test.dart:743-758`. No code change. (BUT-1122, P4)
+### Post-Sprint Steps
 
-### iter-103d (continuation — backlog picks)
-
-- [x] **BUT-1121: joinSharedMenu inner addParticipant catch independence** — added test proving the inner "continue anyway" catch is independent of the outer catch: with `addParticipant` throwing, the collaborative join still returns a `MenuJoinResult` (isCollaborative, correct menuId), still marks the share joined, and sets NO error banner. New `_CollaborativeSharedMenuRepository` + `_AddParticipantThrowsRealtimeMenuService` test doubles. 33/33 pass, reviewed clean (mutation-verified). Test-only. (BUT-1121, P3)
-- [x] **BUT-1123: joinSharedMenu all-failure-paths contract** — DONE (iter-103e). Added 2 tests pinning the remaining internal failure modes: markAsImportedOrJoined-throws (collaborative branch → outer catch → null+banner) and importSharedMenu-throws (static branch → outer catch → null+banner). read-throws already covered by the BUT-1090 regression test; addParticipant-inner-catch by BUT-1121. Both assert `lastError isNotNull` to distinguish a genuine caught throw from an accidental null. 35/35 pass, reviewed clean. (BUT-1123, P4)
-
-### iter-103f (continuation — backlog pick)
-
-- [x] **BUT-1075: BaseSharedContentViewModel injectable PermissionService + UnifiedFriendsService** — DONE (code complete, verified; commit pending a transient Bash-classifier outage). Added optional ctor params to the base VM (resolved via `?? ServiceLocator.get/tryGet`, behavior-identical) + super-parameter forwarding in the 3 subclasses (recipe/menu/shopping). `currentUserId` now reads the injected `_permissionService`. 2 injection-proof tests added (permissionService + friendsService each override the locator via distinct values). All 206 shared_content tests + 36 recipe-VM tests pass; analyze clean; both review agents clean. (BUT-1075, P4)
-
-### iter-103g (continuation — last clean autonomous pick)
-
-- [x] **BUT-1058: comment-draft persistence widget test** — DONE. Added `test/widget/recipe/comment_form_widget_test.dart` (4 tests): load-on-mount seeds TextField + syncs VM; save-on-edit persists per-keystroke; clear-on-post removes the draft key; per-recipe isolation (r2 ignores r1's draft, leaves it intact). Test-only, mocktail `_FakeSocialRecipeViewModel`, sv-locale wrap. 4/4 pass, analyze clean, reviewed clean (each test genuinely gating). (BUT-1058, P4)
-
-> **Autonomous-friendly backlog now exhausted.** Remaining Backlog is UI/visual (needs human visual verification), ops-blocked (prod access / CF deploy / store / MFA), large refactors/EPICs, or only-partially-clean (a clean half bundled with a UI/ops half). Next loop iterations should pace down or await direction on prioritizing UI/larger work.
-
-### Post-Sprint Steps (for the implementing session)
-
-- [ ] Per-ticket Step 0 (read code; classify fits / premise-gone / plan-stale).
 - [ ] `dart analyze --fatal-infos` clean.
-- [ ] Relevant unit tests pass.
+- [ ] Run `flutter test test/architecture/architecture_test.dart` + the new tagging service test.
 - [ ] code-reviewer + testing-specialist on staged Dart (commit-gate hooks).
 - [ ] Commit (conventional; footer Co-Authored-By Claude Opus 4.8), push to main.
-- [ ] Close BUT-1165, BUT-472, BUT-520, BUT-1164 in Linear with the commit SHA.
-- [ ] File any deferred follow-ups in Linear before commit.
+- [ ] Close BUT-1066, BUT-1055 in Linear with the commit SHA + edit ticket bodies for the rescopes.
 
 ---
 
-Prior sprints (iter-100 / iter-101 / iter-102) shipped and closed — see git history (`43b3aadb3`, `b091da229`, `c2d95fb65`). This file is sprint-scratch; the durable record is Linear + git.
+## Sprint: iter-103 — 4 code-only tech-debt tickets (SHIPPED) — 2026-05-29 (Fri)
+
+All of iter-103a–g shipped + closed — see git history (`0a265fed5`, `8fd2ee656`, `9b71e0546`,
+`0bb29128d`, `a7364fd2e`, `f1d63be31`). Closed: BUT-1165, BUT-472, BUT-1164, BUT-1111, BUT-1121,
+BUT-1123, BUT-1075, BUT-1058. BUT-520 + BUT-1122 left as `[~]` (EPIC refined / premise-gone).
+This file is sprint-scratch; the durable record is Linear + git.

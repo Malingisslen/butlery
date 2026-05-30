@@ -28,6 +28,17 @@ class PersonalTagCrudService extends BaseService {
   /// Serializes createTag calls to prevent TOCTOU race on name uniqueness.
   Completer<void>? _createTagLock;
 
+  /// BUT-1055: lightweight invalidation signal. Emits once per tag-set
+  /// mutation (every write that clears [tagsCacheKey]). Consumers subscribe
+  /// to this instead of holding an always-on Firestore `.snapshots()`
+  /// listener — on each event they re-`getAllTags()` (cache was just cleared,
+  /// so the read is fresh). Broadcast so any number of widgets can listen.
+  final StreamController<void> _tagsMutatedController =
+      StreamController<void>.broadcast();
+
+  /// Fires after every tag CRUD mutation. See [_invalidateTagsCache].
+  Stream<void> get tagsMutated => _tagsMutatedController.stream;
+
   PersonalTagCrudService({
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
@@ -36,6 +47,23 @@ class PersonalTagCrudService extends BaseService {
 
   @override
   String get serviceName => 'PersonalTagCrudService';
+
+  /// Clears the tag-set cache and notifies [tagsMutated] subscribers. Order
+  /// matters: the cache is cleared BEFORE the event fires, so a consumer that
+  /// re-reads via `getAllTags()` in response gets fresh data, not the stale
+  /// pre-mutation snapshot.
+  void _invalidateTagsCache() {
+    clearCache(tagsCacheKey);
+    if (!_tagsMutatedController.isClosed) {
+      _tagsMutatedController.add(null);
+    }
+  }
+
+  @override
+  Future<void> onDispose() async {
+    await _tagsMutatedController.close();
+    await super.onDispose();
+  }
 
   // -- Tag CRUD --
 
@@ -66,7 +94,7 @@ class PersonalTagCrudService extends BaseService {
           }
 
           await _tagRepository.create(tag);
-          clearCache(tagsCacheKey);
+          _invalidateTagsCache();
           AppLogger.info('Created personal tag: ${tag.name}');
           return tag;
         },
@@ -140,7 +168,7 @@ class PersonalTagCrudService extends BaseService {
           }
         }
 
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Updated personal tag: ${tag.name}');
       },
       operationName: 'Update personal tag',
@@ -172,7 +200,7 @@ class PersonalTagCrudService extends BaseService {
           );
         }
 
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Deleted personal tag: $tagId');
       },
       operationName: 'Delete personal tag',
@@ -220,7 +248,7 @@ class PersonalTagCrudService extends BaseService {
           totalDeleted += chunk.length;
         }
 
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info(
           'Bulk-deleted $totalDeleted tags; cascaded to $totalCascaded recipe rows',
         );
@@ -258,7 +286,7 @@ class PersonalTagCrudService extends BaseService {
     await executeServiceOperation(
       () async {
         await _tagRepository.reorder(tagIds);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Reordered ${tagIds.length} personal tags');
       },
       operationName: 'Reorder personal tags',
@@ -277,7 +305,7 @@ class PersonalTagCrudService extends BaseService {
         }
 
         await _tagRepository.moveToGroup(tagId, groupId);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Moved tag $tagId to group ${groupId ?? "ungrouped"}');
       },
       operationName: 'Move tag to group',
@@ -396,7 +424,7 @@ class PersonalTagCrudService extends BaseService {
         }
 
         clearCache(groupsCacheKey);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Deleted personal tag group: $groupId');
       },
       operationName: 'Delete personal tag group',
@@ -447,7 +475,7 @@ class PersonalTagCrudService extends BaseService {
         final updatedRules = [...tag.rules, rule];
         final updatedTag = tag.copyWith(rules: updatedRules);
         await _tagRepository.update(updatedTag);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Added rule "${rule.name}" to tag "${tag.name}"');
       },
       operationName: 'Add rule to tag',
@@ -477,7 +505,7 @@ class PersonalTagCrudService extends BaseService {
         updatedRules[ruleIndex] = rule.copyWith(updatedAt: clock.now());
         final updatedTag = tag.copyWith(rules: updatedRules);
         await _tagRepository.update(updatedTag);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Updated rule "${rule.name}" in tag "${tag.name}"');
       },
       operationName: 'Update rule in tag',
@@ -496,7 +524,7 @@ class PersonalTagCrudService extends BaseService {
         final updatedRules = tag.rules.where((r) => r.id != ruleId).toList();
         final updatedTag = tag.copyWith(rules: updatedRules);
         await _tagRepository.update(updatedTag);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Removed rule $ruleId from tag "${tag.name}"');
       },
       operationName: 'Remove rule from tag',
@@ -528,7 +556,7 @@ class PersonalTagCrudService extends BaseService {
         );
         final updatedTag = tag.copyWith(rules: updatedRules);
         await _tagRepository.update(updatedTag);
-        clearCache(tagsCacheKey);
+        _invalidateTagsCache();
         AppLogger.info('Set rule $ruleId enabled: $enabled');
       },
       operationName: 'Set rule enabled',

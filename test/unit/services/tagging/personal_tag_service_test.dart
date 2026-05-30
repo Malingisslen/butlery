@@ -1111,6 +1111,79 @@ void main() {
       });
     });
   });
+
+  // BUT-1055: the `tagsMutated` signal replaces the always-on Firestore
+  // snapshot listener that AutoPersonalTagDisplay used to hold open. These
+  // tests pin the contract consumers rely on: it fires exactly on tag-set
+  // mutations, NOT on group-only ones, and the cache is cleared BEFORE the
+  // signal fires so a consumer that re-reads in response gets fresh data.
+  group('BUT-1055: tagsMutated invalidation signal', () {
+    test('fires once when a tag is created', () async {
+      final tag =
+          PersonalTagBuilder().withId('t1').withName('Vegetariskt').build();
+      when(() => mockTagRepository.nameExists('Vegetariskt'))
+          .thenAnswer((_) async => false);
+      when(() => mockTagRepository.create(any())).thenAnswer((_) async => tag);
+
+      final events = <void>[];
+      final sub = service.tagsMutated.listen(events.add);
+
+      await service.createTag(tag);
+      await Future<void>.delayed(Duration.zero); // flush broadcast delivery
+
+      expect(events.length, 1,
+          reason: 'createTag must emit exactly one tagsMutated event');
+      await sub.cancel();
+    });
+
+    test('does NOT fire on a group-only mutation (createGroup)', () async {
+      // Proves the signal is tag-scoped: creating a group clears only the
+      // groups cache, so tag consumers must not be needlessly woken.
+      final group = PersonalTagGroup.create(name: 'Middag');
+      registerFallbackValue(group);
+      when(() => mockGroupRepository.nameExists('Middag'))
+          .thenAnswer((_) async => false);
+      when(() => mockGroupRepository.create(any()))
+          .thenAnswer((_) async => group);
+
+      final events = <void>[];
+      final sub = service.tagsMutated.listen(events.add);
+
+      await service.createGroup(group);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(events, isEmpty,
+          reason: 'group-only mutation must not emit tagsMutated');
+      await sub.cancel();
+    });
+
+    test('clears the cache before firing so consumers re-read fresh', () async {
+      final tagA = PersonalTagBuilder().withId('a').withName('A').build();
+      final tagB = PersonalTagBuilder().withId('b').withName('B').build();
+
+      // Prime the cache with [tagA].
+      when(() => mockTagRepository.getAllSorted())
+          .thenAnswer((_) async => [tagA]);
+      final first = await service.getAllTags();
+      expect(first.map((t) => t.id), ['a']);
+
+      // Repository now holds the post-mutation set.
+      when(() => mockTagRepository.getAllSorted())
+          .thenAnswer((_) async => [tagA, tagB]);
+      when(() => mockTagRepository.nameExists('B'))
+          .thenAnswer((_) async => false);
+      when(() => mockTagRepository.create(any())).thenAnswer((_) async => tagB);
+
+      await service.createTag(tagB); // _invalidateTagsCache → clears + emits
+
+      // Because the cache was cleared, this re-reads from the repository
+      // rather than returning the stale primed [tagA].
+      final second = await service.getAllTags();
+      expect(second.map((t) => t.id), ['a', 'b'],
+          reason: 'getAllTags after a mutation must reflect fresh repo data');
+      verify(() => mockTagRepository.getAllSorted()).called(2);
+    });
+  });
 }
 
 // Test helpers

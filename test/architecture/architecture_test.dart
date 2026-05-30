@@ -578,6 +578,48 @@ void main() {
       );
     });
 
+    // BUT-1066 (BUT-885 follow-up): the same LoadingIndicator-wrapper rule
+    // applies to lib/views/. Unlike lib/widgets/ (which still carries a
+    // long-tail allowlist), the views layer is already 100% clean — every
+    // view routes spinners through LoadingIndicator / StateWidget. So this
+    // guard ships with a ZERO allowlist: it's pure regression-prevention.
+    // A new raw CircularProgressIndicator( anywhere under lib/views/
+    // (onboarding/, account/, social/, etc.) breaks the build immediately.
+    //
+    // Scope note: lib/core/ still has 4 infra spinners (dialog_factory,
+    // snackbar_utils, application_provider, base_action_handler). Those are
+    // the infrastructure layer, not the UI-component layer this rule governs,
+    // and are intentionally out of scope here.
+    test(
+        'no raw CircularProgressIndicator in lib/views/ '
+        '(use LoadingIndicator wrapper) — zero allowlist', () {
+      final pattern = RegExp(r'\bCircularProgressIndicator\s*\(');
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        if (!relPath.startsWith('lib/views/')) continue;
+
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Raw CircularProgressIndicator in lib/views/ bypasses the '
+            'LoadingIndicator wrapper (platform-adaptive, a11y, consistent '
+            'sizing). Use LoadingIndicator or StateWidget instead.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     test('widgets directory exists under lib', () {
       expect(
         Directory('lib/widgets').existsSync(),

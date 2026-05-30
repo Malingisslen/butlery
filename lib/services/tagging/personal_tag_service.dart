@@ -57,6 +57,11 @@ class PersonalTagService extends BaseService {
 
   Stream<List<PersonalTag>> watchTags() => _crud.watchTags();
 
+  /// BUT-1055: fires once per tag-set mutation. Consumers use this + an
+  /// on-demand [getAllTags] instead of an always-on Firestore snapshot
+  /// listener (see [AutoPersonalTagDisplay]).
+  Stream<void> get tagsMutated => _crud.tagsMutated;
+
   Future<bool> tagNameExists(String name, {String? excludeId}) =>
       _crud.tagNameExists(name, excludeId: excludeId);
 

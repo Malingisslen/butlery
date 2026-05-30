@@ -467,9 +467,13 @@ class AutoPersonalTagDisplay extends StatefulWidget {
 }
 
 class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
-  /// Shared stream subscription for all AutoPersonalTagDisplay instances.
-  /// Avoids redundant Firebase queries while providing real-time updates.
-  static StreamSubscription<List<PersonalTag>>? _sharedSubscription;
+  /// BUT-1055: shared invalidation subscription for all instances. Replaces
+  /// the former always-on `watchTags().snapshots()` listener — we no longer
+  /// hold a live Firestore listener open for the whole time any tagged
+  /// recipe card is visible. Instead one shared `tagsMutated` subscription
+  /// triggers an on-demand `getAllTags()` re-fetch (served from the service's
+  /// 5-min cache between mutations).
+  static StreamSubscription<void>? _mutationSubscription;
   static List<PersonalTag> _sharedTags = [];
   static int _subscriberCount = 0;
 
@@ -502,30 +506,50 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
       _loaded = true;
     }
 
-    // Start shared subscription if this is the first subscriber
-    if (_sharedSubscription == null) {
+    // Start the shared invalidation subscription if this is the first
+    // subscriber. The mutation signal re-fetches; we also kick off one
+    // initial fetch so the first mount populates without waiting for a write.
+    //
+    // Known limitation (pre-existing, same as the old watchTags() listener):
+    // this static subscription binds to the CURRENT service instance. If a
+    // logout/login happens while at least one tagged card stays mounted, the
+    // subscription keeps pointing at the old (disposed) controller and tag
+    // chips stop updating until every instance unmounts and the first one
+    // re-subscribes. Tracked as a follow-up — not a regression from BUT-1055.
+    if (_mutationSubscription == null) {
       try {
         final service = ServiceLocator.get<PersonalTagService>();
-        _sharedSubscription = service.watchTags().listen(
-          (tags) {
-            _sharedTags = tags;
-            // MED-10: Notify ALL registered listeners, not just the first instance
-            for (final listener in _listeners.toList()) {
-              listener();
-            }
-          },
+        _mutationSubscription = service.tagsMutated.listen(
+          (_) => _refetchAndNotify(service),
           onError: (error) {
-            AppLogger.debug('AutoPersonalTagDisplay: Stream error: $error');
-            // MED-10: Notify ALL registered listeners on error
-            for (final listener in _listeners.toList()) {
-              listener();
-            }
+            AppLogger.debug('AutoPersonalTagDisplay: Mutation error: $error');
+            _notifyAll();
           },
         );
+        _refetchAndNotify(service); // initial load
       } catch (e) {
         AppLogger.debug('AutoPersonalTagDisplay: Failed to subscribe: $e');
         _onTagsUpdated(); // Notify just this instance on setup failure
       }
+    }
+  }
+
+  /// Re-reads the tag set on demand and notifies every mounted instance.
+  /// Called on first mount and on each `tagsMutated` event. The cache was
+  /// cleared by the mutation before the event fired, so this read is fresh.
+  static Future<void> _refetchAndNotify(PersonalTagService service) async {
+    try {
+      _sharedTags = await service.getAllTags();
+    } catch (e) {
+      AppLogger.debug('AutoPersonalTagDisplay: getAllTags failed: $e');
+    }
+    _notifyAll();
+  }
+
+  /// MED-10: Notify ALL registered listeners, not just the first instance.
+  static void _notifyAll() {
+    for (final listener in _listeners.toList()) {
+      listener();
     }
   }
 
@@ -543,8 +567,8 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
 
     // Cancel shared subscription when last subscriber disposes
     if (_subscriberCount <= 0) {
-      _sharedSubscription?.cancel();
-      _sharedSubscription = null;
+      _mutationSubscription?.cancel();
+      _mutationSubscription = null;
       _sharedTags = [];
       _subscriberCount = 0;
       _listeners.clear(); // MED-10: Clear listeners list

@@ -121,6 +121,11 @@ class TaggingModule implements DIModule {
         tagRepository: app<FirebasePersonalTagRepository>(),
         groupRepository: app<FirebasePersonalTagGroupRepository>(),
       ),
+      // BUT-1055: run full dispose on user-scope teardown so the
+      // `tagsMutated` broadcast controller is closed (onDispose). Without
+      // this, GetIt drops the singleton without invoking BaseService.dispose
+      // and the controller leaks one instance per logout/login cycle.
+      dispose: (s) => s.dispose(),
     );
 
     container.registerLazySingleton<PersonalTagService>(
