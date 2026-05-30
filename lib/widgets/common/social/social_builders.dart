@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Builder functions for social components
 class SocialBuilders {
@@ -25,7 +26,8 @@ class SocialBuilders {
           ? const SizedBox(
               width: AppDimensions.iconSizeS,
               height: AppDimensions.iconSizeS,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: LoadingIndicator(
+                  size: AppDimensions.iconSizeS, strokeWidth: 2),
             )
           : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
       label: Text(label),

@@ -534,12 +534,11 @@ void main() {
         'lib/widgets/common/service/service_widgets.dart',
         'lib/widgets/messaging/builders/message_content_builder.dart',
         'lib/widgets/common/share_dialog/share_dialog_states.dart',
+        // invitation_states.dart stays: it has DETERMINATE progress bars
+        // (CircularProgressIndicator(value: progress)) that LoadingIndicator —
+        // an indeterminate wrapper — can't express. Needs a determinate variant
+        // (BUT-1173) before it can be migrated + de-allowlisted.
         'lib/widgets/common/social_components/invitation_states.dart',
-        'lib/widgets/common/social_components/social_avatar_components.dart',
-        'lib/widgets/common/social_components/social_builder_components.dart',
-        'lib/widgets/common/social_components/social_group_components.dart',
-        'lib/widgets/common/social/invitation_target_states.dart',
-        'lib/widgets/common/social/social_builders.dart',
         'lib/widgets/common/scaffolds/form_scaffold.dart',
         'lib/widgets/common/settings/blocked_users_section.dart',
         'lib/widgets/common/profile/handlers/auth_action_handler.dart',

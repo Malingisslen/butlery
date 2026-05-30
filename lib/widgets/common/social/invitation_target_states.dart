@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 class InvitationTargetStates {
   /// Build target list loading state
   static Widget targetListLoading() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: LoadingIndicator(),
     );
   }
 
@@ -17,7 +18,7 @@ class InvitationTargetStates {
   static Widget targetCardLoading(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const CircularProgressIndicator(),
+        leading: const LoadingIndicator(),
         title: Text(context.l10n.commonLoading),
       ),
     );

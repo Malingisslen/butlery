@@ -1,5 +1,36 @@
 # Sprint Backlog
 
+## Sprint: iter-109 — Tier A bounded wave (CPI→LoadingIndicator) — 2026-05-30 (Sat)
+
+Bounded mechanical wave (context large from iter-107/108; picked a safe guarded sweep).
+
+### Agent A — CPI→LoadingIndicator migration (BUT-1168 wave)
+
+- [x] **A1. BUT-1168 wave: migrate the social cluster (5 files)** `[Tier A]`
+  - Step 0: FITS. Mechanical CPI→LoadingIndicator migration, guarded by the arch-test in
+    `test/architecture/architecture_test.dart`. Migrated 5 fully-indeterminate files + removed
+    them from the allowlist: `social_components/{social_avatar_components, social_builder_components,
+    social_group_components}.dart`, `social/{invitation_target_states, social_builders}.dart`.
+  - `social_builders.dart`: passed `size: AppDimensions.iconSizeS` so the wrapper's default 24px
+    doesn't overflow the existing fixed 16px SizedBox (behavior-preserving).
+  - **Skipped `invitation_states.dart`** — it has DETERMINATE progress bars (`CPI(value: progress)`)
+    that LoadingIndicator (indeterminate) can't express. Stays allowlisted → filed **BUT-1173** (LOW)
+    for a determinate variant. Updated the allowlist comment to say why it stays.
+  - Verify: analyze clean on all 5 + arch test; arch CPI guard GREEN with the 5 de-allowlisted
+    (proves they're actually clean). BUT-1168 stays In Progress (long-tail, ~24 files remain).
+
+### Post-Sprint Steps
+- [x] analyze clean + arch CPI guard green
+- [ ] code-reviewer + testing-specialist on staged Dart
+- [ ] Commit (stage specific files — NOT `git add -A`), push to main
+- [ ] BUT-1168 progress comment (5 more migrated, stays In Progress); BUT-1173 filed
+
+### Carried high-value (fresh-context iterations)
+- **BUT-1155** (High, Bug) — broken CI views shard (200+ failures + hang). Whole-sprint Tier C.
+- **BUT-1044** (tooling) — custom_lint for un-disposed StreamSubscription.
+
+---
+
 ## Sprint: iter-108 — Tier A bug fix (subscription lifecycle) — 2026-05-30 (Sat)
 
 Focused single-ticket sprint (context already large from iter-107; quality over count).
@@ -35,8 +66,8 @@ Focused single-ticket sprint (context already large from iter-107; quality over 
 - [x] `dart analyze` clean on all 3 changed files
 - [x] New widget test green (logout→login re-bind + post-login mutation + privacy clear) + 38 existing service tests green
 - [x] code-reviewer + testing-specialist — both CLEAN; applied 2 nits (dart:async import order, explicit privacy assert); filed BUT-1172 (LOW) for 2 edge-case test gaps
-- [ ] Commit (stage specific files — NOT `git add -A`; `docs/cleanup/` + stash are not mine), push to main
-- [ ] BUT-1170 → Done (Tier A, test-proven)
+- [x] Commit `9159fbce9` (specific files staged), pushed to main
+- [x] BUT-1170 → Done (Tier A, test-proven). Follow-up BUT-1172 (LOW) filed.
 
 ### Carried high-value (next fresh-context iterations — NOT this sprint)
 - **BUT-1155** (High, Bug) — CI views shard broken: 200+ failures + 10min hang. Whole-sprint Tier C job;

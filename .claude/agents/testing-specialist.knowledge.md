@@ -4315,3 +4315,39 @@ Verdict: COMMIT-SAFE as-is. Intent-gated, authentic, isolated. One optional inli
   bind instead). (2) last-subscriber teardown of `_instanceReadySubscription` — assert that after unmount,
   a subsequent instanceReady event does NOT throw / does NOT resurrect a binding (the BUT-1170 dangling-sub
   cleanup at _unsubscribe:608-611). Both are edge invariants the current single happy-path test doesn't pin.
+
+---
+
+### [Trigger: CPI→LoadingIndicator migration coverage review] 2026-05-30 — arch-test guard is sufficient for indeterminate-spinner swaps; CPI finders survive on non-iOS host
+
+BUT-1168 wave: 5 social helper-widget files swapped raw `CircularProgressIndicator` → `LoadingIndicator`
+(social_avatar_components, social_builder_components, social_group_components, invitation_target_states,
+social_builders). No logic change — indeterminate spinners inside static builders.
+
+Findings / reusable rules:
+- **No behavioral test required beyond the arch guard** for a pure indeterminate-spinner type swap inside
+  static builders. The regression contract is `test/architecture/architecture_test.dart`'s
+  "no raw CircularProgressIndicator in lib/widgets/" guard (BUT-885/1066). Removing a migrated file from
+  its allowlist + confirming the guard still passes IS the proof the file is clean. Adding a widget test
+  that just re-asserts `find.byType(LoadingIndicator)` for these would be a low-value getter-identity test.
+- **`find.byType(CircularProgressIndicator)` survives the swap on the default test host.** `LoadingIndicator`
+  → `AdaptiveActivityIndicator` → on **non-iOS** host renders a real `CircularProgressIndicator` underneath
+  (confirmed: adaptive_activity_indicator_test.dart:27 "non-iOS host → CircularProgressIndicator"). The type
+  swap only changes rendering under `Platform.isIOS` (→ CupertinoActivityIndicator). `flutter test` defaults
+  to a non-iOS host and none of the existing CPI-finder tests pin iOS via debugDefaultTargetPlatformOverride.
+  So a CPI finder breaks ONLY if a test both renders a migrated widget AND forces iOS — neither happens here.
+- **Where CPI finders live (and why they don't break):** all remaining `find.byType(CircularProgressIndicator)`
+  asserts are in test/widget/common/indicators/ (testing the wrapper widgets directly — correct, intentional),
+  plus dialog/button/loading-state/menu tests that render their OWN spinners, not the social helpers. None
+  import the 5 migrated files.
+- **View tests already migrated to the wrapper finder.** group_detail_view_test.dart asserts
+  `find.byType(LoadingIndicator)` (already wrapper). shared_with_me_view_test.dart uses an OR fallback
+  (`LoadingIndicator` || `CircularProgressIndicator`, BUT-891 pattern). view_test_helpers.dart's
+  `expectLoadingState`/`expectNoLoadingState` also accept both. So view-level loading asserts are swap-proof
+  by design.
+- **chunk5_semantics_a11y_test.dart imports social_builder_components.dart** but only exercises `socialCard`'s
+  `semanticLabel` wrapper — no spinner finder, unaffected.
+- **Follow-up worth filing (low priority):** the 5 migrated widgets have no direct widget test of their own.
+  Not a regression from this change (they had none before), and not worth backfilling getter-identity tests.
+  If any of these helpers ever gains a loading-vs-loaded *state transition* (not just a static spinner), THAT
+  transition deserves a behavioral test — the spinner type alone does not.

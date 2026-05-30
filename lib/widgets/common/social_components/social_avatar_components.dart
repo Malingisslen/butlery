@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -307,7 +308,7 @@ class SocialAvatarComponents {
           color:
               backgroundColor ?? Theme.of(context).colorScheme.outlineVariant,
         ),
-        child: const CircularProgressIndicator(),
+        child: const LoadingIndicator(),
       ),
     );
   }
