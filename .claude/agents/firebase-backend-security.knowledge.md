@@ -2991,3 +2991,35 @@ for permission pinning — correct per the convention (auth id for permission
 checks, not profile). `GroupSharedContentService` uses
 `permissionService.currentUserId` only as a null/auth gate, never as profile
 data. No mixing.
+
+### 2026-05-31 — standalone admin backfill scripts are safe to delete; the deployed-surface test
+
+Reviewed the deletion of `functions/src/admin/backfill-ingredients-normalized.ts`
+and `backfill-thumbnail-urls.ts`. Result: CLEAN. The checklist that proves a
+`functions/src/admin/*.ts` script is NOT part of the deployed/operational surface
+(reusable for future admin-script deletions):
+
+1. **No `export` anywhere in the file** → nothing can import a symbol from it.
+   Both files were entirely module-private (`function foo()`, never `export`).
+   They are pure CONSUMERS of shared modules (`admin-init`, `swedish-normalize`),
+   not providers. Direction of dependency matters: shared deps stay and have many
+   other importers, so the `tsc` build still compiles after deletion.
+2. **Not exported from `functions/src/index.ts`** → not a deployed Cloud Function.
+   Contrast: `migrations/backfill-recipe-comments-denorm.ts` IS exported at
+   `index.ts:92` as an `onCall` and is KEPT. "backfill" in a filename does NOT
+   imply deployed — discriminate by the index.ts export, not the name.
+3. **No `package.json` script entry.** Every OTHER admin script is wired as an
+   npm script (`sync-ingredients`, `export-ingredients`, `seed-tag-configs`,
+   `reset-user-data`). These two were not — confirming they were run ad-hoc via
+   `npx ts-node src/admin/<file>.ts` and are one-time backfills.
+4. **No dedicated test** (`functions/src/__tests__/`), no entry in the `test` /
+   `test:rules:all` aggregate scripts, and not in the `app-check-enforcement.test.ts`
+   deployed-function whitelist (which lists only `backfillRecipeCommentsDenorm`).
+5. **`firebase.json` `predeploy`** is generic (`npm ci` / `npm audit` /
+   `npm run build`) — it compiles the whole tree but invokes no specific admin
+   script. No `.github` CI reference either. So deletion removes two `tsc` inputs
+   that nothing references; build, deploy, rules, and GDPR paths are untouched.
+
+No security rule, no GDPR/data-handling path, and no deployed function depends on
+these scripts. The consuming features (BUT-205 ingredient search, BUT-129
+thumbnails) already shipped; a one-time backfill has no ongoing runtime role.

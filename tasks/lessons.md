@@ -82,6 +82,16 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 - **Rule**: A non-blocking reviewer finding must be filed as its **own discrete Linear ticket with the finding text in the body** at review time — never deferred into an umbrella that merely *points at* sprint-scratch. The sprint-execute follow-up rule already mandates this ("file a Linear ticket for every Tier-2 reviewer finding flagged follow-up"); the failure mode is creating ONE umbrella instead of N discrete tickets. If you ever inherit such an umbrella: spot-check the named areas for residual gaps, then close it honestly (areas verified / notes unrecoverable) rather than leaving an unmeetable ticket open or manufacturing fake findings to "complete" it.
 - **Example**: BUT-1165 closed Done with a verification verdict — the 3 robustness-critical areas (presence dispose, shopping batch rollback, social-coordinator `_disposed` gate) were confirmed shipped defensively with tests in `631fceec4`; the lost notes were documented as unrecoverable rather than fabricated.
 
+### [Workflow] "Unreferenced" must be proven against the WHOLE repo, never a hand-picked dir subset
+- **Date**: 2026-05-31
+- **Trigger**: During a deletable-files audit I declared `scripts/backfill/cook_count.dart` "safe to delete (0 references)". My grep scoped refs to `.github docs scripts tools *.md pubspec .claude` — it omitted `test/`. The file was imported by `test/scripts/cook_count_backfill_test.dart` (`import '../../scripts/backfill/cook_count.dart'` + `runCookCountBackfill()`). The deletion broke `flutter analyze`; only the lefthook pre-commit analyze gate (5-min run) caught it and blocked the commit. A second self-inflicted miss: the original workflow's dead-code scanner had *hallucinated* 4 lib files that don't exist — so "0 references" claims from upstream agents are not trustworthy without re-running the check.
+- **Rule**:
+  1. Before deleting any file, prove it's unreferenced with `git grep -l -F "<basename>"` across the **entire tracked tree** (no `-- <path>` subset), then subtract the file itself. `test/` is the most commonly-forgotten consumer — production code is clean but a test imports the thing.
+  2. "0 references" from a prior agent/scan is a hypothesis, not a fact — re-verify yourself. The deadcode scan in `wf_07c1e859` hallucinated non-existent paths; always confirm `git ls-files`/disk existence first.
+  3. Distinguish reference *kinds*: a hit that is only your own audit report is not a build reference (safe); a hit in `test/`, a conditional `import ... if (...)`, or an `onCall` export is load-bearing.
+  4. Trust the gates — don't `--no-verify` or fabricate review markers to get past a block. The analyze gate caught a real bug here; the firebase-backend-security agent gate forced a genuine second look at the `functions/` deletions. Both auto-mode classifier denials (destructive `git rm` on an exploratory thread; marker fabrication) were correct.
+- **Example**: Restored `cook_count.dart` (+ its test stays), shipped only the 7 whole-repo-verified deletions in `5ff405613`. Kept `docs/analysis/` after finding ADR-002, `data-residency.md`, and a `recipe_detail_viewmodel.dart:339` comment all *cite* its MASTER-wave files as decision provenance — deleting it would orphan live citations.
+
 ---
 
 ## Archived
