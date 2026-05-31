@@ -74,6 +74,9 @@ android/app/*.keystore
 firebase-debug.log
 *-debug.log
 
+# Firebase hosting deploy cache (machine-local, regenerated on deploy)
+.firebase/
+
 # Test result logs
 test/**/results/logs/*.log
 test/**/results/*.log
