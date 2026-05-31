@@ -104,7 +104,6 @@ jobs:
     # - rustLight, creamDarker, greenMuted: decorative-only retentions
     # - vegetable_illustration.dart: decorative palette table (no context)
     # - social_collaborative_components.dart: `?? AppColors` safety-net fallbacks
-    # - personal_tag_color_picker.dart: static `fromHex()` utility, no BuildContext
     - name: Forbid AppColors outside legitimate-keep set
       run: |
         set -e
@@ -112,7 +111,6 @@ jobs:
           | grep -v -E "AppColors\.(brand|illustration|overlay|neutral|transparent|rustLight|creamDarker|greenMuted)" \
           | grep -v "vegetable_illustration.dart" \
           | grep -v "social_collaborative_components.dart" \
-          | grep -v "personal_tag_color_picker.dart" \
           || true)
         if [ -n "$OFFENDERS" ]; then
           echo "::error::AppColors.X used outside the legitimate-keep set:"

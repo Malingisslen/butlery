@@ -68,11 +68,15 @@ import-referenser**. Efter att ha räknat *alla* textträffar (för att fånga v
 `lib`+`test`** — äkta kandidater. De övriga 16 är falska positiva (villkorliga `_web`/`_native`/
 `_stub`-mål, bootstrap-wirade observers, samt `drift/database.dart` med 19 träffar).
 
-### 🟡 medel
+### ✅ ÅTGÄRDAT — alla 12 raderade efter per-fil-verifiering (2026-05-31)
 
-Tolv lib-filer vars basenamn inte förekommer i någon annan fil i `lib` eller `test`. Stark
-indikation på oanvänd kod, men Dart kan i sällsynta fall nå filer via DI-/route-strängar — öppna
-var och en kort innan radering (särskilt barrel-/export-filer).
+Per-fil-granskning bekräftade samtliga 12 som genuint döda: symbolerna förekommer bara i sin egen
+fil (utom doc-kommentarer), bas-klassens enda "subklass" var ett docstring-exempel, och varje
+"nylig" git-touch var en **mekanisk svep-migrering** (`clock.now()`-bulk, CPI→LoadingIndicator,
+reduced-motion-batch, StyledButton-retirement) — inte feature-arbete. Inga tester importerar dem.
+Hela-repot-basename-koll var ren (de enda externa omnämnandena var analys-dok + en vestigial
+CI-exkludering för `personal_tag_color_picker`, som städades bort). `flutter analyze` rent efter
+radering. De tolv:
 
 - `lib/core/constants/durations.dart`
 - `lib/core/di/interfaces/user_scoped_service.dart`
