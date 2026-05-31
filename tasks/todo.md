@@ -21,9 +21,9 @@ Bounded mechanical wave (context large from iter-107/108; picked a safe guarded 
 
 ### Post-Sprint Steps
 - [x] analyze clean + arch CPI guard green
-- [ ] code-reviewer + testing-specialist on staged Dart
-- [ ] Commit (stage specific files — NOT `git add -A`), push to main
-- [ ] BUT-1168 progress comment (5 more migrated, stays In Progress); BUT-1173 filed
+- [x] code-reviewer + testing-specialist — both CLEAN (no test breaks)
+- [x] Commit `0181823fa` (specific files), pushed to main
+- [x] BUT-1168 progress comment (5 more migrated, stays In Progress); BUT-1173 filed
 
 ### Carried high-value (fresh-context iterations)
 - **BUT-1155** (High, Bug) — broken CI views shard (200+ failures + hang). Whole-sprint Tier C.
