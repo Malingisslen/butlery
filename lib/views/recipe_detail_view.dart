@@ -374,6 +374,27 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       ),
                     ),
                   ),
+                  // Save a copy (fork) — promoted to a primary app-bar action
+                  // on shared recipes the user doesn't own (BUT-972). Owners
+                  // get it as the "Duplicate" overflow item below instead.
+                  if ((recipe.createdBy ?? '').isNotEmpty &&
+                      recipe.createdBy !=
+                          ServiceLocator.get<PermissionService>().currentUserId)
+                    Padding(
+                      key: const ValueKey('test-recipe-detail-save-copy'),
+                      padding: AppDimensions.paddingVertical8,
+                      child: Semantics(
+                        identifier: 'btn-save-copy',
+                        button: true,
+                        label: context.l10n.recipeCreateCopy,
+                        child: _HeroButton(
+                          icon: Icons.content_copy_outlined,
+                          onPressed: () => _handleMenuAction(
+                              context, _MenuAction.fork, viewModel, recipe),
+                          tooltip: context.l10n.recipeCreateCopy,
+                        ),
+                      ),
+                    ),
                   // More actions menu
                   Padding(
                     key: const ValueKey('test-recipe-detail-more'),
@@ -403,18 +424,26 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
-                            PopupMenuItem(
-                              value: _MenuAction.fork,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.content_copy_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipeCreateCopy),
-                                ],
+                            // Owned/local recipes keep "Create copy" here as a
+                            // secondary action; shared recipes promote it to the
+                            // app-bar instead (BUT-972).
+                            if ((recipe.createdBy ?? '').isEmpty ||
+                                recipe.createdBy ==
+                                    ServiceLocator.get<PermissionService>()
+                                        .currentUserId)
+                              PopupMenuItem(
+                                value: _MenuAction.fork,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.content_copy_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeCreateCopy),
+                                  ],
+                                ),
                               ),
-                            ),
                             PopupMenuItem(
                               value: _MenuAction.generateShoppingList,
                               child: Row(
