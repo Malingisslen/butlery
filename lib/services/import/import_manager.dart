@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
@@ -449,6 +450,49 @@ class ImportManager {
       successfulRecipes: recipes,
       errors: errors,
       totalProcessed: inputs.length,
+      successCount: recipes.length,
+      failureCount: errors.length,
+    );
+  }
+
+  /// Parse a blob that may contain SEVERAL recipes (a cookbook page) into N
+  /// recipes — **parse-only**, no save, no per-block rate-limit charge.
+  ///
+  /// [MultiRecipeSplitter] segments the text; when it finds a single recipe it
+  /// returns `[input]`, so this collapses to exactly the existing
+  /// [autoParseOnly] behaviour (wrapped in a 1-element [BatchImportResult]).
+  /// The single-recipe import path is therefore unchanged. Callers that want a
+  /// picker check `successfulRecipes.length > 1`.
+  Future<BatchImportResult> autoParseMulti(
+    String input, {
+    ImportStrategy? preferredStrategy,
+    Map<String, dynamic>? options,
+  }) async {
+    final blocks = MultiRecipeSplitter().split(input);
+
+    final results = <ImportManagerResult>[];
+    final recipes = <Recipe>[];
+    final errors = <String>[];
+
+    for (final block in blocks) {
+      final result = await autoParseOnly(
+        block,
+        preferredStrategy: preferredStrategy,
+        options: options,
+      );
+      results.add(result);
+      if (result.isSuccess && result.recipe != null) {
+        recipes.add(result.recipe!);
+      } else {
+        errors.add(result.errorMessage ?? 'Unknown error');
+      }
+    }
+
+    return BatchImportResult(
+      results: results,
+      successfulRecipes: recipes,
+      errors: errors,
+      totalProcessed: blocks.length,
       successCount: recipes.length,
       failureCount: errors.length,
     );
