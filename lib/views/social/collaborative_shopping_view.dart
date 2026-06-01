@@ -3,6 +3,7 @@
 // lib/views/social/collaborative_shopping_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -85,6 +86,9 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
                   child: Column(
                     children: [
                       LayoutComponents.offlineIndicator(),
+                      // BUT-1162: surface silent collaborative-edit conflict
+                      // resolutions on this shared list (drop-in; idle-collapses).
+                      ConflictBanner(filterDocId: widget.listId),
                       Expanded(child: _buildBody(context, viewModel)),
                     ],
                   ),

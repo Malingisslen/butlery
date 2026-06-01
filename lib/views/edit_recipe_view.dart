@@ -22,6 +22,7 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -157,6 +158,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   children: [
                     LayoutComponents.offlineIndicator(),
                     _buildSmartBanners(context, widget.recipe),
+                    // BUT-1162: surface silent collaborative-edit conflict
+                    // resolutions on this recipe (drop-in; collapses when idle).
+                    ConflictBanner(filterDocId: widget.recipe.id),
                     Expanded(
                       child: Padding(
                         padding:

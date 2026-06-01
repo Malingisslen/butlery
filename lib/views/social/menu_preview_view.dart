@@ -2,6 +2,7 @@
 // Preview of shared menus with all recipes
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/widgets/common/social_components.dart';
@@ -56,6 +57,11 @@ class MenuPreviewView extends StatelessWidget {
             child: CustomScrollView(
               slivers: [
                 _buildAppBar(context),
+                // BUT-1162: surface silent collaborative-edit conflict
+                // resolutions on this shared menu (drop-in; idle-collapses).
+                SliverToBoxAdapter(
+                  child: ConflictBanner(filterDocId: sharedMenu.id),
+                ),
                 _buildMenuHeader(context),
                 _buildMenuContent(context),
                 _buildActionButtons(context),
