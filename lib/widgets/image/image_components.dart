@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -214,15 +215,10 @@ class ImageComponents {
       child: Builder(builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Center(
-          child: SizedBox(
-            width: AppDimensions.iconSizeM,
-            height: AppDimensions.iconSizeM,
-            child: CircularProgressIndicator(
-              strokeWidth: AppDimensions.strokeWidth2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                cs.primary,
-              ),
-            ),
+          child: LoadingIndicator(
+            size: AppDimensions.iconSizeM,
+            strokeWidth: AppDimensions.strokeWidth2,
+            color: cs.primary,
           ),
         );
       }),

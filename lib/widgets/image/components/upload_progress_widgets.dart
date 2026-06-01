@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Provides upload progress UI components for image editing.
 class UploadProgressWidgets {
@@ -90,14 +91,11 @@ class UploadProgressWidgets {
     if (hasActiveUploads) {
       return Builder(builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        return SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-            value: (managementSummary['overallProgress'] as double?),
-          ),
+        return LoadingIndicator(
+          size: 16,
+          strokeWidth: 2,
+          color: cs.primary,
+          value: managementSummary['overallProgress'] as double?,
         );
       });
     } else {
@@ -386,20 +384,15 @@ class UploadProgressWidgets {
 
         case ImageUploadState.uploading:
         case ImageUploadState.retrying:
-          return SizedBox(
-            width: 60,
-            height: 60,
-            child: CircularProgressIndicator(
-              value: status.progress > 0 ? status.progress : null,
-              strokeWidth: 4,
-              backgroundColor: cs.surfaceContainerHighest
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                status.state == ImageUploadState.retrying
-                    ? cs.onSurfaceVariant
-                    : cs.primary,
-              ),
-            ),
+          return LoadingIndicator(
+            size: 60,
+            strokeWidth: 4,
+            value: status.progress > 0 ? status.progress : null,
+            backgroundColor: cs.surfaceContainerHighest
+                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: status.state == ImageUploadState.retrying
+                ? cs.onSurfaceVariant
+                : cs.primary,
           );
 
         case ImageUploadState.completed:

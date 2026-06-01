@@ -516,11 +516,10 @@ void main() {
       const allowList = <String>{
         // long-tail wave (BUT-885 follow-up)
         // iter-112: image cluster (avatar, editable, simple, empty_image_state)
-        // migrated to LoadingIndicator + de-allowlisted. image_components,
-        // upload_progress_widgets, image_grid_widgets remain (next wave).
-        'lib/widgets/image/image_components.dart',
-        'lib/widgets/image/components/upload_progress_widgets.dart',
-        'lib/widgets/image/components/image_grid_widgets.dart',
+        // migrated. iter-113: image_components, image_grid_widgets, and
+        // upload_progress_widgets migrated to LoadingIndicator (the upload
+        // determinate sites use the new value: variant from BUT-1173) +
+        // de-allowlisted.
         'lib/widgets/common/feedback_form_dialog.dart',
         'lib/widgets/common/friends/friend_category_manager.dart',
         'lib/widgets/common/input/debounced_button.dart',
@@ -533,11 +532,8 @@ void main() {
         'lib/widgets/common/service/service_widgets.dart',
         'lib/widgets/messaging/builders/message_content_builder.dart',
         'lib/widgets/common/share_dialog/share_dialog_states.dart',
-        // invitation_states.dart stays: it has DETERMINATE progress bars
-        // (CircularProgressIndicator(value: progress)) that LoadingIndicator —
-        // an indeterminate wrapper — can't express. Needs a determinate variant
-        // (BUT-1173) before it can be migrated + de-allowlisted.
-        'lib/widgets/common/social_components/invitation_states.dart',
+        // invitation_states.dart migrated (iter-113): its determinate progress
+        // bar now uses LoadingIndicator(value:) from BUT-1173.
         'lib/widgets/common/scaffolds/form_scaffold.dart',
         'lib/widgets/common/settings/blocked_users_section.dart',
         'lib/widgets/common/profile/handlers/auth_action_handler.dart',

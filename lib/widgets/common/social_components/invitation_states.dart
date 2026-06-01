@@ -3,6 +3,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Invitation target state widgets.
 class InvitationStates {
@@ -17,7 +18,7 @@ class InvitationStates {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
+              const LoadingIndicator(),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(displayText),
             ],
@@ -37,7 +38,7 @@ class InvitationStates {
             count,
             (index) => Card(
                   child: ListTile(
-                    leading: const CircularProgressIndicator(),
+                    leading: const LoadingIndicator(),
                     title: Text(context.l10n.commonLoading),
                   ),
                 )),
@@ -56,11 +57,7 @@ class InvitationStates {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: size,
-              height: size,
-              child: const CircularProgressIndicator(strokeWidth: 2),
-            ),
+            LoadingIndicator(size: size, strokeWidth: 2),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(displayText),
           ],
@@ -342,13 +339,10 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 100,
-            height: 100,
-            child: CircularProgressIndicator(
-              value: progress,
-              strokeWidth: 8,
-            ),
+          LoadingIndicator(
+            size: 100,
+            value: progress,
+            strokeWidth: 8,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationSendingInvitations,

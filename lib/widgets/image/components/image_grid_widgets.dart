@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -263,13 +264,10 @@ class ImageGridWidgets {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (isLoading) ...[
-                    SizedBox(
-                      width: AppDimensions.iconSizeM,
-                      height: AppDimensions.iconSizeM,
-                      child: CircularProgressIndicator(
-                        strokeWidth: AppDimensions.borderWidthThin,
-                        valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-                      ),
+                    LoadingIndicator(
+                      size: AppDimensions.iconSizeM,
+                      strokeWidth: AppDimensions.borderWidthThin,
+                      color: cs.primary,
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Flexible(
