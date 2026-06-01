@@ -42,6 +42,41 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
+    group('Cookbook title guards (corpus-found)', () {
+      // The gold-corpus showed the title detector grabbing yield labels and
+      // measurements as the recipe title on real cookbook pages. These prove it
+      // no longer does — it picks the real heading instead.
+      test('does not pick a yield label ("2 PORTIONER") as the title',
+          () async {
+        const text = '2 PORTIONER\n'
+            'Pannkakor\n'
+            'Ingredienser:\n'
+            '3 dl vetemjöl\n'
+            '2 ägg\n'
+            'Gör så här:\n'
+            'Vispa ihop och stek.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('portioner')));
+        expect(title, isNot(startsWith('2')));
+      });
+
+      test('does not pick a measurement line ("100 g grönkål") as the title',
+          () async {
+        const text = '100 g grönkål\n'
+            'Grön smoothie\n'
+            'Ingredienser:\n'
+            '2 dl vatten\n'
+            '1 banan\n'
+            'Gör så här:\n'
+            'Mixa allt slätt.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('grönkål')));
+        expect(title, isNot(startsWith('100')));
+      });
+    });
+
     group('Initialization', () {
       test('should create strategy with correct metadata', () {
         // Assert

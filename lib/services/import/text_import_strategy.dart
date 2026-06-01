@@ -10,6 +10,7 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
+import 'package:butlery/utils/text/ocr_error_corrector.dart';
 
 /// Strategy for importing recipes from text (social media, manual input, structured/unstructured text).
 /// Uses TextImportNormalizer for text preprocessing and RecipeSectionDetector for section classification.
@@ -109,6 +110,27 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return withoutMeasure.trim();
   }
 
+  // A yield/portioning label ("2 PORTIONER", "12 STYCKEN") — never a title.
+  static final _yieldLabel = RegExp(
+    r'^\s*\d*\s*(portion\w*|stycken\w*|pers\w*|bitar|skivor)\b',
+    caseSensitive: false,
+  );
+
+  // A measurement line ("100 g grönkål", "4 dl mjölk") — an ingredient, not a
+  // title. Cookbook OCR routinely surfaces these as the first line.
+  static final _measurementLine = RegExp(
+    r'\d+\s*(dl|cl|ml|l|kg|hg|g|msk|tsk|krm|st)\b',
+    caseSensitive: false,
+  );
+
+  /// True when a candidate line is a yield label or a measurement — both must
+  /// be rejected as recipe titles. Surfaced by the cookbook gold-corpus, where
+  /// the title detector kept grabbing "2 PORTIONE" / "100 g grönkål".
+  bool _looksLikeYieldOrMeasurement(String line) {
+    final t = line.trim();
+    return _yieldLabel.hasMatch(t) || _measurementLine.hasMatch(t);
+  }
+
   /// Extract title from Instagram-style text
   String _extractTitleFromText(String text) {
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
@@ -154,6 +176,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // Validate: reasonable length, not a section header
     if (firstLine.length >= 5 &&
         firstLine.length <= 100 &&
+        !_looksLikeYieldOrMeasurement(firstLine) &&
         !RecipeSectionDetector.isIngredientHeader(firstLine.toLowerCase()) &&
         !RecipeSectionDetector.isInstructionHeader(firstLine.toLowerCase()) &&
         !RecipeSectionDetector.isSectionHeader(firstLine)) {
@@ -271,8 +294,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (line.length > 2 &&
             line.length < 100 &&
             !RecipeSectionDetector.isSectionHeader(line) &&
-            !line.contains(
-                RegExp(r'\d+\s+(dl|cl|ml|kg|g(?!\w)|msk|tsk|st|krm)\b'))) {
+            !_looksLikeYieldOrMeasurement(line)) {
           recipeName = line;
           break;
         }
@@ -487,6 +509,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     cleaned = cleaned.replaceAll(RegExp(r'^-\s*'), '');
     cleaned = cleaned.replaceAll(RegExp(r'^\*\s*'), '');
     cleaned = IngredientProcessor.preprocessOnly(cleaned);
+    // Repair systematic OCR misreads (e.g. "4 di" -> "4 dl"). Gate-safe: only
+    // swaps a token when the result is a known unit/ingredient, so clean
+    // manual/social input is left untouched.
+    cleaned = OcrErrorCorrector.correctLine(cleaned);
 
     cleaned = cleaned.replaceAll('1/2', '½');
     cleaned = cleaned.replaceAll('1/4', '¼');

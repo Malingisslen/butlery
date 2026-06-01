@@ -44,6 +44,21 @@ void main() {
           '2 dl morot',
         );
       });
+
+      test('corrects di -> dl (OCR.space engine 2 misreads the unit)', () {
+        // The systematic cookbook-OCR error: "4 di apelsinjuice" should be dl.
+        expect(
+          OcrErrorCorrector.correctLine('4 di apelsinjuice'),
+          '4 dl apelsinjuice',
+        );
+      });
+
+      test('di -> dl does not corrupt real words containing "di"', () {
+        // "dill" must survive — the candidate "dlll" is not a known word, so
+        // the gate rejects the swap.
+        expect(OcrErrorCorrector.correctLine('1 kruka dill'), '1 kruka dill');
+        expect(OcrErrorCorrector.correctLine('dijonsenap'), 'dijonsenap');
+      });
     });
 
     group('correctLines', () {
