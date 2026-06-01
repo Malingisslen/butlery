@@ -5044,6 +5044,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importProceedToEdit => 'Proceed to edit';
 
   @override
+  String importMultipleRecipesFound(int count) {
+    return 'We found $count recipes';
+  }
+
+  @override
   String get importProcessingImage => 'Processing image...';
 
   @override

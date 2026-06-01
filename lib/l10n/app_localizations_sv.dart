@@ -5047,6 +5047,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importProceedToEdit => 'Gå vidare till redigera';
 
   @override
+  String importMultipleRecipesFound(int count) {
+    return 'Vi hittade $count recept';
+  }
+
+  @override
   String get importProcessingImage => 'Bearbetar bild...';
 
   @override

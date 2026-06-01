@@ -8727,6 +8727,12 @@ abstract class AppLocalizations {
   /// **'Gå vidare till redigera'**
   String get importProceedToEdit;
 
+  /// Button shown after OCR when several recipes were detected on one page; opens the picker.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade {count} recept'**
+  String importMultipleRecipesFound(int count);
+
   /// No description provided for @importProcessingImage.
   ///
   /// In sv, this message translates to:

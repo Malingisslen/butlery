@@ -3209,6 +3209,13 @@
   "importPhotoDescription": "Take a picture of a recipe or choose from gallery to import text automatically",
   "importPhotoImport": "Photo import",
   "importProceedToEdit": "Proceed to edit",
+  "importMultipleRecipesFound": "We found {count} recipes",
+  "@importMultipleRecipesFound": {
+    "description": "Button shown after OCR when several recipes were detected on one page; opens the picker.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "importProcessingImage": "Processing image...",
   "importRecipeLinkDetected": "Recipe link detected",
   "importRecipeTextCanImport": "Recipe text detected! We can import this.",

@@ -3215,6 +3215,13 @@
   "importPhotoDescription": "Ta bild av ett recept eller välj från galleriet för att importera text automatiskt",
   "importPhotoImport": "Fotoimport",
   "importProceedToEdit": "Gå vidare till redigera",
+  "importMultipleRecipesFound": "Vi hittade {count} recept",
+  "@importMultipleRecipesFound": {
+    "description": "Button shown after OCR when several recipes were detected on one page; opens the picker.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "importProcessingImage": "Bearbetar bild...",
   "importRecipeLinkDetected": "Receptlänk detekterad",
   "importRecipeTextCanImport": "Recepttext detekterad! Vi kan importera detta.",

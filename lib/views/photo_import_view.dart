@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -129,6 +131,38 @@ class _PhotoImportViewContent extends StatelessWidget {
         '/franSocialaMedier',
         arguments: viewModel.ocrText,
       );
+    }
+  }
+
+  /// Multi-recipe page → let the user tick which recipes to add, reusing the
+  /// existing [BatchImportPreview] picker (same pattern as file import), then
+  /// save the selection.
+  Future<void> _navigateToMultiRecipePicker(
+    BuildContext context,
+    PhotoImportViewModel viewModel,
+  ) async {
+    final selected = await Navigator.push<List<Recipe>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BatchImportPreview(recipes: viewModel.parsedRecipes),
+      ),
+    );
+    if (!context.mounted || selected == null || selected.isEmpty) return;
+
+    final ok = await viewModel.saveSelectedRecipes(selected);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? context.l10n.importComplete(selected.length, 0)
+              : context.l10n.errorGeneric,
+        ),
+      ),
+    );
+    if (ok) {
+      viewModel.clearPhoto();
+      Navigator.of(context).maybePop();
     }
   }
 
@@ -399,14 +433,26 @@ class _PhotoImportViewContent extends StatelessWidget {
                     const SizedBox(height: AppDimensions.spacingM),
                     TextDisplayCard(text: viewModel.ocrText),
                     const SizedBox(height: AppDimensions.spacingXl),
-                    UtilityComponents.primaryButton(
-                      context,
-                      label: context.l10n.importProceedToEdit,
-                      icon: Icons.arrow_forward,
-                      onPressed: () =>
-                          _navigateToTextImport(context, viewModel),
-                      isExpanded: true,
-                    ),
+                    if (viewModel.hasMultipleRecipes)
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: context.l10n.importMultipleRecipesFound(
+                          viewModel.parsedRecipes.length,
+                        ),
+                        icon: Icons.library_books,
+                        onPressed: () =>
+                            _navigateToMultiRecipePicker(context, viewModel),
+                        isExpanded: true,
+                      )
+                    else
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: context.l10n.importProceedToEdit,
+                        icon: Icons.arrow_forward,
+                        onPressed: () =>
+                            _navigateToTextImport(context, viewModel),
+                        isExpanded: true,
+                      ),
                     // Add bottom padding for safe scrolling
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],

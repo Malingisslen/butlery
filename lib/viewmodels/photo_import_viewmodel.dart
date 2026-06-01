@@ -26,6 +26,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
@@ -58,6 +59,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Last OCR confidence score from successful extraction (0.0-1.0).
   /// Indicates reliability of extracted text for user confidence and retry decisions.
   double? _lastConfidence;
+
+  /// All recipes detected on the page. A cookbook spread can hold several;
+  /// when >1 the view shows a picker instead of the single "edit" CTA. For a
+  /// single recipe this holds one item AND [parsedRecipe] is set, so every
+  /// existing single-recipe consumer behaves exactly as before.
+  final List<Recipe> _parsedRecipes = [];
 
   // BUT-410 heirloom form state lives in PhotoImportHeirloomFormMixin.
 
@@ -107,6 +114,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Returns confidence of extracted text (0.0-1.0) enabling reliability display in UI.
   double? get confidence => _lastConfidence;
 
+  /// All recipes detected on the current page (≥1 when parsing succeeded).
+  List<Recipe> get parsedRecipes => List.unmodifiable(_parsedRecipes);
+
+  /// True when the page held more than one recipe → show the picker.
+  bool get hasMultipleRecipes => _parsedRecipes.length > 1;
+
   /// BUT-1171: test-only seams that populate the REAL backing fields the
   /// production import pipeline reads (`_ocrText`, `_imageBytes`). The former
   /// test double shadowed these with separate fields plus getter overrides, so
@@ -124,6 +137,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
     _imageBytes = bytes;
     notifyListeners();
   }
+
+  /// Drives the real multi-recipe auto-parse path (normally fired inside the
+  /// OCR pipeline) so tests can verify single vs. multi routing without a
+  /// camera/OCR round-trip.
+  @visibleForTesting
+  Future<void> parseOcrTextForTesting(String text) => _autoParseOcrText(text);
 
   /// OCR processing state indicator for UI progress indication and interaction control.
   /// Indicates active OCR processing operations for loading indicators
@@ -211,6 +230,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     _lastQualityScore = null;
     _lastRecommendations = null;
     _lastConfidence = null;
+    _parsedRecipes.clear();
     // Heirloom form clears with the photo — they belong to the same capture.
     clearHeirloomForm();
     clearImportData();
@@ -389,14 +409,40 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Recipes are NOT saved automatically and require explicit user action to save.
   Future<void> _autoParseOcrText(String text) async {
     try {
-      final importResult = await importManager.autoParseOnly(text);
-      if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
-        setParsedRecipe(importResult.importedRecipes.first);
+      final result = await importManager.autoParseMulti(text);
+      final recipes = result.successfulRecipes;
+      _parsedRecipes
+        ..clear()
+        ..addAll(recipes);
+      if (recipes.length == 1) {
+        // Single recipe → keep the existing single-recipe behaviour exactly:
+        // setParsedRecipe drives every current getter/consumer unchanged.
+        setParsedRecipe(recipes.first);
+      } else if (recipes.length > 1) {
+        notifyListeners();
       }
     } catch (e) {
       // Don't throw error for auto-parsing failures
       // User can still manually parse the OCR text
     }
+  }
+
+  /// Save the recipes the user ticked in the multi-recipe picker. Uses the
+  /// import-layer save per recipe; heirloom attachment is intentionally NOT
+  /// applied here — a multi-recipe page is not a single heirloom scan.
+  Future<bool> saveSelectedRecipes(List<Recipe> recipes) async {
+    if (recipes.isEmpty) {
+      setError(AppLocale.current.errorNoRecipeToSave);
+      return false;
+    }
+    return executeAsyncVoid(() async {
+      for (final recipe in recipes) {
+        final result = await importManager.saveImportedRecipe(recipe);
+        if (!result.isSuccess) {
+          throw Exception(result.errorMessage ?? 'Failed to save recipe');
+        }
+      }
+    });
   }
 
   /// Builds enhanced error message from OCR failure with quality data and actionable guidance (Phase 2 Enhancement).
@@ -521,6 +567,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
     _lastQualityScore = null;
     _lastRecommendations = null;
     _lastConfidence = null;
+    _parsedRecipes.clear();
     super.dispose();
   }
 }
