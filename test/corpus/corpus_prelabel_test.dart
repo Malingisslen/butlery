@@ -7,20 +7,21 @@
 ///   2. Skips at runtime unless `RUN_CORPUS_PRELABEL=1`.
 ///
 /// What it does, per image in `<book>/inbox/`:
-///   1. OCR the image (OCRExtractionService) → page-NN.jpg + ocr.txt + ocr.meta.json
+///   1. OCR the image (OCR.space directly, shrunk to clear the 1.5 MB free cap)
+///      → page-01.jpg (full-res) + ocr.txt + ocr.meta.json
 ///   2. Parse the text (ImportManager.autoParseOnly) → title/portions/time/steps
 ///   3. Structure each ingredient line (IngredientParsingStrategy.parseLine)
 ///   4. Write draft.json (the parser's prediction) + a gold.json seed
 ///      (verified:false copy you then correct by hand and flip to true)
 ///
-/// Run it:
-///   RUN_CORPUS_PRELABEL=1 BUTLERY_CORPUS_DIR=/path/to/corpus \
-///     flutter test test/corpus/corpus_prelabel_test.dart \
-///     --dart-define=OCR_SPACE_API_KEY=... --dart-define=GOOGLE_VISION_API_KEY=...
+/// Run it (OCR key + RUN flag are real ENV VARS, not dart-defines):
+///   `OCR_SPACE_API_KEY=<key>` RUN_CORPUS_PRELABEL=1 \
+///     flutter test test/corpus/corpus_prelabel_test.dart
 ///
-/// OCR needs the API keys above (passed as dart-defines, same as the app). A
-/// page whose OCR fails is recorded in ocr.meta.json and skipped — the batch
-/// never aborts.
+/// On this Windows box the flutter wrapper needs System32 + Git + PowerShell on
+/// PATH; the helper script `../run_prelabel.ps1` (outside the repo) sets that up
+/// and reads the key from .env. A page whose OCR fails is recorded in
+/// ocr.meta.json and skipped — the batch never aborts.
 @Tags(['corpus-tools'])
 library;
 
@@ -296,7 +297,9 @@ Future<GoldIngredient> _structureLine(
   String line,
 ) async {
   try {
-    final p = await parser.parseLine(line);
+    // ocrCorrection mirrors the production photo path (TextImportStrategy now
+    // corrects too) so the corpus measures the same text the app would parse.
+    final p = await parser.parseLine(line, ocrCorrection: true);
     return GoldIngredient(
       name: p.name.isEmpty ? line : p.name,
       originalLine: p.originalLine.isEmpty ? line : p.originalLine,
