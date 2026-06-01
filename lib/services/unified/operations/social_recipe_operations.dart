@@ -44,6 +44,7 @@ class SocialRecipeOperations {
     required CreatePersonalRecipeFn createPersonalRecipe,
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
+    void Function(String)? onShareError,
   })  : _getCurrentUserId = getCurrentUserId,
         _getRecipes = getRecipes,
         _ratingsRepository = ratingsRepository,
@@ -56,6 +57,7 @@ class SocialRecipeOperations {
       createCollaborativeRecipe: createCollaborativeRecipe,
       createPersonalRecipe: createPersonalRecipe,
       notificationService: _notificationService,
+      onShareError: onShareError,
     );
     _memberManager = RecipeMemberManager(
       getCurrentUserId: getCurrentUserId,

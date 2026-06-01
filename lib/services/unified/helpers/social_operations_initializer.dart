@@ -22,6 +22,10 @@ class SocialOpsContext {
   final CreateCollaborativeRecipeFn createCollaborativeRecipe;
   final CreatePersonalRecipeFn createPersonalRecipe;
 
+  /// BUT-1056: routes user-facing share errors (e.g. cap reached) to the
+  /// parent service's error sink so they reach the UI.
+  final void Function(String)? onShareError;
+
   const SocialOpsContext({
     required this.getCurrentUserId,
     required this.getCurrentUserDisplayName,
@@ -29,6 +33,7 @@ class SocialOpsContext {
     required this.updateRecipe,
     required this.createCollaborativeRecipe,
     required this.createPersonalRecipe,
+    this.onShareError,
   });
 }
 
@@ -60,6 +65,7 @@ class SocialOperationsInitializer {
           createPersonalRecipe: ctx.createPersonalRecipe,
           ratingsRepository: ratingsRepo,
           firestoreRepository: firestoreRepo,
+          onShareError: ctx.onShareError,
         );
       }
 
@@ -100,6 +106,7 @@ class SocialOperationsInitializer {
       createPersonalRecipe: ctx.createPersonalRecipe,
       ratingsRepository: ratingsRepo,
       firestoreRepository: firestoreRepo,
+      onShareError: ctx.onShareError,
     );
   }
 
@@ -125,6 +132,7 @@ class SocialOperationsInitializer {
           createPersonalRecipe: ctx.createPersonalRecipe,
           ratingsRepository: ratingsRepo,
           firestoreRepository: firestoreRepo,
+          onShareError: ctx.onShareError,
         );
       }
 

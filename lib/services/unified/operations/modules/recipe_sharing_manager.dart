@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/recipe_sharing_manager.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -63,6 +64,13 @@ class RecipeSharingManager {
   final NotificationService? _notificationService;
   final FirestoreRepository _firestoreRepository;
 
+  /// BUT-1056: optional sink for user-facing share errors (e.g. cap reached).
+  /// Mirrors the `_setError` pattern in `SocialRecipeSharingService` so the
+  /// second share callsite can surface the localized `errorShareCapReached`
+  /// instead of returning a bare `null` the UI can't distinguish. Additive —
+  /// happy path is unaffected when null.
+  final void Function(String)? _onShareError;
+
   RecipeSharingManager({
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
@@ -71,12 +79,14 @@ class RecipeSharingManager {
     required CreatePersonalRecipeFn createPersonalRecipe,
     required NotificationService? notificationService,
     FirestoreRepository? firestoreRepository,
+    void Function(String)? onShareError,
   })  : _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _getRecipes = getRecipes,
         _createCollaborativeRecipe = createCollaborativeRecipe,
         _createPersonalRecipe = createPersonalRecipe,
         _notificationService = notificationService,
+        _onShareError = onShareError,
         _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
@@ -134,6 +144,10 @@ class RecipeSharingManager {
         AppLogger.warning(
             'Share denied: recipe $recipeId would have ${projected.length} '
             'shares (cap: ${Recipe.maxSharesPerRecipe})');
+        // BUT-1056: surface the localized cap message to the UI instead of a
+        // bare null that reads as a generic "could not save" error.
+        _onShareError?.call(
+            AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe));
         return null;
       }
 

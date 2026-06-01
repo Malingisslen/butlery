@@ -160,4 +160,94 @@ void main() {
       await ctrl2.close();
     },
   );
+
+  testWidgets(
+    'BUT-1172: first-bind picks up the live instance when login precedes the '
+    'first card mount',
+    (tester) async {
+      Future<void> flush() async {
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+
+      // Login completes BEFORE any tagged card is on screen: the service is
+      // registered and initialized (instanceReady fires) while the subscriber
+      // count is 0, so the signal has no listener yet — it goes into the void.
+      final ctrl = StreamController<void>.broadcast();
+      final svc = _makeService(
+        controller: ctrl,
+        tags: [PersonalTagBuilder().withId('t1').withName('Vego').build()],
+      );
+      GetIt.instance.registerSingleton<PersonalTagService>(svc);
+      await svc.initialize();
+      await flush();
+
+      // The user now navigates to a screen with a tagged card. The first
+      // _subscribe() must bind the shared mutation subscription to the CURRENT
+      // instance and fetch its tags — proving first-bind doesn't depend on an
+      // instanceReady event arriving AFTER the mount. (The `_subscriberCount > 0`
+      // guard in _onInstanceReady is the defensive complement to this path.)
+      await tester.pumpWidget(_host(const ['t1']));
+      await flush();
+
+      expect(find.text('Vego'), findsOneWidget);
+
+      // Reset the static shared state (subscriber count → 0) for the next test.
+      await tester.pumpWidget(const SizedBox());
+      await ctrl.close();
+    },
+  );
+
+  testWidgets(
+    'BUT-1172: a stray instanceReady after the last card unmounts neither '
+    'throws nor resurrects a dead binding',
+    (tester) async {
+      Future<void> flush() async {
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+
+      // Mount a card under svc1 so the instanceReady listener and the mutation
+      // subscription are both live (subscriber count 1).
+      final ctrl1 = StreamController<void>.broadcast();
+      final svc1 = _makeService(
+        controller: ctrl1,
+        tags: [PersonalTagBuilder().withId('t1').withName('Vego').build()],
+      );
+      GetIt.instance.registerSingleton<PersonalTagService>(svc1);
+      await tester.pumpWidget(_host(const ['t1']));
+      await flush();
+      expect(find.text('Vego'), findsOneWidget);
+
+      // Unmount the last card → _unsubscribe cancels BOTH the mutation sub and
+      // the instanceReady sub and resets the subscriber count to 0.
+      await tester.pumpWidget(const SizedBox());
+      await flush();
+
+      // Swap in a fresh instance and fire instanceReady. The cancelled listener
+      // must NOT react — no throw, and no mutation subscription resurrected
+      // against zero subscribers.
+      GetIt.instance.unregister<PersonalTagService>();
+      await ctrl1.close();
+      final ctrl2 = StreamController<void>.broadcast();
+      final svc2 = _makeService(
+        controller: ctrl2,
+        tags: [PersonalTagBuilder().withId('t1').withName('Lchf').build()],
+      );
+      GetIt.instance.registerSingleton<PersonalTagService>(svc2);
+      await svc2.initialize();
+      await flush();
+
+      // Proof the teardown left clean state: a brand-new card mounts and binds
+      // to the CURRENT instance (svc2), showing its tags. A leaked or dead
+      // binding would have shown stale 'Vego' or failed to bind at all.
+      await tester.pumpWidget(_host(const ['t1']));
+      await flush();
+      expect(find.text('Lchf'), findsOneWidget);
+      expect(find.text('Vego'), findsNothing);
+
+      await tester.pumpWidget(const SizedBox());
+      await ctrl2.close();
+    },
+  );
 }

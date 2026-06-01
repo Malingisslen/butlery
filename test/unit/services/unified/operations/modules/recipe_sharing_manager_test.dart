@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_sharing_manager.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -227,6 +228,61 @@ void main() {
 
         expect(newId, isNull, reason: 'cap-guard must reject');
         expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
+      });
+
+      test(
+          'BUT-1056: cap-rejection routes the localized message to onShareError',
+          () async {
+        // Same at-cap staging as above, but this manager wires an onShareError
+        // sink — proving the UI gets the dedicated cap message instead of a
+        // bare null it can't distinguish from "not found" / "save failed".
+        String? surfacedError;
+        final manager = RecipeSharingManager(
+          getCurrentUserId: () => mockParentService.currentUserId,
+          getCurrentUserDisplayName: () =>
+              mockParentService.currentUserDisplayName,
+          getRecipes: () => mockParentService.recipes,
+          createCollaborativeRecipe:
+              mockParentService.createCollaborativeRecipe,
+          createPersonalRecipe: mockParentService.createPersonalRecipe,
+          notificationService: mockNotificationService,
+          onShareError: (msg) => surfacedError = msg,
+        );
+
+        final atCapMembers = <String, ResourcePermission>{
+          for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
+        };
+        final atCapRecipe = Recipe(
+          core: testCollaborativeRecipe.core,
+          type: RecipeType.collaborative,
+          socialData: RecipeSocialData(
+            ownerId: 'user_123',
+            ownerDisplayName: 'Recipe Owner',
+            memberPermissions: atCapMembers,
+            allowGuestViewing: false,
+            allowMemberInvites: true,
+          ),
+        );
+        mockParentService.setRecipeState(
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Current User',
+          recipes: [atCapRecipe],
+          isInitialized: true,
+        );
+
+        final newId = await manager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['new-member-1'],
+          memberDisplayNames: {'new-member-1': 'New Member'},
+        );
+
+        expect(newId, isNull, reason: 'cap-guard still rejects');
+        expect(
+          surfacedError,
+          equals(AppLocale.current
+              .errorShareCapReached(Recipe.maxSharesPerRecipe)),
+          reason: 'cap message must reach the UI error sink',
+        );
       });
 
       test('should fail when recipe not found', () async {

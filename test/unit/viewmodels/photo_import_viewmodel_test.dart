@@ -10,6 +10,9 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/core/di/di_container.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -41,73 +44,35 @@ class MockStreamedResponse extends Mock implements http.StreamedResponse {
   http.ByteStream get stream => http.ByteStream.fromBytes(utf8.encode(_body));
 }
 
-// Testable version that allows dependency injection
+// Testable version that allows dependency injection.
+//
+// BUT-1171: drives the REAL backing fields (`_ocrText` / `_imageBytes`) via the
+// production `@visibleForTesting` seams instead of shadow fields + getter
+// overrides. The previous double diverged from production state — `ocrText`
+// returned the shadow value while `performImport` / `saveImportedRecipe` read
+// the empty real field — so those paths never ran against the data the test
+// set. Now `ocrText`, `hasOcrResult`, `imageBytes`, `hasImage`, `clearPhoto`
+// and `debugState` are all inherited from production and observe the same
+// state the pipeline does. Only the camera/gallery pickers stay stubbed to keep
+// the OCR service and platform channels out of a unit test.
 class TestablePhotoImportViewModel extends PhotoImportViewModel {
   TestablePhotoImportViewModel({
     required super.importManager,
   });
 
-  // Public methods to set test data directly
-  void setTestImageBytes(Uint8List? bytes) {
-    // Use reflection or a workaround to set the private field
-    // For testing, we'll store in our own field and override the getter
-    _testImageBytes = bytes;
-    notifyListeners();
-  }
+  void setTestImageBytes(Uint8List? bytes) => setImageBytesForTesting(bytes);
 
-  void setTestOcrText(String text) {
-    _testOcrText = text;
-    notifyListeners();
-  }
+  void setTestOcrText(String text) => setOcrTextForTesting(text);
 
-  Uint8List? _testImageBytes;
-  String? _testOcrText;
-
-  @override
-  Uint8List? get imageBytes => _testImageBytes;
-
-  @override
-  String get ocrText => _testOcrText ?? '';
-
-  @override
-  bool get hasImage => _testImageBytes != null;
-
-  @override
-  bool get hasOcrResult => _testOcrText != null && _testOcrText!.isNotEmpty;
-
-  // Override the pick methods to use test data
   @override
   Future<void> pickImageFromCamera() async {
-    // For testing, we'll directly set the test data
-    // This simulates a successful image capture and OCR
     await Future.delayed(Duration.zero); // Ensure async behavior
   }
 
   @override
   Future<void> pickImageFromGallery() async {
-    // For testing, we'll directly set the test data
-    // This simulates a successful image selection and OCR
     await Future.delayed(Duration.zero); // Ensure async behavior
   }
-
-  // Override clearPhoto to clear test data
-  @override
-  void clearPhoto() {
-    _testImageBytes = null;
-    _testOcrText = null;
-    clearImportData();
-  }
-
-  // Override debugState to include test data
-  @override
-  Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'hasImage': hasImage,
-        'hasOcrResult': hasOcrResult,
-        'ocrTextLength': (_testOcrText ?? '').length,
-        'isProcessing': isProcessing,
-        'imageBytesSize': _testImageBytes?.length ?? 0,
-      };
 }
 
 void main() {
@@ -178,6 +143,17 @@ void main() {
         getIt.unregister<HeirloomBridge>();
       }
       getIt.registerSingleton<HeirloomBridge>(HeirloomBridge());
+
+      // BUT-1171: bridge the PRODUCTION ServiceLocator (application_provider) to
+      // GetIt.instance so ImportBaseViewModel.saveImportedRecipe's
+      // `ServiceLocator.get<HeirloomBridge>()` resolves the bridge registered
+      // above. Without this the production ServiceLocator is uninitialized, so
+      // the lookup threw "not initialized" — executeAsyncVoid swallowed it into
+      // a generic error, masking the real save flow and keeping the three save
+      // tests permanently red. DIContainer().get<T>() reads the same
+      // GetIt.instance, so the registration above is what gets resolved.
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(DIContainer());
 
       // Create mocks
       mockImportManager = MockImportManager();
@@ -250,6 +226,9 @@ void main() {
 
     tearDown(() async {
       viewModel.dispose();
+      // BUT-1171: tear down the production ServiceLocator bridge so it doesn't
+      // leak a stale DIContainer into sibling test files.
+      app_provider.ServiceLocator.reset();
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });

@@ -107,6 +107,24 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Returns confidence of extracted text (0.0-1.0) enabling reliability display in UI.
   double? get confidence => _lastConfidence;
 
+  /// BUT-1171: test-only seams that populate the REAL backing fields the
+  /// production import pipeline reads (`_ocrText`, `_imageBytes`). The former
+  /// test double shadowed these with separate fields plus getter overrides, so
+  /// `performImport` / `saveImportedRecipe` ran against empty production state —
+  /// a leak that masked the genuine save path and held three tests permanently
+  /// red. Tests now set the real fields, exercising the production code.
+  @visibleForTesting
+  void setOcrTextForTesting(String text) {
+    _ocrText = text;
+    notifyListeners();
+  }
+
+  @visibleForTesting
+  void setImageBytesForTesting(Uint8List? bytes) {
+    _imageBytes = bytes;
+    notifyListeners();
+  }
+
   /// OCR processing state indicator for UI progress indication and interaction control.
   /// Indicates active OCR processing operations for loading indicators
   /// and user interaction management during photo processing.

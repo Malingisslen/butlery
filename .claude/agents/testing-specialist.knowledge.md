@@ -4350,4 +4350,67 @@ Findings / reusable rules:
 - **Follow-up worth filing (low priority):** the 5 migrated widgets have no direct widget test of their own.
   Not a regression from this change (they had none before), and not worth backfilling getter-identity tests.
   If any of these helpers ever gains a loading-vs-loaded *state transition* (not just a static spinner), THAT
+  warrants a behavioral widget test at that point.
+
+### 2026-06-01 — BUT-1056 onShareError callback threading (assessment, no test written)
+- **Trigger:** assess coverage for an additive `onShareError` callback threaded UnifiedRecipeService._socialContext
+  (`onShareError: _setError`) → SocialOperationsInitializer → SocialRecipeOperations → RecipeSharingManager,
+  firing `errorShareCapReached` on the BUT-955 cap-rejection return-null path only.
+- **Cap-path behavior is well-covered.** recipe_sharing_manager_test.dart "BUT-1056: cap-rejection routes the
+  localized message to onShareError" constructs the manager directly with a local sink, stages 200 at-cap members,
+  asserts both `newId == null` AND `surfacedError == AppLocale.current.errorShareCapReached(maxSharesPerRecipe)`.
+  Intent-true: would fail if the `_onShareError?.call(...)` line were dropped or the message swapped.
+- **Design intent confirmed (NOT a gap):** the other return-null paths (recipe-not-found L126, empty
+  createCollaborative result L189, makeRecipePersonal not-collaborative) intentionally do NOT fire onShareError —
+  only the cap path surfaces a dedicated localized message. The "should fail when recipe not found" /
+  "should handle creation failure" tests already pin those as silent-null. Correct: those are not user-input
+  validation, they're internal/empty states the UI handles generically. Don't add onShareError asserts there.
+- **Real (low-priority) gap: the threading itself is untested.** The only test that touches `onShareError`
+  constructs RecipeSharingManager directly with its own sink. Nothing proves `UnifiedRecipeService` actually
+  passes `_setError` into `_socialContext`, nor that SocialOperationsInitializer / SocialRecipeOperations forward
+  `ctx.onShareError` through all three construction branches (initializer has 3 callsites at L68/L109/L135). A
+  refactor that drops `onShareError: ctx.onShareError` on one branch, or changes `_socialContext` to omit the
+  sink, would compile clean and silently regress (UI back to bare-null) with all 9 manager tests still green.
+  Worth a single forwarding test: build SocialRecipeOperations with an `onShareError` sink + at-cap recipe, call
+  `shareRecipe`, assert the sink fires — proves the link the manager test can't see. Not urgent (additive, happy
+  path unaffected), but it's the assertion that survives the next DI refactor.
+- **Pattern:** when a callback is threaded through N constructor hops, a direct-construction test of the leaf
+  proves the leaf FIRES it but never proves the WIRING. Test the outermost wired unit you can cheaply build.
+
+### 2026-06-01 — BUT-1171 PhotoImportViewModel @visibleForTesting setters resolve my own 2026-05-30 leaky-double finding
+- **Trigger:** assess the two `@visibleForTesting` setters (`setOcrTextForTesting`/`setImageBytesForTesting`)
+  that assign the REAL `_ocrText`/`_imageBytes`, replacing the shadow-field `TestablePhotoImportViewModel`.
+- **This is the fix my 2026-05-30 entry (knowledge L4264-4269) demanded.** Back then the 3 red tests were
+  genuinely test-harness artifacts: the double overrode `ocrText`/`hasOcrResult` to read `_testOcrText` while
+  `performImport`/`saveImportedRecipe` read the un-shadowed production `_ocrText` (always empty). Now the
+  setters write the single real backing field, so getters AND the pipeline observe the same state. Sound seam,
+  NOT production masking — production reads `_ocrText` exactly as before; the setters only *populate* what the
+  camera/OCR flow would, with the platform-channel pickers stubbed out. Setter writes + `notifyListeners()`,
+  no behavior fork. This is the correct way to retire a leaky shadow double.
+- **Now-real save path IS adequately covered for the unit level.** `saveImportedRecipe()` (3 tests: success /
+  no-recipe-guard / save-failure) now traverses the genuine base-class body: null-guard → `executeAsyncVoid`
+  → `_attachHeirloomIfPending()` → `_importManager.saveImportedRecipe`. The ServiceLocator bridge in setUp
+  (`app_provider.ServiceLocator.initialize(DIContainer())` + an empty `HeirloomBridge`) is what un-blocked it:
+  previously the production `ServiceLocator.get<HeirloomBridge>()` threw "not initialized", `executeAsyncVoid`
+  swallowed it to a generic error → permanent red. Intent-true now: save-failure asserts `saved==false` +
+  `error=='Ett oväntat fel uppstod'` (the executeAsyncVoid generic), success verifies the manager call fires once.
+- **GENUINE GAP (file LOW): the heirloom-pending branch of `_attachHeirloomIfPending` is never exercised here.**
+  setUp registers a bridge with NO pending draft, so `_attachHeirloomIfPending` early-returns at
+  `if (!bridge.hasPending) return` every time. The whole BUT-953/BUT-1086/BUT-1161 upload sub-path
+  (auth re-check → `errorAuthentication` on signed-out, content-addressed `sha256.substring(0,16).$ext`
+  path build, `StorageRepository.uploadImageData`, draft-restore-on-failure) is unpinned at the
+  PhotoImportViewModel level. My 2026-05-29 entry (L3891-3897) already flagged that the duplicated upload
+  site in `PhotoImportViewModel._uploadHeirloomScan` + the base `saveImportedRecipe` heirloom path are
+  covered ONLY via `import_base_viewmodel_heirloom_test.dart`'s synthetic `_TestImportViewModel` subclass —
+  the real VM's path stays unpinned. The new setters now make a VM-level heirloom test cheap: stage a pending
+  draft on the registered bridge + a `MockStorageRepository`, call `saveImportedRecipe()`, assert upload fires
+  on success and `errorAuthentication` + draft-restored on the signed-out path. Worth a follow-up; not a blocker.
+- **Minor real-wait smell (not introduced by this diff, pre-existing):** `should track processing state` uses
+  `await Future.delayed(Duration(milliseconds: 10))` — DO-NOT-WRITE per the real-wait rule. Low flake risk at
+  10ms but should be `fakeAsync`+`elapse`. The stub pickers also `await Future.delayed(Duration.zero)` which is
+  benign (microtask yield, not a timed wait). Flag if touched again; not worth a standalone fix.
+- **Pattern — retiring a leaky test double:** the right move is to give production a single `@visibleForTesting`
+  setter on the REAL field and delete the shadow field + getter overrides, NOT to add a parallel getter override.
+  A shadow field that diverges from the field the pipeline reads is the exact shape that produces
+  "Expected true, Actual false" with zero production defect. One backing field, one setter, getters inherited.
   transition deserves a behavioral test — the spinner type alone does not.

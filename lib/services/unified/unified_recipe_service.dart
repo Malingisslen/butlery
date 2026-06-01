@@ -364,6 +364,9 @@ class UnifiedRecipeService
         updateRecipe: updateRecipe,
         createCollaborativeRecipe: createCollaborativeRecipe,
         createPersonalRecipe: createPersonalRecipe,
+        // BUT-1056: surface share-cap rejection from the RecipeSharingManager
+        // path through the same error sink the UI already observes.
+        onShareError: _setError,
       );
 
   void _initializeLegacyInterfaces() {
