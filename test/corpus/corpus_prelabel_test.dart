@@ -24,15 +24,19 @@
 @Tags(['corpus-tools'])
 library;
 
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
-import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 
@@ -55,8 +59,14 @@ void main() {
     // body is skipped anyway, and this keeps CI fast and side-effect-free.
     if (!_shouldRun) return;
     TestWidgetsFlutterBinding.ensureInitialized();
+    // flutter_test installs an HttpOverrides that returns HTTP 400 (empty body)
+    // for every real network call. The corpus prelabel genuinely needs to reach
+    // OCR.space, so restore real networking after the binding is up.
+    HttpOverrides.global = null;
+    // The parser caches read SharedPreferences; without a mock the plugin
+    // channel throws MissingPluginException under flutter test.
+    SharedPreferences.setMockInitialValues(const <String, Object>{});
     await TestServiceLocator.initialize();
-    await OCRExtractionService.instance.initialize();
   });
 
   test('prelabel: OCR + parse every inbox image into draft/gold seeds',
@@ -65,6 +75,11 @@ void main() {
     if (!paths.exists) {
       fail('Corpus root not found: ${paths.root}. '
           'Create it or set BUTLERY_CORPUS_DIR.');
+    }
+
+    final ocrKey = Platform.environment['OCR_SPACE_API_KEY'] ?? '';
+    if (ocrKey.isEmpty) {
+      fail('OCR_SPACE_API_KEY env var not set — pass it to flutter test.');
     }
 
     final importManager = ImportManager(_NoopPersonalOps());
@@ -91,9 +106,16 @@ void main() {
         recipeDir.createSync(recursive: true);
 
         final bytes = await image.readAsBytes();
+        // page-01.jpg keeps the FULL-RES camera photo — the realistic
+        // production artifact the corpus is meant to preserve.
         await File('${recipeDir.path}/page-01.jpg').writeAsBytes(bytes);
 
-        final ocr = await _runOcr(bytes);
+        // OCR.space's free plan rejects payloads over 1.5 MB (E556). Phone
+        // photos are 2–4 MB, so shrink the COPY sent to OCR — mirrors the
+        // image_picker compression the real app applies before OCR. Text OCR
+        // gains nothing above ~1600px, so this costs no accuracy.
+        final ocrBytes = _shrinkForOcr(bytes);
+        final ocr = await _runOcr(ocrKey, ocrBytes, '$bookSlug/$recipeId');
         File(paths.ocrText(bookSlug, recipeId)).writeAsStringSync(ocr.text);
         File(paths.ocrMeta(bookSlug, recipeId))
             .writeAsStringSync(encodeJsonPretty(ocr.meta.toJson()));
@@ -140,32 +162,96 @@ void main() {
           : 'set RUN_CORPUS_PRELABEL=1 to run the prelabel batch');
 }
 
+/// Downscale (long edge ≤ 1600) + JPEG re-encode so the OCR payload clears
+/// OCR.space's 1.5 MB free-plan cap. Returns the original bytes if decoding
+/// fails — the provider may still handle a format we couldn't parse.
+Uint8List _shrinkForOcr(Uint8List bytes) {
+  const maxLongEdge = 1600;
+  final decoded = img.decodeImage(bytes);
+  if (decoded == null) return bytes;
+  final longEdge = math.max(decoded.width, decoded.height);
+  final resized = longEdge > maxLongEdge
+      ? img.copyResize(
+          decoded,
+          width: decoded.width >= decoded.height ? maxLongEdge : null,
+          height: decoded.height > decoded.width ? maxLongEdge : null,
+        )
+      : decoded;
+  return Uint8List.fromList(img.encodeJpg(resized, quality: 80));
+}
+
 class _OcrOutcome {
   final String text;
   final OcrMeta meta;
   const _OcrOutcome(this.text, this.meta);
 }
 
-Future<_OcrOutcome> _runOcr(Uint8List bytes) async {
-  // Timestamp is read once here; the corpus is not resumable so this is safe
-  // (unlike workflow scripts, plain tests may call DateTime.now()).
+/// Calls OCR.space directly with the proven request shape (multipart `file`
+/// upload, OCREngine 2, language `eng` — engine 2 is language-independent and
+/// reads Swedish fine; `swe` is rejected with E201). We bypass the app's
+/// `OCRExtractionService` here on purpose: its base64 transport + 2048px
+/// preprocessing still exceeded OCR.space's 1.5 MB free cap (E556) on phone
+/// photos. The recognition engine and image are identical, so the OCR-quality
+/// signal is faithful; only the transport differs.
+Future<_OcrOutcome> _runOcr(
+  String apiKey,
+  Uint8List jpgBytes,
+  String label,
+) async {
   final ts = DateTime.now().toIso8601String();
   try {
-    final result = await OCRExtractionService.instance.extractText(bytes);
-    final ok = result.isSuccessful && result.text.isNotEmpty;
+    final req = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://api.ocr.space/parse/image'),
+    )
+      ..fields['apikey'] = apiKey
+      ..fields['OCREngine'] = '2'
+      ..fields['language'] = 'eng'
+      ..fields['scale'] = 'true'
+      ..fields['isOverlayRequired'] = 'false'
+      ..fields['filetype'] = 'JPG'
+      ..files.add(
+          http.MultipartFile.fromBytes('file', jpgBytes, filename: 'page.jpg'));
+
+    final resp = await http.Response.fromStream(await req.send());
+    if (resp.statusCode != 200) {
+      stderr.writeln('OCR[$label] HTTP ${resp.statusCode}: ${resp.body}');
+      return _OcrOutcome(
+          '',
+          OcrMeta(
+              provider: 'ocr_space',
+              timestampIso: ts,
+              error: 'HTTP ${resp.statusCode}'));
+    }
+
+    final json = jsonDecode(resp.body) as Map<String, dynamic>;
+    if (json['IsErroredOnProcessing'] == true) {
+      final em = json['ErrorMessage'];
+      final msg = em is List ? em.join('; ') : em.toString();
+      stderr.writeln('OCR[$label] OCR.space error: $msg');
+      return _OcrOutcome(
+          '', OcrMeta(provider: 'ocr_space', timestampIso: ts, error: msg));
+    }
+
+    final results = json['ParsedResults'] as List?;
+    final text = (results != null && results.isNotEmpty)
+        ? (results.first['ParsedText']?.toString() ?? '')
+        : '';
+    stderr.writeln('OCR[$label] ok, ${text.length} chars');
     return _OcrOutcome(
-      result.text,
+      text,
       OcrMeta(
-        provider: result.metadata['provider']?.toString() ?? 'unknown',
-        confidence: result.confidence,
+        provider: 'ocr_space',
+        confidence: text.isNotEmpty ? 1.0 : 0.0,
         timestampIso: ts,
-        error: ok ? null : 'no text extracted',
+        error: text.isEmpty ? 'no text extracted' : null,
       ),
     );
-  } catch (e) {
+  } catch (e, st) {
+    stderr.writeln('OCR[$label] threw: $e\n$st');
     return _OcrOutcome(
       '',
-      OcrMeta(provider: 'unknown', timestampIso: ts, error: e.toString()),
+      OcrMeta(provider: 'ocr_space', timestampIso: ts, error: e.toString()),
     );
   }
 }
