@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -316,15 +317,10 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                       .withValues(alpha: AppDimensions.opacityVeryDark),
                 ),
                 child: Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        cs.primary,
-                      ),
-                    ),
+                  child: LoadingIndicator(
+                    size: 24,
+                    strokeWidth: 2,
+                    color: cs.primary,
                   ),
                 ),
               ),

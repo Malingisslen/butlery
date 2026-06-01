@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "title": "Köttbullar",
+  "portions": "4",
+  "timeMinutes": 30,
+  "ingredients": [
+    { "name": "nötfärs", "originalLine": "500 g nötfärs", "quantity": "500", "unit": "g" },
+    { "name": "lök", "originalLine": "1 st lök", "quantity": "1", "unit": "st" }
+  ],
+  "instructions": ["Blanda allt.", "Stek köttbullarna."],
+  "sourcePages": ["page-01.jpg"]
+}

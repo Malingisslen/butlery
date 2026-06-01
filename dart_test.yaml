@@ -25,6 +25,13 @@ tags:
   skip:
     skip: true
 
+  # Corpus prelabel harness — a script shaped as a test. Never runs in CI;
+  # gated by the RUN_CORPUS_PRELABEL env var at runtime. Generous timeout
+  # because it OCRs a batch of scanned pages over the network.
+  corpus-tools:
+    description: Cookbook gold-corpus prelabel/eval harness (manual, env-gated)
+    timeout: 30m
+
 # Test timeout defaults
 timeout: 30s
 

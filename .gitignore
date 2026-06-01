@@ -171,6 +171,12 @@ test/**/failures/
 # root for the nightly workflow to upload — regenerated per run).
 /goldens-*.json
 
+# Cookbook gold corpus (tools/corpus/*). Lives in a sibling dir by default;
+# this guard covers the case where BUTLERY_CORPUS_DIR points inside the repo.
+# Binary scans + copyrighted source material — MUST NOT be committed.
+/butlery-corpus/
+butlery-corpus/
+
 # Transient .claude.json corruption-debug artifacts (cosmetic warning, resolved
 # per memory/claude_config_corrupted_warning.md). cfg-test/ holds copies of the
 # global .claude.json (userID, toolUsage, account data) — MUST NOT be committed.

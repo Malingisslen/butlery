@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -330,7 +331,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
           color: cs.onSurface.withValues(alpha: AppDimensions.opacityHalf),
         ),
         child: Center(
-          child: CircularProgressIndicator(color: cs.surfaceContainerHighest),
+          child: LoadingIndicator(color: cs.surfaceContainerHighest),
         ),
       ),
     );

@@ -1,0 +1,11 @@
+{
+  "verified": false,
+  "title": "Pannkakor",
+  "portions": "4",
+  "timeMinutes": 20,
+  "ingredients": [
+    { "name": "vetemjöl", "originalLine": "3 dl vetemjöl", "quantity": "3", "unit": "dl" },
+    { "name": "ägg", "originalLine": "2 ägg", "quantity": "2", "unit": "st" }
+  ],
+  "instructions": ["Vispa smeten slät.", "Stek i smör."]
+}

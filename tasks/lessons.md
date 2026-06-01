@@ -92,6 +92,12 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
   4. Trust the gates — don't `--no-verify` or fabricate review markers to get past a block. The analyze gate caught a real bug here; the firebase-backend-security agent gate forced a genuine second look at the `functions/` deletions. Both auto-mode classifier denials (destructive `git rm` on an exploratory thread; marker fabrication) were correct.
 - **Example**: Restored `cook_count.dart` (+ its test stays), shipped only the 7 whole-repo-verified deletions in `5ff405613`. Kept `docs/analysis/` after finding ADR-002, `data-residency.md`, and a `recipe_detail_viewmodel.dart:339` comment all *cite* its MASTER-wave files as decision provenance — deleting it would orphan live citations.
 
+### [Workflow] Eval input must match PRODUCTION input, not the cheapest-to-label input
+- **Date**: 2026-06-01
+- **Trigger**: Building the cookbook gold-corpus eval, I recommended capturing pages with a phone **document scanner** (dewarp + contrast) because it maximizes OCR quality and minimizes hand-correction. The user pushed back: the whole point is to measure how the pipeline works **for a real user**, and real users photograph recipes with the plain **camera** — curl, glare, angle and all. Optimizing capture for clean labeling silently swaps the thing being measured: a pristine scan benchmarks a best-case that production never sees.
+- **Rule**: When a corpus exists to measure real-world performance, the **eval image must be captured the way the end user captures it** (here: camera photo), even though that makes the gold facit harder to produce. Decouple the two: the **facit (ground truth)** comes from the physical source in hand (the book), NOT from any one image's OCR — so it's capture-independent; the **eval image** is the realistic production input. A clean scan is at most a *transcription aid for building the facit*, never the scored input. To separate "is the parser good?" from "is our OCR robust?", capture BOTH a clean scan and a camera shot of the same page (multiple images per recipe, one shared facit) and compare — the gap is what OCR quality costs in the field.
+- **Example**: Corrected the corpus capture guidance to camera-first; the pipeline already supported it unchanged (prelabel OCRs `page-01.jpg` → `ocr.txt` → draft → human-corrected `gold.json`), so only the capture *recommendation* was wrong, not the design.
+
 ---
 
 ## Archived

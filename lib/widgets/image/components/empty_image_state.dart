@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// Empty state widget for image picker with add button
 class EmptyImageState extends StatelessWidget {
@@ -59,13 +60,10 @@ class EmptyImageState extends StatelessWidget {
     return [
       Builder(builder: (context) {
         final cs = Theme.of(context).colorScheme;
-        return SizedBox(
-          width: AppDimensions.iconSizeXl,
-          height: AppDimensions.iconSizeXl,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-          ),
+        return LoadingIndicator(
+          size: AppDimensions.iconSizeXl,
+          strokeWidth: 2,
+          color: cs.primary,
         );
       }),
       const SizedBox(height: AppDimensions.spacingSm),

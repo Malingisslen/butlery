@@ -515,13 +515,12 @@ void main() {
       // new entries; fix the file instead.
       const allowList = <String>{
         // long-tail wave (BUT-885 follow-up)
-        'lib/widgets/image/avatar_image_widget.dart',
-        'lib/widgets/image/editable_image_widget.dart',
+        // iter-112: image cluster (avatar, editable, simple, empty_image_state)
+        // migrated to LoadingIndicator + de-allowlisted. image_components,
+        // upload_progress_widgets, image_grid_widgets remain (next wave).
         'lib/widgets/image/image_components.dart',
         'lib/widgets/image/components/upload_progress_widgets.dart',
-        'lib/widgets/image/simple_image_widget.dart',
         'lib/widgets/image/components/image_grid_widgets.dart',
-        'lib/widgets/image/components/empty_image_state.dart',
         'lib/widgets/common/feedback_form_dialog.dart',
         'lib/widgets/common/friends/friend_category_manager.dart',
         'lib/widgets/common/input/debounced_button.dart',
