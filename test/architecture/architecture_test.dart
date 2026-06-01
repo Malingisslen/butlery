@@ -521,11 +521,6 @@ void main() {
         // determinate sites use the new value: variant from BUT-1173) +
         // de-allowlisted.
         'lib/widgets/common/feedback_form_dialog.dart',
-        'lib/widgets/common/friends/friend_category_manager.dart',
-        'lib/widgets/messaging/new_conversation_dialog.dart',
-        'lib/widgets/messaging/fullscreen_image_viewer.dart',
-        'lib/widgets/common/menu_persistence/menu_save_dialog.dart',
-        'lib/widgets/common/menu_persistence/menu_load_dialog.dart',
         'lib/widgets/shopping/shopping_template_browser.dart',
         'lib/widgets/common/service/service_widgets.dart',
         'lib/widgets/messaging/builders/message_content_builder.dart',

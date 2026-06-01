@@ -12,12 +12,16 @@
 ///     <book-slug>/
 ///       book.json           BookMeta
 ///       inbox/*.jpg          unprocessed scans (consumed by prelabel)
-///       <recipe-id>/
-///         page-01.jpg        source scan(s)
-///         ocr.txt            raw OCR text (OCR-eval input)
-///         ocr.meta.json      OcrMeta
-///         draft.json         parser pre-label seed/history (GoldRecipe)
-///         gold.json          verified facit (GoldRecipe, verified=true)
+///       <image-id>/
+///         page-01.jpg        source scan      (shared per image)
+///         ocr.txt            raw OCR text      (shared per image)
+///         ocr.meta.json      OcrMeta           (shared per image)
+///         draft.json         GoldRecipe        ┐ FLAT layout — single-recipe
+///         gold.json          GoldRecipe        ┘ page (image-id == recipe-id)
+///         recipe-01/         ┐ NESTED layout — multi-recipe page (cookbook
+///           draft.json       │ spread). One recipe-NN/ block per recipe;
+///           gold.json        │ page-01.jpg/ocr.txt stay shared above.
+///         recipe-02/ ...     ┘
 /// ```
 library;
 

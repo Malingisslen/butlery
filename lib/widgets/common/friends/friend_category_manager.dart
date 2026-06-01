@@ -1,6 +1,7 @@
 // lib/widgets/common/friends/friend_category_manager.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -70,14 +71,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: AppDimensions.iconSizeM,
-                  height: AppDimensions.iconSizeM,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary),
-                  ),
+                LoadingIndicator(
+                  size: AppDimensions.iconSizeM,
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
                 Text(

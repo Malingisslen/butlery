@@ -1,6 +1,7 @@
 // lib/widgets/messaging/new_conversation_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -187,7 +188,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     final cs = Theme.of(context).colorScheme;
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: LoadingIndicator(),
       );
     }
 

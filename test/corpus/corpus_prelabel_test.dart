@@ -130,28 +130,38 @@ void main() {
           continue;
         }
 
-        final draft = await _parseToDraft(
+        final drafts = await _parseToDrafts(
           importManager,
           ingredientParser,
           ocr.text,
         );
 
-        File(paths.draft(bookSlug, recipeId))
-            .writeAsStringSync(encodeJsonPretty(draft.toJson()));
-
-        // Seed gold.json from the draft ONLY if it doesn't exist yet — never
-        // clobber human corrections on a re-run.
-        final goldFile = File(paths.gold(bookSlug, recipeId));
-        if (!goldFile.existsSync()) {
-          goldFile.writeAsStringSync(
-            encodeJsonPretty(draft.copyWith(verified: false).toJson()),
+        if (drafts.length == 1) {
+          // Single-recipe page → flat layout (draft.json/gold.json at the image
+          // dir), exactly as before. Minimises churn on existing corpora.
+          _writeDraftAndSeed(
+            paths.draft(bookSlug, recipeId),
+            paths.gold(bookSlug, recipeId),
+            drafts.first,
           );
+        } else {
+          // Multi-recipe page → one recipe-NN/ block per recipe; page-01.jpg and
+          // ocr.txt stay shared at the image level.
+          for (var i = 0; i < drafts.length; i++) {
+            final blockId = 'recipe-${(i + 1).toString().padLeft(2, '0')}';
+            Directory(paths.recipeBlock(bookSlug, recipeId, blockId))
+                .createSync(recursive: true);
+            _writeDraftAndSeed(
+              paths.draftBlock(bookSlug, recipeId, blockId),
+              paths.goldBlock(bookSlug, recipeId, blockId),
+              drafts[i],
+            );
+          }
         }
 
         processed++;
         stdout.writeln('Prelabeled $bookSlug/$recipeId '
-            '(${draft.ingredients.length} ingredients, '
-            '${draft.instructions.length} steps)');
+            '(${drafts.length} recipe(s))');
       }
     }
 
@@ -257,39 +267,70 @@ Future<_OcrOutcome> _runOcr(
   }
 }
 
-Future<GoldRecipe> _parseToDraft(
+/// Parse one page's OCR text into N draft recipes via the multi-recipe path.
+/// Returns one draft for a single-recipe page, several for a cookbook spread,
+/// or a single title-only fallback when nothing parsed.
+Future<List<GoldRecipe>> _parseToDrafts(
   ImportManager importManager,
   IngredientParsingStrategy ingredientParser,
   String ocrText,
 ) async {
-  Recipe? recipe;
+  List<Recipe> recipes = const [];
   try {
-    final result = await importManager.autoParseOnly(ocrText);
-    if (result.isSuccess && result.importedRecipes.isNotEmpty) {
-      recipe = result.importedRecipes.first;
-    }
+    final result = await importManager.autoParseMulti(ocrText);
+    recipes = result.successfulRecipes;
   } catch (_) {
-    // Fall through to a title-only draft below.
+    // Fall through to the title-only fallback below.
   }
 
-  final title = recipe?.title ?? _firstNonEmptyLine(ocrText);
-  final rawIngredients = recipe?.ingredients ?? const <String>[];
-  final instructions = recipe?.instructions ?? const <String>[];
+  if (recipes.isEmpty) {
+    return [
+      GoldRecipe(
+        verified: false,
+        title: _firstNonEmptyLine(ocrText),
+        ingredients: const [],
+        instructions: const [],
+        sourcePages: const ['page-01.jpg'],
+      ),
+    ];
+  }
 
+  final drafts = <GoldRecipe>[];
+  for (final recipe in recipes) {
+    drafts.add(await _recipeToGold(ingredientParser, recipe));
+  }
+  return drafts;
+}
+
+Future<GoldRecipe> _recipeToGold(
+  IngredientParsingStrategy ingredientParser,
+  Recipe recipe,
+) async {
   final ingredients = <GoldIngredient>[];
-  for (final line in rawIngredients) {
+  for (final line in recipe.ingredients) {
     ingredients.add(await _structureLine(ingredientParser, line));
   }
-
   return GoldRecipe(
     verified: false,
-    title: title,
-    portions: recipe?.portions?.toString(),
+    title: recipe.title,
+    portions: recipe.portions?.toString(),
     timeMinutes: _totalTime(recipe),
     ingredients: ingredients,
-    instructions: instructions,
+    instructions: recipe.instructions,
     sourcePages: const ['page-01.jpg'],
   );
+}
+
+/// Write the prediction to draft.json and seed gold.json from it — but only if
+/// gold.json doesn't exist yet, so a re-run never clobbers human corrections.
+void _writeDraftAndSeed(String draftPath, String goldPath, GoldRecipe draft) {
+  File(draftPath).writeAsStringSync(encodeJsonPretty(draft.toJson()));
+  final goldFile = File(goldPath);
+  if (!goldFile.existsSync()) {
+    goldFile.writeAsStringSync(
+      encodeJsonPretty(draft.copyWith(verified: false).toJson()),
+    );
+  }
 }
 
 Future<GoldIngredient> _structureLine(

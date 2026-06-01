@@ -72,12 +72,12 @@ CorpusLoad loadEntries(CorpusPaths paths) {
 
   for (final bookDir in paths.books()) {
     final bookSlug = _basename(bookDir.path);
-    for (final recipeDir in paths.recipeDirs(bookSlug)) {
-      final recipeId = _basename(recipeDir.path);
-      final label = '$bookSlug/$recipeId';
+    // recipeEntries flattens both the flat (single-recipe) and nested
+    // (recipe-NN, multi-recipe) layouts into one list.
+    for (final entry in paths.recipeEntries(bookSlug)) {
+      final label = '$bookSlug/${entry.recipeId}';
 
-      final goldFile = File(paths.gold(bookSlug, recipeId));
-      final gold = _readRecipe(goldFile);
+      final gold = _readRecipe(File(entry.goldPath));
       if (gold == null) {
         skipped.add('$label: gold.json missing or malformed');
         continue;
@@ -87,18 +87,18 @@ CorpusLoad loadEntries(CorpusPaths paths) {
         continue;
       }
 
-      final prediction = _readRecipe(File(paths.draft(bookSlug, recipeId)));
+      final prediction = _readRecipe(File(entry.draftPath));
       if (prediction == null) {
         skipped.add('$label: draft.json (prediction) missing');
         continue;
       }
 
-      final ocrFile = File(paths.ocrText(bookSlug, recipeId));
+      final ocrFile = File(entry.ocrTextPath);
       final ocrText = ocrFile.existsSync() ? ocrFile.readAsStringSync() : '';
 
       entries.add(CorpusEntry(
         bookSlug: bookSlug,
-        recipeId: recipeId,
+        recipeId: entry.recipeId,
         gold: gold,
         prediction: prediction,
         ocrText: ocrText,

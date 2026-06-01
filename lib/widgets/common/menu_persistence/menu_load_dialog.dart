@@ -1,6 +1,7 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -117,7 +118,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           // Saved menus content
           Flexible(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: LoadingIndicator())
                 : _savedMenus.isEmpty
                     ? _buildEmptyState()
                     : _buildMenuList(),

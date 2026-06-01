@@ -1,6 +1,7 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -90,15 +91,10 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         FilledButton(
           onPressed: _isLoading ? null : _saveMenu,
           child: _isLoading
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(
-                      Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
+              ? LoadingIndicator(
+                  size: 20,
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 )
               : Text(context.l10n.commonSave),
         ),

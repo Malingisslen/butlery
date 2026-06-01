@@ -1,6 +1,7 @@
 // lib/widgets/messaging/fullscreen_image_viewer.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -69,7 +70,7 @@ class FullscreenImageViewer extends StatelessWidget {
                           MediaQuery.devicePixelRatioOf(context))
                       .round(),
                   placeholder: (context, url) => Center(
-                    child: CircularProgressIndicator(
+                    child: LoadingIndicator(
                       color: cs.surfaceContainerHighest,
                     ),
                   ),
