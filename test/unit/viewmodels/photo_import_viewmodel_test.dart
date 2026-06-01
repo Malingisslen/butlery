@@ -13,11 +13,15 @@ import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/repositories/interfaces/storage_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/repositories/mock_storage_repository.dart';
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager
@@ -859,6 +863,100 @@ void main() {
         // Assert
         expect(viewModel.hasOcrResult, isTrue);
         expect(viewModel.hasParsedRecipe, isTrue);
+      });
+    });
+
+    // BUT-1175: exercise the heirloom-pending upload branch of the inherited
+    // saveImportedRecipe at the REAL PhotoImportViewModel level. The outer
+    // setUp already registered an (empty) HeirloomBridge and bridged the
+    // production ServiceLocator; here we add a MockStorageRepository, stage a
+    // pending draft, and authenticate the FakePermissionService so
+    // `_attachHeirloomIfPending` actually runs (it early-returns in every other
+    // test because no draft is pending). Complements the base-class coverage in
+    // import_base_viewmodel_heirloom_test.dart with a concrete-VM proof.
+    group('BUT-1175: VM-level heirloom-pending upload via saveImportedRecipe',
+        () {
+      late MockStorageRepository mockStorage;
+      late HeirloomBridge bridge;
+
+      setUp(() {
+        final getIt = GetIt.instance;
+        bridge = getIt<HeirloomBridge>();
+        if (getIt.isRegistered<StorageRepository>()) {
+          getIt.unregister<StorageRepository>();
+        }
+        mockStorage = MockStorageRepository();
+        getIt.registerSingleton<StorageRepository>(mockStorage);
+
+        // TestServiceLocator registers a FakePermissionService — authenticate it.
+        (getIt<PermissionService>() as FakePermissionService)
+            .setPermissionState(currentUserId: 'user-abc');
+      });
+
+      test('pending draft + upload OK → uploads scan, attaches metadata, saves',
+          () async {
+        // ignore: invalid_use_of_protected_member
+        viewModel.setParsedRecipe(
+            RecipeFactory.build(id: 'recipe-xyz', title: 'Arvegods'));
+        bridge.setDraft(HeirloomDraft(
+          imageBytes: Uint8List.fromList(List<int>.generate(64, (i) => i)),
+          writerName: 'Farmor Elsa',
+          year: 1972,
+        ));
+        when(() => mockStorage.uploadImageData(
+              imageData: any(named: 'imageData'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              metadata: any(named: 'metadata'),
+              cacheControl: any(named: 'cacheControl'),
+            )).thenAnswer((_) async => 'https://storage/heirloom/abc.jpg');
+
+        final ok = await viewModel.saveImportedRecipe();
+
+        expect(ok, isTrue);
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.parsedRecipe?.heirloom, isNotNull,
+            reason: 'metadata must be stitched onto the recipe before save');
+        expect(viewModel.parsedRecipe!.heirloom!.writerName, 'Farmor Elsa');
+        expect(viewModel.parsedRecipe!.heirloom!.addedByUserId, 'user-abc');
+        expect(bridge.hasPending, isFalse,
+            reason: 'draft drained after upload');
+        verify(() => mockStorage.uploadImageData(
+              imageData: any(named: 'imageData'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              metadata: any(named: 'metadata'),
+              cacheControl: any(named: 'cacheControl'),
+            )).called(1);
+      });
+
+      test(
+          'pending draft + signed out (null uid) → save blocked, no upload, draft restored',
+          () async {
+        (GetIt.instance<PermissionService>() as FakePermissionService)
+            .setPermissionState(currentUserId: null);
+        // ignore: invalid_use_of_protected_member
+        viewModel.setParsedRecipe(RecipeFactory.build(id: 'recipe-xyz'));
+        bridge.setDraft(HeirloomDraft(
+          imageBytes: Uint8List.fromList([1, 2, 3, 4]),
+        ));
+
+        final ok = await viewModel.saveImportedRecipe();
+
+        expect(ok, isFalse,
+            reason: 'save must fail when the heirloom auth re-check fails');
+        expect(viewModel.hasError, isTrue);
+        expect(viewModel.parsedRecipe?.heirloom, isNull,
+            reason: 'no metadata when upload never ran');
+        verifyNever(() => mockStorage.uploadImageData(
+              imageData: any(named: 'imageData'),
+              userId: any(named: 'userId'),
+              path: any(named: 'path'),
+              metadata: any(named: 'metadata'),
+              cacheControl: any(named: 'cacheControl'),
+            ));
+        expect(bridge.hasPending, isTrue,
+            reason: 'failed auth restores the draft so sign-in + retry works');
       });
     });
   });

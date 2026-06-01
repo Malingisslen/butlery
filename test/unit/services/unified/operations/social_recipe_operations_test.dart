@@ -1,21 +1,32 @@
-/// Unit tests for SocialRecipeOperations sub-modules
+/// Unit tests for SocialRecipeOperations and its sub-modules.
 ///
-/// SocialRecipeOperations cannot be constructed in unit tests because its
-/// constructor creates RecipeSharingManager which calls
-/// `ServiceLocator.get<FirestoreRepository>()` at construction time.
-///
-/// Instead we test the independently-constructible modules:
+/// Most coverage targets the independently-constructible modules:
 /// 1. RecipePermissionHelper — pure permission logic
 /// 2. RecipeDiscoveryService — in-memory recipe filtering
+///
+/// The full `SocialRecipeOperations` constructor creates RecipeSharingManager,
+/// which calls `ServiceLocator.get<FirestoreRepository>()` at construction time.
+/// That is resolvable in tests by bridging the production ServiceLocator to a
+/// `MockDIContainer` (which delegates `.get<T>()` to `TestServiceLocator`) — see
+/// the BUT-1174 group below, which exercises the onShareError DI forwarding the
+/// leaf-level `recipe_sharing_manager_test` structurally cannot reach.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 
 import '../../../../infrastructure/builders/recipe_builder.dart';
+import '../../../../infrastructure/di/test_service_locator.dart';
+import '../../../../infrastructure/mocks/production_mocks.dart';
+import '../../../../test_support/base_unit_test.dart';
 
 Recipe _buildCollaborative({
   required String ownerId,
@@ -419,6 +430,104 @@ void main() {
         expect(stats.containsKey('total_recipes'), isTrue);
         expect(stats['total_recipes'], 3);
       });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // SocialRecipeOperations — onShareError forwarding (BUT-1174)
+  //
+  // The leaf-level recipe_sharing_manager_test constructs RecipeSharingManager
+  // directly with a local sink, so it can't see the DI hop. This group builds
+  // the REAL SocialRecipeOperations (bridging the production ServiceLocator to a
+  // MockDIContainer so RecipeSharingManager's ServiceLocator.get<FirestoreRepository>
+  // resolves) and proves the onShareError callback actually survives the
+  // SocialRecipeOperations → RecipeSharingManager forward. A refactor dropping
+  // `onShareError: onShareError` in the constructor would turn this red while all
+  // manager-level tests stayed green.
+  // -----------------------------------------------------------------------
+  group('SocialRecipeOperations onShareError forwarding (BUT-1174)', () {
+    late MockUnifiedRecipeService mockParent;
+
+    setUp(() async {
+      await BaseUnitTest.setupUnit();
+      await TestServiceLocator.initialize();
+      app_provider.ServiceLocator.reset();
+      app_provider.ServiceLocator.initialize(MockDIContainer());
+      mockParent = MockUnifiedRecipeService();
+    });
+
+    tearDown(() async {
+      app_provider.ServiceLocator.reset();
+      await TestServiceLocator.reset();
+      BaseUnitTest.resetMocks();
+    });
+
+    test(
+        'cap-rejection surfaces errorShareCapReached through the DI chain to onShareError',
+        () async {
+      // 200 existing members + owner + the new member projects over the cap.
+      final atCapMembers = <String, ResourcePermission>{
+        for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
+      };
+      final atCapRecipe = Recipe(
+        core: RecipeCore(
+          id: 'collab_1',
+          title: 'Shared Team Recipe',
+          description: 'A collaborative recipe',
+          ingredients: ['x'],
+          instructions: ['y'],
+          mealType: 'Lunch',
+          createdBy: 'user_123',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        type: RecipeType.collaborative,
+        socialData: RecipeSocialData(
+          ownerId: 'user_123',
+          ownerDisplayName: 'Owner',
+          memberPermissions: atCapMembers,
+          allowGuestViewing: false,
+          allowMemberInvites: true,
+        ),
+      );
+
+      mockParent.setRecipeState(
+        currentUserId: 'user_123',
+        currentUserDisplayName: 'Current User',
+        recipes: [atCapRecipe],
+        isInitialized: true,
+      );
+
+      String? surfaced;
+      final ops = SocialRecipeOperations(
+        getCurrentUserId: () => mockParent.currentUserId,
+        getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+        getRecipes: () => mockParent.recipes,
+        updateRecipe: (_) async => true,
+        createCollaborativeRecipe: mockParent.createCollaborativeRecipe,
+        createPersonalRecipe: mockParent.createPersonalRecipe,
+        ratingsRepository: MockRatingsRepository(),
+        firestoreRepository:
+            app_provider.ServiceLocator.get<FirestoreRepository>(),
+        onShareError: (m) => surfaced = m,
+      );
+
+      final id = await ops.shareRecipe(
+        recipeId: 'collab_1',
+        memberIds: ['new-member'],
+        memberDisplayNames: {'new-member': 'New'},
+      );
+
+      expect(id, isNull, reason: 'cap-guard rejects the share');
+      expect(mockParent.createCollaborativeRecipeCalls, isEmpty,
+          reason: 'short-circuits before creating the collaborative recipe');
+      expect(
+        surfaced,
+        equals(
+            AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe)),
+        reason: 'the localized cap message must survive the DI hop '
+            'SocialRecipeOperations → RecipeSharingManager → onShareError',
+      );
     });
   });
 }
