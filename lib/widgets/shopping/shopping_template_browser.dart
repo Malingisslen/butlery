@@ -1,6 +1,7 @@
 // lib/widgets/shopping/shopping_template_browser.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -93,7 +94,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(AppDimensions.paddingXl),
-          child: CircularProgressIndicator(),
+          child: LoadingIndicator(),
         ),
       );
     }

@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -179,13 +180,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                     ),
                   ),
                   child: _isSubmitting
-                      ? SizedBox(
-                          width: AppDimensions.spinnerSizeSmall,
-                          height: AppDimensions.spinnerSizeSmall,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: cs.onPrimary,
-                          ),
+                      ? LoadingIndicator(
+                          size: AppDimensions.spinnerSizeSmall,
+                          strokeWidth: 2,
+                          color: cs.onPrimary,
                         )
                       : Text(context.l10n.feedbackSendButton,
                           style: AppTextStyles.labelLarge),

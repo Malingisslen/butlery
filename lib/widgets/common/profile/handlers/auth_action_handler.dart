@@ -1,6 +1,7 @@
 // lib/widgets/common/profile/handlers/auth_action_handler.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -87,7 +88,7 @@ class AuthActionHandler {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(),
+        child: LoadingIndicator(),
       ),
     );
 

@@ -1,6 +1,7 @@
 // lib/widgets/common/service/service_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -61,14 +62,10 @@ class ServiceWidgets {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Builder(
-            builder: (context) => SizedBox(
-              width: AppDimensions.iconSizeM,
-              height: AppDimensions.iconSizeM,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.primary),
-              ),
+            builder: (context) => LoadingIndicator(
+              size: AppDimensions.iconSizeM,
+              strokeWidth: 2,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -121,13 +118,10 @@ class ServiceWidgets {
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
-              child: SizedBox(
-                width: AppDimensions.iconSizeM,
-                height: AppDimensions.iconSizeM,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
-                ),
+              child: LoadingIndicator(
+                size: AppDimensions.iconSizeM,
+                strokeWidth: 2,
+                color: cs.primary,
               ),
             ),
           ),

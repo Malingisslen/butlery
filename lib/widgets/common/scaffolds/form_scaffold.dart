@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
@@ -67,11 +68,7 @@ class FormScaffold extends StatelessWidget {
         IconButton(
           onPressed: isLoading ? null : onSave,
           icon: isLoading
-              ? const SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const LoadingIndicator(size: 16, strokeWidth: 2)
               : const Icon(Icons.save),
           tooltip: context.l10n.commonSave,
         ),
@@ -122,16 +119,12 @@ class FormScaffold extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: isLoading ? null : onSave,
                     child: isLoading
-                        ? SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest),
-                            ),
+                        ? LoadingIndicator(
+                            size: 16,
+                            strokeWidth: 2,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                           )
                         : Text(context.l10n.commonSave),
                   ),

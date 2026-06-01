@@ -497,8 +497,9 @@ void main() {
     //   lib/widgets/common/state/      — canonical loading-state widgets
     //   lib/widgets/common/loading/    — overlay/utility loading components
     //
-    // Pre-existing violations are allow-listed inline. Each gets a follow-up
-    // in the long-tail migration tracked by BUT-885.
+    // The long-tail migration (BUT-885 → BUT-1168) is COMPLETE: the allowlist
+    // below is now empty, so every spinner in lib/widgets/ routes through
+    // LoadingIndicator. The guard now enforces zero raw CircularProgressIndicator.
     test(
         'no raw CircularProgressIndicator in lib/widgets/ '
         'outside common/{indicators,state,loading}/ '
@@ -510,25 +511,10 @@ void main() {
         'lib/widgets/common/loading/',
       ];
 
-      // Pre-existing violations. Remove an entry here once the file is
-      // migrated — the test will fail if it's not actually clean. Do NOT add
-      // new entries; fix the file instead.
-      const allowList = <String>{
-        // long-tail wave (BUT-885 follow-up)
-        // iter-112: image cluster (avatar, editable, simple, empty_image_state)
-        // migrated. iter-113: image_components, image_grid_widgets, and
-        // upload_progress_widgets migrated to LoadingIndicator (the upload
-        // determinate sites use the new value: variant from BUT-1173) +
-        // de-allowlisted.
-        'lib/widgets/common/feedback_form_dialog.dart',
-        'lib/widgets/shopping/shopping_template_browser.dart',
-        'lib/widgets/common/service/service_widgets.dart',
-        'lib/widgets/messaging/builders/message_content_builder.dart',
-        // invitation_states.dart migrated (iter-113): its determinate progress
-        // bar now uses LoadingIndicator(value:) from BUT-1173.
-        'lib/widgets/common/scaffolds/form_scaffold.dart',
-        'lib/widgets/common/profile/handlers/auth_action_handler.dart',
-      };
+      // Empty — the BUT-885 / BUT-1168 long-tail migration finished (iter-113 +
+      // waves 2-4, 2026-06-01). Every spinner in lib/widgets/ now routes through
+      // LoadingIndicator. Do NOT add new entries; fix the file instead.
+      const allowList = <String>{};
 
       final pattern = RegExp(r'\bCircularProgressIndicator\s*\(');
       final violations = <String>[];

@@ -1,6 +1,7 @@
 // lib/widgets/messaging/builders/message_content_builder.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -294,7 +295,7 @@ class MessageContentBuilder {
           : cs.inversePrimary.withValues(alpha: AppDimensions.opacityLight),
       child: Center(
         child: isLoading
-            ? CircularProgressIndicator(
+            ? LoadingIndicator(
                 color: isFromCurrentUser ? cs.onPrimary : cs.primary,
               )
             : Column(
