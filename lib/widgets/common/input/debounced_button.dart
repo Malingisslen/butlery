@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
 /// A button wrapper that prevents rapid successive taps through debouncing.
 /// Useful for preventing double-submits on forms and duplicate API calls.
@@ -123,11 +124,7 @@ class _DebouncedButtonState extends State<DebouncedButton> {
   Widget build(BuildContext context) {
     if (widget.showLoadingIndicator && _isProcessing) {
       return widget.loadingIndicator ??
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          );
+          const LoadingIndicator(size: 24, strokeWidth: 2);
     }
 
     final detector = GestureDetector(

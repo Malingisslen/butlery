@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -140,10 +141,9 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
               const Padding(
                 padding: EdgeInsets.all(AppDimensions.spacingMd),
                 child: Center(
-                  child: SizedBox(
-                    height: AppDimensions.spinnerSizeSmall,
-                    width: AppDimensions.spinnerSizeSmall,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                  child: LoadingIndicator(
+                    size: AppDimensions.spinnerSizeSmall,
+                    strokeWidth: 2,
                   ),
                 ),
               )

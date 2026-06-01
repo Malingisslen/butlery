@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -92,7 +93,7 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
+          LoadingIndicator(
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingXl),

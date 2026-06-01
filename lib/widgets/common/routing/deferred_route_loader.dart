@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -103,7 +104,7 @@ class ModuleLoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            LoadingIndicator(
               color: cs.primary,
               strokeWidth: 3,
             ),

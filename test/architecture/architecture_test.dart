@@ -522,20 +522,16 @@ void main() {
         // de-allowlisted.
         'lib/widgets/common/feedback_form_dialog.dart',
         'lib/widgets/common/friends/friend_category_manager.dart',
-        'lib/widgets/common/input/debounced_button.dart',
         'lib/widgets/messaging/new_conversation_dialog.dart',
-        'lib/widgets/common/routing/deferred_route_loader.dart',
         'lib/widgets/messaging/fullscreen_image_viewer.dart',
         'lib/widgets/common/menu_persistence/menu_save_dialog.dart',
         'lib/widgets/common/menu_persistence/menu_load_dialog.dart',
         'lib/widgets/shopping/shopping_template_browser.dart',
         'lib/widgets/common/service/service_widgets.dart',
         'lib/widgets/messaging/builders/message_content_builder.dart',
-        'lib/widgets/common/share_dialog/share_dialog_states.dart',
         // invitation_states.dart migrated (iter-113): its determinate progress
         // bar now uses LoadingIndicator(value:) from BUT-1173.
         'lib/widgets/common/scaffolds/form_scaffold.dart',
-        'lib/widgets/common/settings/blocked_users_section.dart',
         'lib/widgets/common/profile/handlers/auth_action_handler.dart',
       };
 
