@@ -215,6 +215,22 @@ String _ingredientFullKey(GoldIngredient i) =>
     '${normalizeText(i.name)}|${_normalizeQuantity(i.quantity)}'
     '|${normalizeText(i.unit ?? '')}';
 
+/// Token-level F1 over ALL instruction text pooled together — segmentation-
+/// invariant. A whole-string set match scores 0 when the parser splits steps
+/// differently than the facit (e.g. 18 short fragments vs 5 merged paragraphs)
+/// even though the words match; pooling tokens measures content capture instead
+/// of paragraph boundaries. (Ingredients deliberately stay set-matched by item
+/// — those ARE discrete, unlike arbitrarily-segmented prose steps.)
+Prf instructionTokenF1(List<String> gold, List<String> pred) {
+  final goldTokens = gold.expand(tokenize).toList();
+  final predTokens = pred.expand(tokenize).toList();
+  return Prf.from(
+    matched: _multisetMatch(goldTokens, predTokens),
+    goldCount: goldTokens.length,
+    predCount: predTokens.length,
+  );
+}
+
 /// Parser-eval. Compares predicted structure against the facit field-by-field.
 RecipeScore scoreRecipe(GoldRecipe gold, GoldRecipe predicted) {
   final titleSim = tokenSetSimilarity(gold.title, predicted.title);
@@ -248,14 +264,7 @@ RecipeScore scoreRecipe(GoldRecipe gold, GoldRecipe predicted) {
     predCount: predicted.ingredients.length,
   );
 
-  final instrF1 = Prf.from(
-    matched: _multisetMatch(
-      gold.instructions.map(normalizeText),
-      predicted.instructions.map(normalizeText),
-    ),
-    goldCount: gold.instructions.length,
-    predCount: predicted.instructions.length,
-  );
+  final instrF1 = instructionTokenF1(gold.instructions, predicted.instructions);
 
   return RecipeScore(
     titleMatch: titleSim >= 0.999,

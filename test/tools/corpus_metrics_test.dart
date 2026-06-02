@@ -173,6 +173,25 @@ void main() {
       final score = scoreRecipe(gold, predicted);
       expect(score.titleSimilarity, 1.0);
     });
+
+    test('instruction F1 is segmentation-invariant (token-level)', () {
+      // Same content, different step boundaries: 1 merged paragraph vs 2 steps.
+      // Whole-string set-match scored this 0; token-level must score it 1.0 —
+      // the parser captured the content, only the segmentation differs.
+      final gold = _recipe(instructions: ['Blanda allt väl. Stek i smör.']);
+      final pred = _recipe(instructions: ['Blanda allt väl.', 'Stek i smör.']);
+      expect(scoreRecipe(gold, pred).instructions.f1, 1.0);
+    });
+
+    test('instruction F1 still drops when content is genuinely missing', () {
+      // Token-level must not become a free pass — a step the parser dropped
+      // lowers recall.
+      final gold = _recipe(
+        instructions: ['Vispa smeten slät.', 'Stek i smör på medelvärme.'],
+      );
+      final pred = _recipe(instructions: ['Vispa smeten slät.']);
+      expect(scoreRecipe(gold, pred).instructions.f1, lessThan(1.0));
+    });
   });
 
   group('GoldRecipe JSON round-trip', () {
