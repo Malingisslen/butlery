@@ -216,15 +216,26 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       caseSensitive: false,
     );
 
-    for (final match in measurementPattern.allMatches(text)) {
-      final quantity = match.group(1);
-      final unit = match.group(2);
-      var name = match.group(3)!.trim();
+    // Process LINE BY LINE (not over the whole blob) so we can:
+    //   1. OCR-correct each line — this stage matches a UNIT ALLOWLIST, so a
+    //      misread unit ("8 di" → "8 dl") would make the ingredient invisible
+    //      (corpus: Grötbas lost "8 di dinkelflingor"/"8 di rågflingor").
+    //   2. SKIP instruction lines — their embedded measurement ("Blanda 1 dl
+    //      grötbas per portion med 2 1/2 dl vatten") is not an ingredient.
+    //      Correcting the unit un-blocks those too, so without this skip the
+    //      fix above would just trade missed ingredients for hallucinated ones.
+    for (final raw in text.split('\n')) {
+      final line = OcrErrorCorrector.correctLine(raw.trim());
+      if (line.isEmpty) continue;
+      if (RecipeSectionDetector.instructionScore(line) >= 2) continue;
 
-      name = _cleanIngredientName(name);
-
-      if (name.isNotEmpty) {
-        ingredients.add('$quantity $unit $name');
+      for (final match in measurementPattern.allMatches(line)) {
+        final quantity = match.group(1);
+        final unit = match.group(2);
+        final name = _cleanIngredientName(match.group(3)!.trim());
+        if (name.isNotEmpty) {
+          ingredients.add('$quantity $unit $name');
+        }
       }
     }
 

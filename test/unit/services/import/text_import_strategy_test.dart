@@ -110,6 +110,31 @@ void main() {
       });
     });
 
+    group('Header-less ingredient extraction (corpus-found)', () {
+      test('OCR-corrects the unit and ignores instruction measurements',
+          () async {
+        // Header-less column (no "Ingredienser:"). "8 di" is an OCR misread of
+        // "8 dl" — must still be captured. The instruction line carries its own
+        // "1 dl"/"2 dl" measurements which must NOT become ingredients.
+        const text = '8 di dinkelflingor\n'
+            '3 dl solrosfrön\n'
+            '1 msk salt\n'
+            'Grötbas\n'
+            'Blanda 1 dl gröt per portion med 2 dl vatten i en kastrull och koka.';
+        final result = await strategy.import(text);
+        final ings = (result.recipe?.ingredients ?? const <String>[])
+            .join(' | ')
+            .toLowerCase();
+
+        expect(ings, contains('dinkelflingor'),
+            reason: 'di→dl corrected so the measurement matched');
+        expect(ings, contains('solrosfrön'));
+        expect(ings, isNot(contains('vatten')),
+            reason:
+                'measurement embedded in an instruction is not an ingredient');
+      });
+    });
+
     group('Initialization', () {
       test('should create strategy with correct metadata', () {
         // Assert
