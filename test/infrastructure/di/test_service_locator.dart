@@ -149,8 +149,12 @@ class TestServiceLocator {
         await ServiceLocator._getIt.reset(dispose: true);
         ServiceLocator._initialized = false;
 
-        // Small delay for garbage collection
-        await Future.delayed(Duration(milliseconds: 5));
+        // BUT-1155: no real-timer await here. `reset()` runs inside the
+        // `testWidgets` fake-async zone for view tests (via
+        // teardownViewTestEnvironment); a real `Future.delayed` never fires
+        // un-pumped and hangs the runner for the full timeout. The old
+        // "GC delay" was folklore — `getIt.reset(dispose: true)` is already
+        // awaited and Dart GC is not nudged by awaiting a timer.
       } catch (e) {
         debugPrint('Error during service locator reset: $e');
         // Force reset on error by creating new instance

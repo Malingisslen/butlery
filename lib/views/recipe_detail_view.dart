@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/views/recipe_detail/fork_placement.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
@@ -377,9 +378,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   // Save a copy (fork) — promoted to a primary app-bar action
                   // on shared recipes the user doesn't own (BUT-972). Owners
                   // get it as the "Duplicate" overflow item below instead.
-                  if ((recipe.createdBy ?? '').isNotEmpty &&
-                      recipe.createdBy !=
-                          ServiceLocator.get<PermissionService>().currentUserId)
+                  if (showForkInAppBar(recipe.createdBy,
+                      ServiceLocator.get<PermissionService>().currentUserId))
                     Padding(
                       key: const ValueKey('test-recipe-detail-save-copy'),
                       padding: AppDimensions.paddingVertical8,
@@ -427,10 +427,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             // Owned/local recipes keep "Create copy" here as a
                             // secondary action; shared recipes promote it to the
                             // app-bar instead (BUT-972).
-                            if ((recipe.createdBy ?? '').isEmpty ||
-                                recipe.createdBy ==
-                                    ServiceLocator.get<PermissionService>()
-                                        .currentUserId)
+                            if (showForkInOverflow(
+                                recipe.createdBy,
+                                ServiceLocator.get<PermissionService>()
+                                    .currentUserId))
                               PopupMenuItem(
                                 value: _MenuAction.fork,
                                 child: Row(

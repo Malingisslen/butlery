@@ -260,8 +260,11 @@ class FirestoreSingleton {
     _testCollections.clear();
     _testSnapshots.clear();
 
-    // Small delay to allow garbage collection
-    await Future.delayed(Duration(milliseconds: 10));
+    // BUT-1155: removed the "GC delay" `Future.delayed(10ms)`. hardReset()
+    // runs inside the `testWidgets` fake-async zone via the view-test
+    // teardown chain (reset → hardReset); a real timer never fires un-pumped
+    // and hangs the runner. The await was cargo-cult — the recreate above is
+    // synchronous and GC is not influenced by awaiting a timer.
 
     debugPrint('Hard reset complete');
   }
