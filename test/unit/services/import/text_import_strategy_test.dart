@@ -75,6 +75,39 @@ void main() {
         expect(title.toLowerCase(), isNot(contains('grönkål')));
         expect(title, isNot(startsWith('100')));
       });
+
+      test('does not pick a unit-less quantity line ("1 medelstor morot")',
+          () async {
+        // The "no unit at all" case: a leading number + noun is still an
+        // ingredient, never a title.
+        const text = '1 medelstor morot\n'
+            'Morotssoppa\n'
+            'Ingredienser:\n'
+            '2 dl grädde\n'
+            '1 lök\n'
+            'Gör så här:\n'
+            'Koka och mixa.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title, isNot(startsWith('1 ')));
+        expect(title.toLowerCase(), isNot(contains('medelstor')));
+      });
+
+      test('rejects a quantity line even when OCR mangled the unit ("2 di")',
+          () async {
+        // "2 di boveteflingor" — OCR misread dl→di; corrected before the guard
+        // so it's still recognised as a measurement and rejected as a title.
+        const text = '2 di boveteflingor\n'
+            'Frukostgröt\n'
+            'Ingredienser:\n'
+            '3 dl havremjölk\n'
+            '1 äpple\n'
+            'Gör så här:\n'
+            'Koka ihop.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('boveteflingor')));
+      });
     });
 
     group('Initialization', () {
