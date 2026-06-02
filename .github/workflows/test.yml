@@ -59,7 +59,16 @@ jobs:
     # runs but landing right at the 20 cap on slower runners → silent
     # cancels that looked like real failures. 30 leaves ~10 min headroom
     # while still failing fast on truly hung jobs.
-    timeout-minutes: 30
+    #
+    # BUT-1182: bumped 30 → 40. Once BUT-1181 unblocked the unit shard, its
+    # true runtime is ~28 min (ubuntu) — only ~2 min under the old cap, a
+    # timeout-flake waiting to happen. 40 restores ~12 min headroom while
+    # still catching genuinely hung jobs. This is a STOPGAP — the real fix is
+    # to split test/unit into sub-shards (BUT-1182), which needs a coverage-
+    # aggregation job because the per-job 55% floor check assumes one complete
+    # unit run (a naive split gives each shard partial coverage → false floor
+    # failure).
+    timeout-minutes: 40
 
     steps:
       - uses: actions/checkout@v6
