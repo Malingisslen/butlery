@@ -5,9 +5,11 @@
 /// permission validation, and copy-on-write collaboration support.
 ///
 /// NOTE: Tests that exercise FieldValue operations (serverTimestamp, arrayUnion,
-/// increment) are skipped due to known FakeFirebaseFirestore limitation where
-/// MethodChannelFieldValue conflicts with MockFieldValuePlatform.
-/// These operations are covered by integration tests with real Firebase.
+/// increment) cannot run against FakeFirebaseFirestore (MethodChannelFieldValue
+/// conflicts with MockFieldValuePlatform). They were moved to the emulator lane —
+/// see firebase_shared_recipe_repository_integration_test.dart (BUT-1151) — which
+/// runs on the CI emulator leg and skips cleanly locally. This file keeps the
+/// read/query/permission tests the fake handles natively.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -182,27 +184,9 @@ void main() {
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test('should allow user to create shared recipe with recipients',
-          () async {
-        final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
-
-        final recipeId = await repository.createSharedRecipe(
-          sharedRecipe,
-          recipientIds: [testFriendId],
-        );
-
-        // Verify members subcollection created (Issue #014)
-        final memberDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(recipeId)
-            .collection('members')
-            .doc(testFriendId)
-            .get();
-        expect(memberDoc.exists, isTrue);
-      },
-          skip:
-              'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
+      // Note: the create-with-recipients happy path moved to the emulator lane
+      // (addMember uses FieldValue.arrayUnion/increment) — see
+      // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
       test('should reject user from creating shared recipe as another user',
           () async {
         final sharedRecipe = createSharedRecipe(
@@ -264,39 +248,9 @@ void main() {
     // ===== CRUD OPERATIONS =====
 
     group('CRUD Operations', () {
-      test('should create shared recipe with members subcollection', () async {
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testUserId,
-          shareMessage: 'Check out this amazing recipe!',
-        );
-
-        final recipeId = await repository.createSharedRecipe(
-          sharedRecipe,
-          recipientIds: [testFriendId, testOtherUserId],
-        );
-
-        expect(recipeId, isNotEmpty);
-
-        final doc = await fakeFirestore
-            .collection('shared_content')
-            .doc(recipeId)
-            .get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['sharedByUserId'], testUserId);
-
-        final membersSnapshot = await fakeFirestore
-            .collection('shared_content')
-            .doc(recipeId)
-            .collection('members')
-            .get();
-        expect(membersSnapshot.docs.length, 2);
-        expect(membersSnapshot.docs.any((d) => d.id == testFriendId), isTrue);
-        expect(
-            membersSnapshot.docs.any((d) => d.id == testOtherUserId), isTrue);
-      },
-          skip:
-              'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
+      // Note: the create-with-members happy path moved to the emulator lane
+      // (addMember uses FieldValue.arrayUnion/increment) — see
+      // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
       test('should get all shared recipes for user via members subcollection',
           () async {
         final recipe1 = createSharedRecipe(
@@ -359,41 +313,19 @@ void main() {
     // ===== BUT-1132: IDEMPOTENT SHARE =====
 
     group('BUT-1132: idempotent share', () {
-      test(
-          'calling createSharedRecipe twice with same (sharedByUserId, originalRecipeId) reuses the existing doc',
-          () async {
-        final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
-
-        final firstId = await repository.createSharedRecipe(
-          sharedRecipe,
-          recipientIds: [testFriendId],
-        );
-        final secondId = await repository.createSharedRecipe(
-          sharedRecipe,
-          recipientIds: [testFriendId],
-        );
-
-        expect(secondId, equals(firstId),
-            reason:
-                'BUT-1132: idempotent — same shared_content doc reused for same (sharedByUserId, originalRecipeId)');
-
-        // Verify only ONE doc exists in shared_content collection despite 2 calls.
-        // The dedup query lookup on (sharedByUserId + originalRecipeId) prevents
-        // the createSharedContent path from running a second time.
-        final snapshot = await fakeFirestore.collection('shared_content').get();
-        expect(snapshot.docs.length, equals(1),
-            reason:
-                'Only one shared_content doc must exist despite 2 createSharedRecipe calls');
-      },
-          skip:
-              'FieldValue.arrayUnion/increment in addMember conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform) — same skip reason as other createSharedRecipe tests in this file. Covered by integration tests with real Firebase.');
-
+      // Note: the end-to-end "createSharedRecipe twice reuses the doc" test
+      // moved to the emulator lane (createSharedRecipe -> addMember uses
+      // FieldValue.arrayUnion/increment) — see
+      // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
       test(
           'dedup query returns existing doc id when shared_content already has matching (sharedByUserId, originalRecipeId) pair',
           () async {
         // Direct probe of the dedup query — proves the where() chain finds the
         // pre-existing doc. Does NOT call createSharedRecipe (which would hit
         // the FieldValue limitation in addMember), so this test runs.
+        // Does NOT exercise the post-query consume branch — see
+        // firebase_shared_recipe_repository_integration_test.dart (emulator
+        // lane) for the fix-regression guard (BUT-1151).
         final preExisting = createSharedRecipe(
           id: 'pre-existing-doc',
           sharedByUserId: testUserId,
@@ -417,86 +349,11 @@ void main() {
     // ===== STATUS MANAGEMENT (SUBCOLLECTIONS) =====
 
     group('Status Management - Subcollections', () {
-      test('should add view to views subcollection', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
-        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
-
-        await repository.markAsViewed(testRecipeId, testUserId);
-
-        final viewDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testRecipeId)
-            .collection('views')
-            .doc(testUserId)
-            .get();
-        expect(viewDoc.exists, isTrue);
-        expect(viewDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
-      test('should add engagement to engagements subcollection', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
-        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
-
-        await repository.markAsImported(testRecipeId, testUserId);
-
-        final engagementDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testRecipeId)
-            .collection('engagements')
-            .doc(testUserId)
-            .get();
-        expect(engagementDoc.exists, isTrue);
-        expect(engagementDoc.data()?['userId'], testUserId);
-        expect(engagementDoc.data()?['action'], 'import');
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
-      test('should add dismissal to dismissals subcollection', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
-        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
-
-        await repository.markAsDismissed(testRecipeId, testUserId);
-
-        final dismissalDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testRecipeId)
-            .collection('dismissals')
-            .doc(testUserId)
-            .get();
-        expect(dismissalDoc.exists, isTrue);
-        expect(dismissalDoc.data()?['userId'], testUserId);
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
-      test('should remove dismissal from dismissals subcollection', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
-        await seedSharedRecipe(
-          sharedRecipe,
-          memberUserIds: [testUserId],
-          dismissedByUserIds: [testUserId],
-        );
-
-        await repository.undismiss(testRecipeId, testUserId);
-
-        final dismissalDoc = await fakeFirestore
-            .collection('shared_content')
-            .doc(testRecipeId)
-            .collection('dismissals')
-            .doc(testUserId)
-            .get();
-        expect(dismissalDoc.exists, isFalse);
-      },
-          skip:
-              'FieldValue.serverTimestamp in removeMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
-
+      // Note: the add/remove-metadata write tests (markAsViewed/markAsImported/
+      // markAsDismissed/undismiss) moved to the emulator lane (addMetadata/
+      // removeMetadata use FieldValue.serverTimestamp) — see
+      // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
+      // The read-side hasViewed/hasEngaged/hasDismissed tests stay here.
       test('should check if user has viewed via hasViewed()', () async {
         final sharedRecipe =
             createSharedRecipe(sharedByUserId: testOtherUserId);
@@ -634,17 +491,10 @@ void main() {
         expect(recipes, isEmpty);
       });
 
-      test('should throw when marking non-existent recipe as viewed', () async {
-        // markAsViewed -> addView -> viewRepository.markAsViewed ->
-        // addMetadata -> validateMetadataAccess returns false for non-existent doc
-        // -> throws PermissionDeniedException wrapped in RepositoryException
-        expect(
-          () => repository.markAsViewed('non-existent', testUserId),
-          throwsA(anything),
-        );
-      },
-          skip:
-              'FieldValue.serverTimestamp in addMetadata conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+      // Note: "should throw when marking non-existent recipe as viewed" moved
+      // to the emulator lane (markAsViewed -> addMetadata uses
+      // FieldValue.serverTimestamp) — see
+      // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
     });
   });
 }
