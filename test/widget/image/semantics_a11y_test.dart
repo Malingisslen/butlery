@@ -111,7 +111,14 @@ void main() {
         ),
       );
 
-      expect(find.bySemanticsLabel(RegExp(r'^Ta bort vald bild 1')),
+      // The remove button exposes its localized label, but its GridView-item
+      // Stack also holds the image's placeholder LoadingIndicator, whose
+      // "Laddar" liveRegion label merges into the same semantics node and
+      // sorts ahead of it. So we match the label as exposed (substring) rather
+      // than as the leading text — the wrapper-label-leads convention used by
+      // the other cases assumes only descendant merges, not a sibling
+      // placeholder. (Unmasked when LoadingIndicator gained its liveRegion.)
+      expect(find.bySemanticsLabel(RegExp(r'Ta bort vald bild 1')),
           findsOneWidget);
       handle.dispose();
     });
