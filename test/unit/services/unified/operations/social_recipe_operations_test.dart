@@ -478,8 +478,11 @@ void main() {
           instructions: ['y'],
           mealType: 'Lunch',
           createdBy: 'user_123',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          // Fixed timestamps — this test asserts member-capacity logic, not
+          // recency; a wall-clock seed would trip the real-time regression
+          // guard (scripts/check_test_real_time.sh).
+          createdAt: DateTime(2025, 1, 1),
+          updatedAt: DateTime(2025, 1, 1),
         ),
         type: RecipeType.collaborative,
         socialData: RecipeSocialData(

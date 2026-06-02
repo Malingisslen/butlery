@@ -93,6 +93,35 @@ void main() {
         expect(title.toLowerCase(), isNot(contains('medelstor')));
       });
 
+      test('does not pick an ALL-CAPS section label ("SOM TILLBEHÖR")',
+          () async {
+        // Cookbook labels are set in caps; real titles are Title-Case.
+        const text = 'SOM TILLBEHÖR\n'
+            'Rotmos\n'
+            'Ingredienser:\n'
+            '500 g potatis\n'
+            '200 g kålrot\n'
+            'Gör så här:\n'
+            'Koka och mosa.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('tillbehör')));
+      });
+
+      test('does not pick a "ca N" quantity line ("ca 8 tilapiafiléer")',
+          () async {
+        const text = 'ca 8 tilapiafiléer\n'
+            'Ugnsfisk\n'
+            'Ingredienser:\n'
+            '2 dl grädde\n'
+            '1 citron\n'
+            'Gör så här:\n'
+            'Grädda i ugn.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('tilapia')));
+      });
+
       test('rejects a quantity line even when OCR mangled the unit ("2 di")',
           () async {
         // "2 di boveteflingor" — OCR misread dl→di; corrected before the guard

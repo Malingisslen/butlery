@@ -123,22 +123,36 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     caseSensitive: false,
   );
 
-  // A line that OPENS with a quantity ("1 medelstor morot", "2 boveteflingor")
-  // is an ingredient/count line even when the unit is missing or OCR-mangled —
-  // the leading "<number><space><content>" is the tell, not the unit. Compound
-  // numeric titles keep the digit attached ("5-minuters bröd") and so survive.
-  static final _leadingQuantity = RegExp(r'^\s*\d+(?:[.,/]\d+)?\s+\S');
+  // A line that OPENS with a quantity ("1 medelstor morot", "2 boveteflingor",
+  // "ca 8 tilapiafiléer") is an ingredient/count line even when the unit is
+  // missing or OCR-mangled — the leading "[ca] <number><space>" is the tell,
+  // not the unit. Compound numeric titles keep the digit attached
+  // ("5-minuters bröd") and so survive.
+  static final _leadingQuantity = RegExp(
+    r'^\s*(?:ca|cirka|c:a)?\s*\d+(?:[.,/]\d+)?\s+\S',
+    caseSensitive: false,
+  );
 
-  /// True when a candidate line is a yield label, a measurement, or any line
-  /// that opens with a quantity — none can be a recipe title. Surfaced by the
-  /// cookbook gold-corpus (title detector kept grabbing "2 PORTIONE",
-  /// "100 g grönkål", "1 medelstor morot"). The candidate is OCR-corrected
-  /// first so a misread unit ("2 di" → "2 dl") is still caught.
+  /// True when a candidate line cannot be a recipe title: a yield label, a
+  /// measurement, a quantity-leading line, or an ALL-CAPS label. Surfaced by
+  /// the cookbook gold-corpus (the detector kept grabbing "2 PORTIONE",
+  /// "100 g grönkål", "1 medelstor morot", "SOM TILLBEHÖR", "CA 12 BITAR").
+  /// OCR-corrected first so a misread unit ("2 di" → "2 dl") is still caught.
   bool _looksLikeYieldOrMeasurement(String line) {
     final t = OcrErrorCorrector.correctLine(line.trim());
+    // ALL-CAPS lines in cookbooks are labels/sub-headers ("SOM TILLBEHÖR",
+    // "TILL FÖRRÄTT", "CA 12 BITAR"), never titles — real titles are Title-Case.
+    if (_isAllCapsLabel(t)) return true;
     return _leadingQuantity.hasMatch(t) ||
         _yieldLabel.hasMatch(t) ||
         _measurementLine.hasMatch(t);
+  }
+
+  /// A line that is all-uppercase letters (≥2 letters, no lowercase). Cookbook
+  /// section labels are set in caps; recipe titles are not.
+  bool _isAllCapsLabel(String s) {
+    final letters = s.replaceAll(RegExp(r'[^a-zåäöA-ZÅÄÖ]'), '');
+    return letters.length >= 2 && s == s.toUpperCase() && s != s.toLowerCase();
   }
 
   /// Extract title from Instagram-style text
