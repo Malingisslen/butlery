@@ -14,6 +14,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_history_repository.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
+import 'package:butlery/repositories/interfaces/notification_analytics_repository.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -32,6 +33,13 @@ class _MockHistoryRepo extends Mock implements NotificationHistoryRepository {}
 class _MockBatchRepo extends Mock implements NotificationBatchRepository {}
 
 class _MockDeviceRepo extends Mock implements DeviceRepository {}
+
+// BUT-1181: NotificationAnalyticsManager resolves this via
+// ServiceLocator.get<NotificationAnalyticsRepository>() at construction, so it
+// must be registered before NotificationService is built or every test throws
+// "not registered inside GetIt".
+class _MockAnalyticsRepo extends Mock
+    implements NotificationAnalyticsRepository {}
 
 void main() {
   group('NotificationService', () {
@@ -90,6 +98,13 @@ void main() {
       // Register notifications repo override so internal modules can find it
       TestServiceLocator.registerMock<NotificationsRepository>(
           mockNotificationsRepo);
+
+      // BUT-1181: NotificationAnalyticsManager resolves its repo via
+      // ServiceLocator.get at construction — register a mock so the service
+      // builds. The 15 preferences/quiet-hours/utility tests don't drive the
+      // analytics write/read paths, so a bare mock is sufficient.
+      TestServiceLocator.registerMock<NotificationAnalyticsRepository>(
+          _MockAnalyticsRepo());
 
       service = NotificationService(
         notificationsRepository: mockNotificationsRepo,

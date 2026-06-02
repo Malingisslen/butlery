@@ -8,6 +8,9 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as prod_locator;
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager with setImportManagerState() method
@@ -21,6 +24,10 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
+      // BUT-1181: bridge the production ServiceLocator so saveImportedRecipe()'s
+      // ServiceLocator.get<HeirloomBridge>() resolves (DIContainer wraps the
+      // shared GetIt where TestServiceLocator registers HeirloomBridge).
+      prod_locator.ServiceLocator.initialize(DIContainer());
       registerFallbackValue(RecipeFactory.build());
     });
 

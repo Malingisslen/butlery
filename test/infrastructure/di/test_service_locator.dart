@@ -25,6 +25,7 @@ import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
+import 'package:butlery/services/import/heirloom_bridge.dart';
 
 // Service interfaces
 import 'package:butlery/services/auth_service.dart';
@@ -464,6 +465,14 @@ class TestServiceLocator {
     getIt.registerSingleton(
       MockFactory.createNetworkManager(),
     );
+
+    // HeirloomBridge — BUT-953 photo-import handoff slot. BUT-1181: import
+    // ViewModels' saveImportedRecipe() resolves it via the production
+    // ServiceLocator.get (fail-loud, not tryGet), so it must exist in the
+    // shared GetIt or every import-save test throws. A real (empty) bridge has
+    // hasPending == false, so _attachHeirloomIfPending early-returns and the
+    // normal save path proceeds — no draft is stashed by these tests.
+    getIt.registerSingleton<HeirloomBridge>(HeirloomBridge());
   }
 
   /// Configure for specific test scenarios
