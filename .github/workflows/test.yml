@@ -13,11 +13,11 @@ name: Run Tests
 #  - Coverage instrumentation roughly doubles unit-suite runtime and can't be
 #    sharded (a naive split gives each shard a PARTIAL lcov → false 55%-floor
 #    failures — the trap BUT-1182 hit). So the per-commit unit run drops
-#    `--coverage` and is sharded 6 ways for fast feedback; the full
+#    `--coverage` and is sharded 3 ways for fast feedback; the full
 #    coverage+floor+Codecov gate runs in the separate `coverage` job nightly and
 #    on push-to-main. The 55% floor is unchanged — only re-timed (BUT-1149).
 #
-# What still gates a PR: ubuntu unit (6 shards) + widget + views + golden +
+# What still gates a PR: ubuntu unit (3 shards) + widget + views + golden +
 # integration here, plus firestore-rules / E2E / Architecture / Build Validation
 # in their own workflows. Coverage + cross-OS are nightly/main only.
 
@@ -54,21 +54,26 @@ env:
 
 jobs:
   # ── Per-commit fast path ────────────────────────────────────────────────
-  # Ubuntu-only, no coverage, unit suite sharded 6 ways. Each shard runs ~1/6
-  # of test/unit. Measured on the first green run (PR #179): per-shard fixed
-  # overhead is only ~40s (warm flutter cache + pub get) and test EXECUTION is
-  # ~95% of the job — so unlike BUT-1182's coverage run, sharding scales nearly
-  # linearly here and 6 shards (~8-9 min/shard) is worth the marginal extra
-  # setup cost. Coverage lives in the `coverage` job below, not here.
+  # Ubuntu-only, no coverage, unit suite sharded 3 ways. Each shard runs ~1/3
+  # of test/unit. Measured on PR #179 (4- vs 6-shard A/B): a shard's wall-clock
+  # is almost INDEPENDENT of how many tests it runs (3492 tests → 12m34s vs
+  # 2222 tests → 12m02s). The dominant cost is the fixed Flutter compile of the
+  # app graph that every `flutter test` invocation re-pays (~11-12 min); actual
+  # test execution is only ~1 min/shard. So sharding hits a ~12 min floor and
+  # more shards just multiply the redundant compile for ~no wall-clock gain —
+  # the wall BUT-1182 hit (it mis-read it as coverage instrumentation; it's the
+  # compile). 3 shards is the cost/latency sweet spot (~12.5 min, 3× compile).
+  # Pushing below ~12 min needs a bigger runner or a cached test kernel, not
+  # more shards. Coverage lives in the `coverage` job below, not here.
   unit-tests:
-    name: unit (ubuntu shard ${{ matrix.shard }}/6)
+    name: unit (ubuntu shard ${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5]
+        shard: [0, 1, 2]
     runs-on: ubuntu-latest
-    # ~8-9 min/shard at 6-way. 20 leaves generous headroom while still
-    # catching a genuinely hung shard.
+    # ~12.5 min/shard (compile-bound). 20 leaves headroom while still catching
+    # a genuinely hung shard.
     timeout-minutes: 20
 
     steps:
@@ -95,11 +100,11 @@ jobs:
         if: matrix.shard == 0
         run: bash scripts/check_test_real_time.sh
 
-      - name: Run unit tests (shard ${{ matrix.shard }}/6, no coverage)
+      - name: Run unit tests (shard ${{ matrix.shard }}/3, no coverage)
         run: |
-          echo "Running test/unit shard ${{ matrix.shard }} of 6..."
+          echo "Running test/unit shard ${{ matrix.shard }} of 3..."
           flutter test test/unit \
-            --total-shards 6 --shard-index ${{ matrix.shard }} \
+            --total-shards 3 --shard-index ${{ matrix.shard }} \
             --reporter=expanded
 
       - name: Upload test results
@@ -114,7 +119,7 @@ jobs:
         shell: bash
         env:
           BUDGET_MIN: 15
-          JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/6)"
+          JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/3)"
         run: |
           JOB_END=$(date +%s)
           DURATION_SEC=$((JOB_END - JOB_START))
