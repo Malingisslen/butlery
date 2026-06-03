@@ -2908,6 +2908,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commentYou => 'Du';
 
   @override
+  String get commentAttachImage => 'Bifoga bild';
+
+  @override
+  String get commentImageUploadError =>
+      'Kunde inte ladda upp bilden. Försök igen.';
+
+  @override
+  String get commentRemoveImage => 'Ta bort bild';
+
+  @override
+  String get a11yCommentImageThumbnail => 'Visa bifogad bild i helskärm';
+
+  @override
+  String get a11yCommentRemoveSelectedImage => 'Ta bort vald bild';
+
+  @override
+  String get a11yCloseImageViewer => 'Stäng bildvisaren';
+
+  @override
   String dialogAddRecipesToCategory(String categoryName) {
     return 'Lägg till recept i $categoryName';
   }

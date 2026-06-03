@@ -147,7 +147,10 @@ class SocialCommentsManager extends ChangeNotifier {
     _safeNotify();
   }
 
-  Future<void> postComment(String recipeId) async {
+  Future<void> postComment(
+    String recipeId, {
+    List<String> imageUrls = const [],
+  }) async {
     if (_newCommentText.trim().isEmpty) return;
 
     _isPostingComment = true;
@@ -158,6 +161,7 @@ class SocialCommentsManager extends ChangeNotifier {
         recipeId: recipeId,
         content: _newCommentText.trim(),
         parentCommentId: _replyToCommentId,
+        imageUrls: imageUrls,
       );
 
       if (commentId != null) {

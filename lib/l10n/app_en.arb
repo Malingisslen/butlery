@@ -1793,6 +1793,12 @@
   "commentWriteComment": "Write a comment",
   "commentWriteReply": "Write a reply",
   "commentYou": "You",
+  "commentAttachImage": "Attach image",
+  "commentImageUploadError": "Could not upload the image. Please try again.",
+  "commentRemoveImage": "Remove image",
+  "a11yCommentImageThumbnail": "View attached image full screen",
+  "a11yCommentRemoveSelectedImage": "Remove selected image",
+  "a11yCloseImageViewer": "Close image viewer",
   "dialogAddRecipesToCategory": "Add recipes to {categoryName}",
   "@dialogAddRecipesToCategory": {
     "placeholders": {

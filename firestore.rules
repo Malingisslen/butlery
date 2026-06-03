@@ -1017,6 +1017,14 @@ service cloud.firestore {
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 2000
         && isServerTimestamp('createdAt')
+        // BUT-1049: comments may carry attached image URLs. When present the
+        // field must be a list of at most 3 strings (Storage write rules gate
+        // who can produce these URLs; this just bounds the denormalised list).
+        && (
+          !('imageUrls' in request.resource.data)
+          || (request.resource.data.imageUrls is list
+              && request.resource.data.imageUrls.size() <= 3)
+        )
         && (
           !('recipeOwnerId' in request.resource.data)
           || isNotBlockedBy(request.resource.data.recipeOwnerId)

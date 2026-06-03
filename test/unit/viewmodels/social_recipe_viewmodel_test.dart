@@ -601,6 +601,7 @@ class _NullAddCommentSocialOps extends FakeSocialRecipeOperations {
     required String content,
     String? parentCommentId,
     List<String>? mentions,
+    List<String> imageUrls = const [],
   }) async =>
       null;
 }

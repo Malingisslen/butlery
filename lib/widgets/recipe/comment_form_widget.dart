@@ -1,10 +1,16 @@
 // lib/widgets/recipe/comment_form_widget.dart
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -43,12 +49,24 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
 
   late final TextEditingController _controller;
 
+  // BUT-1049: locally-selected (not-yet-uploaded) image files, capped at
+  // RecipeComment.maxImageUrls. Uploaded to Storage only on submit.
+  final List<File> _selectedImages = [];
+  bool _isUploadingImages = false;
+
+  late final ImagePickerService _imagePicker;
+  late final StorageService _storageService;
+
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _imagePicker = ServiceLocator.get<ImagePickerService>();
+    _storageService = ServiceLocator.get<StorageService>();
     _loadDraft();
   }
+
+  bool get _atImageCap => _selectedImages.length >= RecipeComment.maxImageUrls;
 
   String get _draftKey => '$_draftPrefsPrefix${widget.recipeId}';
 
@@ -97,14 +115,69 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     _saveDraft(text);
   }
 
+  Future<void> _pickImages() async {
+    if (_atImageCap) return;
+    final remaining = RecipeComment.maxImageUrls - _selectedImages.length;
+    final picked = await _imagePicker.pickMultipleImages(maxImages: remaining);
+    if (picked.isEmpty || !mounted) return;
+    setState(() {
+      _selectedImages.addAll(picked.take(remaining));
+    });
+  }
+
+  void _removeImageAt(int index) {
+    setState(() => _selectedImages.removeAt(index));
+  }
+
+  /// Uploads the selected images to the contract path. Returns the download
+  /// URLs, or null if ANY upload failed — the caller must then NOT post the
+  /// comment (we never publish a comment referencing images that didn't land).
+  Future<List<String>?> _uploadSelectedImages() async {
+    final urls = <String>[];
+    for (final file in _selectedImages) {
+      final url = await _storageService.uploadCommentImage(file);
+      if (url == null) return null;
+      urls.add(url);
+    }
+    return urls;
+  }
+
   Future<void> _onSendPressed() async {
+    List<String> imageUrls = const [];
+
+    if (_selectedImages.isNotEmpty) {
+      setState(() => _isUploadingImages = true);
+      try {
+        final uploaded = await _uploadSelectedImages();
+        if (uploaded == null) {
+          if (mounted) {
+            widget.onShowMessage(context.l10n.commentImageUploadError,
+                isError: true);
+          }
+          return;
+        }
+        imageUrls = uploaded;
+      } catch (e) {
+        AppLogger.error('CommentFormWidget: image upload failed ($e)');
+        if (mounted) {
+          widget.onShowMessage(context.l10n.commentImageUploadError,
+              isError: true);
+        }
+        return;
+      } finally {
+        if (mounted) setState(() => _isUploadingImages = false);
+      }
+    }
+
     try {
-      await widget.socialViewModel.postComment(widget.recipeId);
+      await widget.socialViewModel
+          .postComment(widget.recipeId, imageUrls: imageUrls);
       // Post-success: VM cleared its newCommentText; mirror that on the
-      // controller + drop the persisted draft.
+      // controller + drop the persisted draft + clear selected images.
       _controller.clear();
       await _clearDraft();
       if (mounted) {
+        setState(() => _selectedImages.clear());
         widget.onShowMessage(context.l10n.commentPosted);
       }
       widget.onCommentPosted?.call();
@@ -192,12 +265,15 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingS),
+            if (!_atImageCap)
+              IconButton(
+                tooltip: context.l10n.commentAttachImage,
+                onPressed: _isBusy ? null : _pickImages,
+                icon: const Icon(Icons.add_photo_alternate_outlined),
+              ),
             IconButton(
-              onPressed: socialViewModel.newCommentText.trim().isNotEmpty &&
-                      !socialViewModel.isPostingComment
-                  ? _onSendPressed
-                  : null,
-              icon: socialViewModel.isPostingComment
+              onPressed: _canSend ? _onSendPressed : null,
+              icon: _isBusy
                   ? const LoadingIndicator(
                       size: AppDimensions.iconSizeS,
                       strokeWidth: 2,
@@ -205,18 +281,71 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                   : const Icon(Icons.send),
               style: IconButton.styleFrom(
                 backgroundColor:
-                    socialViewModel.newCommentText.trim().isNotEmpty
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
+                    _canSend ? Theme.of(context).colorScheme.primary : null,
                 foregroundColor:
-                    socialViewModel.newCommentText.trim().isNotEmpty
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : null,
+                    _canSend ? Theme.of(context).colorScheme.onPrimary : null,
               ),
             ),
           ],
         ),
+        if (_selectedImages.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingS),
+          _buildImagePreviewRow(context),
+        ],
       ],
+    );
+  }
+
+  bool get _isBusy =>
+      _isUploadingImages || widget.socialViewModel.isPostingComment;
+
+  bool get _canSend =>
+      widget.socialViewModel.newCommentText.trim().isNotEmpty && !_isBusy;
+
+  Widget _buildImagePreviewRow(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _selectedImages.length,
+        separatorBuilder: (_, __) =>
+            const SizedBox(width: AppDimensions.spacingS),
+        itemBuilder: (context, index) {
+          return Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.zero,
+                child: Image.file(
+                  _selectedImages[index],
+                  width: 72,
+                  height: 72,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Semantics(
+                  label: context.l10n.a11yCommentRemoveSelectedImage,
+                  button: true,
+                  child: InkWell(
+                    onTap: _isBusy ? null : () => _removeImageAt(index),
+                    child: ColoredBox(
+                      color: cs.scrim.withValues(alpha: 0.6),
+                      child: Icon(
+                        Icons.close,
+                        size: AppDimensions.iconSizeS,
+                        color: cs.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

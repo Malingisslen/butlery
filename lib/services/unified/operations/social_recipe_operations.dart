@@ -279,12 +279,14 @@ class SocialRecipeOperations {
     required String content,
     String? parentCommentId,
     List<String>? mentions,
+    List<String> imageUrls = const [],
   }) async {
     return await _commentsManager.addComment(
       recipeId: recipeId,
       content: content,
       parentCommentId: parentCommentId,
       mentions: mentions,
+      imageUrls: imageUrls,
     );
   }
 

@@ -82,8 +82,19 @@ async function setup(): Promise<void> {
       .firestore()
       .doc(`blocks/${OWNER_UID}_${BLOCKED_UID}`)
       .set({ blockedAt: new Date() });
+
   });
 }
+
+// Test isolation: the Firestore emulator persists documents across separate
+// `npm run` invocations (env.cleanup() only closes clients, it does NOT wipe
+// stored data). An `assertSucceeds(set(...))` against a FIXED doc id that
+// already exists from a prior run is evaluated as an UPDATE, not a CREATE —
+// and the recipe_comments update rule only permits text/counter changes, so a
+// full-body re-set is denied and the create-allow test fails on the 2nd+ run.
+// A per-run suffix keeps every create-allow target a brand-new doc id.
+// (See firestore-rules-tester knowledge file, 2026-06-03 entry.)
+const RUN = Date.now().toString(36);
 
 async function teardown(): Promise<void> {
   if (env) await env.cleanup();
@@ -239,7 +250,7 @@ test("recipe_comments: non-blocked user can create a comment", async () => {
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`recipe_comments/c-create-allow`)
+      .doc(`recipe_comments/c-create-allow-${RUN}`)
       .set(validCommentBody(AUTHOR_UID))
   );
 });
@@ -257,6 +268,129 @@ test("recipe_comments: blocked user cannot create a comment on blocker's recipe"
 });
 
 // ----------------------------------------------------------------------------
+// A4: recipe_comments create — imageUrls validator (BUT-1049)
+//
+// The create rule does NOT restrict the field-set (it uses hasAll, a subset
+// check), so imageUrls was already accepted unvalidated. BUT-1049 adds a
+// conditional validator: when present, imageUrls must be a list of size <= 3.
+// The author identity check (auth.uid == authorId) is unchanged and must
+// still gate every create.
+// ----------------------------------------------------------------------------
+
+// ALLOW: author creates a comment with a valid imageUrls list (<= 3 strings).
+test("recipe_comments: author can create a comment with <=3 image URLs", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-ok-${RUN}`)
+      .set(
+        validCommentBody(AUTHOR_UID, {
+          imageUrls: [
+            "https://example.com/a.jpg",
+            "https://example.com/b.jpg",
+            "https://example.com/c.jpg",
+          ],
+        })
+      )
+  );
+});
+
+// ALLOW (back-compat): a comment with no imageUrls field still creates — the
+// validator only fires when the field is present.
+test("recipe_comments: author can create a comment with no imageUrls (back-compat)", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-absent-${RUN}`)
+      .set(validCommentBody(AUTHOR_UID))
+  );
+});
+
+// ALLOW: an empty imageUrls list is a valid list of size 0.
+test("recipe_comments: author can create a comment with an empty imageUrls list", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-empty-${RUN}`)
+      .set(validCommentBody(AUTHOR_UID, { imageUrls: [] }))
+  );
+});
+
+// DENY: more than 3 image URLs exceeds the size cap.
+test("recipe_comments: create with >3 image URLs is denied", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-toomany`)
+      .set(
+        validCommentBody(AUTHOR_UID, {
+          imageUrls: [
+            "https://example.com/a.jpg",
+            "https://example.com/b.jpg",
+            "https://example.com/c.jpg",
+            "https://example.com/d.jpg",
+          ],
+        })
+      )
+  );
+});
+
+// DENY: imageUrls of the wrong type (a string, not a list) is rejected by the
+// `is list` guard.
+test("recipe_comments: create with non-list imageUrls is denied", async () => {
+  const ctx = env.authenticatedContext(AUTHOR_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-wrongtype`)
+      .set(
+        validCommentBody(AUTHOR_UID, {
+          imageUrls: "https://example.com/a.jpg",
+        })
+      )
+  );
+});
+
+// DENY (existing author check still holds): a stranger setting authorId to
+// themselves but writing a valid imageUrls list onto another user's recipe
+// comment must still be gated by the unchanged auth.uid == authorId check.
+// Here the blocked user (who the owner blocked) tries to create a comment with
+// images — the impersonation/blocking gate is unaffected by the new validator.
+test("recipe_comments: blocked user cannot create an image comment on blocker's recipe", async () => {
+  const ctx = env.authenticatedContext(BLOCKED_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-blocked`)
+      .set(
+        validCommentBody(BLOCKED_UID, {
+          imageUrls: ["https://example.com/a.jpg"],
+        })
+      )
+  );
+});
+
+// DENY (author check): a user cannot create a comment whose authorId is
+// someone else's, regardless of a valid imageUrls list.
+test("recipe_comments: cannot create an image comment impersonating another author", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`recipe_comments/c-img-impersonate`)
+      .set(
+        validCommentBody(AUTHOR_UID, {
+          imageUrls: ["https://example.com/a.jpg"],
+        })
+      )
+  );
+});
+
+// ----------------------------------------------------------------------------
 // A3: recipe_ratings create — blocking gate (BUT-459)
 // ----------------------------------------------------------------------------
 
@@ -265,7 +399,7 @@ test("recipe_ratings: non-blocked user can rate a recipe", async () => {
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`recipe_ratings/recipe-1_${AUTHOR_UID}`)
+      .doc(`recipe_ratings/recipe-1_${AUTHOR_UID}_${RUN}`)
       .set(validRatingBody(AUTHOR_UID))
   );
 });
@@ -289,7 +423,7 @@ test("user_notifications: non-blocked friend can send a cross-user notification"
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`user_notifications/n-allow`)
+      .doc(`user_notifications/n-allow-${RUN}`)
       .set(validNotificationBody(AUTHOR_UID, OWNER_UID))
   );
 });
@@ -312,7 +446,7 @@ test("user_notifications: self-notification still allowed", async () => {
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`user_notifications/n-self`)
+      .doc(`user_notifications/n-self-${RUN}`)
       .set(validNotificationBody(AUTHOR_UID, AUTHOR_UID))
   );
 });

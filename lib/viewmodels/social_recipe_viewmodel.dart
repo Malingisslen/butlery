@@ -83,8 +83,11 @@ class SocialRecipeViewModel extends ChangeNotifier {
     _commentsManager.updateNewCommentText(text);
   }
 
-  Future<void> postComment(String recipeId) async {
-    await _commentsManager.postComment(recipeId);
+  Future<void> postComment(
+    String recipeId, {
+    List<String> imageUrls = const [],
+  }) async {
+    await _commentsManager.postComment(recipeId, imageUrls: imageUrls);
   }
 
   void setReplyTo(String commentId) {

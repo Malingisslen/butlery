@@ -9,6 +9,7 @@ import 'package:butlery/widgets/common/linkified_text.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
+import 'package:butlery/widgets/recipe/comment_image_attachments.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
@@ -384,6 +385,12 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   comment.text,
                   style: AppTextStyles.bodyLarge,
                 ),
+
+                // BUT-1049: image attachments above the reactions strip.
+                if (comment.imageUrls.isNotEmpty) ...[
+                  const SizedBox(height: AppDimensions.spacingS),
+                  CommentImageAttachments(imageUrls: comment.imageUrls),
+                ],
 
                 // Emoji reaction display or hint
                 if (widget.currentUserId != null &&

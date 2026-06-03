@@ -258,6 +258,59 @@ class StorageService extends BaseService
     await deleteImage(imageUrl);
   }
 
+  /// BUT-1049: Upload a comment-attachment image to the author-scoped path
+  /// `users/{authorId}/comment_images/{imageId}.jpg`. Author-scoped (not
+  /// comment-scoped) on purpose: images upload BEFORE the comment doc exists,
+  /// so we can't key on a commentId yet. Returns the download URL, or null on
+  /// failure (callers must treat null as "do not post the comment").
+  ///
+  /// Uses the same `uploadImageFile` resilience path as recipe photos
+  /// (compression + offline pre-flight + typed-error propagation), but writes
+  /// to the fixed contract path here rather than letting `uploadImageFile`
+  /// derive a `recipes/` path.
+  Future<String?> uploadCommentImage(
+    File imageFile, {
+    Function(double)? onProgress,
+  }) async {
+    final permissionService =
+        ServiceLocator.get<permission.PermissionService>();
+    final userId = permissionService.currentUserId;
+
+    if (userId == null) {
+      AppLogger.error(
+          '🚫 STORAGE_SERVICE: No authenticated user for comment image upload');
+      return null;
+    }
+
+    try {
+      final offline = ServiceLocator.tryGet<OfflineService>();
+      if (offline != null && !offline.isOnline) {
+        throw const StorageUploadException(
+          'network-request-failed',
+          'No internet connection available',
+        );
+      }
+
+      final imageId = _repository.generateFileName(
+        originalPath: imageFile.path,
+        prefix: 'comment',
+      );
+      final path = 'users/$userId/comment_images/$imageId';
+
+      return await _repository.uploadImage(
+        imageFile: imageFile,
+        userId: userId,
+        path: path,
+        onProgress: onProgress,
+      );
+    } on StorageUploadException {
+      rethrow;
+    } catch (e) {
+      AppLogger.error('Upload comment image failed: $e');
+      return null;
+    }
+  }
+
   /// Get storage information for a user
   Future<StorageInfo?> getUserStorageInfo(String userId) async {
     return await executeServiceOperation<StorageInfo?>(

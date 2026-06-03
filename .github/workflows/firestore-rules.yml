@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - "firestore.rules"
+      - "storage.rules"
       - "functions/src/__tests__/firestore-rules*.test.ts"
       - "functions/src/__tests__/reports-rules.test.ts"
       - "functions/src/__tests__/age-gate-rules.test.ts"
@@ -18,6 +19,7 @@ on:
       - "functions/src/__tests__/menus-rules.test.ts"
       - "functions/src/__tests__/audit-logs-rules.test.ts"
       - "functions/src/__tests__/iter102-rules.test.ts"
+      - "functions/src/__tests__/comment-images-storage-rules.test.ts"
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/firestore-rules.yml"
@@ -25,6 +27,7 @@ on:
     branches: [main]
     paths:
       - "firestore.rules"
+      - "storage.rules"
       - "functions/src/__tests__/firestore-rules*.test.ts"
       - "functions/src/__tests__/reports-rules.test.ts"
       - "functions/src/__tests__/age-gate-rules.test.ts"
@@ -34,6 +37,7 @@ on:
       - "functions/src/__tests__/menus-rules.test.ts"
       - "functions/src/__tests__/audit-logs-rules.test.ts"
       - "functions/src/__tests__/iter102-rules.test.ts"
+      - "functions/src/__tests__/comment-images-storage-rules.test.ts"
   workflow_dispatch:
 
 concurrency:
@@ -75,18 +79,32 @@ jobs:
       # (127.0.0.1:8080). `--project demo-test` keeps the emulator from
       # demanding GCP credentials. The trailing `&` puts it in the
       # background; the wait-for-it loop blocks until the port answers.
-      - name: Start Firestore emulator
+      # Storage emulator (127.0.0.1:9199) is also started so the BUT-1049
+      # comment-images storage rules test (`comment-images-storage-rules.test.ts`)
+      # can run under `test:rules:all`. Firestore stays on 8080.
+      - name: Start Firestore + Storage emulators
         run: |
-          firebase emulators:start --only firestore --project demo-test &
+          firebase emulators:start --only firestore,storage --project demo-test &
           echo "Waiting for Firestore emulator on 127.0.0.1:8080..."
           for i in $(seq 1 60); do
             if curl -sf http://127.0.0.1:8080 >/dev/null 2>&1; then
-              echo "Emulator is up."
+              echo "Firestore emulator is up."
               break
             fi
             sleep 1
           done
           curl -sf http://127.0.0.1:8080 >/dev/null
+          echo "Waiting for Storage emulator on 127.0.0.1:9199..."
+          for i in $(seq 1 60); do
+            # Storage emulator answers 501 to a bare GET on its root — a
+            # non-zero HTTP code still proves the port is live, so check
+            # connectivity rather than a 2xx status.
+            if curl -s -o /dev/null http://127.0.0.1:9199 2>/dev/null; then
+              echo "Storage emulator is up."
+              break
+            fi
+            sleep 1
+          done
 
       - name: Run rules unit tests
         working-directory: functions

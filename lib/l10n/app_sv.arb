@@ -1799,6 +1799,12 @@
   "commentWriteComment": "Skriv en kommentar",
   "commentWriteReply": "Skriv ett svar",
   "commentYou": "Du",
+  "commentAttachImage": "Bifoga bild",
+  "commentImageUploadError": "Kunde inte ladda upp bilden. Försök igen.",
+  "commentRemoveImage": "Ta bort bild",
+  "a11yCommentImageThumbnail": "Visa bifogad bild i helskärm",
+  "a11yCommentRemoveSelectedImage": "Ta bort vald bild",
+  "a11yCloseImageViewer": "Stäng bildvisaren",
   "dialogAddRecipesToCategory": "Lägg till recept i {categoryName}",
   "@dialogAddRecipesToCategory": {
     "placeholders": {

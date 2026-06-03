@@ -2314,7 +2314,8 @@ class FakeSocialRecipeOperations extends Fake
           {required String recipeId,
           required String content,
           String? parentCommentId,
-          List<String>? mentions}) async =>
+          List<String>? mentions,
+          List<String> imageUrls = const []}) async =>
       'comment-${DateTime.now().millisecondsSinceEpoch}';
 
   @override

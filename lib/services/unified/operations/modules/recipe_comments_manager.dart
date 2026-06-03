@@ -57,6 +57,7 @@ class RecipeCommentsManager {
     required String content,
     String? parentCommentId,
     List<String>? mentions,
+    List<String> imageUrls = const [],
   }) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -70,6 +71,7 @@ class RecipeCommentsManager {
       authorId: userId,
       authorDisplayName: currentUserDisplayName,
       parentCommentId: parentCommentId,
+      imageUrls: imageUrls,
     );
 
     if (commentId != null) {

@@ -2907,6 +2907,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentYou => 'You';
 
   @override
+  String get commentAttachImage => 'Attach image';
+
+  @override
+  String get commentImageUploadError =>
+      'Could not upload the image. Please try again.';
+
+  @override
+  String get commentRemoveImage => 'Remove image';
+
+  @override
+  String get a11yCommentImageThumbnail => 'View attached image full screen';
+
+  @override
+  String get a11yCommentRemoveSelectedImage => 'Remove selected image';
+
+  @override
+  String get a11yCloseImageViewer => 'Close image viewer';
+
+  @override
   String dialogAddRecipesToCategory(String categoryName) {
     return 'Add recipes to $categoryName';
   }

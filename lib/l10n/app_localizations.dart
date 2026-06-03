@@ -5013,6 +5013,42 @@ abstract class AppLocalizations {
   /// **'Du'**
   String get commentYou;
 
+  /// No description provided for @commentAttachImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bifoga bild'**
+  String get commentAttachImage;
+
+  /// No description provided for @commentImageUploadError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda upp bilden. Försök igen.'**
+  String get commentImageUploadError;
+
+  /// No description provided for @commentRemoveImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort bild'**
+  String get commentRemoveImage;
+
+  /// No description provided for @a11yCommentImageThumbnail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa bifogad bild i helskärm'**
+  String get a11yCommentImageThumbnail;
+
+  /// No description provided for @a11yCommentRemoveSelectedImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort vald bild'**
+  String get a11yCommentRemoveSelectedImage;
+
+  /// No description provided for @a11yCloseImageViewer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng bildvisaren'**
+  String get a11yCloseImageViewer;
+
   /// No description provided for @dialogAddRecipesToCategory.
   ///
   /// In sv, this message translates to:

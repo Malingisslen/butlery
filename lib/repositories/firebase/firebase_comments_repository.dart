@@ -123,6 +123,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     required String userId,
     required String content,
     String? parentCommentId,
+    List<String> imageUrls = const [],
   }) async {
     // Validate user is creating their own comment
     final currentUser = requireCurrentUserId();
@@ -155,6 +156,15 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     if (content.length > 2000) {
       throw SecurityViolationException(
         'Comment content exceeds maximum length of 2000 characters',
+      );
+    }
+
+    // BUT-1049: defence-in-depth cap mirroring RecipeComment.maxImageUrls and
+    // the Storage/Firestore rules. The composer enforces this in the UI; this
+    // is the server-side trust boundary.
+    if (imageUrls.length > RecipeComment.maxImageUrls) {
+      throw SecurityViolationException(
+        'Comment image count exceeds maximum of ${RecipeComment.maxImageUrls}',
       );
     }
 
@@ -195,6 +205,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     };
     if (ownership?.recipeOwnerId != null) {
       commentData['recipeOwnerId'] = ownership!.recipeOwnerId;
+    }
+    // BUT-1049: only emit when populated so legacy text-only docs stay
+    // byte-identical (empty list is interchangeable with absence on reads).
+    if (imageUrls.isNotEmpty) {
+      commentData['imageUrls'] = imageUrls;
     }
 
     // Batch write: comment + rate limit doc + parent replyCount increment

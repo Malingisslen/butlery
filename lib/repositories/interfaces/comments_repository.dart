@@ -14,12 +14,17 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
     int limit = 50,
   });
 
-  /// Add a new comment to a recipe
+  /// Add a new comment to a recipe.
+  ///
+  /// BUT-1049: [imageUrls] carries already-uploaded comment-image download
+  /// URLs (the composer uploads to Storage before this write). Defaults to
+  /// empty so the historical text-only path is unchanged.
   Future<RecipeComment> addComment({
     required String recipeId,
     required String userId,
     required String content,
     String? parentCommentId,
+    List<String> imageUrls = const [],
   });
 
   /// Update an existing comment

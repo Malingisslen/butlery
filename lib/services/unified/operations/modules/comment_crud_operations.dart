@@ -42,6 +42,7 @@ class CommentCrudOperations {
     required String authorId,
     required String authorDisplayName,
     String? parentCommentId,
+    List<String> imageUrls = const [],
   }) async {
     AppLogger.info('💬 Creating comment for recipe $recipeId');
 
@@ -55,6 +56,7 @@ class CommentCrudOperations {
       userId: authorId,
       content: content.trim(),
       parentCommentId: parentCommentId,
+      imageUrls: imageUrls,
     );
 
     AppLogger.success('✅ Comment created with ID: ${comment.id}');

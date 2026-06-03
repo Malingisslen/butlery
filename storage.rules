@@ -25,6 +25,28 @@ service firebase.storage {
       return request.resource.size < maxSizeMB * 1024 * 1024;
     }
 
+    // BUT-1049: comment images. Authored under the comment author's own
+    // user space, but READABLE by any authenticated user — recipe comments
+    // are visible to the recipe's shared audience (owner + recipients), and
+    // we can't resolve that audience from a Storage path, so reads mirror the
+    // `shared/recipes` scope (authenticated = allowed). Writes stay strictly
+    // owner-scoped so nobody can plant images in another user's namespace.
+    // NOTE: Firebase Storage rules are NOT most-specific-wins — when several
+    // `match` blocks match a path, access is the UNION (OR) of their `allow`
+    // clauses. This block is OR'd with the `/users/{userId}/{allPaths=**}`
+    // wildcard below: the broader `read: any authenticated` here widens read
+    // for this subtree, and write stays owner-only only because BOTH blocks
+    // gate writes on `uid == owner`. Tightening the wildcard alone will NOT
+    // restrict this subtree — both blocks must agree.
+    match /users/{authorId}/comment_images/{imageId} {
+      allow read: if request.auth != null;
+
+      allow write: if request.auth != null
+        && request.auth.uid == authorId
+        && isValidImage()
+        && isWithinSizeLimit(10);
+    }
+
     // Users can only access their own files - this covers all user content including:
     // - Profile avatars: /users/{userId}/avatars/
     // - Recipe images: /users/{userId}/recipes/

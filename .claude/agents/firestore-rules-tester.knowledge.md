@@ -410,3 +410,78 @@ Local-run gap persists: Java still not on PATH (emulator hook fails with
 "Could not spawn java -version"). Type-checked instead with
 `npx tsc --noEmit ... iter102-rules.test.ts` (EXIT 0). CI is the verification
 path.
+
+### 2026-06-03 — Java NOW on PATH; emulator runs locally (supersedes 2026-04-26 + iter102 gap)
+
+`java -version` → OpenJDK 21.0.11 LTS is installed on this workstation now.
+The "no Java, type-check only" gap from 2026-04-26 and the iter102 entry is
+**stale** — the Firestore emulator (and Storage emulator) start and the suites
+run green locally. Verification is real now, not CI-only.
+
+### 2026-06-03 — Storage rules testing (BUT-1049 comment images)
+
+First STORAGE rules test in the repo:
+`functions/src/__tests__/comment-images-storage-rules.test.ts`
+(`test:rules:comment-images-storage`, appended to `test:rules:all`).
+Project id `butlery-rules-comment-images`.
+
+Map row to add:
+
+| `users/{authorId}/comment_images/{imageId}` (storage.rules) | `comment-images-storage-rules.test.ts` | `test:rules:comment-images-storage` |
+
+Patterns:
+- **Init storage, not firestore:** `initializeTestEnvironment({ projectId, storage: { rules, host, port: 9199 } })`. `firebase.json` maps storage emulator to 9199.
+- **Storage client API:** `import { ref, uploadBytes, getBytes } from "firebase/storage"`; act with `ctx.storage()`. Set content type via the third `uploadBytes(ref, bytes, { contentType })` arg so `isValidImage()` is exercised. Tiny valid bytes: `new Uint8Array([0xff,0xd8,0xff,0xd9])`.
+- **Seed for read tests** via `withSecurityRulesDisabled(ctx => uploadBytes(...))` so a read-deny proves the rule, not a missing object.
+- **Most-specific match wins in Storage too:** a narrow `match /users/{authorId}/comment_images/{imageId}` overrides the broad `match /users/{userId}/{allPaths=**}`. PIN this with two tests: (a) a different authenticated user CAN read the comment image (only possible if the specific match wins over the owner-only wildcard read), and (b) a regression guard that a sibling path (`users/{uid}/recipes/...`) is STILL owner-only read (proves only the comment_images subtree was opened).
+- **CI must start storage too:** `firebase emulators:start --only firestore,storage`. The storage emulator answers HTTP 501 to a bare `GET /` — check connectivity (`curl -s -o /dev/null`), not a 2xx, in wait loops. Updated `.github/workflows/firestore-rules.yml` accordingly and added `storage.rules` + the test file to path filters.
+
+### 2026-06-03 — recipe_comments imageUrls validator (BUT-1049)
+
+The `recipe_comments` create rule uses `hasRequiredFields` (`hasAll`, a SUBSET
+check) — NOT `keys().hasOnly([...])`. So a new field like `imageUrls` is
+accepted with zero rule change but ZERO validation. To bound it, add a
+conditional validator clause (present-only, for back-compat):
+
+```
+&& (
+  !('imageUrls' in request.resource.data)
+  || (request.resource.data.imageUrls is list
+      && request.resource.data.imageUrls.size() <= 3)
+)
+```
+
+Coverage: allow <=3, allow empty list, allow absent (back-compat), deny >3,
+deny non-list type, plus the unchanged author/impersonation/blocking denies
+still hold with a valid imageUrls payload. **CEL gap:** there is no clean way
+to assert every list element is a string element-wise — `is list` + `size()`
+is the enforceable bound; a list containing a non-string passes the rule.
+Documented as a known Medium gap, not a test miss.
+
+### 2026-06-03 — EMULATOR PERSISTS DATA ACROSS `npm run` INVOCATIONS (critical isolation gotcha)
+
+`env.cleanup()` only closes clients — it does NOT wipe stored documents. The
+emulator stays up between separate `npm run test:rules:*` calls, so documents
+written in run N are still there in run N+1 (per PROJECT_ID namespace). Two
+failure modes this causes, both LOOK like rule regressions but are test
+isolation bugs:
+
+1. **`assertSucceeds(set(fixedId))` becomes an UPDATE on the 2nd+ run.** The doc
+   already exists, so the engine evaluates the `update` rule, not `create`.
+   recipe_comments' update rule only permits text/counter changes → a full-body
+   re-set is DENIED. Fix: suffix every create-allow doc id with a per-run token
+   `const RUN = Date.now().toString(36)` (e.g. `recipe_comments/c-img-ok-${RUN}`).
+   Deny tests are immune (deny-on-update is still deny). This bit BOTH new and
+   pre-existing create-allow tests (`c-create-allow`, `n-allow`) in
+   recipe-comments-rules.test.ts.
+2. **Rate-limit docs persist** (the older 2026-05-04 entry) — same root cause.
+
+CI is unaffected because it boots a FRESH emulator per job. To reproduce/clear
+locally: `curl -X DELETE
+"http://127.0.0.1:8080/emulator/v1/projects/<PROJECT_ID>/databases/(default)/documents"`.
+When debugging "N/22 failed locally but passed in CI", suspect persisted
+emulator state FIRST — clear and re-run before touching rules or tests.
+
+The real PROJECT_IDs (grep `PROJECT_ID =` across `src/__tests__/*.ts`) do NOT
+follow a guessable pattern (e.g. reports = `butlery-rules-test`, recipes-users =
+`butlery-rules-recipes-users`). Grep them, don't guess, when clearing.
