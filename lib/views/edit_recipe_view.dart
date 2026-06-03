@@ -48,6 +48,7 @@ import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 
@@ -117,7 +118,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   void initState() {
     super.initState();
     _currentUserId =
-        ServiceLocator.get<PermissionService>().currentUserId ?? '';
+        ServiceLocator.get<PermissionService>().currentUserId.orEmpty();
   }
 
   @override
@@ -437,7 +438,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Portions field
       TextFormField(
-        initialValue: viewModel.portions?.toString() ?? '',
+        initialValue: (viewModel.portions?.toString()).orEmpty(),
         decoration: InputDecoration(labelText: context.l10n.recipePortions),
         style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.number,
@@ -449,7 +450,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Time field
       TextFormField(
-        initialValue: viewModel.timeMinutes?.toString() ?? '',
+        initialValue: (viewModel.timeMinutes?.toString()).orEmpty(),
         decoration: InputDecoration(labelText: context.l10n.recipeTimeMinutes),
         style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.number,
@@ -515,7 +516,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Rating field
       TextFormField(
-        initialValue: viewModel.rating?.toString() ?? '',
+        initialValue: (viewModel.rating?.toString()).orEmpty(),
         decoration: InputDecoration(labelText: context.l10n.recipeRating),
         style: AppTextStyles.bodyMedium,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -527,7 +528,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Source URL field
       TextFormField(
-        initialValue: viewModel.sourceUrl ?? '',
+        initialValue: viewModel.sourceUrl.orEmpty(),
         decoration: InputDecoration(
           labelText: context.l10n.recipeSourceUrl,
           hintText: context.l10n.recipeSourceUrlHint,

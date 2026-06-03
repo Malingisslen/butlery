@@ -7,6 +7,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -273,9 +274,9 @@ class _EditItemDialogState extends State<_EditItemDialog> {
         TextEditingController(text: widget.item.amount.toString());
     _unitController = TextEditingController(text: widget.item.unit);
     _categoryController = TextEditingController(text: widget.item.category);
-    _noteController = TextEditingController(text: widget.item.note ?? '');
+    _noteController = TextEditingController(text: widget.item.note.orEmpty());
     _priceController = TextEditingController(
-        text: widget.item.estimatedPrice?.toString() ?? '');
+        text: (widget.item.estimatedPrice?.toString()).orEmpty());
   }
 
   @override

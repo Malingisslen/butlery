@@ -17,8 +17,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:collection/collection.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
@@ -307,7 +307,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         ConversationListItem(
           key: ValueKey(conversation.id),
           conversation: conversation,
-          currentUserId: vm.currentUserId ?? '',
+          currentUserId: vm.currentUserId.orEmpty(),
           onTap: () => _navigateToChat(conversation),
           onLongPress: () => _showConversationActions(vm, conversation),
           onPin: () => vm.togglePin(conversation.id),
@@ -330,7 +330,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       context: context,
       child: ModalContentContainer(
         children: [
-          ModalHeaderText(conversation.getDisplayTitle(vm.currentUserId ?? '')),
+          ModalHeaderText(
+              conversation.getDisplayTitle(vm.currentUserId.orEmpty())),
           ListTile(
             leading: Icon(
               conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
@@ -413,7 +414,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.messagingLeaveGroup),
         content:
-            Text(l10n.messagingConfirmLeaveGroup(conversation.title ?? '')),
+            Text(l10n.messagingConfirmLeaveGroup(conversation.title.orEmpty())),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
@@ -462,7 +463,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                   SnackBarUtils.showSuccess(
                       context,
                       l10n.messagingConversationDeleted(
-                          conversation.title ?? ''));
+                          conversation.title.orEmpty()));
                 } else {
                   SnackBarUtils.showError(
                       context, l10n.messagingCouldNotDeleteConversation(''));
@@ -491,7 +492,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     try {
       final otherParticipantId = conversation.participantIds.firstWhere(
           (id) => id != vm.currentUserId,
-          orElse: () => conversation.participantIds.firstOrNull ?? '');
+          orElse: () => conversation.participantIds.firstOrNull.orEmpty());
 
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 

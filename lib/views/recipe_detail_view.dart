@@ -32,6 +32,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
@@ -686,7 +687,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       create: (_) => CookSnapViewModel(
         service: ServiceLocator.get<CookSnapService>(),
         recipeId: recipe.id,
-        recipeAuthorId: recipe.createdBy ?? '',
+        recipeAuthorId: recipe.createdBy.orEmpty(),
         recipeName: recipe.core.title,
       ),
       child: Consumer<CookSnapViewModel>(

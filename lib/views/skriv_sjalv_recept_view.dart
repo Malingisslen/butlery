@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -101,13 +102,13 @@ class _SkrivSjalvReceptViewContentState
     _titleController = TextEditingController(text: viewModel.title);
     _descriptionController = TextEditingController(text: viewModel.description);
     _portionsController =
-        TextEditingController(text: viewModel.portions?.toString() ?? '');
-    _timeMinutesController =
-        TextEditingController(text: viewModel.timeMinutes?.toString() ?? '');
+        TextEditingController(text: (viewModel.portions?.toString()).orEmpty());
+    _timeMinutesController = TextEditingController(
+        text: (viewModel.timeMinutes?.toString()).orEmpty());
     _ratingController =
-        TextEditingController(text: viewModel.rating?.toString() ?? '');
+        TextEditingController(text: (viewModel.rating?.toString()).orEmpty());
     _sourceUrlController =
-        TextEditingController(text: viewModel.sourceUrl ?? '');
+        TextEditingController(text: viewModel.sourceUrl.orEmpty());
     _controllersInitialized = true;
   }
 

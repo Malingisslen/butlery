@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
@@ -236,7 +237,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
               return MessageBubble(
                 key: ValueKey(message.id),
                 message: message,
-                currentUserId: viewModel.currentUserId ?? '',
+                currentUserId: viewModel.currentUserId.orEmpty(),
                 replyToMessage: replyToMessage,
                 showAvatar:
                     viewModel.shouldShowAvatar(message, previousMessage),

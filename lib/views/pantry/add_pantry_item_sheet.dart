@@ -6,6 +6,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
@@ -49,7 +50,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       _unit = _units.contains(existing.unit) ? existing.unit : 'st';
       _location = existing.location;
       _expiryDate = existing.expiryDate;
-      _noteController.text = existing.note ?? '';
+      _noteController.text = existing.note.orEmpty();
     } else {
       _quantityController.text = '1';
     }

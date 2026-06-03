@@ -21,6 +21,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
@@ -627,7 +628,7 @@ class _HeirloomSectionState extends State<_HeirloomSection> {
     _writerCtrl =
         TextEditingController(text: widget.viewModel.heirloomWriterName);
     _yearCtrl = TextEditingController(
-      text: widget.viewModel.heirloomYear?.toString() ?? '',
+      text: (widget.viewModel.heirloomYear?.toString()).orEmpty(),
     );
     _noteCtrl = TextEditingController(text: widget.viewModel.heirloomNote);
   }

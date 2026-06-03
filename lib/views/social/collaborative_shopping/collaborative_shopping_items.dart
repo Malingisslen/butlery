@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Focused widget for collaborative shopping items list (BUT-238 redesign).
@@ -522,7 +523,7 @@ class _CollaborativeItemCard extends StatelessWidget {
 
   void _maybeShowSnackBar(BuildContext context, ClaimResult result) {
     if (result.outcome != ClaimOutcome.conflict) return;
-    final name = result.conflictingDisplayName ?? '';
+    final name = result.conflictingDisplayName.orEmpty();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(context.l10n.nagonAnnanTogDen(name))),
     );
