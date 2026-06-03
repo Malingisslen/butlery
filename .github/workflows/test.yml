@@ -1,5 +1,26 @@
 name: Run Tests
 
+# BUT-1193: per-commit / PR feedback is fast and ubuntu-only; the slow legs
+# (coverage instrumentation, macOS + Windows cross-OS matrix) are decoupled to
+# a nightly schedule + push-to-main. Rationale:
+#
+#  - Dart/Flutter unit/widget/view behaviour is OS-independent, so running the
+#    full 3-OS matrix on every commit bought almost no signal for ~3× the
+#    compute. Cross-OS regression coverage moves to the nightly `cross-os` job.
+#  - The `views (windows-latest)` leg was an intermittent infra flake (BUT-1192:
+#    fails with no test output, clears on re-run). Moving it off the critical
+#    path means a flake can no longer block a commit.
+#  - Coverage instrumentation roughly doubles unit-suite runtime and can't be
+#    sharded (a naive split gives each shard a PARTIAL lcov → false 55%-floor
+#    failures — the trap BUT-1182 hit). So the per-commit unit run drops
+#    `--coverage` and is sharded 4 ways for fast feedback; the full
+#    coverage+floor+Codecov gate runs in the separate `coverage` job nightly and
+#    on push-to-main. The 55% floor is unchanged — only re-timed (BUT-1149).
+#
+# What still gates a PR: ubuntu unit (4 shards) + widget + views + golden +
+# integration here, plus firestore-rules / E2E / Architecture / Build Validation
+# in their own workflows. Coverage + cross-OS are nightly/main only.
+
 on:
   push:
     branches: [ main, develop ]
@@ -17,6 +38,12 @@ on:
       - 'tasks/**'
       - '.claude/**'
       - 'memory/**'
+  schedule:
+    # 04:00 UTC nightly — off-peak, and clear of e2e (02:00), adoption (03:00)
+    # and golden-llm (03:17) so the cross-OS + coverage legs don't contend for
+    # runners with the other scheduled jobs.
+    - cron: '0 4 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,58 +53,27 @@ env:
   FLUTTER_VERSION: '3.35.1'
 
 jobs:
+  # ── Per-commit fast path ────────────────────────────────────────────────
+  # Ubuntu-only, no coverage, unit suite sharded 4 ways. Each shard runs ~1/4
+  # of test/unit; the (cached) flutter setup + pub get is the only repeated
+  # fixed cost. Coverage lives in the `coverage` job below, not here.
   unit-tests:
-    name: ${{ matrix.suite }} (${{ matrix.os }})
+    name: unit (ubuntu shard ${{ matrix.shard }}/4)
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        # BUT-835 follow-up: split test/unit (~435 files) from test/widget
-        # (~97), test/views (~14), and test/golden (~2) so each suite gets
-        # its own 20-min budget. The combined run was hitting the cap at
-        # ~19 min and getting cancelled, masking real test signal.
-        # Coverage is still aggregated post-job by Codecov via flag merging.
-        suite: [unit, widget, views, golden]
-        # BUT-849: golden tests are deterministic structure/JSON checks,
-        # not pixel diffs. Running on three platforms is redundant, and the
-        # Windows lane was producing line-ending/encoding noise that
-        # masked real signal from ubuntu+macos. Gate it off here.
-        #
-        # BUT-1155 (fixed iter-114): the views shard is restored. The 10-min
-        # hang in infrastructure_integration_test.dart was a real `Future.delayed`
-        # awaited in the testWidgets fake-async zone (the GC-delay folklore in
-        # TestServiceLocator.reset / FirestoreSingleton.hardReset) — removed. The
-        # ~200 social/* + messaging failures were drifted "ULTRATHINK" smoke
-        # suites (production-ServiceLocator bridge gaps + StreamController
-        # re-entrancy); they're @Skip'd with reasons pending a rebuild (BUT-1180).
-        # `flutter test test/views` is now green (+24 ~7).
-        exclude:
-          - os: windows-latest
-            suite: golden
-    runs-on: ${{ matrix.os }}
-    # Bumped 20 → 30. unit (macos) was finishing in 16-17 min in green
-    # runs but landing right at the 20 cap on slower runners → silent
-    # cancels that looked like real failures. 30 leaves ~10 min headroom
-    # while still failing fast on truly hung jobs.
-    #
-    # BUT-1182: bumped 30 → 40. Once BUT-1181 unblocked the unit shard, its
-    # true runtime is ~28 min (ubuntu) — only ~2 min under the old cap, a
-    # timeout-flake waiting to happen. 40 restores ~12 min headroom while
-    # still catching genuinely hung jobs. This is a STOPGAP — the real fix is
-    # to split test/unit into sub-shards (BUT-1182), which needs a coverage-
-    # aggregation job because the per-job 55% floor check assumes one complete
-    # unit run (a naive split gives each shard partial coverage → false floor
-    # failure).
-    timeout-minutes: 40
+        shard: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    # No coverage instrumentation + a quarter of the suite → ~5-8 min/shard.
+    # 20 leaves generous headroom while still catching a genuinely hung shard.
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v6
 
-      # BUT-495: record job start so the Report duration step at the end can
-      # emit a structured timing line. Lives in $GITHUB_ENV so the value
-      # survives between steps. Force bash so the same `$(date +%s)` /
-      # `>> "$GITHUB_ENV"` syntax works on the windows runner too (default
-      # there is PowerShell, which silently mangles the subshell capture).
+      # BUT-495: record job start so the Report duration step can emit a
+      # structured timing line. Lives in $GITHUB_ENV so it survives between
+      # steps.
       - name: Record job start time
         shell: bash
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
@@ -90,48 +86,150 @@ jobs:
 
       - run: flutter pub get
 
-      # Real-time guard (BUT-393). Fails fast if a PR reintroduces
-      # `DateTime.now()` in a new unit test outside the allowlist, or any
-      # long `Future.delayed(...)` in unit/widget/view/integration tests.
-      # Guards the BUT-387 Phase 5 rescue against decay.
+      # Real-time guard (BUT-393). Static grep over test files — only needs to
+      # run once per pipeline, so gate it to shard 0.
       - name: Real-time regression guard
+        if: matrix.shard == 0
         run: bash scripts/check_test_real_time.sh
 
-      # lcov isn't preinstalled on ubuntu-latest. Install before we run
-      # tests so the summary step below can actually produce a number.
-      # Coverage summary + Codecov upload only run on ubuntu + the `unit`
-      # suite (the largest one — its line numbers dominate the dashboard).
-      - name: Install lcov
-        if: matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
-        run: sudo apt-get update && sudo apt-get install -y lcov
-
-      # Run a single suite. The 4-way split (unit / widget / views / golden)
-      # gives each its own 20-min job budget — see matrix comment above.
-      # Coverage instrumentation is only collected for the `unit` suite on
-      # ubuntu (the suite that drives the dashboard); other suites skip
-      # `--coverage` to save runtime. `test/golden/` holds parsing & tagging
-      # golden datasets that don't hit Firebase or the network (LLM tier
-      # uses a service-level mock; see test/golden/README.md).
-      - name: Run ${{ matrix.suite }} tests (with coverage)
-        if: matrix.suite == 'unit' && matrix.os == 'ubuntu-latest'
+      - name: Run unit tests (shard ${{ matrix.shard }}/4, no coverage)
         run: |
-          echo "Running test/${{ matrix.suite }} with coverage..."
-          flutter test test/${{ matrix.suite }} --coverage --reporter=expanded
+          echo "Running test/unit shard ${{ matrix.shard }} of 4..."
+          flutter test test/unit \
+            --total-shards 4 --shard-index ${{ matrix.shard }} \
+            --reporter=expanded
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-results-shard-${{ matrix.shard }}
+          path: test_results/
+
+      - name: Report job duration
+        if: always()
+        shell: bash
+        env:
+          BUDGET_MIN: 15
+          JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/4)"
+        run: |
+          JOB_END=$(date +%s)
+          DURATION_SEC=$((JOB_END - JOB_START))
+          DURATION_MIN=$((DURATION_SEC / 60))
+          DURATION_REM=$((DURATION_SEC % 60))
+          {
+            echo "## Build duration"
+            echo ""
+            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+          fi
+
+  # ── Per-commit fast path: smaller suites ────────────────────────────────
+  # widget (~97 files), views (~14), golden (~2) are small enough to run whole
+  # on ubuntu without coverage. test/golden holds deterministic structure/JSON
+  # checks (service-level LLM mock — no Firebase / network).
+  suite-tests:
+    name: ${{ matrix.suite }} (ubuntu)
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [widget, views, golden]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Record job start time
+        shell: bash
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
 
       - name: Run ${{ matrix.suite }} tests
-        if: matrix.suite != 'unit' || matrix.os != 'ubuntu-latest'
         run: |
           echo "Running test/${{ matrix.suite }}..."
           flutter test test/${{ matrix.suite }} --reporter=expanded
 
-      # Produce a filtered lcov.info matching codecov.yml's ignore list, so
-      # the local "project coverage" number and the Codecov dashboard agree.
-      # No hard gate yet — Codecov owns the drop-tolerance gate via the
-      # `if_ci_failed: error` rule in codecov.yml. Once we've observed a
-      # real baseline from CI, a follow-up PR adds a local floor check
-      # that guards against the Codecov token being unavailable.
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.suite }}-test-results-ubuntu
+          path: test_results/
+
+      - name: Report job duration
+        if: always()
+        shell: bash
+        env:
+          BUDGET_MIN: 15
+          JOB_LABEL: "${{ matrix.suite }} (ubuntu)"
+        run: |
+          JOB_END=$(date +%s)
+          DURATION_SEC=$((JOB_END - JOB_START))
+          DURATION_MIN=$((DURATION_SEC / 60))
+          DURATION_REM=$((DURATION_SEC % 60))
+          {
+            echo "## Build duration"
+            echo ""
+            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+          fi
+
+  # ── Coverage gate (nightly + push-to-main) ──────────────────────────────
+  # The slowest single job: ubuntu unit WITH coverage instrumentation, the
+  # filtered-lcov summary, the hard 55% floor + per-area floors, and the
+  # Codecov upload. Decoupled from the per-commit path so PRs get fast
+  # feedback; coverage is still enforced on every push to main and nightly.
+  # `github.ref == 'refs/heads/main'` holds for both push-to-main and the
+  # scheduled run (schedule checks out the default branch).
+  coverage:
+    name: coverage (ubuntu)
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # Coverage instrumentation roughly doubles the unaffected ~28 min unit
+    # runtime; keep BUT-1182's 40-min cap here where it actually applies.
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Record job start time
+        shell: bash
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      # lcov isn't preinstalled on ubuntu-latest; install before tests so the
+      # summary + floor steps can produce a number.
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Run unit tests (with coverage)
+        run: |
+          echo "Running test/unit with coverage..."
+          flutter test test/unit --coverage --reporter=expanded
+
+      # Produce a filtered lcov matching codecov.yml's ignore list, so the
+      # local "project coverage" number and the Codecov dashboard agree.
       - name: Summarise filtered coverage
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
+        if: always()
         run: |
           if [ ! -f coverage/lcov.info ]; then
             echo "No coverage/lcov.info — skipping summary" >> "$GITHUB_STEP_SUMMARY"
@@ -168,20 +266,13 @@ jobs:
           echo "Filtered coverage: ${FILTERED_PCT:-unknown}"
 
       # Hard local coverage floor. Codecov is the primary gate, but if the
-      # token is unavailable (outage, rotated secret) the dashboard fails
-      # open. This step fails the build locally so regressions can't sneak
-      # in. BUT-494: overall floor aligned to the documented Codecov target
-      # of 60% (see "60% target" comment above) so the two gates agree.
-      # Per-area floors stay at their interim values until ~5 CI runs are
-      # observed for baseline-minus-2pp tightening.
-      #
-      # BUT-1149: temporarily lowered to 55.0 (from 60.0) after the
-      # Intent-Test Sprint (2026-05-27) raised filtered coverage from 48.8%
-      # → 55.5% but stalled short of the 60% target. Restore to 60.0 once
-      # the sprint's testability-friction tickets (BUT-1062/63/75/78/95/1130)
-      # are closed and a focused follow-up sprint pushes the remaining ~5pp.
+      # token is unavailable (outage, rotated secret) the dashboard fails open;
+      # this step fails the build locally so regressions can't sneak in.
+      # BUT-1149: temporarily 55.0 (from 60.0); restore to 60.0 after the
+      # follow-up sprint pushes the remaining ~5pp. BUT-1193 did NOT change
+      # this floor — only re-timed when it runs.
       - name: Enforce coverage floors
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
+        if: always()
         run: |
           if [ ! -f coverage/lcov_filtered.info ]; then
             echo "No filtered lcov — skipping floor check"
@@ -242,9 +333,8 @@ jobs:
 
           exit $fail
 
-      # Upload coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
-        if: success() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
+        if: success()
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0 — BUT-790 SHA-pin
         with:
           files: coverage/lcov_filtered.info
@@ -253,17 +343,74 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Keep the filtered lcov as an artifact so a maintainer can download
-      # and inspect line-by-line coverage from any run.
       - name: Upload coverage artifact
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: coverage-lcov
           path: coverage/lcov_filtered.info
           retention-days: 14
 
-      # Upload test results if tests fail
+      - name: Report job duration
+        if: always()
+        shell: bash
+        env:
+          BUDGET_MIN: 35
+          JOB_LABEL: "coverage (ubuntu)"
+        run: |
+          JOB_END=$(date +%s)
+          DURATION_SEC=$((JOB_END - JOB_START))
+          DURATION_MIN=$((DURATION_SEC / 60))
+          DURATION_REM=$((DURATION_SEC % 60))
+          {
+            echo "## Build duration"
+            echo ""
+            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+          fi
+
+  # ── Cross-OS regression matrix (nightly only) ───────────────────────────
+  # macOS + Windows × all suites. Catches the rare OS-specific regression
+  # (path separators, line-endings, locale) without paying for it on every
+  # commit. golden is excluded on Windows (BUT-849: line-ending/encoding noise
+  # on a deterministic JSON suite). The `views (windows)` infra flake
+  # (BUT-1192) lives here now, off the per-commit critical path.
+  cross-os:
+    name: ${{ matrix.suite }} (${{ matrix.os }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+        suite: [unit, widget, views, golden]
+        exclude:
+          - os: windows-latest
+            suite: golden
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Record job start time
+        shell: bash
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Run ${{ matrix.suite }} tests
+        run: |
+          echo "Running test/${{ matrix.suite }} on ${{ matrix.os }}..."
+          flutter test test/${{ matrix.suite }} --reporter=expanded
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v7
@@ -271,16 +418,11 @@ jobs:
           name: ${{ matrix.suite }}-test-results-${{ matrix.os }}
           path: test_results/
 
-      # BUT-495: emit job duration to step summary + warn if budget exceeded.
-      # Soft budget = 15 min; hard kill is `timeout-minutes: 30` above.
-      # `shell: bash` so the bash `if [ ... ]; then` conditional works on
-      # the windows runner too — the default PowerShell parses `if [` as a
-      # generic-type call and bails (was the widget (windows) red lane).
       - name: Report job duration
         if: always()
         shell: bash
         env:
-          BUDGET_MIN: 15
+          BUDGET_MIN: 30
           JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }})"
         run: |
           JOB_END=$(date +%s)
@@ -296,6 +438,9 @@ jobs:
             echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
           fi
 
+  # ── Integration tests (per-commit, ubuntu) ──────────────────────────────
+  # Firebase-emulator integration suite. Ubuntu-only already and not a
+  # bottleneck, so it stays on the per-commit path unchanged.
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
@@ -304,7 +449,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # BUT-495: record job start (see unit-tests job for rationale).
       - name: Record job start time
         run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
 
@@ -319,15 +463,15 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      
+
       # Install Firebase CLI
       - name: Install Firebase CLI
         run: |
           npm install -g firebase-tools@15.13.0
           firebase --version
-      
+
       - run: flutter pub get
-      
+
       # Start Firebase Emulator
       - name: Start Firebase Emulator
         run: |
@@ -350,15 +494,12 @@ jobs:
               }
             }' > firebase.json
           fi
-          
+
           # Start emulators in background
           firebase emulators:start --only auth,firestore,storage &
 
-          # BUT-489: real health-gate. The previous `sleep 10 + curl || echo`
-          # pattern reported success regardless of emulator state, so a
-          # failed-to-start emulator silently passed integration tests.
-          # Wait up to 60s on each emulator port, hard-fail if either
-          # never comes up. Pattern mirrors firestore-rules.yml:79-85.
+          # BUT-489: real health-gate. Wait up to 60s on each emulator port,
+          # hard-fail if either never comes up.
           wait_for_port() {
             local name="$1"
             local url="$2"
@@ -375,7 +516,7 @@ jobs:
           }
           wait_for_port "Firestore" "http://localhost:8080/"
           wait_for_port "Auth" "http://localhost:9099/"
-      
+
       # Run integration tests only
       - name: Run integration tests
         run: |
@@ -385,14 +526,14 @@ jobs:
           else
             echo "No integration tests found, skipping integration test step"
           fi
-      
+
       # Stop Firebase Emulator
       - name: Stop Firebase Emulator
         if: always()
         run: |
           # Kill all Firebase emulator processes
           pkill -f "firebase" || true
-      
+
       # Upload test results if tests fail
       - name: Upload test results
         if: failure()
