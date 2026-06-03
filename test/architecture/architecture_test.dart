@@ -591,6 +591,105 @@ void main() {
       );
     });
 
+    // BUT-581: the `.orEmpty()` migration replaced ~185 raw `?? ''` fallbacks
+    // with the canonical String? extension `String orEmpty() => this ?? '';`
+    // (lib/core/extensions/default_value_extensions.dart). This guard stops the
+    // migration from eroding: any NEW raw `?? ''` in lib/ breaks the build.
+    //
+    // Two extension-DEFINITION files are exempt entirely — they DEFINE the
+    // fallback semantics, so `?? ''` is their whole point.
+    //
+    // The allowList below pins the 36 legitimately-remaining sites. They CANNOT
+    // use `.orEmpty()`:
+    //   - dynamic-typed receivers (Firestore `data()['k']`, `List<dynamic>`
+    //     elements) — extensions are static-dispatch, so `.orEmpty()` on a
+    //     `dynamic` throws NoSuchMethodError at runtime.
+    //   - chained `a ?? b ?? ''` — the trailing `?? ''` is the terminal
+    //     fallback of a coalescing chain, not a standalone null-default.
+    // Entries are CONTENT-keyed (`relPath::trimmedLine`) so they survive
+    // line-number shifts. New entries should be RARE and justified — if a site
+    // can use `.orEmpty()`, migrate it instead of allowlisting.
+    test('no raw `?? \'\'` in lib/ — use .orEmpty() (BUT-581)', () {
+      const exemptFiles = <String>{
+        'lib/core/extensions/default_value_extensions.dart',
+        'lib/core/utils/validation_utils.dart',
+      };
+
+      const allowList = <String>{
+        "lib/main.dart::email: user.email ?? '',",
+        "lib/models/unified/unified_shopping_item.dart::unit: oldItem.unit ?? '',",
+        "lib/repositories/interfaces/ratings_repository.dart::recipeId: data['recipeId'] ?? '',",
+        "lib/repositories/interfaces/ratings_repository.dart::userId: data['userId'] ?? '',",
+        "lib/services/upload/upload_progress_tracker.dart::final filePath = currentStatus.file?.path ?? currentStatus.url ?? '';",
+        "lib/repositories/interfaces/notifications_repository.dart::userId: data['userId'] ?? '',",
+        "lib/repositories/interfaces/notifications_repository.dart::title: data['title'] ?? '',",
+        "lib/repositories/interfaces/notifications_repository.dart::body: data['body'] ?? '',",
+        "lib/services/upload/upload_models.dart::String get displayPath => url ?? file?.path ?? '';",
+        "lib/services/account/export/preferences_export_manager.dart::'title': data['title'] ?? '',",
+        "lib/services/account/export/preferences_export_manager.dart::'body': data['body'] ?? '',",
+        "lib/models/shared_shopping_list.dart::originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',",
+        "lib/services/import/pipelines/tiktok_pipeline.dart::String title = match.group(1) ?? match.group(0) ?? '';",
+        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::id: realtimeRecipe['id'] ?? '',",
+        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::title: realtimeRecipe['name'] ?? '',",
+        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::description: realtimeRecipe['description'] ?? '',",
+        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::userId: recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '',",
+        "lib/services/group_shared_content_service.dart::sharedByUserId: data['sharedByUserId'] ?? '',",
+        "lib/services/import/llm/llm_enhancement_service.dart::final text = partial.extractedText ?? partial.rawHtml ?? '';",
+        "lib/services/unified/operations/modules/recipe_sharing_manager.dart::'description': recipeData.description ?? '',",
+        "lib/services/unified/operations/modules/recipe_sharing_manager.dart::'mealType': recipeData.mealType ?? '',",
+        "lib/services/import/file_import_strategy.dart::data['ingredients'] ?? data['ingredienser'] ?? data['ingredient'] ?? '';",
+        "lib/services/import/file_import_strategy.dart::data['step\$i'] ?? data['steg\$i'] ?? data['instruction\$i'] ?? '';",
+        "lib/services/import/file_import_strategy.dart::final tagsStr = data['tags'] ?? data['taggar'] ?? data['keywords'] ?? '';",
+        "lib/services/import/file_import_strategy.dart::json['source_url'] as String? ?? json['source'] as String? ?? '',",
+        "lib/services/import/file_import_strategy.dart::'rating': '\${json['rating'] ?? ''}',",
+        "lib/repositories/firebase/firebase_deeplink_repository.dart::String getId(Map<String, dynamic> entity) => entity['id'] ?? '';",
+        // Same trimmed line appears on two lines (272 + 319) — set dedups to one.
+        "lib/repositories/firebase/firebase_comments_repository.dart::resourceOwnerId: commentData['authorId'] ?? '',",
+        "lib/services/parsing/tiers/schema_org_tier.dart::final text = item['text'] ?? item['name'] ?? '';",
+        "lib/services/parsing/tiers/schema_org_tier.dart::final subText = subItem['text'] ?? subItem['name'] ?? '';",
+        "lib/widgets/image/avatar_image_widget.dart::UserAvatarWidgets.getInitials(displayName ?? email ?? '');",
+        "lib/services/unified/friends/friends_utility_operations.dart::email: data['email'] ?? '',",
+        "lib/widgets/common/input/adaptive_text_field.dart::errorText ?? helperText ?? '',",
+        "lib/widgets/common/menu_persistence/menu_load_dialog.dart::content: Text(context.l10n.menuLoadedSuccess(menu.name ?? '')),",
+        "lib/widgets/common/menu_persistence/menu_load_dialog.dart::content: Text(context.l10n.menuDeletedSuccess(menu.name ?? '')),",
+      };
+
+      // Whitespace-tolerant: matches `?? ''` and `??  ''`, but NOT `?? ""`,
+      // `?? ' '`, or `?? 'x'` — only the empty single-quoted-string fallback.
+      final pattern = RegExp(r"\?\?\s+''");
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        if (!relPath.startsWith('lib/')) continue;
+        if (exemptFiles.contains(relPath)) continue;
+
+        final lines = file.readAsLinesSync();
+        for (var i = 0; i < lines.length; i++) {
+          final raw = lines[i];
+          // Strip line comments (mirrors the CircularProgressIndicator guard).
+          // Block comments `/* */` can't carry a `?? ''` fallback in practice;
+          // line-level stripping is enough and avoids cross-line state.
+          final code = raw.replaceAll(RegExp(r'//.*'), '');
+          if (!pattern.hasMatch(code)) continue;
+
+          final key = '$relPath::${raw.trim()}';
+          if (allowList.contains(key)) continue;
+          violations.add('$relPath:${i + 1}: ${raw.trim()}');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: "Use `.orEmpty()` instead of raw `?? ''` — see "
+            'lib/core/extensions/default_value_extensions.dart. Dynamic '
+            'receivers / chained `?? ` must stay `?? \'\'` and be added to '
+            'the allowList with justification.\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     test('widgets directory exists under lib', () {
       expect(
         Directory('lib/widgets').existsSync(),
