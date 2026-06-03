@@ -34,10 +34,19 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         # BUT-835 follow-up: split test/unit (~435 files) from test/widget
         # (~97), test/views (~14), and test/golden (~2) so each suite gets
-        # its own 20-min budget. The combined run was hitting the cap at
-        # ~19 min and getting cancelled, masking real test signal.
-        # Coverage is still aggregated post-job by Codecov via flag merging.
-        suite: [unit, widget, views, golden]
+        # its own budget. The combined run was hitting the cap at ~19 min and
+        # getting cancelled, masking real test signal.
+        #
+        # BUT-1182: test/unit itself grew to ~28 min (near the cap), so it's
+        # further split into 2 shards via `flutter test --total-shards 2
+        # --shard-index N` (see the Run step). Each shard runs on all 3 OSes
+        # for pass/fail; only the ubuntu shards collect `--coverage` and upload
+        # their partial lcov as artifacts. The dependent `coverage-aggregate`
+        # job below lcov-merges the two partials, then runs the filter + 55%
+        # floor check + Codecov upload on the MERGED file — so the floor check
+        # still sees one complete unit run (a per-shard floor check would see
+        # ~half the lines and fail falsely).
+        suite: [unit-1, unit-2, widget, views, golden]
         # BUT-849: golden tests are deterministic structure/JSON checks,
         # not pixel diffs. Running on three platforms is redundant, and the
         # Windows lane was producing line-ending/encoding noise that
@@ -97,46 +106,115 @@ jobs:
       - name: Real-time regression guard
         run: bash scripts/check_test_real_time.sh
 
-      # lcov isn't preinstalled on ubuntu-latest. Install before we run
-      # tests so the summary step below can actually produce a number.
-      # Coverage summary + Codecov upload only run on ubuntu + the `unit`
-      # suite (the largest one — its line numbers dominate the dashboard).
+      # Run the suite. `unit-1`/`unit-2` are the two halves of test/unit via
+      # Flutter's deterministic `--total-shards`/`--shard-index`; every other
+      # suite maps to its test/<suite> directory. Only the ubuntu unit shards
+      # collect `--coverage` (the suite that drives the dashboard); their
+      # partial lcov is uploaded below for the coverage-aggregate job. All
+      # other legs skip `--coverage` to save runtime. `shell: bash` so the
+      # case statement works on the windows runner (default there is
+      # PowerShell). `test/golden/` holds parsing & tagging golden datasets
+      # that don't hit Firebase or the network (see test/golden/README.md).
+      - name: Run ${{ matrix.suite }} tests
+        shell: bash
+        run: |
+          case "${{ matrix.suite }}" in
+            unit-1) TARGET="test/unit --total-shards 2 --shard-index 0" ;;
+            unit-2) TARGET="test/unit --total-shards 2 --shard-index 1" ;;
+            *)      TARGET="test/${{ matrix.suite }}" ;;
+          esac
+          COV=""
+          case "${{ matrix.suite }}-${{ matrix.os }}" in
+            unit-1-ubuntu-latest|unit-2-ubuntu-latest) COV="--coverage" ;;
+          esac
+          echo "Running flutter test $TARGET $COV"
+          flutter test $TARGET $COV --reporter=expanded
+
+      # BUT-1182: each ubuntu unit shard uploads its PARTIAL coverage/lcov.info
+      # as an artifact. The dependent coverage-aggregate job lcov-merges the
+      # two partials and runs the filter + 55% floor check + Codecov upload on
+      # the merged, complete unit coverage (see that job below) — so the floor
+      # gate still evaluates one full unit run, not a half-shard.
+      - name: Upload partial coverage
+        if: matrix.os == 'ubuntu-latest' && startsWith(matrix.suite, 'unit-')
+        uses: actions/upload-artifact@v7
+        with:
+          name: lcov-${{ matrix.suite }}
+          path: coverage/lcov.info
+          retention-days: 1
+
+      # Upload test results if tests fail
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.suite }}-test-results-${{ matrix.os }}
+          path: test_results/
+
+      # BUT-495: emit job duration to step summary + warn if budget exceeded.
+      # Soft budget = 15 min; hard kill is `timeout-minutes: 30` above.
+      # `shell: bash` so the bash `if [ ... ]; then` conditional works on
+      # the windows runner too — the default PowerShell parses `if [` as a
+      # generic-type call and bails (was the widget (windows) red lane).
+      - name: Report job duration
+        if: always()
+        shell: bash
+        env:
+          BUDGET_MIN: 15
+          JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }})"
+        run: |
+          JOB_END=$(date +%s)
+          DURATION_SEC=$((JOB_END - JOB_START))
+          DURATION_MIN=$((DURATION_SEC / 60))
+          DURATION_REM=$((DURATION_SEC % 60))
+          {
+            echo "## Build duration"
+            echo ""
+            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
+            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
+          fi
+
+  # BUT-1182: the unit shard was split into unit-1/unit-2 above, so each ubuntu
+  # shard only produces HALF the coverage. This job merges the two partial lcov
+  # reports back into one complete unit-coverage file, then runs the SAME
+  # filtered-summary + 55% floor gate + Codecov upload the single unit job used
+  # to run — so the floor check evaluates a full unit run, not a half-shard.
+  # `needs: unit-tests` → runs after the matrix; skipped if any matrix leg fails.
+  coverage-aggregate:
+    name: Coverage (aggregate)
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
       - name: Install lcov
-        if: matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: sudo apt-get update && sudo apt-get install -y lcov
 
-      # Run a single suite. The 4-way split (unit / widget / views / golden)
-      # gives each its own 20-min job budget — see matrix comment above.
-      # Coverage instrumentation is only collected for the `unit` suite on
-      # ubuntu (the suite that drives the dashboard); other suites skip
-      # `--coverage` to save runtime. `test/golden/` holds parsing & tagging
-      # golden datasets that don't hit Firebase or the network (LLM tier
-      # uses a service-level mock; see test/golden/README.md).
-      - name: Run ${{ matrix.suite }} tests (with coverage)
-        if: matrix.suite == 'unit' && matrix.os == 'ubuntu-latest'
-        run: |
-          echo "Running test/${{ matrix.suite }} with coverage..."
-          flutter test test/${{ matrix.suite }} --coverage --reporter=expanded
+      # Each ubuntu unit shard uploaded its partial coverage as `lcov-unit-N`;
+      # download-artifact unpacks each into lcov-shards/<artifact-name>/lcov.info.
+      - name: Download shard coverage
+        uses: actions/download-artifact@v7
+        with:
+          pattern: lcov-unit-*
+          path: lcov-shards
 
-      - name: Run ${{ matrix.suite }} tests
-        if: matrix.suite != 'unit' || matrix.os != 'ubuntu-latest'
+      - name: Merge + summarise filtered coverage
         run: |
-          echo "Running test/${{ matrix.suite }}..."
-          flutter test test/${{ matrix.suite }} --reporter=expanded
-
-      # Produce a filtered lcov.info matching codecov.yml's ignore list, so
-      # the local "project coverage" number and the Codecov dashboard agree.
-      # No hard gate yet — Codecov owns the drop-tolerance gate via the
-      # `if_ci_failed: error` rule in codecov.yml. Once we've observed a
-      # real baseline from CI, a follow-up PR adds a local floor check
-      # that guards against the Codecov token being unavailable.
-      - name: Summarise filtered coverage
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
-        run: |
-          if [ ! -f coverage/lcov.info ]; then
-            echo "No coverage/lcov.info — skipping summary" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
+          mkdir -p coverage
+          shopt -s nullglob
+          PARTS=(lcov-shards/lcov-unit-*/lcov.info)
+          if [ ${#PARTS[@]} -eq 0 ]; then
+            echo "::error::No unit-shard coverage artifacts found to merge"
+            exit 1
           fi
+          echo "Merging ${#PARTS[@]} shard coverage files: ${PARTS[*]}"
+          ADD_ARGS=()
+          for p in "${PARTS[@]}"; do ADD_ARGS+=( --add-tracefile "$p" ); done
+          lcov "${ADD_ARGS[@]}" -o coverage/lcov.info --ignore-errors unused,empty,inconsistent
 
           lcov --remove coverage/lcov.info \
             '**/*.g.dart' \
@@ -155,7 +233,7 @@ jobs:
             | awk '/^  lines/ {print $2}')
 
           {
-            echo "## Coverage"
+            echo "## Coverage (merged unit shards)"
             echo ""
             echo "| Scope | Lines covered |"
             echo "| --- | --- |"
@@ -167,25 +245,16 @@ jobs:
 
           echo "Filtered coverage: ${FILTERED_PCT:-unknown}"
 
-      # Hard local coverage floor. Codecov is the primary gate, but if the
-      # token is unavailable (outage, rotated secret) the dashboard fails
-      # open. This step fails the build locally so regressions can't sneak
-      # in. BUT-494: overall floor aligned to the documented Codecov target
-      # of 60% (see "60% target" comment above) so the two gates agree.
-      # Per-area floors stay at their interim values until ~5 CI runs are
-      # observed for baseline-minus-2pp tightening.
-      #
-      # BUT-1149: temporarily lowered to 55.0 (from 60.0) after the
-      # Intent-Test Sprint (2026-05-27) raised filtered coverage from 48.8%
-      # → 55.5% but stalled short of the 60% target. Restore to 60.0 once
-      # the sprint's testability-friction tickets (BUT-1062/63/75/78/95/1130)
-      # are closed and a focused follow-up sprint pushes the remaining ~5pp.
+      # Hard local coverage floor (moved here from the unit job by BUT-1182 so
+      # it runs on the MERGED coverage). Codecov is the primary gate, but if the
+      # token is unavailable the dashboard fails open — this fails the build
+      # locally so regressions can't sneak in. BUT-1149: floor temporarily 55.0
+      # (from 60.0); restore once the testability-friction tickets close.
       - name: Enforce coverage floors
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
         run: |
           if [ ! -f coverage/lcov_filtered.info ]; then
-            echo "No filtered lcov — skipping floor check"
-            exit 0
+            echo "::error::No filtered lcov — the merge step did not produce coverage"
+            exit 1
           fi
 
           fail=0
@@ -242,9 +311,9 @@ jobs:
 
           exit $fail
 
-      # Upload coverage to Codecov — this is the real gate (see codecov.yml).
+      # Upload merged coverage to Codecov — this is the real gate (see codecov.yml).
       - name: Upload coverage to Codecov
-        if: success() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
+        if: success()
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0 — BUT-790 SHA-pin
         with:
           files: coverage/lcov_filtered.info
@@ -253,48 +322,14 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Keep the filtered lcov as an artifact so a maintainer can download
-      # and inspect line-by-line coverage from any run.
+      # Keep the merged filtered lcov as an artifact for line-by-line inspection.
       - name: Upload coverage artifact
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.suite == 'unit'
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: coverage-lcov
           path: coverage/lcov_filtered.info
           retention-days: 14
-
-      # Upload test results if tests fail
-      - name: Upload test results
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ matrix.suite }}-test-results-${{ matrix.os }}
-          path: test_results/
-
-      # BUT-495: emit job duration to step summary + warn if budget exceeded.
-      # Soft budget = 15 min; hard kill is `timeout-minutes: 30` above.
-      # `shell: bash` so the bash `if [ ... ]; then` conditional works on
-      # the windows runner too — the default PowerShell parses `if [` as a
-      # generic-type call and bails (was the widget (windows) red lane).
-      - name: Report job duration
-        if: always()
-        shell: bash
-        env:
-          BUDGET_MIN: 15
-          JOB_LABEL: "${{ matrix.suite }} (${{ matrix.os }})"
-        run: |
-          JOB_END=$(date +%s)
-          DURATION_SEC=$((JOB_END - JOB_START))
-          DURATION_MIN=$((DURATION_SEC / 60))
-          DURATION_REM=$((DURATION_SEC % 60))
-          {
-            echo "## Build duration"
-            echo ""
-            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
-            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
-          fi
 
   integration-tests:
     name: Integration Tests
