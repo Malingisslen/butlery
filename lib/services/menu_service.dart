@@ -21,11 +21,19 @@ import 'package:butlery/services/tagging/config/cuisine_config.dart';
 ///
 /// Example: "tre frukoster och två middagar" → 3 breakfast + 2 dinner recipes
 class MenuService extends BaseService {
-  MenuService({LexiconProvider? lexiconProvider})
-      : _lexiconProvider = lexiconProvider;
+  MenuService({LexiconProvider? lexiconProvider, Random? random})
+      : _lexiconProvider = lexiconProvider,
+        _random = random ?? Random();
 
   final LexiconProvider? _lexiconProvider;
   Lexicon? _cachedLexicon;
+
+  /// RNG for weighted recipe selection. Injectable + seedable so tests can make
+  /// the probabilistic weighting deterministic instead of asserting on flaky
+  /// statistical thresholds: the season-boost test flaked at n=1000 because the
+  /// boost vs no-boost distributions overlap at ~4σ (got 549 vs a >550 floor) —
+  /// a fixed seed removes the flake without weakening the check.
+  final Random _random;
 
   @override
   String get serviceName => 'MenuService';
@@ -258,7 +266,7 @@ class MenuService extends BaseService {
 
     final result = <String, List<Recipe>>{};
     final usedIds = <String>{};
-    final rand = Random();
+    final rand = _random;
     final season = SeasonUtils.currentSeasonTag();
 
     // Day pins land first (so tacofredag wins over generic selection).

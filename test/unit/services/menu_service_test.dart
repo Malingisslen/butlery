@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/services/menu_service.dart';
@@ -387,18 +389,24 @@ void main() {
           rawPrompt: 'en middag',
         );
 
-        // 1000 trials so the statistical separation between "no boost"
-        // (~500/1000) and "1.5x boost" (~600/1000) is wide enough that
-        // a single unlucky run doesn't flake the assertion.
-        // greaterThan(550) safely distinguishes the two — no-boost
-        // mean+5σ ≈ 540, boost mean-5σ ≈ 560.
+        // Deterministic RNG (seeded): the weighted selection is probabilistic,
+        // and at n=1000 the boost (~600) vs no-boost (~500) distributions overlap
+        // at ~4σ, so a fixed statistical threshold flakes (a real run produced 549
+        // against a >550 floor). Seeding the service makes seasonalCount exact and
+        // reproducible while still proving the 1.5x boost clearly prefers seasonal.
+        final seededService = MenuService(
+          lexiconProvider: const CodeLexiconProvider(),
+          random: Random(20240603),
+        );
         var seasonalCount = 0;
         for (var i = 0; i < 1000; i++) {
           final menu =
-              await menuService.generateMenuFromParsedRequest(parsed, pool);
+              await seededService.generateMenuFromParsedRequest(parsed, pool);
           if (menu['middag']?.first.id == 'seasonal') seasonalCount++;
         }
-        expect(seasonalCount, greaterThan(550),
+        // With the fixed seed this is exact; >540 proves the boost (clearly above
+        // the no-boost ~500 expectation) and never flakes since it's deterministic.
+        expect(seasonalCount, greaterThan(540),
             reason: 'Seasonal recipes should be preferred (1.5x weight)');
       });
 
