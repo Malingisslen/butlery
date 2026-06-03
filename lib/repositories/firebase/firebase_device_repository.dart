@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
@@ -29,7 +30,8 @@ class FirebaseDeviceRepository
   Map<String, dynamic> toFirestore(Map<String, dynamic> entity) => entity;
 
   @override
-  String getId(Map<String, dynamic> entity) => entity['docId'] as String? ?? '';
+  String getId(Map<String, dynamic> entity) =>
+      (entity['docId'] as String?).orEmpty();
 
   @override
   Future<bool> validateCreatePermission(

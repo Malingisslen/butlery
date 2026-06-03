@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/notification_history_repository.
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
@@ -33,7 +34,7 @@ class FirebaseNotificationHistoryRepository
 
   @override
   String getId(Map<String, dynamic> entity) =>
-      entity['notificationId'] as String? ?? '';
+      (entity['notificationId'] as String?).orEmpty();
 
   @override
   Future<bool> validateCreatePermission(

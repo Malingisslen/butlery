@@ -31,6 +31,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for friend relationship management with bidirectional consistency and analytics.
@@ -175,9 +176,9 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
       collection.doc(userId2).get(),
     ]);
     final user1Name =
-        (results[0].data()?['displayName'] as String? ?? '').toLowerCase();
+        (results[0].data()?['displayName'] as String?).orEmpty().toLowerCase();
     final user2Name =
-        (results[1].data()?['displayName'] as String? ?? '').toLowerCase();
+        (results[1].data()?['displayName'] as String?).orEmpty().toLowerCase();
     return (user1Name, user2Name);
   }
 

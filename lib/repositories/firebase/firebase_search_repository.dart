@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -55,8 +56,9 @@ class FirestoreSearchRepository implements SearchRepository {
       final hits = snapshot.docs
           .map((doc) {
             final data = doc.data();
-            final title = (data['recipeTitle'] as String?) ?? '';
-            final description = (data['recipeDescription'] as String?) ?? '';
+            final title = (data['recipeTitle'] as String?).orEmpty();
+            final description =
+                (data['recipeDescription'] as String?).orEmpty();
 
             // Simple text matching
             if (query.isEmpty ||
@@ -73,8 +75,8 @@ class FirestoreSearchRepository implements SearchRepository {
                 mealType: (data['mealType'] as String?) ?? 'Middag',
                 tags: (data['tags'] as List<dynamic>?)?.cast<String>() ?? [],
                 ownerDisplayName:
-                    (data['sharedByDisplayName'] as String?) ?? '',
-                ownerId: (data['sharedByUserId'] as String?) ?? '',
+                    (data['sharedByDisplayName'] as String?).orEmpty(),
+                ownerId: (data['sharedByUserId'] as String?).orEmpty(),
               );
             }
             return null;
@@ -119,7 +121,7 @@ class FirestoreSearchRepository implements SearchRepository {
       final hits = snapshot.docs
           .map((doc) {
             final data = doc.data();
-            final displayName = (data['displayName'] as String?) ?? '';
+            final displayName = (data['displayName'] as String?).orEmpty();
 
             if (query.isEmpty ||
                 displayName.toLowerCase().contains(lowerQuery)) {

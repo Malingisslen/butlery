@@ -5,6 +5,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 
@@ -203,9 +204,9 @@ class ShoppingTemplateOperationsModule {
     if (searchQuery != null && searchQuery.trim().isNotEmpty) {
       final lowerQuery = searchQuery.toLowerCase();
       templates = templates.where((template) {
-        final name = (template['name'] as String? ?? '').toLowerCase();
+        final name = (template['name'] as String?).orEmpty().toLowerCase();
         final description =
-            (template['description'] as String? ?? '').toLowerCase();
+            (template['description'] as String?).orEmpty().toLowerCase();
         return name.contains(lowerQuery) || description.contains(lowerQuery);
       }).toList();
     }

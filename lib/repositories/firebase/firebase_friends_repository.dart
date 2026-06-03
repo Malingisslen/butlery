@@ -10,6 +10,7 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
@@ -153,12 +154,12 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
             await transaction.get(collection.doc(request.fromUserId));
         final user2ProfileDoc =
             await transaction.get(collection.doc(request.toUserId));
-        final user1Name =
-            (user1ProfileDoc.data()?['displayName'] as String? ?? '')
-                .toLowerCase();
-        final user2Name =
-            (user2ProfileDoc.data()?['displayName'] as String? ?? '')
-                .toLowerCase();
+        final user1Name = (user1ProfileDoc.data()?['displayName'] as String?)
+            .orEmpty()
+            .toLowerCase();
+        final user2Name = (user2ProfileDoc.data()?['displayName'] as String?)
+            .orEmpty()
+            .toLowerCase();
 
         final user1FriendRef = firestore
             .collection(FirestoreCollections.users)

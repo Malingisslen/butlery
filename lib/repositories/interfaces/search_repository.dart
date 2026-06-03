@@ -1,6 +1,7 @@
 // lib/repositories/interfaces/search_repository.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Provider-agnostic search repository interface.
@@ -147,7 +148,7 @@ class RecipeSearchHit {
       core: RecipeCore(
         id: id,
         title: title,
-        description: description ?? '',
+        description: description.orEmpty(),
         ingredients: const [],
         instructions: const [],
         imageUrls: imageUrl != null ? [imageUrl!] : const [],

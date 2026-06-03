@@ -4,6 +4,7 @@ import 'package:algoliasearch/algoliasearch.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/algolia/algolia_pinning_interceptor.dart';
@@ -180,8 +181,8 @@ class AlgoliaSearchRepository implements SearchRepository {
         final highlight = data['_highlightResult'] as Map<String, dynamic>?;
 
         return RecipeSearchHit(
-          id: data['objectID'] as String? ?? '',
-          title: data['title'] as String? ?? '',
+          id: (data['objectID'] as String?).orEmpty(),
+          title: (data['title'] as String?).orEmpty(),
           description: data['description'] as String?,
           imageUrl: data['imageUrl'] as String?,
           timeMinutes: data['timeMinutes'] as int?,
@@ -189,8 +190,8 @@ class AlgoliaSearchRepository implements SearchRepository {
           rating: (data['rating'] as num?)?.toDouble(),
           mealType: data['mealType'] as String? ?? 'Middag',
           tags: (data['tags'] as List<dynamic>?)?.cast<String>() ?? [],
-          ownerDisplayName: data['ownerDisplayName'] as String? ?? '',
-          ownerId: data['ownerId'] as String? ?? '',
+          ownerDisplayName: (data['ownerDisplayName'] as String?).orEmpty(),
+          ownerId: (data['ownerId'] as String?).orEmpty(),
           highlightedTitle: _extractHighlightValue(highlight, 'title'),
           highlightedDescription:
               _extractHighlightValue(highlight, 'description'),
@@ -237,8 +238,8 @@ class AlgoliaSearchRepository implements SearchRepository {
       final hits = response.hits.map((hit) {
         final data = hit.toJson();
         return UserSearchHit(
-          id: data['objectID'] as String? ?? '',
-          displayName: data['displayName'] as String? ?? '',
+          id: (data['objectID'] as String?).orEmpty(),
+          displayName: (data['displayName'] as String?).orEmpty(),
           avatarUrl: data['avatarUrl'] as String?,
           recipeCount: data['recipeCount'] as int? ?? 0,
           followerCount: data['followerCount'] as int? ?? 0,
@@ -398,7 +399,7 @@ class AlgoliaSearchRepository implements SearchRepository {
       return response.hits
           .map((hit) {
             final data = hit.toJson();
-            return data[attributeToSearch] as String? ?? '';
+            return (data[attributeToSearch] as String?).orEmpty();
           })
           .where((s) => s.isNotEmpty)
           .toList();
