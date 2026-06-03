@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -249,7 +250,7 @@ class AppRouter {
           }
           return _buildRoute(
               ReceiveShareView(
-                content: shareData['content'] as String? ?? '',
+                content: (shareData['content'] as String?).orEmpty(),
                 type: shareData['type'] as String? ?? 'text',
               ),
               settings,

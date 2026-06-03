@@ -10,6 +10,7 @@ library;
 import 'package:flutter/services.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -317,7 +318,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     if (result.needsAssistance) {
       _setPhase(ImportPhase.needsHelp);
       final helpResult = ImportNeedsUserHelp(
-        extractedText: result.extractedText ?? '',
+        extractedText: result.extractedText.orEmpty(),
         suggestedTitle: result.suggestedTitle,
         thumbnailUrl: result.thumbnailUrl,
         sourceUrl: result.sourceUrl,

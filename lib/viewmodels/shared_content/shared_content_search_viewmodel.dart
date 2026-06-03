@@ -7,6 +7,7 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
@@ -314,7 +315,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
             (SharedRecipe r) => SearchResult(
                   id: r.id,
                   title: r.recipeTitle,
-                  description: r.recipeDescription ?? '',
+                  description: r.recipeDescription.orEmpty(),
                   contentType: ContentType.recipes,
                   sharedAt: r.sharedAt,
                   sharedByDisplayName: r.sharedByDisplayName,

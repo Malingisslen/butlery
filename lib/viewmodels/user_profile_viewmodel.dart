@@ -6,6 +6,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -46,7 +47,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   // Getters — delegate to _editedProfile
-  String get displayName => _editedProfile?.displayName ?? '';
+  String get displayName => (_editedProfile?.displayName).orEmpty();
   String? get avatarUrl => _editedProfile?.avatarUrl;
   bool get isSearchable => _editedProfile?.isSearchable ?? true;
   bool get allowEmailSearch => _editedProfile?.allowEmailSearch ?? false;
@@ -58,7 +59,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   CookingSkillLevel? get cookingSkillLevel => _editedProfile?.cookingSkillLevel;
   List<String> get cuisineAffinities =>
       List.unmodifiable(_editedProfile?.cuisineAffinities ?? []);
-  String get bio => _editedProfile?.bio ?? '';
+  String get bio => (_editedProfile?.bio).orEmpty();
   UserProfile? get currentProfile =>
       ServiceLocator.get<UserService>().currentUserProfile;
   bool get hasProfile => currentProfile != null;
@@ -339,7 +340,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         a.allowEmailSearch == b.allowEmailSearch &&
         a.cookingSkillLevel == b.cookingSkillLevel &&
         listEquals(a.cuisineAffinities ?? [], b.cuisineAffinities ?? []) &&
-        (a.bio ?? '') == (b.bio ?? '');
+        a.bio.orEmpty() == b.bio.orEmpty();
   }
 
   bool _hasDisplayNameChanged() {

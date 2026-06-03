@@ -2,6 +2,7 @@
 /// Handles item search, category grouping, and bulk operations like recipe imports.
 /// Part of UnifiedShoppingViewModel's modular architecture.
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/utils/shopping_category_mapper.dart';
 
@@ -78,7 +79,7 @@ class ShoppingItemOperationsManager {
     for (final ingredient in ingredientData) {
       final name = ingredient['name'] as String;
       final amount = (ingredient['amount'] as num).toDouble();
-      final unit = ingredient['unit'] as String? ?? '';
+      final unit = (ingredient['unit'] as String?).orEmpty();
       final category =
           ingredient['category'] as String? ?? ShoppingCategory.other;
 
@@ -86,7 +87,8 @@ class ShoppingItemOperationsManager {
       if (existingItems != null && updateItemCallback != null) {
         final normalizedName = name.trim().toLowerCase();
         final existing = existingItems.cast<dynamic>().where((item) {
-          final itemName = (item.name as String?)?.trim().toLowerCase() ?? '';
+          final itemName =
+              ((item.name as String?)?.trim().toLowerCase()).orEmpty();
           return itemName == normalizedName;
         }).toList();
 

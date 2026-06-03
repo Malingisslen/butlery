@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -510,7 +511,7 @@ class ChatViewModel extends ChangeNotifier
 
   // UI utility operations
   bool shouldShowAvatar(Message message, Message? previousMessage) {
-    if (message.isFromCurrentUser(currentUserId ?? '')) {
+    if (message.isFromCurrentUser(currentUserId.orEmpty())) {
       return false; // Never show avatar for own messages
     }
 

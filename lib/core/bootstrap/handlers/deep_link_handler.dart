@@ -8,6 +8,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -154,8 +155,8 @@ class DeepLinkHandler {
     final utmSource = params['utm_source'];
     if (utmSource == null || utmSource.isEmpty) return;
 
-    final utmMedium = params['utm_medium'] ?? '';
-    final utmCampaign = params['utm_campaign'] ?? '';
+    final utmMedium = params['utm_medium'].orEmpty();
+    final utmCampaign = params['utm_campaign'].orEmpty();
 
     try {
       final analytics = ServiceLocator.tryGet<AnalyticsService>();

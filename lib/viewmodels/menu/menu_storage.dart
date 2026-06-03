@@ -130,7 +130,7 @@ class MenuStorage {
         recipeCount: sharedMenu.totalRecipeCount,
         menu: sharedMenu.menuSnapshot,
         lastPrompt: '', // Not stored in SharedMenu - could be added later
-        comment: sharedMenu.shareMessage ?? '',
+        comment: sharedMenu.shareMessage.orEmpty(),
         originalAuthor: null,
         originalAuthorId: null,
         isModified: false,
@@ -172,7 +172,7 @@ class MenuStorage {
             name: menu.menuTitle,
             savedDate: menu.sharedAt,
             recipeCount: menu.totalRecipeCount,
-            comment: menu.shareMessage ?? '',
+            comment: menu.shareMessage.orEmpty(),
             originalAuthor: null,
             isModified: false,
             isOwned: true,

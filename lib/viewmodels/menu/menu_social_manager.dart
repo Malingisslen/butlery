@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/menu_social_manager.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
@@ -108,7 +109,7 @@ class MenuSocialManager {
             savedDate:
                 SerializationUtils.safeRequiredDateTime(menuData, 'sharedAt'),
             recipeCount: menuData['totalRecipes'] as int,
-            comment: menuData['description'] as String? ?? '',
+            comment: (menuData['description'] as String?).orEmpty(),
             originalAuthor: menuData['sharedByDisplayName'] as String?,
             isModified: false,
             isOwned: false, // Imported menus are not owned by current user
@@ -184,7 +185,7 @@ class MenuSocialManager {
     if (stats['lastSharedAt'] != null) {
       try {
         lastActivity =
-            DateTime.tryParse(stats['lastSharedAt'] as String? ?? '');
+            DateTime.tryParse((stats['lastSharedAt'] as String?).orEmpty());
       } catch (e) {
         // Ignore parsing errors
       }
@@ -193,7 +194,8 @@ class MenuSocialManager {
     // Check last received menu
     for (final menu in sharedMenus) {
       try {
-        final sharedAt = DateTime.tryParse(menu['sharedAt'] as String? ?? '');
+        final sharedAt =
+            DateTime.tryParse((menu['sharedAt'] as String?).orEmpty());
         if (sharedAt != null &&
             (lastActivity == null || sharedAt.isAfter(lastActivity))) {
           lastActivity = sharedAt;

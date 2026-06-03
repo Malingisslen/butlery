@@ -6,6 +6,7 @@
 /// 3. Review and edit recipe details
 library;
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
@@ -99,7 +100,7 @@ class AssistedImportViewModel extends BaseViewModel {
     likelyInstructionIndices = _detectLikelyInstructions();
 
     // Set initial title
-    _title = suggestedTitle ?? '';
+    _title = suggestedTitle.orEmpty();
   }
 
   /// Whether the user has made any selections that would be lost on cancel.

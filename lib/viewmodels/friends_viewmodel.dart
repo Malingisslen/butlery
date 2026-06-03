@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -299,7 +300,7 @@ class FriendsViewModel extends ChangeNotifier
 
         final categoryId = await _friendsService.categories.createCategory(
           name: name,
-          description: description ?? '',
+          description: description.orEmpty(),
           initialMemberIds: selectedFriendIds,
         );
 

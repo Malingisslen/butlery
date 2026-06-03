@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -112,9 +113,9 @@ class ConversationsViewModel extends ChangeNotifier
     } else {
       _filteredConversations = _allConversations.where((conversation) {
         final title =
-            conversation.getDisplayTitle(currentUserId ?? '').toLowerCase();
+            conversation.getDisplayTitle(currentUserId.orEmpty()).toLowerCase();
         final lastMessageContent =
-            conversation.lastMessage?.content.toLowerCase() ?? '';
+            (conversation.lastMessage?.content.toLowerCase()).orEmpty();
 
         return title.contains(_searchQuery) ||
             lastMessageContent.contains(_searchQuery);

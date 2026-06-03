@@ -247,7 +247,9 @@ class RealtimeRecipeViewModel extends ChangeNotifier
           () async {
             final presence =
                 await _recipeService.realtime.getRecipePresence(recipeId);
-            return presence.map((p) => p['userId'] as String? ?? '').toList();
+            return presence
+                .map((p) => (p['userId'] as String?).orEmpty())
+                .toList();
           },
           operationName: 'Get Active Editors',
           defaultValue: <String>[],
@@ -284,7 +286,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
     // Watch presence updates and extract user IDs
     return _recipeService.realtime.watchRecipePresence(recipeId).map(
         (presence) =>
-            presence.map((p) => p['userId'] as String? ?? '').toList());
+            presence.map((p) => (p['userId'] as String?).orEmpty()).toList());
   }
 
   Future<bool> reconnectRealtime() async {

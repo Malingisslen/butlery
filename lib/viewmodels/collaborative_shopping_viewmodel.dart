@@ -6,6 +6,7 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -106,7 +107,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
   // List properties
   String get listTitle => _currentList?.name ?? AppLocale.current.commonLoading;
-  String get listDescription => _currentList?.description ?? '';
+  String get listDescription => (_currentList?.description).orEmpty();
   bool get hasDescription => listDescription.isNotEmpty;
 
   // Permission system - delegate to permission manager

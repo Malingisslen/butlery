@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -159,7 +160,8 @@ LazyDatabase _openConnection() {
         // silently falls back to stock sqlite3 and the database opens
         // *unencrypted* — fail loudly here instead of silently degrading.
         final cipherVersionRow = db.select('PRAGMA cipher_version').firstOrNull;
-        final cipherVersion = cipherVersionRow?.values.first?.toString() ?? '';
+        final cipherVersion =
+            (cipherVersionRow?.values.first?.toString()).orEmpty();
         if (cipherVersion.isEmpty) {
           throw StateError(
             'SQLCipher library failed to load — database would open unencrypted. '
