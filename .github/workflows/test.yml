@@ -94,6 +94,24 @@ jobs:
 
       - run: flutter pub get
 
+      # BUT-1193 follow-up: break the ~12 min Flutter-compile floor. `flutter
+      # test` keeps a persistent incremental-compile kernel at
+      # `build/test_cache/*.dill` (it `initializeFromDill`s from it on startup
+      # and copies the accumulated dill back after — see flutter_tools
+      # test_compiler.dart). On a fresh runner that's empty → full lib/ compile.
+      # Persisting it across runs seeds the compiler so it only recompiles the
+      # files that changed since the cached baseline — correct by construction
+      # (incremental re-reads current sources), not a stale-skip. Rolling key
+      # (sha-suffixed + prefix restore-keys) keeps the baseline fresh each run.
+      # Per-shard key: each shard's dill carries the shared lib/ graph.
+      - name: Cache flutter test kernel (incremental compile)
+        uses: actions/cache@v5
+        with:
+          path: build/test_cache
+          key: flutter-testkernel-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-unit-shard${{ matrix.shard }}-${{ github.sha }}
+          restore-keys: |
+            flutter-testkernel-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-unit-shard${{ matrix.shard }}-
+
       # Real-time guard (BUT-393). Static grep over test files — only needs to
       # run once per pipeline, so gate it to shard 0.
       - name: Real-time regression guard
@@ -161,6 +179,16 @@ jobs:
           cache: true
 
       - run: flutter pub get
+
+      # BUT-1193 follow-up: same incremental-kernel cache as the unit shards
+      # (see that step's comment). Per-suite key.
+      - name: Cache flutter test kernel (incremental compile)
+        uses: actions/cache@v5
+        with:
+          path: build/test_cache
+          key: flutter-testkernel-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ matrix.suite }}-${{ github.sha }}
+          restore-keys: |
+            flutter-testkernel-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ matrix.suite }}-
 
       - name: Run ${{ matrix.suite }} tests
         run: |
