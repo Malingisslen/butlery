@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -85,7 +86,7 @@ class SocialGroupComponents {
     // Create a dummy FriendCategory for the facade
     final group = FriendCategory(
       id: groupId,
-      name: currentGroupName ?? '',
+      name: currentGroupName.orEmpty(),
       ownerId: 'dummy',
     );
     return SocialFacade.showEditGroupDialog(

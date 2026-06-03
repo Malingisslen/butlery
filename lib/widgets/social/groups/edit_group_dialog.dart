@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/edit_group_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -41,7 +42,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.group.name);
     _descriptionController = TextEditingController(
-      text: widget.group.description ?? '',
+      text: widget.group.description.orEmpty(),
     );
     _selectedEmoji = widget.group.emoji ?? '👥';
   }

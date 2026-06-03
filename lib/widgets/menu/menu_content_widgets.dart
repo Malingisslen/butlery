@@ -3,6 +3,7 @@
 // UI Redesign: Meal type headers with green left border (4px) + light green background
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -353,8 +354,9 @@ class MenuContentWidgets {
             Builder(builder: (context) {
               final vote = vvm.getVoteForSlot(category, i);
               if (vote == null) return const SizedBox.shrink();
-              final userId =
-                  ServiceLocator.get<PermissionService>().currentUserId ?? '';
+              final userId = ServiceLocator.get<PermissionService>()
+                  .currentUserId
+                  .orEmpty();
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
                 child: MenuVoteCard(

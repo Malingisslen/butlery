@@ -1,6 +1,7 @@
 // lib/widgets/common/input/shopping_item_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -140,7 +141,7 @@ class _AddUnifiedShoppingItemDialogState
   void initState() {
     super.initState();
     _nameController =
-        TextEditingController(text: widget.initialItem?.name ?? '');
+        TextEditingController(text: (widget.initialItem?.name).orEmpty());
     _amountController = TextEditingController(
       text: widget.initialItem?.formattedAmount ?? '1',
     );

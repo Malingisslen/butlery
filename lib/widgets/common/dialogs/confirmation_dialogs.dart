@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/confirmation_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -170,7 +171,7 @@ class ConfirmationDialogs {
     bool isRequired = false,
     int? maxLength,
   }) async {
-    final controller = TextEditingController(text: initialValue ?? '');
+    final controller = TextEditingController(text: initialValue.orEmpty());
 
     return await showDialog<String?>(
       context: context,

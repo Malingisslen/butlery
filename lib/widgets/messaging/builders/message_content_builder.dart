@@ -1,6 +1,7 @@
 // lib/widgets/messaging/builders/message_content_builder.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -46,7 +47,7 @@ class MessageContentBuilder {
           context,
           message,
           isFromCurrentUser,
-          currentUserId: currentUserId ?? '',
+          currentUserId: currentUserId.orEmpty(),
           onVote: onPollVote,
           onClose: onPollClose,
         );
@@ -211,7 +212,7 @@ class MessageContentBuilder {
     bool isFromCurrentUser,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final imageUrl = message.metadata?['imageUrl'] as String? ?? '';
+    final imageUrl = (message.metadata?['imageUrl'] as String?).orEmpty();
 
     if (imageUrl.isEmpty) {
       return Text(

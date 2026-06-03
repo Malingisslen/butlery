@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -196,7 +197,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     try {
       // Build a temporary rule to test against recipes
       final testRule = PersonalTagRule.create(
-        tagId: _selectedTagId ?? '',
+        tagId: _selectedTagId.orEmpty(),
         name: 'test',
         conditions: _conditions,
         matchMode: _matchMode,

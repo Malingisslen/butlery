@@ -4,6 +4,7 @@
 /// Implements clean conversation header with action coordination.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -107,7 +108,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              conversation?.title ?? '',
+              (conversation?.title).orEmpty(),
               style: AppTextStyles.titleMedium,
             ),
             if (conversation != null && conversation!.participantIds.length > 2)

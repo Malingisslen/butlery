@@ -1,6 +1,7 @@
 // lib/widgets/shopping/shopping_template_browser.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -126,9 +127,9 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
           const SizedBox(height: AppDimensions.spacingSm),
       itemBuilder: (context, index) {
         final template = _templates[index];
-        final id = template['id'] as String? ?? '';
-        final name = template['name'] as String? ?? '';
-        final description = template['description'] as String? ?? '';
+        final id = (template['id'] as String?).orEmpty();
+        final name = (template['name'] as String?).orEmpty();
+        final description = (template['description'] as String?).orEmpty();
         final itemCount = (template['itemCount'] as num?)?.toInt() ?? 0;
         final useCount = (template['useCount'] as num?)?.toInt() ?? 0;
 

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -178,7 +179,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
     // Initiera controllers
     _messageController =
-        TextEditingController(text: widget.initialMessage ?? '');
+        TextEditingController(text: widget.initialMessage.orEmpty());
 
     // Determine if realtime sharing is supported
     _supportsRealtimeSharing =

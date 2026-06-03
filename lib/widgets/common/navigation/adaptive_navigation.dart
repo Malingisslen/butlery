@@ -4,6 +4,7 @@
 // Uses forest green background with rust indicator for selected item
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/core/utils/accessibility_utils.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -312,7 +313,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
 extension AdaptiveNavigationItemExtension on BottomNavigationBarItem {
   AdaptiveNavigationItem toAdaptiveItem({required String route}) {
     return AdaptiveNavigationItem(
-      label: label ?? '',
+      label: label.orEmpty(),
       icon: (icon as Icon).icon ?? Icons.error,
       activeIcon:
           (activeIcon as Icon?)?.icon ?? (icon as Icon).icon ?? Icons.error,

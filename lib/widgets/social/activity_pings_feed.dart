@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -396,7 +397,7 @@ class _FeedRow extends StatelessWidget {
       _ActivityItem(:final activity) => switch (activity.type) {
           ActivityEventType.addedIngredient => l10n.activityAddedIngredient(
               actorName,
-              (activity.extraData['ingredient'] as String?) ?? '',
+              (activity.extraData['ingredient'] as String?).orEmpty(),
             ),
           ActivityEventType.startedCooking => l10n.activityStartedCooking(
               actorName,

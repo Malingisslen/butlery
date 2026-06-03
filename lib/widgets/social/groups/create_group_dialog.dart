@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -65,8 +66,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       final raw = prefs.getString(_draftPrefsKey);
       if (raw == null || raw.isEmpty || !mounted) return;
       final json = jsonDecode(raw) as Map<String, dynamic>;
-      final savedName = json['name'] as String? ?? '';
-      final savedDesc = json['description'] as String? ?? '';
+      final savedName = (json['name'] as String?).orEmpty();
+      final savedDesc = (json['description'] as String?).orEmpty();
       final savedEmoji = json['emoji'] as String? ?? _selectedEmoji;
       final savedFriendIds =
           (json['friendIds'] as List?)?.whereType<String>().toList() ??
