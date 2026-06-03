@@ -1,11 +1,12 @@
 /// Tag-cascade operations for the recipe repository — extracted from
-/// `firebase_recipe_repository.dart` per BUT-536. Handles the three
-/// denormalized-tag write paths: rename across user recipes, remove from
-/// all user recipes, and a batch-additive variant for callers that
-/// orchestrate cross-document tag deletion in their own batches.
+/// `firebase_recipe_repository.dart` per BUT-536. Handles the denormalized-tag
+/// write paths on user recipes: rename across recipes, remove from all
+/// recipes, self-chunking replace/merge (BUT-1186), and a batch-additive
+/// remove variant for callers that orchestrate cross-document tag deletion in
+/// their own batches.
 ///
-/// All three paths read-modify-write the `core.personalTags` rich-object
-/// array; `core.personalTagIds` (UUID array) is only mutated on remove.
+/// All paths read-modify-write the `core.personalTags` rich-object array;
+/// `core.personalTagIds` (UUID array) is mutated on remove and replace.
 /// No CRUD `read`/`update` calls are needed — operations work directly on
 /// the user-scoped collection reference, so this class only depends on
 /// the repository's `firestore` handle and a `getCollectionForUser`
@@ -99,8 +100,18 @@ class RecipeTagOperations {
 
   /// Removes a personal tag from all user recipes that contain it.
   ///
-  /// Removes from both personalTagIds (UUID array) and personalTags (rich objects).
-  /// Returns the number of recipes updated.
+  /// Removes from both personalTagIds (UUID array) and personalTags (rich
+  /// objects). Self-chunking in batches of [kFirestoreBatchSafeChunkSize]
+  /// (one op per doc) so a tag on >500 recipes never overflows the Firestore
+  /// 500-op-per-batch limit. Returns the number of recipes updated.
+  ///
+  /// **Errors PROPAGATE (rethrow, not swallow).** Sole caller is
+  /// `PersonalTagCrudService.deleteTag`, which removes the tag from recipes
+  /// FIRST and only then deletes the tag document. If a cascade chunk fails it
+  /// MUST unwind so the tag-doc delete never runs — otherwise the tag
+  /// disappears while recipes still reference it (silent orphan). The
+  /// legitimate "zero recipes matched" case is the early `return 0` BEFORE any
+  /// write and is distinct from a thrown error.
   Future<int> removePersonalTagFromRecipes(
     String? userId,
     String tagId,
@@ -115,12 +126,11 @@ class RecipeTagOperations {
 
       if (snap.docs.isEmpty) return 0;
 
-      const batchLimit = 500; // 1 op per doc (consolidated update)
       int updated = 0;
 
-      for (var i = 0; i < snap.docs.length; i += batchLimit) {
+      for (var i = 0; i < snap.docs.length; i += kFirestoreBatchSafeChunkSize) {
         final batch = firestore.batch();
-        final chunk = snap.docs.skip(i).take(batchLimit);
+        final chunk = snap.docs.skip(i).take(kFirestoreBatchSafeChunkSize);
 
         for (final doc in chunk) {
           batch.update(
@@ -133,8 +143,11 @@ class RecipeTagOperations {
 
       return updated;
     } catch (e) {
-      AppLogger.warning('Failed to remove tag "$tagId" from recipes: $e');
-      return 0;
+      AppLogger.warning(
+        'Failed to remove tag "$tagId" from recipes '
+        '(propagating so caller skips the tag-doc delete): $e',
+      );
+      rethrow;
     }
   }
 
@@ -143,12 +156,13 @@ class RecipeTagOperations {
   /// Returns the number of recipe updates added.
   /// Caller is responsible for committing the batch and respecting the 500-op limit.
   ///
-  /// **Intentionally no try/catch** — the other two tag methods swallow
-  /// errors and return 0 because they're self-contained operations. This
-  /// one is batch-additive: the caller owns the batch lifecycle, and an
-  /// exception here means the caller's batch is in a half-built state and
-  /// MUST not be committed. Letting the exception propagate forces the
-  /// caller to handle the error explicitly.
+  /// **Intentionally no try/catch** — this one is batch-additive: the caller
+  /// owns the batch lifecycle, and an exception here means the caller's batch
+  /// is in a half-built state and MUST not be committed. Letting the exception
+  /// propagate forces the caller to handle the error explicitly. (The
+  /// self-chunking [removePersonalTagFromRecipes] / [replaceTagInRecipes] also
+  /// propagate — they log then rethrow — so their cascade-then-delete callers
+  /// skip the tag delete on failure rather than orphaning recipe references.)
   Future<int> addRemovePersonalTagFromRecipesToBatch(
     String? userId,
     WriteBatch batch,
@@ -170,27 +184,41 @@ class RecipeTagOperations {
     return snap.docs.length;
   }
 
-  /// Adds replace-personal-tag (merge) operations to an external batch
-  /// without committing. Queries recipes carrying [fromTagId], then for each
-  /// rewrites both denormalized arrays so [fromTagId] is swapped for
-  /// [toTagId]. Returns the number of recipe updates added.
+  /// Replaces (merges) a personal tag across all user recipes that carry it:
+  /// [fromTagId] is swapped for [toTagId] in both denormalized arrays.
+  /// Self-chunking — queries recipes carrying [fromTagId], then commits the
+  /// rewrites in chunks of [kFirestoreBatchSafeChunkSize] (one op per doc),
+  /// so a user with >500 recipes on one tag never overflows the Firestore
+  /// 500-op-per-batch limit. Returns the number of recipes updated.
   ///
   /// [toTagRichEntry] is the `{tagId, name, sources}` map appended to a
   /// recipe's rich `core.personalTags` array when that recipe didn't already
   /// carry [toTagId] — the caller resolves it from the destination tag.
   ///
-  /// **Intentionally no try/catch** — same contract as
-  /// [addRemovePersonalTagFromRecipesToBatch]: the caller owns the batch
-  /// lifecycle, so a query/build failure here must propagate rather than
-  /// leave the caller committing a half-built batch.
-  ///
   /// **Why SET, not FieldValue transforms** — Firestore rejects two
   /// FieldValue transforms (arrayRemove + arrayUnion) on the same field in
   /// one update, so both arrays are computed from [doc.data] and written as
   /// plain lists (mirroring [_buildTagRemovalUpdate]).
-  Future<int> addReplaceTagInRecipesToBatch(
+  ///
+  /// **Idempotency / partial retry**: same posture as
+  /// [renamePersonalTagInRecipes]. The per-doc rewrite is an idempotent SET —
+  /// re-running on an already-retagged recipe (fromTagId absent, toTagId
+  /// present) produces an identical document. A network drop mid-cascade
+  /// leaves some recipes retagged and some not; re-running completes the
+  /// rest. This is why the merge caller MUST retag-all-first, THEN delete the
+  /// source tag (see PersonalTagCrudService.mergeTags): a failed delete is
+  /// then a safe re-run of an idempotent retag + retry-delete.
+  ///
+  /// **Errors PROPAGATE (rethrow, not swallow).** A query/commit failure here
+  /// MUST unwind to the merge caller so its Step-2 source-tag delete never
+  /// runs — otherwise a half-done cascade (e.g. chunk 1 committed, chunk 2
+  /// threw) followed by an unconditional delete would orphan recipe references
+  /// to a deleted tag, with no way to self-heal (the source tag is gone). The
+  /// legitimate "zero recipes matched" case is the early `return 0` BEFORE any
+  /// write — that is NOT a failure and is distinct from a thrown error. The
+  /// warning is logged for diagnostics, then re-thrown.
+  Future<int> replaceTagInRecipes(
     String? userId,
-    WriteBatch batch,
     String fromTagId,
     String toTagId,
     Map<String, dynamic> toTagRichEntry,
@@ -199,25 +227,43 @@ class RecipeTagOperations {
     if (userId == null) return 0;
     if (fromTagId == toTagId) return 0;
 
-    final snap = await getCollectionForUser(userId)
-        .where('core.personalTagIds', arrayContains: fromTagId)
-        .get();
+    try {
+      final snap = await getCollectionForUser(userId)
+          .where('core.personalTagIds', arrayContains: fromTagId)
+          .get();
 
-    if (snap.docs.isEmpty) return 0;
+      if (snap.docs.isEmpty) return 0;
 
-    for (final doc in snap.docs) {
-      batch.update(
-        doc.reference,
-        _buildTagReplaceUpdate(
-          doc.data(),
-          fromTagId,
-          toTagId,
-          toTagRichEntry,
-        ),
+      int updated = 0;
+
+      for (var i = 0; i < snap.docs.length; i += kFirestoreBatchSafeChunkSize) {
+        final batch = firestore.batch();
+        final chunk = snap.docs.skip(i).take(kFirestoreBatchSafeChunkSize);
+
+        for (final doc in chunk) {
+          batch.update(
+            doc.reference,
+            _buildTagReplaceUpdate(
+              doc.data(),
+              fromTagId,
+              toTagId,
+              toTagRichEntry,
+            ),
+          );
+        }
+
+        await batch.commit();
+        updated += chunk.length;
+      }
+
+      return updated;
+    } catch (e) {
+      AppLogger.warning(
+        'Failed to replace tag "$fromTagId" with "$toTagId" in recipes '
+        '(propagating so caller skips the source-tag delete): $e',
       );
+      rethrow;
     }
-
-    return snap.docs.length;
   }
 
   /// Tag-removal update map shared by [removePersonalTagFromRecipes] and
@@ -244,7 +290,7 @@ class RecipeTagOperations {
     return updates;
   }
 
-  /// Tag-replace (merge) update map used by [addReplaceTagInRecipesToBatch].
+  /// Tag-replace (merge) update map used by [replaceTagInRecipes].
   /// Computes both arrays from [data] and SETs them (no FieldValue
   /// transforms — see method doc): pull [fromTagId] from the UUID array and
   /// append [toTagId] if absent; drop the rich entry for [fromTagId] and

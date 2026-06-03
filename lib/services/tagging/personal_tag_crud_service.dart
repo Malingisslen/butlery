@@ -177,27 +177,36 @@ class PersonalTagCrudService extends BaseService {
     );
   }
 
+  /// BUT-1186: removes [tagId] from every recipe carrying it, THEN deletes the
+  /// tag document.
+  ///
+  /// **Ordering invariant — cascade-all-first, THEN delete** (same as
+  /// [mergeTags]). BUT-1042 combined the per-recipe pull and the tag delete in
+  /// one uncapped batch, which overflows Firestore's 500-op limit once a user
+  /// has >450 recipes on the tag. We now delegate the cascade to the already
+  /// self-chunking [FirebaseRecipeRepository.removePersonalTagFromRecipes]
+  /// (batches of [kFirestoreBatchSafeChunkSize]), and only delete the tag doc
+  /// after every cascade chunk has committed. A delete-failure then leaves the
+  /// tag intact with its references already pulled — a re-run safely no-ops the
+  /// cascade and retries the delete.
   Future<void> deleteTag(String tagId) async {
     await executeServiceOperation(
       () async {
-        final batch = _tagRepository.newWriteBatch();
-
-        final recipeRepo = _getFirebaseRecipeRepository();
+        final recipeRepo = _getRecipeRepository();
         int cascadeCount = 0;
         if (recipeRepo != null) {
-          cascadeCount =
-              await recipeRepo.addRemovePersonalTagFromRecipesToBatch(
-            batch,
-            tagId,
-          );
+          // Step 1: pull the tag from ALL recipes first (self-chunked).
+          cascadeCount = await recipeRepo.removePersonalTagFromRecipes(tagId);
         }
 
-        _tagRepository.addDeleteToBatch(batch, tagId);
-        await batch.commit();
+        // Step 2: only after the cascade lands, delete the tag document.
+        final deleteBatch = _tagRepository.newWriteBatch();
+        _tagRepository.addDeleteToBatch(deleteBatch, tagId);
+        await deleteBatch.commit();
 
         if (cascadeCount > 0) {
           AppLogger.info(
-            'Atomically deleted tag "$tagId" and cascaded to $cascadeCount recipes',
+            'Deleted tag "$tagId" and cascaded removal to $cascadeCount recipes',
           );
         }
 
@@ -261,10 +270,22 @@ class PersonalTagCrudService extends BaseService {
     return result ?? 0;
   }
 
-  /// BUT-1042: merges [fromId] into [toId] in one atomic batch — every recipe
-  /// carrying [fromId] is retagged to [toId] (rich `personalTags` entry
-  /// rewritten to point at the destination tag) and the [fromId] tag document
-  /// is deleted, so either the whole merge lands or none of it does.
+  /// BUT-1042 / BUT-1186: merges [fromId] into [toId]. Every recipe carrying
+  /// [fromId] is retagged to [toId] (rich `personalTags` entry rewritten to
+  /// point at the destination tag), then the [fromId] tag document is deleted.
+  ///
+  /// **Ordering invariant — retag-all-first, THEN delete.** BUT-1042 shipped
+  /// this as one uncapped atomic batch, which overflows Firestore's
+  /// 500-op-per-batch limit once a user has >450 recipes on the source tag.
+  /// BUT-1186 splits it: [replaceTagInRecipes] self-chunks the retags into
+  /// batches of [kFirestoreBatchSafeChunkSize] and commits them all FIRST,
+  /// then the source tag is deleted in a separate op. The merge is therefore
+  /// no longer a single atomic batch — but the ordering makes a partial
+  /// failure safe: a delete-failure leaves the source tag intact (recipes
+  /// already moved), so a re-run is an idempotent no-op retag + retry-delete.
+  /// NEVER delete before the retags complete — that would orphan recipe
+  /// references to a tag document that no longer exists. Same partial-retry
+  /// posture as `renamePersonalTagInRecipes`.
   ///
   /// Returns the number of recipes retagged. A no-op (`0`) when ids are equal
   /// or empty — nothing to merge.
@@ -275,6 +296,7 @@ class PersonalTagCrudService extends BaseService {
       () async {
         final toTag = await _tagRepository.read(toId);
         if (toTag == null) {
+          // Guard fires BEFORE any write — nothing retagged, nothing deleted.
           throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
         }
 
@@ -285,21 +307,24 @@ class PersonalTagCrudService extends BaseService {
           name: toTag.name,
         ).toMap();
 
-        final batch = _tagRepository.newWriteBatch();
-
         var retagged = 0;
         final recipeRepo = _getFirebaseRecipeRepository();
         if (recipeRepo != null) {
-          retagged = await recipeRepo.addReplaceTagInRecipesToBatch(
-            batch,
+          // Step 1: retag ALL recipes first (self-chunked; all chunks commit).
+          retagged = await recipeRepo.replaceTagInRecipes(
             fromId,
             toId,
             toRichEntry,
           );
         }
 
-        _tagRepository.addDeleteToBatch(batch, fromId);
-        await batch.commit();
+        // Step 2: only after every retag has landed, delete the source tag in
+        // a separate batch. If this throws, the retags above already
+        // committed, so a re-run safely no-ops the retag and retries the
+        // delete.
+        final deleteBatch = _tagRepository.newWriteBatch();
+        _tagRepository.addDeleteToBatch(deleteBatch, fromId);
+        await deleteBatch.commit();
 
         _invalidateTagsCache();
         AppLogger.info(

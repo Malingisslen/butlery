@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
@@ -918,7 +919,11 @@ void main() {
       });
     });
 
-    group('deleteTag - atomic batch cascade', () {
+    // BUT-1186: deleteTag now cascades the per-recipe removal via the
+    // self-chunking removePersonalTagFromRecipes FIRST (so >500 recipes on one
+    // tag never overflow the 500-op batch limit), THEN deletes the tag doc in
+    // a separate batch. No longer one atomic batch.
+    group('deleteTag - chunked cascade then delete (BUT-1186)', () {
       late MockWriteBatch mockBatch;
 
       setUp(() {
@@ -928,32 +933,63 @@ void main() {
         registerFallbackValue(mockBatch);
       });
 
-      test('should atomically cascade delete and remove tag in one batch',
-          () async {
-        when(() => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
-            any(), 'tag-1')).thenAnswer((_) async => 5);
+      test('cascades removal via chunked path, then deletes the tag', () async {
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async => 5);
         when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
             .thenReturn(null);
 
         await service.deleteTag('tag-1');
 
-        verify(() => mockRecipeRepository
-                .addRemovePersonalTagFromRecipesToBatch(mockBatch, 'tag-1'))
+        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
             .called(1);
         verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
             .called(1);
         verify(() => mockBatch.commit()).called(1);
       });
 
-      test('should commit batch even when cascade affects zero recipes',
-          () async {
-        when(() => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
-            any(), 'tag-1')).thenAnswer((_) async => 0);
+      test('ordering — cascade runs BEFORE the tag delete commits', () async {
+        final calls = <String>[];
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async {
+          calls.add('cascade');
+          return 3;
+        });
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
+            .thenReturn(null);
+        when(() => mockBatch.commit()).thenAnswer((_) async {
+          calls.add('delete-commit');
+        });
+
+        await service.deleteTag('tag-1');
+
+        expect(calls, ['cascade', 'delete-commit']);
+      });
+
+      test('does NOT delete the tag when the cascade throws', () async {
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenThrow(Exception('network drop mid-cascade'));
         when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
             .thenReturn(null);
 
         await service.deleteTag('tag-1');
 
+        // executeServiceOperation swallows the throw; crucially the tag delete
+        // never ran, so the source tag survives with references already pulled.
+        verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
+        verifyNever(() => mockBatch.commit());
+      });
+
+      test('deletes the tag even when cascade affects zero recipes', () async {
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async => 0);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
+            .thenReturn(null);
+
+        await service.deleteTag('tag-1');
+
+        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
+            .called(1);
         verify(() => mockBatch.commit()).called(1);
       });
 
@@ -974,26 +1010,15 @@ void main() {
         // Re-register for other tests
         getIt.registerSingleton<RecipeRepository>(mockRecipeRepository);
       });
-
-      test('should add both cascade and delete to the same batch', () async {
-        when(() => mockRecipeRepository.addRemovePersonalTagFromRecipesToBatch(
-            any(), 'tag-1')).thenAnswer((_) async => 1);
-        when(() => mockTagRepository.addDeleteToBatch(any(), 'tag-1'))
-            .thenReturn(null);
-
-        await service.deleteTag('tag-1');
-
-        // Both operations use the same batch instance
-        verify(() => mockRecipeRepository
-                .addRemovePersonalTagFromRecipesToBatch(mockBatch, 'tag-1'))
-            .called(1);
-        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'tag-1'))
-            .called(1);
-        verify(() => mockBatch.commit()).called(1);
-      });
     });
 
-    group('mergeTags - atomic retag + delete', () {
+    // BUT-1186: mergeTags is no longer one atomic batch. It self-chunks the
+    // retag of every recipe carrying fromId via replaceTagInRecipes (committed
+    // across N batches inside the repo) FIRST, then deletes the source tag in a
+    // SEPARATE batch. Ordering is a correctness invariant: a delete-failure
+    // leaves the source tag intact (recipes already moved), so a re-run is a
+    // safe idempotent no-op retag + retry-delete. Never delete before retags.
+    group('mergeTags - chunked retag then delete (BUT-1186)', () {
       late MockWriteBatch mockBatch;
 
       setUp(() {
@@ -1003,44 +1028,80 @@ void main() {
         registerFallbackValue(mockBatch);
       });
 
-      test('retags recipes and deletes fromId in a single batch', () async {
-        final toTag = PersonalTagBuilder()
-            .withId('to-id')
-            .withName('Destination')
-            .build();
+      PersonalTag toTag() =>
+          PersonalTagBuilder().withId('to-id').withName('Destination').build();
+
+      test('retags recipes (chunked path), THEN deletes fromId separately',
+          () async {
         when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag);
-        when(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
-            any(), 'from-id', 'to-id', any())).thenAnswer((_) async => 4);
+            .thenAnswer((_) async => toTag());
+        when(() => mockRecipeRepository.replaceTagInRecipes(
+            'from-id', 'to-id', any())).thenAnswer((_) async => 4);
         when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
             .thenReturn(null);
 
         final count = await service.mergeTags('from-id', 'to-id');
 
         expect(count, 4);
-        // Both the retag and the delete land on the SAME batch, then commit.
-        verify(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
-            mockBatch, 'from-id', 'to-id', any())).called(1);
+        // Retag delegated to the self-chunking repo method (commits internally).
+        verify(() => mockRecipeRepository.replaceTagInRecipes(
+            'from-id', 'to-id', any())).called(1);
+        // Delete lands on its OWN batch, committed after the retag.
         verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'))
             .called(1);
         verify(() => mockBatch.commit()).called(1);
       });
 
+      test('ordering — retag runs BEFORE the source-tag delete commits',
+          () async {
+        final calls = <String>[];
+        when(() => mockTagRepository.read('to-id'))
+            .thenAnswer((_) async => toTag());
+        when(() => mockRecipeRepository.replaceTagInRecipes(
+            'from-id', 'to-id', any())).thenAnswer((_) async {
+          calls.add('retag');
+          return 4;
+        });
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
+            .thenReturn(null);
+        when(() => mockBatch.commit()).thenAnswer((_) async {
+          calls.add('delete-commit');
+        });
+
+        await service.mergeTags('from-id', 'to-id');
+
+        expect(calls, ['retag', 'delete-commit']);
+      });
+
+      test('does NOT delete fromId when the retag throws mid-way', () async {
+        when(() => mockTagRepository.read('to-id'))
+            .thenAnswer((_) async => toTag());
+        when(() => mockRecipeRepository.replaceTagInRecipes(
+                'from-id', 'to-id', any()))
+            .thenThrow(Exception('network drop mid-retag'));
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
+            .thenReturn(null);
+
+        final count = await service.mergeTags('from-id', 'to-id');
+
+        // Throw is swallowed by executeServiceOperation → 0; the source tag is
+        // NEVER deleted, so recipe references are never orphaned.
+        expect(count, 0);
+        verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
+        verifyNever(() => mockBatch.commit());
+      });
+
       test('passes destination tag rich-entry (manual source) to the repo',
           () async {
-        final toTag = PersonalTagBuilder()
-            .withId('to-id')
-            .withName('Destination')
-            .build();
         when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag);
+            .thenAnswer((_) async => toTag());
         when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
             .thenReturn(null);
 
         Map<String, dynamic>? captured;
-        when(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
-            any(), 'from-id', 'to-id', any())).thenAnswer((invocation) async {
-          captured = invocation.positionalArguments[3] as Map<String, dynamic>;
+        when(() => mockRecipeRepository.replaceTagInRecipes(
+            'from-id', 'to-id', any())).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[2] as Map<String, dynamic>;
           return 1;
         });
 
@@ -1057,8 +1118,8 @@ void main() {
 
         expect(count, 0);
         verifyNever(() => mockTagRepository.newWriteBatch());
-        verifyNever(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
-            any(), any(), any(), any()));
+        verifyNever(() =>
+            mockRecipeRepository.replaceTagInRecipes(any(), any(), any()));
         verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
       });
 
@@ -1066,31 +1127,30 @@ void main() {
         expect(await service.mergeTags('', 'to-id'), 0);
         expect(await service.mergeTags('from-id', ''), 0);
         verifyNever(() => mockTagRepository.newWriteBatch());
+        verifyNever(() =>
+            mockRecipeRepository.replaceTagInRecipes(any(), any(), any()));
       });
 
       test('does not delete fromId when destination tag does not exist',
           () async {
-        // executeServiceOperation swallows the thrown ArgumentError and
-        // returns null → facade yields 0; crucially nothing was committed.
+        // Missing-dest guard throws BEFORE any retag or delete.
         when(() => mockTagRepository.read('to-id'))
             .thenAnswer((_) async => null);
 
         final count = await service.mergeTags('from-id', 'to-id');
 
         expect(count, 0);
+        verifyNever(() =>
+            mockRecipeRepository.replaceTagInRecipes(any(), any(), any()));
         verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
         verifyNever(() => mockBatch.commit());
       });
 
-      test('commits even when retag affects zero recipes', () async {
-        final toTag = PersonalTagBuilder()
-            .withId('to-id')
-            .withName('Destination')
-            .build();
+      test('deletes fromId even when retag affects zero recipes', () async {
         when(() => mockTagRepository.read('to-id'))
-            .thenAnswer((_) async => toTag);
-        when(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
-            any(), 'from-id', 'to-id', any())).thenAnswer((_) async => 0);
+            .thenAnswer((_) async => toTag());
+        when(() => mockRecipeRepository.replaceTagInRecipes(
+            'from-id', 'to-id', any())).thenAnswer((_) async => 0);
         when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
             .thenReturn(null);
 

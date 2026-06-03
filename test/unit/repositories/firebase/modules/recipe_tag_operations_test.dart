@@ -1,19 +1,22 @@
 /// Unit tests for RecipeTagOperations.
 ///
-/// The module owns three denormalized-tag write paths on user recipes:
-/// rename, remove, and batch-additive remove. All three depend only on
-/// `firestore` and a `getCollectionForUser` callback, so we can drive
-/// them end-to-end with `FakeFirebaseFirestore` without any auth wiring.
+/// The module owns the denormalized-tag write paths on user recipes: rename,
+/// remove, self-chunking replace/merge, and a batch-additive remove. They
+/// depend only on `firestore` and a `getCollectionForUser` callback, so we can
+/// drive them end-to-end with `FakeFirebaseFirestore` without auth wiring.
 ///
 /// Coverage focus: short-circuit guards (empty/null inputs), happy-path
-/// read-modify-write semantics, the rename vs remove field-update split,
-/// and the batch-additive contract (no commit, no try/catch).
+/// read-modify-write semantics, the rename vs remove field-update split, the
+/// batch-additive contract (no commit, no try/catch), and — for the
+/// self-chunking remove/replace paths — error PROPAGATION (BUT-1186: a cascade
+/// failure must rethrow so the caller skips the tag-doc delete, never orphan).
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_tag_operations.dart';
 
 const _userId = 'alice';
@@ -28,6 +31,54 @@ RecipeTagOperations _ops(FakeFirebaseFirestore firestore) =>
     RecipeTagOperations(
       firestore: firestore,
       getCollectionForUser: (userId) => _userRecipes(firestore, userId),
+    );
+
+/// Wraps a real [FakeFirebaseFirestore] but makes the Nth (1-based)
+/// `batch()` call return a batch whose `commit()` throws — simulating a
+/// mid-cascade chunk-commit failure (e.g. chunk 1 lands, chunk 2 drops).
+/// Earlier/later batches delegate to the real fake so chunk 1 actually
+/// commits against real data. All other Firestore surface delegates.
+class _ThrowOnNthBatchFirestore extends FakeFirebaseFirestore {
+  _ThrowOnNthBatchFirestore({required this.throwOnBatch});
+
+  final int throwOnBatch;
+  int _batchCalls = 0;
+
+  @override
+  WriteBatch batch() {
+    _batchCalls++;
+    if (_batchCalls == throwOnBatch) {
+      return _ThrowingWriteBatch();
+    }
+    return super.batch();
+  }
+}
+
+/// A [WriteBatch] that accepts staged ops but throws on `commit()`.
+// ignore: subtype_of_sealed_class
+class _ThrowingWriteBatch implements WriteBatch {
+  @override
+  void update(DocumentReference doc, Map<Object, Object?> data) {}
+
+  @override
+  void set<T>(DocumentReference<T> doc, T data, [SetOptions? options]) {}
+
+  @override
+  void delete(DocumentReference doc) {}
+
+  @override
+  Future<void> commit() async => throw Exception('simulated chunk-commit drop');
+}
+
+/// Like [_ops] but drives writes through a firestore whose Nth batch commit
+/// throws. Query reads (`getCollectionForUser`) still hit the same fake.
+RecipeTagOperations _opsWithFailingBatch(
+  _ThrowOnNthBatchFirestore firestore,
+) =>
+    RecipeTagOperations(
+      firestore: firestore,
+      getCollectionForUser: (userId) =>
+          firestore.collection('users').doc(userId).collection('recipes'),
     );
 
 Future<void> _seedRecipe(
@@ -259,6 +310,44 @@ void main() {
       final snap = await _userRecipes(firestore, _userId).doc('r1').get();
       expect((snap.data()!['core'] as Map)['personalTagIds'], <String>[]);
     });
+
+    // BUT-1186: a real cascade failure must PROPAGATE (not swallow→0), so the
+    // caller (deleteTag) skips the tag-doc delete and never orphans recipes.
+    test('rethrows when the query fails (does NOT swallow to 0)', () async {
+      final firestore = FakeFirebaseFirestore();
+      final ops = RecipeTagOperations(
+        firestore: firestore,
+        getCollectionForUser: (_) => throw Exception('permission-denied'),
+      );
+      await expectLater(
+        ops.removePersonalTagFromRecipes(_userId, 'tag-a'),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test('rethrows on a mid-cascade chunk-commit failure (partial cascade)',
+        () async {
+      // chunk+1 matching recipes → 2 batches; the 2nd batch commit throws.
+      final firestore = _ThrowOnNthBatchFirestore(throwOnBatch: 2);
+      final total = kFirestoreBatchSafeChunkSize + 1;
+      for (var i = 0; i < total; i++) {
+        await _userRecipes(firestore, _userId).doc('r$i').set({
+          'core': {
+            'personalTagIds': ['tag-a'],
+            'personalTags': [
+              {'tagId': 'tag-a', 'name': 'name'}
+            ],
+          },
+        });
+      }
+      await expectLater(
+        _opsWithFailingBatch(firestore).removePersonalTagFromRecipes(
+          _userId,
+          'tag-a',
+        ),
+        throwsA(isA<Exception>()),
+      );
+    });
   });
 
   group('addRemovePersonalTagFromRecipesToBatch', () {
@@ -341,7 +430,7 @@ void main() {
     });
   });
 
-  group('addReplaceTagInRecipesToBatch', () {
+  group('replaceTagInRecipes (BUT-1186 self-chunking merge)', () {
     // The rich entry the repo appends to recipes that don't already carry the
     // destination tag — mirrors RecipePersonalTag.manual(...).toMap().
     const toRichEntry = {
@@ -352,30 +441,27 @@ void main() {
 
     test('returns 0 on empty fromTagId', () async {
       final firestore = FakeFirebaseFirestore();
-      final batch = firestore.batch();
       expect(
-        await _ops(firestore).addReplaceTagInRecipesToBatch(
-            _userId, batch, '', 'to-tag', toRichEntry),
+        await _ops(firestore)
+            .replaceTagInRecipes(_userId, '', 'to-tag', toRichEntry),
         0,
       );
     });
 
     test('returns 0 on empty toTagId', () async {
       final firestore = FakeFirebaseFirestore();
-      final batch = firestore.batch();
       expect(
-        await _ops(firestore).addReplaceTagInRecipesToBatch(
-            _userId, batch, 'from-tag', '', toRichEntry),
+        await _ops(firestore)
+            .replaceTagInRecipes(_userId, 'from-tag', '', toRichEntry),
         0,
       );
     });
 
     test('returns 0 on null userId', () async {
       final firestore = FakeFirebaseFirestore();
-      final batch = firestore.batch();
       expect(
-        await _ops(firestore).addReplaceTagInRecipesToBatch(
-            null, batch, 'from-tag', 'to-tag', toRichEntry),
+        await _ops(firestore)
+            .replaceTagInRecipes(null, 'from-tag', 'to-tag', toRichEntry),
         0,
       );
     });
@@ -384,10 +470,9 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       await _seedRecipe(firestore,
           userId: _userId, recipeId: 'r1', tagIds: ['same']);
-      final batch = firestore.batch();
       expect(
-        await _ops(firestore).addReplaceTagInRecipesToBatch(
-            _userId, batch, 'same', 'same', toRichEntry),
+        await _ops(firestore)
+            .replaceTagInRecipes(_userId, 'same', 'same', toRichEntry),
         0,
       );
     });
@@ -396,15 +481,15 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       await _seedRecipe(firestore,
           userId: _userId, recipeId: 'r1', tagIds: ['other']);
-      final batch = firestore.batch();
       expect(
-        await _ops(firestore).addReplaceTagInRecipesToBatch(
-            _userId, batch, 'from-tag', 'to-tag', toRichEntry),
+        await _ops(firestore)
+            .replaceTagInRecipes(_userId, 'from-tag', 'to-tag', toRichEntry),
         0,
       );
     });
 
-    test('swaps fromTagId for toTagId in both arrays', () async {
+    test('swaps fromTagId for toTagId in both arrays (commits internally)',
+        () async {
       final firestore = FakeFirebaseFirestore();
       await _seedRecipe(
         firestore,
@@ -425,11 +510,9 @@ void main() {
         ],
       );
 
-      final batch = firestore.batch();
-      final count = await _ops(firestore).addReplaceTagInRecipesToBatch(
-          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      final count = await _ops(firestore)
+          .replaceTagInRecipes(_userId, 'from-tag', 'to-tag', toRichEntry);
       expect(count, 1);
-      await batch.commit();
 
       final core = (await _userRecipes(firestore, _userId).doc('r1').get())
           .data()!['core'] as Map;
@@ -470,11 +553,9 @@ void main() {
         ],
       );
 
-      final batch = firestore.batch();
-      final count = await _ops(firestore).addReplaceTagInRecipesToBatch(
-          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      final count = await _ops(firestore)
+          .replaceTagInRecipes(_userId, 'from-tag', 'to-tag', toRichEntry);
       expect(count, 1);
-      await batch.commit();
 
       final core = (await _userRecipes(firestore, _userId).doc('r1').get())
           .data()!['core'] as Map;
@@ -507,12 +588,10 @@ void main() {
         ],
       );
 
-      final batch = firestore.batch();
-      final count = await _ops(firestore).addReplaceTagInRecipesToBatch(
-          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      final count = await _ops(firestore)
+          .replaceTagInRecipes(_userId, 'from-tag', 'to-tag', toRichEntry);
       // (e) affected count counts only the matching doc
       expect(count, 1);
-      await batch.commit();
 
       // (d) the untouched recipe is unchanged
       final without =
@@ -528,19 +607,78 @@ void main() {
       ]);
     });
 
-    test('does NOT commit — caller owns the batch lifecycle', () async {
+    test('retags > chunk-size recipes across multiple commits without overflow',
+        () async {
+      // BUT-1186: a user with more recipes than the safe batch chunk size on
+      // one tag must not overflow Firestore's 500-op-per-batch limit. Seed
+      // chunk+5 matching recipes; the method must self-chunk and retag all.
       final firestore = FakeFirebaseFirestore();
-      await _seedRecipe(firestore,
-          userId: _userId, recipeId: 'r1', tagIds: ['from-tag']);
+      final total = kFirestoreBatchSafeChunkSize + 5;
+      for (var i = 0; i < total; i++) {
+        await _seedRecipe(firestore,
+            userId: _userId, recipeId: 'r$i', tagIds: ['from-tag']);
+      }
 
-      final batch = firestore.batch();
-      await _ops(firestore).addReplaceTagInRecipesToBatch(
-          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      final count = await _ops(firestore)
+          .replaceTagInRecipes(_userId, 'from-tag', 'to-tag', toRichEntry);
+      expect(count, total);
 
-      // Uncommitted: still carries fromTag.
-      final before = (await _userRecipes(firestore, _userId).doc('r1').get())
-          .data()!['core'] as Map;
-      expect(before['personalTagIds'], ['from-tag']);
+      // Spot-check first, boundary, and last docs all landed the retag.
+      for (final id in [
+        'r0',
+        'r$kFirestoreBatchSafeChunkSize',
+        'r${total - 1}'
+      ]) {
+        final core = (await _userRecipes(firestore, _userId).doc(id).get())
+            .data()!['core'] as Map;
+        expect(core['personalTagIds'], ['to-tag']);
+        final tags = (core['personalTags'] as List).cast<Map>();
+        expect(tags.single['tagId'], 'to-tag');
+      }
+    });
+
+    // BUT-1186 orphan-bug fix: a genuine retag FAILURE must PROPAGATE so the
+    // merge caller skips deleting the source tag. Distinct from "0 recipes
+    // matched" above (an empty-collection early-return, NOT a throw → the
+    // delete proceeds and a tag-on-no-recipes is still mergeable).
+    test('rethrows when the query fails (does NOT swallow to 0)', () async {
+      final firestore = FakeFirebaseFirestore();
+      final ops = RecipeTagOperations(
+        firestore: firestore,
+        getCollectionForUser: (_) => throw Exception('permission-denied'),
+      );
+      await expectLater(
+        ops.replaceTagInRecipes(_userId, 'from-tag', 'to-tag', toRichEntry),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test('rethrows on a mid-cascade chunk-commit failure (partial retag)',
+        () async {
+      // chunk+1 matching recipes → 2 batches; the 2nd batch commit throws.
+      // Chunk 1 has already committed real retags, but the method MUST still
+      // surface the failure so mergeTags leaves the source tag intact.
+      final firestore = _ThrowOnNthBatchFirestore(throwOnBatch: 2);
+      final total = kFirestoreBatchSafeChunkSize + 1;
+      for (var i = 0; i < total; i++) {
+        await _userRecipes(firestore, _userId).doc('r$i').set({
+          'core': {
+            'personalTagIds': ['from-tag'],
+            'personalTags': [
+              {'tagId': 'from-tag', 'name': 'Old'}
+            ],
+          },
+        });
+      }
+      await expectLater(
+        _opsWithFailingBatch(firestore).replaceTagInRecipes(
+          _userId,
+          'from-tag',
+          'to-tag',
+          toRichEntry,
+        ),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 }
