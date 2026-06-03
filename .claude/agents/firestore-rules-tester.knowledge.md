@@ -485,3 +485,56 @@ emulator state FIRST — clear and re-run before touching rules or tests.
 The real PROJECT_IDs (grep `PROJECT_ID =` across `src/__tests__/*.ts`) do NOT
 follow a guessable pattern (e.g. reports = `butlery-rules-test`, recipes-users =
 `butlery-rules-recipes-users`). Grep them, don't guess, when clearing.
+
+### 2026-06-03 — Admin-SDK cascade integration test against emulator (BUT-1009)
+
+First emulator-backed test that exercises a Cloud Functions CASCADE (not rules):
+`functions/src/__tests__/request-account-deletion.integration.test.ts`
+(`test:integration:account-deletion`, appended to `test:rules:all` and the
+`firestore-rules.yml` path filters along with `functions/src/account/**`).
+Project id `butlery-acct-deletion-integration`.
+
+This is a different harness shape from the rules tests — it does NOT use
+`@firebase/rules-unit-testing`. The cascade (`account-deletion-cascade.ts`)
+runs on the **Admin SDK** (`admin.firestore.Firestore`, `FieldValue.arrayRemove`,
+`.count()`, `commitInChunks`). To point the Admin SDK at the emulator:
+
+```ts
+process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080"; // BEFORE importing admin
+process.env.GCLOUD_PROJECT = PROJECT_ID;
+import * as admin from "firebase-admin";
+admin.initializeApp({ projectId: PROJECT_ID });
+```
+
+Key differences vs rules tests:
+- Admin SDK **bypasses security rules**, so seed with plain `db.collection().set()`
+  — there is no `withSecurityRulesDisabled` (that's a rules-unit-testing concept).
+- `auth` + `storage` deps are injected NO-OP fakes — the cascade's auth-delete
+  and storage-wipe are already covered by the contract test
+  (`request-account-deletion.test.ts`); the integration test isolates the
+  FIRESTORE cascade only.
+- Run the cascade ONCE in `run()` before the assertion loop; each `test()`
+  reads post-cascade state. Capture the result envelope in a module-level var
+  so a final test can assert `failedCollections.length === 0`.
+- Isolation: same emulator-persistence gotcha applies. Clear the namespace via
+  the REST `DELETE /emulator/v1/projects/<id>/databases/(default)/documents`
+  (done with a raw `http.request` in setup AND teardown) AND suffix all uids
+  with a per-RUN token. Belt-and-suspenders because a re-run that didn't clear
+  would otherwise re-delete already-deleted docs (idempotent, but control docs
+  would accumulate).
+
+**Cascade behavior verified == ticket spec (no bugs found).** 21/21 green:
+own-data collections delete (recipes top+sub, menus sub+own, shopping_lists,
+ratings hard-delete) with control docs (other uid) retained; inbound menu +
+inbound shared_content keep the doc and scrub uid from `sharedToUserIds`;
+`group_weekly_menu_plans` deletes the now-empty plan and scrubs the populated
+one (participantUserIds + participants array + memberPermissions key all
+cleaned); `recipe_comments` anonymized to `authorId:'deleted'` /
+`isDeleted:true` (NOT deleted — thread structure preserved); 1:1 conversation
+deleted, >2-participant conversation arrayRemove'd + retained.
+
+**Reusable pattern for any future cascade/trigger integration test:** inject
+the live emulator Firestore as `deps.db`, fake the non-Firestore deps, prove
+each step with a POSITIVE (own data gone / scrubbed) + NEGATIVE (control doc by
+another uid untouched) pair. A green delete WITHOUT a control-retained
+assertion does not prove scope — it could be deleting everything.

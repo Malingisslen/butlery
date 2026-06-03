@@ -20,6 +20,8 @@ on:
       - "functions/src/__tests__/audit-logs-rules.test.ts"
       - "functions/src/__tests__/iter102-rules.test.ts"
       - "functions/src/__tests__/comment-images-storage-rules.test.ts"
+      - "functions/src/__tests__/request-account-deletion.integration.test.ts"
+      - "functions/src/account/**"
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/firestore-rules.yml"
@@ -38,6 +40,8 @@ on:
       - "functions/src/__tests__/audit-logs-rules.test.ts"
       - "functions/src/__tests__/iter102-rules.test.ts"
       - "functions/src/__tests__/comment-images-storage-rules.test.ts"
+      - "functions/src/__tests__/request-account-deletion.integration.test.ts"
+      - "functions/src/account/**"
   workflow_dispatch:
 
 concurrency:
