@@ -10,6 +10,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
+import 'package:butlery/repositories/firebase/comments/comment_likes_operations.dart';
 
 /// Firebase implementation for recipe comments with threaded replies and like tracking.
 /// Supports recipe access validation via optional [RecipeAccessValidator] constructor parameter.
@@ -19,6 +20,7 @@ typedef RecipeAccessValidator = Future<bool> Function(
     String recipeId, String userId);
 
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
+    with CommentLikesOperations
     implements CommentsRepository {
   final RecipeAccessValidator? _recipeAccessValidator;
   final RecipeOwnershipResolver? _recipeOwnershipResolver;
@@ -372,93 +374,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
-  @override
-  Future<void> toggleCommentLike(String commentId, String userId) async {
-    // Validate user is toggling their own like
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'toggle comment like',
-    );
-
-    // Verify comment exists
-    final commentDoc = await getDocumentWithPermissionCheck(
-      docRef: collection.doc(commentId),
-      currentUserId: currentUser,
-      resourceType: 'recipe_comment',
-    );
-
-    if (!commentDoc.exists) {
-      throw ResourceNotFoundException(
-        'Comment not found',
-        resourceType: 'recipe_comment',
-        resourceId: commentId,
-      );
-    }
-
-    final likesCollection =
-        collection.doc(commentId).collection(FirestoreCollections.likes);
-    final userLikeDoc = likesCollection.doc(userId);
-    final likeSnapshot = await userLikeDoc.get();
-
-    final batch = firestore.batch();
-
-    if (likeSnapshot.exists) {
-      // Unlike - remove like and decrement count
-      batch.delete(userLikeDoc);
-      batch.update(collection.doc(commentId), {
-        'likesCount': FieldValue.increment(-1),
-      });
-    } else {
-      // Like - add like and increment count
-      batch.set(userLikeDoc, {
-        'userId': userId,
-        'likedAt': timestampProvider.serverTimestamp(),
-      });
-      batch.update(collection.doc(commentId), {
-        'likesCount': FieldValue.increment(1),
-      });
-    }
-
-    await batch.commit();
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'recipe_comment',
-      operation: likeSnapshot.exists ? 'unlike' : 'like',
-      granted: true,
-    );
-  }
-
-  @override
-  Future<int> getCommentLikeCount(String commentId) async {
-    final doc = await collection.doc(commentId).get();
-    return doc.data()?['likesCount'] ?? 0;
-  }
-
-  @override
-  Future<bool> hasUserLikedComment(String commentId, String userId) async {
-    final likeDoc = await collection
-        .doc(commentId)
-        .collection(FirestoreCollections.likes)
-        .doc(userId)
-        .get();
-    return likeDoc.exists;
-  }
-
-  @override
-  Future<List<String>> getCommentLikers(String commentId,
-      {int limit = 100}) async {
-    final likesSnapshot = await collection
-        .doc(commentId)
-        .collection(FirestoreCollections.likes)
-        .orderBy('likedAt', descending: true)
-        .limit(limit)
-        .get();
-
-    return likesSnapshot.docs.map((doc) => doc.id).toList();
-  }
+  // BUT-1190: like operations (toggleCommentLike, getCommentLikeCount,
+  // hasUserLikedComment, getCommentLikers) extracted to the
+  // [CommentLikesOperations] mixin to keep this file under the 500-line limit.
 
   @override
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
