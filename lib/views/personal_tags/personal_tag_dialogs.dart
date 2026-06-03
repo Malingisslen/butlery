@@ -26,6 +26,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -33,6 +34,21 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 /// Static helper class for all dialogs and bottom sheets in PersonalTagsView.
 abstract final class PersonalTagDialogs {
+  /// BUT-1185: merge dialog for the multi-select flow. Delegates to
+  /// [PersonalTagBulkDialogs] (kept separate to respect the 500-line limit).
+  static Future<void> showMergeDialog(
+    BuildContext context,
+    List<PersonalTag> selectedTags,
+  ) =>
+      PersonalTagBulkDialogs.showMergeDialog(context, selectedTags);
+
+  /// BUT-1185: bulk-delete confirmation for the multi-select flow.
+  static Future<void> showBulkDeleteDialog(
+    BuildContext context,
+    List<PersonalTag> selectedTags,
+  ) =>
+      PersonalTagBulkDialogs.showBulkDeleteDialog(context, selectedTags);
+
   /// Shows the retag-all-recipes progress dialog.
   static void showRetagDialog(BuildContext context) {
     showDialog(

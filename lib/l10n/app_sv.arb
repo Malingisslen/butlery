@@ -919,6 +919,69 @@
     }
   },
   "personalTagDeleted": "Tagg borttagen",
+  "personalTagSelectedCount": "{count, plural, =1{1 markerad} other{{count} markerade}}",
+  "@personalTagSelectedCount": {
+    "description": "Selection-mode app-bar title showing how many tags are selected",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagMergeAction": "Slå ihop",
+  "@personalTagMergeAction": {
+    "description": "Tooltip for the merge action in the selection app-bar"
+  },
+  "personalTagOptions": "Fler alternativ",
+  "@personalTagOptions": {
+    "description": "Tooltip for the per-tag overflow (more) menu button"
+  },
+  "personalTagMergeTitle": "Slå ihop taggar",
+  "@personalTagMergeTitle": {
+    "description": "Title of the merge-tags dialog"
+  },
+  "personalTagMergeMessage": "{count, plural, =2{2 taggar slås ihop till «{target}». Den andra tas bort och recepten flyttas.} other{{count} taggar slås ihop till «{target}». Övriga tas bort och recepten flyttas.}}",
+  "@personalTagMergeMessage": {
+    "description": "Body of the merge-tags dialog",
+    "placeholders": {
+      "count": { "type": "int" },
+      "target": { "type": "String" }
+    }
+  },
+  "personalTagMergeKeepLabel": "Behåll denna tagg:",
+  "@personalTagMergeKeepLabel": {
+    "description": "Label above the radio list for choosing which tag to keep when merging"
+  },
+  "personalTagMergeConfirm": "Slå ihop",
+  "@personalTagMergeConfirm": {
+    "description": "Confirm button on the merge-tags dialog"
+  },
+  "personalTagMergeSuccess": "{count, plural, =0{Taggarna slogs ihop} =1{Taggarna slogs ihop, 1 recept uppdaterat} other{Taggarna slogs ihop, {count} recept uppdaterade}}",
+  "@personalTagMergeSuccess": {
+    "description": "Snackbar after a successful merge, with recipes-updated count",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagBulkDeleteTitle": "{count, plural, =1{Ta bort 1 tagg?} other{Ta bort {count} taggar?}}",
+  "@personalTagBulkDeleteTitle": {
+    "description": "Title of the bulk-delete confirmation dialog",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagBulkDeleteMessage": "{count, plural, =1{Taggen tas bort från alla recept som använder den.} other{Taggarna tas bort från alla recept som använder dem.}}",
+  "@personalTagBulkDeleteMessage": {
+    "description": "Body of the bulk-delete confirmation dialog",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagBulkDeleted": "{count, plural, =1{1 tagg borttagen} other{{count} taggar borttagna}}",
+  "@personalTagBulkDeleted": {
+    "description": "Snackbar after a successful bulk delete",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "personalTagNoGroup": "Ingen grupp",
   "personalTagCreateNewGroup": "Skapa ny grupp",
   "personalTagMoved": "Tagg flyttad",

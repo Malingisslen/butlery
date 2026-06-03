@@ -913,6 +913,69 @@
     }
   },
   "personalTagDeleted": "Tag deleted",
+  "personalTagSelectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@personalTagSelectedCount": {
+    "description": "Selection-mode app-bar title showing how many tags are selected",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagMergeAction": "Merge",
+  "@personalTagMergeAction": {
+    "description": "Tooltip for the merge action in the selection app-bar"
+  },
+  "personalTagOptions": "More options",
+  "@personalTagOptions": {
+    "description": "Tooltip for the per-tag overflow (more) menu button"
+  },
+  "personalTagMergeTitle": "Merge tags",
+  "@personalTagMergeTitle": {
+    "description": "Title of the merge-tags dialog"
+  },
+  "personalTagMergeMessage": "{count, plural, =2{2 tags will be merged into «{target}». The other is removed and its recipes are moved.} other{{count} tags will be merged into «{target}». The others are removed and their recipes are moved.}}",
+  "@personalTagMergeMessage": {
+    "description": "Body of the merge-tags dialog",
+    "placeholders": {
+      "count": { "type": "int" },
+      "target": { "type": "String" }
+    }
+  },
+  "personalTagMergeKeepLabel": "Keep this tag:",
+  "@personalTagMergeKeepLabel": {
+    "description": "Label above the radio list for choosing which tag to keep when merging"
+  },
+  "personalTagMergeConfirm": "Merge",
+  "@personalTagMergeConfirm": {
+    "description": "Confirm button on the merge-tags dialog"
+  },
+  "personalTagMergeSuccess": "{count, plural, =0{Tags merged} =1{Tags merged, 1 recipe updated} other{Tags merged, {count} recipes updated}}",
+  "@personalTagMergeSuccess": {
+    "description": "Snackbar after a successful merge, with recipes-updated count",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagBulkDeleteTitle": "{count, plural, =1{Delete 1 tag?} other{Delete {count} tags?}}",
+  "@personalTagBulkDeleteTitle": {
+    "description": "Title of the bulk-delete confirmation dialog",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagBulkDeleteMessage": "{count, plural, =1{The tag will be removed from every recipe that uses it.} other{The tags will be removed from every recipe that uses them.}}",
+  "@personalTagBulkDeleteMessage": {
+    "description": "Body of the bulk-delete confirmation dialog",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personalTagBulkDeleted": "{count, plural, =1{1 tag deleted} other{{count} tags deleted}}",
+  "@personalTagBulkDeleted": {
+    "description": "Snackbar after a successful bulk delete",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "personalTagNoGroup": "No group",
   "personalTagCreateNewGroup": "Create new group",
   "personalTagMoved": "Tag moved",

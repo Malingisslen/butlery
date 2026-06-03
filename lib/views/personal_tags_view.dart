@@ -16,6 +16,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
@@ -29,13 +30,36 @@ enum TagSortOrder {
 }
 
 /// Full-screen view for managing personal tags.
-class PersonalTagsView extends StatelessWidget {
+class PersonalTagsView extends StatefulWidget {
   const PersonalTagsView({super.key});
 
   @override
+  State<PersonalTagsView> createState() => _PersonalTagsViewState();
+}
+
+class _PersonalTagsViewState extends State<PersonalTagsView> {
+  // BUT-1185: selection manager is view-local UI state — created and disposed
+  // here (not DI-registered) per views/CLAUDE.md.
+  final PersonalTagSelectionManager _selectionManager =
+      PersonalTagSelectionManager();
+
+  @override
+  void dispose() {
+    _selectionManager.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<PersonalTagViewModel>.value(
-      value: ServiceLocator.get<PersonalTagViewModel>(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PersonalTagViewModel>.value(
+          value: ServiceLocator.get<PersonalTagViewModel>(),
+        ),
+        ChangeNotifierProvider<PersonalTagSelectionManager>.value(
+          value: _selectionManager,
+        ),
+      ],
       child: const _PersonalTagsViewContent(),
     );
   }
@@ -112,8 +136,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   @override
   Widget build(BuildContext context) {
+    final selection = context.watch<PersonalTagSelectionManager>();
     return Scaffold(
-      appBar: _buildAppBar(context),
+      appBar: selection.isSelectionMode
+          ? _buildSelectionAppBar(context, selection)
+          : _buildAppBar(context),
       body: FocusTraversalGroup(
         child: Column(
           children: [
@@ -163,6 +190,44 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         ),
         _buildSortMenu(context),
         _buildAddMenu(context),
+      ],
+    );
+  }
+
+  PreferredSizeWidget _buildSelectionAppBar(
+    BuildContext context,
+    PersonalTagSelectionManager selection,
+  ) {
+    final viewModel = context.read<PersonalTagViewModel>();
+    final count = selection.selectedCount;
+    final selectedTags = selection.selectedTagIds
+        .map(viewModel.getTagById)
+        .whereType<PersonalTag>()
+        .toList();
+
+    return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: selection.exitSelection,
+        tooltip: context.l10n.commonCancel,
+      ),
+      title: Text(context.l10n.personalTagSelectedCount(count)),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.merge),
+          tooltip: context.l10n.personalTagMergeAction,
+          onPressed: count >= 2
+              ? () => PersonalTagDialogs.showMergeDialog(context, selectedTags)
+              : null,
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete_outline),
+          tooltip: context.l10n.commonDelete,
+          onPressed: count >= 1
+              ? () =>
+                  PersonalTagDialogs.showBulkDeleteDialog(context, selectedTags)
+              : null,
+        ),
       ],
     );
   }

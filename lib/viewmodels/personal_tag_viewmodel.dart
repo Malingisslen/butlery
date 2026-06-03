@@ -274,6 +274,14 @@ class PersonalTagViewModel extends ChangeNotifier
     return result ?? false;
   }
 
+  /// BUT-1185: merges [fromId] into [toId]. Returns recipes retagged.
+  Future<int> mergeTags(String fromId, String toId) =>
+      _service.mergeTags(fromId, toId);
+
+  /// BUT-1185: bulk-deletes [tagIds]. Returns tags deleted.
+  Future<int> bulkDeleteTags(List<String> tagIds) =>
+      _service.bulkDeleteTags(tagIds);
+
   /// Reorders tags.
   Future<bool> reorderTags(List<String> tagIds) async {
     final result = await safeExecute(

@@ -2534,6 +2534,72 @@ abstract class AppLocalizations {
   /// **'Tagg borttagen'**
   String get personalTagDeleted;
 
+  /// Selection-mode app-bar title showing how many tags are selected
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 markerad} other{{count} markerade}}'**
+  String personalTagSelectedCount(int count);
+
+  /// Tooltip for the merge action in the selection app-bar
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop'**
+  String get personalTagMergeAction;
+
+  /// Tooltip for the per-tag overflow (more) menu button
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler alternativ'**
+  String get personalTagOptions;
+
+  /// Title of the merge-tags dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop taggar'**
+  String get personalTagMergeTitle;
+
+  /// Body of the merge-tags dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =2{2 taggar slås ihop till «{target}». Den andra tas bort och recepten flyttas.} other{{count} taggar slås ihop till «{target}». Övriga tas bort och recepten flyttas.}}'**
+  String personalTagMergeMessage(int count, String target);
+
+  /// Label above the radio list for choosing which tag to keep when merging
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll denna tagg:'**
+  String get personalTagMergeKeepLabel;
+
+  /// Confirm button on the merge-tags dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop'**
+  String get personalTagMergeConfirm;
+
+  /// Snackbar after a successful merge, with recipes-updated count
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Taggarna slogs ihop} =1{Taggarna slogs ihop, 1 recept uppdaterat} other{Taggarna slogs ihop, {count} recept uppdaterade}}'**
+  String personalTagMergeSuccess(int count);
+
+  /// Title of the bulk-delete confirmation dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Ta bort 1 tagg?} other{Ta bort {count} taggar?}}'**
+  String personalTagBulkDeleteTitle(int count);
+
+  /// Body of the bulk-delete confirmation dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Taggen tas bort från alla recept som använder den.} other{Taggarna tas bort från alla recept som använder dem.}}'**
+  String personalTagBulkDeleteMessage(int count);
+
+  /// Snackbar after a successful bulk delete
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 tagg borttagen} other{{count} taggar borttagna}}'**
+  String personalTagBulkDeleted(int count);
+
   /// No description provided for @personalTagNoGroup.
   ///
   /// In sv, this message translates to:

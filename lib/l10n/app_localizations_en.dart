@@ -1430,6 +1430,90 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalTagDeleted => 'Tag deleted';
 
   @override
+  String personalTagSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get personalTagMergeAction => 'Merge';
+
+  @override
+  String get personalTagOptions => 'More options';
+
+  @override
+  String get personalTagMergeTitle => 'Merge tags';
+
+  @override
+  String personalTagMergeMessage(int count, String target) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count tags will be merged into «$target». The others are removed and their recipes are moved.',
+      two:
+          '2 tags will be merged into «$target». The other is removed and its recipes are moved.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get personalTagMergeKeepLabel => 'Keep this tag:';
+
+  @override
+  String get personalTagMergeConfirm => 'Merge';
+
+  @override
+  String personalTagMergeSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tags merged, $count recipes updated',
+      one: 'Tags merged, 1 recipe updated',
+      zero: 'Tags merged',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagBulkDeleteTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count tags?',
+      one: 'Delete 1 tag?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagBulkDeleteMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The tags will be removed from every recipe that uses them.',
+      one: 'The tag will be removed from every recipe that uses it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String personalTagBulkDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags deleted',
+      one: '1 tag deleted',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get personalTagNoGroup => 'No group';
 
   @override

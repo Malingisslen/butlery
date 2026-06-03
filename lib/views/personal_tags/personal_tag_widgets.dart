@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -12,6 +13,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 
@@ -35,52 +37,70 @@ class PersonalTagTile extends StatelessWidget {
     final hasActiveRules = enabledRuleCount > 0;
     final isUnused = usageCount == 0;
 
+    final selection = context.watch<PersonalTagSelectionManager>();
+    final inSelectionMode = selection.isSelectionMode;
+    final isSelected = selection.isSelected(tag.id);
+
     return Semantics(
       label: context.l10n.personalTagTileSemantics(
           tag.name, usageCount, enabledRuleCount, ruleCount),
       button: true,
+      selected: inSelectionMode ? isSelected : null,
       child: Opacity(
         opacity: isUnused ? 0.6 : 1.0,
         child: ListTile(
-          leading: Stack(
-            children: [
-              CircleAvatar(
-                backgroundColor: hasActiveRules
-                    ? context.butleryColors.success
-                        .withValues(alpha: AppDimensions.opacityLight)
-                    : colorScheme.primary
-                        .withValues(alpha: AppDimensions.opacityLight),
-                child: Icon(
-                  Icons.label,
-                  color: hasActiveRules
-                      ? context.butleryColors.success
-                      : colorScheme.primary,
-                  size: AppDimensions.iconSizeM,
-                ),
-              ),
-              if (hasActiveRules)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: AppDimensions.paddingAll2,
-                    decoration: BoxDecoration(
-                      color: context.butleryColors.success,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: colorScheme.surface,
-                        width: 1.5,
+          selected: isSelected,
+          selectedTileColor: Theme.of(context)
+              .colorScheme
+              .primaryContainer
+              .withValues(alpha: AppDimensions.opacityLight),
+          leading: inSelectionMode
+              ? Icon(
+                  isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                  size: AppDimensions.iconSizeL,
+                )
+              : Stack(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: hasActiveRules
+                          ? context.butleryColors.success
+                              .withValues(alpha: AppDimensions.opacityLight)
+                          : colorScheme.primary
+                              .withValues(alpha: AppDimensions.opacityLight),
+                      child: Icon(
+                        Icons.label,
+                        color: hasActiveRules
+                            ? context.butleryColors.success
+                            : colorScheme.primary,
+                        size: AppDimensions.iconSizeM,
                       ),
                     ),
-                    child: Icon(
-                      Icons.auto_awesome,
-                      size: 10,
-                      color: colorScheme.surfaceContainerHighest,
-                    ),
-                  ),
+                    if (hasActiveRules)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: AppDimensions.paddingAll2,
+                          decoration: BoxDecoration(
+                            color: context.butleryColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colorScheme.surface,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.auto_awesome,
+                            size: 10,
+                            color: colorScheme.surfaceContainerHighest,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-            ],
-          ),
           title: Text(tag.name),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,10 +125,19 @@ class PersonalTagTile extends StatelessWidget {
                 ),
             ],
           ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => _navigateToTagDetail(context),
-          onLongPress: () =>
-              PersonalTagDialogs.showTagOptionsSheet(context, tag),
+          trailing: inSelectionMode
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  tooltip: context.l10n.personalTagOptions,
+                  onPressed: () =>
+                      PersonalTagDialogs.showTagOptionsSheet(context, tag),
+                ),
+          onTap: inSelectionMode
+              ? () => selection.toggle(tag.id)
+              : () => _navigateToTagDetail(context),
+          onLongPress:
+              inSelectionMode ? null : () => selection.enterSelection(tag.id),
         ),
       ),
     );
