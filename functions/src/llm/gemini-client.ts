@@ -2,14 +2,16 @@
  * Vertex AI Gemini client configuration and Swedish recipe prompts.
  *
  * This module provides:
- * - Vertex AI client pinned to europe-west1 (GDPR Chapter V — EU data residency)
+ * - Vertex AI client pinned to the `eu` multi-region (GDPR Chapter V — EU data
+ *   residency; see BUT-1187 for the europe-west1 → eu move)
  * - Service-account auth via Application Default Credentials (no API key)
  * - Swedish-language prompts for recipe extraction
  * - Response type definitions and schema enforcement
  * - JSON Schema for server-side structured output validation
  *
  * Migration note (BUT-614): switched from Google AI Studio (generativelanguage.googleapis.com,
- * US egress) to Vertex AI (europe-west1-aiplatform.googleapis.com). All prompts, schemas,
+ * US egress) to Vertex AI (originally europe-west1; now the `eu` multi-region per
+ * BUT-1187 — see VERTEX_LOCATION). All prompts, schemas,
  * parsers, and exported function signatures are preserved so call sites are unchanged.
  */
 
@@ -25,8 +27,21 @@ import { logger } from "firebase-functions/logger";
 /** Prompt version — bump on any prompt change for traceability */
 export const PROMPT_VERSION = "2.1.0";
 
-/** Vertex AI region — EU data residency (BUT-607). */
-export const VERTEX_LOCATION = "europe-west1";
+/**
+ * Vertex AI region — EU data residency (BUT-607, BUT-1187).
+ *
+ * `eu` multi-region (not single-region europe-west1). Rationale: when
+ * gemini-2.0-flash-001 was retired (BUT-1187), the current Gemini 2.5-series
+ * models are not reliably served in the europe-west1 *single* region, but ARE
+ * available on the `eu` multi-region endpoint — which still keeps all data
+ * within EU geography (Chapter V satisfied; covered by the Vertex AI DPA). This
+ * preserves GDPR residency while restoring model availability.
+ *
+ * NOTE: model×region availability is project-allowlist dependent and changes
+ * often. Confirm the chosen TEXT_MODEL is served on `eu` for THIS project at
+ * deploy time (Cloud Logging: jsonPayload.modelId="<model>" with non-zero count).
+ */
+export const VERTEX_LOCATION = "eu";
 
 // Singleton client instance — keyed by resolved project id so test overrides
 // (via GOOGLE_CLOUD_PROJECT) don't collide with a prior cached client.
@@ -770,16 +785,34 @@ function validateDifficulty(
 /**
  * Single model for both text and vision — Gemini Flash is natively multimodal.
  *
- * BUT-785: pinned to a specific version snapshot (`-001`) rather than the
- * moving `gemini-2.0-flash` alias. Google rotates the alias without notice;
- * a pinned version means the model behind the call doesn't change silently
- * underneath quality/cost monitoring (CRIT-AI2). Bump cadence: quarterly,
- * gated by golden-test review — see `docs/architecture/llm-versions.md`.
+ * BUT-785: pinned to a specific version snapshot rather than a moving alias.
+ * Google rotates aliases without notice; a pinned id means the model behind
+ * the call doesn't change silently underneath quality/cost monitoring
+ * (CRIT-AI2). Bump cadence: quarterly, gated by golden-test review — see
+ * `docs/architecture/llm-versions.md`.
+ *
+ * BUT-1187 (2026-06-01 retirement): Google retired `gemini-2.0-flash-001`
+ * (and `gemini-2.0-flash-lite-001`) on 2026-06-01 — Vertex AI returns 404 for
+ * the retired id, so every recipe-import text/vision call was failing in
+ * production. Migrated to `gemini-2.5-flash-lite`, the doc-recommended
+ * cost-parity replacement for the 2.0-flash tier: GA on Vertex, natively
+ * multimodal (preserves the single-model-for-text+vision assumption above),
+ * and supports systemInstruction + responseSchema structured output. The
+ * @google-cloud/vertexai SDK forwards this id as a plain string to the
+ * endpoint, so it's a drop-in. Thinking is off by default on flash-lite — we
+ * deliberately do not set `thinkingConfig` (keeps cost/latency at the 2.0-flash
+ * tier).
+ *
+ * Paired with the VERTEX_LOCATION europe-west1 → `eu` move (above): 2.5-series
+ * models are not reliably served in europe-west1 single-region, so the region
+ * change is part of the same fix. DEPLOY-TIME CHECK: if THIS project does not
+ * serve `gemini-2.5-flash-lite` on `eu`, fall back to `gemini-2.5-flash`
+ * (broader availability, ~higher cost + thinking) — flip this one constant.
  *
  * `MODEL_ID` is exported separately so analytics events can stamp the
  * actual model used per call (rather than re-deriving it from a name).
  */
-export const TEXT_MODEL = "gemini-2.0-flash-001";
+export const TEXT_MODEL = "gemini-2.5-flash-lite";
 
 /** Stable identifier for the model used in analytics events. Same value as
  * `TEXT_MODEL` today; if vision/text diverge we'll add a per-mode mapping. */
@@ -791,7 +824,12 @@ export const MAX_TOKENS = 2000;
 /** Temperature for recipe extraction (lower = more deterministic) */
 export const TEMPERATURE = 0.3;
 
-// Gemini 2.0 Flash pricing per 1M tokens (Vertex AI europe-west1 — same as Google AI Studio)
+// Gemini 2.5 Flash-Lite pricing per 1M tokens (Vertex AI, `eu` multi-region).
+// TODO(BUT-1187): confirm gemini-2.5-flash-lite pricing against the live Vertex
+// pricing page (and re-check if falling back to gemini-2.5-flash, which is
+// pricier + bills thinking tokens). Values below are best-known list rates; cost
+// telemetry only (does not affect request behavior). The 2.5 Flash-Lite tier is
+// cost-parity with the retired 2.0-flash, so these match the prior constants.
 const INPUT_COST_PER_M = 0.10;
 const OUTPUT_COST_PER_M = 0.40;
 

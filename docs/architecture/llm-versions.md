@@ -5,7 +5,7 @@ to a newer version. A single source of truth lives in
 `functions/src/llm/gemini-client.ts`:
 
 ```ts
-export const TEXT_MODEL = "gemini-2.0-flash-001";
+export const TEXT_MODEL = "gemini-2.5-flash-lite";
 export const MODEL_ID = TEXT_MODEL;
 ```
 
@@ -38,8 +38,12 @@ snapshot. The decision criteria:
    sample of recent prompts (sample 50–100 calls from the past month).
 3. **No regression on the prompt-changelog gate** (HIGH-AI8) — the candidate
    model must respect the schema-enforced JSON output without tightening.
-4. **Vertex AI region pin still holds** (`europe-west1`). Pre-release
-   snapshots are sometimes unavailable in EU regions; verify before pinning.
+4. **Vertex AI region still EU-resident** (`eu` multi-region as of BUT-1187;
+   was `europe-west1` single-region). Model×region availability is
+   project-allowlist dependent and changes often — verify the candidate model
+   is actually served on the configured region for THIS project before pinning
+   (2.5-series models are not reliably served in europe-west1 single-region,
+   which is why the endpoint moved to the `eu` multi-region).
 
 If all four pass, bump in a single PR that:
 
@@ -86,3 +90,4 @@ Re-verify on every bump.
 | Date       | Pinned model              | Notes                                    |
 | ---------- | ------------------------- | ---------------------------------------- |
 | 2026-05-06 | `gemini-2.0-flash-001`    | Initial pin (BUT-785). Was the moving `gemini-2.0-flash` alias. |
+| 2026-06-03 | `gemini-2.5-flash-lite` + region `europe-west1`→`eu` | BUT-1187: forced migration — Google retired `gemini-2.0-flash-001` on 2026-06-01 (Vertex returned 404, all imports failing). `gemini-2.5-flash-lite` is the GA cost-parity replacement for the 2.0-flash tier; natively multimodal, drop-in. Region moved europe-west1→`eu` multi-region (still EU-resident) because 2.5-series models aren't reliably served in europe-west1 single-region. Not a quarterly golden-test bump (incident response). **Needs deploy-time live verification + residency ratification (BUT-1187).** |

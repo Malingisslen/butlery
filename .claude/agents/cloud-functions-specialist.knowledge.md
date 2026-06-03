@@ -1061,3 +1061,60 @@ the user is permanently embedded in another user's doc.
   `onUserDeleted` export). New v1-style functions in this repo MUST
   do this or they deploy to us-central1 by default and silently miss
   the auth events for europe-west1 users.
+
+### 2026-06-03 — BUT-1187 Gemini model retirement 404 [Bug fixed]
+
+Google retired `gemini-2.0-flash-001` (and `gemini-2.0-flash-lite-001`)
+on 2026-06-01. Vertex AI returns **404** for retired model ids, so every
+recipe-import LLM call (text structuring + image OCR — both share the
+single multimodal `TEXT_MODEL` constant via `getTextModel` /
+`getIngredientLinesModel` at `gemini-client.ts:71-95`) failed in prod.
+
+Fix: `TEXT_MODEL` `gemini-2.0-flash-001` → `gemini-2.5-flash-lite`
+(`gemini-client.ts:782`-ish). One-line swap; `MODEL_ID = TEXT_MODEL`
+alias left untouched so analytics auto-follows (verified: kill-switch
+test log now emits `"modelId":"gemini-2.5-flash-lite"`).
+
+**Patterns worth remembering**:
+
+- **Vertex model id is a plain string forwarded to the endpoint.** The
+  `@google-cloud/vertexai` SDK (pinned 1.12.0) does no client-side model
+  validation — `client.getGenerativeModel({ model })` just builds the
+  request URL. So a model swap is a pure string change; no SDK bump, no
+  signature change, no new generationConfig fields needed.
+  `gemini-2.5-flash-lite` is multimodal + supports `responseMimeType`
+  + `responseSchema` (the only generationConfig fields this code sets),
+  so the two call sites needed zero structural change.
+
+- **Do NOT add `thinkingConfig`.** 2.5 models support a thinking budget;
+  flash-lite defaults thinking OFF, which keeps cost/latency at the old
+  2.0-flash tier. Adding it would silently raise per-call cost. Leave
+  unset.
+
+- **Pricing constants are telemetry-only.** `INPUT_COST_PER_M` /
+  `OUTPUT_COST_PER_M` feed `calculateGeminiCost`, which only stamps a
+  cost number into analytics — it never gates a request. So a model swap
+  must NOT block on confirming exact pricing: set best-known list rate +
+  a `// TODO(BUT-1187): confirm <model> pricing` and ship. 2.5-flash-lite
+  is cost-parity with the retired 2.0-flash, so the prior 0.10/0.40
+  values were kept.
+
+- **Model id has zero test-fixture coupling here.** Grepped
+  `functions/src/__tests__` for `gemini-2`/`TEXT_MODEL`/`MODEL_ID` — no
+  hits. Tests assert parser behavior on canned response strings, never
+  the model id. So the swap needed no test edits. (If a future test ever
+  pins the id, it'll be in the kill-switch suite where the
+  `structure_recipe.complete` log line surfaces `modelId`.)
+
+- **Single source of truth held.** Only 3 string references to the old
+  model existed in `functions/src`, all in `gemini-client.ts` (the const
+  + two comments). `docs/architecture/llm-versions.md` is the only other
+  place (code block + bump-history table). The BUT-785 single-source-of-
+  truth design (one `TEXT_MODEL`, `MODEL_ID` aliases it) paid off — the
+  incident fix was genuinely a one-line behavioral change.
+
+- **Retirement ≠ quarterly bump.** The BUT-785 runbook gates bumps on
+  golden-test pass-rate + cost-delta review. A forced-retirement 404 is
+  incident response, not a cadence bump — noted as such in the bump-log
+  so the skipped golden-test gate is auditable. Re-run the golden corpus
+  retroactively when BUT-784 lands.
