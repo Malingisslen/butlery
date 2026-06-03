@@ -340,4 +340,207 @@ void main() {
       }
     });
   });
+
+  group('addReplaceTagInRecipesToBatch', () {
+    // The rich entry the repo appends to recipes that don't already carry the
+    // destination tag — mirrors RecipePersonalTag.manual(...).toMap().
+    const toRichEntry = {
+      'tagId': 'to-tag',
+      'name': 'Destination',
+      'sources': ['manual'],
+    };
+
+    test('returns 0 on empty fromTagId', () async {
+      final firestore = FakeFirebaseFirestore();
+      final batch = firestore.batch();
+      expect(
+        await _ops(firestore).addReplaceTagInRecipesToBatch(
+            _userId, batch, '', 'to-tag', toRichEntry),
+        0,
+      );
+    });
+
+    test('returns 0 on empty toTagId', () async {
+      final firestore = FakeFirebaseFirestore();
+      final batch = firestore.batch();
+      expect(
+        await _ops(firestore).addReplaceTagInRecipesToBatch(
+            _userId, batch, 'from-tag', '', toRichEntry),
+        0,
+      );
+    });
+
+    test('returns 0 on null userId', () async {
+      final firestore = FakeFirebaseFirestore();
+      final batch = firestore.batch();
+      expect(
+        await _ops(firestore).addReplaceTagInRecipesToBatch(
+            null, batch, 'from-tag', 'to-tag', toRichEntry),
+        0,
+      );
+    });
+
+    test('returns 0 when fromTagId == toTagId (defensive no-op)', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedRecipe(firestore,
+          userId: _userId, recipeId: 'r1', tagIds: ['same']);
+      final batch = firestore.batch();
+      expect(
+        await _ops(firestore).addReplaceTagInRecipesToBatch(
+            _userId, batch, 'same', 'same', toRichEntry),
+        0,
+      );
+    });
+
+    test('returns 0 when no recipes carry fromTagId', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedRecipe(firestore,
+          userId: _userId, recipeId: 'r1', tagIds: ['other']);
+      final batch = firestore.batch();
+      expect(
+        await _ops(firestore).addReplaceTagInRecipesToBatch(
+            _userId, batch, 'from-tag', 'to-tag', toRichEntry),
+        0,
+      );
+    });
+
+    test('swaps fromTagId for toTagId in both arrays', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedRecipe(
+        firestore,
+        userId: _userId,
+        recipeId: 'r1',
+        tagIds: ['from-tag', 'keep'],
+        tags: const [
+          {
+            'tagId': 'from-tag',
+            'name': 'Old',
+            'sources': ['manual']
+          },
+          {
+            'tagId': 'keep',
+            'name': 'Keep',
+            'sources': ['manual']
+          },
+        ],
+      );
+
+      final batch = firestore.batch();
+      final count = await _ops(firestore).addReplaceTagInRecipesToBatch(
+          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      expect(count, 1);
+      await batch.commit();
+
+      final core = (await _userRecipes(firestore, _userId).doc('r1').get())
+          .data()!['core'] as Map;
+
+      // (a) fromId gone, toId present in personalTagIds
+      expect(core['personalTagIds'], containsAll(['keep', 'to-tag']));
+      expect(core['personalTagIds'], isNot(contains('from-tag')));
+      expect((core['personalTagIds'] as List).length, 2);
+
+      // (c) rich array: from-tag entry gone, to-tag entry appended
+      final tags = (core['personalTags'] as List).cast<Map>();
+      final tagIds = tags.map((t) => t['tagId']).toList();
+      expect(tagIds, containsAll(['keep', 'to-tag']));
+      expect(tagIds, isNot(contains('from-tag')));
+      final toEntry = tags.firstWhere((t) => t['tagId'] == 'to-tag');
+      expect(toEntry['name'], 'Destination');
+      expect(toEntry['sources'], ['manual']);
+    });
+
+    test('does NOT duplicate toTagId when recipe already had it', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedRecipe(
+        firestore,
+        userId: _userId,
+        recipeId: 'r1',
+        tagIds: ['from-tag', 'to-tag'],
+        tags: const [
+          {
+            'tagId': 'from-tag',
+            'name': 'Old',
+            'sources': ['manual']
+          },
+          {
+            'tagId': 'to-tag',
+            'name': 'Destination',
+            'sources': ['manual']
+          },
+        ],
+      );
+
+      final batch = firestore.batch();
+      final count = await _ops(firestore).addReplaceTagInRecipesToBatch(
+          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      expect(count, 1);
+      await batch.commit();
+
+      final core = (await _userRecipes(firestore, _userId).doc('r1').get())
+          .data()!['core'] as Map;
+
+      // (b) no duplicate toId in personalTagIds
+      expect(core['personalTagIds'], ['to-tag']);
+
+      // (c) no duplicate toId entry in rich array, existing entry preserved
+      final tags = (core['personalTags'] as List).cast<Map>();
+      expect(tags.length, 1);
+      expect(tags.single['tagId'], 'to-tag');
+      expect(tags.single['name'], 'Destination');
+    });
+
+    test('leaves recipes without fromTagId untouched', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedRecipe(firestore,
+          userId: _userId, recipeId: 'with', tagIds: ['from-tag']);
+      await _seedRecipe(
+        firestore,
+        userId: _userId,
+        recipeId: 'without',
+        tagIds: ['unrelated'],
+        tags: const [
+          {
+            'tagId': 'unrelated',
+            'name': 'Unrelated',
+            'sources': ['manual']
+          },
+        ],
+      );
+
+      final batch = firestore.batch();
+      final count = await _ops(firestore).addReplaceTagInRecipesToBatch(
+          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+      // (e) affected count counts only the matching doc
+      expect(count, 1);
+      await batch.commit();
+
+      // (d) the untouched recipe is unchanged
+      final without =
+          (await _userRecipes(firestore, _userId).doc('without').get())
+              .data()!['core'] as Map;
+      expect(without['personalTagIds'], ['unrelated']);
+      expect(without['personalTags'], [
+        {
+          'tagId': 'unrelated',
+          'name': 'Unrelated',
+          'sources': ['manual']
+        },
+      ]);
+    });
+
+    test('does NOT commit — caller owns the batch lifecycle', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedRecipe(firestore,
+          userId: _userId, recipeId: 'r1', tagIds: ['from-tag']);
+
+      final batch = firestore.batch();
+      await _ops(firestore).addReplaceTagInRecipesToBatch(
+          _userId, batch, 'from-tag', 'to-tag', toRichEntry);
+
+      // Uncommitted: still carries fromTag.
+      final before = (await _userRecipes(firestore, _userId).doc('r1').get())
+          .data()!['core'] as Map;
+      expect(before['personalTagIds'], ['from-tag']);
+    });
+  });
 }

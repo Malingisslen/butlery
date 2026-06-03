@@ -993,6 +993,116 @@ void main() {
       });
     });
 
+    group('mergeTags - atomic retag + delete', () {
+      late MockWriteBatch mockBatch;
+
+      setUp(() {
+        mockBatch = MockWriteBatch();
+        when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
+        when(() => mockBatch.commit()).thenAnswer((_) async {});
+        registerFallbackValue(mockBatch);
+      });
+
+      test('retags recipes and deletes fromId in a single batch', () async {
+        final toTag = PersonalTagBuilder()
+            .withId('to-id')
+            .withName('Destination')
+            .build();
+        when(() => mockTagRepository.read('to-id'))
+            .thenAnswer((_) async => toTag);
+        when(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
+            any(), 'from-id', 'to-id', any())).thenAnswer((_) async => 4);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
+            .thenReturn(null);
+
+        final count = await service.mergeTags('from-id', 'to-id');
+
+        expect(count, 4);
+        // Both the retag and the delete land on the SAME batch, then commit.
+        verify(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
+            mockBatch, 'from-id', 'to-id', any())).called(1);
+        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'))
+            .called(1);
+        verify(() => mockBatch.commit()).called(1);
+      });
+
+      test('passes destination tag rich-entry (manual source) to the repo',
+          () async {
+        final toTag = PersonalTagBuilder()
+            .withId('to-id')
+            .withName('Destination')
+            .build();
+        when(() => mockTagRepository.read('to-id'))
+            .thenAnswer((_) async => toTag);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
+            .thenReturn(null);
+
+        Map<String, dynamic>? captured;
+        when(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
+            any(), 'from-id', 'to-id', any())).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[3] as Map<String, dynamic>;
+          return 1;
+        });
+
+        await service.mergeTags('from-id', 'to-id');
+
+        expect(captured, isNotNull);
+        expect(captured!['tagId'], 'to-id');
+        expect(captured!['name'], 'Destination');
+        expect(captured!['sources'], ['manual']);
+      });
+
+      test('is a no-op when fromId == toId', () async {
+        final count = await service.mergeTags('same', 'same');
+
+        expect(count, 0);
+        verifyNever(() => mockTagRepository.newWriteBatch());
+        verifyNever(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
+            any(), any(), any(), any()));
+        verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
+      });
+
+      test('returns 0 without touching firestore on empty ids', () async {
+        expect(await service.mergeTags('', 'to-id'), 0);
+        expect(await service.mergeTags('from-id', ''), 0);
+        verifyNever(() => mockTagRepository.newWriteBatch());
+      });
+
+      test('does not delete fromId when destination tag does not exist',
+          () async {
+        // executeServiceOperation swallows the thrown ArgumentError and
+        // returns null → facade yields 0; crucially nothing was committed.
+        when(() => mockTagRepository.read('to-id'))
+            .thenAnswer((_) async => null);
+
+        final count = await service.mergeTags('from-id', 'to-id');
+
+        expect(count, 0);
+        verifyNever(() => mockTagRepository.addDeleteToBatch(any(), any()));
+        verifyNever(() => mockBatch.commit());
+      });
+
+      test('commits even when retag affects zero recipes', () async {
+        final toTag = PersonalTagBuilder()
+            .withId('to-id')
+            .withName('Destination')
+            .build();
+        when(() => mockTagRepository.read('to-id'))
+            .thenAnswer((_) async => toTag);
+        when(() => mockRecipeRepository.addReplaceTagInRecipesToBatch(
+            any(), 'from-id', 'to-id', any())).thenAnswer((_) async => 0);
+        when(() => mockTagRepository.addDeleteToBatch(any(), 'from-id'))
+            .thenReturn(null);
+
+        final count = await service.mergeTags('from-id', 'to-id');
+
+        expect(count, 0);
+        verify(() => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'))
+            .called(1);
+        verify(() => mockBatch.commit()).called(1);
+      });
+    });
+
     group('createTag', () {
       test('should create a valid tag', () async {
         // Arrange

@@ -71,6 +71,12 @@ class PersonalTagService extends BaseService {
   Future<int> bulkDeleteTags(List<String> tagIds) =>
       _crud.bulkDeleteTags(tagIds);
 
+  /// BUT-1042: merge [fromId] into [toId]. Retags every recipe carrying
+  /// [fromId] to [toId] and deletes the [fromId] tag in one atomic batch.
+  /// Returns the number of recipes retagged.
+  Future<int> mergeTags(String fromId, String toId) =>
+      _crud.mergeTags(fromId, toId);
+
   Stream<List<PersonalTag>> watchTags() => _crud.watchTags();
 
   /// BUT-1055: fires once per tag-set mutation. Consumers use this + an

@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
@@ -255,6 +256,58 @@ class PersonalTagCrudService extends BaseService {
         return totalDeleted;
       },
       operationName: 'Bulk-delete personal tags',
+      requiresAuth: true,
+    );
+    return result ?? 0;
+  }
+
+  /// BUT-1042: merges [fromId] into [toId] in one atomic batch — every recipe
+  /// carrying [fromId] is retagged to [toId] (rich `personalTags` entry
+  /// rewritten to point at the destination tag) and the [fromId] tag document
+  /// is deleted, so either the whole merge lands or none of it does.
+  ///
+  /// Returns the number of recipes retagged. A no-op (`0`) when ids are equal
+  /// or empty — nothing to merge.
+  Future<int> mergeTags(String fromId, String toId) async {
+    if (fromId.isEmpty || toId.isEmpty || fromId == toId) return 0;
+
+    final result = await executeServiceOperation<int>(
+      () async {
+        final toTag = await _tagRepository.read(toId);
+        if (toTag == null) {
+          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
+        }
+
+        // Destination rich-entry written onto recipes that lacked toId.
+        // 'manual' source: a merge is a user-driven retag, not a rule match.
+        final toRichEntry = RecipePersonalTag.manual(
+          tagId: toTag.id,
+          name: toTag.name,
+        ).toMap();
+
+        final batch = _tagRepository.newWriteBatch();
+
+        var retagged = 0;
+        final recipeRepo = _getFirebaseRecipeRepository();
+        if (recipeRepo != null) {
+          retagged = await recipeRepo.addReplaceTagInRecipesToBatch(
+            batch,
+            fromId,
+            toId,
+            toRichEntry,
+          );
+        }
+
+        _tagRepository.addDeleteToBatch(batch, fromId);
+        await batch.commit();
+
+        _invalidateTagsCache();
+        AppLogger.info(
+          'Merged tag "$fromId" into "$toId"; retagged $retagged recipes',
+        );
+        return retagged;
+      },
+      operationName: 'Merge personal tags',
       requiresAuth: true,
     );
     return result ?? 0;

@@ -525,6 +525,20 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       _tagOperations.addRemovePersonalTagFromRecipesToBatch(
           currentUserId, batch, tagId);
 
+  Future<int> addReplaceTagInRecipesToBatch(
+    WriteBatch batch,
+    String fromTagId,
+    String toTagId,
+    Map<String, dynamic> toTagRichEntry,
+  ) =>
+      _tagOperations.addReplaceTagInRecipesToBatch(
+        currentUserId,
+        batch,
+        fromTagId,
+        toTagId,
+        toTagRichEntry,
+      );
+
   @override
   Future<List<Recipe>> findBySourceUrl(String url) =>
       _queryOperations.findBySourceUrl(currentUserId, url);

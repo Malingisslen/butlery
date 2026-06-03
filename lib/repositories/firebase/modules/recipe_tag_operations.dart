@@ -170,6 +170,56 @@ class RecipeTagOperations {
     return snap.docs.length;
   }
 
+  /// Adds replace-personal-tag (merge) operations to an external batch
+  /// without committing. Queries recipes carrying [fromTagId], then for each
+  /// rewrites both denormalized arrays so [fromTagId] is swapped for
+  /// [toTagId]. Returns the number of recipe updates added.
+  ///
+  /// [toTagRichEntry] is the `{tagId, name, sources}` map appended to a
+  /// recipe's rich `core.personalTags` array when that recipe didn't already
+  /// carry [toTagId] — the caller resolves it from the destination tag.
+  ///
+  /// **Intentionally no try/catch** — same contract as
+  /// [addRemovePersonalTagFromRecipesToBatch]: the caller owns the batch
+  /// lifecycle, so a query/build failure here must propagate rather than
+  /// leave the caller committing a half-built batch.
+  ///
+  /// **Why SET, not FieldValue transforms** — Firestore rejects two
+  /// FieldValue transforms (arrayRemove + arrayUnion) on the same field in
+  /// one update, so both arrays are computed from [doc.data] and written as
+  /// plain lists (mirroring [_buildTagRemovalUpdate]).
+  Future<int> addReplaceTagInRecipesToBatch(
+    String? userId,
+    WriteBatch batch,
+    String fromTagId,
+    String toTagId,
+    Map<String, dynamic> toTagRichEntry,
+  ) async {
+    if (fromTagId.isEmpty || toTagId.isEmpty) return 0;
+    if (userId == null) return 0;
+    if (fromTagId == toTagId) return 0;
+
+    final snap = await getCollectionForUser(userId)
+        .where('core.personalTagIds', arrayContains: fromTagId)
+        .get();
+
+    if (snap.docs.isEmpty) return 0;
+
+    for (final doc in snap.docs) {
+      batch.update(
+        doc.reference,
+        _buildTagReplaceUpdate(
+          doc.data(),
+          fromTagId,
+          toTagId,
+          toTagRichEntry,
+        ),
+      );
+    }
+
+    return snap.docs.length;
+  }
+
   /// Tag-removal update map shared by [removePersonalTagFromRecipes] and
   /// [addRemovePersonalTagFromRecipesToBatch]. Single point of truth for
   /// the two-field mutation: pull [tagId] from the UUID array, and rebuild
@@ -189,6 +239,47 @@ class RecipeTagOperations {
       updates['core.personalTags'] = personalTags
           .where((entry) => entry is Map && entry['tagId'] != tagId)
           .toList();
+    }
+
+    return updates;
+  }
+
+  /// Tag-replace (merge) update map used by [addReplaceTagInRecipesToBatch].
+  /// Computes both arrays from [data] and SETs them (no FieldValue
+  /// transforms — see method doc): pull [fromTagId] from the UUID array and
+  /// append [toTagId] if absent; drop the rich entry for [fromTagId] and
+  /// append [toTagRichEntry] only when no [toTagId] entry already survives.
+  Map<String, dynamic> _buildTagReplaceUpdate(
+    Map<String, dynamic> data,
+    String fromTagId,
+    String toTagId,
+    Map<String, dynamic> toTagRichEntry,
+  ) {
+    final coreData = data['core'] as Map<String, dynamic>? ?? {};
+
+    final ids = (coreData['personalTagIds'] as List?)
+            ?.where((id) => id != fromTagId)
+            .toList() ??
+        <dynamic>[];
+    if (!ids.contains(toTagId)) {
+      ids.add(toTagId);
+    }
+
+    final updates = <String, dynamic>{
+      'core.personalTagIds': ids,
+    };
+
+    final personalTags = coreData['personalTags'] as List?;
+    if (personalTags != null) {
+      final richTags = personalTags
+          .where((entry) => entry is Map && entry['tagId'] != fromTagId)
+          .toList();
+      final hasTo =
+          richTags.any((entry) => entry is Map && entry['tagId'] == toTagId);
+      if (!hasTo) {
+        richTags.add(toTagRichEntry);
+      }
+      updates['core.personalTags'] = richTags;
     }
 
     return updates;
