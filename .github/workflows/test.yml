@@ -13,11 +13,11 @@ name: Run Tests
 #  - Coverage instrumentation roughly doubles unit-suite runtime and can't be
 #    sharded (a naive split gives each shard a PARTIAL lcov → false 55%-floor
 #    failures — the trap BUT-1182 hit). So the per-commit unit run drops
-#    `--coverage` and is sharded 4 ways for fast feedback; the full
+#    `--coverage` and is sharded 6 ways for fast feedback; the full
 #    coverage+floor+Codecov gate runs in the separate `coverage` job nightly and
 #    on push-to-main. The 55% floor is unchanged — only re-timed (BUT-1149).
 #
-# What still gates a PR: ubuntu unit (4 shards) + widget + views + golden +
+# What still gates a PR: ubuntu unit (6 shards) + widget + views + golden +
 # integration here, plus firestore-rules / E2E / Architecture / Build Validation
 # in their own workflows. Coverage + cross-OS are nightly/main only.
 
@@ -54,18 +54,21 @@ env:
 
 jobs:
   # ── Per-commit fast path ────────────────────────────────────────────────
-  # Ubuntu-only, no coverage, unit suite sharded 4 ways. Each shard runs ~1/4
-  # of test/unit; the (cached) flutter setup + pub get is the only repeated
-  # fixed cost. Coverage lives in the `coverage` job below, not here.
+  # Ubuntu-only, no coverage, unit suite sharded 6 ways. Each shard runs ~1/6
+  # of test/unit. Measured on the first green run (PR #179): per-shard fixed
+  # overhead is only ~40s (warm flutter cache + pub get) and test EXECUTION is
+  # ~95% of the job — so unlike BUT-1182's coverage run, sharding scales nearly
+  # linearly here and 6 shards (~8-9 min/shard) is worth the marginal extra
+  # setup cost. Coverage lives in the `coverage` job below, not here.
   unit-tests:
-    name: unit (ubuntu shard ${{ matrix.shard }}/4)
+    name: unit (ubuntu shard ${{ matrix.shard }}/6)
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5]
     runs-on: ubuntu-latest
-    # No coverage instrumentation + a quarter of the suite → ~5-8 min/shard.
-    # 20 leaves generous headroom while still catching a genuinely hung shard.
+    # ~8-9 min/shard at 6-way. 20 leaves generous headroom while still
+    # catching a genuinely hung shard.
     timeout-minutes: 20
 
     steps:
@@ -92,11 +95,11 @@ jobs:
         if: matrix.shard == 0
         run: bash scripts/check_test_real_time.sh
 
-      - name: Run unit tests (shard ${{ matrix.shard }}/4, no coverage)
+      - name: Run unit tests (shard ${{ matrix.shard }}/6, no coverage)
         run: |
-          echo "Running test/unit shard ${{ matrix.shard }} of 4..."
+          echo "Running test/unit shard ${{ matrix.shard }} of 6..."
           flutter test test/unit \
-            --total-shards 4 --shard-index ${{ matrix.shard }} \
+            --total-shards 6 --shard-index ${{ matrix.shard }} \
             --reporter=expanded
 
       - name: Upload test results
@@ -111,7 +114,7 @@ jobs:
         shell: bash
         env:
           BUDGET_MIN: 15
-          JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/4)"
+          JOB_LABEL: "unit (ubuntu shard ${{ matrix.shard }}/6)"
         run: |
           JOB_END=$(date +%s)
           DURATION_SEC=$((JOB_END - JOB_START))
