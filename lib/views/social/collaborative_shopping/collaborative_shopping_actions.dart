@@ -108,7 +108,16 @@ class CollaborativeShoppingActions extends BaseActionHandler
         children: [
           Expanded(child: _buildItemInput(context)),
           const SizedBox(width: AppDimensions.spacingM),
-          _buildAddButton(context),
+          // Flexible(loose) keeps the button at its natural width (visually
+          // identical to a plain non-flex child) while routing it through the
+          // flex-child layout path. A bare FilledButton.icon as a NON-flex Row
+          // child is measured by RenderFlex at an UNBOUNDED main-axis width
+          // (Flex._constraintsForNonFlexChild leaves width unconstrained),
+          // which makes its min-tap-target (_RenderInputPadding) assert
+          // "BoxConstraints forces an infinite width" whenever the Row is laid
+          // out without a tight width. As a flex child it gets bounded space
+          // instead — robust under any parent constraints (BUT-1184).
+          Flexible(child: _buildAddButton(context)),
         ],
       ),
     );

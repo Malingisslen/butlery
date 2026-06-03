@@ -16,14 +16,18 @@
 ///     drives the VM into its error state (the view's LoadingStateBuilder shows
 ///     that error before it ever reaches the not-found empty branch).
 ///
-/// Why not pump the full view for the loaded/absent states? Its loaded body
-/// puts an `Expanded(TextField) + FilledButton` add-item Row directly under a
-/// `Center`, which the bare test Scaffold leaves horizontally unbounded → an
-/// "infinite width" layout assertion (a real layout fragility of the view
-/// shell, surfaced by the harness; see the closing note). And `_loadList`
-/// rethrows the not-found exception out of the fire-and-forget `_initialize()`,
-/// which the test zone reports as an uncaught error. Both are properties of the
-/// shell, orthogonal to the per-item behaviour under test.
+/// The per-item behaviour tests still drive the real sub-widget directly (it's
+/// the tighter, faster harness). But the SHELL is now testable: BUT-1184 made
+/// the add-item Row width-robust by wrapping its FilledButton in `Flexible`.
+/// Previously that bare non-flex `FilledButton.icon` was measured by RenderFlex
+/// at an UNBOUNDED main-axis width (Flex._constraintsForNonFlexChild leaves the
+/// main axis unconstrained for non-flex children), so its min-tap-target
+/// asserted "BoxConstraints forces an infinite width" on EVERY pump of the full
+/// shell. As a flex child it now gets bounded space, so the full
+/// `CollaborativeShoppingView` lays out cleanly — see the `full shell renders
+/// its loaded body` test below, the regression guard for that fix. (`_loadList`
+/// still rethrows the not-found exception out of the fire-and-forget
+/// `_initialize()`, so the absent-list case stays a VM-level assertion.)
 ///
 /// Rebuilt for BUT-1180 — replaces a ~30-test ULTRATHINK smoke-suite of
 /// `find.byType(ChangeNotifierProvider<...>) findsOneWidget` topology asserts
@@ -35,6 +39,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/views/social/collaborative_shopping_view.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -314,6 +319,73 @@ void main() {
         TextDecoration.lineThrough,
         reason: 'Bought items must render with a strikethrough title',
       );
+    });
+  });
+
+  group('CollaborativeShoppingView — full shell (BUT-1184)', () {
+    // The full view resolves its own VM via
+    // ChangeNotifierProvider(create:) -> ServiceLocator.get(), which lands on
+    // the mock registered in setUp. We pump the WHOLE view (AppBar + responsive
+    // body + add-item Row + items) — the thing the old suite couldn't do.
+    Future<void> pumpFullView(WidgetTester tester) async {
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      // Let the VM's fire-and-forget _loadList settle and the view rebuild.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    testWidgets(
+        'the full shell renders its loaded body without a layout exception',
+        (tester) async {
+      // Before BUT-1184 the full view could NOT be pumped at all: the add-item
+      // Row's bare non-flex FilledButton.icon was measured by RenderFlex at an
+      // UNBOUNDED main-axis width (Flex._constraintsForNonFlexChild leaves the
+      // main axis unconstrained), so its min-tap-target asserted "BoxConstraints
+      // forces an infinite width" on every pump. Wrapping that button in
+      // Flexible routes it through the flex-child layout path (bounded space),
+      // so the whole shell — AppBar + responsive body + add-item Row + items —
+      // now lays out cleanly. This is the regression guard for that fix.
+
+      // Tall surface so the loaded ListView body has room and the assertions
+      // below find the seeded items.
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      // A benign vertical RenderFlex overflow can surface on a short surface;
+      // swallow ONLY that so a genuine "infinite width" assertion (the thing
+      // BUT-1184 fixed) would still surface via takeException().
+      final originalOnError = FlutterError.onError;
+      FlutterError.onError = (FlutterErrorDetails details) {
+        if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
+          return;
+        }
+        originalOnError?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = originalOnError);
+
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Mjölk'), item('Bröd')]),
+        ],
+        isInitialized: true,
+      );
+
+      await pumpFullView(tester);
+
+      // No "infinite width" (or any non-overflow) layout assertion escaped.
+      expect(tester.takeException(), isNull);
+
+      // The view's key content rendered: the add-item action (the formerly
+      // crash-inducing FilledButton, by its Swedish label) and the seeded items.
+      expect(find.text('Lägg till'), findsOneWidget); // l10n.collaborativeAdd
+      expect(find.text('Mjölk'), findsOneWidget);
+      expect(find.text('Bröd'), findsOneWidget);
     });
   });
 }
