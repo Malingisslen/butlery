@@ -29,8 +29,6 @@ import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
@@ -59,27 +57,6 @@ const _socialDisabled =
     'Sociala funktioner är tillfälligt inaktiverade.'; // hardcoded fallback
 
 class _MockFeatureFlagService extends Mock implements FeatureFlagService {}
-
-/// The shared [MockSocialEventsTracker] routes every method through a no-op
-/// returning `Future<void>` — but the view calls
-/// `logSocialOnboardingStartedIfFirstEntry`, which production declares as
-/// `Future<bool>`, so that no-op fails a runtime cast in initState. This local
-/// fake returns the correct `Future<bool>` for the onboarding call.
-class _FakeSocialEventsTracker extends Fake implements SocialEventsTracker {
-  @override
-  Future<bool> logSocialOnboardingStartedIfFirstEntry({
-    required String? userId,
-    required String entryPoint,
-  }) async =>
-      false;
-}
-
-/// AnalyticsService whose `social` module returns the corrected fake tracker.
-class _TestAnalyticsService extends MockAnalyticsService {
-  final _social = _FakeSocialEventsTracker();
-  @override
-  SocialEventsTracker get social => _social;
-}
 
 void main() {
   late MockFriendsViewModel friendsViewModel;
@@ -165,11 +142,11 @@ void main() {
     when(() => offlineService.removeListener(any())).thenReturn(null);
     TestServiceLocator.registerMock<OfflineService>(offlineService);
 
-    // The view fires a fire-and-forget social-onboarding analytics event in
-    // initState. The default registered AnalyticsService's social tracker
-    // returns Future<void> for that Future<bool> method (a shared-mock gap),
-    // crashing the build — register one with the corrected tracker.
-    TestServiceLocator.registerMock<AnalyticsService>(_TestAnalyticsService());
+    // The view fires a fire-and-forget social-onboarding analytics event
+    // (logSocialOnboardingStartedIfFirstEntry, Future<bool>) in initState. The
+    // default registered MockAnalyticsService's shared social tracker now
+    // returns the correct Future<bool> for the IfFirstEntry family (BUT-1183),
+    // so no local override is needed.
   });
 
   tearDown(() async {

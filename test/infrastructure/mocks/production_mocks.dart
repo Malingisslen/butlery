@@ -1709,14 +1709,17 @@ class MockOfflineService extends Mock implements OfflineService {
 // All tracker methods return Future<void>. If a tracker adds a non-void
 // return type, this mock will cause a TypeError — add an explicit override.
 class _NoOpFutureMock extends Fake {
-  /// Tracker milestone helpers (`logFirstXyzIfMilestone`) all return
-  /// `Future<bool>` — the convention is enforced by `BaseTracker.fireOnceMilestone`.
-  /// Match the suffix once instead of maintaining a hand-curated list (the
-  /// list bit-rotted on BUT-803 when `logFirstCookIfMilestone` was added
-  /// without updating it). Default no-op returns false (= "did not fire")
-  /// so analytics-flow tests don't accidentally claim a milestone fired.
+  /// Fire-once tracker helpers return `Future<bool>` (whether they fired) by
+  /// convention — two families: `logFirstXyzIfMilestone`
+  /// (`BaseTracker.fireOnceMilestone`) and `...IfFirstEntry`
+  /// (e.g. `logSocialOnboardingStartedIfFirstEntry`). Match the suffixes once
+  /// instead of a hand-curated list (the list bit-rotted on BUT-803 when
+  /// `logFirstCookIfMilestone` was added; BUT-1183 hit the same on the
+  /// `IfFirstEntry` family, which crashed view-init for any view touching
+  /// social-onboarding analytics). Default no-op returns false (= "did not
+  /// fire") so analytics-flow tests don't accidentally claim a milestone fired.
   static final RegExp _milestoneMethodPattern =
-      RegExp(r'logFirst\w+IfMilestone');
+      RegExp(r'(IfMilestone|IfFirstEntry)');
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
