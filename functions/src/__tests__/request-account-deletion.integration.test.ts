@@ -273,6 +273,107 @@ async function seedFixtures(): Promise<void> {
     .doc("msg1")
     .set({ senderId: TARGET, text: "hej alla" });
 
+  // --- collectionGroup pings/comments/ratings (BUT-1191) ---
+  // These are walked by collectionGroup queries that match on author fields
+  // that are NOT `userId`: pings key on `fromUserId`, comments on
+  // `commentedBy`, ratings on `ratedBy`. Seed under a NON-recipe parent so the
+  // test proves the catch-all collection-group traversal (not a path-scoped
+  // query). All three are HARD-DELETED for the target; control docs by OTHER
+  // under the same groups must survive.
+
+  // pings: under an arbitrary parent (group_feed) so we exercise the
+  // collectionGroup("pings") traversal across paths, not a fixed collection.
+  await db
+    .collection("group_feed")
+    .doc(`gf-${RUN}`)
+    .collection("pings")
+    .doc(`ping-own-${RUN}`)
+    .set({ fromUserId: TARGET, toUserId: OTHER, message: "pingar dig" });
+  await db
+    .collection("group_feed")
+    .doc(`gf-${RUN}`)
+    .collection("pings")
+    .doc(`ping-control-${RUN}`)
+    .set({ fromUserId: OTHER, toUserId: THIRD, message: "annans ping" });
+
+  // comments: collectionGroup query keys on `commentedBy`. Seed under a
+  // non-recipe parent (cook_snaps/{id}/comments) to prove path-agnostic walk.
+  await db
+    .collection("cook_snaps")
+    .doc(`cs-${RUN}`)
+    .collection("comments")
+    .doc(`cmt-own-${RUN}`)
+    .set({ commentedBy: TARGET, text: "snyggt!" });
+  await db
+    .collection("cook_snaps")
+    .doc(`cs-${RUN}`)
+    .collection("comments")
+    .doc(`cmt-control-${RUN}`)
+    .set({ commentedBy: OTHER, text: "tack" });
+
+  // ratings: collectionGroup query keys on `ratedBy`. Seed under a non-recipe
+  // parent (cook_snaps/{id}/ratings).
+  await db
+    .collection("cook_snaps")
+    .doc(`cs-${RUN}`)
+    .collection("ratings")
+    .doc(`rat-own-${RUN}`)
+    .set({ ratedBy: TARGET, value: 5 });
+  await db
+    .collection("cook_snaps")
+    .doc(`cs-${RUN}`)
+    .collection("ratings")
+    .doc(`rat-control-${RUN}`)
+    .set({ ratedBy: OTHER, value: 4 });
+
+  // --- unified_shared_shopping_lists item-level scrub (BUT-1191) ---
+  // The cascade queries `memberPermissions.{uid} != null` then rewrites the
+  // `items` array, nulling assignedTo*/purchasedBy* fields on items where the
+  // uid appears. The list itself is RETAINED (shared, not owned-only), other
+  // members' item authorship untouched.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-${RUN}`)
+    .set({
+      name: "delad lista",
+      memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
+      items: [
+        // item 0: assigned AND purchased by target → both blocks scrubbed.
+        {
+          id: "i0",
+          name: "mjölk",
+          assignedToUserId: TARGET,
+          assignedToDisplayName: "Target",
+          assignedAt: new Date(),
+          purchasedByUserId: TARGET,
+          purchasedByDisplayName: "Target",
+          purchasedAt: new Date(),
+        },
+        // item 1: assigned to OTHER → must be untouched (scope proof).
+        {
+          id: "i1",
+          name: "ägg",
+          assignedToUserId: OTHER,
+          assignedToDisplayName: "Other",
+          assignedAt: new Date(),
+          purchasedByUserId: null,
+          purchasedByDisplayName: null,
+          purchasedAt: null,
+        },
+        // item 2: purchased by target only → only purchased block scrubbed.
+        {
+          id: "i2",
+          name: "smör",
+          assignedToUserId: OTHER,
+          assignedToDisplayName: "Other",
+          assignedAt: new Date(),
+          purchasedByUserId: TARGET,
+          purchasedByDisplayName: "Target",
+          purchasedAt: new Date(),
+        },
+      ],
+    });
+
   // --- users/{target} root doc (deleted last) ---
   await db.collection("users").doc(TARGET).set({ displayName: "Target" });
 }
@@ -506,6 +607,118 @@ test("conversations: group conversation retained with target removed from partic
   const ids = (data.participantIds as string[]) ?? [];
   assert(!ids.includes(TARGET), "target removed from group participantIds");
   assert(ids.includes(OTHER) && ids.includes(THIRD), "others retained in group");
+});
+
+// ===========================================================================
+// COLLECTION-GROUP pings / comments / ratings (BUT-1191) — hard delete by
+// author field, control by OTHER survives.
+// ===========================================================================
+
+// I-CG1: target's ping (collectionGroup, keyed on fromUserId) hard-deleted.
+test("pings (collectionGroup): target's ping is hard-deleted", async () => {
+  assert(
+    !(await exists(`group_feed/gf-${RUN}/pings/ping-own-${RUN}`)),
+    "target's ping (fromUserId==target) should be deleted by collectionGroup walk",
+  );
+});
+
+// I-CG2: another user's ping under the same group is retained (scope proof).
+test("pings (collectionGroup): another user's ping is retained", async () => {
+  assert(
+    await exists(`group_feed/gf-${RUN}/pings/ping-control-${RUN}`),
+    "control ping (fromUserId==OTHER) must survive the collectionGroup walk",
+  );
+});
+
+// I-CG3: target's comment (collectionGroup, keyed on commentedBy) hard-deleted.
+test("comments (collectionGroup): target's comment is hard-deleted", async () => {
+  assert(
+    !(await exists(`cook_snaps/cs-${RUN}/comments/cmt-own-${RUN}`)),
+    "target's comment (commentedBy==target) should be deleted by collectionGroup walk",
+  );
+});
+
+// I-CG4: another user's comment under the same group is retained.
+test("comments (collectionGroup): another user's comment is retained", async () => {
+  assert(
+    await exists(`cook_snaps/cs-${RUN}/comments/cmt-control-${RUN}`),
+    "control comment (commentedBy==OTHER) must survive",
+  );
+});
+
+// I-CG5: target's rating (collectionGroup, keyed on ratedBy) hard-deleted.
+test("ratings (collectionGroup): target's rating is hard-deleted", async () => {
+  assert(
+    !(await exists(`cook_snaps/cs-${RUN}/ratings/rat-own-${RUN}`)),
+    "target's rating (ratedBy==target) should be deleted by collectionGroup walk",
+  );
+});
+
+// I-CG6: another user's rating under the same group is retained.
+test("ratings (collectionGroup): another user's rating is retained", async () => {
+  assert(
+    await exists(`cook_snaps/cs-${RUN}/ratings/rat-control-${RUN}`),
+    "control rating (ratedBy==OTHER) must survive",
+  );
+});
+
+// ===========================================================================
+// UNIFIED_SHARED_SHOPPING_LISTS item-level scrub (BUT-1191) — list retained,
+// target's assigned/purchased authorship nulled, other members untouched.
+// ===========================================================================
+
+// I-SL1: the shared list document itself is RETAINED (not owned-only).
+test("unified_shared_shopping_lists: shared list is retained", async () => {
+  assert(
+    await exists(`unified_shared_shopping_lists/ussl-${RUN}`),
+    "shared list must NOT be deleted — only the target's item authorship is scrubbed",
+  );
+});
+
+// I-SL2: item assigned AND purchased by target has both authorship blocks nulled.
+test("unified_shared_shopping_lists: target's assigned+purchased item is scrubbed", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-${RUN}`);
+  const items = (data.items as Array<Record<string, unknown>>) ?? [];
+  const i0 = items.find((it) => it.id === "i0");
+  assert(!!i0, "item i0 must still be present in the list");
+  assert(i0!.assignedToUserId === null, "i0 assignedToUserId must be nulled");
+  assert(i0!.assignedToDisplayName === null, "i0 assignedToDisplayName must be nulled");
+  assert(i0!.assignedAt === null, "i0 assignedAt must be nulled");
+  assert(i0!.purchasedByUserId === null, "i0 purchasedByUserId must be nulled");
+  assert(i0!.purchasedByDisplayName === null, "i0 purchasedByDisplayName must be nulled");
+  assert(i0!.purchasedAt === null, "i0 purchasedAt must be nulled");
+});
+
+// I-SL3: item assigned to OTHER is left completely untouched (scope proof).
+test("unified_shared_shopping_lists: another member's item authorship is untouched", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-${RUN}`);
+  const items = (data.items as Array<Record<string, unknown>>) ?? [];
+  const i1 = items.find((it) => it.id === "i1");
+  assert(!!i1, "item i1 must still be present");
+  assert(i1!.assignedToUserId === OTHER, "i1 assignedToUserId (OTHER) must be unchanged");
+  assert(
+    i1!.assignedToDisplayName === "Other",
+    "i1 assignedToDisplayName must be unchanged",
+  );
+});
+
+// I-SL4: item purchased by target but assigned to OTHER scrubs ONLY the
+// purchased block — the OTHER assignment is preserved (precise field scope).
+test("unified_shared_shopping_lists: only the purchased-by-target block is scrubbed, foreign assignment kept", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-${RUN}`);
+  const items = (data.items as Array<Record<string, unknown>>) ?? [];
+  const i2 = items.find((it) => it.id === "i2");
+  assert(!!i2, "item i2 must still be present");
+  assert(i2!.purchasedByUserId === null, "i2 purchasedByUserId (target) must be nulled");
+  assert(
+    i2!.purchasedByDisplayName === null,
+    "i2 purchasedByDisplayName must be nulled",
+  );
+  assert(i2!.purchasedAt === null, "i2 purchasedAt must be nulled");
+  assert(
+    i2!.assignedToUserId === OTHER,
+    "i2 assignedToUserId (OTHER) must remain — only target's authorship is scrubbed",
+  );
 });
 
 // ===========================================================================

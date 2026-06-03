@@ -538,3 +538,36 @@ the live emulator Firestore as `deps.db`, fake the non-Firestore deps, prove
 each step with a POSITIVE (own data gone / scrubbed) + NEGATIVE (control doc by
 another uid untouched) pair. A green delete WITHOUT a control-retained
 assertion does not prove scope — it could be deleting everything.
+
+### 2026-06-03 — cascade collectionGroup + shopping-list item-scrub coverage (BUT-1191)
+
+Extended `request-account-deletion.integration.test.ts` (21→31 tests) for two
+cascade surfaces the BUT-1009 seed missed. Both verified CORRECT — no erasure
+gap found, 31/31 green on the emulator. Author-field map is the load-bearing
+detail (these are NOT `userId`):
+
+| collectionGroup | author field queried | cascade action |
+|-----------------|----------------------|----------------|
+| `pings`         | `fromUserId`         | hard delete (`deletePingsByUser`) |
+| `comments`      | `commentedBy`        | hard delete (`deleteCommentsAndRatings`) |
+| `ratings`       | `ratedBy`            | hard delete (`deleteCommentsAndRatings`) |
+
+Note the trap: top-level `recipe_comments` keys on `authorId` and is ANONYMIZED,
+while the collectionGroup `comments` (subcollection, any parent) keys on
+`commentedBy` and is HARD-DELETED. Different field, different verb, same step.
+Seed collectionGroup fixtures under a NON-recipe parent (used `group_feed/*/pings`
+and `cook_snaps/*/comments|ratings`) so the assertion proves the path-agnostic
+collectionGroup walk, not a path-scoped query. Control doc by OTHER under the
+same parent must survive.
+
+`unified_shared_shopping_lists` item-level scrub (`deleteShoppingLists`, lines
+183-213): query is `where('memberPermissions.{uid}', '!=', null)` then rewrites
+the `items` array in place. Per item, two INDEPENDENT blocks: if
+`item.assignedToUserId === uid` → null `assignedToUserId/assignedToDisplayName/
+assignedAt`; if `item.purchasedByUserId === uid` → null `purchasedByUserId/
+purchasedByDisplayName/purchasedAt`. List doc RETAINED (shared, not owned).
+Coverage needs three item fixtures to prove field-level precision: (i) assigned
+AND purchased by target → both blocks null, (ii) assigned to OTHER → fully
+untouched, (iii) purchased by target but assigned to OTHER → only purchased
+block nulled, foreign assignment kept. A single "target item scrubbed" assertion
+would not catch a too-greedy rewrite that also wiped a co-member's authorship.
