@@ -1,5 +1,6 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -89,7 +90,7 @@ class ShoppingItemManagementModule {
       final item = UnifiedShoppingItem(
         name: name,
         amount: amount ?? 1.0,
-        unit: unit ?? '',
+        unit: unit.orEmpty(),
         category: resolvedCategory,
         note: note,
         estimatedPrice: estimatedPrice,

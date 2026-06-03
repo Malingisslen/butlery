@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -479,7 +480,7 @@ class PersonalShoppingOperations {
             RegExp(r'(\d+(?:\.\d+)?)\s*(\w+)?\s*(.+)').firstMatch(itemName);
         if (amountMatch != null) {
           amount = double.tryParse(amountMatch.group(1) ?? '1.0') ?? 1.0;
-          unit = amountMatch.group(2) ?? '';
+          unit = amountMatch.group(2).orEmpty();
           itemName = amountMatch.group(3) ?? itemName;
         }
 

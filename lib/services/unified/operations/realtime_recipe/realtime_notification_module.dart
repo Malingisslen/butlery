@@ -1,6 +1,7 @@
 // lib/services/unified/operations/realtime_recipe/realtime_notification_module.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -154,7 +155,7 @@ class RealtimeNotificationModule {
             'editorUserId': currentUserId,
             'editorDisplayName': currentUserDisplayName,
             'changeDescription': changeDescription,
-            'editDescription': editDescription ?? '',
+            'editDescription': editDescription.orEmpty(),
             'changes': changes,
             'timestamp': clock.now().toIso8601String(),
           },

@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart' as model;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -592,7 +593,7 @@ class FriendsManagementOperations extends BaseService {
         additionalData: {
           'senderUserId': request.fromUserId,
           'requestId': request.id,
-          'message': request.message ?? '',
+          'message': request.message.orEmpty(),
         },
       );
 

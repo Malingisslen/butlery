@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Import focused modules
@@ -102,7 +103,7 @@ class RealtimeRecipeModule {
     return await RealtimeSessionManager.startRealtimeEditing(
       firestore: _firestore,
       recipeId: recipeId,
-      currentUserId: _getCurrentUserId() ?? '',
+      currentUserId: _getCurrentUserId().orEmpty(),
       activeEditingSessions: _activeEditingSessions,
       onRealtimeChange: _handleRealtimeRecipeChange,
       onRealtimeError: _handleRealtimeError,
@@ -139,7 +140,7 @@ class RealtimeRecipeModule {
   /// Helper to create RealtimeEditContext for all operations
   RealtimeEditContext _createEditContext() {
     return RealtimeEditContext(
-      currentUserId: _getCurrentUserId() ?? '',
+      currentUserId: _getCurrentUserId().orEmpty(),
       currentUserDisplayName: _getCurrentUserDisplayName(),
       activeEditingSessions: _activeEditingSessions,
       pendingRealtimeEdits: _pendingRealtimeEdits,
@@ -244,7 +245,7 @@ class RealtimeRecipeModule {
     await RealtimeEditorTracker.registerActiveEditor(
       recipeId: recipeId,
       isActive: isActive,
-      currentUserId: _getCurrentUserId() ?? '',
+      currentUserId: _getCurrentUserId().orEmpty(),
       currentUserDisplayName: _getCurrentUserDisplayName(),
     );
   }
@@ -253,7 +254,7 @@ class RealtimeRecipeModule {
   Future<void> updateActiveEditorPresence(String recipeId) async {
     await RealtimeEditorTracker.updateActiveEditorPresence(
       recipeId: recipeId,
-      currentUserId: _getCurrentUserId() ?? '',
+      currentUserId: _getCurrentUserId().orEmpty(),
     );
   }
 

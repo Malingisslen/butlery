@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -147,7 +148,7 @@ class FriendsInvitationsOperations {
         id: '${currentUserId}_${userId}_${groupId}_${DateTime.now().millisecondsSinceEpoch}',
         groupId: groupId,
         groupName: group.name,
-        groupEmoji: group.emoji ?? '',
+        groupEmoji: group.emoji.orEmpty(),
         fromUserId: currentUserId,
         fromUserName: currentUserDisplayName,
         toUserId: userId,

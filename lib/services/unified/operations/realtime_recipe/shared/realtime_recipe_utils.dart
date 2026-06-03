@@ -1,6 +1,7 @@
 // lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 
@@ -237,7 +238,7 @@ class RealtimeRecipeUtils {
 
     history.add(createEditHistoryEntry(
       timestamp: recipe.createdAt,
-      userId: recipe.core.createdBy ?? '',
+      userId: recipe.core.createdBy.orEmpty(),
       userName: recipe.socialData?.ownerDisplayName ?? 'Unknown',
       action: 'Created recipe',
       details: 'Initial recipe creation',

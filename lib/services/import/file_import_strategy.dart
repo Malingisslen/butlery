@@ -353,7 +353,7 @@ class FileImportStrategy extends ImportStrategy {
       final Map<String, String> data = {};
 
       for (int i = 0; i < headers.length && i < row.length; i++) {
-        data[headers[i]] = row[i]?.toString() ?? '';
+        data[headers[i]] = (row[i]?.toString()).orEmpty();
       }
 
       return _createRecipeFromData(data);

@@ -4,6 +4,7 @@
 /// than importing a copy. See the test header for usage examples.
 
 import 'dart:async';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -135,7 +136,7 @@ class SocialShoppingCoordinator
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
       sharedToUserIds: sharedToUserIds,
-      shareMessage: shareMessage ?? '',
+      shareMessage: shareMessage.orEmpty(),
       listName: contentSnapshot.name,
       itemCount: contentSnapshot.items.length,
       listDescription: contentSnapshot.description,

@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -47,7 +48,7 @@ class SchemaOrgRecipeExtractor {
 
   static String extractDescription(Map<String, dynamic> data) {
     final desc = data['description'];
-    final raw = desc?.toString().trim() ?? '';
+    final raw = (desc?.toString().trim()).orEmpty();
     return raw.isNotEmpty ? _unescape.convert(raw) : '';
   }
 

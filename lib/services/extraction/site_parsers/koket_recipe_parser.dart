@@ -61,8 +61,10 @@ class KoketRecipeParser extends RecipeSiteParser {
     // Rating from JSON-LD aggregateRating
     final aggRating = recipe['aggregateRating'];
     if (aggRating is Map && recipe['rating'] == null) {
-      final score = double.tryParse(aggRating['ratingValue']?.toString() ?? '');
-      final count = int.tryParse(aggRating['reviewCount']?.toString() ?? '');
+      final score =
+          double.tryParse((aggRating['ratingValue']?.toString()).orEmpty());
+      final count =
+          int.tryParse((aggRating['reviewCount']?.toString()).orEmpty());
       if (score != null && count != null) {
         recipe['rating'] = {'score': score, 'count': count};
       }

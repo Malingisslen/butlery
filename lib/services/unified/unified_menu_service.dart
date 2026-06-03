@@ -24,6 +24,7 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 // Operations modules
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Result of importing a shared menu.
 /// Indicates whether the import joined a collaborative session or created a local copy.
@@ -246,7 +247,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
                   menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
                   menuTitle: menuSnapshotData['title'] as String? ??
                       AppLocale.current.labelCollaborativeMenu,
-                  sharedByUserId: data['ownerId'] as String? ?? '',
+                  sharedByUserId: (data['ownerId'] as String?).orEmpty(),
                   sharedByDisplayName:
                       data['ownerDisplayName'] as String? ?? '?',
                   sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ??

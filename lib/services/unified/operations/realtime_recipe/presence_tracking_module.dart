@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'dart:async';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -279,7 +280,7 @@ class PresenceTrackingModule {
     _heartbeatSubscriptions[recipeId]?.cancel();
 
     final subscription = Stream.periodic(heartbeatInterval).listen((_) async {
-      if (isUserPresent(recipeId, _getCurrentUserId() ?? '')) {
+      if (isUserPresent(recipeId, _getCurrentUserId().orEmpty())) {
         await updatePresenceHeartbeat(recipeId);
       }
     });

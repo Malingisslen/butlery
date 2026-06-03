@@ -1,6 +1,7 @@
 // lib/services/unified/modules/social_recipe/social_recipe_creation_service.dart
 
 import 'dart:async';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -80,7 +81,7 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         ownerId: currentUserId,
         ownerDisplayName:
             currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
-        description: description ?? '',
+        description: description.orEmpty(),
         portions: portions,
         timeMinutes: cookingTime,
         personalTagIds: personalTagIds ?? [],
