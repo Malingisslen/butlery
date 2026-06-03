@@ -5,6 +5,7 @@ import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
@@ -71,7 +72,7 @@ class FileImportStrategy extends ImportStrategy {
 
       return await importFromContent(
         file.bytes!,
-        file.extension?.toLowerCase() ?? '',
+        (file.extension?.toLowerCase()).orEmpty(),
         options: options,
       );
     } catch (e) {
@@ -134,7 +135,7 @@ class FileImportStrategy extends ImportStrategy {
 
       return await importMultipleFromContent(
         file.bytes!,
-        file.extension?.toLowerCase() ?? '',
+        (file.extension?.toLowerCase()).orEmpty(),
         options: options,
       );
     } catch (e) {
@@ -290,7 +291,7 @@ class FileImportStrategy extends ImportStrategy {
       // Get headers from first row
       final headerRow = sheet.rows.first;
       final headers = headerRow
-          .map((cell) => cell?.value?.toString().toLowerCase() ?? '')
+          .map((cell) => (cell?.value?.toString().toLowerCase()).orEmpty())
           .toList();
 
       if (sheet.rows.length < 2) {
@@ -327,7 +328,7 @@ class FileImportStrategy extends ImportStrategy {
 
       final headerRow = sheet.rows.first;
       final headers = headerRow
-          .map((cell) => cell?.value?.toString().toLowerCase() ?? '')
+          .map((cell) => (cell?.value?.toString().toLowerCase()).orEmpty())
           .toList();
 
       final recipes = <Recipe>[];
@@ -367,7 +368,7 @@ class FileImportStrategy extends ImportStrategy {
       final Map<String, String> data = {};
 
       for (int i = 0; i < headers.length && i < row.length; i++) {
-        data[headers[i]] = row[i]?.value?.toString() ?? '';
+        data[headers[i]] = (row[i]?.value?.toString()).orEmpty();
       }
 
       return _createRecipeFromData(data);
@@ -563,27 +564,29 @@ class FileImportStrategy extends ImportStrategy {
     final name = json['name'] as String?;
     if (name == null || name.isEmpty) return null;
 
-    final ingredientLines = (json['ingredients'] as String? ?? '')
+    final ingredientLines = (json['ingredients'] as String?)
+        .orEmpty()
         .split('\n')
         .where((l) => l.trim().isNotEmpty)
         .toList();
-    final directionLines = (json['directions'] as String? ?? '')
+    final directionLines = (json['directions'] as String?)
+        .orEmpty()
         .split('\n')
         .where((l) => l.trim().isNotEmpty)
         .toList();
 
     return _createRecipeFromData({
       'title': name,
-      'description': json['description'] as String? ?? '',
+      'description': (json['description'] as String?).orEmpty(),
       'ingredients': ingredientLines.join('\n'),
       'instructions': directionLines.join('\n'),
       'source':
           json['source_url'] as String? ?? json['source'] as String? ?? '',
       'rating': '${json['rating'] ?? ''}',
-      'servings': json['servings'] as String? ?? '',
-      'time': json['total_time'] as String? ?? '',
+      'servings': (json['servings'] as String?).orEmpty(),
+      'time': (json['total_time'] as String?).orEmpty(),
       'mealtype':
-          (json['categories'] as List?)?.firstOrNull as String? ?? 'Middag',
+          (json['categories'] as List?).firstOrNull as String? ?? 'Middag',
     });
   }
 

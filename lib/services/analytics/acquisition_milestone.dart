@@ -10,6 +10,7 @@
 /// the next UTM arrival when a uid exists.
 library;
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/acquisition_attribution.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
@@ -44,8 +45,8 @@ class AcquisitionMilestone {
   }) async {
     // Empty source = no signal worth attributing.
     if (utmSource == null || utmSource.isEmpty) return;
-    final medium = utmMedium ?? '';
-    final campaign = utmCampaign ?? '';
+    final medium = utmMedium.orEmpty();
+    final campaign = utmCampaign.orEmpty();
 
     final prefs = await tryGetSharedPreferences(logTag: 'AcquisitionMilestone');
 

@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
@@ -167,7 +168,7 @@ class AccountDeletionService extends BaseService {
     } else if (e.code == 'unauthenticated') {
       result['requiresReauth'] = true;
     }
-    (result['errors'] as List).add('cf_${e.code}: ${e.message ?? ''}');
+    (result['errors'] as List).add('cf_${e.code}: ${e.message.orEmpty()}');
   }
 
   void _mergeCfResult(

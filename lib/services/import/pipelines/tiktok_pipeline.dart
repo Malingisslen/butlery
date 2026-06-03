@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
@@ -168,7 +169,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
 
     // Tier 1: Fetch metadata via oEmbed
     final metadata = await _fetchMetadata(input);
-    final caption = metadata?.title ?? '';
+    final caption = (metadata?.title).orEmpty();
 
     if (caption.isEmpty) {
       AppLogger.warning('TikTokPipeline: No caption available');
@@ -480,7 +481,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
           },
         ),
       final ImportPartial partial => ImportResult.assistance(
-          extractedText: partial.extractedText ?? '',
+          extractedText: partial.extractedText.orEmpty(),
           suggestedTitle: partial.title,
           metadata: partial.partialData,
         ),

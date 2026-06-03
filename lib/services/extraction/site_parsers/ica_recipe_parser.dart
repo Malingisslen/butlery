@@ -10,6 +10,7 @@
 
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
 /// Parser for ICA.se recipes
@@ -111,7 +112,7 @@ class IcaRecipeParser extends RecipeSiteParser {
     }
 
     // Try finding in text content
-    final bodyText = doc.body?.text ?? '';
+    final bodyText = (doc.body?.text).orEmpty();
     return extractDifficulty(bodyText);
   }
 
@@ -138,7 +139,7 @@ class IcaRecipeParser extends RecipeSiteParser {
     }
 
     // Look for "Tips:" sections in text
-    final bodyText = doc.body?.text ?? '';
+    final bodyText = (doc.body?.text).orEmpty();
     final tipMatch = RegExp(r'Tips?:\s*(.+?)(?:\n|$)', caseSensitive: false)
         .firstMatch(bodyText);
     if (tipMatch != null) {
@@ -341,7 +342,7 @@ class IcaRecipeParser extends RecipeSiteParser {
     }
 
     // Try finding "Portioner: X" in text
-    final bodyText = doc.body?.text ?? '';
+    final bodyText = (doc.body?.text).orEmpty();
     final portionMatch = RegExp(r'Portioner?:\s*(\d+)', caseSensitive: false)
         .firstMatch(bodyText);
     if (portionMatch != null) {

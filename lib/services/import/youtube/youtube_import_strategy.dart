@@ -9,6 +9,7 @@
 library;
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
@@ -230,7 +231,7 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
           },
         ),
       final ImportPartial partial => ImportResult.assistance(
-          extractedText: partial.extractedText ?? '',
+          extractedText: partial.extractedText.orEmpty(),
           suggestedTitle: partial.title,
           metadata: partial.partialData,
         ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Generates content-based fingerprints for recipe deduplication.
 ///
@@ -154,7 +155,7 @@ class ContentFingerprint {
   ///
   /// Convenience method for working with Firestore data.
   String? generateFromMap(Map<String, dynamic> recipeData) {
-    final title = recipeData['title'] as String? ?? '';
+    final title = (recipeData['title'] as String?).orEmpty();
     final ingredients = _extractStringList(recipeData['ingredients']);
     final instructions = _extractStringList(recipeData['instructions']);
 

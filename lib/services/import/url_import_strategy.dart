@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -439,7 +440,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       core: RecipeCore(
         id: _uuid.v4(),
         title: parsed.title.value ?? 'Imported Recipe',
-        description: parsed.description ?? '',
+        description: parsed.description.orEmpty(),
         ingredients: ingredients,
         instructions: instructions,
         portions: parsed.portions.value,

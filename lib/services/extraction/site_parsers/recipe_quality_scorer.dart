@@ -1,6 +1,7 @@
 /// Recipe quality scoring system for validation and success rate measurement
 /// Calculates completeness scores based on field presence and quality.
 /// Used to determine if an extraction meets success criteria (>90% or >95%).
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Quality score for an extracted recipe
 class RecipeQualityScore {
@@ -117,7 +118,7 @@ class RecipeQualityScorer {
   /// ```
   static RecipeQualityScore score(Map<String, dynamic> recipe) {
     // Check title
-    final title = recipe['name']?.toString().trim() ?? '';
+    final title = (recipe['name']?.toString().trim()).orEmpty();
     final hasTitle = title.isNotEmpty &&
         title != 'Importerat recept' &&
         title != 'Imported Recipe' &&

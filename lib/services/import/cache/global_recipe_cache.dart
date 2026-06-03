@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/cache/content_fingerprint.dart';
@@ -198,7 +199,7 @@ class GlobalRecipeCache extends BaseService {
             // Create cache entry
             final entry = CacheEntry(
               urlHash: urlHash,
-              contentFingerprint: fingerprint ?? '',
+              contentFingerprint: fingerprint.orEmpty(),
               domain: domain,
               sourceType: sourceType,
               recipe: recipeData,

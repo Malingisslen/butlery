@@ -9,6 +9,7 @@ library;
 import 'dart:typed_data';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -362,7 +363,7 @@ class LlmEnhancementService extends BaseService {
 
     return Recipe.personal(
       title: extracted.title,
-      description: extracted.description ?? '',
+      description: extracted.description.orEmpty(),
       mealType: mealType,
       portions: extracted.portions ?? ParsingTier.kDefaultPortions,
       timeMinutes: extracted.totalTimeMinutes ?? 0,
