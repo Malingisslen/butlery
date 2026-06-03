@@ -5,16 +5,19 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
+import 'package:butlery/services/storage_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/service_mocks.dart';
 
 void main() {
   group('FirebaseCommentsRepository - Comment System', () {
@@ -340,6 +343,92 @@ void main() {
           () => repository.deleteComment('nonexistent'),
           throwsA(isA<ResourceNotFoundException>()),
         );
+      });
+    });
+
+    // BUT-1189: deleting a comment must best-effort clean up the backing
+    // comment-image Storage objects. StorageService is reached via the
+    // production ServiceLocator (DIContainer), which shares GetIt.instance
+    // with TestServiceLocator — so a MockStorageService registered there is
+    // resolvable by the repository under test.
+    group('Delete Comment - Storage image cleanup (BUT-1189)', () {
+      late MockStorageService mockStorage;
+
+      setUp(() async {
+        // Bridge production ServiceLocator onto the shared GetIt instance so
+        // `ServiceLocator.tryGet<StorageService>()` inside the repo resolves.
+        await BaseUnitTest.setupUnitWithProductionLocator();
+
+        mockStorage = MockStorageService();
+        when(() => mockStorage.deleteImage(any()))
+            .thenAnswer((_) async => true);
+        TestServiceLocator.registerMock<StorageService>(mockStorage);
+      });
+
+      tearDown(() async {
+        await TestServiceLocator.reset();
+      });
+
+      test('deletes each backing image when comment has imageUrls', () async {
+        // Arrange
+        const commentId = 'comment-img';
+        final comment = _createComment('recipe-1', 'user-123', id: commentId);
+        await _seedComment(fakeFirestore, commentId, comment, imageUrls: const [
+          'https://example.com/a.jpg',
+          'https://example.com/b.jpg',
+        ]);
+
+        // Act
+        await repository.deleteComment(commentId);
+
+        // Assert — one Storage delete per URL, comment doc gone.
+        verify(() => mockStorage.deleteImage('https://example.com/a.jpg'))
+            .called(1);
+        verify(() => mockStorage.deleteImage('https://example.com/b.jpg'))
+            .called(1);
+        final doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .get();
+        expect(doc.exists, isFalse);
+      });
+
+      test('does not call Storage delete when comment has no imageUrls',
+          () async {
+        // Arrange
+        const commentId = 'comment-noimg';
+        final comment = _createComment('recipe-1', 'user-123', id: commentId);
+        await _seedComment(fakeFirestore, commentId, comment);
+
+        // Act
+        await repository.deleteComment(commentId);
+
+        // Assert
+        verifyNever(() => mockStorage.deleteImage(any()));
+      });
+
+      test('comment deletion still succeeds when Storage delete throws',
+          () async {
+        // Arrange — Storage cleanup is best-effort; a throwing delete must not
+        // propagate and fail the comment deletion.
+        const commentId = 'comment-throw';
+        final comment = _createComment('recipe-1', 'user-123', id: commentId);
+        await _seedComment(fakeFirestore, commentId, comment,
+            imageUrls: const ['https://example.com/boom.jpg']);
+        when(() => mockStorage.deleteImage(any()))
+            .thenThrow(Exception('storage down'));
+
+        // Act
+        await repository.deleteComment(commentId);
+
+        // Assert — doc still deleted despite the Storage failure.
+        final doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .get();
+        expect(doc.exists, isFalse);
+        verify(() => mockStorage.deleteImage('https://example.com/boom.jpg'))
+            .called(1);
       });
     });
 
@@ -786,9 +875,10 @@ RecipeComment _createComment(
 Future<void> _seedComment(
   FakeFirebaseFirestore firestore,
   String commentId,
-  RecipeComment comment,
-) async {
-  final data = {
+  RecipeComment comment, {
+  List<String>? imageUrls,
+}) async {
+  final data = <String, dynamic>{
     'recipeId': comment.recipeId,
     'authorId': comment.authorId,
     'authorDisplayName': comment.authorDisplayName,
@@ -802,6 +892,9 @@ Future<void> _seedComment(
     'replyCount': comment.replyCount,
     'isDeleted': comment.isDeleted,
   };
+  if (imageUrls != null) {
+    data['imageUrls'] = imageUrls;
+  }
 
   await firestore.collection('recipe_comments').doc(commentId).set(data);
 }

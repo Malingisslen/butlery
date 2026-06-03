@@ -7,7 +7,9 @@ import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/storage_service.dart';
 
 /// Firebase implementation for recipe comments with threaded replies and like tracking.
 /// Supports recipe access validation via optional [RecipeAccessValidator] constructor parameter.
@@ -332,12 +334,31 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
     await batch.commit();
 
+    // BUT-1189: best-effort cleanup of backing comment-image Storage objects.
+    // Non-blocking — a failed Storage delete must not fail comment deletion
+    // (orphaning an image beats a failed delete; the next account-wipe sweeps it).
+    await _deleteCommentImages(commentData['imageUrls']);
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_comment',
       operation: 'delete',
       granted: true,
     );
+  }
+
+  Future<void> _deleteCommentImages(Object? imageUrls) async {
+    if (imageUrls is! List || imageUrls.isEmpty) return;
+    final storage = ServiceLocator.tryGet<StorageService>();
+    if (storage == null) return;
+    for (final url in imageUrls.whereType<String>()) {
+      try {
+        await storage.deleteImage(url);
+      } catch (e) {
+        AppLogger.warning(
+            '[Comments] comment-image cleanup failed for $url: $e');
+      }
+    }
   }
 
   @override
