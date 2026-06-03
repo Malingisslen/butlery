@@ -2582,6 +2582,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{Taggarna slogs ihop} =1{Taggarna slogs ihop, 1 recept uppdaterat} other{Taggarna slogs ihop, {count} recept uppdaterade}}'**
   String personalTagMergeSuccess(int count);
 
+  /// Snackbar after a successful merge, counting how many source tags were merged into the target
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 tagg sammanslagen} other{{count} taggar sammanslagna}}'**
+  String personalTagMergeSuccessCount(int count);
+
   /// Title of the bulk-delete confirmation dialog
   ///
   /// In sv, this message translates to:

@@ -278,6 +278,30 @@ class PersonalTagViewModel extends ChangeNotifier
   Future<int> mergeTags(String fromId, String toId) =>
       _service.mergeTags(fromId, toId);
 
+  /// BUT-1188: merges every tag in [sourceIds] into [targetId], sequentially.
+  ///
+  /// Sequential (not parallel) is required: BUT-1186 established that the per-
+  /// merge retags race on the same recipe docs when run concurrently. [targetId]
+  /// and any empty/duplicate source ids are filtered out first (a self-merge is
+  /// a no-op). If a single [mergeTags] throws, the error propagates — a partial
+  /// merge surfaces to the caller rather than being silently swallowed (same
+  /// failure posture as BUT-1186).
+  ///
+  /// Returns the number of SOURCE TAGS successfully merged — NOT a recipe count.
+  /// Summing per-merge recipe counts over-reports (a recipe carrying two merged
+  /// tags is counted by each merge); the tags-merged count is deterministic and
+  /// accurate without threading recipe-id sets through the BUT-1186 chunking.
+  Future<int> mergeTagsInto(String targetId, List<String> sourceIds) async {
+    final sources =
+        sourceIds.where((id) => id.isNotEmpty && id != targetId).toSet();
+    var merged = 0;
+    for (final fromId in sources) {
+      await _service.mergeTags(fromId, targetId);
+      merged++;
+    }
+    return merged;
+  }
+
   /// BUT-1185: bulk-deletes [tagIds]. Returns tags deleted.
   Future<int> bulkDeleteTags(List<String> tagIds) =>
       _service.bulkDeleteTags(tagIds);

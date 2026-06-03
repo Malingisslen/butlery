@@ -1481,6 +1481,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String personalTagMergeSuccessCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags merged',
+      one: '1 tag merged',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String personalTagBulkDeleteTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

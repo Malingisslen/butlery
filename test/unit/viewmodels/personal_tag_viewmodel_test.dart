@@ -503,6 +503,89 @@ void main() {
       });
     });
 
+    // ---- Merge (BUT-1188) ----
+
+    group('mergeTagsInto', () {
+      test('merges N>2 sources into the target sequentially in order',
+          () async {
+        final calls = <String>[];
+        when(() => mockService.mergeTags(any(), any())).thenAnswer((inv) async {
+          calls.add(inv.positionalArguments[0] as String);
+          return 1; // recipes retagged (ignored by the tags-merged metric)
+        });
+
+        final merged = await viewModel.mergeTagsInto(
+          'target',
+          ['a', 'b', 'c'],
+        );
+
+        expect(merged, 3, reason: 'count is source tags merged, not recipes');
+        expect(calls, ['a', 'b', 'c'], reason: 'sequential, preserving order');
+        verify(() => mockService.mergeTags('a', 'target')).called(1);
+        verify(() => mockService.mergeTags('b', 'target')).called(1);
+        verify(() => mockService.mergeTags('c', 'target')).called(1);
+      });
+
+      test('never merges the target into itself', () async {
+        when(() => mockService.mergeTags(any(), any()))
+            .thenAnswer((_) async => 0);
+
+        final merged = await viewModel.mergeTagsInto(
+          'target',
+          ['a', 'target', 'b'],
+        );
+
+        expect(merged, 2);
+        verifyNever(() => mockService.mergeTags('target', 'target'));
+        verify(() => mockService.mergeTags('a', 'target')).called(1);
+        verify(() => mockService.mergeTags('b', 'target')).called(1);
+      });
+
+      test('propagates a mid-loop failure (partial merge surfaces)', () async {
+        final calls = <String>[];
+        when(() => mockService.mergeTags(any(), any())).thenAnswer((inv) async {
+          final from = inv.positionalArguments[0] as String;
+          calls.add(from);
+          if (from == 'b') throw Exception('Firestore error');
+          return 1;
+        });
+
+        await expectLater(
+          viewModel.mergeTagsInto('target', ['a', 'b', 'c']),
+          throwsException,
+        );
+
+        // 'a' committed, 'b' threw and aborted the loop -> 'c' never ran.
+        expect(calls, ['a', 'b']);
+        verifyNever(() => mockService.mergeTags('c', 'target'));
+      });
+
+      test('filters out empty and duplicate source ids', () async {
+        final calls = <String>[];
+        when(() => mockService.mergeTags(any(), any())).thenAnswer((inv) async {
+          calls.add(inv.positionalArguments[0] as String);
+          return 1;
+        });
+
+        final merged = await viewModel.mergeTagsInto(
+          'target',
+          ['a', '', 'a', 'b', 'target', ''],
+        );
+
+        expect(merged, 2,
+            reason: 'a + b once each; empties/dupes/target dropped');
+        expect(calls.toSet(), {'a', 'b'});
+        expect(calls.length, 2);
+      });
+
+      test('returns 0 when no valid sources remain', () async {
+        final merged = await viewModel.mergeTagsInto('target', ['target', '']);
+
+        expect(merged, 0);
+        verifyNever(() => mockService.mergeTags(any(), any()));
+      });
+    });
+
     // ---- Selection ----
 
     group('selection', () {

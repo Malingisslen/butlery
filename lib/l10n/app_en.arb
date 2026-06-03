@@ -955,6 +955,13 @@
       "count": { "type": "int" }
     }
   },
+  "personalTagMergeSuccessCount": "{count, plural, =1{1 tag merged} other{{count} tags merged}}",
+  "@personalTagMergeSuccessCount": {
+    "description": "Snackbar after a successful merge, counting how many source tags were merged into the target",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "personalTagBulkDeleteTitle": "{count, plural, =1{Delete 1 tag?} other{Delete {count} tags?}}",
   "@personalTagBulkDeleteTitle": {
     "description": "Title of the bulk-delete confirmation dialog",

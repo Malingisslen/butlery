@@ -85,19 +85,20 @@ abstract final class PersonalTagBulkDialogs {
                       ? null
                       : () async {
                           setState(() => isLoading = true);
-                          // mergeTags deletes the source each call; merging the
-                          // others into the shared target sequentially is safe
-                          // for N>2 (A->T, B->T, ...).
+                          // BUT-1188: the N-into-1 merge loop lives in the VM
+                          // (mergeTagsInto) so it's unit-testable; the success
+                          // metric is tags-merged, not a recipe count (the old
+                          // per-merge sum over-reported recipes carrying two
+                          // merged tags).
                           final sources = selectedTags
                               .where((t) => t.id != targetId)
                               .map((t) => t.id)
                               .toList();
-                          var updated = 0;
                           try {
-                            for (final fromId in sources) {
-                              updated +=
-                                  await viewModel.mergeTags(fromId, targetId);
-                            }
+                            final merged = await viewModel.mergeTagsInto(
+                              targetId,
+                              sources,
+                            );
                             await viewModel.loadTagStatistics();
 
                             if (!dialogContext.mounted) return;
@@ -107,7 +108,7 @@ abstract final class PersonalTagBulkDialogs {
                             if (!context.mounted) return;
                             SnackBarUtils.showSuccess(
                               context,
-                              context.l10n.personalTagMergeSuccess(updated),
+                              context.l10n.personalTagMergeSuccessCount(merged),
                             );
                           } catch (e) {
                             if (!dialogContext.mounted) return;
