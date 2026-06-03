@@ -3,6 +3,7 @@
 /// single collection using a `type` discriminator field.
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -194,11 +195,11 @@ class SocialRequest {
   GroupInvitation toGroupInvitation() {
     return GroupInvitation(
       id: id,
-      groupId: groupId ?? '',
-      groupName: groupName ?? '',
+      groupId: groupId.orEmpty(),
+      groupName: groupName.orEmpty(),
       groupEmoji: groupEmoji ?? '👥',
       fromUserId: fromUserId,
-      fromUserName: fromUserName ?? '',
+      fromUserName: fromUserName.orEmpty(),
       toUserId: toUserId,
       status: GroupInvitationStatus.values.firstWhere(
         (s) => s.name == status.name,

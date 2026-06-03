@@ -325,9 +325,6 @@ extension ValidationExtensions on String? {
   /// Replaces: value == null || value.trim().isEmpty
   bool get isNullOrWhitespace => ValidationUtils.isNullOrWhitespace(this);
 
-  /// Replaces: value ?? ''
-  String get orEmpty => ValidationUtils.safeString(this);
-
   /// Replaces: value?.trim() ?? ''
   String get safeTrim => ValidationUtils.safeTrim(this);
 

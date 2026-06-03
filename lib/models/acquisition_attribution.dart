@@ -6,6 +6,7 @@
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 class AcquisitionAttribution {
   /// utm_source — the channel ad / referrer host (e.g. "instagram", "google").
@@ -43,9 +44,9 @@ class AcquisitionAttribution {
     final data = doc.data() ?? const <String, dynamic>{};
     final ts = data['firstSeenAt'];
     return AcquisitionAttribution(
-      source: (data['source'] as String?) ?? '',
-      medium: (data['medium'] as String?) ?? '',
-      campaign: (data['campaign'] as String?) ?? '',
+      source: (data['source'] as String?).orEmpty(),
+      medium: (data['medium'] as String?).orEmpty(),
+      campaign: (data['campaign'] as String?).orEmpty(),
       firstSeenAt: ts is Timestamp ? ts.toDate() : null,
     );
   }

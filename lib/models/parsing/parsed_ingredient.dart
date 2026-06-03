@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 
@@ -125,7 +126,7 @@ class ParsedIngredient {
 
   /// Creates from JSON.
   factory ParsedIngredient.fromJson(Map<String, dynamic> json) {
-    final name = json['name']?.toString() ?? '';
+    final name = (json['name']?.toString()).orEmpty();
     return ParsedIngredient(
       name: name,
       originalLine: json['originalLine']?.toString() ?? name,

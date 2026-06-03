@@ -241,13 +241,6 @@ void main() {
       expect(value.isNullOrWhitespace, isTrue);
     });
 
-    test('orEmpty returns value or empty', () {
-      String? a;
-      expect(a.orEmpty, '');
-      a = 'hi';
-      expect(a.orEmpty, 'hi');
-    });
-
     test('safeTrim trims null-safely', () {
       String? a;
       expect(a.safeTrim, '');
