@@ -24,11 +24,14 @@
 /// TEST FOCUS: MultiProvider setup, ServiceLocator integration, form management lifecycle,
 /// friend selection workflow, validation systems, async creation operations, Swedish localization,
 /// route arguments processing, error handling patterns, loading state coordination
-@Skip(
-    'BUT-1155: drifted ULTRATHINK smoke-suite — has the production-ServiceLocator '
-    'bridge but still hits a StreamController re-entrancy on view init ("Bad state: '
-    'Cannot fire new event. Controller is already firing an event"). Low behavioral '
-    'value. Rebuild as real behavior tests + root-cause the re-entrancy — BUT-1180.')
+@Skip('BUT-1180: drifted ULTRATHINK smoke-suite. Root-caused: the "Bad state: '
+    'Cannot fire new event" is a MISLEADING secondary error — the real fault is '
+    'the self-referential GetIt factory in setUp below '
+    '(registerFactory<FriendsViewModel>(() => get<FriendsViewModel>())), which '
+    'resolves itself → infinite recursion during view init (TEST-only, not a '
+    'production StreamController bug). Deleting those two registerFactory blocks '
+    'fixes the recursion but exposes further drift (Navigator/PageRouteBuilder '
+    'scaffolding). Rebuild as real behavior tests on the journey harness — BUT-1180.')
 library;
 
 import 'package:flutter/material.dart';
