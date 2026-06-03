@@ -65,14 +65,30 @@ abstract final class RecipeDetailSharedWidgets {
               link: true,
               child: GestureDetector(
                 onTap: () => launchSourceUrl(context, recipe.sourceUrl!),
-                child: Text(
-                  context.l10n.recipeSourceFrom(
-                    Uri.tryParse(recipe.sourceUrl!)?.host ?? recipe.sourceUrl!,
-                  ),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurfaceVariant,
-                    decoration: TextDecoration.underline,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // BUT-1041: platform-aware leading icon so video imports
+                    // read as media at a glance, generic links as external.
+                    Icon(
+                      sourceIcon(recipe.sourceUrl!),
+                      size: AppDimensions.iconSizeS,
+                      color: cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingXxs),
+                    Flexible(
+                      child: Text(
+                        context.l10n.recipeSourceFrom(
+                          Uri.tryParse(recipe.sourceUrl!)?.host ??
+                              recipe.sourceUrl!,
+                        ),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: cs.onSurfaceVariant,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -181,6 +197,21 @@ abstract final class RecipeDetailSharedWidgets {
         ],
       ),
     );
+  }
+
+  /// BUT-1041: platform-aware icon for the recipe source link. Sniffs the
+  /// host (no schema/enum migration needed) so YouTube/TikTok video imports
+  /// read as media and generic web imports read as an external link.
+  @visibleForTesting
+  static IconData sourceIcon(String url) {
+    final host = Uri.tryParse(url)?.host.toLowerCase() ?? '';
+    if (host.contains('youtube.') || host.contains('youtu.be')) {
+      return Icons.play_circle_outline;
+    }
+    if (host.contains('tiktok.')) {
+      return Icons.music_note;
+    }
+    return Icons.open_in_new;
   }
 
   /// Launches an external URL (best-effort, silent failure).
