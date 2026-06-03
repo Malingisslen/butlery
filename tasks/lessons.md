@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Testing] Red CI on a commit ≠ your regression — suspect a pre-existing flake when the failing test is unrelated
+- **Date**: 2026-06-03
+- **Trigger**: BUT-581 chunk 3 swept `?? ''`→`.orEmpty()` in `lib/viewmodels/`+`lib/core/` (behaviorally identical, 0 service files touched). CI Run Tests went red — but on `menu_service_test.dart: should give season boost` (`Expected >550, Actual 549`), a `lib/services/` test my change never touched. It had PASSED on the prior commit (same day). It was a pre-existing **flaky probabilistic test**: 1000 trials of weighted selection where boost (P≈0.6, mean 600, σ≈15.5) vs no-boost (mean 500) distributions OVERLAP at ~4σ, so the `>550` threshold trips when a boost run dips to ~549 (~3.3σ). The original "mean-5σ≈560" comment math was wrong (σ≈15.5, not ~2).
+- **Rule**: When CI fails on a commit, FIRST check whether the failing test is in the area you changed and whether your change could plausibly affect it. If the test is unrelated (different layer, behaviorally-identical change) and/or passed on a recent prior commit, it's likely a **pre-existing flake**, not your regression — don't thrash trying to "fix" your correct change. Then FIX the flake at root: for a probabilistic test, **seed the RNG for determinism** (inject an optional `Random? random` defaulting to `Random()` — production unchanged, test seeds it) rather than widening a statistical threshold (at small n, overlapping distributions have NO flake-free threshold). Re-running CI "until it's green" hides the time-bomb.
+- **Example**: Added injectable seeded `Random` to `MenuService`; the season-boost test now asserts a deterministic count (`>540`, exact under seed `Random(20240603)`) — proves the boost, never flakes. `9fd21d07d`.
+
 ---
 
 ### [Workflow] Late-phase side-effect agents must be wrapped — a Ship schema miss discarded a 1.13M-token run
