@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart' as models;
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -129,7 +130,7 @@ class PermissionService extends BaseService {
     return models.UserProfile(
       uid: firebaseUser.uid,
       displayName: firebaseUser.displayName ?? 'User',
-      email: firebaseUser.email ?? '',
+      email: firebaseUser.email.orEmpty(),
       avatarUrl: firebaseUser.photoURL,
       isOnline: true, // Always true for current user
       joinedAt: firebaseUser.metadata.creationTime ?? clock.now(),

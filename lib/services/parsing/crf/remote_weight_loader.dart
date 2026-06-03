@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
@@ -133,7 +134,7 @@ class RemoteWeightLoader extends RemoteModelLoader {
       final metadata = await ref.getMetadata();
 
       final remoteVersion =
-          int.tryParse(metadata.customMetadata?['version'] ?? '');
+          int.tryParse((metadata.customMetadata?['version']).orEmpty());
       if (remoteVersion == null || remoteVersion <= bundledVersion) {
         AppLogger.debug(
           '$serviceName: Remote weights not newer '

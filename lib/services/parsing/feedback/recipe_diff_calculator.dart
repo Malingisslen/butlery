@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/parsing/field_correction.dart';
 import 'package:butlery/models/parsing/ingredient_correction.dart';
 import 'package:butlery/models/parsing/instruction_correction.dart';
@@ -367,8 +368,8 @@ class RecipeDiffCalculator {
     if (a == b) return true;
     if ((a == null || a.isEmpty) && (b == null || b.isEmpty)) return true;
 
-    final normalizedA = (a ?? '').trim().toLowerCase();
-    final normalizedB = (b ?? '').trim().toLowerCase();
+    final normalizedA = a.orEmpty().trim().toLowerCase();
+    final normalizedB = b.orEmpty().trim().toLowerCase();
 
     return normalizedA == normalizedB;
   }

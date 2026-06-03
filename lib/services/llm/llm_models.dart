@@ -6,6 +6,7 @@
 
 import 'dart:typed_data';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 
@@ -170,7 +171,7 @@ class ExtractedIngredient {
     return ExtractedIngredient(
       amount: (json['amount'] as num?)?.toDouble(),
       unit: json['unit'] as String?,
-      name: json['name'] as String? ?? '',
+      name: (json['name'] as String?).orEmpty(),
       preparation: json['preparation'] as String?,
     );
   }

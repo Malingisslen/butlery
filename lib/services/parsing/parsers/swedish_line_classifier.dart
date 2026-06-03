@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/services/parsing/swedish_units.dart';
@@ -283,12 +284,12 @@ class SwedishLineClassifier {
           case LineType.metadata:
             final portionMatch = _portionsPattern.firstMatch(line.text);
             if (portionMatch != null) {
-              portions = int.tryParse(portionMatch.group(1) ?? '');
+              portions = int.tryParse(portionMatch.group(1).orEmpty());
             }
             final timeMatch = _timePattern.firstMatch(line.text);
             if (timeMatch != null) {
-              final value = int.tryParse(timeMatch.group(1) ?? '') ?? 0;
-              final unit = timeMatch.group(2)?.toLowerCase() ?? '';
+              final value = int.tryParse(timeMatch.group(1).orEmpty()) ?? 0;
+              final unit = (timeMatch.group(2)?.toLowerCase()).orEmpty();
               if (unit.startsWith('tim') || unit == 'h') {
                 totalTime = Duration(hours: value);
               } else {

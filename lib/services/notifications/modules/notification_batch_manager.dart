@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:collection/collection.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notification_batch_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
@@ -207,7 +208,8 @@ class NotificationBatchManager {
 
     // Check for rapid succession (all within 1 minute)
     final timestamps = notifications
-        .map((n) => DateTime.tryParse(n.data['timestamp'] as String? ?? ''))
+        .map((n) =>
+            DateTime.tryParse((n.data['timestamp'] as String?).orEmpty()))
         .whereType<DateTime>()
         .toList()
       ..sort();

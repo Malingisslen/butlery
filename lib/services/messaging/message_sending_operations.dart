@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -117,7 +118,7 @@ class MessageSendingOperations {
         senderId: currentUser.uid,
         senderDisplayName: currentUser.displayName ?? '?',
         senderAvatarUrl: currentUser.photoURL,
-        content: caption ?? '',
+        content: caption.orEmpty(),
         type: MessageType.image,
         status: MessageStatus.sent,
         sentAt: clock.now(),
@@ -244,7 +245,7 @@ class MessageSendingOperations {
       Message message, String conversationId) async {
     try {
       // Don't send notifications to ourselves
-      if (message.isFromCurrentUser(authRepository.currentUserId ?? '')) {
+      if (message.isFromCurrentUser(authRepository.currentUserId.orEmpty())) {
         return;
       }
 

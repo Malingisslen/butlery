@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
@@ -302,7 +303,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
 
     final match = RegExp(r'(\d+)').firstMatch(text);
     if (match != null) {
-      final num = int.tryParse(match.group(1) ?? '');
+      final num = int.tryParse(match.group(1).orEmpty());
       if (num != null && num > 0 && num <= ParsingTier.kMaxPortions) {
         return FieldResult.mediumConfidence(num, 'Extracted from page');
       }
@@ -325,18 +326,18 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     var totalMinutes = 0;
 
     if (hourMatch != null) {
-      totalMinutes += (int.tryParse(hourMatch.group(1) ?? '') ?? 0) * 60;
+      totalMinutes += (int.tryParse(hourMatch.group(1).orEmpty()) ?? 0) * 60;
     }
 
     if (minMatch != null) {
-      totalMinutes += int.tryParse(minMatch.group(1) ?? '') ?? 0;
+      totalMinutes += int.tryParse(minMatch.group(1).orEmpty()) ?? 0;
     }
 
     // If no unit found, assume the number is minutes
     if (totalMinutes == 0) {
       final numMatch = RegExp(r'(\d+)').firstMatch(text);
       if (numMatch != null) {
-        totalMinutes = int.tryParse(numMatch.group(1) ?? '') ?? 0;
+        totalMinutes = int.tryParse(numMatch.group(1).orEmpty()) ?? 0;
       }
     }
 

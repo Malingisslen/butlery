@@ -10,6 +10,7 @@ import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as img;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/lru_map.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
@@ -480,8 +481,8 @@ class OCRExtractionService extends BaseService {
 
       if (json['IsErroredOnProcessing'] == false) {
         final parsedResults = json['ParsedResults'] as List?;
-        final extractedText = HtmlSanitizer.instance
-            .sanitizeText(parsedResults?.first['ParsedText'] as String? ?? '');
+        final extractedText = HtmlSanitizer.instance.sanitizeText(
+            (parsedResults?.first['ParsedText'] as String?).orEmpty());
 
         return OCRResult(
           text: extractedText,
@@ -545,7 +546,7 @@ class OCRExtractionService extends BaseService {
 
         if (textAnnotations != null && textAnnotations.isNotEmpty) {
           final extractedText = HtmlSanitizer.instance.sanitizeText(
-              textAnnotations.first['description'] as String? ?? '');
+              (textAnnotations.first['description'] as String?).orEmpty());
 
           return OCRResult(
             text: extractedText,
@@ -594,8 +595,8 @@ class OCRExtractionService extends BaseService {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        final extractedText =
-            HtmlSanitizer.instance.sanitizeText(json['text'] as String? ?? '');
+        final extractedText = HtmlSanitizer.instance
+            .sanitizeText((json['text'] as String?).orEmpty());
 
         return OCRResult(
           text: extractedText,

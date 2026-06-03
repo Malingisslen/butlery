@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
@@ -491,7 +492,7 @@ class NotificationService extends BaseService {
         final route = data['route'] as String?;
         final targetId = data['targetId'] as String?;
         final notificationType = data['notificationType'] as String?;
-        onNotificationTapped!(route ?? '', <String, String?>{
+        onNotificationTapped!(route.orEmpty(), <String, String?>{
           'id': targetId,
           'notificationType': notificationType,
         });

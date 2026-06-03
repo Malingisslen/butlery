@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -242,7 +243,7 @@ class PingService extends BaseService with PermissionValidationMixin {
         variables: {
           'senderName': senderName,
           'pingType': ping.type.name,
-          'message': ping.message ?? '',
+          'message': ping.message.orEmpty(),
         },
         additionalData: {
           'type': NotificationPayloadType.ping,
@@ -257,7 +258,8 @@ class PingService extends BaseService with PermissionValidationMixin {
   }
 
   String _resolveSenderDisplayName(String uid) {
-    final name = _friendsService.friendByUid(uid)?.displayName.trim() ?? '';
+    final name =
+        (_friendsService.friendByUid(uid)?.displayName.trim()).orEmpty();
     // Fall back to the UID when the sender isn't a known friend — better
     // than a blank name. The recipient will at least see SOMETHING.
     return name.isEmpty ? uid : name;

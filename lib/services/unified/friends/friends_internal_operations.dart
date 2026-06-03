@@ -1,6 +1,7 @@
 // lib/services/unified/friends/friends_internal_operations.dart
 
 import 'package:clock/clock.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
@@ -235,7 +236,8 @@ class FriendsInternalOperations {
           {required String phoneNumber, required dynamic invitation}) async =>
       false;
   Future<String> createInvitationLinkInternal(String invitationId) async {
-    final userId = ServiceLocator.get<PermissionService>().currentUserId ?? '';
+    final userId =
+        ServiceLocator.get<PermissionService>().currentUserId.orEmpty();
     final longUrl = DeepLinkService.generateFriendInvitationLink(
       invitationId: invitationId,
       fromUserId: userId,

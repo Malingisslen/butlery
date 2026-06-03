@@ -3,6 +3,7 @@
 // lib/services/menu_voting_service.dart
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/repositories/interfaces/menu_voting_repository.dart';
@@ -17,7 +18,7 @@ class MenuVotingService extends BaseService {
       ServiceLocator.get<MenuVotingRepository>();
 
   String get _currentUserId =>
-      ServiceLocator.get<PermissionService>().currentUserId ?? '';
+      ServiceLocator.get<PermissionService>().currentUserId.orEmpty();
 
   /// Create a new vote for a menu slot.
   Future<MenuSlotVote?> createVote({

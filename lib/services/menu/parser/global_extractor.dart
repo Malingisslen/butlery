@@ -2,6 +2,7 @@
 /// skip-frukost markers. Called before clause splitting.
 library;
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/services/menu/parser/lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/parser_utils.dart';
@@ -229,7 +230,8 @@ void sweepVerbObjects(
       int count = 1;
       if (qtyToken != null) {
         count = int.tryParse(qtyToken) ??
-            int.tryParse(lexicon.of(LexiconCategory.numbers)[qtyToken] ?? '') ??
+            int.tryParse(
+                lexicon.of(LexiconCategory.numbers)[qtyToken].orEmpty()) ??
             1;
       }
       final already = slots.any((slot) =>

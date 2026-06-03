@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:html_unescape/html_unescape.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -185,7 +186,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       // Try to extract number from string like "4 portioner" or "Serves 4"
       final match = RegExp(r'(\d+)').firstMatch(yield_);
       if (match != null) {
-        final num = int.tryParse(match.group(1) ?? '');
+        final num = int.tryParse(match.group(1).orEmpty());
         if (num != null && num > 0 && num <= ParsingTier.kMaxPortions) {
           return FieldResult.success(num);
         }
@@ -199,7 +200,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
         if (item is String) {
           final match = RegExp(r'(\d+)').firstMatch(item);
           if (match != null) {
-            final num = int.tryParse(match.group(1) ?? '');
+            final num = int.tryParse(match.group(1).orEmpty());
             if (num != null && num > 0 && num <= ParsingTier.kMaxPortions) {
               return FieldResult.success(num);
             }
@@ -339,10 +340,10 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     final match = regex.firstMatch(iso);
     if (match == null) return null;
 
-    final days = int.tryParse(match.group(1) ?? '') ?? 0;
-    final hours = int.tryParse(match.group(2) ?? '') ?? 0;
-    final minutes = int.tryParse(match.group(3) ?? '') ?? 0;
-    final seconds = int.tryParse(match.group(4) ?? '') ?? 0;
+    final days = int.tryParse(match.group(1).orEmpty()) ?? 0;
+    final hours = int.tryParse(match.group(2).orEmpty()) ?? 0;
+    final minutes = int.tryParse(match.group(3).orEmpty()) ?? 0;
+    final seconds = int.tryParse(match.group(4).orEmpty()) ?? 0;
 
     if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
       return null;

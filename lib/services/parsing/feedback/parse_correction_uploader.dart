@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/crypto_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
@@ -103,8 +104,8 @@ class ParseCorrectionUploader {
     final out = <PerFieldCorrection>[];
 
     void addField(String field, String? from, String? to) {
-      final fromVal = truncate(from ?? '');
-      final toVal = truncate(to ?? '');
+      final fromVal = truncate(from.orEmpty());
+      final toVal = truncate(to.orEmpty());
       if (isWhitespaceOrCaseOnly(fromVal, toVal)) return;
       out.add(PerFieldCorrection(
         correctedField: field,
@@ -141,11 +142,11 @@ class ParseCorrectionUploader {
     // aggregation cares about which fields fail, not which line.
     if (correction.ingredientCorrections.isNotEmpty) {
       final from = correction.ingredientCorrections
-          .map((c) => c.originalLine ?? '')
+          .map((c) => c.originalLine.orEmpty())
           .where((s) => s.isNotEmpty)
           .join('\n');
       final to = correction.ingredientCorrections
-          .map((c) => c.correctedLine ?? '')
+          .map((c) => c.correctedLine.orEmpty())
           .where((s) => s.isNotEmpty)
           .join('\n');
       addField('ingredients', from, to);
@@ -153,11 +154,11 @@ class ParseCorrectionUploader {
 
     if (correction.instructionCorrections.isNotEmpty) {
       final from = correction.instructionCorrections
-          .map((c) => c.originalText ?? '')
+          .map((c) => c.originalText.orEmpty())
           .where((s) => s.isNotEmpty)
           .join('\n');
       final to = correction.instructionCorrections
-          .map((c) => c.correctedText ?? '')
+          .map((c) => c.correctedText.orEmpty())
           .where((s) => s.isNotEmpty)
           .join('\n');
       addField('instructions', from, to);
@@ -242,7 +243,7 @@ class ParseCorrectionUploader {
     try {
       final prefs = await SharedPreferences.getInstance();
       final salt =
-          prefs.getString(FirebaseAnalyticsRepository.saltPrefsKey) ?? '';
+          prefs.getString(FirebaseAnalyticsRepository.saltPrefsKey).orEmpty();
       if (salt.isEmpty) {
         AppLogger.debug(
             '📊 No analytics salt available yet — skipping per-field upload');
