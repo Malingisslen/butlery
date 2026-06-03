@@ -20,6 +20,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -204,7 +205,7 @@ abstract final class RecipeDetailSharedWidgets {
   /// read as media and generic web imports read as an external link.
   @visibleForTesting
   static IconData sourceIcon(String url) {
-    final host = Uri.tryParse(url)?.host.toLowerCase() ?? '';
+    final host = (Uri.tryParse(url)?.host.toLowerCase()).orEmpty();
     if (host.contains('youtube.') || host.contains('youtu.be')) {
       return Icons.play_circle_outline;
     }
