@@ -1,767 +1,315 @@
-/// ULTRATHINK TEST SUITE: FriendsListView - Phase 2 High-Risk View
+/// Behaviour tests for [FriendsListView] — the friends & groups hub.
 ///
-/// PRODUCTION CODE ANALYSIS: lib/views/social/friends_list_view.dart
-/// - Multi-Provider pattern with FriendsViewModel and UnifiedFriendsService coordination
-/// - StatefulWidget with TickerProviderStateMixin for TabController animation support
-/// - Complex tab management: 3 tabs with IndexedStack state preservation and badge notifications
-/// - 5 Facade components: FriendsTab, RequestsTab, SearchTab, GroupsTab, GroupSearchTab
-/// - Context-aware search system with tab-specific hints and facade switching
-/// - Route arguments handling for tabIndex navigation with post-frame callback
-/// - Error handling with dismissible error container and comprehensive Swedish feedback
-/// - Conditional UI: FloatingActionButton for groups, search widgets per tab, error display
-/// - Badge notifications on requests tab with real-time count updates
-/// - Swedish localization with tab labels, search hints, and user feedback
+/// The view is the most service-entangled of the social set: in
+/// `initState`/`build` it resolves SIX dependencies through the production
+/// [ServiceLocator] (FriendsViewModel, ActivityFeedViewModel, PermissionService,
+/// AnalyticsService, UnifiedFriendsService, FeatureFlagService) and drives a
+/// 4-tab TabController (Feed / Vänner / Grupper / Hitta vänner).
 ///
-/// TEST FOCUS: Multi-Provider integration, TabController lifecycle, search system,
-/// route arguments, badge notifications, facade coordination, state management, Swedish localization
-@Skip('BUT-1155: drifted ULTRATHINK smoke-suite — view resolves the production '
-    'ServiceLocator but this file only inits TestServiceLocator (no bridge), so '
-    'every test throws "ServiceLocator not initialized". Low behavioral value. '
-    'Rebuild as real behavior tests on the journey-test harness — BUT-1180.')
+/// We wire every dependency through the prod↔test ServiceLocator bridge, drive
+/// the FriendsViewModel into a known empty state, and assert the user-visible
+/// Swedish behaviour: the four localized tab labels, the branded Friends-empty
+/// state, tab switching changing the visible content, and the feature-flag gate
+/// rendering the "social disabled" fallback when off.
+///
+/// Rebuilt for BUT-1180 — replaces a ~50-test ULTRATHINK smoke-suite of
+/// `find.byType(MultiProvider)` / `takeException isNull` structural asserts that
+/// threw "ServiceLocator not initialized" because they never wired the bridge.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
-// Production imports - NEVER assume, always check production code first
 import 'package:butlery/views/social/friends_list_view.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
+import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
 
-// Test infrastructure imports - using centralized system
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+
 import '../../infrastructure/di/test_service_locator.dart';
-import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/widget_mocks.dart';
+import '../helpers/view_test_helpers.dart';
+
+// Swedish labels the view renders (from app_sv.arb). Captured here so a
+// behaviour regression — not a copy tweak — is what fails the assertion.
+const _tabFeed = 'Flöde'; // l10n.socialFeed
+const _tabFriends = 'Vänner'; // l10n.socialFriends
+const _tabGroups = 'Grupper'; // l10n.socialGroups
+const _tabFindFriends = 'Hitta vänner'; // l10n.socialFindFriends
+const _friendsEmptyHeadline =
+    'Laga tillsammans med vänner'; // friendsEmptyHeadline
+const _friendsEmptyFindByUsername =
+    'Hitta vänner med användarnamn'; // friendsEmptyFindByUsername
+const _socialDisabled =
+    'Sociala funktioner är tillfälligt inaktiverade.'; // hardcoded fallback
+
+class _MockFeatureFlagService extends Mock implements FeatureFlagService {}
+
+/// The shared [MockSocialEventsTracker] routes every method through a no-op
+/// returning `Future<void>` — but the view calls
+/// `logSocialOnboardingStartedIfFirstEntry`, which production declares as
+/// `Future<bool>`, so that no-op fails a runtime cast in initState. This local
+/// fake returns the correct `Future<bool>` for the onboarding call.
+class _FakeSocialEventsTracker extends Fake implements SocialEventsTracker {
+  @override
+  Future<bool> logSocialOnboardingStartedIfFirstEntry({
+    required String? userId,
+    required String entryPoint,
+  }) async =>
+      false;
+}
+
+/// AnalyticsService whose `social` module returns the corrected fake tracker.
+class _TestAnalyticsService extends MockAnalyticsService {
+  final _social = _FakeSocialEventsTracker();
+  @override
+  SocialEventsTracker get social => _social;
+}
 
 void main() {
-  group('FriendsListView Tests - ULTRATHINK METHODOLOGY', () {
-    setUpAll(() async {
-      await BaseWidgetTest.setupWidget();
+  late MockFriendsViewModel friendsViewModel;
+  late MockActivityFeedViewModel feedViewModel;
+  late MockUnifiedFriendsService friendsService;
+  late MockFriendsInvitationsOperations invitationsOps;
+  late _MockFeatureFlagService featureFlags;
+  late MockOfflineService offlineService;
+
+  setUpAll(() {
+    production.ServiceLocator.initialize(DIContainer());
+
+    // The view wires UnifiedFriendsService through `Provider.value`. Our mock
+    // mixes in ChangeNotifier (to satisfy stateStream/notify in other suites),
+    // making it a Listenable — which trips Provider's debug "use
+    // ChangeNotifierProvider instead" guard. The REAL service is NOT a
+    // Listenable, so this guard is a mock-only artifact, not behaviour under
+    // test. Disable it for this file.
+    Provider.debugCheckInvalidValueType = null;
+  });
+
+  setUp(() async {
+    await ViewTestHelpers.setupViewTestEnvironment();
+
+    // The TabBar's Groups tab reads friendsService.invitations
+    // .pendingReceivedInvitations; the default mock returns an unstubbed ops
+    // object, so seed an empty-invitations ops instance.
+    invitationsOps = MockFriendsInvitationsOperations();
+    when(() => invitationsOps.pendingReceivedInvitations)
+        .thenReturn(<GroupInvitation>[]);
+
+    friendsService = TestServiceLocator.get<UnifiedFriendsService>()
+        as MockUnifiedFriendsService;
+    friendsService.setFriendsState(
+      friends: const [],
+      categoriesList: const [],
+      invitations: invitationsOps,
+      isLoading: false,
+    );
+
+    // FriendsViewModel is registered as a FACTORY → the view's initState
+    // lookup would get a fresh mock. Override with a singleton so the empty
+    // state we configure is what the friends tab renders.
+    friendsViewModel = MockFriendsViewModel();
+    friendsViewModel.setFriendsState(friends: const [], isLoading: false);
+    // The view reads these getters in build(); the widget mock only provides
+    // `friends`/`isLoading`, so stub the rest of the FriendsViewModel surface
+    // the view branches on.
+    when(() => friendsViewModel.searchQuery).thenReturn('');
+    when(() => friendsViewModel.searchResults).thenReturn(<UserProfile>[]);
+    when(() => friendsViewModel.incomingRequests).thenReturn(<FriendRequest>[]);
+    when(() => friendsViewModel.sentRequests).thenReturn(<FriendRequest>[]);
+    when(() => friendsViewModel.friendsCount).thenReturn(0);
+    when(() => friendsViewModel.updateSearch(any())).thenAnswer((_) async {});
+    TestServiceLocator.registerMock<FriendsViewModel>(friendsViewModel);
+
+    // ActivityFeedViewModel is a factory by default; the view captures one in
+    // initState and the Feed tab (the default index 0) reads its
+    // loading/error/events state. Override with a singleton driven to an empty,
+    // settled feed so the Feed tab renders its empty state cleanly.
+    // `events`, `filteredEvents`, `loadFeed` are concrete bodies on this mock —
+    // setFeedState drives them and loadFeed is a no-op Future. Only the
+    // BaseViewModel-derived `isLoading`/`error` getters need stubbing.
+    feedViewModel = MockActivityFeedViewModel();
+    feedViewModel.setFeedState(events: const []);
+    when(() => feedViewModel.isLoading).thenReturn(false);
+    when(() => feedViewModel.error).thenReturn(null);
+    TestServiceLocator.registerMock<ActivityFeedViewModel>(feedViewModel);
+
+    // FeatureFlagService is NOT registered by default; the view reads
+    // isEnabled(enableSocialFeatures) in the content state's initState. Default
+    // to ON (the main behaviour); the "off" test re-stubs it.
+    featureFlags = _MockFeatureFlagService();
+    when(() => featureFlags.isEnabled(FeatureFlags.enableSocialFeatures))
+        .thenReturn(true);
+    TestServiceLocator.registerMock<FeatureFlagService>(featureFlags);
+
+    // LayoutComponents.offlineIndicator() resolves OfflineService and reads
+    // isOnline in initState. Register an online mock so it builds collapsed.
+    offlineService = MockOfflineService();
+    when(() => offlineService.isOnline).thenReturn(true);
+    when(() => offlineService.addListener(any())).thenReturn(null);
+    when(() => offlineService.removeListener(any())).thenReturn(null);
+    TestServiceLocator.registerMock<OfflineService>(offlineService);
+
+    // The view fires a fire-and-forget social-onboarding analytics event in
+    // initState. The default registered AnalyticsService's social tracker
+    // returns Future<void> for that Future<bool> method (a shared-mock gap),
+    // crashing the build — register one with the corrected tracker.
+    TestServiceLocator.registerMock<AnalyticsService>(_TestAnalyticsService());
+  });
+
+  tearDown(() async {
+    friendsViewModel.dispose();
+    feedViewModel.dispose();
+    await TestServiceLocator.reset();
+    await ViewTestHelpers.teardownViewTestEnvironment();
+  });
+
+  Widget testApp() {
+    return MaterialApp(
+      locale: const Locale('sv', 'SE'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      theme: AppTheme.lightTheme,
+      home: const FriendsListView(),
+    );
+  }
+
+  // Pump the real view on a tall surface. The view nests LayoutComponents
+  // .mainMenu (Scaffold + bottom nav) with a centred branded empty state and a
+  // 4-tab bar; on a short surface those overflow vertically. That overflow is a
+  // layout artifact of the surrounding scaffold, orthogonal to the
+  // tab/state behaviour under test — so we ignore RenderFlex-overflow
+  // FlutterErrors ONLY, letting every other error fail the test as normal.
+  Future<void> pumpView(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 2600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
     });
 
-    setUp(() async {
-      await TestServiceLocator.initialize();
+    final previousOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails details) {
+      // String-matches the framework's exact 'A RenderFlex overflowed'
+      // wording; if a future Flutter SDK rewords it, this filter stops
+      // matching and the overflow resurfaces as a failure.
+      if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
+        return;
+      }
+      previousOnError?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = previousOnError);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+  }
+
+  group('FriendsListView — tab hub', () {
+    testWidgets('renders the four Swedish tab labels', (tester) async {
+      await pumpView(tester);
+
+      // Scope the label finders to the TabBar: with no friends the default Feed
+      // tab also shows a "Hitta vänner" CTA (same copy as the Find-friends tab),
+      // so an unscoped find.text(_tabFindFriends) would match twice. Asserting
+      // inside the TabBar pins the *tab labels* specifically.
+      Finder tabLabel(String text) =>
+          find.descendant(of: find.byType(TabBar), matching: find.text(text));
+      expect(tabLabel(_tabFeed), findsOneWidget);
+      expect(tabLabel(_tabFriends), findsOneWidget);
+      expect(tabLabel(_tabGroups), findsOneWidget);
+      expect(tabLabel(_tabFindFriends), findsOneWidget);
+
+      // The 4-tab controller is wired (length 4), not the legacy 3.
+      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+      expect(tabBar.controller?.length, 4);
     });
 
-    tearDown(() async {
-      await TestServiceLocator.reset();
-      await BaseWidgetTest.teardownWidget();
+    testWidgets(
+        'Friends tab with no friends shows the branded empty state, not the feed',
+        (tester) async {
+      await pumpView(tester);
+
+      // Default tab is Feed (index 0); switch to the Friends tab.
+      await tester.tap(find.text(_tabFriends));
+      await tester.pumpAndSettle();
+
+      // The branded FriendsEmptyState renders its headline + the
+      // "find by username" secondary CTA.
+      expect(find.text(_friendsEmptyHeadline), findsOneWidget);
+      expect(find.text(_friendsEmptyFindByUsername), findsOneWidget);
     });
 
-    // Helper to create test environment following gold standard pattern
-    Widget createTestWidget({
-      required Widget child,
-      Map<String, dynamic>? routeArguments,
-    }) {
-      return MaterialApp(
-        home: Builder(
-          builder: (context) {
-            // Simulate route arguments if provided
-            if (routeArguments != null) {
-              return Navigator(
-                pages: [MaterialPage(child: child)],
-                onDidRemovePage: (page) {},
-              );
-            }
-            return child;
-          },
-        ),
-        locale: const Locale('sv', 'SE'),
-        debugShowCheckedModeBanner: false,
-      );
-    }
+    testWidgets(
+        'tapping the Friends-empty "find by username" CTA switches to the Find friends tab',
+        (tester) async {
+      await pumpView(tester);
 
-    group('Multi-Provider Integration Tests', () {
-      testWidgets('should initialize with MultiProvider architecture',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code MultiProvider from lines 115-122
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump(); // Allow provider creation
+      await tester.tap(find.text(_tabFriends));
+      await tester.pumpAndSettle();
 
-        // Verify MultiProvider structure exists
-        expect(find.byType(MultiProvider), findsOneWidget);
-        expect(find.byType(ChangeNotifierProvider<FriendsViewModel>),
-            findsOneWidget);
-        expect(find.byType(Provider<UnifiedFriendsService>), findsOneWidget);
-      });
+      // The branded empty state offers a secondary CTA that animates the tab
+      // controller to index 3 (Find friends). Before tapping, the Find-friends
+      // tab content (the RequestsTab search hub) is not the active body.
+      await tester.tap(find.text(_friendsEmptyFindByUsername));
+      await tester.pumpAndSettle();
 
-      testWidgets('should provide dual ViewModel coordination',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code dual provider coordination from lines 117-118
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Verify Consumer2 structure for dual ViewModels
-        expect(find.byType(Consumer2<FriendsViewModel, UnifiedFriendsService>),
-            findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should integrate with ServiceLocator dependency injection',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code ServiceLocator integration from lines 117-118
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // ServiceLocator integration should work without errors
-        expect(tester.takeException(), isNull);
-        expect(find.byType(FriendsListView), findsOneWidget);
-      });
-
-      testWidgets('should delegate to _FriendsListViewContent properly',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code content delegation from line 120
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Should delegate to content widget through MultiProvider
-        expect(find.byType(MultiProvider), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+      // After the jump, the active tab is index 3 — the friends-empty headline
+      // is gone (we left the Friends tab) and the search box for finding new
+      // friends is now shown.
+      expect(find.text(_friendsEmptyHeadline), findsNothing);
+      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+      expect(tabBar.controller?.index, 3);
     });
 
-    group('TabController Management Tests', () {
-      testWidgets('should initialize TabController with 3 tabs',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code TabController initialization from line 142
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump(); // Allow TabController initialization
+    testWidgets(
+        'switching to the Groups tab surfaces the create-group FloatingActionButton',
+        (tester) async {
+      await pumpView(tester);
 
-        // Verify TabBar with 3 tabs
-        expect(find.byType(TabBar), findsOneWidget);
-        final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-        expect(tabBar.controller?.length, equals(3));
-      });
+      // No FAB on the default Feed tab.
+      expect(find.byType(FloatingActionButton), findsNothing);
 
-      testWidgets('should display Swedish tab labels',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code Swedish tab labels from lines 208-223
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
+      await tester.tap(find.text(_tabGroups));
+      await tester.pumpAndSettle();
 
-        // Verify Swedish tab labels
-        expect(find.text('Vänner'), findsOneWidget);
-        expect(find.text('Grupper'), findsOneWidget);
-        expect(find.text('Förfrågningar'), findsOneWidget);
-      });
-
-      testWidgets('should setup TabController with TickerProviderStateMixin',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code TickerProviderStateMixin from line 134
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Should initialize without animation errors
-        expect(tester.takeException(), isNull);
-        expect(find.byType(TabBar), findsOneWidget);
-      });
-
-      testWidgets('should handle tab switching properly',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code tab switching from lines 143-151
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Test tab switching
-        await tester.tap(find.text('Grupper'));
-        await tester.pumpAndSettle();
-
-        // Should handle tab change without errors
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should preserve tab state with IndexedStack',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code IndexedStack from lines 285-292
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Verify IndexedStack for state preservation
-        expect(find.byType(IndexedStack), findsOneWidget);
-        final indexedStack =
-            tester.widget<IndexedStack>(find.byType(IndexedStack));
-        expect(indexedStack.children.length, equals(3));
-      });
-
-      testWidgets('should dispose TabController properly',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code TabController disposal from lines 171-174
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Remove widget to test disposal
-        await tester.pumpWidget(const MaterialApp(home: Scaffold()));
-
-        // Should dispose TabController without errors
-        expect(tester.takeException(), isNull);
-      });
+      // The Groups tab (index 2) is the only one with a create-group FAB.
+      expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
-    group('Route Arguments Handling Tests', () {
-      testWidgets('should handle tabIndex route argument',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code route arguments from lines 153-167
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-          routeArguments: {'tabIndex': 1}, // Should open groups tab
-        ));
-        await tester.pump(); // Initial load
-        await tester.pump(); // Allow post-frame callback
-
-        // Should handle route arguments without errors
-        expect(tester.takeException(), isNull);
-        expect(find.byType(FriendsListView), findsOneWidget);
-      });
-
-      testWidgets('should handle invalid tabIndex gracefully',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code tabIndex validation from lines 158-165
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-          routeArguments: {'tabIndex': 5}, // Invalid index
-        ));
-        await tester.pump();
-        await tester.pump(); // Allow post-frame processing
-
-        // Should handle invalid tabIndex without errors
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle missing route arguments',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code null arguments handling from lines 154-156
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-          // No route arguments provided
-        ));
-        await tester.pump();
-        await tester.pump();
-
-        // Should handle missing arguments gracefully
-        expect(tester.takeException(), isNull);
-        expect(find.byType(FriendsListView), findsOneWidget);
-      });
-
-      testWidgets(
-          'should use post-frame callback for route argument processing',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code post-frame callback from lines 153-167
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-          routeArguments: {'tabIndex': 2}, // Requests tab
-        ));
-        await tester.pump();
-        await tester.pump(); // Allow post-frame callback execution
-
-        // Post-frame callback should execute without errors
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Badge Notification Tests', () {
-      testWidgets('should display badge on requests tab',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code badge from lines 216-223
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Badge should be present (visibility depends on request count)
-        expect(find.byType(Badge), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle badge visibility based on request count',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code badge visibility from line 218
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Badge visibility logic should work without errors
-        expect(tester.takeException(), isNull);
-        expect(find.byType(Badge), findsOneWidget);
-      });
-
-      testWidgets('should display request count in badge',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code badge count from line 219
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Badge with request count should render properly
-        expect(find.byType(Badge), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should update badge dynamically with request changes',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code dynamic badge updates
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Badge should respond to ViewModel changes
-        expect(find.byType(Badge), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Search System Tests', () {
-      testWidgets('should display context-aware search hints',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code context-aware search from lines 262-281
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Should show friends search hint initially (tab 0)
-        // Note: SearchFilterWidget may not be visible initially
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should switch search hints when changing tabs',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code tab-specific search hints from lines 266, 276
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Switch to groups tab
-        await tester.tap(find.text('Grupper'));
-        await tester.pumpAndSettle();
-
-        // Search hint should change for groups tab
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle search query updates',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code search query handling from lines 176-184
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Search functionality should be available
-        expect(tester.takeException(), isNull);
-        expect(find.byType(FriendsListView), findsOneWidget);
-      });
-
-      testWidgets('should coordinate search with FriendsViewModel',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code ViewModel search coordination from lines 182-183
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // ViewModel search integration should work
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Error Handling Tests', () {
-      testWidgets('should display error container when ViewModel has error',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code error display from lines 228-259
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Error handling should be in place
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should display Swedish error message',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code Swedish error text from line 252
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Should handle Swedish error messages
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should provide error dismissal functionality',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code error dismissal from lines 250-253
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Error dismissal should be available
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should style error container properly',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code error styling from lines 232-239
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Error styling should be applied properly
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Facade Component Integration Tests', () {
-      testWidgets('should render FriendsTab when friends tab is active',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code FriendsTab rendering from lines 322-325
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-        await tester.pump(); // Allow tab content loading
-
-        // FriendsTab should be rendered (default tab 0)
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should render GroupsTab when groups tab is active',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code GroupsTab rendering from lines 332-336
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Switch to groups tab
-        await tester.tap(find.text('Grupper'));
-        await tester.pumpAndSettle();
-
-        // GroupsTab should be rendered
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should render RequestsTab when requests tab is active',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code RequestsTab rendering from line 329
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Switch to requests tab
-        await tester.tap(find.text('Förfrågningar'));
-        await tester.pumpAndSettle();
-
-        // RequestsTab should be rendered
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should switch to SearchTab when search is active',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code SearchTab switching from line 325
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Search tab switching should work
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should switch to GroupSearchTab for group search',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code GroupSearchTab switching from line 336
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Group search tab switching should work
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Conditional UI Tests', () {
-      testWidgets('should display FloatingActionButton for groups tab',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code conditional FAB from lines 296-315
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Switch to groups tab to show FAB
-        await tester.tap(find.text('Grupper'));
-        await tester.pumpAndSettle();
-
-        // FAB should be visible for groups tab
-        expect(find.byType(FloatingActionButton), findsOneWidget);
-      });
-
-      testWidgets('should hide FloatingActionButton for non-groups tabs',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code conditional FAB hiding from line 315
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // On friends tab (default), FAB should not be visible
-        expect(find.byType(FloatingActionButton), findsNothing);
-      });
-
-      testWidgets('should display search widget conditionally per tab',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code conditional search widget from lines 262-281
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Search widget availability depends on tab and implementation
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle FAB action for group creation',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code FAB action from lines 298, 341-350
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Switch to groups tab
-        await tester.tap(find.text('Grupper'));
-        await tester.pumpAndSettle();
-
-        // FAB should be functional
-        expect(find.byType(FloatingActionButton), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('State Management Tests', () {
-      testWidgets('should manage tab state properly',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code tab state management from lines 136, 146-148
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Tab state should be managed properly
-        expect(tester.takeException(), isNull);
-        expect(find.byType(TabBar), findsOneWidget);
-      });
-
-      testWidgets('should manage search query state',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code search state from lines 137, 177-180
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Search state should be managed properly
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle mounted checks properly',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code mounted checks from lines 145, 160, 177, 348
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Remove widget to test mounted checks
-        await tester.pumpWidget(const MaterialApp(home: Scaffold()));
-
-        // Mounted checks should prevent errors
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should update state on tab changes',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code state updates from tab listener
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // State updates should work on tab changes
-        await tester.tap(find.text('Grupper'));
-        await tester.pumpAndSettle();
-
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Swedish Localization Tests', () {
-      testWidgets('should display Swedish main title',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code Swedish title from line 193
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        expect(find.text('Vänner & Grupper'), findsOneWidget);
-      });
-
-      testWidgets('should use Swedish tab labels', (WidgetTester tester) async {
-        // ULTRATHINK: Test production code Swedish tab labels
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        expect(find.text('Vänner'), findsOneWidget);
-        expect(find.text('Grupper'), findsOneWidget);
-        expect(find.text('Förfrågningar'), findsOneWidget);
-      });
-
-      testWidgets('should handle Swedish locale configuration',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test Swedish locale from MaterialApp helper
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Should handle Swedish locale properly
-        final materialApp =
-            tester.widget<MaterialApp>(find.byType(MaterialApp));
-        expect(materialApp.locale?.languageCode, equals('sv'));
-      });
-
-      testWidgets('should use Swedish search hints',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code Swedish search hints from lines 266, 276
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Swedish search hints should be configured properly
-        expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Performance and Integration Tests', () {
-      testWidgets('should handle complex initialization efficiently',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code complex initialization performance
-        final stopwatch = Stopwatch()..start();
-
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-        await tester.pump(); // Allow full initialization
-
-        stopwatch.stop();
-
-        expect(stopwatch.elapsedMilliseconds, lessThan(1000));
-        expect(find.byType(FriendsListView), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should integrate with Phase 1 test infrastructure',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code integration with test infrastructure
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Should integrate with test helpers
-        expect(find.byType(MaterialApp), findsOneWidget);
-        expect(find.byType(FriendsListView), findsOneWidget);
-
-        // Should handle Swedish locale properly
-        final materialApp =
-            tester.widget<MaterialApp>(find.byType(MaterialApp));
-        expect(materialApp.locale?.languageCode, equals('sv'));
-      });
-
-      testWidgets('should handle multi-provider coordination efficiently',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code multi-provider efficiency
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-        await tester.pump(); // Allow provider coordination
-
-        // Multi-provider coordination should be efficient
-        expect(find.byType(MultiProvider), findsOneWidget);
-        expect(find.byType(Consumer2<FriendsViewModel, UnifiedFriendsService>),
-            findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle facade architecture efficiently',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code facade pattern efficiency with 5 components
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-        await tester.pump(); // Allow facade rendering
-
-        // Complex facade structure should be efficient
-        expect(find.byType(TabBar), findsOneWidget);
-        expect(find.byType(IndexedStack), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('should handle tab controller without performance issues',
-          (WidgetTester tester) async {
-        // ULTRATHINK: Test production code TabController performance
-        await tester.pumpWidget(createTestWidget(
-          child: const FriendsListView(),
-        ));
-        await tester.pump();
-
-        // Multiple tab switches should be efficient
-        await tester.tap(find.text('Grupper'));
-        await tester.pump();
-        await tester.tap(find.text('Förfrågningar'));
-        await tester.pump();
-        await tester.tap(find.text('Vänner'));
-        await tester.pumpAndSettle();
-
-        expect(tester.takeException(), isNull);
-      });
+    testWidgets(
+        'with social features flagged OFF the view renders the disabled fallback and no tabs',
+        (tester) async {
+      // Flip the gate the content state reads in initState.
+      when(() => featureFlags.isEnabled(FeatureFlags.enableSocialFeatures))
+          .thenReturn(false);
+
+      await pumpView(tester);
+
+      // The hardcoded Swedish "temporarily disabled" message replaces the whole
+      // tabbed UI.
+      expect(find.text(_socialDisabled), findsOneWidget);
+      expect(find.byType(TabBar), findsNothing);
+      expect(find.text(_tabFeed), findsNothing);
     });
   });
 }
