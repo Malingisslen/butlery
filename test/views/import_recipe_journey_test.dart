@@ -24,8 +24,12 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as prod_locator;
 
 import '../infrastructure/factories/recipe_factory.dart';
+import '../infrastructure/di/test_service_locator.dart';
 
 // Pure mock — the VM calls getTextImportStrategy() and we swap in a fake
 // below. We do NOT extend Mock if we want concrete behavior though —
@@ -257,7 +261,17 @@ Gör så här:
     registerFallbackValue(RecipeFactory.build());
   });
 
-  setUp(() {
+  setUp(() async {
+    // BUT-1181: saveImportedRecipe() resolves ServiceLocator.get<HeirloomBridge>()
+    // (fail-loud, not tryGet) before persisting. Without the DI bootstrap the
+    // lookup throws "ServiceLocator not initialized", executeAsyncVoid catches
+    // it, and the save silently returns false — so the "Recept sparat" toast
+    // never appears. TestServiceLocator registers a real empty bridge in the
+    // shared GetIt; the prod DIContainer wraps that same GetIt so the lookup
+    // resolves and _attachHeirloomIfPending early-returns (no pending draft).
+    await TestServiceLocator.initialize();
+    prod_locator.ServiceLocator.initialize(DIContainer());
+
     firestore = FakeFirebaseFirestore();
     mockTextStrategy = _MockTextImportStrategy();
 
@@ -287,19 +301,15 @@ Gör så här:
     );
   });
 
-  tearDown(() {
+  tearDown(() async {
     viewModel.dispose();
+    await TestServiceLocator.reset();
   });
 
   group('URL import journey', () {
-    // BUT-1155: skipped — pre-existing failure (never ran in CI; the views shard
-    // was gated off). The save path writes to FakeFirebaseFirestore via
-    // executeAsyncVoid and the "Recept sparat" success toast never settles under
-    // pumpAndSettle; needs a runAsync-based harness rework. The sibling "fetch
-    // failure" test below still runs. Fold into the rebuild — BUT-1180.
     testWidgets(
         'paste URL → fetch+parse → edit title → save persists edited recipe',
-        skip: true, (tester) async {
+        (tester) async {
       await tester.pumpWidget(_testApp(viewModel));
       await tester.pumpAndSettle();
 
@@ -329,18 +339,31 @@ Gör så här:
       expect(viewModel.parsedRecipe!.title, 'Mina pannkakor');
 
       // Save → VM returns true, body shows success message.
+      // The save routes through the VM's executeAsyncVoid, which writes to
+      // FakeFirebaseFirestore on the REAL event loop. pumpAndSettle drives the
+      // fake-async zone only, so the write never completes under it — drive the
+      // real async work via runAsync, then pump to rebuild with the new message.
       await tester.tap(find.byKey(const Key('save')));
-      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        // Let the FakeFirestore write + the VM's executeAsyncVoid resolve.
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      await tester.pump(); // rebuild with the updated _lastSaveMessage
 
       expect(find.text('Recept sparat'), findsOneWidget);
 
       // The saved document in the fake repo carries the user's edited title,
-      // not the originally parsed one.
-      final snapshot =
-          await firestore.collection('recipes').doc('pannkakor_parsed').get();
-      expect(snapshot.exists, isTrue);
-      expect(snapshot.data()!['title'], 'Mina pannkakor');
-      expect(snapshot.data()!['sourceUrl'], testUrl);
+      // not the originally parsed one. The read is itself real async work, so
+      // it must run inside runAsync to observe the written doc.
+      late final Map<String, dynamic>? savedData;
+      await tester.runAsync(() async {
+        final snapshot =
+            await firestore.collection('recipes').doc('pannkakor_parsed').get();
+        expect(snapshot.exists, isTrue);
+        savedData = snapshot.data();
+      });
+      expect(savedData!['title'], 'Mina pannkakor');
+      expect(savedData!['sourceUrl'], testUrl);
     });
 
     testWidgets('fetch failure surfaces theme-resolved error banner',
