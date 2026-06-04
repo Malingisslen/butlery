@@ -2933,6 +2933,22 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commentPosted => 'Kommentar postad';
 
   @override
+  String recipeCommentVisibleTo(String audience) {
+    return 'Synlig för: $audience';
+  }
+
+  @override
+  String recipeCommentVisiblePeople(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personer',
+      one: '1 person',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get commentReply => 'Svara';
 
   @override

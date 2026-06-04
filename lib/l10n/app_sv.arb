@@ -1813,6 +1813,20 @@
   "allergenTreeNut": "Trädnötter",
   "commentCouldNotPost": "Kunde inte posta kommentaren",
   "commentPosted": "Kommentar postad",
+  "recipeCommentVisibleTo": "Synlig för: {audience}",
+  "@recipeCommentVisibleTo": {
+    "description": "BUT-914: label under the comment composer naming who will see the comment (collaborative recipe members). {audience} is a pre-formatted name list, e.g. 'Anna, Per, Maria +2'.",
+    "placeholders": {
+      "audience": { "type": "String" }
+    }
+  },
+  "recipeCommentVisiblePeople": "{count, plural, =1{1 person} other{{count} personer}}",
+  "@recipeCommentVisiblePeople": {
+    "description": "BUT-914: count-only fallback for the comment-visibility audience when no member name resolves — must never hide a real audience (privacy). e.g. '3 personer'.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "commentReply": "Svara",
   "commentReplyingTo": "Svarar på",
   "commentWriteComment": "Skriv en kommentar",

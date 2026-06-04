@@ -15,6 +15,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 
@@ -170,6 +174,62 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
+  /// BUT-914: names who will see a comment (collaborative recipe members) so
+  /// the author isn't guessing. Hidden for non-collaborative recipes (no shared
+  /// audience to label) and when no member name resolves (avoids a misleading
+  /// partial). Audience is the privacy-correct set from [commentVisibilityAudience].
+  Widget _buildVisibilityLine(BuildContext context, SocialRecipeViewModel vm) {
+    final audienceIds = commentVisibilityAudience(
+        widget.recipe, (vm.currentUser?.uid).orEmpty());
+    if (audienceIds.isEmpty) return const SizedBox.shrink();
+
+    final names = <String, String>{};
+    try {
+      for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
+        names[f.uid] = f.displayName;
+      }
+    } catch (_) {
+      // Friends unavailable — fall back to the recipe's denormalized owner name.
+    }
+    final ownerId = widget.recipe.socialData?.ownerId;
+    final ownerName = widget.recipe.socialData?.ownerDisplayName;
+    if (ownerId != null && (ownerName?.isNotEmpty ?? false)) {
+      names.putIfAbsent(ownerId, () => ownerName!);
+    }
+
+    final resolved =
+        audienceIds.where(names.containsKey).map((id) => names[id]!).toList();
+    // Privacy invariant lives in formatCommentAudience: it never under-states
+    // the audience (true total is always disclosed; unresolved members count
+    // toward "+N" or a count-only fallback — never silently hidden).
+    final audienceStr = formatCommentAudience(
+      resolved,
+      audienceIds.length,
+      countLabel: context.l10n.recipeCommentVisiblePeople,
+    );
+    if (audienceStr == null) return const SizedBox.shrink();
+
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+      child: Row(
+        children: [
+          Icon(Icons.visibility_outlined,
+              size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+          const SizedBox(width: AppDimensions.spacingXxs),
+          Flexible(
+            child: Text(
+              context.l10n.recipeCommentVisibleTo(audienceStr),
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCommentsSection(BuildContext context, SocialRecipeViewModel vm) {
     final cs = Theme.of(context).colorScheme;
 
@@ -187,11 +247,17 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           else
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingM),
-              child: CommentFormWidget(
-                socialViewModel: vm,
-                recipeId: widget.recipe.id,
-                onShowMessage: _showMessage,
-                onCommentPosted: widget.onCommentPosted,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildVisibilityLine(context, vm),
+                  CommentFormWidget(
+                    socialViewModel: vm,
+                    recipeId: widget.recipe.id,
+                    onShowMessage: _showMessage,
+                    onCommentPosted: widget.onCommentPosted,
+                  ),
+                ],
               ),
             ),
           // Comments list

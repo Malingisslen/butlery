@@ -2932,6 +2932,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentPosted => 'Comment posted';
 
   @override
+  String recipeCommentVisibleTo(String audience) {
+    return 'Visible to: $audience';
+  }
+
+  @override
+  String recipeCommentVisiblePeople(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get commentReply => 'Reply';
 
   @override

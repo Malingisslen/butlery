@@ -1807,6 +1807,20 @@
   "allergenTreeNut": "Tree nut",
   "commentCouldNotPost": "Could not post comment",
   "commentPosted": "Comment posted",
+  "recipeCommentVisibleTo": "Visible to: {audience}",
+  "@recipeCommentVisibleTo": {
+    "description": "BUT-914: label under the comment composer naming who will see the comment (collaborative recipe members). {audience} is a pre-formatted name list, e.g. 'Anna, Per, Maria +2'.",
+    "placeholders": {
+      "audience": { "type": "String" }
+    }
+  },
+  "recipeCommentVisiblePeople": "{count, plural, =1{1 person} other{{count} people}}",
+  "@recipeCommentVisiblePeople": {
+    "description": "BUT-914: count-only fallback for the comment-visibility audience when no member name resolves — must never hide a real audience (privacy). e.g. '3 people'.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "commentReply": "Reply",
   "commentReplyingTo": "Replying to",
   "commentWriteComment": "Write a comment",

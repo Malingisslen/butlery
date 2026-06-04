@@ -5043,6 +5043,18 @@ abstract class AppLocalizations {
   /// **'Kommentar postad'**
   String get commentPosted;
 
+  /// BUT-914: label under the comment composer naming who will see the comment (collaborative recipe members). {audience} is a pre-formatted name list, e.g. 'Anna, Per, Maria +2'.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synlig för: {audience}'**
+  String recipeCommentVisibleTo(String audience);
+
+  /// BUT-914: count-only fallback for the comment-visibility audience when no member name resolves — must never hide a real audience (privacy). e.g. '3 personer'.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 person} other{{count} personer}}'**
+  String recipeCommentVisiblePeople(int count);
+
   /// No description provided for @commentReply.
   ///
   /// In sv, this message translates to:
