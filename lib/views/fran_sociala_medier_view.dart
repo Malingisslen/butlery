@@ -17,6 +17,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
+import 'package:butlery/services/tagging/allergen_mismatch.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -163,6 +166,20 @@ class _FranSocialaMedierViewContentState
       // next visit to this surface starts blank.
       await _draftManager.clear();
       if (!context.mounted) return;
+      // BUT-1208: non-blocking allergen-setup prompt when the parsed recipe
+      // CONTAINS an allergen the user hasn't configured. Covers both direct
+      // text/paste import and the single-photo handoff that lands here.
+      // parsedRecipe carries the Phase-1 tags ImportManager attached — no new
+      // LLM/network — and the app-level ScaffoldMessenger survives the push.
+      // Mirrors SmartImportView._navigateToRecipeEditor.
+      final parsed = viewModel.parsedRecipe;
+      if (parsed != null) {
+        final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+        if (AllergenMismatch.unconfiguredContainedAllergens(parsed, prefs)
+            .isNotEmpty) {
+          AllergenSetupBanner.show(context);
+        }
+      }
       Navigator.push(
         context,
         MaterialPageRoute(

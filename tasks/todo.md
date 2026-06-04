@@ -1,44 +1,40 @@
 # Sprint Backlog
 
-## Sprint: photo-import allergen banner — 2026-06-04 (iter-119)
+## Sprint: text-import allergen banner — 2026-06-04 (iter-120)
 
-Single-ticket Tier-A: BUT-1200. Closes to **Done** — wires an already-approved banner
-(BUT-1198) at a logic condition; zero new visual design, so no review-queue surface.
-Chosen after 4 candidates (BUT-1011/862/554/1149) proved non-actionable headlessly
-(telemetry/profiler/upstream/coverage-gated).
+Single-ticket Tier-A: BUT-1208 (filed last iter). Completes allergen-banner coverage
+across ALL import surfaces. Closes to Done — reuses the approved BUT-1198 banner at a
+logic condition, zero new visual.
 
-### Agent A: direct — BUT-1200 photo-import allergen banner `[Tier A]`
+### Agent A: direct — BUT-1208 franSocialaMedier allergen banner `[Tier A]`
 
-**Step 0:** PLAN-STALE → re-scoped (ticket body updated). The photo view's only direct
-recipe-commit path is `_navigateToMultiRecipePicker → saveSelectedRecipes` (multi-recipe);
-the single-recipe path hands OCR text to `franSocialaMedier` (separate surface → follow-up
-BUT-1208). Banner wired at the multi-recipe save success only.
+**Step 0:** FITS. Verified `TextImportViewModel.parseText` → `ImportManager` attaches
+Phase-1 allergen tags (import_manager.dart:600-614, shared strategy path), so
+`parsedRecipe.tagResult` is populated at the nav point → the banner check works.
 
-- [x] **A1. Add `AllergenMismatch.anyUnconfigured(recipes, prefs)`** `[Tier A]` — `lib/services/tagging/allergen_mismatch.dart`: batch trigger (one prompt covers the saved selection). (BUT-1200)
-- [x] **A2. Wire banner into photo multi-recipe save** `[Tier A]` — `photo_import_view.dart _navigateToMultiRecipePicker`: after `ok`, `AllergenSetupBanner.show` if `anyUnconfigured`; reuse Phase-1 tags, app-level messenger survives `maybePop`. (BUT-1200)
-- [x] **A3. Unit-test `anyUnconfigured`** `[Tier A]` — extend `allergen_mismatch_test.dart` (4 new tests: any-untracked, all-tracked, empty, no-tagResult). (BUT-1200)
+- [x] **A1. Wire banner into franSocialaMedier success→SkrivSjalv nav** `[Tier A]` — `fran_sociala_medier_view.dart:161`: after `parseText` success, `AllergenSetupBanner.show` if `unconfiguredContainedAllergens(parsedRecipe, prefs).isNotEmpty`. Covers direct-text AND single-photo handoff. (BUT-1208)
+
+**Verification:** analyze clean; `?? ''` grep clean; `architecture_test.dart` +18 green
+(ran locally per the reinforced lesson). No new pure logic (reuses the proven
+`unconfiguredContainedAllergens`), so no new unit test; journey coverage tracked with
+the import-banner test family (BUT-1209/BUT-1204).
 
 ### Needs you (Tier D — flagged, not worked)
-- Unchanged carry: store/console/deploy/secrets + monetization clusters; BUT-862
-  (needs profiler+device), BUT-1011 (telemetry-gated), BUT-554 (upstream-blocked).
+- Unchanged carry: store/console/deploy/secrets + monetization; BUT-862/1011/554 (blocked).
 
 ### Awaiting Malin — In Review (carried)
 BUT-904 (epic), BUT-1198, BUT-1199, BUT-1037, BUT-1039, BUT-918, BUT-912, BUT-946, BUT-1079.
 
 ### Post-Sprint Steps
 - [x] `dart analyze --fatal-infos` — clean
-- [x] Run `allergen_mismatch_test.dart` — 10 green
+- [x] `architecture_test.dart` — +18 green
 - [ ] Commit, push
-- [ ] BUT-1200 → Done (Tier-A, test-proven, reuses approved banner)
+- [ ] BUT-1208 → Done
 
 ---
 
-## ARCHIVED — iter-118 (BUT-1203 AutoSaveManager pt.2 — shipped → Done)
-Shipped `d90800c45`. Group-creation draft → AutoSaveManager<Map>; recipe-list filter
-documented as non-fit exception; pure codec gate (7 tests). Follow-up: BUT-1207.
+## ARCHIVED — iter-119 (BUT-1200 photo allergen banner — shipped → Done)
+Shipped `44e0c7472` + fix `837425a2b` (BUT-581 `?? ''` guard miss, fixed forward).
+Follow-ups: BUT-1208, BUT-1209.
 
-## ARCHIVED — iter-117 (CI/release tooling — shipped → Done)
-Shipped `303e2011c`. BUT-1192 (nightly flake retry) + BUT-488 (release version-bump tooling).
-
-## ARCHIVED — iter-116 (BUT-904 AutoSaveManager extraction — shipped → In Review)
-Shipped `0d61ca2bc`. Generic primitive + 3 surfaces. Epic awaits BUT-910. Follow-ups: BUT-1203/1204.
+## ARCHIVED — iter-118 (BUT-1203 AutoSaveManager pt.2 — Done) · iter-117 (CI tooling — Done) · iter-116 (BUT-904 — In Review)
