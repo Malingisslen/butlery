@@ -1,51 +1,43 @@
 # Sprint Backlog
 
-## Sprint: post-refactor testability + import-UX follow-ups — 2026-06-04 (iter-106)
+## Sprint: import-quality heuristic + gesture discoverability — 2026-06-04 (iter-107)
 
-Clean tree on main. Backlog = 120 Backlog issues (27 excluded: 6 EPIC, 7 launch-gated, 14 Tier-D ops).
-Picked a tight Tier-A-heavy cluster freshly spun off overnight from the just-shipped BUT-1154
-(import decomposition) + BUT-1190 (comments-repo facade) refactors — testability debt the refactors
-unlocked — plus one coherent Tier-B import-UX follow-up (BUT-1198).
+Clean tree on main (prior commit 9c8946120, CI green/pending). Clean Tier-A backlog is drained
+(iter-103→106); leaning into a coherent Tier-B-leaning batch per the autonomy policy. Two
+tickets, both low-design-risk (one reuses the shipped SwipeHintBanner; one is a standard confirm
+dialog + a pure heuristic).
 
-### Agent A: import-testability — close the test-gaps BUT-1154 unlocked
-- [x] **A1. BUT-1195** `[Tier A]` — 7 pure cases for `OcrErrorMessageBuilder` (empty-list else branch,
-      recovery line, record fields). Green.
-- [x] **A2. BUT-1196** `[Tier A]` — 5 widget cases for `ConfidenceIndicator` (percent text + 3 buckets). Green.
-- [x] **A3. BUT-1197** `[Tier A]` — Step-0: VM already constructible (connectivity uses `tryGet`);
-      real gap was widget-mount. Added `test/views/smart_import_view_smoke_test.dart` proving
-      `SmartImportView` mounts via ImportManager DI bridge + clipboard stub. No prod change. Green.
+### Agent A: import-quality — stop paid LLM calls on non-recipe text
+- [→] **A1. BUT-1037** `[Tier A heuristic + Tier B dialog]` — CARRIED to next iter (left in Todo,
+      groomed). Step-0 done: premise holds (`parseText()` called from `fran_sociala_medier_view`
+      `_parseAndNavigate`; VM exposes `inputText`; telemetry via `analytics/trackers/import_events_tracker`;
+      existing `looksLikeRecipeContent` in html_sanitizer to reference). Deferred to keep this commit
+      coherent (discoverability hints ≠ import cost-guard) and give the dialog UX + telemetry a focused pass.
 
-### Agent B: repo + recipe-list test/tech-debt
-- [x] **B1. BUT-1194** `[Tier A]` — 4 cases for `getCommentLikers` (desc order, limit, default, empty).
-      Sibling `firebase_comments_repository_likers_test.dart`, FakeFirebaseFirestore. Green.
-- [x] **B2. BUT-1028** `[Tier A]` — scroll-offset persistence via ambient `PrimaryScrollController`
-      (covers grid+list, no shared-widget edits) + `PersistenceService.{get,set}RecipeListScrollOffset`,
-      300ms debounce, bounded post-frame restore, dispose-flush. 3 persistence tests green. (BUT-1015 follow-up)
+### Agent B: discoverability — gesture hints (reuse BUT-982 SwipeHintBanner)
+- [x] **B1. BUT-1199** `[Tier B]` — generalized `SwipeHintBanner` (per-gesture seenKey/icon/message,
+      back-compat defaults) + hints on cooking-mode step list (long-press→timer) + collaborative
+      shopping (swipe→claim). l10n sv/en. 6 banner tests green (incl. per-gesture isolation). → In Review.
 
-### Agent C: import-UX (Tier B — parks In Review)
-- [x] **C1. BUT-1198** `[Tier B]` — non-blocking MaterialBanner at import success (SmartImportView
-      choke point) when recipe CONTAINS an untracked allergen; CTA → `Routes.settingsAllergens`.
-      Pure `AllergenMismatch` detector (6 tests) + `AllergenSetupBanner` + l10n (sv/en) + HTML preview.
-      Reuses Phase-1 tags (no LLM). Photo-import surface → follow-up BUT-1200. → In Review.
-
-### Needs you (Tier D — flagged, not worked) — carried from iter-105
-- BUT-1187 — deployed & live but runtime-unverified: needs ONE real recipe import from your phone.
-- onRecipeDeleted 1st→2nd-gen deploy blocker — still owed a ticket.
+### Needs you (Tier D / deferred — flagged, not worked)
+- BUT-1169 — drop legacy meat_fish/fruit_veg shopping constants: BLOCKED — needs a prod telemetry
+  read + a one-time Cloud Function backfill first; removing constants while old docs exist breaks
+  rendering. Ops-gated.
+- BUT-838 — recipe_cook_events log: deferred — crosses firestore.rules + composite index + a
+  GDPR-cascade Cloud Function (needs deploy + rules-tester sign-off). Too heavy for a clean loop
+  iter; pick up as a dedicated Tier-C sprint.
+- BUT-1187 — phone import runtime-verify (carried). onRecipeDeleted gen-2 deploy ticket (carried).
 
 ### Post-Sprint Steps
 - [ ] Run `dart analyze --fatal-infos`
 - [ ] Run relevant unit/widget tests
 - [ ] Commit, push
-- [ ] Linear: Done for Tier A (1194/1195/1196/1197/1028); In Review + notify for Tier B (1198)
+- [ ] Linear: In Review + notify for Tier B (1037 dialog, 1199); heuristic logic green
 
 ---
 
-## ARCHIVED — iter-105: post-BUT-1193 CI reconciliation + contained refactors (2026-06-04)
+## ARCHIVED — iter-106: post-refactor testability + import-UX (2026-06-04, shipped 9c8946120)
 
-Reconciled CI tickets vs merged BUT-1193 (#179): BUT-1182 Done (premise-gone), BUT-1192 re-scoped P3→P4,
-BUT-1149 left open (coverage ~55%, can't raise floor yet), BUT-397 closed Duplicate. BUT-1190
-facade-extracted comment like-ops → repo 464 lines. BUT-520 de-scoped (self-IDs as EPIC, needs Malin).
-
-## ARCHIVED — BUT-581 sprint (complete, shipped a9bb611d7)
-
-`?? '' → .orEmpty()` migration: chunks 1–8 swept + architecture-test guard added. BUT-581 Done.
+5 Tier-A Done (BUT-1195 OcrErrorMessageBuilder tests, BUT-1196 ConfidenceIndicator widget test,
+BUT-1194 getCommentLikers test, BUT-1197 SmartImportView mount smoke test, BUT-1028 recipe-list
+scroll persistence). BUT-1198 allergen import banner → In Review. Follow-up BUT-1200 (photo surface).

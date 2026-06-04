@@ -18,6 +18,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
+import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -506,6 +507,12 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
       color: cs.primary.withValues(alpha: 0.8),
       child: Column(
         children: [
+          // BUT-1199: first-use hint for the long-press-step → timer gesture.
+          SwipeHintBanner(
+            seenKey: SwipeHintBanner.cookingStepSeenKey,
+            icon: Icons.touch_app,
+            message: context.l10n.cookingStepHintText,
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,

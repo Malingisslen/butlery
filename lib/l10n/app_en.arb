@@ -3121,6 +3121,8 @@
   "recipeSourceUrlHelper": "Link to the original recipe",
   "recipeSourceUrlHint": "Optional: link to the original recipe",
   "recipeSwipeHintText": "Tip: swipe right to edit, left to delete",
+  "cookingStepHintText": "Tip: long-press a step to start a timer",
+  "shoppingClaimHintText": "Tip: swipe an item to claim it",
   "recipeTagsUpdated": "Tags updated",
   "recipeTimeMinutes": "Time (min)",
   "recipeUnsavedChangesTitle": "Unsaved changes",

@@ -14,6 +14,7 @@ import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operatio
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -40,6 +41,12 @@ class CollaborativeShoppingItems extends StatelessWidget {
         _ViewModeToggle(
           mode: viewModel.viewMode,
           onChanged: viewModel.setViewMode,
+        ),
+        // BUT-1199: first-use hint for the swipe-to-claim gesture.
+        SwipeHintBanner(
+          seenKey: SwipeHintBanner.shoppingClaimSeenKey,
+          icon: Icons.swipe,
+          message: context.l10n.shoppingClaimHintText,
         ),
         Expanded(child: _buildBody(context)),
       ],

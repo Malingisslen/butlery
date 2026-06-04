@@ -8367,6 +8367,18 @@ abstract class AppLocalizations {
   /// **'Tips: svep åt höger för att redigera, åt vänster för att radera'**
   String get recipeSwipeHintText;
 
+  /// No description provided for @cookingStepHintText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tips: håll inne ett steg för att starta en timer'**
+  String get cookingStepHintText;
+
+  /// No description provided for @shoppingClaimHintText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tips: svep en vara för att ta den'**
+  String get shoppingClaimHintText;
+
   /// No description provided for @recipeTagsUpdated.
   ///
   /// In sv, this message translates to:

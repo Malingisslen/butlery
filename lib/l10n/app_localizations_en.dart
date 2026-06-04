@@ -4894,6 +4894,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSwipeHintText => 'Tip: swipe right to edit, left to delete';
 
   @override
+  String get cookingStepHintText => 'Tip: long-press a step to start a timer';
+
+  @override
+  String get shoppingClaimHintText => 'Tip: swipe an item to claim it';
+
+  @override
   String get recipeTagsUpdated => 'Tags updated';
 
   @override

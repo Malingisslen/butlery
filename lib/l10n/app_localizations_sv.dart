@@ -4898,6 +4898,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'Tips: svep åt höger för att redigera, åt vänster för att radera';
 
   @override
+  String get cookingStepHintText =>
+      'Tips: håll inne ett steg för att starta en timer';
+
+  @override
+  String get shoppingClaimHintText => 'Tips: svep en vara för att ta den';
+
+  @override
   String get recipeTagsUpdated => 'Taggar uppdaterade';
 
   @override
