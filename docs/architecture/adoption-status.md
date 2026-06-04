@@ -4,7 +4,7 @@
 > the tool and commit the result. Inline adoption % anywhere else in the repo
 > is forbidden by `tools/check_no_inline_adoption_pct.sh` (BUT-776).
 
-**Measured:** 2026-06-03T08:23:19.751699Z (UTC).
+**Measured:** 2026-06-04T07:28:15.895727Z (UTC).
 **Source ticket:** BUT-810. **Tool:** `tools/measure_adoption.dart`.
 **Scope:** every `*.dart` file under `lib/` except `lib/site-packages/`.
 
@@ -20,7 +20,7 @@
 | `extends BaseViewModel` (viewmodels) | 28.6% (18/63) | `lib/viewmodels/` classes |
 | `SerializationUtils.safe*(` (call sites) | 871 | 78 files use it |
 
-**Total Dart files under `lib/` (excl. `site-packages/`):** 1290.
+**Total Dart files under `lib/` (excl. `site-packages/`):** 1299.
 
 ### Why `PermissionValidationMixin` has two rows
 
