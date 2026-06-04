@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -338,7 +339,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         icon: recipe.isFavorite
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        onPressed: () => viewModel.toggleFavorite(),
+                        onPressed: () async {
+                          await viewModel.toggleFavorite();
+                          if (!context.mounted) return;
+                          // BUT-905: announce the new state to screen readers,
+                          // which the icon swap alone doesn't convey.
+                          SemanticsService.announce(
+                            viewModel.recipe.isFavorite
+                                ? context.l10n.a11yRecipeFavorited
+                                : context.l10n.a11yRecipeUnfavorited,
+                            Directionality.of(context),
+                          );
+                        },
                         tooltip: recipe.isFavorite
                             ? context.l10n.favoritesRemove
                             : context.l10n.favoritesAdd,

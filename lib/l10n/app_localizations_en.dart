@@ -12785,6 +12785,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yCookingModeClose => 'Close cooking mode';
 
   @override
+  String get a11yRecipeFavorited => 'Recipe added to favorites';
+
+  @override
+  String get a11yRecipeUnfavorited => 'Recipe removed from favorites';
+
+  @override
+  String get a11yCommentPosted => 'Comment posted';
+
+  @override
   String a11yCookingModeIngredient(String ingredient) {
     return '$ingredient';
   }

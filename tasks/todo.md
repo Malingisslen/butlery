@@ -1,41 +1,34 @@
 # Sprint Backlog
 
-## Sprint: online-status privacy toggle — 2026-06-04 (iter-111)
+## Sprint: a11y state-change announcements (recipe detail) — 2026-06-04 (iter-112)
 
-Clean tree on main (prior commits …f33b0f708, 23ac13e5d). Picked BUT-912 (Medium) — a real privacy
-opt-out. Step-0 confirmed premise holds: `firebase_user_repository.updateOnlineStatus` writes
-`isOnline`/`lastActiveAt`; `friend_request_card` renders a green dot `if (isOnline)`; the write
-funnels through the single `UserService.updateOnlineStatus` gate.
+Clean tree on main (prior commits …23ac13e5d, 0cbd81cb0). BUT-905 (a11y `SemanticsService.announce`
+on state changes). Step-0: the 4 listed sites split — favorite + comment are clean view-layer sites
+with context; shopping-bought is behind an `onToggleItem` callback indirection and OCR-complete has
+no clear view site. Scoping to the two clean recipe-detail surfaces; follow-up for the other two.
 
-### Agent A: privacy — opt out of online status
-- [ ] **A1. BUT-912** `[Tier B]` — "Show online status" toggle. (settings/social)
-      - Model: add `bool showOnlineStatus` (default true) to `UserProfile` (ctor + toFirestore +
-        fromFirestore + fromJson + copyWith), sibling to `isSearchable`/`allowEmailSearch`.
-      - Gate: in `UserService.updateOnlineStatus`, force `isOnline=false` when the current profile's
-        `showOnlineStatus` is off — user is invisible to everyone at the source (write-gate, GDPR-clean).
-      - VM: `user_profile_viewmodel` getter + setter mirroring `isSearchable`.
-      - View: toggle row in `user_profile_edit_view` next to the existing privacy toggles. l10n sv/en.
-      - When toggled OFF, push `isOnline=false` immediately so the dot clears now.
+### Agent A: a11y — recipe-detail announcements
+- [ ] **A1. BUT-905 (recipe-detail slice)** `[Tier A]` — screen-reader announcements:
+      - Favorite toggle (`recipe_detail_view.dart:341`) → announce favorited/unfavorited after the
+        async toggle, based on `viewModel.recipe.isFavorite`.
+      - Comment posted (`recipe_social_handler.postComment`) → announce after the success snackbar.
+      - l10n keys: `a11yRecipeFavorited`, `a11yRecipeUnfavorited`, `a11yCommentPosted` (sv/en).
+      - Tier A (screen-reader only, no visual surface) → closes Done.
+      - Follow-up filed for the shopping-bought + OCR-complete sites (callback/flow indirection).
 
 ### Needs you (Tier D / deferred — carried)
-- BUT-1169, BUT-838, BUT-934 (re-engagement CF), BUT-1187, onRecipeDeleted gen-2 deploy.
+- BUT-1169, BUT-838, BUT-934, BUT-1187, onRecipeDeleted gen-2 deploy.
 
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos`
-- [ ] tests green (model round-trip + service gate)
 - [ ] Commit, push
-- [ ] Linear: In Review + notify (Tier B; firebase-backend-security gate on user_service.dart)
+- [ ] Linear: Done (Tier A); file follow-up for shopping/OCR announcements
 
 ---
 
-## ARCHIVED — iter-110: analytics transparency (shipped 23ac13e5d)
-BUT-918 → In Review. "What we log" disclosure. BUT-923 flagged premise-stale.
+## ARCHIVED — iter-111: online-status privacy opt-out (shipped 0cbd81cb0)
+BUT-912 → In Review. 3 review-caught bugs fixed (persist, dirty-detect, last-active leak).
 
-## ARCHIVED — iter-109: multi-select bulk-unblock (shipped f33b0f708)
-BUT-1039 → In Review. 6 widget tests.
-
-## ARCHIVED — iter-108: import cost-guard (shipped 64be6fd1f)
-BUT-1037 → In Review. RecipeTextHeuristic + warn dialog, 10 tests.
-
-## ARCHIVED — iter-107 / iter-106
-BUT-1199 gesture hints (ba7c7a4e3); 5 Tier-A + BUT-1198 (9c8946120).
+## ARCHIVED — iter-110/109/108/107/106
+918 analytics transparency (23ac13e5d); 1039 bulk-unblock (f33b0f708); 1037 import cost-guard
+(64be6fd1f); 1199 gesture hints (ba7c7a4e3); 5 Tier-A + 1198 (9c8946120).

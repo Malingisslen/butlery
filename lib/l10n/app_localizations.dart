@@ -21514,6 +21514,24 @@ abstract class AppLocalizations {
   /// **'Stäng tillagningsläge'**
   String get a11yCookingModeClose;
 
+  /// No description provided for @a11yRecipeFavorited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept tillagt i favoriter'**
+  String get a11yRecipeFavorited;
+
+  /// No description provided for @a11yRecipeUnfavorited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept borttaget från favoriter'**
+  String get a11yRecipeUnfavorited;
+
+  /// No description provided for @a11yCommentPosted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar publicerad'**
+  String get a11yCommentPosted;
+
   /// No description provided for @a11yCookingModeIngredient.
   ///
   /// In sv, this message translates to:

@@ -12815,6 +12815,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yCookingModeClose => 'Stäng tillagningsläge';
 
   @override
+  String get a11yRecipeFavorited => 'Recept tillagt i favoriter';
+
+  @override
+  String get a11yRecipeUnfavorited => 'Recept borttaget från favoriter';
+
+  @override
+  String get a11yCommentPosted => 'Kommentar publicerad';
+
+  @override
   String a11yCookingModeIngredient(String ingredient) {
     return '$ingredient';
   }

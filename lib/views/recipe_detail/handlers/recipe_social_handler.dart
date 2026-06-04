@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/handlers/recipe_social_handler.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -84,6 +85,11 @@ class RecipeSocialHandler {
       if (!context.mounted) return;
 
       SnackBarUtils.showSuccess(context, context.l10n.socialCommentPosted);
+      // BUT-905: announce to screen readers — the snackbar isn't reliably read.
+      SemanticsService.announce(
+        context.l10n.a11yCommentPosted,
+        Directionality.of(context),
+      );
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showError(context, context.l10n.socialCouldNotPostComment);

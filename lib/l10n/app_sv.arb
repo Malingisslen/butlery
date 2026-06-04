@@ -8722,6 +8722,9 @@
   "emailVerificationSuccess": "E-post verifierad!",
   "a11yCookingModeFontScale": "Ändra textstorlek",
   "a11yCookingModeClose": "Stäng tillagningsläge",
+  "a11yRecipeFavorited": "Recept tillagt i favoriter",
+  "a11yRecipeUnfavorited": "Recept borttaget från favoriter",
+  "a11yCommentPosted": "Kommentar publicerad",
   "a11yCookingModeIngredient": "{ingredient}",
   "@a11yCookingModeIngredient": {
     "placeholders": {
