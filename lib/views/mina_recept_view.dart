@@ -36,6 +36,8 @@ import 'package:butlery/models/recipe_unified.dart';
 // Constants and theming
 import 'package:butlery/core/extensions/localization_extension.dart';
 
+import 'package:butlery/core/constants/routes.dart';
+
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
@@ -295,6 +297,15 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             countBadge: context.l10n.recipeCountBadge(recipeCount),
             trailing: const RecipeListAvatarBadge(),
             actions: [
+              // BUT-977: surface the pantry-match IngredientSearchView power
+              // feature (previously only reachable via Cmd+K). Distinct
+              // kitchen icon so it doesn't read as the in-list text filter.
+              IconButton(
+                icon: const Icon(Icons.kitchen_outlined),
+                tooltip: context.l10n.ingredientSearchTitle,
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(Routes.ingredientSearch),
+              ),
               IconButton(
                 icon: Icon(
                   viewModel.isGridView ? Icons.view_list : Icons.grid_view,
