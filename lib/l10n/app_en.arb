@@ -8726,6 +8726,9 @@
   "a11yRecipeFavorited": "Recipe added to favorites",
   "a11yRecipeUnfavorited": "Recipe removed from favorites",
   "a11yCommentPosted": "Comment posted",
+  "a11yItemBought": "Marked as bought",
+  "a11yItemUnbought": "Marked as not bought",
+  "a11yOcrComplete": "Text extraction complete",
   "a11yCookingModeIngredient": "{ingredient}",
   "@a11yCookingModeIngredient": {
     "placeholders": {

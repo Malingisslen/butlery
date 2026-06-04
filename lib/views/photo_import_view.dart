@@ -3,6 +3,7 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -36,14 +37,37 @@ class PhotoImportView extends StatefulWidget {
 class _PhotoImportViewState extends State<PhotoImportView> {
   late final PhotoImportViewModel _viewModel;
 
+  // BUT-1201: ensures the OCR-complete announcement fires once per extraction,
+  // not on every VM notification while the result is on screen.
+  bool _announcedOcr = false;
+
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<PhotoImportViewModel>();
+    _viewModel.addListener(_announceOcrCompletion);
+  }
+
+  /// BUT-1201: announce the extracting→review transition to screen readers.
+  /// The visual appearance of the interpreted-text card isn't read otherwise.
+  void _announceOcrCompletion() {
+    if (_viewModel.hasOcrResult && !_viewModel.isProcessing) {
+      if (!_announcedOcr && mounted) {
+        _announcedOcr = true;
+        SemanticsService.announce(
+          context.l10n.a11yOcrComplete,
+          TextDirection.ltr,
+        );
+      }
+    } else {
+      // Reset so a subsequent extraction (retry / new photo) announces again.
+      _announcedOcr = false;
+    }
   }
 
   @override
   void dispose() {
+    _viewModel.removeListener(_announceOcrCompletion);
     _viewModel.dispose();
     super.dispose();
   }

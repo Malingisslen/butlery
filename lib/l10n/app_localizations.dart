@@ -8496,7 +8496,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingClaimHintText.
   ///
   /// In sv, this message translates to:
-  /// **'Tips: svep en vara för att ta den'**
+  /// **'Tips: svep en vara för att markera att du köper den'**
   String get shoppingClaimHintText;
 
   /// No description provided for @recipeTagsUpdated.
@@ -21603,6 +21603,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kommentar publicerad'**
   String get a11yCommentPosted;
+
+  /// No description provided for @a11yItemBought.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markerad som köpt'**
+  String get a11yItemBought;
+
+  /// No description provided for @a11yItemUnbought.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markerad som ej köpt'**
+  String get a11yItemUnbought;
+
+  /// No description provided for @a11yOcrComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Textavläsning klar'**
+  String get a11yOcrComplete;
 
   /// No description provided for @a11yCookingModeIngredient.
   ///

@@ -12834,6 +12834,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yCommentPosted => 'Comment posted';
 
   @override
+  String get a11yItemBought => 'Marked as bought';
+
+  @override
+  String get a11yItemUnbought => 'Marked as not bought';
+
+  @override
+  String get a11yOcrComplete => 'Text extraction complete';
+
+  @override
   String a11yCookingModeIngredient(String ingredient) {
     return '$ingredient';
   }

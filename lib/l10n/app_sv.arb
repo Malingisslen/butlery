@@ -8740,6 +8740,9 @@
   "a11yRecipeFavorited": "Recept tillagt i favoriter",
   "a11yRecipeUnfavorited": "Recept borttaget från favoriter",
   "a11yCommentPosted": "Kommentar publicerad",
+  "a11yItemBought": "Markerad som köpt",
+  "a11yItemUnbought": "Markerad som ej köpt",
+  "a11yOcrComplete": "Textavläsning klar",
   "a11yCookingModeIngredient": "{ingredient}",
   "@a11yCookingModeIngredient": {
     "placeholders": {

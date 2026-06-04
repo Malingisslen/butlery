@@ -3,6 +3,7 @@
 // lib/views/social/collaborative_shopping_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
@@ -186,11 +187,22 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   Future<void> _toggleItem(String itemId) async {
     final viewModel = context.read<CollaborativeShoppingViewModel>();
     final success = await viewModel.toggleItemCompletion(itemId);
+    if (!mounted) return;
 
-    if (!success && viewModel.hasError) {
-      if (!mounted) return;
-      SnackBarUtils.showError(context, viewModel.error!);
+    if (!success) {
+      if (viewModel.hasError) {
+        SnackBarUtils.showError(context, viewModel.error!);
+      }
+      return;
     }
+
+    // BUT-1201: announce the new bought/un-bought state to screen readers —
+    // the visual checkbox change on the row isn't reliably read on toggle.
+    final nowBought = viewModel.completedItemsList.any((i) => i.id == itemId);
+    SemanticsService.announce(
+      nowBought ? context.l10n.a11yItemBought : context.l10n.a11yItemUnbought,
+      TextDirection.ltr,
+    );
   }
 
   void _shareList() {
