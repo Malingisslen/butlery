@@ -1,16 +1,15 @@
 // lib/widgets/social/groups/create_group_dialog.dart
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/social/groups/group_draft_codec.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -33,13 +32,17 @@ class CreateGroupDialog extends StatefulWidget {
 class _CreateGroupDialogState extends State<CreateGroupDialog> {
   /// BUT-919: single multi-field JSON-encoded draft. Group-creation is
   /// one-at-a-time per session, no per-id multi-instance concern.
+  /// BUT-1203: persistence is now the shared [AutoSaveManager] (the non-String
+  /// JSON-map case) — this widget keeps only the build-map + load-and-apply glue.
   static const String _draftPrefsKey = 'group_creation_draft_v1';
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  String _selectedEmoji = '👥';
+  late final AutoSaveManager<Map<String, dynamic>> _draftManager;
+
+  String _selectedEmoji = kGroupDraftDefaultEmoji;
   final Set<String> _selectedFriendIds = <String>{};
   List<UserProfile> _selectedFriends = <UserProfile>[];
   bool _isCreating = false;
@@ -48,6 +51,12 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   @override
   void initState() {
     super.initState();
+    _draftManager = AutoSaveManager<Map<String, dynamic>>(
+      storageKey: _draftPrefsKey,
+      encode: encodeGroupDraft,
+      decode: decodeGroupDraft,
+      logLabel: 'CreateGroupDialog',
+    );
     if (widget.preSelectedMembers != null) {
       // Caller-provided pre-selection wins over any saved draft.
       _selectedFriends = List.from(widget.preSelectedMembers!);
@@ -60,12 +69,17 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     _descriptionController.addListener(_saveDraft);
   }
 
+  void _saveDraft() => _draftManager.save(buildGroupDraft(
+        name: _nameController.text,
+        description: _descriptionController.text,
+        emoji: _selectedEmoji,
+        friendIds: _selectedFriendIds.toList(),
+      ));
+
   Future<void> _loadDraft() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_draftPrefsKey);
-      if (raw == null || raw.isEmpty || !mounted) return;
-      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final json = await _draftManager.load();
+      if (json == null || !mounted) return;
       final savedName = (json['name'] as String?).orEmpty();
       final savedDesc = (json['description'] as String?).orEmpty();
       final savedEmoji = json['emoji'] as String? ?? _selectedEmoji;
@@ -101,40 +115,6 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     }
   }
 
-  Future<void> _saveDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final payload = <String, dynamic>{
-        'name': _nameController.text,
-        'description': _descriptionController.text,
-        'emoji': _selectedEmoji,
-        'friendIds': _selectedFriendIds.toList(),
-      };
-      // Skip writing when the entire form is in its initial-empty state —
-      // avoids leaving a useless empty JSON blob behind after dispose.
-      final isEmpty = _nameController.text.isEmpty &&
-          _descriptionController.text.isEmpty &&
-          _selectedEmoji == '👥' &&
-          _selectedFriendIds.isEmpty;
-      if (isEmpty) {
-        await prefs.remove(_draftPrefsKey);
-      } else {
-        await prefs.setString(_draftPrefsKey, jsonEncode(payload));
-      }
-    } catch (e) {
-      AppLogger.warning('CreateGroupDialog: failed to save draft ($e)');
-    }
-  }
-
-  Future<void> _clearDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_draftPrefsKey);
-    } catch (e) {
-      AppLogger.warning('CreateGroupDialog: failed to clear draft ($e)');
-    }
-  }
-
   void _onFriendSelectionChanged(List<UserProfile> selectedFriends) {
     if (mounted) {
       setState(() {
@@ -150,6 +130,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   void dispose() {
     _nameController.removeListener(_saveDraft);
     _descriptionController.removeListener(_saveDraft);
+    _draftManager.dispose();
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -184,7 +165,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
         // BUT-919: user explicitly committed — drop the saved draft so
         // next "create group" opens blank.
-        await _clearDraft();
+        await _draftManager.clear();
 
         if (mounted) {
           Navigator.of(context).pop(createdCategory);

@@ -229,6 +229,11 @@ class RecipeListViewModel extends ChangeNotifier {
   /// BUT-921 / BUT-1015 / BUT-1018: fire-and-forget persistence of active
   /// filters across ALL filter dimensions. Coalesced via a 300ms debounce
   /// so rapid chip taps produce one disk write instead of N.
+  ///
+  /// BUT-1203 exception: deliberately NOT migrated to `AutoSaveManager<T>`.
+  /// That primitive owns a single SharedPreferences key; this writes 8 typed
+  /// per-dimension entries through the `PersistenceService` facade (not one
+  /// JSON blob), so it doesn't fit the single-key shape. Left as-is.
   void _persistActiveFilters() {
     _persistFiltersDebounceTimer?.cancel();
     _persistFiltersDebounceTimer = Timer(const Duration(milliseconds: 300), () {
