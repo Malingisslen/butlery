@@ -5010,6 +5010,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterHide => 'Hide filters';
 
   @override
+  String get filterManageFoodPrefs => 'Manage allergens & diet';
+
+  @override
   String get filterManageTags => 'Manage tags';
 
   @override

@@ -23,6 +23,11 @@ class FiltersPanelWidget extends StatelessWidget {
   final Function(String) onRatingFilterToggle;
   final Function(String)? onAllergenFilterToggle;
   final Function(String)? onDietaryFilterToggle;
+
+  /// BUT-987: deep-link to the combined allergen/dietary preferences screen,
+  /// surfaced contextually under the allergen + dietary filter groups.
+  final VoidCallback? onManageFoodPreferences;
+
   final bool hasActiveFilters;
   final VoidCallback? onClearAllFilters;
 
@@ -57,6 +62,7 @@ class FiltersPanelWidget extends StatelessWidget {
     required this.onRatingFilterToggle,
     this.onAllergenFilterToggle,
     this.onDietaryFilterToggle,
+    this.onManageFoodPreferences,
     required this.hasActiveFilters,
     this.onClearAllFilters,
     this.personalTagIds,
@@ -129,6 +135,30 @@ class FiltersPanelWidget extends StatelessWidget {
                           options: RecipeFilters.dietaryFilters(context),
                           activeFilters: activeDietaryFilters,
                           onToggle: onDietaryFilterToggle!,
+                        ),
+
+                      // BUT-987: contextual deep-link to the allergen/dietary
+                      // preferences screen, so users can edit what the filters
+                      // above (and card display + ranking) key off of.
+                      if (onManageFoodPreferences != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimensions.spacingM,
+                          ),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: onManageFoodPreferences,
+                              icon: const Icon(
+                                Icons.tune,
+                                size: AppDimensions.iconSizeAction,
+                              ),
+                              label: Text(
+                                context.l10n.filterManageFoodPrefs,
+                                style: AppTextStyles.labelLarge,
+                              ),
+                            ),
+                          ),
                         ),
 
                       // Personal tags filters

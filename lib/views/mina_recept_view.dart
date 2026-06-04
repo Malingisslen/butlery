@@ -362,6 +362,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ),
                 );
               },
+              // BUT-987: deep-link to allergen/dietary prefs from the filter
+              // panel — the prefs drive the allergen/dietary filters above.
+              onManageFoodPreferences: () =>
+                  Navigator.of(context).pushNamed(Routes.settingsAllergens),
               searchHistory: viewModel.searchHistory,
               onHistoryTap: (query) => viewModel.updateSearch(query),
               onHistoryRemove: viewModel.removeFromSearchHistory,

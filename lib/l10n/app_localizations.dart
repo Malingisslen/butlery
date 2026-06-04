@@ -8565,6 +8565,12 @@ abstract class AppLocalizations {
   /// **'Dölj filter'**
   String get filterHide;
 
+  /// No description provided for @filterManageFoodPrefs.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hantera allergener & kost'**
+  String get filterManageFoodPrefs;
+
   /// No description provided for @filterManageTags.
   ///
   /// In sv, this message translates to:

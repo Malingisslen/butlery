@@ -5013,6 +5013,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get filterHide => 'Dölj filter';
 
   @override
+  String get filterManageFoodPrefs => 'Hantera allergener & kost';
+
+  @override
   String get filterManageTags => 'Hantera taggar';
 
   @override

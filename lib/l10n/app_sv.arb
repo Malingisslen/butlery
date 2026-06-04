@@ -3208,6 +3208,7 @@
   "filterDietary": "Specialkost",
   "filterExcludeTags": "Exkludera taggar",
   "filterHide": "Dölj filter",
+  "filterManageFoodPrefs": "Hantera allergener & kost",
   "filterManageTags": "Hantera taggar",
   "filterMealType": "Måltidstyp",
   "filterPersonalTags": "Personliga taggar",

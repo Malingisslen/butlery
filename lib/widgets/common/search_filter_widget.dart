@@ -54,6 +54,9 @@ class SearchFilterWidget extends StatefulWidget {
   final Function(String)? onExcludedPersonalTagFilterToggle;
   final VoidCallback? onManagePersonalTags;
 
+  /// BUT-987: deep-link to allergen/dietary preferences from the filter panel.
+  final VoidCallback? onManageFoodPreferences;
+
   // UI state (OPTIONAL - null means no filter toggle)
   final bool? showFilters;
   final VoidCallback? onToggleFilters;
@@ -99,6 +102,7 @@ class SearchFilterWidget extends StatefulWidget {
     this.onPersonalTagFilterToggle,
     this.onExcludedPersonalTagFilterToggle,
     this.onManagePersonalTags,
+    this.onManageFoodPreferences,
 
     // UI state (optional)
     this.showFilters,
@@ -316,6 +320,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       onExcludedPersonalTagFilterToggle:
           widget.onExcludedPersonalTagFilterToggle,
       onManagePersonalTags: widget.onManagePersonalTags,
+      onManageFoodPreferences: widget.onManageFoodPreferences,
     );
   }
 
