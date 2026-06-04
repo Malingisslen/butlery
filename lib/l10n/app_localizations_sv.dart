@@ -4966,7 +4966,8 @@ class AppLocalizationsSv extends AppLocalizations {
       'Tips: håll inne ett steg för att starta en timer';
 
   @override
-  String get shoppingClaimHintText => 'Tips: svep en vara för att ta den';
+  String get shoppingClaimHintText =>
+      'Tips: svep en vara för att markera att du köper den';
 
   @override
   String get recipeTagsUpdated => 'Taggar uppdaterade';

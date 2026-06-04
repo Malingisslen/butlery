@@ -3151,7 +3151,7 @@
   "recipeSourceUrlHint": "Valfritt: länk till originalreceptet",
   "recipeSwipeHintText": "Tips: svep åt höger för att redigera, åt vänster för att radera",
   "cookingStepHintText": "Tips: håll inne ett steg för att starta en timer",
-  "shoppingClaimHintText": "Tips: svep en vara för att ta den",
+  "shoppingClaimHintText": "Tips: svep en vara för att markera att du köper den",
   "recipeTagsUpdated": "Taggar uppdaterade",
   "recipeTimeMinutes": "Tid (min)",
   "recipeUnsavedChangesTitle": "Osparade ändringar",
