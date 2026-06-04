@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -10,7 +9,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -59,7 +58,13 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   /// BUT-911: single global key. URL-import is one-at-a-time per session;
   /// no per-id multi-instance concern. Persists only the URL (extractedText
   /// and parsedRecipe regenerate cheaply from a fetch+parse on next visit).
-  static const String _draftPrefsKey = 'url_import_draft_v1';
+  /// BUT-904: persistence is now the shared AutoSaveManager.
+  final AutoSaveManager<String> _draftManager = AutoSaveManager<String>(
+    storageKey: 'url_import_draft_v1',
+    encode: (text) => text,
+    decode: (raw) => raw,
+    logLabel: 'ImportViaUrlView',
+  );
 
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _extractedTextController =
@@ -71,46 +76,20 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
     _urlController.addListener(_onUrlChanged);
     // Post-frame so the controller is mounted before triggering the
     // listener via .text assignment.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadDraft());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _restoreDraft());
   }
 
-  Future<void> _loadDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString(_draftPrefsKey);
-      if (saved != null && saved.isNotEmpty && mounted) {
-        // Setting .text triggers the listener which syncs the VM.
-        _urlController.text = saved;
-      }
-    } catch (e) {
-      AppLogger.warning('ImportViaUrlView: failed to load draft ($e)');
-    }
-  }
-
-  Future<void> _saveDraft(String text) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (text.isEmpty) {
-        await prefs.remove(_draftPrefsKey);
-      } else {
-        await prefs.setString(_draftPrefsKey, text);
-      }
-    } catch (e) {
-      AppLogger.warning('ImportViaUrlView: failed to save draft ($e)');
-    }
-  }
-
-  Future<void> _clearDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_draftPrefsKey);
-    } catch (e) {
-      AppLogger.warning('ImportViaUrlView: failed to clear draft ($e)');
+  Future<void> _restoreDraft() async {
+    final saved = await _draftManager.load();
+    if (saved != null && saved.isNotEmpty && mounted) {
+      // Setting .text triggers the listener which syncs the VM.
+      _urlController.text = saved;
     }
   }
 
   @override
   void dispose() {
+    _draftManager.dispose();
     _urlController.removeListener(_onUrlChanged);
     _urlController.dispose();
     _extractedTextController.dispose();
@@ -122,7 +101,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
     viewModel.updateUrl(_urlController.text);
     // Eager save — URLs are short; one prefs write per keystroke is
     // bounded and isolate-fenced.
-    _saveDraft(_urlController.text);
+    _draftManager.save(_urlController.text);
   }
 
   void _fetchPage() {
@@ -138,7 +117,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
       if (editedText.isNotEmpty) {
         // User has explicitly committed past the URL stage — drop the draft
         // so next URL-import visit starts blank.
-        await _clearDraft();
+        await _draftManager.clear();
         if (!mounted) return;
         Navigator.pushNamed(
           context,

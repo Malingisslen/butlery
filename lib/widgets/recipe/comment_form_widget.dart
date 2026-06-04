@@ -3,13 +3,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -45,9 +45,8 @@ class CommentFormWidget extends StatefulWidget {
 }
 
 class _CommentFormWidgetState extends State<CommentFormWidget> {
-  static const String _draftPrefsPrefix = 'comment_draft_v1_';
-
   late final TextEditingController _controller;
+  late final AutoSaveManager<String> _draftManager;
 
   // BUT-1049: locally-selected (not-yet-uploaded) image files, capped at
   // RecipeComment.maxImageUrls. Uploaded to Storage only on submit.
@@ -63,47 +62,26 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     _controller = TextEditingController();
     _imagePicker = ServiceLocator.get<ImagePickerService>();
     _storageService = ServiceLocator.get<StorageService>();
-    _loadDraft();
+    // BUT-917 per-recipe isolation: the key carries the recipe id so two open
+    // recipes don't cross-contaminate. BUT-904: persistence is now the shared
+    // AutoSaveManager; this widget keeps only the load-and-apply glue.
+    _draftManager = AutoSaveManager<String>(
+      storageKey: 'comment_draft_v1_${widget.recipeId}',
+      encode: (text) => text,
+      decode: (raw) => raw,
+      logLabel: 'CommentFormWidget',
+    );
+    _restoreDraft();
   }
 
   bool get _atImageCap => _selectedImages.length >= RecipeComment.maxImageUrls;
 
-  String get _draftKey => '$_draftPrefsPrefix${widget.recipeId}';
-
-  Future<void> _loadDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString(_draftKey);
-      if (saved != null && saved.isNotEmpty && mounted) {
-        _controller.text = saved;
-        // Sync VM state so the send button activates immediately.
-        widget.socialViewModel.updateNewCommentText(saved);
-      }
-    } catch (e) {
-      AppLogger.warning('CommentFormWidget: failed to load draft ($e)');
-    }
-  }
-
-  Future<void> _saveDraft(String text) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (text.isEmpty) {
-        await prefs.remove(_draftKey);
-      } else {
-        await prefs.setString(_draftKey, text);
-      }
-    } catch (e) {
-      // Non-critical — draft persistence is best-effort.
-      AppLogger.warning('CommentFormWidget: failed to save draft ($e)');
-    }
-  }
-
-  Future<void> _clearDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_draftKey);
-    } catch (e) {
-      AppLogger.warning('CommentFormWidget: failed to clear draft ($e)');
+  Future<void> _restoreDraft() async {
+    final saved = await _draftManager.load();
+    if (saved != null && saved.isNotEmpty && mounted) {
+      _controller.text = saved;
+      // Sync VM state so the send button activates immediately.
+      widget.socialViewModel.updateNewCommentText(saved);
     }
   }
 
@@ -112,7 +90,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
     // Eager save — comments are short, write volume is low; no debounce
     // needed. SharedPreferences writes are async + isolate-fenced so this
     // doesn't block the keystroke.
-    _saveDraft(text);
+    _draftManager.save(text);
   }
 
   Future<void> _pickImages() async {
@@ -175,7 +153,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
       // Post-success: VM cleared its newCommentText; mirror that on the
       // controller + drop the persisted draft + clear selected images.
       _controller.clear();
-      await _clearDraft();
+      await _draftManager.clear();
       if (mounted) {
         setState(() => _selectedImages.clear());
         widget.onShowMessage(context.l10n.commentPosted);
@@ -190,6 +168,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
 
   @override
   void dispose() {
+    _draftManager.dispose();
     _controller.dispose();
     super.dispose();
   }

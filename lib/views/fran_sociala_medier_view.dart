@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
@@ -17,9 +16,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/logger.dart';
 
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatefulWidget {
@@ -84,8 +83,14 @@ class _FranSocialaMedierViewContentState
     extends State<_FranSocialaMedierViewContent> {
   /// BUT-915: single global key — text-import is a CREATE flow with
   /// one-at-a-time user intent. Unlike per-recipe comment drafts, there's
-  /// no multi-instance isolation concern.
-  static const String _draftPrefsKey = 'text_import_draft_v1';
+  /// no multi-instance isolation concern. BUT-904: persistence is now the
+  /// shared AutoSaveManager.
+  final AutoSaveManager<String> _draftManager = AutoSaveManager<String>(
+    storageKey: 'text_import_draft_v1',
+    encode: (text) => text,
+    decode: (raw) => raw,
+    logLabel: 'FranSocialaMedierView',
+  );
 
   late TextEditingController _textController;
   bool _isInitialized = false;
@@ -112,37 +117,10 @@ class _FranSocialaMedierViewContentState
   }
 
   Future<void> _loadDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString(_draftPrefsKey);
-      if (saved != null && saved.isNotEmpty && mounted) {
-        _textController.text = saved;
-        context.read<TextImportViewModel>().updateInputText(saved);
-      }
-    } catch (e) {
-      AppLogger.warning('FranSocialaMedierView: failed to load draft ($e)');
-    }
-  }
-
-  Future<void> _saveDraft(String text) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (text.isEmpty) {
-        await prefs.remove(_draftPrefsKey);
-      } else {
-        await prefs.setString(_draftPrefsKey, text);
-      }
-    } catch (e) {
-      AppLogger.warning('FranSocialaMedierView: failed to save draft ($e)');
-    }
-  }
-
-  Future<void> _clearDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_draftPrefsKey);
-    } catch (e) {
-      AppLogger.warning('FranSocialaMedierView: failed to clear draft ($e)');
+    final saved = await _draftManager.load();
+    if (saved != null && saved.isNotEmpty && mounted) {
+      _textController.text = saved;
+      context.read<TextImportViewModel>().updateInputText(saved);
     }
   }
 
@@ -151,11 +129,12 @@ class _FranSocialaMedierViewContentState
     // Eager save — pasted recipes are larger than comments, but write
     // volume is still bounded (one save per keystroke; SharedPreferences
     // is isolate-fenced so it doesn't block input latency).
-    _saveDraft(text);
+    _draftManager.save(text);
   }
 
   @override
   void dispose() {
+    _draftManager.dispose();
     _textController.dispose();
     super.dispose();
   }
@@ -182,7 +161,7 @@ class _FranSocialaMedierViewContentState
     if (success && context.mounted) {
       // User explicitly moved past the input stage — drop the draft so the
       // next visit to this surface starts blank.
-      await _clearDraft();
+      await _draftManager.clear();
       if (!context.mounted) return;
       Navigator.push(
         context,
