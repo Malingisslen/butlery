@@ -29,6 +29,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -81,24 +82,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
   }
 
-  /// Raw image bytes from selected photo for display and processing coordination.
-  /// Provides access to captured or selected image data enabling image preview,
-  /// OCR processing coordination, and photo import workflow management.
   Uint8List? get imageBytes => _imageBytes;
 
-  /// Text extracted from OCR processing for review and recipe parsing.
-  /// Provides access to OCR results enabling text review, manual editing,
-  /// and recipe parsing coordination throughout photo import functionality.
   String get ocrText => _ocrText;
 
-  /// Image selection status indicator for conditional UI rendering and workflow management.
-  /// Indicates whether image has been captured or selected enabling
-  /// UI state management and photo import workflow progression.
   bool get hasImage => _imageBytes != null;
 
-  /// OCR processing results availability indicator for parsing and display coordination.
-  /// Indicates whether OCR has produced text results enabling
-  /// recipe parsing workflow and text review functionality.
   bool get hasOcrResult => _ocrText.isNotEmpty;
 
   /// Last OCR quality score for error messaging and user guidance (Phase 2 Enhancement).
@@ -445,88 +434,22 @@ class PhotoImportViewModel extends ImportBaseViewModel
     });
   }
 
-  /// Builds enhanced error message from OCR failure with quality data and actionable guidance (Phase 2 Enhancement).
-  /// [result] OCR processing result containing failure metadata, quality scores, and recommendations
-  /// Extracts rich quality data from OCRResult metadata and constructs specific, actionable error messages
-  /// in Swedish based on actual failure reasons rather than generic fallback messages.
-  /// **Enhanced Error Message Strategy:**
-  /// - Quality-based messaging: Low quality score → specific quality issues
-  /// - Circuit breaker awareness: All providers down → service availability guidance
-  /// - Recommendation surfacing: Display actionable suggestions from quality assessment
-  /// - Progressive guidance: Multiple recovery options from retry to manual entry
-  /// **Metadata Extracted:**
-  /// - quality_assessment: Image quality score (0.0-1.0)
-  /// - recommendations: List of actionable quality improvements
-  /// - circuit_breakers: Provider availability status (OCR.space, Google Vision, Tesseract)
-  /// BUT-1022: testing seam — the metadata-string contract between
-  /// `OCRExtractionService._classifyProviderErrors` and this method is
-  /// load-bearing for the Swedish error copy the user sees. Direct unit
-  /// coverage avoids needing to mock the singleton OCR service.
+  /// BUT-1022: testing seam — the metadata→Swedish-copy contract is load-bearing
+  /// for the error the user sees, so it gets direct unit coverage without mocking
+  /// the OCR singleton. Build logic lives in [OcrErrorMessageBuilder].
   @visibleForTesting
   String buildEnhancedErrorMessageForTesting(OCRResult result) =>
       _buildEnhancedErrorMessage(result);
 
+  /// BUT-1154: message construction moved to [OcrErrorMessageBuilder]; the VM
+  /// keeps the quality-field side effects that the `qualityScore` /
+  /// `recommendations` / `confidence` getters expose.
   String _buildEnhancedErrorMessage(OCRResult result) {
-    // Store quality data for UI access
-    _lastQualityScore = result.metadata['quality_assessment'] as double?;
-    _lastRecommendations =
-        (result.metadata['recommendations'] as List?)?.cast<String>();
-    _lastConfidence = result.confidence;
-
-    // Extract circuit breaker states
-    final circuitBreakers =
-        result.metadata['circuit_breakers'] as Map<String, dynamic>?;
-    final allProvidersDown = circuitBreakers != null &&
-        circuitBreakers['ocr_space_state'] == 'open' &&
-        circuitBreakers['google_vision_state'] == 'open' &&
-        circuitBreakers['tesseract_state'] == 'open';
-
-    // Build specific error message based on failure reasons
-    final messageParts = <String>[];
-
-    // BUT-963: typed failure classification from the OCR service. Wins over
-    // the "no text extracted" generic fallback when the providers actually
-    // threw a recognizable error (rate limit, timeout, network). Quality
-    // gate still wins over classification — if the image was unreadable to
-    // begin with, the user should fix the image, not retry blindly.
-    final classification = result.metadata['failure_classification'] as String?;
-
-    if (_lastQualityScore != null && _lastQualityScore! < 0.6) {
-      final l = AppLocale.current;
-      messageParts.add(
-        l.errorImageQualityTooLow((_lastQualityScore! * 100).toInt()),
-      );
-    } else if (classification == 'rate_limit') {
-      messageParts.add(AppLocale.current.errorOcrRateLimit);
-    } else if (classification == 'timeout' || classification == 'network') {
-      messageParts.add(AppLocale.current.errorOcrTimeout);
-    } else if (allProvidersDown) {
-      messageParts.add(
-        AppLocale.current.errorOcrServicesUnavailable,
-      );
-    } else {
-      messageParts.add(AppLocale.current.errorNoTextExtracted);
-    }
-
-    // Add specific recommendations if available
-    if (_lastRecommendations != null && _lastRecommendations!.isNotEmpty) {
-      messageParts.add('\n\n${AppLocale.current.labelImprovementSuggestions}');
-      for (final recommendation in _lastRecommendations!) {
-        messageParts.add('• $recommendation');
-      }
-    } else {
-      // Generic quality tips if no specific recommendations
-      messageParts.add(
-        '\n\n${AppLocale.current.ocrQualityTips}',
-      );
-    }
-
-    // Add recovery options
-    messageParts.add(
-      '\n\n${AppLocale.current.ocrRetryOrManual}',
-    );
-
-    return messageParts.join('\n');
+    final built = OcrErrorMessageBuilder.build(result);
+    _lastQualityScore = built.qualityScore;
+    _lastRecommendations = built.recommendations;
+    _lastConfidence = built.confidence;
+    return built.message;
   }
 
   /// Provides comprehensive debugging state information for photo import development and troubleshooting.
