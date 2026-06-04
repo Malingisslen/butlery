@@ -1,0 +1,84 @@
+# BUT-488: release-only version bump + changelog.
+#
+# Deliberately MANUAL (workflow_dispatch) — never fires on push/PR, so a normal
+# commit never mutates the version. Maps conventional commits since the last
+# `v*` tag to a semver bump (feat!/BREAKING CHANGE → major, feat → minor, else
+# patch; overridable), bumps pubspec.yaml + build number, regenerates the
+# CHANGELOG section, then commits + tags `v<version>` + pushes to main.
+#
+# The bump logic lives in tools/release/bump_version.sh (unit-verifiable via
+# --dry-run); this workflow is just the CI wiring + git side effects.
+name: Release version bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_override:
+        description: 'Version bump (auto = derive from conventional commits since last v* tag)'
+        type: choice
+        default: auto
+        options: [auto, patch, minor, major]
+
+concurrency:
+  group: release-version-bump
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # commit the bump + push the tag
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0          # full history + tags for the commit scan
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # No Flutter/Dart setup: bump_version.sh is pure bash + git + sed, and
+      # computes the next semver itself. Keeping the release path dependency-free
+      # makes it fast and removes a toolchain that could drift (BUT-488).
+      - name: Compute + apply version bump
+        id: bump
+        shell: bash
+        run: |
+          # Changelog date is supplied by the workflow (dispatch day, UTC) so
+          # the script itself stays clock-free and unit-testable via --dry-run.
+          export RELEASE_DATE="$(date -u +%Y-%m-%d)"
+          ARGS=()
+          if [ "${{ inputs.bump_override }}" != "auto" ]; then
+            ARGS+=(--override "${{ inputs.bump_override }}")
+          fi
+          bash tools/release/bump_version.sh "${ARGS[@]}"
+
+      - name: Commit, tag, push
+        shell: bash
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          NEW_CORE: ${{ steps.bump.outputs.new_core }}
+        run: |
+          if [ -z "$NEW_VERSION" ]; then
+            echo "::error::bump step produced no new_version" >&2
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pubspec.yaml CHANGELOG.md
+          git commit -m "chore(release): v${NEW_VERSION}
+
+          Automated version bump (BUT-488). Bump type: ${{ steps.bump.outputs.bump }}."
+          git tag "v${NEW_CORE}"
+          git push origin HEAD --follow-tags
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Release bump"
+            echo ""
+            echo "- Requested: \`${{ inputs.bump_override }}\`"
+            echo "- Applied bump: \`${{ steps.bump.outputs.bump }}\`"
+            echo "- New version: \`${{ steps.bump.outputs.new_version }}\`"
+            echo "- Tag: \`v${{ steps.bump.outputs.new_core }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

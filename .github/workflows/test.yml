@@ -414,10 +414,30 @@ jobs:
 
       - run: flutter pub get
 
+      # BUT-1192: the views (windows-latest) leg intermittently exits with NO
+      # test output (an infra hang before the reporter emits — flutter-action
+      # cache-restore race / locale init / runner starvation) and clears on a
+      # plain re-run. A bounded 2-attempt retry absorbs that infra flake. It
+      # does NOT mask real regressions: an assertion failure is deterministic
+      # and fails both attempts identically, so a genuine break still goes red
+      # (just one re-run later). Scoped to the nightly cross-OS matrix only —
+      # off the per-commit critical path, fail-fast:false. Whole-matrix rather
+      # than special-casing one cell: any cross-OS leg can take an infra flake.
       - name: Run ${{ matrix.suite }} tests
+        shell: bash
         run: |
           echo "Running test/${{ matrix.suite }} on ${{ matrix.os }}..."
-          flutter test test/${{ matrix.suite }} --reporter=expanded
+          max_attempts=2
+          attempt=1
+          until flutter test test/${{ matrix.suite }} --reporter=expanded; do
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "::error::test/${{ matrix.suite }} on ${{ matrix.os }} failed after ${max_attempts} attempts"
+              exit 1
+            fi
+            echo "::warning::test/${{ matrix.suite }} on ${{ matrix.os }} attempt ${attempt} failed — retrying (BUT-1192 infra-flake absorber)"
+            attempt=$((attempt + 1))
+            sleep 10
+          done
 
       - name: Upload test results
         if: failure()
