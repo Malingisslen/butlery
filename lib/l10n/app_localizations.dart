@@ -14547,6 +14547,24 @@ abstract class AppLocalizations {
   /// **'Logga ut'**
   String get onboardingAgeGateSignOut;
 
+  /// No description provided for @onboardingAgeGateParentOption.
+  ///
+  /// In sv, this message translates to:
+  /// **'En vuxen kan skapa ett konto åt dig'**
+  String get onboardingAgeGateParentOption;
+
+  /// No description provided for @onboardingAgeGateParentInfoTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Be en vuxen om hjälp'**
+  String get onboardingAgeGateParentInfoTitle;
+
+  /// No description provided for @onboardingAgeGateParentInfoBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.'**
+  String get onboardingAgeGateParentInfoBody;
+
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In sv, this message translates to:

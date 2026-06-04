@@ -8565,6 +8565,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingAgeGateSignOut => 'Logga ut';
 
   @override
+  String get onboardingAgeGateParentOption =>
+      'En vuxen kan skapa ett konto åt dig';
+
+  @override
+  String get onboardingAgeGateParentInfoTitle => 'Be en vuxen om hjälp';
+
+  @override
+  String get onboardingAgeGateParentInfoBody =>
+      'Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.';
+
+  @override
   String get onboardingWelcomeTitle => 'Valkommen till Butlery!';
 
   @override

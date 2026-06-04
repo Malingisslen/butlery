@@ -12,6 +12,25 @@ import 'package:butlery/theme/app_text_styles.dart';
 class OnboardingAgeGateBlockedView extends StatelessWidget {
   const OnboardingAgeGateBlockedView({super.key});
 
+  /// BUT-946: a supportive, parent-mediated path. Shows an info dialog rather
+  /// than a real consent flow (that's the larger BUT-674) — it points the child
+  /// toward asking a parent to create their own account.
+  void _showParentInfo(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(ctx.l10n.onboardingAgeGateParentInfoTitle),
+        content: Text(ctx.l10n.onboardingAgeGateParentInfoBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(ctx.l10n.commonOk),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _signOutAndCleanup(BuildContext context) async {
     final authService = ServiceLocator.get<AuthService>();
 
@@ -87,6 +106,16 @@ class OnboardingAgeGateBlockedView extends StatelessWidget {
                             color: cs.surfaceContainerHighest,
                           ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingMd),
+                    // BUT-946: a kinder, parent-mediated alternative to a bare
+                    // forced sign-out.
+                    TextButton(
+                      onPressed: () => _showParentInfo(context),
+                      child: Text(
+                        context.l10n.onboardingAgeGateParentOption,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ],

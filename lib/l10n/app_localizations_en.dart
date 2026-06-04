@@ -8551,6 +8551,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingAgeGateSignOut => 'Sign out';
 
   @override
+  String get onboardingAgeGateParentOption => 'A grown-up can sign up for you';
+
+  @override
+  String get onboardingAgeGateParentInfoTitle => 'Ask a grown-up for help';
+
+  @override
+  String get onboardingAgeGateParentInfoBody =>
+      'Ask a parent or guardian to create their own account and add you as a family member. You need to be at least 15 to have your own account.';
+
+  @override
   String get onboardingWelcomeTitle => 'Welcome to Butlery!';
 
   @override
