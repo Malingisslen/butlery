@@ -4887,6 +4887,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSourceUrlHint => 'Valfritt: länk till originalreceptet';
 
   @override
+  String get recipeSwipeHintText =>
+      'Tips: svep åt höger för att redigera, åt vänster för att radera';
+
+  @override
   String get recipeTagsUpdated => 'Taggar uppdaterade';
 
   @override

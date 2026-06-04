@@ -4884,6 +4884,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSourceUrlHint => 'Optional: link to the original recipe';
 
   @override
+  String get recipeSwipeHintText => 'Tip: swipe right to edit, left to delete';
+
+  @override
   String get recipeTagsUpdated => 'Tags updated';
 
   @override

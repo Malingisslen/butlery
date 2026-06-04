@@ -41,6 +41,7 @@ import 'package:butlery/core/constants/routes.dart';
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
@@ -393,6 +394,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 trailing: MinaReceptSortChip(viewModel: viewModel),
               ),
             ),
+            // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
+            // gesture; self-dismisses once per device.
+            const SwipeHintBanner(),
           ],
           Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
         ],

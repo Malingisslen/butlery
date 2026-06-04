@@ -8349,6 +8349,12 @@ abstract class AppLocalizations {
   /// **'Valfritt: länk till originalreceptet'**
   String get recipeSourceUrlHint;
 
+  /// No description provided for @recipeSwipeHintText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tips: svep åt höger för att redigera, åt vänster för att radera'**
+  String get recipeSwipeHintText;
+
   /// No description provided for @recipeTagsUpdated.
   ///
   /// In sv, this message translates to:

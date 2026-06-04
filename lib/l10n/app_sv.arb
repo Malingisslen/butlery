@@ -3124,6 +3124,7 @@
   "recipeSourceUrl": "Källa (URL)",
   "recipeSourceUrlHelper": "Länk till originalreceptet",
   "recipeSourceUrlHint": "Valfritt: länk till originalreceptet",
+  "recipeSwipeHintText": "Tips: svep åt höger för att redigera, åt vänster för att radera",
   "recipeTagsUpdated": "Taggar uppdaterade",
   "recipeTimeMinutes": "Tid (min)",
   "recipeUnsavedChangesTitle": "Osparade ändringar",
