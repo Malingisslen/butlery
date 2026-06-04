@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+
 /// BUT-1203: the persistence contract for the group-creation draft, extracted
 /// from `CreateGroupDialog` so the all-fields-empty → remove-key rule and the
 /// JSON shape are unit-testable independently of the dialog's widget tree.
@@ -27,8 +29,8 @@ Map<String, dynamic> buildGroupDraft({
 /// initial-empty state. Returning null makes [AutoSaveManager] remove the key,
 /// so an opened-then-abandoned form leaves no useless empty blob behind.
 String? encodeGroupDraft(Map<String, dynamic> draft) {
-  final name = (draft['name'] as String?) ?? '';
-  final description = (draft['description'] as String?) ?? '';
+  final name = (draft['name'] as String?).orEmpty();
+  final description = (draft['description'] as String?).orEmpty();
   final emoji = (draft['emoji'] as String?) ?? kGroupDraftDefaultEmoji;
   final friendIds = (draft['friendIds'] as List?) ?? const [];
   final isEmpty = name.isEmpty &&
