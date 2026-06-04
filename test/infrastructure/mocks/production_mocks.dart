@@ -4579,6 +4579,8 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   bool _hasOcrResult = false;
   bool _canImport = false;
   bool _isProcessing = false;
+  bool _hasMultipleRecipes = false;
+  List<Recipe> _parsedRecipes = const [];
 
   /// Configure mock state for tests
   void setPhotoImportState({
@@ -4590,6 +4592,8 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
     bool hasOcrResult = false,
     bool canImport = false,
     bool isProcessing = false,
+    bool hasMultipleRecipes = false,
+    List<Recipe> parsedRecipes = const [],
   }) {
     _isLoading = isLoading;
     _error = error;
@@ -4599,6 +4603,8 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
     _hasOcrResult = hasOcrResult;
     _canImport = canImport;
     _isProcessing = isProcessing;
+    _hasMultipleRecipes = hasMultipleRecipes;
+    _parsedRecipes = parsedRecipes;
   }
 
   // Getters for configured state (tests can access)
@@ -4606,6 +4612,8 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   bool get isLoading => _isLoading;
   @override
   String? get error => _error;
+  @override
+  bool get hasError => _error != null;
   @override
   Uint8List? get imageBytes => _imageBytes;
   @override
@@ -4618,6 +4626,10 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   bool get canImport => _canImport;
   @override
   bool get isProcessing => _isProcessing;
+  @override
+  bool get hasMultipleRecipes => _hasMultipleRecipes;
+  @override
+  List<Recipe> get parsedRecipes => _parsedRecipes;
 
   // All methods left without implementation to allow stubbing with when()
 }
