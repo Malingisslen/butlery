@@ -8865,6 +8865,7 @@
   "notificationsTitle": "Notifications",
   "notificationsEmpty": "No notifications yet",
   "notificationsErrorLoad": "Could not load notifications",
+  "notificationsSelectedCount": "{count} selected",
   "notificationsMarkAllRead": "Mark all as read",
 
   "allergenIncludeUnknownTitle": "Show unknown allergen status",

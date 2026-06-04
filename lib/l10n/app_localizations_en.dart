@@ -13085,6 +13085,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsErrorLoad => 'Could not load notifications';
 
   @override
+  String notificationsSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
   String get notificationsMarkAllRead => 'Mark all as read';
 
   @override

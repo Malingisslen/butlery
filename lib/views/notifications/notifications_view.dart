@@ -23,42 +23,110 @@ class NotificationsView extends StatelessWidget {
   }
 }
 
-class _NotificationsContent extends StatelessWidget {
+class _NotificationsContent extends StatefulWidget {
   const _NotificationsContent();
+
+  @override
+  State<_NotificationsContent> createState() => _NotificationsContentState();
+}
+
+class _NotificationsContentState extends State<_NotificationsContent> {
+  // BUT-1080: long-press multi-select + bulk dismiss. Selection keys on the
+  // entry doc id (what the dismiss primitive deletes by).
+  bool _selectionMode = false;
+  final Set<String> _selectedIds = {};
+
+  void _enterSelection(String id) {
+    setState(() {
+      _selectionMode = true;
+      _selectedIds.add(id);
+    });
+  }
+
+  void _toggle(String id) {
+    setState(() {
+      if (!_selectedIds.remove(id)) _selectedIds.add(id);
+    });
+  }
+
+  void _cancelSelection() {
+    setState(() {
+      _selectionMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  Future<void> _dismissSelected(NotificationsViewModel vm) async {
+    if (_selectedIds.isEmpty) return;
+    await vm.dismissSelected(Set.of(_selectedIds));
+    if (!mounted) return;
+    _cancelSelection();
+  }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<NotificationsViewModel>();
-    final hasUnread = vm.entries.any((e) => !e.opened);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.notificationsTitle),
-        actions: [
-          // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
-          // the action would be a no-op and shouldn't suggest otherwise.
-          PopupMenuButton<String>(
-            enabled: hasUnread,
-            onSelected: (value) {
-              if (value == 'mark_all_read') {
-                vm.markAllAsOpened();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem<String>(
-                value: 'mark_all_read',
-                child: Text(context.l10n.notificationsMarkAllRead),
-              ),
-            ],
-          ),
-        ],
-      ),
+      appBar: _selectionMode
+          ? _buildSelectionAppBar(context, vm)
+          : _buildDefaultAppBar(context, vm),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 700),
           child: _buildBody(context, vm),
         ),
       ),
+    );
+  }
+
+  PreferredSizeWidget _buildDefaultAppBar(
+    BuildContext context,
+    NotificationsViewModel vm,
+  ) {
+    final hasUnread = vm.entries.any((e) => !e.opened);
+    return AppBar(
+      title: Text(context.l10n.notificationsTitle),
+      actions: [
+        // BUT-952: bulk mark-all-as-read. Disabled when nothing unread —
+        // the action would be a no-op and shouldn't suggest otherwise.
+        PopupMenuButton<String>(
+          enabled: hasUnread,
+          onSelected: (value) {
+            if (value == 'mark_all_read') {
+              vm.markAllAsOpened();
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem<String>(
+              value: 'mark_all_read',
+              child: Text(context.l10n.notificationsMarkAllRead),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  PreferredSizeWidget _buildSelectionAppBar(
+    BuildContext context,
+    NotificationsViewModel vm,
+  ) {
+    final count = _selectedIds.length;
+    return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        tooltip: context.l10n.commonClose,
+        onPressed: _cancelSelection,
+      ),
+      title: Text(context.l10n.notificationsSelectedCount(count)),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.delete_outline),
+          tooltip: context.l10n.commonDismiss,
+          onPressed: count > 0 ? () => _dismissSelected(vm) : null,
+        ),
+      ],
     );
   }
 
@@ -101,10 +169,17 @@ class _NotificationsContent extends StatelessWidget {
                 child: Center(child: LoadingIndicator()),
               );
             }
+            final entry = vm.entries[index];
             return _NotificationTile(
-              key: ValueKey(vm.entries[index].id),
-              entry: vm.entries[index],
-              onTap: () => vm.markAsOpened(vm.entries[index].notificationId),
+              key: ValueKey(entry.id),
+              entry: entry,
+              isSelectionMode: _selectionMode,
+              isSelected: _selectedIds.contains(entry.id),
+              onTap: _selectionMode
+                  ? () => _toggle(entry.id)
+                  : () => vm.markAsOpened(entry.notificationId),
+              onLongPress:
+                  _selectionMode ? null : () => _enterSelection(entry.id),
             );
           },
         ),
@@ -115,12 +190,18 @@ class _NotificationsContent extends StatelessWidget {
 
 class _NotificationTile extends StatelessWidget {
   final NotificationHistoryEntry entry;
+  final bool isSelectionMode;
+  final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _NotificationTile({
     super.key,
     required this.entry,
     required this.onTap,
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.onLongPress,
   });
 
   @override
@@ -128,11 +209,19 @@ class _NotificationTile extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return ListTile(
-      leading: Icon(
-        _categoryIcon(entry.category),
-        color: entry.opened ? cs.onSurfaceVariant : cs.primary,
-        size: AppDimensions.iconSizeAction,
-      ),
+      selected: isSelectionMode && isSelected,
+      selectedTileColor: cs.primary.withValues(alpha: 0.08),
+      leading: isSelectionMode
+          ? Icon(
+              isSelected ? Icons.check_circle : Icons.circle_outlined,
+              color: isSelected ? cs.primary : cs.outline,
+              size: AppDimensions.iconSizeAction,
+            )
+          : Icon(
+              _categoryIcon(entry.category),
+              color: entry.opened ? cs.onSurfaceVariant : cs.primary,
+              size: AppDimensions.iconSizeAction,
+            ),
       title: Text(
         entry.displayTitle,
         style: entry.opened ? AppTextStyles.bodyMedium : AppTextStyles.bodyBold,
@@ -154,6 +243,7 @@ class _NotificationTile extends StatelessWidget {
         ),
       ),
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 

@@ -22060,6 +22060,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte ladda aviseringar'**
   String get notificationsErrorLoad;
 
+  /// No description provided for @notificationsSelectedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} markerade'**
+  String notificationsSelectedCount(int count);
+
   /// Notifications view app-bar overflow action — bulk-marks every unread notification as read (BUT-952).
   ///
   /// In sv, this message translates to:

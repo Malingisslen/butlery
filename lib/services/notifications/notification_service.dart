@@ -660,6 +660,12 @@ class NotificationService extends BaseService {
     return _historyRepository.markAllAsOpenedForUser(_userId);
   }
 
+  /// BUT-1080: bulk-delete the given history notification doc IDs for the
+  /// current user. Returns the number deleted.
+  Future<int> deleteHistoryNotifications(List<String> docIds) async {
+    return _historyRepository.deleteByIds(docIds, _userId);
+  }
+
   /// Handles consent changes for FCMTokenManager-scoped cleanup (BUT-754).
   /// Sibling to FCMService._onConsentChanged which handles SDK + Firestore
   /// + memory; this one handles SecureStorage on revoke.

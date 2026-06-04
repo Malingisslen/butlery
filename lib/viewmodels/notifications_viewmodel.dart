@@ -104,4 +104,25 @@ class NotificationsViewModel extends BaseViewModel {
               AppLogger.warning('Failed to mark notification opened: $e')),
     );
   }
+
+  /// BUT-1080: optimistically removes the selected entries (by doc id) and
+  /// fires the batched delete. Returns the number removed locally.
+  Future<int> dismissSelected(Set<String> entryIds) async {
+    if (entryIds.isEmpty) return 0;
+    final removed = _entries.where((e) => entryIds.contains(e.id)).length;
+    if (removed == 0) return 0;
+
+    _entries = _entries.where((e) => !entryIds.contains(e.id)).toList();
+    notifyListeners();
+
+    unawaited(
+      _notificationService
+          .deleteHistoryNotifications(entryIds.toList())
+          .catchError((e) {
+        AppLogger.warning('Failed to dismiss notifications: $e');
+        return 0;
+      }),
+    );
+    return removed;
+  }
 }

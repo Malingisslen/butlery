@@ -210,4 +210,26 @@ class FirebaseNotificationHistoryRepository
         'Deleted ${snapshot.docs.length} notification_history for user $userId');
     return snapshot.docs.length;
   }
+
+  @override
+  Future<int> deleteByIds(List<String> docIds, String userId) async {
+    // Caller must be deleting their own notifications.
+    await validateOwnership(
+      currentUserId: requireCurrentUserId(),
+      resourceOwnerId: userId,
+      resourceType: collectionName,
+    );
+    if (docIds.isEmpty) return 0;
+
+    // Scope to the user's own docs, then keep only the requested IDs — a doc
+    // ID belonging to another user can never be deleted through this path.
+    final idSet = docIds.toSet();
+    final snapshot = await collection.where('userId', isEqualTo: userId).get();
+    final targets = snapshot.docs.where((d) => idSet.contains(d.id)).toList();
+    if (targets.isEmpty) return 0;
+    await batchDeleteDocs(firestore, targets);
+    AppLogger.info(
+        'Deleted ${targets.length} notification_history by id for user $userId');
+    return targets.length;
+  }
 }

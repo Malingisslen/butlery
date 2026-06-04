@@ -631,4 +631,60 @@ void main() {
       );
     });
   });
+
+  group('deleteByIds — BUT-1080 bulk dismiss (ownership-scoped)', () {
+    test('deletes only the requested ids, leaving the user other docs',
+        () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seed(firestore, id: 'a1', userId: _alice);
+      await _seed(firestore, id: 'a2', userId: _alice);
+      await _seed(firestore, id: 'a3', userId: _alice);
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      final removed = await repo.deleteByIds(['a1', 'a3'], _alice);
+
+      expect(removed, 2);
+      expect(await _doc(firestore, 'a1'), isNull);
+      expect(await _doc(firestore, 'a3'), isNull);
+      expect(await _doc(firestore, 'a2'), isNotNull,
+          reason: 'unselected doc must survive');
+    });
+
+    test('refuses cross-user calls (privacy)', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seed(firestore, id: 'b1', userId: _bob);
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      await expectLater(
+        repo.deleteByIds(['b1'], _bob),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect(await _doc(firestore, 'b1'), isNotNull,
+          reason: 'Alice must not delete Bob notifications');
+    });
+
+    test('ignores ids the caller does not own (defence in depth)', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seed(firestore, id: 'a1', userId: _alice);
+      await _seed(firestore, id: 'b1', userId: _bob);
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      // Alice (as herself) lists a1 + b1; b1 isn't hers → silently ignored.
+      final removed = await repo.deleteByIds(['a1', 'b1'], _alice);
+
+      expect(removed, 1);
+      expect(await _doc(firestore, 'a1'), isNull);
+      expect(await _doc(firestore, 'b1'), isNotNull,
+          reason: 'foreign id must never be deleted through this path');
+    });
+
+    test('returns 0 (no throw) for an empty id list', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seed(firestore, id: 'a1', userId: _alice);
+      final repo = _repo(firestore, authedUserId: _alice);
+
+      expect(await repo.deleteByIds([], _alice), 0);
+      expect(await _doc(firestore, 'a1'), isNotNull);
+    });
+  });
 }

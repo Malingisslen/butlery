@@ -33,4 +33,10 @@ abstract class NotificationHistoryRepository {
   /// Delete every `notification_history` doc owned by [userId]. GDPR Art. 17.
   /// Returns the number of docs deleted (0 if none).
   Future<int> deleteAllByUser(String userId);
+
+  /// BUT-1080: bulk-delete the [docIds] owned by [userId] in batched writes
+  /// (chunks of 500). Only docs that are BOTH in [docIds] AND owned by
+  /// [userId] are deleted — foreign IDs are silently ignored. Caller must
+  /// verify the authenticated uid matches [userId]. Returns the number deleted.
+  Future<int> deleteByIds(List<String> docIds, String userId);
 }

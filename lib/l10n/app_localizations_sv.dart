@@ -13114,6 +13114,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationsErrorLoad => 'Kunde inte ladda aviseringar';
 
   @override
+  String notificationsSelectedCount(int count) {
+    return '$count markerade';
+  }
+
+  @override
   String get notificationsMarkAllRead => 'Markera alla som lästa';
 
   @override

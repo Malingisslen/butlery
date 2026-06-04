@@ -8879,6 +8879,14 @@
   "notificationsTitle": "Aviseringar",
   "notificationsEmpty": "Inga aviseringar än",
   "notificationsErrorLoad": "Kunde inte ladda aviseringar",
+  "notificationsSelectedCount": "{count} markerade",
+  "@notificationsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationsMarkAllRead": "Markera alla som lästa",
   "@notificationsMarkAllRead": {
     "description": "Notifications view app-bar overflow action — bulk-marks every unread notification as read (BUT-952)."
