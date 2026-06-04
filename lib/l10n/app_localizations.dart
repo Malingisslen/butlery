@@ -10419,6 +10419,12 @@ abstract class AppLocalizations {
   /// **'Medlemmar ({count})'**
   String groupMembersCount(int count);
 
+  /// No description provided for @groupRemoveSelectedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort markerade ({count})'**
+  String groupRemoveSelectedCount(int count);
+
   /// No description provided for @groupNoDescription.
   ///
   /// In sv, this message translates to:

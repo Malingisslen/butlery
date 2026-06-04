@@ -3891,6 +3891,14 @@
   "groupMembers": "Medlemmar",
   "groupMembersAndInvitations": "Medlemmar & Inbjudningar",
   "groupMembersCount": "Medlemmar ({count})",
+  "groupRemoveSelectedCount": "Ta bort markerade ({count})",
+  "@groupRemoveSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@groupMembersCount": {
     "placeholders": {
       "count": {

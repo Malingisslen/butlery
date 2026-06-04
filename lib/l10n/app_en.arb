@@ -3892,6 +3892,14 @@
       }
     }
   },
+  "groupRemoveSelectedCount": "Remove selected ({count})",
+  "@groupRemoveSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "groupNoDescription": "No description",
   "groupNoMembersDescription": "Add friends to this group to get started.",
   "groupNoMembersYet": "No members yet",

@@ -6103,6 +6103,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String groupRemoveSelectedCount(int count) {
+    return 'Remove selected ($count)';
+  }
+
+  @override
   String get groupNoDescription => 'No description';
 
   @override

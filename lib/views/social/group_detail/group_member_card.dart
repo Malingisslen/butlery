@@ -18,8 +18,15 @@ class GroupMemberCard {
     BuildContext context,
     UserProfile member,
     FriendCategory group,
-    VoidCallback onRemoved,
-  ) {
+    VoidCallback onRemoved, {
+    // BUT-1038: multi-select removal. When [isSelectionMode] is true the tile
+    // becomes a selection toggle (only for removable members); long-press
+    // enters selection mode otherwise. Defaults preserve the original tile.
+    bool isSelectionMode = false,
+    bool isSelected = false,
+    VoidCallback? onSelectionToggle,
+    VoidCallback? onEnterSelection,
+  }) {
     final permissionService = ServiceLocator.get<PermissionService>();
     final canRemoveMember = _canRemoveMember(member, group, permissionService);
     // BUT-511: Apple 1.2 / Play UGC requires a report entry-point on every
@@ -30,6 +37,9 @@ class GroupMemberCard {
     final canReportMember =
         currentUserId != null && member.uid != currentUserId;
     final showMenu = canRemoveMember || canReportMember;
+    final cs = Theme.of(context).colorScheme;
+    // Only removable members participate in multi-select (owner/self excluded).
+    final selectable = canRemoveMember;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -37,11 +47,21 @@ class GroupMemberCard {
         vertical: AppDimensions.spacingXs,
       ),
       child: ListTile(
-        leading: SocialAvatarComponents.avatar(
-          size: ImageSize.medium,
-          displayName: member.displayName,
-          user: member,
-        ),
+        selected: isSelectionMode && isSelected,
+        selectedTileColor: cs.primary.withValues(alpha: 0.08),
+        onTap: isSelectionMode && selectable ? onSelectionToggle : null,
+        onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
+        leading: isSelectionMode && selectable
+            ? Icon(
+                isSelected ? Icons.check_circle : Icons.circle_outlined,
+                color: isSelected ? cs.primary : cs.outline,
+                size: AppDimensions.iconSizeL,
+              )
+            : SocialAvatarComponents.avatar(
+                size: ImageSize.medium,
+                displayName: member.displayName,
+                user: member,
+              ),
         title: Text(
           member.displayName,
           style: AppTextStyles.titleMedium,
@@ -98,7 +118,7 @@ class GroupMemberCard {
             ),
           ],
         ),
-        trailing: showMenu
+        trailing: showMenu && !isSelectionMode
             ? PopupMenuButton<String>(
                 onSelected: (value) async {
                   if (value == 'remove') {

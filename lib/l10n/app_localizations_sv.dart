@@ -6105,6 +6105,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String groupRemoveSelectedCount(int count) {
+    return 'Ta bort markerade ($count)';
+  }
+
+  @override
   String get groupNoDescription => 'Ingen beskrivning';
 
   @override
