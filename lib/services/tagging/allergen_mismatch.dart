@@ -27,4 +27,16 @@ class AllergenMismatch {
           entry.key,
     };
   }
+
+  /// BUT-1200: true when ANY recipe in [recipes] contains an unconfigured
+  /// allergen — the trigger for the import-flow banner on multi-recipe save
+  /// paths (e.g. the standalone photo-import picker), where one prompt covers
+  /// the whole batch rather than firing per recipe.
+  static bool anyUnconfigured(
+    Iterable<Recipe> recipes,
+    UserAllergenPreferences prefs,
+  ) =>
+      recipes.any(
+        (recipe) => unconfiguredContainedAllergens(recipe, prefs).isNotEmpty,
+      );
 }

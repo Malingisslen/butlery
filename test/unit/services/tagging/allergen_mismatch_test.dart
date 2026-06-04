@@ -91,4 +91,49 @@ void main() {
       expect(result, {'gluten', 'agg'});
     });
   });
+
+  // BUT-1200: the batch trigger for the photo-import multi-recipe save path —
+  // one banner covers the whole saved selection rather than firing per recipe.
+  group('AllergenMismatch.anyUnconfigured', () {
+    test('true when at least one recipe in the batch has an untracked CONTAINS',
+        () {
+      final batch = [
+        _recipe({'gluten': TriState.free}),
+        _recipe({'mjolk': TriState.contains}),
+      ];
+
+      expect(AllergenMismatch.anyUnconfigured(batch, _prefs(const {})), isTrue);
+    });
+
+    test('false when every contained allergen in the batch is already tracked',
+        () {
+      final batch = [
+        _recipe({'gluten': TriState.contains}),
+        _recipe({'mjolk': TriState.contains}),
+      ];
+
+      expect(
+        AllergenMismatch.anyUnconfigured(
+            batch, _prefs(const {'gluten', 'mjolk'})),
+        isFalse,
+      );
+    });
+
+    test('false for an empty batch', () {
+      expect(
+        AllergenMismatch.anyUnconfigured(const <Recipe>[], _prefs(const {})),
+        isFalse,
+      );
+    });
+
+    test('false when no recipe in the batch carries a tag result', () {
+      expect(
+        AllergenMismatch.anyUnconfigured(
+          [_recipe(null), _recipe(null)],
+          _prefs(const {}),
+        ),
+        isFalse,
+      );
+    });
+  });
 }

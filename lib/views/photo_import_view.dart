@@ -8,7 +8,10 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/heirloom_draft.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
+import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -160,6 +163,16 @@ class _PhotoImportViewContent extends StatelessWidget {
       ),
     );
     if (ok) {
+      // BUT-1200: non-blocking allergen-setup prompt when any saved recipe
+      // CONTAINS an allergen the user hasn't configured. Reuses the
+      // deterministic Phase-1 tags ImportManager attached during parse — no new
+      // LLM/network — and the app-level ScaffoldMessenger so it survives the
+      // pop below. Mirrors SmartImportView._navigateToRecipeEditor; one prompt
+      // covers the whole batch rather than firing per recipe.
+      final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+      if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
+        AllergenSetupBanner.show(context);
+      }
       viewModel.clearPhoto();
       Navigator.of(context).maybePop();
     }
