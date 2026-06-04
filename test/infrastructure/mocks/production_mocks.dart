@@ -4562,6 +4562,8 @@ class MockUrlImportViewModel extends Mock implements UrlImportViewModel {
   bool get canFetch => _canFetch;
   @override
   String get sourceUrl => _sourceUrl;
+  @override
+  bool get hasError => _error != null;
 
   // All methods left without implementation to allow stubbing with when()
 }

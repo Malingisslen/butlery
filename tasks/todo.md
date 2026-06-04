@@ -1,19 +1,19 @@
 # Sprint Backlog
 
-## Sprint: group-dialog draft widget test — 2026-06-04 (iter-122)
+## Sprint: URL/text import draft widget tests — 2026-06-04 (iter-123)
 
-Single-ticket Tier-A: BUT-1207 (my own filed follow-up from BUT-1203). Closes the
-codec-unreachable widget glue gap. Test-only, closes to Done.
+Single-ticket Tier-A: BUT-1204 (my own filed follow-up from BUT-904). Closes the
+URL+text import draft view-glue gap. Test-only, closes to Done.
 
-- [x] **A1. Widget test: restore + friend-resolution + drop-unresolved + save** `[Tier A]` — `test/widget/social/groups/create_group_dialog_draft_test.dart`: 3 tests green. Drop test strengthened per code-reviewer (re-save → assert friendIds filtered, not just resolve-positive). (BUT-1207)
+- [x] **A1. Widget tests: URL + text import draft restore + save** `[Tier A]` — `test/widget/views/import_draft_persistence_test.dart`: 4 tests green (restore-on-mount + save-on-keystroke per surface, byte-identical keys). (BUT-1204)
+- [x] **A2. Shared-infra fix** `[Tier A]` — `production_mocks.dart`: `MockUrlImportViewModel` was missing the derived `hasError` getter (returned null → build crash). Added `bool get hasError => _error != null` (additive-safe; mirrors sibling mocks). (BUT-1204)
 
-**Note:** clear-on-commit (4th sub-bullet) not widget-driven — disproportionate showDialog/
-Navigator.pop scaffolding for a one-line wiring whose clear primitive is unit-proven (codec +
-AutoSaveManager.clear) and whose pattern is identical to 3 shipped surfaces. The codec-
-unreachable glue (load→setState + friend resolution) IS now covered — that was the gap's purpose.
+**Note:** clear-on-commit not widget-driven (same as BUT-1207) — disproportionate
+fetch/parse-success + navigation scaffolding for a one-line wiring whose clear primitive
+is unit-proven. Restore + save (the codec-unreachable glue) covered.
 
 ### Awaiting Malin — In Review (carried)
 BUT-904 (epic), BUT-1198, BUT-1199, BUT-1037, BUT-1039, BUT-918, BUT-912, BUT-946, BUT-1079.
 
 ---
-## ARCHIVED — iter-121 (BUT-1201 a11y announcements — Done; premature pace-down caught by Malin, lesson logged) · iter-120 (BUT-1208 — Done) · iter-119 (BUT-1200 — Done) · iter-118 (BUT-1203 — Done) · iter-117 (CI tooling — Done) · iter-116 (BUT-904 — In Review)
+## ARCHIVED — iter-122 (BUT-1207 group-dialog draft test — Done) · iter-121 (BUT-1201 a11y — Done) · iter-120 (BUT-1208 — Done) · iter-119 (BUT-1200 — Done) · iter-118 (BUT-1203 — Done) · iter-117 (CI tooling — Done) · iter-116 (BUT-904 — In Review)
