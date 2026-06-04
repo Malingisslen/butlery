@@ -82,6 +82,16 @@ class ImportEventsTracker extends BaseTracker {
     );
   }
 
+  /// BUT-1037: user dismissed the "doesn't look like a recipe" warn dialog
+  /// instead of forcing the import — one paid LLM parse avoided. [source]
+  /// identifies the import surface (e.g. `text_paste`).
+  Future<void> logWarnDialogCancelled({required String source}) async {
+    await logEvent(
+      name: AnalyticsEvents.importWarnDialogCancelled,
+      parameters: {'source': source},
+    );
+  }
+
   /// Log extraction error (exempt from consent - error tracking)
   Future<void> logExtractionError({
     required String url,

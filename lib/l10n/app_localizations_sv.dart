@@ -3800,6 +3800,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importAllergenSetupCta => 'Ställ in';
 
   @override
+  String get importNotRecipeTitle => 'Ser inte ut som ett recept';
+
+  @override
+  String get importNotRecipeBody =>
+      'Den här texten verkar inte innehålla ett recept. Att importera ändå ger kanske inget användbart resultat. Importera ändå?';
+
+  @override
+  String get importNotRecipeConfirm => 'Importera ändå';
+
+  @override
   String get importCancelConfirm => 'Avbryt import';
 
   @override

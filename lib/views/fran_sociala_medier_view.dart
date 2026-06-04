@@ -15,6 +15,8 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -160,6 +162,21 @@ class _FranSocialaMedierViewContentState
 
   Future<void> _parseAndNavigate(BuildContext context) async {
     final viewModel = context.read<TextImportViewModel>();
+
+    // BUT-1037: cheap recipe-likeness gate — warn before spending a paid LLM
+    // parse on text that clearly isn't a recipe. The user can always override,
+    // so edge-case recipes are never blocked.
+    if (!RecipeTextHeuristic.looksLikeRecipe(viewModel.inputText)) {
+      final proceed = await _confirmNonRecipeImport(context);
+      if (!proceed) {
+        ServiceLocator.tryGet<AnalyticsService>()
+            ?.import
+            .logWarnDialogCancelled(source: 'text_paste');
+        return;
+      }
+      if (!context.mounted) return;
+    }
+
     final success = await viewModel.parseText();
 
     if (success && context.mounted) {
@@ -180,6 +197,30 @@ class _FranSocialaMedierViewContentState
       // Use UtilityComponents.showErrorSnackbar
       UtilityComponents.showErrorSnackbar(context, viewModel.error!);
     }
+  }
+
+  /// BUT-1037: non-blocking confirm shown when the pasted text fails the
+  /// recipe-likeness heuristic. Returns true if the user chooses to import
+  /// anyway (proceed to the paid LLM parse), false to back out.
+  Future<bool> _confirmNonRecipeImport(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.l10n.importNotRecipeTitle),
+        content: Text(dialogContext.l10n.importNotRecipeBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(dialogContext.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(dialogContext.l10n.importNotRecipeConfirm),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   @override

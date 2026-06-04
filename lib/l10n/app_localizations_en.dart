@@ -3798,6 +3798,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importAllergenSetupCta => 'Set up';
 
   @override
+  String get importNotRecipeTitle => 'Doesn\'t look like a recipe';
+
+  @override
+  String get importNotRecipeBody =>
+      'This text doesn\'t look like it contains a recipe. Importing it anyway may not give a useful result. Import anyway?';
+
+  @override
+  String get importNotRecipeConfirm => 'Import anyway';
+
+  @override
   String get importCancelConfirm => 'Cancel import';
 
   @override

@@ -6501,6 +6501,24 @@ abstract class AppLocalizations {
   /// **'Ställ in'**
   String get importAllergenSetupCta;
 
+  /// No description provided for @importNotRecipeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ser inte ut som ett recept'**
+  String get importNotRecipeTitle;
+
+  /// No description provided for @importNotRecipeBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den här texten verkar inte innehålla ett recept. Att importera ändå ger kanske inget användbart resultat. Importera ändå?'**
+  String get importNotRecipeBody;
+
+  /// No description provided for @importNotRecipeConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera ändå'**
+  String get importNotRecipeConfirm;
+
   /// No description provided for @importCancelConfirm.
   ///
   /// In sv, this message translates to:
