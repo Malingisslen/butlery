@@ -5564,6 +5564,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Others can find you through your email address';
 
   @override
+  String get profileShowOnlineStatus => 'Show online status';
+
+  @override
+  String get profileShowOnlineStatusDescription =>
+      'Friends see a green dot and when you were last active. Turn off to stay invisible.';
+
+  @override
   String get profileTheme => 'Theme';
 
   @override

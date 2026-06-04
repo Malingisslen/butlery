@@ -491,6 +491,57 @@ void main() {
       });
     });
 
+    group('Online status privacy (BUT-912)', () {
+      test('defaults to true (visible) when not specified', () {
+        expect(testProfile.showOnlineStatus, isTrue);
+      });
+
+      test('copyWith updates the flag without clobbering other fields', () {
+        final updated = testProfile.copyWith(showOnlineStatus: false);
+        expect(updated.showOnlineStatus, isFalse);
+        expect(updated.uid, equals(testProfile.uid)); // unchanged
+        expect(updated.isOnline, equals(testProfile.isOnline)); // unchanged
+      });
+
+      test('round-trips through JSON for both values', () {
+        for (final value in [true, false]) {
+          final profile = testProfile.copyWith(showOnlineStatus: value);
+          expect(UserProfile.fromJson(profile.toJson()).showOnlineStatus,
+              equals(value));
+        }
+      });
+
+      test('lastActiveText is empty when opted out (no last-seen leak)', () {
+        // BUT-912: a hidden user must not leak a "last active" signal even
+        // though lastActiveAt still carries a value.
+        final hidden = testProfile.copyWith(
+          showOnlineStatus: false,
+          isOnline: false,
+        );
+        expect(hidden.lastActiveText, isEmpty);
+      });
+
+      test('toFirestore includes the flag', () {
+        expect(
+            testProfile
+                .copyWith(showOnlineStatus: false)
+                .toFirestore()['showOnlineStatus'],
+            isFalse);
+      });
+
+      test('backward-compat: absent key deserializes to true', () {
+        // Existing accounts predate the field — they must stay visible.
+        final json = {
+          'uid': 'u',
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+        };
+        expect(UserProfile.fromJson(json).showOnlineStatus, isTrue);
+      });
+    });
+
     group('Firestore Serialization', () {
       test('should serialize to Firestore format', () {
         // Act

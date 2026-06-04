@@ -414,6 +414,26 @@ void main() {
         // Assert
         verifyNever(() => mockUserRepository.updateOnlineStatus(any(), any()));
       });
+
+      test(
+          'writes NO presence at all when the user opted out of online-status '
+          'visibility (BUT-912)', () async {
+        // Arrange — profile with the privacy opt-out set.
+        when(() => mockAuthRepository.authStateChanges())
+            .thenAnswer((_) => Stream.value(mockUser));
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => testProfile.copyWith(showOnlineStatus: false),
+        );
+
+        await userService.initialize();
+
+        // Act — report active, but the opt-out must suppress the write entirely
+        // so lastActiveAt doesn't advance and leak a "last seen" signal.
+        await userService.updateOnlineStatus(true);
+
+        // Assert — no presence write happened, in either direction.
+        verifyNever(() => mockUserRepository.updateOnlineStatus(any(), any()));
+      });
     });
 
     group('Profile Statistics', () {

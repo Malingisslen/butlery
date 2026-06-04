@@ -3522,6 +3522,8 @@
   "profileSaveProfile": "Save profile",
   "profileSearchableByEmail": "Searchable by email",
   "profileSearchableByEmailDescription": "Others can find you through your email address",
+  "profileShowOnlineStatus": "Show online status",
+  "profileShowOnlineStatusDescription": "Friends see a green dot and when you were last active. Turn off to stay invisible.",
   "profileTheme": "Theme",
   "profileThemeChangedTo": "Theme changed to {theme}",
   "@profileThemeChangedTo": {

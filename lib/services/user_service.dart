@@ -114,6 +114,7 @@ class UserService extends ChangeNotifier
     CookingSkillLevel? cookingSkillLevel,
     List<String>? cuisineAffinities,
     String? bio,
+    bool? showOnlineStatus,
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
@@ -151,6 +152,15 @@ class UserService extends ChangeNotifier
         if (bio != null) {
           profile = profile.copyWith(bio: bio);
         }
+        if (showOnlineStatus != null) {
+          // BUT-912: when the user turns visibility off, also clear isOnline so
+          // the live dot disappears the moment they save (not just on the next
+          // heartbeat). The presence gate then keeps them dark.
+          profile = profile.copyWith(
+            showOnlineStatus: showOnlineStatus,
+            isOnline: showOnlineStatus ? profile.isOnline : false,
+          );
+        }
       } else {
         final now = clock.now();
         profile = UserProfile(
@@ -165,6 +175,7 @@ class UserService extends ChangeNotifier
           joinedAt: now,
           lastActiveAt: now,
           isOnline: true,
+          showOnlineStatus: showOnlineStatus ?? true,
           cookingSkillLevel: cookingSkillLevel,
           cuisineAffinities: cuisineAffinities,
           bio: bio,
@@ -287,6 +298,12 @@ class UserService extends ChangeNotifier
   Future<void> updateOnlineStatus(bool isOnline) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) return;
+
+    // BUT-912: respect the online-status privacy opt-out. When visibility is
+    // off we write NO presence at all — not even lastActiveAt — so neither the
+    // dot nor a "last active" time advances. isOnline was already cleared to
+    // false when the user saved the toggle, so they stay fully dark.
+    if (!_currentUserProfile!.showOnlineStatus) return;
 
     try {
       await _repository.updateOnlineStatus(userId, isOnline);

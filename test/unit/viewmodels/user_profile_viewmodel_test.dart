@@ -143,6 +143,7 @@ void main() {
             cookingSkillLevel: any(named: 'cookingSkillLevel'),
             cuisineAffinities: any(named: 'cuisineAffinities'),
             bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
           )).thenAnswer((_) async => UserProfileBuilder.build());
 
       when(() => mockImagePickerService.pickImage(any()))
@@ -269,6 +270,16 @@ void main() {
         viewModel.updateAllowEmailSearch(true);
 
         expect(viewModel.allowEmailSearch, isTrue);
+        expect(viewModel.hasUnsavedChanges, isTrue);
+      });
+
+      test('should update show-online-status preference and mark dirty', () {
+        // BUT-912: pins that _profileFieldsEqual includes showOnlineStatus, so
+        // toggling it alone is detected as an unsaved change (else the save
+        // button stays disabled / the toggle gets clobbered on reload).
+        viewModel.updateShowOnlineStatus(false);
+
+        expect(viewModel.showOnlineStatus, isFalse);
         expect(viewModel.hasUnsavedChanges, isTrue);
       });
     });
@@ -490,6 +501,7 @@ void main() {
               cookingSkillLevel: any(named: 'cookingSkillLevel'),
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
             )).thenAnswer((_) async => savedProfile);
 
         final result = await viewModel.saveProfile();
@@ -504,6 +516,7 @@ void main() {
               cookingSkillLevel: any(named: 'cookingSkillLevel'),
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
             )).called(1);
       });
 
@@ -521,6 +534,7 @@ void main() {
               cookingSkillLevel: any(named: 'cookingSkillLevel'),
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
             ));
       });
 
@@ -555,6 +569,7 @@ void main() {
               cookingSkillLevel: any(named: 'cookingSkillLevel'),
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
             )).thenAnswer((_) async => savedProfile);
 
         final result = await viewModel.saveProfile();
@@ -574,6 +589,7 @@ void main() {
               cookingSkillLevel: any(named: 'cookingSkillLevel'),
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
+              showOnlineStatus: any(named: 'showOnlineStatus'),
             )).thenAnswer((_) async => null);
 
         mockUserService.setUserState(error: 'Network error');

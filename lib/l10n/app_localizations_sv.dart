@@ -5567,6 +5567,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'Andra kan hitta dig genom din e-postadress';
 
   @override
+  String get profileShowOnlineStatus => 'Visa onlinestatus';
+
+  @override
+  String get profileShowOnlineStatusDescription =>
+      'Vänner ser en grön prick och när du senast var aktiv. Stäng av för att vara osynlig.';
+
+  @override
   String get profileTheme => 'Tema';
 
   @override

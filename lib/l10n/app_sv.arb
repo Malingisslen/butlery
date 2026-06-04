@@ -3528,6 +3528,8 @@
   "profileSaveProfile": "Spara profil",
   "profileSearchableByEmail": "Sökbar via e-post",
   "profileSearchableByEmailDescription": "Andra kan hitta dig genom din e-postadress",
+  "profileShowOnlineStatus": "Visa onlinestatus",
+  "profileShowOnlineStatusDescription": "Vänner ser en grön prick och när du senast var aktiv. Stäng av för att vara osynlig.",
   "profileTheme": "Tema",
   "profileThemeChangedTo": "Tema ändrat till {theme}",
   "@profileThemeChangedTo": {

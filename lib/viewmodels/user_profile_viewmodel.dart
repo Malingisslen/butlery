@@ -51,6 +51,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   String? get avatarUrl => _editedProfile?.avatarUrl;
   bool get isSearchable => _editedProfile?.isSearchable ?? true;
   bool get allowEmailSearch => _editedProfile?.allowEmailSearch ?? false;
+  bool get showOnlineStatus => _editedProfile?.showOnlineStatus ?? true;
   bool get isLoading => _isUploadingAvatar;
   bool get isUploadingAvatar => _isUploadingAvatar;
   String? get displayNameError => _displayNameError;
@@ -96,6 +97,15 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   void updateAllowEmailSearch(bool value) {
     _editedProfile = _editedProfile?.copyWith(allowEmailSearch: value);
+    notifyListeners();
+  }
+
+  void updateShowOnlineStatus(bool value) {
+    // BUT-912: turning visibility off also clears the live dot on save, so the
+    // user disappears immediately rather than only on their next presence beat.
+    _editedProfile = value
+        ? _editedProfile?.copyWith(showOnlineStatus: true)
+        : _editedProfile?.copyWith(showOnlineStatus: false, isOnline: false);
     notifyListeners();
   }
 
@@ -233,6 +243,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
                 ? null
                 : edited.cuisineAffinities,
             bio: edited.bio?.isEmpty == true ? null : edited.bio,
+            showOnlineStatus: edited.showOnlineStatus,
           );
 
           if (updatedProfile != null) {
@@ -340,7 +351,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         a.allowEmailSearch == b.allowEmailSearch &&
         a.cookingSkillLevel == b.cookingSkillLevel &&
         listEquals(a.cuisineAffinities ?? [], b.cuisineAffinities ?? []) &&
-        a.bio.orEmpty() == b.bio.orEmpty();
+        a.bio.orEmpty() == b.bio.orEmpty() &&
+        a.showOnlineStatus == b.showOnlineStatus;
   }
 
   bool _hasDisplayNameChanged() {

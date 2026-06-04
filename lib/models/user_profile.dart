@@ -37,6 +37,11 @@ class UserProfile with JsonSerializableMixin {
   final DateTime joinedAt;
   final DateTime lastActiveAt;
   final bool isOnline;
+
+  /// BUT-912: when false the user opts out of online-status visibility — the
+  /// presence write is forced offline so no one sees their dot or last-active.
+  /// Defaults true (existing behaviour) for accounts created before this field.
+  final bool showOnlineStatus;
   final String? fcmToken;
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
@@ -74,6 +79,7 @@ class UserProfile with JsonSerializableMixin {
     required this.joinedAt,
     required this.lastActiveAt,
     this.isOnline = false,
+    this.showOnlineStatus = true,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
@@ -111,6 +117,7 @@ class UserProfile with JsonSerializableMixin {
     DateTime? joinedAt,
     DateTime? lastActiveAt,
     bool? isOnline,
+    bool? showOnlineStatus,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
     bool? notificationsEnabled,
@@ -137,6 +144,7 @@ class UserProfile with JsonSerializableMixin {
       joinedAt: joinedAt ?? this.joinedAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       isOnline: isOnline ?? this.isOnline,
+      showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
       fcmToken: fcmToken == _sentinel ? this.fcmToken : fcmToken as String?,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt == _sentinel
           ? this.fcmTokenUpdatedAt
@@ -190,6 +198,10 @@ class UserProfile with JsonSerializableMixin {
 
   /// Time since last active
   String get lastActiveText {
+    // BUT-912: a user who opted out of online-status visibility must not leak a
+    // "last active" signal either — return empty so no presence text renders.
+    if (!showOnlineStatus) return '';
+
     final now = clock.now();
     final difference = now.difference(lastActiveAt);
 
@@ -250,6 +262,7 @@ class UserProfile with JsonSerializableMixin {
       'joinedAt': AppTimestamp.fromDateTime(joinedAt).toFirestore(),
       'lastActiveAt': AppTimestamp.fromDateTime(lastActiveAt).toFirestore(),
       'isOnline': isOnline,
+      'showOnlineStatus': showOnlineStatus,
       'cookingSkillLevel': cookingSkillLevel?.name,
       'cuisineAffinities': cuisineAffinities,
       'isHidden': isHidden,
@@ -292,6 +305,7 @@ class UserProfile with JsonSerializableMixin {
       'joinedAt': serializeDateTime(joinedAt),
       'lastActiveAt': serializeDateTime(lastActiveAt),
       'isOnline': isOnline,
+      'showOnlineStatus': showOnlineStatus,
       // Notification fields
       'fcmToken': fcmToken,
       'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
@@ -333,6 +347,9 @@ class UserProfile with JsonSerializableMixin {
       lastActiveAt:
           utils.SerializationUtils.safeDateTime(data, 'lastActiveAt').orNow(),
       isOnline: utils.SerializationUtils.safeBool(data, 'isOnline'),
+      showOnlineStatus: utils.SerializationUtils.safeBool(
+          data, 'showOnlineStatus',
+          defaultValue: true),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
       fcmTokenUpdatedAt:
@@ -384,6 +401,9 @@ class UserProfile with JsonSerializableMixin {
           utils.SerializationUtils.parseDateTimeValue(json['lastActiveAt'])
               .orNow(),
       isOnline: utils.SerializationUtils.safeBool(json, 'isOnline'),
+      showOnlineStatus: utils.SerializationUtils.safeBool(
+          json, 'showOnlineStatus',
+          defaultValue: true),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
           json['fcmTokenUpdatedAt']),

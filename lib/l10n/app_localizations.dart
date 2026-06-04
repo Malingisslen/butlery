@@ -9555,6 +9555,18 @@ abstract class AppLocalizations {
   /// **'Andra kan hitta dig genom din e-postadress'**
   String get profileSearchableByEmailDescription;
 
+  /// No description provided for @profileShowOnlineStatus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa onlinestatus'**
+  String get profileShowOnlineStatus;
+
+  /// No description provided for @profileShowOnlineStatusDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner ser en grön prick och när du senast var aktiv. Stäng av för att vara osynlig.'**
+  String get profileShowOnlineStatusDescription;
+
   /// No description provided for @profileTheme.
   ///
   /// In sv, this message translates to:
