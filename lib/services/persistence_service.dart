@@ -91,6 +91,9 @@ class PersistenceService extends BaseService {
   static const String _recipeExcludedPersonalTagFiltersKey =
       'butlery_recipe_excluded_personaltag_filters';
   static const String _recipeFavoritesOnlyKey = 'butlery_recipe_favorites_only';
+  // BUT-1028: persist recipe-list scroll offset across navigations.
+  static const String _recipeListScrollOffsetKey =
+      'butlery_recipe_list_scroll_offset';
 
   /// Provides access to the SharedPreferences instance for cross-platform local storage operations.
   /// This getter manages the SharedPreferences singleton instance providing the underlying
@@ -536,6 +539,29 @@ class PersistenceService extends BaseService {
     } catch (e) {
       AppLogger.error(
           'Failed to save recipe favorites-only flag', e, 'Persistence');
+    }
+  }
+
+  /// BUT-1028: recipe-list scroll offset (logical pixels). Returns 0.0 when
+  /// nothing has been persisted yet — the caller treats <= 0 as "no restore".
+  Future<double> getRecipeListScrollOffset() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getDouble(_recipeListScrollOffsetKey) ?? 0.0;
+    } catch (e) {
+      AppLogger.error(
+          'Failed to load recipe-list scroll offset', e, 'Persistence');
+      return 0.0;
+    }
+  }
+
+  Future<void> setRecipeListScrollOffset(double offset) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setDouble(_recipeListScrollOffsetKey, offset);
+    } catch (e) {
+      AppLogger.error(
+          'Failed to save recipe-list scroll offset', e, 'Persistence');
     }
   }
 

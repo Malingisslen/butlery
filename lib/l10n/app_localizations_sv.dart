@@ -3793,6 +3793,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importAddStep => 'Lägg till steg';
 
   @override
+  String get importAllergenSetupBanner =>
+      'Det här receptet innehåller allergener du inte ställt in. Ställ in dina allergener så flaggar vi dem åt dig automatiskt.';
+
+  @override
+  String get importAllergenSetupCta => 'Ställ in';
+
+  @override
   String get importCancelConfirm => 'Avbryt import';
 
   @override

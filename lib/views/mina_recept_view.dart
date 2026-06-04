@@ -70,6 +70,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
+import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -170,10 +171,71 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   final CookingSessionStreamHolder _sessionsHolder =
       CookingSessionStreamHolder();
 
+  /// BUT-1028: scroll-offset persistence for the recipe list. The controller is
+  /// shared by both view modes via an ambient [PrimaryScrollController] (only
+  /// one of the grid/list is mounted at a time), so a single controller covers
+  /// both without threading one through the shared `responsiveListGrid` helper.
+  final ScrollController _scrollController = ScrollController();
+  late final PersistenceService _persistence;
+
+  /// 300ms debounce mirroring BUT-1018's filter-write debounce, so rapid
+  /// scrolling doesn't burn a prefs write per frame.
+  Timer? _scrollPersistTimer;
+
+  /// Pending offset to restore once the list has laid out enough extent. Held
+  /// across post-frame retries because recipe data loads asynchronously after
+  /// first paint, so the scroll extent is 0 on the earliest frames.
+  double? _pendingRestoreOffset;
+  int _restoreAttempts = 0;
+
   @override
   void dispose() {
+    _scrollPersistTimer?.cancel();
+    _scrollController.removeListener(_onScroll);
+    // Best-effort flush of the final offset on teardown (route change / pop)
+    // before the controller detaches, so we don't lose the last scroll. The
+    // listener is removed first so no later debounce can overwrite this write.
+    if (_scrollController.hasClients) {
+      _persistence.setRecipeListScrollOffset(_scrollController.offset);
+    }
+    _scrollController.dispose();
     _sessionsHolder.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
+    _scrollPersistTimer?.cancel();
+    _scrollPersistTimer = Timer(
+      const Duration(milliseconds: 300),
+      () => _persistence.setRecipeListScrollOffset(offset),
+    );
+  }
+
+  Future<void> _restoreScrollOffset() async {
+    final saved = await _persistence.getRecipeListScrollOffset();
+    if (!mounted || saved <= 0) return;
+    _pendingRestoreOffset = saved;
+    _applyPendingRestore();
+  }
+
+  /// Jumps to the saved offset once the list reports a non-zero max extent.
+  /// Retries across frames (data loads async) up to a bounded cap, then gives
+  /// up — restore is best-effort ("within a few hundred px"), never blocking.
+  void _applyPendingRestore() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _pendingRestoreOffset == null) return;
+      final notReady = !_scrollController.hasClients ||
+          _scrollController.position.maxScrollExtent <= 0;
+      if (notReady) {
+        if (_restoreAttempts++ < 30) _applyPendingRestore();
+        return;
+      }
+      final max = _scrollController.position.maxScrollExtent;
+      _scrollController.jumpTo(_pendingRestoreOffset!.clamp(0.0, max));
+      _pendingRestoreOffset = null;
+    });
   }
 
   /// Initialize state and load social/recipe data after widget mount.
@@ -185,6 +247,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     _seasonalHeroService = ServiceLocator.get<SeasonalHeroService>();
     _seasonalMonthFuture = _seasonalHeroService.getCurrentMonth();
 
+    // BUT-1028: scroll-offset persistence.
+    _persistence = ServiceLocator.get<PersistenceService>();
+    _scrollController.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _safeLoadSocialData();
@@ -193,6 +259,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         context.read<PersonalTagViewModel>().initialize();
         // Load search history for recent search chips
         context.read<RecipeListViewModel>().loadSearchHistory();
+        // BUT-1028: restore the previous scroll position (best-effort).
+        _restoreScrollOffset();
       }
     });
   }
@@ -513,48 +581,62 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
           ],
           Expanded(
-            child: viewModel.isGridView
-                ? GridView.builder(
-                    padding: AppDimensions.responsiveContentPadding(context),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: LayoutComponents.isMobile(context)
-                          ? 2
-                          : LayoutComponents.isTablet(context)
-                              ? 3
-                              : 4,
-                      crossAxisSpacing:
-                          AppDimensions.responsiveGridSpacing(context),
-                      mainAxisSpacing:
-                          AppDimensions.responsiveGridSpacing(context),
-                      childAspectRatio: 0.75,
+            // BUT-1028: ambient controller so both grid and list modes attach
+            // to the same ScrollController for offset persistence/restore.
+            child: PrimaryScrollController(
+              controller: _scrollController,
+              child: viewModel.isGridView
+                  ? GridView.builder(
+                      // Distinct key so toggling view mode tears down this
+                      // Scrollable before the list-mode one attaches to the
+                      // shared controller (avoids a transient double-attach).
+                      key: const ValueKey('recipe-grid-scrollable'),
+                      primary: true,
+                      padding: AppDimensions.responsiveContentPadding(context),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: LayoutComponents.isMobile(context)
+                            ? 2
+                            : LayoutComponents.isTablet(context)
+                                ? 3
+                                : 4,
+                        crossAxisSpacing:
+                            AppDimensions.responsiveGridSpacing(context),
+                        mainAxisSpacing:
+                            AppDimensions.responsiveGridSpacing(context),
+                        childAspectRatio: 0.75,
+                      ),
+                      itemCount: recipes.length,
+                      itemBuilder: (context, index) => MinaReceptRecipeCard(
+                        viewModel: viewModel,
+                        recipe: recipes[index],
+                        allergenPrefs: allergenPrefs,
+                        onDelete: (recipe) =>
+                            _handleDeleteWithUndo(viewModel, recipe),
+                        index: index,
+                      ),
+                    )
+                  : KeyedSubtree(
+                      key: const ValueKey('recipe-list-scrollable'),
+                      child: LayoutComponents.responsiveListGrid(
+                        items: recipes,
+                        tabletColumns: 2,
+                        desktopColumns: 3,
+                        spacing: AppDimensions.responsiveGridSpacing(context),
+                        padding:
+                            AppDimensions.responsiveContentPadding(context),
+                        shrinkWrap: false,
+                        gridChildAspectRatio: 0.75,
+                        animate: true,
+                        itemBuilder: (context, recipe) => MinaReceptRecipeCard(
+                          viewModel: viewModel,
+                          recipe: recipe,
+                          allergenPrefs: allergenPrefs,
+                          onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
+                          index: recipes.indexOf(recipe),
+                        ),
+                      ),
                     ),
-                    itemCount: recipes.length,
-                    itemBuilder: (context, index) => MinaReceptRecipeCard(
-                      viewModel: viewModel,
-                      recipe: recipes[index],
-                      allergenPrefs: allergenPrefs,
-                      onDelete: (recipe) =>
-                          _handleDeleteWithUndo(viewModel, recipe),
-                      index: index,
-                    ),
-                  )
-                : LayoutComponents.responsiveListGrid(
-                    items: recipes,
-                    tabletColumns: 2,
-                    desktopColumns: 3,
-                    spacing: AppDimensions.responsiveGridSpacing(context),
-                    padding: AppDimensions.responsiveContentPadding(context),
-                    shrinkWrap: false,
-                    gridChildAspectRatio: 0.75,
-                    animate: true,
-                    itemBuilder: (context, recipe) => MinaReceptRecipeCard(
-                      viewModel: viewModel,
-                      recipe: recipe,
-                      allergenPrefs: allergenPrefs,
-                      onDelete: (r) => _handleDeleteWithUndo(viewModel, r),
-                      index: recipes.indexOf(recipe),
-                    ),
-                  ),
+            ),
           ),
           if (viewModel.canLoadMore)
             Padding(

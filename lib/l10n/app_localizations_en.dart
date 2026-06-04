@@ -3791,6 +3791,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importAddStep => 'Add step';
 
   @override
+  String get importAllergenSetupBanner =>
+      'This recipe contains allergens you haven\'t set up. Configure your allergens and we\'ll flag them for you automatically.';
+
+  @override
+  String get importAllergenSetupCta => 'Set up';
+
+  @override
   String get importCancelConfirm => 'Cancel import';
 
   @override

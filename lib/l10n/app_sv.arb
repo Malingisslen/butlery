@@ -2426,6 +2426,8 @@
   "imageUseCameraForNewPhoto": "Använd kameran för att ta en ny bild",
   "importAddIngredient": "Lägg till ingrediens",
   "importAddStep": "Lägg till steg",
+  "importAllergenSetupBanner": "Det här receptet innehåller allergener du inte ställt in. Ställ in dina allergener så flaggar vi dem åt dig automatiskt.",
+  "importAllergenSetupCta": "Ställ in",
   "importCancelConfirm": "Avbryt import",
   "importCancelMessage": "Är du säker på att du vill avbryta? Alla val kommer att förloras.",
   "importCancelTitle": "Avbryt import?",

@@ -531,5 +531,31 @@ void main() {
         expect(result, isTrue);
       });
     });
+
+    // BUT-1028: recipe-list scroll-offset persistence (View-layer restore).
+    group('Recipe-list scroll offset', () {
+      test('returns 0.0 when nothing has been persisted', () async {
+        SharedPreferences.setMockInitialValues({});
+
+        expect(await service.getRecipeListScrollOffset(), 0.0);
+      });
+
+      test('round-trips a saved offset', () async {
+        SharedPreferences.setMockInitialValues({});
+
+        await service.setRecipeListScrollOffset(1234.5);
+
+        expect(await service.getRecipeListScrollOffset(), 1234.5);
+      });
+
+      test('overwrites a previous offset', () async {
+        SharedPreferences.setMockInitialValues({});
+
+        await service.setRecipeListScrollOffset(800.0);
+        await service.setRecipeListScrollOffset(42.0);
+
+        expect(await service.getRecipeListScrollOffset(), 42.0);
+      });
+    });
   });
 }

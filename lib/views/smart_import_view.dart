@@ -14,6 +14,9 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/tagging/allergen_mismatch.dart';
+import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
@@ -530,6 +533,17 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   }
 
   void _navigateToRecipeEditor(BuildContext context, Recipe recipe) {
+    // BUT-1198: non-blocking allergen-setup prompt when the imported recipe
+    // contains an allergen the user hasn't configured. Reuses the deterministic
+    // Phase-1 allergen tags ImportManager already attached during import — no
+    // new LLM/network call. Shown via the app-level ScaffoldMessenger so it
+    // survives the pushReplacement below and never gates the import.
+    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+    if (AllergenMismatch.unconfiguredContainedAllergens(recipe, prefs)
+        .isNotEmpty) {
+      AllergenSetupBanner.show(context);
+    }
+
     // Navigate to recipe editor with the imported recipe
     Navigator.of(context).pushReplacementNamed(
       Routes.manualEntry,

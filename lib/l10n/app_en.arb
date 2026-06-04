@@ -2420,6 +2420,8 @@
   "imageUseCameraForNewPhoto": "Use the camera to take a new photo",
   "importAddIngredient": "Add ingredient",
   "importAddStep": "Add step",
+  "importAllergenSetupBanner": "This recipe contains allergens you haven't set up. Configure your allergens and we'll flag them for you automatically.",
+  "importAllergenSetupCta": "Set up",
   "importCancelConfirm": "Cancel import",
   "importCancelMessage": "Are you sure you want to cancel? All selections will be lost.",
   "importCancelTitle": "Cancel import?",

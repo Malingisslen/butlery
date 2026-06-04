@@ -6489,6 +6489,18 @@ abstract class AppLocalizations {
   /// **'Lägg till steg'**
   String get importAddStep;
 
+  /// No description provided for @importAllergenSetupBanner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här receptet innehåller allergener du inte ställt in. Ställ in dina allergener så flaggar vi dem åt dig automatiskt.'**
+  String get importAllergenSetupBanner;
+
+  /// No description provided for @importAllergenSetupCta.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in'**
+  String get importAllergenSetupCta;
+
   /// No description provided for @importCancelConfirm.
   ///
   /// In sv, this message translates to:
