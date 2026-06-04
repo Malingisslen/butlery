@@ -8413,6 +8413,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get blockedUsersEmpty => 'No blocked users';
 
   @override
+  String blockedUsersUnblockSelectedCount(int count) {
+    return 'Unblock selected ($count)';
+  }
+
+  @override
+  String get blockedUsersBulkUnblockTitle => 'Unblock selected?';
+
+  @override
+  String blockedUsersBulkUnblockMessage(int count) {
+    return 'Do you want to unblock $count users?';
+  }
+
+  @override
+  String blockedUsersBulkUnblockResult(int count) {
+    return '$count users unblocked';
+  }
+
+  @override
+  String blockedUsersBulkUnblockPartial(int succeeded, int total) {
+    return '$succeeded of $total unblocked';
+  }
+
+  @override
+  String a11yBlockedUserSelect(String name) {
+    return 'Select blocked user $name';
+  }
+
+  @override
   String get retagFetchingRecipes => 'Fetching recipes...';
 
   @override

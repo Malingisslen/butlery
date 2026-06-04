@@ -2518,6 +2518,12 @@ class MockFriendsManagementOperations extends Mock
   @override
   Future<bool> unblockUser(String userId) async => _shouldSucceed;
   @override
+  Future<int> blockUsers(List<String> userIds) async =>
+      _shouldSucceed ? userIds.length : 0;
+  @override
+  Future<int> unblockUsers(List<String> userIds) async =>
+      _shouldSucceed ? userIds.length : 0;
+  @override
   bool isFriend(String userId) =>
       _friends.any((friend) => friend.uid == userId);
   @override

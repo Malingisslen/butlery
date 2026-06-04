@@ -24,6 +24,10 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
   bool _isLoading = true;
   bool _isExpanded = false;
 
+  // BUT-1039: multi-select bulk-unblock (mirrors the BUT-1038 group pattern).
+  bool _selectionMode = false;
+  final Set<String> _selectedIds = {};
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +86,113 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       await friendsService.management.unblockUser(userId);
       await _loadBlockedUsers();
     }
+  }
+
+  void _enterSelection(String uid) {
+    setState(() {
+      _selectionMode = true;
+      _selectedIds.add(uid);
+    });
+  }
+
+  void _toggleSelection(String uid) {
+    setState(() {
+      if (!_selectedIds.remove(uid)) _selectedIds.add(uid);
+    });
+  }
+
+  void _cancelSelection() {
+    setState(() {
+      _selectionMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  Future<void> _unblockSelected() async {
+    final ids = _selectedIds.toList(growable: false);
+    if (ids.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.l10n.blockedUsersBulkUnblockTitle),
+        content: Text(context.l10n.blockedUsersBulkUnblockMessage(ids.length)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(context.l10n.blockedUsersUnblock),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final succeeded = await friendsService.management.unblockUsers(ids);
+    if (!mounted) return;
+
+    // The primitive returns a success count, not failed names, so the summary
+    // is count-based: a clean count, or "N of M" when some unblocks failed.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          succeeded == ids.length
+              ? context.l10n.blockedUsersBulkUnblockResult(succeeded)
+              : context.l10n
+                  .blockedUsersBulkUnblockPartial(succeeded, ids.length),
+        ),
+      ),
+    );
+    _cancelSelection();
+    await _loadBlockedUsers();
+  }
+
+  /// Inline action bar shown while selecting — kept self-contained inside the
+  /// section's Column (no parent app-bar coordination), mirroring BUT-1038.
+  Widget _buildSelectionBar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final count = _selectedIds.length;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingS,
+      ),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppDimensions.spacingXs,
+        AppDimensions.spacingXxs,
+        AppDimensions.spacingS,
+        AppDimensions.spacingXxs,
+      ),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer,
+        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: context.l10n.commonCancel,
+            visualDensity: VisualDensity.compact,
+            onPressed: _cancelSelection,
+          ),
+          const Spacer(),
+          TextButton.icon(
+            onPressed: count > 0 ? _unblockSelected : null,
+            icon: const Icon(Icons.lock_open),
+            label: Text(context.l10n.blockedUsersUnblockSelectedCount(count)),
+            style: TextButton.styleFrom(foregroundColor: cs.primary),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -155,8 +266,10 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
                   style: AppTextStyles.metadataEmphasized,
                 ),
               )
-            else
+            else ...[
+              if (_selectionMode) _buildSelectionBar(context),
               ..._blockedUserIds.map(_buildBlockedUserTile),
+            ],
           ],
         ],
       ),
@@ -166,14 +279,23 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
   Widget _buildBlockedUserTile(String userId) {
     final profile = _userProfiles[userId];
     final displayName = profile?.displayName ?? userId;
+    final cs = Theme.of(context).colorScheme;
+    final isSelected = _selectedIds.contains(userId);
 
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
       ),
       child: Row(
         children: [
+          if (_selectionMode) ...[
+            Icon(
+              isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+              color: isSelected ? cs.primary : cs.onSurfaceVariant,
+            ),
+            const SizedBox(width: AppDimensions.spacingSm),
+          ],
           SocialAvatarComponents.avatar(
             user: profile,
             displayName: profile == null ? userId : null,
@@ -188,15 +310,30 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          TextButton(
-            onPressed: () => _unblockUser(userId),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              padding: AppDimensions.paddingSymmetric16x8,
+          // Per-tile unblock hides in selection mode to reduce noise.
+          if (!_selectionMode)
+            TextButton(
+              onPressed: () => _unblockUser(userId),
+              style: TextButton.styleFrom(
+                foregroundColor: cs.primary,
+                padding: AppDimensions.paddingSymmetric16x8,
+              ),
+              child: Text(context.l10n.blockedUsersUnblock),
             ),
-            child: Text(context.l10n.blockedUsersUnblock),
-          ),
         ],
+      ),
+    );
+
+    // Long-press anywhere on a tile enters selection; in selection mode a tap
+    // toggles. Wrapped in Semantics per the tap-target a11y rule.
+    return Semantics(
+      label: context.l10n.a11yBlockedUserSelect(displayName),
+      button: true,
+      selected: _selectionMode ? isSelected : null,
+      child: InkWell(
+        onLongPress: () => _enterSelection(userId),
+        onTap: _selectionMode ? () => _toggleSelection(userId) : null,
+        child: row,
       ),
     );
   }

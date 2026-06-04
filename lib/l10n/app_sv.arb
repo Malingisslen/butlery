@@ -5571,6 +5571,27 @@
   "blockedUsersUnblock": "Avblockera",
   "blockedUsersTitle": "Blockerade användare",
   "blockedUsersEmpty": "Inga blockerade användare",
+  "blockedUsersUnblockSelectedCount": "Avblockera valda ({count})",
+  "@blockedUsersUnblockSelectedCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "blockedUsersBulkUnblockTitle": "Avblockera valda?",
+  "blockedUsersBulkUnblockMessage": "Vill du avblockera {count} användare?",
+  "@blockedUsersBulkUnblockMessage": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "blockedUsersBulkUnblockResult": "{count} användare avblockerade",
+  "@blockedUsersBulkUnblockResult": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "blockedUsersBulkUnblockPartial": "{succeeded} av {total} avblockerade",
+  "@blockedUsersBulkUnblockPartial": {
+    "placeholders": { "succeeded": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "a11yBlockedUserSelect": "Markera blockerad användare {name}",
+  "@a11yBlockedUserSelect": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "retagFetchingRecipes": "Hämtar recept...",
   "retagRetaggingRecipes": "Omtaggar recept",
   "retagRetaggingProgress": "Omtaggar {current} av {total} recept...",

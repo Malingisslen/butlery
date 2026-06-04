@@ -5560,6 +5560,27 @@
   "blockedUsersUnblock": "Unblock",
   "blockedUsersTitle": "Blocked users",
   "blockedUsersEmpty": "No blocked users",
+  "blockedUsersUnblockSelectedCount": "Unblock selected ({count})",
+  "@blockedUsersUnblockSelectedCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "blockedUsersBulkUnblockTitle": "Unblock selected?",
+  "blockedUsersBulkUnblockMessage": "Do you want to unblock {count} users?",
+  "@blockedUsersBulkUnblockMessage": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "blockedUsersBulkUnblockResult": "{count} users unblocked",
+  "@blockedUsersBulkUnblockResult": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "blockedUsersBulkUnblockPartial": "{succeeded} of {total} unblocked",
+  "@blockedUsersBulkUnblockPartial": {
+    "placeholders": { "succeeded": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "a11yBlockedUserSelect": "Select blocked user {name}",
+  "@a11yBlockedUserSelect": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "retagFetchingRecipes": "Fetching recipes...",
   "retagRetaggingRecipes": "Retagging recipes",
   "retagRetaggingProgress": "Retagging {current} of {total} recipes...",

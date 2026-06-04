@@ -14313,6 +14313,42 @@ abstract class AppLocalizations {
   /// **'Inga blockerade användare'**
   String get blockedUsersEmpty;
 
+  /// No description provided for @blockedUsersUnblockSelectedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avblockera valda ({count})'**
+  String blockedUsersUnblockSelectedCount(int count);
+
+  /// No description provided for @blockedUsersBulkUnblockTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avblockera valda?'**
+  String get blockedUsersBulkUnblockTitle;
+
+  /// No description provided for @blockedUsersBulkUnblockMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du avblockera {count} användare?'**
+  String blockedUsersBulkUnblockMessage(int count);
+
+  /// No description provided for @blockedUsersBulkUnblockResult.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} användare avblockerade'**
+  String blockedUsersBulkUnblockResult(int count);
+
+  /// No description provided for @blockedUsersBulkUnblockPartial.
+  ///
+  /// In sv, this message translates to:
+  /// **'{succeeded} av {total} avblockerade'**
+  String blockedUsersBulkUnblockPartial(int succeeded, int total);
+
+  /// No description provided for @a11yBlockedUserSelect.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera blockerad användare {name}'**
+  String a11yBlockedUserSelect(String name);
+
   /// No description provided for @retagFetchingRecipes.
   ///
   /// In sv, this message translates to:

@@ -8427,6 +8427,34 @@ class AppLocalizationsSv extends AppLocalizations {
   String get blockedUsersEmpty => 'Inga blockerade användare';
 
   @override
+  String blockedUsersUnblockSelectedCount(int count) {
+    return 'Avblockera valda ($count)';
+  }
+
+  @override
+  String get blockedUsersBulkUnblockTitle => 'Avblockera valda?';
+
+  @override
+  String blockedUsersBulkUnblockMessage(int count) {
+    return 'Vill du avblockera $count användare?';
+  }
+
+  @override
+  String blockedUsersBulkUnblockResult(int count) {
+    return '$count användare avblockerade';
+  }
+
+  @override
+  String blockedUsersBulkUnblockPartial(int succeeded, int total) {
+    return '$succeeded av $total avblockerade';
+  }
+
+  @override
+  String a11yBlockedUserSelect(String name) {
+    return 'Markera blockerad användare $name';
+  }
+
+  @override
   String get retagFetchingRecipes => 'Hämtar recept...';
 
   @override
