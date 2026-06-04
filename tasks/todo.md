@@ -1,16 +1,17 @@
 # Sprint Backlog
 
-## Sprint: under-15 age-gate UX — 2026-06-04 (iter-113)
+## Sprint: "view captured source" (BUT-1079 part 1) — 2026-06-04 (iter-114)
 
-Clean tree on main (prior commits …0cbd81cb0, 990134f83). BUT-925 found plan-stale (confidence not
-threaded to the assisted dialog — VM holds strings; commented, left in Backlog). Picked BUT-946 —
-contained single-view UX improvement.
+Clean tree on main (prior commits …990134f83, a3122fd20). BUT-1079 is 3 parts; scoping to the
+read-only "view source artefact" sheet (part 1). The re-extract overwrite (part 2) + stale banner
+(part 3) genuinely need human UX design (overwrite-vs-append) per the ticket — follow-up.
 
-### Agent A: account — supportive age-gate
-- [ ] **A1. BUT-946** `[Tier B]` — `onboarding_age_gate_blocked_view.dart`: add a secondary
-      "En vuxen kan skapa ett konto åt dig" affordance → info dialog explaining a parent can
-      create an account (the bounded option; the full parent-consent FLOW is the larger BUT-674).
-      The existing supportive title/body + GDPR sign-out path are unchanged. l10n sv/en.
+### Agent A: recipe — view captured source
+- [ ] **A1. BUT-1079 (part 1)** `[Tier B]` — recipe-detail overflow → "Visa källtext" (when
+      `recipe.sourceArtefact != null`) → modal sheet showing the artefact type label + captured-at
+      (`ContextualTimeFormatter.standard`) + scrollable `SelectableText` payload. Distinct from the
+      existing `recipeViewSource` (which opens the sourceUrl externally). l10n sv/en (6 type labels).
+      Re-extract + stale banner → follow-up.
 
 ### Needs you (Tier D / deferred — carried)
 - BUT-1169, BUT-838, BUT-934, BUT-1187, onRecipeDeleted gen-2 deploy.
@@ -18,13 +19,11 @@ contained single-view UX improvement.
 ### Post-Sprint Steps
 - [ ] `dart analyze --fatal-infos`
 - [ ] Commit, push
-- [ ] Linear: In Review + notify (Tier B; child-data sensitive — Malin's eyes on copy)
+- [ ] Linear: In Review (Tier B); file re-extract follow-up
 
 ---
 
-## ARCHIVED — iter-112: a11y announcements (shipped 990134f83)
-BUT-905 → Done (favorite + comment). Shopping/OCR → BUT-1201.
-
-## ARCHIVED — iter-111/110/109/108/107/106
-912 online-status privacy (0cbd81cb0); 918 analytics transparency (23ac13e5d); 1039 bulk-unblock
-(f33b0f708); 1037 import cost-guard (64be6fd1f); 1199 gesture hints (ba7c7a4e3); 5 Tier-A + 1198.
+## ARCHIVED — recent ships
+iter-113 BUT-946 age-gate (a3122fd20); iter-112 BUT-905 a11y (990134f83); iter-111 BUT-912 privacy
+(0cbd81cb0); iter-110 BUT-918 (23ac13e5d); iter-109 BUT-1039 (f33b0f708); iter-108 BUT-1037
+(64be6fd1f); iter-107 BUT-1199 (ba7c7a4e3); iter-106 5 Tier-A + BUT-1198 (9c8946120).

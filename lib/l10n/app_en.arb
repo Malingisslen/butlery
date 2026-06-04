@@ -717,6 +717,18 @@
   "recipeCreateShoppingList": "Create shopping list",
   "recipeUpdateTags": "Update tags",
   "recipeViewSource": "View source",
+  "recipeViewCapturedSource": "View captured source",
+  "recipeSourceSheetTitle": "Source text",
+  "recipeSourceCapturedAt": "Captured {time}",
+  "@recipeSourceCapturedAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "recipeSourceTypeUrl": "Source URL",
+  "recipeSourceTypeYoutube": "YouTube transcript",
+  "recipeSourceTypeTiktok": "TikTok caption",
+  "recipeSourceTypeInstagram": "Instagram caption",
+  "recipeSourceTypeTextPaste": "Pasted text",
+  "recipeSourceTypePhotoOcr": "Photo text (OCR)",
   "recipeShareWithFriends": "Share with friends",
   "recipeShareExternal": "Share externally",
   "recipeSourceFrom": "From {host}",

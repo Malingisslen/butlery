@@ -1131,6 +1131,35 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeViewSource => 'Visa källa';
 
   @override
+  String get recipeViewCapturedSource => 'Visa källtext';
+
+  @override
+  String get recipeSourceSheetTitle => 'Källtext';
+
+  @override
+  String recipeSourceCapturedAt(String time) {
+    return 'Sparad $time';
+  }
+
+  @override
+  String get recipeSourceTypeUrl => 'Käll-URL';
+
+  @override
+  String get recipeSourceTypeYoutube => 'YouTube-transkript';
+
+  @override
+  String get recipeSourceTypeTiktok => 'TikTok-text';
+
+  @override
+  String get recipeSourceTypeInstagram => 'Instagram-text';
+
+  @override
+  String get recipeSourceTypeTextPaste => 'Inklistrad text';
+
+  @override
+  String get recipeSourceTypePhotoOcr => 'Text från foto (OCR)';
+
+  @override
   String get recipeShareWithFriends => 'Dela med vänner';
 
   @override

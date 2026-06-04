@@ -2018,6 +2018,60 @@ abstract class AppLocalizations {
   /// **'Visa källa'**
   String get recipeViewSource;
 
+  /// No description provided for @recipeViewCapturedSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa källtext'**
+  String get recipeViewCapturedSource;
+
+  /// No description provided for @recipeSourceSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källtext'**
+  String get recipeSourceSheetTitle;
+
+  /// No description provided for @recipeSourceCapturedAt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparad {time}'**
+  String recipeSourceCapturedAt(String time);
+
+  /// No description provided for @recipeSourceTypeUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Käll-URL'**
+  String get recipeSourceTypeUrl;
+
+  /// No description provided for @recipeSourceTypeYoutube.
+  ///
+  /// In sv, this message translates to:
+  /// **'YouTube-transkript'**
+  String get recipeSourceTypeYoutube;
+
+  /// No description provided for @recipeSourceTypeTiktok.
+  ///
+  /// In sv, this message translates to:
+  /// **'TikTok-text'**
+  String get recipeSourceTypeTiktok;
+
+  /// No description provided for @recipeSourceTypeInstagram.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instagram-text'**
+  String get recipeSourceTypeInstagram;
+
+  /// No description provided for @recipeSourceTypeTextPaste.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inklistrad text'**
+  String get recipeSourceTypeTextPaste;
+
+  /// No description provided for @recipeSourceTypePhotoOcr.
+  ///
+  /// In sv, this message translates to:
+  /// **'Text från foto (OCR)'**
+  String get recipeSourceTypePhotoOcr;
+
   /// No description provided for @recipeShareWithFriends.
   ///
   /// In sv, this message translates to:

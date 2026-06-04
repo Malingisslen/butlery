@@ -723,6 +723,18 @@
   "recipeCreateShoppingList": "Skapa inköpslista",
   "recipeUpdateTags": "Uppdatera taggar",
   "recipeViewSource": "Visa källa",
+  "recipeViewCapturedSource": "Visa källtext",
+  "recipeSourceSheetTitle": "Källtext",
+  "recipeSourceCapturedAt": "Sparad {time}",
+  "@recipeSourceCapturedAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "recipeSourceTypeUrl": "Käll-URL",
+  "recipeSourceTypeYoutube": "YouTube-transkript",
+  "recipeSourceTypeTiktok": "TikTok-text",
+  "recipeSourceTypeInstagram": "Instagram-text",
+  "recipeSourceTypeTextPaste": "Inklistrad text",
+  "recipeSourceTypePhotoOcr": "Text från foto (OCR)",
   "recipeShareWithFriends": "Dela med vänner",
   "recipeShareExternal": "Dela externt",
   "recipeSourceFrom": "Från {host}",

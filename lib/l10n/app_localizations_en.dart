@@ -1131,6 +1131,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeViewSource => 'View source';
 
   @override
+  String get recipeViewCapturedSource => 'View captured source';
+
+  @override
+  String get recipeSourceSheetTitle => 'Source text';
+
+  @override
+  String recipeSourceCapturedAt(String time) {
+    return 'Captured $time';
+  }
+
+  @override
+  String get recipeSourceTypeUrl => 'Source URL';
+
+  @override
+  String get recipeSourceTypeYoutube => 'YouTube transcript';
+
+  @override
+  String get recipeSourceTypeTiktok => 'TikTok caption';
+
+  @override
+  String get recipeSourceTypeInstagram => 'Instagram caption';
+
+  @override
+  String get recipeSourceTypeTextPaste => 'Pasted text';
+
+  @override
+  String get recipeSourceTypePhotoOcr => 'Photo text (OCR)';
+
+  @override
   String get recipeShareWithFriends => 'Share with friends';
 
   @override

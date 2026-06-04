@@ -3,6 +3,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -65,6 +68,7 @@ enum _MenuAction {
   delete,
   toggleCollaboration,
   source,
+  viewSourceArtefact,
   printRecipe,
   report,
 }
@@ -552,6 +556,23 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
+                            // BUT-1079: the captured source artefact (OCR text,
+                            // transcript, pasted text) — distinct from the URL
+                            // open above.
+                            if (recipe.core.sourceArtefact != null)
+                              PopupMenuItem(
+                                value: _MenuAction.viewSourceArtefact,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.description_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeViewCapturedSource),
+                                  ],
+                                ),
+                              ),
                             if (kIsWeb)
                               PopupMenuItem(
                                 value: _MenuAction.printRecipe,
@@ -808,6 +829,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
           _actions.handleSourceUrlClick(context, recipe.sourceUrl!);
         }
+      case _MenuAction.viewSourceArtefact:
+        final artefact = recipe.core.sourceArtefact;
+        if (artefact != null) _showSourceArtefactSheet(context, artefact);
       case _MenuAction.printRecipe:
         _printRecipe(recipe);
       case _MenuAction.report:
@@ -818,6 +842,63 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           contentOwnerId: recipe.createdBy,
         );
     }
+  }
+
+  /// BUT-1079: read-only view of the persisted source artefact (the raw text
+  /// the recipe was extracted from). Re-extract from here is a follow-up.
+  void _showSourceArtefactSheet(BuildContext context, SourceArtefact artefact) {
+    final cs = Theme.of(context).colorScheme;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: cs.surface,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (ctx, scrollController) => Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(ctx.l10n.recipeSourceSheetTitle,
+                  style: AppTextStyles.titleBold),
+              const SizedBox(height: AppDimensions.spacingXs),
+              Text(
+                '${_sourceTypeLabel(ctx, artefact.type)} · '
+                '${ctx.l10n.recipeSourceCapturedAt(ContextualTimeFormatter.standard(artefact.fetchedAt))}',
+                style: AppTextStyles.metadataEmphasized
+                    .copyWith(color: cs.onSurfaceVariant),
+              ),
+              const Divider(height: AppDimensions.spacingLg),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: SelectableText(
+                    artefact.payload,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _sourceTypeLabel(BuildContext context, SourceArtefactType type) {
+    return switch (type) {
+      SourceArtefactType.url => context.l10n.recipeSourceTypeUrl,
+      SourceArtefactType.youtubeTranscript =>
+        context.l10n.recipeSourceTypeYoutube,
+      SourceArtefactType.tiktokCaption => context.l10n.recipeSourceTypeTiktok,
+      SourceArtefactType.instagramCaption =>
+        context.l10n.recipeSourceTypeInstagram,
+      SourceArtefactType.textPaste => context.l10n.recipeSourceTypeTextPaste,
+      SourceArtefactType.photoOcr => context.l10n.recipeSourceTypePhotoOcr,
+    };
   }
 }
 
