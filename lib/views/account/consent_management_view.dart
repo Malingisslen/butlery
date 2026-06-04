@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -255,6 +256,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.analytics,
           viewModel.setAnalytics,
         ),
+        // BUT-918: GDPR transparency — let users see exactly what telemetry the
+        // analytics consent covers, pulled from the AnalyticsEvents constants.
+        _buildAnalyticsTransparency(),
         // Marketing toggle hidden — no marketing system implemented yet.
         // Field preserved in model for Firestore backwards compatibility.
         const SizedBox(height: AppDimensions.spacingL),
@@ -348,6 +352,120 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// BUT-918: collapsible "What we log" disclosure under the analytics toggle.
+  /// Categories carry representative [AnalyticsEvents] constants directly, so a
+  /// renamed event breaks compilation here rather than drifting out of sync.
+  Widget _buildAnalyticsTransparency() {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+
+    final categories = <(String, List<String>)>[
+      (
+        l10n.consentLogCategoryUsage,
+        [
+          AnalyticsEvents.appOpened,
+          AnalyticsEvents.appBackgrounded,
+          AnalyticsEvents.logout,
+        ]
+      ),
+      (
+        l10n.consentLogCategoryRecipes,
+        [
+          AnalyticsEvents.recipeCreated,
+          AnalyticsEvents.recipeCooked,
+          AnalyticsEvents.recipeViewed,
+          AnalyticsEvents.recipeSearchPerformed,
+        ]
+      ),
+      (
+        l10n.consentLogCategoryMenuShopping,
+        [
+          AnalyticsEvents.menuGenerated,
+          AnalyticsEvents.shoppingListItemChecked,
+        ]
+      ),
+      (
+        l10n.consentLogCategoryImport,
+        [
+          AnalyticsEvents.importStarted,
+          AnalyticsEvents.importSuccess,
+        ]
+      ),
+      (
+        l10n.consentLogCategorySocial,
+        [
+          AnalyticsEvents.friendRequestSent,
+          AnalyticsEvents.recipeShared,
+        ]
+      ),
+      (
+        l10n.consentLogCategoryOnboarding,
+        [
+          AnalyticsEvents.onboardingCompleted,
+          AnalyticsEvents.timeToFirstRecipe,
+        ]
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+      // Strip the default ExpansionTile dividers so it sits flush under the card.
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppDimensions.spacingMd,
+            0,
+            AppDimensions.spacingMd,
+            AppDimensions.spacingMd,
+          ),
+          leading: Icon(Icons.fact_check_outlined,
+              size: AppDimensions.iconSizeM, color: cs.onSurfaceVariant),
+          title: Text(l10n.consentWhatWeLog, style: AppTextStyles.titleSmall),
+          children: [
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                l10n.consentWhatWeLogIntro,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                      height: 1.4,
+                    ),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            ...categories.map((c) => _buildLoggedCategoryRow(c.$1, c.$2)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoggedCategoryRow(String label, List<String> eventNames) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: AppDimensions.paddingOnlyBottom8,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTextStyles.bodyBold),
+          const SizedBox(height: AppDimensions.spacingXxs),
+          Text(
+            eventNames.join(', '),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  height: 1.4,
+                ),
+          ),
+        ],
       ),
     );
   }

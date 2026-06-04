@@ -6093,6 +6093,54 @@ abstract class AppLocalizations {
   /// **'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.'**
   String get consentAnalyticsDescription;
 
+  /// No description provided for @consentWhatWeLog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad vi loggar'**
+  String get consentWhatWeLog;
+
+  /// No description provided for @consentWhatWeLogIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anonyma händelser vi loggar för att förbättra appen:'**
+  String get consentWhatWeLogIntro;
+
+  /// No description provided for @consentLogCategoryUsage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Appanvändning'**
+  String get consentLogCategoryUsage;
+
+  /// No description provided for @consentLogCategoryRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get consentLogCategoryRecipes;
+
+  /// No description provided for @consentLogCategoryMenuShopping.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matsedel & inköp'**
+  String get consentLogCategoryMenuShopping;
+
+  /// No description provided for @consentLogCategoryImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Import'**
+  String get consentLogCategoryImport;
+
+  /// No description provided for @consentLogCategorySocial.
+  ///
+  /// In sv, this message translates to:
+  /// **'Socialt'**
+  String get consentLogCategorySocial;
+
+  /// No description provided for @consentLogCategoryOnboarding.
+  ///
+  /// In sv, this message translates to:
+  /// **'Introduktion'**
+  String get consentLogCategoryOnboarding;
+
   /// No description provided for @consentMarketing.
   ///
   /// In sv, this message translates to:

@@ -3570,6 +3570,31 @@ class AppLocalizationsSv extends AppLocalizations {
       'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.';
 
   @override
+  String get consentWhatWeLog => 'Vad vi loggar';
+
+  @override
+  String get consentWhatWeLogIntro =>
+      'Anonyma händelser vi loggar för att förbättra appen:';
+
+  @override
+  String get consentLogCategoryUsage => 'Appanvändning';
+
+  @override
+  String get consentLogCategoryRecipes => 'Recept';
+
+  @override
+  String get consentLogCategoryMenuShopping => 'Matsedel & inköp';
+
+  @override
+  String get consentLogCategoryImport => 'Import';
+
+  @override
+  String get consentLogCategorySocial => 'Socialt';
+
+  @override
+  String get consentLogCategoryOnboarding => 'Introduktion';
+
+  @override
   String get consentMarketing => 'Marknadsföring';
 
   @override

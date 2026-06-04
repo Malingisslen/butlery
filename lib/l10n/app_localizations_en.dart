@@ -3569,6 +3569,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'Help us improve the app by sharing usage statistics. We collect information about how you use the app to identify bugs and improve the user experience.';
 
   @override
+  String get consentWhatWeLog => 'What we log';
+
+  @override
+  String get consentWhatWeLogIntro =>
+      'Anonymous events we log to improve the app:';
+
+  @override
+  String get consentLogCategoryUsage => 'App usage';
+
+  @override
+  String get consentLogCategoryRecipes => 'Recipes';
+
+  @override
+  String get consentLogCategoryMenuShopping => 'Menu & shopping';
+
+  @override
+  String get consentLogCategoryImport => 'Import';
+
+  @override
+  String get consentLogCategorySocial => 'Social';
+
+  @override
+  String get consentLogCategoryOnboarding => 'Onboarding';
+
+  @override
   String get consentMarketing => 'Marketing';
 
   @override
