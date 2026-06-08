@@ -9,6 +9,13 @@
       "port": 3002,
       "autoPort": true,
       "autoVerify": true
+    },
+    {
+      "name": "academy",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "3007", "--directory", "docs/onboarding"],
+      "port": 3007,
+      "autoPort": true
     }
   ]
 }

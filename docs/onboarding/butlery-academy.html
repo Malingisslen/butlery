@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butlery Academy</title>
+<style>
+  /* === Butlery design tokens (from lib/theme/app_colors.dart) === */
+  :root {
+    --forest-green: #4A7C59;
+    --forest-green-dark: #3D6849;
+    --forest-green-light: #6B9B7A;
+    --rust: #8B5A3C;
+    --rust-light: #A77B5E;
+    --cream: #F8F4E8;
+    --cream-dark: #F0EAD6;
+    --cream-darker: #E8E2D6;
+    --green-pale: #E8F0EA;
+    --green-muted: #526A55;
+    --card-white: #FFFFFF;
+    --text-dark: #1A1A1A;
+    --text-medium: #666666;
+    --text-light: #5A5A5A;
+    --text-on-cream: #3D3D3D;
+    --warning: #D4A03C;
+    --error: #C44536;
+    --sidebar-w: 320px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Square everywhere — no rounded corners (Butlery design rule) */
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    line-height: 1.65;
+    font-size: 16px;
+  }
+  code, pre, .mono { font-family: "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", Menlo, monospace; }
+
+  /* === Layout === */
+  .layout { display: flex; min-height: 100vh; }
+
+  /* === Sidebar === */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--cream-darker);
+    border-right: 3px solid var(--rust);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .brand {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand .logo {
+    width: 40px; height: 40px;
+    background: var(--forest-green);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 22px;
+    border-bottom: 4px solid var(--rust);
+  }
+  .brand .wordmark { font-size: 20px; font-weight: 700; color: var(--forest-green-dark); letter-spacing: -0.3px; }
+  .brand .wordmark small { display:block; font-size: 11px; font-weight: 600; color: var(--green-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* progress */
+  .progress-wrap { padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .progress-label { font-size: 12px; color: var(--green-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .progress-bar { height: 10px; background: var(--cream); border: 1px solid rgba(0,0,0,0.12); }
+  .progress-fill { height: 100%; background: var(--forest-green); width: 0%; transition: width 0.35s ease; }
+
+  /* nav */
+  nav { padding: 8px 0 40px; }
+  .part-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--rust); padding: 18px 20px 6px;
+  }
+  .nav-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 20px; cursor: pointer;
+    color: var(--green-muted); font-size: 14px; font-weight: 500;
+    border-left: 4px solid transparent;
+    transition: background 0.12s, color 0.12s;
+  }
+  .nav-item:hover { background: rgba(74,124,89,0.08); color: var(--forest-green-dark); }
+  .nav-item.active { background: var(--card-white); color: var(--forest-green-dark); font-weight: 700; border-left-color: var(--rust); }
+  .nav-item .num { font-size: 12px; font-weight: 700; opacity: 0.7; min-width: 18px; }
+  .nav-item.done .num::after { content: " ✓"; color: var(--forest-green); }
+  .nav-item.stub { opacity: 0.55; font-style: italic; }
+
+  /* === Main === */
+  main { flex: 1; min-width: 0; padding: 0 0 80px; }
+  .topbar {
+    background: var(--card-white);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 14px 48px; position: sticky; top: 0; z-index: 5;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .topbar .crumb { font-size: 13px; color: var(--text-medium); }
+  .topbar .crumb b { color: var(--forest-green-dark); }
+  .reset-btn {
+    background: none; border: 1px solid var(--rust); color: var(--rust);
+    padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600;
+  }
+  .reset-btn:hover { background: var(--rust); color: #fff; }
+
+  .module { display: none; max-width: 820px; margin: 0 auto; padding: 40px 48px; }
+  .module.active { display: block; }
+
+  .module-kicker { font-size: 13px; font-weight: 700; color: var(--rust); text-transform: uppercase; letter-spacing: 1px; }
+  .module h1 { font-size: 32px; color: var(--text-dark); margin: 6px 0 20px; line-height: 1.2; font-weight: 800; }
+
+  /* goal box */
+  .goal {
+    background: var(--green-pale);
+    border-left: 5px solid var(--forest-green);
+    padding: 14px 18px; margin-bottom: 28px;
+  }
+  .goal .tag { font-size: 12px; font-weight: 700; color: var(--forest-green-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .module h2 {
+    font-size: 20px; color: var(--forest-green-dark); margin: 32px 0 12px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--cream-darker); font-weight: 700;
+  }
+  .module h3 { font-size: 16px; color: var(--rust); margin: 22px 0 8px; font-weight: 700; }
+  .module p { margin-bottom: 14px; color: var(--text-on-cream); }
+  .module ul, .module ol { margin: 0 0 16px 22px; }
+  .module li { margin-bottom: 8px; color: var(--text-on-cream); }
+  .module blockquote {
+    border-left: 4px solid var(--rust-light); background: var(--cream-dark);
+    padding: 12px 18px; margin: 16px 0; font-style: italic; color: var(--text-light);
+  }
+  .module strong { color: var(--text-dark); }
+  code:not(pre code) { background: var(--cream-dark); padding: 2px 6px; font-size: 13.5px; color: var(--rust); border: 1px solid rgba(0,0,0,0.06); }
+
+  /* file chips */
+  .files { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 18px; }
+  .file-chip {
+    display: flex; gap: 10px; align-items: baseline;
+    background: var(--card-white); border: 1px solid rgba(0,0,0,0.1);
+    border-left: 4px solid var(--forest-green-light); padding: 8px 12px; font-size: 13px;
+  }
+  .file-chip .path { font-family: "SF Mono", Consolas, monospace; color: var(--forest-green-dark); font-weight: 600; }
+  .file-chip .role { color: var(--text-medium); }
+
+  /* code / prompt blocks */
+  .code-block { position: relative; margin: 14px 0 20px; }
+  .code-block .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green-muted); margin-bottom: 4px; }
+  pre {
+    background: #2b2b28; color: #e8e4d8; padding: 16px 18px; overflow-x: auto;
+    font-size: 13.5px; line-height: 1.55; border-left: 4px solid var(--rust);
+  }
+  .copy-btn {
+    position: absolute; top: 26px; right: 8px;
+    background: rgba(255,255,255,0.12); color: #e8e4d8; border: 1px solid rgba(255,255,255,0.25);
+    font-size: 11px; padding: 4px 10px; cursor: pointer; font-weight: 600;
+  }
+  .copy-btn:hover { background: var(--forest-green); border-color: var(--forest-green); }
+  .copy-btn.copied { background: var(--forest-green); }
+
+  /* callout boxes */
+  .callout { padding: 14px 18px; margin: 18px 0; border-left: 5px solid; }
+  .callout .head { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+  .callout.gotcha { background: #faf2e0; border-color: var(--warning); }
+  .callout.gotcha .head { color: #8a6a1f; }
+  .callout.try { background: var(--green-pale); border-color: var(--forest-green); }
+  .callout.try .head { color: var(--forest-green-dark); }
+
+  /* quiz */
+  .quiz { background: var(--card-white); border: 1px solid rgba(0,0,0,0.12); border-top: 4px solid var(--forest-green); padding: 16px 18px; margin: 24px 0; }
+  .quiz .q { font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+  .quiz .q::before { content: "✶ Checkpoint  "; color: var(--rust); font-size: 12px; letter-spacing: 1px; }
+  .quiz .reveal { background: none; border: 1px solid var(--forest-green); color: var(--forest-green-dark); padding: 6px 14px; font-size: 13px; cursor: pointer; font-weight: 600; }
+  .quiz .reveal:hover { background: var(--forest-green); color: #fff; }
+  .quiz .answer { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(0,0,0,0.15); color: var(--text-on-cream); }
+  .quiz.open .answer { display: block; }
+  .quiz.open .reveal { display: none; }
+
+  /* complete toggle */
+  .complete-row { margin: 36px 0 0; padding-top: 22px; border-top: 2px solid var(--cream-darker); display: flex; align-items: center; gap: 12px; }
+  .complete-row label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; color: var(--forest-green-dark); user-select: none; }
+  .complete-row input { width: 20px; height: 20px; accent-color: var(--forest-green); cursor: pointer; }
+  .module-nav { margin-left: auto; display: flex; gap: 8px; }
+  .module-nav button { background: var(--forest-green); color: #fff; border: none; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .module-nav button:hover { background: var(--forest-green-dark); }
+  .module-nav button.ghost { background: none; color: var(--forest-green-dark); border: 1px solid var(--forest-green); }
+
+  .stub-note { background: var(--cream-dark); border: 1px dashed var(--rust-light); padding: 20px; color: var(--text-medium); text-align: center; font-style: italic; }
+
+  /* collapsible diagram */
+  .diagram { background: var(--card-white); border: 1px solid rgba(0,0,0,0.1); padding: 18px; margin: 16px 0; }
+  .diagram pre { background: none; color: var(--forest-green-dark); border: none; padding: 0; font-size: 13px; }
+
+  @media (max-width: 880px) {
+    .sidebar { position: fixed; left: -320px; transition: left 0.2s; z-index: 20; }
+    .sidebar.open { left: 0; }
+    .module, .topbar { padding-left: 24px; padding-right: 24px; }
+    .menu-toggle { display: inline-block !important; }
+  }
+  .menu-toggle { display: none; background: var(--forest-green); color: #fff; border: none; padding: 8px 12px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">b</div>
+      <div class="wordmark">Butlery Academy<small>Onboarding</small></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Framsteg</span><span id="progress-pct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <nav id="nav"><!-- built by JS --></nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <div class="topbar">
+      <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="crumb">Du läser: <b id="crumb">Modul 1</b></div>
+      <button class="reset-btn" onclick="resetProgress()">Nollställ framsteg</button>
+    </div>
+
+    <!-- ===== MODULE 1 (filled) ===== -->
+    <section class="module active" data-module="1">
+      <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
+      <h1>Vad är Claude Code &amp; vibe coding</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du förklara vad Claude Code är, vad "vibe coding" innebär i praktiken, och varför Butlery är byggt så att en AI gör nästan all kodning under skyddsräcken.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Claude Code är en AI som sitter i din terminal och faktiskt <em>gör</em> saker i ditt projekt: läser filer, skriver kod, kör kommandon, committar. Den är inte en chattbot som bara svarar — den har verktyg och kan ta sig igenom en hel uppgift själv.</p>
+      <p><strong>Vibe coding</strong> är arbetssättet runt detta: du beskriver <em>vad</em> du vill ha ("lägg till en rad i onboarding som säger att appen funkar på både dator och telefon"), och Claude tar reda på <em>hur</em> — vilka filer, vilket mönster, vilka tester. Du blir mer av en regissör än en maskinskrivare. Men — och det är hela poängen med Butlery — du regisserar inte en frilansare utan rutiner, utan en medarbetare som arbetar under ett tjockt lager av automatiska skyddsräcken.</p>
+      <p>Tänk på hela repot som <strong>ett företag med en enda anställd, och den anställde är en AI.</strong> Då blir alla de konstiga reglerna i <code>CLAUDE.md</code> och <code>.claude/rules/</code> begripliga: de är personalhandboken, skriven för AI:n, inte för en människa.</p>
+      <p>Den återkommande rytmen — kärnan i kulturen — är en loop:</p>
+      <blockquote>fråga → skriv en plan → implementera → klara review-gates → committa → pusha direkt till main</blockquote>
+      <p>Allt annat i kursen finns för att göra den loopen säker. Du jobbar inte med feature branches eller pull requests — det här är en solo-utvecklares repo, så koden går rakt till main. "Granskningen" görs av automatiska gates och specialist-agenter, inte av en kollega.</p>
+      <p>En köks-analogi (passande för en receptapp): plan mode är att skriva receptkortet innan du börjar laga; review-gates är köksmästaren som smakar varje rätt innan den lämnar passet; <code>lessons.md</code> är den tummade anteckningsboken där du klottrar "salta inte soppan för mycket" efter att en gäst klagat.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">CLAUDE.md</span><span class="role">Den översta regelboken (10 Critical Rules, testfilosofi, agent-tiers)</span></div>
+        <div class="file-chip"><span class="path">CLAUDE.local.md</span><span class="role">Privata solo-dev-regler (pusha direkt till main, expert-ton, svensk UI)</span></div>
+        <div class="file-chip"><span class="path">.claude/rules/workflow-discipline.md</span><span class="role">Plan mode, self-improvement loop, verifiering</span></div>
+        <div class="file-chip"><span class="path">.claude/commands/sprint-execute.md</span><span class="role">Den autonoma motorn som driver loopen</span></div>
+      </div>
+
+      <h2>Prompt-exempel</h2>
+      <div class="code-block">
+        <div class="label">Prompt till Claude</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Läs CLAUDE.md och .claude/rules/ och sammanfatta för mig, på svenska och utan
+jargong, de fem viktigaste reglerna jag måste känna till innan jag rör koden.</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Reglerna i <code>CLAUDE.md</code> ser märkliga ut tills du inser att publiken är en AI, inte en människa.</li>
+          <li>"Vibe coding" betyder inte "slarvigt" — i Butlery är det tvärtom hårt inramat av gates. Friheten ligger i <em>vad</em> du ber om, inte i att hoppa över kvalitet.</li>
+          <li>Direkt-till-main är ett medvetet val <em>för det här repot</em> eftersom det bara finns en utvecklare. Det är inte en universell best practice.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>CLAUDE.md</code> och leta upp avsnittet "Critical Rules". Läs regel #5 ("Plans = execute + verify") och #10 ("Honesty over completion"). Skriv en mening var om vad de skyddar mot.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Varför finns det ingen pull request / feature branch i Butlery-flödet, och vad ersätter den mänskliga kodgranskningen?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Det är en solo-utvecklares repo, så det finns ingen andra människa att granska. Granskningen ersätts av automatiska review-gates och specialist-agenter (code-reviewer, testing-specialist m.fl.) som måste signera av innan en commit släpps igenom — koden går sedan rakt till main.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="1"> Markera modul som klar</label>
+        <div class="module-nav"><button onclick="goTo(2)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 2 (filled) ===== -->
+    <section class="module" data-module="2">
+      <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
+      <h1>Sätt upp din maskin</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du en fungerande Butlery-dev-miljö på din egen dator: verktygen, repot, beroenden och hemligheterna.</p></div>
+
+      <h2>Innehåll — checklista i ordning</h2>
+      <ol>
+        <li><strong>Installera verktygen.</strong> Claude Code (CLI:n du redan läser detta för), Flutter SDK (Malin har den på <code>C:\tools\flutter</code> — installera Flutter och lägg <code>C:\tools\flutter\bin</code> i din PATH; <code>dart</code> följer med Flutter på <code>C:\tools\flutter\bin\dart.bat</code>), Node.js + npm (behövs för lefthook och functions-verktygen), Git (Malin: <code>C:\Program Files\Git\cmd</code>), och en editor (VS Code rekommenderas).</li>
+        <li><strong>Klona repot till exakt <code>C:\Butlery\butlery</code></strong> — samma sökväg som Malin, så att alla <code>cmd.bat</code>-sökvägar och <code>notify.ps1</code>-sökvägen stämmer rakt av. Kloningen hämtar automatiskt hela <code>.claude/</code>-mappen (skills, agenter, hooks, rules, CLAUDE.md, settings.json, launch.json) — så <em>större delen av Malins setup är redan på plats efter kloning.</em></li>
+        <li><strong>Installera beroenden.</strong> <code>flutter pub get</code> (Dart/Flutter-paket), <code>npm install</code> (lefthook + functions-deps), <code>npx lefthook install</code> (kopplar in git-hookarna på din maskin: pre-commit kör <code>dart format</code> + secret-scan + <code>dart analyze --fatal-infos</code>, och commit-msg validerar conventional-commit-format).</li>
+        <li><strong>Hemligheter (.env).</strong> Kopiera mallen — <code>copy .env.example .env</code> — och fyll i riktiga värden. Firebase-config hämtas från Firebase Console (Project Settings → SDK setup and configuration); eftersom ni bygger <em>samma app</em> delar Malin samma Firebase-projekt och nycklar med dig på ett säkert sätt. <code>OCR_API_KEY</code> kommer från OCR.space (gratis 25 000/mån) och behövs för foto-import.</li>
+        <li><strong>Verifiera.</strong> Kör <code>flutter analyze</code> (ska gå rent) och starta appen via <code>launch.json</code>-configen "butlery-web" eller <code>flutter run -d chrome</code>.</li>
+      </ol>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">.env.example</span><span class="role">Mall för alla miljövariabler</span></div>
+        <div class="file-chip"><span class="path">lefthook.yml</span><span class="role">Definierar git-gates: format / secret-scan / analyze</span></div>
+        <div class="file-chip"><span class="path">pubspec.yaml</span><span class="role">Flutter-beroenden</span></div>
+        <div class="file-chip"><span class="path">.claude/launch.json</span><span class="role">Kör-konfigurationer</span></div>
+        <div class="file-chip"><span class="path">package.json</span><span class="role">lefthook + node-deps</span></div>
+      </div>
+
+      <h2>Prompt-exempel</h2>
+      <div class="code-block">
+        <div class="label">Sätt upp repot</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>git clone &lt;repo-url&gt; C:\Butlery\butlery
+cd C:\Butlery\butlery
+flutter pub get
+npm install
+npx lefthook install
+copy .env.example .env</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Klona till exakt <code>C:\Butlery\butlery</code> — annars stämmer inte <code>run_test.bat</code>/<code>run_analyze.bat</code>-sökvägarna eller <code>notify.ps1</code>.</li>
+          <li><code>.env</code> är gitignorad och innehåller riktiga nycklar — committa den ALDRIG. Secret-scan-hooken fångar de flesta mönster men är inte ett heltäckande skydd.</li>
+          <li>Lägg Flutter på <code>C:\tools\flutter</code> som Malin; lägger du den någon annanstans måste du justera PATH-raden i <code>run_test.bat</code>.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>På en ren git-tree, kör <code>npx lefthook run pre-commit</code> och se att format/secret-scan/analyze faktiskt kör. Kör sedan <code>flutter analyze</code> och bekräfta att det går rent.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Vad gör <code>npx lefthook install</code>, och varför måste du köra det efter kloning fastän <code>lefthook.yml</code> redan följer med repot?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Det installerar git-hookarna lokalt på din maskin (pre-commit: <code>dart format</code> + secret-scan + <code>dart analyze --fatal-infos</code>; commit-msg: format-validering). <code>lefthook.yml</code> beskriver bara hookarna — de är inte aktiva i din lokala <code>.git</code> förrän du kör <code>npx lefthook install</code>.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="2"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(1)">← Föregående</button><button onclick="goTo(3)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 3 (filled) ===== -->
+    <section class="module" data-module="3">
+      <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
+      <h1>Konfigurera Claude Code som Malins</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du samma Claude Code-tillägg som Malin — plugins, MCP-servrar och kontokopplingar — plus Windows-finliret, och du vet vad som redan kom gratis med repot.</p></div>
+
+      <h2>A. Plugins (user-scope, från marketplace <code>claude-plugins-official</code>)</h2>
+      <p>Först, lägg till marketplacen: <code>claude plugin marketplace add anthropics/claude-plugins-official</code>. Installera sedan Malins 16 plugins (via <code>claude plugin install &lt;namn&gt;@claude-plugins-official</code> eller <code>/plugin</code>-menyn):</p>
+      <ul>
+        <li><strong>superpowers</strong> (skills-motorn: brainstorming, TDD, debugging m.m.), <strong>code-review</strong>, <strong>code-simplifier</strong>, <strong>feature-dev</strong>, <strong>claude-md-management</strong>, <strong>claude-code-setup</strong>, <strong>skill-creator</strong>, <strong>frontend-design</strong>, <strong>security-guidance</strong>, <strong>ralph-loop</strong>, <strong>explanatory-output-style</strong>, <strong>context7</strong>, <strong>firebase</strong>, <strong>github</strong>, <strong>chrome-devtools-mcp</strong>, <strong>telegram</strong>.</li>
+      </ul>
+      <p>Viktigt: plugins <strong>context7, firebase, github, chrome-devtools-mcp och telegram tar med sig sina MCP-servrar automatiskt</strong> när de installeras — du behöver inte lägga till dem separat.</p>
+
+      <h2>B. MCP-servrar (CLI)</h2>
+      <p>Bara en behöver läggas till för hand: <strong>Linear</strong> (Butlerys ärendehantering). <code>claude mcp add --transport http linear https://mcp.linear.app/mcp</code> och autentisera i webbläsaren. Verifiera med <code>claude mcp list</code>.</p>
+
+      <h2>C. claude.ai-kontokopplingar (full spegling)</h2>
+      <p>Logga in på claude.ai → Settings → Connectors och aktivera dem Malin använder: Gmail, Google Calendar, Google Drive, Figma, Spotify m.fl. Dessa är på <em>kontonivå</em>, inte CLI — de bor i ditt eget claude.ai-konto, du delar inte Malins.</p>
+
+      <h2>D. Settings (kom gratis med repot)</h2>
+      <p><code>.claude/settings.json</code> kopplar redan in alla hooks, permissions och <code>autoMemoryEnabled</code> — du behöver inte röra den. (Den sätter bl.a. <code>ENABLE_CLAUDEAI_MCP_SERVERS=false</code>.)</p>
+
+      <h2>E. Windows-finliret</h2>
+      <p><code>flutter test</code> failar med "Unable to find git in your PATH" när det körs via git-bash. Lös det genom att köra <code>flutter test</code> via en <code>.bat</code> som sätter native Windows-PATH: <code>set PATH=C:\Windows\System32;C:\tools\flutter\bin;C:\Program Files\Git\cmd</code> (se <code>run_test.bat</code>). Telegram-notiser när Claude är klar eller behöver input drivs av <code>notify.ps1</code> (kräver telegram-pluginen + att du kör <code>/telegram:configure</code> med en bot-token).</p>
+
+      <h2>F. Din första prompt</h2>
+      <p>Be alltid Claude rita kartan innan du bygger — t.ex. "Jag är ny i repot, ge mig en karta på svenska över appen och de fyra arkitekturlagren, peka på filerna, skriv ingen kod."</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">.claude/settings.json</span><span class="role">Hooks + permissions, kom med repot</span></div>
+        <div class="file-chip"><span class="path">run_test.bat</span><span class="role">Windows PATH-tricket för flutter test</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/notify.ps1</span><span class="role">Telegram-notiser</span></div>
+        <div class="file-chip"><span class="path">.claude/launch.json</span><span class="role">Kör-konfigurationer</span></div>
+      </div>
+
+      <h2>Prompt-exempel</h2>
+      <div class="code-block">
+        <div class="label">Plugins + MCP</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>claude plugin marketplace add anthropics/claude-plugins-official
+claude plugin install superpowers@claude-plugins-official
+claude mcp add --transport http linear https://mcp.linear.app/mcp
+claude mcp list
+claude plugin list</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Windows flutter test (.bat)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>@echo off
+set PATH=C:\Windows\System32;C:\tools\flutter\bin;C:\Program Files\Git\cmd
+cd /d C:\Butlery\butlery
+call flutter test test/widget/...</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Plugins, MCP-servrar och claude.ai-connectors är <strong>user-scoped</strong> — de följer INTE med repo-klonen. Det är den enda delen av Malins setup du måste återskapa för hand.</li>
+          <li>github-MCP kan visa "Failed to connect" tills du autentiserat — ofarligt.</li>
+          <li>Connectorerna (Gmail m.fl.) bor i ditt eget claude.ai-konto; du delar inte Malins inloggning.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Kör <code>claude mcp list</code> och <code>claude plugin list</code> och jämför mot listan ovan. Du ska se linear (✓), och plugins som firebase/context7/telegram med sina MCP-servrar.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Vilken del av Malins setup följer med automatiskt när du klonar repot, och vilken måste du sätta upp för hand?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Hela <code>.claude/</code>-mappen (skills, agenter, hooks, rules, CLAUDE.md, settings.json, launch.json) följer med klonen. Plugins, MCP-servrar och claude.ai-connectors är user-scoped och måste installeras för hand.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="3"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(2)">← Föregående</button><button onclick="goTo(4)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 4 (filled) ===== -->
+    <section class="module" data-module="4">
+      <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
+      <h1>Dina skyddsnät: skills, agenter, hooks</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du skilja på de tre skyddslagren — skills, agenter och hooks — och säga vad var och en skyddar mot.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Butlery har tre olika typer av skyddsnät. De är lätta att blanda ihop, så här är den enkla uppdelningen:</p>
+      <ul>
+        <li><strong>Skill</strong> — en laminerad fusklapp (Markdown-fil med en YAML-header) som styr <em>hur</em> Claude skriver kod. Laddas automatiskt <em>medan</em> Claude skriver, när uppgiften matchar. (En senior-utvecklares väggnotering som Claude tar ner i rätt ögonblick.)</li>
+        <li><strong>Agent</strong> — en specialist-granskare med egen instruktion, som granskar en diff <em>efteråt</em>. Körs när du (eller en gate) skickar en diff till den. (En besiktningsman som signerar innan du får committa.)</li>
+        <li><strong>Hook</strong> — ett litet bash-skript som körs automatiskt på en livscykelhändelse: <em>innan</em> ett verktyg körs, <em>efter</em> en fil skrivs, eller när Claude försöker stanna. (En dörrvakt som antingen vinkar in dig eller stoppar dig.)</li>
+      </ul>
+
+      <h3>Skills — fyra familjer</h3>
+      <p>Skills bor i <code>.claude/skills/</code> och faller i fyra familjer:</p>
+      <ul>
+        <li><strong>Generators</strong> skapar ny kod som redan följer husreglerna (<code>repository-generator</code>, <code>viewmodel-generator</code>, <code>serialization-generator</code>, <code>permission-test-generator</code>).</li>
+        <li><strong>Validators</strong> fångar farliga mönster (<code>tri-state-validator</code>, <code>data-source-enforcer</code>, <code>responsive-layout-validator</code>, <code>facade-pattern-detector</code>, <code>mixin-advisor</code>).</li>
+        <li><strong>Domain-knowledge</strong> kodar affärsregler Claude inte får gissa om (<code>butlery-architecture</code>, <code>tagging-domain-knowledge</code>, <code>firebase-ingredient-patterns</code>).</li>
+        <li><strong>Workflow</strong> är medvetna ritualer (<code>verify</code>, <code>drift-migration</code>, <code>flag-cleanup</code>, <code>permission-audit</code>, <code>release-notes</code>).</li>
+      </ul>
+      <p>Det enda fält som ändrar en skills beteende är <code>disable-model-invocation</code>. Saknas det (vanligast) → skillen tänds automatiskt när din uppgift matchar dess <code>description</code>. Är det satt till <code>true</code> → autotändning AV, och skillen blir ett manuellt <code>/slash-kommando</code> du själv skriver. Det är reserverat för riskabla eller "publicerande" handlingar (databasmigrering, flag-städning, säkerhetsaudit, release notes) där Claude aldrig ska börja på eget bevåg.</p>
+
+      <h3>Agenter — i tiers</h3>
+      <p>Agenter bor i <code>.claude/agents/</code> och är organiserade i tiers:</p>
+      <ul>
+        <li><strong>Tier 1 (rekommenderad):</strong> <code>debugger</code> — för buggar, fel, testfel.</li>
+        <li><strong>Tier 2 (commit-tvingad via hook):</strong> <code>code-reviewer</code>, <code>testing-specialist</code>, <code>firebase-backend-security</code>, <code>firestore-rules-tester</code>.</li>
+        <li><strong>Tier 3 (på begäran):</strong> <code>uiux-designer</code>, <code>performance-optimizer</code>, <code>flutter-developer</code>.</li>
+      </ul>
+
+      <h3>Hooks — det som faktiskt tvingar</h3>
+      <p>Hooks bor i <code>.claude/hooks/</code> och är kopplade i <code>.claude/settings.json</code>. Vissa <strong>blockerar</strong> (du kommer inte vidare förrän du gör X); andra bara <strong>varnar</strong> på stderr (icke-blockerande knuffar). De blockerande sitter runt två flaskhalsar: <code>git commit</code> och <code>ExitPlanMode</code> (plan-granskning), plus <code>Stop</code>-händelsen (<code>dart analyze</code> måste vara ren).</p>
+      <p>Varför detta inte är byråkrati: <code>tri-state-validator</code> förhindrar bokstavligen att Claude säger till en glutenintolerant användare att ett recept är säkert när dess ingredienser aldrig fullt analyserades. Reglerna har riktiga insatser.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">.claude/skills/</span><span class="role">Alla skills; t.ex. butlery-architecture.md, data-source-enforcer.md, tri-state-validator.md, mixin-advisor.md</span></div>
+        <div class="file-chip"><span class="path">.claude/agents/</span><span class="role">code-reviewer.md, testing-specialist.md, firebase-backend-security.md, firestore-rules-tester.md, debugger.md</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/</span><span class="role">require-review-before-commit.sh, file-size-guard.sh, regenerate-l10n.sh, safety-skill-trigger.sh</span></div>
+        <div class="file-chip"><span class="path">.claude/settings.json</span><span class="role">Kopplar varje hook till en händelse + matcher</span></div>
+        <div class="file-chip"><span class="path">CLAUDE.md</span><span class="role">Avsnittet "Agent Usage Rules" och tabellen trigger → agent → marker</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Frontmatter-fältet som avgör autotändning vs slash-kommando</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>disable-model-invocation: true</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">En hook som matchar en händelse (i settings.json, koncept)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>PreToolUse  → matcher "Bash"  → require-review-before-commit.sh
+PostToolUse → matcher "Write|Edit" → regenerate-l10n.sh</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li><strong>Skill ≠ agent.</strong> En <em>skill</em> styr skrivandet i stunden; en <em>agent</em> granskar resultatet efteråt. T.ex. <code>tri-state-validator</code> (skill) styr koden, <code>firebase-backend-security</code> (agent) granskar den.</li>
+          <li><code>disable-model-invocation: true</code> är det enda som skiljer ett manuellt <code>/slash</code>-skill från autotändande. Fyra skills är manuella: <code>drift-migration</code>, <code>flag-cleanup</code>, <code>permission-audit</code>, <code>release-notes</code>.</li>
+          <li>Playbook-texten i skills är skriven <strong>på svenska</strong> (appens UI-språk) med engelska kodkommentarer — rubriker som "Nyckelfilar", "Kritiska Fel", "Varningssignaler" är bara rubriker, inte kod.</li>
+          <li>Generators producerar en <strong>mall</strong> med <code>{Entity}</code>-platshållare, inte färdig kod — du fyller i modellnamn och fält.</li>
+          <li>Inte alla agent-filer är tvingade: <code>cloud-functions-specialist</code> och <code>e2e-test-specialist</code> har fulla filer men gateas <em>inte</em> av commit-hooken.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>.claude/skills/viewmodel-generator.md</code> och <code>.claude/skills/drift-migration.md</code> sida vid sida och läs ENDAST frontmatter (mellan <code>---</code>-raderna). Hitta <code>disable-model-invocation: true</code> i den ena. Förutsäg: om du säger "skapa en ny ViewModel", vilken laddas automatiskt och vilken måste du anropa med <code>/drift-migration</code>?</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Två skill-filer ser identiska ut i format — en tänds automatiskt, den andra körs bara när du skriver dess slash-kommando. Vad i filen avgör vilket?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Raden <code>disable-model-invocation: true</code> i YAML-frontmatter. Närvarande = autotändning AV (manuellt <code>/kommando</code>); frånvarande = Claude autoladdar när <code>description</code> matchar din uppgift.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="4"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(3)">← Föregående</button><button onclick="goTo(5)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 5 (filled) ===== -->
+    <section class="module" data-module="5">
+      <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
+      <h1>När det blockar: gates &amp; markers</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du, när som helst Claude blockeras, slå upp exakt vilken gate som stoppar dig och de exakta stegen för att låsa upp.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>De blockerande hookarna fungerar genom ett <strong>marker-system</strong> (en "tillståndslapp"). Att köra en granskning producerar en marker-fil under <code>.claude/state/&lt;namn&gt;-done.marker</code>. Hooken jämför markerns ändringstid (mtime) med den nyaste ändrade filens mtime:</p>
+      <ul>
+        <li><strong>Marker saknas</strong> (granskning aldrig körd) → blockerad.</li>
+        <li><strong>Marker föråldrad/STALE</strong> (du redigerade en fil EFTER senaste granskning) → blockerad.</li>
+      </ul>
+      <p>Därför är regeln alltid: <strong>redigera → granska → <code>touch</code> markern → committa</strong>, utan redigeringar emellan. Rör du koden igen efter att du touchat markern, är lappen ogiltig och du måste granska om.</p>
+      <p>Det finns <strong>två oberoende commit-gates</strong> som båda rör <code>.claude/state/</code>:</p>
+      <ol>
+        <li><strong>Agent-review-gaten</strong> (<code>require-review-before-commit.sh</code>) — kräver markers för de specialist-agenter vars sökvägsmönster matchar din staged diff.</li>
+        <li><strong>/code-review-gaten</strong> (<code>require-simplify-before-commit.sh</code>) — kräver <code>simplify-done.marker</code> (legacy-namn behållet med flit för att inte krocka med agentens <code>code-review-done.marker</code>).</li>
+      </ol>
+      <p><strong>Plan mode</strong> har sin egen gate (<code>plan-review-gate.sh</code>) som är <strong>två-anrops-stateful</strong>: första <code>ExitPlanMode</code>-anropet skriver en marker och BLOCKERAR med en granskningsuppmaning; andra anropet (inom 30 min) raderar markern och TILLÅTER. Panikna inte vid första blocken — det är meningen att du ska bli stoppad första gången.</p>
+      <p><strong>Stop-hooken</strong> (<code>stop-analyze.sh</code>) blockerar på <code>Stop</code>-händelsen: <code>dart analyze --fatal-infos</code> måste vara ren <em>i filer den här sessionen ändrade</em>. Den är session-medveten — den ignorerar fel från en parallell session.</p>
+      <p><strong>lessons.md</strong> är inte en gate men en regel: efter VARJE användarrättelse ska Claude OMEDELBART lägga till en daterad post i <code>tasks/lessons.md</code> (format <code>### [Kategori] Titel</code> + Date, Trigger, Rule, Example) <em>innan</em> den gör något annat.</p>
+
+      <h2>"Du blev blockerad → gör så här"</h2>
+      <table style="width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:13.5px;">
+        <thead>
+          <tr style="background:var(--cream-darker); color:var(--forest-green-dark); text-align:left;">
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">Du ser detta</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">Vilken hook</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">Vad det betyder</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">Lås upp så här</th>
+          </tr>
+        </thead>
+        <tbody style="color:var(--text-on-cream);">
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>MISSING: code-reviewer</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>require-review-before-commit.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">En <code>*.dart</code>-fil är staged, ingen färsk code-review</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Skicka <code>code-reviewer</code> mot diffen → <code>touch .claude/state/code-review-done.marker</code> → committa igen</td>
+          </tr>
+          <tr style="background:var(--cream-dark);">
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>MISSING: testing-specialist</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>require-review-before-commit.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">En <code>lib/**/*.dart</code>-fil är staged</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Skicka <code>testing-specialist</code> → <code>touch .claude/state/testing-review-done.marker</code></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>MISSING: firebase-backend-security</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>require-review-before-commit.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Diff rör <code>lib/repositories/</code>, <code>lib/services/{firebase|firestore|auth|user|gdpr}</code>, eller <code>functions/src/</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Skicka <code>firebase-backend-security</code> → <code>touch .claude/state/firebase-security-done.marker</code></td>
+          </tr>
+          <tr style="background:var(--cream-dark);">
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>MISSING: firestore-rules-tester</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>require-review-before-commit.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>firestore.rules</code> eller <code>*-rules.test.ts</code> är staged</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Skicka <code>firestore-rules-tester</code> (emulator allow+deny) → <code>touch .claude/state/rules-tester-done.marker</code></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>STALE: &lt;agent&gt;</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>require-review-before-commit.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Du redigerade en fil EFTER att markern touchades</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Granska om med den agenten → <code>touch</code> markern igen → committa</td>
+          </tr>
+          <tr style="background:var(--cream-dark);">
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Commit blockas, nämner <code>/code-review</code> / simplify</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>require-simplify-before-commit.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">En <code>.dart</code> är staged och ingen färsk <code>/code-review</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Kör <code>/code-review high</code> (eller <code>xhigh</code> för backend/security-diffar) → <code>touch .claude/state/simplify-done.marker</code></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Första <code>ExitPlanMode</code> blockar med granskningsuppmaning</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>plan-review-gate.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Förväntat — första halvan av två-anrops-gaten</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Gör granskningen den ber om (för high-stakes-planer: kör <code>/review-plan</code>), anropa sedan <code>ExitPlanMode</code> IGEN</td>
+          </tr>
+          <tr style="background:var(--cream-dark);">
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Claude kan inte stanna, "dart analyze found issues"</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>stop-analyze.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Fel i filer DENNA session ändrade</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Fixa felen; om samma fel två gånger i rad → eskalera till Linear-ticket (anti-loop)</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Bash-kommando vägras (reset --hard, checkout ., clean -f, rm -rf, push --force)</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>bash-firewall.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Destruktivt git/rm-kommando</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Kör <code>git status</code> först, fråga användaren; kör utanför Claudes Bash-verktyg om verkligen nödvändigt</td>
+          </tr>
+          <tr style="background:var(--cream-dark);">
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">stderr-varning "file exceeds 500 lines"</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>file-size-guard.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Icke-blockerande knuff</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Splitta till facade + managers, ELLER allowlista, ELLER lägg <code>// claude:large-file-ok — &lt;skäl&gt;</code> i första 10 raderna</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">stderr "regenerate-l10n FAILED"</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>regenerate-l10n.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">ARB-syntax/placeholder-fel</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Fixa ARB-filen (matchande nycklar/placeholders i båda språkfilerna); markören är icke-blockerande</td>
+          </tr>
+          <tr style="background:var(--cream-dark);">
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">stderr om schemaVersion / drift</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>drift-version-guard.sh</code></td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Drift-tabell ändrad utan version-bump</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Kör <code>/drift-migration</code> (icke-blockerande varning)</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Inget händer på en doc-only commit</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">(alla gates)</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Inga sökvägsmönster matchade</td>
+            <td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);">Hooken är tyst — committa fritt</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">.claude/hooks/require-review-before-commit.sh</span><span class="role">Sökvägsmönstren (rad ~93–127)</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/require-simplify-before-commit.sh</span><span class="role">/code-review-gaten</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/plan-review-gate.sh</span><span class="role">Två-anrops-logiken (rad 54–70)</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/stop-analyze.sh</span><span class="role">Session-medveten dart analyze</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/bash-firewall.sh</span><span class="role">Destruktiva-kommando-spärren</span></div>
+        <div class="file-chip"><span class="path">lefthook.yml</span><span class="role">OS-git-lagrets pre-commit: dart format + secret-scan (rad 24) + dart analyze</span></div>
+        <div class="file-chip"><span class="path">.claude/state/</span><span class="role">Alla marker-filer</span></div>
+        <div class="file-chip"><span class="path">tasks/lessons.md</span><span class="role">Self-improvement-loggen</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Standard-upplåsningssekvens efter att en agent rapporterat rent</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre># efter att en agent rapporterat rent:
+touch .claude/state/code-review-done.marker
+
+# /code-review-gaten:
+touch .claude/state/simplify-done.marker</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li><strong>Första <code>ExitPlanMode</code> blockar ALLTID.</strong> Det är design. Ge inte upp — anropa igen efter granskningen.</li>
+          <li><strong>Redigering efter granskning ogiltigförklarar markern</strong> via mtime. Alltid: edit → review → touch → commit, inget emellan.</li>
+          <li><code>/code-review</code>-markern heter <code>simplify-done.marker</code> (legacy), INTE <code>code-review-done.marker</code>. Det senare är <code>code-reviewer</code>-<em>agentens</em> marker. Två olika granskare, två olika markers.</li>
+          <li><strong>Secret-scanning sker — men inte via en Claude-hook.</strong> <code>secret-scan-precommit.sh</code> finns i repot men är <em>inte</em> inkopplad i <code>.claude/settings.json</code>. MEN secret-scanning gateas ändå vid <em>varje</em> commit via lefthook pre-commit (<code>lefthook.yml</code> rad 24, <code>secret-scan:</code>). Läs inte "inte inkopplad i settings.json" som "hemligheter scannas inte".</li>
+          <li>Stop-hooken är session-medveten: fixa INTE analyze/test-fel i filer den här sessionen inte rörde — de tillhör en parallell session.</li>
+          <li>Plan-markers ligger i <code>$HOME/.claude/state/</code> (inte repots) med 30 min TTL; commit-markers ligger i repots <code>.claude/state/</code>.</li>
+          <li>Kör inte review-agenter på &gt;3 filer samtidigt — de timeout:ar. Splitta commits eller batcha i 2–3.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>.claude/hooks/require-review-before-commit.sh</code> och följ <code>has_match</code>-anropen. För dessa hypotetiska staged-filer, lista vilka markers hooken kräver: (1) <code>lib/views/recipe_detail.dart</code>, (2) <code>functions/src/index.ts</code>, (3) <code>firestore.rules</code>, (4) <code>docs/README.md</code>. <em>(Facit: 1 → code-review + testing-review; 2 → firebase-security (<code>.ts</code> är inte <code>.dart</code>, så code-reviewer tänds INTE); 3 → rules-tester; 4 → ingen, hooken tystnar.)</em></p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Du körde <code>/code-review</code> och <code>testing-specialist</code>, touchade båda markers, upptäckte sedan ett stavfel och redigerade en staged <code>.dart</code>-fil igen. Du kör <code>git commit</code>. Vad händer och varför?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Den BLOCKERAR som STALE. Gaten jämför varje markers mtime mot den nyaste ändrade filens mtime; din redigering efter granskningen gjorde filen nyare än båda markers, så gaten kräver att du granskar om och touchar markers igen innan commit.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="5"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(4)">← Föregående</button><button onclick="goTo(6)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 6 (filled) ===== -->
+    <section class="module" data-module="6">
+      <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
+      <h1>Att dirigera Claude bra</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du skriva en prompt som ger rätt resultat, känna igen när plan mode bör starta, och läsa en diff tillräckligt för att godkänna eller avvisa en ändring.</p></div>
+
+      <h2>Innehåll</h2>
+      <h3>Skriva en bra prompt</h3>
+      <p>Det bästa du kan göra är att vara konkret om <em>vad</em> och låta Claude lösa <em>hur</em> — men ge den ankarpunkter. En vag prompt ("fixa onboarding") ger gissningar; en förankrad prompt ("i <code>lib/l10n/app_sv.arb</code>, lägg till nyckeln X efter Y med värdet Z, och spegla den i <code>app_en.arb</code>") ger exakt det du ville. Mönstret att kopiera är ofta: <em>peka på en befintlig fil som redan gör det rätt och säg "härma den".</em></p>
+
+      <h3>Plan mode</h3>
+      <p>Triggas automatiskt för komplext arbete: 3+ filer, nya services/viewmodels, arkitekturändringar, eller varje "refactor"/"migrate"-begäran. Claude skriver planen till <code>tasks/todo.md</code>, får godkännande, och implementerar sedan. Varje plan MÅSTE sluta med en sektion <code>## What this means in plain language</code> (5–8 punkter, noll jargong) som förklarar vad du kommer märka och vad som kan gå sönder. Den sektionen är din gåva som icke-kodare: läs den för att förstå vad som händer.</p>
+
+      <h3>Läsa en diff</h3>
+      <p>En diff visar <code>-</code> (borttaget) och <code>+</code> (tillagt). Du behöver inte förstå varje rad — du behöver svara på tre frågor:</p>
+      <ol>
+        <li>Rör ändringen bara de filer den borde? (En l10n-ändring som plötsligt rör en repository är en varningsflagga.)</li>
+        <li>Följer den husreglerna? (Svenska UI-strängar, <code>withValues</code> inte <code>withOpacity</code>, inga rundade hörn, ingen <code>FirebaseFirestore.instance</code> utanför en repository.)</li>
+        <li>Stämmer "plain language"-sammanfattningen med vad diffen faktiskt gör?</li>
+      </ol>
+
+      <h3>Riktning i en trace</h3>
+      <p>Lär dig läsa uppifrån-ned för en knapptryckning (View → ViewModel → Service → Repository → Firebase) och nerifrån-upp för data som anländer (Firestore-stream → Repository → Service → ViewModel hör via stream → View ritas om). Mer om detta i Modul 8.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">.claude/rules/workflow-discipline.md</span><span class="role">Plan mode-triggers, obligatorisk plain-language-sektion</span></div>
+        <div class="file-chip"><span class="path">tasks/todo.md</span><span class="role">Där planen skrivs (sprint-scratchpad)</span></div>
+        <div class="file-chip"><span class="path">.claude/plan-review-checklist.md</span><span class="role">Checklistan planer granskas mot</span></div>
+      </div>
+
+      <h2>Prompt-exempel</h2>
+      <div class="code-block">
+        <div class="label">Förankrad bygg-prompt (bra)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>I lib/l10n/app_sv.arb, lägg till nyckeln onboardingWelcomeCrossPlatform direkt efter
+onboardingWelcomeNote med värdet "Planera på datorn, laga från telefonen — Butlery
+funkar överallt." Spegla den i app_en.arb med engelsk text. Härma exakt stilen på
+den befintliga onboardingWelcomeNote-raden (bara nyckel/värde, ingen @-metadata).</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Be om en plan</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Det här rör flera filer och en ny service. Gå in i plan mode, skriv planen till
+tasks/todo.md, och avsluta med plain-language-sektionen så jag förstår vad som händer.</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Läsa en diff</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Visa mig diffen för det du nyss ändrade. För varje fil, säg i en mening varför den
+behövde röras, och bekräfta att inga UI-strängar är på engelska och att ingen kod
+använder withOpacity eller FirebaseFirestore.instance.</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Vag prompt → gissningar. Förankra alltid i en fil eller ett befintligt mönster.</li>
+          <li>Efter att en plan godkänts: be inte Claude "läsa filerna igen" — plan mode har redan utforskat. Hoppa rakt in i steg 1.</li>
+          <li><code>tasks/todo.md</code> skrivs över av nästa sprint. Allt som måste överleva måste till Linear som en egen ticket.</li>
+          <li>Erbjud aldrig "branch + PR vs pusha till main" — det är solo-flöde, pusha alltid till main.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>tasks/todo.md</code> och läs den aktuella sprinten. Hitta en tasks tier-tagg (<code>[Tier A]</code> / <code>[Tier B]</code>). Förklara med egna ord varför en Tier A-task stängdes rakt till Done medan en Tier B-task parkerades i "In Review".</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Vilken sektion måste varje plan sluta med, och varför är den särskilt värdefull för dig som inte är van vid kod?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer"><code>## What this means in plain language</code> — 5–8 jargongfria punkter om vad du kommer märka och vad som kan gå sönder. Den låter dig förstå och godkänna en ändring utan att kunna Flutter.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="6"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(5)">← Föregående</button><button onclick="goTo(7)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 7 (filled) ===== -->
+    <section class="module" data-module="7">
+      <div class="module-kicker">Del 2 · Butlery-appen (kartan)</div>
+      <h1>Vad är Butlery</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du beskriva vad Butlery gör för en användare och rita huvudresan från "jag hittade ett recept" till "jag lagade det och handlade ingredienserna".</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Butlery är en svenskspråkig matlagnings-/receptapp som förvandlar "jag hittade ett recept" till "jag lagade det och handlade varorna". Hela appen hänger på en <strong>fyr-fliks bottennavigering</strong>:</p>
+      <ul>
+        <li><strong>Recept</strong> (Mina recept) — <code>/</code></li>
+        <li><strong>Meny</strong> (Veckomeny) — <code>/veckomeny</code></li>
+        <li><strong>Inköp</strong> (Inköpslista) — <code>/inkopslista</code></li>
+        <li><strong>Lägg till</strong> (importera/skapa recept)</li>
+      </ul>
+      <p>Kärnresan är en pipeline (tänk fabrikslinje, inte lista): råmaterial (en receptlänk) kommer in vid <strong>Lägg till</strong>, bearbetas (import), lagras i ett lager (<strong>Mina recept</strong>), monteras till en order (<strong>Veckomeny</strong>), plockas till en kundvagn (<strong>Inköpslista</strong>), och används till slut (<strong>Cooking Mode</strong>). Varje flik är en station på linjen.</p>
+      <p>Runt den ryggraden sitter stödfunktioner: <strong>Skafferi</strong> (vad du har hemma), <strong>Ingredienssök</strong> (vad kan jag laga av detta?), <strong>Personliga taggar</strong> (egna etiketter/samlingar), <strong>Onboarding</strong> (allergener + diet + första import), <strong>Konto/Inställningar</strong>, och <strong>Notiser</strong>.</p>
+      <p>En andra hel dimension är <strong>Socialt</strong>: vänner, grupper, delning av recept och menyer, realtids-kollaborativa inköpslistor och menyer, direktmeddelanden och offentliga profiler. Ett recept kan flöda från en persons samling in i en väns.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">lib/widgets/common/navigation/adaptive_navigation.dart</span><span class="role">De 4 navigeringsdestinationerna</span></div>
+        <div class="file-chip"><span class="path">lib/core/constants/routes.dart</span><span class="role">Hela navigationsgrafen ("planritningen")</span></div>
+        <div class="file-chip"><span class="path">lib/views/mina_recept_view.dart</span><span class="role">Receptsamlingens nav</span></div>
+        <div class="file-chip"><span class="path">lib/views/veckomeny_view.dart</span><span class="role">Veckomenyplaneraren</span></div>
+        <div class="file-chip"><span class="path">lib/views/cooking_mode_view.dart</span><span class="role">Fullskärms cooking mode (resans sista steg)</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Rutter (routes.dart)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>static const String weeklyMenu = '/veckomeny';
+static const String shoppingList = '/inkopslista';
+static const String cookingMode = '/cooking-mode';</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Bottennavigeringen är exakt <strong>fyra</strong> flikar. Allt annat nås genom att pusha rutter ovanpå dessa.</li>
+          <li>Butlery är medvetet <strong>inte ett socialt nätverk</strong> — discovery-dashboarden är borttagen; men vänner/delning/kommentarer/betyg/grupper finns kvar.</li>
+          <li>Det finns ännu <strong>inga monetiseringsbeslut</strong> och ingen app-store-inlämning — fokus är att bygga.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>lib/core/constants/routes.dart</code> och hitta <code>weeklyMenu</code>, <code>shoppingList</code> och <code>cookingMode</code>. Bekräfta vilka strängar de mappar till (<code>/veckomeny</code>, <code>/inkopslista</code>, <code>/cooking-mode</code>).</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Vilka är de fyra primära flikarna, och vilken är resans terminalsteg (där du faktiskt lagar)?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Recept (<code>/</code>), Meny (<code>/veckomeny</code>), Inköp (<code>/inkopslista</code>), Lägg till. Terminalsteget är Cooking Mode (<code>cooking_mode_view.dart</code>), nås från receptdetalj eller meny.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="7"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(6)">← Föregående</button><button onclick="goTo(8)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 8 (filled) ===== -->
+    <section class="module" data-module="8">
+      <div class="module-kicker">Del 2 · Butlery-appen (kartan)</div>
+      <h1>Arkitekturen (4 lager)</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du följa en knapptryckning genom alla fyra lager och förklara varför bara repository:t får röra databasen.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Butlery är organiserat i fyra staplade lager, och data flödar bara mellan angränsande lager — aldrig hoppande. <strong>Restaurang-analogin:</strong></p>
+      <div class="diagram">
+        <pre>View        = matsalen        (vad du ser och rör — widgets, knappar)
+   ↓  ↑
+ViewModel   = servitören      (tar din beställning, bär ut maten, lagar inget)
+   ↓  ↑
+Service     = köksmästaren    (bestämmer vad som ska göras, koordinerar)
+   ↓  ↑
+Repository  = kocken          (går in i skafferiet — Firebase/Firestore)
+   ↓  ↑
+Firebase    = skafferiet/lagret</pre>
+      </div>
+      <p>Den gyllene regeln: varje lager pratar bara med det direkt under. En knapp skriver aldrig till databasen direkt; det går View → ViewModel → Service → Repository → Firebase.</p>
+
+      <h3>Dependency injection (DI)</h3>
+      <p>Hur får en widget de objekt den behöver (sin servitör, sin kock)? Vid appstart (<code>lib/main.dart</code>) registreras varje service/repository/viewmodel i en central container (GetIt, omsluten av DIContainer). Senare frågar vilken widget som helst efter vad den behöver per typ: <code>ServiceLocator.get&lt;SomeType&gt;()</code> — den bygger aldrig objekten själv med <code>new</code>. Garderobs-analogin: vid start lämnar du alla verktyg till garderobs-disken (containern). Senare säger du bara "ge mig recept-servicen".</p>
+
+      <h3>En konkret trace (favorit-hjärtat — den VERKLIGA favorit-skrivvägen)</h3>
+      <ol>
+        <li>View anropar <code>viewModel.toggleFavorite()</code>.</li>
+        <li>ViewModel (<code>recipe_detail_viewmodel.dart:369–379</code>) vänder den lokala flaggan optimistiskt, anropar <code>notifyListeners()</code> så hjärtat ritas om direkt, frågar sedan Service: <code>recipeService.toggleFavorite(id, nyttVärde)</code>.</li>
+        <li>Service (<code>unified_recipe_service.dart:816</code>) bygger en hel uppdaterad receptkopia (<code>copyWith(isFavorite: ...)</code>) och delegerar persistensen till Repository via <code>updateRecipe(updated)</code> — en <strong>full-dokument-update</strong>, inte en fält-inkrement.</li>
+        <li>Repository (<code>FirebaseRecipeRepository.updateRecipe</code>) kollar permissions och utför Firestore-skrivningen genom basklassens skyddade <code>firestore</code>-getter.</li>
+        <li>Failar skrivningen vänder ViewModel tillbaka flaggan (rollback).</li>
+      </ol>
+      <p><strong>Viktigt — en ANNAN repository-skrivning:</strong> <code>incrementCookCount()</code> (<code>firebase_recipe_repository.dart:549–573</code>) är INTE favorit-vägen. Den backar cook-count-/"Lagat idag"-handlingen (en separat knapp), och skriver bara två fält (<code>core.cookCount</code> + <code>core.lastCookedAt</code>) som ett riktat <code>update</code>. Kontrasten mot favorit-vägens full-dokument-<code>updateRecipe</code> är själva poängen.</p>
+
+      <h3>Interface vs implementation</h3>
+      <p>Containern registrerar <code>RecipeRepository</code> (abstrakt interface) och ger tillbaka en <code>FirebaseRecipeRepository</code> (konkret). Vägguttags-analogin: din lampa (ViewModel) ansluter till uttagsformen (interfacet); bakom väggen kan det vara sol eller kol (Firebase eller en mock) — lampan varken vet eller bryr sig.</p>
+
+      <h3>notifyListeners() är dörrklockan</h3>
+      <p>ViewModel:n ringer på, och varje widget som prenumererar (Consumer/Selector) vaknar och ritar om. Ingen klocka = skärmen ser frusen ut även om datan ändrades. <strong>Optimistisk uppdatering</strong> är som att kryssa av en vara på inköpslistan innan kassörskan bekräftat — känns direkt; avvisas kortet okryssar du.</p>
+
+      <h3>Var bor den enda FirebaseFirestore.instance?</h3>
+      <p>Du kommer i Modul 10/11 läsa regeln "rör aldrig <code>FirebaseFirestore.instance</code> inuti en repository". Det är sant för <em>subklasserna</em>. Men öppnar du basklassen <code>base_firebase_repository.dart</code> ser du den litterala <code>FirebaseFirestore.instance</code> i konstruktorn (rad 29) — det är den ENDA sanktionerade instansieringen i hela datalagret. Den exponeras vidare via den <code>@protected firestore</code>-gettern (rad 36) som alla subklasser använder. Instansen skapas på exakt ETT ställe så att ingen subklass någonsin behöver röra <code>FirebaseFirestore.instance</code> själv.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">lib/main.dart</span><span class="role">Startpunkt, bygger DI</span></div>
+        <div class="file-chip"><span class="path">lib/core/di/di_container.dart</span><span class="role">DI-containern (omsluter GetIt)</span></div>
+        <div class="file-chip"><span class="path">lib/core/providers/application_provider.dart</span><span class="role">ServiceLocator-klassen</span></div>
+        <div class="file-chip"><span class="path">lib/core/di/modules/content_module.dart</span><span class="role">Binder RecipeRepository-interface till impl (rad 355–357)</span></div>
+        <div class="file-chip"><span class="path">lib/viewmodels/recipe_detail_viewmodel.dart</span><span class="role">ViewModel (toggleFavorite rad 369–379)</span></div>
+        <div class="file-chip"><span class="path">lib/services/unified/unified_recipe_service.dart</span><span class="role">Service-facade (toggleFavorite rad 816 → updateRecipe)</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firebase/firebase_recipe_repository.dart</span><span class="role">Impl; incrementCookCount rad 549–573 (SEPARAT cook-count-skrivning)</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firebase/base_firebase_repository.dart</span><span class="role">Konstruktorns FirebaseFirestore.instance (rad 29) + firestore-getter (rad 36)</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Favorit-vägen + den enda sanktionerade instansen</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>// View → ViewModel (recipe_detail_view.dart:346)
+onPressed: () async { await viewModel.toggleFavorite(); ... }
+
+// FAVORIT-vägen: optimistisk uppdatering + rollback (viewmodel:369-379)
+_recipe = _recipe.copyWith(isFavorite: newValue);
+notifyListeners();
+final success = await _recipeService.toggleFavorite(...);
+if (!success) { _recipe = _recipe.copyWith(isFavorite: !newValue); notifyListeners(); }
+
+// FAVORIT-vägens VERKLIGA skrivning: full kopia → updateRecipe
+final updated = recipe.copyWith(isFavorite: value);
+await _recipeRepository.updateRecipe(updated);   // full-dokument-update
+
+// EN ANNAN skrivning (INTE favorit): cook-count, fält-riktad (rad 549-573)
+await getCollectionForUser(userId).doc(recipeId).update({
+  'core.cookCount': FieldValue.increment(1),
+  'core.lastCookedAt': Timestamp.fromDate(cookedAt),
+});
+
+// Den enda sanktionerade instansen bor i basklassen:
+@protected FirebaseFirestore get firestore =&gt; _firestore;   // rad 36</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li><strong>Favorit ≠ cook-count.</strong> Hjärtat går via service <code>toggleFavorite()</code> → <code>updateRecipe(updated)</code> (full-dokument). <code>incrementCookCount()</code> är "Lagat idag" (riktad tvåfälts-skrivning) — en helt separat operation.</li>
+          <li><strong><code>RecipeDetailViewModel</code> är undantaget som bekräftar regeln:</strong> den är INTE registrerad i DI eftersom den behöver en specifik Recipe-instans. View:n skapar den direkt med <code>ChangeNotifierProvider(create: ...)</code>. Andra VM:er hämtas med <code>ServiceLocator.get</code>.</li>
+          <li>Singleton-VM:er måste använda <code>ChangeNotifierProvider.value</code> (aldrig <code>create:</code>) för att undvika dubbel-dispose.</li>
+          <li><strong>Två "aktuell användare"-accessorer får inte blandas:</strong> <code>userService.currentUserProfile</code> (full data/inställningar) vs <code>permissionService.currentUserId</code> (auth/permission-checks). Mer i Modul 10 &amp; 11.</li>
+          <li>Data som flödar UPP från Firestore når UI:t via Service:ns RxDart <code>stateStream</code> (BehaviorSubject), inte via en direkt ChangeNotifier.</li>
+          <li>På webben är receptcachen stubbad — <code>UnifiedRecipeService</code> tar en annan kodväg (<code>kIsWeb</code>-grenar).</li>
+          <li>Den litterala <code>FirebaseFirestore.instance</code> i <code>base_firebase_repository.dart:29</code> är sanktionerad och unik — kopiera den INTE in i en subklass.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>lib/views/recipe_detail_view.dart</code> och hitta hjärtknappen (~rad 346). Följ tryckningen ner: <code>toggleFavorite()</code> i ViewModel (rad 369–379) → i Service (rad 816), där den anropar <code>updateRecipe(updated)</code>. Öppna sedan <code>incrementCookCount()</code> (rad 549–573) och bekräfta att det är en SEPARAT operation. Sök till sist View- och ViewModel-filerna efter <code>FirebaseFirestore</code> och bekräfta NOLL träffar — och öppna <code>base_firebase_repository.dart:29</code> för att se var den enda instansen bor.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">När användaren trycker på favorit-hjärtat, vilket lager utför den verkliga Firestore-skrivningen, vilken repository-metod är det, och varför görs det inte i ViewModel:n?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Repository:t (<code>FirebaseRecipeRepository</code>) utför skrivningen, via <code>updateRecipe(updated)</code> — service-lagrets <code>toggleFavorite()</code> bygger en full receptkopia med <code>copyWith(isFavorite: ...)</code> och skickar ner den. (Det är INTE <code>incrementCookCount()</code>, som backar den separata "Lagat idag"-handlingen.) Repository:t är det enda lagret som får röra Firestore, via basklassens skyddade <code>firestore</code>-getter — vars enda <code>FirebaseFirestore.instance</code> lever i <code>base_firebase_repository.dart</code>. ViewModel:n uppdaterar bara lokal state + <code>notifyListeners</code> och delegerar nedåt. Att centralisera DB-access i repository:t håller permission-validering, ägarcheck och audit-loggning på ett granskningsbart ställe.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="8"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(7)">← Föregående</button><button onclick="goTo(9)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 9 (filled) ===== -->
+    <section class="module" data-module="9">
+      <div class="module-kicker">Del 2 · Butlery-appen (kartan)</div>
+      <h1>Feature-kartan</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du spåra hur ett recept rör sig mellan flikarna och var två features kopplas ihop i koden.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Tänk på appen som en fabrikslinje med två axlar:</p>
+      <ul>
+        <li><strong>Vertikal axel (din egen pipeline):</strong> import → samling → meny → inköp → laga.</li>
+        <li><strong>Horisontell axel (socialt):</strong> vänner/grupper → dela recept &amp; menyer → realtids-kollaborativa listor/menyer → meddelanden.</li>
+      </ul>
+
+      <h3>Import-tratten → samling</h3>
+      <p>Sex importvägar konvergerar alla på samma utfall — ett Recept sparat i Mina recept. <code>lagg_till_recept_view</code> erbjuder 4 (smartImport, manuell, foto, arkiv); <code>smart_import</code> absorberar själv URL + text + sociala medier; <code>receive_share_view</code> är en OS-nivå-ingång; quick capture är en snabb stub-save. Sex olika dörrar, samma lobby.</p>
+
+      <h3>Recept → meny → inköp-pipelinen (kärnvärdesslingan)</h3>
+      <p>Ett recept i samlingen kan läggas till veckomenyn. Menyns dialog (<code>showShoppingListSelector</code>) genererar en inköpslista från alla menyns ingredienser och navigerar till inköpsfliken. Alternativt genererar ett enskilt recepts detaljsida en inköpslista direkt. Båda trattas in i <code>UnifiedShoppingViewModel.addItemsToList</code>.</p>
+
+      <h3>Allergen/diet-preferenser som tvärgående flöde</h3>
+      <p>Sätts vid onboarding, propageras framåt — allergen-banner dyker upp i foto/text/smart-import, allergen-badges på receptdetalj, och menygenerering filtrerar på dem.</p>
+
+      <h3>Skafferi + ingredienssök-slingan</h3>
+      <p>Skafferiet spårar vad som finns hemma; ingredienssök gör omvänd query (välj ingredienser → rankade recept), och stänger en slinga från "vad jag har" tillbaka till "vad ska jag laga".</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">lib/views/lagg_till_recept_view.dart</span><span class="role">Add-launcher (2x2-grid)</span></div>
+        <div class="file-chip"><span class="path">lib/views/smart_import_view.dart</span><span class="role">Enad import-ingång</span></div>
+        <div class="file-chip"><span class="path">lib/widgets/menu/veckomeny_dialogs.dart</span><span class="role">showShoppingListSelector (~rad 144), meny→inköp-bryggan</span></div>
+        <div class="file-chip"><span class="path">lib/views/recipe_detail/handlers/recipe_shopping_handler.dart</span><span class="role">Recept→inköp-kanten</span></div>
+        <div class="file-chip"><span class="path">lib/views/unified_shopping_view.dart</span><span class="role">Inköpslistehanteraren (konvergenspunkt)</span></div>
+        <div class="file-chip"><span class="path">lib/views/pantry/pantry_view.dart</span><span class="role">Skafferiet (sub-tab)</span></div>
+        <div class="file-chip"><span class="path">lib/views/ingredient_search/ingredient_search_view.dart</span><span class="role">Omvänd uppslagning</span></div>
+        <div class="file-chip"><span class="path">lib/views/onboarding/onboarding_view.dart</span><span class="role">Onboarding-wizard</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Meny → inköp-bryggan + konvergenspunkten</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>// Meny → inköp-bryggan (veckomeny_dialogs.showShoppingListSelector)
+Navigator.pushNamed(context, Routes.shoppingList);
+
+// Konvergenspunkten där båda vägarna landar
+Future&lt;bool&gt; addItemsToList(...) =&gt; _shoppingService.addItemsBatch(items);</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>De namngivna import-features är mest enskilda filer i <code>lib/views/</code>-roten, INTE undermappar. <code>fran_sociala_medier_view.dart</code> är faktiskt TEXT-importen (parsar klistrad text), trots namnet — inte en live social-media-scraper.</li>
+          <li><code>cooking_mode</code>, <code>menu/veckomeny</code> och import-varianterna är INTE kataloger — förvänta dig inte <code>lib/views/cooking_mode/</code>.</li>
+          <li>Meny→inköp-kopplingen är INTE en metod på <code>MenuViewModel</code> — bryggan ligger i UI-lagret (<code>veckomeny_dialogs.showShoppingListSelector</code>) och går genom <code>UnifiedShoppingViewModel</code>.</li>
+          <li><code>pantry_view</code> har ingen egen Scaffold/AppBar — den är en sub-tab och går sönder om den renderas fristående.</li>
+          <li>Två parallella <code>group_detail_view.dart</code> finns: <code>lib/views/social/</code> (delningsgrupper) och <code>lib/views/messaging/</code> (chattgrupper) — samma filnamn, olika feature.</li>
+          <li>Det finns realtids-tvillingar (<code>realtime_menu_viewmodel</code>, <code>collaborative_shopping_viewmodel</code>) — kollaboration är en separat kodväg, inte en flagga på den personliga vyn.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>lib/widgets/menu/veckomeny_dialogs.dart</code> och hitta <code>showShoppingListSelector</code> (~rad 144). Följ <code>Navigator.pushNamed(context, Routes.shoppingList)</code> och bekräfta i <code>routes.dart</code> att <code>Routes.shoppingList = '/inkopslista'</code>. Du har då bevisat hur Meny-fliken lämnar en genererad inköpslista till Inköp-fliken.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Ett importerat recept ska bli en inköpslista. Spåra de två möjliga vägarna och var de konvergerar.</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Väg 1 (via meny): recept → veckomeny → <code>veckomeny_dialogs.showShoppingListSelector</code> aggregerar ingredienser → pushar <code>Routes.shoppingList</code>. Väg 2 (enskilt recept): receptdetalj → <code>recipe_shopping_handler</code>. Båda konvergerar på <code>UnifiedShoppingViewModel.addItemsToList</code>.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="9"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(8)">← Föregående</button><button onclick="goTo(10)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 10 (filled) ===== -->
+    <section class="module" data-module="10">
+      <div class="module-kicker">Del 2 · Butlery-appen (kartan)</div>
+      <h1>Firebase &amp; datalagret</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du förklara hur en repository pratar med Firestore, skillnaden på top-level och user-scoped collections, och varför kostnadsreglerna (batch 450, cache, whereIn 30) finns.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Datan bor i <strong>Firestore</strong> (Googles moln-NoSQL: collections av documents). Appen pratar aldrig med Firestore direkt från skärmarna — allt går genom en <strong>repository</strong> (en klass vars enda jobb är att läsa/skriva en sorts sak: recept, användare, kommentarer...).</p>
+      <p><strong>Lager-analogi:</strong> Firestore är ett jättelager, en repository är den enda expediten som får gå bakom disken för en viss hylla. Skärmarna vandrar inte runt i lagret; de lämnar en lapp till expediten ("ge mig recept #42"). Expediten kollar ID (permission), loggar, hämtar lådan och packar upp den.</p>
+
+      <h3>Hur en repository pratar med Firestore</h3>
+      <p>Via den skyddade <code>firestore</code>-gettern på basklassen (aldrig den globala <code>FirebaseFirestore.instance</code>). Den bygger en <code>CollectionReference</code>, anropar <code>.doc(id).set/get/update/delete</code>, och översätter mellan Firestores <code>Map&lt;String, dynamic&gt;</code> och typade modeller via <code>fromFirestore</code>/<code>toFirestore</code> (två översättare, en åt varje håll). Den enda riktiga <code>FirebaseFirestore.instance</code> i hela datalagret skapas i basklassens konstruktor (se Modul 8) så att ingen subklass behöver röra den.</p>
+
+      <h3>Collections vs documents</h3>
+      <p>En collection är en namngiven hink ("recipes"); inuti är varje sak ett document (en JSON-liknande map) med ett id. Documents kan ha subcollections, t.ex. <code>users/{uid}/recipes/{recipeId}</code>. Inga rader/tabeller/joins.</p>
+
+      <h3>Top-level vs user-scoped</h3>
+      <p>Top-level (<code>recipes</code>, <code>public_profiles</code>, <code>conversations</code>...) håller globalt adresserbar/delad data. User-scoped data bor under <code>users/{uid}/...</code> (egna recept, settings, vänner, inköpslistor, skafferi). Repositories med user-scoped data mixar in <code>UserScopedFirebaseRepository</code>, vars override silent ruttar varje operation till <code>getUserCollection(currentUid)</code>.</p>
+
+      <h3>BaseFirebaseRepository (mallen, Template Method)</h3>
+      <p>En abstrakt generisk klass som implementerar create/read/readAll/update/delete EN gång, och slår in varje operation i permission-check + audit-logg. En ny repository svarar bara på fyra frågor: vilken collection? hur (de)serialiserar jag? vad är id:t? vem får göra vad?</p>
+
+      <h3>Kostnadstänk (Firestore tar betalt per läsning och skrivning)</h3>
+      <ul>
+        <li><strong>Batching:</strong> bunta många skrivningar i en <code>WriteBatch</code> (en nätverksresa). MEN max <strong>500</strong> operationer per batch (<code>kFirestoreBatchOpLimit</code>). Projektet chunkar vid <strong>450</strong> (<code>kFirestoreBatchSafeChunkSize</code>) för 50 ops marginal. Brev-analogi: 500 brev i en postsäck = en resa; säcken rymmer 500, Butlery fyller till 450.</li>
+        <li><strong>Caching:</strong> cache-first-läsningar (<code>getDocCacheFirst</code>), in-memory LRU (1h TTL) för site configs, permission-cache. Bibliotek-analogi: kör inte till biblioteket för en fakta du redan skrev på en post-it.</li>
+        <li><strong>Bounded queries:</strong> <code>.limit</code>, <code>readAll</code>s 10000-tak, och <code>whereIn</code> cappad till <strong>30</strong> ids per query (<code>kFirestoreWhereInLimit</code>) — stora id-listor fanas ut i flera chunkade queries.</li>
+      </ul>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">lib/repositories/CLAUDE.md</span><span class="role">Repository-kontraktet</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firebase/base_firebase_repository.dart</span><span class="role">Hjärtat (CRUD + audit, firestore-getter rad 36, enda instance rad 29)</span></div>
+        <div class="file-chip"><span class="path">lib/core/constants/firestore_collections.dart</span><span class="role">Alla collection-namn (snabbaste kartan över datan)</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firebase/firebase_user_repository.dart</span><span class="role">public_profiles + users/{uid}/settings/preferences, whereIn-chunking</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firebase/firestore_batch_utils.dart</span><span class="role">batchDeleteDocs, chunkning vid 450</span></div>
+        <div class="file-chip"><span class="path">lib/core/extensions/iterable_extensions.dart</span><span class="role">Kostnadskonstanterna + .chunked()</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/site_config_repository.dart</span><span class="role">Read-only, cachad, sanktionerad bypass (BUT-886)</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firestore_repository.dart</span><span class="role">Låg-nivå untyped wrapper (GDPR-export/radering)</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Den sanktionerade handlen + kostnadskonstanterna</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>@protected FirebaseFirestore get firestore =&gt; _firestore; // enda sanktionerade handlen (rad 36)
+// _firestore tilldelas i konstruktorn med FirebaseFirestore.instance (rad 29)
+
+const int kFirestoreBatchOpLimit = 500;       // Firestores hard cap
+const int kFirestoreBatchSafeChunkSize = 450; // säker chunk
+const int kFirestoreWhereInLimit = 30;        // whereIn-cap
+
+final chunks = docs.chunked(kFirestoreBatchSafeChunkSize);
+for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
+  final query = await collection.where(FieldPath.documentId, whereIn: batch).get();
+}</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Använd ALDRIG <code>FirebaseFirestore.instance</code> eller <code>FirebaseAuth.instance.currentUser</code> inuti en repository-<em>subklass</em> — använd <code>firestore</code>-gettern och <code>requireCurrentUserId()</code>. (Basklassen är det enda stället där instansen litterar — sanktionerat och unikt.)</li>
+          <li>Registrera INTERFACE-typen i DI (<code>RecipeRepository</code>), inte impl (<code>FirebaseRecipeRepository</code>).</li>
+          <li>Koda aldrig till 500 — chunka vid 450.</li>
+          <li><code>whereIn</code>/<code>in</code>/<code>arrayContainsAny</code> är cappade till 30 ids — fana ut, inte en jätte-query.</li>
+          <li>User settings (allergener, FCM-token, notisprefs, locale) bor i <code>users/{uid}/settings/preferences</code>, INTE på <code>public_profiles</code>-doc:et — för vem som helst inloggad kan läsa publika profiler.</li>
+          <li>Cache-first-läsningar är OK för visning men INTE för permission-checks eller pre-update-validering — de behöver färsk serverdata.</li>
+          <li>Inte varje repository extendar basklassen — <code>firestore_repository.dart</code>, <code>site_config_repository.dart</code>, <code>collaborative_recipe_repository.dart</code> är sanktionerade undantag, var och en med en daterad <code>BUT-###</code>-kommentar.</li>
+          <li><code>batchDeleteDocs</code> har ett partial-write-kontrakt: failar chunk N+1 är de N första redan committade. Kör om är säkert (idempotent).</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>lib/repositories/firebase/firebase_user_repository.dart</code> och hitta <code>updateAllergenPreferences</code> (~rad 561). Notera att den INTE skriver till den publika profilen utan till <code>_settingsDoc(userId)</code> = <code>users/{uid}/settings/preferences</code> med <code>SetOptions(merge: true)</code>. Svara: varför ligger settings i ett separat privat doc? (Ledtråd: <code>validateReadPermission</code> för profilen returnerar true för vilken inloggad användare som helst.)</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Du ska radera 1 200 documents i en logisk operation. Varför kan du inte lägga alla i en <code>WriteBatch</code>, och vad gör Butlery istället?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">En <code>WriteBatch</code> är cappad till 500 ops (<code>kFirestoreBatchOpLimit</code>). Butlery splittar i chunkar om 450 (<code>kFirestoreBatchSafeChunkSize</code>) via <code>.chunked()</code> och committar varje chunk som egen batch (<code>batchDeleteDocs</code>). Raderingen är idempotent, så om en mitt-chunk failar fullföljer en omkörning resten.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="10"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(9)">← Föregående</button><button onclick="goTo(11)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 11 (filled) ===== -->
+    <section class="module" data-module="11">
+      <div class="module-kicker">Del 2 · Butlery-appen (kartan)</div>
+      <h1>Säkerhet</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du förklara de två säkerhetsväggarna, varför "göm en knapp" inte är säkerhet, och hur GDPR-rättigheterna mappar till tre services.</p></div>
+
+      <h2>Innehåll</h2>
+      <p>Butlery skyddar data med <strong>TVÅ oberoende väggar</strong>, inte en.</p>
+
+      <h3>Vägg 1 (i Dart-appen)</h3>
+      <p>Varje repository mixar in <code>PermissionValidationMixin</code> och implementerar fyra checks — <code>validateCreatePermission</code>, <code>validateReadPermission</code>, <code>validateUpdatePermission</code>, <code>validateDeletePermission</code>. Basklassen anropar dem före varje CRUD, loggar resultatet för audit, och kastar <code>PermissionDeniedException</code> vid nekande. Detta ger snabb, vänlig in-app-blockering och en enhetlig audit-trail. Dörrvakts-analogin: den artiga dörrvakten i lobbyn som stoppar dig med ett tydligt meddelande.</p>
+
+      <h3>Vägg 2 (på Googles servrar)</h3>
+      <p><code>firestore.rules</code> om-kollar VARJE läsning och skrivning oavsett vad app-koden gör. Detta är bankvalvs-dörren. En angripare kan smita förbi dörrvakten (curl Firebase REST-API, patchad APK, stulen token) — men valvsdörren sitter på Googles servrar och kan inte pratas förbi. <strong>Den gyllene Firebase-regeln: lita aldrig på klienten.</strong> Att gömma en knapp i Flutter gör ingenting för säkerheten — datan är en HTTP-request bort.</p>
+
+      <h3>Fail closed (default deny)</h3>
+      <p>Varje permission-helper returnerar deny vid osäkerhet — null user, tomt id, saknad repository, eller ett kastat undantag löses alla till false/null. Smart-lås-analogin: om strömmen dör eller mjukvaran kraschar, förblir låset LÅST. En bugg ska låsa ute, aldrig in.</p>
+
+      <h3>Abstrakta metoder tvingar grinden</h3>
+      <p><code>BaseFirebaseRepository</code> deklarerar de fyra <code>validate*</code>-metoderna som abstrakta. Dart kompilerar inte en subklass som inte implementerar dem, och bas-CRUD anropar dem alltid. Att "glömma" en permission-check är strukturellt svårt.</p>
+
+      <h3>Server-side dataintegritet</h3>
+      <p><code>firestore.rules</code> gör mer än ägarskap — validerar dokument-SHAPE (<code>isValidTagResult</code> skyddar allergen-data från klient-tampering, säkerhetskritiskt), cappar fältstorlekar (kommentar ≤ 2000), gör fält oföränderliga (<code>cannotModify</code>), rate-limitar skrivningar, och har en GDPR-åldersgräns (<code>birthYear &lt;= year-13</code>).</p>
+
+      <h3>GDPR mappar till tre services</h3>
+      <ul>
+        <li><code>consent_service</code> (Artikel 7 — vad gick du med på)</li>
+        <li><code>data_export_service</code> (Artikel 20 — ge mig min data)</li>
+        <li><code>account_deletion_service</code> (Artikel 17 — radera mig; går genom en Cloud Function med Admin-rättigheter eftersom en vanlig user inte får radera cross-collection-rader; kräver re-auth inom 5 min)</li>
+      </ul>
+
+      <h3>Att bevisa vs granska rules</h3>
+      <p><code>firebase-backend-security</code> GRANSKAR rule-diffar genom att läsa dem; <code>firestore-rules-tester</code> BEVISAR dem genom att köra emulator-tester. Båda en allow- OCH en deny-väg krävs per gren — att testa att rätt person kommer in bevisar inget om att fel person hålls ute.</p>
+
+      <h3>Data-source-regeln</h3>
+      <p><code>userService.currentUserProfile</code> (full profil/settings) vs <code>permissionService.currentUserId</code> (auth/permission-checks ENDAST). Att blanda dem är tyst — skriver till fel objekt och settings persisterar aldrig.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">lib/repositories/mixins/permission_validation_mixin.dart</span><span class="role">Vägg 1-verktygslådan</span></div>
+        <div class="file-chip"><span class="path">lib/repositories/firebase/base_firebase_repository.dart</span><span class="role">Där Vägg 1 tvingas (4 abstrakta metoder)</span></div>
+        <div class="file-chip"><span class="path">firestore.rules</span><span class="role">Vägg 2 (~2000 rader)</span></div>
+        <div class="file-chip"><span class="path">lib/services/permission_service.dart</span><span class="role">Centraliserad auth-service (currentUserId)</span></div>
+        <div class="file-chip"><span class="path">lib/services/permissions/recipe_permission_module.dart</span><span class="role">Fail-closed-exempel (isRecipeOwner ~rad 244–268)</span></div>
+        <div class="file-chip"><span class="path">lib/services/account/account_deletion_service.dart</span><span class="role">GDPR Art. 17</span></div>
+        <div class="file-chip"><span class="path">.claude/agents/firestore-rules-tester.md</span><span class="role">Agenten som bevisar rules</span></div>
+        <div class="file-chip"><span class="path">.claude/skills/data-source-enforcer.md</span><span class="role">Data-source-regeln</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">firestore.rules — server-side ägarskap + integritet</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>// server-side ägarskap + allergen-dataintegritet
+allow update: if isOwner(userId)
+  &amp;&amp; isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null));
+
+// server-only audit-logg, aldrig klientåtkomst
+match /deletion_audit_logs/{logId} { allow read, write: if false; }</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">recipe_permission_module.dart — fail closed vid fel</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>try { final recipe = recipeService.getRecipeById(recipeId); ... }
+catch (e) { return false; /* default till säkert (neka åtkomst) */ }</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>App-side-checks är INTE säkerhet på egen hand. Tas rules bort = öppen databas, oavsett hur grundlig Dart-koden ser ut.</li>
+          <li>Firestore-rules ärvs INTE in i subcollections. Ett parent-<code>match</code>-block täcker inte <code>/votes/{voteId}</code> under det — varje subcollection-väg behöver eget <code>match</code>-block, annars faller den till default-deny tyst (se BUT-773-kommentaren).</li>
+          <li>En grön rules-allow-test utan matchande deny-test behandlas som NOLL coverage.</li>
+          <li>Account-radering får INTE göras client-side — går genom <code>requestAccountDeletion</code> Cloud Function (Admin SDK), kräver re-auth inom 5 min (BUT-788 tog bort det gamla client-side <code>user.delete()</code>).</li>
+          <li>Commit-hooks tvingar: <code>firestore.rules</code>-ändring kräver rules-tester-markern; <code>lib/**/*.dart</code> kräver code-reviewer + testing-specialist; repository/service/functions kräver firebase-backend-security.</li>
+          <li>Blanda inte data-sources: <code>PermissionService</code> = auth/<code>currentUserId</code> ENDAST; <code>UserService.currentUserProfile</code> = settings/avatar/social.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>lib/services/permissions/recipe_permission_module.dart</code> och läs <code>isRecipeOwner</code> (~rad 244–268). Skriv ut, på vanlig svenska, de FEM villkoren under vilka den returnerar false (ej autentiserad, tomt recipeId, recept ej funnet, undantag kastat, ownerId ≠ currentUserId). Svara sedan: varför är false-vid-fel det säkra valet?</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Du gömmer "Radera recept"-knappen i Flutter-UI för alla som inte är ägaren. Är receptet nu säkert från att raderas av andra?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Nej. Att gömma en knapp är bara UX. En user kan kringgå appen helt och anropa Firebase direkt med sin auth-token. Receptet är bara verkligt skyddat eftersom <code>firestore.rules</code> har <code>allow delete: if isOwner(userId)</code> som evalueras på Googles servrar — den server-side-regeln (Vägg 2), inte den gömda knappen eller ens Dart-side <code>validateDeletePermission</code>, är den icke-kringgångsbara väggen.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="11"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(10)">← Föregående</button><button onclick="goTo(12)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 12 (filled) ===== -->
+    <section class="module" data-module="12">
+      <div class="module-kicker">Del 2 · Butlery-appen (kartan)</div>
+      <h1>Konventionerna</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen kan du lägga till en ny UI-sträng korrekt, känna igen ett design-system-brott, och veta vilka mixins/basklasser ny kod måste använda.</p></div>
+
+      <h2>Innehåll — fem konventioner</h2>
+
+      <h3>1. Lokalisering — två ARB-filer + genererade bindningar</h3>
+      <p>Varje UI-sträng bor i <code>lib/l10n/app_sv.arb</code> (svenska, default) OCH <code>lib/l10n/app_en.arb</code> (engelska), läses i kod som <code>context.l10n.&lt;nyckel&gt;</code>. Varje nyckel måste finnas i BÅDA filerna med matchande <code>@description</code>/placeholders. De stora <code>app_localizations*.dart</code>-filerna är GENERERADE — redigera dem aldrig för hand. När du sparar en ARB kör en PostToolUse-hook (<code>regenerate-l10n.sh</code>) <code>flutter gen-l10n</code> automatiskt. <strong>Frasbok-analogin:</strong> ARB-filerna är två parallella frasböcker; din kod säger bara etiketten; en maskin trycker böckerna till en uppslagsfil du aldrig rör.</p>
+
+      <h3>2. Svenska UI / engelska kommentarer</h3>
+      <p>Den vanligaste fällan, inverterad mot vad folk tror: användarsynlig text är <strong>svenska</strong> ("Spara", "Ta bort"); ALLA kodkommentarer är <strong>engelska</strong>. Engångsregel: "UI talar svenska, kod talar engelska."</p>
+
+      <h3>3. Design system — allt FYRKANTIGT</h3>
+      <p>Färger kommer från <code>AppColors</code> i <code>lib/theme/app_colors.dart</code>, inte rå <code>Color(0x...)</code>. Mockup-språket är fyrkantigt — <code>BorderRadius.zero</code>, inga rundade badges/knappar/FABs/kort. Receptrubriker renderas gemener (<code>.toLowerCase()</code>) på detaljsidan. Färg-fällan: <code>rust</code> (#8B5A3C) är DEKORATIV ENDAST och får ALDRIG användas för fel — fel har sin egen röd (<code>error</code> #C44536). <code>success</code> är alias för <code>forestGreen</code> (#4A7C59). Opacitet: <code>withValues(alpha: 0.3)</code>, ALDRIG deprecaterade <code>withOpacity(0.3)</code>.</p>
+
+      <h3>4. 500-radersgränsen + facade</h3>
+      <p>Ingen Dart-fil ska överstiga 500 rader. När logik växer extraherar du sammanhängande ansvar till "manager"-klasser i en undermapp och behåller en tunn facade (<code>recipe_form</code> splittas i 9 managers). Receptionist-analogin: en 500-radersfil är en person som gör nio jobb; fixet är nio specialister + en receptionist som vidarebefordrar. Guarden är en mjuk varning (exit 0); ~135 filer är medvetet allowlistade.</p>
+
+      <h3>5. Mixins och basklasser är obligatorisk infrastruktur</h3>
+      <p>Services får alltid <code>ErrorHandlingMixin</code> (100% adoption); Firebase-services lägger till <code>FirebaseServiceMixin</code>; realtime lägger till <code>StreamManagementMixin</code>. Repositories extendar <code>BaseFirebaseRepository&lt;T&gt;</code> och MÅSTE ha <code>PermissionValidationMixin</code>. ViewModels extendar <code>ChangeNotifier</code> + <code>ErrorHandlingMixin</code>. <code>mixin-advisor</code>-skillen är uppslagstabellen. Bult-på-verktygslåda-analogin: du återuppfinner inte verktyg, du bultar på standardverktygen.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">.claude/rules/code-style.md</span><span class="role">500-gränsen, withValues, kommentarregler</span></div>
+        <div class="file-chip"><span class="path">lib/theme/app_colors.dart</span><span class="role">Paletten (rust-vs-error, withValues-syntax)</span></div>
+        <div class="file-chip"><span class="path">lib/l10n/app_sv.arb</span><span class="role">Svensk ARB (template)</span></div>
+        <div class="file-chip"><span class="path">lib/l10n/app_en.arb</span><span class="role">Engelsk ARB</span></div>
+        <div class="file-chip"><span class="path">lib/l10n/app_localizations.dart</span><span class="role">GENERERAD, rör ej</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/regenerate-l10n.sh</span><span class="role">Auto-gen-l10n</span></div>
+        <div class="file-chip"><span class="path">.claude/skills/mixin-advisor.md</span><span class="role">Mixin-uppslagstabeller</span></div>
+        <div class="file-chip"><span class="path">lib/viewmodels/recipe_form/</span><span class="role">Facade-exemplet (9 managers)</span></div>
+        <div class="file-chip"><span class="path">lib/views/recipe_detail/recipe_detail_shared_widgets.dart</span><span class="role">Tre konventioner i en fil (.toLowerCase() rad 54, .withValues rad 161, fyrkantig border)</span></div>
+      </div>
+
+      <h2>Kodexempel</h2>
+      <div class="code-block">
+        <div class="label">Tre konventioner + mixin/sentinel</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>recipe.title.toLowerCase(),  // recipe_detail_shared_widgets.dart:54
+border: Border.all(color: cs.primary.withValues(alpha: 0.3)),  // rad 161
+static const Color rust = Color(0xFF8B5A3C); // dekorativ ENDAST ... ALDRIG fel
+
+class CalculationService with ErrorHandlingMixin { }  // mixin-advisor
+// claude:large-file-ok — &lt;skäl&gt;   (file-size-guard-sentinel, första 10 raderna)</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">En ARB-nyckel i båda filerna</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>"recipeCommentVisibleTo": "Synlig för: {audience}"   // app_sv.arb
+"recipeCommentVisibleTo": "Visible to: {audience}"   // app_en.arb</pre>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Att redigera <code>app_localizations*.dart</code> för hand är bortkastat — de genereras och skrivs över.</li>
+          <li>En ARB-nyckel tillagd i ENDAST en av filerna är en defekt — båda måste ha nyckeln med matchande placeholders.</li>
+          <li>Svenska vs engelska är inverterat: UI stannar svenska, kommentarer stannar engelska.</li>
+          <li><code>rust</code> är INTE en felfärg trots att den ser rödaktig ut — använd <code>error</code>.</li>
+          <li>FYRKANTIGT = inga rundade hörn någonstans. Receptrubriker måste vara gemener på detaljvyn.</li>
+          <li>500-guarden är icke-blockerande — verklig enforcement är facade-konventionen + code review.</li>
+          <li><code>withOpacity()</code> kompilerar fortfarande (deprecaterad) — men kodbasen har noll live-användningar.</li>
+          <li>Repositories MÅSTE ha <code>PermissionValidationMixin</code>; services MÅSTE ha <code>ErrorHandlingMixin</code>.</li>
+          <li>Genererade filer (<code>*.g.dart</code>, <code>*.freezed.dart</code>, <code>*app_localizations*</code>) är undantagna storleksguarden.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Öppna <code>lib/views/recipe_detail/recipe_detail_shared_widgets.dart</code> och hitta tre konventioner som lever ihop: titel med <code>.toLowerCase()</code> (~rad 54), en fyrkantig border (<code>BorderSide</code>, ingen rundad radie), och en opacitet med <code>.withValues(alpha: 0.3)</code> (~rad 161). Öppna sedan <code>lib/theme/app_colors.dart</code> och bekräfta att <code>cs.primary</code> resolvar till <code>AppColors.forestGreen</code> (#4A7C59).</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Du behöver en ny knapp med texten "Spara recept". Var hamnar svenska texten, var engelska, vad anropar du i widgeten, och vilken fil får du INTE redigera för hand?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Lägg nyckeln (t.ex. <code>recipeSaveButton:"Spara recept"</code>) i <code>lib/l10n/app_sv.arb</code> OCH engelska ("Save recipe") i <code>lib/l10n/app_en.arb</code> med matchande <code>@description</code>/placeholders; referera som <code>context.l10n.recipeSaveButton</code>; redigera aldrig de genererade <code>app_localizations*.dart</code> för hand — <code>regenerate-l10n</code>-hooken bygger om dem via <code>flutter gen-l10n</code> när du sparar ARB:en.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="12"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(11)">← Föregående</button><button onclick="goTo(13)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 13 (filled) ===== -->
+    <section class="module" data-module="13">
+      <div class="module-kicker">Del 3 · Shippa på riktigt</div>
+      <h1>Din första ticket (BUT-677 → BUT-722)</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du gjort en hel loop två gånger: en enkel l10n+UI-ändring och en fullständig feature med service, modal, DI, test och alla gates.</p></div>
+
+      <h2>Ticket 1 (uppvärmning) — BUT-677: Lyft fram cross-platform i onboarding-copy</h2>
+      <p><strong>Målet:</strong> lägg till EN kort svensk värde-prop-rad på onboarding-välkomstskärmen som säger att appen funkar på dator OCH telefon. (Store-screenshots och webbsida är separata, icke-kod-ytor — utanför scope.) <strong>Mönster att kopiera:</strong> den befintliga <code>onboardingWelcomeNote</code>-strängen + dess render.</p>
+      <p><strong>Filer som rörs:</strong> <code>lib/l10n/app_sv.arb</code>, <code>lib/l10n/app_en.arb</code>, <code>lib/views/onboarding/onboarding_welcome_page.dart</code>, samt <code>lib/l10n/app_localizations*.dart</code> (genereras automatiskt).</p>
+
+      <h3>Steg med exakta prompter</h3>
+      <ol>
+        <li><strong>Läs ticketen.</strong> Den ber kalla ut att Butlery kör på telefon OCH dator (macOS/Windows/Web) — en arbetsflöde-fördel konkurrenter saknar. Hjälte-raden är "Skriv ut veckomenyn från datorn, laga från telefonen".</li>
+        <li><strong>Lägg till ARB-nycklarna.</strong> (prompt nedan)</li>
+        <li><strong><code>regenerate-l10n.sh</code>-hooken tänds automatiskt</strong> när en <code>app_*.arb</code> redigeras och kör <code>flutter gen-l10n</code>. Bevaka stderr: "✓ regenererad" = OK; "✗ FAILED" = ARB-syntax/placeholder-fel att fixa. (Är flutter inte på PATH skippar hooken — kör <code>flutter gen-l10n</code> manuellt då.)</li>
+        <li><strong>Lägg till raden i välkomstskärmen.</strong> <strong>Verifiera token-namnen mot den befintliga koden FÖRST.</strong> Noten använder <code>AppDimensions.spacingMd</code> + <code>AppTextStyles.bodyMedium</code> + <code>cs.outline</code> (INTE <code>cs.primary</code>). Bestäm medvetet: smälta in (<code>cs.outline</code>, samma som noten) eller sticka ut som differentiator (<code>cs.primary</code>)? Båda giltiga — välj utifrån vad koden faktiskt har. (prompt nedan)</li>
+        <li><strong>Verifiera:</strong> <code>flutter analyze</code>. Eventuellt <code>flutter run -d chrome</code> för att se raden.</li>
+        <li><strong>Staga allt i ett Bash-anrop</strong> (alla rörda + de genererade <code>app_localizations*.dart</code>).</li>
+        <li><strong>Försök committa — gates som tänds:</strong> <code>require-review-before-commit.sh</code> BLOCKAR (<code>*.dart</code> staged → code-reviewer; <code>lib/**/*.dart</code> → testing-specialist; ingen repository/service/functions/rules → firebase-security &amp; rules-tester tänds INTE). <code>require-simplify-before-commit.sh</code> BLOCKAR tills <code>/code-review</code> körts.</li>
+        <li><strong>Klara gates</strong> (touch:a de tre markers).</li>
+        <li><strong>Försök committa igen.</strong> Lefthook pre-commit kör <code>dart format</code> (kan reformatera + re-staga — failar första commit på formatering, re-staga och kör SAMMA meddelande), secret-scan, och <code>dart analyze --fatal-infos</code>.</li>
+        <li><strong>Pusha direkt till main</strong> (solo). Flytta BUT-677 mot Done i Linear (notera att store-screenshots + webb-copy återstår som icke-kod-delen).</li>
+      </ol>
+
+      <div class="code-block">
+        <div class="label">Steg 2 — ARB-nycklarna</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>I lib/l10n/app_sv.arb, lägg till en ny nyckel onboardingWelcomeCrossPlatform direkt
+efter onboardingWelcomeNote med svenska värdet: "Planera på datorn, laga från
+telefonen — Butlery funkar överallt." Sedan i lib/l10n/app_en.arb, lägg till matchande
+nyckel efter onboardingWelcomeNote med engelska: "Plan on your computer, cook from your
+phone — Butlery works everywhere." Håll JSON-komma-syntaxen korrekt i båda. Lägg INTE
+till ett @-metadata-block — de närliggande onboarding-nycklarna är bara strängar.</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Steg 4 — raden i välkomstskärmen</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Öppna först onboarding_welcome_page.dart och visa mig de exakta tokens som
+onboardingWelcomeNote-Text-widgeten använder (spacing, textstil, färg). Lägg sedan,
+efter den widgeten (slutar ~rad 56): const SizedBox(height: &lt;samma spacing som noten&gt;),
+sedan Text(context.l10n.onboardingWelcomeCrossPlatform, style: &lt;samma textstil som
+noten&gt;.copyWith(color: &lt;cs.outline för att matcha noten, ELLER cs.primary för att
+sticka ut — säg vilket du valde och varför&gt;), textAlign: TextAlign.center).</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Steg 8 — klara gates</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Skicka code-reviewer mot staged diff → touch .claude/state/code-review-done.marker
+Skicka testing-specialist mot staged diff → touch .claude/state/testing-review-done.marker
+Kör /code-review high → touch .claude/state/simplify-done.marker</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Steg 9 — commit-meddelande</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>feat(onboarding): highlight cross-platform plan-on-desktop-cook-on-phone in welcome copy (BUT-677)
+
+Co-Authored-By: Claude Opus 4.8 (1M context) &lt;noreply@anthropic.com&gt;</pre>
+      </div>
+      <p><strong>Done-kriterier:</strong> ny svensk värde-prop-rad renderas på onboarding-välkomst; nyckeln finns i båda ARB-filerna; genererade filer regenererade + committade; <code>flutter analyze</code> passerar; alla markers färska; <code>dart format</code> ren; commit på main.</p>
+
+      <h2>Ticket 2 (capstone) — BUT-722: "Vad är nytt"-release-notes-sheet en gång per version</h2>
+      <p><strong>Målet:</strong> efter en uppdatering och cold-start, visa ett one-time bottom sheet som listar vad som ändrats i denna version. Visa exakt en gång per version, aldrig på en ny förstagångsinstallation, och hämta changelog-texten från en versionerad lokaliseringsnyckel (<code>whats_new_1_2_0</code>) så den är översatt sv + en.</p>
+      <p><strong>Mönster att kopiera:</strong> <code>lib/services/in_app_review_service.dart</code> rakt igenom (plain service, SharedPreferences-gatad one-time-action, <code>tryGetSharedPreferences</code>, injicerbar dependency + clock för test, kraschar aldrig caller, versionerad prefs-nyckel). För modalen: <code>lib/widgets/cooking/substitution_bottom_sheet.dart</code> (StatelessWidget + static <code>show(context)</code>, fyrkantiga hörn, <code>surfaceContainerHigh</code>, alla strängar via <code>context.l10n</code>). För build-numret: <code>lib/core/utils/version_info.dart</code> (<code>VersionInfo.buildNumber</code>).</p>
+      <p><strong>Filer som rörs:</strong> NY <code>lib/services/release_notes_service.dart</code> (kärnlogiken); NY <code>lib/widgets/whats_new_sheet.dart</code> (modalen); EDIT <code>lib/l10n/app_en.arb</code> + <code>lib/l10n/app_sv.arb</code> (<code>whats_new_1_2_0</code>, <code>whatsNewTitle</code>, <code>whatsNewDismiss</code>); EDIT <code>lib/views/mina_recept_view.dart</code> (cold-start-triggern, StatefulWidget ~rad 91); EDIT <code>lib/core/di/modules/core_module.dart</code> (registrera servicen ~rad 109/254); NY <code>test/unit/services/release_notes_service_test.dart</code>.</p>
+
+      <h3>Steg med exakta prompter</h3>
+      <ol>
+        <li><strong>Steg 0 — premisskontroll</strong> (grep efter befintlig mekanism).</li>
+        <li><strong>Skriv servicen</strong> (modellerad på <code>in_app_review_service.dart</code>, INTE BaseService).</li>
+        <li><strong>Lägg till lokaliserade nycklar</strong> + kör <code>flutter gen-l10n</code>.</li>
+        <li><strong>Bygg modalen</strong> (StatelessWidget + static <code>show</code>, fyrkantiga hörn).</li>
+        <li><strong>Registrera i DI</strong> (<code>registerLazySingleton</code> som speglar InAppReviewService-blocket).</li>
+        <li><strong>Koppla cold-start-triggern</strong> (<code>addPostFrameCallback</code> i <code>initState</code>, aldrig <code>ServiceLocator</code> i <code>build()</code>).</li>
+        <li><strong>Skriv unit-testet</strong> (fyra fall: förstagångs-skip, uppgradering show + persist, samma-version-skip, idempotent-efter-show).</li>
+        <li><strong>Verifiera</strong> (analyze + test + format, allt grönt).</li>
+        <li><strong>Committa — gate-sekvensen.</strong> Staga allt i ett Bash-anrop. Gates: code-reviewer + testing-specialist + <code>/code-review high</code> + Build Validation (<code>dart format</code>). <strong>OBS:</strong> <code>firebase-backend-security</code> tänds INTE (<code>release_notes_service.dart</code> är plain <code>lib/services/</code>, inte <code>firebase|firestore|auth|user|gdpr</code>). <code>firestore-rules-tester</code> tänds INTE. Pusha direkt till main.</li>
+      </ol>
+
+      <div class="code-block">
+        <div class="label">Steg 0 — premisskontroll</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Grep lib efter release_notes, whats_new, WhatsNew. Bekräfta att ingen befintlig
+release-notes/changelog-mekanism finns. Bekräfta att VersionInfo.buildNumber populeras
+vid bootstrap och att MinaReceptView är Routes.home-landningsvyn.</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Steg 2 — servicen</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>Skapa lib/services/release_notes_service.dart modellerad på
+lib/services/in_app_review_service.dart. Den ska INTE extenda BaseService (ren
+SharedPreferences, ingen Firebase). Använd tryGetSharedPreferences(logTag:
+"ReleaseNotesService"). Lagra senast-sedd build under versionerad nyckel
+release_notes_last_seen_build_v1. Lägg till async maybeShouldShow() som: läser
+aktuell build från VersionInfo.buildNumber; om ingen lagrad build finns -> behandla
+som förstagångsinstallation, skriv aktuell build, returnera null (skip); om lagrad
+build skiljer sig från aktuell OCH en lokaliserad changelog-nyckel finns för aktuell
+version -> persistera aktuell build och returnera changelog-nyckelns namn
+(whats_new_1_2_0); annars returnera null. Tillåt injicering av aktuell-build-sträng
+och prefs för test. Returnera null vid fel, kasta aldrig.</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Steg 6 — cold-start-triggern</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>I lib/views/mina_recept_view.dart initState, lägg till
+WidgetsBinding.instance.addPostFrameCallback((_) async { final key = await
+ServiceLocator.get&lt;ReleaseNotesService&gt;().maybeShouldShow(); if (key != null && mounted)
+WhatsNewSheet.show(context, key); }). Följ addPostFrameCallback-mönstret som andra vyer
+använder; anropa inte ServiceLocator inuti build().</pre>
+      </div>
+      <p><strong>Done-kriterier:</strong> <code>dart analyze --fatal-infos</code> ren på alla rörda filer; testet passerar med de fyra fallen; sheet-texten resolvar i sv + en efter <code>flutter gen-l10n</code>; cold-start efter en simulerad build-bump visar sheeten exakt en gång och aldrig igen, ny installation visar den aldrig; alla fyra gates klarade; pushad till main.</p>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">lib/views/onboarding/onboarding_welcome_page.dart</span><span class="role">BUT-677 render-stället</span></div>
+        <div class="file-chip"><span class="path">lib/services/in_app_review_service.dart</span><span class="role">BUT-722 service-mönstret</span></div>
+        <div class="file-chip"><span class="path">lib/widgets/cooking/substitution_bottom_sheet.dart</span><span class="role">BUT-722 modal-mönstret</span></div>
+        <div class="file-chip"><span class="path">lib/core/utils/version_info.dart</span><span class="role">VersionInfo.buildNumber</span></div>
+        <div class="file-chip"><span class="path">lib/core/di/modules/core_module.dart</span><span class="role">DI-registreringen</span></div>
+        <div class="file-chip"><span class="path">test/unit/services/in_app_review_service_test.dart</span><span class="role">Test-scaffoldingen att kopiera</span></div>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li>Lägg INTE <code>@</code>-metadata på BUT-677-nyckeln om grannarna inte har det — matcha omgivningens stil.</li>
+          <li><strong>Lita inte på att en prompt gissar rätt token-namn.</strong> Noten använder <code>cs.outline</code>, inte <code>cs.primary</code>; väljer du <code>cs.primary</code> är det ett medvetet "stick ut"-val, inte en kopiering av grannen.</li>
+          <li>Glömmer du <code>flutter gen-l10n</code> efter ARB-redigering saknas <code>context.l10n</code>-getters och analyze failar.</li>
+          <li>Redigerar du en fil efter att ha touchat en marker → STALE → granska om.</li>
+          <li>Kör inte review-agenter på &gt;3 filer samtidigt (timeout) — BUT-722 rör ~6 filer, så batcha agenterna eller splitta committen och touch:a markern efter sista batchen.</li>
+          <li><code>release_notes_service.dart</code> triggar INTE firebase-security (inte i <code>firebase|firestore|auth|user|gdpr</code>-mönstret) — bra exempel på att veta vilka gates som faktiskt tänds.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Gör BUT-677 från början till slut i repot. När commit blockar, läs blockmeddelandet, kör den agent det ber om, <code>touch</code> markern, och committa igen. Notera exakt vilka markers som krävdes (code-review, testing-review, simplify) och vilka som INTE krävdes (firebase-security, rules-tester) — och varför.</p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">I BUT-722, varför triggar <code>release_notes_service.dart</code> inte <code>firebase-backend-security</code>-gaten, medan en fil i <code>lib/repositories/</code> skulle göra det?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer">Gaten matchar sökvägsmönstret <code>lib/services/.*(firebase|firestore|auth|user|gdpr)</code> (och <code>lib/repositories/</code>, <code>functions/src/</code>). <code>release_notes_service.dart</code> är en plain service i <code>lib/services/</code> utan något av nyckelorden i namnet, så den matchar inte — bara <code>code-reviewer</code> (any <code>*.dart</code>) och <code>testing-specialist</code> (<code>lib/**/*.dart</code>) tänds. En fil i <code>lib/repositories/</code> matchar repository-mönstret och kräver dessutom firebase-security-markern.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="13"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(12)">← Föregående</button><button onclick="goTo(14)">Nästa modul →</button></div>
+      </div>
+    </section>
+
+    <!-- ===== MODULE 14 (filled) ===== -->
+    <section class="module" data-module="14">
+      <div class="module-kicker">Del 3 · Shippa på riktigt</div>
+      <h1>Fusklapp &amp; ordlista</h1>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du en snabbreferens för kommandon, marker-flödet och alla vibe-coding-termer på svenska.</p></div>
+
+      <h2>Kommando-fusklapp</h2>
+      <div class="code-block">
+        <div class="label">Flutter</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>flutter analyze                                 # kollar kompilering/lint, inga fel
+flutter test test/unit/&lt;fil&gt;_test.dart          # kör ett specifikt test (framåtsnedstreck!)
+flutter test test/architecture/architecture_test.dart  # arkitekturguards
+flutter run -d chrome                           # starta appen i webbläsaren
+flutter gen-l10n                                # regenerera l10n efter ARB-ändring (auto via hook)
+dart format lib test                            # formatera (gateas av Build Validation i lefthook.yml)
+dart analyze --fatal-infos                      # strikt analyze (lefthook pre-commit)</pre>
+      </div>
+      <p><em>Windows-fälla: <code>flutter test</code> kan faila på PATH via git-bash — kör via <code>cmd.bat</code> som sätter native Windows-PATH.</em></p>
+
+      <p><strong>Skills (auto-tändande, ingen åtgärd behövs — laddas när uppgiften matchar):</strong> <code>butlery-architecture</code>, <code>data-source-enforcer</code>, <code>tri-state-validator</code>, <code>mixin-advisor</code>, <code>repository-generator</code>, <code>viewmodel-generator</code>, <code>serialization-generator</code>, <code>permission-test-generator</code>, <code>responsive-layout-validator</code>, <code>facade-pattern-detector</code>, <code>tagging-domain-knowledge</code>, <code>firebase-ingredient-patterns</code>, <code>verify</code>.</p>
+
+      <div class="code-block">
+        <div class="label">Skills (manuella /slash-kommandon — disable-model-invocation: true)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>/drift-migration      # säker schema-migrering för lokala SQLCipher-DB
+/flag-cleanup         # kvartals-audit av feature-flaggor
+/permission-audit     # statisk säkerhetssvep av lib/repositories/
+/release-notes        # changelog (svenska först + engelska)</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">/code-review (commit-gate-skill)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>/code-review                  # endast triviala enfils-diffar
+/code-review high             # default för Dart-diffar
+/code-review xhigh            # backend/security: lib/repositories/, lib/services/{firebase|firestore|auth|user|gdpr}, functions/src/, firestore.rules</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Marker-flöde (commit-gate-upplåsning)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre># 1. Skicka rätt agent mot staged diff (max 3 filer åt gången)
+# 2. När den rapporterar rent:
+touch .claude/state/code-review-done.marker      # code-reviewer (any *.dart)
+touch .claude/state/testing-review-done.marker   # testing-specialist (lib/**/*.dart)
+touch .claude/state/firebase-security-done.marker # firebase-backend-security (repos/services/functions)
+touch .claude/state/rules-tester-done.marker     # firestore-rules-tester (firestore.rules)
+touch .claude/state/simplify-done.marker         # /code-review-gaten
+# 3. Försök committa igen</pre>
+      </div>
+      <div class="code-block">
+        <div class="label">Git (solo-flöde)</div>
+        <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
+        <pre>git status                    # ALLTID först
+git add &lt;filer&gt;               # staga (i samma Bash-anrop som commit)
+git commit -m "..."           # committa (gates tänds)
+git push                      # pusha direkt till main, ingen branch/PR</pre>
+      </div>
+      <p><em>Aldrig <code>--amend</code>, aldrig <code>--no-verify</code>. Failar commit på lefthook-formatering: re-staga allt, committa igen med SAMMA meddelande. Obligatorisk footer: <code>Co-Authored-By: Claude Opus 4.8 (1M context) &lt;noreply@anthropic.com&gt;</code></em></p>
+
+      <h2>Vilka gates tänds för vilken diff</h2>
+      <table style="width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:13.5px;">
+        <thead>
+          <tr style="background:var(--cream-darker); color:var(--forest-green-dark); text-align:left;">
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">Staged-fil</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">code-review</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">testing</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">firebase-sec</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">rules-tester</th>
+            <th style="padding:8px 10px; border:1px solid rgba(0,0,0,0.12);">simplify</th>
+          </tr>
+        </thead>
+        <tbody style="color:var(--text-on-cream);">
+          <tr><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>lib/views/*.dart</code></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td></tr>
+          <tr style="background:var(--cream-dark);"><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>lib/repositories/*.dart</code></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td></tr>
+          <tr><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>lib/services/firebase_*.dart</code></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td></tr>
+          <tr style="background:var(--cream-dark);"><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>lib/services/release_notes_service.dart</code></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td></tr>
+          <tr><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>functions/src/*.ts</code></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td></tr>
+          <tr style="background:var(--cream-dark);"><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>firestore.rules</code></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1); text-align:center;">✓</td><td style="border:1px solid rgba(0,0,0,0.1);"></td></tr>
+          <tr><td style="padding:8px 10px; border:1px solid rgba(0,0,0,0.1);"><code>docs/*.md</code> (doc-only)</td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td><td style="border:1px solid rgba(0,0,0,0.1);"></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Ordlista (vibe-coding-termer på svenska)</h2>
+      <ul>
+        <li><strong>Vibe coding</strong> — att beskriva <em>vad</em> du vill och låta Claude lösa <em>hur</em>, inom skyddsräcken.</li>
+        <li><strong>Hook</strong> — litet bash-skript som körs automatiskt på en livscykelhändelse. Kan blockera (exit 2) eller bara varna.</li>
+        <li><strong>Gate</strong> — en blockerande hook vid en flaskhals (<code>git commit</code>, <code>ExitPlanMode</code>).</li>
+        <li><strong>Lefthook</strong> — git pre-commit-hook (<code>lefthook.yml</code>) som kör <code>dart format</code>, secret-scan (rad 24) och <code>dart analyze</code> på OS-git-lagret, oberoende av Claudes egna hooks.</li>
+        <li><strong>Marker</strong> — en tidsstämpel-fil i <code>.claude/state/</code> som bevisar att en granskning körts. Blir "stale" om du redigerar efter att ha touchat den.</li>
+        <li><strong>STALE</strong> — föråldrad marker: filen är nyare än granskningen → gaten blockar igen.</li>
+        <li><strong>Skill</strong> — en Markdown-fusklapp som styr <em>hur</em> Claude skriver kod; autoladdas eller <code>/slash</code>-anropas.</li>
+        <li><strong>Agent</strong> — en specialist-granskare som granskar en diff <em>efteråt</em> (code-reviewer, testing-specialist...).</li>
+        <li><strong>Tier 1/2/3</strong> — agent-nivåer: rekommenderad / commit-tvingad / på begäran.</li>
+        <li><strong>Plan mode</strong> — Claude skriver en plan till <code>tasks/todo.md</code> innan komplext arbete; två-anrops-gate.</li>
+        <li><strong>ServiceLocator</strong> — den globala accessorn (<code>ServiceLocator.get&lt;T&gt;()</code>) som hämtar en service ur DI-containern.</li>
+        <li><strong>DI (dependency injection)</strong> — objekt registreras centralt vid start; widgets frågar efter dem per typ.</li>
+        <li><strong>ViewModel</strong> — skärmens "hjärna": håller data, kör metoder vid knapptryck, ropar <code>notifyListeners()</code>.</li>
+        <li><strong>Repository</strong> — det enda lagret som får röra databasen (Firestore); den enda <code>FirebaseFirestore.instance</code> skapas i basklassens konstruktor.</li>
+        <li><strong>Facade</strong> — en tunn koordinator som delegerar till fokuserade manager-filer (för 500-radersgränsen).</li>
+        <li><strong>Mixin</strong> — en "bult-på-verktygslåda" (t.ex. <code>ErrorHandlingMixin</code>, <code>PermissionValidationMixin</code>).</li>
+        <li><strong>Optimistisk uppdatering</strong> — ändra UI direkt, rulla tillbaka om skrivningen failar.</li>
+        <li><strong><code>notifyListeners()</code></strong> — "dörrklockan" som väcker prenumererande widgets att rita om.</li>
+        <li><strong>Fail closed (default deny)</strong> — vid osäkerhet, neka åtkomst (smart-lås som förblir låst vid strömavbrott).</li>
+        <li><strong>Two walls / defense in depth</strong> — Dart-checks (Vägg 1, UX/audit) + <code>firestore.rules</code> (Vägg 2, server-side-väggen).</li>
+        <li><strong>ARB</strong> — JSON-ordbok för UI-strängar (<code>app_sv.arb</code> svensk, <code>app_en.arb</code> engelsk); genererar <code>app_localizations*.dart</code>.</li>
+        <li><strong>l10n</strong> — localization (lokalisering).</li>
+        <li><strong>lessons.md</strong> — den globala self-improvement-loggen; daterad post efter varje rättelse.</li>
+        <li><strong>Knowledge file</strong> — en agents egna append-only anteckningsbok (<code>&lt;agent&gt;.knowledge.md</code>).</li>
+        <li><strong>Tier A/B/C/D</strong> — sprint-execute-klassificering: full-auto→Done / UI→In Review / stor refactor→In Review / ops-blockerad→flagga.</li>
+        <li><strong>In Review</strong> — Linear-tillstånd där UI/refactor-arbete parkeras för mänsklig sign-off utan att stoppa loopen.</li>
+      </ul>
+
+      <h2>Riktiga referenser</h2>
+      <div class="files">
+        <div class="file-chip"><span class="path">CLAUDE.md</span><span class="role">Kommandolistan, agent-tier-tabellen, /code-review-effort-policyn</span></div>
+        <div class="file-chip"><span class="path">lefthook.yml</span><span class="role">OS-git-lagrets pre-commit: dart format + secret-scan (rad 24) + dart analyze</span></div>
+        <div class="file-chip"><span class="path">.claude/state/</span><span class="role">Alla markers</span></div>
+        <div class="file-chip"><span class="path">tasks/lessons.md</span><span class="role">Self-improvement-loggen</span></div>
+        <div class="file-chip"><span class="path">.claude/commands/sprint-execute.md</span><span class="role">Tier A/B/C/D-definitionerna</span></div>
+      </div>
+
+      <div class="callout gotcha">
+        <div class="head">⚠ Gotchas</div>
+        <ul>
+          <li><code>simplify-done.marker</code> (legacy-namn) = <code>/code-review</code>-gaten, INTE code-reviewer-agentens <code>code-review-done.marker</code>. Två olika gates.</li>
+          <li><code>git commit -a/--all</code> vidgar scope till staged ∪ modifierade-trackade; plain <code>git commit</code> kollar bara staged.</li>
+          <li>Touch:a markern bara EFTER sista redigeringen, aldrig före.</li>
+          <li>Doc-only-commits (<code>*.md</code>) tänder inga gates — hooken tystnar.</li>
+          <li>Secret-scanning körs av lefthook (<code>lefthook.yml</code>), inte av en Claude PreToolUse-hook — men hemligheter scannas ändå vid varje commit.</li>
+        </ul>
+      </div>
+
+      <div class="callout try">
+        <div class="head">▶ Prova nu</div>
+        <p>Skriv ner, utan att slå upp, vilka tre markers som krävs för en commit som stagar <code>lib/views/onboarding/onboarding_welcome_page.dart</code>. Verifiera sedan mot snabbtabellen ovan. <em>(Facit: code-review-done, testing-review-done, simplify-done.)</em></p>
+      </div>
+
+      <div class="quiz">
+        <div class="q">Vad är skillnaden mellan <code>code-review-done.marker</code> och <code>simplify-done.marker</code>?</div>
+        <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
+        <div class="answer"><code>code-review-done.marker</code> produceras av <code>code-reviewer</code>-<em>agenten</em> (Tier 2, tänds för any <code>*.dart</code>). <code>simplify-done.marker</code> produceras av <code>/code-review</code>-<em>skillen</em> via <code>require-simplify-before-commit.sh</code> (legacy-namn behållet för att inte krocka). De är två olika gates från två olika hooks som granskar olika saker — du behöver båda för en <code>.dart</code>-commit.</div>
+      </div>
+
+      <div class="complete-row">
+        <label><input type="checkbox" class="complete-cb" data-module="14"> Markera modul som klar</label>
+        <div class="module-nav"><button class="ghost" onclick="goTo(13)">← Föregående</button></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // === Course structure ===
+  const PARTS = [
+    { title: "Del 1 · Claude Code & din setup", modules: [
+      { n: 1, t: "Vad är Claude Code & vibe coding" },
+      { n: 2, t: "Sätt upp din maskin" },
+      { n: 3, t: "Konfigurera Claude Code som Malins" },
+      { n: 4, t: "Dina skyddsnät: skills, agenter, hooks" },
+      { n: 5, t: "När det blockar: gates & markers" },
+      { n: 6, t: "Att dirigera Claude bra" },
+    ]},
+    { title: "Del 2 · Butlery-appen (kartan)", modules: [
+      { n: 7, t: "Vad är Butlery" },
+      { n: 8, t: "Arkitekturen (4 lager)" },
+      { n: 9, t: "Feature-kartan" },
+      { n: 10, t: "Firebase & datalagret" },
+      { n: 11, t: "Säkerhet" },
+      { n: 12, t: "Konventionerna" },
+    ]},
+    { title: "Del 3 · Shippa på riktigt", modules: [
+      { n: 13, t: "Din första ticket (BUT-677 → BUT-722)" },
+      { n: 14, t: "Fusklapp & ordlista" },
+    ]},
+  ];
+  const GOALS = {};
+  const TOTAL = 14;
+  const FILLED = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]; // modules with real content
+
+  // === State (localStorage) ===
+  const LS_KEY = "butlery-academy-progress-v1";
+  let done = new Set(JSON.parse(localStorage.getItem(LS_KEY) || "[]"));
+  function save() { localStorage.setItem(LS_KEY, JSON.stringify([...done])); }
+
+  // === Build nav + stub modules ===
+  const nav = document.getElementById("nav");
+  const main = document.querySelector("main");
+  PARTS.forEach(part => {
+    const pt = document.createElement("div");
+    pt.className = "part-title"; pt.textContent = part.title;
+    nav.appendChild(pt);
+    part.modules.forEach(m => {
+      const item = document.createElement("div");
+      item.className = "nav-item" + (FILLED.includes(m.n) ? "" : " stub");
+      item.dataset.module = m.n;
+      item.innerHTML = `<span class="num">${m.n}</span><span>${m.t}</span>`;
+      item.onclick = () => goTo(m.n);
+      nav.appendChild(item);
+
+      // create stub section for unfilled modules
+      if (!FILLED.includes(m.n)) {
+        const sec = document.createElement("section");
+        sec.className = "module"; sec.dataset.module = m.n;
+        sec.innerHTML = `
+          <div class="module-kicker">${part.title}</div>
+          <h1>${m.t}</h1>
+          <div class="goal"><span class="tag">Mål</span><p>${GOALS[m.n] || ""}</p></div>
+          <div class="stub-note">Innehållet för den här modulen finns färdigt i kursunderlaget och fylls på efter att vi godkänt look &amp; feel. (Prototyp)</div>
+          <div class="complete-row">
+            <label><input type="checkbox" class="complete-cb" data-module="${m.n}"> Markera modul som klar</label>
+            <div class="module-nav">
+              ${m.n > 1 ? `<button class="ghost" onclick="goTo(${m.n-1})">← Föregående</button>` : ""}
+              ${m.n < TOTAL ? `<button onclick="goTo(${m.n+1})">Nästa modul →</button>` : ""}
+            </div>
+          </div>`;
+        main.appendChild(sec);
+      }
+    });
+  });
+
+  // === Navigation ===
+  function goTo(n) {
+    document.querySelectorAll(".module").forEach(s => s.classList.toggle("active", s.dataset.module == n));
+    document.querySelectorAll(".nav-item").forEach(i => i.classList.toggle("active", i.dataset.module == n));
+    document.getElementById("crumb").textContent = "Modul " + n;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.getElementById("sidebar").classList.remove("open");
+  }
+
+  // === Completion + progress ===
+  function refresh() {
+    document.querySelectorAll(".complete-cb").forEach(cb => { cb.checked = done.has(+cb.dataset.module); });
+    document.querySelectorAll(".nav-item").forEach(i => i.classList.toggle("done", done.has(+i.dataset.module)));
+    const pct = Math.round(done.size / TOTAL * 100);
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-pct").textContent = pct + "%";
+  }
+  document.addEventListener("change", e => {
+    if (e.target.classList.contains("complete-cb")) {
+      const n = +e.target.dataset.module;
+      if (e.target.checked) done.add(n); else done.delete(n);
+      save(); refresh();
+    }
+  });
+  function resetProgress() {
+    if (confirm("Nollställa allt framsteg?")) { done = new Set(); save(); refresh(); }
+  }
+
+  // === Copy buttons ===
+  function copyCode(btn) {
+    const code = btn.parentElement.querySelector("pre").innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = "Kopierat ✓"; btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "Kopiera"; btn.classList.remove("copied"); }, 1500);
+    });
+  }
+
+  refresh();
+</script>
+</body>
+</html>
