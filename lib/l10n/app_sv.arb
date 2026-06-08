@@ -3532,6 +3532,14 @@
   "privacyNotAvailable": "Integritetspolicyn är inte tillgänglig",
   "privacyQuestionsTitle": "Frågor om integritet?",
   "privacyReload": "Ladda om",
+  "privacyShareActivityTitle": "Visa min aktivitet i vänners flöde",
+  "@privacyShareActivityTitle": {
+    "description": "Title for the master toggle that opts the user in/out of broadcasting their activity to friends' feeds (BUT-906)"
+  },
+  "privacyShareActivitySubtitle": "När detta är på ser dina vänner när du lagar, delar och pingar recept.",
+  "@privacyShareActivitySubtitle": {
+    "description": "Subtitle explaining what the activity-broadcast toggle controls (BUT-906)"
+  },
   "profileAddAvatar": "Lägg till avatar",
   "profileAvatarRemoved": "Avatar borttagen",
   "profileAvatarUploaded": "Avatar uppladdad!",

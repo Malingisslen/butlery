@@ -36,6 +36,10 @@ class ActivityFeedService extends BaseService {
 
       final displayName = userService.currentUserProfile?.displayName ?? '?';
 
+      // BUT-906: respect the user's activity-broadcast opt-out. Fire-and-forget,
+      // so a disabled feed silently skips the emit.
+      if (userService.currentUserProfile?.shareActivityToFeed == false) return;
+
       final event = ActivityEvent.create(
         actorId: userId,
         actorDisplayName: displayName,

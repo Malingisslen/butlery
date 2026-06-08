@@ -42,6 +42,11 @@ class UserProfile with JsonSerializableMixin {
   /// presence write is forced offline so no one sees their dot or last-active.
   /// Defaults true (existing behaviour) for accounts created before this field.
   final bool showOnlineStatus;
+
+  /// BUT-906: master toggle for broadcasting activity to friends' feeds. When
+  /// false the user opts out and their cook/share/ping events are not emitted.
+  /// Defaults true (existing behaviour) for accounts created before this field.
+  final bool shareActivityToFeed;
   final String? fcmToken;
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
@@ -80,6 +85,7 @@ class UserProfile with JsonSerializableMixin {
     required this.lastActiveAt,
     this.isOnline = false,
     this.showOnlineStatus = true,
+    this.shareActivityToFeed = true,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
@@ -118,6 +124,7 @@ class UserProfile with JsonSerializableMixin {
     DateTime? lastActiveAt,
     bool? isOnline,
     bool? showOnlineStatus,
+    bool? shareActivityToFeed,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
     bool? notificationsEnabled,
@@ -145,6 +152,7 @@ class UserProfile with JsonSerializableMixin {
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       isOnline: isOnline ?? this.isOnline,
       showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
+      shareActivityToFeed: shareActivityToFeed ?? this.shareActivityToFeed,
       fcmToken: fcmToken == _sentinel ? this.fcmToken : fcmToken as String?,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt == _sentinel
           ? this.fcmTokenUpdatedAt
@@ -263,6 +271,7 @@ class UserProfile with JsonSerializableMixin {
       'lastActiveAt': AppTimestamp.fromDateTime(lastActiveAt).toFirestore(),
       'isOnline': isOnline,
       'showOnlineStatus': showOnlineStatus,
+      'shareActivityToFeed': shareActivityToFeed,
       'cookingSkillLevel': cookingSkillLevel?.name,
       'cuisineAffinities': cuisineAffinities,
       'isHidden': isHidden,
@@ -306,6 +315,7 @@ class UserProfile with JsonSerializableMixin {
       'lastActiveAt': serializeDateTime(lastActiveAt),
       'isOnline': isOnline,
       'showOnlineStatus': showOnlineStatus,
+      'shareActivityToFeed': shareActivityToFeed,
       // Notification fields
       'fcmToken': fcmToken,
       'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
@@ -349,6 +359,9 @@ class UserProfile with JsonSerializableMixin {
       isOnline: utils.SerializationUtils.safeBool(data, 'isOnline'),
       showOnlineStatus: utils.SerializationUtils.safeBool(
           data, 'showOnlineStatus',
+          defaultValue: true),
+      shareActivityToFeed: utils.SerializationUtils.safeBool(
+          data, 'shareActivityToFeed',
           defaultValue: true),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
@@ -403,6 +416,9 @@ class UserProfile with JsonSerializableMixin {
       isOnline: utils.SerializationUtils.safeBool(json, 'isOnline'),
       showOnlineStatus: utils.SerializationUtils.safeBool(
           json, 'showOnlineStatus',
+          defaultValue: true),
+      shareActivityToFeed: utils.SerializationUtils.safeBool(
+          json, 'shareActivityToFeed',
           defaultValue: true),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(

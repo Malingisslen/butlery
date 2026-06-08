@@ -5534,6 +5534,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyReload => 'Reload';
 
   @override
+  String get privacyShareActivityTitle => 'Show my activity in friends\' feed';
+
+  @override
+  String get privacyShareActivitySubtitle =>
+      'When on, your friends see when you cook, share, and ping recipes.';
+
+  @override
   String get profileAddAvatar => 'Add avatar';
 
   @override

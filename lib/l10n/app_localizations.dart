@@ -9459,6 +9459,18 @@ abstract class AppLocalizations {
   /// **'Ladda om'**
   String get privacyReload;
 
+  /// Title for the master toggle that opts the user in/out of broadcasting their activity to friends' feeds (BUT-906)
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa min aktivitet i vänners flöde'**
+  String get privacyShareActivityTitle;
+
+  /// Subtitle explaining what the activity-broadcast toggle controls (BUT-906)
+  ///
+  /// In sv, this message translates to:
+  /// **'När detta är på ser dina vänner när du lagar, delar och pingar recept.'**
+  String get privacyShareActivitySubtitle;
+
   /// No description provided for @profileAddAvatar.
   ///
   /// In sv, this message translates to:

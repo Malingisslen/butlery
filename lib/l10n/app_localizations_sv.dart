@@ -5538,6 +5538,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get privacyReload => 'Ladda om';
 
   @override
+  String get privacyShareActivityTitle => 'Visa min aktivitet i vänners flöde';
+
+  @override
+  String get privacyShareActivitySubtitle =>
+      'När detta är på ser dina vänner när du lagar, delar och pingar recept.';
+
+  @override
   String get profileAddAvatar => 'Lägg till avatar';
 
   @override

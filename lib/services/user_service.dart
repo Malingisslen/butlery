@@ -115,6 +115,7 @@ class UserService extends ChangeNotifier
     List<String>? cuisineAffinities,
     String? bio,
     bool? showOnlineStatus,
+    bool? shareActivityToFeed,
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
@@ -161,6 +162,9 @@ class UserService extends ChangeNotifier
             isOnline: showOnlineStatus ? profile.isOnline : false,
           );
         }
+        if (shareActivityToFeed != null) {
+          profile = profile.copyWith(shareActivityToFeed: shareActivityToFeed);
+        }
       } else {
         final now = clock.now();
         profile = UserProfile(
@@ -176,6 +180,7 @@ class UserService extends ChangeNotifier
           lastActiveAt: now,
           isOnline: true,
           showOnlineStatus: showOnlineStatus ?? true,
+          shareActivityToFeed: shareActivityToFeed ?? true,
           cookingSkillLevel: cookingSkillLevel,
           cuisineAffinities: cuisineAffinities,
           bio: bio,

@@ -542,6 +542,67 @@ void main() {
       });
     });
 
+    group('Activity-broadcast opt-out (BUT-906)', () {
+      test('defaults to true (broadcasting) when not specified', () {
+        expect(testProfile.shareActivityToFeed, isTrue);
+      });
+
+      test('copyWith updates the flag without clobbering other fields', () {
+        final updated = testProfile.copyWith(shareActivityToFeed: false);
+        expect(updated.shareActivityToFeed, isFalse);
+        expect(updated.uid, equals(testProfile.uid)); // unchanged
+        expect(updated.showOnlineStatus,
+            equals(testProfile.showOnlineStatus)); // unchanged
+      });
+
+      test('round-trips through JSON for both values', () {
+        for (final value in [true, false]) {
+          final profile = testProfile.copyWith(shareActivityToFeed: value);
+          expect(UserProfile.fromJson(profile.toJson()).shareActivityToFeed,
+              equals(value));
+        }
+      });
+
+      test('round-trips through Firestore map for both values', () {
+        // toFirestore/fromMap is the persistence path UserService writes
+        // through; the opt-out must survive that round-trip too.
+        for (final value in [true, false]) {
+          final profile = testProfile.copyWith(shareActivityToFeed: value);
+          expect(
+            UserProfile.fromMap('user_123', profile.toFirestore())
+                .shareActivityToFeed,
+            equals(value),
+          );
+        }
+      });
+
+      test('backward-compat: absent JSON key deserializes to true', () {
+        // Accounts created before this field must keep broadcasting (the
+        // previous behaviour) rather than silently going dark.
+        final json = {
+          'uid': 'u',
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+        };
+        expect(UserProfile.fromJson(json).shareActivityToFeed, isTrue);
+      });
+
+      test('backward-compat: absent Firestore key deserializes to true', () {
+        // The Firestore decode path (fromMap) must apply the same
+        // default-true so older docs keep broadcasting.
+        final firestoreData = {
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': AppTimestamp.fromDateTime(testDate).toFirestore(),
+          'lastActiveAt': AppTimestamp.fromDateTime(testDate).toFirestore(),
+        };
+        expect(UserProfile.fromMap('u', firestoreData).shareActivityToFeed,
+            isTrue);
+      });
+    });
+
     group('Firestore Serialization', () {
       test('should serialize to Firestore format', () {
         // Act

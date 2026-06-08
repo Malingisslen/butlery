@@ -52,6 +52,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   bool get isSearchable => _editedProfile?.isSearchable ?? true;
   bool get allowEmailSearch => _editedProfile?.allowEmailSearch ?? false;
   bool get showOnlineStatus => _editedProfile?.showOnlineStatus ?? true;
+  bool get shareActivityToFeed => _editedProfile?.shareActivityToFeed ?? true;
   bool get isLoading => _isUploadingAvatar;
   bool get isUploadingAvatar => _isUploadingAvatar;
   String? get displayNameError => _displayNameError;
@@ -106,6 +107,11 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _editedProfile = value
         ? _editedProfile?.copyWith(showOnlineStatus: true)
         : _editedProfile?.copyWith(showOnlineStatus: false, isOnline: false);
+    notifyListeners();
+  }
+
+  void updateShareActivityToFeed(bool value) {
+    _editedProfile = _editedProfile?.copyWith(shareActivityToFeed: value);
     notifyListeners();
   }
 
@@ -244,7 +250,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
                 : edited.cuisineAffinities,
             bio: edited.bio?.isEmpty == true ? null : edited.bio,
             showOnlineStatus: edited.showOnlineStatus,
-          );
+            shareActivityToFeed: edited.shareActivityToFeed,
+          ); // BUT-906: persist the activity-broadcast opt-out
 
           if (updatedProfile != null) {
             // Sync both profiles to the fresh server response
@@ -352,7 +359,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         a.cookingSkillLevel == b.cookingSkillLevel &&
         listEquals(a.cuisineAffinities ?? [], b.cuisineAffinities ?? []) &&
         a.bio.orEmpty() == b.bio.orEmpty() &&
-        a.showOnlineStatus == b.showOnlineStatus;
+        a.showOnlineStatus == b.showOnlineStatus &&
+        a.shareActivityToFeed == b.shareActivityToFeed;
   }
 
   bool _hasDisplayNameChanged() {

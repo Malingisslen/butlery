@@ -1,39 +1,35 @@
 # Sprint Backlog
 
-## Sprint: cook-snap visibility disclosure (BUT-901) — 2026-06-08 (iter-130) `[Tier B]`
+## Sprint: activity-feed broadcast opt-out (BUT-906) — 2026-06-08 (iter-131) `[Tier B]`
 
-**Step 0:** FITS. Cook snaps inherit the parent recipe's visibility (`isPublic` / `isCollaborative`)
-and the user is never told at capture time. Current add-flow (`recipe_detail_view._showAddSnapSheet`)
-picks a source → `vm.addSnap()` immediately, NO preview/confirm step. Insert a visibility-disclosure
-confirm before upload. Reuses BUT-914's `commentVisibilityAudience` + `resolveCommentAudienceNames`
-for the collaborative audience.
+**Step 0:** FITS (re-scoped to MVP). Activity events (cooked/shared/addedIngredient/startedCooking/
+pinged) auto-post to friends' feeds via the single chokepoint `ActivityFeedService.emitEvent`; users
+are never told and can't opt out. Full ticket wants per-event-type toggles + a one-time hint — re-scoped
+to a **master toggle** ("show my activity in friends' feed", default ON) which delivers the core control;
+per-event granularity + one-time hint → follow-up. Mirrors the established `showOnlineStatus` privacy
+pattern (BUT-912) exactly, so low risk.
 
-**Files touched:**
-- NEW `lib/views/recipe_detail/cook_snap_visibility.dart` — pure `cookSnapAudience(recipe, currentUserId, friendNames)` → `(scope: public|shared|private, resolvedNames, total)`. Reuses comment_visibility helpers for the shared case.
-- `lib/views/recipe_detail_view.dart` — `_showAddSnapSheet`: thread `recipe`; for public/shared scope show a disclosure confirm dialog before `addSnap`; private = unchanged (no friction).
-- `lib/l10n/app_sv.arb` + `app_en.arb` — disclosure title/public-text/shared-text/confirm-button keys.
-- NEW `test/unit/views/recipe_detail/cook_snap_visibility_test.dart` — pure-function tests (public/shared/private, name resolution, never-under-state).
+**Files touched (all mirror `showOnlineStatus`):**
+- `lib/models/user_profile.dart` — new `shareActivityToFeed` bool (default true): field, ctor default, copyWith, both toJson maps, both fromJson/fromFirestore safeBool, equality.
+- `lib/viewmodels/user_profile_viewmodel.dart` — getter + `updateShareActivityToFeed(bool)` + include in save (`completeProfileUpdate`/copyWith) + equality helper.
+- `lib/services/social/activity_feed_service.dart` — `emitEvent`: after loading `currentUserProfile`, `if (profile?.shareActivityToFeed == false) return;` (silent skip; fire-and-forget).
+- `lib/views/social/user_profile_edit_view.dart` — `_buildPrivacySettings`: add a SwitchListTile mirroring the online-status toggle.
+- `lib/l10n/app_sv.arb` + `app_en.arb` — toggle title + subtitle.
 
-**Blast radius:** only the cook-snap add path; additive confirm dialog. Private recipes unchanged.
-comment_visibility helpers reused read-only (no change). recipe_detail_view (993 lines, accepted-large)
-gains only the dialog call — logic lives in the new helper.
+**Blast radius:** enforcement is one early-return in emitEvent (default-true pref + null-profile → preserves current broadcast behavior). Profile field persists via existing saveProfile path (no user_service change → no firebase-backend-security trigger). Default ON = zero behavior change until a user opts out.
 
-**Product-intent flag (note in In-Review):** confirm shown for public AND collaborative recipes
-(both have an audience beyond self); private = no friction. Could be public-only if collaborative
-friction is unwanted.
+**Product-intent flag (In-Review):** master toggle vs the ticket's 5 per-event-type toggles — granularity deferred to follow-up. Default ON (discoverable opt-out, not opt-in) per the ticket.
 
-**Rollback:** revert the commit; disclosure is a self-contained addition.
+**Rollback:** revert commit; field is additive + defaults to current behavior.
 
-**Deferred → follow-up:** per-snap visibility override (same-as-recipe / only-me) — needs a model
-field on `CookSnap` + persistence + enforcement (Part 2 of the ticket).
+**Deferred → follow-up:** per-event-type toggles (5) + one-time "this appears in friends' feed" hint.
 
-- [x] **A1. `cookSnapAudience` pure helper + unit tests** `[Tier B]` — `cook_snap_visibility.dart` + 6 unit tests (public/shared/private, precedence, never-under-state). 6/6 green. (BUT-901)
-- [x] **A2. Disclosure confirm dialog in the add-snap flow + l10n** `[Tier B]` — `recipe_detail_view._showAddSnapSheet` shows the disclosure for public/shared scope before `addSnap`; 4 l10n keys sv/en. analyze clean. (BUT-901)
+- [ ] **A1. `shareActivityToFeed` pref + enforcement + privacy toggle** `[Tier B]` (BUT-906)
 
 ### Post-Sprint Steps
 - [ ] gen-l10n + `dart analyze --fatal-infos` + format
 - [ ] code-reviewer + testing-specialist gates
-- [ ] Commit, push; BUT-901 → In Review + notify; file Part-2 follow-up
+- [ ] Commit, push; BUT-906 → In Review + notify; file granularity follow-up
 
 ---
-## ARCHIVED — iter-129 (BUT-923 In Review) · iter-128 (BUT-944 In Review; BUT-1213) · iter-127 (BUT-1210 Done + BUT-1211 In Review; BUT-1212) · iter-126 (BUT-914 In Review)
+## ARCHIVED — iter-130 (BUT-901 In Review; BUT-1214) · iter-129 (BUT-923 In Review) · iter-128 (BUT-944 In Review; BUT-1213) · iter-127 (BUT-1210 Done + BUT-1211 In Review; BUT-1212)
