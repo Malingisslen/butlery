@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -384,7 +385,9 @@ class RecipeCard extends StatelessWidget {
         child: IconButton(
           onPressed: () => onFavoriteToggle?.call(recipe),
           icon: Icon(
-            isFav ? Icons.favorite : Icons.favorite_border,
+            isFav
+                ? AdaptiveIcons.favouriteFilled
+                : AdaptiveIcons.favouriteOutline,
             size: 20,
             color: isFav ? cs.error : cs.onSurfaceVariant,
           ),

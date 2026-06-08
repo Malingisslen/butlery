@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/linkified_text.dart';
@@ -334,8 +335,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                         onPressed: widget.onToggleLike,
                         icon: Icon(
                           widget.isLiked
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                              ? AdaptiveIcons.favouriteFilled
+                              : AdaptiveIcons.favouriteOutline,
                           color:
                               widget.isLiked ? cs.error : cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,

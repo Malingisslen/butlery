@@ -243,7 +243,7 @@ class ShoppingAppBar {
                 : AdaptiveIcons.people;
         }
       case ListType.template:
-        return AdaptiveIcons.bookmark;
+        return AdaptiveIcons.savedTemplate;
     }
   }
 

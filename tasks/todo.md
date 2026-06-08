@@ -1,29 +1,51 @@
 # Sprint Backlog
 
-## Sprint: a11y announce harness + comment audience dialog — 2026-06-08 (iter-127)
+## Sprint: single icon convention (heart/star/bookmark) — 2026-06-08 (iter-128)
 
-Focused 2-ticket batch — both complete recently-shipped work. Clean Tier A is scarce
-(iter-103→105 drain confirmed: of 22 "Tier A" candidates most carry ops/release tails:
-BUT-1169 needs a prod CF backfill, BUT-828's acceptance is an iOS CI build, BUT-877
-changes a security contract needing a coordinated client release).
+### Agent A: flutter-developer — design-system icon convention (BUT-944) `[Tier B]`
 
-### Agent A: testing-specialist — a11y announce coverage
-- [x] **A1. Announce-channel test harness + per-site tests** `[Tier A]` — harness at `test/infrastructure/helpers/announce_channel.dart` (real `flutter/accessibility` interception, live-l10n assertions); `test/widget/a11y/` (8 tests: 4 harness + 4 photo_import OCR announce-once/re-arm guard). 3 seam-blocked sites → follow-up BUT-1212. (BUT-1210) → **Done**
+**Step 0 classification:** FITS (plan-stale-minor). Ticket says "add lib/widgets/common/icons.dart
+OR extend AdaptiveIcons" — `AdaptiveIcons` (lib/widgets/common/icons/adaptive_icon.dart) ALREADY
+centralizes platform-adaptive favorite/star/bookmark getters, so the work is: name the *concepts*
++ migrate the cited raw `Icons.*` sites onto them. Lower-risk than the ticket assumed.
 
-### Agent B: flutter-developer — comment audience dialog
-- [x] **B1. Tappable "Synlig för:" label → full audience dialog** `[Tier B]` — `recipe_detail_comments.dart`: line is `Semantics(button)`+InkWell → AlertDialog listing the COMPLETE audience + unresolved count (privacy: never under-states). Testability extraction `resolveCommentAudienceNames` in `comment_visibility.dart` → 6 new unit tests (17/17 green). l10n `recipeCommentAudienceTitle`/`recipeCommentAudienceOthers` sv/en. Preview: `docs/design/previews/comment-audience-dialog-preview.html`. (BUT-1211) → **In Review**
+**Convention (documented in the getters' doc comment):** heart = personal preference
+(favourite / like), star = system designation (primary / featured), bookmark = template /
+saved-for-later.
 
-### Follow-ups filed
-- BUT-1212 — announce-channel tests for the 3 seam-blocked sites (BUT-1210 follow-up)
+**Files touched:**
+- `lib/widgets/common/icons/adaptive_icon.dart` — add concept getters: `favouriteFilled`/
+  `favouriteOutline` (→heart), `primaryFilled`/`primaryOutline` (→star), `savedTemplate`/
+  `savedTemplateOutline` (→bookmark), + convention doc comment.
+- Migrate cited call sites (preserve existing colours + filled/outline state toggles):
+  - heart: `recipe_detail_view.dart:344`, `comment_item_widget.dart:97`,
+    `comment_item_widgets.dart:337`, `recipe_card.dart:387`, `collection_stats_view.dart:150`
+  - star (primary): `image_grid_widgets.dart:157`, `primary_badge.dart:28`
+  - bookmark (saved): `shopping_list_header.dart:302`, `shopping_app_bar.dart:246` (semantic rename)
+
+**Blast radius:** icon-constant swaps only; no logic change. iOS sites that used raw Material
+`Icons.*` become platform-adaptive (Cupertino on iOS) — the intended consistency gain, reviewable
+in In-Review. Rating/sort/dietary stars (`star_rating_row`, `sort_menu_builder`,
+`onboarding_dietary`, social_components) are a DIFFERENT concept → left untouched.
+
+**Product-intent flag (note in In-Review comment, don't change):** colour drift — comment likes
+use `colorScheme.error` (red) vs favourites use theme default. Preserving both as-is; the
+unify-or-keep decision is Malin's. → follow-up.
+
+**Rollback shape:** revert the commit — getters are additive, call-site swaps are 1:1.
+
+- [x] **A1. Concept getters + convention doc** `[Tier B]` — `adaptive_icon.dart`: `favouriteFilled/Outline`, `primaryFilled/Outline`, `savedTemplate/Outline` + convention doc comment. (BUT-944)
+- [x] **A2. Migrate 9 cited call sites** `[Tier B]` — recipe_detail_view, comment_item_widget(s), recipe_card, collection_stats_view (heart); image_grid_widgets, primary_badge (star); shopping_list_header, shopping_app_bar (bookmark). Colours preserved. analyze clean. (BUT-944)
+
+### Follow-ups to file
+- Lint/codemod ban on raw `Icons.favorite`/`star`/`bookmark` (enforcement half of BUT-944).
+- Colour convention decision (red likes vs theme-default favourites).
 
 ### Post-Sprint Steps
-- [ ] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests
+- [ ] `dart analyze --fatal-infos` + format
+- [ ] code-reviewer + testing-specialist gates
 - [ ] Commit, push
-- [ ] BUT-1210 → Done; BUT-1211 → In Review + notify
-
-### Awaiting Malin — In Review (carried)
-BUT-904 (epic), BUT-1198, BUT-1199, BUT-1037, BUT-1039, BUT-918, BUT-912, BUT-946, BUT-1079, BUT-914.
+- [ ] BUT-944 → In Review + notify; file follow-ups
 
 ---
-## ARCHIVED — iter-126 (BUT-914 comment-visibility label — In Review) · iter-125 (triage) · iter-124 (BUT-1209) · iter-123 (BUT-1204) · iter-122 (BUT-1207)
+## ARCHIVED — iter-127 (BUT-1210 Done + BUT-1211 In Review; BUT-1212 filed) · iter-126 (BUT-914 In Review) · iter-125 (triage) · iter-124 (BUT-1209) · iter-123 (BUT-1204)

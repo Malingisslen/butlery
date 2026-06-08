@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
@@ -341,8 +342,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           : context.l10n.favoritesAdd,
                       child: _HeroButton(
                         icon: recipe.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
+                            ? AdaptiveIcons.favouriteFilled
+                            : AdaptiveIcons.favouriteOutline,
                         onPressed: () async {
                           await viewModel.toggleFavorite();
                           if (!context.mounted) return;

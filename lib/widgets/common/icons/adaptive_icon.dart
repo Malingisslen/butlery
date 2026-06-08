@@ -636,6 +636,21 @@ class AdaptiveIcons {
   static IconData get bookmarkOutlined =>
       _isIOS ? CupertinoIcons.bookmark : Icons.bookmark_border;
 
+  // BUT-944: semantic concept aliases — one icon per concept so call sites
+  // express *meaning*, not a raw glyph. The convention:
+  //   heart    → personal preference  (favourite, like)
+  //   star     → system designation   (primary image, featured)
+  //   bookmark → template / saved-for-later
+  // Prefer these at call sites over raw `Icons.favorite|star|bookmark` (and over
+  // the generic shape getters above) so the convention stays consistent and
+  // enforceable. These fix only the glyph — colour stays the caller's choice.
+  static IconData get favouriteFilled => favorite;
+  static IconData get favouriteOutline => favoriteOutlined;
+  static IconData get primaryFilled => star;
+  static IconData get primaryOutline => starOutlined;
+  static IconData get savedTemplate => bookmark;
+  static IconData get savedTemplateOutline => bookmarkOutlined;
+
   // Navigation arrows
   static IconData get arrowBack =>
       _isIOS ? CupertinoIcons.back : Icons.arrow_back;

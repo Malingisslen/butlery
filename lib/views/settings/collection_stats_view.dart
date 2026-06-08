@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -147,7 +148,7 @@ class _HeroBanner extends StatelessWidget {
         Row(children: [
           card(Icons.menu_book, totalRecipes, l10n.statsTotalRecipes),
           const SizedBox(width: AppDimensions.spacingMd),
-          card(Icons.favorite, favorites, l10n.statsFavorites),
+          card(AdaptiveIcons.favouriteFilled, favorites, l10n.statsFavorites),
         ]),
         const SizedBox(height: AppDimensions.spacingMd),
         Row(children: [

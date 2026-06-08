@@ -230,4 +230,64 @@ void main() {
       });
     });
   });
+
+  // BUT-944: the semantic concept aliases. These pin the concept→glyph
+  // convention (heart→favourite, star→primary, bookmark→saved-template) so a
+  // future edit can't silently re-point a concept at the wrong glyph
+  // (e.g. `primaryFilled => bookmark`). They also guard that the aliases stay
+  // exactly equivalent to the underlying shape getters the codemod replaced —
+  // that equivalence is what makes the migration glyph-preserving on every
+  // platform.
+  group('AdaptiveIcons semantic concept aliases (BUT-944)', () {
+    test('Material side: concepts map to heart / star / bookmark glyphs', () {
+      onPlatformSync(TargetPlatform.android, () {
+        expect(AdaptiveIcons.favouriteFilled, Icons.favorite);
+        expect(AdaptiveIcons.favouriteOutline, Icons.favorite_border);
+        expect(AdaptiveIcons.primaryFilled, Icons.star);
+        expect(AdaptiveIcons.primaryOutline, Icons.star_border);
+        expect(AdaptiveIcons.savedTemplate, Icons.bookmark);
+        expect(AdaptiveIcons.savedTemplateOutline, Icons.bookmark_border);
+      });
+    });
+
+    test('iOS side: concepts follow their underlying adaptive shape getter',
+        () {
+      onPlatformSync(TargetPlatform.iOS, () {
+        expect(AdaptiveIcons.favouriteFilled, CupertinoIcons.heart_fill);
+        expect(AdaptiveIcons.primaryFilled, CupertinoIcons.star_fill);
+        // savedTemplate aliases bookmark, whose iOS glyph is the *_fill variant.
+        expect(AdaptiveIcons.savedTemplate, CupertinoIcons.bookmark_fill);
+      });
+    });
+
+    test('aliases are exactly equivalent to the shape getters they replaced',
+        () {
+      // Holds on the test platform (Android) and, because both sides resolve
+      // through the same `_isIOS` branch, on iOS too — proving the codemod is
+      // glyph-preserving rather than glyph-changing.
+      onPlatformSync(TargetPlatform.android, () {
+        expect(AdaptiveIcons.favouriteFilled, AdaptiveIcons.favorite);
+        expect(AdaptiveIcons.favouriteOutline, AdaptiveIcons.favoriteOutlined);
+        expect(AdaptiveIcons.primaryFilled, AdaptiveIcons.star);
+        expect(AdaptiveIcons.primaryOutline, AdaptiveIcons.starOutlined);
+        expect(AdaptiveIcons.savedTemplate, AdaptiveIcons.bookmark);
+        expect(
+          AdaptiveIcons.savedTemplateOutline,
+          AdaptiveIcons.bookmarkOutlined,
+        );
+      });
+    });
+
+    test('concepts are distinct — no two semantic names share a glyph', () {
+      onPlatformSync(TargetPlatform.android, () {
+        final glyphs = {
+          AdaptiveIcons.favouriteFilled,
+          AdaptiveIcons.primaryFilled,
+          AdaptiveIcons.savedTemplate,
+        };
+        expect(glyphs, hasLength(3),
+            reason: 'favourite, primary and saved-template must not collide');
+      });
+    });
+  });
 }

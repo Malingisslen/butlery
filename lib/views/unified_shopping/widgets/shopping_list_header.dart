@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -299,7 +300,7 @@ class ShoppingListHeader {
         }
         break;
       case ListType.template:
-        sharingIcon = Icons.bookmark;
+        sharingIcon = AdaptiveIcons.savedTemplate;
         sharingColor = cs.onSurfaceVariant;
         permissionText = context.l10n.shoppingPermissionTemplate;
         break;
