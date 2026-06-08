@@ -293,56 +293,60 @@ jargong, de fem viktigaste reglerna jag måste känna till innan jag rör koden.
     <section class="module" data-module="2">
       <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
       <h1>Sätt upp din maskin</h1>
-      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du en fungerande Butlery-dev-miljö på din egen dator: verktygen, repot, beroenden och hemligheterna.</p></div>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du en fungerande Butlery-dev-miljö på din Mac, redo att bygga och köra appen på iOS-simulatorn.</p></div>
 
       <h2>Innehåll — checklista i ordning</h2>
       <ol>
-        <li><strong>Installera verktygen.</strong> Claude Code (CLI:n du redan läser detta för), Flutter SDK (Malin har den på <code>C:\tools\flutter</code> — installera Flutter och lägg <code>C:\tools\flutter\bin</code> i din PATH; <code>dart</code> följer med Flutter på <code>C:\tools\flutter\bin\dart.bat</code>), Node.js + npm (behövs för lefthook och functions-verktygen), Git (Malin: <code>C:\Program Files\Git\cmd</code>), och en editor (VS Code rekommenderas).</li>
-        <li><strong>Klona repot till exakt <code>C:\Butlery\butlery</code></strong> — samma sökväg som Malin, så att alla <code>cmd.bat</code>-sökvägar och <code>notify.ps1</code>-sökvägen stämmer rakt av. Kloningen hämtar automatiskt hela <code>.claude/</code>-mappen (skills, agenter, hooks, rules, CLAUDE.md, settings.json, launch.json) — så <em>större delen av Malins setup är redan på plats efter kloning.</em></li>
-        <li><strong>Installera beroenden.</strong> <code>flutter pub get</code> (Dart/Flutter-paket), <code>npm install</code> (lefthook + functions-deps), <code>npx lefthook install</code> (kopplar in git-hookarna på din maskin: pre-commit kör <code>dart format</code> + secret-scan + <code>dart analyze --fatal-infos</code>, och commit-msg validerar conventional-commit-format).</li>
-        <li><strong>Hemligheter (.env).</strong> Kopiera mallen — <code>copy .env.example .env</code> — och fyll i riktiga värden. Firebase-config hämtas från Firebase Console (Project Settings → SDK setup and configuration); eftersom ni bygger <em>samma app</em> delar Malin samma Firebase-projekt och nycklar med dig på ett säkert sätt. <code>OCR_API_KEY</code> kommer från OCR.space (gratis 25 000/mån) och behövs för foto-import.</li>
-        <li><strong>Verifiera.</strong> Kör <code>flutter analyze</code> (ska gå rent) och starta appen via <code>launch.json</code>-configen "butlery-web" eller <code>flutter run -d chrome</code>.</li>
+        <li><strong>Verktygen (macOS).</strong> Claude Code (CLI:n). <strong>Xcode</strong> från App Store (krävs för iOS — appen riktar iOS 17.0, så Xcode 15+). Kör sedan <code>xcode-select --install</code>, öppna Xcode en gång och acceptera licensen, samt <code>sudo xcodebuild -runFirstLaunch</code>. <strong>CocoaPods</strong> (<code>sudo gem install cocoapods</code> eller <code>brew install cocoapods</code>) — iOS-native beroenden. <strong>Flutter SDK</strong> (t.ex. via flutter.dev eller <code>brew install --cask flutter</code>); lägg <code>flutter/bin</code> i din PATH i <code>~/.zshrc</code>. <code>dart</code> följer med Flutter. <strong>Node.js + npm</strong> (lefthook + functions), <strong>Git</strong>, en editor (VS Code). Kör till sist <code>flutter doctor</code> — den verifierar Xcode/CocoaPods/Flutter; åtgärda allt den klagar på.</li>
+        <li><strong>Klona repot</strong> till valfri plats på Mac, t.ex. <code>~/dev/butlery</code>. Till skillnad från Windows finns inga hårdkodade sökvägar som tvingar en viss mapp. Kloningen hämtar hela <code>.claude/</code> (skills, agenter, hooks, rules, CLAUDE.md, settings.json) — så <em>större delen av Malins setup är på plats direkt.</em></li>
+        <li><strong>Installera beroenden.</strong> <code>flutter pub get</code> (Dart/Flutter-paket); sedan <code>cd ios &amp;&amp; pod install &amp;&amp; cd ..</code> (iOS-native pods); <code>npm install</code> (lefthook + functions-deps); <code>npx lefthook install</code> (kopplar in git-gates på din maskin: pre-commit kör <code>dart format</code> + secret-scan + <code>dart analyze --fatal-infos</code>; commit-msg-validering).</li>
+        <li><strong>Hemligheter (.env).</strong> <code>cp .env.example .env</code> och fyll i. Du behöver iOS/macOS-Firebase-nycklarna (<code>FIREBASE_API_KEY_IOS</code>, <code>FIREBASE_APP_ID_IOS</code>, <code>FIREBASE_API_KEY_MACOS</code> m.fl.) — samma Firebase-projekt som Malin, nycklar delas säkert. <code>OCR_API_KEY</code> från OCR.space för foto-import.</li>
+        <li><strong>Kör på iOS-simulator.</strong> <code>open -a Simulator</code>, sedan <code>flutter run</code> (välj iOS-enheten), eller <code>flutter run -d ios</code>. Verifiera koden med <code>flutter analyze</code>.</li>
       </ol>
 
       <h2>Riktiga referenser</h2>
       <div class="files">
-        <div class="file-chip"><span class="path">.env.example</span><span class="role">Mall för alla miljövariabler</span></div>
-        <div class="file-chip"><span class="path">lefthook.yml</span><span class="role">Definierar git-gates: format / secret-scan / analyze</span></div>
-        <div class="file-chip"><span class="path">pubspec.yaml</span><span class="role">Flutter-beroenden</span></div>
-        <div class="file-chip"><span class="path">.claude/launch.json</span><span class="role">Kör-konfigurationer</span></div>
+        <div class="file-chip"><span class="path">.env.example</span><span class="role">Miljövariabler, inkl. iOS/macOS-nycklar</span></div>
+        <div class="file-chip"><span class="path">ios/Podfile</span><span class="role">platform :ios, '17.0'</span></div>
+        <div class="file-chip"><span class="path">lefthook.yml</span><span class="role">git-gates: format / secret-scan / analyze</span></div>
+        <div class="file-chip"><span class="path">pubspec.yaml</span><span class="role">Dart ^3.5.0, Flutter ≥3.24.0</span></div>
         <div class="file-chip"><span class="path">package.json</span><span class="role">lefthook + node-deps</span></div>
       </div>
 
       <h2>Prompt-exempel</h2>
       <div class="code-block">
-        <div class="label">Sätt upp repot</div>
+        <div class="label">Sätt upp repot (macOS)</div>
         <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
-        <pre>git clone &lt;repo-url&gt; C:\Butlery\butlery
-cd C:\Butlery\butlery
+        <pre>git clone &lt;repo-url&gt; ~/dev/butlery
+cd ~/dev/butlery
 flutter pub get
+cd ios &amp;&amp; pod install &amp;&amp; cd ..
 npm install
 npx lefthook install
-copy .env.example .env</pre>
+cp .env.example .env
+flutter doctor</pre>
       </div>
 
       <div class="callout gotcha">
         <div class="head">⚠ Gotchas</div>
         <ul>
-          <li>Klona till exakt <code>C:\Butlery\butlery</code> — annars stämmer inte <code>run_test.bat</code>/<code>run_analyze.bat</code>-sökvägarna eller <code>notify.ps1</code>.</li>
-          <li><code>.env</code> är gitignorad och innehåller riktiga nycklar — committa den ALDRIG. Secret-scan-hooken fångar de flesta mönster men är inte ett heltäckande skydd.</li>
-          <li>Lägg Flutter på <code>C:\tools\flutter</code> som Malin; lägger du den någon annanstans måste du justera PATH-raden i <code>run_test.bat</code>.</li>
+          <li>iOS-appen kräver iOS 17.0 (se <code>ios/Podfile</code>) → Xcode 15+.</li>
+          <li>Glöm inte <code>pod install</code> i <code>ios/</code> efter <code>flutter pub get</code>, annars failar iOS-bygget på saknade pods.</li>
+          <li>Kör <code>flutter doctor</code> tidigt — den fångar de vanligaste Mac/Xcode/CocoaPods-problemen innan de blir kryptiska byggfel.</li>
+          <li><code>.env</code> är gitignorad och har riktiga nycklar — committa den ALDRIG.</li>
+          <li>Vissa filer i repot är Windows-artefakter från Malins maskin (<code>run_test.bat</code>, <code>run_analyze.bat</code>) — ignorera dem, de gäller inte på Mac.</li>
         </ul>
       </div>
 
       <div class="callout try">
         <div class="head">▶ Prova nu</div>
-        <p>På en ren git-tree, kör <code>npx lefthook run pre-commit</code> och se att format/secret-scan/analyze faktiskt kör. Kör sedan <code>flutter analyze</code> och bekräfta att det går rent.</p>
+        <p>Kör <code>flutter doctor</code> och bekräfta att iOS-toolchainen (Xcode, CocoaPods) är grön. Kör sedan appen på simulatorn med <code>flutter run</code>.</p>
       </div>
 
       <div class="quiz">
-        <div class="q">Vad gör <code>npx lefthook install</code>, och varför måste du köra det efter kloning fastän <code>lefthook.yml</code> redan följer med repot?</div>
+        <div class="q">Vilka två iOS-specifika verktyg (utöver Flutter) måste du installera på din Mac, och vilket kommando kör du i <code>ios/</code> efter <code>flutter pub get</code>?</div>
         <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
-        <div class="answer">Det installerar git-hookarna lokalt på din maskin (pre-commit: <code>dart format</code> + secret-scan + <code>dart analyze --fatal-infos</code>; commit-msg: format-validering). <code>lefthook.yml</code> beskriver bara hookarna — de är inte aktiva i din lokala <code>.git</code> förrän du kör <code>npx lefthook install</code>.</div>
+        <div class="answer">Xcode och CocoaPods. Efter <code>flutter pub get</code> kör du <code>pod install</code> i <code>ios/</code>-mappen för att hämta de iOS-native beroendena.</div>
       </div>
 
       <div class="complete-row">
@@ -355,35 +359,35 @@ copy .env.example .env</pre>
     <section class="module" data-module="3">
       <div class="module-kicker">Del 1 · Claude Code &amp; din setup</div>
       <h1>Konfigurera Claude Code som Malins</h1>
-      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du samma Claude Code-tillägg som Malin — plugins, MCP-servrar och kontokopplingar — plus Windows-finliret, och du vet vad som redan kom gratis med repot.</p></div>
+      <div class="goal"><span class="tag">Mål</span><p>Efter den här modulen har du samma plugins, MCP-servrar och connectors som Malin (plattformsoberoende), och du vet vilka Windows-specifika bitar i hennes setup du ska hoppa över på din Mac.</p></div>
 
-      <h2>A. Plugins (user-scope, från marketplace <code>claude-plugins-official</code>)</h2>
-      <p>Först, lägg till marketplacen: <code>claude plugin marketplace add anthropics/claude-plugins-official</code>. Installera sedan Malins 16 plugins (via <code>claude plugin install &lt;namn&gt;@claude-plugins-official</code> eller <code>/plugin</code>-menyn):</p>
+      <h2>A. Plugins (user-scope, marketplace <code>claude-plugins-official</code>) — identiskt på Mac</h2>
+      <p><code>claude plugin marketplace add anthropics/claude-plugins-official</code>, installera sedan Malins 16 plugins (<code>claude plugin install &lt;namn&gt;@claude-plugins-official</code> eller <code>/plugin</code>):</p>
       <ul>
-        <li><strong>superpowers</strong> (skills-motorn: brainstorming, TDD, debugging m.m.), <strong>code-review</strong>, <strong>code-simplifier</strong>, <strong>feature-dev</strong>, <strong>claude-md-management</strong>, <strong>claude-code-setup</strong>, <strong>skill-creator</strong>, <strong>frontend-design</strong>, <strong>security-guidance</strong>, <strong>ralph-loop</strong>, <strong>explanatory-output-style</strong>, <strong>context7</strong>, <strong>firebase</strong>, <strong>github</strong>, <strong>chrome-devtools-mcp</strong>, <strong>telegram</strong>.</li>
+        <li><strong>superpowers</strong> (skills-motorn: brainstorming, TDD, debugging), <strong>code-review</strong>, <strong>code-simplifier</strong>, <strong>feature-dev</strong>, <strong>claude-md-management</strong>, <strong>claude-code-setup</strong>, <strong>skill-creator</strong>, <strong>frontend-design</strong>, <strong>security-guidance</strong>, <strong>ralph-loop</strong>, <strong>explanatory-output-style</strong>, <strong>context7</strong>, <strong>firebase</strong>, <strong>github</strong>, <strong>chrome-devtools-mcp</strong>, <strong>telegram</strong>.</li>
       </ul>
-      <p>Viktigt: plugins <strong>context7, firebase, github, chrome-devtools-mcp och telegram tar med sig sina MCP-servrar automatiskt</strong> när de installeras — du behöver inte lägga till dem separat.</p>
+      <p>Pluginsen context7/firebase/github/chrome-devtools-mcp/telegram tar med sina MCP-servrar automatiskt.</p>
 
-      <h2>B. MCP-servrar (CLI)</h2>
-      <p>Bara en behöver läggas till för hand: <strong>Linear</strong> (Butlerys ärendehantering). <code>claude mcp add --transport http linear https://mcp.linear.app/mcp</code> och autentisera i webbläsaren. Verifiera med <code>claude mcp list</code>.</p>
+      <h2>B. MCP-servrar (CLI) — identiskt på Mac</h2>
+      <p>Bara Linear läggs till för hand: <code>claude mcp add --transport http linear https://mcp.linear.app/mcp</code>, autentisera i webbläsaren. Verifiera med <code>claude mcp list</code>.</p>
 
-      <h2>C. claude.ai-kontokopplingar (full spegling)</h2>
-      <p>Logga in på claude.ai → Settings → Connectors och aktivera dem Malin använder: Gmail, Google Calendar, Google Drive, Figma, Spotify m.fl. Dessa är på <em>kontonivå</em>, inte CLI — de bor i ditt eget claude.ai-konto, du delar inte Malins.</p>
+      <h2>C. claude.ai-connectors (full spegling) — samma</h2>
+      <p>claude.ai → Settings → Connectors: aktivera Gmail, Google Calendar, Google Drive, Figma, Spotify m.fl. Kontonivå, inte CLI — bor i ditt eget konto.</p>
 
-      <h2>D. Settings (kom gratis med repot)</h2>
-      <p><code>.claude/settings.json</code> kopplar redan in alla hooks, permissions och <code>autoMemoryEnabled</code> — du behöver inte röra den. (Den sätter bl.a. <code>ENABLE_CLAUDEAI_MCP_SERVERS=false</code>.)</p>
+      <h2>D. Settings (kom med repot, plattformsoberoende)</h2>
+      <p><code>.claude/settings.json</code> kopplar in alla hooks, permissions och <code>autoMemoryEnabled</code>. MEN en hook är Windows-specifik: Notification-hooken kör <code>notify.ps1</code> via PowerShell med en hårdkodad <code>C:/Butlery/butlery</code>-sökväg → den <strong>fungerar inte på din Mac</strong> (ingen PowerShell, fel sökväg). Den failar tyst; du missar inget kritiskt. Vill du ha desktop-notiser kan du ersätta den med <code>terminal-notifier</code> eller <code>osascript</code> — valfritt.</p>
 
-      <h2>E. Windows-finliret</h2>
-      <p><code>flutter test</code> failar med "Unable to find git in your PATH" när det körs via git-bash. Lös det genom att köra <code>flutter test</code> via en <code>.bat</code> som sätter native Windows-PATH: <code>set PATH=C:\Windows\System32;C:\tools\flutter\bin;C:\Program Files\Git\cmd</code> (se <code>run_test.bat</code>). Telegram-notiser när Claude är klar eller behöver input drivs av <code>notify.ps1</code> (kräver telegram-pluginen + att du kör <code>/telegram:configure</code> med en bot-token).</p>
+      <h2>E. Vad du INTE behöver på Mac (Malins Windows-trick)</h2>
+      <p><code>flutter test</code>-PATH-tricket (<code>run_test.bat</code>, som sätter <code>C:\tools\flutter\bin</code> i PATH) är en Windows/git-bash-bugg — på Mac kör du <code>flutter test test/...</code> direkt. <code>launch.json</code>-configen "butlery-web" använder <code>cmd</code> (Windows); på Mac kör du <code>flutter run -d chrome</code> direkt.</p>
 
       <h2>F. Din första prompt</h2>
       <p>Be alltid Claude rita kartan innan du bygger — t.ex. "Jag är ny i repot, ge mig en karta på svenska över appen och de fyra arkitekturlagren, peka på filerna, skriv ingen kod."</p>
 
       <h2>Riktiga referenser</h2>
       <div class="files">
-        <div class="file-chip"><span class="path">.claude/settings.json</span><span class="role">Hooks + permissions, kom med repot</span></div>
-        <div class="file-chip"><span class="path">run_test.bat</span><span class="role">Windows PATH-tricket för flutter test</span></div>
-        <div class="file-chip"><span class="path">.claude/hooks/notify.ps1</span><span class="role">Telegram-notiser</span></div>
+        <div class="file-chip"><span class="path">.claude/settings.json</span><span class="role">Hooks + permissions, plattformsoberoende</span></div>
+        <div class="file-chip"><span class="path">.claude/hooks/notify.ps1</span><span class="role">Windows-only — gäller inte dig</span></div>
+        <div class="file-chip"><span class="path">ios/Podfile</span><span class="role">platform :ios, '17.0'</span></div>
         <div class="file-chip"><span class="path">.claude/launch.json</span><span class="role">Kör-konfigurationer</span></div>
       </div>
 
@@ -398,32 +402,30 @@ claude mcp list
 claude plugin list</pre>
       </div>
       <div class="code-block">
-        <div class="label">Windows flutter test (.bat)</div>
+        <div class="label">På Mac — inga trick behövs</div>
         <button class="copy-btn" onclick="copyCode(this)">Kopiera</button>
-        <pre>@echo off
-set PATH=C:\Windows\System32;C:\tools\flutter\bin;C:\Program Files\Git\cmd
-cd /d C:\Butlery\butlery
-call flutter test test/widget/...</pre>
+        <pre>flutter test test/widget/...
+flutter analyze</pre>
       </div>
 
       <div class="callout gotcha">
         <div class="head">⚠ Gotchas</div>
         <ul>
-          <li>Plugins, MCP-servrar och claude.ai-connectors är <strong>user-scoped</strong> — de följer INTE med repo-klonen. Det är den enda delen av Malins setup du måste återskapa för hand.</li>
+          <li>Plugins, MCP och connectors är user-scoped — följer inte med klonen; den enda delen du återskapar för hand.</li>
+          <li><code>notify.ps1</code>-notishooken är Windows-only och failar tyst på Mac — ofarligt.</li>
           <li>github-MCP kan visa "Failed to connect" tills du autentiserat — ofarligt.</li>
-          <li>Connectorerna (Gmail m.fl.) bor i ditt eget claude.ai-konto; du delar inte Malins inloggning.</li>
         </ul>
       </div>
 
       <div class="callout try">
         <div class="head">▶ Prova nu</div>
-        <p>Kör <code>claude mcp list</code> och <code>claude plugin list</code> och jämför mot listan ovan. Du ska se linear (✓), och plugins som firebase/context7/telegram med sina MCP-servrar.</p>
+        <p>Kör <code>claude mcp list</code> och <code>claude plugin list</code>, jämför mot listan ovan. Kör sedan <code>flutter test</code> på en testfil och se att det funkar direkt utan PATH-trick.</p>
       </div>
 
       <div class="quiz">
-        <div class="q">Vilken del av Malins setup följer med automatiskt när du klonar repot, och vilken måste du sätta upp för hand?</div>
+        <div class="q">Vilken del av Malins setup följer med klonen, vilken sätter du upp för hand, och vilken Windows-specifik bit ska du hoppa över på din Mac?</div>
         <button class="reveal" onclick="this.closest('.quiz').classList.add('open')">Visa svar</button>
-        <div class="answer">Hela <code>.claude/</code>-mappen (skills, agenter, hooks, rules, CLAUDE.md, settings.json, launch.json) följer med klonen. Plugins, MCP-servrar och claude.ai-connectors är user-scoped och måste installeras för hand.</div>
+        <div class="answer"><code>.claude/</code> (skills, agenter, hooks, rules, CLAUDE.md, settings.json) följer med klonen. Plugins, MCP-servrar och claude.ai-connectors är user-scoped och installeras för hand. Windows-bitarna — <code>notify.ps1</code>-notishooken och <code>flutter test</code>-PATH-tricket (<code>run_test.bat</code>) — hoppar du över; på Mac kör du flutter test direkt.</div>
       </div>
 
       <div class="complete-row">
@@ -1456,7 +1458,7 @@ flutter gen-l10n                                # regenerera l10n efter ARB-änd
 dart format lib test                            # formatera (gateas av Build Validation i lefthook.yml)
 dart analyze --fatal-infos                      # strikt analyze (lefthook pre-commit)</pre>
       </div>
-      <p><em>Windows-fälla: <code>flutter test</code> kan faila på PATH via git-bash — kör via <code>cmd.bat</code> som sätter native Windows-PATH.</em></p>
+      <p><em>På macOS kör <code>flutter test test/...</code> direkt — ingen PATH-wrapper behövs.</em></p>
 
       <p><strong>Skills (auto-tändande, ingen åtgärd behövs — laddas när uppgiften matchar):</strong> <code>butlery-architecture</code>, <code>data-source-enforcer</code>, <code>tri-state-validator</code>, <code>mixin-advisor</code>, <code>repository-generator</code>, <code>viewmodel-generator</code>, <code>serialization-generator</code>, <code>permission-test-generator</code>, <code>responsive-layout-validator</code>, <code>facade-pattern-detector</code>, <code>tagging-domain-knowledge</code>, <code>firebase-ingredient-patterns</code>, <code>verify</code>.</p>
 
