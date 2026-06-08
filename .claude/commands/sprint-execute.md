@@ -53,6 +53,7 @@ anything, treat it as B (it has a visual surface → needs eyes). Tier D is only
 external blockers — "I'd rather not" is not Tier D.
 
 ### Selection rules
+- **NEVER select tickets labeled `onboarding-reserved`.** These are reserved as human onboarding capstones (e.g. BUT-677, BUT-722) and must stay untouched by the autonomous loop. Exclude them from selection entirely — don't score them, don't transition them, don't implement them.
 - Default N = auto-size 6–10 based on backlog volume. `$ARGUMENTS` numeric arg overrides.
 - **Mix tiers deliberately.** A healthy batch is mostly Tier A/B/C work — don't skip a ticket
   just because it's UI or a refactor; route it through its tier. Aim for a spread (e.g. 2–3

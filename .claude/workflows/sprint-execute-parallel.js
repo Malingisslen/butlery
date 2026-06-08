@@ -176,7 +176,7 @@ const selectPrompt = `You are running Phase 1 (Selection) of a Butlery sprint. R
 Steps:
 1. Verify Linear MCP is connected (try list_issues team "Butlery"). Set linearAvailable accordingly; if down, still produce a plan from tasks/todo.md + git if possible.
 2. Gather IN PARALLEL: Linear backlog (states Backlog, Todo, In Progress, Triage), tasks/todo.md, and \`git log --since="7 days ago" --oneline --no-merges\`.
-3. Score each open ticket per the skill's priority scoring. Map BUT-XXX in recent git → flag tickets already done but still open (put them in "obsolete").
+3. Score each open ticket per the skill's priority scoring. Map BUT-XXX in recent git → flag tickets already done but still open (put them in "obsolete"). EXCLUDE entirely any ticket whose labels contain "onboarding-reserved" — these are reserved human onboarding capstones (e.g. BUT-677, BUT-722); never score, select, transition, or implement them.
 4. Select N tickets: ${COUNT ? `EXACTLY ${COUNT}` : 'auto-size 6–10 by backlog volume'}.${FOCUS ? ` Filter to area label "${FOCUS}" (warn if <3).` : ''}
 5. CLUSTER tickets by area into batches so that each batch touches a DISJOINT set of files — this is critical: batches run in parallel worktrees and their patches are applied sequentially, so overlapping files would conflict. Never split one area across two batches. Assign each batch a single \`area\`.
 6. For each ticket compute the Phase 1.5 \`requiresPlanMode\` flag.
