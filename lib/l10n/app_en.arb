@@ -1821,6 +1821,17 @@
       "count": { "type": "int" }
     }
   },
+  "recipeCommentAudienceTitle": "Visible to",
+  "@recipeCommentAudienceTitle": {
+    "description": "BUT-1211: title of the dialog that lists the full set of people who will see a comment (tapped from the inline 'Visible to: …' line)."
+  },
+  "recipeCommentAudienceOthers": "{count, plural, =1{and 1 more person} other{and {count} more people}}",
+  "@recipeCommentAudienceOthers": {
+    "description": "BUT-1211: trailing line in the comment-audience dialog for members whose display name couldn't be resolved — counted, never hidden (privacy). e.g. 'and 2 more people'.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "commentReply": "Reply",
   "commentReplyingTo": "Replying to",
   "commentWriteComment": "Write a comment",

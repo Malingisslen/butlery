@@ -174,37 +174,50 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
+  /// BUT-914 / BUT-1211: resolves the comment audience to display names.
+  /// Returns the [resolved] names (members whose display name is known) and the
+  /// TRUE [total] audience size — including members whose name didn't resolve —
+  /// so neither the inline label nor the dialog can under-state who sees the
+  /// comment. Empty total for non-collaborative recipes (no shared audience).
+  ({List<String> resolved, int total}) _resolveCommentAudience(
+      SocialRecipeViewModel vm) {
+    final audienceIds = commentVisibilityAudience(
+        widget.recipe, (vm.currentUser?.uid).orEmpty());
+
+    final friendNames = <String, String>{};
+    try {
+      for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
+        friendNames[f.uid] = f.displayName;
+      }
+    } catch (_) {
+      // Friends unavailable — the owner-name fallback below still resolves.
+    }
+
+    return resolveCommentAudienceNames(
+      audienceIds,
+      friendNames,
+      ownerId: widget.recipe.socialData?.ownerId,
+      ownerName: widget.recipe.socialData?.ownerDisplayName,
+    );
+  }
+
   /// BUT-914: names who will see a comment (collaborative recipe members) so
   /// the author isn't guessing. Hidden for non-collaborative recipes (no shared
   /// audience to label) and when no member name resolves (avoids a misleading
   /// partial). Audience is the privacy-correct set from [commentVisibilityAudience].
+  ///
+  /// BUT-1211: the line is tappable → a dialog listing the COMPLETE audience
+  /// (every resolved name, not the inline +N truncation).
   Widget _buildVisibilityLine(BuildContext context, SocialRecipeViewModel vm) {
-    final audienceIds = commentVisibilityAudience(
-        widget.recipe, (vm.currentUser?.uid).orEmpty());
-    if (audienceIds.isEmpty) return const SizedBox.shrink();
+    final audience = _resolveCommentAudience(vm);
+    if (audience.total <= 0) return const SizedBox.shrink();
 
-    final names = <String, String>{};
-    try {
-      for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
-        names[f.uid] = f.displayName;
-      }
-    } catch (_) {
-      // Friends unavailable — fall back to the recipe's denormalized owner name.
-    }
-    final ownerId = widget.recipe.socialData?.ownerId;
-    final ownerName = widget.recipe.socialData?.ownerDisplayName;
-    if (ownerId != null && (ownerName?.isNotEmpty ?? false)) {
-      names.putIfAbsent(ownerId, () => ownerName!);
-    }
-
-    final resolved =
-        audienceIds.where(names.containsKey).map((id) => names[id]!).toList();
     // Privacy invariant lives in formatCommentAudience: it never under-states
     // the audience (true total is always disclosed; unresolved members count
     // toward "+N" or a count-only fallback — never silently hidden).
     final audienceStr = formatCommentAudience(
-      resolved,
-      audienceIds.length,
+      audience.resolved,
+      audience.total,
       countLabel: context.l10n.recipeCommentVisiblePeople,
     );
     if (audienceStr == null) return const SizedBox.shrink();
@@ -212,21 +225,105 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-      child: Row(
-        children: [
-          Icon(Icons.visibility_outlined,
-              size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
-          const SizedBox(width: AppDimensions.spacingXxs),
-          Flexible(
-            child: Text(
-              context.l10n.recipeCommentVisibleTo(audienceStr),
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-              overflow: TextOverflow.ellipsis,
-            ),
+      child: Semantics(
+        label: context.l10n.recipeCommentVisibleTo(audienceStr),
+        button: true,
+        child: InkWell(
+          onTap: () => _showAudienceDialog(context, vm),
+          child: Row(
+            children: [
+              Icon(Icons.visibility_outlined,
+                  size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+              const SizedBox(width: AppDimensions.spacingXxs),
+              Flexible(
+                child: Text(
+                  context.l10n.recipeCommentVisibleTo(audienceStr),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: cs.onSurfaceVariant),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  /// BUT-1211: lists the COMPLETE comment audience (all resolved names, not the
+  /// inline +N truncation) so the author can verify exactly who can see their
+  /// comment. Members whose name didn't resolve are shown as a trailing count —
+  /// never hidden, preserving the same privacy invariant as the inline label.
+  Future<void> _showAudienceDialog(
+      BuildContext context, SocialRecipeViewModel vm) async {
+    final audience = _resolveCommentAudience(vm);
+    if (audience.total <= 0) return;
+    final unresolved = audience.total - audience.resolved.length;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        final cs = Theme.of(ctx).colorScheme;
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.visibility_outlined,
+                  size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(ctx.l10n.recipeCommentAudienceTitle),
+            ],
+          ),
+          // No name resolved → disclose the count only (never hide the audience).
+          // A collaborative recipe can have many members, so the name list
+          // scrolls rather than overflowing the dialog.
+          content: audience.resolved.isEmpty
+              ? Text(
+                  ctx.l10n.recipeCommentVisiblePeople(audience.total),
+                  style: AppTextStyles.bodyMedium,
+                )
+              : SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final name in audience.resolved)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              bottom: AppDimensions.spacingXs),
+                          child: Row(
+                            children: [
+                              Icon(Icons.person_outline,
+                                  size: AppDimensions.iconSizeS,
+                                  color: cs.onSurfaceVariant),
+                              const SizedBox(width: AppDimensions.spacingM),
+                              Flexible(
+                                child:
+                                    Text(name, style: AppTextStyles.bodyMedium),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (unresolved > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: AppDimensions.spacingXxs),
+                          child: Text(
+                            ctx.l10n.recipeCommentAudienceOthers(unresolved),
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: cs.onSurfaceVariant),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ctx.l10n.commonClose),
+            ),
+          ],
+        );
+      },
     );
   }
 

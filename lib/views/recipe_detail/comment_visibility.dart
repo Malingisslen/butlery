@@ -26,6 +26,37 @@ List<String> commentVisibilityAudience(Recipe recipe, String currentUserId) {
   return ids.toList();
 }
 
+/// BUT-1211: resolves an audience id-set to display names, preserving the TRUE
+/// audience size so callers (the inline label and the full-audience dialog)
+/// can never under-state who sees a comment.
+///
+/// [audienceIds] is the privacy-correct set from [commentVisibilityAudience].
+/// [friendNames] maps uid → display name for any names the caller could resolve
+/// (typically the current user's friends list). [ownerId]/[ownerName] are the
+/// recipe's denormalized owner, used as a fallback so the owner's name still
+/// resolves when the friends list is empty/unavailable.
+///
+/// Returns the [resolved] names (in audience order) and the [total] audience
+/// size — `total` is always `audienceIds.length`, never the resolved subset, so
+/// unresolved members surface as a count downstream rather than being dropped.
+({List<String> resolved, int total}) resolveCommentAudienceNames(
+  List<String> audienceIds,
+  Map<String, String> friendNames, {
+  String? ownerId,
+  String? ownerName,
+}) {
+  if (audienceIds.isEmpty) return (resolved: const <String>[], total: 0);
+
+  final names = Map<String, String>.from(friendNames);
+  if (ownerId != null && (ownerName?.isNotEmpty ?? false)) {
+    names.putIfAbsent(ownerId, () => ownerName!);
+  }
+
+  final resolved =
+      audienceIds.where(names.containsKey).map((id) => names[id]!).toList();
+  return (resolved: resolved, total: audienceIds.length);
+}
+
 /// BUT-914: formats the visibility-label string from [resolvedNames] (audience
 /// members whose display name is known) and [total] (the TRUE audience size,
 /// including members whose name didn't resolve).

@@ -5055,6 +5055,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 person} other{{count} personer}}'**
   String recipeCommentVisiblePeople(int count);
 
+  /// BUT-1211: title of the dialog that lists the full set of people who will see a comment (tapped from the inline 'Synlig för: …' line).
+  ///
+  /// In sv, this message translates to:
+  /// **'Synlig för'**
+  String get recipeCommentAudienceTitle;
+
+  /// BUT-1211: trailing line in the comment-audience dialog for members whose display name couldn't be resolved — counted, never hidden (privacy). e.g. 'och 2 personer till'.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{och 1 person till} other{och {count} personer till}}'**
+  String recipeCommentAudienceOthers(int count);
+
   /// No description provided for @commentReply.
   ///
   /// In sv, this message translates to:

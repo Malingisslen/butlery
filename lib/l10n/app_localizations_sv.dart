@@ -2949,6 +2949,20 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get recipeCommentAudienceTitle => 'Synlig för';
+
+  @override
+  String recipeCommentAudienceOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'och $count personer till',
+      one: 'och 1 person till',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get commentReply => 'Svara';
 
   @override

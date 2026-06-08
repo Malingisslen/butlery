@@ -1827,6 +1827,17 @@
       "count": { "type": "int" }
     }
   },
+  "recipeCommentAudienceTitle": "Synlig för",
+  "@recipeCommentAudienceTitle": {
+    "description": "BUT-1211: title of the dialog that lists the full set of people who will see a comment (tapped from the inline 'Synlig för: …' line)."
+  },
+  "recipeCommentAudienceOthers": "{count, plural, =1{och 1 person till} other{och {count} personer till}}",
+  "@recipeCommentAudienceOthers": {
+    "description": "BUT-1211: trailing line in the comment-audience dialog for members whose display name couldn't be resolved — counted, never hidden (privacy). e.g. 'och 2 personer till'.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "commentReply": "Svara",
   "commentReplyingTo": "Svarar på",
   "commentWriteComment": "Skriv en kommentar",

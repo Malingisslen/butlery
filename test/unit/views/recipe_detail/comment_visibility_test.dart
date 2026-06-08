@@ -104,4 +104,80 @@ void main() {
           formatCommentAudience(const [], 3, countLabel: _count), '3 personer');
     });
   });
+
+  group('resolveCommentAudienceNames — never under-states (BUT-1211)', () {
+    test('empty audience yields no names and zero total', () {
+      final r = resolveCommentAudienceNames(const [], const {});
+      expect(r.resolved, isEmpty);
+      expect(r.total, 0);
+    });
+
+    test('total is the full audience size, not the resolved subset', () {
+      // 3 people see the comment; only one name is known. total must stay 3 so
+      // the dialog/label disclose the other two as a count — never drop them.
+      final r = resolveCommentAudienceNames(
+        const ['owner', 'friendA', 'stranger'],
+        const {'friendA': 'Anna'},
+      );
+      expect(r.resolved, const ['Anna']);
+      expect(r.total, 3);
+    });
+
+    test('owner name resolves via the fallback when the friends map is empty',
+        () {
+      // Friends list unavailable (the try/catch path in the widget): the
+      // recipe's denormalized owner name must still resolve, or a collaborator
+      // sees an audience they cannot identify at all.
+      final r = resolveCommentAudienceNames(
+        const ['ownerId'],
+        const {},
+        ownerId: 'ownerId',
+        ownerName: 'Per',
+      );
+      expect(r.resolved, const ['Per']);
+      expect(r.total, 1);
+    });
+
+    test('an empty owner name does not register as a resolution', () {
+      final r = resolveCommentAudienceNames(
+        const ['ownerId'],
+        const {},
+        ownerId: 'ownerId',
+        ownerName: '',
+      );
+      expect(r.resolved, isEmpty, reason: 'blank name must not resolve');
+      expect(r.total, 1);
+    });
+
+    test('the friends map wins over the owner fallback for the same uid', () {
+      // putIfAbsent semantics: a friend-resolved name is authoritative; the
+      // denormalized owner name is only a fallback, never an override.
+      final r = resolveCommentAudienceNames(
+        const ['ownerId'],
+        const {'ownerId': 'Fresh Name'},
+        ownerId: 'ownerId',
+        ownerName: 'Stale Denormalized Name',
+      );
+      expect(r.resolved, const ['Fresh Name']);
+    });
+
+    test('resolution preserves audience order', () {
+      final r = resolveCommentAudienceNames(
+        const ['c', 'a', 'b'],
+        const {'a': 'Anna', 'b': 'Bo', 'c': 'Cilla'},
+      );
+      expect(r.resolved, const ['Cilla', 'Anna', 'Bo']);
+    });
+
+    test('drives the dialog unresolved-count arithmetic correctly', () {
+      // The dialog computes `unresolved = total - resolved.length`; this is the
+      // value behind the trailing "+N others" line. Pin it on the record so a
+      // refactor of resolved/total can't silently desync that count.
+      final r = resolveCommentAudienceNames(
+        const ['owner', 'x', 'y', 'z'],
+        const {'owner': 'Owner'},
+      );
+      expect(r.total - r.resolved.length, 3);
+    });
+  });
 }

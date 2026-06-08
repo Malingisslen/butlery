@@ -2948,6 +2948,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get recipeCommentAudienceTitle => 'Visible to';
+
+  @override
+  String recipeCommentAudienceOthers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count more people',
+      one: 'and 1 more person',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get commentReply => 'Reply';
 
   @override
