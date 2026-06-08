@@ -1782,7 +1782,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get tagClickToRestore => 'Klicka för att återställa';
 
   @override
-  String get allergenSettingsTitle => 'Allergeninställningar';
+  String get allergenSettingsTitle => 'Allergener & kostpreferenser';
+
+  @override
+  String get allergenSettingsHubSubtitle =>
+      'Uppdatera dina allergener och kostpreferenser när som helst';
 
   @override
   String get allergenTrackAllergensTitle => 'Spåra allergener';

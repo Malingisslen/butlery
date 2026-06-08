@@ -3048,8 +3048,14 @@ abstract class AppLocalizations {
   /// No description provided for @allergenSettingsTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Allergeninställningar'**
+  /// **'Allergener & kostpreferenser'**
   String get allergenSettingsTitle;
+
+  /// BUT-923: subtitle on the Settings food entry, signalling that allergen + dietary preferences can be revisited and edited at any time.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera dina allergener och kostpreferenser när som helst'**
+  String get allergenSettingsHubSubtitle;
 
   /// No description provided for @allergenTrackAllergensTitle.
   ///

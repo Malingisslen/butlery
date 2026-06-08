@@ -1781,7 +1781,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagClickToRestore => 'Click to restore';
 
   @override
-  String get allergenSettingsTitle => 'Allergen Settings';
+  String get allergenSettingsTitle => 'Allergens & dietary';
+
+  @override
+  String get allergenSettingsHubSubtitle =>
+      'Update your allergens and dietary preferences anytime';
 
   @override
   String get allergenTrackAllergensTitle => 'Track Allergens';

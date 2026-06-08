@@ -38,6 +38,7 @@ class SettingsHubView extends StatelessWidget {
                 _SettingsTile(
                   icon: Icons.restaurant_menu,
                   title: context.l10n.allergenSettingsTitle,
+                  subtitle: context.l10n.allergenSettingsHubSubtitle,
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsAllergens),
                 ),
@@ -199,11 +200,13 @@ class _SectionHeader extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final VoidCallback onTap;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.onTap,
   });
 
@@ -213,6 +216,11 @@ class _SettingsTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: cs.onSurfaceVariant),
       title: Text(title, style: AppTextStyles.bodyMedium),
+      subtitle: subtitle != null
+          ? Text(subtitle!,
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant))
+          : null,
       trailing: Icon(Icons.chevron_right, color: cs.outline),
       onTap: onTap,
     );
