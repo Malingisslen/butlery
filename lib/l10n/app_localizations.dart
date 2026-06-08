@@ -22426,6 +22426,30 @@ abstract class AppLocalizations {
   /// **'Mig'**
   String get cookSnapMe;
 
+  /// BUT-901: title of the dialog shown before uploading a cook snap, disclosing who will see it (the snap inherits the recipe's visibility).
+  ///
+  /// In sv, this message translates to:
+  /// **'Vem ser fotot?'**
+  String get cookSnapVisibilityTitle;
+
+  /// BUT-901: disclosure when the parent recipe is public — the cook snap will be visible to everyone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är offentligt – fotot blir synligt för alla.'**
+  String get cookSnapVisibilityPublic;
+
+  /// BUT-901: disclosure when the parent recipe is shared/collaborative. {audience} is a pre-formatted name list (e.g. 'Anna, Per, Maria +2').
+  ///
+  /// In sv, this message translates to:
+  /// **'Synligt för: {audience}'**
+  String cookSnapVisibleTo(String audience);
+
+  /// BUT-901: confirm button on the cook-snap visibility disclosure dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela foto'**
+  String get cookSnapVisibilityConfirm;
+
   /// No description provided for @cookSnapErrorLoad.
   ///
   /// In sv, this message translates to:

@@ -13,6 +13,9 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/views/recipe_detail/cook_snap_visibility.dart';
+import 'package:butlery/views/recipe_detail/comment_visibility.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -732,7 +735,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             isUploading: vm.isUploading,
             currentUserId: currentUserId,
             error: vm.error,
-            onAdd: () => _showAddSnapSheet(context, vm),
+            onAdd: () => _showAddSnapSheet(context, vm, recipe),
             onDelete: (snapId) => _deleteCookSnapWithUndo(snapId, vm),
             onReport: (snap) => ReportContentDialog.show(
               context: context,
@@ -747,11 +750,88 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 
   Future<void> _showAddSnapSheet(
-      BuildContext context, CookSnapViewModel vm) async {
+      BuildContext context, CookSnapViewModel vm, Recipe recipe) async {
     final source = await ImagePickerDialogs.showImageSourceDialog(context);
-    if (source != null) {
-      vm.addSnap(source: source);
+    if (source == null || !mounted) return;
+
+    // BUT-901: a cook snap inherits the recipe's visibility. Disclose who will
+    // see it before uploading — but only when there IS an audience beyond the
+    // author (public or shared recipes). Private recipes add no friction.
+    final audience = cookSnapAudience(
+      recipe,
+      ServiceLocator.get<PermissionService>().currentUserId.orEmpty(),
+      _friendDisplayNames(),
+    );
+    if (audience.scope != CookSnapVisibilityScope.private) {
+      if (!context.mounted) return;
+      final confirmed = await _confirmSnapVisibility(context, audience);
+      if (confirmed != true || !mounted) return;
     }
+
+    vm.addSnap(source: source);
+  }
+
+  Map<String, String> _friendDisplayNames() {
+    final names = <String, String>{};
+    try {
+      for (final f in ServiceLocator.get<UnifiedFriendsService>().friendsList) {
+        names[f.uid] = f.displayName;
+      }
+    } catch (_) {
+      // Friends unavailable — the disclosure falls back to a count.
+    }
+    return names;
+  }
+
+  /// BUT-901: confirmation that discloses the cook snap's audience (it inherits
+  /// the parent recipe's visibility) before upload.
+  Future<bool?> _confirmSnapVisibility(
+    BuildContext context,
+    ({
+      CookSnapVisibilityScope scope,
+      List<String> resolvedNames,
+      int total
+    }) audience,
+  ) {
+    final String message;
+    if (audience.scope == CookSnapVisibilityScope.public) {
+      message = context.l10n.cookSnapVisibilityPublic;
+    } else {
+      // Shared: never under-state — formatCommentAudience discloses the true
+      // total (unresolved members counted), falling back to a count-only label.
+      final formatted = formatCommentAudience(
+        audience.resolvedNames,
+        audience.total,
+        countLabel: context.l10n.recipeCommentVisiblePeople,
+      );
+      message = context.l10n.cookSnapVisibleTo(formatted ?? '');
+    }
+
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.visibility_outlined,
+                size: AppDimensions.iconSizeS,
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Expanded(child: Text(ctx.l10n.cookSnapVisibilityTitle)),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(ctx.l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(ctx.l10n.cookSnapVisibilityConfirm),
+          ),
+        ],
+      ),
+    );
   }
 
   /// BUT-937: confirm-dialog + 7s snackbar undo mirroring the comment

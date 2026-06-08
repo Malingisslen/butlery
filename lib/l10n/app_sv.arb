@@ -9000,6 +9000,23 @@
   "cookSnapFromCamera": "Ta foto",
   "cookSnapFromGallery": "Välj från galleri",
   "cookSnapMe": "Mig",
+  "cookSnapVisibilityTitle": "Vem ser fotot?",
+  "@cookSnapVisibilityTitle": {
+    "description": "BUT-901: title of the dialog shown before uploading a cook snap, disclosing who will see it (the snap inherits the recipe's visibility)."
+  },
+  "cookSnapVisibilityPublic": "Receptet är offentligt – fotot blir synligt för alla.",
+  "@cookSnapVisibilityPublic": {
+    "description": "BUT-901: disclosure when the parent recipe is public — the cook snap will be visible to everyone."
+  },
+  "cookSnapVisibleTo": "Synligt för: {audience}",
+  "@cookSnapVisibleTo": {
+    "description": "BUT-901: disclosure when the parent recipe is shared/collaborative. {audience} is a pre-formatted name list (e.g. 'Anna, Per, Maria +2').",
+    "placeholders": { "audience": { "type": "String" } }
+  },
+  "cookSnapVisibilityConfirm": "Dela foto",
+  "@cookSnapVisibilityConfirm": {
+    "description": "BUT-901: confirm button on the cook-snap visibility disclosure dialog."
+  },
   "cookSnapErrorLoad": "Kunde inte ladda foton",
   "cookSnapErrorUpload": "Kunde inte ladda upp foto",
   "cookSnapErrorDelete": "Kunde inte ta bort foto",

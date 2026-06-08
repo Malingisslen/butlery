@@ -13310,6 +13310,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookSnapMe => 'Me';
 
   @override
+  String get cookSnapVisibilityTitle => 'Who sees this photo?';
+
+  @override
+  String get cookSnapVisibilityPublic =>
+      'This recipe is public – the photo will be visible to everyone.';
+
+  @override
+  String cookSnapVisibleTo(String audience) {
+    return 'Visible to: $audience';
+  }
+
+  @override
+  String get cookSnapVisibilityConfirm => 'Share photo';
+
+  @override
   String get cookSnapErrorLoad => 'Could not load photos';
 
   @override

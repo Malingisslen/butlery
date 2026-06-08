@@ -13341,6 +13341,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapMe => 'Mig';
 
   @override
+  String get cookSnapVisibilityTitle => 'Vem ser fotot?';
+
+  @override
+  String get cookSnapVisibilityPublic =>
+      'Receptet är offentligt – fotot blir synligt för alla.';
+
+  @override
+  String cookSnapVisibleTo(String audience) {
+    return 'Synligt för: $audience';
+  }
+
+  @override
+  String get cookSnapVisibilityConfirm => 'Dela foto';
+
+  @override
   String get cookSnapErrorLoad => 'Kunde inte ladda foton';
 
   @override

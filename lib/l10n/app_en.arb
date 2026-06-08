@@ -8976,6 +8976,23 @@
   "cookSnapFromCamera": "Take photo",
   "cookSnapFromGallery": "Choose from gallery",
   "cookSnapMe": "Me",
+  "cookSnapVisibilityTitle": "Who sees this photo?",
+  "@cookSnapVisibilityTitle": {
+    "description": "BUT-901: title of the dialog shown before uploading a cook snap, disclosing who will see it (the snap inherits the recipe's visibility)."
+  },
+  "cookSnapVisibilityPublic": "This recipe is public – the photo will be visible to everyone.",
+  "@cookSnapVisibilityPublic": {
+    "description": "BUT-901: disclosure when the parent recipe is public — the cook snap will be visible to everyone."
+  },
+  "cookSnapVisibleTo": "Visible to: {audience}",
+  "@cookSnapVisibleTo": {
+    "description": "BUT-901: disclosure when the parent recipe is shared/collaborative. {audience} is a pre-formatted name list (e.g. 'Anna, Per, Maria +2').",
+    "placeholders": { "audience": { "type": "String" } }
+  },
+  "cookSnapVisibilityConfirm": "Share photo",
+  "@cookSnapVisibilityConfirm": {
+    "description": "BUT-901: confirm button on the cook-snap visibility disclosure dialog."
+  },
   "cookSnapErrorLoad": "Could not load photos",
   "cookSnapErrorUpload": "Could not upload photo",
   "cookSnapErrorDelete": "Could not delete photo",
