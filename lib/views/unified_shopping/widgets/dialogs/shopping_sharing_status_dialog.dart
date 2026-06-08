@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -394,7 +395,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       case ListType.collaborative:
         return Icons.people;
       case ListType.template:
-        return Icons.bookmark;
+        return AdaptiveIcons.savedTemplate;
     }
   }
 

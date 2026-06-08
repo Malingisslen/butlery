@@ -97,6 +97,14 @@ jobs:
     - name: Forbid inline adoption %% in prompt/analysis docs
       run: bash tools/check_no_inline_adoption_pct.sh
 
+    # BUT-1213 (enforce half of BUT-944): keep the favourite/saved icon
+    # convention from eroding. Raw Icons.favorite*/Icons.bookmark* in
+    # lib/views|lib/widgets must route through AdaptiveIcons' semantic getters
+    # (heart=favourite, bookmark=saved-template). Star is intentionally not
+    # gated here — it's overloaded (rating/sort/dietary/permission).
+    - name: Forbid raw favourite/bookmark glyphs outside AdaptiveIcons
+      run: bash tools/check_icon_convention.sh
+
     # BUT-758: closes the BUT-572 theme migration. Forbid AppColors.X in
     # views/widgets except the legitimate-keep set established by the
     # pilot + Waves A-D. Keep-set rationale:

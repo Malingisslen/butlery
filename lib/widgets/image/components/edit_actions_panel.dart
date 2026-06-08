@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 
 /// Floating action buttons for image editing operations
 class EditActionsPanel extends StatelessWidget {
@@ -36,7 +37,7 @@ class EditActionsPanel extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingSm),
           if (canSetPrimary)
             _EditActionButton(
-              icon: Icons.star_outline,
+              icon: AdaptiveIcons.primaryOutline,
               onTap: onSetPrimary,
               tooltip: context.l10n.imageSetAsPrimary,
             ),

@@ -1,35 +1,21 @@
 # Sprint Backlog
 
-## Sprint: activity-feed broadcast opt-out (BUT-906) — 2026-06-08 (iter-131) `[Tier B]`
+## Sprint: icon-convention enforcement (BUT-1213 enforce half) — 2026-06-08 (iter-134) `[Tier A]`
 
-**Step 0:** FITS (re-scoped to MVP). Activity events (cooked/shared/addedIngredient/startedCooking/
-pinged) auto-post to friends' feeds via the single chokepoint `ActivityFeedService.emitEvent`; users
-are never told and can't opt out. Full ticket wants per-event-type toggles + a one-time hint — re-scoped
-to a **master toggle** ("show my activity in friends' feed", default ON) which delivers the core control;
-per-event granularity + one-time hint → follow-up. Mirrors the established `showOnlineStatus` privacy
-pattern (BUT-912) exactly, so low risk.
+**Step 0:** FITS. BUT-944 follow-up. Frontier-iteration pick: the one genuinely-clean shippable
+thing from the iter-133 steer. Enforcement half is Tier A tooling (no design decision); the colour
+half stays for Malin → BUT-1213 parks In Review.
 
-**Files touched (all mirror `showOnlineStatus`):**
-- `lib/models/user_profile.dart` — new `shareActivityToFeed` bool (default true): field, ctor default, copyWith, both toJson maps, both fromJson/fromFirestore safeBool, equality.
-- `lib/viewmodels/user_profile_viewmodel.dart` — getter + `updateShareActivityToFeed(bool)` + include in save (`completeProfileUpdate`/copyWith) + equality helper.
-- `lib/services/social/activity_feed_service.dart` — `emitEvent`: after loading `currentUserProfile`, `if (profile?.shareActivityToFeed == false) return;` (silent skip; fire-and-forget).
-- `lib/views/social/user_profile_edit_view.dart` — `_buildPrivacySettings`: add a SwitchListTile mirroring the online-status toggle.
-- `lib/l10n/app_sv.arb` + `app_en.arb` — toggle title + subtitle.
+### Agent A: icon convention guard + missed migrations (BUT-1213)
+- [x] **A1. Fix 3 concept sites BUT-944 missed** `[Tier A]` — `shopping_sharing_status_dialog.dart` + `shopping_list_card.dart` (template `Icons.bookmark` → `AdaptiveIcons.savedTemplate`), `edit_actions_panel.dart` ("set primary" `Icons.star_outline` → `AdaptiveIcons.primaryOutline`). analyze clean; 73/73 widget tests pass. (BUT-1213)
+- [x] **A2. CI guard `tools/check_icon_convention.sh`** `[Tier A]` — hard-fails on raw `Icons.favorite*`/`Icons.bookmark*` in lib/views|lib/widgets (regex `Icons\.(favorite|bookmark)(_[a-z]+)*\b`, excl adaptive_icon.dart). Star deliberately un-gated (overloaded: rating/sort/dietary/permission). Proven exit 1 on violation, 0 clean. Wired into `architecture-validation.yml`. (BUT-1213)
 
-**Blast radius:** enforcement is one early-return in emitEvent (default-true pref + null-profile → preserves current broadcast behavior). Profile field persists via existing saveProfile path (no user_service change → no firebase-backend-security trigger). Default ON = zero behavior change until a user opts out.
-
-**Product-intent flag (In-Review):** master toggle vs the ticket's 5 per-event-type toggles — granularity deferred to follow-up. Default ON (discoverable opt-out, not opt-in) per the ticket.
-
-**Rollback:** revert commit; field is additive + defaults to current behavior.
-
-**Deferred → follow-up:** per-event-type toggles (5) + one-time "this appears in friends' feed" hint.
-
-- [ ] **A1. `shareActivityToFeed` pref + enforcement + privacy toggle** `[Tier B]` (BUT-906)
+### Deferred (BUT-1213 colour half — needs Malin)
+Colour rule for favourite/like (red vs theme-default) — stays open; BUT-1213 → In Review.
 
 ### Post-Sprint Steps
-- [ ] gen-l10n + `dart analyze --fatal-infos` + format
-- [ ] code-reviewer + testing-specialist gates
-- [ ] Commit, push; BUT-906 → In Review + notify; file granularity follow-up
+- [x] analyze + format clean; code-reviewer + testing-specialist LGTM
+- [ ] Commit, push; BUT-1213 → In Review + notify
 
 ---
-## ARCHIVED — iter-130 (BUT-901 In Review; BUT-1214) · iter-129 (BUT-923 In Review) · iter-128 (BUT-944 In Review; BUT-1213) · iter-127 (BUT-1210 Done + BUT-1211 In Review; BUT-1212)
+## ARCHIVED — iter-133 (BUT-1216 foundation filed; frontier) · iter-132 (BUT-925 groomed) · iter-131 (BUT-906 In Review) · iter-130 (BUT-901 In Review)
