@@ -1118,3 +1118,49 @@ test log now emits `"modelId":"gemini-2.5-flash-lite"`).
   incident response, not a cadence bump — noted as such in the bump-log
   so the skipped golden-test gate is auditable. Re-run the golden corpus
   retroactively when BUT-784 lands.
+
+### 2026-06-09 — BUT-1032 phase 1: implicit-cache cost telemetry [Pattern discovered] [Cost finding]
+
+Gemini 2.5 models on Vertex have **implicit caching on by default**; cached
+prompt tokens surface as `usageMetadata.cachedContentTokenCount` and are
+billed at ~10% of the input rate. `calculateGeminiCost` in
+`llm/gemini-client.ts` is now cache-aware:
+`((prompt - cached) + cached * CACHED_INPUT_DISCOUNT) / 1M * INPUT_COST_PER_M`,
+with `cached` clamped to `[0, promptTokenCount]`. Telemetry-only — no
+request-behavior change. Both call sites (structure-recipe, OCR
+`defaultPerformOcr`) already passed the whole `usageMetadata` object, so the
+discount flowed automatically once the param type accepted the field.
+
+Raw token counts (`promptTokenCount` / `candidatesTokenCount` /
+`cachedContentTokenCount`) are now logged on every post-Gemini exit of
+`structure_recipe.complete` (incl. `empty_response` — it has a response too)
+and via a new `[ocrRecipeImage] Vision call usage` structured log inside
+`defaultPerformOcr`. Fields logged **as-is** (may be undefined) — Cloud
+Logging drops undefined JSON fields, which distinguishes "Vertex didn't
+report it" from a real 0. Never coerce to 0.
+
+Patterns worth remembering:
+
+- **SDK already declares the field.** `@google-cloud/vertexai@1.12.0`'s
+  `UsageMetadata` (build/src/types/content.d.ts:428) includes
+  `cachedContentTokenCount?: number` — no local type widening needed. Check
+  the installed `.d.ts` before assuming a usage field is undeclared.
+- **CJS export hijack = Vertex-client test seam without jest.** With
+  `module: node16` CJS emit, `import { getTextModel } from "./gemini-client"`
+  resolves through the module object at call time, and exported function
+  declarations are plain writable `exports.x = x` properties. A ts-node test
+  can reassign `geminiClient.getGeminiClient` / `.getTextModel` to fakes
+  (restore in `finally`) and drive `runStructureRecipe`'s real success path —
+  no seam param needed. See `__tests__/gemini-cache-telemetry.test.ts`.
+- **`getPromptsConfig` fail-open makes that test cheap**: the default loader's
+  `admin.firestore()` throws `app/no-app` in unit env → caught → compiled-in
+  fallback prompts. No admin.initializeApp needed for structure-recipe
+  success-path tests.
+- **OCR file has no `*.complete` timing log** (unlike structure-recipe's
+  BUT-483 `emitTiming`). Usage was logged inside `defaultPerformOcr` because
+  the `OcrPerformResult` seam is `{content, cost}` only — widening it would
+  touch every test seam. Follow-up candidate: an `ocr_recipe_image.complete`
+  emitTiming twin with token counts + retry outcome in one queryable event.
+- **Mirror private pricing constants in the cost test on purpose** — a silent
+  `INPUT_COST_PER_M` change should turn the telemetry suite red so the cache
+  math gets re-reviewed alongside any price update.

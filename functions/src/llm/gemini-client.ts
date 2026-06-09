@@ -834,15 +834,45 @@ const INPUT_COST_PER_M = 0.10;
 const OUTPUT_COST_PER_M = 0.40;
 
 /**
+ * BUT-1032: Vertex AI implicit caching is on by default for Gemini 2.5
+ * models — cached prompt tokens (reported as
+ * `usageMetadata.cachedContentTokenCount`) are billed at ~10% of the
+ * standard input rate. This constant only improves cost-telemetry accuracy;
+ * it does not affect request behavior (no cachedContent resources are
+ * created, no request fields change).
+ */
+const CACHED_INPUT_DISCOUNT = 0.10;
+
+/**
  * Calculate actual cost from Gemini API usage data.
  * Co-located with model config so pricing updates happen in one place.
+ *
+ * Cache-aware (BUT-1032): when the response reports
+ * `cachedContentTokenCount`, that slice of the prompt is priced at
+ * `CACHED_INPUT_DISCOUNT` × the input rate. The count is defensively
+ * clamped to `[0, promptTokenCount]` so a malformed API value can never
+ * produce a negative input cost.
  */
 export function calculateGeminiCost(
-  usage: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined,
+  usage:
+    | {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        cachedContentTokenCount?: number;
+      }
+    | undefined,
   minCost = 0.001,
 ): number {
   if (!usage) return minCost;
-  const inputCost = ((usage.promptTokenCount ?? 0) / 1_000_000) * INPUT_COST_PER_M;
+  const promptTokens = usage.promptTokenCount ?? 0;
+  const cachedTokens = Math.min(
+    Math.max(usage.cachedContentTokenCount ?? 0, 0),
+    promptTokens,
+  );
+  const freshTokens = promptTokens - cachedTokens;
+  const inputCost =
+    ((freshTokens + cachedTokens * CACHED_INPUT_DISCOUNT) / 1_000_000) *
+    INPUT_COST_PER_M;
   const outputCost = ((usage.candidatesTokenCount ?? 0) / 1_000_000) * OUTPUT_COST_PER_M;
   return Math.max(inputCost + outputCost, minCost);
 }

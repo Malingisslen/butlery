@@ -190,6 +190,20 @@ async function defaultPerformOcr(
   const response = result.response;
   const content = extractResponseText(response) ?? "";
   const cost = calculateGeminiCost(response.usageMetadata, 0.01);
+
+  // BUT-1032: implicit-cache observability for the vision call. Raw token
+  // counts logged as-is — each may be undefined (absence ≠ zero). This file
+  // has no `*.complete` timing log (unlike structure-recipe), so the usage
+  // is logged here where the response is in scope; the OcrPerformResult test
+  // seam intentionally stays `{content, cost}`.
+  const usage = response.usageMetadata;
+  logger.info("[ocrRecipeImage] Vision call usage", {
+    promptTokenCount: usage?.promptTokenCount,
+    candidatesTokenCount: usage?.candidatesTokenCount,
+    cachedContentTokenCount: usage?.cachedContentTokenCount,
+    modelId: MODEL_ID,
+  });
+
   return { content, cost };
 }
 

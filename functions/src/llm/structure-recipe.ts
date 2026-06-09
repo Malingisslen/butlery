@@ -258,9 +258,20 @@ export async function runStructureRecipe(
     const response = result.response;
     const content = extractResponseText(response);
 
+    // BUT-1032: implicit-cache observability. Raw token counts from Vertex,
+    // logged as-is on every exit path that has a Gemini response — each may
+    // be undefined (absence ≠ zero; Cloud Logging drops undefined fields,
+    // which is the signal we want for "Vertex didn't report it").
+    const usage = response.usageMetadata;
+    const tokenExtras = {
+      promptTokenCount: usage?.promptTokenCount,
+      candidatesTokenCount: usage?.candidatesTokenCount,
+      cachedContentTokenCount: usage?.cachedContentTokenCount,
+    };
+
     if (!content) {
       logger.error("[structureRecipe] Empty response from Gemini");
-      emitTiming(false, { reason: "empty_response" });
+      emitTiming(false, { reason: "empty_response", ...tokenExtras });
       return {
         success: false,
         error: "Inget svar från AI-tjänsten.",
@@ -278,7 +289,7 @@ export async function runStructureRecipe(
       const parsed = parseIngredientLinesResponse(content);
       if (!parsed) {
         logger.error("[structureRecipe] Failed to parse ingredient lines:", content);
-        emitTiming(false, { reason: "ingredient_lines_parse_failed" });
+        emitTiming(false, { reason: "ingredient_lines_parse_failed", ...tokenExtras });
         return {
           success: false,
           error: "Kunde inte tolka AI-svaret som ingredienser.",
@@ -303,7 +314,7 @@ export async function runStructureRecipe(
         `[structureRecipe] Parsed ${ingredients.length} ingredient lines (cost: $${actualCost.toFixed(6)})`
       );
 
-      emitTiming(true, { ingredientCount: ingredients.length, truncated });
+      emitTiming(true, { ingredientCount: ingredients.length, truncated, ...tokenExtras });
       // Wrap in minimal recipe so existing response type works
       return {
         success: true,
@@ -334,7 +345,7 @@ export async function runStructureRecipe(
       logger.info(
         "[structureRecipe] Input is not a recipe — empty arrays from Gemini"
       );
-      emitTiming(false, { reason: "not_a_recipe" });
+      emitTiming(false, { reason: "not_a_recipe", ...tokenExtras });
       return {
         success: false,
         error:
@@ -348,7 +359,7 @@ export async function runStructureRecipe(
     const recipe = parseRecipeResponse(content, promptVersion);
     if (!recipe) {
       logger.error("[structureRecipe] Failed to parse response:", content);
-      emitTiming(false, { reason: "recipe_parse_failed" });
+      emitTiming(false, { reason: "recipe_parse_failed", ...tokenExtras });
       return {
         success: false,
         error: "Kunde inte tolka AI-svaret som ett recept.",
@@ -367,7 +378,7 @@ export async function runStructureRecipe(
       `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
     );
 
-    emitTiming(true, { ingredientCount: recipe.ingredients.length });
+    emitTiming(true, { ingredientCount: recipe.ingredients.length, ...tokenExtras });
     return {
       success: true,
       recipe,

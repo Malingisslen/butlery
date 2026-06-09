@@ -15,7 +15,7 @@
 - [ ] **D1. CookSnap.visibility field + capped override** `[Tier B]` — `lib/models/cook_snap.dart`: `sameAsRecipe` (default) | `onlyMe`; toggle in BUT-901 disclosure dialog; persist in `firebase_cook_snap_repository`; read-enforce in `cook_snap_service.watchCookSnaps` + gallery query; Firestore rules restrict `onlyMe` reads to author; rules tests + firestore-rules-tester sign-off. → In Review + notify. (BUT-1214)
 
 ### Agent E: Vertex context caching (BUT-1032) `[Tier A]` — RISK-GATED (P2)
-- [ ] **E1. Gemini context caching via cachedContents API** `[Tier A]` — `functions/src/` LLM family: verify current Vertex AI cachedContents API + pricing against docs first (Step 0 external-specifics check); apply to the largest static prompt prefixes; cloud-functions-specialist agent; deploy stays with Malin (code + tests only). (BUT-1032)
+- [x] **E1. Gemini implicit-cache telemetry (re-scoped from explicit cachedContents)** `[Tier A]` — Step 0 found plan stale: 2.5-flash-lite has implicit caching by default @10% billing; explicit caches bill storage/token-hour. Shipped phase 1: cache-aware calculateGeminiCost + 3 token-count fields in completion logs (structure-recipe all 6 post-Gemini exits + new OCR usage log). 7/7 new tests, tsc clean. Phase 2 = data-gated decision (ticket updated). (BUT-1032)
 
 ### Housekeeping
 - [x] BUT-1202 → Duplicate of BUT-1205 (same BUT-1079 part-2 scope filed twice)
