@@ -31,6 +31,15 @@ pre-commit:
       fail_text: "Flutter analyze found issues. Please fix before committing."
       priority: 2
 
+    # BUT-1217: catch CI-only architecture-guard violations in the staged diff
+    # before they reach the (slow) Architecture & Code Quality Validation job.
+    # Currently the recurring BUT-581 raw `?? ''` ban (3x red-main incidents).
+    # Diff-scoped + grep-only -> sub-second, zero false-positives on existing code.
+    arch-guard:
+      run: bash tools/check_staged_arch_guards.sh
+      fail_text: "Architecture guard violation (see above). Use .orEmpty() etc."
+      priority: 3
+
 commit-msg:
   commands:
     # Validate conventional commit format
