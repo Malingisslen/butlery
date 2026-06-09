@@ -804,7 +804,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         audience.total,
         countLabel: context.l10n.recipeCommentVisiblePeople,
       );
-      message = context.l10n.cookSnapVisibleTo(formatted ?? '');
+      message = context.l10n.cookSnapVisibleTo(formatted.orEmpty());
     }
 
     return showDialog<bool>(
