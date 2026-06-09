@@ -649,3 +649,37 @@ Reviewed `test/unit/viewmodels/photo_import/photo_import_draft_test.dart` (9 tes
 - **The headline test must be `persist → dispose() → restore into a FRESH VM instance`** — that's the user-visible feature (draft survives nav-away which disposes the VM). A restore on the same instance would mock away the very death the feature rescues from. Pair with degraded-mode (delete the staged file out-of-band → restore returns true, text-only) and explicit-clear discard (assert BOTH SharedPreferences key gone AND staged file gone; `pumpEventQueue()` after the `unawaited` discard).
 - **"Persist fires after OCR success" wiring is untestable-by-design** (`OCRExtractionService.instance` singleton, no seam — same family as 2026-05-02 BUT-573/434) and is one `unawaited(persistPhotoDraft(...))` line = fan-out-listener-shaped (BUT-754). Testing `persistPhotoDraft` directly is the right call; don't manufacture an OCR-pipeline test for it.
 - **ui-conventions.md:84 "skip heavy-VM widget tests" does NOT apply once an a11y/fake-VM seam already exists.** `photo_import_announce_test.dart` already has `_FakePhotoImportViewModel extends ChangeNotifier implements PhotoImportViewModel` resolved via ServiceLocator — extending it with a non-null `loadPersistedDraft()` + recorded `restoreDraftCalled`/`discardCalled` flags makes the restore-dialog choice wiring (~accept → restoreDraft; decline → discardPersistedDraft so it never re-prompts; skip-when-`hasImage||hasOcrResult`) a cheap widget test, not a heavy one. The decline-discards path is the strongest candidate: a regression re-prompts the user forever. Filed as follow-up, not a blocker.
+
+### 2026-06-09 — BUT-1213 favourite-heart colour token, theme-resolved pattern [Pattern]
+A one-token change (`cs.error` → `cs.primary` on the active favourite heart in `RecipeCard._buildFavoriteButton`) is above the testing threshold when the token encodes a documented domain invariant (green = personal favourite, red = social like — BUT-1213 comment added in production code). The regression risk is real: a future merge could flip the constant back silently and none of the 77 existing tests would catch it.
+
+**Pattern for asserting a theme-resolved colour on a specific Icon:**
+```dart
+late ColorScheme cs;
+await tester.pumpWidget(
+  createLocalizedTestApp(
+    child: Builder(builder: (context) {
+      cs = Theme.of(context).colorScheme;
+      return Scaffold(body: MyWidget(...));
+    }),
+  ),
+);
+final icon = tester.widget<Icon>(
+  find.byWidgetPredicate((w) => w is Icon && w.icon == AdaptiveIcons.favouriteFilled),
+);
+expect(icon.color, cs.primary);
+expect(icon.color, isNot(cs.error));
+```
+The `Builder` captures the live `ColorScheme` from `AppTheme.lightTheme` (installed by `createLocalizedTestApp`), so the assertion is theme-resolved and survives any future token-value change. The `isNot(cs.error)` assertion is load-bearing: it would catch exactly the class of regression this change fixed.
+
+**`RecipeFactory.build(...)` doesn't expose `isFavorite`** — use `.copyWith(isFavorite: true)` on the result. `isFavorite` defaults to `false` in `RecipeCore`, so the inactive-heart test needs no copyWith.
+
+Added 2 tests under group `'Favourite heart colour (BUT-1213)'` in `test/widget/recipe/recipe_card_test.dart`. Import `adaptive_icon.dart` to reference `AdaptiveIcons.favouriteFilled` / `AdaptiveIcons.favouriteOutline`. `dart analyze` clean.
+
+### 2026-06-09 — BUT-1212 announce sites 2-of-3 closed; full-shell announce pump UNMASKED a ProviderNotFoundException [Bug found + Pattern — supersedes parts of 2026-06-04 BUT-905 + 2026-06-08 BUT-1210 deferrals]
+BUT-1212 covered the collaborative-shopping bought/unbought announce (`test/views/social/collaborative_shopping_view_test.dart`, full-shell group) and the comment-posted announce (`test/widget/a11y/comment_posted_announce_test.dart`, host-widget over the REAL static `RecipeSocialHandler.postComment`). Verdict ACCEPTABLE. Updates to prior rulings:
+- **PRODUCTION BUG UNMASKED (the philosophy proven again — add to the bugs-caught list):** `_CollaborativeShoppingViewState._toggleItem`/`_addItem` did `context.read<CollaborativeShoppingViewModel>()` on the **State's own context, which sits ABOVE the `ChangeNotifierProvider` its `build()` creates** → `ProviderNotFoundException` on every real add/toggle in production. Invisible to the old sub-widget-only harness (it injected a VM and bypassed the view's handlers); the first full-shell tap surfaced it instantly. Fix: pass the VM from the Consumer scope into the handler (`onToggleItem: (id) => _toggleItem(id, viewModel)`). **Rule: a State whose `build()` creates its own Provider can NEVER `context.read` that type from its own context — and only a full-shell gesture test exercises that wiring. When a view self-provides, at least one test must tap THROUGH the shell, not drive the sub-widget.**
+- **The BUT-1210 deferral routes were wrong about the needed seam:** no VM-injection ctor was required. `ChangeNotifierProvider(create: () => VM(shoppingService: ServiceLocator.get()))` is already seam-ed via the prod↔test locator bridge — register `MockUnifiedShoppingService`, the REAL VM resolves it. For a static handler (ServiceLocator + Provider deps), a ~25-line host widget (`ChangeNotifierProvider<VM>.value` + `Builder` + button invoking the handler) runs it end to end. Neither is the "brittle heavy-VM" case BUT-905 feared.
+- **The BUT-905 "channel test pins call-site topology" concern does NOT apply when the assertion is gesture→message:** tap checkbox → `announces.messages contains l10n.a11yItemBought`. Extracting/renaming/moving the handler can't break it; only the user-audible behaviour can. The 2026-06-04 "announce = manual-territory" general rule is SUPERSEDED for sites reachable via locator-bridge or host-widget; it survives only for the genuinely scaffold-heavy third site (recipe_detail favorite, 610-line self-loading view) → deferred to **BUT-1225** with rationale.
+- **Stub-mutates-seeded-state pattern for "re-read after refresh" announce branches:** the view computes `nowBought` by RE-reading `viewModel.completedItemsList` after the toggle's `_loadList()` refresh — so the mock's `toggleItemBought` stub must MUTATE `setShoppingState` inside its `thenAnswer` before returning true. That makes the production re-read path (service → _loadList → getter → ternary) genuinely observed; a stub returning bare `true` would leave the ternary untestable/false-green. Pair each direction positively AND negatively (`contains(bought)` + `isNot(contains(unbought))`) plus a failed-toggle `count == 0` (which doubles as "the full shell pump announces nothing spurious").
+- **Known residual gap (non-blocking follow-up):** `_addItem` got the same Provider fix but NO test taps the add path — a regression re-introducing `context.read` in `_addItem` alone would go green. One full-shell test (enterText → tap 'Lägg till' → item appears / `addItem` verified) closes it; harness already exists post-BUT-1184.

@@ -65,7 +65,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
           _actions = CollaborativeShoppingActions(
             viewModel: viewModel,
             newItemController: _newItemController,
-            onAddItem: _addItem,
+            onAddItem: () => _addItem(viewModel),
             onMenuAction: _handleMenuAction,
             onShare: _shareList,
           );
@@ -162,19 +162,24 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
         Expanded(
           child: CollaborativeShoppingItems(
             viewModel: viewModel,
-            onToggleItem: _toggleItem,
+            onToggleItem: (itemId) => _toggleItem(itemId, viewModel),
           ),
         ),
       ],
     );
   }
 
-  Future<void> _addItem() async {
+  // BUT-1212: both handlers take the VM from the Consumer scope explicitly.
+  // The State's own `context` sits ABOVE the ChangeNotifierProvider this
+  // build() creates, so `context.read<CollaborativeShoppingViewModel>()`
+  // threw ProviderNotFoundException on every real add/toggle — unmasked by
+  // the announce tests pumping the full shell.
+  Future<void> _addItem(CollaborativeShoppingViewModel viewModel) async {
     final itemName = _newItemController.text.trim();
     if (itemName.isEmpty) return;
 
-    final viewModel = context.read<CollaborativeShoppingViewModel>();
     final success = await viewModel.addItem(itemName);
+    if (!mounted) return;
 
     if (success) {
       _newItemController.clear();
@@ -184,8 +189,10 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     }
   }
 
-  Future<void> _toggleItem(String itemId) async {
-    final viewModel = context.read<CollaborativeShoppingViewModel>();
+  Future<void> _toggleItem(
+    String itemId,
+    CollaborativeShoppingViewModel viewModel,
+  ) async {
     final success = await viewModel.toggleItemCompletion(itemId);
     if (!mounted) return;
 

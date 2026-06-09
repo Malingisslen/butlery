@@ -53,6 +53,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/helpers/announce_channel.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../helpers/view_test_helpers.dart';
@@ -386,6 +387,117 @@ void main() {
       expect(find.text('Lägg till'), findsOneWidget); // l10n.collaborativeAdd
       expect(find.text('Mjölk'), findsOneWidget);
       expect(find.text('Bröd'), findsOneWidget);
+    });
+  });
+
+  group('CollaborativeShoppingView — bought/unbought announce (BUT-1212)', () {
+    // The announce lives in the VIEW's _toggleItem (BUT-1201), so these pump
+    // the full shell: tap → real VM.toggleItemCompletion → mock service →
+    // list refresh → SemanticsService.announce on the REAL a11y channel
+    // (AnnounceChannel intercepts the channel, not the service).
+
+    Future<void> pumpFullView(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    Future<void> tapItemCheckbox(WidgetTester tester, String itemId) async {
+      final checkbox = find.descendant(
+        of: find.byKey(ValueKey('collab-item-$itemId')),
+        matching: find.byType(Checkbox),
+      );
+      expect(checkbox, findsOneWidget);
+      await tester.tap(checkbox);
+      // Drain _toggleItem's async chain (toggle → refresh → announce).
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    AppLocalizations l10nOf(WidgetTester tester) => AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)));
+
+    testWidgets('checking an item announces the bought state', (tester) async {
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Mjölk', id: 'item-milk')]),
+        ],
+        isInitialized: true,
+      );
+      // After the service-side toggle succeeds, the refreshed list shows the
+      // item bought — what the view's nowBought re-read observes.
+      when(() => shoppingService.toggleItemBought('item-milk'))
+          .thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [
+            listWith([item('Mjölk', id: 'item-milk', bought: true)]),
+          ],
+          isInitialized: true,
+        );
+        return true;
+      });
+
+      final announces = AnnounceChannel.arm(tester);
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-milk');
+
+      final l10n = l10nOf(tester);
+      expect(announces.messages, contains(l10n.a11yItemBought));
+      expect(announces.messages, isNot(contains(l10n.a11yItemUnbought)));
+    });
+
+    testWidgets('un-checking a bought item announces the un-bought state',
+        (tester) async {
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Smör', id: 'item-butter', bought: true)]),
+        ],
+        isInitialized: true,
+      );
+      when(() => shoppingService.toggleItemBought('item-butter'))
+          .thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [
+            listWith([item('Smör', id: 'item-butter', bought: false)]),
+          ],
+          isInitialized: true,
+        );
+        return true;
+      });
+
+      final announces = AnnounceChannel.arm(tester);
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-butter');
+
+      final l10n = l10nOf(tester);
+      expect(announces.messages, contains(l10n.a11yItemUnbought));
+      expect(announces.messages, isNot(contains(l10n.a11yItemBought)));
+    });
+
+    testWidgets('a failed toggle announces nothing', (tester) async {
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Ägg', id: 'item-eggs')]),
+        ],
+        isInitialized: true,
+      );
+      when(() => shoppingService.toggleItemBought('item-eggs'))
+          .thenAnswer((_) async => false);
+
+      final announces = AnnounceChannel.arm(tester);
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-eggs');
+
+      expect(announces.count, 0,
+          reason: 'a failed toggle must not announce a state change');
     });
   });
 }
