@@ -643,7 +643,11 @@ class AdaptiveIcons {
   //   bookmark → template / saved-for-later
   // Prefer these at call sites over raw `Icons.favorite|star|bookmark` (and over
   // the generic shape getters above) so the convention stays consistent and
-  // enforceable. These fix only the glyph — colour stays the caller's choice.
+  // enforceable. Colour rule (BUT-1213, decided 2026-06-09): active personal
+  // favourite → colorScheme.primary (green); active social like →
+  // colorScheme.error (red); inactive → onSurfaceVariant. Exception: the
+  // recipe-detail hero buttons render every icon green by design (cream
+  // squares with green icons), so the heart there does not signal state.
   static IconData get favouriteFilled => favorite;
   static IconData get favouriteOutline => favoriteOutlined;
   static IconData get primaryFilled => star;

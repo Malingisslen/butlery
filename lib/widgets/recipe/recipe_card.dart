@@ -389,7 +389,9 @@ class RecipeCard extends StatelessWidget {
                 ? AdaptiveIcons.favouriteFilled
                 : AdaptiveIcons.favouriteOutline,
             size: 20,
-            color: isFav ? cs.error : cs.onSurfaceVariant,
+            // Colour convention (BUT-1213): green = personal favourite,
+            // red stays reserved for social likes.
+            color: isFav ? cs.primary : cs.onSurfaceVariant,
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),

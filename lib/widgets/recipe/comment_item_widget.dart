@@ -98,6 +98,8 @@ class CommentItemWidget extends StatelessWidget {
                     ? AdaptiveIcons.favouriteFilled
                     : AdaptiveIcons.favouriteOutline,
                 size: AppDimensions.iconSizeM,
+                // Red is deliberate (BUT-1213): red = social like,
+                // green (cs.primary) = personal favourite.
                 color: socialViewModel.hasLikedComment(comment.id)
                     ? Theme.of(context).colorScheme.error
                     : Theme.of(context).colorScheme.onSurfaceVariant,

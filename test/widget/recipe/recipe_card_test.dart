@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -672,6 +673,92 @@ void main() {
 
         // Should not show negative time
         expect(find.text('-10 min'), findsNothing);
+      });
+    });
+
+    // BUT-1213: active favourite heart must use cs.primary (green), not
+    // cs.error (red). Green = personal favourite; red is reserved for social
+    // likes. This test would fail if the colour token regressed.
+    group('Favourite heart colour (BUT-1213)', () {
+      testWidgets(
+          'active favourite heart icon uses cs.primary (green), not cs.error',
+          (tester) async {
+        late ColorScheme cs;
+        final favoriteRecipe = RecipeFactory.build(
+          id: 'fav_recipe',
+          title: 'Favorit rätt',
+        ).copyWith(isFavorite: true);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Builder(builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return Scaffold(
+                body: RecipeCard(
+                  recipe: favoriteRecipe,
+                  onFavoriteToggle: (_) {},
+                ),
+              );
+            }),
+          ),
+        );
+
+        // The favourite button renders an Icon with the active colour.
+        // On web/Android the icon is Icons.favorite (heart_fill via AdaptiveIcons).
+        final activeIcon = tester.widget<Icon>(
+          find.byWidgetPredicate(
+            (w) => w is Icon && w.icon == AdaptiveIcons.favouriteFilled,
+          ),
+        );
+        expect(
+          activeIcon.color,
+          cs.primary,
+          reason: 'Active favourite must be green (cs.primary), '
+              'not red (cs.error) — BUT-1213 colour convention.',
+        );
+        expect(
+          activeIcon.color,
+          isNot(cs.error),
+          reason: 'cs.error (red) is reserved for social likes.',
+        );
+      });
+
+      testWidgets('inactive favourite heart icon uses cs.onSurfaceVariant',
+          (tester) async {
+        late ColorScheme cs;
+        final nonFavoriteRecipe = RecipeFactory.build(
+          id: 'non_fav_recipe',
+          title: 'Vanlig rätt',
+        );
+        // isFavorite defaults to false — no copyWith needed.
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Builder(builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return Scaffold(
+                body: RecipeCard(
+                  recipe: nonFavoriteRecipe,
+                  onFavoriteToggle: (_) {},
+                ),
+              );
+            }),
+          ),
+        );
+
+        final inactiveIcon = tester.widget<Icon>(
+          find.byWidgetPredicate(
+            (w) => w is Icon && w.icon == AdaptiveIcons.favouriteOutline,
+          ),
+        );
+        expect(
+          inactiveIcon.color,
+          cs.onSurfaceVariant,
+          reason: 'Inactive favourite must be onSurfaceVariant (muted), '
+              'not cs.primary or cs.error.',
+        );
       });
     });
 

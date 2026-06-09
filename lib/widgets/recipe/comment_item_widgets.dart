@@ -337,6 +337,8 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                           widget.isLiked
                               ? AdaptiveIcons.favouriteFilled
                               : AdaptiveIcons.favouriteOutline,
+                          // Red is deliberate (BUT-1213): red = social like,
+                          // green (cs.primary) = personal favourite.
                           color:
                               widget.isLiked ? cs.error : cs.onSurfaceVariant,
                           size: AppDimensions.iconSizeM,
