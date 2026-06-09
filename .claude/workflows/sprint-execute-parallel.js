@@ -28,6 +28,21 @@ const FOCUS = A.focus ? A.focus : null        // area label filter
 const DRY_RUN = A.dryRun === true || A.dryRun === 'true'
 const ALLOW_DIRTY = A.allowDirty === true || A.allowDirty === 'true'
 
+// ── model tiering (Fix 8 — Fable 5 is 2× the price of Opus 4.8; tier non-frontier
+// work down to control sprint cost). Brains + high-stakes side effects stay on the
+// inherited main-loop model (Fable): select (planning/scoring), non-mechanical
+// implement, fix-blocking, ship (commit/push/Linear).
+//
+// REVIEW is deliberately split. The bug-hunting reviewers — code-reviewer and
+// firebase-backend-security — stay on Fable, because review is exactly where the
+// frontier model catches what cheaper models miss (a real-world Fable catch found a
+// security bug two frontier models had signed off on). The mechanical/coverage
+// reviewers (test-coverage gaps, rules allow/deny generation, functions checklist)
+// run on Opus — strong enough for structural checks, half the price.
+const REVIEW_MODEL = 'opus'  // mechanical/coverage reviewers (testing, rules, functions)
+const INTEG_MODEL = 'opus'   // patch application + dart analyze (mechanical reasoning)
+const MECH_MODEL = 'haiku'   // pure git-state reads (precondition, verify-ship) — no judgement needed
+
 const SKILL = '.claude/commands/sprint-execute.md'
 // Patches live in the MAIN repo's .claude/state/sprint-patches, derived from the
 // shared git-common-dir so every worktree resolves to the SAME absolute location
@@ -44,7 +59,7 @@ const PATCH_DIR_EXPR = '"$(git rev-parse --git-common-dir)/../.claude/state/spri
 if (!DRY_RUN) {
   const treeState = await agent(
     `Report the working tree state. Run \`git status --porcelain\` and return JSON {clean: boolean, dirtyFiles: string[]} where clean means zero output.`,
-    { label: 'precondition', phase: 'Select', schema: { type: 'object', required: ['clean'], properties: { clean: { type: 'boolean' }, dirtyFiles: { type: 'array', items: { type: 'string' } } } } }
+    { label: 'precondition', phase: 'Select', model: MECH_MODEL, schema: { type: 'object', required: ['clean'], properties: { clean: { type: 'boolean' }, dirtyFiles: { type: 'array', items: { type: 'string' } } } } }
   )
   if (treeState && treeState.clean === false && !ALLOW_DIRTY) {
     log(`✋ Aborting: working tree is dirty (${(treeState.dirtyFiles || []).length} file(s)). A sprint commits with \`git add -A\` and would bundle this in-flight work. Commit/stash it first, or pass args.allowDirty=true to override.`)
@@ -272,7 +287,7 @@ After applying all clean patches:
 5. Return the union of changed files (\`git status --porcelain\`).
 
 Do NOT commit. Leave changes unstaged in the working tree for the review phase.`
-  integ = await agent(integPrompt, { label: 'integrate', phase: 'Integrate', schema: INTEG_SCHEMA }) || integ
+  integ = await agent(integPrompt, { label: 'integrate', phase: 'Integrate', model: INTEG_MODEL, schema: INTEG_SCHEMA }) || integ
 }
 
 if (integ.conflicts && integ.conflicts.length > 0) {
@@ -315,29 +330,29 @@ const reviewTasks = []
 for (const b of reviewTargets) {
   reviewTasks.push(() => agent(
     `Review ${scopeOf(b)}. Butlery sprint, "${b.area}" area. Focus on correctness bugs, architecture compliance (MVVM + Repository), project standards (PermissionValidationMixin on repos, data-source conventions, 500-line limit, withValues not withOpacity). Be specific with file + line.`,
-    { label: `review:${b.area}`, phase: 'Review', agentType: 'code-reviewer', schema: REVIEW_SCHEMA }
+    { label: `review:${b.area}`, phase: 'Review', agentType: 'code-reviewer', schema: REVIEW_SCHEMA } // Fable — primary bug-hunt
   ).then(r => ({ kind: 'cr', r })))
   reviewTasks.push(() => agent(
     `Test-coverage review of ${scopeOf(b)}. Butlery sprint, "${b.area}" area. Identify lib/ changes lacking corresponding test/ updates, weakened assertions, or mocked-away subjects. Run affected tests if quick. Findings: High = untested new behavior, Medium = thin coverage.`,
-    { label: `tests:${b.area}`, phase: 'Review', agentType: 'testing-specialist', schema: REVIEW_SCHEMA }
+    { label: `tests:${b.area}`, phase: 'Review', agentType: 'testing-specialist', model: REVIEW_MODEL, schema: REVIEW_SCHEMA }
   ).then(r => ({ kind: 'ts', r })))
 }
 for (const b of needBackend) {
   reviewTasks.push(() => agent(
     `Security review of ${scopeOf(b)}. Butlery sprint, "${b.area}" area. Validate PermissionValidationMixin usage, Firestore security, auth/permission boundaries, GDPR compliance, and the data-source convention (userService.currentUserProfile vs permissionService.currentUserId). Be specific.`,
-    { label: `security:${b.area}`, phase: 'Review', agentType: 'firebase-backend-security', schema: REVIEW_SCHEMA }
+    { label: `security:${b.area}`, phase: 'Review', agentType: 'firebase-backend-security', schema: REVIEW_SCHEMA } // Fable — catches what others miss
   ).then(r => ({ kind: 'fb', r })))
 }
 for (const b of needRules) {
   reviewTasks.push(() => agent(
     `Firestore rules review of ${scopeOf(b)}. Generate allow/deny cases for the diff and run the rules-unit-testing suite against the emulator if available; report gaps.`,
-    { label: `rules:${b.area}`, phase: 'Review', agentType: 'firestore-rules-tester', schema: REVIEW_SCHEMA }
+    { label: `rules:${b.area}`, phase: 'Review', agentType: 'firestore-rules-tester', model: REVIEW_MODEL, schema: REVIEW_SCHEMA }
   ).then(r => ({ kind: 'rules', r })))
 }
 for (const b of needFns) {
   reviewTasks.push(() => agent(
     `Cloud Functions review of ${scopeOf(b)}. Butlery sprint. Check idempotency, retry semantics, region pinning (europe-west1), and cold-start cost. Be specific.`,
-    { label: `functions:${b.area}`, phase: 'Review', agentType: 'cloud-functions-specialist', schema: REVIEW_SCHEMA }
+    { label: `functions:${b.area}`, phase: 'Review', agentType: 'cloud-functions-specialist', model: REVIEW_MODEL, schema: REVIEW_SCHEMA }
   ).then(r => ({ kind: 'fns', r })))
 }
 
@@ -438,7 +453,7 @@ try {
 // so the summary reflects reality even when Ship's self-report is missing.
 const verify = await agent(
   `Report repo state after a sprint ship. Run \`git log -1 --format=%h%x20%s\`, \`git status --porcelain\`, and \`git rev-list --count @{u}..HEAD 2>/dev/null\`. Return JSON {headSha, headSubject, treeClean (porcelain empty), ahead (the count, 0 = pushed/in sync), pushed (ahead==0)}.`,
-  { label: 'verify-ship', phase: 'Ship', schema: { type: 'object', required: ['headSha', 'treeClean', 'pushed'], properties: { headSha: { type: 'string' }, headSubject: { type: 'string' }, treeClean: { type: 'boolean' }, ahead: { type: 'number' }, pushed: { type: 'boolean' } } } }
+  { label: 'verify-ship', phase: 'Ship', model: MECH_MODEL, schema: { type: 'object', required: ['headSha', 'treeClean', 'pushed'], properties: { headSha: { type: 'string' }, headSubject: { type: 'string' }, treeClean: { type: 'boolean' }, ahead: { type: 'number' }, pushed: { type: 'boolean' } } } }
 ) || {}
 
 const shipOk = !!(ship && ship.committed && ship.pushed) || (verify.treeClean === true && verify.pushed === true)

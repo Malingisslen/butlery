@@ -2,6 +2,12 @@
 
 Learnings from corrections. Claude reviews at session start and adds entries after corrections.
 
+### [Workflow] Don't offload judgment/labor to the user when they have no context you can't find yourself
+- **Date**: 2026-06-09 (mined from session transcripts, adversarially verified)
+- **Trigger**: 2 distinct sessions — Claude handed self-resolvable decisions and tedious-but-mechanical work back to the user despite having authored every artifact involved. User pushback: *"allt är gjort av dig — jag har inget extra minne eller koll än vad du kan hitta"* and *"är det inte enklast om du rättar facit?"*
+- **Rule**: Before deferring anything to the user, ask **"Does the user hold privileged context I cannot obtain by investigating?"** If NO — I authored the artifact, the answer is derivable from code/files/history, or it's tedious-but-mechanical labor — then I OWN it: investigate and decide (or just do the work), then report the decision + reasoning. Only defer when the user genuinely holds context I can't reach: (a) a product/preference/intent call, (b) an irreversible/destructive action needing sign-off, or (c) an external real-world fact. The deciding test is WHO HOLDS THE CONTEXT, not whether asking feels safer. Sharpens the existing "don't ask for hand-holding" / "stop-and-ask only on product-intent ambiguity" rules.
+- **Example**: On the cookbook gold-corpus side-project, Claude said "din boll" on correcting the gold file and offered radera/behåll choices on parser output it had itself generated — work the user could not do better, since Claude authored every artifact involved.
+
 ### [Workflow] Don't extrapolate "backlog drained / loop should stop" from a small sample — scan the WHOLE backlog first
 - **Date**: 2026-06-04 (iter-121)
 - **Trigger**: In a `/loop /sprint-execute` run I evaluated **6** candidate tickets, found them all heavy/deploy-blocked/product-uncertain, and concluded "the actionable-clean backlog is drained — the loop needs Malin's input." I wrote a pace-down todo + drafted a PushNotification saying so. Malin interrupted: *"is this true for all 135 backlog tickets?"* — I had NOT checked the other ~129. A full classification scan (one subagent, ~4min) found ~11 genuinely actionable A-CLEAN tickets — including **three test-gap follow-ups I had filed earlier in the same session** (BUT-1204/1207/1209) and then ignored during selection.

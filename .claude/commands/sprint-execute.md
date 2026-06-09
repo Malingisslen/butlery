@@ -65,6 +65,39 @@ external blockers — "I'd rather not" is not Tier D.
 - Tier D tickets don't count toward N — they're flagged, not worked. If the whole batch would be
   Tier D, say so plainly and pace down instead of forcing blocked work.
 
+**Pacing the loop down is gated (mechanical).** Before you may signal "backlog drained / needs
+you" or schedule a long wake delay in a `/loop /sprint-execute` run, you MUST first run a
+FULL-backlog classification scan (every open Backlog+Todo ticket → A-CLEAN / B-UI / C-REFACTOR /
+D-BLOCKED — never a 6-ticket spot-check, per lessons.md 2026-06-04) and write the result to
+`.claude/state/backlog-scan.json`:
+```json
+{ "timestamp": <unix>, "totalClassified": <N>, "aCleanCount": <M>, "topCandidates": ["BUT-XXXX", ...] }
+```
+The `loop-pace-guard.sh` hook reads this file: if `aCleanCount` is 0 (fresh, <30 min) it lets the
+long wake through; if it's >0, don't pace down — resume on a real A-CLEAN candidate (including your
+own follow-up tickets filed earlier this session) with `delaySeconds: 60`. A genuine external
+blocker (watching CI settle, deploy cooldown, ops/Tier-D wait) is the only other way past the gate
+and must be named in the wake `reason`.
+
+### Acceptance criteria per ticket (write these at selection — they are the rubric)
+
+For every selected ticket, write **2–4 gradeable acceptance criteria** derived from the ticket
+text + the Step-0 code read — BEFORE implementation. A criterion is *gradeable* when a fresh
+agent could verify it from the diff and tests alone, with a yes/no answer. This rubric is what
+Phase 2.7 grades against; it lets the loop self-verify *outcomes* instead of only checking that
+lint/tests are green (see `memory/feedback_self_verification_loops.md`). Structural gates prove
+the code compiles and is covered; they don't prove it did what the ticket asked.
+
+- **Gradeable** (good): "Toggling the setting then restarting persists the value", "No new file
+  exceeds 500 lines", "The allergen filter excludes any recipe containing the flagged allergen",
+  "Every enum case has an explicit branch (no default fall-through)".
+- **Not gradeable** (bad): "Works correctly", "Looks good", "Handles edge cases" — a verifier
+  can't score these, so they catch nothing.
+- Pin the *intent* the ticket exists to satisfy, **plus any explicit "don't do X" constraint** —
+  those negative constraints are the first thing lost to goal drift across a long run.
+- Tier B (UI): criteria are the visual/behavioral checkpoints the human grades from the preview
+  (the screenshot review IS the grading) — still write them so the In-Review comment is concrete.
+
 ### Write the plan to `tasks/todo.md`
 
 ```markdown
@@ -72,10 +105,13 @@ external blockers — "I'd rather not" is not Tier D.
 
 ### Agent A: [agent-name] — [theme]
 - [ ] **A1. [verb] [description]** `[Tier A]` — `file/path.dart`: [change]. (BUT-XXX)
+  - Acceptance: [criterion 1] · [criterion 2] · [criterion 3]
 - [ ] **A2. ...** `[Tier B]` (BUT-YYY)
+  - Acceptance: [criterion 1] · [criterion 2]
 
 ### Agent B: [agent-name] — [theme]
 - [ ] **B1. ...** `[Tier C]` (BUT-ZZZ)
+  - Acceptance: [criterion 1] · [criterion 2] · [criterion 3]
 
 ### Needs you (Tier D — flagged, not worked)
 - BUT-NNN — [one-line: what human/ops action unblocks it]
@@ -248,6 +284,35 @@ Tasks under the same `### Agent` heading batch into one agent invocation. Don't 
 - `dart analyze` fails with non-obvious fix: stop the sprint, report which task caused it.
 - Never silently skip — always report.
 
+## Phase 2.7 — Outcome verification (grade against the acceptance criteria)
+
+**Why:** `dart analyze` + tests + reviewer markers verify *process* — that the code compiles, is
+covered, and follows conventions. They do **not** verify the change actually did what the ticket
+asked. A long autonomous run is exactly where this gap bites (agentic laziness: "20 of 50 items
+done, declared complete"; goal drift losing a "don't do X" constraint after compaction). This
+phase closes it with an independent grader. See `memory/feedback_self_verification_loops.md`.
+
+For each implemented ticket (status `[x]`), dispatch a **fresh-context verifier subagent** — NOT
+the agent that wrote the code (self-preferential bias makes self-grading near-worthless). Give it
+ONLY: the ticket's **Acceptance** criteria, the diff scoped to that ticket's files
+(`git diff -- <files>`), and the relevant tests. It returns, per criterion, **pass / fail /
+unclear** + a one-line reason, and an overall verdict. Batch it: one verifier per `### Agent`
+group is fine (it sees that batch's tickets + diff). This grader checks *intent satisfaction*,
+not code quality — keep the bug-hunting reviewers in Phase 3 step 3 separate; a cheaper capable
+model is fine here.
+
+Handle the verdict:
+- **All criteria pass** → proceed to Phase 3 normally (Tier A → Done, Tier B/C → In Review).
+- **Any criterion fails** → fix inline if scoped, then re-grade. If it's genuine deferred scope,
+  file a follow-up ticket AND **downgrade the close-out**: a Tier A ticket with a failing
+  criterion does NOT close Done — move it to In Review with the failing criterion in the comment,
+  so it gets human eyes instead of a false "done".
+- **Unclear** → treat as a Tier B/C signal: park in In Review with the open question; don't
+  auto-close Done on a criterion the grader couldn't confirm.
+
+Carry the per-criterion grade into the Phase 3 close-out comment (the Tier A Done comment, or the
+Tier B/C In-Review comment) — it's the concrete evidence the ticket did what it claimed.
+
 ## Phase 3 — Post-sprint (MANDATORY — sprint is not done until every step here completes)
 
 **Failure mode being prevented:** prior sprints have ended with uncommitted changes and Linear tickets still in "In Progress." Phase 3 is non-optional. If you reach the end of Phase 2 and skip Phase 3, you have not finished the sprint.
@@ -284,6 +349,7 @@ After all tasks processed (or remaining tasks blocked):
    ```
    Sprint complete.
    - Tasks: X/Y done, Z blocked, W obsoleted
+   - Outcome grade: BUT-XXX 3/3 pass · BUT-YYY 2/3 (1 fail → In Review) · BUT-ZZZ 2/2 pass
    - Commit: <short-sha> "<subject>"
    - Pushed: yes/no
    - Closed Done (Tier A): BUT-XXX, BUT-YYY
