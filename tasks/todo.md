@@ -11,7 +11,8 @@
 ### Agent C: dependency pin verification (BUT-828) `[Tier A]`
 - [x] **C1. Verify firebase_app_check 0.4.3 / freerasp 7.5.1 / http_certificate_pinning 3.0.1 pins** `[Tier A]` — DONE (no code change; BUT-828 closed, freerasp 8.0.0 review filed as BUT-1218) — fresh `flutter pub get`; check pub.dev for newer 0.4.x/patch releases + changelogs for iOS fixes; bump pin + pubspec comment if warranted; iOS Build Validation runs in CI on push. (BUT-828)
 
-### Agent D: per-snap visibility override (BUT-1214) `[Tier B]` — RISK-GATED (multi-module)
+### Agent D: per-snap visibility override (BUT-1214) `[Tier B]` — CARRIED → next iteration
+Deliberately carried, not skipped: full feature slice (model + repo + service read-enforcement + dialog UI + firestore.rules + rules-tester) deserves a fresh-context iteration. Ticket stays Todo in Linear; spec is complete.
 - [ ] **D1. CookSnap.visibility field + capped override** `[Tier B]` — `lib/models/cook_snap.dart`: `sameAsRecipe` (default) | `onlyMe`; toggle in BUT-901 disclosure dialog; persist in `firebase_cook_snap_repository`; read-enforce in `cook_snap_service.watchCookSnaps` + gallery query; Firestore rules restrict `onlyMe` reads to author; rules tests + firestore-rules-tester sign-off. → In Review + notify. (BUT-1214)
 
 ### Agent E: Vertex context caching (BUT-1032) `[Tier A]` — RISK-GATED (P2)
