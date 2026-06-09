@@ -432,6 +432,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have unsaved recipe drafts. Would you like to continue where you left off?';
 
   @override
+  String get photoDraftRecoverySubtitle =>
+      'You have a photo with extracted text from earlier. Would you like to continue where you left off?';
+
+  @override
   String get draftRestore => 'Restore';
 
   @override

@@ -46,6 +46,51 @@ class _PhotoImportViewState extends State<PhotoImportView> {
     super.initState();
     _viewModel = ServiceLocator.get<PhotoImportViewModel>();
     _viewModel.addListener(_announceOcrCompletion);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _maybeOfferDraftRestore();
+    });
+  }
+
+  /// BUT-910: when a previous session left an OCR draft behind (nav-away or
+  /// backgrounding after a completed extraction), offer to continue with it.
+  /// The dialog forces a choice — declining drops the draft so it doesn't
+  /// re-prompt forever.
+  Future<void> _maybeOfferDraftRestore() async {
+    if (_viewModel.hasImage || _viewModel.hasOcrResult) return;
+    final draft = await _viewModel.loadPersistedDraft();
+    if (draft == null || !mounted) return;
+    final restore = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: Icon(
+          Icons.restore,
+          color: Theme.of(context).colorScheme.primary,
+          size: AppDimensions.iconSizeL,
+        ),
+        title: Text(context.l10n.draftRecovery),
+        content: Text(context.l10n.photoDraftRecoverySubtitle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(context.l10n.draftStartFresh),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.restore, size: AppDimensions.iconSizeS),
+            label: Text(context.l10n.draftRestore),
+          ),
+        ],
+      ),
+    );
+    if (restore == true) {
+      await _viewModel.restoreDraft();
+    } else if (restore == false) {
+      // Only an explicit "start fresh" discards. A system back-press pops the
+      // dialog with null — the draft survives and re-offers next visit, so a
+      // reflexive back can't destroy the artefact this feature protects.
+      await _viewModel.discardPersistedDraft();
+    }
   }
 
   /// BUT-1201: announce the extracting→review transition to screen readers.

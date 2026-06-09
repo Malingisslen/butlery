@@ -1,36 +1,17 @@
-/// Photo import ViewModel with OCR processing for converting recipe images to Recipe objects.
-/// **Features:** Camera/gallery capture, OCR.space API, multi-engine text extraction, auto-parsing, Swedish localization.
-/// ```dart
-/// final vm = PhotoImportViewModel(importManager: ServiceLocator.get<ImportManager>());
-/// await vm.pickImageFromCamera();
-/// if (vm.hasOcrResult && vm.hasParsedRecipe) { final recipe = vm.parsedRecipe; }
-/// // Manual import processing if auto-parsing fails
-/// if (photoImportViewModel.hasOcrResult && !photoImportViewModel.hasParsedRecipe) {
-///   await photoImportViewModel.performImport();
-///   if (photoImportViewModel.hasParsedRecipe) {
-///     final recipe = photoImportViewModel.parsedRecipe;
-///   }
-/// }
-/// // State monitoring and processing status
-/// if (photoImportViewModel.isProcessing) {
-///   // Show OCR processing indicator
-/// } else if (photoImportViewModel.canImport) {
-///   // OCR complete and ready for recipe parsing
-/// }
-/// // Photo data management and cleanup
-/// photoImportViewModel.clearPhoto();
-/// // All photo and OCR data cleared
-/// ```
-
 // lib/viewmodels/photo_import_viewmodel.dart
+
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Photo-import ViewModel: camera/gallery capture → multi-provider OCR →
@@ -38,15 +19,11 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// import lifecycle; heirloom form state lives in
 /// [PhotoImportHeirloomFormMixin].
 class PhotoImportViewModel extends ImportBaseViewModel
-    with PhotoImportHeirloomFormMixin {
-  /// Raw image bytes from selected photo for OCR processing and display.
-  /// Stores captured or selected image data enabling OCR processing
-  /// and image preview functionality throughout photo import workflow.
+    with PhotoImportHeirloomFormMixin, PhotoImportDraftMixin {
+  /// Raw image bytes from the selected photo (OCR input + preview).
   Uint8List? _imageBytes;
 
-  /// Extracted text from OCR processing for recipe parsing and display.
-  /// Stores OCR results enabling recipe parsing, text review,
-  /// and manual editing throughout photo import functionality.
+  /// Extracted OCR text awaiting parse/review.
   String _ocrText = '';
 
   /// Last OCR quality score from image assessment (0.0-1.0).
@@ -69,7 +46,12 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   // BUT-410 heirloom form state lives in PhotoImportHeirloomFormMixin.
 
-  PhotoImportViewModel({required super.importManager}) {
+  /// [draftManager] is a test seam (BUT-910) — production passes nothing.
+  PhotoImportViewModel({
+    required super.importManager,
+    AutoSaveManager<PhotoImportDraft>? draftManager,
+  }) {
+    initDraftPersistence(manager: draftManager);
     _initializeOCRService();
   }
 
@@ -162,21 +144,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
     await _pickImageAndProcess(ImageSource.gallery);
   }
 
-  /// Retries OCR processing on the currently selected image after a previous failure.
-  /// Enables users to retry OCR extraction without losing their photo, fixing the navigation trap
-  /// where users become stuck after OCR failures with no recovery options.
-  /// **Retry Process:**
-  /// - Validates that image data is available for retry
-  /// - Clears previous error state for fresh attempt
-  /// - Re-runs OCR processing on existing image bytes
-  /// - Provides user feedback through state management
-  /// **Usage Example:**
-  /// ```dart
-  /// if (photoImportViewModel.hasError && photoImportViewModel.hasImage) {
-  ///   await photoImportViewModel.retryOcr();
-  /// }
-  /// ```
-  /// **Throws**: Exception if no image data is available for retry.
+  /// Re-runs OCR on the current image after a failure — without this the user
+  /// is stuck in a navigation trap (failed OCR, no recovery besides re-shoot).
   Future<void> retryOcr() async {
     if (_imageBytes == null) {
       setError(AppLocale.current.errorNoImageToProcess);
@@ -189,28 +158,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
-  /// Indicates whether OCR retry is possible based on image availability.
-  /// Used by the UI to determine whether to show retry button, providing
-  /// clear user feedback about available recovery options.
-  /// Returns true if image data exists and retry is possible, false otherwise.
+  /// Whether the retry button should show (image still in memory).
   bool get canRetryOcr => _imageBytes != null;
 
   // BUT-410 heirloom getters/setters live in PhotoImportHeirloomFormMixin.
 
-  /// Clears all photo and OCR data with comprehensive state cleanup and memory management.
-  /// Performs complete photo import state cleanup including image data, OCR results,
-  /// quality metrics, and imported recipe data with disposal safety checks and memory management.
-  /// **Cleanup Process:**
-  /// - Image bytes disposal and memory cleanup
-  /// - OCR text results clearing
-  /// - OCR quality data and confidence scores clearing (Phase 2 Enhancement)
-  /// - Imported recipe data cleanup through base class
-  /// - State coordination and UI notification
-  /// **Usage Example:**
-  /// ```dart
-  /// photoImportViewModel.clearPhoto();
-  /// // All photo and OCR data cleared, ready for new import
-  /// ```
+  /// Clears all photo + OCR state. Call sites are explicit user actions only
+  /// (preview X button, post-save cleanup) — see the draft note below.
   void clearPhoto() {
     if (isDisposed) return;
 
@@ -224,40 +178,36 @@ class PhotoImportViewModel extends ImportBaseViewModel
     clearHeirloomForm();
     clearImportData();
 
+    // BUT-910: both clearPhoto call sites are explicit user actions (the
+    // preview's X button, post-save cleanup) — the persisted draft goes too.
+    // Nav-away does NOT come through here, so drafts survive navigation.
+    unawaited(discardPersistedDraft());
+
     // Also clear OCR cache for testing
     OCRExtractionService.instance.clearAllCache();
   }
 
-  /// Alias for clearPhoto() to provide consistent API naming conventions.
-  /// This method provides alternative naming for clearing all photo import data
-  /// maintaining backward compatibility and consistent API patterns across ViewModels.
-  /// Delegates to clearPhoto() for actual implementation.
-  /// **Override Implementation**: Overrides ImportBaseViewModel clearAll() with photo-specific cleanup.
-  /// **Usage Example:**
-  /// ```dart
-  /// photoImportViewModel.clearAll(); // Alternative to clearPhoto()
-  /// ```
+  /// BUT-910: restores the persisted draft into live state — staged image (when
+  /// available; web and purged-temp degrade to text-only), OCR text, and a
+  /// fresh auto-parse so the parsed-recipe state matches what the user saw.
+  /// Returns false when there is no draft to restore.
+  Future<bool> restoreDraft() async {
+    final draft = await loadPersistedDraft();
+    if (draft == null || isDisposed) return false;
+    final bytes = await readDraftImage(draft);
+    if (isDisposed) return false;
+    _imageBytes = bytes;
+    _ocrText = draft.ocrText;
+    notifyListeners();
+    await _autoParseOcrText(_ocrText);
+    return true;
+  }
+
   @override
   void clearAll() => clearPhoto();
 
-  /// Performs manual import operation with OCR text parsing and recipe generation.
-  /// Performs manual recipe import from OCR text when automatic parsing fails or
-  /// user initiates manual import, with comprehensive validation and error handling.
-  /// **Manual Import Process:**
-  /// - OCR text availability validation
-  /// - Recipe parsing through ImportManager text parsing strategy
-  /// - Parsed recipe state update and UI coordination
-  /// - Comprehensive error handling with Swedish localized messages
-  /// **Override Implementation**: Implements ImportBaseViewModel performImport interface with OCR-specific logic.
-  /// **Usage Example:**
-  /// ```dart
-  /// if (photoImportViewModel.hasOcrResult) {
-  ///   await photoImportViewModel.performImport();
-  ///   if (photoImportViewModel.hasParsedRecipe) {
-  ///     final recipe = photoImportViewModel.parsedRecipe;
-  ///   }
-  /// }
-  /// ```
+  /// Manual parse of the OCR text — the fallback when auto-parse failed or
+  /// the user re-triggers import explicitly.
   @override
   Future<void> performImport() async {
     if (!hasOcrResult) {
@@ -269,19 +219,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
     preserveOrSetParsedRecipe(recipe);
   }
 
-  /// Performs unified image selection and OCR processing with comprehensive workflow coordination.
-  /// [source] Image source for capture or selection (camera or gallery)
-  /// Executes complete image selection and OCR workflow including image capture,
-  /// bytes processing, validation, OCR execution, and automatic recipe parsing
-  /// with comprehensive error handling and state coordination.
-  /// **Unified Processing Workflow:**
-  /// - Import data cleanup and state preparation
-  /// - Image selection through ImagePicker with source-specific handling
-  /// - Image validation (size, format) before processing
-  /// - Image bytes reading and state update
-  /// - OCR processing with multi-engine support
-  /// - Automatic recipe parsing from extracted text
-  /// - Comprehensive error handling with Swedish localized messages
+  /// Shared camera/gallery pipeline: pick → validate (format, ≤15MB) →
+  /// quality gate → OCR → auto-parse.
   Future<void> _pickImageAndProcess(ImageSource source) async {
     clearImportData();
 
@@ -344,19 +283,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
-  /// Performs comprehensive OCR processing using universal multi-provider OCR service.
-  /// [imageBytes] Raw image data for OCR processing and text extraction
-  /// Executes sophisticated OCR processing using the universal OCR service with
-  /// multi-provider fallback strategy, image quality assessment, and automatic
-  /// recipe parsing coordination ensuring optimal text extraction on all devices.
-  /// **Universal OCR Processing Strategy:**
-  /// 1. Image quality assessment and preprocessing
-  /// 2. Multi-provider OCR processing (OCR.space → Google Vision → Tesseract)
-  /// 3. Circuit breaker patterns for service resilience
-  /// 4. Swedish language optimization and confidence scoring
-  /// 5. Automatic recipe parsing from extracted text
-  /// 6. Comprehensive error handling with user guidance
-  /// **Throws**: Exception if no text can be extracted from image.
+  /// Multi-provider OCR (OCR.space → Google Vision → Tesseract) followed by
+  /// auto-parse. Throws when no text could be extracted.
   Future<void> _performOcr(Uint8List imageBytes) async {
     try {
       // Use the new universal OCR service
@@ -368,6 +296,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
         _ocrText = ocrResult.text;
         _lastConfidence = ocrResult.confidence;
         notifyListeners();
+
+        // BUT-910: OCR is the expensive step — persist the draft as soon as it
+        // succeeds so nav-away/backgrounding can't lose it. Fire-and-forget:
+        // a failed save must never block the parse below.
+        unawaited(
+          persistPhotoDraft(imageBytes: imageBytes, ocrText: ocrResult.text),
+        );
 
         // Auto-parse the OCR text into a recipe
         await _autoParseOcrText(ocrResult.text);
@@ -382,20 +317,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
   }
 
-  /// Performs automatic recipe parsing from OCR text WITHOUT saving to storage.
-  /// [text] Extracted OCR text for automatic recipe parsing and structure analysis
-  /// Attempts automatic recipe parsing from OCR text using ImportManager parse-only functionality
-  /// with intelligent structure recognition and recipe pattern detection. Creates recipe objects
-  /// in memory only without persisting to storage, preventing unwanted auto-saving.
-  /// **Parse-Only Process:**
-  /// - OCR text analysis through ImportManager autoParseOnly
-  /// - Recipe structure recognition and pattern detection
-  /// - Automatic recipe object generation in memory only
-  /// - Graceful failure handling with manual parsing fallback
-  /// - State update with parsed recipe if successful
-  /// - NO SAVING TO STORAGE - recipe exists in memory only
-  /// **Note**: Failures are handled gracefully - users can still manually parse OCR text.
-  /// Recipes are NOT saved automatically and require explicit user action to save.
+  /// Parse-only auto-parse: recipes exist in memory until the user explicitly
+  /// saves (no silent persistence). Failures degrade to the manual-parse path.
   Future<void> _autoParseOcrText(String text) async {
     try {
       final result = await importManager.autoParseMulti(text);
@@ -452,16 +375,6 @@ class PhotoImportViewModel extends ImportBaseViewModel
     return built.message;
   }
 
-  /// Provides comprehensive debugging state information for photo import development and troubleshooting.
-  /// Returns map containing debug information including photo import state, OCR processing results,
-  /// image data availability, and inherited debug state from ImportBaseViewModel for comprehensive
-  /// development support and troubleshooting capabilities.
-  /// **Debug Information Includes:**
-  /// - Image selection and processing status
-  /// - OCR results availability and text length metrics
-  /// - Photo import specific state and processing indicators
-  /// - Inherited ImportBaseViewModel debug state information
-  /// - OCR processing status and image handling debugging information
   @override
   Map<String, dynamic> get debugState => {
         ...super.debugState,
@@ -473,18 +386,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
         'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
       };
 
-  /// Disposes photo import ViewModel with comprehensive cleanup and memory management.
-  /// Performs complete resource cleanup including image data disposal, OCR text cleanup,
-  /// quality metrics, and memory management ensuring proper photo import ViewModel lifecycle management.
-  /// **Disposal Process:**
-  /// - Image bytes disposal and memory cleanup
-  /// - OCR text data cleanup and state reset
-  /// - OCR quality data and confidence scores cleanup (Phase 2 Enhancement)
-  /// - Parent disposal coordination through super.dispose()
-  /// - Resource cleanup and memory management
-  /// **Override Implementation**: Extends ImportBaseViewModel disposal with photo-specific cleanup.
   @override
   void dispose() {
+    // BUT-910: dispose the manager, do NOT discard the draft — surviving
+    // disposal (the view disposes this VM on nav-away) is the feature.
+    disposeDraftPersistence();
     _imageBytes = null;
     _ocrText = '';
     _lastQualityScore = null;

@@ -432,6 +432,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du har osparade receptutkast. Vill du fortsätta där du slutade?';
 
   @override
+  String get photoDraftRecoverySubtitle =>
+      'Du har ett foto med tolkad text sedan tidigare. Vill du fortsätta där du slutade?';
+
+  @override
   String get draftRestore => 'Återställ';
 
   @override

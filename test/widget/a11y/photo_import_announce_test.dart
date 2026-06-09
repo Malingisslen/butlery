@@ -21,6 +21,7 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/views/photo_import_view.dart';
 
 import '../../infrastructure/helpers/announce_channel.dart';
@@ -85,6 +86,11 @@ class _FakePhotoImportViewModel extends ChangeNotifier
 
   @override
   Uint8List? get imageBytes => null;
+
+  /// BUT-910: the view's post-frame draft-restore check asks for a persisted
+  /// draft on init; none exists in the announce scenario.
+  @override
+  Future<PhotoImportDraft?> loadPersistedDraft() async => null;
 
   // The view's dispose() calls removeListener + dispose() on the VM it resolved.
   // ChangeNotifier provides both; nothing else of the VM is invoked.

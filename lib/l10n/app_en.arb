@@ -342,6 +342,7 @@
   "confirmIrreversibleAction": "This cannot be reversed.",
   "draftRecovery": "Restore draft",
   "draftRecoverySubtitle": "You have unsaved recipe drafts. Would you like to continue where you left off?",
+  "photoDraftRecoverySubtitle": "You have a photo with extracted text from earlier. Would you like to continue where you left off?",
   "draftRestore": "Restore",
   "draftStartFresh": "Start fresh",
   "draftRestored": "Draft restored!",

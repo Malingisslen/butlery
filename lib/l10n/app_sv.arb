@@ -348,6 +348,7 @@
   "confirmIrreversibleAction": "Åtgärden är slutgiltig.",
   "draftRecovery": "Återställ utkast",
   "draftRecoverySubtitle": "Du har osparade receptutkast. Vill du fortsätta där du slutade?",
+  "photoDraftRecoverySubtitle": "Du har ett foto med tolkad text sedan tidigare. Vill du fortsätta där du slutade?",
   "draftRestore": "Återställ",
   "draftStartFresh": "Börja om",
   "draftRestored": "Utkast återställt!",

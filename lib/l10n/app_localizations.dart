@@ -812,6 +812,12 @@ abstract class AppLocalizations {
   /// **'Du har osparade receptutkast. Vill du fortsätta där du slutade?'**
   String get draftRecoverySubtitle;
 
+  /// No description provided for @photoDraftRecoverySubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har ett foto med tolkad text sedan tidigare. Vill du fortsätta där du slutade?'**
+  String get photoDraftRecoverySubtitle;
+
   /// No description provided for @draftRestore.
   ///
   /// In sv, this message translates to:
