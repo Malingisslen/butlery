@@ -160,6 +160,17 @@ export interface OcrPerformResult {
   content: string;
   /** Cost in USD billed by the OCR call. */
   cost: number;
+  /**
+   * BUT-1032/BUT-1222: raw token counts from the Vertex response, threaded
+   * out so the `ocr_recipe_image.complete` event can log them. Each field
+   * may be undefined (absence ≠ zero — never coerce). Optional so older
+   * test seams returning `{content, cost}` keep compiling.
+   */
+  usage?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    cachedContentTokenCount?: number;
+  };
 }
 
 async function defaultPerformOcr(
@@ -191,20 +202,19 @@ async function defaultPerformOcr(
   const content = extractResponseText(response) ?? "";
   const cost = calculateGeminiCost(response.usageMetadata, 0.01);
 
-  // BUT-1032: implicit-cache observability for the vision call. Raw token
-  // counts logged as-is — each may be undefined (absence ≠ zero). This file
-  // has no `*.complete` timing log (unlike structure-recipe), so the usage
-  // is logged here where the response is in scope; the OcrPerformResult test
-  // seam intentionally stays `{content, cost}`.
+  // BUT-1032/BUT-1222: raw token counts ride along in the result so the
+  // caller's `ocr_recipe_image.complete` event carries them — one queryable
+  // event for duration + success + token counts.
   const usage = response.usageMetadata;
-  logger.info("[ocrRecipeImage] Vision call usage", {
-    promptTokenCount: usage?.promptTokenCount,
-    candidatesTokenCount: usage?.candidatesTokenCount,
-    cachedContentTokenCount: usage?.cachedContentTokenCount,
-    modelId: MODEL_ID,
-  });
-
-  return { content, cost };
+  return {
+    content,
+    cost,
+    usage: {
+      promptTokenCount: usage?.promptTokenCount,
+      candidatesTokenCount: usage?.candidatesTokenCount,
+      cachedContentTokenCount: usage?.cachedContentTokenCount,
+    },
+  };
 }
 
 async function defaultIsAiDisabled(): Promise<boolean> {
@@ -239,8 +249,28 @@ export async function runOcrRecipeImage(
 
   const ocrStartMs = now();
 
+  // BUT-1222: every exit path emits an `ocr_recipe_image.complete` log
+  // (twin of structure-recipe's BUT-483 `structure_recipe.complete`) so
+  // Cloud Logging metric filters on durationMs/success/tokens cost zero
+  // deploy. Token counts are captured after the vision call; before it
+  // they're undefined and Cloud Logging drops them (absence ≠ zero).
+  let ocrUsage: OcrPerformResult["usage"];
+  const emitTiming = (success: boolean, extra?: Record<string, unknown>): void => {
+    logger.info("ocr_recipe_image.complete", {
+      event: "ocr_recipe_image.complete",
+      durationMs: now() - ocrStartMs,
+      success,
+      modelId: MODEL_ID,
+      promptTokenCount: ocrUsage?.promptTokenCount,
+      candidatesTokenCount: ocrUsage?.candidatesTokenCount,
+      cachedContentTokenCount: ocrUsage?.cachedContentTokenCount,
+      ...(extra ?? {}),
+    });
+  };
+
   // Validate input
   if (!imageBase64 && !imageUrl) {
+    emitTiming(false, { reason: "missing_image_input" });
     throw new HttpsError(
       "invalid-argument",
       "Antingen imageBase64 eller imageUrl krävs."
@@ -249,6 +279,7 @@ export async function runOcrRecipeImage(
 
   // Validate URL if provided
   if (imageUrl && !isAllowedUrl(imageUrl)) {
+    emitTiming(false, { reason: "invalid_image_url" });
     throw new HttpsError("invalid-argument", "Ogiltig bild-URL.");
   }
 
@@ -266,6 +297,10 @@ export async function runOcrRecipeImage(
     if (!validation.ok) {
       // Surface as `invalid-argument` (not `internal`) — the request is
       // structurally rejected, no retry will help.
+      emitTiming(false, {
+        reason: "url_validation_rejected",
+        urlRejectionReason: validation.reason,
+      });
       throw new HttpsError(
         "invalid-argument",
         mapValidationReasonToSwedish(validation.reason)
@@ -275,6 +310,7 @@ export async function runOcrRecipeImage(
 
   // Validate image size (base64 is ~33% larger than binary)
   if (imageBase64 && imageBase64.length > 10 * 1024 * 1024) {
+    emitTiming(false, { reason: "image_too_large" });
     throw new HttpsError(
       "invalid-argument",
       "Bilden är för stor (max 7.5 MB)."
@@ -284,6 +320,11 @@ export async function runOcrRecipeImage(
   try {
     // AI kill switch
     if (await isAiDisabled()) {
+      emitTiming(false, {
+        reason: "kill_switch_ai",
+        retryCount: 0,
+        retryOutcome: null,
+      });
       return {
         success: false,
         error: "AI-funktioner är tillfälligt avstängda.",
@@ -304,16 +345,22 @@ export async function runOcrRecipeImage(
       { inputType: imageUrl ? "url" : "base64" }
     );
 
-    const { content, cost: ocrCost } = await performOcr({
+    const { content, cost: ocrCost, usage } = await performOcr({
       imageBase64,
       imageUrl,
       mimeType,
       context,
       systemPrompt: prompts.imageOcrSystemPrompt,
     });
+    ocrUsage = usage;
 
     if (!content) {
       logger.error("[ocrRecipeImage] Empty response from Gemini");
+      emitTiming(false, {
+        reason: "empty_response",
+        retryCount: 0,
+        retryOutcome: null,
+      });
       return {
         success: false,
         error: "Inget svar från AI-tjänsten.",
@@ -331,6 +378,11 @@ export async function runOcrRecipeImage(
       logger.info(
         `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${ocrCost.toFixed(6)})`
       );
+      emitTiming(true, {
+        ingredientCount: recipe.ingredients.length,
+        retryCount: 0,
+        retryOutcome: null,
+      });
       return {
         success: true,
         recipe,
@@ -365,6 +417,11 @@ export async function runOcrRecipeImage(
     });
 
     if (retryResult.recipe) {
+      emitTiming(true, {
+        ingredientCount: retryResult.recipe.ingredients.length,
+        retryCount: retryResult.retryCount,
+        retryOutcome: retryResult.retryOutcome,
+      });
       return {
         success: true,
         recipe: retryResult.recipe,
@@ -379,6 +436,11 @@ export async function runOcrRecipeImage(
 
     // Retry didn't produce a recipe — return the rawText fallback (existing
     // behavior preserved) plus retry observability fields.
+    emitTiming(false, {
+      reason: "parse_failed_after_retry",
+      retryCount: retryResult.retryCount,
+      retryOutcome: retryResult.retryOutcome,
+    });
     return {
       success: false,
       rawText: content,
@@ -393,17 +455,20 @@ export async function runOcrRecipeImage(
     logger.error("[ocrRecipeImage] Error:", error);
 
     if (error instanceof HttpsError) {
+      emitTiming(false, { reason: "https_error", code: error.code });
       throw error;
     }
 
     // Check for rate limiting
     if (error instanceof Error && error.message.includes("rate limit")) {
+      emitTiming(false, { reason: "rate_limited" });
       throw new HttpsError(
         "resource-exhausted",
         "AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund."
       );
     }
 
+    emitTiming(false, { reason: "internal_error" });
     throw new HttpsError(
       "internal",
       "Ett fel uppstod vid bildbearbetning. Försök igen."

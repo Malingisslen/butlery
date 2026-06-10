@@ -38,6 +38,38 @@ import type {
   StructureRecipeResponse,
 } from "../llm/structure-recipe";
 import type { ExtractedRecipe } from "../llm/gemini-client";
+import { HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/logger";
+
+// =============================================================================
+// Logger capture (BUT-1222) — same hijack pattern as ocr-validation.test.ts.
+// Captures structured logs so Layer 3 can assert the
+// `ocr_recipe_image.complete` event fields without Cloud Logging.
+// =============================================================================
+
+interface CapturedLog {
+  level: string;
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+const captured: CapturedLog[] = [];
+
+for (const level of ["info", "warn", "error"] as const) {
+  (logger as unknown as Record<string, (...args: unknown[]) => void>)[level] = (
+    ...args: unknown[]
+  ) => {
+    captured.push({
+      level,
+      message: String(args[0] ?? ""),
+      meta: (args[1] as Record<string, unknown>) ?? undefined,
+    });
+  };
+}
+
+function completeEvents(): CapturedLog[] {
+  return captured.filter((l) => l.message === "ocr_recipe_image.complete");
+}
 
 // =============================================================================
 // Helpers
@@ -516,6 +548,215 @@ async function testCoreEndToEnd(): Promise<void> {
 }
 
 // =============================================================================
+// Layer 3: BUT-1222 — `ocr_recipe_image.complete` structured event
+// =============================================================================
+
+async function testCompleteEvent(): Promise<void> {
+  console.log("\n[3] ocr_recipe_image.complete structured event (BUT-1222)");
+
+  // Success path (no retry): exactly one complete event carrying duration,
+  // success, retry fields, modelId AND token counts in the same payload
+  // (acceptance: one metric filter covers duration + tokens).
+  {
+    captured.length = 0;
+    const state: OcrTestState = {
+      performOcrCalls: 0,
+      structureRecipeCalls: [],
+    };
+    const validJson = JSON.stringify(makeRecipe("Lasagne"));
+    const seams = makeOcrSeams({
+      ocr: async () => ({
+        content: validJson,
+        cost: 0.01,
+        usage: {
+          promptTokenCount: 111,
+          candidatesTokenCount: 22,
+          cachedContentTokenCount: 5,
+        },
+      }),
+      retry: async () => ({
+        success: true,
+        recipe: makeRecipe("should-not-be-called"),
+        estimatedCost: 0,
+      }),
+      state,
+    });
+
+    await runOcrRecipeImage({
+      data: { imageBase64: "/9j/" + "A".repeat(40) },
+      authUidHash: "test-hash",
+      ...seams,
+    });
+
+    const events = completeEvents();
+    const m = events[0]?.meta ?? {};
+    const ok =
+      events.length === 1 &&
+      m.event === "ocr_recipe_image.complete" &&
+      m.success === true &&
+      typeof m.durationMs === "number" &&
+      m.retryCount === 0 &&
+      m.retryOutcome === null &&
+      typeof m.modelId === "string" &&
+      m.promptTokenCount === 111 &&
+      m.candidatesTokenCount === 22 &&
+      m.cachedContentTokenCount === 5;
+    record(
+      "success path emits exactly one complete event with tokens + duration in same payload",
+      ok
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `events=${events.length}, meta=${JSON.stringify(m)}`,
+          }
+    );
+  }
+
+  // Standalone usage log is gone — token counts live ONLY in the complete
+  // event now (the old "[ocrRecipeImage] Vision call usage" log was removed).
+  {
+    const usageLogs = captured.filter((l) =>
+      l.message.includes("Vision call usage")
+    );
+    record(
+      "standalone Vision call usage log removed (tokens only in complete event)",
+      usageLogs.length === 0
+        ? { ok: true }
+        : { ok: false, detail: `found ${usageLogs.length} standalone usage logs` }
+    );
+  }
+
+  // Failure path: parse fails, retry fails → success=false,
+  // reason=parse_failed_after_retry, retry outcome + tokens present.
+  {
+    captured.length = 0;
+    const state: OcrTestState = {
+      performOcrCalls: 0,
+      structureRecipeCalls: [],
+    };
+    const seams = makeOcrSeams({
+      ocr: async () => ({
+        content:
+          "Some legible OCR text long enough to pass the 20-char minimum.",
+        cost: 0.011,
+        usage: { promptTokenCount: 99, candidatesTokenCount: 7 },
+      }),
+      retry: async () => {
+        throw new Error("simulated vertex ai outage");
+      },
+      state,
+    });
+
+    await runOcrRecipeImage({
+      data: { imageBase64: "/9j/" + "A".repeat(40) },
+      authUidHash: "test-hash",
+      ...seams,
+    });
+
+    const events = completeEvents();
+    const m = events[0]?.meta ?? {};
+    const ok =
+      events.length === 1 &&
+      m.success === false &&
+      m.reason === "parse_failed_after_retry" &&
+      m.retryCount === 1 &&
+      m.retryOutcome === "failure" &&
+      typeof m.durationMs === "number" &&
+      m.promptTokenCount === 99 &&
+      m.candidatesTokenCount === 7 &&
+      m.cachedContentTokenCount === undefined;
+    record(
+      "retry-failure path emits one complete event (reason=parse_failed_after_retry, retryOutcome=failure, tokens)",
+      ok
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `events=${events.length}, meta=${JSON.stringify(m)}`,
+          }
+    );
+  }
+
+  // Kill-switch exit: one event, reason=kill_switch_ai, no tokens (no
+  // vision call happened — fields undefined, dropped by Cloud Logging).
+  {
+    captured.length = 0;
+    const state: OcrTestState = {
+      performOcrCalls: 0,
+      structureRecipeCalls: [],
+    };
+    const seams = {
+      ...makeOcrSeams({
+        ocr: async () => ({ content: "x", cost: 0 }),
+        retry: async () => ({
+          success: false as const,
+          error: "n/a",
+          estimatedCost: 0,
+        }),
+        state,
+      }),
+      isAiDisabled: async () => true,
+    };
+
+    await runOcrRecipeImage({
+      data: { imageBase64: "/9j/" + "A".repeat(40) },
+      authUidHash: "test-hash",
+      ...seams,
+    });
+
+    const events = completeEvents();
+    const m = events[0]?.meta ?? {};
+    const ok =
+      events.length === 1 &&
+      m.success === false &&
+      m.reason === "kill_switch_ai" &&
+      m.promptTokenCount === undefined &&
+      state.performOcrCalls === 0;
+    record(
+      "kill-switch exit emits one complete event (reason=kill_switch_ai, no tokens)",
+      ok
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `events=${events.length}, meta=${JSON.stringify(m)}, ocrCalls=${state.performOcrCalls}`,
+          }
+    );
+  }
+
+  // Thrown exit (validation): missing image input throws HttpsError but
+  // still emits exactly one complete event with reason=missing_image_input.
+  {
+    captured.length = 0;
+    let threw = false;
+    try {
+      await runOcrRecipeImage({
+        data: {},
+        authUidHash: "test-hash",
+        isAiDisabled: async () => false,
+      });
+    } catch (e) {
+      threw = e instanceof HttpsError && e.code === "invalid-argument";
+    }
+
+    const events = completeEvents();
+    const m = events[0]?.meta ?? {};
+    const ok =
+      threw &&
+      events.length === 1 &&
+      m.success === false &&
+      m.reason === "missing_image_input";
+    record(
+      "missing-input throw still emits exactly one complete event (reason=missing_image_input)",
+      ok
+        ? { ok: true }
+        : {
+            ok: false,
+            detail: `threw=${threw}, events=${events.length}, meta=${JSON.stringify(m)}`,
+          }
+    );
+  }
+}
+
+// =============================================================================
 // Driver
 // =============================================================================
 
@@ -525,6 +766,7 @@ async function main(): Promise<void> {
 
   await testOrchestrator();
   await testCoreEndToEnd();
+  await testCompleteEvent();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +

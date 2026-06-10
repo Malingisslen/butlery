@@ -1164,3 +1164,42 @@ Patterns worth remembering:
 - **Mirror private pricing constants in the cost test on purpose** — a silent
   `INPUT_COST_PER_M` change should turn the telemetry suite red so the cache
   math gets re-reviewed alongside any price update.
+
+### 2026-06-10 — BUT-1222 ocr_recipe_image.complete timing event [Pattern discovered]
+
+The BUT-1032 follow-up landed: `runOcrRecipeImage` now has an `emitTiming`
+twin of structure-recipe's `structure_recipe.complete` (BUT-483 pattern),
+emitting `ocr_recipe_image.complete` on every exit path with durationMs,
+success, reason, retryCount/retryOutcome (BUT-559), modelId, and the three
+raw token counts. The standalone `[ocrRecipeImage] Vision call usage` log
+from BUT-1032 is removed — tokens are queryable from the same event as
+duration/success (one metric filter).
+
+Patterns worth remembering:
+
+- **Optional seam-widening beats a side-channel log.** BUT-1032 avoided
+  widening `OcrPerformResult` and logged usage inside `defaultPerformOcr`
+  instead. The right long-term fix was an OPTIONAL `usage?` field on the
+  seam result — zero breakage for existing `{content, cost}` test seams
+  (verified: ocr-retry + ocr-validation suites compiled untouched), and the
+  caller owns the single structured event.
+- **Token fields stay undefined-capable through the closure.** `let
+  ocrUsage` is captured by `emitTiming` and assigned only after the vision
+  call; pre-Gemini exits log undefined token fields which Cloud Logging
+  drops (absence ≠ zero — BUT-1032 convention preserved).
+- **Early-throw exits sit BEFORE the try block** in `runOcrRecipeImage`
+  (missing input / isAllowedUrl / BUT-425 validator / size cap), so giving
+  them their own `emitTiming(...); throw` does NOT double-emit via the
+  catch's `https_error` path. When mirroring this pattern elsewhere, check
+  whether validation throws are inside or outside the try before adding
+  catch-side emits.
+- **OCR exit-path reason taxonomy**: missing_image_input, invalid_image_url,
+  url_validation_rejected (+ urlRejectionReason), image_too_large,
+  kill_switch_ai, empty_response, parse_failed_after_retry, https_error
+  (+ code), rate_limited, internal_error; success carries ingredientCount +
+  retryCount/retryOutcome instead of reason.
+- **"Exactly one event per call" is the test contract.** Layer-3 cases in
+  `ocr-retry.test.ts` clear a module-scope logger-capture array per case and
+  assert `completeEvents().length === 1` — this is what catches a future
+  double-emit (e.g. someone adding an emit inside the try AND keeping the
+  catch emit).
