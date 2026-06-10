@@ -129,3 +129,9 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 ## Archived
 
 <!-- Internalized patterns moved here -->
+
+### [Testing] Adding a named param to a mocked service silently un-matches every old mocktail stub
+- **Date:** 2026-06-10
+- **Trigger:** BUT-906 added `shareActivityToFeed` to `UserService.createOrUpdateProfile`; `user_profile_viewmodel_test.dart` stubs (written without that arg) stopped matching, the missing-stub throw was swallowed by `safeExecute`, and `saveProfile()` returned false — red nightly + red push CI two days later, far from the causing commit.
+- **Rule:** When adding a named parameter to a service method that tests mock, grep `test/` for the METHOD NAME and add `paramName: any(named: 'paramName')` to every stub/verify site in the same commit. Mocktail fails to match silently — no compile error, and error-swallowing wrappers convert it to a wrong return value.
+- **Example:** Fixed in iter-137 by the debugger agent: 6 stub sites in test/unit/viewmodels/user_profile_viewmodel_test.dart.

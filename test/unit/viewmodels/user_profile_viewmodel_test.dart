@@ -144,6 +144,7 @@ void main() {
             cuisineAffinities: any(named: 'cuisineAffinities'),
             bio: any(named: 'bio'),
             showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
           )).thenAnswer((_) async => UserProfileBuilder.build());
 
       when(() => mockImagePickerService.pickImage(any()))
@@ -502,6 +503,7 @@ void main() {
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
               showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
             )).thenAnswer((_) async => savedProfile);
 
         final result = await viewModel.saveProfile();
@@ -517,6 +519,7 @@ void main() {
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
               showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
             )).called(1);
       });
 
@@ -535,6 +538,7 @@ void main() {
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
               showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
             ));
       });
 
@@ -570,6 +574,7 @@ void main() {
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
               showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
             )).thenAnswer((_) async => savedProfile);
 
         final result = await viewModel.saveProfile();
@@ -590,6 +595,7 @@ void main() {
               cuisineAffinities: any(named: 'cuisineAffinities'),
               bio: any(named: 'bio'),
               showOnlineStatus: any(named: 'showOnlineStatus'),
+              shareActivityToFeed: any(named: 'shareActivityToFeed'),
             )).thenAnswer((_) async => null);
 
         mockUserService.setUserState(error: 'Network error');
