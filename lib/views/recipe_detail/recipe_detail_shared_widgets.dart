@@ -168,10 +168,14 @@ abstract final class RecipeDetailSharedWidgets {
               Icon(Icons.tips_and_updates_outlined,
                   size: 18, color: cs.primary),
               const SizedBox(width: AppDimensions.spacingSm),
-              Text(
-                context.l10n.recipeImproveTitle,
-                style: AppTextStyles.titleSmall.copyWith(
-                  color: cs.onPrimaryContainer,
+              // Flexible: the title must wrap at narrow widths (BUT-1230 —
+              // an unbounded Text here overflowed the Row at <=420px).
+              Flexible(
+                child: Text(
+                  context.l10n.recipeImproveTitle,
+                  style: AppTextStyles.titleSmall.copyWith(
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
             ],
