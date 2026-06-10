@@ -1052,6 +1052,19 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuToShoppingList => 'Till inköpslista';
 
   @override
+  String menuShoppingListGenerated(String listName, int count) {
+    return '$listName uppdaterad – $count varor';
+  }
+
+  @override
+  String get menuShoppingListGenerationEmpty =>
+      'Veckans plan har inga recept med ingredienser ännu';
+
+  @override
+  String get menuShoppingListGenerationFailed =>
+      'Kunde inte skapa inköpslistan – försök igen';
+
+  @override
   String get menuLoadSaved => 'Ladda sparad meny';
 
   @override
@@ -1077,6 +1090,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get commonHide => 'Dölj';
+
+  @override
+  String get commonShow => 'Visa';
 
   @override
   String commonShowAllCount(int count) {

@@ -656,6 +656,19 @@
     }
   },
   "menuToShoppingList": "To shopping list",
+  "menuShoppingListGenerated": "{listName} updated – {count} items",
+  "@menuShoppingListGenerated": {
+    "description": "BUT-956: snackbar after generating the aggregated week shopping list. {listName} e.g. 'Inköpslista v.24'.",
+    "placeholders": { "listName": { "type": "String" }, "count": { "type": "int" } }
+  },
+  "menuShoppingListGenerationEmpty": "This week's plan has no recipes with ingredients yet",
+  "menuShoppingListGenerationFailed": "Could not create the shopping list – try again",
+  "@menuShoppingListGenerationFailed": {
+    "description": "BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning."
+  },
+  "@menuShoppingListGenerationEmpty": {
+    "description": "BUT-956: warning when generation found no resolvable recipes on the week plan."
+  },
   "menuLoadSaved": "Load saved menu",
   "menuClear": "Clear menu",
   "menuShared": "Weekly menu shared!",
@@ -674,6 +687,10 @@
   },
   "commonSort": "Sort",
   "commonHide": "Hide",
+  "commonShow": "Show",
+  "@commonShow": {
+    "description": "BUT-956: generic snackbar action to navigate to a just-created artifact (e.g. the generated shopping list)."
+  },
   "commonShowAllCount": "Show all ({count})",
   "@commonShowAllCount": {
     "placeholders": {

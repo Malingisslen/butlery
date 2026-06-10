@@ -40,6 +40,7 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/menu/parser/code_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/composite_lexicon_provider.dart';
 import 'package:butlery/services/menu/parser/firestore_lexicon_provider.dart';
@@ -541,6 +542,12 @@ class ContentModule implements DIModule {
           repository: container<WeeklyMenuPlanRepository>(),
           userService: container<UserService>(),
         ),
+      );
+
+      // BUT-956: menu→shopping generation. ServiceLocator-resolves its three
+      // collaborators at call time, so registration order is a non-issue.
+      container.registerLazySingleton<MenuShoppingListGenerator>(
+        () => MenuShoppingListGenerator(),
       );
 
       // BUT-405: group-scoped weekly menu plans. Coexists with the per-user

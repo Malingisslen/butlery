@@ -1052,6 +1052,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuToShoppingList => 'To shopping list';
 
   @override
+  String menuShoppingListGenerated(String listName, int count) {
+    return '$listName updated – $count items';
+  }
+
+  @override
+  String get menuShoppingListGenerationEmpty =>
+      'This week\'s plan has no recipes with ingredients yet';
+
+  @override
+  String get menuShoppingListGenerationFailed =>
+      'Could not create the shopping list – try again';
+
+  @override
   String get menuLoadSaved => 'Load saved menu';
 
   @override
@@ -1077,6 +1090,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonHide => 'Hide';
+
+  @override
+  String get commonShow => 'Show';
 
   @override
   String commonShowAllCount(int count) {

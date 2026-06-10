@@ -7,11 +7,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -197,19 +200,80 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         actions: _buildHeaderActions(context, viewModel),
       ),
       body: _buildBody(context, viewModel),
-      floatingActionButton: viewModel.hasMenu
-          ? ActionButtons.actionButton(
-              context,
-              label: context.l10n.menuToShoppingList,
-              icon: Icons.shopping_cart,
-              onPressed: () => VeckomenyDialogs.showShoppingListSelector(
-                context,
-                viewModel: viewModel,
-              ),
-              style: ActionButtonStyle.primary,
-            )
-          : null,
+      floatingActionButton: _buildShoppingFab(context, viewModel),
     );
+  }
+
+  /// Mode-aware menu→shopping FAB: the generated-menu (lista) mode keeps the
+  /// existing per-recipe list-selector flow; the calendar (kalender) mode
+  /// generates the BUT-956 aggregated week list from the plan.
+  Widget? _buildShoppingFab(BuildContext context, MenuViewModel viewModel) {
+    if (_viewMode == VeckomenyViewMode.kalender) {
+      final planVm = context.watch<WeeklyMenuPlanViewModel>();
+      if (!planVm.hasEntries) return null;
+      return ActionButtons.actionButton(
+        context,
+        label: context.l10n.menuToShoppingList,
+        icon: Icons.shopping_cart,
+        onPressed: () => _generateWeekShoppingList(planVm.currentWeekStart),
+        style: ActionButtonStyle.primary,
+      );
+    }
+    if (!viewModel.hasMenu) return null;
+    return ActionButtons.actionButton(
+      context,
+      label: context.l10n.menuToShoppingList,
+      icon: Icons.shopping_cart,
+      onPressed: () => VeckomenyDialogs.showShoppingListSelector(
+        context,
+        viewModel: viewModel,
+      ),
+      style: ActionButtonStyle.primary,
+    );
+  }
+
+  /// BUT-956: aggregate the calendar week's recipes into one shopping list.
+  /// Re-entrancy-guarded — a double-tap before the first generation lands
+  /// would otherwise race the name-based idempotency into duplicate lists.
+  bool _isGeneratingList = false;
+
+  Future<void> _generateWeekShoppingList(DateTime weekStart) async {
+    if (_isGeneratingList) return;
+    _isGeneratingList = true;
+    try {
+      final generator = ServiceLocator.get<MenuShoppingListGenerator>();
+      final result = await generator.generateForWeek(weekStart);
+      if (!mounted) return;
+      if (result == null) {
+        // null = the generation FAILED (service error path) — distinct from
+        // an empty plan, which returns nothingToGenerate.
+        SnackBarUtils.showError(
+            context, context.l10n.menuShoppingListGenerationFailed);
+        return;
+      }
+      if (result.isEmptyPlan) {
+        SnackBarUtils.showWarning(
+            context, context.l10n.menuShoppingListGenerationEmpty);
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n
+              .menuShoppingListGenerated(result.listName, result.itemCount)),
+          action: SnackBarAction(
+            label: context.l10n.commonShow,
+            // The snackbar can outlive this route — guard the late tap.
+            onPressed: () {
+              if (mounted) {
+                Navigator.pushNamed(context, Routes.shoppingList);
+              }
+            },
+          ),
+        ),
+      );
+    } finally {
+      _isGeneratingList = false;
+    }
   }
 
   List<Widget> _buildHeaderActions(

@@ -1880,6 +1880,24 @@ abstract class AppLocalizations {
   /// **'Till inköpslista'**
   String get menuToShoppingList;
 
+  /// BUT-956: snackbar after generating the aggregated week shopping list. {listName} e.g. 'Inköpslista v.24'.
+  ///
+  /// In sv, this message translates to:
+  /// **'{listName} uppdaterad – {count} varor'**
+  String menuShoppingListGenerated(String listName, int count);
+
+  /// BUT-956: warning when generation found no resolvable recipes on the week plan.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckans plan har inga recept med ingredienser ännu'**
+  String get menuShoppingListGenerationEmpty;
+
+  /// BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa inköpslistan – försök igen'**
+  String get menuShoppingListGenerationFailed;
+
   /// No description provided for @menuLoadSaved.
   ///
   /// In sv, this message translates to:
@@ -1927,6 +1945,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Dölj'**
   String get commonHide;
+
+  /// BUT-956: generic snackbar action to navigate to a just-created artifact (e.g. the generated shopping list).
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa'**
+  String get commonShow;
 
   /// No description provided for @commonShowAllCount.
   ///
