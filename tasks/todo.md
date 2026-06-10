@@ -1,32 +1,35 @@
 # Sprint Backlog
 
-## Sprint: portion-scaling on structured ingredients + import wiring + test debt — 2026-06-10 (iter-137)
+## Sprint: menu→shopping aggregation + ingredient derivation + shopping-view debt — 2026-06-11 (iter-138)
 
-### Agent A: structured-ingredient wire-through (BUT-1228) `[Tier A]` — FIRST (feeds B1)
-- [x] **A1. Wire structuredIngredients through remaining import paths** `[Tier A]` — DONE via flutter-developer: toRecipeData + LLM seam (_extractedToRecipe — covers TikTok/Instagram/photo-vision/URL-LLM-fallback/enhance). Step-0 finding: text import has NO ParsedIngredient (regex pipeline) — wiring it = derivation work, stays deferred → follow-up ticket. 67+174 tests green. — text import, photo/OCR import, TikTok pipeline (`tiktok_pipeline.dart:405`), and `ParsedRecipe.toRecipeData()` (`parsed_recipe.dart:172`) persist the structured form index-aligned with the strings. (BUT-1228)
-  - Acceptance: each wired path persists structuredIngredients with entry.raw == ingredients[i] · toRecipeData carries the structured form · one test per wired path proves persisted structured data · ingredient strings themselves unchanged (no behavior change to existing consumers)
+### Agent A: menu→shopping aggregation (BUT-956) `[Tier C]` — RISK-GATED (P2, cross-module) — main loop
+- [ ] **A1. Aggregate the week's menu into a shopping list** `[Tier C]` — new aggregation service (sum structured amounts per normalized ingredient name; unit normalization via SmartUnitConverter; name normalization via swedish_character_normalizer; category grouping via ingredient_categorizer) + "Generera inköpslista" action on the weekly menu view. V1 scope decisions (epic trimmed): no pantry subtraction (no pantry feature); idempotency = regeneration updates the week's generated list rather than duplicating. → In Review + notify. (BUT-956)
+  - Acceptance: two menu recipes both containing "mjöl" with structured amounts produce ONE summed line (e.g. 2 dl + 1 dl → 3 dl) · raw-only/unparseable lines still land on the list (un-summed, never dropped) · regenerating for the same week does not duplicate items (idempotent) · deterministic, zero LLM calls
 
-### Agent B: portion scaling rebuild (BUT-444) `[Tier C]` — RISK-GATED (P2, cross-module)
-- [x] **B1. Scale on structured amounts + fix range quantities** `[Tier C]` — DONE: scaleEntries (structured-first, per-entry raw fallback) + range handling in BOTH paths; detail-content + cooking-mode switched, edit view deliberately stays string-path; 242 input-suite + 38 cooking/detail tests green. — rebuild the PortionScaler path (`lib/widgets/common/input/portion_scaler*.dart`, `lib/utils/text/unit_converter.dart`, wiring at `recipe_detail_content.dart:168` + edit view + `cooking_mode_viewmodel.dart:148`) to consume `Recipe.structuredIngredients` when entries are structured, falling back to the existing string path for raw-only entries; add range handling ("2-3 dl" scales both endpoints). Deterministic, no LLM. → In Review + notify. (BUT-444)
-  - Acceptance: structured entries scale via the model's `amount` (no string re-parse on that path) · "2-3 dl" at 2x renders "4-6 dl" (ranges scale both endpoints, not silently wrong) · raw-only/legacy entries keep current v1 behavior (regression-tested) · zero LLM calls introduced
+### Agent B: structured-ingredient derivation (BUT-1232) `[Tier A]` — feeds A1
+- [x] **B1. Derive structuredIngredients where none exist** `[Tier A]` — DONE via flutter-developer: StructuredIngredientDeriver (ren regex-util; LLM-tier avvisad med motivering), text-import + form-save (reuse-by-raw bevarar rikare importdata) + RecipeOperations lockstep med self-healing av stale data; 179 tester gröna. — text-import path derives via the deterministic ingredient parsing strategy; recipe-form save re-derives from final strings; RecipeOperations mutations stop persisting stale structured data. (BUT-1232)
+  - Acceptance: a text-imported recipe carries index-aligned structuredIngredients for parseable lines · saving an edited recipe re-derives (alignment holds by construction) · RecipeOperations add/remove/update/reorder no longer leave misaligned structured data persisted · deterministic, zero LLM
 
-### Agent C: small Tier A batch
-- [x] **C1. Fix improve-banner overflow at narrow widths** `[Tier A]` — DONE: Flexible wrap; regression test proven red-before-fix, green-after (375px + 320px). — `lib/views/recipe_detail/recipe_detail_shared_widgets.dart:166`: wrap banner text in Flexible; narrow-width regression test on the BUT-1225 scaffolding. (BUT-1230)
-  - Acceptance: RecipeDetailView with an incomplete recipe renders without RenderFlex overflow at 375px · regression test pins it
-- [x] **C2. Dialog-wiring test: "Bara jag" reaches addSnap(visibility: onlyMe)** `[Tier A]` — DONE via testing-specialist: 4 tests on the BUT-1225 harness (onlyMe wiring, default, cancel, private-recipe-no-dialog invariant), 8/8 file total. — BUT-1225 harness + faked image-picker dialog; select ValueKey('cook-snap-visibility-only-me'), confirm, assert VM/service receives onlyMe. (BUT-1231)
-  - Acceptance: "Bara jag" + confirm → addSnap called with onlyMe · default confirm → sameAsRecipe · cancel → no addSnap call
-- [x] **C3. Fix functions npm-test chain: 6 red suites + fail-at-end** `[Tier A]` — DONE via cloud-functions-specialist: rate-cap injection seam + cascade-fake extensions (3 stale batching assertions corrected to post-BUT-886 contract); run-all-collect-exit runner; +10 orphan suites registered; 44/44 green, tsc clean, break-experiment verified. — rate-cap app-init seam (lapsed-users, activity-digest) + cascade-test fakes (presence-cascade, notification-gdpr, but753, but466); replace && chain with run-all-collect-exit. (BUT-1223)
-  - Acceptance: full `npm test` in functions/ green · a deliberately-broken suite still lets the rest run AND the chain exits non-zero · all 6 named suites individually green
+### Agent C: shopping-view pattern debt (BUT-1226) `[Tier A]`
+- [x] **C1. CollaborativeShoppingView → State-owned-VM pattern + add-item shell test** `[Tier A]` — DONE via flutter-developer: kanoniskt mönster + didUpdateWidget-recreate; test-tand mutation-verifierad; 10/10 gröna. — initState-owned VM + .value provider + _Content widget + didUpdateWidget(listId); full-shell add-item regression test. (BUT-1226)
+  - Acceptance: view follows lib/views/CLAUDE.md pattern (no create: in build) · existing 9 view + 3 announce tests stay green · add-item full-shell test pins enterText → 'Lägg till' → addItem hit
+
+### Agent D: scaling wiring pin (BUT-1233) `[Tier A]`
+- [x] **D1. Shell-harness pin for detail-content structuredIngredients pass-through** `[Tier A]` — DONE via testing-specialist: exakt-match-assertion (5 dl närvarande, mangle 2 dl frånvarande); 9/9 i filen. — BUT-1225 harness: structured "ca 2,5 dl" entry, tap stepper +, assert "5 dl" renders. (BUT-1233)
+  - Acceptance: test fails if the named arg at recipe_detail_content.dart:591 is dropped (string path renders the mangled "2 dl" instead)
+
+### Housekeeping
+- [x] BUT-1227 Step-0: PREMISE-GONE — stängd obsolete (AllergenSetupBanner täcker alla importvägar sedan BUT-1198/1200).  Orig:  allergen-setup banner shipped for photo (BUT-1200) + text (BUT-1208) import paths — verify URL-import coverage, then close obsolete or re-scope to the missing path.
 
 ### Needs you (Tier D — flagged, not worked)
-- (none this iteration; BUT-1229 backfill→deploy ordering from iter-136 still awaits you)
+- (inget nytt; BUT-1229 backfill→deploy väntar fortfarande)
 
 ### Post-Sprint Steps
-- [ ] Run `dart analyze --fatal-infos` + relevant tests
-- [ ] Tier-2 review agents per staged paths + Phase 2.7 outcome grading
+- [ ] dart analyze --fatal-infos + relevant tests
+- [ ] Tier-2 review agents + Phase 2.7 grading
 - [ ] Commit per ticket, push
-- [ ] Linear: Done for Tier A; In Review + PushNotification for BUT-444
-- [ ] File follow-up tickets for deferred scope BEFORE commit
+- [ ] Linear: Done för Tier A; In Review + PushNotification för BUT-956
+- [ ] File follow-ups BEFORE commit
 
 ---
-## ARCHIVED — iter-136 (BUT-1214→In Review, BUT-1216→In Review, BUT-1222/1221/1225 Done, BUT-1219 duped; rules-tester killed a query-leak pre-ship; follow-ups BUT-1228..1231) · iter-135 (BUT-910, BUT-1212, BUT-828, BUT-1032 ph1) · iter-134 (BUT-1213 + BUT-1217) · iter-133..130
+## ARCHIVED — iter-137 (BUT-444→In Review, BUT-1228/1230/1231/1223 Done, red main fixed) · iter-136 (BUT-1214/1216→In Review, BUT-1222/1221/1225 Done) · iter-135..130
