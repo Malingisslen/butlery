@@ -12,6 +12,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -127,6 +128,16 @@ class RecipeCore with JsonSerializableMixin {
   /// instructions (e.g., "2 cups flour, sifted", "1 large onion, diced").
   /// Order typically reflects the sequence of use in cooking.
   List<String> ingredients;
+
+  /// BUT-1216: structured ingredient data (amount/unit/name) parallel to
+  /// [ingredients] — entry i corresponds to ingredients[i] and carries the
+  /// original line in `raw`. Null for legacy recipes and manual entry;
+  /// populated by import pipelines that produce ParsedIngredient. NEVER
+  /// read this directly for features — use `Recipe.structuredIngredients`,
+  /// which validates alignment against [ingredients] and falls back to
+  /// raw-only entries when the strings were edited after import.
+  /// Deliberately excluded from [computeChecksum] (derived data).
+  List<RecipeIngredient>? structuredIngredients;
 
   /// Step-by-step cooking instructions.
   /// Each string represents one cooking step, ordered from first to last.
@@ -332,6 +343,7 @@ class RecipeCore with JsonSerializableMixin {
     this.portions,
     this.timeMinutes,
     required this.ingredients,
+    this.structuredIngredients,
     required this.instructions,
     this.personalTagIds,
     this.personalTags,
@@ -396,6 +408,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? portions = _sentinel,
     Object? timeMinutes = _sentinel,
     List<String>? ingredients,
+    Object? structuredIngredients = _sentinel,
     List<String>? instructions,
     Object? personalTagIds = _sentinel,
     Object? personalTags = _sentinel,
@@ -460,6 +473,9 @@ class RecipeCore with JsonSerializableMixin {
       timeMinutes:
           timeMinutes == _sentinel ? this.timeMinutes : timeMinutes as int?,
       ingredients: newIngredients,
+      structuredIngredients: structuredIngredients == _sentinel
+          ? this.structuredIngredients
+          : (structuredIngredients as List?)?.cast<RecipeIngredient>(),
       instructions: newInstructions,
       // Use `(x as List?)?.cast<T>()` instead of `x as List<T>?` because
       // Dart infers a bare `[]` literal as `List<dynamic>`, which cannot be
@@ -571,6 +587,11 @@ class RecipeCore with JsonSerializableMixin {
         'portions': portions,
         'timeMinutes': timeMinutes,
         'ingredients': ingredients,
+        // Omit when null so legacy/manual recipes stay legacy — readers
+        // treat absence as "no structured data" and fall back to raw.
+        if (structuredIngredients != null)
+          'structuredIngredients':
+              structuredIngredients!.map((i) => i.toJson()).toList(),
         'instructions': instructions,
         'personalTagIds': personalTagIds,
         'personalTags': personalTags?.map((t) => t.toMap()).toList(),
@@ -615,6 +636,10 @@ class RecipeCore with JsonSerializableMixin {
         'portions': portions,
         'timeMinutes': timeMinutes,
         'ingredients': ingredients,
+        // Omit when null — see toJson.
+        if (structuredIngredients != null)
+          'structuredIngredients':
+              structuredIngredients!.map((i) => i.toJson()).toList(),
         'instructions': instructions,
         'personalTagIds': personalTagIds,
         'personalTags': personalTags?.map((t) => t.toMap()).toList(),
@@ -693,6 +718,8 @@ class RecipeCore with JsonSerializableMixin {
       timeMinutes:
           utils.SerializationUtils.safeNullableInt(json, 'timeMinutes'),
       ingredients: ingredients,
+      structuredIngredients:
+          RecipeIngredient.listFromJson(json['structuredIngredients']),
       instructions: instructions,
       personalTagIds: json['personalTagIds'] != null
           ? List<String>.from(json['personalTagIds'])
@@ -884,6 +911,8 @@ class RecipeCore with JsonSerializableMixin {
       timeMinutes:
           utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
       ingredients: ingredients,
+      structuredIngredients:
+          RecipeIngredient.listFromJson(data['structuredIngredients']),
       instructions: instructions,
       personalTagIds:
           utils.SerializationUtils.safeStringList(data, 'personalTagIds')
@@ -1173,6 +1202,29 @@ class Recipe {
   int? get timeMinutes => core.timeMinutes;
   List<String> get ingredients => core.ingredients;
   List<String> get instructions => core.instructions;
+
+  /// BUT-1216: structured ingredients for quantity-aware features (portion
+  /// scaling, shopping aggregation). Returns the persisted structured list
+  /// ONLY when it still aligns with [ingredients] (same length, each entry's
+  /// `raw` matches the string at its index) — editing the free-text
+  /// ingredients after import makes the stored data stale, and serving a
+  /// stale amount is worse than serving none. Misaligned or missing data
+  /// degrades to raw-only entries, so callers always get one entry per
+  /// ingredient line.
+  List<RecipeIngredient> get structuredIngredients {
+    final stored = core.structuredIngredients;
+    if (stored != null && _structuredAligned(stored)) return stored;
+    return core.ingredients.map(RecipeIngredient.rawOnly).toList();
+  }
+
+  bool _structuredAligned(List<RecipeIngredient> stored) {
+    if (stored.length != core.ingredients.length) return false;
+    for (var i = 0; i < stored.length; i++) {
+      if (stored[i].raw != core.ingredients[i]) return false;
+    }
+    return true;
+  }
+
   List<String>? get personalTagIds => core.personalTagIds;
   double? get rating => core.rating;
   String get mealType => core.mealType;

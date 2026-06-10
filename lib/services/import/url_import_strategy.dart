@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
@@ -432,8 +433,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       AppLogger.debug('Stored ParsedRecipe in cache for: $url');
     }
 
+    final parsedIngredients = parsed.ingredients.value;
     final ingredients =
-        parsed.ingredients.value?.map((i) => i.originalLine).toList() ?? [];
+        parsedIngredients?.map((i) => i.originalLine).toList() ?? [];
     final instructions = parsed.instructions.value ?? [];
 
     final recipe = Recipe(
@@ -442,6 +444,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         title: parsed.title.value ?? 'Imported Recipe',
         description: parsed.description.orEmpty(),
         ingredients: ingredients,
+        // BUT-1216: persist the parser's structured form (amount/unit/name)
+        // instead of discarding it — index-aligned with `ingredients`.
+        structuredIngredients:
+            parsedIngredients?.map(RecipeIngredient.fromParsed).toList(),
         instructions: instructions,
         portions: parsed.portions.value,
         timeMinutes: parsed.totalTime.value?.inMinutes,
