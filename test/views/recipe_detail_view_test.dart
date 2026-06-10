@@ -30,6 +30,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cook_snap.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -41,6 +42,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
+import 'package:butlery/widgets/common/input/portion_scaler.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -417,6 +419,96 @@ void main() {
           reason: 'upload must proceed without the dialog');
       expect(cookSnapService.lastVisibility, CookSnapVisibility.sameAsRecipe);
       expect(cookSnapService.lastRecipeId, recipe.id);
+    });
+  });
+
+  group(
+      'RecipeDetailView — structured-first portion scaling (BUT-444/BUT-1233)',
+      () {
+    setUp(() {
+      // The last unpinned link in the BUT-444 chain: the call-site named arg
+      // in recipe_detail_content.dart (`structuredIngredients:
+      // viewModel.recipe.structuredIngredients`). Every layer below it
+      // defaults null → legacy string path, so dropping the forward compiles
+      // clean while the detail view silently mangles "ca"-style lines.
+      // The fixture line defeats the string parser by design.
+      const lines = ['ca 2,5 dl vispgrädde', '3 ägg', '4 msk socker'];
+      final base = RecipeFactory.build(
+        id: 'recipe-scale-1',
+        title: 'Pannacotta',
+        createdBy: _testUserId,
+        portions: 4,
+        ingredients: lines,
+        instructions: ['Koka upp grädden.', 'Kyl och servera.'],
+      );
+      // Recipe.structuredIngredients only serves the stored list when EVERY
+      // entry is index-aligned (raw == ingredients[i]); any mismatch degrades
+      // the whole list to rawOnly entries, which would silently re-route this
+      // test through the string path — hence rawOnly companions for the two
+      // unstructured lines. RecipeCore.copyWith preserves the id; the test
+      // RecipeFactory doesn't expose structuredIngredients.
+      recipe = Recipe(
+        core: base.core.copyWith(structuredIngredients: [
+          const RecipeIngredient(
+            amount: 2.5,
+            unit: 'dl',
+            name: 'vispgrädde',
+            raw: 'ca 2,5 dl vispgrädde',
+          ),
+          RecipeIngredient.rawOnly(lines[1]),
+          RecipeIngredient.rawOnly(lines[2]),
+        ]),
+        type: RecipeType.personal,
+      );
+      recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
+    });
+
+    testWidgets(
+        'doubling portions renders the persisted-amount scale (5 dl), not '
+        'the string-path mangle (2 dl)', (tester) async {
+      // Proves: the detail view forwards recipe.structuredIngredients into
+      // the portion scaler, so a string-unscalable line ("ca 2,5 dl
+      // vispgrädde", amount 2.5) scales on its persisted amount when the
+      // user doubles portions 4 → 8. If the call-site named arg is dropped,
+      // the v1 string parser coerces "ca 2,5" to 1.0 and drops the "ca",
+      // rendering 2 dl at factor 2 — the documented-wrong legacy contract
+      // pinned in portion_scaler_orchestration_test.dart.
+      await pumpDetailView(tester);
+
+      final plusButton = find.descendant(
+        of: find.byType(PortionScaler),
+        matching: find.byIcon(Icons.add),
+      );
+      await tester.ensureVisible(plusButton);
+      await tester.pump();
+
+      // One increment per tap: 4 → 5 → 6 → 7 → 8 (factor 2.0). The short
+      // pump between taps drains the setState + bounce animation enough for
+      // the next hit test; the harness never uses pumpAndSettle.
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(plusButton);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+
+      // The ingredient row re-parses the scaled line into a quantity cell
+      // ('5 dl') and a name cell ('vispgrädde'). Exact-match the quantity
+      // cell: textContaining('5 dl') would false-pass on an unscaled
+      // 'ca 2,5 dl vispgrädde' rendered verbatim.
+      expect(
+        find.text('5 dl'),
+        findsOneWidget,
+        reason: '2,5 dl at factor 2 must render as 5 dl — its absence means '
+            'the structured route never ran for the detail view',
+      );
+      expect(
+        find.text('2 dl'),
+        findsNothing,
+        reason: 'the v1 string path mangles "ca 2,5 dl" to 2 dl at factor 2 '
+            '— seeing it means the call site dropped the '
+            'structuredIngredients forward and fell back to legacy scaling',
+      );
+      expect(find.text('vispgrädde'), findsOneWidget);
     });
   });
 }
