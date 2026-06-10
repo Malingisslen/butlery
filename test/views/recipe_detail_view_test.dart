@@ -1,5 +1,10 @@
 /// First view-level scaffolding for [RecipeDetailView] (BUT-1225) + the
-/// favorite-toggle announce coverage that closes BUT-1212 site 3/3 (BUT-905).
+/// favorite-toggle announce coverage that closes BUT-1212 site 3/3 (BUT-905)
+/// + the cook-snap visibility dialog wiring (BUT-1214/BUT-1231): the "Bara
+/// jag" choice must reach `CookSnapService.addCookSnap` as
+/// `CookSnapVisibility.onlyMe` — every layer in that chain defaults to
+/// `sameAsRecipe`, so a dropped forward compiles clean and silently shares
+/// author-only photos.
 ///
 /// The view is the 1100-line self-providing shell: its State resolves
 /// SocialRecipeViewModel/UserService from the production ServiceLocator in
@@ -20,6 +25,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
@@ -50,10 +56,41 @@ import 'helpers/view_test_helpers.dart';
 /// CookSnapService is a concrete class with repository deps; the gallery only
 /// needs its stream, so a Fake emitting an empty list keeps the cook-snap
 /// section in its (settled, snapless) state without Firebase.
+///
+/// `addCookSnap` is a recording override (BUT-1231): the view creates its
+/// CookSnapViewModel internally via `ChangeNotifierProvider(create:)`, so the
+/// service is the practical capture seam for "which visibility did the dialog
+/// choice actually produce" — consistent with the BUT-1214 service-level pin.
 class _FakeCookSnapService extends Fake implements CookSnapService {
+  int addCalls = 0;
+  String? lastRecipeId;
+  ImageSource? lastSource;
+  CookSnapVisibility? lastVisibility;
+
   @override
   Stream<List<CookSnap>> watchCookSnaps(String recipeId, {int limit = 20}) =>
       Stream.value(const <CookSnap>[]);
+
+  @override
+  Future<CookSnap?> addCookSnap({
+    required String recipeId,
+    required String recipeAuthorId,
+    required String recipeName,
+    required ImageSource source,
+    String? caption,
+    CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
+  }) async {
+    addCalls++;
+    lastRecipeId = recipeId;
+    lastSource = source;
+    lastVisibility = visibility;
+    return CookSnap.create(
+      recipeId: recipeId,
+      userId: _testUserId,
+      userDisplayName: 'Test User',
+      photoUrl: 'https://example.com/snap.jpg',
+    );
+  }
 }
 
 const _testUserId = 'test-user-123';
@@ -62,6 +99,7 @@ void main() {
   late MockUnifiedRecipeService recipeService;
   late MockUserService userService;
   late MockSocialRecipeViewModel socialVm;
+  late _FakeCookSnapService cookSnapService;
   late Recipe recipe;
 
   setUpAll(() {
@@ -126,7 +164,8 @@ void main() {
     TestServiceLocator.registerMock<OfflineService>(offlineService);
 
     // Cook-snap gallery resolves CookSnapService from the locator.
-    TestServiceLocator.registerMock<CookSnapService>(_FakeCookSnapService());
+    cookSnapService = _FakeCookSnapService();
+    TestServiceLocator.registerMock<CookSnapService>(cookSnapService);
   });
 
   tearDown(() async {
@@ -251,6 +290,133 @@ void main() {
       final l10n = l10nOf(tester);
       expect(announces.messages, [l10n.a11yRecipeUnfavorited],
           reason: 'announcement must reflect the reverted state on failure');
+    });
+  });
+
+  group('RecipeDetailView — cook-snap visibility wiring (BUT-1214/BUT-1231)',
+      () {
+    /// Scrolls the gallery's add affordance into view, taps it, and resolves
+    /// the image-source bottom sheet with the gallery option — landing on
+    /// whatever the production flow shows next (visibility dialog for
+    /// public/shared recipes, direct upload for private ones).
+    Future<void> startAddSnapFlow(WidgetTester tester) async {
+      await pumpDetailView(tester);
+
+      final addButton = find.byIcon(Icons.add_a_photo);
+      await tester.ensureVisible(addButton);
+      await tester.pump();
+      await tester.tap(addButton);
+      // Modal bottom sheet slide-in.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      final l10n = l10nOf(tester);
+      await tester.tap(find.text(l10n.commonSelectFromGallery));
+      // Sheet pops, then (for non-private recipes) the dialog fades in.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    Finder onlyMeRadio() =>
+        find.byKey(const ValueKey('cook-snap-visibility-only-me'));
+
+    Finder inDialog(Finder matching) =>
+        find.descendant(of: find.byType(AlertDialog), matching: matching);
+
+    group('public recipe (dialog fires)', () {
+      setUp(() {
+        // The visibility dialog only appears when the snap has an audience
+        // beyond the author — a public recipe is the simplest such case.
+        // Still owned by the test user; personal type keeps the sharing-
+        // status section short-circuited.
+        recipe = RecipeFactory.build(
+          id: 'recipe-snap-1',
+          title: 'Pannkakor',
+          createdBy: _testUserId,
+          isPublic: true,
+          ingredients: ['3 ägg', '6 dl mjölk', '2.5 dl vetemjöl'],
+          instructions: ['Vispa smeten.', 'Grädda i stekpanna.'],
+        );
+        recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
+      });
+
+      testWidgets(
+          '"Bara jag" choice reaches addCookSnap as '
+          'CookSnapVisibility.onlyMe', (tester) async {
+        // Proves: the per-snap privacy override survives the whole chain
+        // dialog → vm.addSnap → service.addCookSnap. Every link defaults to
+        // sameAsRecipe, so dropping any forward compiles clean and silently
+        // shares an author-only photo — this is the regression BUT-1214
+        // pinned at the service→doc link; this test pins the dialog→service
+        // half.
+        await startAddSnapFlow(tester);
+        expect(onlyMeRadio(), findsOneWidget,
+            reason: 'public recipe must show the visibility dialog');
+
+        await tester.tap(onlyMeRadio());
+        await tester.pump();
+        final l10n = l10nOf(tester);
+        await tester.tap(inDialog(find.text(l10n.cookSnapVisibilityConfirm)));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+
+        expect(cookSnapService.addCalls, 1);
+        expect(cookSnapService.lastVisibility, CookSnapVisibility.onlyMe);
+        expect(cookSnapService.lastRecipeId, recipe.id);
+        expect(cookSnapService.lastSource, ImageSource.gallery);
+      });
+
+      testWidgets('confirming without changing the radio uploads sameAsRecipe',
+          (tester) async {
+        // Proves: the dialog's default selection is "Samma som receptet" —
+        // a regression preselecting onlyMe (or forwarding garbage) would
+        // hide every confirmed-by-default snap from the recipe's audience.
+        await startAddSnapFlow(tester);
+
+        final l10n = l10nOf(tester);
+        await tester.tap(inDialog(find.text(l10n.cookSnapVisibilityConfirm)));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+
+        expect(cookSnapService.addCalls, 1);
+        expect(cookSnapService.lastVisibility, CookSnapVisibility.sameAsRecipe);
+      });
+
+      testWidgets('cancelling the visibility dialog uploads nothing',
+          (tester) async {
+        // Proves: cancel means cancel — the dialog is a consent gate, so
+        // backing out must not fall through to an upload with the default
+        // visibility.
+        await startAddSnapFlow(tester);
+
+        final l10n = l10nOf(tester);
+        await tester.tap(inDialog(find.text(l10n.commonCancel)));
+        // Dialog pop transition (~150ms fade) must finish before asserting
+        // it left the tree.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(onlyMeRadio(), findsNothing, reason: 'dialog must be dismissed');
+        expect(cookSnapService.addCalls, 0,
+            reason: 'cancel must not upload anything');
+      });
+    });
+
+    testWidgets('private recipe skips the dialog and uploads with sameAsRecipe',
+        (tester) async {
+      // Proves: the BUT-1214 "private recipes add no friction" rule — the
+      // audience is already author-only, so no dialog appears AND the upload
+      // still happens (a regression gating the upload on the never-shown
+      // dialog would silently break adding snaps to personal recipes).
+      // Uses the outer setUp's private personal recipe unchanged.
+      await startAddSnapFlow(tester);
+
+      expect(onlyMeRadio(), findsNothing,
+          reason: 'private recipe must not show the visibility dialog');
+      expect(cookSnapService.addCalls, 1,
+          reason: 'upload must proceed without the dialog');
+      expect(cookSnapService.lastVisibility, CookSnapVisibility.sameAsRecipe);
+      expect(cookSnapService.lastRecipeId, recipe.id);
     });
   });
 }
