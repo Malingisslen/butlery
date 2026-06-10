@@ -1,11 +1,11 @@
 /// Behaviour tests for [CollaborativeShoppingView] — the real-time shared
 /// shopping-list surface.
 ///
-/// The view builds its OWN production [CollaborativeShoppingViewModel] inside a
-/// `ChangeNotifierProvider(create:)`, passing `shoppingService:
-/// ServiceLocator.get()`. We register a [MockUnifiedShoppingService] through the
-/// prod↔test ServiceLocator bridge so that real VM resolves OUR mock and seed
-/// the mock's `lists` per scenario.
+/// The view's State owns its production [CollaborativeShoppingViewModel]
+/// (created in initState, exposed via `ChangeNotifierProvider.value` —
+/// BUT-1226), passing `shoppingService: ServiceLocator.get()`. We register a
+/// [MockUnifiedShoppingService] through the prod↔test ServiceLocator bridge so
+/// that real VM resolves OUR mock and seed the mock's `lists` per scenario.
 ///
 /// Test strategy (mirrors the group_detail_view_test template — drive the real
 /// VM / real sub-widgets, not topology):
@@ -324,10 +324,10 @@ void main() {
   });
 
   group('CollaborativeShoppingView — full shell (BUT-1184)', () {
-    // The full view resolves its own VM via
-    // ChangeNotifierProvider(create:) -> ServiceLocator.get(), which lands on
-    // the mock registered in setUp. We pump the WHOLE view (AppBar + responsive
-    // body + add-item Row + items) — the thing the old suite couldn't do.
+    // The full view's State creates its own VM in initState via
+    // ServiceLocator.get() (BUT-1226), which lands on the mock registered in
+    // setUp. We pump the WHOLE view (AppBar + responsive body + add-item Row +
+    // items) — the thing the old suite couldn't do.
     Future<void> pumpFullView(WidgetTester tester) async {
       await tester.pumpWidget(
         localize(const CollaborativeShoppingView(listId: _testListId)),
@@ -387,6 +387,67 @@ void main() {
       expect(find.text('Lägg till'), findsOneWidget); // l10n.collaborativeAdd
       expect(find.text('Mjölk'), findsOneWidget);
       expect(find.text('Bröd'), findsOneWidget);
+    });
+
+    testWidgets(
+        'typing a name and tapping Lägg till adds the item through the '
+        'service (BUT-1212 regression)', (tester) async {
+      // Drives the FULL shell add path: enterText → tap → State handler →
+      // real VM.addItem → mock service.addItemToActiveList. The handler reads
+      // the State-owned `_vm` field directly (BUT-1226); a re-introduced
+      // `context.read<CollaborativeShoppingViewModel>()` inside _addItem would
+      // throw ProviderNotFoundException (the State's context sits ABOVE the
+      // provider its build creates), surface via takeException, and never
+      // reach the service — failing both assertions below.
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      shoppingService.setShoppingState(
+        lists: [listWith(const [])],
+        isInitialized: true,
+      );
+      when(() => shoppingService.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          )).thenAnswer((_) async {
+        // The post-add refresh re-reads the list — show the added item.
+        shoppingService.setShoppingState(
+          lists: [
+            listWith([item('Havregryn', id: 'item-oats')]),
+          ],
+          isInitialized: true,
+        );
+        return true;
+      });
+
+      await pumpFullView(tester);
+
+      await tester.enterText(find.byType(TextField), 'Havregryn');
+      await tester.tap(find.text('Lägg till'));
+      // Drain _addItem's async chain (service add → list refresh → clear).
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(tester.takeException(), isNull,
+          reason: 'add must not throw (e.g. ProviderNotFoundException from a '
+              'context.read against the above-provider State context)');
+      verify(() => shoppingService.addItemToActiveList(
+            name: 'Havregryn',
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          )).called(1);
+      // Success path clears the input — the draft text is gone.
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller?.text,
+        isEmpty,
+      );
     });
   });
 

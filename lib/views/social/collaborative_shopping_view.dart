@@ -37,67 +37,156 @@ class CollaborativeShoppingView extends StatefulWidget {
 class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   final TextEditingController _newItemController = TextEditingController();
 
-  // Focused components (Phase 9 refactoring)
+  // State-owned VM (BUT-1226): created once per listId, provided via .value.
+  // Handlers below read this field directly — the BUT-1212
+  // ProviderNotFoundException class (context.read against the State's
+  // above-provider context) is structurally impossible.
+  late CollaborativeShoppingViewModel _vm;
   late CollaborativeShoppingActions _actions;
 
   @override
   void initState() {
     super.initState();
-    // Actions component will be initialized in build method with current viewModel
+    _vm = _createViewModel();
+    _actions = _createActions();
+  }
+
+  @override
+  void didUpdateWidget(CollaborativeShoppingView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The route normally recreates this view per list, but if an ancestor
+    // rebinds listId in place (e.g. deep-link re-navigation reusing the
+    // element) the VM must follow — it is constructed around a single listId.
+    if (oldWidget.listId != widget.listId) {
+      final oldVm = _vm;
+      setState(() {
+        _vm = _createViewModel();
+        _actions = _createActions();
+        _newItemController.clear();
+      });
+      // Safe before the rebuild swaps providers: ChangeNotifier.removeListener
+      // is explicitly allowed after dispose.
+      oldVm.dispose();
+    }
   }
 
   @override
   void dispose() {
+    _vm.dispose();
     _newItemController.dispose();
     super.dispose();
   }
 
+  CollaborativeShoppingViewModel _createViewModel() {
+    return CollaborativeShoppingViewModel(
+      listId: widget.listId,
+      shoppingService: ServiceLocator.get(),
+    );
+  }
+
+  CollaborativeShoppingActions _createActions() {
+    return CollaborativeShoppingActions(
+      viewModel: _vm,
+      newItemController: _newItemController,
+      onAddItem: _addItem,
+      onMenuAction: _handleMenuAction,
+      onShare: _shareList,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CollaborativeShoppingViewModel(
-        listId: widget.listId,
-        shoppingService: ServiceLocator.get(),
+    return ChangeNotifierProvider<CollaborativeShoppingViewModel>.value(
+      value: _vm,
+      child: _CollaborativeShoppingViewContent(
+        actions: _actions,
+        onToggleItem: _toggleItem,
       ),
-      child: Consumer<CollaborativeShoppingViewModel>(
-        builder: (context, viewModel, child) {
-          // Initialize actions component with current viewModel
-          _actions = CollaborativeShoppingActions(
-            viewModel: viewModel,
-            newItemController: _newItemController,
-            onAddItem: () => _addItem(viewModel),
-            onMenuAction: _handleMenuAction,
-            onShare: _shareList,
-          );
+    );
+  }
 
-          return Scaffold(
-            appBar: _actions.buildAppBar(context),
-            body: SafeArea(
-              // ✅ RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 800,
-                      desktop: 900,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      LayoutComponents.offlineIndicator(),
-                      // BUT-1162: surface silent collaborative-edit conflict
-                      // resolutions on this shared list (drop-in; idle-collapses).
-                      ConflictBanner(filterDocId: widget.listId),
-                      Expanded(child: _buildBody(context, viewModel)),
-                    ],
-                  ),
-                ),
+  Future<void> _addItem() async {
+    final itemName = _newItemController.text.trim();
+    if (itemName.isEmpty) return;
+
+    final success = await _vm.addItem(itemName);
+    if (!mounted) return;
+
+    if (success) {
+      _newItemController.clear();
+    } else if (_vm.hasError) {
+      SnackBarUtils.showError(context, _vm.error!);
+    }
+  }
+
+  Future<void> _toggleItem(String itemId) async {
+    final success = await _vm.toggleItemCompletion(itemId);
+    if (!mounted) return;
+
+    if (!success) {
+      if (_vm.hasError) {
+        SnackBarUtils.showError(context, _vm.error!);
+      }
+      return;
+    }
+
+    // BUT-1201: announce the new bought/un-bought state to screen readers —
+    // the visual checkbox change on the row isn't reliably read on toggle.
+    final nowBought = _vm.completedItemsList.any((i) => i.id == itemId);
+    SemanticsService.announce(
+      nowBought ? context.l10n.a11yItemBought : context.l10n.a11yItemUnbought,
+      TextDirection.ltr,
+    );
+  }
+
+  void _shareList() {
+    _actions.handleShare(context);
+  }
+
+  void _handleMenuAction(String action) {
+    _actions.handleMenuAction(context, action);
+  }
+}
+
+/// Actual UI — rebuilds via `context.watch` on the State-owned VM above.
+class _CollaborativeShoppingViewContent extends StatelessWidget {
+  final CollaborativeShoppingActions actions;
+  final ValueChanged<String> onToggleItem;
+
+  const _CollaborativeShoppingViewContent({
+    required this.actions,
+    required this.onToggleItem,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.watch<CollaborativeShoppingViewModel>();
+
+    return Scaffold(
+      appBar: actions.buildAppBar(context),
+      body: SafeArea(
+        // Responsive: center and constrain content on large screens.
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 800,
+                desktop: 900,
               ),
             ),
-          );
-        },
+            child: Column(
+              children: [
+                LayoutComponents.offlineIndicator(),
+                // BUT-1162: surface silent collaborative-edit conflict
+                // resolutions on this shared list (drop-in; idle-collapses).
+                ConflictBanner(filterDocId: viewModel.listId),
+                Expanded(child: _buildBody(context, viewModel)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -158,65 +247,14 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     return Column(
       children: [
         CollaborativeShoppingHeader(viewModel: viewModel),
-        _actions.buildAddItemSection(context),
+        actions.buildAddItemSection(context),
         Expanded(
           child: CollaborativeShoppingItems(
             viewModel: viewModel,
-            onToggleItem: (itemId) => _toggleItem(itemId, viewModel),
+            onToggleItem: onToggleItem,
           ),
         ),
       ],
     );
-  }
-
-  // BUT-1212: both handlers take the VM from the Consumer scope explicitly.
-  // The State's own `context` sits ABOVE the ChangeNotifierProvider this
-  // build() creates, so `context.read<CollaborativeShoppingViewModel>()`
-  // threw ProviderNotFoundException on every real add/toggle — unmasked by
-  // the announce tests pumping the full shell.
-  Future<void> _addItem(CollaborativeShoppingViewModel viewModel) async {
-    final itemName = _newItemController.text.trim();
-    if (itemName.isEmpty) return;
-
-    final success = await viewModel.addItem(itemName);
-    if (!mounted) return;
-
-    if (success) {
-      _newItemController.clear();
-    } else if (viewModel.hasError) {
-      if (!mounted) return;
-      SnackBarUtils.showError(context, viewModel.error!);
-    }
-  }
-
-  Future<void> _toggleItem(
-    String itemId,
-    CollaborativeShoppingViewModel viewModel,
-  ) async {
-    final success = await viewModel.toggleItemCompletion(itemId);
-    if (!mounted) return;
-
-    if (!success) {
-      if (viewModel.hasError) {
-        SnackBarUtils.showError(context, viewModel.error!);
-      }
-      return;
-    }
-
-    // BUT-1201: announce the new bought/un-bought state to screen readers —
-    // the visual checkbox change on the row isn't reliably read on toggle.
-    final nowBought = viewModel.completedItemsList.any((i) => i.id == itemId);
-    SemanticsService.announce(
-      nowBought ? context.l10n.a11yItemBought : context.l10n.a11yItemUnbought,
-      TextDirection.ltr,
-    );
-  }
-
-  void _shareList() {
-    _actions.handleShare(context);
-  }
-
-  void _handleMenuAction(String action) {
-    _actions.handleMenuAction(context, action);
   }
 }
