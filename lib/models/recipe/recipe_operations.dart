@@ -1,11 +1,25 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
+// BUT-1232: pure-compute regex util (no DI/IO/services) — model purity holds.
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
 const _sentinel = Object();
 
 /// Recipe content operations (ingredients, instructions, state changes).
 class RecipeOperations {
+  /// BUT-1232: snapshot of the structured list ready for lockstep mutation,
+  /// or null when the recipe has none (legacy/manual — derivation happens at
+  /// import/form-save, not here). Goes through the facade getter, which
+  /// degrades a STALE persisted list to aligned raw-only entries — so
+  /// mutating its result replaces the garbage in Firestore instead of
+  /// compounding it.
+  static List<RecipeIngredient>? _structuredForEdit(Recipe recipe) {
+    if (recipe.core.structuredIngredients == null) return null;
+    return [...recipe.structuredIngredients];
+  }
+
   /// Add ingredient with user tracking
   static Recipe addIngredient(
     Recipe recipe,
@@ -16,8 +30,11 @@ class RecipeOperations {
     if (ingredient.trim().isEmpty) return recipe;
 
     final updatedIngredients = [...recipe.core.ingredients, ingredient.trim()];
+    final structured = _structuredForEdit(recipe);
+    structured?.add(StructuredIngredientDeriver.derive(ingredient.trim()));
     return recipe.copyWith(
       ingredients: updatedIngredients,
+      structuredIngredients: structured,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );
@@ -37,8 +54,13 @@ class RecipeOperations {
     final updatedIngredients = [...recipe.core.ingredients];
     updatedIngredients[index] = newIngredient.trim();
 
+    final structured = _structuredForEdit(recipe);
+    structured?[index] =
+        StructuredIngredientDeriver.derive(newIngredient.trim());
+
     return recipe.copyWith(
       ingredients: updatedIngredients,
+      structuredIngredients: structured,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );
@@ -56,8 +78,12 @@ class RecipeOperations {
     final updatedIngredients = [...recipe.core.ingredients];
     updatedIngredients.removeAt(index);
 
+    final structured = _structuredForEdit(recipe);
+    structured?.removeAt(index);
+
     return recipe.copyWith(
       ingredients: updatedIngredients,
+      structuredIngredients: structured,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );
@@ -75,8 +101,22 @@ class RecipeOperations {
         .where((ingredient) => ingredient.isNotEmpty)
         .toList();
 
+    // Reuse aligned entries by raw match (survives reorders), derive the rest.
+    final structured = recipe.core.structuredIngredients == null
+        ? null
+        : StructuredIngredientDeriver.deriveAll(
+            cleanedIngredients,
+            // Reuse from CORE, not the facade: the facade degrades stale
+            // entries to rawOnly, and those synthetic entries would shadow
+            // fresh derivation for every surviving line. Core entries only
+            // match by raw when genuinely current — stale ones miss the map
+            // and get re-derived (upgrade instead of raw-only lock-in).
+            reuse: recipe.core.structuredIngredients,
+          );
+
     return recipe.copyWith(
       ingredients: cleanedIngredients,
+      structuredIngredients: structured,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );
@@ -102,8 +142,14 @@ class RecipeOperations {
     final ingredient = updatedIngredients.removeAt(fromIndex);
     updatedIngredients.insert(toIndex, ingredient);
 
+    final structured = _structuredForEdit(recipe);
+    if (structured != null) {
+      structured.insert(toIndex, structured.removeAt(fromIndex));
+    }
+
     return recipe.copyWith(
       ingredients: updatedIngredients,
+      structuredIngredients: structured,
       lastEditedByUserId: userId,
       lastEditedByDisplayName: userDisplayName,
     );

@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -960,6 +961,84 @@ void main() {
         // Assert
         expect(recipe.createdAt, equals(originalCreatedAt));
         expect(recipe.updatedAt.isAfter(originalCreatedAt), isTrue);
+      });
+    });
+
+    group('BUT-1232 structured ingredient derivation at save', () {
+      // Intention: createRecipe (the single point behind save/fork/auto-save)
+      // derives structuredIngredients from the final form strings —
+      // index-aligned so the facade getter accepts them — and reuses richer
+      // import-time entries for unchanged lines instead of downgrading them.
+      test('derives index-aligned structured entries from form strings', () {
+        formState.setTitle(testTitle);
+        formState.instructionsManager.updateValue(0, 'Some instruction');
+        formState.ingredientsManager
+            .updateItems(['3 dl vetemjöl', '2 ägg', 'färsk basilika']);
+
+        final recipe = formState.createRecipe();
+        final stored = recipe.core.structuredIngredients;
+
+        expect(stored, isNotNull);
+        expect(stored!.length, recipe.ingredients.length);
+        for (var i = 0; i < stored.length; i++) {
+          expect(stored[i].raw, recipe.ingredients[i]);
+        }
+        expect(stored[0].amount, 3);
+        expect(stored[0].unit, 'dl');
+        // Unparseable line degrades to raw-only, not dropped.
+        expect(stored[2].amount, isNull);
+        expect(stored[2].unit, isNull);
+      });
+
+      test('re-derives after editing so edited lines never carry stale data',
+          () {
+        final originalRecipe = RecipeFactory.build(
+          title: 'Original Title',
+          ingredients: ['3 dl vetemjöl'],
+        ).copyWith(
+          structuredIngredients: const [
+            RecipeIngredient(
+                amount: 3, unit: 'dl', name: 'vetemjöl', raw: '3 dl vetemjöl'),
+          ],
+        );
+        formState = RecipeFormState(initialRecipe: originalRecipe);
+        formState.ingredientsManager.updateValue(0, '4 dl vetemjöl');
+
+        final recipe = formState.createRecipe();
+        final stored = recipe.core.structuredIngredients!;
+
+        expect(stored.single.raw, '4 dl vetemjöl');
+        expect(stored.single.amount, 4);
+      });
+
+      test('unchanged lines keep richer import-time entries (raw match)', () {
+        // A note can only come from the CRF/LLM import path — regex
+        // re-derivation would lose it. Unchanged raw must preserve it.
+        const richEntry = RecipeIngredient(
+          amount: 3,
+          unit: 'dl',
+          name: 'vetemjöl',
+          note: 'siktat',
+          raw: '3 dl vetemjöl',
+        );
+        final originalRecipe = RecipeFactory.build(
+          title: 'Original Title',
+          ingredients: ['3 dl vetemjöl'],
+        ).copyWith(structuredIngredients: const [richEntry]);
+        formState = RecipeFormState(initialRecipe: originalRecipe);
+
+        final recipe = formState.createRecipe();
+
+        expect(recipe.core.structuredIngredients!.single, equals(richEntry));
+      });
+
+      test('leaves structuredIngredients null when no ingredients', () {
+        formState.setTitle(testTitle);
+
+        final recipe = formState.createRecipe();
+
+        expect(recipe.ingredients, isEmpty);
+        expect(recipe.core.structuredIngredients, isNull);
       });
     });
 

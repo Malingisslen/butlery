@@ -954,5 +954,71 @@ Instructions:
         expect(result.recipe!.title, isEmpty);
       });
     });
+
+    group('BUT-1232 structured ingredient derivation', () {
+      // Intention: text imports persist structuredIngredients derived from
+      // the final cleaned strings — index-aligned (raw == ingredients[i]) so
+      // the Recipe.structuredIngredients facade getter accepts them, with
+      // unparseable lines degrading to raw-only instead of failing the import.
+      test('persists index-aligned structured entries with parsed amounts',
+          () async {
+        const text = 'Pannkakor\n'
+            'Ingredienser:\n'
+            '3 dl vetemjöl\n'
+            '2 ägg\n'
+            'färsk basilika\n'
+            'Gör så här:\n'
+            'Vispa ihop alla ingredienser och stek i smör.';
+
+        final result = await strategy.import(text);
+        final recipe = result.recipe!;
+        final stored = recipe.core.structuredIngredients;
+
+        expect(stored, isNotNull);
+        expect(stored!.length, recipe.ingredients.length);
+        for (var i = 0; i < stored.length; i++) {
+          expect(stored[i].raw, recipe.ingredients[i],
+              reason: 'entry $i must align with its free-text line');
+        }
+        // Facade getter must return the persisted entries (aligned), not the
+        // raw-only fallback.
+        expect(recipe.structuredIngredients, equals(stored));
+
+        final flour = stored.firstWhere((e) => e.raw.contains('vetemjöl'));
+        expect(flour.amount, 3);
+        expect(flour.unit, 'dl');
+      });
+
+      test('unparseable ingredient line degrades to raw-only entry', () async {
+        const text = 'Tomatsallad\n'
+            'Ingredienser:\n'
+            '2 st tomater\n'
+            'färsk basilika\n'
+            'Gör så här:\n'
+            'Skiva tomaterna och toppa med basilika.';
+
+        final result = await strategy.import(text);
+        final stored = result.recipe!.core.structuredIngredients!;
+
+        final basil = stored.firstWhere((e) => e.raw.contains('basilika'));
+        expect(basil.amount, isNull);
+        expect(basil.unit, isNull);
+        expect(basil.isStructured, isFalse);
+      });
+
+      test('no ingredients extracted leaves structuredIngredients null',
+          () async {
+        // Instruction-only text: parse succeeds but ingredient list is empty —
+        // stay legacy (null) rather than persisting an empty list.
+        const text = 'Mystisk rätt\n'
+            'Gör så här:\n'
+            'Blanda allt och servera direkt till gästerna.';
+
+        final result = await strategy.import(text);
+
+        expect(result.recipe!.ingredients, isEmpty);
+        expect(result.recipe!.core.structuredIngredients, isNull);
+      });
+    });
   });
 }

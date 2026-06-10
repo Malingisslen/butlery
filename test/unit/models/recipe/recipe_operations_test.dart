@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import '../helpers/model_test_base.dart';
 
@@ -125,6 +126,115 @@ void main() {
 
         final updated3 = RecipeOperations.reorderIngredients(testRecipe, 1, 1);
         expect(updated3, equals(testRecipe));
+      });
+    });
+
+    group('BUT-1232 structured ingredient lockstep', () {
+      // Intention: ingredient edits keep the persisted structured list
+      // index-aligned (raw == ingredients[i]) instead of leaving stale
+      // entries in Firestore that the facade getter silently discards.
+      const flour = RecipeIngredient(
+          amount: 3, unit: 'dl', name: 'vetemjöl', raw: '3 dl vetemjöl');
+      const eggs = RecipeIngredient(amount: 2, name: 'ägg', raw: '2 ägg');
+
+      Recipe buildStructuredRecipe() => RecipeFactory.createPersonal(
+            title: 'Strukturerat recept',
+            description: 'Med strukturerade ingredienser',
+            ingredients: ['3 dl vetemjöl', '2 ägg'],
+            structuredIngredients: [flour, eggs],
+            instructions: ['Blanda allt'],
+            mealType: 'Middag',
+          );
+
+      void expectAligned(Recipe recipe) {
+        final stored = recipe.core.structuredIngredients!;
+        expect(stored.length, recipe.core.ingredients.length);
+        for (var i = 0; i < stored.length; i++) {
+          expect(stored[i].raw, recipe.core.ingredients[i]);
+        }
+      }
+
+      test('legacy recipe (no structured data) stays legacy after edits', () {
+        final updated = RecipeOperations.addIngredient(testRecipe, '1 dl olja');
+
+        expect(updated.core.structuredIngredients, isNull,
+            reason: 'derivation for legacy recipes happens at import/save, '
+                'not in model-level edits');
+      });
+
+      test('addIngredient appends a derived entry in lockstep', () {
+        final updated = RecipeOperations.addIngredient(
+          buildStructuredRecipe(),
+          '  1,5 dl mjölk  ',
+        );
+
+        expectAligned(updated);
+        final added = updated.core.structuredIngredients!.last;
+        expect(added.raw, '1,5 dl mjölk');
+        expect(added.amount, 1.5);
+        expect(added.unit, 'dl');
+      });
+
+      test('updateIngredient replaces the entry at the same index', () {
+        final updated = RecipeOperations.updateIngredient(
+          buildStructuredRecipe(),
+          0,
+          '4 dl rågmjöl',
+        );
+
+        expectAligned(updated);
+        expect(updated.core.structuredIngredients![0].amount, 4);
+        expect(updated.core.structuredIngredients![0].name, 'rågmjöl');
+        expect(updated.core.structuredIngredients![1], equals(eggs),
+            reason: 'untouched entries are preserved');
+      });
+
+      test('removeIngredient removes the entry at the same index', () {
+        final updated =
+            RecipeOperations.removeIngredient(buildStructuredRecipe(), 0);
+
+        expectAligned(updated);
+        expect(updated.core.structuredIngredients, equals([eggs]));
+      });
+
+      test('reorderIngredients moves the entry with its line', () {
+        final updated =
+            RecipeOperations.reorderIngredients(buildStructuredRecipe(), 0, 1);
+
+        expectAligned(updated);
+        expect(updated.core.structuredIngredients, equals([eggs, flour]));
+      });
+
+      test('updateAllIngredients reuses matching entries and derives new ones',
+          () {
+        final updated = RecipeOperations.updateAllIngredients(
+          buildStructuredRecipe(),
+          ['2 ägg', '1 dl socker'],
+        );
+
+        expectAligned(updated);
+        expect(updated.core.structuredIngredients![0], equals(eggs),
+            reason: 'kept line keeps its entry across reorder/removal');
+        expect(updated.core.structuredIngredients![1].amount, 1);
+        expect(updated.core.structuredIngredients![1].unit, 'dl');
+      });
+
+      test('stale persisted data is replaced with aligned entries on edit', () {
+        // Simulates pre-BUT-1232 garbage: structured list no longer matches
+        // the strings (the getter ignores it, but it sits in Firestore).
+        const stale = RecipeIngredient(
+            amount: 9, unit: 'kg', name: 'fel', raw: 'gammal rad');
+        final recipe = buildStructuredRecipe()
+            .copyWith(structuredIngredients: const [stale]);
+
+        final updated = RecipeOperations.removeIngredient(recipe, 0);
+
+        expectAligned(updated);
+        expect(
+          updated.core.structuredIngredients!.map((e) => e.raw),
+          isNot(contains('gammal rad')),
+          reason: 'misaligned garbage must not survive the edit',
+        );
       });
     });
 

@@ -11,6 +11,7 @@ import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/utils/text/ocr_error_corrector.dart';
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
 /// Strategy for importing recipes from text (social media, manual input, structured/unstructured text).
 /// Uses TextImportNormalizer for text preprocessing and RecipeSectionDetector for section classification.
@@ -470,6 +471,12 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // CRIT-12: Use empty list instead of fake placeholder
         // Tagging system will handle empty ingredients correctly via TagResult.empty()
         ingredients: cleanedIngredients,
+        // BUT-1232: derive structured form (amount/unit/name) from the final
+        // cleaned strings so text imports get scaling/aggregation data, same
+        // as URL imports (BUT-1216). Index-aligned, raw == ingredients[i].
+        structuredIngredients: cleanedIngredients.isEmpty
+            ? null
+            : StructuredIngredientDeriver.deriveAll(cleanedIngredients),
         instructions: cleanedInstructions,
         imageUrls: [],
         mealType: mealType,

@@ -16,6 +16,8 @@ import 'package:butlery/core/errors/contextual_error_engine.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/utils/text/structured_ingredient_deriver.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -709,6 +711,18 @@ class RecipeFormState extends ChangeNotifier {
       }
     }
 
+    // BUT-1232: re-derive structured ingredients from the final strings so
+    // manual entry and post-import edits persist aligned data instead of
+    // none/stale. Unchanged lines reuse the original entry (raw match) so
+    // richer import-time parses (CRF/LLM) aren't downgraded to regex output.
+    final List<RecipeIngredient>? structuredIngredients =
+        cleanIngredients.isEmpty
+            ? null
+            : StructuredIngredientDeriver.deriveAll(
+                cleanIngredients,
+                reuse: _originalRecipe?.core.structuredIngredients,
+              );
+
     return Recipe(
       core: RecipeCore(
         id: (recipeId ?? _originalRecipe?.id).orEmpty(),
@@ -719,6 +733,7 @@ class RecipeFormState extends ChangeNotifier {
         timeMinutes: _timeMinutes,
         rating: _rating,
         ingredients: cleanIngredients,
+        structuredIngredients: structuredIngredients,
         instructions: cleanInstructions,
         personalTagIds: cleanTagIds,
         personalTags: personalTags,
