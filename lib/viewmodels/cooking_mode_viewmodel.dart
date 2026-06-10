@@ -145,8 +145,10 @@ class CookingModeViewModel extends ChangeNotifier {
     if (newPortions == _currentPortions) return;
 
     _currentPortions = newPortions;
-    _scaledIngredients = PortionScalerLogic.scaleIngredients(
-      recipe.ingredients,
+    // BUT-444: structured-first scaling (persisted amounts; per-entry
+    // string fallback for legacy recipes).
+    _scaledIngredients = PortionScalerLogic.scaleEntries(
+      recipe.structuredIngredients,
       originalPortions,
       _currentPortions,
       false,

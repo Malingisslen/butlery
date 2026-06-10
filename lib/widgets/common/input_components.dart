@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 // Import all input modules
@@ -26,9 +27,12 @@ class InputComponents {
   }
 
   /// Creates a portion scaler with automatic ingredient scaling.
+  /// [structuredIngredients] (BUT-444) enables amount-based scaling from
+  /// `Recipe.structuredIngredients` instead of string re-parsing.
   static Widget portionScaler({
     required int originalPortions,
     required List<String> originalIngredients,
+    List<RecipeIngredient>? structuredIngredients,
     required Function(int newPortions, List<String> scaledIngredients)
         onPortionChanged,
     int minPortions = 1,
@@ -37,6 +41,7 @@ class InputComponents {
     return PortionScaler(
       originalPortions: originalPortions,
       originalIngredients: originalIngredients,
+      structuredIngredients: structuredIngredients,
       onPortionChanged: onPortionChanged,
       minPortions: minPortions,
       maxPortions: maxPortions,

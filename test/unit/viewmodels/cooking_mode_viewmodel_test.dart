@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -259,6 +260,47 @@ void main() {
       vm.updatePortions(4); // same as original
 
       expect(notifyCount, 0);
+
+      vm.dispose();
+    });
+
+    test(
+        'scales via persisted structured amounts (BUT-444) — '
+        'string-unscalable line still scales', () {
+      // The v1 string path mangles "ca 2,5 dl ..." (quantity coerced to 1.0,
+      // "ca" dropped → '2 dl vispgrädde' at factor 2). Only the structured
+      // route (scaleEntries over recipe.structuredIngredients) scales it
+      // correctly — this test fails if updatePortions reverts to
+      // scaleIngredients(recipe.ingredients, ...).
+      // Recipe.copyWith doesn't forward structuredIngredients (only
+      // RecipeCore.copyWith does), so construct the core directly.
+      final structuredRecipe = Recipe(
+        core: RecipeCore(
+          id: 'recipe-structured',
+          title: 'Pannkakor',
+          description: '',
+          portions: 4,
+          ingredients: ['ca 2,5 dl vispgrädde'],
+          structuredIngredients: const [
+            RecipeIngredient(
+              amount: 2.5,
+              unit: 'dl',
+              name: 'vispgrädde',
+              raw: 'ca 2,5 dl vispgrädde',
+            ),
+          ],
+          instructions: ['Vispa'],
+          mealType: 'Middag',
+        ),
+        type: RecipeType.personal,
+      );
+      final vm = CookingModeViewModel(recipe: structuredRecipe);
+
+      vm.updatePortions(8); // factor 2.0
+
+      expect(vm.scaledIngredients.single, '5 dl vispgrädde',
+          reason: 'seeing "2 dl vispgrädde" here means cooking mode fell '
+              'back to the string path');
 
       vm.dispose();
     });

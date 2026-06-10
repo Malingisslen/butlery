@@ -588,6 +588,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     return InputComponents.portionScaler(
       originalPortions: viewModel.recipe.portions ?? 1,
       originalIngredients: viewModel.recipe.ingredients,
+      // BUT-444: scale on persisted amounts; falls back per-entry to the
+      // string path for legacy recipes (raw-only entries).
+      structuredIngredients: viewModel.recipe.structuredIngredients,
       onPortionChanged: onPortionChanged,
       minPortions: 1,
       maxPortions: 20,

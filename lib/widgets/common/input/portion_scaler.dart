@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
@@ -13,6 +14,13 @@ import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 class PortionScaler extends StatefulWidget {
   final int originalPortions;
   final List<String> originalIngredients;
+
+  /// BUT-444: when provided (from `Recipe.structuredIngredients`), scaling
+  /// uses the persisted amounts instead of re-parsing the strings. Optional
+  /// so string-only callers (e.g. the edit view, which scales the user's
+  /// actual ingredient text) keep the v1 path.
+  final List<RecipeIngredient>? structuredIngredients;
+
   final Function(int newPortions, List<String> scaledIngredients)
       onPortionChanged;
   final int minPortions;
@@ -22,6 +30,7 @@ class PortionScaler extends StatefulWidget {
     super.key,
     required this.originalPortions,
     required this.originalIngredients,
+    this.structuredIngredients,
     required this.onPortionChanged,
     this.minPortions = 1,
     this.maxPortions = 20,
@@ -78,12 +87,7 @@ class _PortionScalerState extends State<PortionScaler>
     if (mounted) {
       setState(() {
         _currentPortions = newPortions;
-        _scaledIngredients = PortionScalerLogic.scaleIngredients(
-          widget.originalIngredients,
-          widget.originalPortions,
-          newPortions,
-          _convertToSwedish,
-        );
+        _scaledIngredients = _scale(newPortions);
       });
     }
 
@@ -102,17 +106,30 @@ class _PortionScalerState extends State<PortionScaler>
     if (mounted) {
       setState(() {
         _convertToSwedish = !_convertToSwedish;
-        _scaledIngredients = PortionScalerLogic.scaleIngredients(
-          widget.originalIngredients,
-          widget.originalPortions,
-          _currentPortions,
-          _convertToSwedish,
-        );
+        _scaledIngredients = _scale(_currentPortions);
       });
     }
 
     HapticFeedback.mediumImpact();
     widget.onPortionChanged(_currentPortions, _scaledIngredients);
+  }
+
+  List<String> _scale(int newPortions) {
+    final structured = widget.structuredIngredients;
+    if (structured != null) {
+      return PortionScalerLogic.scaleEntries(
+        structured,
+        widget.originalPortions,
+        newPortions,
+        _convertToSwedish,
+      );
+    }
+    return PortionScalerLogic.scaleIngredients(
+      widget.originalIngredients,
+      widget.originalPortions,
+      newPortions,
+      _convertToSwedish,
+    );
   }
 
   @override

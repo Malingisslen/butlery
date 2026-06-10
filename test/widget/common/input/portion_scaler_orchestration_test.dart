@@ -3,7 +3,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
+import 'package:butlery/widgets/common/input_components.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -205,6 +207,74 @@ void main() {
       expect(find.text('6'), findsOneWidget);
       // l10n sv: 'Portioner:'
       expect(find.text('Portioner:'), findsOneWidget);
+    });
+  });
+
+  // BUT-444: when structuredIngredients is provided, the WIDGET must route
+  // scaling through PortionScalerLogic.scaleEntries (persisted amounts), not
+  // the v1 string re-parse. Driven through InputComponents.portionScaler so
+  // the facade's parameter forwarding is exercised too. The fixture line
+  // ("ca 2,5 dl ...") defeats the string parser (quantity coerced to 1.0 and
+  // the "ca" dropped — '2 dl vispgrädde' at factor 2), so these tests FAIL
+  // if any link in the chain silently drops back to the legacy path.
+  group('Structured-first routing (BUT-444)', () {
+    const structuredEntry = RecipeIngredient(
+      amount: 2.5,
+      unit: 'dl',
+      name: 'vispgrädde',
+      raw: 'ca 2,5 dl vispgrädde',
+    );
+
+    testWidgets(
+        'scales via persisted amounts when structuredIngredients provided',
+        (tester) async {
+      List<String> scaled = [];
+
+      await tester.pumpWidget(createLocalizedTestApp(
+        child: InputComponents.portionScaler(
+          originalPortions: 1,
+          originalIngredients: const ['ca 2,5 dl vispgrädde'],
+          structuredIngredients: const [structuredEntry],
+          onPortionChanged: (_, i) => scaled = i,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // 1 -> 2 portions: factor 2.0 -> 2,5 dl becomes 5 dl.
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      expect(
+        scaled.single,
+        '5 dl vispgrädde',
+        reason: 'the string path mangles this line to "2 dl vispgrädde" — '
+            'seeing that here means the widget/facade dropped the '
+            'structured route',
+      );
+    });
+
+    testWidgets('omitting structuredIngredients keeps the v1 string path',
+        (tester) async {
+      List<String> scaled = [];
+
+      await tester.pumpWidget(createLocalizedTestApp(
+        child: InputComponents.portionScaler(
+          originalPortions: 1,
+          originalIngredients: const ['ca 2,5 dl vispgrädde'],
+          onPortionChanged: (_, i) => scaled = i,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(findControlIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      // Documented-wrong legacy output (probe-then-pin): the v1 parser
+      // coerces "ca 2,5" to quantity 1.0 and drops the "ca" — this is the
+      // very mangling BUT-444 fixes on the structured route. Pinned so the
+      // string-only fallback contract stays observable; if the string path
+      // ever learns to scale this line correctly, update this expectation.
+      expect(scaled.single, '2 dl vispgrädde');
     });
   });
 

@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 
 void main() {
@@ -286,6 +287,117 @@ void main() {
       );
       expect(result.single.toLowerCase(), contains('dl'));
       expect(result.single.toLowerCase(), contains('mjölk'));
+    });
+  });
+
+  // BUT-444: structured-first scaling. The persisted amount is the source of
+  // truth — no string re-parse — and range quantities scale both endpoints
+  // instead of being coerced to 1.0 (the v1 "scales silently wrong" bug).
+  group('PortionScalerLogic.scaleEntries (BUT-444)', () {
+    test('structured entry scales via the persisted amount, not the string',
+        () {
+      // "ca 2,5 dl vispgrädde" — the leading "ca" defeats the string parser
+      // (quantity coerced to 1.0, "ca" dropped → '2 dl vispgrädde' at
+      // factor 2), but the structured amount knows better. This pins
+      // "no string re-parse on the structured path".
+      const entry = RecipeIngredient(
+        amount: 2.5,
+        unit: 'dl',
+        name: 'vispgrädde',
+        raw: 'ca 2,5 dl vispgrädde',
+      );
+      final result =
+          PortionScalerLogic.scaleEntries(const [entry], 2, 4, false);
+      expect(result.single, '5 dl vispgrädde');
+    });
+
+    test('structured entry keeps its note through scaling', () {
+      const entry = RecipeIngredient(
+        amount: 1,
+        unit: 'msk',
+        name: 'smör',
+        note: 'rumstempererat',
+        raw: '1 msk smör, rumstempererat',
+      );
+      final result =
+          PortionScalerLogic.scaleEntries(const [entry], 2, 4, false);
+      expect(result.single, '2 msk smör, rumstempererat');
+    });
+
+    test('range "2-3 dl" doubles to "4-6 dl" (both endpoints)', () {
+      // Ranges have amount == null in the structured model; v1 coerced the
+      // quantity to 1.0 and scaled from that — silently wrong.
+      const entry = RecipeIngredient(
+        name: 'mjölk',
+        raw: '2-3 dl mjölk',
+      );
+      final result =
+          PortionScalerLogic.scaleEntries(const [entry], 2, 4, false);
+      expect(result.single, '4-6 dl mjölk');
+    });
+
+    test('range scales fractionally with Swedish fraction formatting', () {
+      const entry = RecipeIngredient(
+        name: 'vitlöksklyftor',
+        raw: '1-2 vitlöksklyftor',
+      );
+      final result =
+          PortionScalerLogic.scaleEntries(const [entry], 2, 3, false);
+      expect(result.single, '1 ½-3 vitlöksklyftor');
+    });
+
+    test('raw-only entry falls back to the v1 string path (identical output)',
+        () {
+      final viaEntries = PortionScalerLogic.scaleEntries(
+        [RecipeIngredient.rawOnly('2 dl mjölk')],
+        2,
+        4,
+        false,
+      );
+      final viaStrings = PortionScalerLogic.scaleIngredients(
+        const ['2 dl mjölk'],
+        2,
+        4,
+        false,
+      );
+      expect(viaEntries, viaStrings,
+          reason: 'legacy recipes must scale exactly as before');
+    });
+
+    test('same portions without conversion returns the raw lines unchanged',
+        () {
+      const entry = RecipeIngredient(
+        amount: 2,
+        unit: 'dl',
+        name: 'mjölk',
+        raw: '2 dl mjölk',
+      );
+      final result =
+          PortionScalerLogic.scaleEntries(const [entry], 4, 4, false);
+      expect(result.single, '2 dl mjölk');
+    });
+
+    test('string path also scales ranges now (legacy callers fixed too)', () {
+      final result = PortionScalerLogic.scaleIngredients(
+        const ['2-3 dl mjölk'],
+        2,
+        4,
+        false,
+      );
+      expect(result.single, '4-6 dl mjölk');
+    });
+
+    test(
+        'hyphenated ingredient names without quantities are not mangled by '
+        'the range matcher', () {
+      // The range regex requires digits on BOTH sides of the dash.
+      final result = PortionScalerLogic.scaleIngredients(
+        const ['chili-flakes efter smak'],
+        2,
+        4,
+        false,
+      );
+      expect(result.single, 'chili-flakes efter smak');
     });
   });
 }
