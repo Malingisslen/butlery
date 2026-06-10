@@ -1067,11 +1067,27 @@ service cloud.firestore {
     // /users/{ownerId}/friends/ subcollection. Pair queries with a
     // userId-in-[self+friends] whereIn — rules eval per-doc, so any stranger
     // snap in a result set fails the entire query.
+    //
+    // BUT-1214: a snap marked visibility == 'onlyMe' is author-only — friends
+    // are denied. The friend branch requires STRICT equality on
+    // 'sameAsRecipe': any back-compat shape (`!('visibility' in data)` or
+    // `get('visibility', default)`) is a proven privacy leak — at query time
+    // the engine evaluates an unconstrained field as absent, which satisfies
+    // the permissive clause and ALLOWS the old unconstrained query shape to
+    // return onlyMe docs (rules are not filters). Verified on the emulator
+    // 2026-06-10. Consequence: legacy docs (field missing) are
+    // friend-unreadable until the backfill runs — so
+    // functions/scripts/backfill-cook-snap-visibility.js MUST run BEFORE
+    // this rules version is deployed.
     match /cook_snaps/{snapId} {
-      // Read: snap-owner OR friend-of-snap-owner. Admin override below.
+      // Read: snap-owner OR (friend-of-snap-owner AND visibility is
+      // explicitly sameAsRecipe). Admin override below.
       allow read: if isAuthenticated() && (
         request.auth.uid == resource.data.userId
-        || exists(/databases/$(database)/documents/users/$(resource.data.userId)/friends/$(request.auth.uid))
+        || (
+          exists(/databases/$(database)/documents/users/$(resource.data.userId)/friends/$(request.auth.uid))
+          && resource.data.visibility == 'sameAsRecipe'
+        )
       );
 
       // Create: caller must be the snap-owner. Structural validation prevents
@@ -1091,12 +1107,22 @@ service cloud.firestore {
           || (request.resource.data.caption is string
               && request.resource.data.caption.size() <= 200)
         )
+        && isValidSnapVisibility()
         && rateLimitWrite('cook_snaps', 5);
 
       // Update: only the snap-owner. Identity fields are immutable.
+      // Visibility IS mutable (owner may retro-hide or re-share a snap).
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.userId
-        && cannotModify(['recipeId', 'userId', 'createdAt']);
+        && cannotModify(['recipeId', 'userId', 'createdAt'])
+        && isValidSnapVisibility();
+
+      // BUT-1214: a forged visibility value (neither enum member) would be
+      // readable via get but invisible to the friends query — reject it.
+      function isValidSnapVisibility() {
+        return !('visibility' in request.resource.data)
+          || request.resource.data.visibility in ['sameAsRecipe', 'onlyMe'];
+      }
 
       // Delete: only the snap-owner.
       allow delete: if isAuthenticated()

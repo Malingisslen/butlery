@@ -68,20 +68,14 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Future<List<CookSnap>> getCookSnapsForRecipe(
     String recipeId, {
-    required Set<String> allowedUserIds,
+    required String viewerId,
+    required Set<String> friendIds,
     int limit = 20,
   }) async {
-    if (allowedUserIds.isEmpty) return const [];
+    if (viewerId.isEmpty) return const [];
 
-    final chunks = allowedUserIds.chunked(kFirestoreWhereInLimit);
-    // Per-chunk over-fetch buffer: each chunk needs at most `limit` of its
-    // own to contribute to a global top-N, but we allow a small buffer for
-    // ties. Caps total reads at `limit + chunks*buf` instead of `limit*chunks`.
-    final perChunkLimit =
-        chunks.length == 1 ? limit : (limit ~/ chunks.length) + 5;
-
-    final snapshots = await Future.wait(chunks
-        .map((chunk) => _chunkQuery(recipeId, chunk, perChunkLimit).get()));
+    final snapshots = await Future.wait(
+        _readQueries(recipeId, viewerId, friendIds, limit).map((q) => q.get()));
 
     return _mergeAndRank(snapshots, limit);
   }
@@ -89,17 +83,14 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
   @override
   Stream<List<CookSnap>> watchCookSnaps(
     String recipeId, {
-    required Set<String> allowedUserIds,
+    required String viewerId,
+    required Set<String> friendIds,
     int limit = 20,
   }) {
-    if (allowedUserIds.isEmpty) return Stream<List<CookSnap>>.value(const []);
+    if (viewerId.isEmpty) return Stream<List<CookSnap>>.value(const []);
 
-    final chunks = allowedUserIds.chunked(kFirestoreWhereInLimit);
-    final perChunkLimit =
-        chunks.length == 1 ? limit : (limit ~/ chunks.length) + 5;
-
-    final streams = chunks
-        .map((chunk) => _chunkQuery(recipeId, chunk, perChunkLimit).snapshots())
+    final streams = _readQueries(recipeId, viewerId, friendIds, limit)
+        .map((q) => q.snapshots())
         .toList();
 
     // combineLatestList waits for every chunk's first emission before
@@ -109,16 +100,37 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
         .map((snaps) => _mergeAndRank(snaps, limit));
   }
 
-  Query<Map<String, dynamic>> _chunkQuery(
+  /// BUT-1214: the viewer's own snaps are queried WITHOUT a visibility
+  /// filter (they see their own `onlyMe` snaps); friends' snaps must carry
+  /// an explicit `visibility == sameAsRecipe` constraint — rules deny
+  /// foreign `onlyMe` docs and one such doc in a result set would fail the
+  /// whole query. Legacy docs are backfilled with the field (see
+  /// functions/scripts/backfill-cook-snap-visibility.js).
+  List<Query<Map<String, dynamic>>> _readQueries(
     String recipeId,
-    List<String> chunk,
+    String viewerId,
+    Set<String> friendIds,
     int limit,
-  ) =>
-      collection
-          .where('recipeId', isEqualTo: recipeId)
-          .where('userId', whereIn: chunk)
-          .orderBy('createdAt', descending: true)
-          .limit(limit);
+  ) {
+    final friendChunks =
+        ({...friendIds}..remove(viewerId)).chunked(kFirestoreWhereInLimit);
+
+    // Every query fetches the full `limit`: the global top-N can come
+    // entirely from one chunk (a prolific friend, or the viewer's own
+    // snaps), so a divided per-chunk budget silently drops the newest
+    // snaps. Worst-case reads stay bounded at limit * (1 + chunks).
+    final base = collection
+        .where('recipeId', isEqualTo: recipeId)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    return [
+      base.where('userId', isEqualTo: viewerId),
+      for (final chunk in friendChunks)
+        base.where('userId', whereIn: chunk).where('visibility',
+            isEqualTo: CookSnapVisibility.sameAsRecipe.name),
+    ];
+  }
 
   List<CookSnap> _mergeAndRank(
     List<QuerySnapshot<Map<String, dynamic>>> snapshots,

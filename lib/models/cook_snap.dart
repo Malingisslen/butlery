@@ -6,6 +6,24 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
+/// BUT-1214: per-snap visibility override. A snap can be made MORE private
+/// than its parent recipe (never more public — the recipe's audience is the
+/// cap, enforced by the existing friends-gated read rules).
+enum CookSnapVisibility {
+  /// Default — the snap inherits the parent recipe's audience (BUT-901).
+  sameAsRecipe,
+
+  /// Author-only: filtered from every other viewer in the read path AND
+  /// denied by Firestore rules.
+  onlyMe;
+
+  /// Missing/unknown wire values resolve to [sameAsRecipe] so legacy docs
+  /// (written before the field existed) keep their inherited behaviour.
+  static CookSnapVisibility fromWire(String? value) => value == 'onlyMe'
+      ? CookSnapVisibility.onlyMe
+      : CookSnapVisibility.sameAsRecipe;
+}
+
 /// A cooking photo posted on a recipe by any authenticated user.
 class CookSnap {
   final String id;
@@ -24,6 +42,9 @@ class CookSnap {
   /// displays; subsequent reads resolve to the server-set time.
   final DateTime createdAt;
 
+  /// BUT-1214: per-snap visibility override; see [CookSnapVisibility].
+  final CookSnapVisibility visibility;
+
   CookSnap({
     required this.id,
     required this.recipeId,
@@ -33,6 +54,7 @@ class CookSnap {
     required this.photoUrl,
     this.thumbnailUrl,
     this.caption,
+    this.visibility = CookSnapVisibility.sameAsRecipe,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? clock.now();
 
@@ -47,6 +69,7 @@ class CookSnap {
     required String photoUrl,
     String? thumbnailUrl,
     String? caption,
+    CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) {
     return CookSnap(
       id: const Uuid().v4(),
@@ -57,6 +80,7 @@ class CookSnap {
       photoUrl: photoUrl,
       thumbnailUrl: thumbnailUrl,
       caption: _sanitizeCaption(caption),
+      visibility: visibility,
       createdAt: clock.now(),
     );
   }
@@ -80,6 +104,7 @@ class CookSnap {
       'photoUrl': photoUrl,
       'thumbnailUrl': thumbnailUrl,
       'caption': caption,
+      'visibility': visibility.name,
       'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
     };
   }
@@ -99,6 +124,9 @@ class CookSnap {
       photoUrl: SerializationUtils.safeString(data, 'photoUrl'),
       thumbnailUrl: SerializationUtils.safeNullableString(data, 'thumbnailUrl'),
       caption: SerializationUtils.safeNullableString(data, 'caption'),
+      visibility: CookSnapVisibility.fromWire(
+        SerializationUtils.safeNullableString(data, 'visibility'),
+      ),
       createdAt:
           SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
     );

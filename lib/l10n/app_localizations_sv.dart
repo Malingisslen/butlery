@@ -13367,6 +13367,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookSnapVisibilityConfirm => 'Dela foto';
 
   @override
+  String get cookSnapVisibilityChoiceSame => 'Samma som receptet';
+
+  @override
+  String get cookSnapVisibilityChoiceOnlyMe => 'Bara jag';
+
+  @override
+  String get cookSnapVisibilityChoiceOnlyMeHint =>
+      'Fotot syns inte för andra som ser receptet';
+
+  @override
   String get cookSnapErrorLoad => 'Kunde inte ladda foton';
 
   @override

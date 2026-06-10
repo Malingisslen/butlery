@@ -45,6 +45,7 @@ class CookSnapService extends BaseService {
     required String recipeName,
     required ImageSource source,
     String? caption,
+    CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) async {
     return executeServiceOperation<CookSnap?>(
       () async {
@@ -104,6 +105,7 @@ class CookSnapService extends BaseService {
           photoUrl: result.url!,
           thumbnailUrl: result.thumbnailUrl,
           caption: validCaption,
+          visibility: visibility,
         );
 
         // Save to Firestore
@@ -162,7 +164,8 @@ class CookSnapService extends BaseService {
     final friendIds = await _resolveFriendIds(userId);
     return _repository.getCookSnapsForRecipe(
       recipeId,
-      allowedUserIds: _allowedFor(userId, friendIds),
+      viewerId: userId,
+      friendIds: friendIds.toSet(),
       limit: limit,
     );
   }
@@ -176,11 +179,12 @@ class CookSnapService extends BaseService {
 
     return _friendsRepository
         .friendIdsStream(userId)
-        .map((ids) => _allowedFor(userId, ids))
+        .map((ids) => ids.toSet())
         .distinct(const SetEquality<String>().equals)
-        .switchMap((allowed) => _repository.watchCookSnaps(
+        .switchMap((friendIds) => _repository.watchCookSnaps(
               recipeId,
-              allowedUserIds: allowed,
+              viewerId: userId,
+              friendIds: friendIds,
               limit: limit,
             ));
   }
@@ -198,9 +202,6 @@ class CookSnapService extends BaseService {
     }
     return _friendsRepository.fetchFriendIds(userId);
   }
-
-  Set<String> _allowedFor(String userId, Iterable<String> friendIds) =>
-      {userId, ...friendIds};
 
   /// Gets all cook snaps by a user (for GDPR export).
   Future<List<CookSnap>> getCookSnapsByUser(String userId) async {

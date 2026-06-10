@@ -9002,6 +9002,18 @@
   "@cookSnapVisibilityConfirm": {
     "description": "BUT-901: confirm button on the cook-snap visibility disclosure dialog."
   },
+  "cookSnapVisibilityChoiceSame": "Same as the recipe",
+  "@cookSnapVisibilityChoiceSame": {
+    "description": "BUT-1214: default visibility choice in the cook-snap disclosure dialog — the photo inherits the recipe's audience."
+  },
+  "cookSnapVisibilityChoiceOnlyMe": "Only me",
+  "@cookSnapVisibilityChoiceOnlyMe": {
+    "description": "BUT-1214: author-only visibility choice in the cook-snap disclosure dialog."
+  },
+  "cookSnapVisibilityChoiceOnlyMeHint": "The photo stays hidden from others who can see the recipe",
+  "@cookSnapVisibilityChoiceOnlyMeHint": {
+    "description": "BUT-1214: subtitle under the 'Only me' choice clarifying the photo stays hidden from other recipe viewers."
+  },
   "cookSnapErrorLoad": "Could not load photos",
   "cookSnapErrorUpload": "Could not upload photo",
   "cookSnapErrorDelete": "Could not delete photo",

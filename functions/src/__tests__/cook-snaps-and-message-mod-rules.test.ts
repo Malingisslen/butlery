@@ -102,13 +102,15 @@ test("cook_snaps: owner can read own snap", async () => {
 });
 
 // a friend of the snap-owner can read the owner's snap.
-// (Friend doc seeded in setup at users/OWNER_UID/friends/FRIEND_UID.)
+// (Friend doc seeded in setup at users/OWNER_UID/friends/FRIEND_UID.
+// BUT-1214: the friend branch requires explicit visibility — post-backfill
+// every readable doc carries 'sameAsRecipe'.)
 test("cook_snaps: friend-of-owner can read owner's snap", async () => {
   await env.withSecurityRulesDisabled(async (admin) => {
     await admin
       .firestore()
       .doc(`cook_snaps/cs-friend-readable`)
-      .set(validSnapBody());
+      .set(validSnapBody({ visibility: "sameAsRecipe" }));
   });
   const ctx = env.authenticatedContext(FRIEND_UID);
   await assertSucceeds(
@@ -141,14 +143,15 @@ test("cook_snaps: unauthenticated user cannot read any snap", async () => {
   await assertFails(ctx.firestore().doc(`cook_snaps/cs-anon`).get());
 });
 
-// friends-gated query — querying with userId in [self + friends] returns
-// docs without permission denial.
-test("cook_snaps: friend-scoped query succeeds", async () => {
+// friends-gated query — BUT-1214 split-query contract: friends' snaps are
+// queried with an explicit visibility constraint (rules can't prove a
+// foreign doc isn't onlyMe otherwise).
+test("cook_snaps: friend-scoped query with visibility constraint succeeds", async () => {
   await env.withSecurityRulesDisabled(async (admin) => {
     await admin
       .firestore()
       .doc(`cook_snaps/cs-q-friend`)
-      .set(validSnapBody({ recipeId: "recipe-q" }));
+      .set(validSnapBody({ recipeId: "recipe-q", visibility: "sameAsRecipe" }));
   });
   const ctx = env.authenticatedContext(FRIEND_UID);
   await assertSucceeds(
@@ -156,9 +159,216 @@ test("cook_snaps: friend-scoped query succeeds", async () => {
       .firestore()
       .collection(`cook_snaps`)
       .where("recipeId", "==", "recipe-q")
+      .where("userId", "in", [OWNER_UID])
+      .where("visibility", "==", "sameAsRecipe")
+      .get()
+  );
+});
+
+// BUT-1214: the PRE-1214 query shape (no visibility constraint) is now
+// denied for foreign userIds — it could surface an onlyMe snap. Proves the
+// repository's own/friends query split is not optional.
+test("cook_snaps: friend query without visibility constraint is denied", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .collection(`cook_snaps`)
+      .where("recipeId", "==", "recipe-q")
       .where("userId", "in", [FRIEND_UID, OWNER_UID])
       .get()
   );
+});
+
+// BUT-1214: the viewer's own-snaps query needs NO visibility constraint —
+// authors always see their own onlyMe snaps.
+test("cook_snaps: own-snaps query without visibility constraint succeeds", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-q-own-onlyme`)
+      .set(validSnapBody({ recipeId: "recipe-q3", visibility: "onlyMe" }));
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .collection(`cook_snaps`)
+      .where("recipeId", "==", "recipe-q3")
+      .where("userId", "==", OWNER_UID)
+      .get()
+  );
+});
+
+// ============================================================================
+// COOK SNAPS — BUT-1214 per-snap visibility override (onlyMe)
+// ============================================================================
+
+// the author can still read their own onlyMe snap.
+test("cook_snaps: owner can read own onlyMe snap", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-onlyme-own`)
+      .set(validSnapBody({ visibility: "onlyMe" }));
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(ctx.firestore().doc(`cook_snaps/cs-onlyme-own`).get());
+});
+
+// a friend (who CAN read sameAsRecipe snaps) is denied an onlyMe snap —
+// the core BUT-1214 privacy guarantee, enforced at the rules layer.
+test("cook_snaps: friend cannot read an onlyMe snap", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-onlyme-friend`)
+      .set(validSnapBody({ visibility: "onlyMe" }));
+  });
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx.firestore().doc(`cook_snaps/cs-onlyme-friend`).get()
+  );
+});
+
+// a legacy doc (no visibility field) is friend-UNREADABLE by design: any
+// permissive back-compat clause (`!('visibility' in data)` / get-with-
+// default) was proven on the emulator to leak onlyMe docs through
+// unconstrained list queries. The backfill
+// (functions/scripts/backfill-cook-snap-visibility.js) MUST therefore run
+// before this rules version deploys; this test pins the deliberate
+// trade-off. The owner can still read their own legacy snap.
+test("cook_snaps: legacy snap without visibility is NOT friend-readable (backfill required)", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-legacy`)
+      .set(validSnapBody());
+  });
+  await assertFails(
+    env.authenticatedContext(FRIEND_UID).firestore().doc(`cook_snaps/cs-legacy`).get()
+  );
+  await assertSucceeds(
+    env.authenticatedContext(OWNER_UID).firestore().doc(`cook_snaps/cs-legacy`).get()
+  );
+});
+
+// create accepts both enum values…
+test("cook_snaps: owner can create an onlyMe snap", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`cook_snaps/cs-create-onlyme`)
+      .set(validSnapBody({ visibility: "onlyMe" }))
+  );
+});
+
+// …but rejects a forged value (would be get-readable yet query-invisible —
+// an inconsistent state the validation refuses to persist).
+test("cook_snaps: create with forged visibility value is rejected", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`cook_snaps/cs-create-forged`)
+      .set(validSnapBody({ visibility: "everyone" }))
+  );
+});
+
+// owner may retro-hide a snap (visibility is mutable, identity fields not).
+test("cook_snaps: owner can update visibility to onlyMe", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-retro-hide`)
+      .set(validSnapBody({ visibility: "sameAsRecipe" }));
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`cook_snaps/cs-retro-hide`)
+      .update({ visibility: "onlyMe" })
+  );
+});
+
+// a forged visibility value is rejected on UPDATE too — without this the
+// create-time check is trivially bypassed by create-valid-then-update.
+test("cook_snaps: update with forged visibility value is rejected", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-update-forged`)
+      .set(validSnapBody({ visibility: "sameAsRecipe" }));
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`cook_snaps/cs-update-forged`)
+      .update({ visibility: "everyone" })
+  );
+});
+
+// owner may also re-share (onlyMe -> sameAsRecipe) — the rule comment
+// promises visibility is mutable in BOTH directions.
+test("cook_snaps: owner can update visibility back to sameAsRecipe", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-reshare`)
+      .set(validSnapBody({ visibility: "onlyMe" }));
+  });
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`cook_snaps/cs-reshare`)
+      .update({ visibility: "sameAsRecipe" })
+  );
+});
+
+// unauthenticated query is denied regardless of constraints.
+test("cook_snaps: unauthenticated query is denied", async () => {
+  const ctx = env.unauthenticatedContext();
+  await assertFails(
+    ctx
+      .firestore()
+      .collection(`cook_snaps`)
+      .where("recipeId", "==", "recipe-q")
+      .where("visibility", "==", "sameAsRecipe")
+      .get()
+  );
+});
+
+// a friend query explicitly constrained to visibility == 'onlyMe' for a
+// foreign userId is denied — the deny half of the query-level visibility
+// gate (the allow half is the sameAsRecipe query above).
+test("cook_snaps: friend query constrained to onlyMe is denied", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .collection(`cook_snaps`)
+      .where("recipeId", "==", "recipe-q")
+      .where("userId", "==", OWNER_UID)
+      .where("visibility", "==", "onlyMe")
+      .get()
+  );
+});
+
+// admin moderation override still works on onlyMe snaps (reported content
+// must stay reviewable regardless of visibility).
+test("cook_snaps: admin can read an onlyMe snap (moderation)", async () => {
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin
+      .firestore()
+      .doc(`cook_snaps/cs-onlyme-mod`)
+      .set(validSnapBody({ visibility: "onlyMe" }));
+  });
+  const ctx = env.authenticatedContext(ADMIN_UID);
+  await assertSucceeds(ctx.firestore().doc(`cook_snaps/cs-onlyme-mod`).get());
 });
 
 // a query whose result set would include a stranger's snap is denied

@@ -44,6 +44,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
 import 'package:butlery/widgets/recipe/heirloom_section.dart';
 import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
@@ -762,13 +763,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       ServiceLocator.get<PermissionService>().currentUserId.orEmpty(),
       _friendDisplayNames(),
     );
+    // BUT-1214: the disclosure doubles as the per-snap override choice —
+    // share with the recipe's audience (default) or keep the photo
+    // author-only. Private recipes skip the dialog; the audience is already
+    // just the author, so an override is meaningless there.
+    var visibility = CookSnapVisibility.sameAsRecipe;
     if (audience.scope != CookSnapVisibilityScope.private) {
       if (!context.mounted) return;
-      final confirmed = await _confirmSnapVisibility(context, audience);
-      if (confirmed != true || !mounted) return;
+      final choice = await _confirmSnapVisibility(context, audience);
+      if (choice == null || !mounted) return;
+      visibility = choice;
     }
 
-    vm.addSnap(source: source);
+    vm.addSnap(source: source, visibility: visibility);
   }
 
   Map<String, String> _friendDisplayNames() {
@@ -784,8 +791,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
   }
 
   /// BUT-901: confirmation that discloses the cook snap's audience (it inherits
-  /// the parent recipe's visibility) before upload.
-  Future<bool?> _confirmSnapVisibility(
+  /// the parent recipe's visibility) before upload. BUT-1214: also offers the
+  /// per-snap override — "Samma som receptet" (default) or "Bara jag". Returns
+  /// the chosen visibility, or null if cancelled.
+  Future<CookSnapVisibility?> _confirmSnapVisibility(
     BuildContext context,
     ({
       CookSnapVisibilityScope scope,
@@ -807,29 +816,65 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       message = context.l10n.cookSnapVisibleTo(formatted.orEmpty());
     }
 
-    return showDialog<bool>(
+    var selected = CookSnapVisibility.sameAsRecipe;
+    return showDialog<CookSnapVisibility>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.visibility_outlined,
-                size: AppDimensions.iconSizeS,
-                color: Theme.of(ctx).colorScheme.onSurfaceVariant),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Expanded(child: Text(ctx.l10n.cookSnapVisibilityTitle)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.visibility_outlined,
+                  size: AppDimensions.iconSizeS,
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppDimensions.spacingXs),
+              Expanded(child: Text(ctx.l10n.cookSnapVisibilityTitle)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message),
+              const SizedBox(height: AppDimensions.spacingSm),
+              RadioGroup<CookSnapVisibility>(
+                groupValue: selected,
+                onChanged: (v) => setDialogState(
+                    () => selected = v ?? CookSnapVisibility.sameAsRecipe),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<CookSnapVisibility>(
+                      key: const ValueKey('cook-snap-visibility-same'),
+                      value: CookSnapVisibility.sameAsRecipe,
+                      title: Text(ctx.l10n.cookSnapVisibilityChoiceSame),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                    RadioListTile<CookSnapVisibility>(
+                      key: const ValueKey('cook-snap-visibility-only-me'),
+                      value: CookSnapVisibility.onlyMe,
+                      title: Text(ctx.l10n.cookSnapVisibilityChoiceOnlyMe),
+                      subtitle:
+                          Text(ctx.l10n.cookSnapVisibilityChoiceOnlyMeHint),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(ctx.l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, selected),
+              child: Text(ctx.l10n.cookSnapVisibilityConfirm),
+            ),
           ],
         ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(ctx.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(ctx.l10n.cookSnapVisibilityConfirm),
-          ),
-        ],
       ),
     );
   }

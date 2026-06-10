@@ -1,14 +1,16 @@
 /// Tests for FirebaseCookSnapRepository's friends-aware read queries.
 ///
-/// The repo's read methods take an `allowedUserIds` whitelist (resolved by
-/// the service layer from the caller's friend list). The repo chunks the
-/// list across Firestore's 30-element `whereIn` cap and merges results.
-/// These tests prove:
-///   1. empty whitelist short-circuits to an empty result (no Firestore call);
-///   2. single-chunk path returns correctly filtered snaps;
-///   3. multi-chunk path merges per-chunk results, sorts by createdAt desc,
-///      and respects the global limit;
-///   4. stream variant emits the merged-and-sorted view across all chunks.
+/// BUT-1214 contract: read methods take the viewer's id plus a friend-id
+/// set (resolved by the service layer). The repo issues ONE unfiltered
+/// query for the viewer's own snaps (authors always see their own `onlyMe`
+/// snaps) and visibility-filtered whereIn chunks for friends' snaps —
+/// rules deny foreign `onlyMe` docs, so the friends query must exclude
+/// them structurally. These tests prove:
+///   1. empty viewerId short-circuits to an empty result;
+///   2. the viewer sees their own snaps regardless of visibility;
+///   3. friends' sameAsRecipe snaps appear, friends' onlyMe snaps do NOT;
+///   4. multi-chunk merge stays sorted and respects the global limit;
+///   5. stream variant mirrors the get variant.
 library;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -26,6 +28,8 @@ void main() {
     late FakeAuthRepository mockAuthRepository;
     late FirebaseCookSnapRepository repo;
 
+    const viewer = 'viewer-uid';
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
@@ -33,28 +37,32 @@ void main() {
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
       mockAuthRepository = FakeAuthRepository();
-      mockAuthRepository.setAuthState(userId: 'viewer-uid');
+      mockAuthRepository.setAuthState(userId: viewer);
       repo = FirebaseCookSnapRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepository,
       );
     });
 
-    /// Seed N snaps for [recipeId], one per user in [userIds], with
-    /// monotonically decreasing createdAt timestamps (most recent first).
+    /// Seed one snap per user in [userIds] for [recipeId], with
+    /// monotonically decreasing createdAt (most recent first). [indexOffset]
+    /// keeps timestamps distinct across multiple seed calls.
     Future<void> seedSnaps({
       required String recipeId,
       required List<String> userIds,
+      CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
+      int indexOffset = 0,
     }) async {
       final base = DateTime(2026, 4, 26, 12);
       for (var i = 0; i < userIds.length; i++) {
         final snap = CookSnap(
-          id: 'snap-${userIds[i]}',
+          id: 'snap-${userIds[i]}-$visibility',
           recipeId: recipeId,
           userId: userIds[i],
           userDisplayName: 'User-$i',
           photoUrl: 'https://example.com/$i.jpg',
-          createdAt: base.subtract(Duration(minutes: i)),
+          visibility: visibility,
+          createdAt: base.subtract(Duration(minutes: i + indexOffset)),
         );
         await fakeFirestore
             .collection('cook_snaps')
@@ -64,57 +72,104 @@ void main() {
     }
 
     test(
-      'getCookSnapsForRecipe returns empty when allowedUserIds is empty '
+      'getCookSnapsForRecipe returns empty when viewerId is empty '
       '(no Firestore round-trip)',
       () async {
         await seedSnaps(recipeId: 'r1', userIds: ['someone']);
-        final result =
-            await repo.getCookSnapsForRecipe('r1', allowedUserIds: const {});
+        final result = await repo.getCookSnapsForRecipe('r1',
+            viewerId: '', friendIds: const {'someone'});
         expect(result, isEmpty);
       },
     );
 
     test(
-      'getCookSnapsForRecipe with single chunk returns only allowed userIds, '
-      'sorted by createdAt desc',
+      'viewer sees own snaps — including own onlyMe — with no friends',
       () async {
+        await seedSnaps(recipeId: 'r1', userIds: [viewer]);
         await seedSnaps(
           recipeId: 'r1',
-          userIds: ['friend-1', 'friend-2', 'stranger-1'],
+          userIds: [viewer],
+          visibility: CookSnapVisibility.onlyMe,
+          indexOffset: 5,
         );
-        final result = await repo.getCookSnapsForRecipe(
-          'r1',
-          allowedUserIds: {'friend-1', 'friend-2'},
-        );
-        expect(result.map((s) => s.userId).toList(),
-            equals(['friend-1', 'friend-2']));
-        expect(
-          result[0].createdAt.isAfter(result[1].createdAt),
-          isTrue,
-          reason: 'createdAt should descend',
-        );
+        final result = await repo
+            .getCookSnapsForRecipe('r1', viewerId: viewer, friendIds: const {});
+        expect(result.length, 2,
+            reason: 'own query must not filter on visibility');
       },
     );
 
     test(
-      'getCookSnapsForRecipe with >30 allowedUserIds chunks the query and '
-      'merges results across chunks',
+      "friends' sameAsRecipe snaps appear; friends' onlyMe snaps do not",
       () async {
-        // 35 friends → 2 chunks (30 + 5). Seed one snap per friend.
-        final friends = List.generate(35, (i) => 'friend-$i');
-        await seedSnaps(recipeId: 'r1', userIds: friends);
+        await seedSnaps(recipeId: 'r1', userIds: ['friend-1']);
+        await seedSnaps(
+          recipeId: 'r1',
+          userIds: ['friend-2'],
+          visibility: CookSnapVisibility.onlyMe,
+          indexOffset: 5,
+        );
+        await seedSnaps(
+            recipeId: 'r1', userIds: ['stranger-1'], indexOffset: 10);
 
         final result = await repo.getCookSnapsForRecipe(
           'r1',
-          allowedUserIds: friends.toSet(),
+          viewerId: viewer,
+          friendIds: {'friend-1', 'friend-2'},
+        );
+        expect(result.map((s) => s.userId).toList(), equals(['friend-1']),
+            reason: "friend-2's onlyMe snap and the stranger's snap "
+                'must both be excluded');
+      },
+    );
+
+    test(
+      'legacy friend doc without a visibility field is NOT returned '
+      '(documents the backfill requirement — see '
+      'functions/scripts/backfill-cook-snap-visibility.js)',
+      () async {
+        final legacy = CookSnap(
+          id: 'snap-legacy',
+          recipeId: 'r1',
+          userId: 'friend-1',
+          userDisplayName: 'Legacy',
+          photoUrl: 'https://example.com/legacy.jpg',
+        ).toFirestore()
+          ..remove('visibility');
+        await fakeFirestore
+            .collection('cook_snaps')
+            .doc('snap-legacy')
+            .set(legacy);
+
+        final result = await repo.getCookSnapsForRecipe(
+          'r1',
+          viewerId: viewer,
+          friendIds: {'friend-1'},
+        );
+        expect(result, isEmpty,
+            reason: 'equality filter cannot match a missing field — legacy '
+                'docs need the backfill before the new client ships');
+      },
+    );
+
+    test(
+      'getCookSnapsForRecipe with >30 friendIds chunks the query and '
+      'merges results across chunks (plus own snaps)',
+      () async {
+        // 35 friends → 2 whereIn chunks (30 + 5) + 1 own query.
+        final friends = List.generate(35, (i) => 'friend-$i');
+        await seedSnaps(recipeId: 'r1', userIds: friends);
+        await seedSnaps(recipeId: 'r1', userIds: [viewer], indexOffset: 40);
+
+        final result = await repo.getCookSnapsForRecipe(
+          'r1',
+          viewerId: viewer,
+          friendIds: friends.toSet(),
           limit: 100,
         );
 
-        expect(
-          result.length,
-          equals(35),
-          reason: 'all snaps from both chunks should be present',
-        );
+        expect(result.length, equals(36),
+            reason: 'all snaps from both chunks + own should be present');
         // Result must remain globally sorted by createdAt desc after merge.
         for (var i = 1; i < result.length; i++) {
           expect(
@@ -135,7 +190,8 @@ void main() {
 
         final result = await repo.getCookSnapsForRecipe(
           'r1',
-          allowedUserIds: friends.toSet(),
+          viewerId: viewer,
+          friendIds: friends.toSet(),
           limit: 10,
         );
 
@@ -150,29 +206,39 @@ void main() {
     );
 
     test(
-      'watchCookSnaps emits empty list immediately when allowedUserIds empty',
+      'watchCookSnaps emits empty list immediately when viewerId empty',
       () async {
-        final stream = repo.watchCookSnaps('r1', allowedUserIds: const {});
+        final stream =
+            repo.watchCookSnaps('r1', viewerId: '', friendIds: const {});
         final first = await stream.first;
         expect(first, isEmpty);
       },
     );
 
     test(
-      'watchCookSnaps single-chunk path emits sorted results matching '
-      'allowedUserIds',
+      "watchCookSnaps excludes friends' onlyMe snaps but includes own",
       () async {
+        await seedSnaps(recipeId: 'r1', userIds: ['friend-1']);
         await seedSnaps(
           recipeId: 'r1',
-          userIds: ['friend-1', 'friend-2', 'stranger'],
+          userIds: ['friend-2'],
+          visibility: CookSnapVisibility.onlyMe,
+          indexOffset: 5,
+        );
+        await seedSnaps(
+          recipeId: 'r1',
+          userIds: [viewer],
+          visibility: CookSnapVisibility.onlyMe,
+          indexOffset: 10,
         );
         final stream = repo.watchCookSnaps(
           'r1',
-          allowedUserIds: {'friend-1', 'friend-2'},
+          viewerId: viewer,
+          friendIds: {'friend-1', 'friend-2'},
         );
         final first = await stream.first;
-        expect(first.map((s) => s.userId).toSet(),
-            equals({'friend-1', 'friend-2'}));
+        expect(
+            first.map((s) => s.userId).toSet(), equals({'friend-1', viewer}));
       },
     );
 
@@ -184,7 +250,8 @@ void main() {
 
         final stream = repo.watchCookSnaps(
           'r1',
-          allowedUserIds: friends.toSet(),
+          viewerId: viewer,
+          friendIds: friends.toSet(),
           limit: 100,
         );
 
@@ -204,7 +271,8 @@ void main() {
 
         final stream = repo.watchCookSnaps(
           'r1',
-          allowedUserIds: friends.toSet(),
+          viewerId: viewer,
+          friendIds: friends.toSet(),
           limit: 100,
         );
         final sub = stream.listen((_) {});

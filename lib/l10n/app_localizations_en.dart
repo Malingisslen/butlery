@@ -13336,6 +13336,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookSnapVisibilityConfirm => 'Share photo';
 
   @override
+  String get cookSnapVisibilityChoiceSame => 'Same as the recipe';
+
+  @override
+  String get cookSnapVisibilityChoiceOnlyMe => 'Only me';
+
+  @override
+  String get cookSnapVisibilityChoiceOnlyMeHint =>
+      'The photo stays hidden from others who can see the recipe';
+
+  @override
   String get cookSnapErrorLoad => 'Could not load photos';
 
   @override

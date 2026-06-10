@@ -58,6 +58,7 @@ class CookSnapViewModel extends BaseViewModel {
   Future<bool> addSnap({
     required ImageSource source,
     String? caption,
+    CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) async {
     if (_isUploading) return false;
 
@@ -71,6 +72,7 @@ class CookSnapViewModel extends BaseViewModel {
         recipeName: _recipeName,
         source: source,
         caption: caption,
+        visibility: visibility,
       );
       return snap != null;
     } catch (e) {

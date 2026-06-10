@@ -144,6 +144,60 @@ void main() {
     });
   });
 
+  // BUT-1214: per-snap visibility override. Legacy docs (no field) and
+  // unknown wire values MUST resolve to sameAsRecipe so pre-1214 snaps keep
+  // their inherited behaviour.
+  group('visibility (BUT-1214)', () {
+    test('defaults to sameAsRecipe on create and constructor', () {
+      final created = CookSnap.create(
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrl: 'p',
+      );
+      expect(created.visibility, CookSnapVisibility.sameAsRecipe);
+    });
+
+    test('onlyMe round-trips through toFirestore + fromMap', () {
+      final snap = CookSnap.create(
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrl: 'p',
+        visibility: CookSnapVisibility.onlyMe,
+      );
+      final payload = snap.toFirestore();
+      expect(payload['visibility'], 'onlyMe');
+      final restored = CookSnap.fromMap(snap.id, payload);
+      expect(restored.visibility, CookSnapVisibility.onlyMe);
+    });
+
+    test('toFirestore always writes the field (sameAsRecipe explicit)', () {
+      // The friends-gallery query filters on visibility == sameAsRecipe;
+      // a new doc missing the field would vanish from friends' galleries.
+      final snap = CookSnap.create(
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrl: 'p',
+      );
+      expect(snap.toFirestore()['visibility'], 'sameAsRecipe');
+    });
+
+    test('legacy doc without visibility deserializes to sameAsRecipe', () {
+      final snap = CookSnap.fromMap('legacy', {'recipeId': 'r'});
+      expect(snap.visibility, CookSnapVisibility.sameAsRecipe);
+    });
+
+    test('unknown wire value resolves to sameAsRecipe', () {
+      expect(CookSnapVisibility.fromWire('everyone'),
+          CookSnapVisibility.sameAsRecipe);
+      expect(
+          CookSnapVisibility.fromWire(null), CookSnapVisibility.sameAsRecipe);
+      expect(CookSnapVisibility.fromWire('onlyMe'), CookSnapVisibility.onlyMe);
+    });
+  });
+
   group('equality + hash', () {
     test('two CookSnaps with same id are equal', () {
       final a = CookSnap(

@@ -5,17 +5,23 @@ import 'package:butlery/repositories/interfaces/repository.dart';
 ///
 /// Read queries are friends-gated at the rules layer: a `cook_snaps` doc is
 /// only visible if the caller is the snap-owner or in the snap-owner's
-/// friends list. The `allowedUserIds` parameter on read queries must contain
-/// only ids the caller is authorised to see (i.e. self + friend ids), or the
-/// query will be denied wholesale by Firestore. The service layer is
-/// responsible for resolving and supplying this set.
+/// friends list. [friendIds] on read queries must contain only ids the
+/// caller is authorised to see, or the query will be denied wholesale by
+/// Firestore. The service layer is responsible for resolving this set.
+///
+/// BUT-1214: snaps marked [CookSnapVisibility.onlyMe] are author-only.
+/// Implementations must query the viewer's own snaps separately (no
+/// visibility filter) from friends' snaps (visibility-filtered), because
+/// rules deny foreign `onlyMe` docs and any such doc in a result set fails
+/// the entire query.
 abstract class CookSnapRepository extends Repository<CookSnap> {
-  /// Gets cook snaps for a recipe, restricted to docs whose `userId` is in
-  /// [allowedUserIds]. Ordered by createdAt desc. Chunks the set across
-  /// Firestore's `whereIn` cap and merges results.
+  /// Gets cook snaps for a recipe: all of [viewerId]'s own snaps plus
+  /// friends' snaps whose visibility is not `onlyMe`. Ordered by createdAt
+  /// desc. Chunks [friendIds] across Firestore's `whereIn` cap and merges.
   Future<List<CookSnap>> getCookSnapsForRecipe(
     String recipeId, {
-    required Set<String> allowedUserIds,
+    required String viewerId,
+    required Set<String> friendIds,
     int limit,
   });
 
@@ -25,12 +31,12 @@ abstract class CookSnapRepository extends Repository<CookSnap> {
   /// Deletes a cook snap.
   Future<void> deleteCookSnap(String snapId);
 
-  /// Watches cook snaps for a recipe in real-time, restricted to docs whose
-  /// `userId` is in [allowedUserIds]. See [getCookSnapsForRecipe] for the
-  /// allowedUserIds contract.
+  /// Watches cook snaps for a recipe in real-time. See
+  /// [getCookSnapsForRecipe] for the viewer/friends contract.
   Stream<List<CookSnap>> watchCookSnaps(
     String recipeId, {
-    required Set<String> allowedUserIds,
+    required String viewerId,
+    required Set<String> friendIds,
     int limit,
   });
 

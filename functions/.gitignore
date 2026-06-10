@@ -2,6 +2,8 @@
 lib/
 *.js
 *.js.map
+# ...except intentional admin/migration scripts (BUT-1214 backfill etc.)
+!scripts/*.js
 
 # Node dependencies
 node_modules/

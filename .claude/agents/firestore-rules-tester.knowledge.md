@@ -539,6 +539,54 @@ each step with a POSITIVE (own data gone / scrubbed) + NEGATIVE (control doc by
 another uid untouched) pair. A green delete WITHOUT a control-retained
 assertion does not prove scope — it could be deleting everything.
 
+### 2026-06-10 — map correction: cook_snaps lives in cook-snaps-and-message-mod-rules.test.ts
+
+Supersedes the 2026-04-26 moderation-rules entry's cook_snaps row:
+`moderation-rules.test.ts` no longer contains any cook_snaps tests (grep = 0).
+Map rows:
+
+| `/cook_snaps/{snapId}` + `/messages` admin-read | `cook-snaps-and-message-mod-rules.test.ts` | run via `npx ts-node src/__tests__/cook-snaps-and-message-mod-rules.test.ts` |
+
+PROJECT_ID `butlery-rules-cook-snaps-and-message-mod`. Note the create rule
+includes `rateLimitWrite('cook_snaps', 5)` — but the rate-limit doc is only
+written by the app, so multiple create-allow tests by the same actor pass as
+long as no test seeds `users/{uid}/rate_limits/cook_snaps`.
+
+### 2026-06-10 — presence-check clauses NEUTRALIZE query-level enforcement (BUT-1214, CRITICAL)
+
+A read rule of the shape `... || (friendGate && (!('field' in resource.data) || resource.data.field != 'secret'))`
+does NOT protect list queries. Verified on emulator: for a query that leaves
+`field` unconstrained, the engine evaluates `'field' in resource.data` as FALSE
+(absent), so the legacy/back-compat disjunct satisfies the rule, the query is
+ALLOWED, and — because rules are not filters — real docs WITH
+`field == 'secret'` are returned in full. Same hole with
+`resource.data.get('field', 'default') != 'secret'` (default kicks in at query
+time → allow → leak). The ONLY shape that closes the query path is strict
+equality on the safe value: `resource.data.field == 'safeValue'` — unconstrained
+query then DENIES, and `where('field','==','safeValue')` ALLOWS. Cost: docs
+missing the field become unreadable via that branch (direct get too) → a
+backfill must run BEFORE the rules deploy. Rule of thumb: in any read rule,
+treat `!('x' in resource.data)` and `.get('x', default)` back-compat clauses as
+get-only semantics that OPEN the list path; require strict equality for any
+visibility/privacy enum.
+
+Resolution (same day): strict-equality fix applied to firestore.rules
+cook_snaps friend-read branch; suite green 32/32 incl. the unconstrained-query
+deny and the flipped legacy contract test ("legacy snap without visibility is
+NOT friend-readable (backfill required)"). Operational invariant: the
+backfill (functions/scripts/backfill-cook-snap-visibility.js) MUST run before
+any rules deploy, or legacy snaps go friend-invisible in prod.
+
+### 2026-06-10 — probe candidate fixes by patching the rules string in-memory
+
+To verify a proposed rule fix WITHOUT touching firestore.rules (that file is
+firebase-backend-security's territory), load the rules file, `rules.replace(
+clauseRegex, candidate)`, and pass the patched string to
+`initializeTestEnvironment` under a fresh projectId per candidate. Match the
+clause with a whitespace-tolerant REGEX (`\s*` between tokens) — literal
+template strings silently miss on indentation. Lets the tester report "fix A
+verified green, fix B verified leaky" instead of speculating.
+
 ### 2026-06-03 — cascade collectionGroup + shopping-list item-scrub coverage (BUT-1191)
 
 Extended `request-account-deletion.integration.test.ts` (21→31 tests) for two

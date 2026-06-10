@@ -22468,6 +22468,24 @@ abstract class AppLocalizations {
   /// **'Dela foto'**
   String get cookSnapVisibilityConfirm;
 
+  /// BUT-1214: default visibility choice in the cook-snap disclosure dialog — the photo inherits the recipe's audience.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samma som receptet'**
+  String get cookSnapVisibilityChoiceSame;
+
+  /// BUT-1214: author-only visibility choice in the cook-snap disclosure dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara jag'**
+  String get cookSnapVisibilityChoiceOnlyMe;
+
+  /// BUT-1214: subtitle under the 'Only me' choice clarifying the photo stays hidden from other recipe viewers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotot syns inte för andra som ser receptet'**
+  String get cookSnapVisibilityChoiceOnlyMeHint;
+
   /// No description provided for @cookSnapErrorLoad.
   ///
   /// In sv, this message translates to:
