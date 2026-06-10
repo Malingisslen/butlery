@@ -35,7 +35,11 @@
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { sendPushToUser } from "./fcm-tokens";
-import { checkAndIncrement, Priority } from "../notifications/notification-rate-cap";
+import {
+  checkAndIncrement,
+  Priority,
+  RateCapResult,
+} from "../notifications/notification-rate-cap";
 
 export type PushSkipReason =
   | "sent"
@@ -73,6 +77,17 @@ export interface Deps {
   getPreferences: (userId: string) => Promise<PreferencesShape | null>;
   getNow: () => Date;
   send: typeof sendPushToUser;
+  /**
+   * BUT-1223: rate-cap seam. The real `checkAndIncrement` opens a Firestore
+   * transaction via `admin.firestore()` — tests without an initialized app
+   * MUST inject a stub here (same convention as the gate/recordEvent seams
+   * on DispatchOptions in send-notification.ts).
+   */
+  checkRateCap: (args: {
+    userId: string;
+    priority?: Priority;
+    now?: Date;
+  }) => Promise<RateCapResult>;
 }
 
 const STOCKHOLM_TZ = "Europe/Stockholm";
@@ -157,6 +172,7 @@ export async function sendPushToUserRespectingPreferences(
   const getPreferences = deps.getPreferences ?? defaultGetPreferences;
   const getNow = deps.getNow ?? (() => new Date());
   const send = deps.send ?? sendPushToUser;
+  const checkRateCap = deps.checkRateCap ?? checkAndIncrement;
 
   const prefs = (await getPreferences(userId)) ?? {};
 
@@ -194,7 +210,7 @@ export async function sendPushToUserRespectingPreferences(
   // category-aware sends are non-critical by definition; critical sends
   // (security alerts, admin moderation) call sendPushToUser directly and
   // therefore bypass this gate intentionally.
-  const capDecision = await checkAndIncrement({
+  const capDecision = await checkRateCap({
     userId,
     priority: "noncritical" as Priority,
     now: getNow(),

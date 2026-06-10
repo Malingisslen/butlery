@@ -1203,3 +1203,64 @@ Patterns worth remembering:
   assert `completeEvents().length === 1` — this is what catches a future
   double-emit (e.g. someone adding an emit inside the try AND keeping the
   catch emit).
+
+### 2026-06-10 — BUT-1223 run-all test runner + 6 pre-existing suite fixes [Bug fixed]
+
+The composite `npm test` chained 34 suites with `&&` — the first red suite
+(lapsed-users, suite #2) masked everything after it, hiding that 6 suites
+were red on main. Replaced with `functions/scripts/run-all-tests.js`
+(plain Node, no deps): auto-discovers every `test:*` script in package.json
+except `test:rules*` / `test:integration:*` (emulator-bound, owned by
+firestore-rules-tester), runs ALL of them even when earlier ones fail,
+prints a summary, exits non-zero if any failed. Verified by deliberately
+breaking `test:kill-switch` mid-list: all 44 suites still ran, exit 1,
+failed suite named in summary; restored after.
+
+**Fix 1 — rate-cap app-init seam (lapsed-users + activity-digest)**:
+`sendPushToUserRespectingPreferences` called the real `checkAndIncrement`
+(BUT-651) directly, which opens a Firestore transaction via
+`admin.firestore()` → `app/no-app` in unit env. Root-cause fix: added a
+`checkRateCap` field to the helper's `Deps` interface (defaults to the
+real `checkAndIncrement`; tests inject `async () => ({allowed, count,
+cap, reason})`). Same convention as the gate/recordEvent seams on
+DispatchOptions (2026-04-30 entry). Also added a `rate_capped` scenario to
+detect-lapsed-users.test.ts proving the seam's decision flows through.
+
+**Fix 2 — cascade fakes vs BUT-886 audit wiring (4 suites)**:
+presence-cascade, notification-gdpr, but753-sharedwith, but466-tombstone
+fakes predated `stageCascadeAuditEntry` and broke three ways:
+1. `database.collection("audit_logs").doc()` — fakes lacked `.doc()` on
+   the collection stub (auto-id ref: `audit_logs/auto-N`).
+2. `batch.set(ref, data)` — fakes lacked `set`. Route audit set-ops to a
+   separate `auditRows` array (NOT the main docs map) so existing
+   size()/has() assertions stay about the cascade target docs.
+3. `doc.ref.parent.parent` (presence only) — refs were bare `{path}`;
+   built a `makeRef(path)` helper deriving the full parent chain.
+
+**Batching assertions were wrong-as-tests after BUT-886** — each cascade
+doc now stages 2 ops (mutation + audit), halving the per-batch cap to 250.
+The "501 docs → 2 commits" assertions asserted the obsolete pre-audit
+behavior; updated to 3 commits (250+250+1), and best-effort failure cases
+to "first of 3 chunks fails → 2 successful commits". Also added positive
+audit-row assertions (count + operation + userId/targetUid) per suite.
+
+**Orphan suites registered**: `notification-rate-cap`, `cascade-audit-log`,
+`cascade-audit-log-wirings`, `duplicate-content-guard`, `on-report-created`,
+`parse-recipe-description-length`, `pii-scrubber`,
+`rate-limiter-global-limits`, `request-account-deletion`,
+`structure-recipe-empty` — 10 test files existed with NO `test:` script
+(the 2026-04-30 "easy to forget the chain" lesson had escalated to
+forgetting the script entirely). All verified green standalone before
+registering. The auto-discovery runner makes this failure mode structural:
+a new `test:foo` script is automatically part of `npm test`.
+
+Patterns worth remembering:
+- **`npm test` now = `node scripts/run-all-tests.js`** (44 suites, ~100s).
+  Adding a suite = add the `test:<name>` script only; no chain to extend.
+- **When production code halves a batch cap, grep tests for the old
+  commit-count constant.** `git log -1 -- <test-file>` predating the
+  wiring commit (here 5bd98f8e8/633595561) is the tell that fakes/asserts
+  are stale, not that the production change is wrong.
+- **spawnSync on Windows needs `shell: true`** for `npm` (npm.cmd; Node's
+  CVE fix blocks .cmd without shell). Command string built only from our
+  own package.json script names.

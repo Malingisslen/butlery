@@ -31,14 +31,49 @@ interface FakeDoc {
 }
 
 /**
+ * Doc-ref stub with the `.parent.parent` chain the SUT walks to derive the
+ * presence parent collection + parent doc id for the BUT-886 audit row.
+ * Path shape: `{collection}/{parentId}/activeUsers/{rowId}`.
+ */
+interface FakeRef {
+  path: string;
+  id: string;
+  parent: { id: string; parent: FakeParentRef | null };
+}
+
+interface FakeParentRef {
+  id: string;
+  parent: { id: string };
+}
+
+function makeRef(path: string): FakeRef {
+  const segments = path.split("/");
+  const id = segments[segments.length - 1];
+  const collId = segments[segments.length - 2];
+  let parentDoc: FakeParentRef | null = null;
+  if (segments.length >= 4) {
+    parentDoc = {
+      id: segments[segments.length - 3],
+      parent: { id: segments[segments.length - 4] },
+    };
+  }
+  return { path, id, parent: { id: collId, parent: parentDoc } };
+}
+
+/**
  * Minimal Firestore-like stub. Stores docs by full path string. Supports
- * `collectionGroup(name).where('userId', '==', uid).get()` and batched
- * deletes — the only API surface `cleanupPresenceRowsWithDb` touches.
+ * `collectionGroup(name).where('userId', '==', uid).get()`, batched deletes,
+ * and — since BUT-886 wired cascade audit rows — `collection('audit_logs')
+ * .doc()` auto-id refs plus `batch.set` for the staged audit entries.
+ * Audit writes land in `auditRows` (not the presence doc map) so presence
+ * size/has assertions stay about presence rows.
  */
 class FakeFirestore {
   private docs = new Map<string, Record<string, unknown>>();
+  private nextAutoId = 0;
   public commits = 0;
   public deletedPaths: string[] = [];
+  public auditRows: { path: string; data: Record<string, unknown> }[] = [];
 
   set(path: string, data: Record<string, unknown>): void {
     this.docs.set(path, data);
@@ -52,6 +87,13 @@ class FakeFirestore {
     return this.docs.has(path);
   }
 
+  collection(name: string): { doc: (id?: string) => FakeRef } {
+    return {
+      doc: (id?: string) =>
+        makeRef(`${name}/${id ?? `auto-${this.nextAutoId++}`}`),
+    };
+  }
+
   collectionGroup(name: string): {
     where: (
       field: string,
@@ -60,7 +102,7 @@ class FakeFirestore {
     ) => {
       get: () => Promise<{
         empty: boolean;
-        docs: { ref: { path: string } }[];
+        docs: { ref: FakeRef }[];
       }>;
     };
   } {
@@ -84,7 +126,7 @@ class FakeFirestore {
           }
           return {
             empty: matches.length === 0,
-            docs: matches.map((d) => ({ ref: { path: d.path } })),
+            docs: matches.map((d) => ({ ref: makeRef(d.path) })),
           };
         },
       }),
@@ -93,17 +135,25 @@ class FakeFirestore {
 
   batch(): {
     delete: (ref: { path: string }) => void;
+    set: (ref: { path: string }, data: Record<string, unknown>) => void;
     commit: () => Promise<void>;
   } {
-    const ops: string[] = [];
+    const deleteOps: string[] = [];
+    const setOps: { path: string; data: Record<string, unknown> }[] = [];
     return {
       delete: (ref) => {
-        ops.push(ref.path);
+        deleteOps.push(ref.path);
+      },
+      set: (ref, data) => {
+        setOps.push({ path: ref.path, data });
       },
       commit: async () => {
-        for (const path of ops) {
+        for (const path of deleteOps) {
           this.docs.delete(path);
           this.deletedPaths.push(path);
+        }
+        for (const op of setOps) {
+          this.auditRows.push(op);
         }
         this.commits++;
       },
@@ -198,6 +248,24 @@ async function scenario_purgesAllUserRowsAcrossBothPresenceCollections(): Promis
     db.size() === initialCount - 3,
     `expected ${initialCount - 3} remaining, got ${db.size()}`
   );
+
+  // BUT-886: one audit_logs row staged per deleted presence row, in the
+  // same batch, with the cascade-delete shape.
+  check(
+    "one audit row per deleted presence row (3)",
+    db.auditRows.length === 3,
+    `expected 3 audit rows, got ${db.auditRows.length}`
+  );
+  check(
+    "audit rows land in audit_logs with cascade_delete + subject uid",
+    db.auditRows.every(
+      (r) =>
+        r.path.startsWith("audit_logs/") &&
+        r.data.operation === "cascade_delete" &&
+        r.data.userId === targetUid
+    ),
+    "audit row shape mismatch"
+  );
 }
 
 async function scenario_emptyResultsetCommitIsSkipped(): Promise<void> {
@@ -233,7 +301,9 @@ async function scenario_emptyResultsetCommitIsSkipped(): Promise<void> {
 }
 
 async function scenario_largeResultsetIsBatched(): Promise<void> {
-  // Verify the 500-op batch chunking by seeding 501 target rows.
+  // Verify batch chunking by seeding 501 target rows. Since BUT-886 each
+  // row stages 2 ops (delete + audit), so the per-batch row cap is 250
+  // (500-op Firestore limit / 2) → 501 rows = 3 commits.
   const db = new FakeFirestore();
   const targetUid = "heavy_user";
 
@@ -256,9 +326,9 @@ async function scenario_largeResultsetIsBatched(): Promise<void> {
   );
 
   check(
-    "uses 2 batch commits when total > 500 (Firestore batch limit)",
-    db.commits === 2,
-    `expected 2 commits (500 + 1), got ${db.commits}`
+    "uses 3 batch commits at 250 rows/batch (delete + audit = 2 ops/row)",
+    db.commits === 3,
+    `expected 3 commits (250 + 250 + 1), got ${db.commits}`
   );
 
   check(

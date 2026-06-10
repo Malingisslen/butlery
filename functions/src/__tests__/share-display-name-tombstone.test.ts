@@ -33,9 +33,12 @@ interface FakeRef {
 
 class FakeFirestore {
   private docs = new Map<string, Record<string, unknown>>();
+  private nextAutoId = 0;
   public commits = 0;
   public failNextCommit = false;
   public failedCommits = 0;
+  /** BUT-886: committed audit rows staged via `batch.set`. */
+  public auditRows: { path: string; data: Record<string, unknown> }[] = [];
 
   set(path: string, data: Record<string, unknown>): void {
     this.docs.set(path, data);
@@ -50,6 +53,7 @@ class FakeFirestore {
   }
 
   collection(name: string): {
+    doc: (id?: string) => FakeRef;
     where: (
       field: string,
       op: string,
@@ -62,6 +66,11 @@ class FakeFirestore {
     };
   } {
     return {
+      // BUT-886: stageCascadeAuditEntry calls `.collection("audit_logs")
+      // .doc()` for an auto-id audit ref.
+      doc: (id?: string) => ({
+        path: `${name}/${id ?? `auto-${this.nextAutoId++}`}`,
+      }),
       where: (field: string, op: string, value: unknown) => ({
         get: async () => {
           const matches: { path: string; data: Record<string, unknown> }[] = [];
@@ -80,6 +89,7 @@ class FakeFirestore {
             empty: matches.length === 0,
             docs: matches.map((d) => ({
               ref: { path: d.path },
+              id: d.path.split("/")[1],
               data: () => d.data,
             })),
           };
@@ -90,12 +100,17 @@ class FakeFirestore {
 
   batch(): {
     update: (ref: FakeRef, data: Record<string, unknown>) => void;
+    set: (ref: FakeRef, data: Record<string, unknown>) => void;
     commit: () => Promise<void>;
   } {
     const ops: { path: string; data: Record<string, unknown> }[] = [];
+    const setOps: { path: string; data: Record<string, unknown> }[] = [];
     return {
       update: (ref, data) => {
         ops.push({ path: ref.path, data });
+      },
+      set: (ref, data) => {
+        setOps.push({ path: ref.path, data });
       },
       commit: async () => {
         if (this.failNextCommit) {
@@ -107,6 +122,9 @@ class FakeFirestore {
           const existing = this.docs.get(op.path);
           if (!existing) continue;
           this.docs.set(op.path, { ...existing, ...op.data });
+        }
+        for (const op of setOps) {
+          this.auditRows.push(op);
         }
         this.commits++;
       },
@@ -185,6 +203,19 @@ async function scenario_tombstonesTargetSharerOnly(): Promise<void> {
     "other sharer's avatar URL is untouched",
     otherAfter?.sharedByAvatarUrl === "https://example.com/avatar/anna.png",
     `expected anna.png, got ${String(otherAfter?.sharedByAvatarUrl)}`
+  );
+
+  // BUT-886: one cascade_anonymize audit row per tombstoned doc.
+  check(
+    "one cascade_anonymize audit row per tombstoned doc (3)",
+    db.auditRows.length === 3 &&
+      db.auditRows.every(
+        (r) =>
+          r.path.startsWith("audit_logs/") &&
+          r.data.operation === "cascade_anonymize" &&
+          r.data.userId === targetUid
+      ),
+    `audits=${db.auditRows.length}`
   );
 }
 
@@ -298,15 +329,17 @@ async function scenario_largeResultsetIsBatched(): Promise<void> {
   );
 
   check(
-    "queues all 501 docs across 2 batches",
+    "queues all 501 docs across multiple batches",
     queued === 501,
     `expected 501, got ${queued}`
   );
 
   check(
-    "uses 2 batch commits when total > 500 (Firestore batch limit)",
-    db.commits === 2,
-    `expected 2 commits, got ${db.commits}`
+    // BUT-886: opsPerItem=2 (update + audit) halves the chunk cap to 250
+    // docs/batch → 501 docs = 3 commits.
+    "uses 3 batch commits at 250 docs/batch (update + audit = 2 ops/doc)",
+    db.commits === 3,
+    `expected 3 commits (250 + 250 + 1), got ${db.commits}`
   );
 
   let allTombstoned = true;
@@ -357,9 +390,10 @@ async function scenario_failedChunkContinues(): Promise<void> {
   );
 
   check(
-    "second chunk still commits successfully (best-effort guarantee)",
-    db.commits === 1,
-    `expected 1 successful commit after first failed, got ${db.commits}`
+    // BUT-886: 3 chunks total (250 docs/batch) — first fails, two succeed.
+    "remaining chunks still commit successfully (best-effort guarantee)",
+    db.commits === 2,
+    `expected 2 successful commits after first failed, got ${db.commits}`
   );
 }
 

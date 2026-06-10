@@ -40,12 +40,20 @@ interface FakeStore {
   docs: SeedDoc[];
   /** Set of `<collection>/<id>` paths that were deleted. */
   deleted: Set<string>;
+  /** BUT-886: committed audit rows staged via `batch.set`. */
+  audits: { path: string; data: Record<string, unknown> }[];
 }
 
 function makeFakeDb(store: FakeStore) {
+  let nextAutoId = 0;
   return {
     collection(name: string) {
       return {
+        // BUT-886: stageCascadeAuditEntry calls `.collection("audit_logs")
+        // .doc()` for an auto-id audit ref.
+        doc(id?: string) {
+          return { path: `${name}/${id ?? `auto-${nextAutoId++}`}` };
+        },
         where(field: string, _op: string, value: unknown) {
           const matches = store.docs.filter(
             (d) => d.collection === name && (d as never as Record<string, unknown>)[field] === value
@@ -55,6 +63,7 @@ function makeFakeDb(store: FakeStore) {
               return {
                 empty: matches.length === 0,
                 docs: matches.map((m) => ({
+                  id: m.id,
                   ref: {
                     delete: async () => {
                       store.deleted.add(`${m.collection}/${m.id}`);
@@ -72,6 +81,11 @@ function makeFakeDb(store: FakeStore) {
       return {
         delete(ref: { delete: () => Promise<void> }) {
           ops.push(() => ref.delete());
+        },
+        set(ref: { path: string }, data: Record<string, unknown>) {
+          ops.push(async () => {
+            store.audits.push({ path: ref.path, data });
+          });
         },
         async commit() {
           for (const op of ops) await op();
@@ -104,6 +118,7 @@ async function deletesAcrossAllThreeCollections(): Promise<void> {
       { collection: "notification_opened_events", id: "o1", userId: "u1" },
     ],
     deleted: new Set(),
+    audits: [],
   };
   const total = await cleanupNotificationQueuesWithDb(
     makeFakeDb(store) as never,
@@ -120,6 +135,21 @@ async function deletesAcrossAllThreeCollections(): Promise<void> {
     ok,
     `total=${total} deleted=${[...store.deleted].join(", ")}`
   );
+
+  // BUT-886: one audit_logs row committed per deleted doc, same batch.
+  const auditsOk =
+    store.audits.length === 4 &&
+    store.audits.every(
+      (a) =>
+        a.path.startsWith("audit_logs/") &&
+        a.data.operation === "cascade_delete" &&
+        a.data.userId === "u1"
+    );
+  record(
+    "stages one cascade_delete audit row per purged doc",
+    auditsOk,
+    `audits=${store.audits.length}`
+  );
 }
 
 async function leavesOtherUsersAlone(): Promise<void> {
@@ -131,6 +161,7 @@ async function leavesOtherUsersAlone(): Promise<void> {
       { collection: "notification_send_events", id: "se2", userId: "u3" },
     ],
     deleted: new Set(),
+    audits: [],
   };
   const total = await cleanupNotificationQueuesWithDb(
     makeFakeDb(store) as never,
@@ -150,7 +181,7 @@ async function leavesOtherUsersAlone(): Promise<void> {
 }
 
 async function emptyCollectionsNoop(): Promise<void> {
-  const store: FakeStore = { docs: [], deleted: new Set() };
+  const store: FakeStore = { docs: [], deleted: new Set(), audits: [] };
   const total = await cleanupNotificationQueuesWithDb(
     makeFakeDb(store) as never,
     "u1"
@@ -170,6 +201,7 @@ async function totalReflectsCrossCollectionSum(): Promise<void> {
       { collection: "notification_opened_events", id: "o1", userId: "u1" },
     ],
     deleted: new Set(),
+    audits: [],
   };
   const total = await cleanupNotificationQueuesWithDb(
     makeFakeDb(store) as never,

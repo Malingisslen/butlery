@@ -63,9 +63,12 @@ interface FakeRef {
 
 class FakeFirestore {
   private docs = new Map<string, Record<string, unknown>>();
+  private nextAutoId = 0;
   public commits = 0;
   public failNextCommit = false;
   public failedCommits = 0;
+  /** BUT-886: committed audit rows staged via `batch.set`. */
+  public auditRows: { path: string; data: Record<string, unknown> }[] = [];
 
   set(path: string, data: Record<string, unknown>): void {
     this.docs.set(path, data);
@@ -80,6 +83,7 @@ class FakeFirestore {
   }
 
   collection(name: string): {
+    doc: (id?: string) => FakeRef;
     where: (
       field: string,
       op: string,
@@ -87,11 +91,16 @@ class FakeFirestore {
     ) => {
       get: () => Promise<{
         empty: boolean;
-        docs: { ref: FakeRef; data: () => Record<string, unknown> }[];
+        docs: { ref: FakeRef; id: string; data: () => Record<string, unknown> }[];
       }>;
     };
   } {
     return {
+      // BUT-886: stageCascadeAuditEntry calls `.collection("audit_logs")
+      // .doc()` for an auto-id audit ref.
+      doc: (id?: string) => ({
+        path: `${name}/${id ?? `auto-${this.nextAutoId++}`}`,
+      }),
       where: (field: string, op: string, value: unknown) => ({
         get: async () => {
           const matches: { path: string; data: Record<string, unknown> }[] = [];
@@ -110,6 +119,7 @@ class FakeFirestore {
             empty: matches.length === 0,
             docs: matches.map((d) => ({
               ref: { path: d.path },
+              id: d.path.split("/")[1],
               data: () => d.data,
             })),
           };
@@ -120,12 +130,17 @@ class FakeFirestore {
 
   batch(): {
     update: (ref: FakeRef, data: Record<string, unknown>) => void;
+    set: (ref: FakeRef, data: Record<string, unknown>) => void;
     commit: () => Promise<void>;
   } {
     const ops: { path: string; data: Record<string, unknown> }[] = [];
+    const setOps: { path: string; data: Record<string, unknown> }[] = [];
     return {
       update: (ref, data) => {
         ops.push({ path: ref.path, data });
+      },
+      set: (ref, data) => {
+        setOps.push({ path: ref.path, data });
       },
       commit: async () => {
         if (this.failNextCommit) {
@@ -146,6 +161,9 @@ class FakeFirestore {
             }
           }
           this.docs.set(op.path, next);
+        }
+        for (const op of setOps) {
+          this.auditRows.push(op);
         }
         this.commits++;
       },
@@ -205,6 +223,18 @@ async function scenario_scrubsTargetUserPreservesOthers(): Promise<void> {
     Array.isArray(after2?.sharedWith) &&
       JSON.stringify(after2?.sharedWith) === JSON.stringify([userA, userC]),
     `expected [A,C], got ${JSON.stringify(after2?.sharedWith)}`
+  );
+
+  // BUT-886: one audit row per scrubbed doc, targetUid = the sharer.
+  check(
+    "one cascade_delete audit row staged for the scrubbed doc",
+    db.auditRows.length === 1 &&
+      db.auditRows[0].path.startsWith("audit_logs/") &&
+      db.auditRows[0].data.operation === "cascade_delete" &&
+      db.auditRows[0].data.userId === userB &&
+      (db.auditRows[0].data.metadata as Record<string, unknown>).targetUid ===
+        userA,
+    `audit rows=${JSON.stringify(db.auditRows)}`
   );
 }
 
@@ -266,9 +296,11 @@ async function scenario_largeResultsetIsBatched(): Promise<void> {
   );
 
   check(
-    "uses 2 batch commits when total > 500 (Firestore batch limit)",
-    db.commits === 2,
-    `expected 2 commits (500 + 1), got ${db.commits}`
+    // BUT-886: onItemOp audit row halves the chunk cap to 250 docs/batch
+    // (arrayRemove + audit = 2 ops/doc) → 501 docs = 3 commits.
+    "uses 3 batch commits at 250 docs/batch (arrayRemove + audit = 2 ops/doc)",
+    db.commits === 3,
+    `expected 3 commits (250 + 250 + 1), got ${db.commits}`
   );
 
   // Verify all docs scrubbed (target gone, owner stays).
@@ -321,9 +353,10 @@ async function scenario_failedChunkContinues(): Promise<void> {
   );
 
   check(
-    "second chunk still commits successfully (best-effort guarantee)",
-    db.commits === 1,
-    `expected 1 successful commit after first failed, got ${db.commits}`
+    // BUT-886: 3 chunks total (250 docs/batch) — first fails, two succeed.
+    "remaining chunks still commit successfully (best-effort guarantee)",
+    db.commits === 2,
+    `expected 2 successful commits after first failed, got ${db.commits}`
   );
 }
 

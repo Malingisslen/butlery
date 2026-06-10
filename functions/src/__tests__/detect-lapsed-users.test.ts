@@ -46,6 +46,8 @@ interface Scenario {
   prefs: Record<string, unknown> | null;
   /** UTC time the test should pretend "now" is. */
   nowUtcIso: string;
+  /** BUT-1223: rate-cap seam outcome for this scenario (default allowed). */
+  capAllowed?: boolean;
   expectSent: boolean;
   expectReason: string;
 }
@@ -53,11 +55,20 @@ interface Scenario {
 function makeDeps(
   prefs: Record<string, unknown> | null,
   nowUtcIso: string,
-  sends: SendCall[]
+  sends: SendCall[],
+  capAllowed = true
 ) {
   return {
     getPreferences: async (_userId: string) => prefs,
     getNow: () => new Date(nowUtcIso),
+    // BUT-1223: stub the rate-cap seam — the real checkAndIncrement opens a
+    // Firestore transaction via admin.firestore() (no app in unit env).
+    checkRateCap: async () => ({
+      allowed: capAllowed,
+      count: capAllowed ? 0 : 10,
+      cap: 10,
+      reason: (capAllowed ? "ok" : "total_cap") as "ok" | "total_cap",
+    }),
     send: async (
       userId: string,
       notification: { title: string; body: string },
@@ -143,6 +154,19 @@ const scenarios: Scenario[] = [
     nowUtcIso: WINTER_AFTERNOON_UTC,
     expectSent: false,
     expectReason: "opted_out",
+  },
+  {
+    // BUT-1223: the rate-cap seam's decision must flow through — a capped
+    // user is not pinged and the send() dep is never invoked.
+    name: "rate-capped user (24h fatigue cap hit) is NOT pinged",
+    prefs: {
+      enabled: true,
+      reEngagement: true,
+    },
+    nowUtcIso: WINTER_AFTERNOON_UTC,
+    capAllowed: false,
+    expectSent: false,
+    expectReason: "rate_capped",
   },
 ];
 
@@ -640,7 +664,7 @@ async function runTests(): Promise<void> {
 
   for (const s of scenarios) {
     const sends: SendCall[] = [];
-    const deps = makeDeps(s.prefs, s.nowUtcIso, sends);
+    const deps = makeDeps(s.prefs, s.nowUtcIso, sends, s.capAllowed ?? true);
     const result = await sendPushToUserRespectingPreferences(
       "user-123",
       { title: "Butlery", body: "Vi saknar dig!" },

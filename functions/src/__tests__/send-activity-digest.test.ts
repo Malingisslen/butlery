@@ -49,6 +49,14 @@ function makeDeps(
   return {
     getPreferences: async (_userId: string) => prefs,
     getNow: () => new Date(nowUtcIso),
+    // BUT-1223: stub the rate-cap seam — the real checkAndIncrement opens a
+    // Firestore transaction via admin.firestore() (no app in unit env).
+    checkRateCap: async () => ({
+      allowed: true,
+      count: 0,
+      cap: 10,
+      reason: "ok" as const,
+    }),
     send: async (
       userId: string,
       notification: { title: string; body: string },
