@@ -154,6 +154,36 @@ void main() {
       expect(map.containsKey('parseMetadata'), isTrue);
     });
 
+    /// BUT-1228: toRecipeData must carry the parser's structured form so any
+    /// consumer building a Recipe from this map can persist it. The entries
+    /// must be index-aligned with the raw `ingredients` strings (entry.raw ==
+    /// ingredients[i]) — misaligned data is silently discarded by the
+    /// Recipe.structuredIngredients facade, so alignment IS the contract.
+    test(
+        'structuredIngredients key is index-aligned with ingredients and '
+        'carries amount/unit/name', () {
+      final map = _completeRecipe().toRecipeData();
+
+      final raw = map['ingredients'] as List;
+      final structured = map['structuredIngredients'] as List;
+
+      expect(structured.length, raw.length);
+      for (var i = 0; i < structured.length; i++) {
+        expect((structured[i] as Map)['raw'], raw[i],
+            reason: 'entry $i must align with its raw ingredient line');
+      }
+      expect((structured[0] as Map)['amount'], 2);
+      expect((structured[0] as Map)['name'], 'tomato');
+      // Unstructured line degrades to name-only, raw still present.
+      expect((structured[1] as Map)['name'], 'basil');
+      expect((structured[1] as Map).containsKey('amount'), isFalse);
+    });
+
+    test('structuredIngredients key absent when ingredients failed', () {
+      final r = ParsedRecipe.empty(metadata: _meta());
+      expect(r.toRecipeData().containsKey('structuredIngredients'), isFalse);
+    });
+
     test('maps every populated field', () {
       final r = _completeRecipe();
       final map = r.toRecipeData();

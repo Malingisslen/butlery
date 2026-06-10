@@ -12,8 +12,10 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/llm/llm_models.dart';
+import 'package:butlery/services/parsing/ingredient_conversion.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
@@ -361,13 +363,24 @@ class LlmEnhancementService extends BaseService {
     // Infer meal type from tags if available
     final mealType = _inferMealType(extracted.tags);
 
+    // BUT-1228: persist the LLM's structured form (amount/unit/name) instead
+    // of discarding it. Both lists derive from the SAME ParsedIngredient list
+    // (originalLine == formatted), which guarantees the index-alignment
+    // invariant that Recipe.structuredIngredients validates. This seam covers
+    // every LLM-built recipe: TikTok/Instagram captions, photo vision
+    // fallback, URL Tier-6 fallback, and enhance mode.
+    final parsedIngredients =
+        extracted.ingredients.map(parsedIngredientFromExtracted).toList();
+
     return Recipe.personal(
       title: extracted.title,
       description: extracted.description.orEmpty(),
       mealType: mealType,
       portions: extracted.portions ?? ParsingTier.kDefaultPortions,
       timeMinutes: extracted.totalTimeMinutes ?? 0,
-      ingredients: extracted.ingredients.map((i) => i.formatted).toList(),
+      ingredients: parsedIngredients.map((i) => i.originalLine).toList(),
+      structuredIngredients:
+          parsedIngredients.map(RecipeIngredient.fromParsed).toList(),
       instructions: extracted.instructions,
       personalTagIds: extracted.tags,
       sourceUrl: extracted.source,

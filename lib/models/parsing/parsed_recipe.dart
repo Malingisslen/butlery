@@ -2,6 +2,7 @@ import 'package:butlery/models/nutrition_info.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 
 /// A parsed recipe with per-field confidence tracking.
 ///
@@ -174,6 +175,13 @@ class ParsedRecipe {
         if (portions.hasValue) 'portions': portions.value,
         if (ingredients.hasValue)
           'ingredients': ingredients.value!.map((i) => i.originalLine).toList(),
+        // BUT-1228: both lists derive from the same ParsedIngredient list, so
+        // entry i's `raw` equals ingredients[i] — the alignment invariant
+        // Recipe.structuredIngredients validates before serving the data.
+        if (ingredients.hasValue)
+          'structuredIngredients': ingredients.value!
+              .map((i) => RecipeIngredient.fromParsed(i).toJson())
+              .toList(),
         if (instructions.hasValue) 'instructions': instructions.value,
         if (totalTime.hasValue) 'timeMinutes': totalTime.value!.inMinutes,
         if (prepTime.hasValue) 'prepTimeMinutes': prepTime.value!.inMinutes,

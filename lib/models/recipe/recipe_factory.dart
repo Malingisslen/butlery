@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
@@ -20,12 +21,14 @@ class RecipeFactory {
     String? sourceUrl,
     List<String>? imageUrls,
     bool isPublic = false,
+    List<RecipeIngredient>? structuredIngredients,
   }) {
     return Recipe(
       core: RecipeCore(
         title: title,
         description: description,
         ingredients: ingredients,
+        structuredIngredients: structuredIngredients,
         instructions: instructions,
         mealType: mealType,
         createdBy: createdBy,

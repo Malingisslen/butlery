@@ -42,6 +42,7 @@ library;
 
 import 'dart:typed_data';
 
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
@@ -769,6 +770,81 @@ void main() {
       );
       await service.extractFromTranscript('t', 'u');
       expect(llm.lastStructureMode, StructureMode.spoken);
+    });
+  });
+
+  group('structured ingredients wiring (BUT-1228)', () {
+    // This conversion seam builds the Recipe for ALL LLM-based imports:
+    // TikTok/Instagram captions, photo vision fallback, URL Tier-6 fallback
+    // and enhance mode. The Recipe it produces must PERSIST the LLM's
+    // structured form (amount/unit/name), index-aligned with the raw
+    // ingredient strings — the facade silently degrades misaligned data to
+    // raw-only, so these assertions check core storage AND facade output.
+    const structuredInput = [
+      ExtractedIngredient(amount: 2, unit: 'dl', name: 'mjölk'),
+      ExtractedIngredient(name: 'salt'),
+      ExtractedIngredient(
+        amount: 1.5,
+        unit: 'tsk',
+        name: 'socker',
+        preparation: 'siktat',
+      ),
+    ];
+
+    void expectStructuredWired(Recipe recipe) {
+      final stored = recipe.core.structuredIngredients;
+      expect(stored, isNotNull,
+          reason: 'structured data must be persisted on the core, '
+              'not synthesized by the facade fallback');
+      expect(stored!.length, recipe.ingredients.length);
+      for (var i = 0; i < stored.length; i++) {
+        expect(stored[i].raw, recipe.ingredients[i],
+            reason: 'entry $i must be index-aligned with ingredients[$i]');
+      }
+
+      // Facade serves the stored data (proves alignment validation passed).
+      final facade = recipe.structuredIngredients;
+      expect(facade[0].amount, 2);
+      expect(facade[0].unit, 'dl');
+      expect(facade[0].name, 'mjölk');
+      expect(facade[1].isStructured, isFalse,
+          reason: 'amount-less line stays a raw-only entry');
+      expect(facade[1].name, 'salt');
+      expect(facade[2].amount, 1.5);
+      expect(facade[2].note, 'siktat');
+    }
+
+    test(
+        'extractFromTranscript (TikTok/Instagram path) recipe carries '
+        'index-aligned structuredIngredients', () async {
+      llm.structureResponse = StructureRecipeResponse(
+        success: true,
+        recipe: _extracted(ingredients: structuredInput),
+        estimatedCost: 0,
+      );
+
+      final result = await service.extractFromTranscript(
+        'caption text',
+        'https://www.tiktok.com/@chef/video/1',
+      ) as ImportSuccess;
+
+      expectStructuredWired(result.recipe);
+    });
+
+    test(
+        'extractFromImage (photo LLM fallback) recipe carries '
+        'index-aligned structuredIngredients', () async {
+      llm.ocrResponse = OcrRecipeImageResponse(
+        success: true,
+        recipe: _extracted(ingredients: structuredInput),
+        estimatedCost: 0,
+      );
+
+      final result = await service.extractFromImage(
+        Uint8List.fromList([1, 2, 3]),
+      ) as ImportSuccess;
+
+      expectStructuredWired(result.recipe);
     });
   });
 
