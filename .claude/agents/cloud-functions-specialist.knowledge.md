@@ -1327,3 +1327,54 @@ Patterns worth remembering:
   owner-only rules (`request.auth.uid == userId` read/create, no client
   delete needed — admin cascade is the erasure path). firestore.rules is
   owned by the Dart-side agent/firestore-rules-tester.
+
+### 2026-06-11 — BUT-839 v2-trigger integration tests via CloudFunction.run() [Pattern discovered]
+
+First integration tests for STORAGE/FIRESTORE-TRIGGERED functions (vs the
+BUT-1009 precedent which tested a callable's `runX(deps)` seam). Neither
+`moderateUpload` (`storage/moderate-upload.ts`, onObjectFinalized) nor
+`syncConversationLastMessage` (`messaging/sync-conversation-last-message.ts`,
+onDocumentWritten) has a deps seam — their logic is inline in the trigger
+body. The emulator does NOT fire deployed trigger code, so the tests invoke
+the real handler via the v2 SDK's `CloudFunction.run(event)` surface:
+
+- **v2 exports carry `.run(event)`** — every `onDocumentWritten`/
+  `onObjectFinalized`/etc. export is callable as `fn.run(event)` with a
+  typed event payload. This proves the REAL handler wiring without
+  firebase-functions-test or a functions emulator.
+- **Build Firestore `Change` payloads from REAL emulator snapshots**: read
+  the doc BEFORE the write (non-existent snapshot for creates — `.data()`
+  returns undefined, exactly like production), write, read again, pass
+  `{ params, data: { before, after } }`. Delete events: snapshot before,
+  delete, snapshot after (exists=false). No hand-rolled snapshot fakes.
+- **Storage events are plain objects**: `{ data: { bucket, name,
+  contentType, metadata } }` is all `moderateUpload` reads; seed the actual
+  bytes via `bucket().file(p).save(buf, { contentType })` first so the
+  handler's ranged `download({ start, end })` hits real emulator data.
+- **Admin SDK → Storage emulator**: set `FIREBASE_STORAGE_EMULATOR_HOST=
+  127.0.0.1:9199` (plus `FIRESTORE_EMULATOR_HOST`, `GCLOUD_PROJECT`,
+  `FIREBASE_CONFIG` with `storageBucket`) BEFORE importing firebase-admin.
+  The trigger module must also be `require()`d AFTER `admin.initializeApp`.
+- **Skip gate**: probe the emulator port(s) with a raw `http.request`
+  (any HTTP answer = live; storage answers 501 on bare GET). Port down +
+  `process.env.CI` unset → print SKIP, exit 0. In CI (GitHub Actions sets
+  `CI=true`) a missing emulator is a hard fail. This keeps Java-less local
+  machines green while CI stays strict.
+- **Storage emulator alongside the hook's firestore-only emulator**: the
+  `ensure-firestore-emulator.sh` instance holds hub 4400 / UI 4000, so a
+  second `emulators:start` collides. Workaround: alternate config at REPO
+  ROOT (`firebase.storage-emulator.json` — rules path must be inside the
+  config's directory, so it cannot live under `.claude/state/`) with
+  `--only storage`, hub 4401, logging 4501, UI disabled:
+  `firebase emulators:start --only storage --project demo-test --config
+  firebase.storage-emulator.json`. CI doesn't need this (it starts
+  firestore,storage in one instance).
+- **Shared demo-test namespace**: when a suite uses project `demo-test`
+  (so storage's singleProjectMode doesn't complain), use per-run unique
+  ids, assert by unique resourceId (avoids needing a namespace wipe that
+  would clobber parallel suites), and delete seeded docs in cleanup.
+- Suites wired as `test:integration:moderate-upload` /
+  `test:integration:sync-conversation`, appended to `test:rules:all`
+  (which the firestore-rules CI lane runs with both emulators up), and
+  added to the workflow's path triggers incl. `functions/src/storage/**`
+  + `functions/src/messaging/**`.

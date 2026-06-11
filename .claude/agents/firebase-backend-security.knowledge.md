@@ -116,6 +116,9 @@ _Compacted 2026-06-01 (BUT-1177): older entries condensed to their reusable less
 
 *Append new dated entries below as the agent learns them.*
 
+### 2026-06-11 — ONNX model-integrity gate is fail-close; cache path is trusted by design (BUT-792/876/877)
+`RemoteModelLoader.verifyModelDownload` returns true ONLY on registry hash match — empty registry and missing-version entry both refuse (BUT-877 superseded the BUT-876 transitional soft-allow). **Ordering invariant to re-check on any edit:** in `ner_model_manager.dart`/`line_classifier_model_manager.dart` the verify call sits BEFORE `getCacheDir()`/any `.tmp` write/`_cachedModelPath` assignment — refused bytes never touch disk or the ONNX runtime. **Cache path (`_tryLoadCached`) does NOT re-hash** — deliberate: threat model is Storage-side substitution/MITM, not local-disk tamper (= device compromise, out of scope); zero released users means no installed base carries unverified caches from the BUT-876 soft-allow window. If a soft-allow window ever overlaps real users, a one-time cache re-verify becomes required. **Publish-order footgun:** the registry entry must ship in the client release BEFORE bumping Storage `latest_version.txt`, or all clients refuse the new version (now documented in `_expected_model_hashes.dart`). `ModelIntegrityResult.ok` is true even when `unverified=true` — pure-data result carries no policy; callers must check `unverified` first. `RemoteWeightLoader` (CRF JSON weights) has NO integrity check — accepted: pure-Dart Viterbi decode of JSON, no native deserialization of attacker-controlled bytes; revisit if weights gain code-like power.
+
 ### 2026-04-25 — initial seed
 Seeded from CLAUDE.md (rules #3, data-source, cost), the agent description, and MEMORY.md (batch limit). Record genuinely new permission/GDPR/query patterns or surprising Firebase behavior — not re-derivations of the reference sections above.
 
