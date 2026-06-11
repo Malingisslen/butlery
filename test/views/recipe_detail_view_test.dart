@@ -384,6 +384,42 @@ void main() {
         expect(cookSnapService.lastVisibility, CookSnapVisibility.sameAsRecipe);
       });
 
+      testWidgets(
+          'tapping "Bara jag" marks it selected (and deselects the default) '
+          'before confirm', (tester) async {
+        // Proves: the tap gives immediate selection feedback. The square
+        // restyle replaced RadioListTile (selection rendered for free from
+        // groupValue) with a hand-rolled tile whose selected state must be
+        // re-rendered via setDialogState and is exposed through
+        // Semantics(selected:) per the radio-picker a11y rule. A regression
+        // mutating `selected` without setState would still pass the
+        // service-level pin above (the pop value is right) while the user
+        // sees no selection change and screen readers announce the wrong
+        // choice — this is the only test that catches it.
+        final handle = tester.ensureSemantics();
+        await startAddSnapFlow(tester);
+
+        final sameTile =
+            find.byKey(const ValueKey('cook-snap-visibility-same'));
+        expect(
+            tester.getSemantics(sameTile), containsSemantics(isSelected: true),
+            reason: '"Samma som receptet" must start selected');
+        expect(tester.getSemantics(onlyMeRadio()),
+            containsSemantics(isSelected: false));
+
+        await tester.tap(onlyMeRadio());
+        await tester.pump();
+
+        expect(tester.getSemantics(onlyMeRadio()),
+            containsSemantics(isSelected: true),
+            reason: 'tapping "Bara jag" must visibly select it');
+        expect(
+            tester.getSemantics(sameTile), containsSemantics(isSelected: false),
+            reason: 'single-choice picker: the default must deselect');
+
+        handle.dispose();
+      });
+
       testWidgets('cancelling the visibility dialog uploads nothing',
           (tester) async {
         // Proves: cancel means cancel — the dialog is a consent gate, so

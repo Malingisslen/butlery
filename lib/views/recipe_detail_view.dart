@@ -14,6 +14,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/views/recipe_detail/cook_snap_visibility.dart';
+import 'package:butlery/views/recipe_detail/cook_snap_visibility_dialog.dart';
 import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
@@ -816,67 +817,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       message = context.l10n.cookSnapVisibleTo(formatted.orEmpty());
     }
 
-    var selected = CookSnapVisibility.sameAsRecipe;
-    return showDialog<CookSnapVisibility>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.visibility_outlined,
-                  size: AppDimensions.iconSizeS,
-                  color: Theme.of(ctx).colorScheme.onSurfaceVariant),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Expanded(child: Text(ctx.l10n.cookSnapVisibilityTitle)),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(message),
-              const SizedBox(height: AppDimensions.spacingSm),
-              RadioGroup<CookSnapVisibility>(
-                groupValue: selected,
-                onChanged: (v) => setDialogState(
-                    () => selected = v ?? CookSnapVisibility.sameAsRecipe),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RadioListTile<CookSnapVisibility>(
-                      key: const ValueKey('cook-snap-visibility-same'),
-                      value: CookSnapVisibility.sameAsRecipe,
-                      title: Text(ctx.l10n.cookSnapVisibilityChoiceSame),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                    RadioListTile<CookSnapVisibility>(
-                      key: const ValueKey('cook-snap-visibility-only-me'),
-                      value: CookSnapVisibility.onlyMe,
-                      title: Text(ctx.l10n.cookSnapVisibilityChoiceOnlyMe),
-                      subtitle:
-                          Text(ctx.l10n.cookSnapVisibilityChoiceOnlyMeHint),
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(ctx.l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, selected),
-              child: Text(ctx.l10n.cookSnapVisibilityConfirm),
-            ),
-          ],
-        ),
-      ),
-    );
+    return showCookSnapVisibilityDialog(context, message: message);
   }
 
   /// BUT-937: confirm-dialog + 7s snackbar undo mirroring the comment
