@@ -9,6 +9,8 @@
  * Run with: npx ts-node src/__tests__/pii-scrubber.test.ts
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import { scrubPii, scrubUrlParams } from "../llm/pii-scrubber";
 
 interface Case {
@@ -204,6 +206,28 @@ const URL_CASES: UrlCase[] = [
   },
 ];
 
+// BUT-694: street-address + person-name heuristic vectors. Loaded from the
+// shared fixture (NOT inlined) — the Dart port copies the same file, so the
+// JSON is the single cross-port contract. Exact full-string equality, which
+// also pins that the heuristics don't disturb surrounding text.
+interface HeuristicVector {
+  name: string;
+  input: string;
+  expected: string;
+}
+
+function loadHeuristicVectors(): HeuristicVector[] {
+  const raw = fs.readFileSync(
+    path.join(__dirname, "fixtures", "pii-heuristic-vectors.json"),
+    "utf8"
+  );
+  const parsed = JSON.parse(raw) as { vectors: HeuristicVector[] };
+  if (!Array.isArray(parsed.vectors) || parsed.vectors.length === 0) {
+    throw new Error("pii-heuristic-vectors.json: vectors array missing/empty");
+  }
+  return parsed.vectors;
+}
+
 function runTests(): void {
   console.log("BUT-423/692: PII Scrubber Tests\n");
   console.log("================================\n");
@@ -258,7 +282,25 @@ function runTests(): void {
     }
   }
 
-  const total = CASES.length + URL_CASES.length;
+  console.log("\nBUT-694: address + name heuristic vectors (shared fixture)\n");
+  console.log("------------------------------------------------------------\n");
+
+  const heuristicVectors = loadHeuristicVectors();
+  for (const tc of heuristicVectors) {
+    const out = scrubPii(tc.input);
+    const ok = out === tc.expected;
+    if (ok) {
+      console.log(`  PASS  ${tc.name}`);
+    } else {
+      failed++;
+      console.log(`  FAIL  ${tc.name}`);
+      console.log(`        input:    ${JSON.stringify(tc.input)}`);
+      console.log(`        expected: ${JSON.stringify(tc.expected)}`);
+      console.log(`        output:   ${JSON.stringify(out)}`);
+    }
+  }
+
+  const total = CASES.length + URL_CASES.length + heuristicVectors.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

@@ -14,6 +14,13 @@ const String _replacementEmail = '[EMAIL]';
 const String _replacementPhone = '[PHONE]';
 const String _replacementPersonnummer = '[PERSONNUMMER]';
 
+/// BUT-694 heuristic tokens. Byte-identical with the TS-side
+/// `REPLACEMENT_ADDRESS` / `REPLACEMENT_NAME` so the server's
+/// `redactionRatio` (token coverage over scrubbed output) counts
+/// client-emitted heuristic redactions with unchanged semantics.
+const String _replacementAddress = '[ADDRESS]';
+const String _replacementName = '[NAME]';
+
 /// Opaque-token marker used by the URL scrubber. Must stay byte-identical
 /// with the TS-side `REPLACEMENT_OPAQUE` — the parity test cases in
 /// `test/unit/services/llm/pii_scrubber_test.dart` and
@@ -31,8 +38,16 @@ final RegExp _personnummerRegex = RegExp(r'\b(?:\d{6}|\d{8})[-+]\d{4}\b');
 
 /// Unit suffixes that signal a hyphenated number range is NOT a phone number
 /// (recipe durations, temperatures, quantities).
+///
+/// The unit word must NOT continue into a longer word. ASCII `\b` is wrong
+/// here: it reports a boundary between `l` and `ä` ("lägenhet"), so
+/// "Storgatan 14 lägenhet 1203" would read as "14 l" (litres) and leak the
+/// address. Use an explicit non-word lookahead that includes å/ä/ö instead.
+const String _unitWordEnd = r'(?![A-Za-zÅÄÖåäö0-9_])';
 const String _unitSuffixLookahead =
-    r'(?!\s*(?:min\b|sek\b|tim\b|timmar\b|minuter\b|sekunder\b|°C|°F|kr\b|st\b|g\b|kg\b|ml\b|dl\b|l\b|cl\b|tsk\b|msk\b|portioner\b))';
+    r'(?!\s*(?:(?:min|sek|tim|timmar|minuter|sekunder|kr|st|g|kg|ml|dl|l|cl|tsk|msk|portioner)'
+    '$_unitWordEnd'
+    '|°C|°F))';
 
 /// Swedish phone numbers: +46 / 0046 / leading-0 trunk, followed by digit
 /// groups with optional `-`/space separators. Negative lookahead rejects
@@ -40,6 +55,59 @@ const String _unitSuffixLookahead =
 final RegExp _swedishPhoneRegex = RegExp(
   r'(?:\+46|0046|\b0)[-\s]?\d{1,3}[-\s]?\d{2,4}[-\s]?\d{2,4}(?:[-\s]?\d{2,4})?'
   '$_unitSuffixLookahead',
+);
+
+// ---------------------------------------------------------------------------
+// BUT-694 (option c) — Swedish street-address + person-name heuristics.
+//
+// Mirror of the HEURISTIC CONTRACT block in functions/src/llm/pii-scrubber.ts.
+// The contract is pinned by the shared vector file copied to
+// test/unit/services/llm/fixtures/pii-heuristic-vectors.json — any rule change
+// starts on the TS side and re-copies the vectors here.
+//
+// RULE A: word ending in a closed street-suffix set + REQUIRED house number
+//         (1-4 digits, optional attached letter) → "[ADDRESS]". Guards: ≥1
+//         letter before the suffix (bare "vägen"/"gatan" never match), and
+//         the shared cooking-unit lookahead rejects quantities
+//         ("Ringvägen 5 minuter" stays).
+// RULE B: closed relation/honorific trigger + capitalized (optionally
+//         hyphen-doubled) name → trigger kept, name → "[NAME]". NO general
+//         capitalized-word NER — possessive recipe titles stay.
+// ---------------------------------------------------------------------------
+
+/// Closed suffix set for RULE A. Longer alternative first (gränden before
+/// gränd) so the full word is consumed.
+const String _streetSuffixes =
+    '(?:gatan|vägen|gränden|gränd|torget|stigen|allén|backen|platsen)';
+
+/// RULE A regex. No leading `\b` — like JS, Dart's ASCII `\b` mis-fires
+/// before å/ä/ö; the letter class itself extends the match left as far as
+/// the word goes, which is what we want for redaction. The trailing `\b`
+/// sits after ASCII digits/letters where it is reliable.
+///
+/// The letter run is bounded at 60: an unbounded `+` backtracks O(n²) on
+/// long unbroken letter runs. No real street name approaches 60 letters.
+final RegExp _swedishStreetAddressRegex = RegExp(
+  '[A-Za-zÅÄÖåäöé]{1,60}$_streetSuffixes'
+  r'\s+\d{1,4}[A-Za-z]?\b'
+  '$_unitSuffixLookahead',
+);
+
+/// RULE B triggers. Case spelled per-letter instead of `caseSensitive: false`
+/// so the NAME part stays strictly capital-initial.
+const String _relationOrHonorific = '(?:[Mm]ormor|[Ff]armor|[Mm]orfar|[Ff]arfar'
+    '|[Mm]oster|[Ff]aster|[Mm]orbror|[Ff]arbror'
+    '|[Mm]in vän(?:inna)?|[Vv]år vän(?:inna)?'
+    '|[Hh]err|[Ff]röken|[Ff]ru)';
+
+/// RULE B regex. The lookbehind enforces a non-letter (or string start)
+/// before the trigger — using a letter class instead of `\b` for the same
+/// å/ä/ö reason as RULE A; `\s+` after the trigger rejects genitives
+/// ("mormors") and embedded matches ("Frukost"). Group 1 (trigger +
+/// whitespace) is preserved by the replacement.
+final RegExp _relationNameRegex = RegExp(
+  '(?<=^|[^A-Za-zÅÄÖåäö])($_relationOrHonorific'
+  r'\s+)[A-ZÅÄÖ][a-zåäöé]+(?:-[A-ZÅÄÖ][a-zåäöé]+)?',
 );
 
 /// Remove PII from [text] before sending to an LLM Cloud Function.
@@ -52,6 +120,12 @@ String scrubPii(String text) {
   result = result.replaceAll(_emailRegex, _replacementEmail);
   result = result.replaceAll(_personnummerRegex, _replacementPersonnummer);
   result = result.replaceAll(_swedishPhoneRegex, _replacementPhone);
+  // BUT-694 heuristics run last — same deterministic order as the TS side.
+  result = result.replaceAll(_swedishStreetAddressRegex, _replacementAddress);
+  result = result.replaceAllMapped(
+    _relationNameRegex,
+    (m) => '${m.group(1)!}$_replacementName',
+  );
   return result;
 }
 

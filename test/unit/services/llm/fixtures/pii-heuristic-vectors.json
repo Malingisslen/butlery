@@ -1,0 +1,160 @@
+{
+  "_header": [
+    "BUT-694 (option c): shared test vectors for the Swedish street-address +",
+    "person-name PII heuristics. SOURCE OF TRUTH lives here, next to the TS",
+    "implementation (functions/src/llm/pii-scrubber.ts — see the HEURISTIC",
+    "CONTRACT comment block).",
+    "",
+    "The Dart mirror (lib/services/llm/pii_scrubber.dart) COPIES this file to",
+    "test/unit/services/llm/fixtures/ and runs the same vectors — that copy is",
+    "the cross-port sync mechanism. If you change a vector here, re-copy the",
+    "file to the Dart side and vice versa.",
+    "",
+    "Each vector: scrubPii(input) must equal `expected` EXACTLY (full-string",
+    "equality, not substring checks). Vectors are heuristics-only: inputs",
+    "contain no emails/phones/personnummer so both ports can run them through",
+    "the full scrubber without interference from the older rules."
+  ],
+  "vectors": [
+    {
+      "name": "RULE A: gatan + house number is redacted",
+      "input": "Hämta nyckeln på Storgatan 14 i Stockholm",
+      "expected": "Hämta nyckeln på [ADDRESS] i Stockholm"
+    },
+    {
+      "name": "RULE A: vägen + number with attached letter (52B)",
+      "input": "Leverans till Ringvägen 52B",
+      "expected": "Leverans till [ADDRESS]"
+    },
+    {
+      "name": "RULE A: torget",
+      "input": "Vi ses vid Järntorget 3",
+      "expected": "Vi ses vid [ADDRESS]"
+    },
+    {
+      "name": "RULE A: gränd",
+      "input": "Bor i Prästgränd 4",
+      "expected": "Bor i [ADDRESS]"
+    },
+    {
+      "name": "RULE A: gränden (definite form)",
+      "input": "Festen är i Skomakargränden 2",
+      "expected": "Festen är i [ADDRESS]"
+    },
+    {
+      "name": "RULE A: allén",
+      "input": "Festen är på Björkallén 12",
+      "expected": "Festen är på [ADDRESS]"
+    },
+    {
+      "name": "RULE A: stigen, lowercase street word + lowercase house letter",
+      "input": "kyrkstigen 7a",
+      "expected": "[ADDRESS]"
+    },
+    {
+      "name": "RULE A: backen",
+      "input": "Skicka kakan till Solbacken 9",
+      "expected": "Skicka kakan till [ADDRESS]"
+    },
+    {
+      "name": "RULE A: platsen",
+      "input": "Adressen är Odenplatsen 1",
+      "expected": "Adressen är [ADDRESS]"
+    },
+    {
+      "name": "RULE A negative: street name WITHOUT house number stays",
+      "input": "Vasagatan är vacker på våren",
+      "expected": "Vasagatan är vacker på våren"
+    },
+    {
+      "name": "RULE A negative: street word + duration is NOT an address (unit lookahead)",
+      "input": "Följ Ringvägen 5 minuter norrut",
+      "expected": "Följ Ringvägen 5 minuter norrut"
+    },
+    {
+      "name": "RULE A negative: bare common noun 'vägen' never matches (prefix required)",
+      "input": "Gå längs vägen 5 minuter till",
+      "expected": "Gå längs vägen 5 minuter till"
+    },
+    {
+      "name": "RULE A negative: cooking range untouched",
+      "input": "Koka potatisen i 10-15 minuter",
+      "expected": "Koka potatisen i 10-15 minuter"
+    },
+    {
+      "name": "RULE A negative: realistic instruction text passes unredacted",
+      "input": "Skala potatisen och skär i tunna skivor. Varva med lök och ansjovis i en smord form.",
+      "expected": "Skala potatisen och skär i tunna skivor. Varva med lök och ansjovis i en smord form."
+    },
+    {
+      "name": "RULE B: relation + capitalized name",
+      "input": "mormor Astrid lärde mig det här",
+      "expected": "mormor [NAME] lärde mig det här"
+    },
+    {
+      "name": "RULE B: sentence-initial relation + genitive name",
+      "input": "Farmor Elsas berömda recept",
+      "expected": "Farmor [NAME] berömda recept"
+    },
+    {
+      "name": "RULE B: 'min vän' + name",
+      "input": "min vän Johan tipsade om receptet",
+      "expected": "min vän [NAME] tipsade om receptet"
+    },
+    {
+      "name": "RULE B: 'min väninna' + name",
+      "input": "min väninna Sara bakade bullarna",
+      "expected": "min väninna [NAME] bakade bullarna"
+    },
+    {
+      "name": "RULE B: relation + genitive name keeps following dish noun",
+      "input": "moster Gretas äppelpaj",
+      "expected": "moster [NAME] äppelpaj"
+    },
+    {
+      "name": "RULE B: honorific fru + surname",
+      "input": "Beställ hos fru Andersson",
+      "expected": "Beställ hos fru [NAME]"
+    },
+    {
+      "name": "RULE B: hyphenated double name",
+      "input": "farfar Karl-Erik rökte fisken själv",
+      "expected": "farfar [NAME] rökte fisken själv"
+    },
+    {
+      "name": "RULE B negative: possessive recipe title 'Janssons frestelse' is NEVER redacted",
+      "input": "Janssons frestelse med extra ansjovis",
+      "expected": "Janssons frestelse med extra ansjovis"
+    },
+    {
+      "name": "RULE B negative: possessive recipe title 'Gustavs special' is NEVER redacted",
+      "input": "Gustavs special",
+      "expected": "Gustavs special"
+    },
+    {
+      "name": "RULE B negative: genitive relation + lowercase dish noun stays",
+      "input": "mormors äppelkaka",
+      "expected": "mormors äppelkaka"
+    },
+    {
+      "name": "RULE B negative: capitalized dish noun without trigger stays",
+      "input": "Servera med Skagenröra och citron",
+      "expected": "Servera med Skagenröra och citron"
+    },
+    {
+      "name": "RULE B negative: 'Frukost' does not trigger the 'fru' honorific",
+      "input": "Frukost Hela familjen samlas",
+      "expected": "Frukost Hela familjen samlas"
+    },
+    {
+      "name": "Combined negative: realistic recipe text with temperature stays unredacted",
+      "input": "Toscakakan gräddas i 200°C i 25 minuter tills den fått fin färg",
+      "expected": "Toscakakan gräddas i 200°C i 25 minuter tills den fått fin färg"
+    },
+    {
+      "name": "RULE A: address followed by a Swedish word starting with the litre unit letter (lägenhet) still redacts — ASCII \b in the unit lookahead must not treat 'l' before 'ä' as the litre unit",
+      "input": "Leverans till Storgatan 14 lägenhet 1203 efter klockan fem",
+      "expected": "Leverans till [ADDRESS] lägenhet 1203 efter klockan fem"
+    }
+  ]
+}
