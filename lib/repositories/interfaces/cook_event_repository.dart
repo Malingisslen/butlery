@@ -15,8 +15,8 @@ abstract class CookEventRepository extends Repository<CookEvent> {
   /// and the counter can never drift.
   ///
   /// Returns true on commit, false on auth-missing / write failure
-  /// (mirrors the old `RecipeRepository.incrementCookCount` contract that
-  /// `RecipeCookingService` builds its retry-safe session guard on).
+  /// (the boolean contract `RecipeCookingService` builds its retry-safe
+  /// session guard on).
   Future<bool> logCookEvent(String recipeId, DateTime cookedAt);
 
   /// Number of cook events for [userId] with `cookedAt >= since`
@@ -26,4 +26,14 @@ abstract class CookEventRepository extends Repository<CookEvent> {
   /// Index-backed: a server-side `count()` aggregate over a single-field
   /// range on `cookedAt` — no documents are downloaded.
   Future<int> countSince(String userId, DateTime since);
+
+  /// GDPR Article 15/20: export [userId]'s cook events as raw
+  /// `{id, data}` maps for the user data export bundle.
+  ///
+  /// Owner-only — throws `PermissionDeniedException` when [userId] is not
+  /// the authenticated user. A null [limit] fetches the whole event log.
+  Future<List<Map<String, dynamic>>> exportCookEventsByUser(
+    String userId, {
+    int? limit,
+  });
 }

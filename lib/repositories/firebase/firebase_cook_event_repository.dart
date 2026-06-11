@@ -147,25 +147,32 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
     }
   }
 
-  @override
-  Future<int> countSince(String userId, DateTime since) async {
+  /// Self-only gate shared by every per-user read: audit-logs the check,
+  /// then throws unless the signed-in user IS [userId]. Centralized so the
+  /// audit row and the exception can never drift apart between methods.
+  Future<void> _requireSelf(String userId, String operation) async {
     final requesterId = requireCurrentUserId();
     final granted = requesterId == userId;
     await logPermissionCheck(
       userId: requesterId,
       resource: '$collectionName/$userId',
-      operation: 'countSince',
+      operation: operation,
       granted: granted,
       auditRepository: auditRepository,
     );
     if (!granted) {
       throw PermissionDeniedException(
-        'User $requesterId cannot count cook events of $userId',
+        'User $requesterId cannot $operation on cook events of $userId',
         resource: collectionName,
-        operation: 'countSince',
+        operation: operation,
         userId: requesterId,
       );
     }
+  }
+
+  @override
+  Future<int> countSince(String userId, DateTime since) async {
+    await _requireSelf(userId, 'countSince');
 
     // Server-side aggregate — counts without downloading documents. The
     // single range constraint rides Firestore's automatic single-field
@@ -175,5 +182,25 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
         .count()
         .get();
     return snapshot.count ?? 0;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportCookEventsByUser(
+    String userId, {
+    int? limit,
+  }) async {
+    // GDPR Article 15/20: caller must be exporting their own events.
+    await _requireSelf(userId, 'exportCookEventsByUser');
+
+    // Newest-first so a truncated export keeps the most recent events
+    // (deterministic; rides the automatic single-field index).
+    Query<Map<String, dynamic>> query =
+        eventsCollectionForUser(userId).orderBy('cookedAt', descending: true);
+    if (limit != null) query = query.limit(limit);
+    final snapshot = await query.get();
+
+    return snapshot.docs
+        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
+        .toList();
   }
 }

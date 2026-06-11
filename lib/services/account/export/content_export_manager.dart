@@ -7,6 +7,7 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_group_reposi
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
@@ -25,6 +26,7 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 class ContentExportManager {
   // Test seams: production resolves via ServiceLocator on first use.
   final CookSnapRepository? _cookSnapRepo;
+  final CookEventRepository? _cookEventRepo;
   final ActivityEventRepository? _activityEventRepo;
   final WeeklyMenuPlanRepository? _weeklyMenuRepo;
   final GroupWeeklyMenuPlanRepository? _groupMenuRepo;
@@ -38,6 +40,7 @@ class ContentExportManager {
 
   ContentExportManager({
     CookSnapRepository? cookSnapRepository,
+    CookEventRepository? cookEventRepository,
     ActivityEventRepository? activityEventRepository,
     WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
     GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
@@ -47,6 +50,7 @@ class ContentExportManager {
     FirebasePersonalTagGroupRepository? personalTagGroupRepository,
     FirebaseDataExportRepository? dataExportRepository,
   })  : _cookSnapRepo = cookSnapRepository,
+        _cookEventRepo = cookEventRepository,
         _activityEventRepo = activityEventRepository,
         _weeklyMenuRepo = weeklyMenuPlanRepository,
         _groupMenuRepo = groupWeeklyMenuPlanRepository,
@@ -58,6 +62,8 @@ class ContentExportManager {
 
   CookSnapRepository get _cookSnaps =>
       _cookSnapRepo ?? ServiceLocator.get<CookSnapRepository>();
+  CookEventRepository get _cookEvents =>
+      _cookEventRepo ?? ServiceLocator.get<CookEventRepository>();
   ActivityEventRepository get _activityEvents =>
       _activityEventRepo ?? ServiceLocator.get<ActivityEventRepository>();
   WeeklyMenuPlanRepository get _weeklyMenus =>
@@ -288,6 +294,36 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export cook snaps', e);
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Export all cook events (GDPR Articles 15/20)
+  Future<Map<String, dynamic>> exportCookEvents(String userId) async {
+    try {
+      final events = <Map<String, dynamic>>[];
+      final eventLimit =
+          ExportPaginationHelper.getLimitForType('recipe_cook_events');
+
+      final entries = await _cookEvents.exportCookEventsByUser(
+        userId,
+        limit: eventLimit,
+      );
+
+      for (final entry in entries) {
+        events.add({
+          'event_id': entry['id'],
+          'data': sanitizeForJson(entry['data']),
+        });
+      }
+
+      return {
+        'total_count': events.length,
+        'recipe_cook_events': events,
+        if (events.length >= eventLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Failed to export cook events', e);
       return {'error': e.toString()};
     }
   }

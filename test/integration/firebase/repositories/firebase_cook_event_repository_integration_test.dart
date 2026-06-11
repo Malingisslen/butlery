@@ -173,6 +173,32 @@ void main() {
                 'failure, never a half-success');
       });
 
+      test('signed-out user: returns false and writes no event doc', () async {
+        // The cook flow must degrade, not throw, when auth is missing
+        // (cold-start race) — and nothing may reach Firestore.
+        final signedOutAuth = FirebaseAuthRepository(
+          firebaseAuth: firebase_auth_mocks.MockFirebaseAuth(signedIn: false),
+        );
+        final signedOutRepo = FirebaseCookEventRepository(
+          authRepository: signedOutAuth,
+          firestore: fakeFirestore,
+          recipeRepository: FirebaseRecipeRepository(
+            authRepository: signedOutAuth,
+            firestore: fakeFirestore,
+          ),
+        );
+
+        expect(await signedOutRepo.logCookEvent(recipeId, now), isFalse);
+
+        final events = await fakeFirestore
+            .collection(FirestoreCollections.recipeCookEvents)
+            .doc(testUserId)
+            .collection('events')
+            .get();
+        expect(events.docs, isEmpty,
+            reason: 'a signed-out call must not write any event');
+      });
+
       test('empty recipeId is rejected without writing', () async {
         final ok = await repository.logCookEvent('', now);
         expect(ok, isFalse);
@@ -183,6 +209,46 @@ void main() {
             .collection(FirestoreCollections.recipeCookEventEntries)
             .get();
         expect(events.docs, isEmpty);
+      });
+    });
+
+    group('exportCookEventsByUser (GDPR Art 15/20, BUT-1235)', () {
+      test('owner export returns every logged event as {id, data}', () async {
+        await repository.logCookEvent(recipeId, now);
+        await repository.logCookEvent(
+            'recipe-2', now.subtract(const Duration(days: 3)));
+
+        final entries = await repository.exportCookEventsByUser(testUserId);
+
+        expect(entries, hasLength(2));
+        for (final entry in entries) {
+          expect(entry.keys, unorderedEquals(['id', 'data']),
+              reason: 'export contract is raw {id, data} maps');
+          expect(entry['id'], isA<String>());
+          final data = entry['data'] as Map<String, dynamic>;
+          expect(data.keys, unorderedEquals(['recipeId', 'cookedAt']));
+        }
+        expect(
+          entries.map((e) => (e['data'] as Map)['recipeId']),
+          unorderedEquals([recipeId, 'recipe-2']),
+        );
+      });
+
+      test('limit caps the number of exported events', () async {
+        await repository.logCookEvent(recipeId, now);
+        await repository.logCookEvent(recipeId, now);
+        await repository.logCookEvent(recipeId, now);
+
+        final entries =
+            await repository.exportCookEventsByUser(testUserId, limit: 2);
+        expect(entries, hasLength(2));
+      });
+
+      test('is owner-only: exporting another user\'s events throws', () async {
+        expect(
+          () => repository.exportCookEventsByUser('someone-else'),
+          throwsA(isA<PermissionDeniedException>()),
+        );
       });
     });
   });

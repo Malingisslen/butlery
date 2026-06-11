@@ -12,6 +12,7 @@ import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_cook_event_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_cook_snap_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
@@ -210,6 +211,14 @@ void main() {
         cookSnapRepository: FirebaseCookSnapRepository(
           firestore: fakeFirestore,
           authRepository: mockAuthRepository,
+        ),
+        cookEventRepository: FirebaseCookEventRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepository,
+          recipeRepository: FirebaseRecipeRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
         ),
         activityEventRepository: FirebaseActivityEventRepository(
           firestore: fakeFirestore,
@@ -415,6 +424,38 @@ void main() {
         expect(data['activity_events']['total_count'], equals(1));
         expect(data['weekly_menu_plans']['total_count'], equals(1));
         expect(data['pantry_items']['total_count'], equals(1));
+      });
+
+      test(
+          'BUT-1235: export bundle includes recipe_cook_events with the '
+          'user\'s cook events as {event_id, data}', () async {
+        // Seed directly (logCookEvent uses FieldValue.increment, which is
+        // MethodChannel-backed after BaseUnitTest.setupUnit — see the cook
+        // event integration test header for the freeze gotcha).
+        await fakeFirestore
+            .collection('recipe_cook_events')
+            .doc(testUserId)
+            .collection('events')
+            .doc('evt-1')
+            .set({
+          'recipeId': 'r1',
+          'cookedAt': DateTime(2026, 6, 1, 18, 30),
+        });
+
+        final jsonString = await service.exportUserData();
+        final data = json.decode(jsonString) as Map<String, dynamic>;
+
+        final section = data['recipe_cook_events'] as Map<String, dynamic>;
+        expect(section.containsKey('error'), isFalse,
+            reason: 'a repo-path or ownership-guard regression turns the '
+                'section into an {error: ...} payload');
+        expect(section['total_count'], equals(1));
+        final events = section['recipe_cook_events'] as List<dynamic>;
+        final event = events.single as Map<String, dynamic>;
+        expect(event['event_id'], 'evt-1');
+        expect(event['data']['recipeId'], 'r1');
+        expect(event['data']['cookedAt'], isA<String>(),
+            reason: 'timestamps must be sanitized to ISO strings for JSON');
       });
     });
 

@@ -175,6 +175,7 @@ class ExportPaginationHelper {
     'consent_records': 100,
     'weekly_menu_plans': 260, // ~5 years × 52 weeks
     'pantry_items': 1000,
+    'recipe_cook_events': 2000, // ~5 years of daily cooking
   };
 
   /// Get export limit for content type

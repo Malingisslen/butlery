@@ -9,6 +9,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
@@ -67,6 +68,7 @@ class DataExportService extends BaseService {
     RatingsRepository? ratingsRepository,
     FeedbackRepository? feedbackRepository,
     CookSnapRepository? cookSnapRepository,
+    CookEventRepository? cookEventRepository,
     ActivityEventRepository? activityEventRepository,
     WeeklyMenuPlanRepository? weeklyMenuPlanRepository,
     GroupWeeklyMenuPlanRepository? groupWeeklyMenuPlanRepository,
@@ -89,6 +91,7 @@ class DataExportService extends BaseService {
         );
     _contentManager = ContentExportManager(
       cookSnapRepository: cookSnapRepository,
+      cookEventRepository: cookEventRepository,
       activityEventRepository: activityEventRepository,
       weeklyMenuPlanRepository: weeklyMenuPlanRepository,
       groupWeeklyMenuPlanRepository: groupWeeklyMenuPlanRepository,
@@ -139,6 +142,7 @@ class DataExportService extends BaseService {
       'personal_tags': _contentManager.exportPersonalTags(userId),
       'personal_tag_groups': _contentManager.exportPersonalTagGroups(userId),
       'cook_snaps': _contentManager.exportCookSnaps(userId),
+      'recipe_cook_events': _contentManager.exportCookEvents(userId),
       'activity_events': _contentManager.exportActivityEvents(userId),
       'weekly_menu_plans': _contentManager.exportWeeklyMenuPlans(userId),
       'pantry_items': _contentManager.exportPantryItems(userId),
