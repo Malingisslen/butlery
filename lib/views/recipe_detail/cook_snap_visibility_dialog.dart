@@ -22,13 +22,13 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
-        backgroundColor: AppColors.cream,
+        backgroundColor: Theme.of(ctx).colorScheme.surface,
         shape: const RoundedRectangleBorder(),
         title: Row(
           children: [
-            const Icon(Icons.visibility_outlined,
+            Icon(Icons.visibility_outlined,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.forestGreenDark),
+                color: Theme.of(ctx).colorScheme.onPrimaryContainer),
             const SizedBox(width: AppDimensions.spacingXs),
             Expanded(
               child: Text(
@@ -65,7 +65,7 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.textMedium,
+              foregroundColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
               shape: const RoundedRectangleBorder(),
             ),
             onPressed: () => Navigator.pop(ctx),
@@ -73,8 +73,8 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.forestGreen,
-              foregroundColor: AppColors.cream,
+              backgroundColor: Theme.of(ctx).colorScheme.primary,
+              foregroundColor: Theme.of(ctx).colorScheme.onPrimary,
               shape: const RoundedRectangleBorder(),
             ),
             onPressed: () => Navigator.pop(ctx, selected),
@@ -110,6 +110,7 @@ class _VisibilityOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: subtitle == null ? title : '$title. $subtitle',
       button: true,
@@ -121,9 +122,11 @@ class _VisibilityOptionTile extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(_gap),
           decoration: BoxDecoration(
-            color: selected ? AppColors.greenPale : AppColors.cardWhite,
+            color: selected
+                ? cs.primaryContainer.withValues(alpha: 0.6)
+                : cs.surfaceContainerHighest,
             border: Border.all(
-              color: selected ? AppColors.forestGreen : AppColors.creamDarker,
+              color: selected ? cs.primary : AppColors.creamDarker,
             ),
           ),
           child: Row(
@@ -134,14 +137,13 @@ class _VisibilityOptionTile extends StatelessWidget {
                 height: 18,
                 margin: const EdgeInsets.only(top: 1),
                 decoration: BoxDecoration(
-                  color: selected ? AppColors.forestGreen : null,
+                  color: selected ? cs.primary : null,
                   border: selected
                       ? null
                       : Border.all(color: AppColors.creamDarker, width: 2),
                 ),
                 child: selected
-                    ? const Icon(Icons.check,
-                        size: 14, color: AppColors.cardWhite)
+                    ? Icon(Icons.check, size: 14, color: cs.onPrimary)
                     : null,
               ),
               const SizedBox(width: _gap),
@@ -156,7 +158,7 @@ class _VisibilityOptionTile extends StatelessWidget {
                         child: Text(
                           subtitle!,
                           style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textMedium),
+                              .copyWith(color: cs.onSurfaceVariant),
                         ),
                       ),
                   ],
