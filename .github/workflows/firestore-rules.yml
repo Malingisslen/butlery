@@ -22,7 +22,11 @@ on:
       - "functions/src/__tests__/comment-images-storage-rules.test.ts"
       - "functions/src/__tests__/cook-events-rules.test.ts"
       - "functions/src/__tests__/request-account-deletion.integration.test.ts"
+      - "functions/src/__tests__/moderate-upload.integration.test.ts"
+      - "functions/src/__tests__/sync-conversation-last-message.integration.test.ts"
       - "functions/src/account/**"
+      - "functions/src/storage/**"
+      - "functions/src/messaging/**"
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/firestore-rules.yml"
@@ -43,7 +47,11 @@ on:
       - "functions/src/__tests__/comment-images-storage-rules.test.ts"
       - "functions/src/__tests__/cook-events-rules.test.ts"
       - "functions/src/__tests__/request-account-deletion.integration.test.ts"
+      - "functions/src/__tests__/moderate-upload.integration.test.ts"
+      - "functions/src/__tests__/sync-conversation-last-message.integration.test.ts"
       - "functions/src/account/**"
+      - "functions/src/storage/**"
+      - "functions/src/messaging/**"
   workflow_dispatch:
 
 concurrency:

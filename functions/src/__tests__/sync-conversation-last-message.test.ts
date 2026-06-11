@@ -1,8 +1,10 @@
 /**
  * BUT-778 — sync-conversation-last-message unit tests.
  *
- * The full CF (Firestore transaction + collection-group recompute on delete)
- * is integration-tested via the Firestore emulator; this file locks down
+ * The full CF (Firestore transaction + recompute-on-delete) is exercised
+ * against the Firestore emulator in
+ * `sync-conversation-last-message.integration.test.ts` (BUT-839,
+ * `npm run test:integration:sync-conversation`); this file locks down
  * the pure decision helper `shouldReplaceLastMessage` so a future regression
  * on the create/update precedence rule is caught fast in unit runs.
  *

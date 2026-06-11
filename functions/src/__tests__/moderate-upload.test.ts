@@ -8,9 +8,11 @@
  *     then from the path conventions used in storage.rules.
  *
  * The full CF (admin SDK download + delete + audit-log write) is exercised
- * in integration via the Storage emulator; here we lock down the byte-level
- * decisions so a future regression on detection logic gets caught in a
- * fast unit run.
+ * against the Firestore+Storage emulators in
+ * `moderate-upload.integration.test.ts` (BUT-839,
+ * `npm run test:integration:moderate-upload`); here we lock down the
+ * byte-level decisions so a future regression on detection logic gets
+ * caught in a fast unit run.
  *
  * Run: npx ts-node src/__tests__/moderate-upload.test.ts
  */
