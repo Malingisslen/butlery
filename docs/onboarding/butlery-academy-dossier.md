@@ -418,7 +418,7 @@ Den gyllene regeln: varje lager pratar bara med det direkt under. En knapp skriv
 4. Repository (`FirebaseRecipeRepository.updateRecipe`) kollar permissions och utför Firestore-skrivningen (`getCollectionForUser(userId).doc(recipeId).update(updated.toFirestore())`) genom basklassens skyddade `firestore`-getter.
 5. Failar skrivningen vänder ViewModel tillbaka flaggan (rollback).
 
-**Viktigt — en ANNAN repository-skrivning:** `incrementCookCount()` (`firebase_recipe_repository.dart:549–573`) är INTE favorit-vägen. Den backar cook-count-/"Lagat idag"-handlingen (en separat knapp), och skriver bara två fält (`core.cookCount` + `core.lastCookedAt`) som ett riktat `update`. Vi visar den nedan som ett rent exempel på en *minimal, fält-riktad* repository-skrivning — kontrasten mot favorit-vägens full-dokument-`updateRecipe` är själva poängen.
+**Viktigt — en ANNAN repository-skrivning:** cook-count-/"Lagat idag"-handlingen (en separat knapp) är INTE favorit-vägen. Den går via `CookEventRepository.logCookEvent()` (`firebase_cook_event_repository.dart:106`), som i EN atomisk WriteBatch både skriver ett cook-event-dokument och bumpar receptets räknare via `FirebaseRecipeRepository.addIncrementCookCountToBatch()` (`firebase_recipe_repository.dart:555–566`) — en *minimal, fält-riktad* `batch.update` som bara rör `core.cookCount` + `core.lastCookedAt` (+ `core.updatedAt`). Vi visar den nedan — kontrasten mot favorit-vägens full-dokument-`updateRecipe` är själva poängen.
 
 **Interface vs implementation:** containern registrerar `RecipeRepository` (abstrakt interface) och ger tillbaka en `FirebaseRecipeRepository` (konkret). Vägguttags-analogin: din lampa (ViewModel) ansluter till uttagsformen (interfacet); bakom väggen kan det vara sol eller kol (Firebase eller en mock) — lampan varken vet eller bryr sig.
 
@@ -439,7 +439,7 @@ Den gyllene regeln: varje lager pratar bara med det direkt under. En knapp skriv
 - `C:/Butlery/butlery/lib/viewmodels/recipe_detail_viewmodel.dart` — ViewModel (`toggleFavorite` rad 369–379)
 - `C:/Butlery/butlery/lib/services/unified/unified_recipe_service.dart` — Service-facade (`toggleFavorite` rad 816 → `updateRecipe`)
 - `C:/Butlery/butlery/lib/repositories/interfaces/recipe_repository.dart` — kontraktet
-- `C:/Butlery/butlery/lib/repositories/firebase/firebase_recipe_repository.dart` — impl; `incrementCookCount` rad 549–573 (SEPARAT cook-count-skrivning, ej favorit)
+- `C:/Butlery/butlery/lib/repositories/firebase/firebase_recipe_repository.dart` — impl; `addIncrementCookCountToBatch` rad 555–566 (SEPARAT cook-count-skrivning, ej favorit; committas av `FirebaseCookEventRepository.logCookEvent`)
 - `C:/Butlery/butlery/lib/repositories/firebase/base_firebase_repository.dart` — konstruktorns `FirebaseFirestore.instance` (rad 29) + den sanktionerade `firestore`-gettern (rad 36)
 
 ### Kodexempel
@@ -462,11 +462,14 @@ if (!success) {
 final updated = recipe.copyWith(isFavorite: value);
 await _recipeRepository.updateRecipe(updated);   // full-dokument-update
 
-// EN ANNAN repository-skrivning (INTE favorit): cook-count-/"Lagat idag"-handlingen
-// (firebase_recipe_repository.dart:549-573) — minimal, fält-riktad update
-await getCollectionForUser(userId).doc(recipeId).update({
+// EN ANNAN repository-skrivning (INTE favorit): cook-count-/"Lagat idag"-handlingen.
+// logCookEvent (firebase_cook_event_repository.dart:106) committar i EN batch både
+// event-dokumentet och denna minimala, fält-riktade update
+// (firebase_recipe_repository.dart:555-566):
+batch.update(getCollectionForUser(userId).doc(recipeId), {
   'core.cookCount': FieldValue.increment(1),
   'core.lastCookedAt': Timestamp.fromDate(cookedAt),
+  'core.updatedAt': Timestamp.fromDate(cookedAt),
 });
 
 // Den enda sanktionerade FirebaseFirestore.instance bor i basklassen:
@@ -476,7 +479,7 @@ await getCollectionForUser(userId).doc(recipeId).update({
 
 ### Gotchas
 
-- **Favorit ≠ cook-count.** Hjärtat går via service `toggleFavorite()` → `updateRecipe(updated)` (full-dokument-skrivning). `incrementCookCount()` är "Lagat idag"-handlingen (riktad tvåfälts-skrivning) — en helt separat operation. Blanda inte ihop dem.
+- **Favorit ≠ cook-count.** Hjärtat går via service `toggleFavorite()` → `updateRecipe(updated)` (full-dokument-skrivning). "Lagat idag" går via `logCookEvent()` → `addIncrementCookCountToBatch()` (riktad fält-skrivning i en atomisk batch) — en helt separat operation. Blanda inte ihop dem.
 - **`RecipeDetailViewModel` är undantaget som bekräftar regeln:** den är INTE registrerad i DI (`ui_module.dart`) eftersom den behöver en specifik Recipe-instans. View:n skapar den direkt med `ChangeNotifierProvider(create: ...)`. Andra VM:er (SocialRecipeViewModel m.fl.) hämtas med `ServiceLocator.get`.
 - Singleton-VM:er måste använda `ChangeNotifierProvider.value` (aldrig `create:`) för att undvika dubbel-dispose.
 - **Två olika "aktuell användare"-accessorer får inte blandas:** `userService.currentUserProfile` (full data/inställningar) vs `permissionService.currentUserId` (auth/permission-checks). Mer i Modul 9 & 10.
@@ -486,12 +489,12 @@ await getCollectionForUser(userId).doc(recipeId).update({
 
 ### Prova nu
 
-Öppna `C:/Butlery/butlery/lib/views/recipe_detail_view.dart` och hitta hjärtknappen (~rad 346). Följ tryckningen ner: `toggleFavorite()` i ViewModel (rad 369–379) → i Service (rad 816), där den anropar `updateRecipe(updated)` (favoritens VERKLIGA skrivning). Öppna sedan `incrementCookCount()` (rad 549–573) och bekräfta att det är en SEPARAT operation (cook-count, inte hjärtat). Sök till sist View- och ViewModel-filerna efter `FirebaseFirestore` och bekräfta NOLL träffar — och öppna `base_firebase_repository.dart:29` för att se var den enda instansen faktiskt bor.
+Öppna `C:/Butlery/butlery/lib/views/recipe_detail_view.dart` och hitta hjärtknappen (~rad 346). Följ tryckningen ner: `toggleFavorite()` i ViewModel (rad 369–379) → i Service (rad 816), där den anropar `updateRecipe(updated)` (favoritens VERKLIGA skrivning). Öppna sedan `addIncrementCookCountToBatch()` (rad 555–566) och `logCookEvent()` i `firebase_cook_event_repository.dart` och bekräfta att cook-count är en SEPARAT operation (inte hjärtat). Sök till sist View- och ViewModel-filerna efter `FirebaseFirestore` och bekräfta NOLL träffar — och öppna `base_firebase_repository.dart:29` för att se var den enda instansen faktiskt bor.
 
 ### Checkpoint
 
 **Fråga:** När användaren trycker på favorit-hjärtat, vilket lager utför den verkliga Firestore-skrivningen, vilken repository-metod är det, och varför görs det inte i ViewModel:n?
-**Svar:** Repository:t (`FirebaseRecipeRepository`) utför skrivningen, via `updateRecipe(updated)` — service-lagrets `toggleFavorite()` bygger en full receptkopia med `copyWith(isFavorite: ...)` och skickar ner den. (Det är INTE `incrementCookCount()`, som backar den separata "Lagat idag"-handlingen.) Repository:t är det enda lagret som får röra Firestore, via basklassens skyddade `firestore`-getter — vars enda `FirebaseFirestore.instance` lever i `base_firebase_repository.dart`. ViewModel:n uppdaterar bara lokal state + `notifyListeners` och delegerar nedåt. Att centralisera DB-access i repository:t håller permission-validering, ägarcheck och audit-loggning på ett granskningsbart ställe.
+**Svar:** Repository:t (`FirebaseRecipeRepository`) utför skrivningen, via `updateRecipe(updated)` — service-lagrets `toggleFavorite()` bygger en full receptkopia med `copyWith(isFavorite: ...)` och skickar ner den. (Det är INTE `logCookEvent()`/`addIncrementCookCountToBatch()`, som backar den separata "Lagat idag"-handlingen.) Repository:t är det enda lagret som får röra Firestore, via basklassens skyddade `firestore`-getter — vars enda `FirebaseFirestore.instance` lever i `base_firebase_repository.dart`. ViewModel:n uppdaterar bara lokal state + `notifyListeners` och delegerar nedåt. Att centralisera DB-access i repository:t håller permission-validering, ägarcheck och audit-loggning på ett granskningsbart ställe.
 
 ---
 

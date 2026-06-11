@@ -2,15 +2,17 @@
 ///
 /// Targets uncovered methods that fake_cloud_firestore can reach:
 /// - countRecipesByTagId (count() aggregation on user-scoped collection)
-/// - incrementCookCount (FieldValue.increment + lastCookedAt write)
 /// - canRead / canWrite / canDelete (permission decision matrix)
 /// - validateUpdatePermission collaborative-recipe branches
+///
+/// The cook-count batch write (addIncrementCookCountToBatch) is covered by
+/// test/integration/firebase/repositories/
+/// firebase_cook_event_repository_integration_test.dart via logCookEvent.
 ///
 /// Pattern: lightweight FakeFirebaseFirestore + FakeAuthRepository, no
 /// global ServiceLocator (matches conversation_mutation_module_test.dart).
 library;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -124,48 +126,6 @@ void main() {
       );
 
       expect(await repo.countRecipesByTagId('veg'), 0);
-    });
-  });
-
-  group('incrementCookCount', () {
-    test('increments cookCount + writes lastCookedAt + updatedAt', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      final recipe = _personalRecipe();
-      await _seedUserRecipe(firestore, _alice, recipe);
-
-      final cookedAt = DateTime.utc(2026, 5, 1);
-      expect(await repo.incrementCookCount(recipe.id, cookedAt), isTrue);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_alice)
-          .collection('recipes')
-          .doc(recipe.id)
-          .get();
-      final core = doc.data()?['core'] as Map<String, dynamic>?;
-      expect(core?['cookCount'], 1);
-      expect((core?['lastCookedAt'] as Timestamp).toDate().toUtc(), cookedAt);
-    });
-
-    test('returns false when not authenticated', () async {
-      final firestore = FakeFirebaseFirestore();
-      final mockAuth = FakeAuthRepository();
-      final repo = FirebaseRecipeRepository(
-        firestore: firestore,
-        authRepository: mockAuth,
-      );
-
-      expect(await repo.incrementCookCount('any', DateTime.utc(2026, 5, 1)),
-          isFalse);
-    });
-
-    test('returns false when recipe doc missing (update fails)', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-
-      expect(await repo.incrementCookCount('ghost', DateTime.utc(2026, 5, 1)),
-          isFalse);
     });
   });
 

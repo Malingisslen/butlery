@@ -545,34 +545,12 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> findByTitle(String title) =>
       _queryOperations.findByTitle(currentUserId, title);
 
-  @override
-  Future<bool> incrementCookCount(String recipeId, DateTime cookedAt) async {
-    final userId = currentUserId;
-    if (userId == null) {
-      AppLogger.warning(
-          'incrementCookCount: no authenticated user, skipping $recipeId');
-      return false;
-    }
-
-    try {
-      final batch = firestore.batch();
-      addIncrementCookCountToBatch(batch, userId, recipeId, cookedAt);
-      await batch.commit();
-      AppLogger.info('Recipe cookCount incremented: $recipeId');
-      return true;
-    } catch (e, stackTrace) {
-      AppLogger.error(
-          'Failed to increment cookCount for $recipeId: $e', stackTrace);
-      return false;
-    }
-  }
-
-  /// Batch-additive variant of [incrementCookCount] (BUT-838): adds the
-  /// atomic cook-count bump to an external [batch] without committing, so
+  /// Adds the atomic cook-count bump (`core.cookCount` increment +
+  /// `core.lastCookedAt`) to an external [batch] without committing, so
   /// callers (FirebaseCookEventRepository) can commit it together with the
-  /// cook-event document in one atomic write. Caller owns the batch
-  /// lifecycle. FieldValue.increment handles concurrent writers and the
-  /// null-legacy case (null + 1 = 1) matches the firestore rule branch
+  /// cook-event document in one atomic write (BUT-838). Caller owns the
+  /// batch lifecycle. FieldValue.increment handles concurrent writers and
+  /// the null-legacy case (null + 1 = 1) matches the firestore rule branch
   /// that accepts `null -> 1` on first increment.
   void addIncrementCookCountToBatch(
     WriteBatch batch,
