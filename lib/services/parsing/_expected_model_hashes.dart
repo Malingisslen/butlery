@@ -8,23 +8,33 @@ import 'package:crypto/crypto.dart';
 // rest, a TLS MITM corrupted the bytes during transport, or someone
 // replaced a published version (which is itself a process violation).
 //
-// **When publishing a new model version:**
+// **When publishing a new model version (every step MANDATORY):**
 // 1. Build the .onnx, then compute its hash:
 //    ```bash
 //    shasum -a 256 model.onnx
 //    # OR (Windows): certutil -hashfile model.onnx SHA256
 //    ```
-// 2. Upload `model.onnx` to Firebase Storage at the new
+// 2. Add the version → SHA-256 entry to the matching map below — in the
+//    SAME PR as the Storage upload. CI does not have model-bytes access so
+//    this is a manual gate; a forgotten entry bricks the new version (see
+//    fail-close contract below), it does not silently ship unverified.
+// 3. Upload `model.onnx` to Firebase Storage at the new
 //    `models/<family>/v<N>/` path.
-// 3. Add the version → SHA-256 entry to the matching map below in the
-//    same PR. CI does not have model-bytes access so this is a manual gate.
-// 4. Bump `latest_version.txt` in Storage so clients pull the new version.
+// 4. Ship the client release containing the new registry entry.
+// 5. Bump `latest_version.txt` in Storage so clients pull the new version
+//    (only after the client with the entry is out — older clients refuse
+//    versions they have no hash for).
 //
-// **Transitional rollout:**
-// If the version downloaded has no matching entry below, the manager logs a
-// warning + emits a Crashlytics non-fatal but allows the load to proceed.
-// This avoids locking out existing users on the first deploy of this guard.
-// Once a hash is added, mismatch becomes a hard failure for that version.
+// **Fail-close contract (BUT-877, supersedes the BUT-876 transitional
+// soft-allow):**
+// A downloaded version with no matching entry below is REFUSED — the
+// manager logs a Crashlytics non-fatal and aborts before any disk write,
+// exactly like a hash mismatch. An empty registry refuses everything.
+// The parser then falls back gracefully (rule-based classifier / LLM
+// tier); it is never stranded without a parsing path.
+//
+// SCOPE: the contract covers the two ONNX loaders below. CRF weight JSON
+// (RemoteWeightLoader) still downloads UNVERIFIED — tracked as BUT-1238.
 
 /// SHA-256 hashes of the BERT NER ONNX model, keyed by Firebase Storage
 /// version directory (`models/ingredient_ner/v{N}/model.onnx`).
@@ -70,8 +80,9 @@ class ModelIntegrityCheckFailure implements Exception {
 /// Result of a SHA-256 integrity check on downloaded ONNX bytes.
 /// Pure data — easy to unit-test without touching Firebase Storage.
 class ModelIntegrityResult {
-  /// True when the bytes are safe to write to disk (either matched or no
-  /// hash registered for this version yet).
+  /// True when the computed hash matched a registry entry, OR when no
+  /// entry existed ([unverified] = true). NOTE: since BUT-877 the loader
+  /// treats unverified as a refusal — check [unverified] before [ok].
   final bool ok;
 
   /// Computed SHA-256 of the bytes (hex). Always populated.
@@ -80,9 +91,9 @@ class ModelIntegrityResult {
   /// Set when [ok] is false — the registered hash that didn't match.
   final String? expectedHash;
 
-  /// Set when [ok] is true and no hash was registered for the version.
-  /// Callers should emit a non-fatal Crashlytics event so the gap is
-  /// visible in the field.
+  /// Set when no hash was registered for the version. Fail-close
+  /// (BUT-877): callers must refuse the load and emit a non-fatal
+  /// Crashlytics event so the missing registry entry is visible.
   final bool unverified;
 
   const ModelIntegrityResult._({

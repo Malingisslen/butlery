@@ -24,9 +24,9 @@ void main() {
       );
 
       expect(result.ok, isTrue,
-          reason:
-              'Unverified bytes still pass during transitional rollout, but a '
-              'non-fatal Crashlytics event must surface the gap.');
+          reason: 'Pure result reports unverified via the flag, not ok=false '
+              '— policy lives in verifyModelDownload, which since BUT-877 '
+              'refuses unverified loads (fail-close).');
       expect(result.unverified, isTrue);
       expect(result.expectedHash, isNull);
       expect(result.actualHash, hasLength(64));

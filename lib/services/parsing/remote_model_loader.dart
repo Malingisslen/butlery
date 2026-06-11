@@ -69,16 +69,17 @@ abstract class RemoteModelLoader {
   @protected
   bool get canCacheLocally => !kIsWeb;
 
-  /// BUT-792 — verify downloaded ONNX bytes against the registered SHA-256.
-  /// Returns true when the bytes are safe to write to disk (matched, or
-  /// transitional state with empty registry). Returns false on registered
-  /// mismatch — caller must abort the download.
+  /// BUT-792 / BUT-877 — verify downloaded ONNX bytes against the
+  /// registered SHA-256. Fail-close contract: returns true ONLY when the
+  /// bytes match the registry entry for [version]. A version absent from
+  /// the registry (or an empty registry) refuses to load — publishing a
+  /// new model version REQUIRES adding its hash to the registry in the
+  /// same PR as the Storage upload (see `_expected_model_hashes.dart`).
   ///
   /// SHA-256 of a 25 MB blob takes ~200-400 ms in pure Dart, enough to
   /// drop frames on the main isolate. Verification runs in `Isolate.run`
-  /// when the registry has entries; while the registry is empty
-  /// (transitional rollout) we skip the hash entirely and emit a sentinel
-  /// so the gap surfaces in Crashlytics.
+  /// when the registry has entries; an empty registry short-circuits to
+  /// refusal without hashing (every version is unverifiable anyway).
   @protected
   Future<bool> verifyModelDownload({
     required List<int> modelBytes,
@@ -89,11 +90,11 @@ abstract class RemoteModelLoader {
   }) async {
     if (hashRegistry.isEmpty) {
       AppLogger.error(
-        '$serviceName: SHA-256 unverified — $registryConstantName is empty '
-        '(transitional). Populate it to enable mismatch detection.',
+        '$serviceName: refusing model load — $registryConstantName is empty '
+        'so no version can be verified. Populate it to allow downloads.',
         StateError('$modelName hash registry is empty'),
       );
-      return true;
+      return false;
     }
 
     final result = await Isolate.run(
@@ -106,11 +107,12 @@ abstract class RemoteModelLoader {
 
     if (result.unverified) {
       AppLogger.error(
-        '$serviceName: SHA-256 unverified for v$version (no entry in '
-        '$registryConstantName). Computed: ${result.actualHash}.',
+        '$serviceName: refusing model load — no entry for v$version in '
+        '$registryConstantName (fail-close, BUT-877). '
+        'Computed: ${result.actualHash}.',
         StateError('$modelName hash registry missing entry for v$version'),
       );
-      return true;
+      return false;
     }
     if (result.ok) return true;
 

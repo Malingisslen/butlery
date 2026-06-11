@@ -103,17 +103,14 @@ void main() {
     });
 
     test(
-        'latest version absent from hash registry soft-allows under '
-        'transitional rollout (BUT-876)', () async {
-      // Version 999 is not in `kExpectedNerModelHashes`. Per the documented
-      // transitional-rollout contract in
-      // `lib/services/parsing/_expected_model_hashes.dart:23-27`, an
-      // unregistered version logs a fail-loud Crashlytics signal but
-      // **allows** the load to proceed. This avoids locking out existing
-      // users on first deploy of the integrity guard.
-      //
-      // See BUT-876 follow-up for hardening to fail-close once every
-      // shipped version has a registry entry.
+        'latest version absent from hash registry refuses the load '
+        '(fail-close, BUT-877)', () async {
+      // Version 999 is not in `kExpectedNerModelHashes`. Per the fail-close
+      // contract in `lib/services/parsing/_expected_model_hashes.dart`, an
+      // unregistered version logs a Crashlytics non-fatal and REFUSES the
+      // load — identical to a hash mismatch. Publishing a new version
+      // requires adding its registry entry in the same PR as the upload.
+      // (Supersedes the BUT-876 transitional soft-allow.)
       await mockStorage
           .ref('models/ingredient_ner/latest_version.txt')
           .putData(Uint8List.fromList(utf8.encode('999')));
@@ -126,21 +123,16 @@ void main() {
 
       final result = await manager.ensureModelAvailable();
 
-      expect(result, isNotNull,
-          reason: 'Unregistered version is soft-allowed during transitional '
-              'rollout (verifyModelDownload returns true on unverified).');
-      expect(result!.version, 999);
-      expect(result.vocabContent, 'vocab');
+      expect(result, isNull,
+          reason: 'Unregistered version must be refused (verifyModelDownload '
+              'returns false on unverified) so the parser falls back to the '
+              'rule-based / LLM path instead of running unvetted bytes.');
 
-      final committedNames = tempDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .map((f) => f.path.split(Platform.pathSeparator).last)
-          .toSet();
-      expect(committedNames, containsAll(<String>['model.onnx', 'vocab.txt']),
-          reason: 'Soft-allow path commits the downloaded artifacts.');
-      expect(committedNames.where((n) => n.endsWith('.tmp')).toList(), isEmpty,
-          reason: 'All .tmp files are renamed to their committed names.');
+      final committed =
+          tempDir.listSync(recursive: true).whereType<File>().toList();
+      expect(committed, isEmpty,
+          reason: 'Refused unverified bytes never touch disk — no .tmp or '
+              'committed artifacts.');
     });
 
     test('cached load deletes leftover .tmp from prior interrupted write',
