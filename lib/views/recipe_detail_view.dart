@@ -68,6 +68,7 @@ import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 enum _MenuAction {
   edit,
   fork,
+  addToMenu,
   generateShoppingList,
   reTag,
   editTags,
@@ -467,6 +468,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
+                            // BUT-999: add to weekly menu — opens the
+                            // multi-select day/slot picker.
+                            PopupMenuItem(
+                              key: const ValueKey(
+                                  'test-recipe-detail-add-to-menu'),
+                              value: _MenuAction.addToMenu,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_month_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.bulkAddToMenu),
+                                ],
+                              ),
+                            ),
                             PopupMenuItem(
                               value: _MenuAction.generateShoppingList,
                               child: Row(
@@ -869,6 +886,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           ),
           'isTemplate': true,
         });
+      case _MenuAction.addToMenu:
+        await _actions.addToMenu(context);
       case _MenuAction.generateShoppingList:
         await _actions.generateShoppingListFromRecipe(context);
       case _MenuAction.reTag:

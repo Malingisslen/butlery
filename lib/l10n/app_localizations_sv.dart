@@ -165,6 +165,27 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String slotPickerConfirmCount(int count) {
+    return 'Lägg till ($count)';
+  }
+
+  @override
+  String a11ySlotPickerCell(String day, String slot) {
+    return 'Välj $day $slot';
+  }
+
+  @override
+  String recipeAddedToMenuSlots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Receptet lades till på $count platser i veckomenyn',
+      one: 'Receptet lades till på 1 plats i veckomenyn',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get bulkAddToMenu => 'Lägg till i veckomeny';
 
   @override

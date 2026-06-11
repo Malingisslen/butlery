@@ -67,6 +67,28 @@
       "week": { "type": "int" }
     }
   },
+  "slotPickerConfirmCount": "Lägg till ({count})",
+  "@slotPickerConfirmCount": {
+    "description": "BUT-999: confirm button in the multi-select slot picker; count = number of selected day/slot targets.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "a11ySlotPickerCell": "Välj {day} {slot}",
+  "@a11ySlotPickerCell": {
+    "description": "BUT-999: a11y label for a day×slot cell in the slot picker (day = mån..sön, slot = lunch/middag/övrigt).",
+    "placeholders": {
+      "day": { "type": "String" },
+      "slot": { "type": "String" }
+    }
+  },
+  "recipeAddedToMenuSlots": "{count, plural, =1{Receptet lades till på 1 plats i veckomenyn} other{Receptet lades till på {count} platser i veckomenyn}}",
+  "@recipeAddedToMenuSlots": {
+    "description": "BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "bulkAddToMenu": "Lägg till i veckomeny",
   "@bulkAddToMenu": {
     "description": "BUT-1013: selection-app-bar tooltip for the bulk-add-to-menu action."

@@ -404,6 +404,24 @@ abstract class AppLocalizations {
   /// **'v.{week}'**
   String slotPickerWeekLabel(int week);
 
+  /// BUT-999: confirm button in the multi-select slot picker; count = number of selected day/slot targets.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ({count})'**
+  String slotPickerConfirmCount(int count);
+
+  /// BUT-999: a11y label for a day×slot cell in the slot picker (day = mån..sön, slot = lunch/middag/övrigt).
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {day} {slot}'**
+  String a11ySlotPickerCell(String day, String slot);
+
+  /// BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Receptet lades till på 1 plats i veckomenyn} other{Receptet lades till på {count} platser i veckomenyn}}'**
+  String recipeAddedToMenuSlots(int count);
+
   /// BUT-1013: selection-app-bar tooltip for the bulk-add-to-menu action.
   ///
   /// In sv, this message translates to:

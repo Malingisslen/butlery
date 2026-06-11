@@ -165,6 +165,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String slotPickerConfirmCount(int count) {
+    return 'Add ($count)';
+  }
+
+  @override
+  String a11ySlotPickerCell(String day, String slot) {
+    return 'Pick $day $slot';
+  }
+
+  @override
+  String recipeAddedToMenuSlots(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recipe added to $count slots in the weekly menu',
+      one: 'Recipe added to 1 slot in the weekly menu',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get bulkAddToMenu => 'Add to weekly menu';
 
   @override

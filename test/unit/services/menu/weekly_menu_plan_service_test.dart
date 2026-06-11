@@ -629,4 +629,131 @@ void main() {
       );
     });
   });
+
+  // BUT-999: one recipe → many (day, slot) targets in ONE action. The core
+  // contract is write-efficiency and atomicity-by-batching: no matter how
+  // many targets the user picks, the repository sees exactly one save with
+  // all placements already applied.
+  group('assignRecipeToTargets — BUT-999', () {
+    setUpAll(() {
+      registerFallbackValue(_FakeWeeklyMenuPlan());
+    });
+
+    setUp(() {
+      when(() => userService.currentUserProfile).thenReturn(_profile('u'));
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer((_) async => null);
+      when(() => repo.save(any())).thenAnswer((_) async {});
+    });
+
+    test('3 targets → ONE batched save containing all 3 entries', () async {
+      final recipe = _recipe('tacos');
+
+      final added = await service.assignRecipeToTargets(
+        weekStart: mon,
+        recipe: recipe,
+        targets: const [
+          (day: DayOfWeek.mon, slot: MealSlot.middag),
+          (day: DayOfWeek.wed, slot: MealSlot.lunch),
+          (day: DayOfWeek.fri, slot: MealSlot.ovrigt),
+        ],
+      );
+
+      expect(added, 3);
+
+      final captured = verify(() => repo.save(captureAny())).captured;
+      expect(captured, hasLength(1),
+          reason: 'N targets must produce exactly ONE save, never N writes');
+      final saved = captured.single as WeeklyMenuPlan;
+      expect(saved.entries, hasLength(3));
+      expect(saved.entriesAt(DayOfWeek.mon, MealSlot.middag), hasLength(1));
+      expect(saved.entriesAt(DayOfWeek.wed, MealSlot.lunch), hasLength(1));
+      expect(saved.entriesAt(DayOfWeek.fri, MealSlot.ovrigt), hasLength(1));
+      expect(
+        saved.entries.every((e) => e.recipeTitle == 'Recipe tacos'),
+        isTrue,
+      );
+    });
+
+    test('single target regression: behaves like one addEntry + one save',
+        () async {
+      // The single-select path must be byte-for-byte the old behavior:
+      // single-slot targets replace any existing occupant (addEntry
+      // semantics — the user explicitly tapped that cell).
+      final occupant = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.tue,
+        slot: MealSlot.middag,
+        recipeId: 'old',
+        recipeTitle: 'Old',
+      );
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer(
+        (_) async => _emptyPlan(mon).copyWith(entries: [occupant]),
+      );
+
+      final added = await service.assignRecipeToTargets(
+        weekStart: mon,
+        recipe: _recipe('new'),
+        targets: const [(day: DayOfWeek.tue, slot: MealSlot.middag)],
+      );
+
+      expect(added, 1);
+      final captured = verify(() => repo.save(captureAny())).captured;
+      expect(captured, hasLength(1));
+      final saved = captured.single as WeeklyMenuPlan;
+      final tueMid = saved.entriesAt(DayOfWeek.tue, MealSlot.middag);
+      expect(tueMid, hasLength(1),
+          reason: 'Single-slot replacement must not duplicate the cell');
+      expect(tueMid.single.recipeTitle, 'Recipe new');
+    });
+
+    test('duplicate targets are applied once', () async {
+      final added = await service.assignRecipeToTargets(
+        weekStart: mon,
+        recipe: _recipe('r'),
+        targets: const [
+          (day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+          (day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+        ],
+      );
+
+      expect(added, 1);
+      final saved = verify(() => repo.save(captureAny())).captured.single
+          as WeeklyMenuPlan;
+      expect(saved.entriesAt(DayOfWeek.mon, MealSlot.ovrigt), hasLength(1),
+          reason: 'A duplicated övrigt target must not stack twice');
+    });
+
+    test('empty targets returns 0 without touching the repository', () async {
+      final added = await service.assignRecipeToTargets(
+        weekStart: mon,
+        recipe: _recipe('r'),
+        targets: const [],
+      );
+
+      expect(added, 0);
+      verifyNever(() => repo.save(any()));
+      verifyNever(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ));
+    });
+
+    test('throws StateError when no authenticated user', () async {
+      when(() => userService.currentUserProfile).thenReturn(null);
+
+      expect(
+        () => service.assignRecipeToTargets(
+          weekStart: mon,
+          recipe: _recipe('r'),
+          targets: const [(day: DayOfWeek.mon, slot: MealSlot.middag)],
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+  });
 }

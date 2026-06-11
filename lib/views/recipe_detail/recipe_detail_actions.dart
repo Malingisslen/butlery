@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_menu_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler.dart';
@@ -107,6 +108,11 @@ class RecipeDetailActions {
       context,
       currentPortions: _currentPortions,
     );
+  }
+
+  /// BUT-999: add the recipe to one or more weekly-menu day/slot targets.
+  Future<void> addToMenu(BuildContext context) async {
+    await RecipeMenuHandler.addToMenu(context);
   }
 
   /// Toggle collaborative editing on a recipe

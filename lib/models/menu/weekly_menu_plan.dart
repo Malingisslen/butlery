@@ -74,6 +74,11 @@ enum DayOfWeek {
       SerializationUtils.safeEnumByName(DayOfWeek.values, name, DayOfWeek.mon);
 }
 
+/// A single placement target inside one week: (day, slot). Lives next to the
+/// enums it combines so service- and widget-layer consumers share one type
+/// without a services-layer import (BUT-999).
+typedef SlotTarget = ({DayOfWeek day, MealSlot slot});
+
 /// A single placement of a recipe into a day + slot of the weekly plan.
 ///
 /// Cached `recipeTitle` and `recipeImageUrl` keep the calendar renderable

@@ -302,13 +302,7 @@ class WeeklyMenuPlanService extends BaseService {
     if (userId == null) {
       throw StateError('No authenticated user for bulkAssignRecipes');
     }
-    final normalizedWeekStart = IsoWeekUtils.weekStartOf(weekStart);
-    final fetched = await _repository.fetchForWeek(
-      userId: userId,
-      weekStart: normalizedWeekStart,
-    );
-    var plan = fetched ??
-        WeeklyMenuPlan.empty(userId: userId, date: normalizedWeekStart);
+    var plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
 
     var added = 0;
     var overflowed = 0;
@@ -349,6 +343,61 @@ class WeeklyMenuPlanService extends BaseService {
     // handler) catches and surfaces; we don't want a swallow-and-return-null.
     if (added > 0) await _repository.save(plan);
     return (added: added, overflowed: overflowed);
+  }
+
+  /// BUT-999: place ONE recipe on multiple (day, slot) targets within the
+  /// same week — the inverse of [bulkAssignRecipes] (N recipes → one start
+  /// cell). All targets are applied in memory and persisted with a SINGLE
+  /// batched save, never one write per target.
+  ///
+  /// Placement follows [addEntry] semantics per target: single-slot targets
+  /// (lunch/middag) replace any existing occupant — the user explicitly
+  /// tapped that cell in the picker, so replacement is deliberate — while
+  /// övrigt targets append. Duplicate targets are applied once.
+  ///
+  /// Returns the number of targets actually placed (0 short-circuits
+  /// without touching the repository).
+  Future<int> assignRecipeToTargets({
+    required DateTime weekStart,
+    required Recipe recipe,
+    required List<SlotTarget> targets,
+  }) async {
+    if (targets.isEmpty) return 0;
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw StateError('No authenticated user for assignRecipeToTargets');
+    }
+    var plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
+
+    // toSet() dedupes record-equal targets, preserving first-seen order.
+    final unique = targets.toSet();
+    for (final target in unique) {
+      plan = addEntry(
+        plan: plan,
+        day: target.day,
+        slot: target.slot,
+        recipe: recipe,
+      );
+    }
+    // Direct `_repository.save` for the same reason as bulkAssignRecipes:
+    // raw error surface for the snackbar handler, mock-friendly in tests.
+    await _repository.save(plan);
+    return unique.length;
+  }
+
+  /// Shared write-path loader for the bulk operations: fetch the week's
+  /// plan or start from an empty one. Normalizes [weekStart] to Monday.
+  Future<WeeklyMenuPlan> _loadPlanForWrite({
+    required String userId,
+    required DateTime weekStart,
+  }) async {
+    final normalizedWeekStart = IsoWeekUtils.weekStartOf(weekStart);
+    final fetched = await _repository.fetchForWeek(
+      userId: userId,
+      weekStart: normalizedWeekStart,
+    );
+    return fetched ??
+        WeeklyMenuPlan.empty(userId: userId, date: normalizedWeekStart);
   }
 
   /// Add a single recipe to a (day, slot). For lunch/middag, replaces any

@@ -66,6 +66,28 @@
       "week": { "type": "int" }
     }
   },
+  "slotPickerConfirmCount": "Add ({count})",
+  "@slotPickerConfirmCount": {
+    "description": "BUT-999: confirm button in the multi-select slot picker; count = number of selected day/slot targets.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "a11ySlotPickerCell": "Pick {day} {slot}",
+  "@a11ySlotPickerCell": {
+    "description": "BUT-999: a11y label for a day×slot cell in the slot picker.",
+    "placeholders": {
+      "day": { "type": "String" },
+      "slot": { "type": "String" }
+    }
+  },
+  "recipeAddedToMenuSlots": "{count, plural, =1{Recipe added to 1 slot in the weekly menu} other{Recipe added to {count} slots in the weekly menu}}",
+  "@recipeAddedToMenuSlots": {
+    "description": "BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "bulkAddToMenu": "Add to weekly menu",
   "@bulkAddToMenu": {
     "description": "BUT-1013."
