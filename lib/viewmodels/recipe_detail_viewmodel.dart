@@ -67,6 +67,8 @@ import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/in_app_review_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -82,6 +84,11 @@ class RecipeDetailViewModel extends ChangeNotifier
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
   final RecipeCookingService _cookingService;
+
+  /// BUT-838: real cook-event counts for lifecycle classification. Nullable
+  /// because ServiceLocator may not have it in degraded modes (tests,
+  /// cold-start race) — the post-cook analytics path degrades gracefully.
+  final CookEventRepository? _cookEventRepository;
 
   /// Current recipe data with real-time synchronization and state coordination.
   Recipe _recipe;
@@ -101,13 +108,16 @@ class RecipeDetailViewModel extends ChangeNotifier
     UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
     RecipeCookingService? cookingService,
+    CookEventRepository? cookEventRepository,
   })  : _recipe = recipe,
         _recipeService =
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>(),
         _cookingService =
-            cookingService ?? ServiceLocator.get<RecipeCookingService>() {
+            cookingService ?? ServiceLocator.get<RecipeCookingService>(),
+        _cookEventRepository = cookEventRepository ??
+            ServiceLocator.tryGet<CookEventRepository>() {
     _recipeServiceSubscription =
         _recipeService.stateStream.listen((_) => _onRecipeServiceUpdate());
 
@@ -294,9 +304,10 @@ class RecipeDetailViewModel extends ChangeNotifier
     return await executeAsync(() async {
       final isFirstTime = _recipe.lastCookedAt == null;
 
-      // Single atomic Firestore update: FieldValue.increment(1) on cookCount
-      // + lastCookedAt in the same write, keyed per-session to swallow rapid
-      // double-taps. See RecipeCookingService for the dedup contract.
+      // One atomic WriteBatch: the cook-event doc + FieldValue.increment(1)
+      // on cookCount/lastCookedAt commit together (BUT-838), keyed
+      // per-session to swallow rapid double-taps. See RecipeCookingService
+      // for the dedup contract.
       final success = await _cookingService.markAsCooked(_recipe.id);
 
       if (success) {
@@ -329,26 +340,37 @@ class RecipeDetailViewModel extends ChangeNotifier
 
         // BUT-830: re-emit lifecycle_stage so cohort progression
         // (`new_` → `activated` → `habitual`) propagates without waiting
-        // for the next session-start bootstrap. The cook just performed
-        // mutates `_recipe` locally but the underlying `_recipeService`
-        // cache only updates when the Firestore stream echoes back, so
-        // we exclude the current recipe id from the snapshot count and
-        // add 1 explicitly — otherwise the 3rd cook trips the habitual
-        // threshold one cook late. cooks-in-14d is a distinct-recipe
-        // proxy (one row per recipe in the local cache); the classifier's
-        // ≥3 threshold accepts this approximation per `MASTER-wave3-08-
-        // product-analytics-data.md` guidance — see BUT-838 for the
-        // event-log upgrade path that fixes the repeat-cooker undercount.
+        // for the next session-start bootstrap.
+        //
+        // BUT-838: cooks-in-14d comes from the real per-user cook-event
+        // log (CookEventRepository.countSince), replacing the old
+        // distinct-recipe proxy that undercounted repeat cooks of the
+        // same recipe (3 cooks of one recipe counted as 1, making
+        // `habitual` unreachable). The event for THIS cook was committed
+        // in the same atomic batch as the counter bump, so the aggregate
+        // already includes it — no local +1 compensation. Floors at 1
+        // (this cook definitely happened) and falls back to 1 when the
+        // repository is unavailable or the query fails — analytics
+        // enrichment must never break the cook flow.
+        // Resolve the lifecycle emitter BEFORE the count: the aggregate is
+        // a billed server round-trip whose only consumer is emitLifecycle —
+        // in degraded modes (no bootstrap registered) skip it entirely.
+        final bootstrap = ServiceLocator.tryGet<UserPropertyBootstrap>();
         final now = clock.now();
         final since = now.subtract(const Duration(days: 14));
-        final cooksLast14d = _recipeService.personalRecipes
-                .where((r) =>
-                    r.id != _recipe.id &&
-                    r.lastCookedAt != null &&
-                    r.lastCookedAt!.isAfter(since))
-                .length +
-            1;
-        final bootstrap = ServiceLocator.tryGet<UserPropertyBootstrap>();
+        var cooksLast14d = 1;
+        final cookEventRepository = _cookEventRepository;
+        if (bootstrap != null &&
+            cookEventRepository != null &&
+            userId != null) {
+          try {
+            final counted = await cookEventRepository.countSince(userId, since);
+            if (counted > 1) cooksLast14d = counted;
+          } catch (e) {
+            AppLogger.warning(
+                'cooksLast14Days count failed, falling back to 1: $e');
+          }
+        }
         if (bootstrap != null) {
           unawaited(bootstrap.emitLifecycle(
             profile: profile,

@@ -1,29 +1,31 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 
 /// Service coordinating the "mark recipe as cooked" action.
 ///
 /// Owns two responsibilities the model layer cannot:
-/// 1. Atomic Firestore write via [RecipeRepository.incrementCookCount] — a
-///    single `FieldValue.increment(1)` update, no read-modify-write race.
+/// 1. Atomic Firestore write via [CookEventRepository.logCookEvent] — one
+///    WriteBatch carrying both the append-only cook-event document and the
+///    recipe's `FieldValue.increment(1)` counter bump (BUT-838), no
+///    read-modify-write race and no event/counter drift.
 /// 2. Per-session idempotency — rapid double-taps on the same recipe within
 ///    the same calendar day count once. Guard is process-local; a fresh app
 ///    launch on the next day naturally counts again.
 class RecipeCookingService extends BaseService {
-  final RecipeRepository _recipeRepository;
+  final CookEventRepository _cookEventRepository;
 
   /// Keyed by `recipeId|YYYY-MM-DD`. Presence = already counted today.
   final Set<_CookEventKey> _cookedThisSession = <_CookEventKey>{};
 
-  RecipeCookingService({required RecipeRepository recipeRepository})
-      : _recipeRepository = recipeRepository;
+  RecipeCookingService({required CookEventRepository cookEventRepository})
+      : _cookEventRepository = cookEventRepository;
 
   @override
   String get serviceName => 'RecipeCookingService';
 
-  /// Atomically increment cook count and set lastCookedAt.
+  /// Atomically log a cook event + increment cook count / lastCookedAt.
   /// Returns true if the write happened; false when rejected by the
   /// session guard (already cooked today) or an underlying write failure.
   Future<bool> markAsCooked(String recipeId) async {
@@ -40,7 +42,7 @@ class RecipeCookingService extends BaseService {
       return false;
     }
 
-    final ok = await _recipeRepository.incrementCookCount(recipeId, now);
+    final ok = await _cookEventRepository.logCookEvent(recipeId, now);
     if (ok) {
       _cookedThisSession.add(key);
     }

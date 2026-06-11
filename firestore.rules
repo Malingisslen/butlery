@@ -1134,6 +1134,33 @@ service cloud.firestore {
     }
 
     // ========================================
+    // RECIPE COOK EVENTS - per-user append-only cook log (BUT-838)
+    // ========================================
+    // One doc per "mark as cooked": {recipeId, cookedAt}. Written in the
+    // same WriteBatch as the recipe's core.cookCount bump. The read rule
+    // depends only on the {userId} path segment, so the client's
+    // countSince aggregate (`where cookedAt >= since` + count()) is
+    // provable for the owner without per-doc data access. Events are
+    // immutable (no update); delete stays owner-only. The server-side
+    // GDPR cascade uses the Admin SDK and bypasses these rules.
+    match /recipe_cook_events/{userId}/events/{eventId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && hasRequiredFields(['recipeId', 'cookedAt'])
+        && request.resource.data.keys().hasOnly(['recipeId', 'cookedAt'])
+        && request.resource.data.recipeId is string
+        && request.resource.data.recipeId.size() > 0
+        && request.resource.data.recipeId.size() <= 200
+        && request.resource.data.cookedAt is timestamp;
+
+      allow update: if false;
+
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ========================================
     // BUTLERY ARCHIVE - Read-only community recipes
     // ========================================
 

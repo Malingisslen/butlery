@@ -555,14 +555,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     }
 
     try {
-      // Single atomic update — FieldValue.increment handles concurrent writers
-      // and the null-legacy case (null + 1 = 1) matches the firestore rule
-      // branch that accepts `null -> 1` on first increment.
-      await getCollectionForUser(userId).doc(recipeId).update({
-        'core.cookCount': FieldValue.increment(1),
-        'core.lastCookedAt': Timestamp.fromDate(cookedAt),
-        'core.updatedAt': Timestamp.fromDate(cookedAt),
-      });
+      final batch = firestore.batch();
+      addIncrementCookCountToBatch(batch, userId, recipeId, cookedAt);
+      await batch.commit();
       AppLogger.info('Recipe cookCount incremented: $recipeId');
       return true;
     } catch (e, stackTrace) {
@@ -570,6 +565,26 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
           'Failed to increment cookCount for $recipeId: $e', stackTrace);
       return false;
     }
+  }
+
+  /// Batch-additive variant of [incrementCookCount] (BUT-838): adds the
+  /// atomic cook-count bump to an external [batch] without committing, so
+  /// callers (FirebaseCookEventRepository) can commit it together with the
+  /// cook-event document in one atomic write. Caller owns the batch
+  /// lifecycle. FieldValue.increment handles concurrent writers and the
+  /// null-legacy case (null + 1 = 1) matches the firestore rule branch
+  /// that accepts `null -> 1` on first increment.
+  void addIncrementCookCountToBatch(
+    WriteBatch batch,
+    String userId,
+    String recipeId,
+    DateTime cookedAt,
+  ) {
+    batch.update(getCollectionForUser(userId).doc(recipeId), {
+      'core.cookCount': FieldValue.increment(1),
+      'core.lastCookedAt': Timestamp.fromDate(cookedAt),
+      'core.updatedAt': Timestamp.fromDate(cookedAt),
+    });
   }
 
   @override

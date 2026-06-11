@@ -1,11 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/lifecycle_stage_classifier.dart';
+import 'package:butlery/services/analytics/user_property_bootstrap.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -13,6 +20,11 @@ import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
+
+class _MockCookEventRepository extends Mock implements CookEventRepository {}
+
+class _MockUserPropertyBootstrap extends Mock
+    implements UserPropertyBootstrap {}
 
 void main() {
   group('RecipeDetailViewModel - Ultrathink Enhanced Tests', () {
@@ -30,6 +42,7 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
+      registerFallbackValue(DateTime(2026));
     });
 
     setUp(() async {
@@ -398,6 +411,159 @@ void main() {
 
         // Assert
         expect(viewModel.recipe, equals(testRecipe)); // Keeps original recipe
+      });
+    });
+
+    group('BUT-838: lifecycle re-emit uses real cook-event counts', () {
+      late _MockCookEventRepository mockCookEvents;
+      late _MockUserPropertyBootstrap mockBootstrap;
+      late MockUserService mockUserService;
+      late UserProfile profile;
+
+      setUp(() {
+        // The VM resolves UserService/UserPropertyBootstrap via the
+        // production ServiceLocator (tryGet); bridge it onto the shared
+        // GetIt so the mocks registered below are visible.
+        prod.ServiceLocator.initialize(DIContainer());
+
+        mockCookEvents = _MockCookEventRepository();
+        mockBootstrap = _MockUserPropertyBootstrap();
+        mockUserService = MockUserService();
+
+        profile = UserProfile(
+          uid: testUserId,
+          displayName: 'Test User',
+          email: 'test@example.com',
+          // Signup well outside the 7d activation window so only the
+          // habitual rule (cooks >= 3) can produce a non-new_ stage.
+          joinedAt: DateTime.now().subtract(const Duration(days: 60)),
+          lastActiveAt: DateTime.now(),
+        );
+
+        when(() => mockUserService.currentUserProfile).thenReturn(profile);
+        when(() => mockUserService.currentUserId).thenReturn(testUserId);
+        when(() => mockBootstrap.emitLifecycle(
+              profile: any(named: 'profile'),
+              lastCookAt: any(named: 'lastCookAt'),
+              cooksLast14Days: any(named: 'cooksLast14Days'),
+              now: any(named: 'now'),
+            )).thenAnswer((_) async {});
+
+        TestServiceLocator.registerMock<UserService>(mockUserService);
+        TestServiceLocator.registerMock<UserPropertyBootstrap>(mockBootstrap);
+      });
+
+      tearDown(() {
+        // Other groups in this file rely on tryGet returning null.
+        prod.ServiceLocator.reset();
+      });
+
+      RecipeDetailViewModel buildViewModel() => RecipeDetailViewModel(
+            recipe: testRecipe,
+            recipeService: mockRecipeService,
+            analyticsService: mockAnalyticsService,
+            cookingService: mockCookingService,
+            cookEventRepository: mockCookEvents,
+          );
+
+      test(
+          'marquee: 3 cooks of the SAME recipe within 14d → '
+          'cooksLast14Days == 3 → lifecycle habitual (proxy gave 1)', () async {
+        // The event log holds 3 events for one recipe — the old
+        // personalRecipes.where(...) proxy counted distinct recipes and
+        // would have reported 1 here.
+        when(() => mockCookEvents.countSince(any(), any()))
+            .thenAnswer((_) async => 3);
+
+        viewModel = buildViewModel();
+        final ok = await viewModel.markAsCooked();
+        expect(ok, isTrue);
+
+        // The count is queried for the signed-in user over a 14d window.
+        final countArgs =
+            verify(() => mockCookEvents.countSince(captureAny(), captureAny()))
+                .captured;
+        expect(countArgs[0], testUserId);
+        final since = countArgs[1] as DateTime;
+        expect(DateTime.now().difference(since).inDays, 14);
+
+        // The real count reaches the lifecycle emission unchanged...
+        final captured = verify(() => mockBootstrap.emitLifecycle(
+              profile: captureAny(named: 'profile'),
+              lastCookAt: captureAny(named: 'lastCookAt'),
+              cooksLast14Days: captureAny(named: 'cooksLast14Days'),
+              now: captureAny(named: 'now'),
+            )).captured;
+        // Mocktail does not guarantee declaration order for captured named
+        // args — extract by type. lastCookAt and now are the same instant
+        // in the VM (both `clock.now()` of the cook).
+        final cooks = captured.whereType<int>().single;
+        final emittedProfile = captured.whereType<UserProfile>().single;
+        final cookInstant = captured.whereType<DateTime>().first;
+        expect(cooks, 3,
+            reason: 'the distinct-recipe proxy reported 1 for repeat cooks '
+                'of the same recipe; the event log must report 3');
+
+        // ...and classifies as habitual with exactly these inputs.
+        final stage = classifyLifecycleStage(
+          signupAt: emittedProfile.joinedAt,
+          lastCookAt: cookInstant,
+          cooksLast14Days: cooks,
+          now: cookInstant,
+        );
+        expect(stage, LifecycleStage.habitual);
+      });
+
+      test('countSince runs only after the cook write has committed', () async {
+        // The aggregate must include the event this cook just wrote — the
+        // VM has no local +1 compensation anymore. A refactor that counts
+        // before the write stays green with a canned mock count but
+        // undercounts by one in production (3rd cook reports 2 →
+        // habitual one cook late).
+        when(() => mockCookEvents.countSince(any(), any()))
+            .thenAnswer((_) async => 3);
+
+        viewModel = buildViewModel();
+        await viewModel.markAsCooked();
+
+        verifyInOrder([
+          () => mockCookingService.markAsCooked(any()),
+          () => mockCookEvents.countSince(any(), any()),
+        ]);
+      });
+
+      test('count failure falls back to 1 — cook flow never breaks', () async {
+        when(() => mockCookEvents.countSince(any(), any()))
+            .thenThrow(Exception('aggregate query offline'));
+
+        viewModel = buildViewModel();
+        final ok = await viewModel.markAsCooked();
+        expect(ok, isTrue,
+            reason: 'analytics enrichment must never fail '
+                'the user-facing cook action');
+
+        verify(() => mockBootstrap.emitLifecycle(
+              profile: any(named: 'profile'),
+              lastCookAt: any(named: 'lastCookAt'),
+              cooksLast14Days: 1,
+              now: any(named: 'now'),
+            )).called(1);
+      });
+
+      test('a zero count is floored to 1 (this cook definitely happened)',
+          () async {
+        when(() => mockCookEvents.countSince(any(), any()))
+            .thenAnswer((_) async => 0);
+
+        viewModel = buildViewModel();
+        await viewModel.markAsCooked();
+
+        verify(() => mockBootstrap.emitLifecycle(
+              profile: any(named: 'profile'),
+              lastCookAt: any(named: 'lastCookAt'),
+              cooksLast14Days: 1,
+              now: any(named: 'now'),
+            )).called(1);
       });
     });
 

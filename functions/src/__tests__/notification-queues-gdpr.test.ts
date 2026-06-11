@@ -13,6 +13,10 @@
  *   3. Empty collections (no docs for the user) → no-op, returns 0.
  *   4. Total returned reflects sum across all three collections.
  *
+ * BUT-838: also covers `cleanupRecipeCookEventsWithDb` — the GDPR cascade
+ * for the recipe_cook_events/{userId} tree (event subcollection discovered
+ * via listCollections + per-user root doc), with one audit row per delete.
+ *
  * Run with: npx ts-node src/__tests__/notification-queues-gdpr.test.ts
  */
 
@@ -28,6 +32,7 @@ if (!admin.apps.length) {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
   cleanupNotificationQueuesWithDb,
+  cleanupRecipeCookEventsWithDb,
 } = require("../cleanup/on-user-deleted");
 
 interface SeedDoc {
@@ -85,6 +90,90 @@ function makeFakeDb(store: FakeStore) {
         set(ref: { path: string }, data: Record<string, unknown>) {
           ops.push(async () => {
             store.audits.push({ path: ref.path, data });
+          });
+        },
+        async commit() {
+          for (const op of ops) await op();
+        },
+      };
+    },
+  };
+}
+
+// BUT-838: fake for the recipe_cook_events/{userId} doc tree. Models the
+// admin-SDK surface the cascade uses: `.collection().doc()` for the root
+// ref (listCollections / get / delete) and for audit_logs auto-id refs
+// (path + standalone `set` used by writeCascadeAuditEntry), plus the same
+// batch shape as makeFakeDb.
+interface CookEventsState {
+  /** Event docs keyed by subcollection name. */
+  events: { sub: string; id: string }[];
+  rootExists: boolean;
+  /** Full paths of deleted docs (events + root). */
+  deleted: Set<string>;
+  audits: { path: string; data: Record<string, unknown> }[];
+}
+
+function makeCookEventsFakeDb(state: CookEventsState) {
+  let nextAutoId = 0;
+  return {
+    collection(name: string) {
+      return {
+        doc(id?: string) {
+          if (name === "audit_logs") {
+            const path = `audit_logs/${id ?? `auto-${nextAutoId++}`}`;
+            return {
+              path,
+              // writeCascadeAuditEntry (root-doc audit) sets directly on the ref.
+              set: async (data: Record<string, unknown>) => {
+                state.audits.push({ path, data });
+              },
+            };
+          }
+          const rootPath = `${name}/${id}`;
+          return {
+            path: rootPath,
+            async listCollections() {
+              const subNames = [...new Set(state.events.map((e) => e.sub))];
+              return subNames.map((sub) => ({
+                id: sub,
+                async get() {
+                  const docs = state.events.filter((e) => e.sub === sub);
+                  return {
+                    empty: docs.length === 0,
+                    docs: docs.map((e) => ({
+                      id: e.id,
+                      ref: {
+                        path: `${rootPath}/${sub}/${e.id}`,
+                        delete: async () => {
+                          state.deleted.add(`${rootPath}/${sub}/${e.id}`);
+                        },
+                      },
+                    })),
+                  };
+                },
+              }));
+            },
+            async get() {
+              return { exists: state.rootExists };
+            },
+            async delete() {
+              state.deleted.add(rootPath);
+              state.rootExists = false;
+            },
+          };
+        },
+      };
+    },
+    batch() {
+      const ops: Array<() => Promise<void>> = [];
+      return {
+        delete(ref: { delete: () => Promise<void> }) {
+          ops.push(() => ref.delete());
+        },
+        set(ref: { path: string }, data: Record<string, unknown>) {
+          ops.push(async () => {
+            state.audits.push({ path: ref.path, data });
           });
         },
         async commit() {
@@ -215,6 +304,71 @@ async function totalReflectsCrossCollectionSum(): Promise<void> {
   );
 }
 
+// BUT-838: the cook-event log is timestamped behavioral PII; account
+// deletion must remove the event docs AND the per-user root doc, staging
+// one cascade_delete audit row per delete.
+async function purgesRecipeCookEventsTree(): Promise<void> {
+  const state: CookEventsState = {
+    events: [
+      { sub: "events", id: "e1" },
+      { sub: "events", id: "e2" },
+      { sub: "events", id: "e3" },
+    ],
+    rootExists: true,
+    deleted: new Set(),
+    audits: [],
+  };
+  const total = await cleanupRecipeCookEventsWithDb(
+    makeCookEventsFakeDb(state) as never,
+    "u1"
+  );
+
+  const eventAudits = state.audits.filter(
+    (a) => a.data.resourceType === "recipe_cook_events/events"
+  );
+  const rootAudits = state.audits.filter(
+    (a) => a.data.resourceType === "recipe_cook_events"
+  );
+  const ok =
+    total === 4 && // 3 event docs + root doc
+    state.deleted.has("recipe_cook_events/u1/events/e1") &&
+    state.deleted.has("recipe_cook_events/u1/events/e2") &&
+    state.deleted.has("recipe_cook_events/u1/events/e3") &&
+    state.deleted.has("recipe_cook_events/u1") &&
+    eventAudits.length === 3 &&
+    rootAudits.length === 1 &&
+    state.audits.every(
+      (a) =>
+        a.path.startsWith("audit_logs/") &&
+        a.data.operation === "cascade_delete" &&
+        a.data.userId === "u1"
+    );
+  record(
+    "BUT-838: purges recipe_cook_events tree (events + root) and stages audit rows",
+    ok,
+    `total=${total} deleted=${[...state.deleted].join(", ")} audits=${state.audits.length}`
+  );
+}
+
+async function recipeCookEventsNoopWhenAbsent(): Promise<void> {
+  const state: CookEventsState = {
+    events: [],
+    rootExists: false,
+    deleted: new Set(),
+    audits: [],
+  };
+  const total = await cleanupRecipeCookEventsWithDb(
+    makeCookEventsFakeDb(state) as never,
+    "u1"
+  );
+  const ok = total === 0 && state.deleted.size === 0 && state.audits.length === 0;
+  record(
+    "BUT-838: no cook events + no root doc → no-op, returns 0, no audit rows",
+    ok,
+    `total=${total} audits=${state.audits.length}`
+  );
+}
+
 async function runAll(): Promise<void> {
   console.log("Security-C2: GDPR notification-queue cascade tests\n");
   console.log("===================================================\n");
@@ -222,6 +376,8 @@ async function runAll(): Promise<void> {
   await leavesOtherUsersAlone();
   await emptyCollectionsNoop();
   await totalReflectsCrossCollectionSum();
+  await purgesRecipeCookEventsTree();
+  await recipeCookEventsNoopWhenAbsent();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +

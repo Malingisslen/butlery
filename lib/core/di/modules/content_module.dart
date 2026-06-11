@@ -27,6 +27,10 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
+// Cook-event log (BUT-838)
+import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_cook_event_repository.dart';
+
 // Storage repository
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
@@ -159,6 +163,7 @@ class ContentModule implements DIModule {
   @override
   List<Type> get provides => [
         RecipeRepository,
+        CookEventRepository,
         UnifiedRecipeService,
         UnifiedMenuService,
         ImportManager,
@@ -254,12 +259,13 @@ class ContentModule implements DIModule {
       () => ImportManager(container<UnifiedRecipeService>().personal),
     );
 
-    // RecipeCookingService — owns atomic cook-count increments and
-    // per-session dedup. Depends only on RecipeRepository so it stays
-    // testable without a full UnifiedRecipeService graph.
+    // RecipeCookingService — owns atomic cook-event logging (event doc +
+    // cook-count increment in one batch, BUT-838) and per-session dedup.
+    // Depends only on CookEventRepository so it stays testable without a
+    // full UnifiedRecipeService graph.
     container.registerLazySingleton<RecipeCookingService>(
       () => RecipeCookingService(
-        recipeRepository: app<RecipeRepository>(),
+        cookEventRepository: app<CookEventRepository>(),
       ),
       dispose: (s) => s.dispose(),
     );
@@ -356,6 +362,17 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<RecipeRepository>(
         () => FirebaseRecipeRepository(
             authRepository: container<auth.AuthRepository>()),
+      );
+
+      // BUT-838: per-user cook-event log. Needs the concrete recipe
+      // repository so the event doc and the recipe's cookCount bump can
+      // commit in one atomic WriteBatch (batch-additive increment helper).
+      container.registerLazySingleton<CookEventRepository>(
+        () => FirebaseCookEventRepository(
+          authRepository: container<auth.AuthRepository>(),
+          recipeRepository:
+              container<RecipeRepository>() as FirebaseRecipeRepository,
+        ),
       );
 
       // Collaborative recipe repository with permission validation and audit logging

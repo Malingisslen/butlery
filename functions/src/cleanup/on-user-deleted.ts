@@ -67,6 +67,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     contentGuardSubcollectionsPurged: 0,
     shareDisplayNameTombstoned: 0,
     reportsAnonymized: 0,
+    recipeCookEventsPurged: 0,
   };
 
   // Fetch friends list once (used by steps 1 and 4)
@@ -160,6 +161,13 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   //     only erase the linked PII (contentOwnerId → null + tombstone date).
   results.reportsAnonymized =
       await anonymizeReportsByContentOwner(userId);
+
+  // 14. GDPR (BUT-838): purge the per-user recipe cook-event log at
+  //     recipe_cook_events/{userId}/... — one event doc per cook action
+  //     (timestamped, recipe-linked behavioral data = linked PII).
+  //     Firestore never cascade-deletes a doc's subcollections, so an
+  //     explicit purge is required for Right-to-Erasure.
+  results.recipeCookEventsPurged = await cleanupRecipeCookEvents(userId);
 
   v1.logger.info(`Cleanup results for ${userId}:`, results);
 }
@@ -411,6 +419,104 @@ export async function cleanupNotificationQueuesWithDb(
       }
     );
   }
+  return total;
+}
+
+/**
+ * BUT-838: GDPR cascade for the per-user recipe cook-event log.
+ *
+ * Assumed tree shape (the client write + firestore.rules block land with the
+ * Dart-side half of BUT-838 this iteration):
+ *
+ *   recipe_cook_events/{userId}                  — per-user root doc (may be
+ *                                                  a "ghost" path prefix if
+ *                                                  the client only writes
+ *                                                  event docs)
+ *   recipe_cook_events/{userId}/events/{eventId} — one doc per cook action
+ *
+ * The event-subcollection name is DISCOVERED via `listCollections()` rather
+ * than hard-coded: this half ships before the client writer, and discovery
+ * keeps the cascade correct even if the subcollection name shifts between
+ * `events` and something else before both halves land. `listCollections()`
+ * also sees subcollections under ghost parents, so the purge works whether
+ * or not the root doc exists.
+ *
+ * Rules assumption (owned by the Dart-side agent — do NOT add here): the
+ * tree is owner-only (`request.auth.uid == userId` for read/create); client
+ * delete is unnecessary because this admin cascade is the erasure path.
+ *
+ * Idempotency: re-runs see no subcollections + a missing root doc → 0.
+ * Best-effort (BUT-753 rationale): a failure here must NOT re-throw out of
+ * the cascade — onUserDeleted retries the WHOLE cascade and step 4's
+ * `friendsCount: increment(-1)` is not idempotent. Residue is swept up by
+ * the next delete event for the same uid or a manual sweep.
+ */
+async function cleanupRecipeCookEvents(userId: string): Promise<number> {
+  return cleanupRecipeCookEventsWithDb(db, userId);
+}
+
+/** Test seam — accepts an injected Firestore so the cascade can run against a stub. */
+export async function cleanupRecipeCookEventsWithDb(
+  database: admin.firestore.Firestore,
+  userId: string
+): Promise<number> {
+  const rootRef = database.collection("recipe_cook_events").doc(userId);
+  let total = 0;
+
+  try {
+    const subcollections = await rootRef.listCollections();
+
+    for (const subcoll of subcollections) {
+      // Unbounded read is acceptable: one user's cook events accumulate at
+      // human cooking pace (a few per day worst case → low thousands over
+      // an account lifetime), well within the 540s/512MB budget.
+      const snap = await subcoll.get();
+      if (snap.empty) continue;
+
+      // BUT-886: own-data delete — stage one audit row per event doc in the
+      // same batch (2 ops/doc → chunk cap 250 via opsPerItem).
+      total += await commitInChunks(
+        database,
+        snap.docs,
+        (batch, doc) => {
+          batch.delete(doc.ref);
+          stageCascadeAuditEntry(database, batch, {
+            subjectUserId: userId,
+            targetUid: null,
+            operation: "cascade_delete",
+            resourceType: `recipe_cook_events/${subcoll.id}`,
+            resourceId: doc.id,
+          });
+        },
+        {
+          label: `BUT-838: recipe_cook_events/${subcoll.id} purge for ${userId}`,
+          // BUT-886: mutate stages delete + audit = 2 ops per item.
+          opsPerItem: 2,
+        }
+      );
+    }
+
+    // Delete the per-user root doc (aggregate counters) only if it actually
+    // exists — auditing the delete of a ghost parent would be noise.
+    const rootSnap = await rootRef.get();
+    if (rootSnap.exists) {
+      await rootRef.delete();
+      await writeCascadeAuditEntry(database, {
+        subjectUserId: userId,
+        targetUid: null,
+        operation: "cascade_delete",
+        resourceType: "recipe_cook_events",
+        resourceId: userId,
+      });
+      total += 1;
+    }
+  } catch (err) {
+    v1.logger.warn(
+      `BUT-838: recipe_cook_events purge failed for ${userId}`,
+      { err }
+    );
+  }
+
   return total;
 }
 

@@ -45,6 +45,11 @@ abstract final class FirestoreCollections {
   static const String notificationEngagement = 'notification_engagement';
   static const String ingredientSubstitutions = 'ingredient_substitutions';
   static const String cookSnaps = 'cook_snaps';
+  // BUT-838: per-user cook-event log. Events live in an `events`
+  // subcollection under recipe_cook_events/{userId} (a virtual doc that is
+  // never written — Firestore paths must alternate collection/document).
+  static const String recipeCookEvents = 'recipe_cook_events';
+  static const String recipeCookEventEntries = 'events';
   static const String activityEvents = 'activity_events';
   static const String pings = 'pings';
   static const String weeklyMenuPlans = 'weekly_menu_plans';
