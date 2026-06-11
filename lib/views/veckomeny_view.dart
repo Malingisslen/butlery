@@ -14,7 +14,8 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
-import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart'
+    show MenuShoppingGenerationResult;
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -215,7 +216,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         context,
         label: context.l10n.menuToShoppingList,
         icon: Icons.shopping_cart,
-        onPressed: () => _generateWeekShoppingList(planVm.currentWeekStart),
+        // Disabled while the VM is busy — together with the VM's isLoading
+        // guard this replaces the old hand-rolled re-entrancy flag.
+        isLoading: planVm.isLoading,
+        onPressed: _generateWeekShoppingList,
         style: ActionButtonStyle.primary,
       );
     }
@@ -232,48 +236,44 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  /// BUT-956: aggregate the calendar week's recipes into one shopping list.
-  /// Re-entrancy-guarded — a double-tap before the first generation lands
-  /// would otherwise race the name-based idempotency into duplicate lists.
-  bool _isGeneratingList = false;
-
-  Future<void> _generateWeekShoppingList(DateTime weekStart) async {
-    if (_isGeneratingList) return;
-    _isGeneratingList = true;
-    try {
-      final generator = ServiceLocator.get<MenuShoppingListGenerator>();
-      final result = await generator.generateForWeek(weekStart);
-      if (!mounted) return;
-      if (result == null) {
-        // null = the generation FAILED (service error path) — distinct from
-        // an empty plan, which returns nothingToGenerate.
-        SnackBarUtils.showError(
-            context, context.l10n.menuShoppingListGenerationFailed);
-        return;
-      }
-      if (result.isEmptyPlan) {
-        SnackBarUtils.showWarning(
-            context, context.l10n.menuShoppingListGenerationEmpty);
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n
-              .menuShoppingListGenerated(result.listName, result.itemCount)),
-          action: SnackBarAction(
-            label: context.l10n.commonShow,
-            // The snackbar can outlive this route — guard the late tap.
-            onPressed: () {
-              if (mounted) {
-                Navigator.pushNamed(context, Routes.shoppingList);
-              }
-            },
-          ),
-        ),
-      );
-    } finally {
-      _isGeneratingList = false;
+  /// BUT-956/BUT-1234: generation lives on the ViewModel — the view only
+  /// triggers it and renders the result as snackbars (null = failure,
+  /// alreadyRunning = silence, empty-plan sentinel = warning, otherwise
+  /// success).
+  Future<void> _generateWeekShoppingList() async {
+    final result =
+        await context.read<WeeklyMenuPlanViewModel>().generateShoppingList();
+    if (!mounted) return;
+    if (result == null) {
+      SnackBarUtils.showError(
+          context, context.l10n.menuShoppingListGenerationFailed);
+      return;
     }
+    // A double-tap raced an in-flight generation — the first call's
+    // snackbar will speak for both.
+    if (identical(result, MenuShoppingGenerationResult.alreadyRunning)) {
+      return;
+    }
+    if (result.isEmptyPlan) {
+      SnackBarUtils.showWarning(
+          context, context.l10n.menuShoppingListGenerationEmpty);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n
+            .menuShoppingListGenerated(result.listName, result.itemCount)),
+        action: SnackBarAction(
+          label: context.l10n.commonShow,
+          // The snackbar can outlive this route — guard the late tap.
+          onPressed: () {
+            if (mounted) {
+              Navigator.pushNamed(context, Routes.shoppingList);
+            }
+          },
+        ),
+      ),
+    );
   }
 
   List<Widget> _buildHeaderActions(

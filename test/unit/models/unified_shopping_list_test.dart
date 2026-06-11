@@ -649,6 +649,61 @@ void main() {
       });
     });
 
+    group('generatedForWeek marker (BUT-1234)', () {
+      // The MenuShoppingListGenerator finds "this week's list" via this
+      // marker — if serialization drops it in either format, regeneration
+      // would silently start duplicating lists after an app restart.
+
+      test('round-trips through toJson/fromJson', () {
+        final marked = testList.copyWith(generatedForWeek: '2026-W24');
+
+        final restored = UnifiedShoppingList.fromJson(marked.toJson());
+
+        expect(restored.generatedForWeek, equals('2026-W24'));
+      });
+
+      test('round-trips through toFirestore/fromMap', () {
+        final marked = testList.copyWith(generatedForWeek: '2026-W24');
+
+        final restored =
+            UnifiedShoppingList.fromMap(marked.id, marked.toFirestore());
+
+        expect(restored.generatedForWeek, equals('2026-W24'));
+      });
+
+      test('legacy docs without the field deserialize to null', () {
+        // Pre-BUT-1234 Firestore docs and cached JSON have no
+        // generatedForWeek key — they must load as unmarked lists, never
+        // throw or coerce to ''.
+        final legacyMap = {
+          'name': 'Inköpslista v.24',
+          'ownerId': 'owner_123',
+          'ownerDisplayName': 'Owner Name',
+          'items': <dynamic>[],
+          'createdAt': Timestamp.fromDate(testDate),
+          'updatedAt': Timestamp.fromDate(testDate),
+        };
+
+        final fromFirestore = UnifiedShoppingList.fromMap('id', legacyMap);
+        expect(fromFirestore.generatedForWeek, isNull);
+
+        final legacyJson = testList.toJson()..remove('generatedForWeek');
+        final fromCache = UnifiedShoppingList.fromJson(legacyJson);
+        expect(fromCache.generatedForWeek, isNull);
+      });
+
+      test('copyWith sets the marker and preserves it when omitted', () {
+        final marked = testList.copyWith(generatedForWeek: '2026-W24');
+        expect(marked.generatedForWeek, equals('2026-W24'));
+
+        // An unrelated copyWith (e.g. the rename flow) must not lose it.
+        final renamed = marked.copyWith(name: 'veckans mat');
+        expect(renamed.generatedForWeek, equals('2026-W24'));
+        expect(testList.generatedForWeek, isNull,
+            reason: 'baseline list starts unmarked');
+      });
+    });
+
     group('Edge Cases and Validation', () {
       test('should validate shopping list constraints', () {
         // Valid list

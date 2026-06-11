@@ -46,15 +46,23 @@ abstract final class IsoWeekUtils {
     return date.year;
   }
 
+  /// Canonical user-independent week key: `{YYYY}-W{WW}` (zero-padded),
+  /// e.g. `2026-W24`. Used as the `generatedForWeek` marker on shopping
+  /// lists generated from the weekly menu (BUT-1234) and as the suffix of
+  /// [weekIdFor].
+  static String weekKeyOf(DateTime date) {
+    final year = isoWeekYear(date);
+    final week = isoWeekNumber(date);
+    return '$year-W${week.toString().padLeft(2, '0')}';
+  }
+
   /// Deterministic Firestore document ID: `{userId}_{YYYY}-W{WW}` (zero-padded).
   ///
   /// Example: `abc123_2026-W15`. Same `(userId, week)` always returns the
   /// same ID — used as the upsert key for `WeeklyMenuPlan` so generation
   /// re-runs overwrite the same doc rather than creating duplicates.
   static String weekIdFor(String userId, DateTime date) {
-    final year = isoWeekYear(date);
-    final week = isoWeekNumber(date);
-    return '${userId}_$year-W${week.toString().padLeft(2, '0')}';
+    return '${userId}_${weekKeyOf(date)}';
   }
 
   static bool _isLeapYear(int year) {

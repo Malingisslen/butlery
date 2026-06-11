@@ -8,18 +8,22 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
 class WeeklyMenuPlanViewModel extends BaseViewModel {
   final WeeklyMenuPlanService _service;
   final UnifiedRecipeService _recipeService;
+  final MenuShoppingListGenerator _shoppingListGenerator;
 
   WeeklyMenuPlanViewModel({
     required WeeklyMenuPlanService service,
     required UnifiedRecipeService recipeService,
+    required MenuShoppingListGenerator shoppingListGenerator,
   })  : _service = service,
-        _recipeService = recipeService;
+        _recipeService = recipeService,
+        _shoppingListGenerator = shoppingListGenerator;
 
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
@@ -228,6 +232,34 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       },
       errorPrefix: 'Kunde inte ångra rensningen',
     );
+  }
+
+  /// BUT-956/BUT-1234: aggregate the visible week's recipes into one
+  /// shopping list ("Generera inköpslista" FAB).
+  ///
+  /// Three-way result contract the view renders snackbars from:
+  /// - non-null with `isEmptyPlan == false` → success
+  /// - non-null `nothingToGenerate` sentinel → week has no resolvable recipes
+  /// - null → generation FAILED
+  ///
+  /// Re-entrancy rides on [isLoading] (set synchronously by executeAsync) —
+  /// the view disables the FAB while loading; a racing second call returns
+  /// the [MenuShoppingGenerationResult.alreadyRunning] sentinel, which the
+  /// view renders as silence (a double-tap is not a failure). The
+  /// generator's own error path swallows
+  /// exceptions into a null return, so the catch below only fires for
+  /// failures outside it; either way the caller sees null = failure.
+  Future<MenuShoppingGenerationResult?> generateShoppingList() async {
+    if (isLoading) return MenuShoppingGenerationResult.alreadyRunning;
+    try {
+      return await executeAsync(
+        () => _shoppingListGenerator.generateForWeek(currentWeekStart),
+        errorPrefix: 'Kunde inte skapa inköpslistan',
+      );
+    } catch (_) {
+      // executeAsync already set the error state and logged the details.
+      return null;
+    }
   }
 
   /// Drop a recipe from the overflow tray into a slot.

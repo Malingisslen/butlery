@@ -53,6 +53,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -238,6 +239,7 @@ class UIModule implements DIModule {
         () => WeeklyMenuPlanViewModel(
           service: container<WeeklyMenuPlanService>(),
           recipeService: container<UnifiedRecipeService>(),
+          shoppingListGenerator: container<MenuShoppingListGenerator>(),
         ),
       );
       // Unified Shopping ViewModel - Zero dependencies

@@ -662,6 +662,11 @@
     }
   },
   "menuToShoppingList": "Till inköpslista",
+  "menuGeneratedShoppingListName": "Inköpslista v.{week}",
+  "@menuGeneratedShoppingListName": {
+    "description": "BUT-1234: default name for the shopping list generated from the weekly menu. {week} is the ISO week number, e.g. 24.",
+    "placeholders": { "week": { "type": "int" } }
+  },
   "menuShoppingListGenerated": "{listName} uppdaterad – {count} varor",
   "@menuShoppingListGenerated": {
     "description": "BUT-956: snackbar after generating the aggregated week shopping list. {listName} e.g. 'Inköpslista v.24'.",

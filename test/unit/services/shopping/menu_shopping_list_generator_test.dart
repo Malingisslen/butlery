@@ -1,12 +1,15 @@
-/// BUT-956: menu→shopping-list GENERATION orchestration contract.
+/// BUT-956 + BUT-1234: menu→shopping-list GENERATION orchestration contract.
 ///
 /// The pure aggregation math is pinned in `menu_shopping_aggregator_test.dart`
-/// — this file pins what the GENERATOR adds on top: one named list per ISO
-/// week ("Inköpslista v.NN"), idempotent regeneration into the same list,
-/// bought-status survival across regeneration (keyed by the SAME Swedish
-/// normalization as the aggregation), honest degradation when plan recipes
-/// can't be resolved, and the `nothingToGenerate` sentinel for an empty week
-/// (null is reserved for FAILURE — the view shows different copy for each).
+/// — this file pins what the GENERATOR adds on top: one list per ISO week
+/// identified by the `generatedForWeek` marker (BUT-1234 — lookup by name was
+/// the BUT-956 V1 contract and was deliberately replaced), idempotent
+/// regeneration into the marked list even after a user rename, hands-off
+/// treatment of identically named UNMARKED user lists, bought-status survival
+/// across regeneration (keyed by the SAME Swedish normalization as the
+/// aggregation), honest degradation when plan recipes can't be resolved, and
+/// the `nothingToGenerate` sentinel for an empty week (null is reserved for
+/// FAILURE — the view shows different copy for each).
 ///
 /// Scaffolding note: the generator resolves all three services via
 /// `ServiceLocator.get` at call time, and `executeServiceOperation`'s
@@ -44,12 +47,14 @@ class _MockWeeklyMenuPlanService extends Mock
 
 const _testUserId = 'test-user-123';
 
-/// 2026-06-10 is a Wednesday in ISO week 24 — the expected list name is
-/// asserted as a LITERAL so this suite independently pins both the name
-/// format and the week computation (no tautological re-derivation via
-/// IsoWeekUtils in the assertion).
+/// 2026-06-10 is a Wednesday in ISO week 24 — the expected list name and
+/// week marker are asserted as LITERALS so this suite independently pins the
+/// name format, the marker format, and the week computation (no tautological
+/// re-derivation via IsoWeekUtils in the assertions). The name comes from
+/// `AppLocale.current`, which defaults to Swedish in unit tests.
 final _date = DateTime(2026, 6, 10);
 const _expectedListName = 'Inköpslista v.24';
+const _expectedWeekKey = '2026-W24';
 
 Recipe _recipe(String id, List<RecipeIngredient> entries) => Recipe(
       core: RecipeCore(
@@ -86,6 +91,7 @@ UnifiedShoppingList _list(
   String id,
   String name, {
   List<UnifiedShoppingItem> items = const [],
+  String? generatedForWeek,
 }) =>
     UnifiedShoppingList(
       id: id,
@@ -93,6 +99,7 @@ UnifiedShoppingList _list(
       ownerId: _testUserId,
       ownerDisplayName: 'Test',
       items: items,
+      generatedForWeek: generatedForWeek,
     );
 
 void main() {
@@ -196,6 +203,10 @@ void main() {
 
       final written = capturedUpdate();
       expect(written.id, 'new-list-1');
+      expect(written.generatedForWeek, _expectedWeekKey,
+          reason: 'BUT-1234: a freshly created week list must carry the '
+              'generatedForWeek marker so the next regeneration finds it '
+              'even if the user renames it');
       final byName = {for (final i in written.items) i.name: i};
       expect(byName.keys, containsAll(['mjöl', 'ägg']));
       expect(byName['mjöl']!.amount, 3,
@@ -209,12 +220,17 @@ void main() {
         'idempotent regeneration: existing week list is updated in place, '
         'never duplicated, and its content is replaced', () async {
       // Proves: re-running "Generera inköpslista" for the same week targets
-      // the existing list (no "Inköpslista v.24 (2)" pile-up) and the
+      // the existing MARKED list (no "Inköpslista v.24 (2)" pile-up) and the
       // generator OWNS the content — stale/manual lines do not survive.
       seedTwoRecipePlan();
-      final existing = _list('existing-1', _expectedListName, items: [
-        UnifiedShoppingItem(name: 'gammal vara', amount: 1, unit: 'st'),
-      ]);
+      final existing = _list(
+        'existing-1',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+        items: [
+          UnifiedShoppingItem(name: 'gammal vara', amount: 1, unit: 'st'),
+        ],
+      );
       shoppingService.setShoppingState(
         lists: [existing],
         personalLists: [existing],
@@ -237,15 +253,140 @@ void main() {
     });
 
     test(
+        'BUT-1234: a RENAMED generated list is still found via its '
+        'generatedForWeek marker and regenerated in place', () async {
+      // Proves: lookup is by marker, not name. The user renaming
+      // "Inköpslista v.24" to "veckans mat" must not cause a duplicate
+      // marker-less "Inköpslista v.24" to spawn next regeneration.
+      seedTwoRecipePlan();
+      final renamed = _list(
+        'renamed-1',
+        'veckans mat', // user renamed it — nothing like the generated name
+        generatedForWeek: _expectedWeekKey,
+      );
+      shoppingService.setShoppingState(
+        lists: [renamed],
+        personalLists: [renamed],
+      );
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull,
+          reason: 'regeneration must run against the renamed marked list');
+      expect(result!.listId, 'renamed-1');
+      expect(result.listName, 'veckans mat',
+          reason: 'the snackbar must echo the name the user actually sees, '
+              'not the default generated name');
+      verifyNever(() => shoppingService.createPersonalList(any(),
+          items: any(named: 'items')));
+      expect(capturedUpdate().id, 'renamed-1');
+    });
+
+    test(
+        'BUT-1234: a user list coincidentally named "Inköpslista v.NN" but '
+        'WITHOUT the marker is never touched — a new marked list is created '
+        'alongside it', () async {
+      // Proves: name collision alone does not make a list the generator's
+      // target. The user's own list (and its items) must survive untouched;
+      // the duplicate name is the documented acceptable cost.
+      seedTwoRecipePlan();
+      final userList = _list(
+        'user-list-1',
+        _expectedListName, // same name, no generatedForWeek marker
+        items: [
+          UnifiedShoppingItem(name: 'användarens vara', amount: 1, unit: 'st'),
+        ],
+      );
+      shoppingService.setShoppingState(
+        lists: [userList],
+        personalLists: [userList],
+      );
+      when(() => shoppingService.createPersonalList(any(),
+          items: any(named: 'items'))).thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [userList, _list('new-list-1', _expectedListName)],
+          personalLists: [userList, _list('new-list-1', _expectedListName)],
+        );
+        return 'new-list-1';
+      });
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull,
+          reason: 'an unmarked name-collision must not abort generation');
+      expect(result!.listId, 'new-list-1',
+          reason: 'generation must target a NEW list, not the user\'s');
+      verify(() => shoppingService.createPersonalList(_expectedListName,
+          items: any(named: 'items'))).called(1);
+
+      final written = capturedUpdate();
+      expect(written.id, 'new-list-1',
+          reason: 'the only write must hit the new list — the user\'s '
+              'identically named list stays untouched');
+      expect(written.generatedForWeek, _expectedWeekKey);
+    });
+
+    test(
+        'BUT-1234: a list marked for a DIFFERENT week is never hijacked — '
+        'generating a new week creates a new list', () async {
+      // Proves: lookup matches the marker VALUE, not mere marker presence.
+      // A regression to "find any generated list" would overwrite last
+      // week's list every time a new week is generated.
+      seedTwoRecipePlan();
+      final lastWeek = _list(
+        'last-week-1',
+        'Inköpslista v.23',
+        generatedForWeek: '2026-W23',
+        items: [
+          UnifiedShoppingItem(
+              name: 'förra veckans vara', amount: 1, unit: 'st'),
+        ],
+      );
+      shoppingService.setShoppingState(
+        lists: [lastWeek],
+        personalLists: [lastWeek],
+      );
+      when(() => shoppingService.createPersonalList(any(),
+          items: any(named: 'items'))).thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [lastWeek, _list('new-list-1', _expectedListName)],
+          personalLists: [lastWeek, _list('new-list-1', _expectedListName)],
+        );
+        return 'new-list-1';
+      });
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull);
+      expect(result!.listId, 'new-list-1',
+          reason: 'a marker for another week must not make a list the '
+              'generation target');
+      verify(() => shoppingService.createPersonalList(_expectedListName,
+          items: any(named: 'items'))).called(1);
+
+      final written = capturedUpdate();
+      expect(written.id, 'new-list-1',
+          reason: 'the only write must hit the new list — last week\'s '
+              'list must receive no write');
+      expect(written.generatedForWeek, _expectedWeekKey);
+    });
+
+    test(
         'bought-status survives regeneration by name+unit; new lines '
         'default to not bought', () async {
       // Proves: ticking off "mjöl" in the store, then regenerating the week,
       // does not resurrect it as unbought — while genuinely new lines start
       // unbought.
       seedTwoRecipePlan();
-      final existing = _list('existing-1', _expectedListName, items: [
-        UnifiedShoppingItem(name: 'mjöl', amount: 2, unit: 'dl', bought: true),
-      ]);
+      final existing = _list(
+        'existing-1',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+        items: [
+          UnifiedShoppingItem(
+              name: 'mjöl', amount: 2, unit: 'dl', bought: true),
+        ],
+      );
       shoppingService.setShoppingState(
         lists: [existing],
         personalLists: [existing],
@@ -284,9 +425,15 @@ void main() {
         ],
         isInitialized: true,
       );
-      final existing = _list('existing-1', _expectedListName, items: [
-        UnifiedShoppingItem(name: 'Mjöl', amount: 2, unit: 'dl', bought: true),
-      ]);
+      final existing = _list(
+        'existing-1',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+        items: [
+          UnifiedShoppingItem(
+              name: 'Mjöl', amount: 2, unit: 'dl', bought: true),
+        ],
+      );
       shoppingService.setShoppingState(
         lists: [existing],
         personalLists: [existing],

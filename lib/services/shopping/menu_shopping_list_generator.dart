@@ -1,6 +1,7 @@
 // lib/services/shopping/menu_shopping_list_generator.dart
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -43,15 +44,31 @@ class MenuShoppingGenerationResult {
     unresolvedRecipes: 0,
   );
 
+  /// Re-entrancy sentinel: a generation is already in flight. Distinct from
+  /// `null` (= FAILED) so a double-tap is rendered as silence, not an error
+  /// snackbar. Compare with [identical] — field-wise it looks like
+  /// [nothingToGenerate].
+  static const alreadyRunning = MenuShoppingGenerationResult(
+    listId: '',
+    listName: '',
+    itemCount: 0,
+    recipeCount: 0,
+    unresolvedRecipes: 0,
+  );
+
   bool get isEmptyPlan => listId.isEmpty;
 }
 
 /// BUT-956: generates ("Generera inköpslista") a shopping list from the
 /// weekly menu plan. Deterministic, zero LLM.
 ///
-/// V1 contract:
-/// - One generated list per ISO week, named "Inköpslista v.NN" — regenerating
-///   the same week UPDATES that list instead of duplicating it (idempotent).
+/// Contract (BUT-956 + BUT-1234):
+/// - One generated list per ISO week, identified by the `generatedForWeek`
+///   marker (e.g. "2026-W24") — NOT by name. Regenerating the same week
+///   UPDATES the marked list in place (idempotent), even if the user renamed
+///   it. A user list that merely shares the generated name but lacks the
+///   marker is never touched — a new marked list is created alongside it
+///   (the name collision is acceptable).
 /// - On regeneration the list's content is replaced by the fresh aggregation,
 ///   but bought-status survives for lines whose name+unit key still matches.
 ///   The generated list is OWNED by the generator: manual additions to it do
@@ -87,11 +104,16 @@ class MenuShoppingListGenerator extends BaseService {
         }
 
         final aggregated = MenuShoppingAggregator.aggregate(recipes);
-        final listName = 'Inköpslista v.${IsoWeekUtils.isoWeekNumber(date)}';
+        final weekKey = IsoWeekUtils.weekKeyOf(date);
+        final listName = AppLocale.current
+            .menuGeneratedShoppingListName(IsoWeekUtils.isoWeekNumber(date));
 
         // Idempotency: reuse this week's generated list when it exists.
+        // Lookup is by the generatedForWeek marker, never by name — a
+        // renamed generated list still regenerates in place, and a user
+        // list that happens to carry the generated name is left alone.
         final existing = shoppingService.personalLists
-            .where((l) => l.name == listName)
+            .where((l) => l.generatedForWeek == weekKey)
             .toList();
         String listId;
         if (existing.isNotEmpty) {
@@ -132,16 +154,21 @@ class MenuShoppingListGenerator extends BaseService {
             .toList();
 
         final list = shoppingService.lists.firstWhere((l) => l.id == listId);
+        // Stamp the marker on every write: it tags freshly created lists and
+        // is a no-op re-stamp on reused ones (already carrying this weekKey).
         final updated = await shoppingService.updateList(
-          list.copyWith(items: items),
+          list.copyWith(items: items, generatedForWeek: weekKey),
         );
+        // `list` was fetched by id above, so its name is the one the user
+        // actually sees (a reused list may have been renamed) — error and
+        // snackbar must echo it.
         if (!updated) {
-          throw StateError('Could not write items to "$listName"');
+          throw StateError('Could not write items to "${list.name}"');
         }
 
         return MenuShoppingGenerationResult(
           listId: listId,
-          listName: listName,
+          listName: list.name,
           itemCount: items.length,
           recipeCount: recipes.length,
           unresolvedRecipes: unresolved,

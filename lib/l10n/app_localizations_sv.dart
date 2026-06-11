@@ -1052,6 +1052,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuToShoppingList => 'Till inköpslista';
 
   @override
+  String menuGeneratedShoppingListName(int week) {
+    return 'Inköpslista v.$week';
+  }
+
+  @override
   String menuShoppingListGenerated(String listName, int count) {
     return '$listName uppdaterad – $count varor';
   }

@@ -19,6 +19,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -32,6 +33,9 @@ class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
+
+class _MockMenuShoppingListGenerator extends Mock
+    implements MenuShoppingListGenerator {}
 
 class _FakeWeeklyMenuPlan extends Fake implements WeeklyMenuPlan {}
 
@@ -118,6 +122,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       addTearDown(vm.dispose);
 
@@ -164,6 +169,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       addTearDown(vm.dispose);
 
@@ -215,6 +221,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       addTearDown(vm.dispose);
 
@@ -257,6 +264,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       addTearDown(vm.dispose);
 
@@ -294,6 +302,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       addTearDown(vm.dispose);
       await vm.loadWeek(pastWeek);
@@ -352,6 +361,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       addTearDown(vm.dispose);
 
@@ -443,6 +453,7 @@ void main() {
       final vm = WeeklyMenuPlanViewModel(
         service: service,
         recipeService: recipeService,
+        shoppingListGenerator: _MockMenuShoppingListGenerator(),
       );
       // Pre-load the plan so the widget mounts with state already resident
       // — the widget's post-frame callback will still fire loadWeek but

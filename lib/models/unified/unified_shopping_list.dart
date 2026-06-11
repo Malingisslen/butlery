@@ -201,6 +201,14 @@ class UnifiedShoppingList {
   /// - 'shared': Created from accepting a shared list invitation (don't show in dropdown)
   final String? collaborativeOrigin;
 
+  /// BUT-1234: ISO week key (`2026-W24`, see `IsoWeekUtils.weekKeyOf`) set by
+  /// `MenuShoppingListGenerator` on lists it generated from the weekly menu.
+  /// The generator finds "this week's list" via this marker — NOT via the
+  /// display name — so a renamed generated list still regenerates in place,
+  /// while a user list that merely shares the generated name is never touched.
+  /// Null for manually created lists and legacy docs.
+  final String? generatedForWeek;
+
   /// Creates a new unified shopping list with comprehensive metadata and automatic ID generation.
   /// This constructor provides complete shopping list initialization with support for personal,
   /// collaborative, and template shopping lists. All collaborative features are optional and
@@ -245,6 +253,7 @@ class UnifiedShoppingList {
     this.allowGuestEditing = true,
     this.autoRemoveCompleted = false,
     this.collaborativeOrigin,
+    this.generatedForWeek,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? clock.now(),
         updatedAt = updatedAt ?? clock.now();
@@ -414,6 +423,7 @@ class UnifiedShoppingList {
     bool? allowGuestEditing,
     bool? autoRemoveCompleted,
     String? collaborativeOrigin,
+    String? generatedForWeek,
   }) {
     return UnifiedShoppingList(
       id: id,
@@ -437,6 +447,7 @@ class UnifiedShoppingList {
       allowGuestEditing: allowGuestEditing ?? this.allowGuestEditing,
       autoRemoveCompleted: autoRemoveCompleted ?? this.autoRemoveCompleted,
       collaborativeOrigin: collaborativeOrigin ?? this.collaborativeOrigin,
+      generatedForWeek: generatedForWeek ?? this.generatedForWeek,
     );
   }
 
@@ -594,6 +605,7 @@ class UnifiedShoppingList {
       'allowGuestEditing': allowGuestEditing,
       'autoRemoveCompleted': autoRemoveCompleted,
       'collaborativeOrigin': collaborativeOrigin,
+      'generatedForWeek': generatedForWeek,
     };
   }
 
@@ -624,6 +636,7 @@ class UnifiedShoppingList {
       'categoryIds': categoryIds,
       'allowGuestEditing': allowGuestEditing,
       'autoRemoveCompleted': autoRemoveCompleted,
+      'generatedForWeek': generatedForWeek,
     };
   }
 
@@ -680,6 +693,8 @@ class UnifiedShoppingList {
           defaultValue: true),
       autoRemoveCompleted:
           SerializationUtils.safeBool(json, 'autoRemoveCompleted'),
+      generatedForWeek:
+          SerializationUtils.safeNullableString(json, 'generatedForWeek'),
     );
   }
 
@@ -736,6 +751,8 @@ class UnifiedShoppingList {
           SerializationUtils.safeBool(data, 'autoRemoveCompleted'),
       collaborativeOrigin:
           SerializationUtils.safeNullableString(data, 'collaborativeOrigin'),
+      generatedForWeek:
+          SerializationUtils.safeNullableString(data, 'generatedForWeek'),
     );
   }
 

@@ -1880,6 +1880,12 @@ abstract class AppLocalizations {
   /// **'Till inköpslista'**
   String get menuToShoppingList;
 
+  /// BUT-1234: default name for the shopping list generated from the weekly menu. {week} is the ISO week number, e.g. 24.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslista v.{week}'**
+  String menuGeneratedShoppingListName(int week);
+
   /// BUT-956: snackbar after generating the aggregated week shopping list. {listName} e.g. 'Inköpslista v.24'.
   ///
   /// In sv, this message translates to:
