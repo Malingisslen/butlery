@@ -1264,3 +1264,66 @@ Patterns worth remembering:
 - **spawnSync on Windows needs `shell: true`** for `npm` (npm.cmd; Node's
   CVE fix blocks .cmd without shell). Command string built only from our
   own package.json script names.
+
+### 2026-06-11 — BUT-694(c) PII heuristics + BUT-838 cook-event GDPR cascade [Pattern discovered]
+
+**BUT-694 option (c)** — `llm/pii-scrubber.ts` gained two deterministic
+heuristic rules (no LLM/ONNX): Swedish street addresses
+(closed suffix set + REQUIRED house number → `[ADDRESS]`) and person names
+(closed relation/honorific trigger set + capitalized name → `[NAME]`,
+trigger word kept). The full HEURISTIC CONTRACT lives as a comment block in
+the file; the Dart mirror is written from it.
+
+Patterns worth remembering:
+- **Shared JSON vector fixture as the cross-port sync mechanism**:
+  `src/__tests__/fixtures/pii-heuristic-vectors.json` — `{_header: [...],
+  vectors: [{name, input, expected}]}`. TS suite asserts exact full-string
+  equality; the Dart side copies the file verbatim. JSON has no comments, so
+  the "Dart copies this" note lives in a `_header` string array (wrapper
+  object, not a bare array).
+- **JS ASCII `\b` mis-fires before å/ä/ö** (Å is non-word in `\w`). For
+  Swedish-letter patterns, don't lead with `\b` — let the letter class
+  extend the match — or use a `(?<=^|[^A-Za-zÅÄÖåäö])` lookbehind (used for
+  the relation triggers). Trailing `\b` is fine after ASCII digits/letters.
+- **No `/i` flag when only the trigger should be case-insensitive**: spell
+  per-letter classes (`[Mm]ormor`) so the NAME part stays strictly
+  capital-initial. The `\s+` after the trigger is what rejects genitives
+  ("mormors äppelkaka") and embedded matches ("Frukost" never triggers
+  "fru").
+- **Reuse `UNIT_SUFFIX_LOOKAHEAD` for any number-terminated heuristic** —
+  it's what keeps "Följ Ringvägen 5 minuter" from redacting as an address.
+- **Pinned negative landmines**: "X:s" possessive recipe titles ("Janssons
+  frestelse", "Gustavs special") must NEVER redact — no general
+  capitalized-word NER. These are fixture vectors; don't "improve" the name
+  rule into one that matches bare capitalized words.
+- **redactionRatio extends by token registration only**: new replacement
+  tokens just get appended to `PII_TOKENS`; the ratio (token coverage over
+  scrubbed output) then counts them with unchanged semantics. For RULE B the
+  kept trigger word correctly counts as non-redacted.
+
+**BUT-838** — `cleanup/on-user-deleted.ts` step 14:
+`cleanupRecipeCookEvents(WithDb)` purges the `recipe_cook_events/{userId}`
+tree (per-user root doc + event subcollection). BUT-886 audit wiring:
+delete + audit = 2 ops/doc via `commitInChunks(opsPerItem: 2)` (chunk cap
+250). Tests live in `notification-queues-gdpr.test.ts` (suite doubles as
+the general per-user GDPR cascade suite now).
+
+Patterns worth remembering:
+- **`listCollections()` for shape-not-yet-final subcollection purges**: this
+  cascade shipped BEFORE the client writer (Dart half of BUT-838 lands the
+  rules + writes). Discovering subcollections via
+  `rootRef.listCollections()` instead of hard-coding `events` keeps the
+  cascade correct if the name shifts. It also sees subcollections under
+  ghost parents (root doc never written).
+- **Root-doc delete gated on `exists`** — auditing the delete of a ghost
+  parent is noise; one extra read buys a truthful audit log.
+- **New cascade steps should be best-effort, not strict**: a re-thrown error
+  retries the WHOLE onUserDeleted cascade, and step 4's
+  `friendsCount: increment(-1)` is NOT idempotent — strict failure in a late
+  step double-decrements friend counts. Catch + warn + return partial
+  (BUT-753 rationale). The strict mode on the notification-queues step is
+  pre-existing behavior, not the template to copy.
+- **Rules assumption recorded, not implemented**: the cascade assumes
+  owner-only rules (`request.auth.uid == userId` read/create, no client
+  delete needed — admin cascade is the erasure path). firestore.rules is
+  owned by the Dart-side agent/firestore-rules-tester.

@@ -587,6 +587,43 @@ clause with a whitespace-tolerant REGEX (`\s*` between tokens) — literal
 template strings silently miss on indentation. Lets the tester report "fix A
 verified green, fix B verified leaky" instead of speculating.
 
+### 2026-06-11 — cook-events-rules.test.ts created (BUT-838) + count() aggregate test pattern
+
+New test file `functions/src/__tests__/cook-events-rules.test.ts` (24 tests),
+wired in as `test:rules:cook-events`, appended to `test:rules:all`, added to
+`firestore-rules.yml` path filters (PR + push). Project id
+`butlery-rules-cook-events`.
+
+Map row to add:
+
+| `recipe_cook_events/{userId}/events/{eventId}` | `cook-events-rules.test.ts` | `test:rules:cook-events` |
+
+Rules shape (BUT-838): read/delete gate ONLY on the `{userId}` path segment;
+create adds hasAll+hasOnly(['recipeId','cookedAt']) + recipeId string 1..200
++ cookedAt timestamp; `allow update: if false` (append-only log).
+
+**count() aggregate test pattern (first in repo):** the compat API from
+`ctx.firestore()` has NO `.count()` — import the MODULAR helpers and cast:
+
+```ts
+import { collection, query, where, getCountFromServer, Firestore } from "firebase/firestore";
+const db = ctx.firestore() as unknown as Firestore; // unwrapped via getModularInstance
+await assertSucceeds(getCountFromServer(query(collection(db, path), where("cookedAt", ">=", ts))));
+```
+
+Verified on emulator: a path-segment-only read rule makes the owner's
+count aggregate provable (allow), foreign + unauthenticated aggregates DENY.
+Coverage triple: owner-allow / foreign-deny / unauth-deny on the EXACT query
+shape the client issues, plus a getDocs() pair for the non-aggregate fallback.
+
+**Append-only `update: if false` test subtlety:** prove it with BOTH
+`.update(partial)` AND a full-body `.set(validBody)` on an existing doc (the
+set-on-existing path is what a buggy client retry would hit). Suffix
+create-allow doc ids with the per-RUN token — with update denied outright, a
+persisted doc from a prior run turns every create-allow into a guaranteed
+false FAIL (bit the cook-snaps suite this run: 30/32 until namespace clear,
+then 32/32).
+
 ### 2026-06-03 — cascade collectionGroup + shopping-list item-scrub coverage (BUT-1191)
 
 Extended `request-account-deletion.integration.test.ts` (21→31 tests) for two

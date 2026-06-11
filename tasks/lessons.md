@@ -135,3 +135,10 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 - **Trigger:** BUT-906 added `shareActivityToFeed` to `UserService.createOrUpdateProfile`; `user_profile_viewmodel_test.dart` stubs (written without that arg) stopped matching, the missing-stub throw was swallowed by `safeExecute`, and `saveProfile()` returned false — red nightly + red push CI two days later, far from the causing commit.
 - **Rule:** When adding a named parameter to a service method that tests mock, grep `test/` for the METHOD NAME and add `paramName: any(named: 'paramName')` to every stub/verify site in the same commit. Mocktail fails to match silently — no compile error, and error-swallowing wrappers convert it to a wrong return value.
 - **Example:** Fixed in iter-137 by the debugger agent: 6 stub sites in test/unit/viewmodels/user_profile_viewmodel_test.dart.
+
+
+### [Testing] cloud_firestore FieldValue cachear plattformsfactoryn statiskt — fake-batchar kan kasta subtype-fel
+- **Date:** 2026-06-11
+- **Trigger:** BUT-838: `FieldValue` cachear `FieldValueFactoryPlatform.instance` i en `static final` vid första användning. Om `BaseUnitTest.setupUnit()` skapar en FieldValue INNAN fake_cloud_firestore installerat sin mock-factory kastar varje senare `FieldValue.increment` genom en fake-batch `MethodChannelFieldValue is not a subtype of MockFieldValuePlatform`.
+- **Rule:** Tester som driver `FieldValue` genom fake_cloud_firestore-batchar får inte dela bootstrap med tester som rört FieldValue före fake-installationen — kör dem i egen fil utan den delade setupen (dokumentera i filhuvudet).
+- **Example:** test/integration/firebase/repositories/firebase_cook_event_repository_integration_test.dart hoppar avsiktligt över den delade bootstrappen.
