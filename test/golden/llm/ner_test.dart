@@ -15,9 +15,16 @@
 //   NER_VOCAB_PATH=/path/to/vocab.txt \
 //   flutter test test/golden/llm/ner_test.dart
 //
-// When the env vars are unset (the default for CI nightly today), the
-// test SKIPS with a clear message. Bundling the model + vocab is the
-// follow-up — see BUT-1005.
+// BUT-1005 resolution: the skip is PERMANENT under `flutter test`.
+// flutter_onnxruntime is a platform-channel plugin — the headless test VM
+// has no plugin registrants, so `OnnxRuntime.createSession` throws
+// MissingPluginException regardless of whether the model file is present.
+// Bundling a stub model or downloading the production one in CI cannot
+// fix that. Real NER golden signal needs an integration_test lane on a
+// device-capable runner (tracked separately — see the BUT-1005 close-out).
+// The env-var gate stays so such a lane can opt in without test changes,
+// and the companion test below emits a machine-readable skip artifact so
+// the nightly upload always contains `goldens-ner.json`.
 
 import 'dart:convert';
 import 'dart:io';
@@ -68,11 +75,36 @@ void main() {
       expect(results.length, greaterThan(0));
     },
     skip: (modelPath == null || vocabPath == null)
-        ? 'NER_MODEL_PATH + NER_VOCAB_PATH env vars not set. See BUT-1005 for '
-            'bundling the test model. The categorize_ingredient runner '
-            'produces baseline numbers in the meantime.'
+        ? 'NER_MODEL_PATH + NER_VOCAB_PATH env vars not set — and ONNX '
+            'inference cannot run under flutter test anyway (platform-channel '
+            'plugin, BUT-1005). The categorize_ingredient runner produces '
+            'baseline numbers in the meantime.'
         : null,
   );
+
+  test('ner skip artifact is emitted when the corpus cannot run (BUT-1005)',
+      () {
+    // The nightly uploads goldens-*.json; a silently-skipped corpus would
+    // simply be missing from the artifact set, indistinguishable from a
+    // broken runner. Emit an explicit skip record instead so "could not
+    // run" is machine-readable. When the env vars ARE set, the real test
+    // above owns the artifact and this test must not clobber it.
+    if (modelPath != null && vocabPath != null) return;
+
+    final summary = {
+      'corpus': 'ner',
+      'total': 0,
+      'passed': 0,
+      'failed': 0,
+      'skipped': true,
+      'reason': 'ONNX runtime is a platform-channel plugin — unavailable '
+          'under flutter test. Needs an integration_test lane on a '
+          'device-capable runner (BUT-1005).',
+      'failures': const <Object>[],
+    };
+    File('goldens-ner.json').writeAsStringSync(jsonEncode(summary));
+    expect(File('goldens-ner.json').existsSync(), isTrue);
+  });
 }
 
 /// Convert per-word BIO labels into entity-span maps matching the

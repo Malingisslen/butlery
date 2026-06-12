@@ -58,7 +58,7 @@ jobs:
       - run: flutter pub get
 
       # BUT-888: on-device runners are wired (categorize_ingredient runs
-      # for real; ner skips until NER_MODEL_PATH is provided — see BUT-1005).
+      # for real; ner emits a skip artifact — see the BUT-1005 note below).
       # BUT-889 / BUT-1006-1008: paid-API corpora still pending.
       - name: Run golden corpora
         id: run
@@ -90,8 +90,16 @@ jobs:
             flutter test test/golden/llm/categorize_ingredient_test.dart
           fi
 
+          # BUT-1005: the ner corpus CANNOT produce real signal in this job —
+          # flutter_onnxruntime is a platform-channel plugin, and `flutter test`
+          # runs a headless VM with no plugin registrants, so inference throws
+          # MissingPluginException even if the model file were bundled or
+          # downloaded here. The run below executes only the skip-artifact
+          # companion test, which emits goldens-ner.json marking the corpus
+          # skipped. Real signal requires an integration_test lane on a
+          # device-capable runner (follow-up filed from BUT-1005).
           if [ "$corpus_filter" = "all" ] || [ "$corpus_filter" = "ner" ]; then
-            echo "▶ ner (skips without NER_MODEL_PATH — see BUT-1005)"
+            echo "▶ ner (emits skip artifact — cannot run under flutter test, see BUT-1005)"
             flutter test test/golden/llm/ner_test.dart
           fi
 
