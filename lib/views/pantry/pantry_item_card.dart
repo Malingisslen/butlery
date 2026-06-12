@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -23,12 +22,26 @@ class PantryItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final viewModel = context.read<PantryViewModel>();
+    // Captured BEFORE dismissal: onDismissed fires after the row's element
+    // is deactivated, so context lookups there would hit a dead element.
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final removedMessage =
+        context.l10n.pantryItemRemovedUndoMessage(item.ingredientName);
+    final undoLabel = context.l10n.commonUndo;
 
     return Dismissible(
       key: ValueKey('pantry-${item.id}'),
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) => _confirmDelete(context),
-      onDismissed: (_) => viewModel.removeItem(item.id),
+      // BUT-954: pantry rows are the reversible-destructive class — a row is
+      // trivially recreatable, so swipe deletes without a confirm dialog and
+      // the snackbar's "Ångra" restores it. (Rule: ui-conventions.md →
+      // "Destructive-action confirmation".)
+      onDismissed: (_) => _removeWithUndo(
+        viewModel,
+        messenger: messenger,
+        message: removedMessage,
+        undoLabel: undoLabel,
+      ),
       background: Container(
         color: cs.error,
         alignment: AlignmentDirectional.centerEnd,
@@ -88,13 +101,24 @@ class PantryItemCard extends StatelessWidget {
     );
   }
 
-  Future<bool> _confirmDelete(BuildContext context) async {
-    final result = await CommonDialogActions.showDeleteConfirmation(
-      context: context,
-      itemName: item.ingredientName,
-      itemType: 'ingrediens',
+  void _removeWithUndo(
+    PantryViewModel viewModel, {
+    required ScaffoldMessengerState? messenger,
+    required String message,
+    required String undoLabel,
+  }) {
+    viewModel.removeItem(item.id);
+    messenger?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: SnackBarAction(
+          label: undoLabel,
+          onPressed: () => viewModel.restoreItem(item),
+        ),
+        duration: const Duration(seconds: 7),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
-    return result ?? false;
   }
 
   void _showEditSheet(BuildContext context, PantryViewModel viewModel) {

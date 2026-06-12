@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -296,6 +297,34 @@ void main() {
       // Assert: only the in-window items, in ascending expiry order.
       expect(result.map((i) => i.id).toList(), ['d1', 'd2']);
       verify(() => mockPantryRepository.getExpiringSoon(userId, 3)).called(1);
+    });
+  });
+
+  group('PantryService.restoreItem (BUT-954)', () {
+    test('re-adds the removed item and returns it with the fresh document id',
+        () async {
+      // Intent: the snackbar-undo flow must round-trip — the restored item
+      // is byte-identical to the removed one except for the new id the
+      // repository generates.
+      final removed = _pantryItem(id: 'old-id', ingredientName: 'Mjölk');
+      when(() => mockPantryRepository.add(userId, removed))
+          .thenAnswer((_) async => 'new-id');
+
+      final restored = await service.restoreItem(userId, removed);
+
+      expect(restored.id, 'new-id');
+      expect(restored.ingredientName, 'Mjölk');
+      verify(() => mockPantryRepository.add(userId, removed)).called(1);
+    });
+
+    test('rejects invalid payloads via the shared input validation', () async {
+      // A blank-name item must never reach the repository — same contract
+      // as addFromIngredient/addFromText.
+      final junk = _pantryItem(id: 'x', ingredientName: '   ');
+
+      await expectLater(service.restoreItem(userId, junk),
+          throwsA(isA<ValidationException>()));
+      verifyNever(() => mockPantryRepository.add(any(), any()));
     });
   });
 }

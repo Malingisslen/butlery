@@ -145,6 +145,20 @@ class PantryService extends BaseService {
     );
   }
 
+  /// BUT-954: re-persists a just-removed item for the snackbar-undo flow.
+  /// Returns the restored item (with its newly generated document ID).
+  Future<PantryItem> restoreItem(String userId, PantryItem item) async {
+    _validateInput(item.ingredientName, item.quantity);
+    final id = await executeServiceOperation<String>(
+      () => _pantryRepository.add(userId, item),
+      operationName: 'restoreItem',
+    );
+    if (id == null) {
+      throw StateError('restoreItem failed');
+    }
+    return item.copyWith(id: id);
+  }
+
   Future<List<PantryItem>> getAll(String userId) async {
     return await executeServiceOperation<List<PantryItem>>(
           () => _pantryRepository.getAll(userId),

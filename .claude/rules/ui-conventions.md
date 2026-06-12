@@ -82,3 +82,15 @@ handle.dispose();
 ```
 
 Skip tests that need heavy ViewModel scaffolding — those are covered by the audit script + manual screen-reader passes.
+
+## Destructive-action confirmation (BUT-954)
+
+Three severity classes decide the friction pattern. Pick by **recoverability**, not by how scary the verb sounds:
+
+1. **Reversible-destructive** — the item is trivially recreatable or restorable (pantry row, image attachment, own comment): **swipe/tap deletes immediately + snackbar with "Ångra" (7s, `SnackBarUtils.showSuccessWithAction` + a `restore`/undo path). NO confirm dialog** — a dialog on a recoverable action is friction without protection.
+2. **Hard-destructive** — user-authored content that is gone (or expensive to rebuild) after the undo window closes (recipe delete, bulk recipe delete, personal-tag delete which untags recipes): **confirm dialog AND, where a restore path exists, snackbar undo.** Recipe single + bulk delete are the canonical implementations (dialog → optimistic delete → 5-7s undo).
+3. **Light action** — reversible state flips with an obvious inverse (claim/release shopping item, mark step done, favorite): **no friction at all.** Never add a dialog or undo snackbar to these.
+
+Reference implementations: `mina_recept/recipe_card_widget.dart` + `recipe_delete_manager.dart` (class 2), `pantry/pantry_item_card.dart` (class 1), `collaborative_shopping_items.dart` claim flow (class 3).
+
+When adding a new destructive action: classify first, then copy the matching reference. If undo is impossible for a class-2 action, say so in the confirm dialog body ("Detta går inte att ångra").

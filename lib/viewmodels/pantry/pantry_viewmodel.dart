@@ -130,6 +130,23 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
     );
   }
 
+  /// BUT-954: undo for the snackbar-undo delete flow — re-persists [item]
+  /// (it gets a fresh document ID) and puts it back in the list. Pantry
+  /// rows are the reversible-destructive class: swipe deletes immediately,
+  /// the snackbar's "Ångra" calls this.
+  Future<void> restoreItem(PantryItem item) async {
+    final userId = _currentUserId();
+    if (userId == null) return;
+
+    await executeAsyncVoid(
+      () async {
+        final restored = await _pantryService.restoreItem(userId, item);
+        _items = [..._items, restored];
+      },
+      errorPrefix: 'Kunde inte återställa objektet',
+    );
+  }
+
   Future<void> updateItem(PantryItem item) async {
     final userId = _currentUserId();
     if (userId == null) return;
