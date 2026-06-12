@@ -33,8 +33,8 @@ import 'package:crypto/crypto.dart';
 // The parser then falls back gracefully (rule-based classifier / LLM
 // tier); it is never stranded without a parsing path.
 //
-// SCOPE: the contract covers the two ONNX loaders below. CRF weight JSON
-// (RemoteWeightLoader) still downloads UNVERIFIED — tracked as BUT-1238.
+// SCOPE: the contract covers all three Storage→parser inputs — the two
+// ONNX loaders and the CRF weight JSON (RemoteWeightLoader, BUT-1238).
 
 /// SHA-256 hashes of the BERT NER ONNX model, keyed by Firebase Storage
 /// version directory (`models/ingredient_ner/v{N}/model.onnx`).
@@ -54,6 +54,16 @@ const Map<int, String> kExpectedLineClassifierModelHashes = <int, String>{
   // `scripts/line_classifier/output/onnx/model.onnx` exactly.
   1: 'd155becda1cf586d9e1ee86fac6e81c5f999404aa8741d0f1a9223ec5f57f085',
 };
+
+/// SHA-256 hashes of the CRF ingredient-weight JSON, keyed by the `version`
+/// custom-metadata integer on `models/crf_ingredient_weights.json`.
+///
+/// BUT-1238: empty because no remote weights have ever been published —
+/// verified 2026-06-11 via Firebase Storage (404 on the object path). The
+/// retraining Cloud Function publishing a first version MUST land its hash
+/// here in the same PR as the upload, or every client refuses the download
+/// (empty/absent registry fail-closes; the bundled weights keep parsing).
+const Map<int, String> kExpectedCrfWeightHashes = <int, String>{};
 
 /// Thrown when a downloaded ONNX model fails its SHA-256 integrity check.
 /// Caller is expected to delete the cached file and treat the model as

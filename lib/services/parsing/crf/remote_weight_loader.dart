@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/parsing/_expected_model_hashes.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
 import 'package:butlery/services/parsing/remote_model_loader.dart';
@@ -19,6 +21,10 @@ import 'package:butlery/services/parsing/remote_model_loader.dart';
 ///
 /// Weights are cached locally so the app works offline after first download.
 /// The loader is fire-and-forget -- failures never block parsing.
+///
+/// BUT-1238: downloads are SHA-256-verified against
+/// [kExpectedCrfWeightHashes] before parsing or caching (fail-close, same
+/// contract as the ONNX loaders — see `_expected_model_hashes.dart`).
 class RemoteWeightLoader extends RemoteModelLoader {
   static const _storagePath = 'models/crf_ingredient_weights.json';
   static const _localFileName = 'crf_remote_weights.json';
@@ -35,6 +41,12 @@ class RemoteWeightLoader extends RemoteModelLoader {
 
   @override
   Duration get checkInterval => const Duration(hours: 6);
+
+  /// Registry seam so integrity tests can stage entries; production always
+  /// resolves to the committed [kExpectedCrfWeightHashes] map.
+  @protected
+  @visibleForTesting
+  Map<int, String> get weightHashRegistry => kExpectedCrfWeightHashes;
 
   /// Try to load remote weights if newer than the given bundled version.
   ///
@@ -145,6 +157,19 @@ class RemoteWeightLoader extends RemoteModelLoader {
 
       final data = await ref.getData(_maxWeightsSize);
       if (data == null) return null;
+
+      // BUT-1238: fail-close SHA-256 gate before the bytes are parsed or
+      // cached — mirrors the BUT-877 contract on the ONNX loaders. Refused
+      // bytes never reach CrfWeights.fromJson or disk; the bundled weights
+      // keep parsing.
+      final verified = await verifyModelDownload(
+        modelBytes: data,
+        version: remoteVersion,
+        hashRegistry: weightHashRegistry,
+        modelName: 'crf_ingredient_weights',
+        registryConstantName: 'kExpectedCrfWeightHashes',
+      );
+      if (!verified) return null;
 
       final jsonString = utf8.decode(data);
       final weights = CrfWeights.fromJson(jsonString);
