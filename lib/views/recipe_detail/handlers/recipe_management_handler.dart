@@ -198,7 +198,6 @@ class RecipeManagementHandler {
         final dialogCs = Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => AlertDialog(
-            shape: const RoundedRectangleBorder(),
             title: Text(context.l10n.collaborationEnableTitle),
             content: SizedBox(
               width: double.maxFinite,
@@ -263,7 +262,6 @@ class RecipeManagementHandler {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: const RoundedRectangleBorder(),
         title: Text(context.l10n.collaborationDeactivateTitle),
         content: Text(context.l10n.collaborationDeactivateMessage),
         actions: [

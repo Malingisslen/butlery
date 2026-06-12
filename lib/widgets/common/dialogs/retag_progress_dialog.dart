@@ -67,7 +67,6 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: const RoundedRectangleBorder(),
       title: Row(
         children: [
           Icon(

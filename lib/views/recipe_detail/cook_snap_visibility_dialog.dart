@@ -22,8 +22,6 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
-        backgroundColor: Theme.of(ctx).colorScheme.surface,
-        shape: const RoundedRectangleBorder(),
         title: Row(
           children: [
             Icon(Icons.visibility_outlined,
