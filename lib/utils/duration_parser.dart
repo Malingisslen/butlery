@@ -8,6 +8,8 @@
 /// - `ca 20 minuter` (and other prefixes like `ungefär`, `cirka`, `i`, `låt koka i`)
 /// - `1 timme`, `2 timmar`, `1 h`, `1.5 h`
 /// - `30 sek`, `30 sekunder`, `30 s`
+/// - BUT-604: word-number phrases — `en halvtimme`, `en halv timme`,
+///   `en kvart`, `tre kvart(ar)`, `en timme`
 ///
 /// Case-insensitive. Returns `null` when no match is found or when the parsed
 /// duration falls outside `0 < x ≤ 12h` — the cooking-mode timer widget caps
@@ -30,6 +32,43 @@ final RegExp _durationPattern = RegExp(
   caseSensitive: false,
 );
 
+/// BUT-604: word-number duration phrases that carry no digits. Ordered so
+/// the longer "en halv timme" wins over a bare "timme" suffix elsewhere.
+/// Quarter-forms: "en kvart" = 15 min, "tre kvart"/"tre kvartar" = 45 min.
+final RegExp _wordDurationPattern = RegExp(
+  r'\b(en\s+halvtimme|en\s+halv\s+timme|tre\s+kvartar|tre\s+kvart|en\s+kvart|en\s+timme)\b',
+  caseSensitive: false,
+);
+
+Duration? _wordPhraseToDuration(String phrase) {
+  final normalized = phrase.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  return switch (normalized) {
+    'en halvtimme' || 'en halv timme' => const Duration(minutes: 30),
+    'en kvart' => const Duration(minutes: 15),
+    'tre kvart' || 'tre kvartar' => const Duration(minutes: 45),
+    'en timme' => const Duration(hours: 1),
+    _ => null,
+  };
+}
+
+/// A parsed duration plus the character span of the phrase that produced it
+/// (BUT-604) — lets UI render the phrase itself as a tappable timer chip.
+class DurationMatch {
+  final Duration duration;
+
+  /// Start offset (inclusive) of the matched phrase in the source line.
+  final int start;
+
+  /// End offset (exclusive) of the matched phrase in the source line.
+  final int end;
+
+  const DurationMatch({
+    required this.duration,
+    required this.start,
+    required this.end,
+  });
+}
+
 /// Parses the first duration mention in a Swedish cooking instruction.
 ///
 /// Returns `null` when:
@@ -43,12 +82,31 @@ final RegExp _durationPattern = RegExp(
 /// parseSwedishDuration('ca 20 minuter')               // 20 minutes
 /// parseSwedishDuration('Grädda i 10-15 min')          // 15 minutes (upper)
 /// parseSwedishDuration('Låt stå i 1 timme')           // 1 hour
+/// parseSwedishDuration('Vila en halvtimme')           // 30 minutes (BUT-604)
+/// parseSwedishDuration('Jäs en kvart')                // 15 minutes (BUT-604)
 /// parseSwedishDuration('Koka i 24 timmar')            // null (out of range)
 /// parseSwedishDuration('Rör ner smöret')              // null (no time)
 /// ```
-Duration? parseSwedishDuration(String line) {
+Duration? parseSwedishDuration(String line) =>
+    parseSwedishDurationMatch(line)?.duration;
+
+/// Span-aware variant of [parseSwedishDuration] (BUT-604): returns the first
+/// duration mention together with the character range of the matched phrase,
+/// so callers can render that phrase as an inline tappable chip. Same
+/// null-contract as [parseSwedishDuration]. When both a numeric and a
+/// word-phrase mention exist, the one appearing first in the line wins.
+DurationMatch? parseSwedishDurationMatch(String line) {
   if (line.isEmpty) return null;
 
+  final numeric = _firstNumericMatch(line);
+  final word = _firstWordMatch(line);
+
+  if (numeric == null) return word;
+  if (word == null) return numeric;
+  return numeric.start <= word.start ? numeric : word;
+}
+
+DurationMatch? _firstNumericMatch(String line) {
   final match = _durationPattern.firstMatch(line);
   if (match == null) return null;
 
@@ -66,7 +124,25 @@ Duration? parseSwedishDuration(String line) {
   if (duration <= Duration.zero) return null;
   if (duration > _maxDuration) return null;
 
-  return duration;
+  return DurationMatch(
+    duration: duration,
+    start: match.start,
+    end: match.end,
+  );
+}
+
+DurationMatch? _firstWordMatch(String line) {
+  final match = _wordDurationPattern.firstMatch(line);
+  if (match == null) return null;
+
+  final duration = _wordPhraseToDuration(match.group(1)!);
+  if (duration == null) return null;
+
+  return DurationMatch(
+    duration: duration,
+    start: match.start,
+    end: match.end,
+  );
 }
 
 /// Converts a (value, unit-token) pair into a [Duration]. Unit tokens are

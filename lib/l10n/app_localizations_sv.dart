@@ -151,6 +151,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageRemovedUndoMessage => 'Foto borttaget';
 
   @override
+  String pantryItemRemovedUndoMessage(String name) {
+    return '$name borttagen ur skafferiet';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Välj plats i veckomenyn';
 
   @override
@@ -183,6 +188,94 @@ class AppLocalizationsSv extends AppLocalizations {
       one: 'Receptet lades till på 1 plats i veckomenyn',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get menuPlaceAutoButton => 'Placera automatiskt i kalendern';
+
+  @override
+  String get menuPlaceManualButton => 'Jag placerar själv';
+
+  @override
+  String menuAutoPlacedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept placerade i kalendern',
+      one: '1 recept placerat i kalendern',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuAutoPlacedChangeAction => 'Ändra';
+
+  @override
+  String get menuPlacementTitle => 'placera i veckan';
+
+  @override
+  String menuPlacementProgress(int placed, int total) {
+    return '$placed av $total placerade';
+  }
+
+  @override
+  String menuPlacementTrayLabel(int count) {
+    return 'Kvar att placera ($count)';
+  }
+
+  @override
+  String menuPlacementHint(String recipe) {
+    return 'Tryck på en ledig ruta för att placera $recipe.';
+  }
+
+  @override
+  String get menuPlacementHintSelect =>
+      'Välj ett recept nedan för att placera det.';
+
+  @override
+  String get menuPlacementPlaceHere => 'placera här';
+
+  @override
+  String get menuPlacementAutoRest => 'Placera resten automatiskt';
+
+  @override
+  String menuPlacementOverflow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept fick inte plats den här veckan',
+      one: '1 recept fick inte plats den här veckan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String menuPlacementSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept placerade i veckomenyn',
+      one: '1 recept placerat i veckomenyn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuNewBadge => 'NY';
+
+  @override
+  String a11yPlacementCell(String day, String slot) {
+    return 'Placera på $day $slot';
+  }
+
+  @override
+  String a11yPlacementTrayCard(String recipe) {
+    return 'Välj $recipe';
+  }
+
+  @override
+  String a11yPlacementRemoveEntry(String recipe) {
+    return 'Ta bort $recipe från rutan';
   }
 
   @override
@@ -14252,6 +14345,11 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String a11yCookingStepLongPressTimer(int step) {
     return 'Steg $step, långtryck för att starta timer';
+  }
+
+  @override
+  String a11yStartTimerForPhrase(String phrase) {
+    return 'Starta timer: $phrase';
   }
 
   @override

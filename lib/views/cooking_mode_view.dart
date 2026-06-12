@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
+import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
@@ -587,8 +588,14 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                       // default fallback).
                                       onLongPress: () =>
                                           _openStepTimer(context, instruction),
-                                      child: Text(
-                                        instruction,
+                                      // BUT-604: the duration phrase renders
+                                      // as an inline tappable chip — visible
+                                      // affordance for the same timer sheet.
+                                      child: InlineTimerText(
+                                        text: instruction,
+                                        onTimerTap: (_) => _openStepTimer(
+                                            context, instruction),
+                                        chipColor: cs.onPrimary,
                                         style:
                                             AppTextStyles.titleLarge.copyWith(
                                           color: cs.onPrimary,

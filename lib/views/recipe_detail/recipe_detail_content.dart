@@ -3,18 +3,25 @@
 // Ingredients and instructions render inline (no tabs) for immediate visibility.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
+import 'package:butlery/widgets/cooking/inline_timer_text.dart';
+import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
@@ -323,8 +330,14 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                 _buildStepCheckbox(context, index + 1, isCompleted),
                 const SizedBox(width: AppDimensions.spacingMd),
                 Expanded(
-                  child: Text(
-                    instruction,
+                  // BUT-604: duration phrases render as inline tappable
+                  // chips that open the step-timer sheet — same affordance
+                  // as cooking mode, no long-press discovery needed.
+                  child: InlineTimerText(
+                    text: instruction,
+                    onTimerTap: (match) =>
+                        _openStepTimer(context, instruction, match),
+                    chipColor: cs.primary,
                     style: AppTextStyles.bodyLarge.copyWith(
                       color: isCompleted ? cs.onSurfaceVariant : cs.onSurface,
                       decoration: isCompleted
@@ -337,6 +350,40 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// BUT-604: opens the step-timer bottom sheet pre-filled with the tapped
+  /// chip's duration. Mirrors cooking mode's `_openStepTimer` — the
+  /// DI-registered [StepTimerService] is reused so a running timer survives
+  /// sheet re-opens and view switches.
+  void _openStepTimer(
+      BuildContext context, String instruction, DurationMatch match) {
+    final service = ServiceLocator.get<StepTimerService>();
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final cs = Theme.of(context).colorScheme;
+    final starGold = context.butleryColors.starGold;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: cs.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (sheetContext) => StepTimerWidget(
+        service: service,
+        initialDuration: match.duration,
+        sourcePhrase: instruction,
+        onExpired: () {
+          HapticFeedback.mediumImpact();
+          messenger?.showSnackBar(
+            SnackBar(
+              content: Text(l10n.timerExpired),
+              backgroundColor: starGold,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
       ),
     );
   }

@@ -150,4 +150,94 @@ void main() {
       );
     });
   });
+
+  group('word-number phrases (BUT-604)', () {
+    test('"en halvtimme" → 30 minutes', () {
+      expect(
+        parseSwedishDuration('Låt vila en halvtimme'),
+        const Duration(minutes: 30),
+      );
+    });
+
+    test('"en halv timme" (split form) → 30 minutes', () {
+      expect(
+        parseSwedishDuration('Jäs under bakduk en halv timme'),
+        const Duration(minutes: 30),
+      );
+    });
+
+    test('"en kvart" → 15 minutes', () {
+      expect(
+        parseSwedishDuration('Låt stå en kvart'),
+        const Duration(minutes: 15),
+      );
+    });
+
+    test('"tre kvart" → 45 minutes', () {
+      expect(
+        parseSwedishDuration('Grädda i ugnen tre kvart'),
+        const Duration(minutes: 45),
+      );
+    });
+
+    test('"en timme" → 1 hour', () {
+      expect(
+        parseSwedishDuration('Låt jäsa en timme'),
+        const Duration(hours: 1),
+      );
+    });
+
+    test('case-insensitive: "En Kvart" → 15 minutes', () {
+      expect(
+        parseSwedishDuration('En Kvart i kylen'),
+        const Duration(minutes: 15),
+      );
+    });
+
+    test('"kvart i fem" idiom without "en/tre" prefix does not match', () {
+      expect(parseSwedishDuration('Servera kvart i fem'), isNull);
+    });
+  });
+
+  group('parseSwedishDurationMatch — span contract (BUT-604)', () {
+    test('numeric phrase span covers exactly the duration mention', () {
+      const line = 'Grädda i 25 min mitt i ugnen';
+      final match = parseSwedishDurationMatch(line)!;
+
+      expect(match.duration, const Duration(minutes: 25));
+      expect(line.substring(match.start, match.end), '25 min',
+          reason: 'The chip renders this substring — it must cover the '
+              'value + unit, nothing else.');
+    });
+
+    test('word phrase span covers exactly the phrase', () {
+      const line = 'Låt vila en halvtimme innan servering';
+      final match = parseSwedishDurationMatch(line)!;
+
+      expect(match.duration, const Duration(minutes: 30));
+      expect(line.substring(match.start, match.end), 'en halvtimme');
+    });
+
+    test('range span includes the lower bound', () {
+      const line = 'Koka 10-15 min';
+      final match = parseSwedishDurationMatch(line)!;
+
+      expect(match.duration, const Duration(minutes: 15));
+      expect(line.substring(match.start, match.end), '10-15 min',
+          reason: 'Chipping only "15 min" out of "10-15 min" would read '
+              'as a different instruction.');
+    });
+
+    test('earliest mention wins when numeric and word phrases coexist', () {
+      const line = 'Vila en kvart, grädda sedan 25 min';
+      final match = parseSwedishDurationMatch(line)!;
+
+      expect(match.duration, const Duration(minutes: 15));
+      expect(line.substring(match.start, match.end), 'en kvart');
+    });
+
+    test('no duration → null (callers fall back to plain text)', () {
+      expect(parseSwedishDurationMatch('Rör ner smöret'), isNull);
+    });
+  });
 }

@@ -54,6 +54,15 @@
   "@imageRemovedUndoMessage": {
     "description": "BUT-932: snackbar shown after image deletion; pairs with commonUndo action button."
   },
+  "pantryItemRemovedUndoMessage": "{name} borttagen ur skafferiet",
+  "@pantryItemRemovedUndoMessage": {
+    "description": "BUT-954: snackbar shown after pantry-item swipe-delete; pairs with commonUndo action button. Mirrors commentDeletedUndoMessage pattern.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "slotPickerDialogTitle": "Välj plats i veckomenyn",
   "@slotPickerDialogTitle": {
     "description": "BUT-1029: SlotPickerDialog header title."
@@ -87,6 +96,103 @@
     "description": "BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.",
     "placeholders": {
       "count": { "type": "int" }
+    }
+  },
+  "menuPlaceAutoButton": "Placera automatiskt i kalendern",
+  "@menuPlaceAutoButton": {
+    "description": "BUT-1241: primary button in the lista-result footer — runs auto-distribution onto the week grid."
+  },
+  "menuPlaceManualButton": "Jag placerar själv",
+  "@menuPlaceManualButton": {
+    "description": "BUT-1241: secondary button in the lista-result footer — opens the manual placement mode."
+  },
+  "menuAutoPlacedToast": "{count, plural, =1{1 recept placerat i kalendern} other{{count} recept placerade i kalendern}}",
+  "@menuAutoPlacedToast": {
+    "description": "BUT-1241: snackbar after auto-distribution; carries the ÄNDRA action.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuAutoPlacedChangeAction": "Ändra",
+  "@menuAutoPlacedChangeAction": {
+    "description": "BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout."
+  },
+  "menuPlacementTitle": "placera i veckan",
+  "@menuPlacementTitle": {
+    "description": "BUT-1241: app-bar title of the manual placement mode (lowercase per design language)."
+  },
+  "menuPlacementProgress": "{placed} av {total} placerade",
+  "@menuPlacementProgress": {
+    "description": "BUT-1241: progress pill in the placement-mode header.",
+    "placeholders": {
+      "placed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "menuPlacementTrayLabel": "Kvar att placera ({count})",
+  "@menuPlacementTrayLabel": {
+    "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuPlacementHint": "Tryck på en ledig ruta för att placera {recipe}.",
+  "@menuPlacementHint": {
+    "description": "BUT-1241: hint banner while a tray recipe is selected.",
+    "placeholders": {
+      "recipe": { "type": "String" }
+    }
+  },
+  "menuPlacementHintSelect": "Välj ett recept nedan för att placera det.",
+  "@menuPlacementHintSelect": {
+    "description": "BUT-1241: hint banner when no tray recipe is selected."
+  },
+  "menuPlacementPlaceHere": "placera här",
+  "@menuPlacementPlaceHere": {
+    "description": "BUT-1241: text inside eligible (highlighted) cells in placement mode."
+  },
+  "menuPlacementAutoRest": "Placera resten automatiskt",
+  "@menuPlacementAutoRest": {
+    "description": "BUT-1241: tray action that auto-distributes the still-unplaced recipes."
+  },
+  "menuPlacementOverflow": "{count, plural, =1{1 recept fick inte plats den här veckan} other{{count} recept fick inte plats den här veckan}}",
+  "@menuPlacementOverflow": {
+    "description": "BUT-1241: warning after auto-rest when some recipes did not fit the week.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuPlacementSaved": "{count, plural, =1{1 recept placerat i veckomenyn} other{{count} recept placerade i veckomenyn}}",
+  "@menuPlacementSaved": {
+    "description": "BUT-1241: snackbar after the placement session saved.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeklyMenuNewBadge": "NY",
+  "@weeklyMenuNewBadge": {
+    "description": "BUT-1241: badge on calendar cells placed by the latest generation."
+  },
+  "a11yPlacementCell": "Placera på {day} {slot}",
+  "@a11yPlacementCell": {
+    "description": "BUT-1241: a11y label for an eligible day×slot cell in placement mode.",
+    "placeholders": {
+      "day": { "type": "String" },
+      "slot": { "type": "String" }
+    }
+  },
+  "a11yPlacementTrayCard": "Välj {recipe}",
+  "@a11yPlacementTrayCard": {
+    "description": "BUT-1241: a11y label for a tray recipe card in placement mode.",
+    "placeholders": {
+      "recipe": { "type": "String" }
+    }
+  },
+  "a11yPlacementRemoveEntry": "Ta bort {recipe} från rutan",
+  "@a11yPlacementRemoveEntry": {
+    "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.",
+    "placeholders": {
+      "recipe": { "type": "String" }
     }
   },
   "bulkAddToMenu": "Lägg till i veckomeny",
@@ -10019,6 +10125,15 @@
     "placeholders": {
       "step": {
         "type": "int"
+      }
+    }
+  },
+  "a11yStartTimerForPhrase": "Starta timer: {phrase}",
+  "@a11yStartTimerForPhrase": {
+    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).",
+    "placeholders": {
+      "phrase": {
+        "type": "String"
       }
     }
   },

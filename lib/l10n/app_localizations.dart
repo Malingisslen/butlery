@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'Foto borttaget'**
   String get imageRemovedUndoMessage;
 
+  /// BUT-954: snackbar shown after pantry-item swipe-delete; pairs with commonUndo action button. Mirrors commentDeletedUndoMessage pattern.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} borttagen ur skafferiet'**
+  String pantryItemRemovedUndoMessage(String name);
+
   /// BUT-1029: SlotPickerDialog header title.
   ///
   /// In sv, this message translates to:
@@ -421,6 +427,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count, plural, =1{Receptet lades till på 1 plats i veckomenyn} other{Receptet lades till på {count} platser i veckomenyn}}'**
   String recipeAddedToMenuSlots(int count);
+
+  /// BUT-1241: primary button in the lista-result footer — runs auto-distribution onto the week grid.
+  ///
+  /// In sv, this message translates to:
+  /// **'Placera automatiskt i kalendern'**
+  String get menuPlaceAutoButton;
+
+  /// BUT-1241: secondary button in the lista-result footer — opens the manual placement mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag placerar själv'**
+  String get menuPlaceManualButton;
+
+  /// BUT-1241: snackbar after auto-distribution; carries the ÄNDRA action.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept placerat i kalendern} other{{count} recept placerade i kalendern}}'**
+  String menuAutoPlacedToast(int count);
+
+  /// BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra'**
+  String get menuAutoPlacedChangeAction;
+
+  /// BUT-1241: app-bar title of the manual placement mode (lowercase per design language).
+  ///
+  /// In sv, this message translates to:
+  /// **'placera i veckan'**
+  String get menuPlacementTitle;
+
+  /// BUT-1241: progress pill in the placement-mode header.
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed} av {total} placerade'**
+  String menuPlacementProgress(int placed, int total);
+
+  /// BUT-1241: label above the tray of recipes waiting to be placed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kvar att placera ({count})'**
+  String menuPlacementTrayLabel(int count);
+
+  /// BUT-1241: hint banner while a tray recipe is selected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck på en ledig ruta för att placera {recipe}.'**
+  String menuPlacementHint(String recipe);
+
+  /// BUT-1241: hint banner when no tray recipe is selected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ett recept nedan för att placera det.'**
+  String get menuPlacementHintSelect;
+
+  /// BUT-1241: text inside eligible (highlighted) cells in placement mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'placera här'**
+  String get menuPlacementPlaceHere;
+
+  /// BUT-1241: tray action that auto-distributes the still-unplaced recipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Placera resten automatiskt'**
+  String get menuPlacementAutoRest;
+
+  /// BUT-1241: warning after auto-rest when some recipes did not fit the week.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept fick inte plats den här veckan} other{{count} recept fick inte plats den här veckan}}'**
+  String menuPlacementOverflow(int count);
+
+  /// BUT-1241: snackbar after the placement session saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept placerat i veckomenyn} other{{count} recept placerade i veckomenyn}}'**
+  String menuPlacementSaved(int count);
+
+  /// BUT-1241: badge on calendar cells placed by the latest generation.
+  ///
+  /// In sv, this message translates to:
+  /// **'NY'**
+  String get weeklyMenuNewBadge;
+
+  /// BUT-1241: a11y label for an eligible day×slot cell in placement mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Placera på {day} {slot}'**
+  String a11yPlacementCell(String day, String slot);
+
+  /// BUT-1241: a11y label for a tray recipe card in placement mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {recipe}'**
+  String a11yPlacementTrayCard(String recipe);
+
+  /// BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {recipe} från rutan'**
+  String a11yPlacementRemoveEntry(String recipe);
 
   /// BUT-1013: selection-app-bar tooltip for the bulk-add-to-menu action.
   ///
@@ -23859,6 +23967,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Steg {step}, långtryck för att starta timer'**
   String a11yCookingStepLongPressTimer(int step);
+
+  /// Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).
+  ///
+  /// In sv, this message translates to:
+  /// **'Starta timer: {phrase}'**
+  String a11yStartTimerForPhrase(String phrase);
 
   /// Semantics label for the archived-conversations expand/collapse row in the messaging list.
   ///

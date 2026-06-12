@@ -54,6 +54,15 @@
   "@imageRemovedUndoMessage": {
     "description": "BUT-932: snackbar shown after image deletion; pairs with commonUndo action button."
   },
+  "pantryItemRemovedUndoMessage": "{name} removed from pantry",
+  "@pantryItemRemovedUndoMessage": {
+    "description": "BUT-954: snackbar shown after pantry-item swipe-delete; pairs with commonUndo action button. Mirrors commentDeletedUndoMessage pattern.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "slotPickerDialogTitle": "Pick a menu slot",
   "@slotPickerDialogTitle": {
     "description": "BUT-1029: SlotPickerDialog header title."
@@ -86,6 +95,103 @@
     "description": "BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.",
     "placeholders": {
       "count": { "type": "int" }
+    }
+  },
+  "menuPlaceAutoButton": "Place automatically in the calendar",
+  "@menuPlaceAutoButton": {
+    "description": "BUT-1241: primary button in the lista-result footer — runs auto-distribution onto the week grid."
+  },
+  "menuPlaceManualButton": "I'll place them myself",
+  "@menuPlaceManualButton": {
+    "description": "BUT-1241: secondary button in the lista-result footer — opens the manual placement mode."
+  },
+  "menuAutoPlacedToast": "{count, plural, =1{1 recipe placed in the calendar} other{{count} recipes placed in the calendar}}",
+  "@menuAutoPlacedToast": {
+    "description": "BUT-1241: snackbar after auto-distribution; carries the change action.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuAutoPlacedChangeAction": "Change",
+  "@menuAutoPlacedChangeAction": {
+    "description": "BUT-1241: snackbar action that opens the manual placement mode to redo the auto layout."
+  },
+  "menuPlacementTitle": "place in the week",
+  "@menuPlacementTitle": {
+    "description": "BUT-1241: app-bar title of the manual placement mode (lowercase per design language)."
+  },
+  "menuPlacementProgress": "{placed} of {total} placed",
+  "@menuPlacementProgress": {
+    "description": "BUT-1241: progress pill in the placement-mode header.",
+    "placeholders": {
+      "placed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "menuPlacementTrayLabel": "Left to place ({count})",
+  "@menuPlacementTrayLabel": {
+    "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuPlacementHint": "Tap a free cell to place {recipe}.",
+  "@menuPlacementHint": {
+    "description": "BUT-1241: hint banner while a tray recipe is selected.",
+    "placeholders": {
+      "recipe": { "type": "String" }
+    }
+  },
+  "menuPlacementHintSelect": "Select a recipe below to place it.",
+  "@menuPlacementHintSelect": {
+    "description": "BUT-1241: hint banner when no tray recipe is selected."
+  },
+  "menuPlacementPlaceHere": "place here",
+  "@menuPlacementPlaceHere": {
+    "description": "BUT-1241: text inside eligible (highlighted) cells in placement mode."
+  },
+  "menuPlacementAutoRest": "Place the rest automatically",
+  "@menuPlacementAutoRest": {
+    "description": "BUT-1241: tray action that auto-distributes the still-unplaced recipes."
+  },
+  "menuPlacementOverflow": "{count, plural, =1{1 recipe didn't fit this week} other{{count} recipes didn't fit this week}}",
+  "@menuPlacementOverflow": {
+    "description": "BUT-1241: warning after auto-rest when some recipes did not fit the week.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "menuPlacementSaved": "{count, plural, =1{1 recipe placed in the weekly menu} other{{count} recipes placed in the weekly menu}}",
+  "@menuPlacementSaved": {
+    "description": "BUT-1241: snackbar after the placement session saved.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeklyMenuNewBadge": "NEW",
+  "@weeklyMenuNewBadge": {
+    "description": "BUT-1241: badge on calendar cells placed by the latest generation."
+  },
+  "a11yPlacementCell": "Place on {day} {slot}",
+  "@a11yPlacementCell": {
+    "description": "BUT-1241: a11y label for an eligible day×slot cell in placement mode.",
+    "placeholders": {
+      "day": { "type": "String" },
+      "slot": { "type": "String" }
+    }
+  },
+  "a11yPlacementTrayCard": "Select {recipe}",
+  "@a11yPlacementTrayCard": {
+    "description": "BUT-1241: a11y label for a tray recipe card in placement mode.",
+    "placeholders": {
+      "recipe": { "type": "String" }
+    }
+  },
+  "a11yPlacementRemoveEntry": "Remove {recipe} from the cell",
+  "@a11yPlacementRemoveEntry": {
+    "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.",
+    "placeholders": {
+      "recipe": { "type": "String" }
     }
   },
   "bulkAddToMenu": "Add to weekly menu",
@@ -9992,6 +10098,15 @@
     "placeholders": {
       "step": {
         "type": "int"
+      }
+    }
+  },
+  "a11yStartTimerForPhrase": "Start timer: {phrase}",
+  "@a11yStartTimerForPhrase": {
+    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).",
+    "placeholders": {
+      "phrase": {
+        "type": "String"
       }
     }
   },

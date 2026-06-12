@@ -151,6 +151,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageRemovedUndoMessage => 'Photo removed';
 
   @override
+  String pantryItemRemovedUndoMessage(String name) {
+    return '$name removed from pantry';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Pick a menu slot';
 
   @override
@@ -183,6 +188,93 @@ class AppLocalizationsEn extends AppLocalizations {
       one: 'Recipe added to 1 slot in the weekly menu',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get menuPlaceAutoButton => 'Place automatically in the calendar';
+
+  @override
+  String get menuPlaceManualButton => 'I\'ll place them myself';
+
+  @override
+  String menuAutoPlacedToast(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes placed in the calendar',
+      one: '1 recipe placed in the calendar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuAutoPlacedChangeAction => 'Change';
+
+  @override
+  String get menuPlacementTitle => 'place in the week';
+
+  @override
+  String menuPlacementProgress(int placed, int total) {
+    return '$placed of $total placed';
+  }
+
+  @override
+  String menuPlacementTrayLabel(int count) {
+    return 'Left to place ($count)';
+  }
+
+  @override
+  String menuPlacementHint(String recipe) {
+    return 'Tap a free cell to place $recipe.';
+  }
+
+  @override
+  String get menuPlacementHintSelect => 'Select a recipe below to place it.';
+
+  @override
+  String get menuPlacementPlaceHere => 'place here';
+
+  @override
+  String get menuPlacementAutoRest => 'Place the rest automatically';
+
+  @override
+  String menuPlacementOverflow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes didn\'t fit this week',
+      one: '1 recipe didn\'t fit this week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String menuPlacementSaved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes placed in the weekly menu',
+      one: '1 recipe placed in the weekly menu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuNewBadge => 'NEW';
+
+  @override
+  String a11yPlacementCell(String day, String slot) {
+    return 'Place on $day $slot';
+  }
+
+  @override
+  String a11yPlacementTrayCard(String recipe) {
+    return 'Select $recipe';
+  }
+
+  @override
+  String a11yPlacementRemoveEntry(String recipe) {
+    return 'Remove $recipe from the cell';
   }
 
   @override
@@ -14217,6 +14309,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11yCookingStepLongPressTimer(int step) {
     return 'Step $step, long-press to start timer';
+  }
+
+  @override
+  String a11yStartTimerForPhrase(String phrase) {
+    return 'Start timer: $phrase';
   }
 
   @override
