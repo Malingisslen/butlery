@@ -215,11 +215,19 @@ class WeeklyMenuPlanService extends BaseService {
                       false)))
           .firstOrNull;
       if (match == null) continue;
-      pinnedRecipeIds.add(match.id);
       // weekdayIndex is 1-based (Mon=1), DayOfWeek is 0-based index.
       final dayIdx = (pin.weekdayIndex - 1).clamp(0, DayOfWeek.sun.index);
       final day = DayOfWeek.values[dayIdx];
       final slot = mapMealTypeToSlot(slotKey);
+      // BUT-1241: a pin must not double-stack an occupied single slot
+      // (e.g. the user already hand-placed Friday middag in the manual
+      // placement flow). Skip the pin and let the recipe fall through to
+      // the chronological fill instead.
+      if (!slot.isMulti &&
+          mutableEntries.any((e) => e.day == day && e.slot == slot)) {
+        continue;
+      }
+      pinnedRecipeIds.add(match.id);
       mutableEntries.add(_entryFor(day: day, slot: slot, recipe: match));
     }
 

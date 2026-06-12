@@ -30,6 +30,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   bool _applyInFlight = false;
   ParsedMenuRequest? _lastParsedRequest;
 
+  // BUT-1241: entry ids placed by the most recent auto-distribution, used
+  // by the calendar cells to render the "NY" badge. Cleared whenever a
+  // (re)load replaces the plan — the badge only lives for the session that
+  // triggered the generation.
+  Set<String> _recentlyPlacedEntryIds = const {};
+
   // Snapshot kept for the 7-second undo window after clearWeek. Both the
   // visible entries AND the overflow tray are captured so undo restores the
   // full pre-clear state — clearWeek wipes both, so undo must restore both or
@@ -40,6 +46,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   WeeklyMenuPlan? get plan => _plan;
   List<Recipe> get overflow => _overflow;
   ParsedMenuRequest? get lastParsedRequest => _lastParsedRequest;
+
+  /// BUT-1241: whether [entryId] was placed by the most recent
+  /// auto-distribution (renders the "NY" badge).
+  bool isRecentlyPlaced(String entryId) =>
+      _recentlyPlacedEntryIds.contains(entryId);
 
   // Until the first `loadWeek` call completes, fall back to "this week".
   DateTime get currentWeekStart =>
@@ -59,11 +70,33 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Future<void> loadWeek(DateTime date) async {
     final targetWeekStart = IsoWeekUtils.weekStartOf(date);
     if (_plan != null && _plan!.weekStartDate == targetWeekStart) return;
+    await _fetchWeek(targetWeekStart);
+  }
+
+  /// BUT-1241: adopt a plan the manual placement flow already persisted —
+  /// the saved document would otherwise be re-read from Firestore just to
+  /// learn what we already hold in memory. [recentlyPlacedEntryIds] carries
+  /// the session's placements so manual placements get the same "NY" badge
+  /// treatment as auto-distribution.
+  void adoptPlan(
+    WeeklyMenuPlan plan, {
+    Set<String> recentlyPlacedEntryIds = const {},
+  }) {
+    _plan = plan;
+    // The placement session is the new truth for that week; whatever the
+    // tray held that wasn't placed was deliberately left out.
+    _overflow = const [];
+    _recentlyPlacedEntryIds = recentlyPlacedEntryIds;
+    notifyListeners();
+  }
+
+  Future<void> _fetchWeek(DateTime weekStart) async {
     await executeAsyncVoid(
       () async {
-        final fetched = await _service.getWeek(targetWeekStart);
+        final fetched = await _service.getWeek(weekStart);
         if (isDisposed) return;
         _plan = fetched;
+        _recentlyPlacedEntryIds = const {};
         notifyListeners();
       },
       errorPrefix: 'Kunde inte ladda veckomenyn',
@@ -81,38 +114,58 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// Apply a generated menu (from `MenuGenerator.generateMenuFromPrompt`)
   /// to the currently visible week. Guarded against concurrent runs so
   /// two rapid taps don't race each other on the same plan.
-  Future<void> applyGeneratedMenu(
+  ///
+  /// BUT-1241: returns the number of entries actually placed (null when the
+  /// call was skipped or failed) so the view can render the
+  /// "N recept placerade" toast. Newly placed entry ids are tracked for the
+  /// "NY" badge via [isRecentlyPlaced].
+  Future<int?> applyGeneratedMenu(
     Map<String, List<Recipe>> generated, {
     DateTime? now,
     ParsedMenuRequest? parsedRequest,
     bool replaceExisting = false,
   }) async {
-    if (_applyInFlight) return;
+    if (_applyInFlight) return null;
     _applyInFlight = true;
     _lastParsedRequest = parsedRequest;
+    int? placedCount;
     try {
-      await executeAsyncVoid(
+      final ok = await executeAsyncVoid(
         () async {
+          final base =
+              replaceExisting ? _plan?.copyWith(entries: const []) : _plan;
+          final baseIds = base?.entries.map((e) => e.id).toSet() ?? const {};
           final result = _service.distributeFromGeneratedMenu(
             generated: generated,
             weekStart: currentWeekStart,
-            existing:
-                replaceExisting ? _plan?.copyWith(entries: const []) : _plan,
+            existing: base,
             now: now,
             dayPins: parsedRequest?.dayPins ?? const [],
           );
           if (isDisposed) return;
-          _plan = result.plan;
-          _overflow = result.overflow;
+          // Persist FIRST, publish after: a failed save must not leave the
+          // calendar showing a distributed week (with NY badges) that was
+          // never written.
           await _service.save(result.plan);
           if (isDisposed) return;
+          final newIds = result.plan.entries
+              .map((e) => e.id)
+              .where((id) => !baseIds.contains(id))
+              .toSet();
+          _plan = result.plan;
+          _overflow = result.overflow;
+          _recentlyPlacedEntryIds = newIds;
+          placedCount = newIds.length;
           notifyListeners();
         },
         errorPrefix: 'Kunde inte fördela recepten',
       );
+      // A failed save must not report success either.
+      if (!ok) return null;
     } finally {
       _applyInFlight = false;
     }
+    return placedCount;
   }
 
   Future<void> assignRecipe({

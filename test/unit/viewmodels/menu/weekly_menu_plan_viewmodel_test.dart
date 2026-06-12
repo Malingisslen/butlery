@@ -908,5 +908,89 @@ void main() {
         expect(viewModel.overflow, isEmpty);
       });
     });
+
+    group('BUT-1241 placement-flow additions', () {
+      WeeklyMenuDistributionResult stubDistribution(WeeklyMenuPlan plan) {
+        final result = WeeklyMenuDistributionResult(
+          plan: plan,
+          overflow: const [],
+        );
+        when(() => mockService.distributeFromGeneratedMenu(
+              generated: any(named: 'generated'),
+              weekStart: any(named: 'weekStart'),
+              existing: any(named: 'existing'),
+              now: any(named: 'now'),
+              dayPins: any(named: 'dayPins'),
+            )).thenReturn(result);
+        return result;
+      }
+
+      test(
+          'applyGeneratedMenu returns the placed count and flags the new '
+          'entries as recently placed (NY badge)', () async {
+        final preExisting =
+            _entry(day: DayOfWeek.mon, slot: MealSlot.lunch, id: 'old-1');
+        final initial = _plan(entries: [preExisting]);
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+
+        stubDistribution(initial.copyWith(entries: [
+          preExisting,
+          _entry(day: DayOfWeek.tue, slot: MealSlot.middag, id: 'new-1'),
+          _entry(day: DayOfWeek.wed, slot: MealSlot.middag, id: 'new-2'),
+        ]));
+
+        final placed = await viewModel.applyGeneratedMenu({
+          'middag': [_recipe()],
+        });
+
+        expect(placed, 2);
+        expect(viewModel.isRecentlyPlaced('new-1'), isTrue);
+        expect(viewModel.isRecentlyPlaced('new-2'), isTrue);
+        expect(viewModel.isRecentlyPlaced('old-1'), isFalse,
+            reason: 'pre-existing entries are not "NY"');
+      });
+
+      test(
+          'adoptPlan publishes a placement-saved plan without a Firestore '
+          'read and carries the session NY flags', () async {
+        final initial = _plan();
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+
+        final placedPlan = initial.copyWith(entries: [
+          _entry(day: DayOfWeek.tue, slot: MealSlot.middag, id: 'manual-1'),
+        ]);
+        viewModel.adoptPlan(placedPlan, recentlyPlacedEntryIds: {'manual-1'});
+
+        expect(viewModel.plan, same(placedPlan));
+        expect(viewModel.isRecentlyPlaced('manual-1'), isTrue,
+            reason: 'manual placements get the same NY badge as auto');
+        expect(viewModel.overflow, isEmpty,
+            reason: 'a placement session supersedes any stale overflow tray');
+        // Exactly the initial fetch — adoption must not re-read the doc.
+        verify(() => mockService.getWeek(any())).called(1);
+      });
+
+      test(
+          'applyGeneratedMenu returns null when the save fails — a success '
+          'toast must never describe an unpersisted week', () async {
+        final initial = _plan();
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => initial);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+
+        stubDistribution(initial.copyWith(entries: [
+          _entry(day: DayOfWeek.tue, slot: MealSlot.middag, id: 'new-1'),
+        ]));
+        when(() => mockService.save(any())).thenThrow(Exception('boom'));
+
+        final placed = await viewModel.applyGeneratedMenu({
+          'middag': [_recipe()],
+        });
+
+        expect(placed, isNull);
+        expect(viewModel.hasError, isTrue);
+      });
+    });
   });
 }

@@ -18,6 +18,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_drag.dart';
+import 'package:butlery/widgets/menu/menu_new_badge.dart';
 
 const double _kSlotMinHeight = 80;
 
@@ -205,7 +206,12 @@ class _SingleSlotCell extends StatelessWidget {
     final entry = plan.entryAt(day, slot);
     final inner = entry == null
         ? _EmptySlot(day: day, slot: slot, onTap: onTapEmptySlot)
-        : _AssignedSlot(entry: entry, onTap: onTapRecipe);
+        : _AssignedSlot(
+            entry: entry,
+            onTap: onTapRecipe,
+            // BUT-1241: "NY" badge on entries from the latest generation.
+            showNewBadge: vm.isRecentlyPlaced(entry.id),
+          );
     return wrapAsDropTarget(
       context: context,
       vm: vm,
@@ -277,8 +283,13 @@ class _EmptySlot extends StatelessWidget {
 class _AssignedSlot extends StatelessWidget {
   final WeeklyMenuPlanEntry entry;
   final RecipeNavCallback onTap;
+  final bool showNewBadge;
 
-  const _AssignedSlot({required this.entry, required this.onTap});
+  const _AssignedSlot({
+    required this.entry,
+    required this.onTap,
+    this.showNewBadge = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -298,7 +309,15 @@ class _AssignedSlot extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _slotLabel(entry.slot.displayLabel, cs.onPrimaryContainer),
+              Row(
+                children: [
+                  Expanded(
+                    child: _slotLabel(
+                        entry.slot.displayLabel, cs.onPrimaryContainer),
+                  ),
+                  if (showNewBadge) const MenuNewBadge(),
+                ],
+              ),
               const SizedBox(height: 4),
               Container(
                 height: 28,
@@ -375,7 +394,11 @@ class _OvrigtCell extends StatelessWidget {
                 _slotLabel(MealSlot.ovrigt.displayLabel, cs.secondary),
                 const SizedBox(height: 2),
                 for (final entry in entries) ...[
-                  _OvrigtEntry(entry: entry, onTap: onTapRecipe),
+                  _OvrigtEntry(
+                    entry: entry,
+                    onTap: onTapRecipe,
+                    showNewBadge: vm.isRecentlyPlaced(entry.id),
+                  ),
                   const SizedBox(height: 3),
                 ],
                 Semantics(
@@ -417,8 +440,13 @@ class _OvrigtCell extends StatelessWidget {
 class _OvrigtEntry extends StatelessWidget {
   final WeeklyMenuPlanEntry entry;
   final RecipeNavCallback onTap;
+  final bool showNewBadge;
 
-  const _OvrigtEntry({required this.entry, required this.onTap});
+  const _OvrigtEntry({
+    required this.entry,
+    required this.onTap,
+    this.showNewBadge = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -463,6 +491,7 @@ class _OvrigtEntry extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (showNewBadge) const MenuNewBadge(),
             ],
           ),
         ),

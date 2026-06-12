@@ -20,14 +20,18 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
+    show PlacementSaveResult;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/views/menu_placement_view.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
+import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 
 // BUT-408: live cooking session presence
@@ -118,23 +122,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     if (mode != _viewMode) setState(() => _viewMode = mode);
   }
 
+  /// BUT-1241: the toggle is a pure view switch now. The old silent
+  /// distribute-on-toggle bridge was replaced by the explicit choice footer
+  /// in lista mode (auto vs manual placement).
   Future<void> _setViewMode(VeckomenyViewMode mode) async {
     if (mode == _viewMode) return;
     setState(() => _viewMode = mode);
     await ServiceLocator.get<PersistenceService>()
         .setVeckomenyViewMode(mode.name);
-
-    // When switching to calendar with a generated menu, apply it.
-    if (mode == VeckomenyViewMode.kalender && mounted) {
-      final menuVm = context.read<MenuViewModel>();
-      final calendarVm = context.read<WeeklyMenuPlanViewModel>();
-      if (menuVm.hasMenu) {
-        await calendarVm.applyGeneratedMenu(
-          menuVm.menu,
-          replaceExisting: true,
-        );
-      }
-    }
   }
 
   Future<void> _generateMenu() async {
@@ -152,11 +147,102 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     if (!mounted) return;
 
     if (_viewMode == VeckomenyViewMode.kalender && menuVm.hasMenu) {
-      await calendarVm.applyGeneratedMenu(
-        menuVm.menu,
-        replaceExisting: true,
-      );
+      // Overwrite was already confirmed above.
+      final placed = await _applyGeneratedToCalendar(skipConfirm: true);
+      if (placed != null && placed > 0 && mounted) {
+        _showAutoPlacedToast(placed);
+      }
     }
+  }
+
+  /// BUT-1241: auto-distribute the generated menu onto the CURRENT week —
+  /// the same week the calendar opens on, and the only week where the
+  /// today-anchored distribution semantics ("inga recept på passerade
+  /// dagar") make sense. Confirms overwrite when the week already has
+  /// entries, threads the parsed day pins, and surfaces failures here
+  /// (lista mode never renders the calendar VM's error state). Returns the
+  /// placed count, or null when cancelled / failed / nothing to place.
+  Future<int?> _applyGeneratedToCalendar({bool skipConfirm = false}) async {
+    final menuVm = context.read<MenuViewModel>();
+    final calendarVm = context.read<WeeklyMenuPlanViewModel>();
+    if (!menuVm.hasMenu) return null;
+    await calendarVm.loadWeek(clock.now());
+    if (!mounted) return null;
+    if (!skipConfirm && calendarVm.hasEntries) {
+      final confirmed = await _confirmOverwrite();
+      if (!confirmed || !mounted) return null;
+    }
+    final parsed = await menuVm.parsedRequestForLastPrompt();
+    if (!mounted) return null;
+    final placed = await calendarVm.applyGeneratedMenu(
+      menuVm.menu,
+      replaceExisting: true,
+      parsedRequest: parsed,
+    );
+    // applyGeneratedMenu clears the error state on entry, so a non-null
+    // error here belongs to THIS run (cancel paths return before this).
+    if (placed == null && mounted) {
+      final error = calendarVm.error;
+      if (error != null) SnackBarUtils.showError(context, error);
+    }
+    return placed;
+  }
+
+  /// Footer primary action: auto-place, switch to kalender, offer ÄNDRA.
+  Future<void> _onPlaceAutomatically() async {
+    final placed = await _applyGeneratedToCalendar();
+    if (placed == null || !mounted) return;
+    await _setViewMode(VeckomenyViewMode.kalender);
+    if (!mounted) return;
+    // placed == 0 (everything overflowed) skips the toast — the calendar's
+    // overflow tray explains the outcome better than a "0 placed" snackbar.
+    if (placed > 0) _showAutoPlacedToast(placed);
+  }
+
+  void _showAutoPlacedToast(int placed) {
+    SnackBarUtils.showSuccessWithAction(
+      context,
+      context.l10n.menuAutoPlacedToast(placed),
+      actionLabel: context.l10n.menuAutoPlacedChangeAction,
+      onAction: () => unawaited(_openPlacement(redoAuto: true)),
+      duration: const Duration(seconds: 7),
+    );
+  }
+
+  /// Opens the manual placement mode (BUT-1241). [redoAuto] is the ÄNDRA
+  /// path: the working week starts empty because the saved plan holds the
+  /// auto layout being redone (same replace semantics the auto path used).
+  Future<void> _openPlacement({required bool redoAuto}) async {
+    if (!mounted) return;
+    final menuVm = context.read<MenuViewModel>();
+    final calendarVm = context.read<WeeklyMenuPlanViewModel>();
+    if (!menuVm.hasMenu) return;
+    final parsed = await menuVm.parsedRequestForLastPrompt();
+    if (!mounted) return;
+    final result = await Navigator.of(context).push<PlacementSaveResult>(
+      MaterialPageRoute(
+        builder: (_) => MenuPlacementView(
+          generated: menuVm.menu,
+          weekStart: calendarVm.currentWeekStart,
+          parsedRequest: parsed,
+          startFromEmptyWeek: redoAuto,
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+    // Adopt the just-persisted plan instead of re-reading it from
+    // Firestore; the session ids give manual placements the same NY-badge
+    // treatment as auto-distribution.
+    calendarVm.adoptPlan(
+      result.plan,
+      recentlyPlacedEntryIds: result.sessionEntryIds,
+    );
+    await _setViewMode(VeckomenyViewMode.kalender);
+    if (!mounted) return;
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.menuPlacementSaved(result.placed),
+    );
   }
 
   Future<bool> _confirmOverwrite() async {
@@ -447,12 +533,29 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                               onRefinePrompt: _promptFocusNode.requestFocus,
                             ),
                           )
-                        : MenuContentWidgets.buildMenuContent(
-                            context,
-                            viewModel: viewModel,
-                            onRetry: _promptController.text.isNotEmpty
-                                ? () => unawaited(_generateMenu())
-                                : null,
+                        : Column(
+                            children: [
+                              Expanded(
+                                child: MenuContentWidgets.buildMenuContent(
+                                  context,
+                                  viewModel: viewModel,
+                                  onRetry: _promptController.text.isNotEmpty
+                                      ? () => unawaited(_generateMenu())
+                                      : null,
+                                ),
+                              ),
+                              // BUT-1241: explicit placement choice for the
+                              // generated result.
+                              if (viewModel.hasMenu &&
+                                  !viewModel.isGenerating &&
+                                  !viewModel.hasError)
+                                MenuPlacementChoiceFooter(
+                                  onPlaceAuto: () =>
+                                      unawaited(_onPlaceAutomatically()),
+                                  onPlaceManual: () => unawaited(
+                                      _openPlacement(redoAuto: false)),
+                                ),
+                            ],
                           ),
                   ),
                 ),

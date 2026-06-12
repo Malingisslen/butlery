@@ -7,6 +7,7 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -218,6 +219,22 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
 
     return result;
+  }
+
+  /// BUT-1241: parsed constraint trace for the last generation prompt, used
+  /// to thread day pins ("tacofredag") and the extraction-chip strip into
+  /// the calendar distribution. Re-parses on demand — the parser is
+  /// deterministic and lexicon-cached, so this costs no LLM call and stays
+  /// consistent with what generation saw.
+  Future<ParsedMenuRequest?> parsedRequestForLastPrompt() async {
+    final prompt = lastPrompt;
+    if (prompt.isEmpty) return null;
+    try {
+      return await _menuService.parsePrompt(prompt);
+    } catch (e) {
+      AppLogger.error('Could not re-parse menu prompt', e);
+      return null;
+    }
   }
 
   /// Clears current menu state for new generation or menu reset operations.

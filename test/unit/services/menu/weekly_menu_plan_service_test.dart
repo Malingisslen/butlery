@@ -1,3 +1,4 @@
+import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
@@ -187,6 +188,51 @@ void main() {
       expect(placed, hasLength(1));
       expect(placed.single.day, DayOfWeek.sun);
       expect(result.overflow, hasLength(2));
+    });
+  });
+
+  group('distributeFromGeneratedMenu — day pins vs occupied cells (BUT-1241)',
+      () {
+    test(
+        'a pin targeting an occupied single slot does NOT double-stack — '
+        'the recipe falls through to the chronological fill', () {
+      // Friday middag is already taken (e.g. hand-placed in the manual
+      // placement flow before "Placera resten automatiskt").
+      final occupied = _emptyPlan(mon).copyWith(entries: [
+        WeeklyMenuPlanEntry.create(
+          day: DayOfWeek.fri,
+          slot: MealSlot.middag,
+          recipeId: 'manual-r',
+          recipeTitle: 'Handplacerad',
+        ),
+      ]);
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [_recipe('pinned')],
+        },
+        weekStart: mon,
+        existing: occupied,
+        now: mon,
+        dayPins: const [
+          // tacofredag: Friday (ISO 5) middag, unconstrained tags so the
+          // single generated recipe matches the pin.
+          DayPin(
+            weekdayIndex: 5,
+            mealType: 'middag',
+            constraint: RecipeConstraint(count: 1),
+          ),
+        ],
+      );
+
+      // No cell holds two entries...
+      expect(
+          result.plan.entriesAt(DayOfWeek.fri, MealSlot.middag), hasLength(1));
+      // ...and the pinned recipe landed on the first free middag instead.
+      expect(
+        result.plan.entryAt(DayOfWeek.mon, MealSlot.middag)?.recipeTitle,
+        'Recipe pinned',
+      );
     });
   });
 
