@@ -196,20 +196,24 @@ class AppRouter {
           final arguments = settings.arguments;
           String? initialText;
           String? sourceUrl;
+          double? ocrConfidence;
 
           if (arguments is String) {
-            // Simple text argument from photo import
+            // Legacy plain-text argument (pre-BUT-928 callers)
             initialText = arguments;
           } else if (arguments is Map<String, dynamic>) {
-            // Complex arguments from URL import
+            // Map arguments from URL import / photo-OCR handoff
             initialText = arguments['text'] as String?;
             sourceUrl = arguments['sourceUrl'] as String?;
+            // BUT-928: overall OCR confidence from the photo-import preview.
+            ocrConfidence = arguments['ocrConfidence'] as double?;
           }
 
           return _buildRoute(
               FranSocialaMedierView(
                 initialText: initialText,
                 sourceUrl: sourceUrl,
+                ocrConfidence: ocrConfidence,
               ),
               settings,
               Routes.getAnimationType(routeName));

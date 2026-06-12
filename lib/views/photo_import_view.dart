@@ -23,7 +23,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
-import 'package:butlery/views/photo_import/confidence_indicator.dart';
+import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/views/photo_import/image_preview.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
@@ -197,10 +197,15 @@ class _PhotoImportViewContent extends StatelessWidget {
   ) {
     if (viewModel.hasOcrResult) {
       _stashHeirloomDraftIfActive(viewModel);
+      // BUT-928: carry the OCR confidence across the handoff so the badge
+      // the user saw on the preview step doesn't vanish on the next screen.
       Navigator.pushNamed(
         context,
         '/franSocialaMedier',
-        arguments: viewModel.ocrText,
+        arguments: {
+          'text': viewModel.ocrText,
+          'ocrConfidence': viewModel.confidence,
+        },
       );
     }
   }
@@ -275,7 +280,12 @@ class _PhotoImportViewContent extends StatelessWidget {
     Navigator.pushNamed(
       context,
       '/franSocialaMedier',
-      arguments: viewModel.ocrText.isEmpty ? '' : viewModel.ocrText,
+      arguments: {
+        'text': viewModel.ocrText.isEmpty ? '' : viewModel.ocrText,
+        // BUT-928: only meaningful when OCR actually produced text.
+        'ocrConfidence':
+            viewModel.ocrText.isEmpty ? null : viewModel.confidence,
+      },
     );
   }
 

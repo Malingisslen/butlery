@@ -20,6 +20,7 @@ import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/tagging/allergen_mismatch.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/widgets/import/allergen_setup_banner.dart';
+import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -28,10 +29,16 @@ class FranSocialaMedierView extends StatefulWidget {
   final String? initialText;
   final String? sourceUrl;
 
+  /// BUT-928: overall OCR confidence (0.0-1.0) when [initialText] came from
+  /// the photo-import OCR step — re-surfaces the preview badge here so the
+  /// quality signal isn't dropped at the handoff. Null for non-OCR entry.
+  final double? ocrConfidence;
+
   const FranSocialaMedierView({
     super.key,
     this.initialText,
     this.sourceUrl,
+    this.ocrConfidence,
   });
 
   @override
@@ -63,6 +70,7 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
       child: _FranSocialaMedierViewContent(
         initialText: widget.initialText,
         sourceUrl: widget.sourceUrl,
+        ocrConfidence: widget.ocrConfidence,
       ),
     );
   }
@@ -71,10 +79,12 @@ class _FranSocialaMedierViewState extends State<FranSocialaMedierView> {
 class _FranSocialaMedierViewContent extends StatefulWidget {
   final String? initialText;
   final String? sourceUrl;
+  final double? ocrConfidence;
 
   const _FranSocialaMedierViewContent({
     this.initialText,
     this.sourceUrl,
+    this.ocrConfidence,
   });
 
   @override
@@ -249,6 +259,19 @@ class _FranSocialaMedierViewContentState
                   // Show if recipe comes from URL
                   if (viewModel.sourceUrl != null) ...[
                     SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
+                    const SizedBox(height: AppDimensions.spacingM),
+                  ],
+
+                  // BUT-928: same green/orange/red badge as the photo-import
+                  // preview step — describes the OCR pass that produced the
+                  // initial text (kept visible even if the user edits).
+                  if (widget.ocrConfidence != null) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ConfidenceIndicator(
+                        confidence: widget.ocrConfidence!,
+                      ),
+                    ),
                     const SizedBox(height: AppDimensions.spacingM),
                   ],
 

@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
-import 'package:butlery/views/photo_import/confidence_indicator.dart';
+import 'package:butlery/widgets/import/confidence_indicator.dart';
 
 /// Captures the theme-resolved badge colors so assertions compare against the
 /// real tokens (not hard-coded literals that would drift from the theme).
