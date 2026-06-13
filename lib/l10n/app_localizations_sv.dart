@@ -14430,7 +14430,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get parseConfidenceTitle => 'Tolkningskvalitet per ingrediens';
 
   @override
-  String parseConfidenceLowCountSubtitle(int count) {
+  String parseConfidenceReviewCountSubtitle(int count) {
     final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
@@ -14438,23 +14438,11 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString rader med osäker tolkning',
-      one: '$countString rad med osäker tolkning',
+      other: '$countString kan behöva en koll',
+      one: '1 kan behöva en koll',
     );
     return '$_temp0';
   }
-
-  @override
-  String get parseConfidencePillHigh => 'HÖG';
-
-  @override
-  String get parseConfidencePillMedium => 'MEDIUM';
-
-  @override
-  String get parseConfidencePillLow => 'LÅG';
-
-  @override
-  String get parseConfidencePillFailed => 'OKÄND';
 
   @override
   String parseConfidenceOriginalPrefix(String line) {
@@ -14466,9 +14454,21 @@ class AppLocalizationsSv extends AppLocalizations {
       'Visa tolkningskvalitet per ingrediens';
 
   @override
-  String a11yToggleIngredientOriginalLine(String name) {
-    return 'Visa originalrad för $name';
+  String a11yIngredientWithConfidence(String name, String confidence) {
+    return '$name, $confidence';
   }
+
+  @override
+  String get a11yConfidenceHigh => 'hög tolkningskvalitet';
+
+  @override
+  String get a11yConfidenceMedium => 'medel tolkningskvalitet';
+
+  @override
+  String get a11yConfidenceLow => 'låg tolkningskvalitet';
+
+  @override
+  String get a11yConfidenceFailed => 'okänd tolkningskvalitet';
 
   @override
   String get recipeRelatedSectionTitle => 'Relaterade recept';

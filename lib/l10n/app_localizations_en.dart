@@ -14393,7 +14393,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get parseConfidenceTitle => 'Parse quality per ingredient';
 
   @override
-  String parseConfidenceLowCountSubtitle(int count) {
+  String parseConfidenceReviewCountSubtitle(int count) {
     final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
@@ -14401,23 +14401,11 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString lines with uncertain parse',
-      one: '$countString line with uncertain parse',
+      other: '$countString may need a check',
+      one: '1 may need a check',
     );
     return '$_temp0';
   }
-
-  @override
-  String get parseConfidencePillHigh => 'HIGH';
-
-  @override
-  String get parseConfidencePillMedium => 'MEDIUM';
-
-  @override
-  String get parseConfidencePillLow => 'LOW';
-
-  @override
-  String get parseConfidencePillFailed => 'UNKNOWN';
 
   @override
   String parseConfidenceOriginalPrefix(String line) {
@@ -14428,9 +14416,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yToggleConfidenceSection => 'Show parse quality per ingredient';
 
   @override
-  String a11yToggleIngredientOriginalLine(String name) {
-    return 'Show original line for $name';
+  String a11yIngredientWithConfidence(String name, String confidence) {
+    return '$name, $confidence';
   }
+
+  @override
+  String get a11yConfidenceHigh => 'high parse quality';
+
+  @override
+  String get a11yConfidenceMedium => 'medium parse quality';
+
+  @override
+  String get a11yConfidenceLow => 'low parse quality';
+
+  @override
+  String get a11yConfidenceFailed => 'unknown parse quality';
 
   @override
   String get recipeRelatedSectionTitle => 'Related recipes';

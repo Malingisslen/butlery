@@ -24106,35 +24106,11 @@ abstract class AppLocalizations {
   /// **'Tolkningskvalitet per ingrediens'**
   String get parseConfidenceTitle;
 
-  /// BUT-1244: subtitle shown when one or more ingredients have low/failed parse confidence. Uses ICU plural: =1 for singular (rad), other for plural (rader).
+  /// BUT-1244 redesign: subtitle shown when one or more ingredients are not high-confidence (medium + low + failed). Only rendered when count > 0.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{{count} rad med osäker tolkning} other{{count} rader med osäker tolkning}}'**
-  String parseConfidenceLowCountSubtitle(int count);
-
-  /// BUT-1244: label on the green confidence pill for a high-confidence parse result.
-  ///
-  /// In sv, this message translates to:
-  /// **'HÖG'**
-  String get parseConfidencePillHigh;
-
-  /// BUT-1244: label on the amber confidence pill for a medium-confidence parse result.
-  ///
-  /// In sv, this message translates to:
-  /// **'MEDIUM'**
-  String get parseConfidencePillMedium;
-
-  /// BUT-1244: label on the grey confidence pill for a low-confidence parse result.
-  ///
-  /// In sv, this message translates to:
-  /// **'LÅG'**
-  String get parseConfidencePillLow;
-
-  /// BUT-1244: label on the grey confidence pill when parsing failed entirely.
-  ///
-  /// In sv, this message translates to:
-  /// **'OKÄND'**
-  String get parseConfidencePillFailed;
+  /// **'{count, plural, =1{1 kan behöva en koll} other{{count} kan behöva en koll}}'**
+  String parseConfidenceReviewCountSubtitle(int count);
 
   /// BUT-1244: prefix shown before the original source line when a user expands an ingredient row.
   ///
@@ -24148,11 +24124,35 @@ abstract class AppLocalizations {
   /// **'Visa tolkningskvalitet per ingrediens'**
   String get a11yToggleConfidenceSection;
 
-  /// BUT-1244: screen-reader label for the tappable ingredient row that reveals its original source line.
+  /// BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).
   ///
   /// In sv, this message translates to:
-  /// **'Visa originalrad för {name}'**
-  String a11yToggleIngredientOriginalLine(String name);
+  /// **'{name}, {confidence}'**
+  String a11yIngredientWithConfidence(String name, String confidence);
+
+  /// BUT-1244 redesign: confidence word for screen readers — high confidence.
+  ///
+  /// In sv, this message translates to:
+  /// **'hög tolkningskvalitet'**
+  String get a11yConfidenceHigh;
+
+  /// BUT-1244 redesign: confidence word for screen readers — medium confidence.
+  ///
+  /// In sv, this message translates to:
+  /// **'medel tolkningskvalitet'**
+  String get a11yConfidenceMedium;
+
+  /// BUT-1244 redesign: confidence word for screen readers — low confidence.
+  ///
+  /// In sv, this message translates to:
+  /// **'låg tolkningskvalitet'**
+  String get a11yConfidenceLow;
+
+  /// BUT-1244 redesign: confidence word for screen readers — failed/unknown confidence.
+  ///
+  /// In sv, this message translates to:
+  /// **'okänd tolkningskvalitet'**
+  String get a11yConfidenceFailed;
 
   /// BUT-1057: heading for the related-recipes section in recipe detail and edit form.
   ///

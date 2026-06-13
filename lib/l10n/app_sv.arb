@@ -10250,31 +10250,15 @@
   "@parseConfidenceTitle": {
     "description": "BUT-1244: section heading in the parse-confidence review widget shown after recipe import."
   },
-  "parseConfidenceLowCountSubtitle": "{count, plural, =1{{count} rad med osäker tolkning} other{{count} rader med osäker tolkning}}",
-  "@parseConfidenceLowCountSubtitle": {
-    "description": "BUT-1244: subtitle shown when one or more ingredients have low/failed parse confidence. Uses ICU plural: =1 for singular (rad), other for plural (rader).",
+  "parseConfidenceReviewCountSubtitle": "{count, plural, =1{1 kan behöva en koll} other{{count} kan behöva en koll}}",
+  "@parseConfidenceReviewCountSubtitle": {
+    "description": "BUT-1244 redesign: subtitle shown when one or more ingredients are not high-confidence (medium + low + failed). Only rendered when count > 0.",
     "placeholders": {
       "count": {
         "type": "int",
         "format": "decimalPattern"
       }
     }
-  },
-  "parseConfidencePillHigh": "HÖG",
-  "@parseConfidencePillHigh": {
-    "description": "BUT-1244: label on the green confidence pill for a high-confidence parse result."
-  },
-  "parseConfidencePillMedium": "MEDIUM",
-  "@parseConfidencePillMedium": {
-    "description": "BUT-1244: label on the amber confidence pill for a medium-confidence parse result."
-  },
-  "parseConfidencePillLow": "LÅG",
-  "@parseConfidencePillLow": {
-    "description": "BUT-1244: label on the grey confidence pill for a low-confidence parse result."
-  },
-  "parseConfidencePillFailed": "OKÄND",
-  "@parseConfidencePillFailed": {
-    "description": "BUT-1244: label on the grey confidence pill when parsing failed entirely."
   },
   "parseConfidenceOriginalPrefix": "Original: {line}",
   "@parseConfidenceOriginalPrefix": {
@@ -10289,14 +10273,33 @@
   "@a11yToggleConfidenceSection": {
     "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
   },
-  "a11yToggleIngredientOriginalLine": "Visa originalrad för {name}",
-  "@a11yToggleIngredientOriginalLine": {
-    "description": "BUT-1244: screen-reader label for the tappable ingredient row that reveals its original source line.",
+  "a11yIngredientWithConfidence": "{name}, {confidence}",
+  "@a11yIngredientWithConfidence": {
+    "description": "BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).",
     "placeholders": {
       "name": {
         "type": "String"
+      },
+      "confidence": {
+        "type": "String"
       }
     }
+  },
+  "a11yConfidenceHigh": "hög tolkningskvalitet",
+  "@a11yConfidenceHigh": {
+    "description": "BUT-1244 redesign: confidence word for screen readers — high confidence."
+  },
+  "a11yConfidenceMedium": "medel tolkningskvalitet",
+  "@a11yConfidenceMedium": {
+    "description": "BUT-1244 redesign: confidence word for screen readers — medium confidence."
+  },
+  "a11yConfidenceLow": "låg tolkningskvalitet",
+  "@a11yConfidenceLow": {
+    "description": "BUT-1244 redesign: confidence word for screen readers — low confidence."
+  },
+  "a11yConfidenceFailed": "okänd tolkningskvalitet",
+  "@a11yConfidenceFailed": {
+    "description": "BUT-1244 redesign: confidence word for screen readers — failed/unknown confidence."
   },
   "recipeRelatedSectionTitle": "Relaterade recept",
   "@recipeRelatedSectionTitle": {

@@ -10,11 +10,11 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Review widget that surfaces per-ingredient parse confidence (BUT-925).
 ///
-/// Shown in the recipe editor immediately after import, when the
-/// [ParsedRecipeCache] contains a live [ParsedRecipe] for this recipe.
-/// Low-confidence items are sorted first so the user sees shaky parses
-/// without scrolling. Each item has a square confidence pill (green/amber/grey)
-/// and the original source line viewable on long-press or tap-expand.
+/// Shown in the recipe editor immediately after import. Low-confidence items
+/// are sorted first. Each row has a thin coloured left bar (no visible text
+/// label) that encodes confidence: green = high, amber = medium, grey =
+/// low/failed. Screen readers announce the confidence word via Semantics so
+/// the widget meets WCAG 2.1 (colour is not the only signal).
 class ParseConfidenceReview extends StatefulWidget {
   /// Parsed ingredients with confidence — from [RecipeFormViewModel.parsedIngredients].
   final List<ParsedIngredient> ingredients;
@@ -31,7 +31,7 @@ class ParseConfidenceReview extends StatefulWidget {
 class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
   bool _expanded = true;
 
-  /// Sort copy: low first, then medium, then high.
+  /// Sort copy: low/failed first, then medium, then high.
   late List<_IndexedIngredient> _sorted;
 
   @override
@@ -43,8 +43,6 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
   @override
   void didUpdateWidget(ParseConfidenceReview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Re-sort when the parent supplies a refreshed parse (e.g. cache update);
-    // _sorted is a one-shot copy so it would otherwise go stale.
     if (oldWidget.ingredients != widget.ingredients) {
       _sorted = _sortedIngredients(widget.ingredients);
     }
@@ -71,15 +69,15 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
 
   @override
   Widget build(BuildContext context) {
-    // Count everything that needs review (low AND failed) — a failed item
-    // renders the same grey pill, so the header warning must include it too.
-    final lowCount =
-        _sorted.where((i) => i.ingredient.confidence.needsReview).length;
+    // Count rows that may need a look: everything that is NOT high confidence.
+    final reviewCount = _sorted
+        .where((i) => i.ingredient.confidence != ParseConfidence.high)
+        .length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context, lowCount),
+        _buildHeader(context, reviewCount),
         if (_expanded) ...[
           const SizedBox(height: AppDimensions.spacingS),
           ..._sorted.map(
@@ -93,7 +91,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, int lowCount) {
+  Widget _buildHeader(BuildContext context, int reviewCount) {
     return Semantics(
       label: context.l10n.a11yToggleConfidenceSection,
       button: true,
@@ -113,9 +111,10 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                       context.l10n.parseConfidenceTitle,
                       style: AppTextStyles.labelLarge,
                     ),
-                    if (lowCount > 0)
+                    if (reviewCount > 0)
                       Text(
-                        context.l10n.parseConfidenceLowCountSubtitle(lowCount),
+                        context.l10n
+                            .parseConfidenceReviewCountSubtitle(reviewCount),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: context.butleryColors.warning,
                         ),
@@ -136,7 +135,11 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
   }
 }
 
-/// A single row showing one ingredient with its confidence pill.
+/// A single row showing one ingredient with a colour-coded left accent bar.
+///
+/// The bar width is fixed at [_barWidth] so ingredient names align in a clean
+/// column regardless of confidence level. No visible text label is shown; the
+/// confidence is conveyed to screen readers via [Semantics.label].
 class _IngredientConfidenceRow extends StatefulWidget {
   final ParsedIngredient ingredient;
 
@@ -153,55 +156,90 @@ class _IngredientConfidenceRow extends StatefulWidget {
 class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
   bool _showOriginal = false;
 
+  /// Returns true when the original line is meaningfully different from the
+  /// display string — whitespace-only differences are ignored because they
+  /// are invisible to users and cause pointless expand noise (e.g. "100g smör"
+  /// vs "100 g smör" should NOT trigger the reveal).
+  bool get _hasOriginal {
+    final original = widget.ingredient.originalLine;
+    if (original.isEmpty) return false;
+    return _stripped(original) != _stripped(widget.ingredient.displayString);
+  }
+
+  static String _stripped(String s) => s.replaceAll(RegExp(r'\s+'), '');
+
   @override
   Widget build(BuildContext context) {
+    final colors = context.butleryColors;
+    final barColor = confidenceColorFor(widget.ingredient.confidence, colors);
+    final a11yLabel = _a11yLabel(context, widget.ingredient);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
-          label: context.l10n
-              .a11yToggleIngredientOriginalLine(widget.ingredient.name),
-          button: true,
-          toggled: _showOriginal,
+          label: a11yLabel,
+          button: _hasOriginal,
+          toggled: _hasOriginal ? _showOriginal : null,
           child: InkWell(
-            onTap: () => setState(() => _showOriginal = !_showOriginal),
-            onLongPress: () => setState(() => _showOriginal = !_showOriginal),
+            onTap: _hasOriginal
+                ? () => setState(() => _showOriginal = !_showOriginal)
+                : null,
+            onLongPress: _hasOriginal
+                ? () => setState(() => _showOriginal = !_showOriginal)
+                : null,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: AppDimensions.spacingXs,
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _ConfidencePill(confidence: widget.ingredient.confidence),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
-                    child: Text(
-                      widget.ingredient.displayString,
-                      style: AppTextStyles.bodyMedium,
+              // IntrinsicHeight lets the bar stretch to match the text row
+              // height even though the parent is unconstrained (scrollview).
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Thin colour accent bar — 4 px wide, full row height, square.
+                    Container(
+                      key: ValueKey(
+                          'confidence-bar-${widget.ingredient.confidence.name}'),
+                      width: _barWidth,
+                      color: barColor,
                     ),
-                  ),
-                  if (widget.ingredient.originalLine.isNotEmpty &&
-                      widget.ingredient.originalLine !=
-                          widget.ingredient.displayString)
-                    Icon(
-                      _showOriginal
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      size: AppDimensions.iconSizeS,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.spacingXs,
+                        ),
+                        child: Text(
+                          widget.ingredient.displayString,
+                          style: AppTextStyles.bodyMedium,
+                        ),
+                      ),
                     ),
-                ],
+                    if (_hasOriginal)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.spacingXs,
+                        ),
+                        child: Icon(
+                          _showOriginal
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          size: AppDimensions.iconSizeS,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-        if (_showOriginal &&
-            widget.ingredient.originalLine.isNotEmpty &&
-            widget.ingredient.originalLine != widget.ingredient.displayString)
+        if (_showOriginal && _hasOriginal)
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.spacingXl + AppDimensions.spacingS,
+              start: _barWidth + AppDimensions.spacingS,
               bottom: AppDimensions.spacingXs,
             ),
             child: Text(
@@ -217,86 +255,33 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
       ],
     );
   }
-}
 
-/// Square confidence pill per design rule (--radius: 0px).
-///
-/// Color mapping per BUT-925:
-///   high   → green  (butleryColors.success = forestGreen)
-///   medium → amber  (butleryColors.warning = #D4A03C)
-///   low    → grey   (butleryColors.neutral = #9CA3AF)
-///
-/// Exported for widget tests — use [confidencePillKey] to find the container
-/// and check its color via [confidenceColorFor] for the expected value.
-@visibleForTesting
-class ConfidencePill extends StatelessWidget {
-  final ParseConfidence confidence;
-
-  const ConfidencePill({
-    super.key,
-    required this.confidence,
-  });
-
-  @override
-  Widget build(BuildContext context) => _ConfidencePill(confidence: confidence);
-
-  /// Returns the canonical foreground color for a given confidence level.
-  /// Used in widget tests to assert color-per-enum without depending on theme.
-  static Color confidenceColorFor(
-    ParseConfidence confidence,
-    ButleryColors colors,
-  ) =>
-      _ConfidencePill._colorFor(confidence, colors);
-}
-
-class _ConfidencePill extends StatelessWidget {
-  final ParseConfidence confidence;
-
-  const _ConfidencePill({required this.confidence});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.butleryColors;
-    final color = _colorFor(confidence, colors);
-    final label = _labelFor(context, confidence);
-
-    return Container(
-      key: ValueKey('confidence-pill-${confidence.name}'),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingS,
-        vertical: 2,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        border: Border.all(color: color, width: 1),
-        // Square — no border radius per design language
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 11,
-        ),
-      ),
-    );
+  String _a11yLabel(BuildContext context, ParsedIngredient ingredient) {
+    final l10n = context.l10n;
+    final confidenceWord = switch (ingredient.confidence) {
+      ParseConfidence.high => l10n.a11yConfidenceHigh,
+      ParseConfidence.medium => l10n.a11yConfidenceMedium,
+      ParseConfidence.low => l10n.a11yConfidenceLow,
+      ParseConfidence.failed => l10n.a11yConfidenceFailed,
+    };
+    return l10n.a11yIngredientWithConfidence(ingredient.name, confidenceWord);
   }
-
-  static Color _colorFor(ParseConfidence confidence, ButleryColors colors) =>
-      switch (confidence) {
-        ParseConfidence.high => colors.success,
-        ParseConfidence.medium => colors.warning,
-        ParseConfidence.low || ParseConfidence.failed => colors.neutral,
-      };
-
-  static String _labelFor(BuildContext context, ParseConfidence confidence) =>
-      switch (confidence) {
-        ParseConfidence.high => context.l10n.parseConfidencePillHigh,
-        ParseConfidence.medium => context.l10n.parseConfidencePillMedium,
-        ParseConfidence.low => context.l10n.parseConfidencePillLow,
-        ParseConfidence.failed => context.l10n.parseConfidencePillFailed,
-      };
 }
+
+/// Fixed width of the left accent bar in logical pixels.
+const double _barWidth = 4.0;
+
+/// Returns the bar colour for a given confidence level.
+///
+/// Exported for widget tests via [confidenceColorFor] so tests can assert the
+/// correct color token without depending on hard-coded hex values.
+@visibleForTesting
+Color confidenceColorFor(ParseConfidence confidence, ButleryColors colors) =>
+    switch (confidence) {
+      ParseConfidence.high => colors.success,
+      ParseConfidence.medium => colors.warning,
+      ParseConfidence.low || ParseConfidence.failed => colors.neutral,
+    };
 
 /// Internal record for index-preserving sort.
 class _IndexedIngredient {

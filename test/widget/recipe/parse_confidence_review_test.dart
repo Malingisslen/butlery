@@ -1,11 +1,13 @@
-// BUT-925: widget tests for ParseConfidenceReview and ConfidencePill.
+// BUT-925: widget tests for ParseConfidenceReview and the colour accent bar.
 //
-// Acceptance gate: the pill renders the correct color for each
-// ParseConfidence value (high→green, medium→amber/gold, low/failed→neutral
-// grey), and the original line is reachable per ingredient.
+// Acceptance gate: each row renders a coloured left bar (not a pill label)
+// at the correct colour token, the original line is reachable only when
+// non-whitespace differences exist, and screen-reader semantics include the
+// confidence word in the row label.
 //
-// BUT-1244: updated to assert via l10n keys and ButleryColors.neutral token
-// rather than hardcoded Swedish strings and AppColors.neutralMedium.
+// BUT-1244: updated to assert via l10n keys and ButleryColors tokens.
+// BUT-1244-redesign: updated for the new left-bar design (no pill labels,
+// whitespace-only suppression, subtitle counts non-high rows).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,148 +46,167 @@ Widget _wrap(Widget child) => MaterialApp(
       home: Scaffold(body: SingleChildScrollView(child: child)),
     );
 
-// Helper: find the Container that forms the confidence pill for a given
-// ParseConfidence value, using the key we set in _ConfidencePill.build.
-Finder _pillContainer(ParseConfidence confidence) =>
-    find.byKey(ValueKey('confidence-pill-${confidence.name}'));
+/// Finds the accent-bar Container for a given [ParseConfidence] using the
+/// ValueKey set in _IngredientConfidenceRow.build.
+Finder _barContainer(ParseConfidence confidence) =>
+    find.byKey(ValueKey('confidence-bar-${confidence.name}'));
 
-// Extract the BoxDecoration border color from a Container found by [finder].
-Color _pillBorderColor(WidgetTester tester, Finder finder) {
+/// Reads the solid [color] from the Container found by [finder].
+Color _barColor(WidgetTester tester, Finder finder) {
   final container = tester.widget<Container>(finder);
-  final decoration = container.decoration as BoxDecoration;
-  return decoration.border!.top.color;
+  return container.color!;
 }
 
 void main() {
-  group('ConfidencePill — color-per-ParseConfidence', () {
-    // Use ButleryColors.light values (registered by AppTheme.lightTheme)
-    const colors = ButleryColors.light;
+  const colors = ButleryColors.light;
 
-    testWidgets('high confidence → success green border', (tester) async {
+  group('Accent bar — colour-per-ParseConfidence', () {
+    testWidgets('high confidence → success green bar', (tester) async {
       await tester.pumpWidget(
-        _wrap(ConfidencePill(confidence: ParseConfidence.high)),
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'smör', confidence: ParseConfidence.high),
+          ],
+        )),
       );
+      await tester.pumpAndSettle();
 
-      final pillFinder = _pillContainer(ParseConfidence.high);
-      expect(pillFinder, findsOneWidget);
-
-      final borderColor = _pillBorderColor(tester, pillFinder);
-      expect(borderColor, equals(colors.success)); // #4A7C59 forestGreen
+      final bar = _barContainer(ParseConfidence.high);
+      expect(bar, findsOneWidget);
+      expect(_barColor(tester, bar), equals(colors.success));
     });
 
-    testWidgets('medium confidence → warning amber border', (tester) async {
+    testWidgets('medium confidence → warning amber bar', (tester) async {
       await tester.pumpWidget(
-        _wrap(ConfidencePill(confidence: ParseConfidence.medium)),
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
+          ],
+        )),
       );
+      await tester.pumpAndSettle();
 
-      final pillFinder = _pillContainer(ParseConfidence.medium);
-      expect(pillFinder, findsOneWidget);
-
-      final borderColor = _pillBorderColor(tester, pillFinder);
-      expect(borderColor, equals(colors.warning)); // #D4A03C warm gold
+      final bar = _barContainer(ParseConfidence.medium);
+      expect(bar, findsOneWidget);
+      expect(_barColor(tester, bar), equals(colors.warning));
     });
 
-    testWidgets('low confidence → neutral grey border', (tester) async {
+    testWidgets('low confidence → neutral grey bar', (tester) async {
       await tester.pumpWidget(
-        _wrap(ConfidencePill(confidence: ParseConfidence.low)),
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
+          ],
+        )),
       );
+      await tester.pumpAndSettle();
 
-      final pillFinder = _pillContainer(ParseConfidence.low);
-      expect(pillFinder, findsOneWidget);
-
-      final borderColor = _pillBorderColor(tester, pillFinder);
-      // Assert via the neutral token, not the raw AppColors constant
-      expect(borderColor, equals(colors.neutral)); // #9CA3AF
+      final bar = _barContainer(ParseConfidence.low);
+      expect(bar, findsOneWidget);
+      expect(_barColor(tester, bar), equals(colors.neutral));
     });
 
-    testWidgets('failed confidence → neutral grey border (same as low)',
+    testWidgets('failed confidence → neutral grey bar (same as low)',
         (tester) async {
       await tester.pumpWidget(
-        _wrap(ConfidencePill(confidence: ParseConfidence.failed)),
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'okänd sak', confidence: ParseConfidence.failed),
+          ],
+        )),
       );
+      await tester.pumpAndSettle();
 
-      final pillFinder = _pillContainer(ParseConfidence.failed);
-      expect(pillFinder, findsOneWidget);
-
-      final borderColor = _pillBorderColor(tester, pillFinder);
-      expect(borderColor, equals(colors.neutral));
+      final bar = _barContainer(ParseConfidence.failed);
+      expect(bar, findsOneWidget);
+      expect(_barColor(tester, bar), equals(colors.neutral));
     });
+  });
 
-    testWidgets('pill label text matches confidence — l10n Swedish values',
-        (tester) async {
-      // Pump one widget and read l10n from its context rather than hardcoding
-      // the Swedish strings, so the test survives locale changes.
+  group('No visible HÖG/MEDEL/LÅG/OKÄND pill labels', () {
+    testWidgets('pill text labels are NOT rendered in the UI', (tester) async {
       await tester.pumpWidget(
-        _wrap(ConfidencePill(confidence: ParseConfidence.high)),
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'a', confidence: ParseConfidence.high),
+            _ingredient(name: 'b', confidence: ParseConfidence.medium),
+            _ingredient(name: 'c', confidence: ParseConfidence.low),
+            _ingredient(name: 'd', confidence: ParseConfidence.failed),
+          ],
+        )),
       );
-      final l10n =
-          AppLocalizations.of(tester.element(find.byType(ConfidencePill)));
+      await tester.pumpAndSettle();
 
-      for (final entry in {
-        ParseConfidence.high: l10n.parseConfidencePillHigh,
-        ParseConfidence.medium: l10n.parseConfidencePillMedium,
-        ParseConfidence.low: l10n.parseConfidencePillLow,
-        ParseConfidence.failed: l10n.parseConfidencePillFailed,
-      }.entries) {
-        await tester.pumpWidget(
-          _wrap(ConfidencePill(confidence: entry.key)),
-        );
-        expect(find.text(entry.value), findsOneWidget,
-            reason: '${entry.key.name} should show "${entry.value}"');
-      }
+      // Old pill text labels must not appear anywhere
+      expect(find.text('HÖG'), findsNothing);
+      expect(find.text('MEDEL'), findsNothing);
+      expect(find.text('LÅG'), findsNothing);
+      expect(find.text('OKÄND'), findsNothing);
+      // English variants too (in case locale resolution differs in CI)
+      expect(find.text('HIGH'), findsNothing);
+      expect(find.text('MEDIUM'), findsNothing);
+      expect(find.text('LOW'), findsNothing);
+      expect(find.text('UNKNOWN'), findsNothing);
+    });
+  });
+
+  group('confidenceColorFor() helper', () {
+    test('returns correct token per confidence', () {
+      expect(confidenceColorFor(ParseConfidence.high, colors), colors.success);
+      expect(
+          confidenceColorFor(ParseConfidence.medium, colors), colors.warning);
+      expect(confidenceColorFor(ParseConfidence.low, colors), colors.neutral);
+      expect(
+          confidenceColorFor(ParseConfidence.failed, colors), colors.neutral);
+    });
+  });
+
+  group('ParseConfidenceReview — subtitle counts non-high rows', () {
+    testWidgets('medium + low each count toward the review total',
+        (tester) async {
+      final ingredients = [
+        _ingredient(name: 'a', confidence: ParseConfidence.low),
+        _ingredient(name: 'b', confidence: ParseConfidence.medium),
+        _ingredient(name: 'c', confidence: ParseConfidence.high),
+      ];
+
+      await tester
+          .pumpWidget(_wrap(ParseConfidenceReview(ingredients: ingredients)));
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)));
+      // 2 non-high rows (a=low, b=medium) → subtitle shows count=2
+      expect(
+        find.textContaining(l10n.parseConfidenceReviewCountSubtitle(2)),
+        findsOneWidget,
+      );
     });
 
-    test('confidenceColorFor() returns same colors as the pill build', () {
-      const colors = ButleryColors.light;
+    testWidgets('subtitle not shown when all rows are high confidence',
+        (tester) async {
+      final ingredients = [
+        _ingredient(name: 'a', confidence: ParseConfidence.high),
+        _ingredient(name: 'b', confidence: ParseConfidence.high),
+      ];
 
+      await tester
+          .pumpWidget(_wrap(ParseConfidenceReview(ingredients: ingredients)));
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)));
+      // Assert against the count=1 string (not count=0): it can only be absent
+      // because reviewCount==0 suppressed the whole subtitle, NOT because the
+      // format string happens to differ — a stronger guard than findsNothing(0).
       expect(
-        ConfidencePill.confidenceColorFor(ParseConfidence.high, colors),
-        equals(colors.success),
-      );
-      expect(
-        ConfidencePill.confidenceColorFor(ParseConfidence.medium, colors),
-        equals(colors.warning),
-      );
-      expect(
-        ConfidencePill.confidenceColorFor(ParseConfidence.low, colors),
-        equals(colors.neutral),
-      );
-      expect(
-        ConfidencePill.confidenceColorFor(ParseConfidence.failed, colors),
-        equals(colors.neutral),
+        find.textContaining(l10n.parseConfidenceReviewCountSubtitle(1)),
+        findsNothing,
       );
     });
   });
 
-  group('ParseConfidenceReview — original line reachable', () {
-    testWidgets('tapping an ingredient row expands to show original line',
-        (tester) async {
-      const originalText = '2dl vetemjöl siktat';
-      final ingredients = [
-        _ingredient(
-          name: 'vetemjöl',
-          confidence: ParseConfidence.medium,
-          originalLine: originalText,
-          quantity: '2',
-          unit: 'dl',
-        ),
-      ];
-
-      await tester.pumpWidget(
-        _wrap(ParseConfidenceReview(ingredients: ingredients)),
-      );
-
-      // Original line not visible before tap
-      expect(find.textContaining(originalText), findsNothing);
-
-      // Tap the row to expand
-      await tester.tap(find.text('2 dl vetemjöl'));
-      await tester.pumpAndSettle();
-
-      // Original line now visible (widget renders "Original: <line>" via l10n)
-      expect(find.textContaining(originalText), findsOneWidget);
-    });
-
+  group('ParseConfidenceReview — sort order', () {
     testWidgets('low-confidence items appear before high-confidence ones',
         (tester) async {
       final ingredients = [
@@ -207,48 +228,57 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify low-confidence pill appears in the tree
-      expect(_pillContainer(ParseConfidence.low), findsOneWidget);
-      expect(_pillContainer(ParseConfidence.medium), findsOneWidget);
-      expect(_pillContainer(ParseConfidence.high), findsOneWidget);
+      final lowBar = _barContainer(ParseConfidence.low);
+      final medBar = _barContainer(ParseConfidence.medium);
+      final highBar = _barContainer(ParseConfidence.high);
 
-      // Low must appear before medium which appears before high in render order
-      final lowTop = tester.getTopLeft(_pillContainer(ParseConfidence.low)).dy;
-      final medTop =
-          tester.getTopLeft(_pillContainer(ParseConfidence.medium)).dy;
-      final highTop =
-          tester.getTopLeft(_pillContainer(ParseConfidence.high)).dy;
-
-      expect(lowTop, lessThan(medTop),
+      expect(
+          tester.getTopLeft(lowBar).dy, lessThan(tester.getTopLeft(medBar).dy),
           reason: 'low-confidence row should render above medium');
-      expect(medTop, lessThan(highTop),
+      expect(
+          tester.getTopLeft(medBar).dy, lessThan(tester.getTopLeft(highBar).dy),
           reason: 'medium-confidence row should render above high');
     });
+  });
 
-    testWidgets('renders all three confidence pills in a mixed list',
+  group('ParseConfidenceReview — original line expand/collapse', () {
+    testWidgets('tapping a row with a genuinely different original shows it',
         (tester) async {
+      const originalText = '2dl vetemjöl siktat';
       final ingredients = [
-        _ingredient(name: 'a', confidence: ParseConfidence.high),
-        _ingredient(name: 'b', confidence: ParseConfidence.medium),
-        _ingredient(name: 'c', confidence: ParseConfidence.low),
+        _ingredient(
+          name: 'vetemjöl',
+          confidence: ParseConfidence.medium,
+          originalLine: originalText,
+          quantity: '2',
+          unit: 'dl',
+        ),
       ];
 
       await tester.pumpWidget(
         _wrap(ParseConfidenceReview(ingredients: ingredients)),
       );
+
+      expect(find.textContaining(originalText), findsNothing);
+
+      await tester.tap(find.text('2 dl vetemjöl'));
       await tester.pumpAndSettle();
 
-      expect(_pillContainer(ParseConfidence.high), findsOneWidget);
-      expect(_pillContainer(ParseConfidence.medium), findsOneWidget);
-      expect(_pillContainer(ParseConfidence.low), findsOneWidget);
+      expect(find.textContaining(originalText), findsOneWidget);
     });
 
-    testWidgets('warns about low-confidence count in header subtitle',
+    testWidgets(
+        'whitespace-only difference does NOT show the chevron or original line',
         (tester) async {
+      // "100g smör" vs "100 g smör" — differ only by a space → no expand arrow.
       final ingredients = [
-        _ingredient(name: 'a', confidence: ParseConfidence.low),
-        _ingredient(name: 'b', confidence: ParseConfidence.low),
-        _ingredient(name: 'c', confidence: ParseConfidence.high),
+        _ingredient(
+          name: 'smör',
+          confidence: ParseConfidence.high,
+          originalLine: '100g smör',
+          quantity: '100',
+          unit: 'g',
+        ),
       ];
 
       await tester.pumpWidget(
@@ -256,13 +286,150 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Read the expected subtitle from l10n rather than hardcoding Swedish
+      // No expand chevron rendered
+      expect(find.byIcon(Icons.keyboard_arrow_down), findsNothing);
+      expect(find.byIcon(Icons.keyboard_arrow_up), findsNothing);
+
+      // Tapping the row still does nothing
+      await tester.tap(find.text('100 g smör'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('100g smör'), findsNothing);
+    });
+
+    testWidgets('non-whitespace different original DOES show the chevron',
+        (tester) async {
+      final ingredients = [
+        _ingredient(
+          name: 'mjölk',
+          confidence: ParseConfidence.medium,
+          originalLine: '3dl helmjölk',
+          quantity: '3',
+          unit: 'dl',
+        ),
+      ];
+
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(ingredients: ingredients)),
+      );
+      await tester.pumpAndSettle();
+
+      // Chevron is visible before expand
+      expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);
+    });
+  });
+
+  group('Accessibility — semantics label includes confidence word', () {
+    testWidgets('high-confidence row semantics include confidence word',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'smör', confidence: ParseConfidence.high),
+          ],
+        )),
+      );
+      await tester.pumpAndSettle();
+
       final l10n = AppLocalizations.of(
           tester.element(find.byType(ParseConfidenceReview)));
+      final expectedLabel = l10n.a11yIngredientWithConfidence(
+        'smör',
+        l10n.a11yConfidenceHigh,
+      );
+
       expect(
-        find.textContaining(l10n.parseConfidenceLowCountSubtitle(2)),
+        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        findsOneWidget,
+        reason: 'Row semantics must include both name and confidence word',
+      );
+
+      handle.dispose();
+    });
+
+    testWidgets('low-confidence row semantics include confidence word',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'mystisk sak', confidence: ParseConfidence.low),
+          ],
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)));
+      final expectedLabel = l10n.a11yIngredientWithConfidence(
+        'mystisk sak',
+        l10n.a11yConfidenceLow,
+      );
+
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
         findsOneWidget,
       );
+
+      handle.dispose();
+    });
+
+    testWidgets('medium-confidence row semantics include confidence word',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
+          ],
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)));
+      final expectedLabel = l10n.a11yIngredientWithConfidence(
+        'mjölk',
+        l10n.a11yConfidenceMedium,
+      );
+
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        findsOneWidget,
+      );
+
+      handle.dispose();
+    });
+
+    testWidgets('failed-confidence row semantics include confidence word',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+
+      await tester.pumpWidget(
+        _wrap(ParseConfidenceReview(
+          ingredients: [
+            _ingredient(name: 'okänd sak', confidence: ParseConfidence.failed),
+          ],
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)));
+      final expectedLabel = l10n.a11yIngredientWithConfidence(
+        'okänd sak',
+        l10n.a11yConfidenceFailed,
+      );
+
+      expect(
+        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        findsOneWidget,
+      );
+
+      handle.dispose();
     });
   });
 }
