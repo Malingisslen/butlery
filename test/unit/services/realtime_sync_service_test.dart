@@ -719,6 +719,81 @@ void main() {
     });
   });
 
+  group('conflictStream (BUT-1265 live delivery end-to-end)', () {
+    /// BUT-1265: end-to-end proof that a REAL losing-local conflict — driven
+    /// through `updateResource` → `shouldResolveConflict` → the real
+    /// `resolveConflict` path — delivers exactly one `ConflictEvent` to a
+    /// subscriber that attached BEFORE the conflicting write. The other
+    /// conflict tests call `resolveConflict` directly (no stream) or assert
+    /// only the cache side effect (line "cache reflects the remote winner");
+    /// none verify the broadcast actually reaches a live `conflictStream`
+    /// listener. A regression that severed the `onConflict` sink wiring (the
+    /// `ConflictResolutionModule` → `_conflictController.add` hop in
+    /// `_initializeModules`) would leave the ConflictBanner silent while every
+    /// existing test stayed green. We subscribe first, drive a remote-wins
+    /// conflict, and assert exactly one event with `chosenStrategy ==
+    /// remoteWon` lands on the live subscriber — proving the resolver-to-UI
+    /// pipe is intact, not just the resolver's return value.
+    test(
+        'delivers exactly one remoteWon ConflictEvent to a pre-subscribed listener',
+        () async {
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        final events = <ConflictEvent>[];
+        // Subscribe BEFORE the conflicting write — this is the contract the
+        // banner relies on (the subscriber is live when the conflict resolves).
+        final sub = service.conflictStream.listen(events.add);
+
+        // Warm the conflict-tracking window with a first owner write so the
+        // next write enters the conflict-resolution branch.
+        final initial = _buildResource(
+          id: 'cs1',
+          ownerId: 'user_owner',
+          editCount: 1,
+          lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+        );
+        await _seed(fake, initial);
+        await service.updateResource(initial);
+
+        // A collaborator overwrites the doc with a HIGHER editCount and a
+        // timestamp strictly after our recorded local update, so the resolver
+        // picks the remote (the local edit loses).
+        final collaborator = _buildResource(
+          id: 'cs1',
+          ownerId: 'user_owner',
+          editCount: 9,
+          lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+        );
+        await _seed(fake, collaborator);
+
+        // Our losing local edit: lower editCount than the live remote.
+        final losingLocal = _buildResource(
+          id: 'cs1',
+          ownerId: 'user_owner',
+          editCount: 2,
+          lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+        );
+
+        await service.updateResource(losingLocal);
+
+        // Let the broadcast event drain to the live subscriber.
+        await Future<void>.delayed(Duration.zero);
+        await sub.cancel();
+
+        expect(events, hasLength(1),
+            reason: 'exactly one conflict resolved → exactly one event '
+                'on the live conflictStream subscriber');
+        expect(
+            events.single.chosenStrategy, ConflictResolutionStrategy.remoteWon,
+            reason: 'remote had the higher editCount, so the resolver must '
+                'report the local edit lost (remoteWon)');
+        expect(events.single.docId, 'cs1');
+        expect(events.single.remoteValue.editCount, 9,
+            reason: 'the winning remote (editCount 9) rides on the event so '
+                'the banner can show what overwrote the local edit');
+      });
+    });
+  });
+
   group('fetchLatestResource', () {
     /// Proves: error-swallowing contract — returns null, does not throw. UI
     /// callers depend on this; a regression that rethrew would surface as a
