@@ -248,17 +248,24 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       final shouldResolveConflict =
           await _conflictModule.shouldResolveConflict(resource);
 
+      // Track which version actually reached Firestore so the local cache
+      // stays coherent with persisted state. When conflict resolution picks
+      // the REMOTE (the local edit lost), caching `resource` would leave
+      // getCachedResource handing out the user's discarded edit while
+      // Firestore holds the winner — a silent cache/disk divergence that
+      // confuses any read-modify-write keyed off the cache.
+      final T persisted;
       if (shouldResolveConflict) {
         final remote = await _parserModule.getLatestResource<T>(resource.id);
-        final resolvedResource =
-            await _conflictModule.resolveConflict<T>(resource, remote);
-        await _conflictModule.performUpdate(docRef, resolvedResource);
+        persisted = await _conflictModule.resolveConflict<T>(resource, remote);
+        await _conflictModule.performUpdate(docRef, persisted);
       } else {
+        persisted = resource;
         await _conflictModule.performUpdate(docRef, resource);
       }
 
-      // Update local cache and tracking
-      _cachedResources[resource.id] = resource;
+      // Update local cache and tracking with the version that won.
+      _cachedResources[resource.id] = persisted;
       _conflictModule.recordLocalUpdate(resource.id);
 
       AppLogger.success('✅ Resurs uppdaterad: ${resource.id}');

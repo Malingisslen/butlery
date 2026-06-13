@@ -27,6 +27,7 @@ library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -334,6 +335,64 @@ void main() {
         service.getCachedResource<RealtimeRecipe>('r3')!.editCount,
         5,
       );
+    });
+
+    /// Proves the cache-coherence guarantee on the conflict-LOSS path: when
+    /// conflict resolution picks the REMOTE (the local edit lost), the local
+    /// cache must reflect the persisted remote winner — NOT the discarded
+    /// local copy. A regression that caches the local loser would make
+    /// `getCachedResource` hand out an edit that never reached Firestore,
+    /// silently diverging cache from disk and corrupting any read-modify-write
+    /// keyed off the cache.
+    test('cache reflects the remote winner after a conflict the local lost',
+        () async {
+      await withClock(Clock.fixed(DateTime(2026, 4, 1, 12)), () async {
+        // Seed an initial doc and warm the conflict-tracking window by doing a
+        // first owner write (this calls recordLocalUpdate internally).
+        final initial = _buildResource(
+          id: 'conf1',
+          ownerId: 'user_owner',
+          editCount: 1,
+          lastEditedAt: DateTime(2026, 4, 1, 11, 59),
+        );
+        await _seed(fake, initial);
+        await service.updateResource(initial);
+
+        // A collaborator overwrites the doc with a HIGHER editCount and a
+        // timestamp strictly after our recorded local update — so the next
+        // write enters conflict resolution and the remote wins.
+        final collaborator = _buildResource(
+          id: 'conf1',
+          ownerId: 'user_owner',
+          editCount: 9,
+          lastEditedAt: DateTime(2026, 4, 1, 12, 0, 1),
+        );
+        await _seed(fake, collaborator);
+
+        // Our losing local edit: same id, LOWER editCount than the remote.
+        final losingLocal = _buildResource(
+          id: 'conf1',
+          ownerId: 'user_owner',
+          editCount: 2,
+          lastEditedAt: DateTime(2026, 4, 1, 11, 59, 30),
+        );
+
+        await service.updateResource(losingLocal);
+
+        // Disk holds the remote winner (editCount 9), unchanged by our loss.
+        final snap =
+            await fake.collection('realtime_resources').doc('conf1').get();
+        expect(snap.data()!['editCount'], 9,
+            reason: 'remote won → Firestore keeps the collaborator version');
+
+        // Cache must match the persisted winner, not our discarded edit (2).
+        expect(
+          service.getCachedResource<RealtimeRecipe>('conf1')!.editCount,
+          9,
+          reason: 'cache must mirror the persisted remote winner, '
+              'not the local edit that lost the conflict',
+        );
+      });
     });
 
     /// Proves: errors are surfaced through the errorStream pipeline (not
