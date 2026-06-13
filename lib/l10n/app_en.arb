@@ -919,6 +919,7 @@
   "commonEditName": "Edit name",
   "commonErrorOccurred": "An error occurred",
   "commonContinue": "Continue",
+  "commonMore": "More",
   "commonNext": "Next",
   "commonPrevious": "Previous",
   "commonSkip": "Skip",
@@ -5566,6 +5567,22 @@
   "@conflictBannerDismiss": {"description": "BUT-1031: dismiss action on the conflict banner."},
   "a11yConflictBannerDismiss": "Dismiss conflict notification",
   "@a11yConflictBannerDismiss": {"description": "BUT-1031: a11y label for the conflict banner dismiss action."},
+  "conflictDiffTitle": "What changed",
+  "@conflictDiffTitle": {"description": "BUT-1163: title of the conflict diff view."},
+  "conflictDiffLocalLabel": "My version",
+  "@conflictDiffLocalLabel": {"description": "BUT-1163: label for the local snapshot column in the conflict diff."},
+  "conflictDiffRemoteLabel": "Their version",
+  "@conflictDiffRemoteLabel": {"description": "BUT-1163: label for the remote snapshot column in the conflict diff."},
+  "conflictDiffKeepMine": "Keep my version",
+  "@conflictDiffKeepMine": {"description": "BUT-1163: button that re-applies the local version after a lost conflict."},
+  "conflictDiffKeptToast": "Your version was saved",
+  "@conflictDiffKeptToast": {"description": "BUT-1163: success toast after re-applying the local version."},
+  "conflictDiffKeepFailed": "Couldn't save your version",
+  "@conflictDiffKeepFailed": {"description": "BUT-1163: error toast when re-applying the local version fails."},
+  "conflictDiffNoChanges": "No field changes to show — the versions are identical.",
+  "@conflictDiffNoChanges": {"description": "BUT-1163: empty state when the two snapshots are identical."},
+  "conflictDiffEmptyValue": "(empty)",
+  "@conflictDiffEmptyValue": {"description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."},
   "privacyEmailSubject": "Privacy inquiry",
   "unshareRecipeTitle": "Stop sharing recipe?",
   "unshareRecipeConfirm": "The recipe \"{title}\" will be removed from all groups it was shared with.",
@@ -9226,6 +9243,38 @@
   "weeklyMenuChipsRefinePrompt": "Refine your prompt",
   "weeklyMenuClearWeekAction": "Clear week",
   "weeklyMenuClearedUndo": "Week cleared",
+  "weeklyMenuCopyToNextAction": "Copy this week → next week",
+  "weeklyMenuCopyToNextConfirmTitle": "Copy this week?",
+  "weeklyMenuCopyToNextConfirmBody": "The recipes in this week will be copied to next week. Your current plan for next week is kept.",
+  "weeklyMenuCopyToNextResult": "{count, plural, =0{Nothing copied – it's all already on next week} =1{1 recipe copied to next week} other{{count} recipes copied to next week}}",
+  "@weeklyMenuCopyToNextResult": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weeklyMenuCopyToNextFailed": "Couldn't copy the week",
+  "weeklyMenuSelectAction": "Select several to move",
+  "weeklyMenuSelectionCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@weeklyMenuSelectionCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weeklyMenuMoveSelectionAction": "Move",
+  "weeklyMenuMoveSheetTitle": "Move to",
+  "weeklyMenuMovedResult": "{count, plural, =0{Nothing moved} =1{1 recipe moved} other{{count} recipes moved}}",
+  "@weeklyMenuMovedResult": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weeklyMenuMoveFailed": "Couldn't move the recipes",
+  "a11yWeeklyMenuSelectEntry": "Select {recipe} to move",
+  "@a11yWeeklyMenuSelectEntry": {
+    "placeholders": {
+      "recipe": {"type": "String"}
+    }
+  },
 
   "pantrySectionExpiring": "Expiring soon",
   "pantrySectionFridge": "Fridge",

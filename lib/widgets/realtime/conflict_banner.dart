@@ -21,6 +21,7 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/views/realtime/conflict_diff_view.dart';
 
 /// Listens to the realtime sync service's [conflictStream] and renders a
 /// [MaterialBanner] for the most recent event until the user dismisses it.
@@ -32,8 +33,10 @@ class ConflictBanner extends StatefulWidget {
   /// events for other documents are ignored.
   final String? filterDocId;
 
-  /// Optional callback for the "View what changed" diff view — null hides the
-  /// secondary action until the diff UI ships (separate follow-up).
+  /// Optional override for the "View what changed" action. When null, the
+  /// banner opens its built-in [ConflictDiffView] for the active event
+  /// (BUT-1163). Provide a callback only to intercept the navigation (e.g. a
+  /// surface that wants to route differently or run a test spy).
   final VoidCallback? onViewChange;
 
   const ConflictBanner({
@@ -81,6 +84,18 @@ class _ConflictBannerState extends State<ConflictBanner> {
     });
   }
 
+  /// Open the diff view for the active conflict. A caller-supplied
+  /// [ConflictBanner.onViewChange] takes precedence so a surface can intercept;
+  /// otherwise the banner navigates to its built-in [ConflictDiffView].
+  void _onViewChange(ConflictEvent event) {
+    final override = widget.onViewChange;
+    if (override != null) {
+      override();
+      return;
+    }
+    ConflictDiffView.show(context, event);
+  }
+
   @override
   Widget build(BuildContext context) {
     final event = _activeEvent;
@@ -126,13 +141,11 @@ class _ConflictBannerState extends State<ConflictBanner> {
                 ),
               ),
             ),
-            if (widget.onViewChange != null) ...[
-              TextButton(
-                onPressed: widget.onViewChange,
-                child: Text(context.l10n.commonView),
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-            ],
+            TextButton(
+              onPressed: () => _onViewChange(event),
+              child: Text(context.l10n.commonView),
+            ),
+            const SizedBox(width: AppDimensions.spacingS),
             IconButton(
               tooltip: context.l10n.a11yConflictBannerDismiss,
               icon: const Icon(Icons.close),

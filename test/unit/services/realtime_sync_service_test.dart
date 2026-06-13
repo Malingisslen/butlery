@@ -372,6 +372,60 @@ void main() {
     });
   });
 
+  group('recoverLocalVersion (BUT-1163 conflict recovery)', () {
+    /// Proves the core of the BUT-1163 fix: when a local version that LOST a
+    /// conflict is recovered, it must be written back with an editCount that
+    /// BEATS the current remote — not the stale (losing) editCount it carried.
+    /// Otherwise the next concurrent edit would silently discard it again.
+    test('writes the local content back with editCount = remote.editCount + 1',
+        () async {
+      // Remote currently sits at editCount 9 (it won the conflict).
+      final remote = _buildResource(
+        id: 'rec1',
+        ownerId: 'user_owner',
+        editCount: 9,
+        lastEditedAt: DateTime(2026, 3, 1),
+      );
+      await _seed(fake, remote);
+
+      // The local snapshot the user is recovering carries the LOSING count (4).
+      final losingLocal = _buildResource(
+        id: 'rec1',
+        ownerId: 'user_owner',
+        editCount: 4,
+        lastEditedAt: DateTime(2026, 2, 1),
+      );
+
+      await service.recoverLocalVersion(losingLocal);
+
+      final snap =
+          await fake.collection('realtime_resources').doc('rec1').get();
+      expect(snap.data()!['editCount'], 10,
+          reason: 'recovered version must outrank the remote that beat it '
+              '(9 + 1), not re-persist its own stale 4');
+    });
+
+    /// Proves the fallback path: if the remote can't be read, the recovery
+    /// still bumps the local snapshot's own counter rather than regressing it.
+    test('bumps the local counter when no remote exists to compare against',
+        () async {
+      final local = _buildResource(
+        id: 'rec2',
+        ownerId: 'user_owner',
+        editCount: 3,
+      );
+      // No seed → getLatestResource throws documentNotFound, caught internally.
+
+      await service.recoverLocalVersion(local);
+
+      final snap =
+          await fake.collection('realtime_resources').doc('rec2').get();
+      expect(snap.data()!['editCount'], 4,
+          reason: 'no remote to beat → bump the local snapshot (3 + 1), '
+              'never write back the un-incremented 3');
+    });
+  });
+
   group('deleteResource', () {
     /// Proves: auth gate fires before any Firestore touch.
     test('throws permissionDenied when not logged in', () async {

@@ -3,7 +3,8 @@
 ///
 /// The banner subscribes to [RealtimeSyncService.conflictStream], filters by an
 /// optional [ConflictBanner.filterDocId], renders a localized message, exposes a
-/// "View" action only when [ConflictBanner.onViewChange] is non-null, and
+/// "View" action for the active event (BUT-1163: self-wired to the built-in
+/// diff view, with [ConflictBanner.onViewChange] as an optional override), and
 /// dismisses on the close button. A broken subscription, a wrong filter, or a
 /// missing l10n key would otherwise ship silently — these tests pin that
 /// contract.
@@ -133,21 +134,22 @@ void main() {
     expect(find.text(message), findsNothing);
   });
 
-  testWidgets('View action is hidden when onViewChange is null',
-      (tester) async {
+  testWidgets(
+      'View action is always shown for an active event (BUT-1163: built-in '
+      'diff view, no callback required)', (tester) async {
     await tester.pumpWidget(harness());
     await tester.pump();
 
     conflicts.add(_event());
     await tester.pumpAndSettle();
 
-    // The banner itself must be visible — otherwise the absent View button
-    // would be a false pass.
     expect(find.text(message), findsOneWidget);
-    expect(find.widgetWithText(TextButton, viewLabel), findsNothing);
+    // The banner now self-wires navigation to ConflictDiffView, so the View
+    // action no longer depends on an injected onViewChange callback.
+    expect(find.widgetWithText(TextButton, viewLabel), findsOneWidget);
   });
 
-  testWidgets('View action appears and fires when onViewChange is provided',
+  testWidgets('onViewChange override intercepts the View action when provided',
       (tester) async {
     var tapped = 0;
     await tester.pumpWidget(harness(onViewChange: () => tapped++));

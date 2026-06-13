@@ -1359,6 +1359,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonContinue => 'Fortsätt';
 
   @override
+  String get commonMore => 'Mer';
+
+  @override
   String get commonNext => 'Nästa';
 
   @override
@@ -8253,6 +8256,31 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yConflictBannerDismiss => 'Stäng konfliktnotis';
 
   @override
+  String get conflictDiffTitle => 'Vad ändrades';
+
+  @override
+  String get conflictDiffLocalLabel => 'Min version';
+
+  @override
+  String get conflictDiffRemoteLabel => 'Deras version';
+
+  @override
+  String get conflictDiffKeepMine => 'Behåll min version';
+
+  @override
+  String get conflictDiffKeptToast => 'Din version sparades';
+
+  @override
+  String get conflictDiffKeepFailed => 'Kunde inte spara din version';
+
+  @override
+  String get conflictDiffNoChanges =>
+      'Inga fältändringar att visa — versionerna är identiska.';
+
+  @override
+  String get conflictDiffEmptyValue => '(tomt)';
+
+  @override
   String get privacyEmailSubject => 'Integritetsfråga';
 
   @override
@@ -13644,6 +13672,71 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get weeklyMenuClearedUndo => 'Veckan rensad';
+
+  @override
+  String get weeklyMenuCopyToNextAction => 'Kopiera denna vecka → nästa vecka';
+
+  @override
+  String get weeklyMenuCopyToNextConfirmTitle => 'Kopiera veckan?';
+
+  @override
+  String get weeklyMenuCopyToNextConfirmBody =>
+      'Recepten i den här veckan kopieras till nästa vecka. Din nuvarande planering för nästa vecka behålls.';
+
+  @override
+  String weeklyMenuCopyToNextResult(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept kopierade till nästa vecka',
+      one: '1 recept kopierat till nästa vecka',
+      zero: 'Inget kopierades – allt finns redan nästa vecka',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuCopyToNextFailed => 'Kunde inte kopiera veckan';
+
+  @override
+  String get weeklyMenuSelectAction => 'Välj flera att flytta';
+
+  @override
+  String weeklyMenuSelectionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count valda',
+      one: '1 vald',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuMoveSelectionAction => 'Flytta';
+
+  @override
+  String get weeklyMenuMoveSheetTitle => 'Flytta till';
+
+  @override
+  String weeklyMenuMovedResult(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept flyttade',
+      one: '1 recept flyttat',
+      zero: 'Inget flyttades',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuMoveFailed => 'Kunde inte flytta recepten';
+
+  @override
+  String a11yWeeklyMenuSelectEntry(String recipe) {
+    return 'Välj $recipe för att flytta';
+  }
 
   @override
   String get pantrySectionExpiring => 'Går ut snart';

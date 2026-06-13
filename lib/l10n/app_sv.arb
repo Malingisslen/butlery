@@ -925,6 +925,7 @@
   "commonEditName": "Redigera namn",
   "commonErrorOccurred": "Ett fel uppstod",
   "commonContinue": "Fortsätt",
+  "commonMore": "Mer",
   "commonNext": "Nästa",
   "commonPrevious": "Föregående",
   "commonSkip": "Hoppa över",
@@ -5577,6 +5578,22 @@
   "@conflictBannerDismiss": {"description": "BUT-1031: dismiss action on the conflict banner."},
   "a11yConflictBannerDismiss": "Stäng konfliktnotis",
   "@a11yConflictBannerDismiss": {"description": "BUT-1031: a11y label for the conflict banner dismiss action."},
+  "conflictDiffTitle": "Vad ändrades",
+  "@conflictDiffTitle": {"description": "BUT-1163: title of the conflict diff view."},
+  "conflictDiffLocalLabel": "Min version",
+  "@conflictDiffLocalLabel": {"description": "BUT-1163: label for the local snapshot column in the conflict diff."},
+  "conflictDiffRemoteLabel": "Deras version",
+  "@conflictDiffRemoteLabel": {"description": "BUT-1163: label for the remote snapshot column in the conflict diff."},
+  "conflictDiffKeepMine": "Behåll min version",
+  "@conflictDiffKeepMine": {"description": "BUT-1163: button that re-applies the local version after a lost conflict."},
+  "conflictDiffKeptToast": "Din version sparades",
+  "@conflictDiffKeptToast": {"description": "BUT-1163: success toast after re-applying the local version."},
+  "conflictDiffKeepFailed": "Kunde inte spara din version",
+  "@conflictDiffKeepFailed": {"description": "BUT-1163: error toast when re-applying the local version fails."},
+  "conflictDiffNoChanges": "Inga fältändringar att visa — versionerna är identiska.",
+  "@conflictDiffNoChanges": {"description": "BUT-1163: empty state when the two snapshots are identical."},
+  "conflictDiffEmptyValue": "(tomt)",
+  "@conflictDiffEmptyValue": {"description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."},
   "privacyEmailSubject": "Integritetsfråga",
   "unshareRecipeTitle": "Sluta dela recept?",
   "unshareRecipeConfirm": "Receptet \"{title}\" tas bort från alla grupper det delats med.",
@@ -9253,6 +9270,38 @@
   "weeklyMenuChipsRefinePrompt": "Förfina prompten",
   "weeklyMenuClearWeekAction": "Rensa veckan",
   "weeklyMenuClearedUndo": "Veckan rensad",
+  "weeklyMenuCopyToNextAction": "Kopiera denna vecka → nästa vecka",
+  "weeklyMenuCopyToNextConfirmTitle": "Kopiera veckan?",
+  "weeklyMenuCopyToNextConfirmBody": "Recepten i den här veckan kopieras till nästa vecka. Din nuvarande planering för nästa vecka behålls.",
+  "weeklyMenuCopyToNextResult": "{count, plural, =0{Inget kopierades – allt finns redan nästa vecka} =1{1 recept kopierat till nästa vecka} other{{count} recept kopierade till nästa vecka}}",
+  "@weeklyMenuCopyToNextResult": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weeklyMenuCopyToNextFailed": "Kunde inte kopiera veckan",
+  "weeklyMenuSelectAction": "Välj flera att flytta",
+  "weeklyMenuSelectionCount": "{count, plural, =1{1 vald} other{{count} valda}}",
+  "@weeklyMenuSelectionCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weeklyMenuMoveSelectionAction": "Flytta",
+  "weeklyMenuMoveSheetTitle": "Flytta till",
+  "weeklyMenuMovedResult": "{count, plural, =0{Inget flyttades} =1{1 recept flyttat} other{{count} recept flyttade}}",
+  "@weeklyMenuMovedResult": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "weeklyMenuMoveFailed": "Kunde inte flytta recepten",
+  "a11yWeeklyMenuSelectEntry": "Välj {recipe} för att flytta",
+  "@a11yWeeklyMenuSelectEntry": {
+    "placeholders": {
+      "recipe": {"type": "String"}
+    }
+  },
 
   "pantrySectionExpiring": "Går ut snart",
   "pantrySectionFridge": "Kylskåp",

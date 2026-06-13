@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -195,7 +196,11 @@ class RecipeCacheModule {
           // Call async method without awaiting (fire-and-forget)
           _updateCachedRecipe(recipe, source);
         },
-        onRecipeRemoved: _removeCachedRecipe,
+        onRecipeRemoved: (recipeId, source) {
+          // Call async method without awaiting (fire-and-forget); the method
+          // owns its own error handling so a failed cache delete can't escape.
+          _removeCachedRecipe(recipeId, source);
+        },
         onSyncError: _handleSyncError,
         firestore: firestore,
         onSyncStatusChanged: (hasPendingWrites, isFromCache) {
@@ -256,10 +261,12 @@ class RecipeCacheModule {
   }
 
   /// Remove cached recipe from Firebase change
-  void _removeCachedRecipe(String recipeId, String source) {
+  Future<void> _removeCachedRecipe(String recipeId, String source) async {
     try {
-      // Remove from cache using CacheOperations
-      removeRecipeFromCache(recipeId);
+      // Await the cache delete so a failure (CacheOperations rethrows) is
+      // caught here instead of escaping as an unhandled async exception, and
+      // so the callback/notify below only fire after the delete settles.
+      await removeRecipeFromCache(recipeId);
 
       // BUG-003: Call direct removal callback (for web where cache is stubbed)
       _onRecipeRemoved?.call(recipeId);
@@ -274,6 +281,23 @@ class RecipeCacheModule {
     } catch (e) {
       AppLogger.error('Error removing cached recipe: $e');
     }
+  }
+
+  /// BUT-1256: Test seam exposing the sync→cache update path so the
+  /// direct-callback single-notify contract (BUT-1252) can be verified without
+  /// a live Firestore stream. Drives the exact code FirebaseSyncManager invokes
+  /// on a recipe add/modify.
+  @visibleForTesting
+  Future<void> debugApplyRecipeUpdate(Recipe recipe, {String source = 'test'}) {
+    return _updateCachedRecipe(recipe, source);
+  }
+
+  /// BUT-1256: Test seam for the sync→cache removal path. See
+  /// [debugApplyRecipeUpdate].
+  @visibleForTesting
+  Future<void> debugApplyRecipeRemoval(String recipeId,
+      {String source = 'test'}) {
+    return _removeCachedRecipe(recipeId, source);
   }
 
   /// Handle sync errors

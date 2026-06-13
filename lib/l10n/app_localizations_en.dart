@@ -1358,6 +1358,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonContinue => 'Continue';
 
   @override
+  String get commonMore => 'More';
+
+  @override
   String get commonNext => 'Next';
 
   @override
@@ -8239,6 +8242,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yConflictBannerDismiss => 'Dismiss conflict notification';
 
   @override
+  String get conflictDiffTitle => 'What changed';
+
+  @override
+  String get conflictDiffLocalLabel => 'My version';
+
+  @override
+  String get conflictDiffRemoteLabel => 'Their version';
+
+  @override
+  String get conflictDiffKeepMine => 'Keep my version';
+
+  @override
+  String get conflictDiffKeptToast => 'Your version was saved';
+
+  @override
+  String get conflictDiffKeepFailed => 'Couldn\'t save your version';
+
+  @override
+  String get conflictDiffNoChanges =>
+      'No field changes to show — the versions are identical.';
+
+  @override
+  String get conflictDiffEmptyValue => '(empty)';
+
+  @override
   String get privacyEmailSubject => 'Privacy inquiry';
 
   @override
@@ -13612,6 +13640,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weeklyMenuClearedUndo => 'Week cleared';
+
+  @override
+  String get weeklyMenuCopyToNextAction => 'Copy this week → next week';
+
+  @override
+  String get weeklyMenuCopyToNextConfirmTitle => 'Copy this week?';
+
+  @override
+  String get weeklyMenuCopyToNextConfirmBody =>
+      'The recipes in this week will be copied to next week. Your current plan for next week is kept.';
+
+  @override
+  String weeklyMenuCopyToNextResult(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes copied to next week',
+      one: '1 recipe copied to next week',
+      zero: 'Nothing copied – it\'s all already on next week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuCopyToNextFailed => 'Couldn\'t copy the week';
+
+  @override
+  String get weeklyMenuSelectAction => 'Select several to move';
+
+  @override
+  String weeklyMenuSelectionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuMoveSelectionAction => 'Move';
+
+  @override
+  String get weeklyMenuMoveSheetTitle => 'Move to';
+
+  @override
+  String weeklyMenuMovedResult(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes moved',
+      one: '1 recipe moved',
+      zero: 'Nothing moved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weeklyMenuMoveFailed => 'Couldn\'t move the recipes';
+
+  @override
+  String a11yWeeklyMenuSelectEntry(String recipe) {
+    return 'Select $recipe to move';
+  }
 
   @override
   String get pantrySectionExpiring => 'Expiring soon';

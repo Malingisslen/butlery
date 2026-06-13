@@ -2,6 +2,7 @@
 /// Provides realtime document streams, intelligent conflict resolution, and connection management.
 
 import 'dart:async';
+import 'package:clock/clock.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -277,6 +278,40 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       }
       rethrow;
     }
+  }
+
+  /// BUT-1163: re-apply a local snapshot that LOST a conflict so it wins the
+  /// next round, used by the conflict-recovery screen ("Behåll min version").
+  ///
+  /// Re-persisting the captured snapshot verbatim would write back its stale
+  /// `editCount` (which was <= the remote's — that's *why* it lost). The very
+  /// next concurrent edit would then compare against that stale counter and
+  /// silently discard the just-recovered version again. So we rebuild the
+  /// local content on top of the latest remote's `editCount + 1` and a fresh
+  /// `lastEditedAt`, making the recovered version legitimately win subsequent
+  /// `resolveConflict` comparisons.
+  Future<void> recoverLocalVersion<T extends RealtimeResource>(T local) async {
+    // Base the bump on the current remote so the recovered version outranks
+    // whatever overwrote it. If the remote can't be read, fall back to the
+    // local snapshot's own counter — still bumped below, never regressed.
+    int baseEditCount = local.editCount;
+    try {
+      final remote = await _parserModule.getLatestResource<T>(local.id);
+      if (remote.editCount > baseEditCount) {
+        baseEditCount = remote.editCount;
+      }
+    } catch (e) {
+      AppLogger.warning(
+          '⚠️ Kunde inte hämta remote-version vid återställning ${local.id}: $e');
+    }
+
+    final recovered = local.copyWithMetadata(
+      editCount: baseEditCount + 1,
+      lastEditedAt: clock.now(),
+      lastEditedBy: _currentUserId ?? local.lastEditedBy,
+    ) as T;
+
+    await updateResource<T>(recovered);
   }
 
   /// Ta bort en realtidsresurs

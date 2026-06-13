@@ -2342,6 +2342,12 @@ abstract class AppLocalizations {
   /// **'Fortsätt'**
   String get commonContinue;
 
+  /// No description provided for @commonMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mer'**
+  String get commonMore;
+
   /// No description provided for @commonNext.
   ///
   /// In sv, this message translates to:
@@ -13911,6 +13917,54 @@ abstract class AppLocalizations {
   /// **'Stäng konfliktnotis'**
   String get a11yConflictBannerDismiss;
 
+  /// BUT-1163: title of the conflict diff view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad ändrades'**
+  String get conflictDiffTitle;
+
+  /// BUT-1163: label for the local snapshot column in the conflict diff.
+  ///
+  /// In sv, this message translates to:
+  /// **'Min version'**
+  String get conflictDiffLocalLabel;
+
+  /// BUT-1163: label for the remote snapshot column in the conflict diff.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deras version'**
+  String get conflictDiffRemoteLabel;
+
+  /// BUT-1163: button that re-applies the local version after a lost conflict.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behåll min version'**
+  String get conflictDiffKeepMine;
+
+  /// BUT-1163: success toast after re-applying the local version.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din version sparades'**
+  String get conflictDiffKeptToast;
+
+  /// BUT-1163: error toast when re-applying the local version fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara din version'**
+  String get conflictDiffKeepFailed;
+
+  /// BUT-1163: empty state when the two snapshots are identical.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga fältändringar att visa — versionerna är identiska.'**
+  String get conflictDiffNoChanges;
+
+  /// BUT-1163: placeholder shown for an empty or missing field value in the diff.
+  ///
+  /// In sv, this message translates to:
+  /// **'(tomt)'**
+  String get conflictDiffEmptyValue;
+
   /// No description provided for @privacyEmailSubject.
   ///
   /// In sv, this message translates to:
@@ -22863,6 +22917,78 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Veckan rensad'**
   String get weeklyMenuClearedUndo;
+
+  /// No description provided for @weeklyMenuCopyToNextAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera denna vecka → nästa vecka'**
+  String get weeklyMenuCopyToNextAction;
+
+  /// No description provided for @weeklyMenuCopyToNextConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera veckan?'**
+  String get weeklyMenuCopyToNextConfirmTitle;
+
+  /// No description provided for @weeklyMenuCopyToNextConfirmBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepten i den här veckan kopieras till nästa vecka. Din nuvarande planering för nästa vecka behålls.'**
+  String get weeklyMenuCopyToNextConfirmBody;
+
+  /// No description provided for @weeklyMenuCopyToNextResult.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inget kopierades – allt finns redan nästa vecka} =1{1 recept kopierat till nästa vecka} other{{count} recept kopierade till nästa vecka}}'**
+  String weeklyMenuCopyToNextResult(int count);
+
+  /// No description provided for @weeklyMenuCopyToNextFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte kopiera veckan'**
+  String get weeklyMenuCopyToNextFailed;
+
+  /// No description provided for @weeklyMenuSelectAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj flera att flytta'**
+  String get weeklyMenuSelectAction;
+
+  /// No description provided for @weeklyMenuSelectionCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vald} other{{count} valda}}'**
+  String weeklyMenuSelectionCount(int count);
+
+  /// No description provided for @weeklyMenuMoveSelectionAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta'**
+  String get weeklyMenuMoveSelectionAction;
+
+  /// No description provided for @weeklyMenuMoveSheetTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta till'**
+  String get weeklyMenuMoveSheetTitle;
+
+  /// No description provided for @weeklyMenuMovedResult.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inget flyttades} =1{1 recept flyttat} other{{count} recept flyttade}}'**
+  String weeklyMenuMovedResult(int count);
+
+  /// No description provided for @weeklyMenuMoveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte flytta recepten'**
+  String get weeklyMenuMoveFailed;
+
+  /// No description provided for @a11yWeeklyMenuSelectEntry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj {recipe} för att flytta'**
+  String a11yWeeklyMenuSelectEntry(String recipe);
 
   /// No description provided for @pantrySectionExpiring.
   ///
