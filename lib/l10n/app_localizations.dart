@@ -24153,6 +24153,72 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa originalrad för {name}'**
   String a11yToggleIngredientOriginalLine(String name);
+
+  /// BUT-1057: heading for the related-recipes section in recipe detail and edit form.
+  ///
+  /// In sv, this message translates to:
+  /// **'Relaterade recept'**
+  String get recipeRelatedSectionTitle;
+
+  /// BUT-1057: heading for the reverse-link section showing recipes that link to this one.
+  ///
+  /// In sv, this message translates to:
+  /// **'Används i'**
+  String get recipeUsedInSectionTitle;
+
+  /// BUT-1057: button label that opens the related-recipe picker in the edit form.
+  ///
+  /// In sv, this message translates to:
+  /// **'+ Länka relaterat recept'**
+  String get recipeRelatedLinkButton;
+
+  /// BUT-1057: title of the dialog for selecting recipes to link.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj relaterade recept'**
+  String get recipeRelatedPickerTitle;
+
+  /// BUT-1057: snackbar shown after a successful link operation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept länkat'**
+  String get recipeRelatedLinkSuccess;
+
+  /// BUT-1057: snackbar shown after a successful unlink operation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länk borttagen'**
+  String get recipeRelatedUnlinkSuccess;
+
+  /// BUT-1057: snackbar shown when link fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte länka receptet'**
+  String get recipeRelatedLinkError;
+
+  /// BUT-1057: snackbar shown when unlink fails.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort länken'**
+  String get recipeRelatedUnlinkError;
+
+  /// BUT-1057: screen-reader label for a related-recipe chip in the edit form.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länkat recept: {title}'**
+  String a11yRelatedRecipeChip(String title);
+
+  /// BUT-1057: screen-reader label for the X button that removes a related-recipe link.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort länk till {title}'**
+  String a11yRemoveRelatedRecipe(String title);
+
+  /// BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna relaterat recept: {title}'**
+  String a11yRelatedRecipeThumbnail(String title);
 }
 
 class _AppLocalizationsDelegate

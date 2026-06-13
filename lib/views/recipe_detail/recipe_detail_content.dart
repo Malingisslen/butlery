@@ -1,6 +1,7 @@
 // lib/views/recipe_detail/recipe_detail_content.dart
 //
 // Ingredients and instructions render inline (no tabs) for immediate visibility.
+// BUT-1057: RelatedRecipesSection and UsedInSection added below instructions.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -100,6 +102,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         _buildIngredientsSection(context),
         const SizedBox(height: AppDimensions.spacingMd),
         _buildInstructionsSection(context),
+        // BUT-1057: Related-recipe sections — hidden when empty. Lists are
+        // resolved in the viewmodel; the sections are purely presentational.
+        RelatedRecipesSection(related: viewModel.relatedRecipes),
+        UsedInSection(usedIn: viewModel.usedInRecipes),
       ],
     );
   }

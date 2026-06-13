@@ -14469,4 +14469,43 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11yToggleIngredientOriginalLine(String name) {
     return 'Visa originalrad för $name';
   }
+
+  @override
+  String get recipeRelatedSectionTitle => 'Relaterade recept';
+
+  @override
+  String get recipeUsedInSectionTitle => 'Används i';
+
+  @override
+  String get recipeRelatedLinkButton => '+ Länka relaterat recept';
+
+  @override
+  String get recipeRelatedPickerTitle => 'Välj relaterade recept';
+
+  @override
+  String get recipeRelatedLinkSuccess => 'Recept länkat';
+
+  @override
+  String get recipeRelatedUnlinkSuccess => 'Länk borttagen';
+
+  @override
+  String get recipeRelatedLinkError => 'Kunde inte länka receptet';
+
+  @override
+  String get recipeRelatedUnlinkError => 'Kunde inte ta bort länken';
+
+  @override
+  String a11yRelatedRecipeChip(String title) {
+    return 'Länkat recept: $title';
+  }
+
+  @override
+  String a11yRemoveRelatedRecipe(String title) {
+    return 'Ta bort länk till $title';
+  }
+
+  @override
+  String a11yRelatedRecipeThumbnail(String title) {
+    return 'Öppna relaterat recept: $title';
+  }
 }

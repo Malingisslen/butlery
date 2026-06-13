@@ -61,6 +61,13 @@ class RecipeFormViewModel extends ChangeNotifier
   bool _isCheckingIngredients = false;
   double? _ingredientCoverage;
 
+  /// BUT-1057: mutable, viewmodel-owned copy of the related-recipe ids.
+  /// Seeded from the initial recipe at construction, then updated
+  /// optimistically by link/unlink so the chip row refreshes immediately
+  /// (the frozen `originalRecipe` snapshot would otherwise stay stale, and
+  /// waiting on the async Firestore listener would race the UI).
+  final List<String> _relatedRecipeIds = [];
+
   late final RecipeFormState _state;
   late final RecipeCollaborativeManager _collaborativeManager;
   late final RecipeImageManager _imageManager;
@@ -133,6 +140,9 @@ class RecipeFormViewModel extends ChangeNotifier
       if (initialRecipe.imageUrls.isNotEmpty) {
         _imageManager.setUploadedImageUrls(initialRecipe.imageUrls);
       }
+
+      // BUT-1057: seed the mutable related-recipe list from the initial recipe.
+      _relatedRecipeIds.addAll(initialRecipe.core.relatedRecipeIds ?? const []);
     }
 
     // Register lifecycle observer for auto-save on app background/kill
@@ -594,6 +604,53 @@ class RecipeFormViewModel extends ChangeNotifier
     _ingredientCoverage = null;
     _isCheckingIngredients = false;
     notifyListeners();
+  }
+
+  // ── BUT-1057: related-recipe link/unlink ──────────────────────────────────
+
+  /// Current linked recipe ids (unmodifiable view of the viewmodel-owned list).
+  List<String> get relatedRecipeIds => List.unmodifiable(_relatedRecipeIds);
+
+  /// Related recipes resolved to (id, title) records for presentation.
+  /// The title is looked up via the recipe service; when the target recipe is
+  /// not in memory (e.g. a friend's recipe not loaded) the id is used as a
+  /// fallback label. Resolving here keeps the editor widget purely
+  /// presentational — it never touches the ServiceLocator.
+  List<({String id, String title})> get relatedRecipes {
+    return _relatedRecipeIds.map((id) {
+      final recipe = _recipeService.getRecipeById(id);
+      return (id: id, title: recipe?.title ?? id);
+    }).toList();
+  }
+
+  /// Creates a symmetric link between this recipe and [targetId].
+  /// On success, optimistically adds [targetId] to the local list and notifies
+  /// listeners so the chip row refreshes without a full save. On failure the
+  /// local list is left unchanged.
+  Future<bool> linkRelatedRecipe(String targetId) async {
+    final id = originalRecipe?.id;
+    if (id == null || id == targetId) return false;
+    final ok = await _recipeService.linkRecipes(id, targetId);
+    if (_disposed) return ok;
+    if (ok && !_relatedRecipeIds.contains(targetId)) {
+      _relatedRecipeIds.add(targetId);
+      notifyListeners();
+    }
+    return ok;
+  }
+
+  /// Removes the symmetric link between this recipe and [targetId].
+  /// On success, optimistically removes [targetId] from the local list and
+  /// notifies listeners. On failure the local list is left unchanged.
+  Future<bool> unlinkRelatedRecipe(String targetId) async {
+    final id = originalRecipe?.id;
+    if (id == null) return false;
+    final ok = await _recipeService.unlinkRecipes(id, targetId);
+    if (_disposed) return ok;
+    if (ok && _relatedRecipeIds.remove(targetId)) {
+      notifyListeners();
+    }
+    return ok;
   }
 
   @override

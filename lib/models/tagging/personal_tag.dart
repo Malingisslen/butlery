@@ -48,6 +48,10 @@ class PersonalTag {
   /// Rules are evaluated when recipes are saved to auto-apply this tag.
   final List<PersonalTagRule> rules;
 
+  /// BUT-648: Schema version for lazy migration on read.
+  /// Default 1 — old docs without this field are treated as v1.
+  final int schemaVersion;
+
   const PersonalTag({
     required this.id,
     required this.name,
@@ -56,6 +60,7 @@ class PersonalTag {
     this.sortOrder = 0,
     this.groupId,
     this.rules = const [],
+    this.schemaVersion = 1,
   });
 
   /// Creates a new PersonalTag with generated ID and timestamps.
@@ -104,6 +109,7 @@ class PersonalTag {
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder', defaultValue: 0),
       groupId: SerializationUtils.safeNullableString(data, 'groupId'),
       rules: _parseRules(data['rules']),
+      schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
 
@@ -134,6 +140,7 @@ class PersonalTag {
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder', defaultValue: 0),
       groupId: SerializationUtils.safeNullableString(json, 'groupId'),
       rules: _parseRules(json['rules']),
+      schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
 
@@ -148,6 +155,7 @@ class PersonalTag {
       if (groupId != null) 'groupId': groupId,
       if (rules.isNotEmpty)
         'rules': rules.map((r) => r.toEmbeddedMap()).toList(),
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -163,6 +171,7 @@ class PersonalTag {
       if (groupId != null) 'groupId': groupId,
       if (rules.isNotEmpty)
         'rules': rules.map((r) => r.toEmbeddedMap()).toList(),
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -177,6 +186,7 @@ class PersonalTag {
     String? groupId,
     List<PersonalTagRule>? rules,
     bool clearGroupId = false,
+    int? schemaVersion,
   }) {
     return PersonalTag(
       id: id ?? this.id,
@@ -186,6 +196,7 @@ class PersonalTag {
       sortOrder: sortOrder ?? this.sortOrder,
       groupId: clearGroupId ? null : (groupId ?? this.groupId),
       rules: rules ?? this.rules,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 

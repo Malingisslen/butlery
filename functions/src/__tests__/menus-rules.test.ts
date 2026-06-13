@@ -340,6 +340,32 @@ test("menus: unauthenticated client cannot write", async () => {
   );
 });
 
+// ============================================================================
+// MENUS — BUT-648 schemaVersion field (M20–M21)
+// ============================================================================
+
+// M20: ALLOW — owner can write a menu doc WITH schemaVersion: 1 (new field).
+// Proves the menus collection rules don't block the new field.
+test("menus: owner can create menu with schemaVersion: 1 (BUT-648)", async () => {
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-schema-create").set(
+      validMenuBody(OWNER_UID, { schemaVersion: 1 })
+    )
+  );
+});
+
+// M21: ALLOW — owner can update schemaVersion on an existing menu.
+// Covers the lazy-migration path where an old doc gets schemaVersion written
+// on the next save.
+test("menus: owner can update menu to add schemaVersion (BUT-648)", async () => {
+  await seedMenu("m-schema-update", validMenuBody(OWNER_UID));
+  const ctx = env.authenticatedContext(OWNER_UID);
+  await assertSucceeds(
+    ctx.firestore().doc("menus/m-schema-update").update({ schemaVersion: 1 })
+  );
+});
+
 async function run(): Promise<void> {
   console.log("menus rules tests (BUT-746 + BUT-747)");
   console.log("=====================================\n");

@@ -10297,5 +10297,64 @@
         "type": "String"
       }
     }
+  },
+  "recipeRelatedSectionTitle": "Relaterade recept",
+  "@recipeRelatedSectionTitle": {
+    "description": "BUT-1057: heading for the related-recipes section in recipe detail and edit form."
+  },
+  "recipeUsedInSectionTitle": "Används i",
+  "@recipeUsedInSectionTitle": {
+    "description": "BUT-1057: heading for the reverse-link section showing recipes that link to this one."
+  },
+  "recipeRelatedLinkButton": "+ Länka relaterat recept",
+  "@recipeRelatedLinkButton": {
+    "description": "BUT-1057: button label that opens the related-recipe picker in the edit form."
+  },
+  "recipeRelatedPickerTitle": "Välj relaterade recept",
+  "@recipeRelatedPickerTitle": {
+    "description": "BUT-1057: title of the dialog for selecting recipes to link."
+  },
+  "recipeRelatedLinkSuccess": "Recept länkat",
+  "@recipeRelatedLinkSuccess": {
+    "description": "BUT-1057: snackbar shown after a successful link operation."
+  },
+  "recipeRelatedUnlinkSuccess": "Länk borttagen",
+  "@recipeRelatedUnlinkSuccess": {
+    "description": "BUT-1057: snackbar shown after a successful unlink operation."
+  },
+  "recipeRelatedLinkError": "Kunde inte länka receptet",
+  "@recipeRelatedLinkError": {
+    "description": "BUT-1057: snackbar shown when link fails."
+  },
+  "recipeRelatedUnlinkError": "Kunde inte ta bort länken",
+  "@recipeRelatedUnlinkError": {
+    "description": "BUT-1057: snackbar shown when unlink fails."
+  },
+  "a11yRelatedRecipeChip": "Länkat recept: {title}",
+  "@a11yRelatedRecipeChip": {
+    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRemoveRelatedRecipe": "Ta bort länk till {title}",
+  "@a11yRemoveRelatedRecipe": {
+    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRelatedRecipeThumbnail": "Öppna relaterat recept: {title}",
+  "@a11yRelatedRecipeThumbnail": {
+    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

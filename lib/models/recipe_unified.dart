@@ -296,6 +296,10 @@ class RecipeCore with JsonSerializableMixin {
   /// Not persisted to Firestore - tracked silently for analytics.
   DataIntegrityStatus dataIntegrityStatus;
 
+  /// BUT-648: Schema version for lazy migration on read.
+  /// Default 1 — old docs without this field are treated as v1.
+  final int schemaVersion;
+
   /// Compute SHA256 checksum from critical recipe fields.
   /// Critical fields: id, title, ingredients, instructions.
   /// These fields define the recipe's core content and any corruption
@@ -377,6 +381,7 @@ class RecipeCore with JsonSerializableMixin {
     this.difficulty,
     this.nutritionInfo,
     this.dataIntegrityStatus = DataIntegrityStatus.unverified,
+    this.schemaVersion = 1,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
         createdAt = createdAt ?? clock.now(),
@@ -441,6 +446,7 @@ class RecipeCore with JsonSerializableMixin {
     Object? difficulty = _sentinel,
     Object? nutritionInfo = _sentinel,
     DataIntegrityStatus? dataIntegrityStatus,
+    int? schemaVersion,
   }) {
     final newTitle = title ?? this.title;
     final newIngredients = ingredients ?? this.ingredients;
@@ -546,6 +552,7 @@ class RecipeCore with JsonSerializableMixin {
           ? this.nutritionInfo
           : nutritionInfo as NutritionInfo?,
       dataIntegrityStatus: newIntegrityStatus,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -626,6 +633,7 @@ class RecipeCore with JsonSerializableMixin {
         'cuisine': cuisine,
         'difficulty': difficulty,
         'nutritionInfo': nutritionInfo?.toJson(),
+        'schemaVersion': schemaVersion,
       };
 
   Map<String, dynamic> toFirestore() => {
@@ -676,6 +684,7 @@ class RecipeCore with JsonSerializableMixin {
         'cuisine': cuisine,
         'difficulty': difficulty,
         'nutritionInfo': nutritionInfo?.toFirestore(),
+        'schemaVersion': schemaVersion,
       };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
@@ -778,6 +787,7 @@ class RecipeCore with JsonSerializableMixin {
               json['nutritionInfo'] as Map<String, dynamic>)
           : null,
       dataIntegrityStatus: integrityStatus,
+      schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
 
@@ -976,6 +986,7 @@ class RecipeCore with JsonSerializableMixin {
           utils.SerializationUtils.safeNullableString(data, 'difficulty'),
       nutritionInfo: _parseNutritionInfo(data['nutritionInfo']),
       dataIntegrityStatus: integrityStatus,
+      schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
 

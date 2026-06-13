@@ -209,6 +209,10 @@ class UnifiedShoppingList {
   /// Null for manually created lists and legacy docs.
   final String? generatedForWeek;
 
+  /// BUT-648: Schema version for lazy migration on read.
+  /// Default 1 — old docs without this field are treated as v1.
+  final int schemaVersion;
+
   /// Creates a new unified shopping list with comprehensive metadata and automatic ID generation.
   /// This constructor provides complete shopping list initialization with support for personal,
   /// collaborative, and template shopping lists. All collaborative features are optional and
@@ -254,6 +258,7 @@ class UnifiedShoppingList {
     this.autoRemoveCompleted = false,
     this.collaborativeOrigin,
     this.generatedForWeek,
+    this.schemaVersion = 1,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? clock.now(),
         updatedAt = updatedAt ?? clock.now();
@@ -424,6 +429,7 @@ class UnifiedShoppingList {
     bool? autoRemoveCompleted,
     String? collaborativeOrigin,
     String? generatedForWeek,
+    int? schemaVersion,
   }) {
     return UnifiedShoppingList(
       id: id,
@@ -448,6 +454,7 @@ class UnifiedShoppingList {
       autoRemoveCompleted: autoRemoveCompleted ?? this.autoRemoveCompleted,
       collaborativeOrigin: collaborativeOrigin ?? this.collaborativeOrigin,
       generatedForWeek: generatedForWeek ?? this.generatedForWeek,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -606,6 +613,7 @@ class UnifiedShoppingList {
       'autoRemoveCompleted': autoRemoveCompleted,
       'collaborativeOrigin': collaborativeOrigin,
       'generatedForWeek': generatedForWeek,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -637,6 +645,7 @@ class UnifiedShoppingList {
       'allowGuestEditing': allowGuestEditing,
       'autoRemoveCompleted': autoRemoveCompleted,
       'generatedForWeek': generatedForWeek,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -695,6 +704,7 @@ class UnifiedShoppingList {
           SerializationUtils.safeBool(json, 'autoRemoveCompleted'),
       generatedForWeek:
           SerializationUtils.safeNullableString(json, 'generatedForWeek'),
+      schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
 
@@ -753,6 +763,7 @@ class UnifiedShoppingList {
           SerializationUtils.safeNullableString(data, 'collaborativeOrigin'),
       generatedForWeek:
           SerializationUtils.safeNullableString(data, 'generatedForWeek'),
+      schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
 

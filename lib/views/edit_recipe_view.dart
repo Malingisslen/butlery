@@ -51,6 +51,7 @@ import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
+import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatefulWidget {
@@ -545,6 +546,17 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onChanged: viewModel.setSourceUrl,
         validator: FormValidators.recipeSourceUrl(),
       ),
+      const SizedBox(height: AppDimensions.spacingXl),
+
+      // BUT-1057: Related recipes section — link/unlink other recipes.
+      // Only shown when editing an existing recipe (originalRecipe != null).
+      if (viewModel.originalRecipe != null)
+        RelatedRecipesEditor(
+          currentRecipeId: viewModel.originalRecipe!.id,
+          relatedRecipes: viewModel.relatedRecipes,
+          onLink: viewModel.linkRelatedRecipe,
+          onUnlink: viewModel.unlinkRelatedRecipe,
+        ),
     ];
   }
 

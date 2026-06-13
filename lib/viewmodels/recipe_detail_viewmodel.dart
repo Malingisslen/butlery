@@ -164,6 +164,27 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// Exposes recipe service for sub-widgets that need social operations (e.g. rating checks).
   UnifiedRecipeService get recipeService => _recipeService;
 
+  /// BUT-1057: recipes this one links to, resolved from the in-memory list.
+  /// Ids that don't resolve (e.g. a friend's recipe not loaded) are dropped.
+  /// Resolved here so the detail sections stay purely presentational.
+  List<Recipe> get relatedRecipes {
+    final ids = _recipe.core.relatedRecipeIds;
+    if (ids == null || ids.isEmpty) return const [];
+    return ids
+        .map((id) => _recipeService.getRecipeById(id))
+        .whereType<Recipe>()
+        .toList();
+  }
+
+  /// BUT-1057: recipes that link TO this one ("Används i").
+  /// O(n) scan over the in-memory list; acceptable at current collection sizes
+  /// (a reverse-index follow-up is tracked separately).
+  List<Recipe> get usedInRecipes {
+    return _recipeService.recipes
+        .where((r) => r.core.relatedRecipeIds?.contains(_recipe.id) ?? false)
+        .toList();
+  }
+
   /// Deletion operation state for UI progress indication and interaction control.
   /// Indicates active deletion operation for UI loading indicators and interaction disabling
   /// during recipe deletion processes for optimal user experience and operation feedback.

@@ -847,5 +847,155 @@ void main() {
         expect(viewModel.timeMinutes, isNull);
       });
     });
+
+    // BUT-1057: pins the Critical regression — the viewmodel must own the
+    // related-recipe list mutably and reflect link/unlink optimistically.
+    // Reading the frozen `originalRecipe.core.relatedRecipeIds` snapshot left
+    // the chip row stale after a successful link/unlink.
+    group('Related recipes (BUT-1057)', () {
+      // Builds an editing-mode viewmodel whose initial recipe carries
+      // [relatedIds], and seeds the mock service so getRecipeById resolves
+      // titles for the related ids.
+      RecipeFormViewModel editingVm(List<String> relatedIds) {
+        final base = RecipeBuilder()
+            .withId('recipe-test-user-123-rel')
+            .withTitle('Bas')
+            .build();
+        final recipeWithRelated = base.copyWith(relatedRecipeIds: relatedIds);
+
+        // Make the related ids resolvable to titles.
+        mockRecipeService.setRecipeState(
+          recipes: [
+            recipeWithRelated,
+            RecipeBuilder().withId('r2').withTitle('Pastasås').build(),
+            RecipeBuilder().withId('r3').withTitle('Köttbullar').build(),
+          ],
+          isInitialized: true,
+          currentUserId: 'test-user-123',
+          personalOperations: mockPersonalOps,
+        );
+
+        return RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: recipeWithRelated,
+        );
+      }
+
+      test('seeds relatedRecipeIds from the initial recipe', () {
+        final vm = editingVm(const ['r2']);
+        addTearDown(vm.dispose);
+
+        expect(vm.relatedRecipeIds, ['r2']);
+      });
+
+      test('relatedRecipes resolves ids to (id, title) records', () {
+        final vm = editingVm(const ['r2', 'r3']);
+        addTearDown(vm.dispose);
+
+        expect(vm.relatedRecipes, [
+          (id: 'r2', title: 'Pastasås'),
+          (id: 'r3', title: 'Köttbullar'),
+        ]);
+      });
+
+      test('relatedRecipes falls back to the id when not in memory', () {
+        final vm = editingVm(const ['ghost']);
+        addTearDown(vm.dispose);
+
+        expect(vm.relatedRecipes, [(id: 'ghost', title: 'ghost')]);
+      });
+
+      test('linkRelatedRecipe optimistically adds the id and notifies',
+          () async {
+        final vm = editingVm(const []);
+        addTearDown(vm.dispose);
+
+        when(() =>
+                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'))
+            .thenAnswer((_) async => true);
+
+        var notified = 0;
+        vm.addListener(() => notified++);
+
+        final ok = await vm.linkRelatedRecipe('r2');
+
+        expect(ok, isTrue);
+        // The getter reflects the add immediately — the broken version read a
+        // frozen originalRecipe snapshot and stayed empty here.
+        expect(vm.relatedRecipeIds, ['r2']);
+        expect(vm.relatedRecipes, [(id: 'r2', title: 'Pastasås')]);
+        expect(notified, greaterThan(0));
+      });
+
+      test('linkRelatedRecipe does not mutate when the service fails',
+          () async {
+        final vm = editingVm(const []);
+        addTearDown(vm.dispose);
+
+        when(() =>
+                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'))
+            .thenAnswer((_) async => false);
+
+        final ok = await vm.linkRelatedRecipe('r2');
+
+        expect(ok, isFalse);
+        expect(vm.relatedRecipeIds, isEmpty);
+      });
+
+      test('linkRelatedRecipe rejects self-links without calling the service',
+          () async {
+        final vm = editingVm(const []);
+        addTearDown(vm.dispose);
+
+        final ok = await vm.linkRelatedRecipe('recipe-test-user-123-rel');
+
+        expect(ok, isFalse);
+        expect(vm.relatedRecipeIds, isEmpty);
+        verifyNever(() => mockRecipeService.linkRecipes(any(), any()));
+      });
+
+      test('linkRelatedRecipe is idempotent for an already-linked id',
+          () async {
+        final vm = editingVm(const ['r2']);
+        addTearDown(vm.dispose);
+
+        when(() =>
+                mockRecipeService.linkRecipes('recipe-test-user-123-rel', 'r2'))
+            .thenAnswer((_) async => true);
+
+        final ok = await vm.linkRelatedRecipe('r2');
+
+        expect(ok, isTrue);
+        // No duplicate entry appended.
+        expect(vm.relatedRecipeIds, ['r2']);
+      });
+
+      test('unlinkRelatedRecipe optimistically removes the id', () async {
+        final vm = editingVm(const ['r2', 'r3']);
+        addTearDown(vm.dispose);
+
+        when(() => mockRecipeService.unlinkRecipes(
+            'recipe-test-user-123-rel', 'r2')).thenAnswer((_) async => true);
+
+        final ok = await vm.unlinkRelatedRecipe('r2');
+
+        expect(ok, isTrue);
+        expect(vm.relatedRecipeIds, ['r3']);
+      });
+
+      test('unlinkRelatedRecipe leaves the list unchanged when service fails',
+          () async {
+        final vm = editingVm(const ['r2']);
+        addTearDown(vm.dispose);
+
+        when(() => mockRecipeService.unlinkRecipes(
+            'recipe-test-user-123-rel', 'r2')).thenAnswer((_) async => false);
+
+        final ok = await vm.unlinkRelatedRecipe('r2');
+
+        expect(ok, isFalse);
+        expect(vm.relatedRecipeIds, ['r2']);
+      });
+    });
   });
 }

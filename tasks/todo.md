@@ -1,36 +1,29 @@
 # Sprint Backlog
 
-## Sprint: dup-threshold-tests + A/B-prompt-buckets + parse-confidence-l10n + parser-isolate-offload — 2026-06-13 (iter-143)
+## Sprint: schemaVersion-foundation + related-recipes-UI — 2026-06-13 (iter-144)
 
-Reusing iter-142 full-backlog scan (98 workable: 36 A / 38 B / 8 C / 16 D). Picked 4 fully-verifiable tickets; skipped BUT-610 (4-6 day epic) and routed BUT-862 through a Step-0 plugin-isolate reality check.
+Tight 2-ticket batch (4th sprint this session — quality over volume). Skipped BUT-1011 (premature per its own telemetry gate) and BUT-1169 (constant-drop unsafe before a prod backfill).
 
-### Agent A: testing — duplicate-detection threshold logic
-- [x] **A1. Extract + test ImportResultHandler duplicate-threshold decision** `[Tier A]` — extract the pure score→`DuplicateMergeChoice` decision (thresholds `_contentDuplicateThreshold=0.6`, `_exactMatchMinScore=0.8`) out of the UI/service-coupled `ImportResultHandler.checkForDuplicates` into a testable function; unit-test the boundaries. `lib/views/smart_import/import_result_handler.dart` + `test/`. (BUT-1245)
-  - Acceptance: a pure, service-free function encapsulates the score→branch decision (extracted from the dialog/service-coupled method) · unit test proves a score just below 0.8 vs ≥0.8 routes to different branches · unit test proves the 0.6 content-duplicate boundary triggers/!triggers the content-dup path · existing smart_import tests still pass; `dart analyze` clean
+### Agent A: schema — forward-compatible schemaVersion `[Tier C]` (always risk-gated; touches firestore.rules + security)
+- [x] **A1. Add schemaVersion to the 6 core models + lazy-read + rules allowlist** `[Tier C]` — add `schemaVersion: int` (default 1) to UserProfile, Recipe, Menu, MealPlan, ShoppingList, PersonalTag following the EXISTING `TagResult` versioned pattern (`lib/models/tagging/tag_result.dart`); read it in each repository `fromFirestore` (default 1 when absent — lazy migration handles old docs WITHOUT a backfill); write it on save; extend `firestore.rules` per-collection field allowlists to accept `schemaVersion`; one-paragraph doc. Backfill CF is DEFERRED (lazy-on-read covers old docs) → follow-up. NO speculative migration framework — just the version field + read/write + rules (YAGNI until a real v2 exists). (BUT-648)
+  - Acceptance: all 6 models expose `schemaVersion` (default 1), round-tripping through to/fromFirestore (testpinned) · each model's `fromFirestore` defaults to 1 when the field is absent (old-doc compatibility, testpinned) · `firestore.rules` allows `schemaVersion` on all 6 collections AND the rules test suite proves a write WITH it is allowed and the existing constraints still hold · `dart analyze` clean; existing model/repo tests green · NO backfill CF and NO migration-dispatch framework added (deferred — scope discipline)
 
-### Agent B: backend — A/B prompt-variant buckets (functions)
-- [x] **B1. Bucket-based prompt-variant assignment** `[Tier A]` — Step 0: confirm `functions/src/llm/prompts-config.ts` (Remote Config path) + `promptVersion` analytics field exist. Add deterministic `hash(userId)→bucket` assignment in `functions/src/middleware/rate_limiter.ts` (`withRateLimit`); select variant from the existing Remote Config path; emit the bucket in analytics. NO new Firestore `system/prompts/variants` collection. (BUT-626)
-  - Acceptance: a deterministic bucket function maps a given userId to a stable bucket (same id → same bucket, testpinned) · variant is sourced from the existing Remote Config path, not a new Firestore collection · the assigned bucket is emitted in analytics alongside the existing `promptVersion` · `npm test` (functions) green
+### Agent B: recipe UI — related-recipes wiring `[Tier B]`
+- [x] **B1. Link/unlink picker in editor + Related/Used-in sections on detail** `[Tier B]` — service layer (`RecipeRelationsService.link/unlink` via `unifiedRecipeService`) already exists. Editor (`lib/views/edit_recipe_view.dart` + `lib/viewmodels/recipe_form/recipe_form_coordinator.dart`): "+ Länka relaterat recept" button → multi-select picker → `linkRecipes`; show current `relatedRecipeIds` as removable chips (X → `unlinkRecipes`). Detail (`lib/views/recipe_detail/recipe_detail_content.dart`): "Relaterade recept" grid when non-empty, tappable → navigate; "Används i" section via `recipes.where((r) => r.relatedRecipeIds?.contains(currentId) ?? false)`. Do NOT modify the Recipe model (read existing `relatedRecipeIds`). (BUT-1057)
+  - Acceptance: user can link AND unlink related recipes from the editor (chips + picker, widget-testpinned) · detail view renders "Relaterade recept" + "Används i" sections only when populated (testpinned empty→hidden, non-empty→shown) · tapping a related thumbnail navigates to that recipe's detail · square design language + l10n strings (sv+en); HTML preview → In Review
 
-### Agent C: UI/l10n — finish the parse-confidence widget
-- [x] **C1. l10n pass + neutral ButleryColors slot** `[Tier B]` — extract ALL hardcoded Swedish (visible strings + the 2 Semantics labels) in `lib/widgets/recipe/parse_confidence_review.dart` to `context.l10n` keys in both `app_sv.arb` + `app_en.arb`; add a `neutral` slot to `ButleryColors` and route the grey pill through it; update the widget test. (BUT-1244)
-  - Acceptance: zero hardcoded user-visible/Semantics strings in the widget (all `context.l10n`, keys in both ARB files) · a `neutral` slot exists on ButleryColors (light+dark), pill grey reads it, no direct `AppColors.neutralMedium` in the widget · `flutter gen-l10n` clean · widget test updated (reads token + l10n) and green
-
-### Agent D: perf refactor — isolate-offload the SAFE hot path(s) `[Tier C]` (always risk-gated)
-- [x] **D1. compute()/Isolate.run offload, plugin-safe only** `[Tier C]` — Step 0 MANDATORY: determine which of the 3 paths (text parser / CRF inference / OCR post-processor) are pure-Dart (offloadable) vs platform-plugin-bound. CRF uses `flutter_onnxruntime` and OCR uses platform channels — these CANNOT run in a background isolate (MissingPluginException). Wrap ONLY the safe pure-Dart path(s) in `compute()`; document why the plugin-bound ones can't be. (BUT-862)
-  - Acceptance: Step-0 classification recorded (which paths are pure vs plugin-bound) · only pure-Dart path(s) wrapped; NO plugin-backed path wrapped (would crash) · the wrapped path produces identical output (unit tests pass unchanged) · parser/CRF/OCR unit tests all green; `dart analyze` clean (jank/profiler claim parked for manual In-Review confirmation)
-
-### Needs you (Tier D / deferred this batch)
-- BUT-610 — offline-mode audit+harden is a 4-6 day epic; needs its own focused multi-session effort, not a sprint batch slot.
-- BUT-840 / ops cluster — unchanged from iter-142 (Algolia admin key + console/creds/enrollment).
+### Needs you (Tier D / deferred-by-design)
+- BUT-1011 — async account-deletion polling: build only IF Functions telemetry shows real `deadline-exceeded` timeouts (ticket's own gate). None reported. Not worked.
+- BUT-1169 — dropping legacy meat_fish/fruit_veg constants needs a prod backfill of existing docs first (else old docs render blank); backfill needs prod access. Not worked.
+- BUT-840 / ops cluster — unchanged.
 
 ### Post-Sprint Steps
-- [x] Run `dart analyze --fatal-infos` + arch gates (architecture_test + AppColors grep, per iter-142 lesson)
-- [x] Run relevant unit tests
+- [x] Run `dart analyze --fatal-infos` + arch gates (architecture_test + AppColors grep)
+- [x] Run relevant unit tests + firestore.rules test suite
 - [x] Phase 2.7 outcome-grading per agent group
-- [x] Follow-ups → Linear BEFORE commit
+- [x] Follow-ups → Linear BEFORE commit (schemaVersion backfill CF)
 - [x] Commit, push
-- [x] Linear: Tier A (1245, 626) → Done; Tier B/C (1244, 862) → In Review + notify
+- [x] Linear: none Tier A this batch; BUT-648 (C) + BUT-1057 (B) → In Review + notify
 
 ---
-## ARCHIVED — iter-142 (BUT-879/881 Done; BUT-1243/925/1154 In Review; follow-ups BUT-1244/1245; CI arch-fix 5e04bcabe) · iter-141 (BUT-1238/1005/1237/928/604/954) · iter-140 (BUT-1235/1236/839/877 Done) · äldre i git-historiken
+## ARCHIVED — iter-143 (BUT-1245/626 Done; BUT-1244/862 In Review; follow-ups BUT-1246/1247; CI green) · iter-142 (BUT-879/881 Done; BUT-1243/925/1154 In Review; arch-fix 5e04bcabe) · iter-141 (BUT-1238/1005/1237/928/604/954) · äldre i git-historiken

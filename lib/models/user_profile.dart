@@ -72,6 +72,10 @@ class UserProfile with JsonSerializableMixin {
   final bool isHidden;
   final DateTime? hiddenAt;
 
+  /// BUT-648: Schema version for lazy migration on read.
+  /// Default 1 — old docs without this field are treated as v1.
+  final int schemaVersion;
+
   UserProfile({
     required this.uid,
     required this.displayName,
@@ -99,6 +103,7 @@ class UserProfile with JsonSerializableMixin {
     this.birthYear,
     this.isHidden = false,
     this.hiddenAt,
+    this.schemaVersion = 1,
   }) {
     if (birthYear != null) {
       final currentYear = clock.now().year;
@@ -138,6 +143,7 @@ class UserProfile with JsonSerializableMixin {
     Object? birthYear = _sentinel,
     bool? isHidden,
     Object? hiddenAt = _sentinel,
+    int? schemaVersion,
   }) {
     return UserProfile(
       uid: uid,
@@ -179,6 +185,7 @@ class UserProfile with JsonSerializableMixin {
       birthYear: birthYear == _sentinel ? this.birthYear : birthYear as int?,
       isHidden: isHidden ?? this.isHidden,
       hiddenAt: hiddenAt == _sentinel ? this.hiddenAt : hiddenAt as DateTime?,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -278,6 +285,7 @@ class UserProfile with JsonSerializableMixin {
       'hiddenAt': hiddenAt != null
           ? AppTimestamp.fromDateTime(hiddenAt!).toFirestore()
           : null,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -336,6 +344,7 @@ class UserProfile with JsonSerializableMixin {
       'birthYear': birthYear,
       'isHidden': isHidden,
       'hiddenAt': hiddenAt != null ? serializeDateTime(hiddenAt!) : null,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -392,6 +401,7 @@ class UserProfile with JsonSerializableMixin {
       birthYear: _readBirthYear(data),
       isHidden: utils.SerializationUtils.safeBool(data, 'isHidden'),
       hiddenAt: utils.SerializationUtils.safeDateTime(data, 'hiddenAt'),
+      schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
 
@@ -447,6 +457,7 @@ class UserProfile with JsonSerializableMixin {
       birthYear: _readBirthYear(json),
       isHidden: utils.SerializationUtils.safeBool(json, 'isHidden'),
       hiddenAt: utils.SerializationUtils.parseDateTimeValue(json['hiddenAt']),
+      schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
 

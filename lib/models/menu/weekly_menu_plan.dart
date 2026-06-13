@@ -174,6 +174,10 @@ class WeeklyMenuPlan {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// BUT-648: Schema version for lazy migration on read.
+  /// Default 1 — old docs without this field are treated as v1.
+  final int schemaVersion;
+
   const WeeklyMenuPlan({
     required this.id,
     required this.userId,
@@ -181,6 +185,7 @@ class WeeklyMenuPlan {
     required this.entries,
     required this.createdAt,
     required this.updatedAt,
+    this.schemaVersion = 1,
   });
 
   /// Creates an empty plan for the ISO week containing [date].
@@ -226,6 +231,7 @@ class WeeklyMenuPlan {
   WeeklyMenuPlan copyWith({
     List<WeeklyMenuPlanEntry>? entries,
     DateTime? updatedAt,
+    int? schemaVersion,
   }) {
     return WeeklyMenuPlan(
       id: id,
@@ -234,6 +240,7 @@ class WeeklyMenuPlan {
       entries: entries ?? this.entries,
       createdAt: createdAt,
       updatedAt: updatedAt ?? clock.now(),
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -244,6 +251,7 @@ class WeeklyMenuPlan {
       'entries': entries.map((e) => e.toMap()).toList(),
       'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
       'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -265,6 +273,7 @@ class WeeklyMenuPlan {
       ),
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
       updatedAt: SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
+      schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
 }

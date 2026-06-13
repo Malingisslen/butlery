@@ -24,6 +24,10 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   final String? _originalOwnerStaticCopyId;
   final int _activeCollaboratorCount;
 
+  /// BUT-648: Schema version for lazy migration on read.
+  /// Default 1 — old docs without this field are treated as v1.
+  final int schemaVersion;
+
   SharedMenu({
     required super.id,
     required super.sharedByUserId,
@@ -42,6 +46,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     bool copyOnWriteTriggered = false,
     String? originalOwnerStaticCopyId,
     int activeCollaboratorCount = 0,
+    this.schemaVersion = 1,
   })  : _isOriginalReference = isOriginalReference,
         _copyOnWriteTriggered = copyOnWriteTriggered,
         _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
@@ -113,6 +118,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     bool? copyOnWriteTriggered,
     String? originalOwnerStaticCopyId,
     int? activeCollaboratorCount,
+    int? schemaVersion,
   }) {
     return SharedMenu(
       id: id,
@@ -133,6 +139,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
           originalOwnerStaticCopyId ?? this.originalOwnerStaticCopyId,
       activeCollaboratorCount:
           activeCollaboratorCount ?? this.activeCollaboratorCount,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
     );
   }
 
@@ -272,6 +279,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       'categories': categories,
       'allowCollaboration': allowCollaboration,
       if (realtimeMenuId != null) 'realtimeMenuId': realtimeMenuId,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -364,6 +372,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         originalOwnerStaticCopyId:
             cowFields['originalOwnerStaticCopyId'] as String?,
         activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
+        schemaVersion: data['schemaVersion'] as int? ?? 1,
       );
     } catch (e) {
       rethrow;
@@ -386,6 +395,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       'categories': categories,
       'allowCollaboration': allowCollaboration,
       if (realtimeMenuId != null) 'realtimeMenuId': realtimeMenuId,
+      'schemaVersion': schemaVersion,
     };
   }
 
@@ -428,6 +438,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       originalOwnerStaticCopyId:
           cowFields['originalOwnerStaticCopyId'] as String?,
       activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
+      schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
 

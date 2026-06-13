@@ -10270,5 +10270,64 @@
         "type": "String"
       }
     }
+  },
+  "recipeRelatedSectionTitle": "Related recipes",
+  "@recipeRelatedSectionTitle": {
+    "description": "BUT-1057: heading for the related-recipes section in recipe detail and edit form."
+  },
+  "recipeUsedInSectionTitle": "Used in",
+  "@recipeUsedInSectionTitle": {
+    "description": "BUT-1057: heading for the reverse-link section showing recipes that link to this one."
+  },
+  "recipeRelatedLinkButton": "+ Link related recipe",
+  "@recipeRelatedLinkButton": {
+    "description": "BUT-1057: button label that opens the related-recipe picker in the edit form."
+  },
+  "recipeRelatedPickerTitle": "Select related recipes",
+  "@recipeRelatedPickerTitle": {
+    "description": "BUT-1057: title of the dialog for selecting recipes to link."
+  },
+  "recipeRelatedLinkSuccess": "Recipe linked",
+  "@recipeRelatedLinkSuccess": {
+    "description": "BUT-1057: snackbar shown after a successful link operation."
+  },
+  "recipeRelatedUnlinkSuccess": "Link removed",
+  "@recipeRelatedUnlinkSuccess": {
+    "description": "BUT-1057: snackbar shown after a successful unlink operation."
+  },
+  "recipeRelatedLinkError": "Could not link recipe",
+  "@recipeRelatedLinkError": {
+    "description": "BUT-1057: snackbar shown when link fails."
+  },
+  "recipeRelatedUnlinkError": "Could not remove link",
+  "@recipeRelatedUnlinkError": {
+    "description": "BUT-1057: snackbar shown when unlink fails."
+  },
+  "a11yRelatedRecipeChip": "Linked recipe: {title}",
+  "@a11yRelatedRecipeChip": {
+    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRemoveRelatedRecipe": "Remove link to {title}",
+  "@a11yRemoveRelatedRecipe": {
+    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRelatedRecipeThumbnail": "Open related recipe: {title}",
+  "@a11yRelatedRecipeThumbnail": {
+    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

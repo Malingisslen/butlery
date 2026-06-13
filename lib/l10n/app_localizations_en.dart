@@ -14431,4 +14431,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yToggleIngredientOriginalLine(String name) {
     return 'Show original line for $name';
   }
+
+  @override
+  String get recipeRelatedSectionTitle => 'Related recipes';
+
+  @override
+  String get recipeUsedInSectionTitle => 'Used in';
+
+  @override
+  String get recipeRelatedLinkButton => '+ Link related recipe';
+
+  @override
+  String get recipeRelatedPickerTitle => 'Select related recipes';
+
+  @override
+  String get recipeRelatedLinkSuccess => 'Recipe linked';
+
+  @override
+  String get recipeRelatedUnlinkSuccess => 'Link removed';
+
+  @override
+  String get recipeRelatedLinkError => 'Could not link recipe';
+
+  @override
+  String get recipeRelatedUnlinkError => 'Could not remove link';
+
+  @override
+  String a11yRelatedRecipeChip(String title) {
+    return 'Linked recipe: $title';
+  }
+
+  @override
+  String a11yRemoveRelatedRecipe(String title) {
+    return 'Remove link to $title';
+  }
+
+  @override
+  String a11yRelatedRecipeThumbnail(String title) {
+    return 'Open related recipe: $title';
+  }
 }
