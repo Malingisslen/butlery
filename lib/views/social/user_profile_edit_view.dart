@@ -1,36 +1,35 @@
 // lib/views/social/user_profile_edit_view.dart
+//
+// Orchestrates the profile editing screen. Build sections are extracted into
+// lib/views/social/user_profile_edit/ to keep this file under the 634-line
+// baseline.
 
 // ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
-import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
-import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/recipe/collection_insights_card.dart';
+import 'package:butlery/views/social/user_profile_edit/identity_sections.dart';
+import 'package:butlery/views/social/user_profile_edit/cooking_identity_section.dart';
+import 'package:butlery/views/social/user_profile_edit/privacy_section.dart';
+import 'package:butlery/views/social/user_profile_edit/preferences_sections.dart';
 
 class UserProfileEditView extends StatefulWidget {
   const UserProfileEditView({super.key});
@@ -160,7 +159,6 @@ class _UserProfileEditViewContentState
     AppLogger.debug('🎨 VIEW: _uploadAvatar called');
     final viewModel = context.read<UserProfileViewModel>();
 
-    // Show loading dialog during upload
     AppLogger.debug('🎨 VIEW: Showing loading dialog');
     showDialog(
       context: context,
@@ -201,7 +199,6 @@ class _UserProfileEditViewContentState
 
     final viewModel = context.read<UserProfileViewModel>();
 
-    // Use ValidationUtils for safe text processing
     final displayName = ValidationUtils.safeTrim(_displayNameController.text);
 
     // Sync form controllers to ViewModel before save
@@ -213,8 +210,6 @@ class _UserProfileEditViewContentState
     if (mounted) {
       if (success) {
         SnackBarUtils.showSuccess(context, context.l10n.profileSaved);
-
-        // Navigate back after successful save
         Navigator.pop(context);
       } else {
         SnackBarUtils.showError(
@@ -230,9 +225,7 @@ class _UserProfileEditViewContentState
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.l10n.profileUnsavedChanges),
-        content: Text(
-          context.l10n.profileUnsavedChangesMessage,
-        ),
+        content: Text(context.l10n.profileUnsavedChangesMessage),
         actions: [
           ActionButtons.secondaryButton(
             context,
@@ -281,7 +274,6 @@ class _UserProfileEditViewContentState
         }
       },
       child: LayoutComponents.mainMenu(
-        // Use LayoutComponents instead of MainLayoutMenu
         currentIndex: null,
         body: SafeArea(
           // Responsive: center and constrain on large screens
@@ -305,7 +297,6 @@ class _UserProfileEditViewContentState
                 showSaveButton: false,
                 showCancelButton: false,
                 additionalActions: [
-                  // Clear error button
                   if (viewModel.hasError)
                     IconButton(
                       icon: const Icon(Icons.refresh),
@@ -345,488 +336,55 @@ class _UserProfileEditViewContentState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar section
-          _buildAvatarSection(viewModel),
+          ProfileAvatarSection(
+            viewModel: viewModel,
+            onUploadAvatar: _uploadAvatar,
+          ),
           const SizedBox(height: AppDimensions.spacingXl),
-
-          // Display name field
-          _buildDisplayNameField(viewModel),
+          ProfileDisplayNameField(
+            controller: _displayNameController,
+            focusNode: _displayNameFocusNode,
+            viewModel: viewModel,
+            onChanged: (value) {
+              viewModel.updateDisplayName(value);
+              // Clear previous validation errors when user types
+              if (viewModel.displayNameError != null) {
+                Future.delayed(AppDimensions.animationDurationLong, () {
+                  if (mounted && _displayNameController.text == value) {
+                    _checkDisplayNameAvailability();
+                  }
+                });
+              }
+            },
+          ),
           const SizedBox(height: AppDimensions.spacingXl),
-
-          // Cooking identity (skill, cuisines, bio)
-          _buildCookingIdentitySection(viewModel),
+          CookingIdentitySection(
+            bioController: _bioController,
+            viewModel: viewModel,
+          ),
           const SizedBox(height: AppDimensions.spacingXl),
-
           CollectionInsightsCard(
             recipes: _recipesSnapshot,
             cuisineDisplayNames: _cuisineDisplayNames,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
-
-          // Privacy settings
-          _buildPrivacySettings(viewModel),
+          PrivacySettingsSection(viewModel: viewModel),
           const SizedBox(height: AppDimensions.spacingXl),
-
-          // Language settings
-          _buildLanguageSettings(),
+          LanguageSettingsSection(localeProvider: _localeProvider),
           const SizedBox(height: AppDimensions.spacingXl),
-
-          // Theme settings
-          _buildThemeSettings(),
+          ThemeSettingsSection(themeService: _themeService),
           const SizedBox(height: AppDimensions.spacingXxl),
-
-          // Action buttons
-          _buildActionButtons(viewModel),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvatarSection(UserProfileViewModel viewModel) {
-    return Center(
-      child: Column(
-        children: [
-          // Avatar with edit overlay
-          Stack(
-            children: [
-              UserDisplayWidgets.editableAvatar(
-                imageUrl: viewModel.avatarUrl,
-                displayName: viewModel.displayName.isNotEmpty
-                    ? viewModel.displayName
-                    : context.l10n.profileNewUser,
-                onEditTap: _uploadAvatar,
-              ),
-              // Upload progress overlay
-              if (viewModel.isUploadingAvatar)
-                ProgressOverlay.avatar(text: context.l10n.commonUploading),
-            ],
-          ),
-
-          const SizedBox(height: AppDimensions.spacingL),
-
-          // Avatar action buttons
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: AppDimensions.spacingL,
-            children: [
-              ActionButtons.outlinedButton(
-                context,
-                label: viewModel.avatarUrl != null
-                    ? context.l10n.profileChangeAvatar
-                    : context.l10n.profileAddAvatar,
-                icon: Icons.camera_alt,
-                onPressed: viewModel.isUploadingAvatar ? null : _uploadAvatar,
-              ),
-              if (viewModel.avatarUrl != null)
-                ActionButtons.outlinedButton(
-                  context,
-                  label: context.l10n.commonRemove,
-                  icon: Icons.delete_outline,
-                  onPressed: viewModel.isUploadingAvatar
-                      ? null
-                      : () {
-                          viewModel.removeAvatar();
-                          SnackBarUtils.showSuccess(
-                              context, context.l10n.profileAvatarRemoved);
-                        },
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDisplayNameField(UserProfileViewModel viewModel) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.profileDisplayName,
-          style: AppTextStyles.labelMedium,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        StyledInput(
-          controller: _displayNameController,
-          focusNode: _displayNameFocusNode,
-          hint: context.l10n.profileDisplayNameHint,
-          prefixIcon: const Icon(Icons.person),
-          suffixIcon: viewModel.displayNameError != null
-              ? Icon(Icons.error, color: Theme.of(context).colorScheme.error)
-              : _displayNameController.text.isNotEmpty &&
-                      viewModel.displayNameError == null
-                  ? Icon(Icons.check_circle,
-                      color: context.butleryColors.success)
-                  : null,
-          // BUT-517: required + content-filter chain on displayName.
-          validator: FormValidators.combine([
-            (value) => ValidationUtils.validateRequired(
-                  value,
-                  fieldName: context.l10n.profileDisplayName,
-                ),
-            FormValidators.contentFilter(context.l10n.profileDisplayName),
-          ]),
-          onChanged: (value) {
-            viewModel.updateDisplayName(value);
-            // Clear previous validation errors when user types
-            if (viewModel.displayNameError != null) {
-              Future.delayed(AppDimensions.animationDurationLong, () {
-                if (mounted && _displayNameController.text == value) {
-                  _checkDisplayNameAvailability();
-                }
-              });
-            }
-          },
-        ),
-        if (viewModel.displayNameError != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            viewModel.displayNameError!,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildCookingIdentitySection(UserProfileViewModel viewModel) {
-    final atMax = viewModel.cuisineAffinities.length >=
-        UserProfileViewModel.maxCuisineAffinities;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            context.l10n.profileCookingIdentity,
-            style: AppTextStyles.titleMedium,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-
-        // Skill level
-        Text(
-          context.l10n.profileCookingSkill,
-          style: AppTextStyles.labelMedium,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        SizedBox(
-          width: double.infinity,
-          child: SegmentedButton<CookingSkillLevel>(
-            segments: [
-              ButtonSegment(
-                value: CookingSkillLevel.beginner,
-                label: Text(context.l10n.profileCookingSkillBeginner),
-              ),
-              ButtonSegment(
-                value: CookingSkillLevel.intermediate,
-                label: Text(context.l10n.profileCookingSkillIntermediate),
-              ),
-              ButtonSegment(
-                value: CookingSkillLevel.advanced,
-                label: Text(context.l10n.profileCookingSkillAdvanced),
-              ),
-            ],
-            selected: viewModel.cookingSkillLevel != null
-                ? {viewModel.cookingSkillLevel!}
-                : {},
-            emptySelectionAllowed: true,
-            onSelectionChanged: (selection) {
-              viewModel.updateCookingSkillLevel(
-                selection.isEmpty ? null : selection.first,
-              );
+          ProfileActionButtons(
+            viewModel: viewModel,
+            onSave: _saveProfile,
+            onReset: () {
+              viewModel.resetForm();
+              _initializeForm(viewModel, force: true);
+              SnackBarUtils.showSuccess(context, context.l10n.profileFormReset);
             },
-            style: ButtonStyle(
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadius8),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-
-        // Cuisine affinities
-        Text(
-          context.l10n.profileCuisineAffinities,
-          style: AppTextStyles.labelMedium,
-        ),
-        const SizedBox(height: AppDimensions.spacingXxs),
-        Text(
-          atMax
-              ? context.l10n.profileCuisineAffinitiesMax
-              : context.l10n.profileCuisineAffinitiesHint,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: atMax
-                ? context.butleryColors.warning
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Wrap(
-          spacing: AppDimensions.spacingXs,
-          runSpacing: AppDimensions.spacingXs,
-          children: CuisineConfig.cuisines.map((cuisine) {
-            final selected = viewModel.cuisineAffinities.contains(cuisine.tag);
-            return FilterChip(
-              label: Text(cuisine.tag),
-              selected: selected,
-              onSelected: (value) {
-                if (!value || !atMax) {
-                  viewModel.toggleCuisineAffinity(cuisine.tag);
-                }
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius8),
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-
-        // Bio
-        Text(
-          context.l10n.profileBio,
-          style: AppTextStyles.labelMedium,
-        ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        StyledInput(
-          controller: _bioController,
-          hint: context.l10n.profileBioHint,
-          maxLines: 3,
-          minLines: 2,
-          maxLength: UserProfileViewModel.maxBioLength,
-          keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.newline,
-          onChanged: viewModel.updateBio,
-          // BUT-517: profanity gate on bio (optional field — empty passes).
-          validator: FormValidators.contentFilter(context.l10n.profileBio),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPrivacySettings(UserProfileViewModel viewModel) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            context.l10n.profilePrivacySettings,
-            style: AppTextStyles.titleMedium,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-        BorderedContainer(
-          child: Column(
-            children: [
-              SwitchListTile(
-                title: Text(context.l10n.profileVisibleInSearch),
-                subtitle: Text(context.l10n.profileVisibleInSearchDescription),
-                value: viewModel.isSearchable,
-                onChanged: viewModel.updateIsSearchable,
-                secondary: const Icon(Icons.search),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: Text(context.l10n.profileSearchableByEmail),
-                subtitle:
-                    Text(context.l10n.profileSearchableByEmailDescription),
-                value: viewModel.allowEmailSearch,
-                onChanged: viewModel.updateAllowEmailSearch,
-                secondary: const Icon(Icons.email),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: Text(context.l10n.profileShowOnlineStatus),
-                subtitle: Text(context.l10n.profileShowOnlineStatusDescription),
-                value: viewModel.showOnlineStatus,
-                onChanged: viewModel.updateShowOnlineStatus,
-                secondary: const Icon(Icons.podcasts),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: Text(context.l10n.privacyShareActivityTitle),
-                subtitle: Text(context.l10n.privacyShareActivitySubtitle),
-                value: viewModel.shareActivityToFeed,
-                onChanged: viewModel.updateShareActivityToFeed,
-                secondary: const Icon(Icons.dynamic_feed),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLanguageSettings() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            context.l10n.profileLanguage,
-            style: AppTextStyles.titleMedium,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-        BorderedContainer(
-          child: Column(
-            children: LocaleProvider.supportedLocales.map((localeCode) {
-              final isSelected =
-                  _localeProvider.locale.languageCode == localeCode;
-              return RadioListTile<String>(
-                title: Text(LocaleProvider.getLocaleName(localeCode)),
-                value: localeCode,
-                groupValue: _localeProvider.locale.languageCode,
-                onChanged: (value) {
-                  if (value != null) {
-                    _localeProvider.setLocale(value);
-                    SnackBarUtils.showSuccess(
-                      context,
-                      context.l10n.profileLanguageChangedTo(
-                          LocaleProvider.getLocaleName(value)),
-                    );
-                  }
-                },
-                secondary: Icon(
-                  isSelected ? Icons.check_circle : Icons.language,
-                  color: isSelected ? context.butleryColors.success : null,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildThemeSettings() {
-    final themeModes = [
-      (
-        ThemeMode.system,
-        context.l10n.profileThemeSystem,
-        Icons.settings_suggest
-      ),
-      (ThemeMode.light, context.l10n.profileThemeLight, Icons.light_mode),
-      (ThemeMode.dark, context.l10n.profileThemeDark, Icons.dark_mode),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            context.l10n.profileTheme,
-            style: AppTextStyles.titleMedium,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-        BorderedContainer(
-          child: Column(
-            children: themeModes.map((mode) {
-              final isSelected = _themeService.themeMode == mode.$1;
-              return RadioListTile<ThemeMode>(
-                title: Text(mode.$2),
-                value: mode.$1,
-                groupValue: _themeService.themeMode,
-                onChanged: (value) {
-                  if (value != null) {
-                    _themeService.setThemeMode(value);
-                    SnackBarUtils.showSuccess(
-                      context,
-                      context.l10n.profileThemeChangedTo(mode.$2),
-                    );
-                  }
-                },
-                secondary: Icon(
-                  isSelected ? Icons.check_circle : mode.$3,
-                  color: isSelected ? context.butleryColors.success : null,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons(UserProfileViewModel viewModel) {
-    return Column(
-      children: [
-        // Save button
-        ActionButtons.primaryButton(
-          context,
-          label: context.l10n.profileSaveProfile,
-          icon: Icons.save,
-          onPressed: viewModel.isLoading || !viewModel.isFormValid
-              ? null
-              : _saveProfile,
-          isLoading: viewModel.isLoading,
-          loadingText: context.l10n.commonSaving,
-          isExpanded: true,
-        ),
-
-        const SizedBox(height: AppDimensions.spacingL),
-
-        // Reset button
-        ActionButtons.outlinedButton(
-          context,
-          label: context.l10n.profileResetChanges,
-          icon: Icons.refresh,
-          onPressed: viewModel.hasUnsavedChanges
-              ? () {
-                  viewModel.resetForm();
-                  _initializeForm(viewModel, force: true);
-                  SnackBarUtils.showSuccess(
-                      context, context.l10n.profileFormReset);
-                }
-              : null,
-          isExpanded: true,
-        ),
-
-        // Unsaved changes indicator
-        if (viewModel.hasUnsavedChanges) ...[
-          const SizedBox(height: AppDimensions.spacingL),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            decoration: BoxDecoration(
-              color: context.butleryColors.warning
-                  .withValues(alpha: AppDimensions.opacityVeryLight),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
-                  color: context.butleryColors.warning
-                      .withValues(alpha: AppDimensions.opacityMediumLight)),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.warning_amber,
-                  color: context.butleryColors.warning,
-                  size: AppDimensions.iconSizeM,
-                ),
-                const SizedBox(width: AppDimensions.spacingXs),
-                Expanded(
-                  child: Text(
-                    context.l10n.profileYouHaveUnsavedChanges,
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
-      ],
+      ),
     );
   }
 }

@@ -24,10 +24,10 @@ After the runbook is executed:
 | Control | Status | Evidence |
 |---|---|---|
 | PITR enabled | ENABLED — 7-day window | `versionRetentionPeriod: 604800s` |
-| Weekly GCS export | SCHEDULED — Sundays 03:00 UTC | Cloud Scheduler job `firestore-weekly-export` (europe-west3) |
-| Backup bucket | CREATED — `gs://butlery-firestore-backups` | europe-west3, uniform bucket-level access |
-| Retention policy | 30 days auto-delete | lifecycle rule applied via `docs/ops/lifecycle.json` |
-| Firestore region | europe-west3 (Frankfurt, EU) | — |
+| Weekly GCS export | SCHEDULED — Sundays 03:00 UTC | Cloud Scheduler job `firestore-weekly-export` (europe-west1) |
+| Backup bucket | CREATED — `gs://butlery-firestore-backups` | europe-west1, uniform bucket-level access |
+| Retention policy | 30 days auto-delete ⚠️ confirm against live GCP object-lifecycle config | lifecycle rule applied via `docs/ops/lifecycle.json` |
+| Firestore region | europe-west1 (Belgium, EU) — **decision value; actual deployment UNVERIFIED** | canonical *decision* per `docs/operations/data-residency.md`. ⚠️ A 2026-05 forensic audit (`docs/analysis/runs/2026-05-claude/03-infrastructure.md`) recorded a `gcloud` reading of **europe-west3 (Frankfurt)** for the actual Firestore region. This conflict is unresolved — confirm via `gcloud firestore databases describe` and reconcile under **BUT-819** before relying on the region for bucket placement. |
 | Restore drill | NEVER PERFORMED | schedule one after first successful export |
 
 ---
@@ -59,11 +59,13 @@ PITR window is 7 days. Cost: ~$0.10/GB-month of PITR data. Immediate effect.
 ### 3. Create the backup bucket
 
 ```bash
-# Bucket must live in the same region as Firestore (verify with describe above).
-# Butlery Firestore region is europe-west3 — keep exports in-region for GDPR.
+# Bucket MUST live in the same region as Firestore — keep exports in-region for GDPR.
+# The decision region is europe-west1, but a 2026-05 audit saw gcloud report
+# europe-west3 (see status table + BUT-819). VERIFY the live region with the
+# describe command above and set --location to match it before creating the bucket.
 gcloud storage buckets create gs://butlery-firestore-backups \
   --project=butlery-app-1 \
-  --location=europe-west3 \
+  --location=europe-west1 \
   --uniform-bucket-level-access \
   --public-access-prevention
 ```
@@ -113,7 +115,7 @@ Option A — Cloud Scheduler invoking the Firestore export API (simplest, no Fun
 # Off-peak for a Swedish consumer app.
 gcloud scheduler jobs create http firestore-weekly-export \
   --project=butlery-app-1 \
-  --location=europe-west3 \
+  --location=europe-west1 \
   --schedule="0 3 * * 0" \
   --time-zone="UTC" \
   --uri="https://firestore.googleapis.com/v1/projects/butlery-app-1/databases/(default):exportDocuments" \
@@ -139,7 +141,7 @@ Force an immediate run to confirm the pipeline works:
 ```bash
 gcloud scheduler jobs run firestore-weekly-export \
   --project=butlery-app-1 \
-  --location=europe-west3
+  --location=europe-west1
 
 # Wait ~2 minutes, then confirm an export folder landed:
 gcloud storage ls gs://butlery-firestore-backups/weekly/
@@ -178,7 +180,7 @@ gcloud storage ls gs://butlery-firestore-backups/weekly/
 # Import to a recovery database (never into production):
 gcloud firestore databases create \
   --database=recovery-YYYYMMDD \
-  --location=europe-west3 \
+  --location=europe-west1 \
   --project=butlery-app-1
 
 gcloud firestore import \

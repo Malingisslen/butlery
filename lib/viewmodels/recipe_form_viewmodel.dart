@@ -38,6 +38,9 @@ import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mix
 // Import for feedback loop
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 
+// Import for per-ingredient confidence review (BUT-925)
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
+
 // Import for tagging validation preview
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
@@ -217,6 +220,14 @@ class RecipeFormViewModel extends ChangeNotifier
   double? get parseQuality => _state.originalParsedRecipe?.overallQuality;
   List<String> get fieldsNeedingImprovement =>
       _state.originalParsedRecipe?.fieldsNeedingImprovement ?? [];
+
+  /// Per-ingredient parse confidence for the confidence review widget (BUT-925).
+  ///
+  /// Only populated for imported recipes that went through the CRF/NER/LLM
+  /// parsing pipeline and were cached in [ParsedRecipeCache]. Returns null for
+  /// manually-entered recipes or when the cache entry expired.
+  List<ParsedIngredient>? get parsedIngredients =>
+      _state.originalParsedRecipe?.ingredients.value;
 
   FormFieldsManager get ingredientsManager => _state.ingredientsManager;
   FormFieldsManager get instructionsManager => _state.instructionsManager;

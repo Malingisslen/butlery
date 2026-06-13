@@ -13,25 +13,18 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/tagging/allergen_mismatch.dart';
-import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
-import 'package:butlery/widgets/recipe/duplicate_merge_sheet.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
-import 'package:butlery/services/import/cache/content_fingerprint.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/views/smart_import/import_widgets.dart';
+import 'package:butlery/views/smart_import/import_result_handler.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
@@ -88,8 +81,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SmartImportViewModel>();
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
       canPop: !viewModel.isImporting,
@@ -127,13 +119,13 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                 // Pending import retry banner
                                 if (viewModel.hasPendingImport &&
                                     viewModel.isOnline)
-                                  _PendingImportBanner(
+                                  PendingImportBanner(
                                     onRetry: viewModel.retryPendingImport,
                                     onDismiss: viewModel.dismissPendingImport,
                                   ),
 
                                 // Input section
-                                _InputSection(
+                                ImportInputSection(
                                   controller: _inputController,
                                   focusNode: _focusNode,
                                   viewModel: viewModel,
@@ -171,7 +163,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                     viewModel.phase == ImportPhase.error) ...[
                                   const SizedBox(
                                       height: AppDimensions.spacingMd),
-                                  _ErrorMessage(
+                                  ImportErrorMessage(
                                     message: viewModel.error!,
                                     colorScheme: colorScheme,
                                     onPasteText: () => _handlePaste(viewModel),
@@ -183,7 +175,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                                 const Spacer(),
 
                                 // Action buttons
-                                _ActionSection(
+                                ImportActionSection(
                                   viewModel: viewModel,
                                   onImport: () =>
                                       _handleImport(context, viewModel),
@@ -234,21 +226,18 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     BuildContext context,
     SmartImportViewModel viewModel,
   ) async {
-    // Unfocus input
     FocusScope.of(context).unfocus();
 
-    // Start import
     final result = await viewModel.startImport();
 
     if (!context.mounted) return;
 
-    // Handle result
     switch (result) {
       case ImportSucceeded(:final recipe):
-        final proceed = await _checkForDuplicates(context, recipe);
+        final proceed =
+            await ImportResultHandler.checkForDuplicates(context, recipe);
         if (proceed && context.mounted) {
-          HapticFeedback.mediumImpact();
-          _navigateToRecipeEditor(context, recipe);
+          ImportResultHandler.navigateToRecipeEditor(context, recipe);
         }
 
       case ImportNeedsUserHelp():
@@ -258,7 +247,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         await _showRateLimitDialog(context, viewModel, rateLimitResult);
 
       case ImportFailed():
-        // Error is shown in UI, no additional action needed
+        // Error is shown in UI — no additional action needed
         break;
     }
   }
@@ -269,7 +258,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   ) async {
     if (!viewModel.canImport) return;
 
-    // Show assisted import dialog with the input text
     final recipe = await showAssistedImportDialog(
       context: context,
       extractedText: viewModel.input,
@@ -278,13 +266,12 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
     if (!context.mounted || recipe == null) return;
 
-    // Save the recipe
     final result = await viewModel.handleAssistedRecipe(recipe);
 
     if (!context.mounted) return;
 
     if (result is ImportSucceeded) {
-      _navigateToRecipeEditor(context, result.recipe);
+      ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
     }
   }
 
@@ -293,7 +280,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     SmartImportViewModel viewModel,
     ImportNeedsUserHelp helpResult,
   ) async {
-    // Check if this is a "needs screenshot" case (short error message, no real content)
     final text = helpResult.extractedText;
 
     // Detect if this is a short error message rather than actual recipe content
@@ -306,7 +292,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             text.isEmpty);
 
     if (isNeedsScreenshot) {
-      // Show a simple dialog with photo import option
       await _showNeedsScreenshotDialog(context, helpResult);
       return;
     }
@@ -322,13 +307,12 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
     if (!context.mounted || recipe == null) return;
 
-    // Save the recipe
     final result = await viewModel.handleAssistedRecipe(recipe);
 
     if (!context.mounted) return;
 
     if (result is ImportSucceeded) {
-      _navigateToRecipeEditor(context, result.recipe);
+      ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
     }
   }
 
@@ -363,7 +347,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
     if (!context.mounted || action != 'photo') return;
 
-    // Navigate to photo import
     Navigator.of(context).pushReplacementNamed(Routes.photoImport);
   }
 
@@ -383,435 +366,18 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
     switch (action) {
       case FallbackAction.skipLlm:
-        // Retry without LLM
         final result = await viewModel.retryWithoutLlm();
         if (context.mounted && result is ImportSucceeded) {
-          _navigateToRecipeEditor(context, result.recipe);
+          ImportResultHandler.navigateToRecipeEditor(context, result.recipe);
         }
 
       case FallbackAction.useUserAssisted:
-        // Show manual import dialog
         await _handleManualImport(context, viewModel);
 
       case FallbackAction.retryLater:
       case FallbackAction.useCache:
-        // User chose to retry later or use cache, just close
+        // User chose to retry later or use cache — nothing to do
         break;
     }
-  }
-
-  // Minimum Jaccard similarity to flag as potential duplicate
-  static const _contentDuplicateThreshold = 0.6;
-
-  // URL/title matches are at least this similar by definition
-  static const _exactMatchMinScore = 0.8;
-
-  /// Check for duplicate recipes by source URL, title, or content similarity.
-  /// Returns true if import should proceed, false if cancelled/handled.
-  Future<bool> _checkForDuplicates(
-    BuildContext context,
-    Recipe recipe,
-  ) async {
-    try {
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final fingerprinter = ContentFingerprint();
-
-      // Check by source URL first (most reliable match)
-      final sourceUrl = recipe.sourceUrl;
-      List<Recipe> matches = [];
-      double matchScore = 1.0;
-
-      if (sourceUrl != null && sourceUrl.isNotEmpty) {
-        matches = await recipeService.findBySourceUrl(sourceUrl);
-      }
-
-      // Fall back to title match
-      if (matches.isEmpty && recipe.title.isNotEmpty) {
-        matches = await recipeService.findByTitle(recipe.title);
-      }
-
-      // Fall back to content fingerprint similarity
-      if (matches.isEmpty && recipe.ingredients.isNotEmpty) {
-        final allRecipes = recipeService.recipes;
-
-        Recipe? bestMatch;
-        double bestScore = 0.0;
-
-        for (final existing in allRecipes) {
-          if (existing.ingredients.isEmpty) continue;
-          final score = fingerprinter.recipeSimilarity(
-            titleA: recipe.title,
-            ingredientsA: recipe.ingredients,
-            titleB: existing.title,
-            ingredientsB: existing.ingredients,
-          );
-          if (score > bestScore) {
-            bestScore = score;
-            bestMatch = existing;
-          }
-        }
-
-        if (bestMatch != null && bestScore >= _contentDuplicateThreshold) {
-          matches = [bestMatch];
-          matchScore = bestScore;
-        }
-      }
-
-      if (matches.isEmpty || !context.mounted) return true;
-
-      // Compute similarity for display if not already set
-      if (matchScore == 1.0 && matches.first.ingredients.isNotEmpty) {
-        matchScore = fingerprinter.recipeSimilarity(
-          titleA: recipe.title,
-          ingredientsA: recipe.ingredients,
-          titleB: matches.first.title,
-          ingredientsB: matches.first.ingredients,
-        );
-        if (matchScore < _exactMatchMinScore) matchScore = _exactMatchMinScore;
-      }
-
-      final result = await showDuplicateMergeSheet(
-        context: context,
-        existingRecipe: matches.first,
-        newRecipe: recipe,
-        similarityScore: matchScore,
-      );
-
-      if (!context.mounted || result == null) return false;
-
-      switch (result.choice) {
-        case DuplicateMergeChoice.keepExisting:
-          Navigator.of(context).pushReplacementNamed(
-            Routes.recipeDetail,
-            arguments: matches.first.id,
-          );
-          return false;
-
-        case DuplicateMergeChoice.replaceWithNew:
-          // Replace existing recipe content with new recipe data
-          final merged = matches.first.copyWith(
-            title: recipe.title,
-            description: recipe.description,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            timeMinutes: recipe.timeMinutes,
-            portions: recipe.portions,
-            imageUrls: recipe.imageUrls,
-            sourceUrl: recipe.sourceUrl,
-          );
-          await recipeService.updateRecipe(merged);
-          if (context.mounted) {
-            SnackBarUtils.showSuccess(
-                context, context.l10n.duplicateMergeSuccess);
-            Navigator.of(context).pushReplacementNamed(
-              Routes.recipeDetail,
-              arguments: matches.first.id,
-            );
-          }
-          return false;
-
-        case DuplicateMergeChoice.saveAsNew:
-          return true;
-
-        case DuplicateMergeChoice.mergeBestFields:
-          final merged = result.buildMergedRecipe();
-          await recipeService.updateRecipe(merged);
-          if (context.mounted) {
-            SnackBarUtils.showSuccess(
-                context, context.l10n.duplicateMergeSuccess);
-            Navigator.of(context).pushReplacementNamed(
-              Routes.recipeDetail,
-              arguments: matches.first.id,
-            );
-          }
-          return false;
-      }
-    } catch (_) {
-      // If duplicate check fails, let user proceed with import
-      return true;
-    }
-  }
-
-  void _navigateToRecipeEditor(BuildContext context, Recipe recipe) {
-    // BUT-1198: non-blocking allergen-setup prompt when the imported recipe
-    // contains an allergen the user hasn't configured. Reuses the deterministic
-    // Phase-1 allergen tags ImportManager already attached during import — no
-    // new LLM/network call. Shown via the app-level ScaffoldMessenger so it
-    // survives the pushReplacement below and never gates the import.
-    final prefs = ServiceLocator.get<UserService>().allergenPreferences;
-    if (AllergenMismatch.unconfiguredContainedAllergens(recipe, prefs)
-        .isNotEmpty) {
-      AllergenSetupBanner.show(context);
-    }
-
-    // Navigate to recipe editor with the imported recipe
-    Navigator.of(context).pushReplacementNamed(
-      Routes.manualEntry,
-      arguments: {
-        'initialRecipe': recipe,
-        'isTemplate': true,
-      },
-    );
-  }
-}
-
-class _PendingImportBanner extends StatelessWidget {
-  final VoidCallback onRetry;
-  final VoidCallback onDismiss;
-
-  const _PendingImportBanner({
-    required this.onRetry,
-    required this.onDismiss,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      color: cs.primaryContainer,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.l10n.importPendingRetryPrompt,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: cs.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: onDismiss,
-                child: Text(context.l10n.importPendingDismiss),
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              FilledButton(
-                onPressed: onRetry,
-                child: Text(context.l10n.importPendingRetry),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Input section with text field and paste button.
-class _InputSection extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final SmartImportViewModel viewModel;
-  final ValueChanged<String> onChanged;
-
-  const _InputSection({
-    required this.controller,
-    required this.focusNode,
-    required this.viewModel,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      onChanged: onChanged,
-      enabled: !viewModel.isImporting,
-      maxLines: 5,
-      minLines: 3,
-      decoration: InputDecoration(
-        hintText: context.l10n.importPasteLinkOrText,
-        hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant
-              .withValues(alpha: AppDimensions.opacityMediumDark),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          borderSide: BorderSide(color: theme.colorScheme.outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          borderSide: BorderSide(
-            color: theme.colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        filled: true,
-        fillColor: theme.colorScheme.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
-        suffixIcon: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  controller.clear();
-                  viewModel.clearInput();
-                },
-                tooltip: context.l10n.commonClear,
-              )
-            : null,
-      ),
-      textCapitalization: TextCapitalization.none,
-      keyboardType: TextInputType.multiline,
-    );
-  }
-}
-
-/// Error message display.
-class _ErrorMessage extends StatelessWidget {
-  final String message;
-  final ColorScheme colorScheme;
-  final VoidCallback? onPasteText;
-  final VoidCallback? onManualAdd;
-
-  const _ErrorMessage({
-    required this.message,
-    required this.colorScheme,
-    this.onPasteText,
-    this.onManualAdd,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: colorScheme.onErrorContainer,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Expanded(
-                child: Text(
-                  message,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onErrorContainer,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (onPasteText != null || onManualAdd != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
-            Wrap(
-              spacing: AppDimensions.spacingSm,
-              children: [
-                if (onPasteText != null)
-                  TextButton.icon(
-                    onPressed: onPasteText,
-                    icon: const Icon(Icons.content_paste,
-                        size: AppDimensions.iconSizeS),
-                    label: Text(context.l10n.importPasteText),
-                  ),
-                if (onManualAdd != null)
-                  TextButton.icon(
-                    onPressed: onManualAdd,
-                    icon: const Icon(Icons.edit, size: AppDimensions.iconSizeS),
-                    label: Text(context.l10n.importAddManually),
-                  ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Action buttons section.
-class _ActionSection extends StatelessWidget {
-  final SmartImportViewModel viewModel;
-  final VoidCallback onImport;
-  final VoidCallback onManualImport;
-  final VoidCallback onPaste;
-
-  const _ActionSection({
-    required this.viewModel,
-    required this.onImport,
-    required this.onManualImport,
-    required this.onPaste,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Paste button (shown when input is empty)
-        if (viewModel.input.isEmpty) ...[
-          OutlinedButton.icon(
-            onPressed: onPaste,
-            icon: const Icon(Icons.content_paste),
-            label: Text(context.l10n.importPasteFromClipboard),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingModerate),
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-        ],
-
-        // Import button.
-        // BUT-403: `btn-import-url` identifier for browser a11y tree.
-        Semantics(
-          identifier: 'btn-import-url',
-          button: true,
-          enabled: viewModel.canImport && !viewModel.isImporting,
-          label: context.l10n.importImport,
-          child: FilledButton.icon(
-            key: const ValueKey('test-smart-import-url'),
-            onPressed:
-                viewModel.canImport && !viewModel.isImporting ? onImport : null,
-            icon: viewModel.isImporting
-                ? LoadingIndicator(
-                    size: 18,
-                    strokeWidth: 2,
-                    color: theme.colorScheme.onPrimary,
-                  )
-                : const Icon(Icons.download),
-            label: Text(viewModel.isImporting
-                ? context.l10n.importImporting
-                : context.l10n.importImport),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: AppDimensions.spacingSm),
-
-        // Manual import link
-        TextButton(
-          onPressed: viewModel.canImport && !viewModel.isImporting
-              ? onManualImport
-              : null,
-          child: Text(context.l10n.importManually),
-        ),
-      ],
-    );
   }
 }

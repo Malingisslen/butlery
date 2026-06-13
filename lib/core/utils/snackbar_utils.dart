@@ -327,9 +327,7 @@ class SnackBarUtils {
         duration: duration ?? const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(AppDimensions.spacingXl),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        ),
+        // Shape inherits the square global snackBarTheme (BUT-1243).
         action: (actionLabel != null && onAction != null)
             ? SnackBarAction(
                 label: actionLabel,

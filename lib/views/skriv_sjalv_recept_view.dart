@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -549,6 +550,17 @@ class _SkrivSjalvReceptViewContentState
                           onReorder: viewModel.reorderIngredient,
                           viewModel: viewModel,
                         ),
+
+                        // BUT-925: per-ingredient confidence review, shown
+                        // only for fresh imports that still have a cached
+                        // ParsedRecipe (30-min TTL in ParsedRecipeCache).
+                        if (viewModel.parsedIngredients != null &&
+                            viewModel.parsedIngredients!.isNotEmpty) ...[
+                          const SizedBox(height: AppDimensions.spacingM),
+                          ParseConfidenceReview(
+                            ingredients: viewModel.parsedIngredients!,
+                          ),
+                        ],
                         const SizedBox(height: AppDimensions.spacingXl),
 
                         // Instruktioner

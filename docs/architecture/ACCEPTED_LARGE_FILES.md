@@ -151,10 +151,10 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `di_container.dart` | 569 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 640 | DI registrations for content layer |
 | `edit_recipe_view.dart` | 668 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28) |
-| `user_profile_edit_view.dart` | 816 | User profile editing screen (drifted +182 from 634 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
+| `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 634 | OCR-based recipe image extraction |
 | `auth_view.dart` | 692 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
-| `smart_import_view.dart` | 803 | Smart import orchestration screen (drifted +183 from 620 — BUT-550 reconciled 2026-05-28; flag decomp follow-up) |
+| `smart_import_view.dart` | 383 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
 | `recipe_form_viewmodel.dart` | 615 | Recipe form VM — delegates to 6 managers |
 | `personal_tag_selector.dart` | 606 | Tag picker widget |
 | `adaptive_navigation.dart` | 580 | Bottom nav / side nav adaptive widget |

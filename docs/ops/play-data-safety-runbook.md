@@ -136,7 +136,7 @@ Processors (no sharing flag triggered):
 
 | Processor | Function | Region | DPA |
 |---|---|---|---|
-| **Google Firebase** (Auth, Firestore, Storage, FCM, Analytics, Crashlytics, Performance, Installations, App Check) | Backend infrastructure | Storage + Firestore: **USER MUST VERIFY** in Firebase Console. Functions: `europe-west1`. Auth: global (managed). | Google Cloud DPA |
+| **Google Firebase** (Auth, Firestore, Storage, FCM, Analytics, Crashlytics, Performance, Installations, App Check) | Backend infrastructure | Storage + Firestore: `europe-west1` (canonical per `docs/operations/data-residency.md`; verify live via `gcloud firestore databases describe`). Functions: `europe-west1`. Auth: global (managed). | Google Cloud DPA |
 | **Google Cloud Vertex AI** (Gemini models for recipe parsing + OCR) | LLM-based recipe extraction | `europe-west1` (Belgium) | Google Cloud DPA |
 | **OCR.space** | OCR for recipe-photo import | EU/EEA | OCR.space privacy policy |
 | **Algolia** (currently inactive — feature flag) | Recipe search indexing | EU (France primary, US backup) | Algolia DPA + EU-US DPF |
@@ -172,7 +172,7 @@ If `butlery.app/data-deletion` is not yet hosted at submission time, use the `ma
 
 - [ ] **Re-read** `ios/Runner/PrivacyInfo.xcprivacy` to confirm no new `NSPrivacyCollectedDataType` entries since last audit (`docs/ops/ios-privacy-manifest-audit.md`). If any are new, add them to §2 here and to the Play Console form.
 - [ ] **Re-read** `assets/legal/privacy_policy_en.md` and confirm §6.1 third-party processor list matches §3 of this runbook.
-- [ ] **Verify** Firestore + Storage region (`docs/ops/data-residency.md` table — the two "USER MUST VERIFY" rows). If non-EU, declare cross-border transfer in §3.
+- [ ] **Verify** Firestore + Storage region (`docs/operations/data-residency.md` — canonical region is `europe-west1`; run `gcloud firestore databases describe` to confirm the live database matches). If non-EU, declare cross-border transfer in §3.
 - [ ] **Verify** Algolia is still inactive (`grep -r "algolia" lib/ functions/src/` and check feature flag). If activated since last submission, set Algolia search-context purpose in §2.10 "In-app search history".
 - [ ] **Cross-check** Play Console field labels against this runbook — Google occasionally renames categories (e.g., "Other in-app messages" was "Messages" before 2025). If a label has changed, look at the field's tooltip rather than the column header.
 - [ ] **Save as draft.** Walk away for 30 minutes. Re-read for typos and inconsistencies between the iOS manifest and Play form.

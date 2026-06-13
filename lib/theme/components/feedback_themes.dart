@@ -21,9 +21,8 @@ class FeedbackThemes {
       contentTextStyle: AppTextStyles.snackbarText.copyWith(
         color: cs.onInverseSurface,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
+      // SQUARE-everywhere design rule (BUT-1243): zero radius = no rounded corners.
+      shape: const RoundedRectangleBorder(),
       behavior: SnackBarBehavior.floating,
       elevation: AppDimensions.elevationMedium,
     );
