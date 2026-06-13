@@ -82,8 +82,13 @@ function validRecipeBody(extra: Record<string, unknown> = {}): Record<string, un
   };
 }
 
+// Per-run token: prevents emulator-persistence collisions when tests re-run
+// against a live emulator that retains documents from previous runs.
+// (See knowledge file: 2026-06-03 — EMULATOR PERSISTS DATA ACROSS npm run INVOCATIONS)
+const RUN = Date.now().toString(36);
+
 // ============================================================================
-// RECIPES (8 assertions across 6 tests)
+// RECIPES (10 assertions across 8 tests)
 // ============================================================================
 
 // R1: owner can create their own recipe with a valid tagResult.
@@ -251,6 +256,50 @@ test(
     const otherCtx = env.authenticatedContext(OTHER_UID);
     await assertFails(
       otherCtx.firestore().doc(`users/${OWNER_UID}/recipes/r-doomed`).delete()
+    );
+  }
+);
+
+// R9: BUT-1249 — owner can CREATE a recipe doc that carries a root-level
+//     `schemaVersion: 1` field. BUT-648 added schemaVersion to models; the
+//     recipes rule has NO root-level hasOnly() validator, so the field passes
+//     through isValidTagResult (which only gates core.tagResult, not the doc
+//     root). This test guards against a future top-level validator being added
+//     that would silently reject the field and break all recipe creates.
+test(
+  "recipes: owner can create a recipe with root-level schemaVersion:1 (BUT-1249)",
+  async () => {
+    const ctx = env.authenticatedContext(OWNER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/recipes/r-sv-create-${RUN}`)
+        .set(validRecipeBody({ schemaVersion: 1 }))
+    );
+  }
+);
+
+// R10: BUT-1249 — owner can UPDATE (overwrite) a recipe doc and keep the
+//      root-level `schemaVersion: 1` field. Exercises the update rule branch
+//      separately from create (the two branches are distinct in the rules:
+//      `allow create` and `allow update` are written independently).
+test(
+  "recipes: owner can update a recipe keeping root-level schemaVersion:1 (BUT-1249)",
+  async () => {
+    // Seed the doc via admin SDK so the update rule is exercised (not create).
+    await env.withSecurityRulesDisabled(async (admin) => {
+      await admin
+        .firestore()
+        .doc(`users/${OWNER_UID}/recipes/r-sv-update-${RUN}`)
+        .set(validRecipeBody({ schemaVersion: 1 }));
+    });
+    const ctx = env.authenticatedContext(OWNER_UID);
+    // Update: change a title field inside core while keeping schemaVersion at root.
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/recipes/r-sv-update-${RUN}`)
+        .set(validRecipeBody({ schemaVersion: 1, updatedAt: new Date() }))
     );
   }
 );

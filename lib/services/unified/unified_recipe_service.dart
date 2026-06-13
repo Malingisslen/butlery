@@ -118,6 +118,11 @@ class UnifiedRecipeService
 
   // State
   final List<Recipe> _recipes = [];
+
+  /// O(1) lookup index kept in sync with [_recipes] via [_reindex].
+  /// Rebuilt by [notifyListeners] after every mutation.
+  final Map<String, Recipe> _recipeById = {};
+
   bool _isInitialized = false;
   bool _isLoading = false;
   String? _error;
@@ -144,8 +149,17 @@ class UnifiedRecipeService
     _cachedCollaborative = null;
   }
 
+  /// Rebuild the O(1) id→recipe index from the current [_recipes] list.
+  /// Called from [notifyListeners] so it fires after every list mutation.
+  void _reindex() {
+    _recipeById
+      ..clear()
+      ..addEntries(_recipes.map((r) => MapEntry(r.id, r)));
+  }
+
   void notifyListeners() {
     _invalidateListCaches();
+    _reindex();
     _emitState();
   }
 
@@ -875,7 +889,7 @@ class UnifiedRecipeService
   /// Legacy refresh method (delegated to utility helper)
   Future<void> refresh() async => _utilityOps.refresh();
   Recipe? getRecipeById(String id) {
-    return _recipes.where((r) => r.id == id).firstOrNull;
+    return _recipeById[id];
   }
 
   // Optimistic local-only list mutations for undo delete support
@@ -999,6 +1013,10 @@ class UnifiedRecipeService
 
     // Clear recipe state
     _recipes.clear();
+    // Clear the id→recipe index too — resetForLogout does NOT route through
+    // notifyListeners(), so _reindex() won't fire; without this the index would
+    // retain the previous user's recipes and getRecipeById would leak them.
+    _recipeById.clear();
     _invalidateListCaches();
     _isInitialized = false;
     _isLoading = false;

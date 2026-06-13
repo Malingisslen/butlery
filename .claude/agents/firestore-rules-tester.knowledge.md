@@ -656,3 +656,18 @@ AND purchased by target → both blocks null, (ii) assigned to OTHER → fully
 untouched, (iii) purchased by target but assigned to OTHER → only purchased
 block nulled, foreign assignment kept. A single "target item scrubbed" assertion
 would not catch a too-greedy rewrite that also wiped a co-member's authorship.
+
+### 2026-06-13 — root-level schemaVersion guard pattern (BUT-1249)
+
+`users/{uid}/recipes/{recipeId}` has NO root-level `keys().hasOnly()` validator.
+The only structural gate is `isValidTagResult(core.tagResult)`, scoped to the
+nested tagResult map. A root-level `schemaVersion: 1` field (added by BUT-648
+to the model) passes the create AND update rules today.
+
+Tests R9 and R10 in `firestore-rules.test.ts` guard this contract: if a future
+engineer adds a top-level `hasOnly([...])` to the recipes rule without
+including `schemaVersion`, these tests will fail and surface the regression
+before it ships. Both verified green on emulator (22/22 passed, including all
+pre-existing tests). Doc ids use the per-RUN token to avoid emulator-persistence
+collisions. The `validRecipeBody(extra)` builder accepts `{ schemaVersion: 1 }`
+in the spread so the root-level field sits alongside `core: {...}`.

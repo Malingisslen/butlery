@@ -795,6 +795,54 @@ void main() {
         // the getter works correctly when recipes list is empty
         expect(service.collaborativeRecipes, isEmpty);
       });
+
+      // Regression gate for BUT-1251: resetForLogout must clear the O(1)
+      // _recipeById index. Before the fix, resetForLogout only called
+      // _recipes.clear() but not _recipeById.clear() — the index was never
+      // rebuilt (resetForLogout bypasses notifyListeners) so getRecipeById
+      // kept returning stale recipes from the previous user's session.
+      test(
+          'resetForLogout clears the id index — getRecipeById returns null after logout',
+          () async {
+        // Arrange: stub repo so createCollaborativeRecipe actually seeds a
+        // recipe into _recipes (and therefore into _recipeById).
+        when(() => mockRecipeRepository.create(any())).thenAnswer(
+          (inv) async => inv.positionalArguments[0] as Recipe,
+        );
+        when(() => mockRecipeRepository.update(any())).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.read(any())).thenAnswer(
+          (inv) async => RecipeFactory.buildCollaborative(
+            id: inv.positionalArguments[0] as String,
+          ),
+        );
+
+        // Seed one recipe into the service so the index is non-empty.
+        final recipeId = await service.createCollaborativeRecipe(
+          title: 'Recept att logga ut från',
+          memberIds: ['user1'],
+          ingredients: ['Potatis'],
+          instructions: ['Koka.'],
+        );
+        expect(recipeId, isNotNull,
+            reason: 'Pre-condition: recipe must be created');
+        expect(
+          service.getRecipeById(recipeId!),
+          isNotNull,
+          reason: 'Pre-condition: recipe must be in the index before logout',
+        );
+
+        // Act
+        service.resetForLogout();
+
+        // Assert: index cleared — no stale lookup possible.
+        expect(
+          service.getRecipeById(recipeId),
+          isNull,
+          reason: 'getRecipeById must return null after resetForLogout — '
+              'the _recipeById index must be cleared even though '
+              'resetForLogout does not route through notifyListeners',
+        );
+      });
     });
 
     group('Error Management', () {
