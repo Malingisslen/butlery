@@ -97,7 +97,8 @@ class _MenuPlacementViewContent extends StatelessWidget {
       actions: [
         Center(
           child: Container(
-            margin: const EdgeInsets.only(right: AppDimensions.spacingMd),
+            margin:
+                const EdgeInsetsDirectional.only(end: AppDimensions.spacingMd),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             decoration: BoxDecoration(
               border: Border.all(color: cs.onPrimary.withValues(alpha: 0.4)),

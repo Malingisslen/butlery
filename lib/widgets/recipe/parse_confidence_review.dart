@@ -119,7 +119,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                       Text(
                         '$lowCount ${lowCount == 1 ? 'rad' : 'rader'} med osäker tolkning',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.warning,
+                          color: context.butleryColors.warning,
                         ),
                       ),
                   ],
@@ -203,8 +203,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
             widget.ingredient.originalLine.isNotEmpty &&
             widget.ingredient.originalLine != widget.ingredient.displayString)
           Padding(
-            padding: const EdgeInsets.only(
-              left: AppDimensions.spacingXl + AppDimensions.spacingS,
+            padding: const EdgeInsetsDirectional.only(
+              start: AppDimensions.spacingXl + AppDimensions.spacingS,
               bottom: AppDimensions.spacingXs,
             ),
             child: Text(
