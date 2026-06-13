@@ -431,9 +431,9 @@ Steps:
 6. Verification gate: \`git status\` MUST show a clean tracked tree. Repeat step 5 until clean.
 7. \`git push -u origin HEAD\`.
 8. Close Linear tickets — close ONLY the EXACT ticket IDs listed here; do NOT infer, add, or close any other ticket even if it looks related or is referenced in the diff:
-   - Done-state: ${doneIds.join(', ') || '(none)'} — comment "Fixed in commit <short-sha>: <subject>".
+   - Done-state: ${doneIds.join(', ') || '(none)'} — comment "Fixed in commit <short-sha>: <subject>" PLUS one plain-language sentence on what changed in the app and why (Malin reads these and doesn't read code — no class names, no shorthand; describe what she'd notice).
    - Obsolete: ${obsoleteIds.join(', ') || '(none)'} — comment "Obsolete — resolved by <sha>".
-   - Move back to Todo with a failure comment: ${[...failedIds, ...conflictBatches].join(', ') || '(none)'}.
+   - Move back to Todo with a failure comment: ${[...failedIds, ...conflictBatches].join(', ') || '(none)'} — explain the failure in plain language too (what didn't work, what it means for the app).
 9. Clean up: \`rm -rf ${PATCH_DIR_EXPR}\` and \`git worktree prune\` (remove the per-batch worktrees that have been emptied).
 
 Return the ship summary.`

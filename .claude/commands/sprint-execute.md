@@ -361,6 +361,17 @@ After all tasks processed (or remaining tasks blocked):
    ```
    If any line of that report is "skipped" or "n/a" without a real reason, you have not finished the sprint — go back and complete it. The "In Review" and "Needs you" lines are how the user stays in the loop without blocking it — never omit them when tickets land in those buckets.
 
+   **Write for a non-coder who wasn't watching.** Malin reads every report, Linear comment, and
+   push notification herself, and she doesn't read code. After the structured block above, add a
+   short plain-language paragraph per shipped ticket: what changed *in the app* and *why* it was
+   done — "recipes you cooked today now show a chip on the card, so you can see at a glance what's
+   already been made" beats "added isCookedToday to RecipeCardViewModel". No arrow chains, no
+   session shorthand, no invented labels; gloss any unavoidable technical term in product terms the
+   first time. Same register as the mandatory "What this means in plain language" plan section.
+   This applies to ALL human-facing text the sprint produces: the final report, every In-Review
+   `save_comment` (the "what to spot-check" must be checkable by looking at the app, not the diff),
+   and every PushNotification one-liner.
+
 ## Follow-up rule (mandatory, applies in every phase)
 
 **`tasks/todo.md` is sprint-scratch, not a backlog.** The next `/sprint-execute` overwrites it. Anything that needs to outlive the current sprint must land in Linear before the commit.
