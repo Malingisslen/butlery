@@ -86,12 +86,18 @@ const TICKET = {
     files: { type: 'array', items: { type: 'string' }, description: 'Target file paths' },
     change: { type: 'string', description: 'One-line intended change' },
     acceptance: { type: 'array', items: { type: 'string' }, description: '2–4 gradeable acceptance criteria per skill Phase 1 — yes/no checkable from diff+tests; the rubric the Verify phase grades against' },
+    disposition: {
+      type: 'string',
+      enum: ['build', 'build-review'],
+      description: 'MANDATE judgement. Every ticket here was created by Claude with no human approval, so do not assume it is worth doing. "build" = clear mandate AND unambiguous enough to implement and auto-close (clear bug/correctness fix, obvious-benefit tech-debt, follow-up to already-approved work). "build-review" = worth building but needs Malin\'s sign-off (any UI/design/visual choice, a product or UX decision, debatable behavior change, or anything you would normally show her a preview/options for first). Tickets you judge should NOT be built at all go in plan.needsApproval, NOT in a batch.',
+    },
+    signoffReason: { type: 'string', description: 'For build-review: the one thing Malin should look at / decide when she reviews it.' },
   },
 }
 
 const PLAN_SCHEMA = {
   type: 'object',
-  required: ['sprintName', 'date', 'batches', 'obsolete'],
+  required: ['sprintName', 'date', 'batches', 'obsolete', 'needsApproval'],
   properties: {
     sprintName: { type: 'string' },
     date: { type: 'string', description: 'YYYY-MM-DD from `date` command' },
@@ -114,6 +120,19 @@ const PLAN_SCHEMA = {
       type: 'array',
       description: 'Tickets that git shows already done but Linear still has open',
       items: { type: 'object', required: ['id', 'reason'], properties: { id: { type: 'string' }, reason: { type: 'string' } } },
+    },
+    needsApproval: {
+      type: 'array',
+      description: 'MANDATE GATE. Tickets that exist but you judge should NOT be auto-implemented — because they were AI-created with no human approval and are speculative, debatable, possibly-unwanted, change established behavior in a contestable way, or are genuinely Malin\'s call to make. These are NOT built; they are surfaced to her with your reasoning + recommendation so she decides. Do not be trigger-happy (clear bugs, obvious-benefit refactors, and follow-ups to approved work are "build", not this) — but when you would not bet the ticket is wanted, flag it here instead of silently shipping it.',
+      items: {
+        type: 'object',
+        required: ['id', 'reason', 'recommendation'],
+        properties: {
+          id: { type: 'string' },
+          reason: { type: 'string', description: 'Why its mandate is doubtful — what makes it your-call rather than clearly-worth-doing' },
+          recommendation: { type: 'string', description: 'Your honest steer: do it / drop it / needs reframing — and why' },
+        },
+      },
     },
     linearAvailable: { type: 'boolean' },
   },
@@ -199,9 +218,13 @@ Steps:
 1. Verify Linear MCP is connected (try list_issues team "Butlery"). Set linearAvailable accordingly; if down, still produce a plan from tasks/todo.md + git if possible.
 2. Gather IN PARALLEL: Linear backlog (states Backlog, Todo, In Progress, Triage), tasks/todo.md, and \`git log --since="7 days ago" --oneline --no-merges\`.
 3. Score each open ticket per the skill's priority scoring. Map BUT-XXX in recent git → flag tickets already done but still open (put them in "obsolete"). EXCLUDE entirely any ticket whose labels contain "onboarding-reserved" — these are reserved human onboarding capstones (e.g. BUT-677, BUT-722); never score, select, transition, or implement them.
-4. Select N tickets: ${COUNT ? `EXACTLY ${COUNT}` : 'auto-size 6–10 by backlog volume'}.${FOCUS ? ` Filter to area label "${FOCUS}" (warn if <3).` : ''}
-5. CLUSTER tickets by area into batches so that each batch touches a DISJOINT set of files — this is critical: batches run in parallel worktrees and their patches are applied sequentially, so overlapping files would conflict. Never split one area across two batches. Assign each batch a single \`area\`.
-6. For each ticket compute the Phase 1.5 \`requiresPlanMode\` flag, AND write 2–4 gradeable \`acceptance\` criteria per skill Phase 1 (each must be yes/no verifiable from the diff + tests alone — pin the intent the ticket exists to satisfy plus any explicit "don't do X" constraint). These become the rubric the Verify phase grades against.
+4. MANDATE JUDGEMENT (do this for EVERY candidate, any topic, BEFORE selecting). CRITICAL CONTEXT: every ticket in this backlog was created by Claude itself — by autonomous /linear scans and sprint follow-ups — so NO human has ever approved that any of them is worth doing. Do not treat "the ticket exists" as "the ticket should be built." For each candidate decide one of:
+   - \`build\` — clear mandate AND unambiguous: a real bug/correctness fix, an obvious-benefit refactor/tech-debt cleanup, a follow-up to work already approved, or a change backed by a mockup / spec / a saved preference in memory. Safe to implement and auto-close.
+   - \`build-review\` — worth building, but the OUTCOME is Malin's to sign off: anything with a UI/visual/design choice, a product or UX decision, a debatable behavior change, or anything you would normally show her a preview or A/B options for first. Build a best guess, but it will park in In Review for her — never auto-close. Set \`signoffReason\` to the one thing she should look at.
+   - needsApproval (do NOT build) — you would not honestly bet Malin wants this done: speculative / nice-to-have with unclear benefit, a contestable change to established behavior, scope she may not want touched, or genuinely her call. Put it in plan.needsApproval with your reason + an honest recommendation (do it / drop it / reframe). It is surfaced to her, not implemented.
+   Calibrate: be a skeptical-but-fair gatekeeper, not trigger-happy. Clear wins flow through; only flag what you genuinely can't vouch for. If the WHOLE batch is build-review/needsApproval (e.g. a backlog of pure design decisions), that is fine and expected — say so; do not manufacture "build" work to fill N.
+5. Select up to N tickets that are \`build\` or \`build-review\`: ${COUNT ? `aim for ${COUNT}` : 'auto-size 6–10 by backlog volume'} (needsApproval tickets do NOT count toward N).${FOCUS ? ` Filter to area label "${FOCUS}" (warn if <3).` : ''} CLUSTER the selected tickets by area into batches so that each batch touches a DISJOINT set of files — critical: batches run in parallel worktrees and patches apply sequentially, so overlapping files conflict. Never split one area across two batches. Assign each batch a single \`area\`. Only \`build\`/\`build-review\` tickets go in batches; never put a needsApproval ticket in a batch.
+6. For each batched ticket set its \`disposition\`, compute the Phase 1.5 \`requiresPlanMode\` flag, AND write 2–4 gradeable \`acceptance\` criteria per skill Phase 1 (each must be yes/no verifiable from the diff + tests alone — pin the intent the ticket exists to satisfy plus any explicit "don't do X" constraint). These become the rubric the Verify phase grades against.
 7. Run \`date +%Y-%m-%d\` for the sprint date.
 ${DRY_RUN ? `8. DRY-RUN — READ-ONLY. Do NOT write tasks/todo.md. Do NOT transition any Linear ticket. Make zero mutations; only read and return the proposed plan.` : `8. Write tasks/todo.md in the skill's format (archive any prior sprint below a --- separator).
 9. If Linear is up, transition each selected ticket to "Todo" (resolve state UUIDs once via list_issue_statuses, then save_issue per ticket).`}
@@ -212,17 +235,40 @@ Return the structured plan. Estimate \`files\` per ticket from a quick code read
 
 const plan = await agent(selectPrompt, { label: 'select', phase: 'Select', schema: PLAN_SCHEMA })
 
-if (!plan || !plan.batches || plan.batches.length === 0) {
-  log('No tickets selected — nothing to do.')
-  return { status: 'empty', plan }
+if (!plan) {
+  log('Selection returned nothing — nothing to do.')
+  return { status: 'empty', plan: null }
 }
 
-log(`Selected ${plan.batches.reduce((n, b) => n + b.tickets.length, 0)} tickets across ${plan.batches.length} batch(es): ${plan.batches.map(b => `${b.agentName}[${b.area}]`).join(', ')}`)
+const needsApproval = plan.needsApproval || []
+const batchTicketCount = (plan.batches || []).reduce((n, b) => n + b.tickets.length, 0)
+log(`Mandate gate: ${batchTicketCount} ticket(s) to build/build-review, ${needsApproval.length} flagged for your decision (created by automation, never human-approved).`)
+
+// Surface mandate-flagged tickets so Malin decides them — they are NOT built.
+// Real runs only (Linear writes); the dry-run returns them in the plan instead.
+if (!DRY_RUN && needsApproval.length > 0 && plan.linearAvailable !== false) {
+  await agent(
+    `Surface ${needsApproval.length} mandate-flagged Butlery ticket(s) for Malin's decision. CONTEXT: these were created by Claude's own automation with no human approval, and were judged NOT clearly worth auto-implementing — so they must NOT be built or closed; she decides. For EACH ticket: post a Linear save_comment written for a non-coder (no class names, no jargon) explaining plainly why Claude is unsure it should be done, and the honest recommendation. Do NOT change the ticket's state and do NOT implement anything. Then send ONE consolidated PushNotification: "<N> backlog tickets need your decision (auto-created, never approved) — open Linear: <ids>".
+
+Tickets:
+${needsApproval.map(t => `- ${t.id}: ${t.reason} → recommendation: ${t.recommendation}`).join('\n')}`,
+    { label: 'surface-needs-approval', phase: 'Select', schema: { type: 'object', properties: { commented: { type: 'array', items: { type: 'string' } }, notified: { type: 'boolean' } } } }
+  )
+}
 
 if (DRY_RUN) {
   log('Dry-run: stopping after selection.')
   return { status: 'dry-run', plan }
 }
+
+if (!plan.batches || plan.batches.length === 0) {
+  log(needsApproval.length
+    ? `No autonomously-buildable work this run — ${needsApproval.length} ticket(s) flagged for your decision instead.`
+    : 'No tickets selected — nothing to do.')
+  return { status: needsApproval.length ? 'needs-approval-only' : 'empty', plan }
+}
+
+log(`Building ${batchTicketCount} ticket(s) across ${plan.batches.length} batch(es): ${plan.batches.map(b => `${b.agentName}[${b.area}]`).join(', ')}`)
 
 // ── Phase 2: Implement (parallel, isolated worktrees) ──────────────────────
 phase('Implement')
@@ -535,15 +581,30 @@ const doneIds = doneResults.filter(r => r.status === 'done' || r.status === 'pla
 const failedIds = doneResults.filter(r => r.status === 'failed').map(r => r.id)
 const conflictBatches = (integ.conflicts || []).map(c => c.batch)
 
-// Only tickets that passed the adversarial panel close to Done. Ones that failed
-// verification still SHIP (the code is in the tree), but they park in In Review with
-// the failing-lens reasons rather than auto-closing — never claim "done" on a
-// criterion three skeptics could not confirm (skill Phase 2.7).
-const verifiedDoneIds = doneIds.filter(id => !verifyFailedIds.has(id))
-const needsReviewIds = doneIds.filter(id => verifyFailedIds.has(id))
+// A ticket closes to Done ONLY when it is both (a) a clear-mandate `build` ticket
+// AND (b) passed the adversarial panel. Two distinct things send a ticket to In
+// Review instead, each meaning "Malin's eyes, not auto-done":
+//   1. disposition `build-review` — the OUTCOME is hers to sign off (design/UX/
+//      product judgement). Parks in In Review EVEN IF the panel passed it — a robot
+//      cannot approve a design decision on her behalf.
+//   2. failed verification — three skeptics could not confirm it's correct/safe.
+const dispositionOf = new Map()
+for (const b of (plan.batches || [])) for (const t of (b.tickets || [])) {
+  dispositionOf.set(t.id, { disposition: t.disposition || 'build', signoffReason: t.signoffReason || '' })
+}
+const isBuildReview = (id) => (dispositionOf.get(id) || {}).disposition === 'build-review'
+const verifiedDoneIds = doneIds.filter(id => !verifyFailedIds.has(id) && !isBuildReview(id))
+const needsReviewIds = doneIds.filter(id => verifyFailedIds.has(id) || isBuildReview(id))
 const gradeFor = (id) => {
   const g = graded.find(x => x.id === id)
   return g ? g.votes.map(v => `${v.lens}:${v.verdict} (${v.reason})`).join(' · ') : 'ungraded'
+}
+// Why each In-Review ticket needs her: design sign-off, failed verification, or both.
+const reviewReasonFor = (id) => {
+  const parts = []
+  if (isBuildReview(id)) parts.push(`design/judgement sign-off — ${(dispositionOf.get(id) || {}).signoffReason || 'check it matches what you want'}`)
+  if (verifyFailedIds.has(id)) parts.push(`verification flagged it — ${gradeFor(id)}`)
+  return parts.join(' · ') || 'needs your eyes'
 }
 const completenessLines = (completeness.gaps || []).map(g => `- ${g.concerns}: ${g.gap}${g.suggestedFollowUp ? ` → ${g.suggestedFollowUp}` : ''}`).join('\n')
 
@@ -551,9 +612,9 @@ const markerList = markersToTouch.join(' ')
 const shipPrompt = `You are running Phase 3 (Post-sprint, MANDATORY) of a Butlery sprint. Read ${SKILL} Phase 3 + the Follow-up rule and follow them exactly.
 
 Context:
-- Tickets VERIFIED (passed the adversarial panel → close Done): ${verifiedDoneIds.join(', ') || 'none'}
-- Tickets that landed code but FAILED verification (→ In Review, NOT Done): ${needsReviewIds.join(', ') || 'none'}
-${needsReviewIds.map(id => `    · ${id}: ${gradeFor(id)}`).join('\n')}
+- Tickets VERIFIED + clear-mandate (passed the panel AND safe to auto-close → Done): ${verifiedDoneIds.join(', ') || 'none'}
+- Tickets that landed code but need YOUR eyes (→ In Review, NOT Done — either a design/judgement decision only Malin signs off, or verification flagged them): ${needsReviewIds.join(', ') || 'none'}
+${needsReviewIds.map(id => `    · ${id}: ${reviewReasonFor(id)}`).join('\n')}
 - Tickets obsolete (close as obsolete): ${obsoleteIds.join(', ') || 'none'}
 - Tickets failed (leave open, move to Todo, comment the reason): ${failedIds.join(', ') || 'none'}
 - Batches that failed to apply (their tickets did NOT land — treat as failed/open): ${conflictBatches.join(', ') || 'none'}
@@ -574,7 +635,7 @@ Steps:
 7. \`git push -u origin HEAD\`.
 8. Transition Linear tickets — touch ONLY the EXACT ticket IDs listed here; do NOT infer, add, or transition any other ticket even if it looks related or is referenced in the diff:
    - Done-state (verified): ${verifiedDoneIds.join(', ') || '(none)'} — comment "Fixed in commit <short-sha>: <subject>" PLUS one plain-language sentence on what changed in the app and why (Malin reads these and doesn't read code — no class names, no shorthand; describe what she'd notice).
-   - In Review (state UUID \`9929b3b0-b74f-44b8-bf34-ad2e2e78af7c\`) — landed but failed verification, needs your eyes: ${needsReviewIds.join(', ') || '(none)'} — for each, comment the failing lens + reason from the context above, in plain language (what the skeptic thinks is wrong or unconfirmed, and what to check in the app). Then PushNotification a one-liner per ticket so Malin can review on her phone. Do NOT close these to Done.
+   - In Review (state UUID \`9929b3b0-b74f-44b8-bf34-ad2e2e78af7c\`) — landed code that needs YOUR eyes: ${needsReviewIds.join(', ') || '(none)'} — for each, comment the reason from the context above in plain language: if it's a design/judgement sign-off, describe what to look at and what she's approving (and any alternative you considered so she can redirect); if verification flagged it, what the skeptic thinks is wrong/unconfirmed and what to check in the app. For UI tickets, include the HTML-preview/screenshot path. Then PushNotification a one-liner per ticket so Malin can review on her phone. Do NOT close these to Done.
    - Obsolete: ${obsoleteIds.join(', ') || '(none)'} — comment "Obsolete — resolved by <sha>".
    - Move back to Todo with a failure comment: ${[...failedIds, ...conflictBatches].join(', ') || '(none)'} — explain the failure in plain language too (what didn't work, what it means for the app).
 9. Clean up: \`rm -rf ${PATCH_DIR_EXPR}\` and \`git worktree prune\` (remove the per-batch worktrees that have been emptied).
@@ -609,7 +670,8 @@ return {
   status: shipOk ? 'complete' : 'ship-incomplete',
   sprint: plan.sprintName,
   date: plan.date,
-  tickets: { done: verifiedDoneIds, inReview: needsReviewIds, obsolete: obsoleteIds, failed: [...failedIds, ...conflictBatches] },
+  tickets: { done: verifiedDoneIds, inReview: needsReviewIds, obsolete: obsoleteIds, failed: [...failedIds, ...conflictBatches], needsApproval: needsApproval.map(t => t.id) },
+  needsApprovalDetail: needsApproval,
   conflicts: integ.conflicts,
   review: { total: allFindings.length, blockingFixed: blocking.length },
   verification: { graded: graded.length, failed: [...verifyFailedIds], detail: graded.map(g => ({ id: g.id, verified: g.verified, votes: g.votes.map(v => `${v.lens}:${v.verdict}`) })) },
