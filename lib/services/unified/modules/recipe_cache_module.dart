@@ -242,8 +242,12 @@ class RecipeCacheModule {
       // BUG-003: Call direct update callback (for web where cache is stubbed)
       _onRecipeUpdated?.call(recipe);
 
-      // Notify listeners of change
-      _notifyListeners();
+      // BUT-1252: When a direct callback handled the update (web), it already
+      // mutated _recipes AND notified — notifying again here would double-fire.
+      // Only the cache-owned native path notifies from here.
+      if (_onRecipeUpdated == null) {
+        _notifyListeners();
+      }
 
       AppLogger.debug('Recipe updated from $source: ${recipe.title}');
     } catch (e) {
@@ -260,8 +264,11 @@ class RecipeCacheModule {
       // BUG-003: Call direct removal callback (for web where cache is stubbed)
       _onRecipeRemoved?.call(recipeId);
 
-      // Notify listeners of change
-      _notifyListeners();
+      // BUT-1252: see _updateCachedRecipe — skip the redundant notify when the
+      // direct removal callback already notified.
+      if (_onRecipeRemoved == null) {
+        _notifyListeners();
+      }
 
       AppLogger.debug('Recipe removed from $source cache: $recipeId');
     } catch (e) {

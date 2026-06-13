@@ -174,7 +174,12 @@ class OCRExtractionService extends BaseService {
     unawaited(_usageTracker.loadFromPersistence());
   }
 
-  /// Create OCR service for testing with injectable dependencies
+  /// Create OCR service for testing with injectable dependencies.
+  ///
+  /// When [registerAsInstance] is true the created service is also installed
+  /// as the static singleton, so static test hooks that operate on `instance`
+  /// (e.g. [clearCacheForTesting]) act on this mock-driven service rather than
+  /// a separate default singleton.
   @visibleForTesting
   static OCRExtractionService createForTesting({
     http.Client? testHttpClient,
@@ -182,14 +187,19 @@ class OCRExtractionService extends BaseService {
     String? testGoogleVisionKey,
     String? testTesseractApiUrl,
     DateTime Function()? testTimeProvider,
+    bool registerAsInstance = false,
   }) {
-    return OCRExtractionService._(
+    final service = OCRExtractionService._(
       testHttpClient: testHttpClient,
       testOcrApiKey: testOcrApiKey,
       testGoogleVisionKey: testGoogleVisionKey,
       testTesseractApiUrl: testTesseractApiUrl,
       testTimeProvider: testTimeProvider,
     );
+    if (registerAsInstance) {
+      _instance = service;
+    }
+    return service;
   }
 
   /// Reset singleton for testing (clears instance state)
@@ -944,13 +954,27 @@ class OCRExtractionService extends BaseService {
     };
   }
 
-  /// Clear cache for testing
-  static void clearCacheForTesting() => instance.clearAllCache();
+  /// Clear the service's own in-memory caches. Shared by [dispose] and the
+  /// test hook so a test can reset OCR state without tearing down the
+  /// singleton. The BaseService cache is cleared separately via
+  /// [clearAllCache] — these LruMaps are not part of it.
+  void _clearLocalCaches() {
+    _cache.clear();
+    _rawHashToPreprocessedHash.clear();
+  }
+
+  /// Clear cache for testing. Clears both the BaseService cache and the
+  /// service's own OCR-result / raw-hash-index LruMaps — otherwise a test
+  /// would see stale cache hits from a prior test's extractions.
+  @visibleForTesting
+  static void clearCacheForTesting() {
+    instance.clearAllCache();
+    instance._clearLocalCaches();
+  }
 
   @override
   Future<void> dispose() async {
-    _cache.clear();
-    _rawHashToPreprocessedHash.clear();
+    _clearLocalCaches();
     await super.dispose();
   }
 }

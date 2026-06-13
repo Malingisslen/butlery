@@ -654,6 +654,52 @@ void main() {
       // Cannot check cache size after dispose, but verified in implementation
     });
 
+    test(
+        'clearCacheForTesting clears the service own LruMaps (cache + raw index)',
+        () async {
+      // BUT-1253: clearCacheForTesting() previously only cleared the
+      // BaseService cache, leaving _cache (OCR results) and
+      // _rawHashToPreprocessedHash populated. A repeat extraction of the same
+      // bytes would then return a stale cache hit instead of re-hitting the
+      // API — so the only behavior that proves the LruMaps were actually
+      // cleared is that the second extraction calls the provider again.
+      final imageBytes = OCRTestImages.mediumQuality;
+      final mockResponse = MockStreamedResponse();
+
+      when(() => mockResponse.statusCode).thenReturn(200);
+      when(() => mockResponse.stream).thenAnswer(
+          (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess));
+
+      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
+
+      // Register this mock-driven service as the singleton so the static
+      // clearCacheForTesting() hook (which operates on `instance`) acts on it.
+      final singletonService = OCRExtractionService.createForTesting(
+        testHttpClient: mockClient,
+        testOcrApiKey: 'test-key',
+        testTimeProvider: () => testTime,
+        registerAsInstance: true,
+      );
+
+      // First extraction populates both LruMaps.
+      await singletonService.extractText(imageBytes);
+      expect(singletonService.getServiceStatus()['cache_size'], greaterThan(0));
+
+      OCRExtractionService.clearCacheForTesting();
+
+      // Result cache is empty after the clear.
+      expect(singletonService.getServiceStatus()['cache_size'], equals(0));
+
+      // Same bytes again: with both the result cache AND the raw-hash
+      // fast-path index cleared, this must re-hit the provider (2 calls
+      // total). If only the BaseService cache had been cleared, the raw-hash
+      // index would still short-circuit to a stale result (1 call).
+      await singletonService.extractText(imageBytes);
+      verify(() => mockClient.send(any())).called(2);
+
+      await singletonService.dispose();
+    });
+
     test('should cap cache at maxSize with LRU eviction', () async {
       // BUT-817: cache backed by LruMap — bound holds at maxSize (100); each
       // insert past the bound evicts exactly the eldest entry, not a 25%

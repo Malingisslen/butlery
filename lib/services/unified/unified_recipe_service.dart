@@ -150,16 +150,28 @@ class UnifiedRecipeService
   }
 
   /// Rebuild the O(1) id→recipe index from the current [_recipes] list.
-  /// Called from [notifyListeners] so it fires after every list mutation.
+  /// Called from [notifyListeners] only when the list actually changed.
   void _reindex() {
     _recipeById
       ..clear()
       ..addEntries(_recipes.map((r) => MapEntry(r.id, r)));
   }
 
+  /// Default notify path: the [_recipes] list may have changed, so the O(1)
+  /// [_recipeById] index is rebuilt. Kept parameterless so it still satisfies
+  /// the `ChangeNotifier.notifyListeners()` signature that mocks mix in.
   void notifyListeners() {
     _invalidateListCaches();
     _reindex();
+    _emitState();
+  }
+
+  /// BUT-1252: notify path for state changes that provably leave [_recipes]
+  /// untouched (error/loading-state flips). Skips BOTH the O(n) index rebuild
+  /// and the list-cache invalidation — the list-derived caches (unmodifiable /
+  /// personal / collaborative) stay valid when [_recipes] hasn't changed — and
+  /// only re-emits state.
+  void _notifyStateOnly() {
     _emitState();
   }
 
@@ -501,7 +513,14 @@ class UnifiedRecipeService
     }
   }
 
-  /// BUG-003: Handle direct recipe updates on web (bypasses stubbed cache)
+  /// BUG-003: Handle direct recipe updates on web (bypasses stubbed cache).
+  ///
+  /// BUT-1252: Self-contained — calls [notifyListeners] itself at the end. On
+  /// web the cache module therefore skips its own notify (it notifies only when
+  /// its direct callback is null — see RecipeCacheModule._updateCachedRecipe),
+  /// so the listener signal fires exactly once. This keeps the mutation and the
+  /// signal in one place and guarantees the O(1) index is rebuilt for the
+  /// freshly-mutated [_recipes].
   void _handleDirectRecipeUpdate(Recipe recipe) {
     final existingIndex = _recipes.indexWhere((r) => r.id == recipe.id);
     if (existingIndex >= 0) {
@@ -510,12 +529,16 @@ class UnifiedRecipeService
       _recipes.add(recipe);
     }
     AppLogger.debug('📝 [Web] Direct recipe update: ${recipe.title}');
+    notifyListeners();
   }
 
-  /// BUG-003: Handle direct recipe removals on web (bypasses stubbed cache)
+  /// BUG-003: Handle direct recipe removals on web (bypasses stubbed cache).
+  ///
+  /// BUT-1252: Self-contained — see [_handleDirectRecipeUpdate].
   void _handleDirectRecipeRemoval(String recipeId) {
     _recipes.removeWhere((r) => r.id == recipeId);
     AppLogger.debug('🗑️ [Web] Direct recipe removal: $recipeId');
+    notifyListeners();
   }
 
   /// Public getter for firestore instance (for legacy interfaces)
@@ -961,7 +984,8 @@ class UnifiedRecipeService
 
   void clearError() {
     _error = null;
-    notifyListeners();
+    // BUT-1252: error-only state change — _recipes is untouched, skip reindex.
+    _notifyStateOnly();
   }
 
   void _handleAuthStateChange(String? userId) {
@@ -979,7 +1003,8 @@ class UnifiedRecipeService
 
   void _setError(String message) {
     _error = message.isEmpty ? null : message;
-    notifyListeners();
+    // BUT-1252: error-only state change — _recipes is untouched, skip reindex.
+    _notifyStateOnly();
   }
 
   /// Get service status for debugging

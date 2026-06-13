@@ -845,6 +845,100 @@ void main() {
       });
     });
 
+    // BUT-1252: list-mutating changes go through notifyListeners() (which
+    // reindexes the O(1) _recipeById map), while error/loading-only changes go
+    // through _notifyStateOnly() (clearError/_setError), which skips the reindex
+    // but must never corrupt or stale the existing index. These tests pin that
+    // contract through the public surface (getRecipeById + optimistic list
+    // mutations + clearError) so a regression that either drops the reindex on a
+    // real mutation OR wrongly staled it on an error-only notify would fail.
+    group('BUT-1252 index reindex gating', () {
+      setUp(() async {
+        await service.initialize();
+        // Firebase sync fails in unit tests and may set an error — clear it so
+        // the index/state starts from a known-clean baseline.
+        service.clearError();
+      });
+
+      test(
+          'list mutation reindexes — getRecipeById finds an optimistically '
+          'restored recipe', () {
+        // Arrange
+        final recipe = RecipeFactory.build(id: 'reindex-target');
+        expect(service.getRecipeById('reindex-target'), isNull,
+            reason: 'pre-condition: recipe not yet in the index');
+
+        // Act — optimisticRestore mutates _recipes and notifies with the
+        // default recipesChanged: true, which must rebuild the index.
+        service.optimisticRestore(recipe);
+
+        // Assert
+        expect(service.getRecipeById('reindex-target'), isNotNull,
+            reason: 'a list mutation must trigger a reindex');
+        expect(service.getRecipeById('reindex-target')!.id, 'reindex-target');
+      });
+
+      test(
+          'error-only notify does not stale the index — recipe stays findable '
+          'after clearError', () {
+        // Arrange — seed the index via a real list mutation.
+        final recipe = RecipeFactory.build(id: 'survives-clearerror');
+        service.optimisticRestore(recipe);
+        expect(service.getRecipeById('survives-clearerror'), isNotNull,
+            reason: 'pre-condition: recipe is indexed');
+
+        // Act — clearError routes through the state-only notify path, which
+        // skips the reindex. The previously-built index must remain intact.
+        service.clearError();
+
+        // Assert
+        expect(service.getRecipeById('survives-clearerror'), isNotNull,
+            reason: 'an error-only notify must not drop the existing index');
+        expect(service.error, isNull);
+      });
+
+      test(
+          'removal reindexes — getRecipeById returns null after optimisticRemove',
+          () {
+        // Arrange
+        final recipe = RecipeFactory.build(id: 'to-be-removed');
+        service.optimisticRestore(recipe);
+        expect(service.getRecipeById('to-be-removed'), isNotNull,
+            reason: 'pre-condition: recipe is indexed');
+
+        // Act — a removal is a list mutation, so the index must rebuild.
+        service.optimisticRemove('to-be-removed');
+
+        // Assert
+        expect(service.getRecipeById('to-be-removed'), isNull,
+            reason: 'a removal must trigger a reindex that drops the entry');
+      });
+
+      test(
+          'single native list mutation emits exactly one state event '
+          '(no double-notify)', () async {
+        // BUT-1252 motivation: the cache module previously notified twice on a
+        // single direct update (its own _notifyListeners PLUS the direct
+        // callback). The fix makes a single mutation produce a single state
+        // signal. The web double-notify path is kIsWeb-gated and can't run in
+        // the VM, but the native optimistic path shares the same one-mutation/
+        // one-notify contract — a regression that re-adds a redundant notify on
+        // this path would emit twice and fail this count.
+        var emissions = 0;
+        final sub = service.stateStream.listen((_) => emissions++);
+        // Drain the BehaviorSubject replay event before counting.
+        await Future<void>.delayed(Duration.zero);
+        emissions = 0;
+
+        service.optimisticRestore(RecipeFactory.build(id: 'emit-once'));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(emissions, 1,
+            reason: 'one list mutation must emit exactly one state event');
+        await sub.cancel();
+      });
+    });
+
     group('Error Management', () {
       setUp(() async {
         await service.initialize();
