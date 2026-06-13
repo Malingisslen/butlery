@@ -71,9 +71,10 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
 
   @override
   Widget build(BuildContext context) {
-    final lowCount = _sorted
-        .where((i) => i.ingredient.confidence == ParseConfidence.low)
-        .length;
+    // Count everything that needs review (low AND failed) — a failed item
+    // renders the same grey pill, so the header warning must include it too.
+    final lowCount =
+        _sorted.where((i) => i.ingredient.confidence.needsReview).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
