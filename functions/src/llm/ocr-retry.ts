@@ -63,6 +63,12 @@ export interface RetryDeps {
   minRemainingBudgetMs?: number;
   /** Total parent-function timeout (ms). Default `OCR_FUNCTION_TIMEOUT_MS`. */
   totalBudgetMs?: number;
+  /**
+   * BUT-1053: canonical user locale (e.g. 'sv', 'en') forwarded from the
+   * parent OCR request. Threaded into the structureRecipe retry request so
+   * the respond-in-locale instruction applies on the retry path too.
+   */
+  locale?: string;
 }
 
 // =============================================================================
@@ -152,7 +158,7 @@ export async function runOcrRetry(
   // Attempt the retry.
   try {
     const result = await deps.structureRecipe(
-      { text: rawText, mode: "extract" },
+      { text: rawText, mode: "extract", locale: deps.locale },
       authUidHash
     );
 

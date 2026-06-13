@@ -456,6 +456,60 @@ class OCRExtractionService extends BaseService {
     return 'generic';
   }
 
+  /// Reduce a locale tag to its bare ISO 639-1 language code, dropping any
+  /// region/script suffix (`en_US`, `en-GB`, `sv_SE` → `en`/`en`/`sv`). The
+  /// provider-language helpers below switch on the language only, so a
+  /// regional locale must not fall through to the unknown-locale default.
+  static String _languageCode(String localeName) =>
+      localeName.split('_').first.split('-').first;
+
+  /// Maps the active UI locale to the language code expected by OCR.space
+  /// (ISO 639-2, single string). User-locale is the primary hint; 'eng' is the
+  /// fallback for any unrecognised locale (OCR.space accepts only one code).
+  @visibleForTesting
+  static String ocrSpaceLanguage(String localeName) {
+    switch (_languageCode(localeName)) {
+      case 'sv':
+        return 'swe';
+      case 'en':
+        return 'eng';
+      default:
+        return 'eng';
+    }
+  }
+
+  /// Maps the active UI locale to Google Vision language hints (ISO 639-1
+  /// array). User-locale goes first; the fallback language is always included
+  /// so OCR stays robust for bilingual content.
+  @visibleForTesting
+  static List<String> googleVisionLanguageHints(String localeName) {
+    switch (_languageCode(localeName)) {
+      case 'sv':
+        return ['sv', 'en'];
+      case 'en':
+        return ['en', 'sv'];
+      default:
+        // Unknown locale: keep Swedish + English — the app's primary audience.
+        return ['sv', 'en'];
+    }
+  }
+
+  /// Maps the active UI locale to a '+'-joined Tesseract language string
+  /// (ISO 639-2). User-locale goes first; second language retained for
+  /// bilingual robustness.
+  @visibleForTesting
+  static String tesseractLanguage(String localeName) {
+    switch (_languageCode(localeName)) {
+      case 'sv':
+        return 'swe+eng';
+      case 'en':
+        return 'eng+swe';
+      default:
+        // Unknown locale: keep Swedish first (app default audience).
+        return 'swe+eng';
+    }
+  }
+
   /// Extract text using OCR.space API (Primary - Universal compatibility)
   Future<OCRResult> _extractWithOCRSpace(Uint8List imageBytes) async {
     final base64Image = base64Encode(imageBytes);
@@ -464,7 +518,9 @@ class OCRExtractionService extends BaseService {
     request.fields['apikey'] = _ocrApiKey;
     request.fields['OCREngine'] = '2'; // Best for Swedish text
     request.fields['base64Image'] = 'data:image/jpeg;base64,$base64Image';
-    request.fields['language'] = 'eng'; // English works well for Swedish text
+    // BUT-1053: use active UI locale for primary language hint; fallback to
+    // 'eng' for unknown locales. OCR.space takes a single ISO 639-2 code.
+    request.fields['language'] = ocrSpaceLanguage(AppLocale.current.localeName);
     request.fields['detectOrientation'] = 'true';
     request.fields['scale'] = 'true';
     request.fields['isTable'] = 'false';
@@ -520,7 +576,9 @@ class OCRExtractionService extends BaseService {
             {'type': 'TEXT_DETECTION', 'maxResults': 1},
           ],
           'imageContext': {
-            'languageHints': ['sv', 'en'], // Swedish and English
+            // BUT-1053: user-locale first, fallback retained for robustness.
+            'languageHints':
+                googleVisionLanguageHints(AppLocale.current.localeName),
           },
         },
       ],
@@ -553,7 +611,10 @@ class OCRExtractionService extends BaseService {
             confidence: _calculateConfidenceFromText(extractedText),
             processingMethod: 'google_vision',
             metadata: {
-              'language_hints': ['sv', 'en'],
+              // BUT-1053: reflect the hints actually sent (locale-derived),
+              // not a hardcoded pair — keeps debug/monitoring metadata honest.
+              'language_hints':
+                  googleVisionLanguageHints(AppLocale.current.localeName),
               'processing_time': _now.millisecondsSinceEpoch,
               'annotations_count': textAnnotations.length,
             },
@@ -577,7 +638,8 @@ class OCRExtractionService extends BaseService {
 
     final requestBody = jsonEncode({
       'image': base64Image,
-      'language': 'swe+eng', // Swedish + English
+      // BUT-1053: user-locale first, second language retained for robustness.
+      'language': tesseractLanguage(AppLocale.current.localeName),
       'options': {
         'psm': '6', // Uniform block of text
         'oem': '3', // Default OCR engine mode
@@ -603,7 +665,8 @@ class OCRExtractionService extends BaseService {
           confidence: _calculateConfidenceFromText(extractedText),
           processingMethod: 'tesseract',
           metadata: {
-            'language': 'swe+eng',
+            // BUT-1053: reflect the locale-derived language actually sent.
+            'language': tesseractLanguage(AppLocale.current.localeName),
             'psm': '6',
             'processing_time': _now.millisecondsSinceEpoch,
           },

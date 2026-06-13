@@ -1,25 +1,24 @@
 # Sprint Backlog
 
-## Sprint: close-out clean follow-ups (round-trip test + recipe-id index + rules allow-test) — 2026-06-13 (iter-145)
+## Sprint: locale-aware LLM/OCR + two test-gap close-outs — 2026-06-13 (iter-146)
 
-5th sprint this session. Genuinely-clean Tier A is the session's own filed follow-ups — knocking out 3 small, self-contained ones. All Tier A → Done.
+6th sprint this session. All Tier A → Done. Backlog re-scan (107 open: 15 A-CLEAN). Keeping to clean Tier A that auto-closes (the In-Review queue is already at 7 awaiting Malin).
 
-### Agent A: backend — isolate round-trip test + O(1) recipe-id index
-- [x] **A1. ParsedRecipeStructure round-trip losslessness test** `[Tier A]` — add a test constructing a fully-populated `ParsedRecipeStructure` (every field non-default incl. the Duration total-time) and asserting `fromIsolateMap(toIsolateMap(x))` equals it field-for-field. Guards the BUT-862 isolate seam against a future field being added without updating both serializers. (BUT-1246)
-  - Acceptance: a test builds a fully-populated ParsedRecipeStructure and asserts round-trip equality field-for-field · the test would fail if a field were added to only one of toIsolateMap/fromIsolateMap · existing parsing tests stay green
-- [x] **A2. O(1) getRecipeById index in UnifiedRecipeService** `[Tier A]` — replace the linear `_recipes.where((r)=>r.id==id).firstOrNull` with a `Map<String,Recipe>` index rebuilt whenever `_recipes` changes; getRecipeById does a map lookup. Find ALL `_recipes` mutation sites and keep the index in sync. No behavior change. (BUT-1251)
-  - Acceptance: getRecipeById is an O(1) map lookup · the index is rebuilt/kept in sync at every `_recipes` assignment/mutation site (grep-verified) · existing UnifiedRecipeService + recipe tests pass unchanged · `dart analyze` clean
+### Agent A: backend — locale-aware LLM prompts + OCR language hints `[Tier A]`
+- [ ] **A1. CF prompt locale + OCR provider language-hint threading** `[Tier A]` — the client already sends `locale` (BUT-984). (1) `functions/src/llm/structure-recipe.ts` + OCR equivalent: read `request.locale` and prepend a "Respond in <locale>; preserve culturally-meaningful ingredient/dish names" instruction to the prompt. (2) `lib/services/ocr_extraction_service.dart`: add `_providerLanguage(provider, locale)` mapping AppLocale → provider code (OCR.space ISO-639-2, Vision ISO-639-1 array, Tesseract '+'-joined 639-2); reorder existing multi-lang hints so the user's locale is first (keep the others for robustness). (BUT-1053)
+  - Acceptance: CF reads `request.locale` and includes the respond-in-locale + preserve-names instruction in the prompt (testpinned in functions) · OCR hints derive from the active locale with user-locale first, per-provider code convention correct (testpinned) · no hardcoded single-language regression (the multi-lang fallback retained) · `npm test` + Dart analyze clean
 
-### Agent B: rules — recipes schemaVersion allow-test
-- [x] **B1. schemaVersion-at-root allow-case for recipes collection** `[Tier A]` — add an emulator allow-test to `functions/src/__tests__/firestore-rules.test.ts` (or the recipes rules suite) proving an owner can create AND update a `users/{uid}/recipes` doc carrying root-level `schemaVersion: 1`. Guards against a future top-level recipe validator silently rejecting it (recipes is the one collection with a nested hasOnly). (BUT-1249)
-  - Acceptance: an emulator test proves owner create+update of a recipes doc with root-level schemaVersion:1 is allowed · the rules suite runs green on the emulator (or documented if emulator unavailable) · no rules-file change needed (test-only)
+### Agent B: testing — close the two remaining test-gap follow-ups `[Tier A]`
+- [ ] **B1. ImportResultHandler callsite-order contract test** `[Tier A]` — test `checkForDuplicates` (production DI bridge) proving the content-threshold gate is applied BEFORE the exact-match clamp, and the clamp fires only on URL/title matches. Uses `production.ServiceLocator.initialize(DIContainer())`. (BUT-1247)
+  - Acceptance: a test exercises checkForDuplicates and pins gate→clamp ordering · pins clamp-only-on-URL/title-match · existing smart_import tests green
+- [ ] **B2. End-to-end link-via-picker flow test** `[Tier A]` — widget test tapping the "Länka relaterat recept" button → picker dialog → select → confirm → assert the link callback fires with the selected id and a chip appears (optimistic add). Needs showDialog scaffolding. (BUT-1250)
+  - Acceptance: test taps the link button, selects in the picker, confirms, asserts link fires with the right id · asserts the chip appears after (optimistic update) · related_recipes_test green
 
 ### Post-Sprint Steps
-- [x] Run `dart analyze --fatal-infos --fatal-warnings` + arch gate
-- [x] Run relevant unit tests + rules suite
-- [x] Phase 2.7 outcome-grading
-- [x] Commit, push
-- [x] Linear: BUT-1246/1251/1249 → Done (Tier A)
+- [ ] Run `dart analyze --fatal-infos --fatal-warnings` + arch gate + (functions) npm test
+- [ ] Phase 2.7 outcome-grading
+- [ ] Commit, push
+- [ ] Linear: BUT-1053/1247/1250 → Done (Tier A)
 
 ---
-## ARCHIVED — iter-144 (BUT-648/1057 In Review; follow-ups BUT-1248/1249/1250/1251; CI green) · iter-143 (BUT-1245/626 Done, BUT-1244/862 In Review) · iter-142 (BUT-879/881 Done, BUT-1243/925/1154 In Review) · äldre i git-historiken
+## ARCHIVED — iter-145 (BUT-1251/1246/1249 Done; follow-up BUT-1252; CI green) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done, BUT-1244/862 In Review) · iter-142 (BUT-879/881 Done, BUT-1243/925/1154 In Review) · äldre i git-historiken

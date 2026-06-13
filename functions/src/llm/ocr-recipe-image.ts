@@ -30,7 +30,7 @@ import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
-import { runStructureRecipe } from "./structure-recipe";
+import { runStructureRecipe, buildLocaleInstruction } from "./structure-recipe";
 import {
   runOcrRetry,
   RetryOutcome,
@@ -49,6 +49,12 @@ interface OcrRecipeImageRequest {
   mimeType?: string;
   /** Additional context (e.g., recipe title from filename) */
   context?: string;
+  /**
+   * BUT-1053: canonical user locale (e.g. 'sv', 'en') sent by the client
+   * (BUT-984). Forwarded to the vision model prompt and to the structureRecipe
+   * retry path. Absent → no instruction, backward-compatible.
+   */
+  locale?: string;
 }
 
 interface OcrRecipeImageResponse {
@@ -154,6 +160,12 @@ export interface OcrPerformArgs {
    * the compiled-in `IMAGE_OCR_SYSTEM_PROMPT` from `gemini-client.ts`.
    */
   systemPrompt?: string;
+  /**
+   * BUT-1053: canonical user locale (e.g. 'sv', 'en'). When present,
+   * the vision user prompt is prefixed with a respond-in-locale instruction.
+   * Optional so older test seams remain valid.
+   */
+  locale?: string;
 }
 
 export interface OcrPerformResult {
@@ -185,6 +197,12 @@ async function defaultPerformOcr(
     "Läs texten i denna bild och extrahera receptet. Svara med JSON.";
   if (args.context) {
     userPrompt += `\n\nKontext: ${scrubPii(args.context)}`;
+  }
+
+  // BUT-1053: prepend locale instruction when the client supplies one.
+  const localeInstruction = buildLocaleInstruction(args.locale);
+  if (localeInstruction) {
+    userPrompt = `${localeInstruction}\n\n${userPrompt}`;
   }
 
   const parts = buildContentParts(
@@ -241,7 +259,7 @@ export async function runOcrRecipeImage(
   opts: OcrCoreOptions
 ): Promise<OcrRecipeImageResponse> {
   const { data, authUidHash } = opts;
-  const { imageBase64, imageUrl, mimeType, context } = data;
+  const { imageBase64, imageUrl, mimeType, context, locale } = data;
   const performOcr = opts.performOcr ?? defaultPerformOcr;
   const isAiDisabled = opts.isAiDisabled ?? defaultIsAiDisabled;
   const structureRecipe = opts.structureRecipe ?? runStructureRecipe;
@@ -371,6 +389,7 @@ export async function runOcrRecipeImage(
       mimeType,
       context,
       systemPrompt: prompts.imageOcrSystemPrompt,
+      locale,
     });
     ocrUsage = usage;
 
@@ -422,6 +441,7 @@ export async function runOcrRecipeImage(
     const retryResult = await runOcrRetry(content, ocrStartMs, authUidHash, {
       structureRecipe,
       now,
+      locale,
     });
 
     const totalCost = ocrCost + retryResult.additionalCost;

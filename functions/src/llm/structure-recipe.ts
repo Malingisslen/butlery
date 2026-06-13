@@ -39,6 +39,12 @@ export interface StructureRecipeRequest {
   mode?: "extract" | "enhance" | "spoken" | "ingredientLines";
   /** Source URL for reference */
   sourceUrl?: string;
+  /**
+   * BUT-1053: canonical user locale (e.g. 'sv', 'en') sent by the client
+   * (BUT-984). When present, the model prompt includes a respond-in-locale
+   * instruction. Absent → no instruction, backward-compatible.
+   */
+  locale?: string;
 }
 
 export interface StructureRecipeResponse {
@@ -130,7 +136,7 @@ export async function runStructureRecipe(
   authUidHash: string,
   deps?: RunStructureRecipeDeps
 ): Promise<StructureRecipeResponse> {
-  const { text, partialData, mode = "extract", sourceUrl } = req;
+  const { text, partialData, mode = "extract", sourceUrl, locale } = req;
 
   // Every exit path emits a `structure_recipe.complete` log so a future
   // Cloud Logging distribution-metric filter on `durationMs` (sliced by
@@ -267,6 +273,15 @@ export async function runStructureRecipe(
       default:
         systemPrompt = prompts.recipeExtractionSystemPrompt;
         userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
+    }
+
+    // BUT-1053: when the client sends a locale (BUT-984), prepend a short
+    // instruction so the model responds in the user's language while still
+    // preserving culturally-meaningful dish/ingredient names in their origin
+    // language. Absent locale → no instruction, preserving existing behavior.
+    const localeInstruction = buildLocaleInstruction(locale);
+    if (localeInstruction) {
+      systemPrompt = `${localeInstruction}\n\n${systemPrompt}`;
     }
 
     logger.info(
@@ -516,8 +531,31 @@ function isNotRecipeResponse(content: string): boolean {
   }
 }
 
+/**
+ * BUT-1053: build the respond-in-locale prefix for a given locale string.
+ * Returns undefined when locale is absent/empty (no instruction injected).
+ * @internal — exported only for unit tests.
+ */
+export function buildLocaleInstruction(locale: string | undefined): string | undefined {
+  if (!locale || typeof locale !== "string" || locale.trim().length === 0) {
+    return undefined;
+  }
+  // Strip anything that isn't a locale-tag character BEFORE clamping, so a
+  // value like "en. IGNORE ALL" can't smuggle a sentence into the prompt.
+  const sanitized = locale.trim().replace(/[^a-zA-Z0-9-]/g, "").substring(0, 10);
+  if (sanitized.length === 0) {
+    return undefined;
+  }
+  return (
+    `Respond in ${sanitized}. ` +
+    `Preserve original ingredient and dish names where culturally meaningful ` +
+    `(e.g. keep "köttbullar" or "boeuf bourguignon" in their source language).`
+  );
+}
+
 /** @internal — exported only for unit tests. Do not import from production code. */
 export const __test__ = {
   isNotRecipeResponse,
+  buildLocaleInstruction,
 };
 
