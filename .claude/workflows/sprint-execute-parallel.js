@@ -326,8 +326,8 @@ ${built.filter(b => b.patchPath).map(b => `- ${b.batchName} [${b.area}]: ${b.pat
 
 For each patch:
 1. \`git apply --3way --whitespace=fix <patchPath>\`.
-2. If it applies cleanly, add the batch name to appliedBatches.
-3. If it conflicts, record {batch, detail} in conflicts and SKIP that batch (\`git checkout -- .\` only the conflicted hunks if needed) — do not force a broken merge. Area-clustering should make conflicts rare; a conflict means two batches touched the same file (a selection bug).
+2. If it applies cleanly, add its EXACT batchName (e.g. "batch-0" exactly as shown above — NOT the area name) to appliedBatches.
+3. If it conflicts, record {batch, detail} in conflicts where \`batch\` is the EXACT batchName string (e.g. "batch-1", not the area) and SKIP that batch (\`git checkout -- .\` only the conflicted hunks if needed) — do not force a broken merge. Downstream review/verify keys off conflicts by batchName, so the exact string matters. Area-clustering should make conflicts rare; a conflict means two batches touched the same file (a selection bug).
 
 After applying all clean patches:
 4. Run \`/c/tools/flutter/bin/dart format lib test\` then \`dart analyze --fatal-infos\`. Fix trivial issues (unused imports, format). Set analyzeClean.
@@ -353,9 +353,32 @@ if (!integ.changedFiles || integ.changedFiles.length === 0) {
 // rare; each reviewer sees only its batch's handful of files.
 phase('Review')
 
-const appliedNames = new Set(integ.appliedBatches || [])
-const reviewTargets = built.filter(b => b.patchPath && appliedNames.has(b.batchName))
+// Robust review-target selection. Do NOT require the integrate agent to echo each
+// batchName back in appliedBatches — iter-147 showed it substitutes AREA names
+// ("ocr" / "recipe-service") for batchNames ("batch-0/1/2"), which matched ZERO
+// batches and silently zeroed out BOTH review and verify (code shipped unreviewed,
+// markers faked, ship blocked). Instead: every batch that produced a patch is a
+// review target UNLESS integrate reported it as a conflict. Conflicts are matched
+// leniently (batchName or area, substring-tolerant) and default to "not conflicted"
+// when unsure — so the worst case is reviewing a batch that didn't land (harmless),
+// never silently reviewing nothing.
+const conflictKeys = (integ.conflicts || [])
+  .map(c => String((c && c.batch) || '').toLowerCase().trim())
+  .filter(Boolean)
+const isConflicted = (b) => {
+  const name = (b.batchName || '').toLowerCase()
+  const area = (b.area || '').toLowerCase()
+  return conflictKeys.some(k =>
+    k === name || k === area || (!!name && k.includes(name)) || (!!area && k.includes(area)))
+}
+const reviewTargets = built.filter(b => b.patchPath && !isConflicted(b))
 const batchFiles = (b) => [...new Set((b.ticketResults || []).flatMap(t => t.filesChanged || []))]
+
+// Guard: changes landed but nothing resolved as a review target → a pipeline bug,
+// not "review complete". Refuse to fake markers; Ship will (correctly) be blocked.
+if (reviewTargets.length === 0 && (integ.changedFiles || []).length > 0) {
+  log('⚠ PIPELINE ERROR: changes landed but zero review targets resolved. Review/verify cannot run — markers will NOT be touched and Ship will not commit. Investigate the integrate→built batch mapping before retrying.')
+}
 
 // Path patterns mirror the commit-gate hook table in CLAUDE.md, so a marker is
 // only ever touched after the specialist that owns it genuinely ran (Fix 4).
@@ -405,8 +428,12 @@ for (const b of needFns) {
 
 const tagged = (await parallel(reviewTasks)).filter(Boolean)
 const okFor = (kind, need) => need === 0 || tagged.filter(t => t.kind === kind && t.r).length === need
-const crOk = okFor('cr', reviewTargets.length)
-const tsOk = okFor('ts', reviewTargets.length)
+// The primary reviewers (code-reviewer, testing-specialist) run on EVERY target, so
+// their markers must never be earned with zero targets — the `need === 0` shortcut in
+// okFor is only legitimate for the OPTIONAL specialists (backend/rules/fns). Require a
+// real target count > 0 so an empty-targets bug can't fake the code-review/testing gate.
+const crOk = reviewTargets.length > 0 && okFor('cr', reviewTargets.length)
+const tsOk = reviewTargets.length > 0 && okFor('ts', reviewTargets.length)
 const fbOk = okFor('fb', needBackend.length)
 const rulesOk = okFor('rules', needRules.length)
 const fnsOk = okFor('fns', needFns.length)
