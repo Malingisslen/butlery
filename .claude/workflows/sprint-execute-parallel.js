@@ -8,7 +8,8 @@ export const meta = {
     { title: 'Integrate', detail: 'Apply all batch patches into the main tree, full dart analyze' },
     { title: 'Review', detail: 'Per-batch code-reviewer + testing-specialist (+ security/rules/functions specialists when relevant); gates the commit markers' },
     { title: 'Fix', detail: 'Address Critical/High findings inline (conditional)' },
-    { title: 'Ship', detail: 'Touch only earned markers, commit, push to main, close exact tickets, file follow-ups, prune worktrees' },
+    { title: 'Verify', detail: 'Adversarial 3-lens outcome grading (correctness / data-safety / intent) per ticket + a completeness sweep for missed work' },
+    { title: 'Ship', detail: 'Touch only earned markers, commit, push to main, close verified tickets (Done) / park failed ones (In Review), file follow-ups, prune worktrees' },
   ],
 }
 
@@ -28,20 +29,25 @@ const FOCUS = A.focus ? A.focus : null        // area label filter
 const DRY_RUN = A.dryRun === true || A.dryRun === 'true'
 const ALLOW_DIRTY = A.allowDirty === true || A.allowDirty === 'true'
 
-// ── model tiering (Fix 8 — Fable 5 is 2× the price of Opus 4.8; tier non-frontier
-// work down to control sprint cost). Brains + high-stakes side effects stay on the
-// inherited main-loop model (Fable): select (planning/scoring), non-mechanical
-// implement, fix-blocking, ship (commit/push/Linear).
+// ── model policy: optimise for code quality, not cost ───────────────────────
+// Cost is not a constraint here — every judgement-bearing step runs on the BEST
+// available model. We do that by OMITTING the `model:` override: an agent with no
+// override inherits the session's resolved model, i.e. whatever you launched the
+// run on (today Opus 4.8 1M; a stronger model when one is available and selected).
 //
-// REVIEW is deliberately split. The bug-hunting reviewers — code-reviewer and
-// firebase-backend-security — stay on Fable, because review is exactly where the
-// frontier model catches what cheaper models miss (a real-world Fable catch found a
-// security bug two frontier models had signed off on). The mechanical/coverage
-// reviewers (test-coverage gaps, rules allow/deny generation, functions checklist)
-// run on Opus — strong enough for structural checks, half the price.
-const REVIEW_MODEL = 'opus'  // mechanical/coverage reviewers (testing, rules, functions)
-const INTEG_MODEL = 'opus'   // patch application + dart analyze (mechanical reasoning)
-const MECH_MODEL = 'haiku'   // pure git-state reads (precondition, verify-ship) — no judgement needed
+// Do NOT hardcode a model name (no 'fable', no 'opus') on these steps — a named
+// model goes stale the moment the frontier moves or a model is pulled (exactly the
+// breakage that retired the old Fable references). "Inherit" is self-updating and
+// can never point at a switched-off model.
+//
+// Inherit (best model): select, implement, integrate, review, outcome-verify,
+// completeness, fix, ship — every step where judgement affects code quality.
+//
+// The ONLY pinned model is for the two pure git-state reads (precondition,
+// verify-ship). These run `git status` / `git rev-parse` and have zero quality
+// dimension — a bigger model cannot read a git status "better", only slower — so a
+// small fast model is the right tool, not a cost compromise.
+const MECH_MODEL = 'haiku'   // pure git-state reads only (precondition, verify-ship) — no judgement
 
 const SKILL = '.claude/commands/sprint-execute.md'
 // Patches live in the MAIN repo's .claude/state/sprint-patches, derived from the
@@ -79,6 +85,7 @@ const TICKET = {
     requiresPlanMode: { type: 'boolean', description: 'Phase 1.5 risk gate result' },
     files: { type: 'array', items: { type: 'string' }, description: 'Target file paths' },
     change: { type: 'string', description: 'One-line intended change' },
+    acceptance: { type: 'array', items: { type: 'string' }, description: '2–4 gradeable acceptance criteria per skill Phase 1 — yes/no checkable from diff+tests; the rubric the Verify phase grades against' },
   },
 }
 
@@ -194,7 +201,7 @@ Steps:
 3. Score each open ticket per the skill's priority scoring. Map BUT-XXX in recent git → flag tickets already done but still open (put them in "obsolete"). EXCLUDE entirely any ticket whose labels contain "onboarding-reserved" — these are reserved human onboarding capstones (e.g. BUT-677, BUT-722); never score, select, transition, or implement them.
 4. Select N tickets: ${COUNT ? `EXACTLY ${COUNT}` : 'auto-size 6–10 by backlog volume'}.${FOCUS ? ` Filter to area label "${FOCUS}" (warn if <3).` : ''}
 5. CLUSTER tickets by area into batches so that each batch touches a DISJOINT set of files — this is critical: batches run in parallel worktrees and their patches are applied sequentially, so overlapping files would conflict. Never split one area across two batches. Assign each batch a single \`area\`.
-6. For each ticket compute the Phase 1.5 \`requiresPlanMode\` flag.
+6. For each ticket compute the Phase 1.5 \`requiresPlanMode\` flag, AND write 2–4 gradeable \`acceptance\` criteria per skill Phase 1 (each must be yes/no verifiable from the diff + tests alone — pin the intent the ticket exists to satisfy plus any explicit "don't do X" constraint). These become the rubric the Verify phase grades against.
 7. Run \`date +%Y-%m-%d\` for the sprint date.
 ${DRY_RUN ? `8. DRY-RUN — READ-ONLY. Do NOT write tasks/todo.md. Do NOT transition any Linear ticket. Make zero mutations; only read and return the proposed plan.` : `8. Write tasks/todo.md in the skill's format (archive any prior sprint below a --- separator).
 9. If Linear is up, transition each selected ticket to "Todo" (resolve state UUIDs once via list_issue_statuses, then save_issue per ticket).`}
@@ -219,11 +226,6 @@ if (DRY_RUN) {
 
 // ── Phase 2: Implement (parallel, isolated worktrees) ──────────────────────
 phase('Implement')
-
-// A batch is "mechanical" when every ticket is non-risk-gated and low-stakes
-// (priority Medium/Low). Such batches run on sonnet to cut cost (Fix 7).
-const isMechanical = (batch) =>
-  batch.tickets.every(t => !t.requiresPlanMode && (t.priority || 4) >= 3)
 
 const built = (await parallel(plan.batches.map((batch, i) => () => {
   const ticketList = batch.tickets.map(t =>
@@ -260,7 +262,6 @@ Stay strictly within the "${batch.area}" area — touching files another batch o
     phase: 'Implement',
     isolation: 'worktree',
     schema: BATCH_RESULT_SCHEMA,
-    ...(isMechanical(batch) ? { model: 'sonnet' } : {}),
   })
 }))).filter(Boolean)
 
@@ -287,7 +288,7 @@ After applying all clean patches:
 5. Return the union of changed files (\`git status --porcelain\`).
 
 Do NOT commit. Leave changes unstaged in the working tree for the review phase.`
-  integ = await agent(integPrompt, { label: 'integrate', phase: 'Integrate', model: INTEG_MODEL, schema: INTEG_SCHEMA }) || integ
+  integ = await agent(integPrompt, { label: 'integrate', phase: 'Integrate', schema: INTEG_SCHEMA }) || integ
 }
 
 if (integ.conflicts && integ.conflicts.length > 0) {
@@ -334,7 +335,7 @@ for (const b of reviewTargets) {
   ).then(r => ({ kind: 'cr', r })))
   reviewTasks.push(() => agent(
     `Test-coverage review of ${scopeOf(b)}. Butlery sprint, "${b.area}" area. Identify lib/ changes lacking corresponding test/ updates, weakened assertions, or mocked-away subjects. Run affected tests if quick. Findings: High = untested new behavior, Medium = thin coverage.`,
-    { label: `tests:${b.area}`, phase: 'Review', agentType: 'testing-specialist', model: REVIEW_MODEL, schema: REVIEW_SCHEMA }
+    { label: `tests:${b.area}`, phase: 'Review', agentType: 'testing-specialist', schema: REVIEW_SCHEMA }
   ).then(r => ({ kind: 'ts', r })))
 }
 for (const b of needBackend) {
@@ -346,13 +347,13 @@ for (const b of needBackend) {
 for (const b of needRules) {
   reviewTasks.push(() => agent(
     `Firestore rules review of ${scopeOf(b)}. Generate allow/deny cases for the diff and run the rules-unit-testing suite against the emulator if available; report gaps.`,
-    { label: `rules:${b.area}`, phase: 'Review', agentType: 'firestore-rules-tester', model: REVIEW_MODEL, schema: REVIEW_SCHEMA }
+    { label: `rules:${b.area}`, phase: 'Review', agentType: 'firestore-rules-tester', schema: REVIEW_SCHEMA }
   ).then(r => ({ kind: 'rules', r })))
 }
 for (const b of needFns) {
   reviewTasks.push(() => agent(
     `Cloud Functions review of ${scopeOf(b)}. Butlery sprint. Check idempotency, retry semantics, region pinning (europe-west1), and cold-start cost. Be specific.`,
-    { label: `functions:${b.area}`, phase: 'Review', agentType: 'cloud-functions-specialist', model: REVIEW_MODEL, schema: REVIEW_SCHEMA }
+    { label: `functions:${b.area}`, phase: 'Review', agentType: 'cloud-functions-specialist', schema: REVIEW_SCHEMA }
   ).then(r => ({ kind: 'fns', r })))
 }
 
@@ -397,6 +398,131 @@ If a finding is wrong or not worth fixing, say so with reasoning rather than pap
   log('No blocking findings — skipping fix phase.')
 }
 
+// ── Phase 5.5: Verify outcomes (adversarial 3-lens panel) ────────────────────
+// The Review phase proves the code is well-built (compiles, covered, conventions).
+// It does NOT prove the change actually did what the ticket asked. This phase closes
+// that gap with an adversarial panel: each landed ticket is judged by THREE
+// independent skeptics, each through a different lens, each told to REFUTE — to find
+// why it is NOT done. A ticket is "verified" only when a majority of lenses pass AND
+// the data-safety lens does not hard-fail. Single-grader review rubber-stamps
+// plausible-but-wrong code; three skeptics from different angles catch what one misses.
+phase('Verify')
+
+// Gather tickets that actually landed code (done / plan-stale-done) from applied
+// batches — only these have a diff to grade. Pull acceptance criteria from the plan.
+const landedTickets = []
+for (const b of reviewTargets) {
+  const planBatch = plan.batches.find(pb => pb.agentName === b.batchName) ||
+                    plan.batches.find(pb => pb.area === b.area)
+  const planTickets = new Map((planBatch ? planBatch.tickets : []).map(t => [t.id, t]))
+  for (const tr of (b.ticketResults || [])) {
+    if (tr.status === 'done' || tr.status === 'plan-stale-done') {
+      const pt = planTickets.get(tr.id)
+      landedTickets.push({
+        id: tr.id,
+        title: pt ? pt.title : tr.id,
+        change: pt ? pt.change : (tr.notes || ''),
+        acceptance: (pt && pt.acceptance) ? pt.acceptance : [],
+        files: (tr.filesChanged && tr.filesChanged.length) ? tr.filesChanged : (pt ? (pt.files || []) : []),
+      })
+    }
+  }
+}
+
+const LENSES = [
+  { key: 'correctness', brief: 'CORRECTNESS — does the code actually do what it claims, with no bugs, broken edge cases, off-by-ones, null/error-path holes, or regressions? Trace the logic and try to break it.' },
+  { key: 'data-safety', brief: 'DATA-SAFETY — permissions, privacy, Firestore security, GDPR, and the data-source convention (userService.currentUserProfile for user data vs permissionService.currentUserId for auth/permission checks only). Could this leak, corrupt, over-expose, or mis-scope user data?' },
+  { key: 'intent', brief: 'INTENT — does the change actually satisfy the ticket\'s acceptance criteria and original goal, or did it drift, do something close-but-wrong, only partially complete the work, or silently drop an explicit "don\'t do X" constraint?' },
+]
+
+const VERDICT_SCHEMA = {
+  type: 'object',
+  required: ['verdict', 'reason'],
+  properties: {
+    verdict: { type: 'string', enum: ['pass', 'fail', 'unclear'] },
+    reason: { type: 'string', description: 'One line — for fail/unclear, the specific thing that is wrong or unconfirmable' },
+  },
+}
+
+const graded = await parallel(landedTickets.map(t => () =>
+  parallel(LENSES.map(lens => () =>
+    agent(
+      `You are an ADVERSARIAL verifier for a Butlery sprint ticket. Your job is to REFUTE — actively find why this change is NOT done correctly. Default to "fail" when you cannot positively confirm the criterion is met; use "unclear" only when the diff is genuinely insufficient to judge. Do not be generous.
+
+Ticket ${t.id}: ${t.title}
+Intended change: ${t.change}
+Acceptance criteria:
+${(t.acceptance || []).map(c => `  - ${c}`).join('\n') || '  (none recorded — judge against the intended change + ticket title)'}
+
+Judge ONLY through this lens:
+${lens.brief}
+
+Read the actual landed change in the working tree: \`git diff -- ${(t.files || []).join(' ') || '.'}\` (changes are unstaged), and read the corresponding test files. Decide whether THIS lens passes for THIS ticket. Return {verdict: pass|fail|unclear, reason}.`,
+      { label: `verify:${t.id}:${lens.key}`, phase: 'Verify', schema: VERDICT_SCHEMA }
+    ).then(v => ({ lens: lens.key, ...(v || { verdict: 'unclear', reason: 'verifier returned no output' }) }))
+  )).then(votes => {
+    const passes = votes.filter(v => v.verdict === 'pass').length
+    // Data-safety is blocking on its own: a single data-safety fail sinks the ticket
+    // even if correctness + intent pass, because a data leak is never an acceptable
+    // trade for a working feature.
+    const dataSafetyFail = votes.some(v => v.lens === 'data-safety' && v.verdict === 'fail')
+    const verified = passes >= 2 && !dataSafetyFail
+    return { id: t.id, verified, dataSafetyFail, votes }
+  })
+)).filter(Boolean)
+
+const verifyFailedIds = new Set(graded.filter(g => !g.verified).map(g => g.id))
+log(`Outcome verification: ${graded.length} ticket(s) × ${LENSES.length} adversarial lenses; ${verifyFailedIds.size} did not pass.`)
+for (const g of graded.filter(x => !x.verified)) {
+  log(`  ✗ ${g.id}: ${g.votes.map(v => `${v.lens}=${v.verdict}`).join(' ')}${g.dataSafetyFail ? ' (data-safety blocking)' : ''}`)
+}
+
+// ── Completeness sweep ───────────────────────────────────────────────────────
+// A final critic whose only job is to find what the sprint MISSED — not code
+// quality (that's Review), but coverage of the work itself: a selected ticket that
+// silently vanished, a criterion never graded, new behavior with no test, a deferred
+// constraint nobody handled. Its findings are fed into Ship's follow-up filing so
+// every gap becomes a durable Linear ticket instead of being lost.
+const completeness = await agent(
+  `You are the COMPLETENESS CRITIC for a Butlery sprint, run just before ship. Find what this sprint MISSED. Do NOT re-review code quality — hunt for gaps in coverage of the work itself.
+
+Selected this sprint: ${plan.batches.flatMap(b => b.tickets.map(t => `${t.id} (${t.title})`)).join('; ') || 'none'}
+Obsolete (closed without code): ${plan.obsolete.map(o => o.id).join(', ') || 'none'}
+Failed outcome verification: ${[...verifyFailedIds].join(', ') || 'none'}
+Batches that failed to apply: ${(integ.conflicts || []).map(c => c.batch).join(', ') || 'none'}
+
+Check for, and list concretely (name the BUT-XXX or file each gap concerns):
+- A selected ticket that neither landed code, was marked obsolete, nor recorded as failed — i.e. silently dropped.
+- A ticket whose acceptance criteria were never graded, or graded "unclear".
+- New behavior visible in the diff with no corresponding test.
+- A specialist reviewer that did not complete for files that needed it.
+- A deferred sub-scope or explicit "don't do X" constraint mentioned in a ticket but not handled.
+- Any claim in the batch results not backed by an actual diff.
+
+Inspect the working tree (\`git status\`, \`git diff --stat\`) and tests as needed. Return the list of gaps — each is a candidate Linear follow-up. If genuinely nothing is missing, return an empty list and say so in note.`,
+  {
+    label: 'completeness-sweep', phase: 'Verify',
+    schema: {
+      type: 'object', required: ['gaps'],
+      properties: {
+        gaps: {
+          type: 'array',
+          items: {
+            type: 'object', required: ['concerns', 'gap'],
+            properties: {
+              concerns: { type: 'string', description: 'BUT-XXX or file path the gap relates to' },
+              gap: { type: 'string' },
+              suggestedFollowUp: { type: 'string' },
+            },
+          },
+        },
+        note: { type: 'string' },
+      },
+    },
+  }
+) || { gaps: [] }
+log(`Completeness sweep: ${(completeness.gaps || []).length} gap(s) flagged${completeness.note ? ` — ${completeness.note}` : ''}.`)
+
 // ── Phase 6: Ship (commit + push + Linear close + follow-ups) ───────────────
 phase('Ship')
 
@@ -409,20 +535,36 @@ const doneIds = doneResults.filter(r => r.status === 'done' || r.status === 'pla
 const failedIds = doneResults.filter(r => r.status === 'failed').map(r => r.id)
 const conflictBatches = (integ.conflicts || []).map(c => c.batch)
 
+// Only tickets that passed the adversarial panel close to Done. Ones that failed
+// verification still SHIP (the code is in the tree), but they park in In Review with
+// the failing-lens reasons rather than auto-closing — never claim "done" on a
+// criterion three skeptics could not confirm (skill Phase 2.7).
+const verifiedDoneIds = doneIds.filter(id => !verifyFailedIds.has(id))
+const needsReviewIds = doneIds.filter(id => verifyFailedIds.has(id))
+const gradeFor = (id) => {
+  const g = graded.find(x => x.id === id)
+  return g ? g.votes.map(v => `${v.lens}:${v.verdict} (${v.reason})`).join(' · ') : 'ungraded'
+}
+const completenessLines = (completeness.gaps || []).map(g => `- ${g.concerns}: ${g.gap}${g.suggestedFollowUp ? ` → ${g.suggestedFollowUp}` : ''}`).join('\n')
+
 const markerList = markersToTouch.join(' ')
 const shipPrompt = `You are running Phase 3 (Post-sprint, MANDATORY) of a Butlery sprint. Read ${SKILL} Phase 3 + the Follow-up rule and follow them exactly.
 
 Context:
-- Tickets implemented (Done): ${doneIds.join(', ') || 'none'}
+- Tickets VERIFIED (passed the adversarial panel → close Done): ${verifiedDoneIds.join(', ') || 'none'}
+- Tickets that landed code but FAILED verification (→ In Review, NOT Done): ${needsReviewIds.join(', ') || 'none'}
+${needsReviewIds.map(id => `    · ${id}: ${gradeFor(id)}`).join('\n')}
 - Tickets obsolete (close as obsolete): ${obsoleteIds.join(', ') || 'none'}
 - Tickets failed (leave open, move to Todo, comment the reason): ${failedIds.join(', ') || 'none'}
 - Batches that failed to apply (their tickets did NOT land — treat as failed/open): ${conflictBatches.join(', ') || 'none'}
 - Review findings total: ${allFindings.length} (blocking fixed: ${blocking.length})
 - Review complete across all required specialists: ${reviewComplete}
+- Completeness-sweep gaps to file as follow-ups:
+${completenessLines || '    (none)'}
 
 Steps:
 1. \`git status\` / \`git add -A\`. Final \`dart analyze --fatal-infos\` — fix anything fatal.
-2. File Linear follow-up tickets for every deferred sub-scope / reviewer follow-up / test gap (see Follow-up rule). Capture the Medium/Low non-blocking review findings here. Record the new BUT-XXX ids.
+2. File Linear follow-up tickets for every deferred sub-scope / reviewer follow-up / test gap (see Follow-up rule). Capture the Medium/Low non-blocking review findings here, AND every completeness-sweep gap listed above, AND the specific failing reason for each ticket that failed verification. Record the new BUT-XXX ids.
 3. Touch ONLY these marker files — they correspond to specialist reviews that genuinely completed in this pipeline. Touch NOTHING else, and NEVER use --no-verify to bypass a missing one:
    ${markerList ? `\`touch ${markerList}\`` : '(none — no reviewer completed; do NOT fake any marker)'}
    ${reviewComplete ? '' : 'NOTE: review was INCOMPLETE. If the commit hook blocks on a marker not in the list above, STOP — do not bypass. Leave changes uncommitted, set committed=false, explain in notes, and return so a human can run the missing review.'}
@@ -430,8 +572,9 @@ Steps:
 5. \`git commit\`. If lefthook reformats and the commit fails, re-stage all and commit again with the same message — never --amend, never --no-verify.
 6. Verification gate: \`git status\` MUST show a clean tracked tree. Repeat step 5 until clean.
 7. \`git push -u origin HEAD\`.
-8. Close Linear tickets — close ONLY the EXACT ticket IDs listed here; do NOT infer, add, or close any other ticket even if it looks related or is referenced in the diff:
-   - Done-state: ${doneIds.join(', ') || '(none)'} — comment "Fixed in commit <short-sha>: <subject>" PLUS one plain-language sentence on what changed in the app and why (Malin reads these and doesn't read code — no class names, no shorthand; describe what she'd notice).
+8. Transition Linear tickets — touch ONLY the EXACT ticket IDs listed here; do NOT infer, add, or transition any other ticket even if it looks related or is referenced in the diff:
+   - Done-state (verified): ${verifiedDoneIds.join(', ') || '(none)'} — comment "Fixed in commit <short-sha>: <subject>" PLUS one plain-language sentence on what changed in the app and why (Malin reads these and doesn't read code — no class names, no shorthand; describe what she'd notice).
+   - In Review (state UUID \`9929b3b0-b74f-44b8-bf34-ad2e2e78af7c\`) — landed but failed verification, needs your eyes: ${needsReviewIds.join(', ') || '(none)'} — for each, comment the failing lens + reason from the context above, in plain language (what the skeptic thinks is wrong or unconfirmed, and what to check in the app). Then PushNotification a one-liner per ticket so Malin can review on her phone. Do NOT close these to Done.
    - Obsolete: ${obsoleteIds.join(', ') || '(none)'} — comment "Obsolete — resolved by <sha>".
    - Move back to Todo with a failure comment: ${[...failedIds, ...conflictBatches].join(', ') || '(none)'} — explain the failure in plain language too (what didn't work, what it means for the app).
 9. Clean up: \`rm -rf ${PATCH_DIR_EXPR}\` and \`git worktree prune\` (remove the per-batch worktrees that have been emptied).
@@ -466,9 +609,11 @@ return {
   status: shipOk ? 'complete' : 'ship-incomplete',
   sprint: plan.sprintName,
   date: plan.date,
-  tickets: { done: doneIds, obsolete: obsoleteIds, failed: [...failedIds, ...conflictBatches] },
+  tickets: { done: verifiedDoneIds, inReview: needsReviewIds, obsolete: obsoleteIds, failed: [...failedIds, ...conflictBatches] },
   conflicts: integ.conflicts,
   review: { total: allFindings.length, blockingFixed: blocking.length },
+  verification: { graded: graded.length, failed: [...verifyFailedIds], detail: graded.map(g => ({ id: g.id, verified: g.verified, votes: g.votes.map(v => `${v.lens}:${v.verdict}`) })) },
+  completenessGaps: completeness.gaps || [],
   commit: verify.headSha ? `${verify.headSha} ${verify.headSubject || ''}` : (ship && ship.sha ? `${ship.sha} ${ship.subject || ''}` : null),
   pushed: verify.pushed === true || (ship ? ship.pushed === true : false),
   treeClean: verify.treeClean,
