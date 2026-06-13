@@ -490,7 +490,7 @@ const VERDICT_SCHEMA = {
   },
 }
 
-const graded = await parallel(landedTickets.map(t => () =>
+const graded = (await parallel(landedTickets.map(t => () =>
   parallel(LENSES.map(lens => () =>
     agent(
       `You are an ADVERSARIAL verifier for a Butlery sprint ticket. Your job is to REFUTE — actively find why this change is NOT done correctly. Default to "fail" when you cannot positively confirm the criterion is met; use "unclear" only when the diff is genuinely insufficient to judge. Do not be generous.
@@ -503,7 +503,7 @@ ${(t.acceptance || []).map(c => `  - ${c}`).join('\n') || '  (none recorded — 
 Judge ONLY through this lens:
 ${lens.brief}
 
-Read the actual landed change in the working tree: \`git diff -- ${(t.files || []).join(' ') || '.'}\` (changes are unstaged), and read the corresponding test files. Decide whether THIS lens passes for THIS ticket. Return {verdict: pass|fail|unclear, reason}.`,
+Read the actual landed change in the working tree: \`git diff HEAD -- ${(t.files || []).join(' ') || '.'}\` (this shows the change whether staged or not), and read the corresponding test files. Decide whether THIS lens passes for THIS ticket. Return {verdict: pass|fail|unclear, reason}.`,
       { label: `verify:${t.id}:${lens.key}`, phase: 'Verify', schema: VERDICT_SCHEMA }
     ).then(v => ({ lens: lens.key, ...(v || { verdict: 'unclear', reason: 'verifier returned no output' }) }))
   )).then(votes => {
@@ -515,7 +515,7 @@ Read the actual landed change in the working tree: \`git diff -- ${(t.files || [
     const verified = passes >= 2 && !dataSafetyFail
     return { id: t.id, verified, dataSafetyFail, votes }
   })
-)).filter(Boolean)
+))).filter(Boolean)
 
 const verifyFailedIds = new Set(graded.filter(g => !g.verified).map(g => g.id))
 log(`Outcome verification: ${graded.length} ticket(s) × ${LENSES.length} adversarial lenses; ${verifyFailedIds.size} did not pass.`)
