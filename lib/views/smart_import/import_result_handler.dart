@@ -28,6 +28,29 @@ abstract final class ImportResultHandler {
   // URL/title matches are at least this similar by definition
   static const _exactMatchMinScore = 0.8;
 
+  /// Returns true when [score] meets or exceeds the content-duplicate
+  /// threshold — i.e. the fingerprint similarity is high enough to surface
+  /// the recipe as a candidate duplicate.
+  ///
+  /// Exposed for testing so the threshold boundary (0.6) can be pinned
+  /// without any service/dialog scaffolding.
+  @visibleForTesting
+  static bool meetsContentDuplicateThreshold(double score) =>
+      score >= _contentDuplicateThreshold;
+
+  /// Clamps [score] to [_exactMatchMinScore] from below.
+  ///
+  /// URL / title matches carry [matchScore] == 1.0 as a sentinel; when the
+  /// computed content similarity is below the exact-match floor the display
+  /// value is clamped so the sheet never shows an unrealistically low
+  /// percentage for a match already confirmed by URL or title.
+  ///
+  /// Exposed for testing so the 0.8 floor boundary can be pinned without
+  /// any service/dialog scaffolding.
+  @visibleForTesting
+  static double clampToExactMatchFloor(double score) =>
+      score < _exactMatchMinScore ? _exactMatchMinScore : score;
+
   /// Checks for duplicates and, if none (or user chose "save as new"),
   /// navigates to the recipe editor.
   ///
@@ -76,7 +99,7 @@ abstract final class ImportResultHandler {
           }
         }
 
-        if (bestMatch != null && bestScore >= _contentDuplicateThreshold) {
+        if (bestMatch != null && meetsContentDuplicateThreshold(bestScore)) {
           matches = [bestMatch];
           matchScore = bestScore;
         }
@@ -92,7 +115,7 @@ abstract final class ImportResultHandler {
           titleB: matches.first.title,
           ingredientsB: matches.first.ingredients,
         );
-        if (matchScore < _exactMatchMinScore) matchScore = _exactMatchMinScore;
+        matchScore = clampToExactMatchFloor(matchScore);
       }
 
       final result = await showDuplicateMergeSheet(

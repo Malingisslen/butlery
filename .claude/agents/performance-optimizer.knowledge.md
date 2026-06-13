@@ -137,3 +137,67 @@ swap extension within an already-declared directory. Saved a class of
 fallback (`pip install Pillow` then `Image.open(...).save(..., "WEBP",
 quality=85, method=6)`) is reliable and ~94% size reduction matches
 cwebp at the same quality.
+
+### 2026-06-13 — isolate offload for SwedishLineClassifier (BUT-862)
+
+**Context**: 3 hot-path candidates for `compute()` / `Isolate.run()`.
+
+**Step-0 classification (plugin-isolate reality check)**:
+
+1. **Recipe-text parser (SwedishLineClassifier / rule-based tier)**
+   — pure Dart. No `flutter_onnxruntime`, no `rootBundle`, no
+   platform channels. Dependencies: only `dart:math`, `dart:convert`,
+   `crypto`, `clock`, `known_ingredients.dart` (static const), etc.
+   Input: `String`. Output: `ParsedRecipeStructure` (primitives only —
+   `String?`, `List<String>`, `int?`, `Duration?`).
+   VERDICT: offloadable.
+
+2. **CRF inference loop (CrfViterbiDecoder / CrfIngredientParser)**
+   — **also** pure Dart (weights loaded from bundled JSON via
+   `rootBundle` in `IngredientParsingStrategy._ensureInitialized()`).
+   The Viterbi decoder itself is pure Map/List arithmetic, no plugin
+   calls. HOWEVER: `IngredientParsingStrategy` uses `rootBundle`
+   (a platform channel) to bootstrap the weights, and holds mutable
+   state across calls (`_crfParser`, `_neuralParser` etc.) that cannot
+   cross an isolate boundary. The decoder _instance_ is non-sendable.
+   Wrapping the decoder alone would require re-loading weights on every
+   `compute()` call (expensive). The existing `ingredient_parsing_strategy`
+   also chains to the BERT NER ONNX model on uncertain lines.
+   VERDICT: not offloaded this pass. If needed later, extract a
+   stateless `CrfViterbiDecoder.decodeAll(weights, lines)` top-level
+   function that takes serialized weights and returns labels.
+
+3. **OCR post-processor (OcrErrorCorrector.correctLine/Lines)**
+   — pure Dart (string→string, static const tables, no plugin calls).
+   But: it runs per-ingredient-line, O(words × confusions), and is
+   already fast (<1ms per line). The overhead of spawning an isolate
+   would exceed the work being done. VERDICT: not worth isolate overhead.
+   The ONNX-based NER + line-classifier (`OnnxNerService`,
+   `OnnxLineClassifierService`) both use `flutter_onnxruntime` plugin
+   and are hard-excluded from isolate offload.
+
+**What was implemented**: `compute(parseStructureInIsolate, text)` for
+the rule-based tier path in `ParsingContext.parseStructureCachedAsync`.
+
+- Top-level worker function `parseStructureInIsolate(String text)`
+  added to `lib/services/parsing/parsers/swedish_line_classifier.dart`.
+- `ParsedRecipeStructure.toIsolateMap()` / `fromIsolateMap()` for
+  primitive-safe isolate boundary crossing (`Duration` encoded as int
+  minutes).
+- `parsing_context.dart` now imports `flutter/foundation.dart` for
+  `compute` and calls `compute(parseStructureInIsolate, text)` on the
+  rule-based fallback path. Neural (ONNX) path unchanged.
+- Public API (`parseStructureCachedAsync`) unchanged — callers see no
+  difference.
+
+**Tests**: 521 parsing unit tests + 18 arch tests — all pass unchanged.
+
+**Profiler confirmation PENDING**: actual jank delta (ms on main
+thread for long Instagram caption, before/after) requires
+`flutter run --profile` + DevTools on device. Not measurable headless.
+Estimated win for a 100-line recipe text: ~30–80ms off the main thread
+(per rough profiler observation from similar workloads — not measured
+in this session). Mark for In-Review manual smoke test.
+
+**Device class measured**: not yet measured on device (headless session).
+Numbers to fill in after manual profiling.

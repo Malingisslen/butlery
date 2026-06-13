@@ -1,38 +1,36 @@
 # Sprint Backlog
 
-## Sprint: ops-docs + square-snackbars + parse-confidence-surface + large-file-decomp — 2026-06-13 (iter-142)
+## Sprint: dup-threshold-tests + A/B-prompt-buckets + parse-confidence-l10n + parser-isolate-offload — 2026-06-13 (iter-143)
 
-Full backlog scan: 98 workable tickets (36 A-CLEAN / 38 B-UI / 8 C-REFACTOR / 16 D-BLOCKED). Tier-A clean work is scarce (drained iter-103→141); this batch is docs + UI + refactor, the volume areas.
+Reusing iter-142 full-backlog scan (98 workable: 36 A / 38 B / 8 C / 16 D). Picked 4 fully-verifiable tickets; skipped BUT-610 (4-6 day epic) and routed BUT-862 through a Step-0 plugin-isolate reality check.
 
-### Agent A: ops-docs reconciliation — observability & residency docs
-- [x] **A1. SLO_DEFINITIONS.md with numeric targets** `[Tier A]` — create `docs/operations/SLO_DEFINITIONS.md`: 6 SLO targets (Firestore p50/p95 latency, crash-free sessions, FCM delivery, OCR success, Vertex success, signup-funnel) each with numeric value + target source + burn-rate alert threshold + measuring query/dashboard. (BUT-879)
-  - Acceptance: all 6 targets have a numeric value AND a named source (historical-p95 / business-commitment / Google-default) · each target names a burn-rate alert threshold · each target names the dashboard/query that measures it · any number requiring a 30-day metrics baseline is explicitly flagged "provisional — confirm against baseline" rather than presented as measured
-- [x] **A2. Reconcile retention + residency doc drift** `[Tier A]` — grep `europe-west3` across `docs/` → reconcile to canonical `europe-west1`; consolidate duplicate `data-residency.md` (delete/redirect stale `docs/ops/` copy toward canonical `docs/operations/`); remove "USER MUST VERIFY" placeholders; confirm `docs/security/audit-logs-retention.md` matches `functions/src/audit_logs/` scheduler config. (BUT-881)
-  - Acceptance: zero `europe-west3` references remain in `docs/` (grep proves it) · only one canonical `data-residency.md` survives, stale copy deleted or redirected · zero "USER MUST VERIFY" placeholders remain · backup-retention number reconciled to one value across docs, with the one needing console confirmation explicitly flagged
+### Agent A: testing — duplicate-detection threshold logic
+- [x] **A1. Extract + test ImportResultHandler duplicate-threshold decision** `[Tier A]` — extract the pure score→`DuplicateMergeChoice` decision (thresholds `_contentDuplicateThreshold=0.6`, `_exactMatchMinScore=0.8`) out of the UI/service-coupled `ImportResultHandler.checkForDuplicates` into a testable function; unit-test the boundaries. `lib/views/smart_import/import_result_handler.dart` + `test/`. (BUT-1245)
+  - Acceptance: a pure, service-free function encapsulates the score→branch decision (extracted from the dialog/service-coupled method) · unit test proves a score just below 0.8 vs ≥0.8 routes to different branches · unit test proves the 0.6 content-duplicate boundary triggers/!triggers the content-dup path · existing smart_import tests still pass; `dart analyze` clean
 
-### Agent C: design-system — square the global SnackBar (continues BUT-1237 dialog work)
-- [x] **C1. Square global SnackBar shape** `[Tier B]` — set square shape in the global `snackBarTheme` (`lib/theme/components/feedback_themes.dart:19`); remove/square the per-call `RoundedRectangleBorder` override in `lib/core/utils/snackbar_utils.dart:330`; verify mockup §4.18 colors (green-dark bg, cream text) while in there. (BUT-1243)
-  - Acceptance: global snackBarTheme.shape is square (RoundedRectangleBorder zero radius or square) · grep shows zero rounded `borderRadius` on SnackBar shape anywhere · §4.18 toast colors confirmed/noted in In-Review comment · HTML preview of representative snackbars (undo flow, success toast) → In Review
+### Agent B: backend — A/B prompt-variant buckets (functions)
+- [x] **B1. Bucket-based prompt-variant assignment** `[Tier A]` — Step 0: confirm `functions/src/llm/prompts-config.ts` (Remote Config path) + `promptVersion` analytics field exist. Add deterministic `hash(userId)→bucket` assignment in `functions/src/middleware/rate_limiter.ts` (`withRateLimit`); select variant from the existing Remote Config path; emit the bucket in analytics. NO new Firestore `system/prompts/variants` collection. (BUT-626)
+  - Acceptance: a deterministic bucket function maps a given userId to a stable bucket (same id → same bucket, testpinned) · variant is sourced from the existing Remote Config path, not a new Firestore collection · the assigned bucket is emitted in analytics alongside the existing `promptVersion` · `npm test` (functions) green
 
-### Agent D: import feature — surface per-ingredient parse confidence
-- [x] **D1. Thread ParsedIngredient confidence to a review UI** `[Tier B]` — Step 0: confirm which live import path emits `ParsedIngredient` with `.confidence` (CRF path produces it). Thread `List<ParsedIngredient>` (not flattened strings) into a review widget on that flow; render green/amber/grey confidence pill per item + original line on expand. (BUT-925)
-  - Acceptance: a real import flow exposes `ParsedIngredient` to the UI with `.confidence` intact (not flattened to String) · a confidence pill renders per ingredient in the review surface · the original parsed line is viewable per item (expand/long-press) · widget test pins the pill renders the correct color per ParseConfidence enum value · HTML preview → In Review
+### Agent C: UI/l10n — finish the parse-confidence widget
+- [x] **C1. l10n pass + neutral ButleryColors slot** `[Tier B]` — extract ALL hardcoded Swedish (visible strings + the 2 Semantics labels) in `lib/widgets/recipe/parse_confidence_review.dart` to `context.l10n` keys in both `app_sv.arb` + `app_en.arb`; add a `neutral` slot to `ButleryColors` and route the grey pill through it; update the widget test. (BUT-1244)
+  - Acceptance: zero hardcoded user-visible/Semantics strings in the widget (all `context.l10n`, keys in both ARB files) · a `neutral` slot exists on ButleryColors (light+dark), pill grey reads it, no direct `AppColors.neutralMedium` in the widget · `flutter gen-l10n` clean · widget test updated (reads token + l10n) and green
 
-### Agent E: refactor — decompose 2 drifted large files `[Tier C]` (always risk-gated)
-- [x] **E1. Decompose smart_import_view + user_profile_edit_view** `[Tier C]` — `lib/views/smart_import_view.dart` (817→under baseline 620) and `lib/views/social/user_profile_edit_view.dart` (832→under baseline 634) via facade/sub-widget extraction (pattern: `lib/views/mina_recept/`, `lib/viewmodels/recipe_form/`); update `ACCEPTED_LARGE_FILES.md`. (BUT-1154)
-  - Acceptance: both files dropped under their original baseline (620 / 634) OR a much-tightened justification recorded · `ACCEPTED_LARGE_FILES.md` reflects post-decomp sizes · `dart analyze --fatal-infos` clean · existing tests still pass; no behavioral change (pure extraction)
+### Agent D: perf refactor — isolate-offload the SAFE hot path(s) `[Tier C]` (always risk-gated)
+- [x] **D1. compute()/Isolate.run offload, plugin-safe only** `[Tier C]` — Step 0 MANDATORY: determine which of the 3 paths (text parser / CRF inference / OCR post-processor) are pure-Dart (offloadable) vs platform-plugin-bound. CRF uses `flutter_onnxruntime` and OCR uses platform channels — these CANNOT run in a background isolate (MissingPluginException). Wrap ONLY the safe pure-Dart path(s) in `compute()`; document why the plugin-bound ones can't be. (BUT-862)
+  - Acceptance: Step-0 classification recorded (which paths are pure vs plugin-bound) · only pure-Dart path(s) wrapped; NO plugin-backed path wrapped (would crash) · the wrapped path produces identical output (unit tests pass unchanged) · parser/CRF/OCR unit tests all green; `dart analyze` clean (jank/profiler claim parked for manual In-Review confirmation)
 
-### Needs you (Tier D — flagged, not worked)
-- BUT-840 — Algolia search-index freshness needs an Algolia **admin** API key provisioned as a backend secret (functions/ has zero Algolia client today; index is written client-side). Both ticket options require backend admin write access to Algolia. Action: provision `ALGOLIA_ADMIN_KEY` secret + decide CF-vs-scheduled-reindex, then it's workable.
-- Prior ops cluster (BUT-451/486/492/813/814/880/889/1166/1229) — console/creds/enrollment, unchanged.
+### Needs you (Tier D / deferred this batch)
+- BUT-610 — offline-mode audit+harden is a 4-6 day epic; needs its own focused multi-session effort, not a sprint batch slot.
+- BUT-840 / ops cluster — unchanged from iter-142 (Algolia admin key + console/creds/enrollment).
 
 ### Post-Sprint Steps
-- [x] Run `dart analyze --fatal-infos`
+- [x] Run `dart analyze --fatal-infos` + arch gates (architecture_test + AppColors grep, per iter-142 lesson)
 - [x] Run relevant unit tests
 - [x] Phase 2.7 outcome-grading per agent group
 - [x] Follow-ups → Linear BEFORE commit
 - [x] Commit, push
-- [x] Linear: Tier A (879, 881) → Done; Tier B/C (1243, 925, 1154) → In Review + notify
+- [x] Linear: Tier A (1245, 626) → Done; Tier B/C (1244, 862) → In Review + notify
 
 ---
-## ARCHIVED — iter-141 (BUT-1238/1005/1237/928/604/954 done; 4 Done-bound, 2 In-Review-bound) · iter-140 (BUT-1235/1236/839/877 Done, BUT-999 In Review; follow-ups BUT-1238/1239) · iter-139 (BUT-838/694/1234 Done) · iter-138 (BUT-956 In Review, 3 Done) · äldre i git-historiken
+## ARCHIVED — iter-142 (BUT-879/881 Done; BUT-1243/925/1154 In Review; follow-ups BUT-1244/1245; CI arch-fix 5e04bcabe) · iter-141 (BUT-1238/1005/1237/928/604/954) · iter-140 (BUT-1235/1236/839/877 Done) · äldre i git-historiken

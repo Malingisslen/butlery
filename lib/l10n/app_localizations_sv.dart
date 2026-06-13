@@ -14425,4 +14425,48 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get unnamedSharedList => '(Namnlös lista)';
+
+  @override
+  String get parseConfidenceTitle => 'Tolkningskvalitet per ingrediens';
+
+  @override
+  String parseConfidenceLowCountSubtitle(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString rader med osäker tolkning',
+      one: '$countString rad med osäker tolkning',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get parseConfidencePillHigh => 'HÖG';
+
+  @override
+  String get parseConfidencePillMedium => 'MEDIUM';
+
+  @override
+  String get parseConfidencePillLow => 'LÅG';
+
+  @override
+  String get parseConfidencePillFailed => 'OKÄND';
+
+  @override
+  String parseConfidenceOriginalPrefix(String line) {
+    return 'Original: $line';
+  }
+
+  @override
+  String get a11yToggleConfidenceSection =>
+      'Visa tolkningskvalitet per ingrediens';
+
+  @override
+  String a11yToggleIngredientOriginalLine(String name) {
+    return 'Visa originalrad för $name';
+  }
 }

@@ -1,9 +1,9 @@
 // lib/widgets/recipe/parse_confidence_review.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -95,9 +95,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
 
   Widget _buildHeader(BuildContext context, int lowCount) {
     return Semantics(
-      // NOTE: hardcoded Swedish to match this widget's current (non-l10n) copy;
-      // unified l10n pass (visible strings + a11y keys) tracked as a follow-up.
-      label: 'Visa tolkningskvalitet per ingrediens',
+      label: context.l10n.a11yToggleConfidenceSection,
       button: true,
       toggled: _expanded,
       child: InkWell(
@@ -112,12 +110,12 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tolkningskvalitet per ingrediens',
+                      context.l10n.parseConfidenceTitle,
                       style: AppTextStyles.labelLarge,
                     ),
                     if (lowCount > 0)
                       Text(
-                        '$lowCount ${lowCount == 1 ? 'rad' : 'rader'} med osäker tolkning',
+                        context.l10n.parseConfidenceLowCountSubtitle(lowCount),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: context.butleryColors.warning,
                         ),
@@ -161,9 +159,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
-          // Hardcoded Swedish to match this widget's current copy; full l10n
-          // pass (visible strings + a11y keys) tracked as a follow-up.
-          label: 'Visa originalrad för ${widget.ingredient.name}',
+          label: context.l10n
+              .a11yToggleIngredientOriginalLine(widget.ingredient.name),
           button: true,
           toggled: _showOriginal,
           child: InkWell(
@@ -208,7 +205,8 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
               bottom: AppDimensions.spacingXs,
             ),
             child: Text(
-              'Original: ${widget.ingredient.originalLine}',
+              context.l10n.parseConfidenceOriginalPrefix(
+                  widget.ingredient.originalLine),
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -226,7 +224,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
 /// Color mapping per BUT-925:
 ///   high   → green  (butleryColors.success = forestGreen)
 ///   medium → amber  (butleryColors.warning = #D4A03C)
-///   low    → grey   (AppColors.neutralMedium)
+///   low    → grey   (butleryColors.neutral = #9CA3AF)
 ///
 /// Exported for widget tests — use [confidencePillKey] to find the container
 /// and check its color via [confidenceColorFor] for the expected value.
@@ -260,7 +258,7 @@ class _ConfidencePill extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.butleryColors;
     final color = _colorFor(confidence, colors);
-    final label = _labelFor(confidence);
+    final label = _labelFor(context, confidence);
 
     return Container(
       key: ValueKey('confidence-pill-${confidence.name}'),
@@ -288,16 +286,15 @@ class _ConfidencePill extends StatelessWidget {
       switch (confidence) {
         ParseConfidence.high => colors.success,
         ParseConfidence.medium => colors.warning,
-        ParseConfidence.low ||
-        ParseConfidence.failed =>
-          AppColors.neutralMedium,
+        ParseConfidence.low || ParseConfidence.failed => colors.neutral,
       };
 
-  static String _labelFor(ParseConfidence confidence) => switch (confidence) {
-        ParseConfidence.high => 'HÖG',
-        ParseConfidence.medium => 'MEDIUM',
-        ParseConfidence.low => 'LÅG',
-        ParseConfidence.failed => 'OKÄND',
+  static String _labelFor(BuildContext context, ParseConfidence confidence) =>
+      switch (confidence) {
+        ParseConfidence.high => context.l10n.parseConfidencePillHigh,
+        ParseConfidence.medium => context.l10n.parseConfidencePillMedium,
+        ParseConfidence.low => context.l10n.parseConfidencePillLow,
+        ParseConfidence.failed => context.l10n.parseConfidencePillFailed,
       };
 }
 

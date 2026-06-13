@@ -24099,6 +24099,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'(Namnlös lista)'**
   String get unnamedSharedList;
+
+  /// BUT-1244: section heading in the parse-confidence review widget shown after recipe import.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tolkningskvalitet per ingrediens'**
+  String get parseConfidenceTitle;
+
+  /// BUT-1244: subtitle shown when one or more ingredients have low/failed parse confidence. Uses ICU plural: =1 for singular (rad), other for plural (rader).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{{count} rad med osäker tolkning} other{{count} rader med osäker tolkning}}'**
+  String parseConfidenceLowCountSubtitle(int count);
+
+  /// BUT-1244: label on the green confidence pill for a high-confidence parse result.
+  ///
+  /// In sv, this message translates to:
+  /// **'HÖG'**
+  String get parseConfidencePillHigh;
+
+  /// BUT-1244: label on the amber confidence pill for a medium-confidence parse result.
+  ///
+  /// In sv, this message translates to:
+  /// **'MEDIUM'**
+  String get parseConfidencePillMedium;
+
+  /// BUT-1244: label on the grey confidence pill for a low-confidence parse result.
+  ///
+  /// In sv, this message translates to:
+  /// **'LÅG'**
+  String get parseConfidencePillLow;
+
+  /// BUT-1244: label on the grey confidence pill when parsing failed entirely.
+  ///
+  /// In sv, this message translates to:
+  /// **'OKÄND'**
+  String get parseConfidencePillFailed;
+
+  /// BUT-1244: prefix shown before the original source line when a user expands an ingredient row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Original: {line}'**
+  String parseConfidenceOriginalPrefix(String line);
+
+  /// BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa tolkningskvalitet per ingrediens'**
+  String get a11yToggleConfidenceSection;
+
+  /// BUT-1244: screen-reader label for the tappable ingredient row that reveals its original source line.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa originalrad för {name}'**
+  String a11yToggleIngredientOriginalLine(String name);
 }
 
 class _AppLocalizationsDelegate

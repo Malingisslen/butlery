@@ -508,6 +508,15 @@ class SwedishLineClassifier {
   }
 }
 
+/// Top-level worker for [compute()] — must be top-level so the Dart isolate
+/// spawner can reference it without capturing any closure state.
+///
+/// Returns a [Map] of primitive values so the result can cross the isolate
+/// boundary via [SendPort] without custom serialization.
+Map<String, dynamic> parseStructureInIsolate(String text) {
+  return SwedishLineClassifier.instance.parseStructure(text).toIsolateMap();
+}
+
 /// Parsed recipe structure from line classification.
 class ParsedRecipeStructure {
   final String? title;
@@ -523,6 +532,28 @@ class ParsedRecipeStructure {
     this.portions,
     this.totalTime,
   });
+
+  /// Encode to a [Map] of primitives that can cross an isolate [SendPort].
+  /// [totalTime] is stored as integer minutes (null → absent key).
+  Map<String, dynamic> toIsolateMap() => {
+        'title': title,
+        'ingredients': List<String>.from(ingredients),
+        'instructions': List<String>.from(instructions),
+        'portions': portions,
+        if (totalTime != null) 'totalTimeMinutes': totalTime!.inMinutes,
+      };
+
+  /// Reconstruct from the map returned by [toIsolateMap].
+  factory ParsedRecipeStructure.fromIsolateMap(Map<String, dynamic> map) {
+    final rawMinutes = map['totalTimeMinutes'] as int?;
+    return ParsedRecipeStructure(
+      title: map['title'] as String?,
+      ingredients: List<String>.from(map['ingredients'] as List),
+      instructions: List<String>.from(map['instructions'] as List),
+      portions: map['portions'] as int?,
+      totalTime: rawMinutes != null ? Duration(minutes: rawMinutes) : null,
+    );
+  }
 
   /// Overall confidence based on extracted data.
   double get confidence {

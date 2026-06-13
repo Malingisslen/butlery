@@ -1,14 +1,18 @@
 // BUT-925: widget tests for ParseConfidenceReview and ConfidencePill.
 //
 // Acceptance gate: the pill renders the correct color for each
-// ParseConfidence value (high→green, medium→amber/gold, low→grey), and the
-// original line is reachable per ingredient.
+// ParseConfidence value (high→green, medium→amber/gold, low/failed→neutral
+// grey), and the original line is reachable per ingredient.
+//
+// BUT-1244: updated to assert via l10n keys and ButleryColors.neutral token
+// rather than hardcoded Swedish strings and AppColors.neutralMedium.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/recipe/parse_confidence_review.dart';
 
@@ -30,13 +34,15 @@ ParsedIngredient _ingredient({
   );
 }
 
-Widget _wrap(Widget child) {
-  return MaterialApp(
-    // No custom theme extension → ButleryColorsAccess falls back to
-    // ButleryColors.light, giving deterministic color values for assertions.
-    home: Scaffold(body: SingleChildScrollView(child: child)),
-  );
-}
+/// Wraps [child] with full theme + Swedish l10n so context.l10n and
+/// context.butleryColors both resolve to their light-mode values.
+Widget _wrap(Widget child) => MaterialApp(
+      theme: AppTheme.lightTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      home: Scaffold(body: SingleChildScrollView(child: child)),
+    );
 
 // Helper: find the Container that forms the confidence pill for a given
 // ParseConfidence value, using the key we set in _ConfidencePill.build.
@@ -52,7 +58,7 @@ Color _pillBorderColor(WidgetTester tester, Finder finder) {
 
 void main() {
   group('ConfidencePill — color-per-ParseConfidence', () {
-    // Use ButleryColors.light values (the fallback when no theme extension)
+    // Use ButleryColors.light values (registered by AppTheme.lightTheme)
     const colors = ButleryColors.light;
 
     testWidgets('high confidence → success green border', (tester) async {
@@ -88,15 +94,38 @@ void main() {
       expect(pillFinder, findsOneWidget);
 
       final borderColor = _pillBorderColor(tester, pillFinder);
-      expect(borderColor, equals(AppColors.neutralMedium)); // #9CA3AF
+      // Assert via the neutral token, not the raw AppColors constant
+      expect(borderColor, equals(colors.neutral)); // #9CA3AF
     });
 
-    testWidgets('pill label text matches confidence — HÖG/MEDIUM/LÅG',
+    testWidgets('failed confidence → neutral grey border (same as low)',
         (tester) async {
+      await tester.pumpWidget(
+        _wrap(ConfidencePill(confidence: ParseConfidence.failed)),
+      );
+
+      final pillFinder = _pillContainer(ParseConfidence.failed);
+      expect(pillFinder, findsOneWidget);
+
+      final borderColor = _pillBorderColor(tester, pillFinder);
+      expect(borderColor, equals(colors.neutral));
+    });
+
+    testWidgets('pill label text matches confidence — l10n Swedish values',
+        (tester) async {
+      // Pump one widget and read l10n from its context rather than hardcoding
+      // the Swedish strings, so the test survives locale changes.
+      await tester.pumpWidget(
+        _wrap(ConfidencePill(confidence: ParseConfidence.high)),
+      );
+      final l10n =
+          AppLocalizations.of(tester.element(find.byType(ConfidencePill)));
+
       for (final entry in {
-        ParseConfidence.high: 'HÖG',
-        ParseConfidence.medium: 'MEDIUM',
-        ParseConfidence.low: 'LÅG',
+        ParseConfidence.high: l10n.parseConfidencePillHigh,
+        ParseConfidence.medium: l10n.parseConfidencePillMedium,
+        ParseConfidence.low: l10n.parseConfidencePillLow,
+        ParseConfidence.failed: l10n.parseConfidencePillFailed,
       }.entries) {
         await tester.pumpWidget(
           _wrap(ConfidencePill(confidence: entry.key)),
@@ -119,7 +148,11 @@ void main() {
       );
       expect(
         ConfidencePill.confidenceColorFor(ParseConfidence.low, colors),
-        equals(AppColors.neutralMedium),
+        equals(colors.neutral),
+      );
+      expect(
+        ConfidencePill.confidenceColorFor(ParseConfidence.failed, colors),
+        equals(colors.neutral),
       );
     });
   });
@@ -149,7 +182,7 @@ void main() {
       await tester.tap(find.text('2 dl vetemjöl'));
       await tester.pumpAndSettle();
 
-      // Original line now visible
+      // Original line now visible (widget renders "Original: <line>" via l10n)
       expect(find.textContaining(originalText), findsOneWidget);
     });
 
@@ -223,9 +256,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Should show "2 rader med osäker tolkning"
+      // Read the expected subtitle from l10n rather than hardcoding Swedish
+      final l10n = AppLocalizations.of(
+          tester.element(find.byType(ParseConfidenceReview)));
       expect(
-        find.textContaining('2 rader med osäker tolkning'),
+        find.textContaining(l10n.parseConfidenceLowCountSubtitle(2)),
         findsOneWidget,
       );
     });

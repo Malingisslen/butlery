@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
@@ -152,6 +153,10 @@ class ParsingContext {
   ///
   /// Preferred when a [NeuralLineClassifier] is available — the async path
   /// actually runs the ONNX model instead of falling back to rule-based.
+  ///
+  /// When neither a neural classifier nor the cache is available, offloads
+  /// the synchronous rule-based classification to a background isolate via
+  /// [compute()] so that long recipe texts do not block the UI thread.
   Future<ParsedRecipeStructure> parseStructureCachedAsync(
     String text, {
     NeuralLineClassifier? neuralClassifier,
@@ -163,7 +168,12 @@ class ParsingContext {
     if (neuralClassifier != null && neuralClassifier.isAvailable) {
       result = await neuralClassifier.parseStructureAsync(text);
     } else {
-      result = SwedishLineClassifier.instance.parseStructure(text);
+      // Offload to a background isolate — [parseStructureInIsolate] is a
+      // top-level function so compute() can reference it directly.
+      // Input: String (primitive). Output: Map<String, dynamic> (primitives
+      // only, Duration encoded as int minutes). Reconstructed on return.
+      final map = await compute(parseStructureInIsolate, text);
+      result = ParsedRecipeStructure.fromIsolateMap(map);
     }
     _cachedStructure = result;
     _structureCacheKey = text;

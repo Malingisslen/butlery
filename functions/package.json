@@ -76,6 +76,7 @@
     "test:rate-limiter-global-limits": "ts-node src/__tests__/rate-limiter-global-limits.test.ts",
     "test:request-account-deletion": "ts-node src/__tests__/request-account-deletion.test.ts",
     "test:structure-recipe-empty": "ts-node src/__tests__/structure-recipe-empty.test.ts",
+    "test:prompt-ab-bucket": "ts-node src/__tests__/prompt-ab-bucket.test.ts",
     "test": "node scripts/run-all-tests.js",
     "reset-user-data": "ts-node src/admin/reset-user-data.ts",
     "reset-user-data:dry-run": "ts-node src/admin/reset-user-data.ts --dry-run"

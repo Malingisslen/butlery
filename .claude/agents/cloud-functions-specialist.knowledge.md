@@ -1378,3 +1378,64 @@ the real handler via the v2 SDK's `CloudFunction.run(event)` surface:
   (which the firestore-rules CI lane runs with both emulators up), and
   added to the workflow's path triggers incl. `functions/src/storage/**`
   + `functions/src/messaging/**`.
+
+### 2026-06-13 — BUT-626 prompt A/B bucket experiment [Pattern discovered]
+
+`functions/src/shared/prompt-ab-bucket.ts` — deterministic per-user bucket
+assignment for prompt experiments. Two exported functions:
+- `assignPromptBucket(userId, bucketCount?)` — SHA-256(`uid:prompt_experiment`)
+  mod bucketCount. Pure, <5µs, zero Firestore reads.
+- `resolvePromptBucket(userId, promptVariants?)` — maps bucket to named variant
+  from an optional `string[]`. Returns `{ bucket, variant }` where `variant`
+  is undefined when no experiment is configured (safe no-op).
+
+Integration points:
+- `PromptsConfig` (prompts-config.ts) gained optional `promptVariants?: string[]`
+  parsed from `system/prompts` Firestore doc. Validation is all-or-nothing:
+  any invalid element (non-string, empty string) → field absent (no partial
+  overlay). Doc without the field → field absent. The five required string
+  fields are completely unchanged; `promptVariants` is strictly additive.
+- `structure-recipe.ts` + `ocr-recipe-image.ts`: declared `let experimentBucket`
+  and `let promptVariant` in the function scope BEFORE the `emitTiming` closure
+  so the closure captures them at call time. They get assigned after
+  `getPromptsConfig()` resolves. Early exit paths (validation before prompts
+  fetch) emit undefined bucket fields — Cloud Logging drops undefined JSON
+  fields, distinguishing "bucket not yet known" from bucket=0.
+- Both `structure_recipe.complete` and `ocr_recipe_image.complete` analytics
+  events now carry `experimentBucket` (number) and `promptVariant` (string |
+  absent) alongside the existing `promptVersion`.
+
+**Operator workflow to start an experiment**: add
+`promptVariants: ["control", "challenger"]` to the `system/prompts` Firestore
+doc alongside the normal `promptVersion` bump. Every CF instance picks it up
+within the 5-min cache TTL. To end the experiment: remove the field (or leave
+it — variant=undefined is the no-op fallback). No redeploy needed.
+
+**Patterns worth remembering**:
+
+- **Mutable closure variables let early-exit emitTiming stay unaware of
+  bucket assignment.** The alternative (passing bucket explicitly to every
+  `emitTiming(false, {...})` call) would mean touching 9+ call sites. Declare
+  `let experimentBucket: number | undefined` BEFORE `emitTiming`, assign
+  AFTER prompts fetch. Cloud Logging drops undefined JSON fields, which is
+  exactly the right signal for "validate-before-fetch" exits.
+
+- **`:prompt_experiment` salt keeps this bucket independent of winback
+  buckets.** Same user hashes to different buckets for different experiments.
+  Don't reuse the `:thresholdType` salt pattern from BUT-688 for orthogonal
+  experiments — give each experiment its own salt string.
+
+- **`promptVariants` does NOT replace `promptVersion`.** `promptVersion`
+  remains the canonical analytics key for prompt regressions (bumped on every
+  doc edit). `experimentBucket` + `promptVariant` are additive fields for
+  A/B slicing. A Logs Explorer query like
+  `jsonPayload.experimentBucket=0 AND jsonPayload.promptVersion="v12"`
+  filters to one bucket for one prompt version.
+
+- **Bucket count comes from the variants array length.** When `promptVariants`
+  has 3 entries, bucketCount=3 automatically. No separate config field needed.
+
+- **Test suite** (`test:prompt-ab-bucket`, 14 cases): covers stability,
+  ±10% distribution for 2- and 3-bucket cases over 1000-1500 ids,
+  variant-to-bucket mapping correctness, all fallback/malformed paths, and
+  the analytics payload shape. Auto-discovered by the run-all-tests.js runner.

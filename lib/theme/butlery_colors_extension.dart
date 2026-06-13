@@ -29,6 +29,8 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     required this.onInfo,
     required this.infoContainer,
     required this.onInfoContainer,
+    // Status: neutral
+    required this.neutral,
     // Brand / decorative
     required this.starGold,
     required this.recipeCardLeftBorder,
@@ -77,6 +79,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   final Color onInfo;
   final Color infoContainer;
   final Color onInfoContainer;
+
+  // Status: neutral — used for low/failed parse confidence pills, muted badges
+  final Color neutral;
 
   // Brand / decorative
   final Color starGold;
@@ -130,6 +135,8 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     onInfo: Color(0xFFFFFFFF),
     infoContainer: Color(0xFFF0F9FF),
     onInfoContainer: Color(0xFF1E40AF),
+    // Status: neutral — matches AppColors.neutralMedium (#9CA3AF)
+    neutral: Color(0xFF9CA3AF),
     // Brand / decorative
     starGold: Color(0xFFFBBF24),
     recipeCardLeftBorder: Color(0xFF4A7C59), // forestGreen
@@ -177,6 +184,8 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     onInfo: Color(0xFF002F66),
     infoContainer: Color(0xFF00458F),
     onInfoContainer: Color(0xFFD6E3FF),
+    // Neutral — tone 60 on dark surfaces (M3 pattern: lighter grey for contrast)
+    neutral: Color(0xFFBDBDBD),
     // Brand / decorative: slightly desaturated for dark
     starGold: Color(0xFFFFD54F),
     recipeCardLeftBorder: Color(0xFF6B9B7A), // forestGreenLight
@@ -221,6 +230,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     Color? onInfo,
     Color? infoContainer,
     Color? onInfoContainer,
+    Color? neutral,
     Color? starGold,
     Color? recipeCardLeftBorder,
     Color? recipeCardBottomBorder,
@@ -259,6 +269,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       onInfo: onInfo ?? this.onInfo,
       infoContainer: infoContainer ?? this.infoContainer,
       onInfoContainer: onInfoContainer ?? this.onInfoContainer,
+      neutral: neutral ?? this.neutral,
       starGold: starGold ?? this.starGold,
       recipeCardLeftBorder: recipeCardLeftBorder ?? this.recipeCardLeftBorder,
       recipeCardBottomBorder:
@@ -312,6 +323,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
       onInfo: Color.lerp(onInfo, other.onInfo, t)!,
       infoContainer: Color.lerp(infoContainer, other.infoContainer, t)!,
       onInfoContainer: Color.lerp(onInfoContainer, other.onInfoContainer, t)!,
+      neutral: Color.lerp(neutral, other.neutral, t)!,
       starGold: Color.lerp(starGold, other.starGold, t)!,
       recipeCardLeftBorder:
           Color.lerp(recipeCardLeftBorder, other.recipeCardLeftBorder, t)!,

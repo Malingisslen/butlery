@@ -27,6 +27,7 @@ import {
   MODEL_ID,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
+import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
 import { runStructureRecipe } from "./structure-recipe";
@@ -255,6 +256,13 @@ export async function runOcrRecipeImage(
   // deploy. Token counts are captured after the vision call; before it
   // they're undefined and Cloud Logging drops them (absence ≠ zero).
   let ocrUsage: OcrPerformResult["usage"];
+
+  // BUT-626: mutable variables captured by emitTiming. Assigned after
+  // getPromptsConfig() resolves; undefined for early validation exits.
+  let experimentBucket: number | undefined;
+  let promptVariant: string | undefined;
+  let promptVersionForTiming: string | undefined;
+
   const emitTiming = (success: boolean, extra?: Record<string, unknown>): void => {
     logger.info("ocr_recipe_image.complete", {
       event: "ocr_recipe_image.complete",
@@ -265,6 +273,12 @@ export async function runOcrRecipeImage(
       candidatesTokenCount: ocrUsage?.candidatesTokenCount,
       cachedContentTokenCount: ocrUsage?.cachedContentTokenCount,
       ...(extra ?? {}),
+      // BUT-626: emit promptVersion + bucket in the SAME event for per-bucket,
+      // per-version analytics in one query. Spread LAST so these authoritative
+      // A/B fields can't be clobbered by `extra`.
+      ...(promptVersionForTiming !== undefined ? { promptVersion: promptVersionForTiming } : {}),
+      ...(experimentBucket !== undefined ? { experimentBucket } : {}),
+      ...(promptVariant !== undefined ? { promptVariant } : {}),
     });
   };
 
@@ -339,6 +353,12 @@ export async function runOcrRecipeImage(
     // Falls back to compiled-in defaults on read failure.
     const prompts = await getPromptsConfig();
     const promptVersion = prompts.promptVersion;
+    promptVersionForTiming = promptVersion;
+
+    // BUT-626: deterministic A/B bucket. Assigned to mutable outer variables
+    // so emitTiming includes them on every exit path from here forward.
+    ({ bucket: experimentBucket, variant: promptVariant } =
+      resolvePromptBucket(authUidHash, prompts.promptVariants));
 
     logger.info(
       `[ocrRecipeImage] Processing image for user ${authUidHash} (prompt v${promptVersion}, source=${prompts.source})`,

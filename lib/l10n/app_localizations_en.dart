@@ -14388,4 +14388,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unnamedSharedList => '(Unnamed list)';
+
+  @override
+  String get parseConfidenceTitle => 'Parse quality per ingredient';
+
+  @override
+  String parseConfidenceLowCountSubtitle(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString lines with uncertain parse',
+      one: '$countString line with uncertain parse',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get parseConfidencePillHigh => 'HIGH';
+
+  @override
+  String get parseConfidencePillMedium => 'MEDIUM';
+
+  @override
+  String get parseConfidencePillLow => 'LOW';
+
+  @override
+  String get parseConfidencePillFailed => 'UNKNOWN';
+
+  @override
+  String parseConfidenceOriginalPrefix(String line) {
+    return 'Original: $line';
+  }
+
+  @override
+  String get a11yToggleConfidenceSection => 'Show parse quality per ingredient';
+
+  @override
+  String a11yToggleIngredientOriginalLine(String name) {
+    return 'Show original line for $name';
+  }
 }

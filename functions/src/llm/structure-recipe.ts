@@ -21,6 +21,7 @@ import {
   MODEL_ID,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
+import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 import { hashUid } from "../shared/hash-uid";
@@ -136,6 +137,14 @@ export async function runStructureRecipe(
   // `mode`) costs zero deploy.
   const startMs = Date.now();
   const textLength = typeof text === "string" ? text.length : 0;
+
+  // BUT-626: mutable variables captured by the emitTiming closure. Assigned
+  // after `getPromptsConfig()` resolves; undefined for early exit paths
+  // (validation errors before prompts are fetched — bucket not yet known).
+  let experimentBucket: number | undefined;
+  let promptVariant: string | undefined;
+  let promptVersionForTiming: string | undefined;
+
   const emitTiming = (success: boolean, extra?: Record<string, unknown>): void => {
     logger.info("structure_recipe.complete", {
       event: "structure_recipe.complete",
@@ -145,6 +154,12 @@ export async function runStructureRecipe(
       success,
       modelId: MODEL_ID,
       ...(extra ?? {}),
+      // BUT-626: emit bucket alongside promptVersion in the SAME event so a single
+      // Cloud Logging / BigQuery query can slice quality deltas per bucket+version.
+      // Spread LAST so these authoritative A/B fields can't be clobbered by `extra`.
+      ...(promptVersionForTiming !== undefined ? { promptVersion: promptVersionForTiming } : {}),
+      ...(experimentBucket !== undefined ? { experimentBucket } : {}),
+      ...(promptVariant !== undefined ? { promptVariant } : {}),
     });
   };
 
@@ -220,6 +235,17 @@ export async function runStructureRecipe(
     // Falls back to compiled-in defaults on read failure.
     const prompts = await getPromptsConfig();
     const promptVersion = prompts.promptVersion;
+    promptVersionForTiming = promptVersion;
+
+    // BUT-626: deterministic A/B bucket for prompt experiments.
+    // `authUidHash` is the SHA-256 hash of the real UID — NOT the raw UID.
+    // We use it here as the stable per-user key; collision probability is
+    // negligible for our user scale, and it avoids logging a raw UID.
+    // When no `promptVariants` are configured, `variant` is undefined and
+    // the bucket is still emitted to analytics (pre-experiment baseline).
+    // Assigned to mutable outer variables so `emitTiming` can include them.
+    ({ bucket: experimentBucket, variant: promptVariant } =
+      resolvePromptBucket(authUidHash, prompts.promptVariants));
 
     // Select system prompt based on mode
     let systemPrompt: string;

@@ -10218,5 +10218,57 @@
   "unnamedSharedList": "(Unnamed list)",
   "@unnamedSharedList": {
     "description": "BUT-1109: localized fallback shown when a shared shopping list lacks a name (legacy/malformed data)."
+  },
+  "parseConfidenceTitle": "Parse quality per ingredient",
+  "@parseConfidenceTitle": {
+    "description": "BUT-1244: section heading in the parse-confidence review widget shown after recipe import."
+  },
+  "parseConfidenceLowCountSubtitle": "{count, plural, =1{{count} line with uncertain parse} other{{count} lines with uncertain parse}}",
+  "@parseConfidenceLowCountSubtitle": {
+    "description": "BUT-1244: subtitle shown when one or more ingredients have low/failed parse confidence.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "parseConfidencePillHigh": "HIGH",
+  "@parseConfidencePillHigh": {
+    "description": "BUT-1244: label on the green confidence pill for a high-confidence parse result."
+  },
+  "parseConfidencePillMedium": "MEDIUM",
+  "@parseConfidencePillMedium": {
+    "description": "BUT-1244: label on the amber confidence pill for a medium-confidence parse result."
+  },
+  "parseConfidencePillLow": "LOW",
+  "@parseConfidencePillLow": {
+    "description": "BUT-1244: label on the grey confidence pill for a low-confidence parse result."
+  },
+  "parseConfidencePillFailed": "UNKNOWN",
+  "@parseConfidencePillFailed": {
+    "description": "BUT-1244: label on the grey confidence pill when parsing failed entirely."
+  },
+  "parseConfidenceOriginalPrefix": "Original: {line}",
+  "@parseConfidenceOriginalPrefix": {
+    "description": "BUT-1244: prefix shown before the original source line when a user expands an ingredient row.",
+    "placeholders": {
+      "line": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yToggleConfidenceSection": "Show parse quality per ingredient",
+  "@a11yToggleConfidenceSection": {
+    "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
+  },
+  "a11yToggleIngredientOriginalLine": "Show original line for {name}",
+  "@a11yToggleIngredientOriginalLine": {
+    "description": "BUT-1244: screen-reader label for the tappable ingredient row that reveals its original source line.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -54,6 +54,15 @@ export const PROMPTS_DOC_PATH = "system/prompts";
  * Snapshot of all LLM system prompts, plus the version string that
  * downstream analytics keys off. `source` lets callers (and tests) tell
  * whether the snapshot came from Firestore or the compiled-in fallback.
+ *
+ * BUT-626: `promptVariants` is an optional list of experiment variant names
+ * (e.g. `["control", "v2_extraction"]`). When present, callers use
+ * `resolvePromptBucket(userId, promptVariants)` to deterministically assign
+ * a user to one variant without any additional Firestore reads. When absent,
+ * no experiment is active and the single-version fallback applies.
+ *
+ * Operators add/remove `promptVariants` to the `system/prompts` doc to
+ * start/stop an experiment. The doc's 5-min cache TTL governs propagation.
  */
 export interface PromptsConfig {
   recipeExtractionSystemPrompt: string;
@@ -63,6 +72,11 @@ export interface PromptsConfig {
   ingredientLineSystemPrompt: string;
   promptVersion: string;
   source: "firestore" | "fallback";
+  /**
+   * BUT-626: Optional A/B experiment variant names. Present only when an
+   * experiment is active in the `system/prompts` Firestore doc.
+   */
+  promptVariants?: string[];
 }
 
 /** Test seam: returns the raw Firestore data, or undefined if doc missing. */
@@ -142,6 +156,27 @@ function validateRemoteDoc(
     }
   }
 
+  // BUT-626: optional A/B variant list. Validated as string[]; any invalid
+  // element makes the whole field absent (all-or-nothing, same rationale as
+  // the required fields). A missing/non-array field is silently ignored —
+  // no active experiment is the safe default.
+  let promptVariants: string[] | undefined;
+  const rawVariants = raw["promptVariants"];
+  if (Array.isArray(rawVariants) && rawVariants.length > 0) {
+    // Non-empty strings, capped at 64 chars so a stray long value can't bloat
+    // the structured analytics log entries that carry the variant name.
+    const allStrings = rawVariants.every(
+      (v) =>
+        typeof v === "string" &&
+        (v as string).trim().length > 0 &&
+        (v as string).length <= 64,
+    );
+    if (allStrings) {
+      promptVariants = rawVariants as string[];
+    }
+    // If invalid, silently omit — experiment simply isn't active.
+  }
+
   return {
     recipeExtractionSystemPrompt: raw.recipeExtractionSystemPrompt as string,
     recipeEnhancementSystemPrompt: raw.recipeEnhancementSystemPrompt as string,
@@ -150,6 +185,7 @@ function validateRemoteDoc(
     ingredientLineSystemPrompt: raw.ingredientLineSystemPrompt as string,
     promptVersion: (raw.promptVersion as string).trim(),
     source: "firestore",
+    ...(promptVariants !== undefined ? { promptVariants } : {}),
   };
 }
 
