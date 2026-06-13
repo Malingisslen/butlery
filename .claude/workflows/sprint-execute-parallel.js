@@ -657,8 +657,13 @@ Steps:
    ${markerList ? `\`touch ${markerList}\`` : '(none — no reviewer completed; do NOT fake any marker)'}
    ${reviewComplete ? '' : 'NOTE: review was INCOMPLETE. If the commit hook blocks on a marker not in the list above, STOP — do not bypass. Leave changes uncommitted, set committed=false, explain in notes, and return so a human can run the missing review.'}
 4. Write a conventional commit (feat/fix/refactor) with body: why + key changes + a "Known follow-ups (filed in Linear)" section listing the BUT-XXX from step 2. Footer EXACTLY: \`Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>\`.
-5. \`git commit\`. If lefthook reformats and the commit fails, re-stage all and commit again with the same message — never --amend, never --no-verify.
-6. Verification gate: \`git status\` MUST show a clean tracked tree. Repeat step 5 until clean.
+5. Commit — skipping ONLY the redundant whole-repo \`dart analyze\` (lefthook re-runs \`dart analyze --fatal-infos\`, which you ALREADY ran clean in step 1 and which HUNG mid-commit on Windows and deadlocked the whole run — iter-147). Keep every other gate (format, secret-scan, arch-guard, commit-msg):
+   - Record HEAD first: \`PRE=$(git rev-parse HEAD)\`.
+   - Write the message to a temp file, then: \`LEFTHOOK_EXCLUDE=analyze git commit -F <msgfile>\`.
+   - **Detect success by GROUND TRUTH — never busy-wait on a PID or an output file.** A slow commit may get backgrounded by the harness; that is fine. Just re-check \`git rev-parse HEAD\`: when it differs from \`$PRE\`, the commit landed. If needed, re-check a few times a couple of seconds apart. Do NOT write \`while kill -0 ...\` loops on a process id.
+   - If HEAD has NOT moved because lefthook's \`format\` re-staged files and aborted, re-run the SAME \`LEFTHOOK_EXCLUDE=analyze git commit -F <msgfile>\` once (format is now a no-op). Never --amend, never --no-verify.
+   - If HEAD still hasn't moved after ~2 retries, STOP: set committed=false, explain in notes, leave the tree clean-staged for a human. Do NOT loop forever or busy-wait.
+6. Verification gate: confirm \`git rev-parse HEAD\` advanced past \`$PRE\` AND \`git status --porcelain\` is empty. Only then push.
 7. \`git push -u origin HEAD\`.
 8. Transition Linear tickets — touch ONLY the EXACT ticket IDs listed here; do NOT infer, add, or transition any other ticket even if it looks related or is referenced in the diff:
    - Done-state (verified): ${verifiedDoneIds.join(', ') || '(none)'} — comment "Fixed in commit <short-sha>: <subject>" PLUS one plain-language sentence on what changed in the app and why (Malin reads these and doesn't read code — no class names, no shorthand; describe what she'd notice).
