@@ -395,6 +395,15 @@ Exemplary shapes: HeirloomBridge one-shot handoff with **draft-restore-on-failur
 ### 2026-05-28 — shared_content pagination guard [Pattern]
 The 3 subclass files pin `supportsPagination==false` + `loadMoreContent()` throws `UnsupportedError` (sound mutation behaviour). **Fragile-pattern note: `expect(() => vm.method(), throwsA(...))` in a SYNCHRONOUS test body on an `async` method passes only because the throw precedes any `await`** — robust form is `await expectLater(() => vm.method(), throwsA(...))` in an `async` test.
 
+### 2026-06-13 — BUT-925/1244 parse_confidence_review widget test assessment [Pattern + Gap]
+14/14 green. Five design behaviours under review:
+- **Bar colour per confidence**: real — reads `Container.color` from a `ValueKey` test hook, compares to static `ButleryColors.light.success/warning/neutral`. Would catch wrong-token, wrong-widget regressions. Fragile point: the `ValueKey` is embedded in production code; removing it breaks the finder before any colour assertion runs (document as known fragile spot).
+- **No pill labels**: real — `find.text('HÖG')` etc. + English variants, covers CI locale.
+- **Subtitle counts / hidden when all-high**: real, but the "all-high" assertion checks `findTextContaining(subtitle(0))` which is always-absent even when the guard is correct. More explicit form: assert no subtitle string at ALL (e.g. `findsNothing` on `find.textContaining('ingrediens')`). Add a comment explaining the indirect logic.
+- **Whitespace-only suppression vs genuine difference**: real — exercises `_stripped()` boundary on both sides.
+- **A11y semantics**: real — uses `ensureSemantics()` + live l10n. **GAP: only `high` and `low` tested; `medium` and `failed` arms of the production switch are uncovered.** Two cheap additions close it.
+**Action taken**: none (assessment-only task). Flag to add medium+failed a11y tests in same file.
+
 ### 2026-05-28 — SocialRecipeService: pin SPECIFIC error string not isNotNull [Pattern]
 **When a diff's intent is "surface a SPECIFIC user-facing message", pin that exact localized string** (`expect(service.error, AppLocale.current.errorImportPartialReSignIn)`), not `isNotNull` — a refactor regressing to a generic message still passes the weak assertion. Gap: `importSharedMenu` sign-out path has a bare `if (isAuthenticated)` with NO `else` (asymmetric with the recipe path) — documented in a test, not "fixed".
 
