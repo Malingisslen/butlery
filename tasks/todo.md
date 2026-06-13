@@ -1,32 +1,37 @@
 # Sprint Backlog
 
-## Sprint: realtime data-loss-path sign-off — 2026-06-13 (iter-147)
+## Sprint: recoverLocalVersion test-gap hardening — 2026-06-14 (iter-148)
 
-7th sprint this session. FULL backlog scan (105 open: Backlog 100 + Todo 5; In Progress / Triage empty). Honest finding: the clean-buildable Tier A pool on `main` is essentially drained this iteration. Most open tickets are (a) **premise-pending** — they reference files from an uncommitted parallel sprint that have NOT landed on `main` (BUT-1259/1260/1258 cite `lib/butlery_app.dart`, `lib/bootstrap/app_initializer.dart`, and a 832-line `veckomeny_view.dart` — none of which exist here; `main.dart` is still 1395 lines, `veckomeny_view.dart` is 606), (b) **ops/secret-blocked** (BUT-840 needs an Algolia admin key in CF; BUT-819 needs prod gcloud; BUT-1011 premature until prod telemetry), or (c) **self-deferred-until-trigger** by their own bodies (BUT-1067/1176/1248/1149/610). Per the skill, a batch that's mostly needsApproval is fine and expected — not manufacturing build work to fill N.
+8th sprint this session. FULL backlog scan (100 most-recently-updated of ~105 open; Todo 5, In Progress / Triage empty). Honest finding repeated from iter-147: the clean-buildable Tier A pool on `main` is still essentially drained. Verified against `main`:
 
-One genuinely-clean build this sprint.
+- **Premise-pending (still not merged):** BUT-1259/1260/1258 reference the parallel-session cold-start split — `lib/butlery_app.dart`, `lib/bootstrap/app_initializer.dart`, slimmed `main.dart`, grown `veckomeny_view.dart`. None landed: `main.dart` is still 1395 lines, `butlery_app.dart`/`app_initializer.dart` don't exist, `veckomeny_view.dart` is at `lib/views/veckomeny_view.dart` (not the path they cite). BUT-1259's ACCEPTED_LARGE_FILES.md entry doesn't even exist on main. → hold.
+- **Ops/secret-blocked:** BUT-840 (Algolia admin key), BUT-819 (prod gcloud), BUT-1229/814/492/451/486/etc. → not worked.
+- **Self-deferred-until-trigger:** BUT-1011, BUT-1176, BUT-1248, BUT-1149, BUT-610. → hold.
 
-### Agent A: realtime — data-loss-prevention path sign-off `[Tier A]`
-- [ ] **A1. Re-review + harden recoverLocalVersion / conflict_diff_view** `[Tier A]` — `lib/services/realtime_sync_service.dart` (recoverLocalVersion ~line 293, the ~35-line conflict-resolution + editCount-bump method) and `lib/views/realtime/conflict_diff_view.dart` (the "Behåll min version" button wired to call it). The reviewer markers were stale when BUT-1262 was filed (newer lib changes than the marker mtime), so the fixup wave never got a fresh code-review / testing-review. Read the recoverLocalVersion diff cold for correctness on the load-bearing data-loss path: editCount monotonicity, no silent overwrite of the remote winner, idempotency, dispose/listener safety. Fix any real bug inline (smallest correct diff); if clean, the existing `realtime_sync_service_test.dart` coverage stands and this is a sign-off only. (BUT-1262)
-  - Acceptance: recoverLocalVersion's editCount handling is correct — it bumps strictly above the remote version so the local recovery wins the next sync (test-pinned in realtime_sync_service_test.dart, or shown already-pinned) · "Behåll min version" calls recoverLocalVersion (not a raw re-persist) and the path cannot silently drop the user's local edits · `dart analyze --fatal-infos` clean on both files · existing realtime_sync_service_test.dart + any conflict_diff_view tests stay green (no assertion weakened to pass)
+The one clean, verified-on-main build slice this iteration: two test-gap follow-ups to last sprint's BUT-1262 conflict-recovery work. Both reference `recoverLocalVersion` (real, at `realtime_sync_service.dart:300`) and the existing tests at `realtime_sync_service_test.dart:434`. I read the method + tests: both gaps are real (existing tests assert only `editCount`; the `lastEditedAt`/`lastEditedBy` bump and the `remote.editCount <= local.editCount` branch are genuinely unasserted). Single batch — both touch only the one test file.
+
+### Agent A: realtime — recoverLocalVersion test-gap hardening `[Tier A]`
+- [ ] **A1. Assert timestamp + author bump in recoverLocalVersion recovery** `[Tier A]` — `test/unit/services/realtime_sync_service_test.dart`: add a test under the existing `recoverLocalVersion` group that, under a fixed clock, asserts the persisted doc's `lastEditedBy == currentUserId` and `lastEditedAt == clock.now()` (not just editCount). (BUT-1263)
+  - Acceptance: a new test in the `recoverLocalVersion` group asserts the persisted doc's `lastEditedBy` equals the current user id · the same (or a sibling) test asserts `lastEditedAt` equals the fixed `clock.now()` value · neither of the two pre-existing recoverLocalVersion tests has any assertion weakened or removed · `flutter test test/unit/services/realtime_sync_service_test.dart` passes green
+- [ ] **A2. Cover the remote.editCount <= local.editCount branch** `[Tier A]` — `test/unit/services/realtime_sync_service_test.dart`: add a case where the remote exists but `remote.editCount <= local.editCount`, asserting the persisted bump is `local.editCount + 1` (the guard is false → local's own count is used). (BUT-1264)
+  - Acceptance: a new test seeds a remote whose `editCount` is <= the local snapshot's `editCount` · it asserts the persisted `editCount` equals `local.editCount + 1` (proving the false-guard branch uses local's count, not remote's) · the test is distinct from the existing remote>local and no-remote cases · file stays green under `flutter test`
 
 ### Needs you (not built — flagged for your call)
-- **BUT-1259** — premise-pending: cites `lib/butlery_app.dart` (1164 lines) which does not exist on `main` yet. The BUT-530 main.dart slim-down + ButleryApp extraction was done in a parallel session that hasn't merged. Re-runnable once that lands. Recommend: hold.
-- **BUT-1260** — premise-pending: cites `lib/bootstrap/app_initializer.dart` (runPhaseA/runPhaseB) which doesn't exist on `main`. Same uncommitted cold-start split. Recommend: hold until BUT-431 lands.
-- **BUT-1258** — premise-pending: cites `veckomeny_view.dart` at 832 lines; it's 606 on `main` (the BUT-1043 copy-week UI that grew it hasn't merged). Recommend: hold.
-- **BUT-840** — ops/secret-blocked: search is real Algolia (client-side `saveObject`); the CF `on-profile-updated.ts` has no Algolia admin SDK or admin API key. Needs a secret + SDK add. Recommend: do it, but you (or a deliberate ops pass) must provision the Algolia admin key first.
-- **BUT-819** — ops-only: `gcloud firestore databases describe` against prod. Recommend: run it yourself when convenient; it's a 1-line verify.
-- **BUT-1011** — self-deferred: its own body says "premature optimization; file IF telemetry shows timeouts." None reported. Recommend: drop until a real prod `deadline-exceeded` appears.
-- **BUT-1176** — self-deferred: adds a `custom_lint` dependency for a refinement of a guard that has zero current leaks. Body says "pick up only if custom_lint is added for other reasons." Note: it flags one clean sub-fix — the inert `- custom_lint` plugin line at `analysis_options.yaml:37` (no package in pubspec) should be removed if the ticket is dropped. Recommend: drop the custom_lint upgrade; remove the dangling line as a tiny follow-up.
-- **BUT-1248** — self-deferred: "no v2 schema exists; building the dispatcher now would be speculative dead code." Recommend: drop until the first breaking model change.
-- **BUT-1149** — blocked-on-precondition: bumping the coverage floor 55→60 would red `main` because filtered coverage is ~55.5% today. Needs more tests to reach 60% first. Recommend: reframe as "write tests to 60%, THEN flip the floor" — not a one-liner.
-- **BUT-610** — large open-ended audit+harden (~1 day audit + 3–5 days). Genuine value (offline is a review-rejection vector) but the scope/size is your call. Recommend: greenlight just Phase 1 (the offline-path audit) as a scoped sprint if you want it moving.
+- **BUT-1259 / BUT-1260 / BUT-1258** — premise-pending: all cite the parallel cold-start split (`butlery_app.dart`, `app_initializer.dart`, slimmed main.dart, 832-line veckomeny_view) that has NOT merged to `main`. Re-runnable once that branch lands. Recommend: hold.
+- **BUT-1261** — Tier B design-decision: conflict diff view per-resource-type rendering + semantic ingredient diffing, OR narrow BUT-1163's acceptance. Its own body asks to "confirm with Malin." Recommend: your call — option (b) narrow-the-acceptance is cheaper if the generic diff reads fine to you.
+- **BUT-840** — ops/secret-blocked (Algolia admin key in CF). Recommend: provision the key first.
+- **BUT-819** — ops-only (`gcloud firestore databases describe` against prod). Recommend: 1-line verify you run when convenient.
+- **BUT-1011 / BUT-1248** — self-deferred dead-code-until-trigger. Recommend: drop until a real trigger.
+- **BUT-1176** — self-deferred custom_lint upgrade. Note: the inert `- custom_lint` plugin line at `analysis_options.yaml:37` (no package in pubspec) is a real dangling-config nit and could be removed as a tiny standalone fix. Recommend: drop the upgrade; greenlight just the line-removal if you want it gone.
+- **BUT-1149** — blocked-on-precondition: floor 55→60 would red main (coverage ~55.5%). Recommend: reframe as "write tests to 60% THEN flip."
+- **BUT-610** — large open-ended offline audit+harden (~1 day + 3–5 days). Recommend: greenlight just Phase 1 if you want it moving.
 
 ### Post-Sprint Steps
 - [ ] Run `dart analyze --fatal-infos`
-- [ ] Phase 2.7 outcome-grading (fresh-context verifier on BUT-1262 acceptance)
+- [ ] Run `flutter test test/unit/services/realtime_sync_service_test.dart`
+- [ ] Phase 2.7 outcome-grading (fresh-context verifier on BUT-1263/1264 acceptance)
 - [ ] Commit, push
-- [ ] Linear: BUT-1262 → Done if review clean (Tier A); → In Review if a non-trivial fix was made
+- [ ] Linear: BUT-1263, BUT-1264 → Done (Tier A) if tests green and acceptance met
 
 ---
-## ARCHIVED — iter-146 (BUT-1053/1247/1250 — 1247 confirmed Done; locale-aware LLM/OCR + 2 test-gap close-outs, commit b247fad66) · iter-145 (BUT-1251/1246/1249 Done) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done) · äldre i git-historiken
+## ARCHIVED — iter-147 (BUT-1262 realtime data-loss-path sign-off, 1 clean build; rest premise-pending/ops-blocked/self-deferred) · iter-146 (BUT-1053/1247/1250 — 1247 Done; locale-aware LLM/OCR + 2 test-gap close-outs, commit b247fad66) · iter-145 (BUT-1251/1246/1249 Done) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done) · äldre i git-historiken

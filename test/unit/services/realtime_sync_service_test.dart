@@ -483,6 +483,98 @@ void main() {
           reason: 'no remote to beat → bump the local snapshot (3 + 1), '
               'never write back the un-incremented 3');
     });
+
+    /// BUT-1263: recovery must stamp authorship AND time, not just bump the
+    /// counter. `recoverLocalVersion` sets `lastEditedBy: _currentUserId` and
+    /// `lastEditedAt: clock.now()`. The other recovery tests only assert
+    /// editCount, so a regression that dropped either stamp (e.g. re-persisting
+    /// the snapshot's own stale author/time, which is the bug recoverLocalVersion
+    /// exists to avoid) would slip through. Under a fixed clock and a recovering
+    /// user distinct from the snapshot's author, we pin both: the persisted doc
+    /// must record the recovering user as editor and the clock's instant as the
+    /// edit time — so the resolver's timestamp tiebreaker and the audit trail
+    /// both reflect who actually recovered it and when.
+    test('stamps lastEditedBy = current user and lastEditedAt = clock.now()',
+        () async {
+      final fixedNow = DateTime(2026, 5, 10, 9, 30, 15);
+
+      await withClock(Clock.fixed(fixedNow), () async {
+        // The recovering user differs from the snapshot's original author so
+        // the authorship bump is observable (not a coincidental match).
+        when(() => mockAuth.currentUserId).thenReturn('recovering_user');
+
+        // Local snapshot authored by someone else, carrying a stale edit time.
+        final local = RealtimeRecipe(
+          id: 'rec_stamp',
+          ownerId: 'user_owner',
+          ownerDisplayName: 'Owner user_owner',
+          participants: const {
+            'user_owner': ResourcePermission.owner,
+            'recovering_user': ResourcePermission.editor,
+          },
+          createdAt: DateTime(2026, 1, 1, 10),
+          lastEditedAt: DateTime(2026, 2, 1, 8),
+          lastEditedBy: 'original_author',
+          lastEditedByDisplayName: 'Original Author',
+          editCount: 4,
+          recipe: RecipeFactory.build(id: 'rec_stamp', title: 'R-rec_stamp'),
+        );
+        // No seed → fall back to local's own counter, but the stamps are what
+        // this test asserts, independent of the editCount path.
+
+        await service.recoverLocalVersion(local);
+
+        final snap =
+            await fake.collection('realtime_resources').doc('rec_stamp').get();
+        final data = snap.data()!;
+
+        expect(data['lastEditedBy'], 'recovering_user',
+            reason: 'recovery must record the user who recovered it, '
+                'not the snapshot\'s original author');
+        expect(
+          (data['lastEditedAt'] as Timestamp).toDate(),
+          fixedNow,
+          reason: 'recovery must stamp the current clock instant, '
+              'not re-persist the snapshot\'s stale lastEditedAt',
+        );
+      });
+    });
+
+    /// BUT-1264: covers the guard's FALSE branch. The bump is based on
+    /// `max(local.editCount, remote.editCount) + 1` via
+    /// `if (remote.editCount > baseEditCount)`. The "+1 over remote" test
+    /// exercises the TRUE branch (remote ahead); the "no remote" test skips the
+    /// comparison entirely. This case has a remote that exists but is at or
+    /// below the local count, so the guard is false and the bump must come from
+    /// LOCAL's own count — proving recovery never regresses a local edit that
+    /// already outranks (or ties) the remote.
+    test('uses local.editCount + 1 when remote.editCount <= local.editCount',
+        () async {
+      // Remote sits BEHIND the local snapshot (5 <= 7).
+      final remote = _buildResource(
+        id: 'rec3',
+        ownerId: 'user_owner',
+        editCount: 5,
+        lastEditedAt: DateTime(2026, 2, 1),
+      );
+      await _seed(fake, remote);
+
+      // Local carries the HIGHER count.
+      final local = _buildResource(
+        id: 'rec3',
+        ownerId: 'user_owner',
+        editCount: 7,
+        lastEditedAt: DateTime(2026, 3, 1),
+      );
+
+      await service.recoverLocalVersion(local);
+
+      final snap =
+          await fake.collection('realtime_resources').doc('rec3').get();
+      expect(snap.data()!['editCount'], 8,
+          reason: 'guard false (remote 5 <= local 7) → bump local (7 + 1), '
+              'never drop down to the lagging remote count');
+    });
   });
 
   group('deleteResource', () {
