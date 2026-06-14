@@ -622,6 +622,52 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
+  Future<void> setAutoAddBoughtToPantry(String userId, bool enabled) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set auto-add-bought-to-pantry',
+    );
+
+    // BUT-1050: the preference lives in the private settings sub-doc
+    // (toPrivateSettings). A merge:true single-field set touches only this field
+    // and never overwrites the public profile doc, so it can't clobber
+    // friendsCount (friend-creation transactions) or isHidden/hiddenAt.
+    await _settingsDoc(userId).set({
+      'autoAddBoughtToPantry': enabled,
+    }, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_auto_add_bought_to_pantry',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> markPantryAutoAddPrompted(String userId) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'mark pantry auto-add prompted',
+    );
+
+    await _settingsDoc(userId).set({
+      'pantryAutoAddPrompted': true,
+    }, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'mark_pantry_auto_add_prompted',
+      granted: true,
+    );
+  }
+
+  @override
   Future<bool> deletePublicProfile(String userId) async {
     // GDPR cascade: caller must own this profile.
     final currentUser = requireCurrentUserId();

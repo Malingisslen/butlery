@@ -1179,3 +1179,15 @@ Trigger: test-coverage review of `lib/widgets/menu/veckomeny_selection_widgets.d
 - **Not a blocker:** both behaviours (success persist + capture, failure revert + false) ARE covered and the contract is real; this is a Medium "strengthen the failure assertion" note, not a missing test. No mocked-away subject, no weakened assertion in the success path.
 - **BUT-1300 default seam (line 1138 entry) already closed** — `defaultReextractStrategyForTest` assertions present in `recipe_detail_viewmodel_reextract_test.dart`. Re-confirmed this review.
 - **Run confirmed:** `/c/tools/flutter/bin/flutter test test/unit/viewmodels/recipe_detail_viewmodel_test.dart test/unit/viewmodels/recipe_detail_viewmodel_reextract_test.dart` → 43/43 pass. (The `cmd.exe /c batch.bat` wrapper drops into an interactive prompt in this harness — do NOT use it; export PATH + call flutter directly through Bash, per the prior entry.)
+
+### 2026-06-14 — BUT-1050 ShoppingCheckoffPantryService dedup assessment [Pattern]
+
+The 4-test file for `ShoppingCheckoffPantryService.onItemCheckedOff` was assessed as intent-correct with one significant gap:
+
+**What was correct (all 4 tests):** Each uses a real Mock (no concrete `@override` bodies), mocks the two dependencies (`PantryService`/`UserService`), and drives the real SUT. Every assertion is load-bearing — no test can be green-washed by a no-op. Test 1 (dedup) is exemplary: it pairs `expect(captured.quantity, 5)` WITH `verifyNever(addFromShoppingItem)` — both arms are required to prove the intent. Test 3 (pref-OFF) asserts `verifyNever(pantry.getAll)` not just `verifyNever(addFromShoppingItem)` — proves the gate fires before any pantry I/O.
+
+**Gap found and closed — unit mismatch must NOT dedup (high priority):** The dedup predicate has TWO conditions: `p.ingredientName.toLowerCase() == item.name.toLowerCase() && p.unit == item.unit`. The 4 original tests only exercise the name match and the no-match-at-all paths. A regression dropping `p.unit == item.unit` from the predicate would aggregate "Mjölk dl" into "Mjölk l" — same name, different unit, wrong pantry math — and all 4 tests stay green. Added test 5: pantry contains "Mjölk l", check off "Mjölk dl" → `addFromShoppingItem` called, `updateItem` never called.
+
+**Minor gap closed — profile==null (low priority):** The `null` and `autoAdd:false` branches share the same `return` statement, but the null side had no test. Added test 6: `currentUserProfile` returns `null` → no pantry I/O. Worth having because the null check is the first guard (protects against calling `.autoAddBoughtToPantry` on null) and took 2 lines.
+
+**General rule confirmed:** When a compound AND predicate gates a dedup/aggregation branch, write one test per condition — name-only and unit-only tests are both needed. Missing either lets a one-operand regression through.

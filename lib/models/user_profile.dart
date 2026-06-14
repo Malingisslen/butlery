@@ -59,6 +59,16 @@ class UserProfile with JsonSerializableMixin {
   /// hint has already been shown. Flipped true after the first event is
   /// broadcast so the nudge fires exactly once. Defaults false.
   final bool hasSeenActivityFeedHint;
+
+  /// BUT-1050: when true, checking off a bought shopping item auto-adds it to
+  /// the pantry. Defaults false (opt-in) — existing accounts keep manual pantry
+  /// management until they turn it on.
+  final bool autoAddBoughtToPantry;
+
+  /// BUT-1050: whether the one-time "add bought items to your pantry?" prompt
+  /// has been shown on the first shopping-checkoff. Flipped true after it fires
+  /// once so it never re-nags. Defaults false.
+  final bool pantryAutoAddPrompted;
   final String? fcmToken;
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
@@ -104,6 +114,8 @@ class UserProfile with JsonSerializableMixin {
     this.shareActivityToFeed = true,
     this.activityFeedEventTypes = const {},
     this.hasSeenActivityFeedHint = false,
+    this.autoAddBoughtToPantry = false,
+    this.pantryAutoAddPrompted = false,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
@@ -152,6 +164,8 @@ class UserProfile with JsonSerializableMixin {
     bool? shareActivityToFeed,
     Map<String, bool>? activityFeedEventTypes,
     bool? hasSeenActivityFeedHint,
+    bool? autoAddBoughtToPantry,
+    bool? pantryAutoAddPrompted,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
     bool? notificationsEnabled,
@@ -185,6 +199,10 @@ class UserProfile with JsonSerializableMixin {
           activityFeedEventTypes ?? this.activityFeedEventTypes,
       hasSeenActivityFeedHint:
           hasSeenActivityFeedHint ?? this.hasSeenActivityFeedHint,
+      autoAddBoughtToPantry:
+          autoAddBoughtToPantry ?? this.autoAddBoughtToPantry,
+      pantryAutoAddPrompted:
+          pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
       fcmToken: fcmToken == _sentinel ? this.fcmToken : fcmToken as String?,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt == _sentinel
           ? this.fcmTokenUpdatedAt
@@ -355,6 +373,8 @@ class UserProfile with JsonSerializableMixin {
       'bio': bio,
       'birthYear': birthYear,
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
+      'autoAddBoughtToPantry': autoAddBoughtToPantry,
+      'pantryAutoAddPrompted': pantryAutoAddPrompted,
     };
   }
 
@@ -376,6 +396,8 @@ class UserProfile with JsonSerializableMixin {
       'shareActivityToFeed': shareActivityToFeed,
       'activityFeedEventTypes': activityFeedEventTypes,
       'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
+      'autoAddBoughtToPantry': autoAddBoughtToPantry,
+      'pantryAutoAddPrompted': pantryAutoAddPrompted,
       // Notification fields
       'fcmToken': fcmToken,
       'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
@@ -427,6 +449,10 @@ class UserProfile with JsonSerializableMixin {
       activityFeedEventTypes: _readActivityFeedEventTypes(data),
       hasSeenActivityFeedHint:
           utils.SerializationUtils.safeBool(data, 'hasSeenActivityFeedHint'),
+      autoAddBoughtToPantry:
+          utils.SerializationUtils.safeBool(data, 'autoAddBoughtToPantry'),
+      pantryAutoAddPrompted:
+          utils.SerializationUtils.safeBool(data, 'pantryAutoAddPrompted'),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
       fcmTokenUpdatedAt:
@@ -488,6 +514,10 @@ class UserProfile with JsonSerializableMixin {
       activityFeedEventTypes: _readActivityFeedEventTypes(json),
       hasSeenActivityFeedHint:
           utils.SerializationUtils.safeBool(json, 'hasSeenActivityFeedHint'),
+      autoAddBoughtToPantry:
+          utils.SerializationUtils.safeBool(json, 'autoAddBoughtToPantry'),
+      pantryAutoAddPrompted:
+          utils.SerializationUtils.safeBool(json, 'pantryAutoAddPrompted'),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
           json['fcmTokenUpdatedAt']),

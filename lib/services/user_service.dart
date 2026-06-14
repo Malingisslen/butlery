@@ -606,6 +606,47 @@ class UserService extends ChangeNotifier
     }
   }
 
+  /// BUT-1050: persist the "auto-add bought shopping items to pantry" preference
+  /// (the Settings toggle). Optimistically updates the in-memory profile after
+  /// the targeted single-field write succeeds.
+  Future<void> setAutoAddToPantry(bool enabled) async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot set auto-add-to-pantry - no current user');
+      return;
+    }
+
+    try {
+      await _repository.setAutoAddBoughtToPantry(userId, enabled);
+      _currentUserProfile = profile.copyWith(autoAddBoughtToPantry: enabled);
+      _cacheProfile(userId, _currentUserProfile!);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('❌ Failed to set auto-add-to-pantry', e);
+      rethrow;
+    }
+  }
+
+  /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,
+  /// so it never re-nags across sessions/devices. Idempotent and best-effort —
+  /// a no-op when there's no profile or the flag is already set.
+  Future<void> markPantryAutoAddPrompted() async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) return;
+    if (profile.pantryAutoAddPrompted) return;
+
+    try {
+      await _repository.markPantryAutoAddPrompted(userId);
+      _currentUserProfile = profile.copyWith(pantryAutoAddPrompted: true);
+      _cacheProfile(userId, _currentUserProfile!);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('❌ Failed to mark pantry auto-add prompted', e);
+    }
+  }
+
   /// BUT-1220: persist that the one-time activity-feed hint has been shown, so
   /// it never fires again across sessions/devices. Idempotent and best-effort —
   /// a no-op when there's no profile or the flag is already set.

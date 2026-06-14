@@ -96,6 +96,16 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// (`isHidden`/`hiddenAt`), which a stale full-profile set would do.
   Future<void> markActivityFeedHintSeen(String userId);
 
+  /// BUT-1050: persist the auto-add-bought-to-pantry preference with a targeted
+  /// single-field set on the private settings sub-doc — never a full-document
+  /// set (same clobber-safety reasoning as [markActivityFeedHintSeen]).
+  Future<void> setAutoAddBoughtToPantry(String userId, bool enabled);
+
+  /// BUT-1050: persist that the one-time "add bought items to pantry?" prompt
+  /// has been shown, with a targeted single-field set on the private settings
+  /// sub-doc.
+  Future<void> markPantryAutoAddPrompted(String userId);
+
   /// Delete the `public_profiles/{userId}` document. GDPR Art. 17.
   /// Caller must own the profile (enforced via `validateOwnership`).
   Future<bool> deletePublicProfile(String userId);
