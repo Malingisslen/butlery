@@ -19,13 +19,11 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart'
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
     show PlacementSaveResult;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/views/menu_placement_view.dart';
@@ -33,17 +31,8 @@ import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
-
-// BUT-408: live cooking session presence
-import 'package:butlery/models/cooking/cooking_session.dart';
-import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/services/unified/operations/cooking/cooking_session_module.dart';
-import 'package:butlery/widgets/cooking/cooking_session_card.dart';
-import 'package:butlery/widgets/cooking/cooking_session_stream.dart';
+import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
-
-/// View-mode toggle for the Veckomeny screen output.
-enum VeckomenyViewMode { lista, kalender }
 
 /// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
@@ -79,8 +68,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final FocusNode _promptFocusNode = FocusNode();
   final UnifiedFriendsService _friendsService =
       ServiceLocator.get<UnifiedFriendsService>();
-  final CookingSessionStreamHolder _sessionsHolder =
-      CookingSessionStreamHolder();
 
   VeckomenyViewMode _viewMode = VeckomenyViewMode.lista;
 
@@ -100,7 +87,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   @override
   void dispose() {
-    _sessionsHolder.dispose();
     _promptController.removeListener(_onPromptChanged);
     _promptController.dispose();
     _promptFocusNode.dispose();
@@ -365,7 +351,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   List<Widget> _buildHeaderActions(
       BuildContext context, MenuViewModel viewModel) {
     return [
-      _buildViewModeToggle(context),
+      VeckomenyViewModeToggle(
+        mode: _viewMode,
+        onSelect: (mode) => unawaited(_setViewMode(mode)),
+      ),
       // Load menu / template button
       IconButton(
         icon: Icon(Icons.folder_open,
@@ -403,67 +392,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     ];
   }
 
-  Widget _buildViewModeToggle(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest.withValues(alpha: 0.12),
-          border: Border.all(
-            color: cs.surfaceContainerHighest.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _toggleButton(
-              context,
-              label: context.l10n.weeklyMenuToggleList,
-              active: _viewMode == VeckomenyViewMode.lista,
-              onTap: () => _setViewMode(VeckomenyViewMode.lista),
-            ),
-            _toggleButton(
-              context,
-              label: context.l10n.weeklyMenuToggleCalendar,
-              active: _viewMode == VeckomenyViewMode.kalender,
-              onTap: () => _setViewMode(VeckomenyViewMode.kalender),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _toggleButton(
-    BuildContext context, {
-    required String label,
-    required bool active,
-    required VoidCallback onTap,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-    return Semantics(
-      label: context.l10n.a11yWeeklyMenuViewModeToggle(label),
-      button: true,
-      selected: active,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          color: active ? cs.surface : Colors.transparent,
-          child: Text(
-            label.toLowerCase(),
-            style: AppTextStyles.labelSmall.copyWith(
-              color: active ? cs.onPrimaryContainer : cs.onPrimary,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
     return Stack(
       children: [
@@ -483,7 +411,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 // BUT-407: online-members presence bar (union across groups).
                 const FamilyPresenceBar(),
                 // BUT-408: live cooking session card for the user's groups.
-                _buildCookingSessionCard(),
+                const VeckomenyCookingSessionCard(),
                 Padding(
                   padding: AppDimensions.responsiveContentPadding(context),
                   child: Column(
@@ -564,43 +492,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ),
         ),
         // Loading overlay
-        if (viewModel.isGenerating) _buildLoadingOverlay(context),
+        if (viewModel.isGenerating) const VeckomenyGeneratingOverlay(),
       ],
-    );
-  }
-
-  /// UI Redesign: Uses PeaLoadingAnimation for branded loading experience
-  Widget _buildLoadingOverlay(BuildContext context) {
-    return PeaLoadingOverlay(
-      message: context.l10n.menuGeneratingOverlay,
-      subtitle: context.l10n.menuGeneratingSubtitle,
-    );
-  }
-
-  /// BUT-408: merges presence streams across every FriendCategory the user
-  /// belongs to. Hidden entirely when no friend is cooking.
-  Widget _buildCookingSessionCard() {
-    final module = ServiceLocator.tryGet<CookingSessionModule>();
-    final userId = _friendsService.currentUserId;
-    if (module == null || userId == null) return const SizedBox.shrink();
-
-    final groups = _friendsService.categoriesList
-        .where((FriendCategory c) =>
-            c.ownerId == userId || c.friendUserIds.contains(userId))
-        .map((g) => g.id)
-        .toList(growable: false);
-    if (groups.isEmpty) return const SizedBox.shrink();
-
-    _sessionsHolder.refresh(module, groups, userId);
-    final stream = _sessionsHolder.stream;
-    if (stream == null) return const SizedBox.shrink();
-
-    return StreamBuilder<List<CookingSession>>(
-      stream: stream,
-      builder: (_, snapshot) {
-        final sessions = snapshot.data ?? const <CookingSession>[];
-        return CookingSessionCard(sessions: sessions);
-      },
     );
   }
 }

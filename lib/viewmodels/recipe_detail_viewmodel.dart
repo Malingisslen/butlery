@@ -82,6 +82,31 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// maps this to a success/error snackbar without knowing the import internals.
 enum ReextractOutcome { success, failure }
 
+/// BUT-1300: seam for [RecipeDetailViewModel.reextractFromSource]. Maps a
+/// [SourceArtefactType] to the [ImportStrategy] that owns re-extracting its
+/// payload. Defaulted in the constructor to the production construction
+/// ([_defaultReextractStrategyFactory]); tests inject a fake to drive the
+/// re-extract contract without touching real network/parsing.
+typedef ReextractStrategyFactory = ImportStrategy Function(
+    SourceArtefactType type);
+
+/// Production default for [ReextractStrategyFactory]: URL artefacts re-extract
+/// via [UrlImportStrategy], everything else (transcript/caption/pasted/OCR
+/// text) via [TextImportStrategy]. Mirrors the original inline selection so
+/// the production happy path is unchanged by the BUT-1300 seam.
+ImportStrategy _defaultReextractStrategyFactory(SourceArtefactType type) =>
+    type == SourceArtefactType.url ? UrlImportStrategy() : TextImportStrategy();
+
+/// BUT-1300: the production default factory, exposed so tests can assert the
+/// real url-vs-text mapping. The re-extract unit tests inject a *fake* factory
+/// through the seam, which means they never exercise this default — a regression
+/// flipping the url/text condition would otherwise ship green. Constructing
+/// either strategy is side-effect-free (network only happens in `import()`),
+/// so asserting the dispatched runtime type here is safe.
+@visibleForTesting
+ImportStrategy defaultReextractStrategyForTest(SourceArtefactType type) =>
+    _defaultReextractStrategyFactory(type);
+
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
 /// recipe interactions, analytics tracking, and real-time state management while maintaining clean MVVM architecture
@@ -97,6 +122,12 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// because ServiceLocator may not have it in degraded modes (tests,
   /// cold-start race) — the post-cook analytics path degrades gracefully.
   final CookEventRepository? _cookEventRepository;
+
+  /// BUT-1300: injectable strategy selector for [reextractFromSource]. Defaults
+  /// to [_defaultReextractStrategyFactory] (the original inline construction)
+  /// so production behavior is unchanged; tests pass a fake to avoid real
+  /// network/parsing.
+  final ReextractStrategyFactory _reextractStrategyFactory;
 
   /// Current recipe data with real-time synchronization and state coordination.
   Recipe _recipe;
@@ -117,6 +148,7 @@ class RecipeDetailViewModel extends ChangeNotifier
     AnalyticsService? analyticsService,
     RecipeCookingService? cookingService,
     CookEventRepository? cookEventRepository,
+    ReextractStrategyFactory? reextractStrategyFactory,
   })  : _recipe = recipe,
         _recipeService =
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
@@ -124,8 +156,10 @@ class RecipeDetailViewModel extends ChangeNotifier
             analyticsService ?? ServiceLocator.get<AnalyticsService>(),
         _cookingService =
             cookingService ?? ServiceLocator.get<RecipeCookingService>(),
-        _cookEventRepository = cookEventRepository ??
-            ServiceLocator.tryGet<CookEventRepository>() {
+        _cookEventRepository =
+            cookEventRepository ?? ServiceLocator.tryGet<CookEventRepository>(),
+        _reextractStrategyFactory =
+            reextractStrategyFactory ?? _defaultReextractStrategyFactory {
     _recipeServiceSubscription =
         _recipeService.stateStream.listen((_) => _onRecipeServiceUpdate());
 
@@ -527,9 +561,10 @@ class RecipeDetailViewModel extends ChangeNotifier
     try {
       // The artefact payload already IS the canonical extraction input: a URL
       // for url-type, the raw transcript/caption/pasted/OCR text otherwise.
-      final ImportStrategy strategy = artefact.type == SourceArtefactType.url
-          ? UrlImportStrategy()
-          : TextImportStrategy();
+      // BUT-1300: strategy selection goes through the injectable factory so a
+      // fake can be supplied in tests; the default reproduces the original
+      // url-vs-text construction.
+      final ImportStrategy strategy = _reextractStrategyFactory(artefact.type);
       result = await strategy.import(artefact.payload);
     } catch (e) {
       return ReextractOutcome.failure;
