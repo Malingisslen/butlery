@@ -1,75 +1,13 @@
-/// Comprehensive URL import ViewModel providing advanced web content extraction for Flutter applications.
-/// This module implements sophisticated URL-based recipe importing following Single Responsibility Principle,
-/// specializing in extracting recipe content from web URLs including blog posts, recipe websites, social media,
-/// and general web pages containing recipe information. It provides complete web scraping infrastructure
-/// while maintaining clean separation from UI rendering, data persistence, and other import types.
-/// **Single Responsibility Focus:**
-/// This module exclusively handles URL import presentation layer concerns:
-/// - **Web Content Extraction**: Advanced URL fetching, HTML parsing, and content extraction with comprehensive error handling
-/// - **Recipe Site Intelligence**: Smart recognition of known recipe sites with optimized extraction strategies
-/// - **URL Validation Excellence**: Comprehensive URL validation ensuring fetchability and content viability
-/// - **Content Analysis Features**: Intelligent content quality assessment and extraction optimization recommendations
-/// - **HTTP Coordination Management**: Complete HTTP request management with fallback strategies and user agent handling
-/// **What This Module Does NOT Handle:**
-/// - Text-based content parsing (handled by TextImportViewModel and text parsing services)
-/// - UI rendering and widget creation (handled by URL import views and presentation components)
-/// - Direct data persistence (handled by ImportManager and underlying storage services)
-/// - Complex web scraping implementation (handled by web scraping services and extraction strategies)
-/// **URL Import ViewModel Features:**
-/// - **Advanced Web Scraping**: Sophisticated URL content extraction with HTML parsing and text extraction
-/// - **Recipe Site Recognition**: Smart recognition of popular recipe sites with optimized extraction strategies
-/// - **URL Validation System**: Comprehensive URL validation ensuring proper format and fetchability
-/// - **Content Quality Analysis**: Intelligent content assessment with quality scoring and extraction recommendations
-/// - **Swedish Localization**: Complete Swedish language support for errors, suggestions, and user feedback
-/// **Usage Examples:**
-/// ```dart
-/// // Initialize URL import ViewModel with ImportManager dependency
-/// final urlImportViewModel = UrlImportViewModel(
-///   importManager: ServiceLocator.get<ImportManager>(),
-/// );
-/// // URL input and content fetching workflow
-/// urlImportViewModel.updateUrl('https://www.ica.se/recept/pannkakor-grundrecept');
-/// // Validate and fetch content
-/// final validationErrors = urlImportViewModel.getUrlValidationErrors();
-/// if (validationErrors.isEmpty) {
-///   await urlImportViewModel.fetchAndParse();
-///   if (urlImportViewModel.hasExtractedText) {
-///     final contentAnalysis = urlImportViewModel.analyzeExtractedContent();
-///     if (contentAnalysis['quality'] == 'excellent') {
-///       final recipe = urlImportViewModel.parsedRecipe;
-///     }
-///   }
-/// }
-/// // Complete import workflow
-/// final importSuccess = await urlImportViewModel.importAndSave();
-/// if (importSuccess) {
-///   // Recipe successfully imported and saved
-/// } else {
-///   // Handle error: urlImportViewModel.error
-/// }
-/// // URL analysis and suggestions
-/// final suggestions = urlImportViewModel.getUrlSuggestions();
-/// final isKnownSite = urlImportViewModel.isKnownRecipeSite();
-/// // Content quality assessment
-/// final contentAnalysis = urlImportViewModel.analyzeExtractedContent();
-/// final quality = contentAnalysis['quality']; // 'excellent', 'good', 'fair', 'poor'
-/// final score = contentAnalysis['score']; // 0-100
-/// final issues = contentAnalysis['issues']; // List of identified issues
-/// // State monitoring and validation
-/// if (urlImportViewModel.canFetch) {
-///   // URL is valid and ready for fetching
-/// } else {
-///   // Show validation errors
-/// }
-/// ```
-
-// lib/viewmodels/url_import_viewmodel.dart
+/// Presentation-layer ViewModel for importing recipes from web URLs.
+/// Handles single-URL fetch/parse plus BUT-947 multi-URL ("batch") import;
+/// delegates the actual scraping/persistence to WebScraper and ImportManager.
 
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
+import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -98,26 +36,7 @@ class UrlImportResult {
   bool get isLoading => status == UrlFetchStatus.loading;
 }
 
-/// Comprehensive URL import ViewModel providing advanced web content extraction through HTTP coordination.
-/// Specializes in URL-based recipe importing from web sources including recipe blogs, cooking websites, social media,
-/// and general web pages containing recipe content. Extends ImportBaseViewModel with UrlImportMixin to provide complete
-/// web scraping functionality with content analysis, validation, and extraction workflow management.
-/// **Core Responsibilities:**
-/// - Advanced URL content fetching with HTML parsing and text extraction
-/// - Recipe site recognition and optimized extraction strategies
-/// - URL validation ensuring proper format and content accessibility
-/// - Content quality analysis with extraction optimization recommendations
-/// - Swedish localized error messages and user feedback coordination
 class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
-  /// Initializes URL import ViewModel with comprehensive ImportManager integration and web scraping preparation.
-  /// [importManager] ImportManager instance for URL import strategy coordination and recipe parsing
-  /// Establishes URL import infrastructure with ImportManager integration, enabling comprehensive
-  /// web content extraction functionality with unified state management, validation, and error handling.
-  /// **Initialization Process:**
-  /// - ImportManager integration for URL import strategy execution
-  /// - UrlImportMixin setup for specialized web content functionality
-  /// - HTTP client preparation for web scraping operations
-  /// - URL validation system preparation with comprehensive error handling
   UrlImportViewModel({required super.importManager});
 
   // ---- BUT-947: multiple-URL ("batch") import -----------------------------
@@ -302,23 +221,8 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     notifyListeners();
   }
 
-  /// Fetches web content from URL and parses it into recipe with comprehensive workflow coordination.
-  /// Performs complete URL import workflow including URL validation, content fetching,
-  /// HTML parsing, text extraction, and recipe parsing with comprehensive error handling
-  /// and Swedish localized error messages for optimal user experience.
-  /// **Fetch and Parse Process:**
-  /// 1. URL validation ensuring proper format and fetchability
-  /// 2. Web content fetching with HTTP client and user agent handling
-  /// 3. HTML parsing and text extraction with content optimization
-  /// 4. Recipe parsing through ImportManager strategy coordination
-  /// **Usage Example:**
-  /// ```dart
-  /// urlImportViewModel.updateUrl('https://www.ica.se/recept/pannkakor');
-  /// await urlImportViewModel.fetchAndParse();
-  /// if (urlImportViewModel.hasParsedRecipe) {
-  ///   final recipe = urlImportViewModel.parsedRecipe;
-  /// }
-  /// ```
+  /// Single-URL flow: fetch content, then parse it only if the fetch yielded
+  /// text and didn't error.
   Future<void> fetchAndParse() async {
     if (!canFetch) {
       setError(AppLocale.current.errorPleaseEnterValidUrl);
@@ -334,41 +238,12 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     }
   }
 
-  /// Completes comprehensive URL import workflow with fetching, parsing, validation, and recipe saving.
-  /// Returns true if complete import process succeeds, false if any step fails.
-  /// Performs complete URL import workflow including URL validation, content fetching,
-  /// HTML parsing, recipe parsing, validation, and saving with comprehensive error handling.
-  /// **Complete Import Process:**
-  /// 1. URL validation and fetchability checks
-  /// 2. Web content fetching and HTML parsing
-  /// 3. Text extraction and recipe parsing through ImportManager
-  /// 4. Recipe data validation ensuring completeness
-  /// 5. Recipe saving to collection with error handling
-  /// **Usage Example:**
-  /// ```dart
-  /// urlImportViewModel.updateUrl('https://recipe-site.com/recipe');
-  /// final importSuccess = await urlImportViewModel.importAndSave();
-  /// if (importSuccess) {
-  ///   // Recipe successfully imported and saved
-  /// } else {
-  ///   // Handle error: urlImportViewModel.error
-  /// }
-  /// ```
   Future<bool> importAndSave() async {
     return await completeImport();
   }
 
-  /// Fetches recipe content from URL using advanced WebScraper with platform-specific extraction.
-  /// [url] Target URL for recipe content extraction
-  /// Returns extracted recipe text content optimized for parsing.
-  /// Uses sophisticated WebScraper service with platform detection, headless browser technology,
-  /// and recipe-specific content selectors for optimal extraction quality.
-  /// **Advanced Extraction Process:**
-  /// - Platform detection for extraction strategy optimization
-  /// - WebScraper service with headless browser and JavaScript support
-  /// - Recipe-specific DOM selectors and structured data parsing
-  /// - Comprehensive error handling with Swedish localized messages
-  /// **Override Implementation**: Replaces basic HTTP with sophisticated WebScraper integration.
+  /// Overrides the mixin's basic HTTP fetch with the full WebScraper path
+  /// (platform detection + headless extraction). Always disposes the scraper.
   @override
   Future<String> fetchContentFromUrl(String url) async {
     // Detect platform for optimized extraction
@@ -397,24 +272,8 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     }
   }
 
-  /// Generates comprehensive URL validation errors with Swedish localized error messages.
-  /// Returns list of validation errors for current URL ensuring proper format and fetchability.
-  /// Performs comprehensive URL validation including format checking, scheme validation,
-  /// domain presence verification, and protocol support assessment with Swedish localized error messages.
-  /// **Validation Criteria:**
-  /// - URL presence and non-empty content
-  /// - Valid URL format and parsing capability
-  /// - HTTP/HTTPS protocol scheme requirement
-  /// - Domain name presence and authority validation
-  /// **Usage Example:**
-  /// ```dart
-  /// final errors = urlImportViewModel.getUrlValidationErrors();
-  /// if (errors.isEmpty) {
-  ///   // URL is valid for fetching
-  /// } else {
-  ///   // Display validation errors to user
-  /// }
-  /// ```
+  /// Swedish-localized validation errors for the current URL (empty scheme,
+  /// non-http(s), missing domain, private/reserved host, malformed).
   List<String> getUrlValidationErrors() {
     if (url.trim().isEmpty) {
       return [AppLocale.current.validationUrlRequired];
@@ -446,56 +305,19 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   }
 
   /// Returns true if the host is a private, loopback, or reserved address.
-  static bool _isPrivateOrReservedHost(String host) {
-    final h = host.toLowerCase();
+  ///
+  /// BUT-1303: delegates to the single tested SSRF guard in
+  /// [HttpContentFetcher.isBlockedHost] rather than carrying a second,
+  /// string-prefix-based copy. The fetcher's guard parses the host as an
+  /// [InternetAddress], so it also catches cases this VM's old string match
+  /// missed — full `127.0.0.0/8` (not just `127.0.0.1`), IPv4-mapped IPv6
+  /// (`::ffff:10.0.0.1`), and `uri.host`'s bracket-stripped IPv6 form (`::1`,
+  /// which never equalled the old `[::1]` literal). One guard, one test surface.
+  static bool _isPrivateOrReservedHost(String host) =>
+      HttpContentFetcher.isBlockedHost(host);
 
-    // Block loopback and localhost
-    if (h == 'localhost' ||
-        h == '127.0.0.1' ||
-        h == '[::1]' ||
-        h == '0.0.0.0') {
-      return true;
-    }
-
-    // Block IPv6 private (fc00::/7) and link-local (fe80::/10)
-    if (h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80')) {
-      return true;
-    }
-
-    // Block private IPv4 ranges
-    final parts = h.split('.');
-    if (parts.length == 4 && parts.every((p) => int.tryParse(p) != null)) {
-      final octets = parts.map(int.parse).toList();
-      final first = octets[0];
-      final second = octets[1];
-      if (first == 0) return true; // 0.0.0.0/8
-      if (first == 10) return true; // 10.0.0.0/8
-      if (first == 172 && second >= 16 && second <= 31) {
-        return true; // 172.16.0.0/12
-      }
-      if (first == 192 && second == 168) return true; // 192.168.0.0/16
-      if (first == 169 && second == 254) return true; // 169.254.0.0/16
-    }
-
-    return false;
-  }
-
-  /// Checks if URL points to known recipe site with optimized extraction capabilities.
-  /// Returns true if URL domain matches known recipe sites, false otherwise.
-  /// Performs domain analysis against curated list of popular recipe sites
-  /// enabling optimized extraction strategies and improved parsing success rates.
-  /// **Known Recipe Sites Include:**
-  /// - International: AllRecipes, Food.com, Epicurious, Food Network, Delish, Tasty
-  /// - Swedish: ICA, Arla, Köket, Recepten
-  /// - Additional sites continuously added based on usage patterns
-  /// **Usage Example:**
-  /// ```dart
-  /// if (urlImportViewModel.isKnownRecipeSite()) {
-  ///   // URL from known recipe site - higher success probability
-  /// } else {
-  ///   // General web content - may require additional processing
-  /// }
-  /// ```
+  /// True when the URL's domain is a curated recipe site — drives the
+  /// higher-success-probability suggestion shown to the user.
   bool isKnownRecipeSite() {
     if (!canFetch) return false;
 
@@ -523,22 +345,8 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     return knownSites.any((site) => domain.contains(site));
   }
 
-  /// Generates intelligent URL processing suggestions with Swedish localization and optimization recommendations.
-  /// Returns list of suggestions for improving URL processing success and content extraction quality.
-  /// Performs comprehensive URL analysis including site recognition, keyword detection,
-  /// URL structure assessment, and extraction optimization recommendations with Swedish localized suggestions.
-  /// **URL Analysis Features:**
-  /// - Known recipe site recognition with success probability indicators
-  /// - Recipe keyword detection in URL structure
-  /// - URL length assessment with optimization recommendations
-  /// - Content extraction quality predictions and improvement suggestions
-  /// **Usage Example:**
-  /// ```dart
-  /// final suggestions = urlImportViewModel.getUrlSuggestions();
-  /// for (final suggestion in suggestions) {
-  ///   // Display suggestion to user for URL optimization
-  /// }
-  /// ```
+  /// Swedish-localized hints shown before fetching (known/unknown site,
+  /// recipe keyword present, over-long URL, social-media source).
   List<String> getUrlSuggestions() {
     if (!canFetch) {
       return getUrlValidationErrors();
@@ -574,32 +382,8 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     return suggestions;
   }
 
-  /// Analyzes extracted content quality with comprehensive scoring and Swedish localized feedback.
-  /// Returns detailed analysis map containing quality assessment, scoring, and recommendations.
-  /// Performs comprehensive content analysis including recipe indicator detection, content structure assessment,
-  /// and parsing viability evaluation with Swedish localized issue identification and positive indicators.
-  /// **Content Analysis Features:**
-  /// - Recipe indicator detection (ingredients, instructions, timing, serving info)
-  /// - Content length assessment and parsing viability scoring
-  /// - Recipe keyword recognition and structure analysis
-  /// - Quality scoring with 'excellent', 'good', 'fair', 'poor' classifications
-  /// - Swedish localized issue identification and improvement suggestions
-  /// **Analysis Result Structure:**
-  /// ```dart
-  /// {
-  ///   'quality': 'excellent', // Overall quality classification
-  ///   'score': 85,           // Numerical score (0-100)
-  ///   'issues': [],          // List of identified issues
-  ///   'positives': [],       // List of positive indicators
-  /// }
-  /// ```
-  /// **Usage Example:**
-  /// ```dart
-  /// final analysis = urlImportViewModel.analyzeExtractedContent();
-  /// final quality = analysis['quality'];
-  /// final score = analysis['score'];
-  /// final issues = analysis['issues'];
-  /// ```
+  /// Heuristically scores the extracted text (0-100) by recipe indicators
+  /// and length, returning {quality, score, issues, positives} for UI feedback.
   Map<String, dynamic> analyzeExtractedContent() {
     if (!hasExtractedText) {
       return {
@@ -685,16 +469,6 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     };
   }
 
-  /// Provides comprehensive debugging state information for URL import development and troubleshooting.
-  /// Returns map containing debug information including URL validation state, content analysis results,
-  /// recipe site recognition status, and inherited debug state from ImportBaseViewModel for comprehensive
-  /// development support and troubleshooting capabilities.
-  /// **Debug Information Includes:**
-  /// - URL validation errors and processing suggestions
-  /// - Recipe site recognition and extraction optimization status
-  /// - Content analysis results with quality scoring and issue identification
-  /// - Inherited ImportBaseViewModel debug state information
-  /// - Web scraping status and HTTP request debugging information
   @override
   Map<String, dynamic> get debugState => {
         ...super.debugState,

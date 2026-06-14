@@ -89,6 +89,30 @@ class ConcurrencyTrackingUrlImportViewModel extends UrlImportViewModel {
   }
 }
 
+/// Invokes [onMidFetch] during the FIRST per-URL fetch, before that fetch
+/// resolves, so a test can observe the in-flight [urlResults] (rows still
+/// seeded [UrlFetchStatus.loading]) and prove `UrlImportResult.isLoading`
+/// reflects the loading status. Only fires once to keep the snapshot
+/// unambiguous.
+class _LoadingObservingUrlImportViewModel extends UrlImportViewModel {
+  _LoadingObservingUrlImportViewModel({
+    required super.importManager,
+    required this.onMidFetch,
+  });
+
+  final void Function(_LoadingObservingUrlImportViewModel vm) onMidFetch;
+  bool _fired = false;
+
+  @override
+  Future<String> fetchContentFromUrl(String url) async {
+    if (!_fired) {
+      _fired = true;
+      onMidFetch(this);
+    }
+    return 'recipe content for $url long enough to count as a body';
+  }
+}
+
 void main() {
   group('UrlImportViewModel', () {
     late TestableUrlImportViewModel viewModel;
@@ -349,6 +373,85 @@ void main() {
         // Assert
         expect(errors, isEmpty);
       });
+    });
+
+    // BUT-1303: the single-URL SSRF guard. getUrlValidationErrors() rejects
+    // private/loopback/reserved hosts with errorUrlPrivateAddress, and canFetch
+    // goes false. Since the guard now delegates to the parsed-address
+    // HttpContentFetcher.isBlockedHost (not the old string-prefix copy), these
+    // assert every block branch through the public validation surface — and
+    // pin the cases the old copy missed (full 127/8, IPv4-mapped IPv6, the
+    // bracket-stripped uri.host IPv6 form). Each blocked host is paired with a
+    // public sibling so the test also proves the guard isn't over-broad.
+    group('SSRF host guard — getUrlValidationErrors (BUT-1303)', () {
+      const privateAddressError =
+          'URL:en pekar på en privat eller reserverad adress och kan inte användas';
+
+      void expectBlocked(String url) {
+        viewModel.updateUrl(url);
+        expect(
+            viewModel.getUrlValidationErrors(), contains(privateAddressError),
+            reason: '$url should be flagged as a private/reserved host');
+        // NOTE: canFetch only checks the scheme (ImportBaseViewModel._isValidUrl),
+        // so it stays true here — the SSRF block surfaces through the validation
+        // errors and the batch parseUrls() drop, which is what this guard governs.
+      }
+
+      void expectAllowed(String url) {
+        viewModel.updateUrl(url);
+        expect(viewModel.getUrlValidationErrors(),
+            isNot(contains(privateAddressError)),
+            reason: '$url is public and must not be flagged private');
+      }
+
+      test('blocks localhost', () => expectBlocked('http://localhost/recipe'));
+
+      test('blocks loopback 127.0.0.1',
+          () => expectBlocked('http://127.0.0.1/recipe'));
+
+      test('blocks the wider 127.0.0.0/8 loopback range (old copy missed this)',
+          () => expectBlocked('http://127.1.2.3/recipe'));
+
+      test('blocks 0.0.0.0', () => expectBlocked('http://0.0.0.0/recipe'));
+
+      test('blocks 10.0.0.0/8 private range',
+          () => expectBlocked('http://10.0.0.5/recipe'));
+
+      test('blocks 172.16.0.0/12 private range',
+          () => expectBlocked('http://172.16.0.1/recipe'));
+
+      test('blocks 172.31.x (upper bound of 172.16.0.0/12)',
+          () => expectBlocked('http://172.31.255.254/recipe'));
+
+      test('does NOT block 172.32.x (just outside 172.16.0.0/12)',
+          () => expectAllowed('http://172.32.0.1/recipe'));
+
+      test('blocks 192.168.0.0/16 private range',
+          () => expectBlocked('http://192.168.1.10/recipe'));
+
+      test('blocks 169.254.0.0/16 link-local',
+          () => expectBlocked('http://169.254.1.1/recipe'));
+
+      test('blocks IPv6 loopback ::1 (bracket-stripped uri.host form)',
+          () => expectBlocked('http://[::1]/recipe'));
+
+      test('blocks IPv6 unique-local fc00::/7',
+          () => expectBlocked('http://[fc00::1]/recipe'));
+
+      test('blocks IPv6 link-local fe80::/10',
+          () => expectBlocked('http://[fe80::1]/recipe'));
+
+      test('blocks IPv4-mapped IPv6 ::ffff:10.0.0.1 (old copy missed this)',
+          () => expectBlocked('http://[::ffff:10.0.0.1]/recipe'));
+
+      test('allows a public IPv4 host',
+          () => expectAllowed('http://93.184.216.34/recipe'));
+
+      test('allows a public hostname',
+          () => expectAllowed('https://www.example.com/recipe'));
+
+      test('allows a public IPv6 host',
+          () => expectAllowed('http://[2606:2800:220:1:248:1893:25c8:1946]/r'));
     });
 
     group('Recipe Site Recognition', () {
@@ -1115,6 +1218,96 @@ void main() {
 
         viewModel.updateUrl('https://single.com/r');
         expect(viewModel.urlResults, isEmpty);
+      });
+
+      // successfulUrlCount drives the "Importera N recept" CTA count. It must
+      // count ONLY the successful rows — not the total, not failures. A regression
+      // that counted total rows (or off-by-one) would offer to import N recipes
+      // when only M fetched, dead-ending the user on the paste step.
+      test('successfulUrlCount counts only successful rows, excluding failures',
+          () async {
+        // r2 fails; r1 and r3 succeed → count must be 2, not 3.
+        when(() => mockHttpClient.get(
+              Uri.parse('https://b.com/r2'),
+              headers: any(named: 'headers'),
+            )).thenThrow(Exception('boom'));
+
+        viewModel.updateUrl(
+          'https://a.com/r1\nhttps://b.com/r2\nhttps://c.com/r3',
+        );
+        await viewModel.fetchMultipleUrls();
+
+        expect(viewModel.urlResults, hasLength(3));
+        expect(viewModel.successfulUrlCount, 2,
+            reason: 'two of three succeeded — the failed row must not be '
+                'counted toward the CTA');
+      });
+
+      test('successfulUrlCount is zero when every URL failed', () async {
+        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
+            .thenThrow(Exception('all down'));
+
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+
+        expect(viewModel.allUrlsFailed, isTrue);
+        expect(viewModel.successfulUrlCount, 0);
+      });
+
+      // While the batch is in flight every row is seeded with UrlFetchStatus
+      // .loading (and UrlImportResult.isLoading reflects it). The view renders a
+      // spinner per loading row; if isLoading didn't track the loading status,
+      // the rows would render as pending/blank during the fetch. Prove it by
+      // inspecting the rows the instant the sequential loop is mid-flight.
+      test('rows expose isLoading while the batch fetch is in flight',
+          () async {
+        late List<UrlImportResult> midFlightSnapshot;
+        final tracking = _LoadingObservingUrlImportViewModel(
+          importManager: mockImportManager,
+          onMidFetch: (vm) => midFlightSnapshot = vm.urlResults,
+        );
+        addTearDown(tracking.dispose);
+
+        tracking.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await tracking.fetchMultipleUrls();
+
+        // Captured during the first row's fetch: at least one row reports
+        // isLoading (the one being processed is still seeded loading).
+        expect(midFlightSnapshot.any((r) => r.isLoading), isTrue,
+            reason: 'rows must report isLoading while their fetch is pending');
+        // After settle, nothing is left loading.
+        expect(tracking.urlResults.any((r) => r.isLoading), isFalse);
+      });
+
+      // clearUrlResults() is the explicit "discard the batch" affordance (the
+      // view calls it when the user backs out). It must empty the rows AND
+      // notify so the surface rebuilds; and it must be a no-op (no spurious
+      // notification) when there's nothing to clear.
+      test('clearUrlResults empties the batch and notifies', () async {
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+        expect(viewModel.urlResults, isNotEmpty);
+
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
+
+        viewModel.clearUrlResults();
+
+        expect(viewModel.urlResults, isEmpty);
+        expect(notifications, greaterThanOrEqualTo(1));
+      });
+
+      test('clearUrlResults is a silent no-op when already empty', () {
+        expect(viewModel.urlResults, isEmpty);
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
+
+        viewModel.clearUrlResults();
+
+        expect(viewModel.urlResults, isEmpty);
+        expect(notifications, 0,
+            reason: 'clearing an already-empty batch must not notify and '
+                'trigger a needless rebuild');
       });
 
       // BUT-1295: successfulBatchText is what feeds a settled batch fetch into
