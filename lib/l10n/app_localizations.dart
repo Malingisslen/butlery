@@ -23566,6 +23566,48 @@ abstract class AppLocalizations {
   /// **'Timer klar!'**
   String get timerExpired;
 
+  /// BUT-1242: title of the OS local notification fired when a backgrounded step timer expires.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timer klar!'**
+  String get timerNotificationTitle;
+
+  /// BUT-1242: body of the timer expiry notification when no label is available.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din timer har gått ut.'**
+  String get timerNotificationBody;
+
+  /// BUT-1242: body of the timer expiry notification including the step label.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart: {label}'**
+  String timerNotificationBodyLabeled(String label);
+
+  /// BUT-1242: Android notification channel name for cooking step timers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mat-timers'**
+  String get timerNotificationChannelTitle;
+
+  /// BUT-1242: Android notification channel description for cooking step timers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringar när dina mat-timers går ut'**
+  String get timerNotificationChannelDescription;
+
+  /// BUT-1242: header of the active-timers overview strip in cooking mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiva timers'**
+  String get cookingActiveTimersTitle;
+
+  /// BUT-1242: screen-reader label for one chip in the active-timers overview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Timer {label}: {time} kvar'**
+  String a11yActiveTimer(String label, String time);
+
   /// BUT-406: pause-button label on the step timer widget.
   ///
   /// In sv, this message translates to:

@@ -31,6 +31,7 @@ dependencies:
   firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
   firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
   flutter_local_notifications: ^20.1.0  # For Android notification channels (21.x needs Dart 3.10+)
+  timezone: ^0.10.0  # BUT-1242: zonedSchedule needs an explicit tz dependency (was transitive via flutter_local_notifications)
   device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. See BUT-750.
   freerasp: 7.5.1  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds.
 

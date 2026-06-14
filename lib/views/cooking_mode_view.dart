@@ -469,7 +469,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
   /// the instruction text when a Swedish time phrase is detected; otherwise
   /// defaults to 5 minutes. The DI-registered [StepTimerService] is reused
   /// across openings so re-entry doesn't reset a running timer.
-  void _openStepTimer(BuildContext context, String instruction) {
+  void _openStepTimer(BuildContext context, int stepIndex, String instruction) {
     final parsed = parseSwedishDuration(instruction);
     final duration = parsed ?? const Duration(minutes: 5);
     final service = ServiceLocator.get<StepTimerService>();
@@ -477,6 +477,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final messenger = ScaffoldMessenger.maybeOf(context);
     final cs = Theme.of(context).colorScheme;
     final starGold = context.butleryColors.starGold;
+    // BUT-1242: one timer per step so several can run at once.
+    final timerId = 'step-$stepIndex';
 
     showModalBottomSheet<void>(
       context: context,
@@ -484,6 +486,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => StepTimerWidget(
         service: service,
+        timerId: timerId,
         initialDuration: duration,
         sourcePhrase: parsed != null ? instruction : null,
         onExpired: () {
@@ -508,6 +511,12 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
       color: cs.primary.withValues(alpha: 0.8),
       child: Column(
         children: [
+          // BUT-1242: overview of all concurrently-running step timers.
+          _ActiveTimersStrip(
+            service: ServiceLocator.get<StepTimerService>(),
+            onTapTimer: (index) =>
+                _openStepTimer(context, index, vm.instructions[index]),
+          ),
           // BUT-1199: first-use hint for the long-press-step → timer gesture.
           SwipeHintBanner(
             seenKey: SwipeHintBanner.cookingStepSeenKey,
@@ -586,15 +595,15 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                       // sheet, pre-filled with the duration
                                       // parsed from this instruction (5 min
                                       // default fallback).
-                                      onLongPress: () =>
-                                          _openStepTimer(context, instruction),
+                                      onLongPress: () => _openStepTimer(
+                                          context, index, instruction),
                                       // BUT-604: the duration phrase renders
                                       // as an inline tappable chip — visible
                                       // affordance for the same timer sheet.
                                       child: InlineTimerText(
                                         text: instruction,
                                         onTimerTap: (_) => _openStepTimer(
-                                            context, instruction),
+                                            context, index, instruction),
                                         chipColor: cs.onPrimary,
                                         style:
                                             AppTextStyles.titleLarge.copyWith(
@@ -621,6 +630,156 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
           ),
           _StepNavigation(vm: vm),
         ],
+      ),
+    );
+  }
+}
+
+/// BUT-1242: horizontally-scrolling strip of all running/paused step timers,
+/// shown above the instruction list so the cook can glance at every active
+/// countdown at once. Tapping a chip reopens that step's timer sheet. Renders
+/// nothing when no timers are active (idle/expired entries are filtered out).
+class _ActiveTimersStrip extends StatelessWidget {
+  final StepTimerService service;
+  final ValueChanged<int> onTapTimer;
+
+  const _ActiveTimersStrip({
+    required this.service,
+    required this.onTapTimer,
+  });
+
+  static int? _stepIndexOf(String timerId) {
+    const prefix = 'step-';
+    if (!timerId.startsWith(prefix)) return null;
+    return int.tryParse(timerId.substring(prefix.length));
+  }
+
+  static String _format(Duration d) {
+    final total = d.inSeconds < 0 ? 0 : d.inSeconds;
+    final m = (total ~/ 60).toString().padLeft(2, '0');
+    final s = (total % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return StreamBuilder<List<StepTimerEntry>>(
+      stream: service.timers,
+      initialData: service.currentTimers,
+      builder: (context, snapshot) {
+        final active = (snapshot.data ?? const <StepTimerEntry>[])
+            .where((e) => e.isRunning || e.isPaused)
+            .toList();
+        if (active.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color: cs.primary.withValues(alpha: 0.5),
+            border: Border(
+              bottom: BorderSide(color: cs.surface.withValues(alpha: 0.15)),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                    end: AppDimensions.spacingSm),
+                child: Text(
+                  context.l10n.cookingActiveTimersTitle,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final entry in active)
+                        _TimerChip(
+                          entry: entry,
+                          time: _format(entry.remaining),
+                          onTap: () {
+                            final index = _stepIndexOf(entry.id);
+                            if (index != null) onTapTimer(index);
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TimerChip extends StatelessWidget {
+  final StepTimerEntry entry;
+  final String time;
+  final VoidCallback onTap;
+
+  const _TimerChip({
+    required this.entry,
+    required this.time,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final label = entry.label.isEmpty ? time : entry.label;
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: AppDimensions.spacingSm),
+      child: Semantics(
+        label: context.l10n.a11yActiveTimer(label, time),
+        button: true,
+        // Square design language — no border radius.
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+              vertical: AppDimensions.spacingXs,
+            ),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              border: Border.all(color: cs.onPrimary.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  entry.isPaused ? Icons.pause : Icons.timer_outlined,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.primary,
+                ),
+                const SizedBox(width: AppDimensions.spacingXxs),
+                Text(
+                  time,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

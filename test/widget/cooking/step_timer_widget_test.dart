@@ -14,6 +14,7 @@ void main() {
   Widget harness(
     StepTimerService service, {
     Duration initialDuration = const Duration(minutes: 5),
+    String timerId = StepTimerService.defaultTimerId,
     String? sourcePhrase,
     VoidCallback? onExpired,
   }) {
@@ -24,6 +25,7 @@ void main() {
       home: Scaffold(
         body: StepTimerWidget(
           service: service,
+          timerId: timerId,
           initialDuration: initialDuration,
           sourcePhrase: sourcePhrase,
           onExpired: onExpired,
@@ -127,6 +129,63 @@ void main() {
     );
 
     service.reset();
+    await service.dispose();
+  });
+
+  testWidgets(
+      'per-timerId (BUT-1242): two widgets on one service drive independent '
+      'timers, pausing one leaves the other running', (tester) async {
+    final service = StepTimerService();
+
+    // Two widgets share the DI-singleton service but each owns a distinct
+    // step-N slot — this is the multi-timer wiring from cooking_mode_view.
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('sv'),
+        supportedLocales: const [Locale('sv'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: Scaffold(
+          body: Column(
+            children: [
+              Expanded(
+                child: StepTimerWidget(
+                  service: service,
+                  timerId: 'step-0',
+                  initialDuration: const Duration(minutes: 10),
+                ),
+              ),
+              Expanded(
+                child: StepTimerWidget(
+                  service: service,
+                  timerId: 'step-1',
+                  initialDuration: const Duration(minutes: 3),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump(); // post-frame auto-start for both
+
+    expect(service.isRunningFor('step-0'), isTrue);
+    expect(service.isRunningFor('step-1'), isTrue);
+    // Both countdowns render — distinct because the durations differ.
+    expect(find.text('10:00'), findsOneWidget);
+    expect(find.text('03:00'), findsOneWidget);
+
+    // Pause the second widget's timer only. The first must keep running.
+    await tester.tap(find.byTooltip('Pausa').last);
+    await tester.pump();
+
+    expect(service.isPausedFor('step-1'), isTrue);
+    expect(service.isRunningFor('step-0'), isTrue,
+        reason: 'pausing step-1 must not touch step-0');
+
+    service.reset();
+    service.resetTimer('step-0');
+    service.resetTimer('step-1');
+    await tester.pumpWidget(const MaterialApp(home: Scaffold()));
     await service.dispose();
   });
 }

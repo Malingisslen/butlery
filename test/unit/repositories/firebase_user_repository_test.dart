@@ -158,6 +158,42 @@ void main() {
             data['displayNameLower'], equals('test user')); // Searchable index
       });
 
+      test(
+          'saveProfile preserves server-owned friendsCount/isHidden/hiddenAt '
+          'when the in-memory profile is stale (merge, not overwrite)',
+          () async {
+        // Regression guard for the full-set() clobber: friendsCount is mutated
+        // by OTHER users' friend-creation transactions, and isHidden/hiddenAt
+        // are moderator-only. A profile edit built from a stale in-memory copy
+        // must NOT revert those server values — saveProfile writes only the
+        // owner-editable subset with merge:true.
+        const userId = 'user-123';
+        // Server state: 9 friends, moderator-hidden.
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore()
+            ..['friendsCount'] = 9
+            ..['isHidden'] = true,
+        );
+
+        // The client saves an edit (new display name) from a stale profile that
+        // still thinks friendsCount == 0 and isHidden == false.
+        final staleEdit =
+            _createUserProfile(userId).copyWith(displayName: 'Renamed User');
+        await repository.saveProfile(staleEdit);
+
+        final publicDoc =
+            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        // The user-editable field landed...
+        expect(publicDoc.data()!['displayName'], equals('Renamed User'));
+        // ...but the server-owned fields were left untouched (no clobber).
+        expect(publicDoc.data()!['friendsCount'], equals(9),
+            reason: 'a stale save must not revert a concurrent friend count');
+        expect(publicDoc.data()!['isHidden'], equals(true),
+            reason: 'a stale save must not un-hide a moderation-hidden user');
+      });
+
       test('should fetch profile by id', () async {
         // Arrange
         const userId = 'user-123';

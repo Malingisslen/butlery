@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
@@ -30,13 +31,19 @@ class StepTimerWidget extends StatefulWidget {
   /// re-opens.
   final StepTimerService service;
 
+  /// BUT-1242: id of the timer this widget drives. Defaults to the legacy
+  /// single-timer slot so existing callers keep working unchanged. Pass a
+  /// stable per-step id (e.g. the step index) to run concurrent timers.
+  final String timerId;
+
   /// Initial duration seeded from [parseSwedishDuration] on the step text.
   /// Ignored when the service is already running or paused (re-entry case).
   final Duration initialDuration;
 
   /// Optional source phrase (e.g. `"Låt koka i 10 min"`) displayed as a
   /// hint under the timer so users know where the prefill came from. When
-  /// null, no hint is shown.
+  /// null, no hint is shown. Also used as the timer's label for the
+  /// active-timers overview and the expiry notification body.
   final String? sourcePhrase;
 
   /// Fired once when a running timer reaches zero. The sheet uses this to
@@ -48,6 +55,7 @@ class StepTimerWidget extends StatefulWidget {
     super.key,
     required this.service,
     required this.initialDuration,
+    this.timerId = StepTimerService.defaultTimerId,
     this.sourcePhrase,
     this.onExpired,
   });
@@ -71,8 +79,15 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
     // Auto-start once at mount — no need to re-check on every rebuild.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (widget.service.isRunning || widget.service.isPaused) return;
-      widget.service.start(widget.initialDuration);
+      if (widget.service.isRunningFor(widget.timerId) ||
+          widget.service.isPausedFor(widget.timerId)) {
+        return;
+      }
+      widget.service.startTimer(
+        id: widget.timerId,
+        duration: widget.initialDuration,
+        label: widget.sourcePhrase.orEmpty(),
+      );
     });
   }
 
@@ -101,14 +116,15 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Duration>(
-      stream: widget.service.remaining,
-      initialData: widget.service.currentRemaining == Duration.zero
-          ? widget.initialDuration
-          : widget.service.currentRemaining,
+      stream: widget.service.remainingFor(widget.timerId),
+      initialData:
+          widget.service.currentRemainingFor(widget.timerId) == Duration.zero
+              ? widget.initialDuration
+              : widget.service.currentRemainingFor(widget.timerId),
       builder: (context, snapshot) {
         final remaining = snapshot.data ?? widget.initialDuration;
-        final isRunning = widget.service.isRunning;
-        final isPaused = widget.service.isPaused;
+        final isRunning = widget.service.isRunningFor(widget.timerId);
+        final isPaused = widget.service.isPausedFor(widget.timerId);
         final isExpired = !isRunning && !isPaused && remaining == Duration.zero;
 
         // Only schedule the expiry post-frame on the first expired frame —
@@ -171,12 +187,12 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
               isRunning: isRunning,
               isPaused: isPaused,
               isExpired: isExpired,
-              onPause: widget.service.pause,
-              onResume: widget.service.resume,
+              onPause: () => widget.service.pauseTimer(widget.timerId),
+              onResume: () => widget.service.resumeTimer(widget.timerId),
               onReset: () {
                 _pulseController.stop();
                 _hasFiredExpired = false;
-                widget.service.reset();
+                widget.service.resetTimer(widget.timerId);
               },
             ),
           ],

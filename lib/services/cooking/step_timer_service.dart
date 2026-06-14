@@ -3,59 +3,154 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 
-/// BUT-406: In-memory step timer for cooking mode.
+/// Lifecycle state of a single step timer.
+enum StepTimerState { idle, running, paused, expired }
+
+/// Immutable snapshot of one labelled timer, surfaced via
+/// [StepTimerService.timers]. `remaining` is computed against the wall clock at
+/// snapshot time, so consumers re-render from the latest emission rather than
+/// recomputing themselves.
+class StepTimerEntry {
+  const StepTimerEntry({
+    required this.id,
+    required this.label,
+    required this.state,
+    required this.remaining,
+    required this.total,
+  });
+
+  final String id;
+
+  /// Human label (e.g. the parsed step phrase). Empty when the caller didn't
+  /// supply one.
+  final String label;
+
+  final StepTimerState state;
+
+  /// Remaining time at snapshot. Never negative; zero when expired/idle.
+  final Duration remaining;
+
+  /// The duration the timer was started with — lets the UI render progress.
+  final Duration total;
+
+  bool get isRunning => state == StepTimerState.running;
+  bool get isPaused => state == StepTimerState.paused;
+  bool get isExpired => state == StepTimerState.expired;
+
+  @override
+  bool operator ==(Object other) =>
+      other is StepTimerEntry &&
+      other.id == id &&
+      other.label == label &&
+      other.state == state &&
+      other.remaining == remaining &&
+      other.total == total;
+
+  @override
+  int get hashCode => Object.hash(id, label, state, remaining, total);
+}
+
+/// BUT-406 / BUT-1242: In-memory step timers for cooking mode.
 ///
-/// Single active timer per service instance. Local-only — no Firestore/RTDB.
-/// The timer is driven by the wall clock via `package:clock` so tests can
-/// advance time with `withClock(FakeClock(...))` + `fakeAsync`.
+/// Originally a single active timer (BUT-406); BUT-1242 generalised it to a map
+/// of `id -> timer` so several labelled timers can run concurrently (e.g. "koka
+/// pasta 10 min" + "stek lök 5 min"), with a [timers] snapshot stream powering a
+/// cooking-mode active-timers overview, and an OS-level local notification
+/// scheduled per running timer so expiry is alerted even when backgrounded.
 ///
-/// Backgrounding: when the app is suspended Dart may pause `Timer.periodic`,
-/// but the target end-time is stored as an absolute `DateTime`. On resume
-/// the next tick reconciles against `clock.now()`, so short backgroundings
-/// don't drift.
+/// Local-only — no Firestore/RTDB. Timers are driven by the wall clock via
+/// `package:clock` so tests advance time with `withClock(Clock(...))` +
+/// `fakeAsync`.
+///
+/// Backgrounding: when the app is suspended Dart pauses `Timer.periodic`, but
+/// each timer stores an absolute `DateTime` end-time. On resume the next tick
+/// reconciles against `clock.now()`, so short backgroundings don't drift; the
+/// scheduled local notification covers longer backgroundings where the periodic
+/// tick wouldn't fire in time.
+///
+/// Backward compatibility: the original single-timer API ([start], [pause],
+/// [resume], [reset], [remaining], [isRunning], [isPaused], [currentRemaining])
+/// is preserved — it operates on a reserved [defaultTimerId] entry. New callers
+/// use the id-keyed variants ([startTimer], [pauseTimer], [resumeTimer],
+/// [resetTimer]) and observe [timers].
 class StepTimerService extends BaseService {
+  StepTimerService({LocalTimerNotificationService? notifications})
+      : _notifications = notifications;
+
   @override
   String get serviceName => 'StepTimerService';
 
-  /// Stream of remaining time. Emits on every tick (1Hz) and on every state
-  /// transition (start/pause/resume/reset/expire). Terminates when the
-  /// service is disposed.
-  Stream<Duration> get remaining => _remainingController.stream;
+  /// Reserved id for the legacy single-timer API.
+  static const String defaultTimerId = '_default';
 
-  /// Whether a timer is currently counting down (not paused, not idle).
-  bool get isRunning => _state == _TimerState.running;
+  final LocalTimerNotificationService? _notifications;
 
-  /// Whether a timer exists but is currently paused.
-  bool get isPaused => _state == _TimerState.paused;
-
-  /// Current remaining duration. Never negative; zero when expired or idle.
-  Duration get currentRemaining => _computeRemaining();
+  final Map<String, _Timer> _timers = {};
 
   final StreamController<Duration> _remainingController =
       StreamController<Duration>.broadcast();
+  final StreamController<List<StepTimerEntry>> _timersController =
+      StreamController<List<StepTimerEntry>>.broadcast();
 
-  _TimerState _state = _TimerState.idle;
+  /// Stream of the default timer's remaining time (legacy single-timer API).
+  /// Emits on every tick (1Hz) and on every default-timer state transition.
+  Stream<Duration> get remaining => _remainingController.stream;
 
-  /// Absolute wall-clock time at which the running timer expires. `null`
-  /// when the timer is idle or paused.
-  DateTime? _endAt;
+  /// Stream of all timer snapshots, sorted by remaining ascending (soonest to
+  /// expire first). Emits whenever any timer ticks or changes state. Idle/expired
+  /// default-timer churn from the legacy API is included so the overview stays
+  /// consistent.
+  Stream<List<StepTimerEntry>> get timers => _timersController.stream;
 
-  /// Cached remaining while paused. `null` when the timer is running or idle.
-  Duration? _pausedRemaining;
+  /// Current snapshot of all timers (sorted soonest-first).
+  List<StepTimerEntry> get currentTimers => _snapshot();
 
-  Timer? _ticker;
+  // ── Legacy single-timer API (operates on [defaultTimerId]) ────────────────
 
-  /// Last `inSeconds` value we emitted — the ticker fires at sub-second
-  /// cadence under `fakeAsync`, so skip emissions that wouldn't change
-  /// the `mm:ss` rendering downstream.
-  int? _lastEmittedSeconds;
+  bool get isRunning =>
+      _timers[defaultTimerId]?.state == StepTimerState.running;
+  bool get isPaused => _timers[defaultTimerId]?.state == StepTimerState.paused;
+  Duration get currentRemaining =>
+      _timers[defaultTimerId]?.computeRemaining() ?? Duration.zero;
 
-  /// Starts a new countdown of [duration]. Any existing timer is reset
-  /// first — callers that want to guard against this should check
-  /// [isRunning]/[isPaused] beforehand. Throws [ArgumentError] if
-  /// [duration] is not positive.
-  void start(Duration duration) {
+  void start(Duration duration) =>
+      startTimer(id: defaultTimerId, duration: duration);
+  void pause() => pauseTimer(defaultTimerId);
+  void resume() => resumeTimer(defaultTimerId);
+  void reset() => resetTimer(defaultTimerId);
+
+  // ── Per-id accessors (for a widget bound to one timer) ────────────────────
+
+  /// Remaining time for [id] as a stream, derived from the shared snapshot
+  /// stream. Emits the entry's current remaining on every change; emits
+  /// [Duration.zero] when the timer doesn't exist (idle/reset/expired-removed).
+  Stream<Duration> remainingFor(String id) =>
+      timers.map((list) => _remainingOf(list, id));
+
+  bool isRunningFor(String id) => _timers[id]?.state == StepTimerState.running;
+  bool isPausedFor(String id) => _timers[id]?.state == StepTimerState.paused;
+  Duration currentRemainingFor(String id) =>
+      _timers[id]?.computeRemaining() ?? Duration.zero;
+
+  Duration _remainingOf(List<StepTimerEntry> list, String id) {
+    for (final e in list) {
+      if (e.id == id) return e.remaining;
+    }
+    return Duration.zero;
+  }
+
+  // ── Multi-timer API ───────────────────────────────────────────────────────
+
+  /// Starts (or restarts) the timer identified by [id] with [duration].
+  /// Throws [ArgumentError] if [duration] is not positive. An existing timer
+  /// with the same id is replaced. Schedules a backgrounded-expiry notification.
+  void startTimer({
+    required String id,
+    required Duration duration,
+    String label = '',
+  }) {
     if (duration <= Duration.zero) {
       throw ArgumentError.value(
         duration,
@@ -64,108 +159,217 @@ class StepTimerService extends BaseService {
       );
     }
 
-    _cancelTicker();
-    _endAt = clock.now().add(duration);
-    _pausedRemaining = null;
-    _state = _TimerState.running;
-    _emit(duration);
-    _startTicker();
+    final existing = _timers[id];
+    existing?.cancelTicker();
+
+    final timer = _Timer(
+      id: id,
+      label: existing?.label.isNotEmpty == true && label.isEmpty
+          ? existing!.label
+          : label,
+      total: duration,
+      endAt: clock.now().add(duration),
+      state: StepTimerState.running,
+      onTick: () => _onTick(id),
+    );
+    _timers[id] = timer;
+    timer.startTicker();
+
+    _scheduleNotification(timer);
+    _emit(id);
   }
 
-  /// Pauses a running timer. No-op when idle or already paused.
-  void pause() {
-    if (_state != _TimerState.running) return;
-    _pausedRemaining = _computeRemaining();
-    _endAt = null;
-    _cancelTicker();
-    _state = _TimerState.paused;
-    _emit(_pausedRemaining ?? Duration.zero);
+  /// Pauses the running timer [id]. No-op when idle/paused/missing. Cancels the
+  /// pending notification (a paused timer must not fire a phantom alert).
+  void pauseTimer(String id) {
+    final timer = _timers[id];
+    if (timer == null || timer.state != StepTimerState.running) return;
+    timer.pausedRemaining = timer.computeRemaining();
+    timer.endAt = null;
+    timer.cancelTicker();
+    timer.state = StepTimerState.paused;
+    _cancelNotification(id);
+    _emit(id);
   }
 
-  /// Resumes a paused timer from the previously captured remaining. No-op
-  /// when idle or already running. If the paused remaining is zero, the
-  /// timer transitions straight to expired.
-  void resume() {
-    if (_state != _TimerState.paused) return;
-    final remaining = _pausedRemaining ?? Duration.zero;
+  /// Resumes the paused timer [id] from its captured remaining. No-op when
+  /// idle/running/missing. Zero remaining → expires immediately.
+  void resumeTimer(String id) {
+    final timer = _timers[id];
+    if (timer == null || timer.state != StepTimerState.paused) return;
+    final remaining = timer.pausedRemaining ?? Duration.zero;
     if (remaining <= Duration.zero) {
-      _expire();
+      _expire(id);
       return;
     }
-    _endAt = clock.now().add(remaining);
-    _pausedRemaining = null;
-    _state = _TimerState.running;
-    _emit(remaining);
-    _startTicker();
+    timer.endAt = clock.now().add(remaining);
+    timer.pausedRemaining = null;
+    timer.state = StepTimerState.running;
+    timer.startTicker();
+    _scheduleNotification(timer);
+    _emit(id);
   }
 
-  /// Clears the current timer and emits zero. Safe to call from any state.
-  void reset() {
-    _cancelTicker();
-    _endAt = null;
-    _pausedRemaining = null;
-    _state = _TimerState.idle;
-    _emit(Duration.zero);
+  /// Clears the timer [id] (back to idle) and cancels any pending notification.
+  /// Safe from any state. The default timer stays in the map (idle) so the
+  /// legacy `remaining` stream keeps emitting zero; named timers are removed
+  /// from the map so they leave the overview.
+  void resetTimer(String id) {
+    final timer = _timers[id];
+    _cancelNotification(id);
+    if (id == defaultTimerId) {
+      timer?.cancelTicker();
+      if (timer != null) {
+        timer.endAt = null;
+        timer.pausedRemaining = null;
+        timer.state = StepTimerState.idle;
+      }
+      _emit(id);
+      return;
+    }
+    timer?.cancelTicker();
+    _timers.remove(id);
+    _emitAll();
   }
 
   @override
   Future<void> onDispose() async {
-    _cancelTicker();
-    if (!_remainingController.isClosed) {
-      await _remainingController.close();
+    for (final t in _timers.values) {
+      t.cancelTicker();
     }
+    _timers.clear();
+    if (!_remainingController.isClosed) await _remainingController.close();
+    if (!_timersController.isClosed) await _timersController.close();
   }
 
-  void _startTicker() {
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      final remaining = _computeRemaining();
-      if (remaining <= Duration.zero) {
-        _expire(emitZero: true);
-        return;
-      }
-      // Skip emission if the `mm:ss` rendering wouldn't change — avoids
-      // per-tick widget churn under fakeAsync and sub-second ticker drift.
-      if (_lastEmittedSeconds == remaining.inSeconds) return;
-      _emit(remaining);
-    });
-  }
-
-  void _cancelTicker() {
-    _ticker?.cancel();
-    _ticker = null;
-  }
-
-  /// Transitions to expired. Emits zero unless the caller has already
-  /// emitted it this tick (only the ticker path does so today — callers
-  /// from `resume()` on a paused-to-zero timer still need the emit).
-  void _expire({bool emitZero = true}) {
-    _cancelTicker();
-    _endAt = null;
-    _pausedRemaining = null;
-    _state = _TimerState.expired;
-    if (emitZero) _emit(Duration.zero);
-  }
-
-  Duration _computeRemaining() {
-    switch (_state) {
-      case _TimerState.running:
-        final endAt = _endAt;
-        if (endAt == null) return Duration.zero;
-        final diff = endAt.difference(clock.now());
-        return diff.isNegative ? Duration.zero : diff;
-      case _TimerState.paused:
-        return _pausedRemaining ?? Duration.zero;
-      case _TimerState.idle:
-      case _TimerState.expired:
-        return Duration.zero;
+  void _onTick(String id) {
+    final timer = _timers[id];
+    if (timer == null) return;
+    final remaining = timer.computeRemaining();
+    if (remaining <= Duration.zero) {
+      _expire(id);
+      return;
     }
+    // Skip emission if the mm:ss rendering wouldn't change — avoids per-tick
+    // widget churn under fakeAsync and sub-second ticker drift.
+    if (timer.lastEmittedSeconds == remaining.inSeconds) return;
+    _emit(id);
   }
 
-  void _emit(Duration remaining) {
-    if (_remainingController.isClosed) return;
-    _lastEmittedSeconds = remaining.inSeconds;
-    _remainingController.add(remaining);
+  void _expire(String id) {
+    final timer = _timers[id];
+    if (timer == null) return;
+    timer.cancelTicker();
+    timer.endAt = null;
+    timer.pausedRemaining = null;
+    timer.state = StepTimerState.expired;
+    // The OS notification (if any) has already fired by expiry; cancel defends
+    // against the foreground case where the periodic tick beat the schedule.
+    _cancelNotification(id);
+    _emit(id);
+  }
+
+  void _scheduleNotification(_Timer timer) {
+    final notifications = _notifications;
+    if (notifications == null) return;
+    final remaining = timer.computeRemaining();
+    if (remaining <= Duration.zero) return;
+    // Fire-and-forget: notification scheduling must never block the timer.
+    unawaited(notifications.schedule(
+      timerId: timer.id,
+      duration: remaining,
+      label: timer.label.isEmpty ? null : timer.label,
+    ));
+  }
+
+  void _cancelNotification(String id) {
+    final notifications = _notifications;
+    if (notifications == null) return;
+    unawaited(notifications.cancel(id));
+  }
+
+  /// Emits the default-timer remaining (legacy stream) when [id] is the default,
+  /// and always re-emits the full snapshot.
+  void _emit(String id) {
+    final timer = _timers[id];
+    if (timer != null) {
+      timer.lastEmittedSeconds = timer.computeRemaining().inSeconds;
+    }
+    if (id == defaultTimerId && !_remainingController.isClosed) {
+      _remainingController.add(timer?.computeRemaining() ?? Duration.zero);
+    }
+    _emitAll();
+  }
+
+  void _emitAll() {
+    if (_timersController.isClosed) return;
+    _timersController.add(_snapshot());
+  }
+
+  List<StepTimerEntry> _snapshot() {
+    final entries = _timers.values
+        .map((t) => StepTimerEntry(
+              id: t.id,
+              label: t.label,
+              state: t.state,
+              remaining: t.computeRemaining(),
+              total: t.total,
+            ))
+        .toList()
+      ..sort((a, b) => a.remaining.compareTo(b.remaining));
+    return entries;
   }
 }
 
-enum _TimerState { idle, running, paused, expired }
+/// Mutable per-timer bookkeeping. Private — only [StepTimerService] mutates it;
+/// consumers see immutable [StepTimerEntry] snapshots.
+class _Timer {
+  _Timer({
+    required this.id,
+    required this.label,
+    required this.total,
+    required this.endAt,
+    required this.state,
+    required this.onTick,
+  });
+
+  final String id;
+  final String label;
+  final Duration total;
+  final void Function() onTick;
+
+  /// Absolute expiry instant while running; null while paused/idle.
+  DateTime? endAt;
+
+  /// Cached remaining while paused; null while running/idle.
+  Duration? pausedRemaining;
+
+  StepTimerState state;
+  Timer? ticker;
+  int? lastEmittedSeconds;
+
+  void startTicker() {
+    cancelTicker();
+    ticker = Timer.periodic(const Duration(seconds: 1), (_) => onTick());
+  }
+
+  void cancelTicker() {
+    ticker?.cancel();
+    ticker = null;
+  }
+
+  Duration computeRemaining() {
+    switch (state) {
+      case StepTimerState.running:
+        final e = endAt;
+        if (e == null) return Duration.zero;
+        final diff = e.difference(clock.now());
+        return diff.isNegative ? Duration.zero : diff;
+      case StepTimerState.paused:
+        return pausedRemaining ?? Duration.zero;
+      case StepTimerState.idle:
+      case StepTimerState.expired:
+        return Duration.zero;
+    }
+  }
+}

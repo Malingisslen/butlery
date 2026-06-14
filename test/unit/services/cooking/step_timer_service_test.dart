@@ -3,6 +3,29 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/notifications/local_timer_notification_service.dart';
+
+/// BUT-1242: records schedule/cancel calls without touching the real plugin or
+/// the timezone database, so the service's notification side-effects are
+/// assertable in a pure-Dart test.
+class _RecordingNotifications extends LocalTimerNotificationService {
+  final List<({String id, Duration duration, String? label})> scheduled = [];
+  final List<String> cancelled = [];
+
+  @override
+  Future<void> schedule({
+    required String timerId,
+    required Duration duration,
+    String? label,
+  }) async {
+    scheduled.add((id: timerId, duration: duration, label: label));
+  }
+
+  @override
+  Future<void> cancel(String timerId) async {
+    cancelled.add(timerId);
+  }
+}
 
 /// BUT-406: Service-level tests. All time-dependent behaviour runs inside
 /// `fakeAsync` + `withClock(Clock(() => async.elapse.now))` so the
@@ -176,6 +199,138 @@ void main() {
         throwsA(isA<ArgumentError>()),
       );
       service.dispose();
+    });
+  });
+
+  group('StepTimerService — multiple concurrent timers (BUT-1242)', () {
+    test('two labelled timers count down independently', () {
+      withFakeTime((async) {
+        final service = StepTimerService();
+        service.startTimer(
+            id: 'step-0',
+            duration: const Duration(seconds: 30),
+            label: 'pasta');
+        service.startTimer(
+            id: 'step-1', duration: const Duration(seconds: 10), label: 'lök');
+
+        async.elapse(const Duration(seconds: 4));
+
+        expect(
+            service.currentRemainingFor('step-0'), const Duration(seconds: 26));
+        expect(
+            service.currentRemainingFor('step-1'), const Duration(seconds: 6));
+
+        // The shorter timer expires first without disturbing the other.
+        async.elapse(const Duration(seconds: 6));
+        expect(service.isRunningFor('step-1'), isFalse);
+        expect(service.isRunningFor('step-0'), isTrue);
+        expect(
+            service.currentRemainingFor('step-0'), const Duration(seconds: 20));
+
+        service.dispose();
+      });
+    });
+
+    test('timers snapshot stream lists active timers sorted soonest-first', () {
+      withFakeTime((async) {
+        final service = StepTimerService();
+        final snapshots = <List<StepTimerEntry>>[];
+        final sub = service.timers.listen(snapshots.add);
+
+        service.startTimer(id: 'step-0', duration: const Duration(seconds: 30));
+        service.startTimer(id: 'step-1', duration: const Duration(seconds: 10));
+        async.elapse(const Duration(seconds: 1));
+
+        final latest = snapshots.last;
+        expect(latest.map((e) => e.id).toList(), ['step-1', 'step-0']);
+        expect(latest.first.remaining.inSeconds,
+            lessThan(latest.last.remaining.inSeconds));
+
+        sub.cancel();
+        service.dispose();
+      });
+    });
+
+    test('resetTimer removes a named timer from the snapshot', () {
+      withFakeTime((async) {
+        final service = StepTimerService();
+        service.startTimer(id: 'step-0', duration: const Duration(seconds: 30));
+        service.startTimer(id: 'step-1', duration: const Duration(seconds: 30));
+        async.elapse(const Duration(seconds: 1));
+        expect(service.currentTimers.length, 2);
+
+        service.resetTimer('step-0');
+        expect(service.currentTimers.map((e) => e.id).toList(), ['step-1']);
+
+        service.dispose();
+      });
+    });
+  });
+
+  group('StepTimerService — expiry notifications (BUT-1242)', () {
+    test('startTimer schedules a notification with the remaining + label', () {
+      withFakeTime((async) {
+        final notes = _RecordingNotifications();
+        final service = StepTimerService(notifications: notes);
+
+        service.startTimer(
+            id: 'step-0',
+            duration: const Duration(minutes: 10),
+            label: 'koka pasta');
+
+        expect(notes.scheduled, hasLength(1));
+        expect(notes.scheduled.single.id, 'step-0');
+        expect(notes.scheduled.single.duration, const Duration(minutes: 10));
+        expect(notes.scheduled.single.label, 'koka pasta');
+
+        service.dispose();
+      });
+    });
+
+    test('pause cancels the scheduled notification', () {
+      withFakeTime((async) {
+        final notes = _RecordingNotifications();
+        final service = StepTimerService(notifications: notes);
+        service.startTimer(id: 'step-0', duration: const Duration(minutes: 5));
+        async.elapse(const Duration(seconds: 2));
+
+        service.pauseTimer('step-0');
+        expect(notes.cancelled, contains('step-0'));
+
+        service.dispose();
+      });
+    });
+
+    test('reset cancels the scheduled notification', () {
+      withFakeTime((async) {
+        final notes = _RecordingNotifications();
+        final service = StepTimerService(notifications: notes);
+        service.startTimer(id: 'step-0', duration: const Duration(minutes: 5));
+
+        service.resetTimer('step-0');
+        expect(notes.cancelled, contains('step-0'));
+
+        service.dispose();
+      });
+    });
+
+    test('resume re-schedules a notification for the remaining time', () {
+      withFakeTime((async) {
+        final notes = _RecordingNotifications();
+        final service = StepTimerService(notifications: notes);
+        service.startTimer(id: 'step-0', duration: const Duration(seconds: 60));
+        async.elapse(const Duration(seconds: 20));
+        service.pauseTimer('step-0');
+
+        notes.scheduled.clear();
+        service.resumeTimer('step-0');
+
+        expect(notes.scheduled, hasLength(1));
+        // ~40s remaining when resumed.
+        expect(notes.scheduled.single.duration.inSeconds, closeTo(40, 1));
+
+        service.dispose();
+      });
     });
   });
 }

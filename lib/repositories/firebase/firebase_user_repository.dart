@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/modules/user_root_deletion_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -61,6 +62,7 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 /// await userRepo.updateNotificationSettings(userId, true);
 /// ```
 class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
+    with UserRootDeletionMixin
     implements UserRepository {
   FirebaseUserRepository({
     super.firestore,
@@ -141,10 +143,16 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       resourceType: 'user_profile',
     );
 
-    final data = profile.toFirestore();
+    // BUT-1242 follow-up: write only owner-editable public fields with merge,
+    // so we never clobber friendsCount (mutated by friend-creation transactions)
+    // or moderator-owned isHidden/hiddenAt. A full set() with a stale in-memory
+    // profile would silently revert a concurrent friend's count, and a stale
+    // isHidden:false would trip the rules' diff() guard and reject every edit a
+    // moderation-hidden user tries to make.
+    final data = profile.toFirestoreEditable();
     data['displayNameLower'] = profile.displayName.toLowerCase();
     await Future.wait([
-      collection.doc(profile.uid).set(data),
+      collection.doc(profile.uid).set(data, SetOptions(merge: true)),
       _settingsDoc(profile.uid)
           .set(profile.toPrivateSettings(), SetOptions(merge: true)),
     ]);
@@ -614,29 +622,28 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   @override
   Future<bool> deletePublicProfile(String userId) async {
     // GDPR cascade: caller must own this profile.
+    final currentUser = requireCurrentUserId();
     await validateOwnership(
-      currentUserId: requireCurrentUserId(),
+      currentUserId: currentUser,
       resourceOwnerId: userId,
       resourceType: collectionName,
     );
     // `collection` points at `public_profiles` (per `collectionName` above).
     await collection.doc(userId).delete();
     AppLogger.info('Deleted public_profiles/$userId');
+    // GDPR Article 17 erasure must leave an audit entry on the SUCCESS path —
+    // validateOwnership only logs on deny. Mirror the granted:true logging that
+    // every other mutating method here does.
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'public_profile/$userId',
+      operation: 'delete',
+      granted: true,
+    );
     return true;
   }
 
-  @override
-  Future<bool> deleteUserRootDoc(String userId) async {
-    // GDPR cascade: caller must own this user document.
-    await validateOwnership(
-      currentUserId: requireCurrentUserId(),
-      resourceOwnerId: userId,
-      resourceType: FirestoreCollections.users,
-    );
-    // The `collection` getter points at `public_profiles` (collectionName).
-    // Root user doc lives in `users/{userId}` — explicit reference here.
-    await firestore.collection(FirestoreCollections.users).doc(userId).delete();
-    AppLogger.info('Deleted users/$userId');
-    return true;
-  }
+  // deleteUserRootDoc is provided by UserRootDeletionMixin — it deletes the
+  // root `users/{userId}` doc, which lives outside this repository's
+  // `public_profiles` collection (BUT-734).
 }

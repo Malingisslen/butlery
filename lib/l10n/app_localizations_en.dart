@@ -14051,6 +14051,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timerExpired => 'Timer done!';
 
   @override
+  String get timerNotificationTitle => 'Timer done!';
+
+  @override
+  String get timerNotificationBody => 'Your timer has finished.';
+
+  @override
+  String timerNotificationBodyLabeled(String label) {
+    return 'Done: $label';
+  }
+
+  @override
+  String get timerNotificationChannelTitle => 'Cooking timers';
+
+  @override
+  String get timerNotificationChannelDescription =>
+      'Alerts when your cooking timers run out';
+
+  @override
+  String get cookingActiveTimersTitle => 'Active timers';
+
+  @override
+  String a11yActiveTimer(String label, String time) {
+    return 'Timer $label: $time remaining';
+  }
+
+  @override
   String get pauseTimer => 'Pause';
 
   @override

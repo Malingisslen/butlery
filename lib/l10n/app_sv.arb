@@ -9570,6 +9570,50 @@
   "@timerExpired": {
     "description": "BUT-406: snackbar/label shown when the step timer hits zero."
   },
+  "timerNotificationTitle": "Timer klar!",
+  "@timerNotificationTitle": {
+    "description": "BUT-1242: title of the OS local notification fired when a backgrounded step timer expires."
+  },
+  "timerNotificationBody": "Din timer har gått ut.",
+  "@timerNotificationBody": {
+    "description": "BUT-1242: body of the timer expiry notification when no label is available."
+  },
+  "timerNotificationBodyLabeled": "Klart: {label}",
+  "@timerNotificationBodyLabeled": {
+    "description": "BUT-1242: body of the timer expiry notification including the step label.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Låt koka i 10 min"
+      }
+    }
+  },
+  "timerNotificationChannelTitle": "Mat-timers",
+  "@timerNotificationChannelTitle": {
+    "description": "BUT-1242: Android notification channel name for cooking step timers."
+  },
+  "timerNotificationChannelDescription": "Aviseringar när dina mat-timers går ut",
+  "@timerNotificationChannelDescription": {
+    "description": "BUT-1242: Android notification channel description for cooking step timers."
+  },
+  "cookingActiveTimersTitle": "Aktiva timers",
+  "@cookingActiveTimersTitle": {
+    "description": "BUT-1242: header of the active-timers overview strip in cooking mode."
+  },
+  "a11yActiveTimer": "Timer {label}: {time} kvar",
+  "@a11yActiveTimer": {
+    "description": "BUT-1242: screen-reader label for one chip in the active-timers overview.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Koka pasta"
+      },
+      "time": {
+        "type": "String",
+        "example": "08:30"
+      }
+    }
+  },
   "pauseTimer": "Pausa",
   "@pauseTimer": {
     "description": "BUT-406: pause-button label on the step timer widget."

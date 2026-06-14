@@ -9519,6 +9519,50 @@
   "@timerExpired": {
     "description": "BUT-406: snackbar/label shown when the step timer hits zero."
   },
+  "timerNotificationTitle": "Timer done!",
+  "@timerNotificationTitle": {
+    "description": "BUT-1242: title of the OS local notification fired when a backgrounded step timer expires."
+  },
+  "timerNotificationBody": "Your timer has finished.",
+  "@timerNotificationBody": {
+    "description": "BUT-1242: body of the timer expiry notification when no label is available."
+  },
+  "timerNotificationBodyLabeled": "Done: {label}",
+  "@timerNotificationBodyLabeled": {
+    "description": "BUT-1242: body of the timer expiry notification including the step label.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Let simmer for 10 min"
+      }
+    }
+  },
+  "timerNotificationChannelTitle": "Cooking timers",
+  "@timerNotificationChannelTitle": {
+    "description": "BUT-1242: Android notification channel name for cooking step timers."
+  },
+  "timerNotificationChannelDescription": "Alerts when your cooking timers run out",
+  "@timerNotificationChannelDescription": {
+    "description": "BUT-1242: Android notification channel description for cooking step timers."
+  },
+  "cookingActiveTimersTitle": "Active timers",
+  "@cookingActiveTimersTitle": {
+    "description": "BUT-1242: header of the active-timers overview strip in cooking mode."
+  },
+  "a11yActiveTimer": "Timer {label}: {time} remaining",
+  "@a11yActiveTimer": {
+    "description": "BUT-1242: screen-reader label for one chip in the active-timers overview.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Boil pasta"
+      },
+      "time": {
+        "type": "String",
+        "example": "08:30"
+      }
+    }
+  },
   "pauseTimer": "Pause",
   "@pauseTimer": {
     "description": "BUT-406: pause-button label on the step timer widget."

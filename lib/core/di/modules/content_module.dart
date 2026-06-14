@@ -131,6 +131,7 @@ import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.
 
 // Cooking-mode substitution suggestions (canonical-ID based, BUT-202)
 import 'package:butlery/services/cooking/step_timer_service.dart';
+import 'package:butlery/services/notifications/local_timer_notification_service.dart';
 import 'package:butlery/services/cooking/substitution_suggestion_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 
@@ -223,8 +224,9 @@ class ContentModule implements DIModule {
         NeuralLineClassifier,
         // Cooking-mode substitution suggestions (BUT-202)
         SubstitutionSuggestionService,
-        // Cooking-mode step timer (BUT-406)
+        // Cooking-mode step timer (BUT-406) + backgrounded-expiry alert (BUT-1242)
         StepTimerService,
+        LocalTimerNotificationService,
         // Menu lexicon overlay (BUT-370)
         FirebaseMenuLexiconRepository,
         // Ingredient registry (enriches static KnownIngredients from Firestore)
@@ -333,10 +335,19 @@ class ContentModule implements DIModule {
       ),
     );
 
+    // BUT-1242: schedules OS-level local notifications for backgrounded timer
+    // expiry. Local-only, no Firestore/FCM.
+    container.registerLazySingleton<LocalTimerNotificationService>(
+      () => LocalTimerNotificationService(),
+    );
+
     // BUT-406: in-memory cooking-mode step timer. Local-only, no repository
     // deps — registered alongside other cooking services for discoverability.
+    // BUT-1242: now multi-timer + backgrounded-expiry notifications.
     container.registerLazySingleton<StepTimerService>(
-      () => StepTimerService(),
+      () => StepTimerService(
+        notifications: app<LocalTimerNotificationService>(),
+      ),
     );
 
     // Recipe parser service — depends on LlmService (user-scoped)

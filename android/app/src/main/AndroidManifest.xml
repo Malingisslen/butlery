@@ -14,7 +14,17 @@
 
     <!-- BUT-414: Android 13+ runtime notification permission. Pre-13 devices ignore this. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    
+
+    <!-- BUT-1242: scheduled cooking-timer expiry alerts (flutter_local_notifications
+         zonedSchedule with exactAllowWhileIdle). USE_EXACT_ALARM lets a backgrounded
+         timer fire at the exact wall-clock second without a runtime prompt — a cooking
+         timer is the sanctioned alarm/timer use case for this permission (targets API 33+).
+         RECEIVE_BOOT_COMPLETED + the two receivers below let the plugin re-arm pending
+         alerts after the app is killed or the device reboots. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:label="Butlery"
         android:name="${applicationName}"
@@ -82,6 +92,24 @@
                 <data android:scheme="butlery" />
             </intent-filter>
         </activity>
+        <!-- BUT-1242: flutter_local_notifications receivers. Without these the
+             scheduled cooking-timer expiry alert is dropped after the app is
+             killed or the device reboots (the backgrounded scenario the feature
+             targets). Names per the plugin README (com.dexterous...). -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

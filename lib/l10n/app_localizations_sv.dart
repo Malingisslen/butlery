@@ -14086,6 +14086,32 @@ class AppLocalizationsSv extends AppLocalizations {
   String get timerExpired => 'Timer klar!';
 
   @override
+  String get timerNotificationTitle => 'Timer klar!';
+
+  @override
+  String get timerNotificationBody => 'Din timer har gått ut.';
+
+  @override
+  String timerNotificationBodyLabeled(String label) {
+    return 'Klart: $label';
+  }
+
+  @override
+  String get timerNotificationChannelTitle => 'Mat-timers';
+
+  @override
+  String get timerNotificationChannelDescription =>
+      'Aviseringar när dina mat-timers går ut';
+
+  @override
+  String get cookingActiveTimersTitle => 'Aktiva timers';
+
+  @override
+  String a11yActiveTimer(String label, String time) {
+    return 'Timer $label: $time kvar';
+  }
+
+  @override
   String get pauseTimer => 'Pausa';
 
   @override

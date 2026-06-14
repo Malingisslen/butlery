@@ -316,6 +316,27 @@ class UserProfile with JsonSerializableMixin {
     };
   }
 
+  /// Owner-editable subset of the public profile, for a `merge:true` write.
+  ///
+  /// Deliberately EXCLUDES three server-owned fields that a stale in-memory
+  /// profile would otherwise clobber on a full `set()`:
+  /// - `friendsCount` — maintained by OTHER users' friend-creation transactions
+  ///   (firestore.rules lets any authed user change only this field). A stale
+  ///   value in a full overwrite silently reverts a concurrent friend's change.
+  /// - `isHidden` / `hiddenAt` — moderator-only. A stale `isHidden:false` trips
+  ///   the rules' diff() guard and rejects the ENTIRE save, so a hidden user
+  ///   could never edit their display name, avatar, or searchability.
+  ///
+  /// Omitting these keys means `merge:true` leaves the server values untouched
+  /// and they never appear in the update's affectedKeys().
+  Map<String, dynamic> toFirestoreEditable() {
+    final data = toFirestore();
+    data.remove('friendsCount');
+    data.remove('isHidden');
+    data.remove('hiddenAt');
+    return data;
+  }
+
   /// Sensitive fields stored in users/{uid}/settings/preferences subcollection
   Map<String, dynamic> toPrivateSettings() {
     return {
