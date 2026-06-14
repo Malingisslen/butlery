@@ -531,6 +531,287 @@ void main() {
         verifyNever(() => recipeService.getRecipeById(any()));
       });
     });
+
+    // BUT-1280: the bulk-move target-picker flow. Drives the full UI path the
+    // user takes after selecting entries: open the "Flytta till" bottom sheet
+    // from the selection action bar, pick a (day, slot) target -> the move is
+    // persisted via the service + a success snackbar is shown; and the
+    // dismiss-without-picking path -> no move, sheet just closes.
+    group('bulk-move target picker (BUT-1280)', () {
+      /// Pump a one-entry week, enter selection mode, and select the single
+      /// entry so the move action becomes enabled. Returns the live VM.
+      Future<WeeklyMenuPlanViewModel> pumpSelectedOneEntry(
+        WidgetTester tester, {
+        required WeeklyMenuPlan plan,
+      }) async {
+        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+
+        // Enter selection mode and select the one populated cell.
+        await tester.tap(find.byIcon(Icons.checklist_outlined));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('pasta'));
+        await tester.pumpAndSettle();
+        expect(vm.selectedCount, 1);
+        return vm;
+      }
+
+      WeeklyMenuPlan oneEntryWeek() {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        return _plan(
+          weekStart: weekStart,
+          entries: [
+            _entry(
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              id: 'mon-m',
+              recipeId: 'r-mon',
+              title: 'Pasta',
+            ),
+          ],
+        );
+      }
+
+      testWidgets(
+          'tapping move opens the target sheet, picking a (day, slot) fires '
+          'bulkMoveEntries and shows the success snackbar', (tester) async {
+        final plan = oneEntryWeek();
+        // The bulk move re-reads the same week afterwards (_fetchWeek), so
+        // getWeek is already stubbed by pumpSelectedOneEntry to return `plan`.
+        when(() => service.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            )).thenAnswer((_) async => 1);
+
+        final vm = await pumpSelectedOneEntry(tester, plan: plan);
+
+        // The action bar's move button (drive_file_move_outline) opens the
+        // "Flytta till" target sheet.
+        await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+        await tester.pumpAndSettle();
+        expect(find.text('Flytta till'), findsOneWidget,
+            reason: 'the bulk-move target sheet header');
+        // 7 days × 3 slots = 21 target rows in the sheet.
+        expect(find.byType(ListTile), findsNWidgets(21));
+
+        // Pick "mån · lunch" — the first tile in the sheet (guaranteed
+        // on-screen at the default 800x600 surface) and a unique title.
+        await tester.tap(find.text('mån · lunch'));
+        await tester.pumpAndSettle();
+
+        // The move was persisted to the target the user picked.
+        verify(() => service.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: ['mon-m'],
+              toDay: DayOfWeek.mon,
+              toSlot: MealSlot.lunch,
+            )).called(1);
+        // Success snackbar: "1 recept flyttat" (singular plural form).
+        expect(find.text('1 recept flyttat'), findsOneWidget);
+        // Selection mode is exited after a successful move.
+        expect(vm.selectionMode, isFalse);
+        expect(find.byType(SelectionActionBar), findsNothing);
+      });
+
+      testWidgets(
+          'a failed bulk move (service returns null path) shows the error '
+          'snackbar instead of the success one', (tester) async {
+        final plan = oneEntryWeek();
+        // Throwing makes the VM's executeAsyncVoid fail, so bulkMoveSelected
+        // returns null and the view shows the error snackbar.
+        when(() => service.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            )).thenThrow(StateError('move failed'));
+
+        await pumpSelectedOneEntry(tester, plan: plan);
+
+        await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('mån · lunch'));
+        await tester.pumpAndSettle();
+
+        // The failure surfaces the error copy (in the snackbar, and also in
+        // the VM's error-state body via the errorPrefix) — at least once, and
+        // never the success copy.
+        expect(find.text('Kunde inte flytta recepten'), findsWidgets);
+        expect(find.text('1 recept flyttat'), findsNothing);
+      });
+
+      testWidgets(
+          'dismissing the target sheet without picking leaves the selection '
+          'intact and never calls bulkMoveEntries', (tester) async {
+        final plan = oneEntryWeek();
+        final vm = await pumpSelectedOneEntry(tester, plan: plan);
+
+        await tester.tap(find.byIcon(Icons.drive_file_move_outline));
+        await tester.pumpAndSettle();
+        expect(find.text('Flytta till'), findsOneWidget);
+
+        // Dismiss by tapping the modal barrier (no target chosen).
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pumpAndSettle();
+
+        // Sheet is gone, no move happened, and the selection survives so the
+        // user can re-open the picker.
+        expect(find.text('Flytta till'), findsNothing);
+        verifyNever(() => service.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            ));
+        expect(vm.selectionMode, isTrue);
+        expect(vm.selectedCount, 1);
+      });
+    });
+
+    // BUT-1280 follow-up: the copy-week affordance's widget-layer wiring. The
+    // VM's copyWeekToNext is unit-tested in isolation, but the dialog gate +
+    // the three-way result snackbar (N copied / nothing-to-copy / failure)
+    // live only in _onCopyWeek and were previously asserted only by icon
+    // presence. These drive the real tap -> confirm -> snackbar path.
+    group('copy-week affordance', () {
+      Future<WeeklyMenuPlanViewModel> pumpOneEntryWeek(
+        WidgetTester tester,
+      ) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        final plan = _plan(
+          weekStart: weekStart,
+          entries: [
+            _entry(
+              day: DayOfWeek.mon,
+              slot: MealSlot.middag,
+              id: 'mon-m',
+              recipeId: 'r-mon',
+              title: 'Pasta',
+            ),
+          ],
+        );
+        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+        return vm;
+      }
+
+      final from = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+
+      testWidgets(
+          'tapping copy opens a confirm dialog; confirming calls '
+          'service.copyWeek(from -> +7d) and shows the count snackbar',
+          (tester) async {
+        when(() => service.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            )).thenAnswer((_) async => 2);
+
+        await pumpOneEntryWeek(tester);
+
+        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.pumpAndSettle();
+        // Confirm dialog header (l10n weeklyMenuCopyToNextConfirmTitle).
+        expect(find.text('Kopiera veckan?'), findsOneWidget);
+
+        // Continue (commonContinue) fires the copy.
+        await tester.tap(find.text('Fortsätt'));
+        await tester.pumpAndSettle();
+
+        verify(() => service.copyWeek(
+              fromWeekStart: from,
+              toWeekStart: from.add(const Duration(days: 7)),
+            )).called(1);
+        // Plural-form result: 2 -> "2 recept kopierade till nästa vecka".
+        expect(
+          find.text('2 recept kopierade till nästa vecka'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets(
+          'a copy that touches nothing (count 0) shows the '
+          '"already there" snackbar, not a numbered one', (tester) async {
+        when(() => service.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            )).thenAnswer((_) async => 0);
+
+        await pumpOneEntryWeek(tester);
+
+        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Fortsätt'));
+        await tester.pumpAndSettle();
+
+        // =0 plural branch — distinct copy from the numbered success.
+        expect(
+          find.text('Inget kopierades – allt finns redan nästa vecka'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets(
+          'a failed copy (service throws) shows the error snackbar and no '
+          'success copy', (tester) async {
+        when(() => service.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            )).thenThrow(StateError('copy failed'));
+
+        await pumpOneEntryWeek(tester);
+
+        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Fortsätt'));
+        await tester.pumpAndSettle();
+
+        // errorPrefix + snackbar both surface this copy.
+        expect(find.text('Kunde inte kopiera veckan'), findsWidgets);
+        expect(
+          find.textContaining('kopierade till nästa vecka'),
+          findsNothing,
+        );
+      });
+
+      testWidgets('cancelling the confirm dialog never calls service.copyWeek',
+          (tester) async {
+        await pumpOneEntryWeek(tester);
+
+        await tester.tap(find.byIcon(Icons.copy_all_outlined));
+        await tester.pumpAndSettle();
+        expect(find.text('Kopiera veckan?'), findsOneWidget);
+
+        // Cancel (commonCancel) — dialog closes, no copy fires.
+        await tester.tap(find.text('Avbryt'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Kopiera veckan?'), findsNothing);
+        verifyNever(() => service.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            ));
+      });
+    });
   });
 
   // -------- Golden -------------------------------------------------------

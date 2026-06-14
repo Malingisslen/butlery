@@ -1,0 +1,314 @@
+// BUT-1275: widget gates for the multi-URL ("batch") path of ImportViaUrlView
+// (BUT-947). A user can paste a list of recipe URLs; the view then renders one
+// progress row per URL, a per-row retry on failures, and a "Importera N recept"
+// CTA whose count reflects only the URLs that succeeded. These tests pin that
+// user-visible contract against a fake ViewModel:
+//   - one result row per urlResults entry, each showing the URL text;
+//   - the per-row status icon distinguishes success / failure / loading;
+//   - the retry button appears only on failed rows and calls retryUrl(index);
+//   - the partial-success CTA shows successfulUrlCount, not the total;
+//   - the CTA is absent until at least one URL succeeds.
+//
+// Asserts behaviour (row count, retry wiring, CTA count), not pixel layout, so
+// it needs no human visual sign-off.
+
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/viewmodels/url_import_viewmodel.dart';
+import 'package:butlery/views/import_via_url_view.dart';
+
+/// Self-contained ChangeNotifier fake exposing only the surface the view reads
+/// for the multi-URL path, plus a retry recorder. The real VM drives a
+/// WebScraper + AutoSaveManager; here we hand the view a fixed batch result so
+/// the render + wiring are deterministic and platform-free.
+class _FakeUrlImportViewModel extends ChangeNotifier
+    implements UrlImportViewModel {
+  _FakeUrlImportViewModel({
+    required List<UrlImportResult> results,
+    String batchText = '',
+  })  : _results = results,
+        _batchText = batchText;
+
+  final List<UrlImportResult> _results;
+  final String _batchText;
+
+  @override
+  bool get isLoading => false;
+
+  int? retriedIndex;
+
+  @override
+  List<UrlImportResult> get urlResults => List.unmodifiable(_results);
+
+  @override
+  bool get hasAnyUrlSuccess => _results.any((r) => r.isSuccess);
+
+  @override
+  int get successfulUrlCount => _results.where((r) => r.isSuccess).length;
+
+  @override
+  bool get isMultiUrl => true;
+
+  @override
+  Future<void> retryUrl(int index) async {
+    retriedIndex = index;
+  }
+
+  // ---- inert surface the view's build() also reads ----
+  @override
+  bool get hasError => false;
+  @override
+  String? get error => null;
+  @override
+  bool get canFetch => true;
+  @override
+  bool get hasExtractedText => false;
+  @override
+  String get extractedText => '';
+  @override
+  String get sourceUrl => '';
+  @override
+  void updateUrl(String url) {}
+  @override
+  Future<void> fetchFromUrl() async {}
+  @override
+  Future<void> fetchMultipleUrls() async {}
+  @override
+  String get successfulBatchText => _batchText;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Records every route pushed past the home route so a test can assert the
+/// batch CTA actually navigates (and with which arguments), not merely that it
+/// renders the right label.
+class _RouteRecorder extends NavigatorObserver {
+  final List<Route<dynamic>> pushed = [];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pushed.add(route);
+    super.didPush(route, previousRoute);
+  }
+}
+
+Widget _wrap(Widget child, {List<NavigatorObserver> observers = const []}) =>
+    MaterialApp(
+      theme: AppTheme.lightTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      navigatorObservers: observers,
+      // The batch CTA pushes '/franSocialaMedier'; give it a stub destination so
+      // the push resolves instead of throwing "no route" mid-test.
+      routes: {
+        '/franSocialaMedier': (_) => const Scaffold(body: Text('paste-stub')),
+      },
+      home: child,
+    );
+
+void main() {
+  late _FakeUrlImportViewModel fakeVm;
+
+  void registerFake(_FakeUrlImportViewModel vm) {
+    final getIt = GetIt.instance;
+    if (getIt.isRegistered<UrlImportViewModel>()) {
+      getIt.unregister<UrlImportViewModel>();
+    }
+    getIt.registerFactory<UrlImportViewModel>(() => vm);
+    app_provider.ServiceLocator.reset();
+    app_provider.ServiceLocator.initialize(DIContainer());
+  }
+
+  setUp(() {
+    // Empty prefs so the view's AutoSaveManager.load resolves (no draft).
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+  });
+
+  tearDown(() {
+    app_provider.ServiceLocator.reset();
+    final getIt = GetIt.instance;
+    if (getIt.isRegistered<UrlImportViewModel>()) {
+      getIt.unregister<UrlImportViewModel>();
+    }
+  });
+
+  Future<void> pumpView(
+    WidgetTester tester, {
+    bool settle = true,
+    List<NavigatorObserver> observers = const [],
+  }) async {
+    await tester.pumpWidget(
+      _wrap(const ImportViaUrlView(), observers: observers),
+    );
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      // A loading row holds an indefinitely-animating spinner, so pumpAndSettle
+      // would never converge — two bounded pumps run the post-frame draft check
+      // and flush the first build.
+      await tester.pump();
+      await tester.pump();
+    }
+  }
+
+  const okUrl = 'https://ica.se/recept/ett';
+  const failUrl = 'https://example.com/trasig';
+  const loadingUrl = 'https://koket.se/laddar';
+
+  testWidgets('renders one progress row per URL in the batch', (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // Each pasted URL gets its own row showing the URL string.
+    expect(find.text(okUrl), findsOneWidget);
+    expect(find.text(failUrl), findsOneWidget);
+  });
+
+  testWidgets('a failed row shows the retry button; a successful row does not',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // One failure ⇒ exactly one "Försök igen" retry affordance.
+    expect(find.text('Försök igen'), findsOneWidget);
+  });
+
+  testWidgets('tapping retry calls retryUrl with the failed row index',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // The failure is row index 1; its retry must target exactly that row.
+    await tester.tap(find.text('Försök igen'));
+    await tester.pump();
+
+    expect(fakeVm.retriedIndex, 1);
+  });
+
+  testWidgets('per-row status icons distinguish success / failure / loading',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+      UrlImportResult(url: loadingUrl, status: UrlFetchStatus.loading),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester, settle: false);
+
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byIcon(Icons.error), findsOneWidget);
+    // A loading row shows a spinner instead of an icon.
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+
+  testWidgets('the import CTA counts only the URLs that succeeded',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+      UrlImportResult(
+          url: 'https://arla.se/recept/tva', status: UrlFetchStatus.success),
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // 2 of 3 succeeded → "Importera 2 recept", never the total of 3.
+    expect(find.text('Importera 2 recept'), findsOneWidget);
+    expect(find.text('Importera 3 recept'), findsNothing);
+  });
+
+  testWidgets('no import CTA until at least one URL succeeds', (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+      UrlImportResult(
+          url: 'https://example.com/ocksa-trasig',
+          status: UrlFetchStatus.failure),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // All failed ⇒ the partial-success CTA is absent (nothing to import).
+    expect(find.textContaining('Importera'), findsNothing);
+  });
+
+  // Gap (BUT-1275 review): the original suite proved the CTA's *label* count but
+  // never that the CTA actually *does* anything. A user who taps "Importera N
+  // recept" must reach the paste step carrying the combined batch text; if the
+  // wiring (or successfulBatchText) silently produced nothing, the label would
+  // still read correctly while the button did nothing. This pins the dispatch.
+  testWidgets('tapping the batch CTA navigates to paste with the combined text',
+      (tester) async {
+    final recorder = _RouteRecorder();
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [
+        UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+        UrlImportResult(
+            url: 'https://arla.se/recept/tva', status: UrlFetchStatus.success),
+      ],
+      batchText: 'RECEPT ETT\n\nRECEPT TVA',
+    );
+    registerFake(fakeVm);
+    await pumpView(tester, observers: [recorder]);
+
+    await tester.tap(find.text('Importera 2 recept'));
+    await tester.pumpAndSettle();
+
+    final pushedSettings =
+        recorder.pushed.map((r) => r.settings).toList(growable: false);
+    final batchRoute = pushedSettings
+        .where((s) => s.name == '/franSocialaMedier')
+        .toList(growable: false);
+    expect(batchRoute, hasLength(1),
+        reason: 'the CTA must push the paste route exactly once');
+    expect(
+      (batchRoute.single.arguments as Map)['text'],
+      'RECEPT ETT\n\nRECEPT TVA',
+      reason: 'the combined batch text must reach the paste step verbatim',
+    );
+  });
+
+  // Gap (BUT-1275 review): the "{success} av {total} hämtade" progress summary
+  // is the user's at-a-glance partial-success readout and is a separate
+  // aggregation from the CTA count (it shows the TOTAL, the CTA shows only the
+  // successes). A regression collapsing the two would be invisible to the
+  // existing CTA-only assertions.
+  testWidgets(
+      'the batch summary shows successes over total, not just successes',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [
+      UrlImportResult(url: okUrl, status: UrlFetchStatus.success),
+      UrlImportResult(
+          url: 'https://arla.se/recept/tva', status: UrlFetchStatus.success),
+      UrlImportResult(url: failUrl, status: UrlFetchStatus.failure),
+    ]);
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // 2 succeeded out of 3 pasted → "2 av 3 hämtade" (Swedish copy).
+    expect(find.text('2 av 3 hämtade'), findsOneWidget);
+  });
+}
