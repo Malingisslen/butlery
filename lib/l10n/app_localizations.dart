@@ -2234,6 +2234,54 @@ abstract class AppLocalizations {
   /// **'Text från foto (OCR)'**
   String get recipeSourceTypePhotoOcr;
 
+  /// No description provided for @recipeSourceReextract.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återhämta från källa'**
+  String get recipeSourceReextract;
+
+  /// No description provided for @recipeSourceReextractConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återhämta receptet?'**
+  String get recipeSourceReextractConfirmTitle;
+
+  /// No description provided for @recipeSourceReextractConfirmMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här skriver över receptets nuvarande innehåll med en ny extrahering från källan. Det går inte att ångra.'**
+  String get recipeSourceReextractConfirmMessage;
+
+  /// No description provided for @recipeSourceReextractConfirmAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återhämta'**
+  String get recipeSourceReextractConfirmAction;
+
+  /// No description provided for @recipeSourceReextractInProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återhämtar från källan …'**
+  String get recipeSourceReextractInProgress;
+
+  /// No description provided for @recipeSourceReextractSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet återhämtades från källan'**
+  String get recipeSourceReextractSuccess;
+
+  /// No description provided for @recipeSourceReextractFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte återhämta från källan. Receptet är oförändrat.'**
+  String get recipeSourceReextractFailed;
+
+  /// No description provided for @recipeSourceStaleBanner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källan sparades för länge sedan — en ny extrahering kan skilja sig från originalet.'**
+  String get recipeSourceStaleBanner;
+
   /// No description provided for @recipeShareWithFriends.
   ///
   /// In sv, this message translates to:
@@ -7245,6 +7293,18 @@ abstract class AppLocalizations {
   /// **'Trolig'**
   String get importLikely;
 
+  /// Chip label on import lines the AI/heuristic detector suggested (vs. lines the user entered)
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-förslag'**
+  String get importAiSuggested;
+
+  /// Screen-reader hint announced for an import line the AI suggested
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-förslag'**
+  String get importAiSuggestedA11y;
+
   /// No description provided for @importNoLinesToShow.
   ///
   /// In sv, this message translates to:
@@ -9195,6 +9255,36 @@ abstract class AppLocalizations {
   /// **'Vi hittade {count} recept'**
   String importMultipleRecipesFound(int count);
 
+  /// Button that appends another photo as the next page of the same multi-page recipe import (BUT-903).
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till sida'**
+  String get importPhotoAddPage;
+
+  /// Label under each thumbnail in the multi-page photo import strip (BUT-903).
+  ///
+  /// In sv, this message translates to:
+  /// **'Sida {number}'**
+  String importPhotoPageLabel(int number);
+
+  /// Caption above the page strip explaining the pages are merged into one recipe (BUT-903).
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} sidor kombineras till ett recept'**
+  String importPhotoPagesCombined(int count);
+
+  /// Error/disabled-state message when the user tries to add more than the page cap (BUT-903).
+  ///
+  /// In sv, this message translates to:
+  /// **'Max {max} sidor per recept'**
+  String importPhotoPagesMaxReached(int max);
+
+  /// Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort sida {number}'**
+  String a11yRemovePhotoPage(int number);
+
   /// No description provided for @importProcessingImage.
   ///
   /// In sv, this message translates to:
@@ -9278,6 +9368,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'URL från {platform}'**
   String importUrlFromPlatform(String platform);
+
+  /// No description provided for @importUrlBatchAllFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen av webbadresserna kunde hämtas. Kontrollera länkarna och försök igen.'**
+  String get importUrlBatchAllFailed;
+
+  /// No description provided for @importMultipleUrlsHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in en eller flera recept-URL:er (en per rad)'**
+  String get importMultipleUrlsHint;
+
+  /// No description provided for @importMultipleUrlsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept-URL:er'**
+  String get importMultipleUrlsLabel;
+
+  /// No description provided for @importUrlBatchProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'{success} av {total} hämtade'**
+  String importUrlBatchProgress(int success, int total);
+
+  /// No description provided for @importUrlBatchImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera {count} recept'**
+  String importUrlBatchImport(int count);
+
+  /// No description provided for @importUrlFetchPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar...'**
+  String get importUrlFetchPending;
+
+  /// No description provided for @importUrlFetchSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtad'**
+  String get importUrlFetchSuccess;
+
+  /// No description provided for @importUrlFetchFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Misslyckades'**
+  String get importUrlFetchFailed;
 
   /// No description provided for @importVideoNoText.
   ///

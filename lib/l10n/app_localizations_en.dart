@@ -1298,6 +1298,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSourceTypePhotoOcr => 'Photo text (OCR)';
 
   @override
+  String get recipeSourceReextract => 'Re-extract from source';
+
+  @override
+  String get recipeSourceReextractConfirmTitle => 'Re-extract recipe?';
+
+  @override
+  String get recipeSourceReextractConfirmMessage =>
+      'This overwrites the recipe\'s current content with a fresh extraction from the source. This cannot be undone.';
+
+  @override
+  String get recipeSourceReextractConfirmAction => 'Re-extract';
+
+  @override
+  String get recipeSourceReextractInProgress => 'Re-extracting from source …';
+
+  @override
+  String get recipeSourceReextractSuccess => 'Recipe re-extracted from source';
+
+  @override
+  String get recipeSourceReextractFailed =>
+      'Could not re-extract from source. The recipe is unchanged.';
+
+  @override
+  String get recipeSourceStaleBanner =>
+      'The source was saved a long time ago — a fresh extraction may differ from the original.';
+
+  @override
   String get recipeShareWithFriends => 'Share with friends';
 
   @override
@@ -4304,6 +4331,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importLikely => 'Likely';
 
   @override
+  String get importAiSuggested => 'AI suggestion';
+
+  @override
+  String get importAiSuggestedA11y => 'AI suggestion';
+
+  @override
   String get importNoLinesToShow => 'No lines to show';
 
   @override
@@ -5422,6 +5455,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get importPhotoAddPage => 'Add page';
+
+  @override
+  String importPhotoPageLabel(int number) {
+    return 'Page $number';
+  }
+
+  @override
+  String importPhotoPagesCombined(int count) {
+    return '$count pages combined into one recipe';
+  }
+
+  @override
+  String importPhotoPagesMaxReached(int max) {
+    return 'Max $max pages per recipe';
+  }
+
+  @override
+  String a11yRemovePhotoPage(int number) {
+    return 'Remove page $number';
+  }
+
+  @override
   String get importProcessingImage => 'Processing image...';
 
   @override
@@ -5466,6 +5522,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String importUrlFromPlatform(String platform) {
     return 'URL from $platform';
   }
+
+  @override
+  String get importUrlBatchAllFailed =>
+      'None of the URLs could be fetched. Check the links and try again.';
+
+  @override
+  String get importMultipleUrlsHint =>
+      'Paste one or more recipe URLs (one per line)';
+
+  @override
+  String get importMultipleUrlsLabel => 'Recipe URLs';
+
+  @override
+  String importUrlBatchProgress(int success, int total) {
+    return '$success of $total fetched';
+  }
+
+  @override
+  String importUrlBatchImport(int count) {
+    return 'Import $count recipes';
+  }
+
+  @override
+  String get importUrlFetchPending => 'Waiting...';
+
+  @override
+  String get importUrlFetchSuccess => 'Fetched';
+
+  @override
+  String get importUrlFetchFailed => 'Failed';
 
   @override
   String get importVideoNoText => 'Video has no text';

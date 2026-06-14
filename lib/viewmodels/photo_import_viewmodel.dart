@@ -21,10 +21,22 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class PhotoImportViewModel extends ImportBaseViewModel
     with PhotoImportHeirloomFormMixin, PhotoImportDraftMixin {
   /// Raw image bytes from the selected photo (OCR input + preview).
+  /// In multi-page mode (BUT-903) this mirrors the FIRST page so every existing
+  /// single-image consumer — preview thumbnail, heirloom scan, draft staging —
+  /// keeps working unchanged. The full ordered set lives in [_pages].
   Uint8List? _imageBytes;
 
-  /// Extracted OCR text awaiting parse/review.
+  /// Extracted OCR text awaiting parse/review. In multi-page mode this is the
+  /// per-page OCR text concatenated in page order, so the single downstream
+  /// parse sees the whole recipe spread as one document.
   String _ocrText = '';
+
+  /// BUT-903: ordered photo pages (max [maxPages]) combined into ONE recipe.
+  /// A long recipe split across several cookbook pages OCRs each page then
+  /// concatenates the text in this order before a single parse. The single-page
+  /// flow is simply the `length == 1` case — [_imageBytes]/[_ocrText] stay the
+  /// live combined state so no existing consumer changes.
+  final List<_PhotoPage> _pages = [];
 
   /// Last OCR quality score from image assessment (0.0-1.0).
   /// Enables quality-based error messaging and user guidance on image quality.
@@ -64,6 +76,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
     }
   }
 
+  /// BUT-903: hard cap on combinable pages. A single recipe rarely spans more
+  /// than a few cookbook pages; the cap also bounds OCR quota per import.
+  static const int maxPages = 5;
+
   Uint8List? get imageBytes => _imageBytes;
 
   String get ocrText => _ocrText;
@@ -71,6 +87,21 @@ class PhotoImportViewModel extends ImportBaseViewModel
   bool get hasImage => _imageBytes != null;
 
   bool get hasOcrResult => _ocrText.isNotEmpty;
+
+  /// BUT-903: the ordered image bytes for every added page (for the page-strip
+  /// thumbnails). One entry per page; index 0 is the first/cover page.
+  List<Uint8List> get pageImages =>
+      List.unmodifiable(_pages.map((p) => p.bytes));
+
+  /// Number of pages currently combined into the import.
+  int get pageCount => _pages.length;
+
+  /// True once a second page exists — the view shows the page strip + reorder
+  /// affordances only then, keeping the single-photo flow visually unchanged.
+  bool get hasMultiplePages => _pages.length > 1;
+
+  /// False once the page cap is reached, so the "add page" CTA can disable.
+  bool get canAddPage => _pages.length < maxPages;
 
   /// Last OCR quality score for error messaging and user guidance (Phase 2 Enhancement).
   /// Returns quality score from image assessment (0.0-1.0) enabling quality-based
@@ -115,6 +146,18 @@ class PhotoImportViewModel extends ImportBaseViewModel
   @visibleForTesting
   Future<void> parseOcrTextForTesting(String text) => _autoParseOcrText(text);
 
+  /// BUT-903: append a page with pre-extracted OCR text (skipping the
+  /// camera/OCR round-trip) and run the real combine+parse path, so tests can
+  /// exercise multi-page ordering, removal, reordering, and the cap without a
+  /// platform image picker. Mirrors what [_ocrAndAppendPage] does after a
+  /// successful OCR.
+  @visibleForTesting
+  Future<void> addPageForTesting(Uint8List bytes, String text) async {
+    if (!canAddPage) return;
+    _pages.add(_PhotoPage(bytes: bytes, text: text));
+    await _recombineAndParse();
+  }
+
   /// OCR processing state indicator for UI progress indication and interaction control.
   /// Indicates active OCR processing operations for loading indicators
   /// and user interaction management during photo processing.
@@ -135,13 +178,54 @@ class PhotoImportViewModel extends ImportBaseViewModel
   String get importType => 'photo';
 
   /// Captures a photo from the camera and runs the OCR + auto-parse pipeline.
+  /// Starts a fresh import — replaces any existing pages.
   Future<void> pickImageFromCamera() async {
     await _pickImageAndProcess(ImageSource.camera);
   }
 
   /// Selects an image from the gallery and runs the OCR + auto-parse pipeline.
+  /// Starts a fresh import — replaces any existing pages.
   Future<void> pickImageFromGallery() async {
     await _pickImageAndProcess(ImageSource.gallery);
+  }
+
+  /// BUT-903: append a camera photo as the next page of the SAME recipe, then
+  /// re-OCR-combine + re-parse. No-op (with an error) once the cap is hit.
+  Future<void> addPageFromCamera() async {
+    await _pickImageAndProcess(ImageSource.camera, addAsPage: true);
+  }
+
+  /// BUT-903: append a gallery photo as the next page of the same recipe.
+  Future<void> addPageFromGallery() async {
+    await _pickImageAndProcess(ImageSource.gallery, addAsPage: true);
+  }
+
+  /// BUT-903: drop the page at [index] and recombine. Removing the last page
+  /// clears the whole import (same as [clearPhoto]).
+  Future<void> removePage(int index) async {
+    if (isDisposed || index < 0 || index >= _pages.length) return;
+    _pages.removeAt(index);
+    if (_pages.isEmpty) {
+      clearPhoto();
+      return;
+    }
+    await _recombineAndParse();
+  }
+
+  /// BUT-903: move the page at [oldIndex] to [newIndex] (drag-to-reorder) and
+  /// recombine — page order is the OCR concatenation order, so reordering can
+  /// fix an out-of-sequence capture without re-shooting.
+  Future<void> reorderPage(int oldIndex, int newIndex) async {
+    if (isDisposed) return;
+    if (oldIndex < 0 || oldIndex >= _pages.length) return;
+    var target = newIndex;
+    // ReorderableListView reports an index past the end when dropping last.
+    if (target > oldIndex) target -= 1;
+    target = target.clamp(0, _pages.length - 1);
+    if (target == oldIndex) return;
+    final page = _pages.removeAt(oldIndex);
+    _pages.insert(target, page);
+    await _recombineAndParse();
   }
 
   /// Re-runs OCR on the current image after a failure — without this the user
@@ -154,7 +238,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
     await executeAsyncVoid(() async {
       clearError();
-      await _performOcr(_imageBytes!);
+      // Re-OCR the cover image as a fresh single page. A retry follows a failed
+      // first-page OCR (the failing page was never appended), so the page set
+      // restarts from this image.
+      _pages.clear();
+      await _ocrAndAppendPage(_imageBytes!);
     }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
@@ -170,6 +258,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
     _imageBytes = null;
     _ocrText = '';
+    _pages.clear();
     _lastQualityScore = null;
     _lastRecommendations = null;
     _lastConfidence = null;
@@ -183,8 +272,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // Nav-away does NOT come through here, so drafts survive navigation.
     unawaited(discardPersistedDraft());
 
-    // Also clear OCR cache for testing
-    OCRExtractionService.instance.clearAllCache();
+    // NB: the OCR result cache is intentionally NOT cleared here. It is keyed by
+    // image content, so persisting it across photo clears lets a re-import of
+    // the same image hit the cache instead of re-spending OCR provider quota
+    // (CLAUDE.md cost principles). Tests that need a clean cache call
+    // OCRExtractionService.clearCacheForTesting() in their teardown.
   }
 
   /// BUT-910: restores the persisted draft into live state — staged image (when
@@ -198,6 +290,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
     if (isDisposed) return false;
     _imageBytes = bytes;
     _ocrText = draft.ocrText;
+    // BUT-903: the draft schema stages one image + the combined OCR text, so a
+    // restore rebuilds a single-page set. The user can add more pages on top.
+    _pages
+      ..clear()
+      ..add(_PhotoPage(bytes: bytes ?? Uint8List(0), text: draft.ocrText));
     notifyListeners();
     await _autoParseOcrText(_ocrText);
     return true;
@@ -220,9 +317,23 @@ class PhotoImportViewModel extends ImportBaseViewModel
   }
 
   /// Shared camera/gallery pipeline: pick → validate (format, ≤15MB) →
-  /// quality gate → OCR → auto-parse.
-  Future<void> _pickImageAndProcess(ImageSource source) async {
-    clearImportData();
+  /// quality gate → OCR → combine → auto-parse.
+  ///
+  /// [addAsPage] = false starts a fresh import (replaces all pages); true
+  /// (BUT-903) appends the picked image as the next page of the current recipe
+  /// and re-runs the combine+parse over every page in order.
+  Future<void> _pickImageAndProcess(
+    ImageSource source, {
+    bool addAsPage = false,
+  }) async {
+    if (addAsPage && !canAddPage) {
+      setError(AppLocale.current.importPhotoPagesMaxReached(maxPages));
+      return;
+    }
+    if (!addAsPage) {
+      clearImportData();
+      _pages.clear();
+    }
 
     await executeAsyncVoid(() async {
       // Pick image
@@ -260,7 +371,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
         );
       }
 
-      _imageBytes = bytes;
+      // Reflect the new image immediately: first page drives the live preview.
+      if (!addAsPage || _pages.isEmpty) {
+        _imageBytes = bytes;
+      }
       notifyListeners();
 
       // Pre-flight quality assessment (Phase 2 Enhancement)
@@ -278,43 +392,52 @@ class PhotoImportViewModel extends ImportBaseViewModel
             AppLocale.current.ocrImageRejected);
       }
 
-      // Perform OCR
-      await _performOcr(bytes);
+      // OCR just this page, append it, then combine + parse the whole set.
+      await _ocrAndAppendPage(bytes);
     }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
-  /// Multi-provider OCR (OCR.space → Google Vision → Tesseract) followed by
-  /// auto-parse. Throws when no text could be extracted.
-  Future<void> _performOcr(Uint8List imageBytes) async {
-    try {
-      // Use the new universal OCR service
-      final ocrResult = await OCRExtractionService.instance.extractText(
-        imageBytes,
-      );
+  /// BUT-903: multi-provider OCR (OCR.space → Google Vision → Tesseract) on a
+  /// single page, append it to [_pages] in capture order, then recombine the
+  /// per-page text and auto-parse the whole recipe. Throws when this page
+  /// yields no text — a blank page must surface rather than silently extend the
+  /// recipe with nothing.
+  Future<void> _ocrAndAppendPage(Uint8List imageBytes) async {
+    final ocrResult = await OCRExtractionService.instance.extractText(
+      imageBytes,
+    );
 
-      if (ocrResult.isSuccessful && ocrResult.text.isNotEmpty) {
-        _ocrText = ocrResult.text;
-        _lastConfidence = ocrResult.confidence;
-        notifyListeners();
-
-        // BUT-910: OCR is the expensive step — persist the draft as soon as it
-        // succeeds so nav-away/backgrounding can't lose it. Fire-and-forget:
-        // a failed save must never block the parse below.
-        unawaited(
-          persistPhotoDraft(imageBytes: imageBytes, ocrText: ocrResult.text),
-        );
-
-        // Auto-parse the OCR text into a recipe
-        await _autoParseOcrText(ocrResult.text);
-      } else {
-        // Handle OCR failure with enhanced error messaging (Phase 2 Enhancement)
-        final errorMessage = _buildEnhancedErrorMessage(ocrResult);
-
-        throw Exception(errorMessage);
-      }
-    } catch (e) {
-      rethrow;
+    if (!ocrResult.isSuccessful || ocrResult.text.isEmpty) {
+      // Enhanced error messaging (Phase 2 Enhancement) — also drives the
+      // quality-field getters via its side effects.
+      throw Exception(_buildEnhancedErrorMessage(ocrResult));
     }
+
+    _pages.add(_PhotoPage(bytes: imageBytes, text: ocrResult.text));
+    _lastConfidence = ocrResult.confidence;
+    await _recombineAndParse();
+  }
+
+  /// BUT-903: rebuild the combined OCR text from every page in order, keep the
+  /// first page as the live preview/heirloom image, persist the draft, then run
+  /// ONE auto-parse over the joined text. Shared by add/remove/reorder so all
+  /// page mutations converge on the same combine+parse path.
+  Future<void> _recombineAndParse() async {
+    if (_pages.isEmpty) return;
+    _imageBytes = _pages.first.bytes;
+    // Blank-line separator so the parser/splitter treats page boundaries the
+    // same as the blank lines that already delimit sections within a page.
+    _ocrText = _pages.map((p) => p.text).join('\n\n');
+    notifyListeners();
+
+    // BUT-910: OCR is the expensive step — persist as soon as combined text
+    // exists so nav-away can't lose it. Fire-and-forget; persist the first
+    // page's bytes (the draft schema stages one image) alongside the full text.
+    unawaited(
+      persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText),
+    );
+
+    await _autoParseOcrText(_ocrText);
   }
 
   /// Parse-only auto-parse: recipes exist in memory until the user explicitly
@@ -380,6 +503,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
         ...super.debugState,
         'hasImage': hasImage,
         'hasOcrResult': hasOcrResult,
+        'pageCount': pageCount,
         'ocrTextLength': _ocrText.length,
         'isProcessing': isProcessing,
         'imageBytesSize': _imageBytes?.length ?? 0,
@@ -393,10 +517,21 @@ class PhotoImportViewModel extends ImportBaseViewModel
     disposeDraftPersistence();
     _imageBytes = null;
     _ocrText = '';
+    _pages.clear();
     _lastQualityScore = null;
     _lastRecommendations = null;
     _lastConfidence = null;
     _parsedRecipes.clear();
     super.dispose();
   }
+}
+
+/// BUT-903: one captured page of a multi-page photo import — the raw bytes and
+/// the OCR text extracted from just that page. Pages are concatenated in list
+/// order to form the combined recipe text.
+class _PhotoPage {
+  final Uint8List bytes;
+  final String text;
+
+  const _PhotoPage({required this.bytes, required this.text});
 }

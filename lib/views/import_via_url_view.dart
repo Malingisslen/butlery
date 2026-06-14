@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -70,13 +71,35 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   final TextEditingController _extractedTextController =
       TextEditingController();
 
+  /// Tracks the last extractedText we seeded into the editor so a VM rebuild
+  /// (from any notifyListeners) doesn't clobber the user's manual edits. We
+  /// only push VM text into the controller when a NEW extraction arrives — the
+  /// empty→non-empty (or changed-extraction) transition — never on every build.
+  String _seededExtractedText = '';
+
   @override
   void initState() {
     super.initState();
     _urlController.addListener(_onUrlChanged);
+    _viewModelForListener = ServiceLocator.get<UrlImportViewModel>();
+    _viewModelForListener.addListener(_syncExtractedTextController);
     // Post-frame so the controller is mounted before triggering the
     // listener via .text assignment.
     WidgetsBinding.instance.addPostFrameCallback((_) => _restoreDraft());
+  }
+
+  late final UrlImportViewModel _viewModelForListener;
+
+  /// Seed the editable extracted-text field ONCE per fresh extraction. A bare
+  /// `..text = viewModel.extractedText` in build() reset the field (and the
+  /// cursor) on every rebuild, discarding edits — the editor's whole point is
+  /// letting the user revise the text before importing.
+  void _syncExtractedTextController() {
+    final vmText = _viewModelForListener.extractedText;
+    if (vmText != _seededExtractedText) {
+      _seededExtractedText = vmText;
+      _extractedTextController.text = vmText;
+    }
   }
 
   Future<void> _restoreDraft() async {
@@ -90,6 +113,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   @override
   void dispose() {
     _draftManager.dispose();
+    _viewModelForListener.removeListener(_syncExtractedTextController);
     _urlController.removeListener(_onUrlChanged);
     _urlController.dispose();
     _extractedTextController.dispose();
@@ -106,7 +130,13 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
 
   void _fetchPage() {
     final viewModel = context.read<UrlImportViewModel>();
-    viewModel.fetchFromUrl();
+    // BUT-947: a pasted list of URLs takes the batch path; a single URL keeps
+    // the original single-fetch flow untouched.
+    if (viewModel.isMultiUrl) {
+      viewModel.fetchMultipleUrls();
+    } else {
+      viewModel.fetchFromUrl();
+    }
   }
 
   Future<void> _navigateToTextImport() async {
@@ -129,6 +159,24 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
         );
       }
     }
+  }
+
+  /// BUT-947: turn a successful multi-URL batch into recipes. The extracted
+  /// text of every fetched URL is concatenated (blank-line separated) and handed
+  /// to the paste step, whose multi-recipe splitter segments it back into N
+  /// recipes surfaced in the shared picker. sourceUrl is omitted: a batch spans
+  /// several URLs, so no single attribution applies.
+  Future<void> _navigateToBatchTextImport() async {
+    final viewModel = context.read<UrlImportViewModel>();
+    final combined = viewModel.successfulBatchText;
+    if (combined.isEmpty) return;
+    await _draftManager.clear();
+    if (!mounted) return;
+    Navigator.pushNamed(
+      context,
+      '/franSocialaMedier',
+      arguments: {'text': combined},
+    );
   }
 
   @override
@@ -156,15 +204,19 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                 padding: AppDimensions.responsiveContentPadding(context),
                 child: Column(
                   children: [
-                    // URL input
+                    // URL input — multi-line so a user can paste several
+                    // recipe URLs (one per line). A single URL still works.
                     StyledInput(
                       controller: _urlController,
                       enabled: !viewModel.isLoading,
-                      label: context.l10n.importPasteRecipeUrl,
-                      hint: 'https://example.com/recept',
-                      keyboardType: TextInputType.url,
-                      textInputAction: TextInputAction.done,
-                      // Note: onFieldSubmitted functionality moved to fetch button
+                      label: viewModel.isMultiUrl
+                          ? context.l10n.importMultipleUrlsLabel
+                          : context.l10n.importPasteRecipeUrl,
+                      hint: context.l10n.importMultipleUrlsHint,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: 4,
+                      minLines: 1,
+                      textInputAction: TextInputAction.newline,
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
 
@@ -188,16 +240,35 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                       ),
                     ],
 
-                    // Extraherad text (editable)
-                    if (viewModel.hasExtractedText) ...[
+                    // BUT-947: per-URL progress for a pasted list of URLs, plus
+                    // the "Importera N recept" action once any URL succeeded.
+                    if (viewModel.urlResults.isNotEmpty) ...[
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _UrlBatchResults(viewModel: viewModel),
+                      if (viewModel.hasAnyUrlSuccess) ...[
+                        const SizedBox(height: AppDimensions.spacingXl),
+                        ActionButtons.primaryButton(
+                          context,
+                          label: context.l10n.importUrlBatchImport(
+                              viewModel.successfulUrlCount),
+                          onPressed: viewModel.isLoading
+                              ? null
+                              : _navigateToBatchTextImport,
+                          isExpanded: true,
+                        ),
+                      ],
+                    ],
+
+                    // Extraherad text (editable) — single-URL flow only.
+                    if (viewModel.urlResults.isEmpty &&
+                        viewModel.hasExtractedText) ...[
                       const SizedBox(height: AppDimensions.spacingXl),
                       Text(context.l10n.importExtractedText,
                           style: AppTextStyles.headlineSmall),
                       const SizedBox(height: AppDimensions.spacingS),
                       Expanded(
                         child: StyledInput(
-                          controller: _extractedTextController
-                            ..text = viewModel.extractedText,
+                          controller: _extractedTextController,
                           maxLines: null,
                           minLines: 10,
                           label: context.l10n.importEditTextBeforeImport,
@@ -221,5 +292,96 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
         ),
       ),
     );
+  }
+}
+
+/// BUT-947: renders one progress row per URL in a multi-URL import batch,
+/// with a per-URL retry affordance on failures and a "{n} of {m} fetched"
+/// summary so partial success is visible at a glance.
+class _UrlBatchResults extends StatelessWidget {
+  const _UrlBatchResults({required this.viewModel});
+
+  final UrlImportViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final results = viewModel.urlResults;
+    final successCount = results.where((r) => r.isSuccess).length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          context.l10n.importUrlBatchProgress(successCount, results.length),
+          style: AppTextStyles.headlineSmall,
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
+        Flexible(
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: results.length,
+            separatorBuilder: (_, __) =>
+                const SizedBox(height: AppDimensions.spacingS),
+            itemBuilder: (context, index) {
+              final result = results[index];
+              return _UrlResultRow(
+                result: result,
+                onRetry: () => viewModel.retryUrl(index),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UrlResultRow extends StatelessWidget {
+  const _UrlResultRow({required this.result, required this.onRetry});
+
+  final UrlImportResult result;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _statusIcon(),
+        const SizedBox(width: AppDimensions.spacingS),
+        Expanded(
+          child: Text(
+            result.url,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodyMedium,
+          ),
+        ),
+        if (result.isFailure)
+          TextButton(
+            onPressed: onRetry,
+            child: Text(context.l10n.commonRetry),
+          ),
+      ],
+    );
+  }
+
+  Widget _statusIcon() {
+    switch (result.status) {
+      case UrlFetchStatus.loading:
+        return const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        );
+      case UrlFetchStatus.success:
+        return const Icon(Icons.check_circle,
+            color: AppColors.success, size: 20);
+      case UrlFetchStatus.failure:
+        return const Icon(Icons.error, color: AppColors.error, size: 20);
+      case UrlFetchStatus.pending:
+        return const Icon(Icons.schedule,
+            color: AppColors.greenMuted, size: 20);
+    }
   }
 }

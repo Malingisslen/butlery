@@ -65,11 +65,38 @@
 
 // lib/viewmodels/url_import_viewmodel.dart
 
+import 'package:flutter/foundation.dart';
+
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+
+/// Per-URL lifecycle state for batch ("multiple URLs") imports.
+enum UrlFetchStatus { pending, loading, success, failure }
+
+/// BUT-947: immutable per-URL result for a multi-URL import batch.
+/// One of these exists per URL the user pasted; the view renders a progress
+/// row per entry and offers per-URL retry on [UrlFetchStatus.failure].
+@immutable
+class UrlImportResult {
+  const UrlImportResult({
+    required this.url,
+    this.status = UrlFetchStatus.pending,
+    this.extractedText,
+    this.error,
+  });
+
+  final String url;
+  final UrlFetchStatus status;
+  final String? extractedText;
+  final String? error;
+
+  bool get isSuccess => status == UrlFetchStatus.success;
+  bool get isFailure => status == UrlFetchStatus.failure;
+  bool get isLoading => status == UrlFetchStatus.loading;
+}
 
 /// Comprehensive URL import ViewModel providing advanced web content extraction through HTTP coordination.
 /// Specializes in URL-based recipe importing from web sources including recipe blogs, cooking websites, social media,
@@ -92,6 +119,182 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   /// - HTTP client preparation for web scraping operations
   /// - URL validation system preparation with comprehensive error handling
   UrlImportViewModel({required super.importManager});
+
+  // ---- BUT-947: multiple-URL ("batch") import -----------------------------
+
+  List<UrlImportResult> _urlResults = const [];
+
+  /// Editing the URL field invalidates any prior batch results. The mixin's
+  /// [updateUrl] already resets single-URL extracted text; extend it to also
+  /// drop the per-URL batch rows so a re-edit starts clean.
+  @override
+  void updateUrl(String url) {
+    super.updateUrl(url);
+    if (_urlResults.isNotEmpty) {
+      _urlResults = const [];
+      notifyListeners();
+    }
+  }
+
+  /// Per-URL results for the most recent multi-URL fetch. Empty when the
+  /// current input is a single URL (the legacy single-URL path is used then).
+  List<UrlImportResult> get urlResults => List.unmodifiable(_urlResults);
+
+  /// True when the current [url] input parses to more than one URL, i.e. the
+  /// user pasted a list. Drives the view's per-URL progress list vs. the
+  /// single-field flow.
+  bool get isMultiUrl => parseUrls(url).length > 1;
+
+  /// True once at least one URL in the batch succeeded — partial success still
+  /// gives the user something to import.
+  bool get hasAnyUrlSuccess => _urlResults.any((r) => r.isSuccess);
+
+  /// Number of URLs in the batch that fetched successfully — drives the
+  /// "Importera N recept" CTA count once the batch settles.
+  int get successfulUrlCount => _urlResults.where((r) => r.isSuccess).length;
+
+  /// BUT-947: the extracted text of every successfully-fetched URL, joined with
+  /// the same blank-line separator the multi-recipe splitter treats as a recipe
+  /// boundary. Feeding this into the paste step turns a successful batch fetch
+  /// into N recipes via the shared multi-recipe picker — without this getter a
+  /// batch that fetched fine had no path forward (the success state dead-ended).
+  String get successfulBatchText => _urlResults
+      .where((r) => r.isSuccess && (r.extractedText?.isNotEmpty ?? false))
+      .map((r) => r.extractedText!)
+      .join('\n\n');
+
+  /// True when every URL in the batch failed (used to surface a batch-level
+  /// error instead of leaving the user staring at all-red rows with no banner).
+  bool get allUrlsFailed =>
+      _urlResults.isNotEmpty && _urlResults.every((r) => r.isFailure);
+
+  /// Splits a free-text input into candidate URLs. Accepts newline-, comma-,
+  /// space-, semicolon- and tab-separated lists (the natural ways a user pastes
+  /// several browser-tab URLs) and keeps only well-formed http(s) URLs so a
+  /// trailing word or stray token doesn't become a phantom import row.
+  /// De-duplicates while preserving order.
+  static List<String> parseUrls(String input) {
+    final tokens = input
+        .split(RegExp(r'[\s,;]+'))
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty);
+
+    final seen = <String>{};
+    final urls = <String>[];
+    for (final token in tokens) {
+      if (!_isFetchableUrl(token)) continue;
+      if (seen.add(token)) urls.add(token);
+    }
+    return urls;
+  }
+
+  static bool _isFetchableUrl(String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null) return false;
+    if (uri.scheme != 'http' && uri.scheme != 'https') return false;
+    if (!uri.hasAuthority) return false;
+    return !_isPrivateOrReservedHost(uri.host);
+  }
+
+  /// Fetches every URL in the current multi-URL input concurrently, exposing
+  /// per-URL progress via [urlResults] and tolerating partial failure — one
+  /// dead link doesn't abort the whole batch. Mirrors the per-page failure
+  /// handling of multi-page photo import. Returns without setting a global
+  /// error unless *every* URL failed, so the view can render successful rows
+  /// alongside failed ones.
+  Future<void> fetchMultipleUrls() async {
+    if (isDisposed) return;
+
+    final urls = parseUrls(url);
+    if (urls.isEmpty) {
+      setError(AppLocale.current.errorPleaseEnterValidUrl);
+      return;
+    }
+
+    clearError();
+    _urlResults = [
+      for (final u in urls)
+        UrlImportResult(url: u, status: UrlFetchStatus.loading),
+    ];
+    setLoading(true);
+
+    await Future.wait([
+      for (var i = 0; i < urls.length; i++) _fetchOneInto(i, urls[i]),
+    ]);
+
+    if (isDisposed) return;
+    setLoading(false);
+
+    if (allUrlsFailed) {
+      setError(AppLocale.current.importUrlBatchAllFailed);
+    }
+  }
+
+  /// Retries a single failed URL in the batch without disturbing the others.
+  Future<void> retryUrl(int index) async {
+    if (isDisposed) return;
+    if (index < 0 || index >= _urlResults.length) return;
+
+    final target = _urlResults[index];
+    // Fresh result (not copyWith) so the prior error string is dropped while
+    // the row shows the loading state.
+    _updateUrlResult(
+      index,
+      UrlImportResult(url: target.url, status: UrlFetchStatus.loading),
+    );
+
+    await _fetchOneInto(index, target.url);
+
+    if (isDisposed) return;
+    // A retry can clear an all-failed batch error.
+    if (hasAnyUrlSuccess &&
+        error == AppLocale.current.importUrlBatchAllFailed) {
+      clearError();
+    } else if (allUrlsFailed) {
+      setError(AppLocale.current.importUrlBatchAllFailed);
+    }
+  }
+
+  Future<void> _fetchOneInto(int index, String singleUrl) async {
+    try {
+      final text = await fetchContentFromUrl(singleUrl);
+      if (isDisposed) return;
+      _updateUrlResult(
+        index,
+        UrlImportResult(
+          url: singleUrl,
+          status: UrlFetchStatus.success,
+          extractedText: text,
+        ),
+      );
+    } catch (e) {
+      if (isDisposed) return;
+      _updateUrlResult(
+        index,
+        UrlImportResult(
+          url: singleUrl,
+          status: UrlFetchStatus.failure,
+          error: e.toString(),
+        ),
+      );
+    }
+  }
+
+  void _updateUrlResult(int index, UrlImportResult result) {
+    if (isDisposed) return;
+    if (index < 0 || index >= _urlResults.length) return;
+    final next = List<UrlImportResult>.from(_urlResults);
+    next[index] = result;
+    _urlResults = next;
+    notifyListeners();
+  }
+
+  void clearUrlResults() {
+    if (isDisposed) return;
+    if (_urlResults.isEmpty) return;
+    _urlResults = const [];
+    notifyListeners();
+  }
 
   /// Fetches web content from URL and parses it into recipe with comprehensive workflow coordination.
   /// Performs complete URL import workflow including URL validation, content fetching,

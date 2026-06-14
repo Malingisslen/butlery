@@ -824,6 +824,13 @@ void main() {
         // Note: TextImportStrategy will fail on whitespace-only text
       });
     });
+
+    // NOTE: the BUT-903 multi-page combine path lived behind an
+    // `imageBytesList`/`base64ImageList` option that no production caller ever
+    // supplied — PhotoImportViewModel OCRs each page itself and feeds the
+    // combined text to ImportManager.autoParseMulti. That dead strategy path
+    // (and its tests, which only proved dead code) were removed; multi-page
+    // combine is covered end-to-end by photo_import_viewmodel_multi_test.dart.
   });
 }
 

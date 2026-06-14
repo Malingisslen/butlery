@@ -61,6 +61,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
@@ -73,6 +77,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+
+/// BUT-1205: result of [RecipeDetailViewModel.reextractFromSource] — the View
+/// maps this to a success/error snackbar without knowing the import internals.
+enum ReextractOutcome { success, failure }
 
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
@@ -501,6 +509,59 @@ class RecipeDetailViewModel extends ChangeNotifier
   void updateRecipe(Recipe updatedRecipe) {
     _recipe = updatedRecipe;
     notifyListeners();
+  }
+
+  /// BUT-1205: re-run the import pipeline on the stored source payload and
+  /// overwrite the recipe's parsed fields, persisting the result. This is
+  /// business logic (strategy selection, import, copyWith assembly,
+  /// persistence) — it lives here, not in the View, which only drives the
+  /// confirm dialog + feedback from the returned [ReextractOutcome].
+  ///
+  /// Identity is preserved: [Recipe.copyWith] never overwrites `id` /
+  /// `createdAt`, and the ORIGINAL [artefact] is re-passed so comments,
+  /// cook-snaps and history stay attached and the capture metadata survives.
+  /// On any failure (import error or persistence failure) the existing recipe
+  /// is left untouched.
+  Future<ReextractOutcome> reextractFromSource(SourceArtefact artefact) async {
+    ImportResult result;
+    try {
+      // The artefact payload already IS the canonical extraction input: a URL
+      // for url-type, the raw transcript/caption/pasted/OCR text otherwise.
+      final ImportStrategy strategy = artefact.type == SourceArtefactType.url
+          ? UrlImportStrategy()
+          : TextImportStrategy();
+      result = await strategy.import(artefact.payload);
+    } catch (e) {
+      return ReextractOutcome.failure;
+    }
+
+    final extracted = result.recipe;
+    if (!result.isSuccess || extracted == null) {
+      return ReextractOutcome.failure;
+    }
+
+    // Overwrite only the parsed fields; copyWith keeps id + createdAt, and we
+    // re-pass the ORIGINAL sourceArtefact so the capture metadata is preserved.
+    final updated = _recipe.copyWith(
+      title: extracted.title,
+      description: extracted.description,
+      ingredients: extracted.ingredients,
+      structuredIngredients: extracted.core.structuredIngredients,
+      instructions: extracted.instructions,
+      portions: extracted.core.portions,
+      timeMinutes: extracted.core.timeMinutes,
+      imageUrls: extracted.imageUrls,
+      sourceArtefact: artefact,
+    );
+
+    try {
+      final success = await _recipeService.updateRecipe(updated);
+      if (!success) return ReextractOutcome.failure;
+      updateRecipe(updated);
+      return ReextractOutcome.success;
+    } catch (e) {
+      return ReextractOutcome.failure;
+    }
   }
 
   /// Clears error state with comprehensive state management and UI synchronization.

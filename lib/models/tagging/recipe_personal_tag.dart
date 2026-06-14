@@ -22,6 +22,7 @@ class RecipePersonalTag {
   /// Possible values:
   /// - `['manual']` - User explicitly added the tag
   /// - `['rule-xyz']` - Applied by rule with ID 'xyz'
+  /// - `['ai']` - Suggested by AI-assisted import/detection (BUT-931)
   /// - `['manual', 'rule-xyz']` - Both manual and rule
   final List<String> sources;
 
@@ -40,6 +41,22 @@ class RecipePersonalTag {
       tagId: tagId,
       name: name,
       sources: const ['manual'],
+    );
+  }
+
+  /// Creates an AI-suggested tag reference (BUT-931).
+  ///
+  /// Marks the tag as content the AI proposed rather than the user entering
+  /// it by hand, so the UI can label it (e.g. an "AI-förslag" chip) and the
+  /// user can tell suggested content from their own.
+  factory RecipePersonalTag.fromAi({
+    required String tagId,
+    required String name,
+  }) {
+    return RecipePersonalTag(
+      tagId: tagId,
+      name: name,
+      sources: const ['ai'],
     );
   }
 
@@ -87,6 +104,9 @@ class RecipePersonalTag {
 
   /// Returns true if this tag was applied by any rule.
   bool get isFromRule => sources.any((s) => s.startsWith('rule-'));
+
+  /// Returns true if this tag was suggested by AI (BUT-931).
+  bool get isFromAi => sources.contains('ai');
 
   /// Returns the rule IDs that applied this tag.
   List<String> get ruleIds => sources

@@ -5,8 +5,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
+import 'package:butlery/widgets/import/batch_import_preview.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
@@ -171,6 +173,16 @@ class _FranSocialaMedierViewContentState
 
     final success = await viewModel.parseText();
 
+    if (success && context.mounted && viewModel.hasMultipleParsedRecipes) {
+      // BUT-1040: a cookbook-style paste produced several recipes — drop the
+      // draft and hand off to the shared multi-recipe picker (same widget the
+      // photo and file import flows use) so the user ticks which to keep.
+      await _draftManager.clear();
+      if (!context.mounted) return;
+      await _pickAndSaveMultiple(context, viewModel);
+      return;
+    }
+
     if (success && context.mounted) {
       // User explicitly moved past the input stage — drop the draft so the
       // next visit to this surface starts blank.
@@ -201,6 +213,42 @@ class _FranSocialaMedierViewContentState
       );
     } else if (context.mounted && viewModel.hasError) {
       // Use UtilityComponents.showErrorSnackbar
+      UtilityComponents.showErrorSnackbar(context, viewModel.error!);
+    }
+  }
+
+  /// BUT-1040: multi-recipe handoff — let the user tick which parsed recipes
+  /// to add via the shared [BatchImportPreview] picker (same pattern as the
+  /// photo and file import flows), then save the selection.
+  Future<void> _pickAndSaveMultiple(
+    BuildContext context,
+    TextImportViewModel viewModel,
+  ) async {
+    final selected = await Navigator.push<List<Recipe>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BatchImportPreview(recipes: viewModel.parsedRecipes),
+      ),
+    );
+    if (!context.mounted || selected == null || selected.isEmpty) return;
+
+    final ok = await viewModel.saveSelectedRecipes(selected);
+    if (!context.mounted) return;
+
+    if (ok) {
+      // One allergen-setup prompt covers the whole batch (mirrors
+      // PhotoImportView._navigateToMultiRecipePicker) — reuses the Phase-1 tags
+      // ImportManager attached during parse, no new LLM/network.
+      final prefs = ServiceLocator.get<UserService>().allergenPreferences;
+      if (AllergenMismatch.anyUnconfigured(selected, prefs)) {
+        AllergenSetupBanner.show(context);
+      }
+      UtilityComponents.showSuccessSnackbar(
+        context,
+        context.l10n.importComplete(selected.length, 0),
+      );
+      if (context.mounted) Navigator.of(context).maybePop();
+    } else if (viewModel.hasError) {
       UtilityComponents.showErrorSnackbar(context, viewModel.error!);
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -110,6 +112,98 @@ Stek små plättar i plättlagg.''';
       final ok = await vm.saveSelectedRecipes(const []);
       expect(ok, isFalse);
       verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+    });
+
+    // BUT-903 multi-page: collect ordered photos, OCR each, concatenate in
+    // order before one parse.
+    group('multi-page combine (BUT-903)', () {
+      Uint8List bytes(int n) => Uint8List.fromList([n]);
+
+      test('two pages concatenate OCR text in capture order', () async {
+        await vm.addPageForTesting(bytes(1), 'PAGE-ONE');
+        await vm.addPageForTesting(bytes(2), 'PAGE-TWO');
+
+        expect(vm.pageCount, 2);
+        expect(vm.hasMultiplePages, isTrue);
+        // Combined text is the per-page text joined in order — this is the
+        // single document the one parse sees.
+        expect(vm.ocrText, 'PAGE-ONE\n\nPAGE-TWO');
+        // First page drives the live preview image.
+        expect(vm.imageBytes, bytes(1));
+      });
+
+      test('page cap blocks the sixth page', () async {
+        for (var i = 1; i <= PhotoImportViewModel.maxPages; i++) {
+          await vm.addPageForTesting(bytes(i), 'P$i');
+        }
+        expect(vm.pageCount, PhotoImportViewModel.maxPages);
+        expect(vm.canAddPage, isFalse);
+
+        // Beyond the cap the seam is a no-op — count stays at the max.
+        await vm.addPageForTesting(bytes(99), 'OVERFLOW');
+        expect(vm.pageCount, PhotoImportViewModel.maxPages);
+        expect(vm.ocrText.contains('OVERFLOW'), isFalse);
+      });
+
+      test('removePage drops the page and recombines remaining text', () async {
+        await vm.addPageForTesting(bytes(1), 'ONE');
+        await vm.addPageForTesting(bytes(2), 'TWO');
+        await vm.addPageForTesting(bytes(3), 'THREE');
+
+        await vm.removePage(1); // drop "TWO"
+
+        expect(vm.pageCount, 2);
+        expect(vm.ocrText, 'ONE\n\nTHREE');
+      });
+
+      test('removing the last remaining page clears the whole import',
+          () async {
+        await vm.addPageForTesting(bytes(1), 'ONLY');
+        await vm.removePage(0);
+
+        expect(vm.pageCount, 0);
+        expect(vm.hasImage, isFalse);
+        expect(vm.hasOcrResult, isFalse);
+      });
+
+      test('reorderPage changes the concatenation order', () async {
+        await vm.addPageForTesting(bytes(1), 'FIRST');
+        await vm.addPageForTesting(bytes(2), 'SECOND');
+
+        // Move the second page in front of the first.
+        await vm.reorderPage(1, 0);
+
+        expect(vm.ocrText, 'SECOND\n\nFIRST');
+        expect(vm.imageBytes, bytes(2));
+      });
+
+      // ReorderableListView reports newIndex == length when an item is dropped
+      // past the last slot. The VM must decrement that index by one (the item
+      // being moved still occupies its old slot at drop time) so "drag the
+      // first page to the end" actually lands it last instead of throwing or
+      // no-op'ing. This is the off-by-one branch the production comment flags.
+      test('reorderPage handles drop-past-end index from ReorderableListView',
+          () async {
+        await vm.addPageForTesting(bytes(1), 'A');
+        await vm.addPageForTesting(bytes(2), 'B');
+
+        // List = [A, B]; drag A (index 0) to the end → newIndex == length (2).
+        await vm.reorderPage(0, 2);
+
+        expect(vm.ocrText, 'B\n\nA',
+            reason: 'first page moved to the end becomes the last page');
+        expect(vm.imageBytes, bytes(2),
+            reason: 'B is now the first/cover page driving the preview');
+      });
+
+      test('reorderPage to its own slot is a no-op', () async {
+        await vm.addPageForTesting(bytes(1), 'A');
+        await vm.addPageForTesting(bytes(2), 'B');
+
+        await vm.reorderPage(1, 1);
+
+        expect(vm.ocrText, 'A\n\nB');
+      });
     });
   });
 }

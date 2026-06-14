@@ -109,6 +109,10 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
   @override
   Future<ImportResult> import(String input,
       {Map<String, dynamic>? options}) async {
+    // NOTE (BUT-903 cleanup): multi-page combine lives entirely in
+    // PhotoImportViewModel, which OCRs each page itself and feeds the combined
+    // text to ImportManager.autoParseMulti. The strategy only ever sees a
+    // single image, so there is no `imageBytesList` routing here.
     try {
       // Step 1: Extract image bytes from options parameter
       final imageBytes = _extractImageBytes(options);

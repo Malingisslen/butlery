@@ -22,6 +22,7 @@
 ///   UnifiedFriendsService (default).
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,6 +32,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -107,6 +109,8 @@ void main() {
 
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
+    // Re-extract captures the recipe passed to updateRecipe via captureAny().
+    registerFallbackValue(RecipeFactory.build(id: 'fallback'));
   });
 
   setUp(() async {
@@ -546,6 +550,251 @@ void main() {
             'structuredIngredients forward and fell back to legacy scaling',
       );
       expect(find.text('vispgrädde'), findsOneWidget);
+    });
+  });
+
+  group('RecipeDetailView — re-extract from source (BUT-1205)', () {
+    // A parseable Swedish payload: TextImportStrategy is fully hermetic (no DI,
+    // no network), so a textPaste-type re-extract runs end to end in the widget
+    // test. The exact parse (title/ingredient split) is brittle, so the
+    // assertions below pin the BEHAVIOURAL invariants — id/createdAt survive,
+    // parsed fields are replaced, the original artefact metadata is kept —
+    // never the literal parser output.
+    const sourcePayload = '''Recept: Morotssoppa
+
+Ingredienser:
+500 g morötter
+1 gul lök
+1 liter grönsaksbuljong
+2 dl grädde
+
+Gör så här:
+1. Skala och skär morötterna i bitar.
+2. Fräs löken mjuk i en kastrull.
+3. Tillsätt morötter och buljong, koka tills mjuka.
+4. Mixa slätt, rör i grädden och servera.''';
+
+    final originalCreatedAt = DateTime(2024, 1, 2, 9, 30);
+
+    /// Rebuilds the outer-setUp recipe with a [SourceArtefact] of [type]
+    /// captured [age] ago, an explicit createdAt, and deliberately sparse
+    /// parsed content so a successful re-extract is observable.
+    void seedRecipeWithArtefact({
+      required SourceArtefactType type,
+      required String payload,
+      required Duration age,
+    }) {
+      final base = RecipeFactory.build(
+        id: 'recipe-reextract-1',
+        title: 'Stale Title',
+        createdBy: _testUserId,
+        createdAt: originalCreatedAt,
+        ingredients: ['old placeholder ingredient'],
+        instructions: ['old placeholder step'],
+      );
+      recipe = Recipe(
+        core: base.core.copyWith(
+          sourceArtefact: SourceArtefact(
+            type: type,
+            payload: payload,
+            fetchedAt: clock.now().subtract(age),
+          ),
+        ),
+        type: RecipeType.personal,
+      );
+      recipeService.setRecipeState(recipes: [recipe], isInitialized: true);
+    }
+
+    /// Opens the overflow menu and taps "view source artefact" to surface the
+    /// source bottom sheet.
+    ///
+    /// The owner popup menu's Swedish item Rows (addToMenu /
+    /// generateShoppingList) overflow the menu's intrinsic 256px width — a
+    /// pre-existing layout quirk unrelated to the BUT-1205 subject. We swallow
+    /// ONLY those overflow FlutterErrors while the menu is open so they don't
+    /// abort the test; any other exception still surfaces.
+    Future<void> openSourceSheet(WidgetTester tester) async {
+      final previousOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        final text = details.exceptionAsString();
+        if (text.contains('A RenderFlex overflowed')) return;
+        previousOnError?.call(details);
+      };
+      try {
+        await tester.tap(find.byIcon(Icons.more_horiz));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        final l10n = l10nOf(tester);
+        await tester.tap(find.text(l10n.recipeViewCapturedSource));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      } finally {
+        FlutterError.onError = previousOnError;
+      }
+    }
+
+    testWidgets(
+        'a source older than 30 days shows the stale-source banner in the sheet',
+        (tester) async {
+      // Proves: the >30-day staleness check drives a user-visible warning. The
+      // banner is the only signal that a fresh extraction might diverge from
+      // the captured source; if the boundary regresses, the user re-extracts
+      // blind.
+      await withClock(Clock.fixed(DateTime(2024, 6, 1)), () async {
+        seedRecipeWithArtefact(
+          type: SourceArtefactType.textPaste,
+          payload: sourcePayload,
+          age: const Duration(days: 31),
+        );
+        await pumpDetailView(tester);
+        await openSourceSheet(tester);
+
+        final l10n = l10nOf(tester);
+        expect(find.text(l10n.recipeSourceStaleBanner), findsOneWidget,
+            reason: 'a 31-day-old source must warn before re-extract');
+      });
+    });
+
+    testWidgets('a source captured within 30 days shows no stale banner',
+        (tester) async {
+      // Proves: the banner is gated, not always-on — a recent capture must not
+      // nag. Pairs with the test above to pin both sides of the boundary
+      // (29 days quiet / 31 days warned) so a flipped comparison can't pass.
+      await withClock(Clock.fixed(DateTime(2024, 6, 1)), () async {
+        seedRecipeWithArtefact(
+          type: SourceArtefactType.textPaste,
+          payload: sourcePayload,
+          age: const Duration(days: 29),
+        );
+        await pumpDetailView(tester);
+        await openSourceSheet(tester);
+
+        final l10n = l10nOf(tester);
+        expect(find.text(l10n.recipeSourceStaleBanner), findsNothing,
+            reason: 'a 29-day-old source is fresh enough — no warning');
+      });
+    });
+
+    testWidgets(
+        're-extract preserves id + createdAt while replacing parsed fields',
+        (tester) async {
+      // Proves the core BUT-1205 invariant: re-running the import pipeline on
+      // the stored payload overwrites the recipe content but keeps identity.
+      // copyWith has no id/createdAt params, so they ride along inside core;
+      // a regression that rebuilt the recipe from the extraction (new id /
+      // today's createdAt) would orphan comments/cook-snaps and reset history.
+      // The original sourceArtefact is re-passed explicitly so capture
+      // metadata isn't lost on re-extract.
+      final captured = <Recipe>[];
+      when(() => recipeService.updateRecipe(captureAny())).thenAnswer((inv) {
+        captured.add(inv.positionalArguments.first as Recipe);
+        return Future.value(true);
+      });
+
+      await withClock(Clock.fixed(DateTime(2024, 6, 1)), () async {
+        seedRecipeWithArtefact(
+          type: SourceArtefactType.textPaste,
+          payload: sourcePayload,
+          age: const Duration(days: 1),
+        );
+        await pumpDetailView(tester);
+        await openSourceSheet(tester);
+
+        final l10n = l10nOf(tester);
+        // Tap the re-extract button in the sheet, then confirm the danger
+        // dialog.
+        await tester.tap(find.text(l10n.recipeSourceReextract));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester
+            .tap(find.text(l10n.recipeSourceReextractConfirmAction).last);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      });
+
+      expect(captured, hasLength(1),
+          reason: 'confirmed re-extract must persist exactly one update');
+      final updated = captured.single;
+      expect(updated.id, 'recipe-reextract-1',
+          reason: 're-extract must not mint a new recipe id');
+      expect(updated.createdAt, originalCreatedAt,
+          reason: 're-extract must preserve the original createdAt');
+      expect(updated.core.sourceArtefact?.payload, sourcePayload,
+          reason:
+              'the original source artefact must be re-passed, not dropped');
+      expect(updated.ingredients, isNot(['old placeholder ingredient']),
+          reason: 'parsed fields must be replaced by the fresh extraction');
+      expect(updated.ingredients, isNotEmpty);
+    });
+
+    testWidgets('cancelling the re-extract confirmation persists nothing',
+        (tester) async {
+      // Proves: the danger dialog is a real gate. The copy says "cannot be
+      // undone" — backing out must not fall through to updateRecipe, otherwise
+      // the warning is a lie and manual edits are silently destroyed.
+      when(() => recipeService.updateRecipe(any()))
+          .thenAnswer((_) async => true);
+
+      await withClock(Clock.fixed(DateTime(2024, 6, 1)), () async {
+        seedRecipeWithArtefact(
+          type: SourceArtefactType.textPaste,
+          payload: sourcePayload,
+          age: const Duration(days: 1),
+        );
+        await pumpDetailView(tester);
+        await openSourceSheet(tester);
+
+        final l10n = l10nOf(tester);
+        await tester.tap(find.text(l10n.recipeSourceReextract));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text(l10n.commonCancel));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      });
+
+      verifyNever(() => recipeService.updateRecipe(any()));
+    });
+
+    testWidgets(
+        'a failed persistence keeps the old content (no optimistic mutation)',
+        (tester) async {
+      // Proves the fail-soft contract: when updateRecipe returns false the
+      // in-memory recipe is NOT mutated to the extraction — the detail view
+      // still shows the original title, not the re-extracted one. A regression
+      // that called viewModel.updateRecipe before confirming the write would
+      // show content the backend never stored. (The "unchanged" error snackbar
+      // is queued behind the still-visible in-progress info toast, so this pins
+      // the durable state outcome rather than the transient toast order.)
+      when(() => recipeService.updateRecipe(any()))
+          .thenAnswer((_) async => false);
+
+      await withClock(Clock.fixed(DateTime(2024, 6, 1)), () async {
+        seedRecipeWithArtefact(
+          type: SourceArtefactType.textPaste,
+          payload: sourcePayload,
+          age: const Duration(days: 1),
+        );
+        await pumpDetailView(tester);
+        await openSourceSheet(tester);
+
+        final l10n = l10nOf(tester);
+        await tester.tap(find.text(l10n.recipeSourceReextract));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester
+            .tap(find.text(l10n.recipeSourceReextractConfirmAction).last);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Title is rendered lowercased by the detail view (design rule).
+        expect(find.text('stale title'), findsOneWidget,
+            reason: 'a failed write must leave the original title visible');
+        expect(find.text('recept: morotssoppa'), findsNothing,
+            reason: 'the extracted content must not appear when the write '
+                'failed — no optimistic mutation');
+      });
+      verify(() => recipeService.updateRecipe(any())).called(1);
     });
   });
 }

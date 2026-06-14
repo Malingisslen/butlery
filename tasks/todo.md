@@ -1,50 +1,54 @@
 # Sprint Backlog
 
-## Sprint: social conflict-cleanup + activity/sharing UI — 2026-06-14 (iter-150)
+## Sprint: import flow — multi-recipe wiring + URL/photo/source UX — 2026-06-14 (iter-151)
 
-Focus = `social` area label (per orchestrator). Backlog scan: 10 social-labeled Backlog tickets + 5 Todo carryover (Triage/In Progress empty). The prior sprint's only pick, BUT-1265, is already on `main` (HEAD `f37c9af03`) — confirmed obsolete-vs-open and listed below.
+Focus = `import` area label (per orchestrator). Backlog scan: 9 import-labeled Backlog tickets (Todo / In Progress / Triage all empty). This pool is almost entirely `idea`-labeled UX features — so the batch is mostly **build-review** (worth building, but the user-facing outcome is Malin's to sign off), and two tier-parameterization tickets are flagged **needsApproval** because they presuppose a monetization model that hasn't been decided.
 
-Selected 5 buildable social tickets: **2 build (Tier A)** + **3 build-review (Tier B)**. The rest of the social pool is `idea`-labeled speculation, ops-blocked, or large GDPR scope → flagged under "Needs you", not built.
+Selected 5 buildable import tickets, all **build-review (Tier B/C)**. Batches are file-disjoint so they run in parallel worktrees without patch collisions. ImportManager / multi-recipe-path edits are owned exclusively by Agent A (text-import) so Agent C (photo) never touches the same files.
 
-Batches are file-disjoint so they can run in parallel worktrees without patch collisions.
+### Agent A: import-text — wire text import through the production multi-recipe path + AI-provenance labels `[Tier B]`
+- [ ] **A1. Route text import through `ImportManager.autoParseMulti` + reuse the existing multi-recipe picker** `[Tier B]` — `lib/viewmodels/text_import_viewmodel.dart` (route `parseText()` through `autoParseMulti`), `lib/services/import/import_manager.dart` (expose/confirm the multi entrypoint), reuse photo-import picker UI, delete the orphaned `lib/services/parsing/common/recipe_boundary_detector.dart` + its test, l10n keys. (BUT-1040)
+  - Acceptance: when `autoParseMulti` detects >1 recipe, `parseText` shows the multi-recipe picker instead of running the single-recipe pipeline · the user can import all OR pick a subset, and each selected block saves as its own Recipe · the orphaned `recipe_boundary_detector.dart` is deleted (or folded into the live path and UTF-8 re-encoded) with zero remaining references · multi-extract shows progress feedback (snackbar/progress dialog) and runs sequentially (no N concurrent LLM calls)
+  - Sign-off: picker copy + sequential-vs-parallel choice (ticket recommends sequential for cost/rate-limit safety).
+- [ ] **A2. Label AI-suggested vs user-entered content in the line selector + add an `ai` provenance source** `[Tier B]` — `lib/widgets/import/text_line_selector.dart` ("AI-förslag" chip on AI-detected lines), `RecipePersonalTag.sources` model (add an `ai` provenance value). (BUT-931)
+  - Acceptance: AI-detected lines in the selector carry a visible "AI-suggested" affordance distinct from user-entered lines · `RecipePersonalTag` provenance can represent an `ai` source distinguishable from user-applied tags · the chip/label follows the square/cream design language (no rounded badges) · existing user-entered lines render unchanged (no false AI labelling)
+  - Sign-off: chip wording ("AI-förslag" vs "Föreslaget av AI") + visual treatment of AI vs user lines.
 
-### Agent A: social-realtime — conflict-module cleanup + coverage `[Tier A]`
-- [ ] **A1. Delete dead duplicate `RealtimeSyncService.resolveConflict` + re-point its pinning tests** `[Tier A]` — `lib/services/realtime_sync_service.dart` (delete method, lines ~377-409), `test/unit/services/realtime_sync_service_test.dart` (remove/re-point the 4 last-write-wins tests that exercise the dead copy). (BUT-1267)
-  - Acceptance: `RealtimeSyncService.resolveConflict<T>(T local, T remote)` is removed entirely · no test references the deleted method (the 4 last-write-wins tests are deleted or re-pointed to the live `_conflictModule`/`updateResource` emit path) · `grep` shows zero callers of the bare service-level `resolveConflict` remain · `flutter test test/unit/services/realtime_sync_service_test.dart` passes green
-- [ ] **A2. Module-level tests for the three FALSE branches of `shouldResolveConflict`** `[Tier A]` — `test/unit/services/realtime/conflict_resolution_module_test.dart`: add tests for (a) no prior `recordLocalUpdate` (lastUpdate null), (b) 5000ms window elapsed, (c) remote not after lastUpdate. (BUT-1266)
-  - Acceptance: a test asserts `shouldResolveConflict` returns false when no `recordLocalUpdate` preceded it · a `withClock` test asserts strict window boundary — true/conflict at 4999ms, false at 5000ms (proves `<` not `<=`) · a test asserts false when remote `lastEditedAt` is not after `lastUpdate` · all new tests drive the real `recordLocalUpdate` + `shouldResolveConflict` path (no injected sink, no pre-seeded controller) · `flutter test test/unit/services/realtime/conflict_resolution_module_test.dart` passes green
+### Agent B: import-url — multiple URLs / recipe-index pages in URL import `[Tier B]`
+- [ ] **B1. Accept multiple URLs (and recipe-index listing pages) in URL import** `[Tier B]` — `lib/viewmodels/url_import_viewmodel.dart` (`fetchContentFromUrl` → list-aware), `lib/views/import_via_url_view.dart` (multi-URL input + per-URL result/progress). (BUT-947)
+  - Acceptance: the URL field accepts a list of URLs (newline/whitespace-separated) and each is fetched + parsed into its own Recipe · per-URL progress/result feedback is shown (which succeeded, which failed) · a single invalid URL does not abort the whole batch (partial success allowed) · runs sequentially, not N concurrent fetches (cost/rate-limit safety)
+  - Sign-off: input affordance (one multiline field vs add-row list) + whether recipe-index listing-page expansion is in scope for v1 vs just a URL list.
 
-### Agent B: social-activity — per-event-type feed toggles + first-time hint `[Tier B]`
-- [ ] **B1. Per-event-type activity-feed toggles under the master toggle + one-time onboarding hint** `[Tier B]` — `lib/models/user_profile.dart` (per-type toggle map field, absent=on), `lib/services/social/activity_feed_service.dart` (check master AND per-type before publish), `lib/views/social/user_profile_edit/privacy_section.dart` (toggle UI), one-time hint flag + l10n strings. (BUT-1220)
-  - Acceptance: per-type toggles persist on `UserProfile` as a map where an absent key means ON (no migration needed) · `ActivityFeedService` does NOT publish an event whose type toggle is off, even when the master toggle is on · the first-time hint shows exactly once (gated by a profile flag) and is not re-shown after the flag is set · master-toggle-off still suppresses ALL event types (per-type toggles do not override it)
-  - Sign-off: defaults + Swedish copy + whether per-type granularity is wanted for beta vs master-only.
+### Agent C: import-photo — multi-page recipe import (2–5 photos → one recipe) `[Tier B]`
+- [ ] **C1. Multi-page photo import — combine 2–5 photos into one recipe** `[Tier B]` — `lib/viewmodels/photo_import_viewmodel.dart` (collect an ordered photo list, cap 5), `lib/views/photo_import_view.dart` (add/reorder/remove pages UI), `lib/services/ocr_extraction_service.dart` (OCR each page, concatenate in order before the single parse). Does NOT touch `import_manager.dart` / `multi_recipe_splitter.dart` (owned by Agent A). (BUT-903)
+  - Acceptance: a user can add 2–5 photos to a single import and the OCR text is concatenated in page order before one parse pass (one Recipe out, not N) · adding more than 5 pages is capped/rejected, not silently truncated · single-photo import behavior is unchanged (no regression to the existing one-image path) · page order is user-controllable (reorder/remove) before extraction
+  - Sign-off: page-management UX (reorder/remove affordance) + the 5-page cap.
 
-### Agent C: social-sharing — "recipes shared by friend X" filter view `[Tier B]`
-- [ ] **C1. Per-friend shared-recipes filter view/section** `[Tier B]` — `lib/views/social/shared_with_me/` (new per-friend section/view reusing the shared-content card scaffold), query shared-content where `sharedByUserId == friendId` for the current recipient; viewmodel under `lib/viewmodels/social/`. (BUT-1000)
-  - Acceptance: the view lists only shared content where `sharedByUserId == friendId` AND the current user is a recipient (no leakage of content shared to others) · empty state renders when the friend has shared nothing · reuses the existing `shared_recipe_card`/shared-content scaffold rather than a new bespoke card · follows the square/cream design language (no rounded badges/cards)
-  - Sign-off: placement (friend profile vs shared-with-me tab) + empty-state copy.
-
-### Agent D: social-cooksnap — cook-snap photo album (multi-photo) `[Tier B]`
-- [ ] **D1. Multiple photos per cook snap (album), backward-compatible** `[Tier B]` — `lib/models/cook_snap.dart` (`photoUrls: List<String>`, keep legacy `photoUrl` read-mapped into list, cap 5), `lib/services/cook_snap_service.dart` (upload/storage layout), carousel render in feed + recipe-detail "people who cooked this". (BUT-949)
-  - Acceptance: `CookSnap` exposes a photo list capped at 5 · an old document with only the singular `photoUrl` deserializes into a one-element list (no data loss, no migration required) · the feed/detail renders a carousel when >1 photo and a single image when ==1 · uploading more than 5 photos is rejected/capped, not silently truncated mid-list
-  - Sign-off: carousel interaction + 5-photo cap + editor UX.
+### Agent D: import-source — re-extract from source + 30-day stale-source banner `[Tier C]`
+- [ ] **D1. "Re-extract from source" action + stale-source banner in the source sheet** `[Tier C]` — source-sheet view (from BUT-1079 part 1, commit `881ceac55`), `lib/viewmodels/` source/re-extract wiring, `UrlImportStrategy` / `TextImportStrategy` re-feed by `SourceArtefactType`. Preserves recipe `id` + `createdAt` + `sourceArtefact`. Does NOT touch `import_manager.dart` (Agent A) — re-extract goes through the strategy directly. (BUT-1205)
+  - Step 0: fits (part 1 read-only sheet already shipped + Done; this is the sanctioned deferred follow-up).
+  - Files touched: source-sheet view + its viewmodel; `UrlImportStrategy`/`TextImportStrategy` invocation seam; confirmation dialog widget.
+  - Blast radius: re-extract overwrites parsed fields on an existing Recipe — must preserve identity metadata and be guarded by a confirmation dialog when the recipe has user edits; failure path must leave the recipe untouched.
+  - Product-intent flag: the overwrite-vs-append behavior on user-edited recipes is a real UX decision — implement overwrite-with-confirmation (the ticket's stated default) and surface it for sign-off; do NOT silently overwrite.
+  - Rollback shape: feature is additive (new action + banner); revert the source-sheet diff to remove it, no data migration.
+  - Acceptance: the source sheet has a "Återhämta från källa" action that re-fetches/re-feeds per `SourceArtefactType` and replaces the parsed fields · re-extract preserves the recipe's `id`, `createdAt`, and `sourceArtefact` metadata · a confirmation dialog ("Det här skriver över dina ändringar") gates overwrite when the recipe has user edits · re-extract failure leaves the existing recipe untouched (error toast, no partial write) · the stale-source banner appears when `fetchedAt` is older than 30 days
+  - Sign-off: the overwrite confirmation copy + behavior (overwrite vs append) on a recipe the user has hand-edited.
 
 ### Needs you (not built — flagged for your call)
-- **BUT-934** — premise likely gone: lapsed-user win-back already shipped via BUT-688 (`detect-lapsed-users.ts`, A/B winback). Recommend: verify against the shipped CF and close as obsolete, or reframe to the specific remaining gap.
-- **BUT-945** — pure `idea`: "recently removed friends" re-add + "past groups". Speculative discoverability feature, no concrete demand. Recommend: drop until a real request.
-- **BUT-840** — ops/infra-adjacent: extend `on-profile-updated.ts` to refresh an Algolia search mirror. Needs confirmation Algolia is wired + the mirror index exists. Recommend: confirm Algolia infra before building.
-- **BUT-674** — large GDPR/security product scope: minors (15-17) parental consent + social restrictions + minimization. Recommend: scope as its own legal/product decision, not an autonomous sprint pick.
-- **BUT-1179** — Tier D manual QA: live concurrent-edit ConflictBanner verification across 3 surfaces; can't be unit/widget-tested. Recommend: run by hand on a device when convenient.
+- **BUT-653** — parameterize import daily/monthly caps by user *tier*. Presupposes a freemium tier system + `EntitlementService` that doesn't exist; memory says no monetization decisions yet. Recommend: **drop** until monetization is decided — building tier-keyed Remote Config now is speculative scaffolding for an undecided model.
+- **BUT-656** — same as above for the OCR monthly cap (`OCRUsageTracker.freeMonthlyLimit`, currently a display-only in-memory counter; server-side limits are authoritative). Recommend: **drop** with BUT-653 — revisit both together when tiers are real.
+- **BUT-684** — handwritten-specific OCR path. `idea`; needs a choice between auto-detect-handwriting (heuristic) vs a "this is handwritten" UI toggle, plus prompt tuning that can't be verified without a handwritten-scan corpus. Recommend: **reframe** — decide toggle-vs-autodetect first; the toggle version is a small, verifiable build once you pick it.
+- **BUT-941** — accept OS multi-share (Android `SEND_MULTIPLE` + iOS multi-file). Touches native Android manifest + the iOS share extension (platform/ops surface), and demand is speculative. Recommend: **defer** until there's a concrete request — the native-config blast radius isn't worth it for an unvalidated flow.
 
 ### Obsolete (done in git, still open in Linear)
-- **BUT-1265** — already on `main` at `f37c9af03` ("test(realtime): end-to-end conflictStream delivery test"). Close to Done.
+- None. No import-labeled ticket appears resolved in the last 7 days of git history.
 
 ### Post-Sprint Steps
 - [ ] Run `dart analyze --fatal-infos`
-- [ ] Run relevant unit tests (realtime sync + conflict module; activity feed; cook snap)
+- [ ] Run relevant unit tests (text-import VM, url-import VM, photo-import VM, ocr extraction, import strategies)
 - [ ] Phase 2.7 outcome-grading (fresh-context verifier per agent group)
 - [ ] Commit, push
-- [ ] Linear: Tier A (BUT-1267, BUT-1266) → Done; Tier B (BUT-1220, BUT-1000, BUT-949) → In Review + notify; BUT-1265 → Done (obsolete close)
+- [ ] Linear: all five (BUT-1040, BUT-931, BUT-947, BUT-903, BUT-1205) are build-review → In Review + notify; none auto-close to Done
 
 ---
-## ARCHIVED — iter-149 (BUT-1265 conflictStream end-to-end delivery test — landed `f37c9af03`) · iter-148 (BUT-1263/1264 recoverLocalVersion test-gaps — HEAD d4ee51b0f) · iter-147 (BUT-1262 realtime data-loss-path sign-off) · iter-146 (BUT-1053/1247/1250) · iter-145 (BUT-1251/1246/1249 Done) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done) · äldre i git-historiken
+## ARCHIVED — iter-150 (social conflict-cleanup + activity/sharing UI: BUT-1267/1266 Tier A, BUT-1220/1000/949 Tier B; BUT-1265 obsolete-closed) · iter-149 (BUT-1265 conflictStream end-to-end delivery test — landed `f37c9af03`) · iter-148 (BUT-1263/1264 recoverLocalVersion test-gaps — HEAD d4ee51b0f) · iter-147 (BUT-1262 realtime data-loss-path sign-off) · iter-146 (BUT-1053/1247/1250) · iter-145 (BUT-1251/1246/1249 Done) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done) · äldre i git-historiken

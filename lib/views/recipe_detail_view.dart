@@ -4,9 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/views/recipe_detail/recipe_source_artefact_sheet.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
-import 'package:butlery/core/utils/contextual_time_formatter.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
@@ -917,7 +916,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         }
       case _MenuAction.viewSourceArtefact:
         final artefact = recipe.core.sourceArtefact;
-        if (artefact != null) _showSourceArtefactSheet(context, artefact);
+        if (artefact != null) {
+          showSourceArtefactSheet(
+            context: context,
+            artefact: artefact,
+            onReextract: () =>
+                _reextractFromSource(context, artefact, viewModel),
+          );
+        }
       case _MenuAction.printRecipe:
         _printRecipe(recipe);
       case _MenuAction.report:
@@ -930,61 +936,41 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     }
   }
 
-  /// BUT-1079: read-only view of the persisted source artefact (the raw text
-  /// the recipe was extracted from). Re-extract from here is a follow-up.
-  void _showSourceArtefactSheet(BuildContext context, SourceArtefact artefact) {
-    final cs = Theme.of(context).colorScheme;
-    showModalBottomSheet<void>(
+  /// BUT-1205: confirm + drive the re-extract. All business logic (strategy
+  /// selection, import, copyWith assembly, persistence, id/createdAt/
+  /// sourceArtefact preservation) lives in
+  /// [RecipeDetailViewModel.reextractFromSource]; the View only gates it behind
+  /// a confirmation dialog (it discards manual edits) and maps the returned
+  /// outcome to snackbar feedback. The source sheet UI itself lives in
+  /// recipe_detail/recipe_source_artefact_sheet.dart.
+  Future<void> _reextractFromSource(
+    BuildContext context,
+    SourceArtefact artefact,
+    RecipeDetailViewModel viewModel,
+  ) async {
+    final confirmed = await CommonDialogActions.showActionConfirmation(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: cs.surface,
-      builder: (sheetContext) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        builder: (ctx, scrollController) => Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(ctx.l10n.recipeSourceSheetTitle,
-                  style: AppTextStyles.titleBold),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                '${_sourceTypeLabel(ctx, artefact.type)} · '
-                '${ctx.l10n.recipeSourceCapturedAt(ContextualTimeFormatter.standard(artefact.fetchedAt))}',
-                style: AppTextStyles.metadataEmphasized
-                    .copyWith(color: cs.onSurfaceVariant),
-              ),
-              const Divider(height: AppDimensions.spacingLg),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: SelectableText(
-                    artefact.payload,
-                    style: AppTextStyles.bodyMedium,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      title: context.l10n.recipeSourceReextractConfirmTitle,
+      message: context.l10n.recipeSourceReextractConfirmMessage,
+      confirmText: context.l10n.recipeSourceReextractConfirmAction,
+      icon: Icons.refresh_outlined,
+      isDangerous: true,
     );
-  }
+    if (confirmed != true || !context.mounted) return;
 
-  String _sourceTypeLabel(BuildContext context, SourceArtefactType type) {
-    return switch (type) {
-      SourceArtefactType.url => context.l10n.recipeSourceTypeUrl,
-      SourceArtefactType.youtubeTranscript =>
-        context.l10n.recipeSourceTypeYoutube,
-      SourceArtefactType.tiktokCaption => context.l10n.recipeSourceTypeTiktok,
-      SourceArtefactType.instagramCaption =>
-        context.l10n.recipeSourceTypeInstagram,
-      SourceArtefactType.textPaste => context.l10n.recipeSourceTypeTextPaste,
-      SourceArtefactType.photoOcr => context.l10n.recipeSourceTypePhotoOcr,
-    };
+    SnackBarUtils.showInfo(
+        context, context.l10n.recipeSourceReextractInProgress);
+
+    final outcome = await viewModel.reextractFromSource(artefact);
+    if (!context.mounted) return;
+
+    if (outcome == ReextractOutcome.success) {
+      SnackBarUtils.showSuccess(
+          context, context.l10n.recipeSourceReextractSuccess);
+    } else {
+      SnackBarUtils.showError(
+          context, context.l10n.recipeSourceReextractFailed);
+    }
   }
 }
 

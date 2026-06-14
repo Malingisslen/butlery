@@ -880,6 +880,14 @@
   "recipeSourceTypeInstagram": "Instagram caption",
   "recipeSourceTypeTextPaste": "Pasted text",
   "recipeSourceTypePhotoOcr": "Photo text (OCR)",
+  "recipeSourceReextract": "Re-extract from source",
+  "recipeSourceReextractConfirmTitle": "Re-extract recipe?",
+  "recipeSourceReextractConfirmMessage": "This overwrites the recipe's current content with a fresh extraction from the source. This cannot be undone.",
+  "recipeSourceReextractConfirmAction": "Re-extract",
+  "recipeSourceReextractInProgress": "Re-extracting from source …",
+  "recipeSourceReextractSuccess": "Recipe re-extracted from source",
+  "recipeSourceReextractFailed": "Could not re-extract from source. The recipe is unchanged.",
+  "recipeSourceStaleBanner": "The source was saved a long time ago — a fresh extraction may differ from the original.",
   "recipeShareWithFriends": "Share with friends",
   "recipeShareExternal": "Share externally",
   "recipeSourceFrom": "From {host}",
@@ -2830,6 +2838,14 @@
   "dialogPhoneLabel": "Phone number",
   "dialogSearchHint": "Type to search...",
   "importLikely": "Likely",
+  "importAiSuggested": "AI suggestion",
+  "@importAiSuggested": {
+    "description": "Chip label on import lines the AI/heuristic detector suggested (vs. lines the user entered)"
+  },
+  "importAiSuggestedA11y": "AI suggestion",
+  "@importAiSuggestedA11y": {
+    "description": "Screen-reader hint announced for an import line the AI suggested"
+  },
   "importNoLinesToShow": "No lines to show",
   "importSelectAllHighlighted": "Select all highlighted ({count})",
   "@importSelectAllHighlighted": {
@@ -3502,6 +3518,38 @@
       "count": { "type": "int" }
     }
   },
+  "importPhotoAddPage": "Add page",
+  "@importPhotoAddPage": {
+    "description": "Button that appends another photo as the next page of the same multi-page recipe import (BUT-903)."
+  },
+  "importPhotoPageLabel": "Page {number}",
+  "@importPhotoPageLabel": {
+    "description": "Label under each thumbnail in the multi-page photo import strip (BUT-903).",
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "importPhotoPagesCombined": "{count} pages combined into one recipe",
+  "@importPhotoPagesCombined": {
+    "description": "Caption above the page strip explaining the pages are merged into one recipe (BUT-903).",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importPhotoPagesMaxReached": "Max {max} pages per recipe",
+  "@importPhotoPagesMaxReached": {
+    "description": "Error/disabled-state message when the user tries to add more than the page cap (BUT-903).",
+    "placeholders": {
+      "max": { "type": "int" }
+    }
+  },
+  "a11yRemovePhotoPage": "Remove page {number}",
+  "@a11yRemovePhotoPage": {
+    "description": "Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).",
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
   "importProcessingImage": "Processing image...",
   "importRecipeLinkDetected": "Recipe link detected",
   "importRecipeTextCanImport": "Recipe text detected! We can import this.",
@@ -3523,6 +3571,31 @@
       }
     }
   },
+  "importUrlBatchAllFailed": "None of the URLs could be fetched. Check the links and try again.",
+  "importMultipleUrlsHint": "Paste one or more recipe URLs (one per line)",
+  "importMultipleUrlsLabel": "Recipe URLs",
+  "importUrlBatchProgress": "{success} of {total} fetched",
+  "@importUrlBatchProgress": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlBatchImport": "Import {count} recipes",
+  "@importUrlBatchImport": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlFetchPending": "Waiting...",
+  "importUrlFetchSuccess": "Fetched",
+  "importUrlFetchFailed": "Failed",
   "importVideoNoText": "Video has no text",
   "importVideoNoTextDescription": "This video has no subtitles we can read.\n\nYou can take a screenshot of the recipe in the video and import it instead.",
   "importWebRecipeLinkDetected": "Recipe link from website detected!",

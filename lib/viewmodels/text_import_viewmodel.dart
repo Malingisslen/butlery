@@ -43,6 +43,7 @@
 
 // lib/viewmodels/text_import_viewmodel.dart
 
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -67,6 +68,20 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// - Base state preparation for text import workflow management
   /// - Text validation system preparation with Swedish localization
   TextImportViewModel({required super.importManager});
+
+  /// BUT-1040: recipes parsed from the current input. A single-recipe paste
+  /// holds exactly one entry (and `parsedRecipe` mirrors it, so every existing
+  /// single-recipe getter/consumer is unchanged); a cookbook-style paste with
+  /// explicit separators holds N. The view checks `hasMultipleParsedRecipes`
+  /// to decide between the single-recipe editor and the multi-recipe picker.
+  final List<Recipe> _parsedRecipes = [];
+
+  /// Read-only view of the recipes parsed from the last [parseText] call.
+  List<Recipe> get parsedRecipes => List.unmodifiable(_parsedRecipes);
+
+  /// True when the last parse produced more than one recipe — the signal the
+  /// view uses to route into the shared multi-recipe picker.
+  bool get hasMultipleParsedRecipes => _parsedRecipes.length > 1;
 
   /// Parses current input text into recipe with comprehensive validation and error handling.
   /// Returns true if parsing succeeds and recipe is generated, false if parsing fails.
@@ -93,12 +108,67 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       return false;
     }
 
+    _parsedRecipes.clear();
+
+    // BUT-960 + BUT-1040: drive isLoading/isParsing manually for the whole
+    // Cloud Function round-trip — the social-media view binds its spinner and
+    // its double-tap guard to `isParsing` (== isLoading), so the parse MUST
+    // flip it true the way the old parseTextToRecipe/executeAsync path did.
+    // A bare executeAsyncVoid would also work for the loading state, but it
+    // collapses every thrown message to a generic error, losing the distinct
+    // 60s-timeout copy this finding requires — so we manage state by hand and
+    // map errors precisely.
+    clearError();
+    setLoading(true);
     try {
-      await performImport();
-      return hasParsedRecipe && !hasError;
+      // BUT-1040: route through autoParseMulti so a cookbook-style paste with
+      // explicit recipe separators yields N recipes (surfaced via the shared
+      // multi-recipe picker). MultiRecipeSplitter collapses a single-recipe
+      // paste to one block, so the single-recipe path is behaviourally
+      // unchanged — parsedRecipe still drives every existing consumer.
+      //
+      // BUT-960: parse is a Cloud Function round-trip; a 60s client timeout
+      // ensures a server-side hang surfaces errorImportTimeout instead of an
+      // endless spinner (mirrors parseTextToRecipe).
+      final result =
+          await importManager.autoParseMulti(inputText.trim()).timeout(
+                const Duration(seconds: 60),
+                onTimeout: () =>
+                    throw Exception(AppLocale.current.errorImportTimeout),
+              );
+      final parsed = result.successfulRecipes;
+
+      if (parsed.isEmpty) {
+        setError(AppLocale.current.errorImportFailed);
+        return false;
+      }
+
+      // Preserve the prior source-URL attribution: the old single-recipe path
+      // applied `sourceUrl` to the parsed recipe, so carry it across every
+      // recipe in the batch here too.
+      final url = sourceUrl;
+      final recipes = url == null
+          ? parsed
+          : parsed.map((r) => r.copyWith(sourceUrl: url)).toList();
+
+      _parsedRecipes.addAll(recipes);
+
+      // Single recipe → preserve the exact prior behaviour: setParsedRecipe
+      // drives the single-recipe editor handoff and allergen banner unchanged.
+      // Multiple → still seed parsedRecipe with the first so single-recipe
+      // getters/consumers stay non-null, but the view routes to the picker.
+      setParsedRecipe(recipes.first);
+      return true;
     } catch (e) {
-      setError(AppLocale.current.errorImportFailed);
+      // The timeout throws its own localized copy; everything else collapses to
+      // the standard import-failed banner.
+      final message = e.toString();
+      setError(message.contains(AppLocale.current.errorImportTimeout)
+          ? AppLocale.current.errorImportTimeout
+          : AppLocale.current.errorImportFailed);
       return false;
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -123,6 +193,24 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   Future<bool> importAndSave() async {
     return await completeImport();
+  }
+
+  /// BUT-1040: save the recipes the user ticked in the multi-recipe picker.
+  /// Mirrors PhotoImportViewModel.saveSelectedRecipes — one import-layer save
+  /// per recipe, surfacing the first failure as an error.
+  Future<bool> saveSelectedRecipes(List<Recipe> recipes) async {
+    if (recipes.isEmpty) {
+      setError(AppLocale.current.errorNoRecipeToSave);
+      return false;
+    }
+    return executeAsyncVoid(() async {
+      for (final recipe in recipes) {
+        final result = await importManager.saveImportedRecipe(recipe);
+        if (!result.isSuccess) {
+          throw Exception(result.errorMessage ?? 'Failed to save recipe');
+        }
+      }
+    });
   }
 
   /// Updates both input text and source URL with comprehensive state coordination and UI notification.

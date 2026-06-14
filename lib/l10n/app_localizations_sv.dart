@@ -1299,6 +1299,34 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSourceTypePhotoOcr => 'Text från foto (OCR)';
 
   @override
+  String get recipeSourceReextract => 'Återhämta från källa';
+
+  @override
+  String get recipeSourceReextractConfirmTitle => 'Återhämta receptet?';
+
+  @override
+  String get recipeSourceReextractConfirmMessage =>
+      'Det här skriver över receptets nuvarande innehåll med en ny extrahering från källan. Det går inte att ångra.';
+
+  @override
+  String get recipeSourceReextractConfirmAction => 'Återhämta';
+
+  @override
+  String get recipeSourceReextractInProgress => 'Återhämtar från källan …';
+
+  @override
+  String get recipeSourceReextractSuccess =>
+      'Receptet återhämtades från källan';
+
+  @override
+  String get recipeSourceReextractFailed =>
+      'Kunde inte återhämta från källan. Receptet är oförändrat.';
+
+  @override
+  String get recipeSourceStaleBanner =>
+      'Källan sparades för länge sedan — en ny extrahering kan skilja sig från originalet.';
+
+  @override
   String get recipeShareWithFriends => 'Dela med vänner';
 
   @override
@@ -4307,6 +4335,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importLikely => 'Trolig';
 
   @override
+  String get importAiSuggested => 'AI-förslag';
+
+  @override
+  String get importAiSuggestedA11y => 'AI-förslag';
+
+  @override
   String get importNoLinesToShow => 'Inga rader att visa';
 
   @override
@@ -5428,6 +5462,29 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get importPhotoAddPage => 'Lägg till sida';
+
+  @override
+  String importPhotoPageLabel(int number) {
+    return 'Sida $number';
+  }
+
+  @override
+  String importPhotoPagesCombined(int count) {
+    return '$count sidor kombineras till ett recept';
+  }
+
+  @override
+  String importPhotoPagesMaxReached(int max) {
+    return 'Max $max sidor per recept';
+  }
+
+  @override
+  String a11yRemovePhotoPage(int number) {
+    return 'Ta bort sida $number';
+  }
+
+  @override
   String get importProcessingImage => 'Bearbetar bild...';
 
   @override
@@ -5471,6 +5528,36 @@ class AppLocalizationsSv extends AppLocalizations {
   String importUrlFromPlatform(String platform) {
     return 'URL från $platform';
   }
+
+  @override
+  String get importUrlBatchAllFailed =>
+      'Ingen av webbadresserna kunde hämtas. Kontrollera länkarna och försök igen.';
+
+  @override
+  String get importMultipleUrlsHint =>
+      'Klistra in en eller flera recept-URL:er (en per rad)';
+
+  @override
+  String get importMultipleUrlsLabel => 'Recept-URL:er';
+
+  @override
+  String importUrlBatchProgress(int success, int total) {
+    return '$success av $total hämtade';
+  }
+
+  @override
+  String importUrlBatchImport(int count) {
+    return 'Importera $count recept';
+  }
+
+  @override
+  String get importUrlFetchPending => 'Väntar...';
+
+  @override
+  String get importUrlFetchSuccess => 'Hämtad';
+
+  @override
+  String get importUrlFetchFailed => 'Misslyckades';
 
   @override
   String get importVideoNoText => 'Videon saknar text';

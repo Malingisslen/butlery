@@ -42,6 +42,24 @@ void main() {
         expect(tag.isManual, isFalse);
         expect(tag.isFromRule, isTrue);
       });
+
+      // BUT-931: an AI-suggested tag must be distinguishable from a
+      // user-entered one so the UI can label it ("AI-förslag").
+      test('factory fromAi creates an ai-sourced, ai-flagged tag', () {
+        final tag = RecipePersonalTag.fromAi(
+          tagId: 'tag-1',
+          name: 'Vegetariskt',
+        );
+
+        expect(tag.tagId, 'tag-1');
+        expect(tag.name, 'Vegetariskt');
+        expect(tag.sources, ['ai']);
+        expect(tag.isFromAi, isTrue);
+        // An AI tag is neither manual nor rule-applied — the three provenances
+        // must not bleed into each other.
+        expect(tag.isManual, isFalse);
+        expect(tag.isFromRule, isFalse);
+      });
     });
 
     group('source tracking', () {
@@ -92,6 +110,46 @@ void main() {
           sources: ['manual'],
         );
 
+        expect(tag.isFromRule, isFalse);
+      });
+
+      // BUT-931: provenance getters must be mutually honest — an 'ai' source
+      // reads as AI and NOT as manual/rule, and a non-'ai' source never
+      // reads as AI (so the "AI-förslag" chip can't appear on user input).
+      test('isFromAi returns true only for an ai source', () {
+        const ai = RecipePersonalTag(
+          tagId: 'tag-1',
+          name: 'Test',
+          sources: ['ai'],
+        );
+        const manual = RecipePersonalTag(
+          tagId: 'tag-2',
+          name: 'Test',
+          sources: ['manual'],
+        );
+        const rule = RecipePersonalTag(
+          tagId: 'tag-3',
+          name: 'Test',
+          sources: ['rule-abc'],
+        );
+
+        expect(ai.isFromAi, isTrue);
+        expect(manual.isFromAi, isFalse);
+        expect(rule.isFromAi, isFalse);
+      });
+
+      test('a tag merged from ai + manual reports both provenances', () {
+        // After the user accepts an AI suggestion and also keeps it manually,
+        // the tag should read as both AI-suggested and manual (so the chip
+        // and the "yours" affordance can both apply).
+        const tag = RecipePersonalTag(
+          tagId: 'tag-1',
+          name: 'Test',
+          sources: ['ai', 'manual'],
+        );
+
+        expect(tag.isFromAi, isTrue);
+        expect(tag.isManual, isTrue);
         expect(tag.isFromRule, isFalse);
       });
 
@@ -253,6 +311,20 @@ void main() {
         expect(restored.tagId, original.tagId);
         expect(restored.name, original.name);
         expect(restored.sources, original.sources);
+      });
+
+      // BUT-931: the 'ai' provenance must survive a Firestore round-trip, else
+      // a reloaded recipe would lose the "AI-förslag" label on its tags.
+      test('ai provenance survives a toMap/fromMap round-trip', () {
+        final original = RecipePersonalTag.fromAi(
+          tagId: 'tag-ai',
+          name: 'Vegetariskt',
+        );
+
+        final restored = RecipePersonalTag.fromMap(original.toMap());
+
+        expect(restored.sources, ['ai']);
+        expect(restored.isFromAi, isTrue);
       });
     });
 

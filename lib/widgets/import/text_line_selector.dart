@@ -33,6 +33,12 @@ class TextLineSelector extends StatelessWidget {
   /// Pre-detected lines to highlight (e.g., likely ingredients).
   final Set<int> highlightedIndices;
 
+  /// BUT-931: lines the AI/heuristic detector suggested (vs. lines the user
+  /// typed/selected themselves). When a line is in this set it gets an
+  /// "AI-förslag" chip and an a11y provenance hint, so the user can tell
+  /// suggested content apart from their own.
+  final Set<int> aiSuggestedIndices;
+
   /// Indices to exclude from display (already used in another selection).
   final Set<int> excludedIndices;
 
@@ -54,6 +60,7 @@ class TextLineSelector extends StatelessWidget {
     required this.selectedIndices,
     required this.onSelectionChanged,
     this.highlightedIndices = const {},
+    this.aiSuggestedIndices = const {},
     this.excludedIndices = const {},
     this.mode = SelectionMode.ingredients,
     this.headerText,
@@ -118,6 +125,7 @@ class TextLineSelector extends StatelessWidget {
                       text: entry.value,
                       isSelected: selectedIndices.contains(entry.key),
                       isHighlighted: highlightedIndices.contains(entry.key),
+                      isAiSuggested: aiSuggestedIndices.contains(entry.key),
                       mode: mode,
                       showLineNumber: showLineNumbers,
                       onTap: () => _toggleLine(entry.key),
@@ -205,6 +213,7 @@ class _LineItem extends StatelessWidget {
   final String text;
   final bool isSelected;
   final bool isHighlighted;
+  final bool isAiSuggested;
   final SelectionMode mode;
   final bool showLineNumber;
   final VoidCallback onTap;
@@ -214,6 +223,7 @@ class _LineItem extends StatelessWidget {
     required this.text,
     required this.isSelected,
     required this.isHighlighted,
+    required this.isAiSuggested,
     required this.mode,
     required this.showLineNumber,
     required this.onTap,
@@ -258,8 +268,9 @@ class _LineItem extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Semantics(
-          label:
-              '${text.trim()}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}',
+          label: isAiSuggested
+              ? '${text.trim()}, ${context.l10n.importAiSuggestedA11y}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}'
+              : '${text.trim()}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}',
           button: true,
           child: InkWell(
             onTap: onTap,
@@ -328,6 +339,36 @@ class _LineItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  // BUT-931: AI-provenance chip — marks lines the detector
+                  // suggested so the user can tell them from their own input.
+                  if (isAiSuggested) ...[
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Container(
+                      padding: AppDimensions.paddingSymmetric6x2,
+                      decoration: BoxDecoration(
+                        color: colorScheme.secondaryContainer,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: AppDimensions.iconSizeXs,
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingXxs),
+                          Text(
+                            context.l10n.importAiSuggested,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   // Highlighted indicator
                   if (isHighlighted && !isSelected) ...[
                     const SizedBox(width: AppDimensions.spacingSm),

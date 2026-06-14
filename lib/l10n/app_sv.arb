@@ -886,6 +886,14 @@
   "recipeSourceTypeInstagram": "Instagram-text",
   "recipeSourceTypeTextPaste": "Inklistrad text",
   "recipeSourceTypePhotoOcr": "Text från foto (OCR)",
+  "recipeSourceReextract": "Återhämta från källa",
+  "recipeSourceReextractConfirmTitle": "Återhämta receptet?",
+  "recipeSourceReextractConfirmMessage": "Det här skriver över receptets nuvarande innehåll med en ny extrahering från källan. Det går inte att ångra.",
+  "recipeSourceReextractConfirmAction": "Återhämta",
+  "recipeSourceReextractInProgress": "Återhämtar från källan …",
+  "recipeSourceReextractSuccess": "Receptet återhämtades från källan",
+  "recipeSourceReextractFailed": "Kunde inte återhämta från källan. Receptet är oförändrat.",
+  "recipeSourceStaleBanner": "Källan sparades för länge sedan — en ny extrahering kan skilja sig från originalet.",
   "recipeShareWithFriends": "Dela med vänner",
   "recipeShareExternal": "Dela externt",
   "recipeSourceFrom": "Från {host}",
@@ -2836,6 +2844,14 @@
   "dialogPhoneLabel": "Telefonnummer",
   "dialogSearchHint": "Skriv för att söka...",
   "importLikely": "Trolig",
+  "importAiSuggested": "AI-förslag",
+  "@importAiSuggested": {
+    "description": "Chip label on import lines the AI/heuristic detector suggested (vs. lines the user entered)"
+  },
+  "importAiSuggestedA11y": "AI-förslag",
+  "@importAiSuggestedA11y": {
+    "description": "Screen-reader hint announced for an import line the AI suggested"
+  },
   "importNoLinesToShow": "Inga rader att visa",
   "importSelectAllHighlighted": "Välj alla markerade ({count})",
   "@importSelectAllHighlighted": {
@@ -3508,6 +3524,38 @@
       "count": { "type": "int" }
     }
   },
+  "importPhotoAddPage": "Lägg till sida",
+  "@importPhotoAddPage": {
+    "description": "Button that appends another photo as the next page of the same multi-page recipe import (BUT-903)."
+  },
+  "importPhotoPageLabel": "Sida {number}",
+  "@importPhotoPageLabel": {
+    "description": "Label under each thumbnail in the multi-page photo import strip (BUT-903).",
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "importPhotoPagesCombined": "{count} sidor kombineras till ett recept",
+  "@importPhotoPagesCombined": {
+    "description": "Caption above the page strip explaining the pages are merged into one recipe (BUT-903).",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importPhotoPagesMaxReached": "Max {max} sidor per recept",
+  "@importPhotoPagesMaxReached": {
+    "description": "Error/disabled-state message when the user tries to add more than the page cap (BUT-903).",
+    "placeholders": {
+      "max": { "type": "int" }
+    }
+  },
+  "a11yRemovePhotoPage": "Ta bort sida {number}",
+  "@a11yRemovePhotoPage": {
+    "description": "Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).",
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
   "importProcessingImage": "Bearbetar bild...",
   "importRecipeLinkDetected": "Receptlänk detekterad",
   "importRecipeTextCanImport": "Recepttext detekterad! Vi kan importera detta.",
@@ -3529,6 +3577,31 @@
       }
     }
   },
+  "importUrlBatchAllFailed": "Ingen av webbadresserna kunde hämtas. Kontrollera länkarna och försök igen.",
+  "importMultipleUrlsHint": "Klistra in en eller flera recept-URL:er (en per rad)",
+  "importMultipleUrlsLabel": "Recept-URL:er",
+  "importUrlBatchProgress": "{success} av {total} hämtade",
+  "@importUrlBatchProgress": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlBatchImport": "Importera {count} recept",
+  "@importUrlBatchImport": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importUrlFetchPending": "Väntar...",
+  "importUrlFetchSuccess": "Hämtad",
+  "importUrlFetchFailed": "Misslyckades",
   "importVideoNoText": "Videon saknar text",
   "importVideoNoTextDescription": "Den här videon har inga undertexter som vi kan läsa.\n\nDu kan ta en skärmbild av receptet i videon och importera den istället.",
   "importWebRecipeLinkDetected": "Receptlänk från webbsida detekterad!",

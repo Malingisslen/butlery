@@ -989,5 +989,185 @@ void main() {
         expect(viewModel.hasExtractedText, isTrue);
       });
     });
+
+    // BUT-947: list-aware URL import — pasting several URLs imports each one
+    // with per-URL progress and partial-success handling.
+    group('Multiple URL import (BUT-947)', () {
+      test('parseUrls splits newline/comma/space lists and keeps only http(s)',
+          () {
+        final urls = UrlImportViewModel.parseUrls(
+          'https://a.com/r1\nhttps://b.com/r2, https://c.com/r3 not-a-url '
+          'ftp://d.com/x',
+        );
+
+        expect(urls, [
+          'https://a.com/r1',
+          'https://b.com/r2',
+          'https://c.com/r3',
+        ]);
+      });
+
+      test('parseUrls de-duplicates while preserving order', () {
+        final urls = UrlImportViewModel.parseUrls(
+          'https://a.com/r1 https://a.com/r1 https://b.com/r2',
+        );
+
+        expect(urls, ['https://a.com/r1', 'https://b.com/r2']);
+      });
+
+      test('parseUrls drops private/reserved hosts (SSRF guard)', () {
+        // The single-URL path rejects these with errorUrlPrivateAddress; the
+        // batch path must apply the same guard or pasting a list becomes an
+        // SSRF vector. Each public sibling proves the drop isn't over-broad.
+        final urls = UrlImportViewModel.parseUrls(
+          'https://public.com/ok '
+          'http://localhost/x '
+          'http://127.0.0.1/x '
+          'http://192.168.1.10/x '
+          'http://10.0.0.5/x '
+          'http://169.254.1.1/x '
+          'https://other.com/ok',
+        );
+
+        expect(urls, ['https://public.com/ok', 'https://other.com/ok']);
+      });
+
+      test('isMultiUrl is true only when input parses to more than one URL',
+          () {
+        viewModel.updateUrl('https://a.com/r1');
+        expect(viewModel.isMultiUrl, isFalse);
+
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        expect(viewModel.isMultiUrl, isTrue);
+      });
+
+      test('fetchMultipleUrls fetches every URL and records per-URL success',
+          () async {
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+
+        await viewModel.fetchMultipleUrls();
+
+        expect(viewModel.urlResults, hasLength(2));
+        expect(viewModel.urlResults.every((r) => r.isSuccess), isTrue);
+        expect(viewModel.hasAnyUrlSuccess, isTrue);
+        expect(viewModel.allUrlsFailed, isFalse);
+        expect(viewModel.hasError, isFalse);
+      });
+
+      test('partial failure keeps successful rows and does not set batch error',
+          () async {
+        // Second URL fails; first succeeds.
+        when(() => mockHttpClient.get(
+              Uri.parse('https://b.com/r2'),
+              headers: any(named: 'headers'),
+            )).thenThrow(Exception('boom'));
+
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+
+        expect(viewModel.urlResults[0].isSuccess, isTrue);
+        expect(viewModel.urlResults[1].isFailure, isTrue);
+        expect(viewModel.hasAnyUrlSuccess, isTrue);
+        expect(viewModel.allUrlsFailed, isFalse);
+        // Partial success → no global blocking error banner.
+        expect(viewModel.hasError, isFalse);
+      });
+
+      test('all URLs failing surfaces the batch-level error', () async {
+        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
+            .thenThrow(Exception('boom'));
+
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+
+        expect(viewModel.allUrlsFailed, isTrue);
+        expect(viewModel.hasError, isTrue);
+      });
+
+      test('retryUrl re-fetches only the targeted failed URL', () async {
+        // index 0 fails (primary + fallback both throw), index 1 succeeds.
+        when(() => mockHttpClient.get(
+              Uri.parse('https://a.com/bad'),
+              headers: any(named: 'headers'),
+            )).thenThrow(Exception('down'));
+
+        viewModel.updateUrl('https://a.com/bad\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+        expect(viewModel.urlResults[0].isFailure, isTrue);
+        expect(viewModel.urlResults[1].isSuccess, isTrue);
+
+        // The site comes back up; retrying just that row should now succeed.
+        when(() => mockHttpClient.get(
+              Uri.parse('https://a.com/bad'),
+              headers: any(named: 'headers'),
+            )).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
+
+        await viewModel.retryUrl(0);
+
+        expect(viewModel.urlResults[0].isSuccess, isTrue);
+        expect(viewModel.urlResults[1].isSuccess, isTrue);
+      });
+
+      test('fetchMultipleUrls with no fetchable URLs sets the validation error',
+          () async {
+        // isMultiUrl can be true while parseUrls yields nothing fetchable
+        // (e.g. two non-http tokens). The early-return must surface the
+        // "enter a valid URL" message rather than leaving an empty silent UI.
+        viewModel.updateUrl('ftp://a.com/x ftp://b.com/y');
+
+        await viewModel.fetchMultipleUrls();
+
+        expect(viewModel.urlResults, isEmpty);
+        expect(viewModel.error, equals('Vänligen ange en giltig URL'));
+      });
+
+      test('retryUrl that recovers an all-failed batch clears the batch error',
+          () async {
+        // Distinct from the partial-batch retry test: here EVERY url fails
+        // first, so the batch-level error banner is set. A successful retry
+        // must clear it — otherwise the user sees "none could be fetched"
+        // sitting above a now-successful row.
+        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
+            .thenThrow(Exception('all down'));
+
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+        expect(viewModel.allUrlsFailed, isTrue);
+        expect(viewModel.hasError, isTrue);
+
+        // One link comes back; retry just that row.
+        when(() => mockHttpClient.get(
+              Uri.parse('https://a.com/r1'),
+              headers: any(named: 'headers'),
+            )).thenAnswer((_) async => TestHttpResponse(testHtmlContent, 200));
+
+        await viewModel.retryUrl(0);
+
+        expect(viewModel.urlResults[0].isSuccess, isTrue);
+        expect(viewModel.hasAnyUrlSuccess, isTrue);
+        expect(viewModel.hasError, isFalse);
+      });
+
+      test('retryUrl ignores an out-of-range index without throwing', () async {
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+        final before = viewModel.urlResults;
+
+        await viewModel.retryUrl(99);
+        await viewModel.retryUrl(-1);
+
+        // No crash, batch untouched.
+        expect(viewModel.urlResults, equals(before));
+      });
+
+      test('editing the URL clears prior batch results', () async {
+        viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+        await viewModel.fetchMultipleUrls();
+        expect(viewModel.urlResults, isNotEmpty);
+
+        viewModel.updateUrl('https://single.com/r');
+        expect(viewModel.urlResults, isEmpty);
+      });
+    });
   });
 }

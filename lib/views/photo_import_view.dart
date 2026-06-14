@@ -25,6 +25,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/views/photo_import/image_preview.dart';
+import 'package:butlery/views/photo_import/photo_page_strip.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatefulWidget {
@@ -360,6 +361,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                   // Bildvisning
                   ImagePreview(viewModel: viewModel),
                   const SizedBox(height: AppDimensions.spacingXl),
+
+                  // BUT-903: multi-page strip — thumbnails of every photo
+                  // combined into one recipe, plus the "add page" tile. Renders
+                  // nothing until at least one image exists.
+                  if (viewModel.hasImage) ...[
+                    PhotoPageStrip(viewModel: viewModel),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
 
                   // BUT-410: heirloom toggle + form, only when an image exists.
                   // Kept between the preview and OCR-quality warnings so the
