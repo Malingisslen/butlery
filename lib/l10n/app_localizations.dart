@@ -7293,16 +7293,16 @@ abstract class AppLocalizations {
   /// **'Trolig'**
   String get importLikely;
 
-  /// Chip label on import lines the AI/heuristic detector suggested (vs. lines the user entered)
+  /// Chip label on import lines Butlery's detector suggested (vs. lines the user entered). Avoids 'AI' since detection is a local heuristic, not an LLM call.
   ///
   /// In sv, this message translates to:
-  /// **'AI-förslag'**
+  /// **'Butlerys förslag'**
   String get importAiSuggested;
 
-  /// Screen-reader hint announced for an import line the AI suggested
+  /// Screen-reader hint announced for an import line Butlery suggested
   ///
   /// In sv, this message translates to:
-  /// **'AI-förslag'**
+  /// **'Butlerys förslag'**
   String get importAiSuggestedA11y;
 
   /// No description provided for @importNoLinesToShow.

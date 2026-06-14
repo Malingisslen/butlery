@@ -33,10 +33,11 @@ class TextLineSelector extends StatelessWidget {
   /// Pre-detected lines to highlight (e.g., likely ingredients).
   final Set<int> highlightedIndices;
 
-  /// BUT-931: lines the AI/heuristic detector suggested (vs. lines the user
-  /// typed/selected themselves). When a line is in this set it gets an
-  /// "AI-förslag" chip and an a11y provenance hint, so the user can tell
-  /// suggested content apart from their own.
+  /// BUT-931: lines Butlery's local heuristic detector suggested (vs. lines the
+  /// user typed/selected themselves). When a line is in this set it gets a
+  /// "Butlerys förslag" chip and an a11y provenance hint, so the user can tell
+  /// suggested content apart from their own. Labelled "Butlery's suggestion"
+  /// rather than "AI" because detection is a rule-based heuristic, not an LLM.
   final Set<int> aiSuggestedIndices;
 
   /// Indices to exclude from display (already used in another selection).
@@ -339,8 +340,9 @@ class _LineItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  // BUT-931: AI-provenance chip — marks lines the detector
-                  // suggested so the user can tell them from their own input.
+                  // BUT-931: provenance chip ("Butlerys förslag") — marks lines
+                  // the local heuristic detector suggested so the user can tell
+                  // them from their own input. Not labelled "AI" (no LLM call).
                   if (isAiSuggested) ...[
                     const SizedBox(width: AppDimensions.spacingSm),
                     Container(

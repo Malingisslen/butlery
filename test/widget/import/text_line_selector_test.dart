@@ -1,6 +1,8 @@
-// BUT-931: TextLineSelector marks AI/heuristic-suggested lines with an
-// "AI-förslag" chip + an a11y provenance hint, so the user can tell suggested
-// content apart from lines they typed/selected themselves. These tests assert
+// BUT-931: TextLineSelector marks lines Butlery's local heuristic detector
+// suggested with a "Butlerys förslag" chip + an a11y provenance hint, so the
+// user can tell suggested content apart from lines they typed/selected
+// themselves. (Labelled "Butlery's suggestion", not "AI" — it's a rule-based
+// heuristic, not an LLM.) These tests assert
 // that user-visible behaviour (chip presence, theme-resolved colour, a11y
 // label, tap-to-toggle), not layout/padding internals.
 
@@ -30,12 +32,12 @@ void main() {
   }
 
   group('TextLineSelector AI-provenance chip (BUT-931)', () {
-    testWidgets('shows the AI-förslag chip only on ai-suggested lines',
+    testWidgets('shows the Butlerys förslag chip only on ai-suggested lines',
         (tester) async {
       await tester.pumpWidget(buildSelector(aiSuggested: {0}));
 
-      // Swedish locale → "AI-förslag". One suggested line ⇒ exactly one chip.
-      expect(find.text('AI-förslag'), findsOneWidget);
+      // Swedish locale → "Butlerys förslag". One suggested line ⇒ exactly one chip.
+      expect(find.text('Butlerys förslag'), findsOneWidget);
       // The auto_awesome glyph is the chip's icon.
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     });
@@ -43,14 +45,14 @@ void main() {
     testWidgets('shows no chip when no lines are ai-suggested', (tester) async {
       await tester.pumpWidget(buildSelector());
 
-      expect(find.text('AI-förslag'), findsNothing);
+      expect(find.text('Butlerys förslag'), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
 
     testWidgets('renders one chip per ai-suggested line', (tester) async {
       await tester.pumpWidget(buildSelector(aiSuggested: {0, 2}));
 
-      expect(find.text('AI-förslag'), findsNWidgets(2));
+      expect(find.text('Butlerys förslag'), findsNWidgets(2));
     });
 
     testWidgets('chip colour comes from the live theme, not a hardcoded value',
@@ -87,13 +89,13 @@ void main() {
       // non-AI line does not. Asserting on substrings keeps this robust to
       // copy tweaks to the surrounding selected/not-selected text.
       final aiSemantics = tester.getSemantics(
-        find.bySemanticsLabel(RegExp('200 g smör.*AI-förslag')),
+        find.bySemanticsLabel(RegExp('200 g smör.*Butlerys förslag')),
       );
       expect(aiSemantics, isNotNull);
 
       // The plain instruction line must NOT advertise AI provenance.
       expect(
-        find.bySemanticsLabel(RegExp('Vispa ihop.*AI-förslag')),
+        find.bySemanticsLabel(RegExp('Vispa ihop.*Butlerys förslag')),
         findsNothing,
       );
     });

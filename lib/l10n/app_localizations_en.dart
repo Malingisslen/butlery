@@ -4331,10 +4331,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importLikely => 'Likely';
 
   @override
-  String get importAiSuggested => 'AI suggestion';
+  String get importAiSuggested => 'Butlery\'s suggestion';
 
   @override
-  String get importAiSuggestedA11y => 'AI suggestion';
+  String get importAiSuggestedA11y => 'Butlery\'s suggestion';
 
   @override
   String get importNoLinesToShow => 'No lines to show';

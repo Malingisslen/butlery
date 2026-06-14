@@ -2838,13 +2838,13 @@
   "dialogPhoneLabel": "Phone number",
   "dialogSearchHint": "Type to search...",
   "importLikely": "Likely",
-  "importAiSuggested": "AI suggestion",
+  "importAiSuggested": "Butlery's suggestion",
   "@importAiSuggested": {
-    "description": "Chip label on import lines the AI/heuristic detector suggested (vs. lines the user entered)"
+    "description": "Chip label on import lines Butlery's detector suggested (vs. lines the user entered). Avoids 'AI' since detection is a local heuristic, not an LLM call."
   },
-  "importAiSuggestedA11y": "AI suggestion",
+  "importAiSuggestedA11y": "Butlery's suggestion",
   "@importAiSuggestedA11y": {
-    "description": "Screen-reader hint announced for an import line the AI suggested"
+    "description": "Screen-reader hint announced for an import line Butlery suggested"
   },
   "importNoLinesToShow": "No lines to show",
   "importSelectAllHighlighted": "Select all highlighted ({count})",

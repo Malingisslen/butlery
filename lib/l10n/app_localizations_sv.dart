@@ -4335,10 +4335,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importLikely => 'Trolig';
 
   @override
-  String get importAiSuggested => 'AI-förslag';
+  String get importAiSuggested => 'Butlerys förslag';
 
   @override
-  String get importAiSuggestedA11y => 'AI-förslag';
+  String get importAiSuggestedA11y => 'Butlerys förslag';
 
   @override
   String get importNoLinesToShow => 'Inga rader att visa';
