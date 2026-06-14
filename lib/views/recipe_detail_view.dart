@@ -39,7 +39,6 @@ import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
@@ -894,16 +893,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.editTags:
         final overrides = await TagEditorDialog.show(context, recipe);
         if (overrides != null && context.mounted) {
-          try {
-            final updated = recipe.copyWith(tagOverrides: overrides);
-            final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-            await recipeService.updateRecipe(updated);
-            viewModel.updateRecipe(updated);
-          } catch (e) {
-            if (context.mounted) {
-              SnackBarUtils.showError(
-                  context, context.l10n.commonErrorOccurred);
-            }
+          // BUT-1304: route the persist through the ViewModel (MVVM) instead of
+          // hitting UnifiedRecipeService directly from the View. The VM owns the
+          // optimistic local update + revert-on-failure.
+          final saved = await viewModel.updateRecipeTagOverrides(overrides);
+          if (!saved && context.mounted) {
+            SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
           }
         }
       case _MenuAction.delete:

@@ -4,6 +4,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -358,6 +359,68 @@ void main() {
               mealType: any(named: 'mealType'),
               isFirstTime: false, // Should be false since already cooked
             )).called(1);
+      });
+    });
+
+    group('BUT-1304: updateRecipeTagOverrides (MVVM tag persist)', () {
+      const overrides = TagOverrides(
+        addedTags: {'vegetariskt'},
+        removedTags: {'kött'},
+      );
+
+      test(
+          'applies overrides optimistically and persists via the service '
+          'when the write succeeds', () async {
+        when(() => mockRecipeService.updateRecipe(any()))
+            .thenAnswer((_) async => true);
+
+        final result = await viewModel.updateRecipeTagOverrides(overrides);
+
+        expect(result, isTrue);
+        // The new overrides are reflected on the VM's recipe...
+        expect(viewModel.recipe.tagOverrides, equals(overrides));
+        // ...and the persist went through the service exactly once, carrying
+        // those overrides (the View no longer calls the service directly).
+        final persisted =
+            verify(() => mockRecipeService.updateRecipe(captureAny()))
+                .captured
+                .single as Recipe;
+        expect(persisted.tagOverrides, equals(overrides));
+      });
+
+      test('reverts to the previous overrides when the service write fails',
+          () async {
+        const previous = TagOverrides(addedTags: {'original'});
+        final taggedRecipe = RecipeBuilder()
+            .withId(testRecipeId)
+            .withTitle('Tagged Recipe')
+            .withTagOverrides(previous)
+            .build();
+        viewModel = RecipeDetailViewModel(
+          recipe: taggedRecipe,
+          recipeService: mockRecipeService,
+          analyticsService: mockAnalyticsService,
+          cookingService: mockCookingService,
+        );
+
+        when(() => mockRecipeService.updateRecipe(any()))
+            .thenAnswer((_) async => false);
+
+        // Count notifications: the optimistic apply and the revert must each
+        // fire one, so a no-op method that skipped the optimistic update (and
+        // happened to leave `previous` in place) cannot pass this test.
+        var notifications = 0;
+        viewModel.addListener(() => notifications++);
+
+        final result = await viewModel.updateRecipeTagOverrides(overrides);
+
+        // Failure is surfaced to the caller (the View shows the error snackbar)
+        // and the VM's recipe is rolled back to the pre-edit overrides, so the
+        // UI never shows an edit that wasn't saved.
+        expect(result, isFalse);
+        expect(viewModel.recipe.tagOverrides, equals(previous));
+        expect(notifications, greaterThanOrEqualTo(2),
+            reason: 'optimistic apply + revert each fire notifyListeners');
       });
     });
 

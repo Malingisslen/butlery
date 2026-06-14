@@ -136,7 +136,15 @@ class _VeckomenyCookingSessionCardState
 
     _sessionsHolder.refresh(module, groups, userId);
     final stream = _sessionsHolder.stream;
-    if (stream == null) return const SizedBox.shrink();
+    // `groups` is provably non-empty here (the `groups.isEmpty` guard above
+    // short-circuits), and `refresh` only leaves `stream` null for an empty
+    // group list — so this is never null at this point. Assert it instead of
+    // silently hiding, so a future change to the holder's null contract trips
+    // a test rather than vanishing the card with no signal.
+    assert(
+        stream != null,
+        'CookingSessionStreamHolder.stream must be non-null for a non-empty '
+        'group list');
 
     return StreamBuilder<List<CookingSession>>(
       stream: stream,

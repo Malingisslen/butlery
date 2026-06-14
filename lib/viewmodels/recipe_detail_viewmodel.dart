@@ -62,6 +62,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
@@ -500,6 +501,29 @@ class RecipeDetailViewModel extends ChangeNotifier
         }
       }
     });
+  }
+
+  /// BUT-1304: persists edited tag overrides through the ViewModel so the View
+  /// no longer reaches into [UnifiedRecipeService] directly (MVVM violation).
+  /// Mirrors [rateRecipe]'s optimistic-update + persist + revert pattern:
+  /// applies the new overrides locally, notifies, then persists — rolling back
+  /// to the previous overrides if the service write fails so the UI never shows
+  /// an edit that wasn't saved. Returns true on success, false on failure.
+  Future<bool> updateRecipeTagOverrides(TagOverrides overrides) async {
+    final previousOverrides = _recipe.tagOverrides;
+
+    // Optimistic update so the tag UI reflects the edit immediately.
+    _recipe = _recipe.copyWith(tagOverrides: overrides);
+    notifyListeners();
+
+    final success = await _recipeService.updateRecipe(_recipe);
+    if (!success) {
+      // Revert on failure.
+      _recipe = _recipe.copyWith(tagOverrides: previousOverrides);
+      notifyListeners();
+      return false;
+    }
+    return true;
   }
 
   /// BUT-678: trigger in-app review prompt at the happy moment.
