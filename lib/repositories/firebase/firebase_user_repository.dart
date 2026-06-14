@@ -637,6 +637,13 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // validateOwnership only logs on deny. Mirror the granted:true logging that
     // every other mutating method here does, and forward auditRepository so the
     // entry PERSISTS to the Art.30 trail (BUT-1286), not just the console.
+    //
+    // BUT-1287 (behavioral note): passing auditRepository here is what flips
+    // this success-path log from console-only to Firestore-persisted. Without
+    // the argument logPermissionCheck() still emits to AppLogger but writes
+    // nothing durable — so a public-profile erasure would leave no Art.30
+    // record an auditor could retrieve. The presence of `auditRepository:` is
+    // the load-bearing difference; do not drop it when refactoring.
     logPermissionCheck(
       userId: currentUser,
       resource: 'public_profile/$userId',

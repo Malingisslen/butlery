@@ -1,8 +1,10 @@
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/repositories/interfaces/activity_event_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
@@ -61,7 +63,45 @@ class FirebaseActivityEventRepository
 
   @override
   Future<void> addEvent(ActivityEvent event) async {
-    await create(event);
+    final userId = requireCurrentUserId();
+    final canCreate = await validateCreatePermission(userId, event);
+
+    await logPermissionCheck(
+      userId: userId,
+      resource: '$collectionName/${event.id}',
+      operation: 'create',
+      granted: canCreate,
+      auditRepository: auditRepository,
+    );
+
+    if (!canCreate) {
+      throw PermissionDeniedException(
+        'User $userId does not have permission to create activity event',
+      );
+    }
+
+    // Batch the event create with a rate-limit marker so the firestore.rules
+    // `rateLimitWrite('activity_events', 2)` gate is actually armed. Without
+    // this doc the rule always takes the `!exists(limitsPath)` branch and the
+    // 2-second burst guard never fires.
+    final batch = firestore.batch();
+    batch.set(collection.doc(event.id), toFirestore(event));
+    batch.set(
+      firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userRateLimits)
+          .doc(FirestoreCollections.activityEvents),
+      {
+        'lastWrite': timestampProvider.serverTimestamp(),
+        'expireAt':
+            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+      },
+      SetOptions(merge: true),
+    );
+    await batch.commit();
+
+    AppLogger.info('ActivityEvent created: ${event.id}');
   }
 
   @override

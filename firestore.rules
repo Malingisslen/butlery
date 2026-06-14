@@ -1161,6 +1161,56 @@ service cloud.firestore {
     }
 
     // ========================================
+    // ACTIVITY EVENTS - Social activity feed (BUT-1294)
+    // ========================================
+    // Top-level collection: one doc per social event {actorId, type, recipeId,
+    // recipeTitle, createdAt, ...}. The feed query is a batched
+    // `where('actorId', whereIn: [self + friendIds])` + orderBy createdAt
+    // (see FirebaseActivityEventRepository.fetchFriendActivity), so the read
+    // rule must allow a doc when the requester is the actor OR a friend of the
+    // actor. Friendship is the snap-owner pattern: a friend doc exists at
+    // users/{actorId}/friends/{request.auth.uid} (mirrors cook_snaps).
+    //
+    // Until this block existed the collection sat on Firestore default-deny —
+    // every feed read AND every "mark as cooked"/shared write was silently
+    // rejected in production, so the activity feed could not function.
+    match /activity_events/{eventId} {
+      // Read: the actor themselves, OR a friend of the actor. Pair queries
+      // with a `whereIn` over [self + friends] — rules evaluate per candidate
+      // doc, so a stranger's event in a result set fails the whole query.
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.actorId
+        || exists(/databases/$(database)/documents/users/$(resource.data.actorId)/friends/$(request.auth.uid))
+      );
+
+      // Create: only the actor may write their own event. Structural
+      // validation prevents identity forgery and oversized documents.
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.actorId
+        && hasRequiredFields(['actorId', 'type', 'recipeId', 'createdAt'])
+        && request.resource.data.actorId is string
+        && request.resource.data.type is string
+        && request.resource.data.recipeId is string
+        && request.resource.data.recipeId.size() <= 200
+        && (
+          !('recipeTitle' in request.resource.data)
+          || (request.resource.data.recipeTitle is string
+              && request.resource.data.recipeTitle.size() <= 300)
+        )
+        && rateLimitWrite('activity_events', 2);
+
+      // Update: only the actor, and the identity/anchor fields are immutable.
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.actorId
+        && cannotModify(['actorId', 'recipeId', 'createdAt']);
+
+      // Delete: only the actor (also the GDPR self-cascade path; the
+      // server-side Admin SDK cascade bypasses these rules).
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.actorId;
+    }
+
+    // ========================================
     // BUTLERY ARCHIVE - Read-only community recipes
     // ========================================
 

@@ -671,3 +671,48 @@ before it ships. Both verified green on emulator (22/22 passed, including all
 pre-existing tests). Doc ids use the per-RUN token to avoid emulator-persistence
 collisions. The `validRecipeBody(extra)` builder accepts `{ schemaVersion: 1 }`
 in the spread so the root-level field sits alongside `core: {...}`.
+
+### 2026-06-14 — activity-events-rules.test.ts wired + gap-closing additions (BUT-1294)
+
+New top-level collection `/activity_events/{eventId}` (social activity feed).
+The test file was authored by the feature author at 17 tests; I wired it into
+`functions/package.json` as `test:rules:activity-events` (it had NO npm script),
+appended it to `test:rules:all`, and added it to both path-filter blocks in
+`firestore-rules.yml`. Project id `butlery-rules-activity-events`.
+
+Map row to add:
+
+| `/activity_events/{eventId}` | `activity-events-rules.test.ts` | `test:rules:activity-events` |
+
+Rule shape: read = actor OR friend-of-actor (`exists(users/{actorId}/friends/{auth.uid})`,
+same snap-owner pattern as cook_snaps); create = actor-only +
+`hasRequiredFields(['actorId','type','recipeId','createdAt'])` + type/recipeId
+string checks + recipeId<=200 + optional recipeTitle<=300 +
+`rateLimitWrite('activity_events', 2)`; update = actor-only +
+`cannotModify(['actorId','recipeId','createdAt'])`; delete = actor-only.
+
+**Gaps the authored 17 tests left (I added 6, now 23/23 green):**
+1. **No update allow-path** — every update test was a deny. A regression of the
+   actor check or `cannotModify` to a blanket deny would have passed all of
+   them. Added AE12b (actor updates `recipeTitle` → SUCCEEDS). This is the
+   load-bearing addition; the `cannotModify`-immutable-field denies are
+   worthless without one proof the rule permits a legitimate edit.
+2. **Only 1 of 3 immutable fields denied** (actorId). Added AE13b (recipeId) +
+   AE13c (createdAt) so each anchor in `cannotModify([...])` has its own proof.
+3. **`type` required-field + `is string` branches unproven** — added AE9b
+   (missing type) + AE9c (non-string type).
+4. **rate-limit clause unproven** — added AE12c using the seed pattern from the
+   2026-04-26 entry (seed `users/{RL_UID}/rate_limits/activity_events` with a
+   fresh `lastWrite`, dedicated actor so AE5's actor stays clean, create within
+   2s → DENIES). Reminder: the rate-limit doc is app-written, so create-allow
+   tests by other actors do NOT trip it unless seeded.
+
+Verified 23/23 on emulator after a namespace clear. Reminder for next run:
+clear `butlery-rules-activity-events` before fixed-id seed tests (ae-read-*,
+ae-update-*, ae-del-* use stable ids — they re-seed via withSecurityRulesDisabled
+each run so they're idempotent, but a leftover ae-del-own delete is harmless).
+
+The two Dart files in this diff (`firebase_user_repository.dart`,
+`user_root_deletion_mixin.dart`) were COMMENT-ONLY changes (BUT-1287 behavioral
+notes about `auditRepository:` persistence) — no rule-testable behavior, nothing
+to assert.

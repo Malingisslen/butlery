@@ -25,7 +25,18 @@ class TestHttpResponse extends http.Response {
   TestHttpResponse(super.body, super.statusCode);
 }
 
-// Testable version that allows HTTP client injection
+// Testable version that overrides ONLY the leaf network call.
+//
+// Production's [UrlImportViewModel.fetchContentFromUrl] delegates to the
+// headless-browser WebScraper, which we can't drive in a unit test. We stub
+// just that leaf so the REAL inherited orchestration runs unchanged:
+// fetchFromUrl() stores the returned text into extractedText via executeAsync
+// (incl. its error/loading lifecycle), fetchAndParse() feeds it to the import
+// strategy, analyzeExtractedContent() scores it, and the BUT-947 multi-URL
+// batch logic sequences the fetches. The stub mirrors WebScraper's only real
+// content contract — return the extracted text, or throw on failure — and adds
+// no HTTP-status / fallback-retry / length policy that production does not have
+// (asserting such fixture-only logic would prove nothing about production).
 class TestableUrlImportViewModel extends UrlImportViewModel {
   final http.Client? testHttpClient;
 
@@ -37,66 +48,25 @@ class TestableUrlImportViewModel extends UrlImportViewModel {
   @override
   Future<String> fetchContentFromUrl(String url) async {
     if (testHttpClient != null) {
-      try {
-        final response = await testHttpClient!.get(
-          Uri.parse(url),
-          headers: {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept':
-                'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'sv-SE,sv;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-          },
-        );
-
-        if (response.statusCode != 200) {
-          throw Exception(
-              'Kunde inte hämta innehåll från URL: HTTP ${response.statusCode}');
-        }
-
-        final htmlContent = response.body;
-
-        if (htmlContent.isEmpty) {
-          throw Exception('Inget innehåll hittades på denna sida');
-        }
-
-        return htmlContent;
-      } catch (e) {
-        // Fallback to basic fetch
-        final response = await testHttpClient!.get(
-          Uri.parse(url),
-          headers: {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          },
-        );
-
-        if (response.statusCode != 200) {
-          throw Exception(
-              'Kunde inte hämta innehåll: HTTP ${response.statusCode}');
-        }
-
-        // Basic HTML content extraction
-        String content = response.body;
-
-        // Remove HTML tags for basic text extraction
-        content = content.replaceAll(RegExp(r'<[^>]*>'), ' ');
-        content = content.replaceAll(RegExp(r'\s+'), ' ');
-        content = content.trim();
-
-        if (content.length < 100) {
-          throw Exception(
-              'Innehållet är för kort för att innehålla ett recept');
-        }
-
-        return content;
+      // A single fetch, like WebScraper.performExtraction: success returns the
+      // body, any failure (network throw or non-200) propagates so the real
+      // executeAsync error path in fetchFromUrl is exercised.
+      final response = await testHttpClient!.get(
+        Uri.parse(url),
+        headers: _stubHeaders,
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+            'Kunde inte hämta innehåll från URL: HTTP ${response.statusCode}');
       }
+      return response.body;
     }
     return super.fetchContentFromUrl(url);
   }
+
+  static const Map<String, String> _stubHeaders = {
+    'User-Agent': 'butlery-test',
+  };
 }
 
 /// Records how many [fetchContentFromUrl] calls are in flight at once so a test
@@ -556,7 +526,12 @@ void main() {
             .called(1);
       });
 
-      test('should handle 404 error', () async {
+      // A failing fetch (here a non-200 surfaced as a throw, but the same path
+      // covers any WebScraper failure) must propagate through the REAL
+      // fetchFromUrl/executeAsync error lifecycle: no extracted text, error
+      // flag set. This exercises production's actual error handling — the only
+      // fetch-failure contract the production fetchContentFromUrl has.
+      test('failed fetch sets the error state and extracts no text', () async {
         // Arrange
         viewModel.updateUrl('https://www.example.com/notfound');
         when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
@@ -574,79 +549,12 @@ void main() {
         expect(viewModel.hasError, isTrue);
       });
 
-      test('should handle empty response', () async {
-        // Arrange
-        viewModel.updateUrl('https://www.example.com/empty');
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenAnswer((_) async {
-          // Both primary and fallback return empty
-          return TestHttpResponse('', 200);
-        });
-
-        // Act — executeAsync rethrows, so catch the propagated exception
-        try {
-          await viewModel.fetchFromUrl();
-        } catch (_) {
-          // Expected: executeAsync sets error then rethrows
-        }
-
-        // Assert
-        expect(viewModel.hasExtractedText, isFalse);
-        expect(viewModel.hasError, isTrue);
-      });
-
-      test('should handle network error', () async {
+      test('network error during fetch propagates to the error state',
+          () async {
         // Arrange
         viewModel.updateUrl('https://www.example.com/error');
         when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
             .thenThrow(Exception('Network error'));
-
-        // Act — executeAsync rethrows, so catch the propagated exception
-        try {
-          await viewModel.fetchFromUrl();
-        } catch (_) {
-          // Expected: executeAsync sets error then rethrows
-        }
-
-        // Assert
-        expect(viewModel.hasExtractedText, isFalse);
-        expect(viewModel.hasError, isTrue);
-      });
-
-      test('should use fallback fetch on primary failure', () async {
-        // Arrange
-        viewModel.updateUrl('https://www.example.com/recipe');
-        var callCount = 0;
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenAnswer((_) async {
-          callCount++;
-          if (callCount == 1) {
-            throw Exception('Primary fetch failed');
-          }
-          return TestHttpResponse(testHtmlContent, 200);
-        });
-
-        // Act
-        await viewModel.fetchFromUrl();
-
-        // Assert
-        expect(viewModel.hasExtractedText, isTrue);
-        expect(callCount, equals(2)); // Primary + fallback
-      });
-
-      test('should reject short content', () async {
-        // Arrange
-        viewModel.updateUrl('https://www.example.com/short');
-        // Make first call fail to trigger fallback, then return short content in fallback
-        var callCount = 0;
-        when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
-            .thenAnswer((_) async {
-          callCount++;
-          if (callCount == 1) {
-            throw Exception('Force fallback');
-          }
-          return TestHttpResponse('<html><body>Too short</body></html>', 200);
-        });
 
         // Act — executeAsync rethrows, so catch the propagated exception
         try {
@@ -1207,6 +1115,95 @@ void main() {
 
         viewModel.updateUrl('https://single.com/r');
         expect(viewModel.urlResults, isEmpty);
+      });
+
+      // BUT-1295: successfulBatchText is what feeds a settled batch fetch into
+      // the shared multi-recipe paste step. It must join ONLY the successful
+      // rows' extracted text with the '\n\n' boundary the multi-recipe
+      // splitter treats as a recipe separator — a failed row contributes
+      // nothing (no body, no stray blank gap). The testable VM returns the raw
+      // HTTP body as the extracted text, so a distinct per-URL body lets each
+      // test assert the exact join.
+      group('successfulBatchText (BUT-1295)', () {
+        // Stub a distinct, recognizable body per URL; throw for any URL the
+        // test wants to fail so both the primary and fallback fetch fail.
+        void stubBodies(
+          Map<String, String> bodyByUrl, {
+          Set<String> failUrls = const {},
+        }) {
+          for (final entry in bodyByUrl.entries) {
+            when(() => mockHttpClient.get(
+                  Uri.parse(entry.key),
+                  headers: any(named: 'headers'),
+                )).thenAnswer((_) async => TestHttpResponse(entry.value, 200));
+          }
+          for (final url in failUrls) {
+            when(() => mockHttpClient.get(
+                  Uri.parse(url),
+                  headers: any(named: 'headers'),
+                )).thenThrow(Exception('down'));
+          }
+        }
+
+        test(
+            '[success, failure, success] joins ONLY the two successes with '
+            'the \\n\\n separator, skipping the failed row', () async {
+          stubBodies(
+            {
+              'https://a.com/r1': 'BODY_A',
+              'https://b.com/r2': 'BODY_B', // will fail
+              'https://c.com/r3': 'BODY_C',
+            },
+            failUrls: {'https://b.com/r2'},
+          );
+
+          viewModel.updateUrl(
+            'https://a.com/r1\nhttps://b.com/r2\nhttps://c.com/r3',
+          );
+          await viewModel.fetchMultipleUrls();
+
+          // Sanity: the middle row really did fail, so this proves the skip.
+          expect(viewModel.urlResults[0].isSuccess, isTrue);
+          expect(viewModel.urlResults[1].isFailure, isTrue);
+          expect(viewModel.urlResults[2].isSuccess, isTrue);
+
+          expect(viewModel.successfulBatchText, 'BODY_A\n\nBODY_C',
+              reason: 'only the two successful bodies are joined, with the '
+                  'recipe-boundary separator and no gap for the failure');
+        });
+
+        test('single success yields exactly that body with no separator',
+            () async {
+          stubBodies(
+            {
+              'https://a.com/r1': 'BODY_A',
+              'https://b.com/r2': 'BODY_B', // will fail
+            },
+            failUrls: {'https://b.com/r2'},
+          );
+
+          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+          await viewModel.fetchMultipleUrls();
+
+          expect(viewModel.successfulBatchText, 'BODY_A',
+              reason: 'a lone success must not be wrapped in a trailing or '
+                  'leading separator');
+        });
+
+        test('all-failure batch yields an empty string', () async {
+          stubBodies(
+            const {},
+            failUrls: {'https://a.com/r1', 'https://b.com/r2'},
+          );
+
+          viewModel.updateUrl('https://a.com/r1\nhttps://b.com/r2');
+          await viewModel.fetchMultipleUrls();
+
+          expect(viewModel.allUrlsFailed, isTrue);
+          expect(viewModel.successfulBatchText, isEmpty,
+              reason: 'no successful rows means nothing to feed the paste '
+                  'step — the empty string, not a stray separator');
+        });
       });
     });
   });

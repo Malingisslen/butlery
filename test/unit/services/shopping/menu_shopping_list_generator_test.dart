@@ -631,6 +631,12 @@ void main() {
       expect(result!.excludedStaples, 1,
           reason: 'one staple line (salt) was kept off the list');
 
+      // BUT-1296: the staples must be read for THIS user, not some default or
+      // empty id. An explicit-arg verify (not any()) catches a regression that
+      // reads the wrong user's pantry — which would either leak another user's
+      // staples or silently exclude nothing.
+      verify(() => pantryService.getAll(_testUserId)).called(1);
+
       final written = capturedUpdate();
       expect(written.items.map((i) => i.name), ['mjöl'],
           reason: 'salt is a staple and must be excluded; mjöl remains');

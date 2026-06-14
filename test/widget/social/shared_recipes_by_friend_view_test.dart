@@ -166,6 +166,11 @@ class _FakeCoordinator extends SharedContentCoordinatorViewModel {
 
   final _FakeRecipeViewModel _recipeVm;
 
+  /// BUT-1296: records retry dispatches so the error-state test can prove the
+  /// retry button actually calls back into the coordinator (not just that a
+  /// button with the right label renders).
+  int refreshAllContentCalls = 0;
+
   @override
   bool get isGloballyLoading => false;
 
@@ -176,18 +181,24 @@ class _FakeCoordinator extends SharedContentCoordinatorViewModel {
   Future<void> initialize() async {}
 
   @override
-  Future<void> refreshAllContent() async {}
+  Future<void> refreshAllContent() async {
+    refreshAllContentCalls++;
+  }
 }
 
-void _register(_FakeRecipeViewModel recipeVm) {
+_FakeCoordinator _register(_FakeRecipeViewModel recipeVm) {
   // The view's offline banner resolves OfflineService from the locator.
   GetIt.instance.registerSingleton<OfflineService>(_FakeOfflineService());
   // The populated list's SharedRecipeCard Reply button resolves this.
   GetIt.instance.registerSingleton<MessagingService>(_FakeMessagingService());
-  GetIt.instance.registerFactory<SharedContentCoordinatorViewModel>(
-    () => _FakeCoordinator(recipeVm),
+  // Singleton (not factory) so the test holds the SAME instance the view
+  // resolves — BUT-1296 reads its retry-dispatch counter after tapping retry.
+  final coordinator = _FakeCoordinator(recipeVm);
+  GetIt.instance.registerSingleton<SharedContentCoordinatorViewModel>(
+    coordinator,
   );
   production.ServiceLocator.initialize(DIContainer());
+  return coordinator;
 }
 
 SharedRecipe _sharedRecipe({required String id, required String title}) =>
@@ -239,9 +250,11 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
-    testWidgets('error state shows the error widget with a retry action',
-        (tester) async {
-      _register(_FakeRecipeViewModel(errorMessage: 'Något gick fel'));
+    testWidgets(
+        'error state shows the error widget and its retry dispatches '
+        'refreshAllContent', (tester) async {
+      final coordinator =
+          _register(_FakeRecipeViewModel(errorMessage: 'Något gick fel'));
       await tester.pumpWidget(_wrap());
       await tester.pump();
 
@@ -249,6 +262,17 @@ void main() {
           reason: 'hasError must surface the error message');
       // StateWidget.error renders a retry button wired to refreshAllContent.
       expect(find.byType(StateWidget), findsOneWidget);
+
+      // BUT-1296: tapping retry must actually re-fetch — assert the dispatch,
+      // not merely the presence of a refresh-labelled button. The retry is the
+      // outlined button carrying the refresh icon (see MessageStates.error).
+      expect(coordinator.refreshAllContentCalls, 0,
+          reason: 'no retry has happened before the tap');
+      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.pump();
+
+      expect(coordinator.refreshAllContentCalls, 1,
+          reason: 'tapping retry must call back into refreshAllContent');
     });
 
     testWidgets('empty state shows the branded "no recipes" empty widget',
