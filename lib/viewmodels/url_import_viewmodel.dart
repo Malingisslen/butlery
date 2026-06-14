@@ -196,12 +196,13 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     return !_isPrivateOrReservedHost(uri.host);
   }
 
-  /// Fetches every URL in the current multi-URL input concurrently, exposing
-  /// per-URL progress via [urlResults] and tolerating partial failure — one
-  /// dead link doesn't abort the whole batch. Mirrors the per-page failure
-  /// handling of multi-page photo import. Returns without setting a global
-  /// error unless *every* URL failed, so the view can render successful rows
-  /// alongside failed ones.
+  /// Fetches every URL in the current multi-URL input sequentially — one at a
+  /// time, never N concurrent fetches — for cost/rate-limit safety (BUT-947),
+  /// exposing per-URL progress via [urlResults] and tolerating partial failure
+  /// so one dead link doesn't abort the whole batch. Mirrors the per-page
+  /// failure handling of multi-page photo import. Returns without setting a
+  /// global error unless *every* URL failed, so the view can render successful
+  /// rows alongside failed ones.
   Future<void> fetchMultipleUrls() async {
     if (isDisposed) return;
 
@@ -218,9 +219,14 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     ];
     setLoading(true);
 
-    await Future.wait([
-      for (var i = 0; i < urls.length; i++) _fetchOneInto(i, urls[i]),
-    ]);
+    // Sequential, not Future.wait: fetch one URL at a time so a pasted list
+    // never fans out into N concurrent network/LLM calls (BUT-947 cost/
+    // rate-limit safety). Each fetch updates its own row, so progress still
+    // streams in per-URL.
+    for (var i = 0; i < urls.length; i++) {
+      if (isDisposed) return;
+      await _fetchOneInto(i, urls[i]);
+    }
 
     if (isDisposed) return;
     setLoading(false);

@@ -99,6 +99,26 @@ class TestableUrlImportViewModel extends UrlImportViewModel {
   }
 }
 
+/// Records how many [fetchContentFromUrl] calls are in flight at once so a test
+/// can prove the batch fetch is sequential (BUT-947). Each call holds for a
+/// real delay; if the batch fired concurrently every call would overlap and
+/// [maxInFlight] would climb above 1.
+class ConcurrencyTrackingUrlImportViewModel extends UrlImportViewModel {
+  ConcurrencyTrackingUrlImportViewModel({required super.importManager});
+
+  int _inFlight = 0;
+  int maxInFlight = 0;
+
+  @override
+  Future<String> fetchContentFromUrl(String url) async {
+    _inFlight++;
+    if (_inFlight > maxInFlight) maxInFlight = _inFlight;
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    _inFlight--;
+    return 'recipe content for $url long enough to count as a body';
+  }
+}
+
 void main() {
   group('UrlImportViewModel', () {
     late TestableUrlImportViewModel viewModel;
@@ -1052,6 +1072,26 @@ void main() {
         expect(viewModel.hasAnyUrlSuccess, isTrue);
         expect(viewModel.allUrlsFailed, isFalse);
         expect(viewModel.hasError, isFalse);
+      });
+
+      test(
+          'fetchMultipleUrls fetches URLs sequentially, never concurrently '
+          '(BUT-947 cost/rate-limit safety)', () async {
+        final tracking = ConcurrencyTrackingUrlImportViewModel(
+          importManager: mockImportManager,
+        );
+        addTearDown(tracking.dispose);
+        tracking.updateUrl(
+          'https://a.com/r1\nhttps://b.com/r2\nhttps://c.com/r3',
+        );
+
+        await tracking.fetchMultipleUrls();
+
+        // Sequential fetch => only one request is ever in flight. A regression
+        // to Future.wait (concurrent fan-out) would push this to 3 and fail.
+        expect(tracking.maxInFlight, 1);
+        expect(tracking.urlResults, hasLength(3));
+        expect(tracking.urlResults.every((r) => r.isSuccess), isTrue);
       });
 
       test('partial failure keeps successful rows and does not set batch error',
