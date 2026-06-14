@@ -1,36 +1,50 @@
 # Sprint Backlog
 
-## Sprint: conflictStream end-to-end delivery test — 2026-06-14 (iter-149)
+## Sprint: social conflict-cleanup + activity/sharing UI — 2026-06-14 (iter-150)
 
-9th sprint this session. FULL backlog scan: 100 most-recently-updated Backlog + 5 Todo (Triage/In Progress empty). Honest finding (repeats iter-147/148): the clean, verified-on-main Tier A pool is essentially drained. Verified against `main`:
+Focus = `social` area label (per orchestrator). Backlog scan: 10 social-labeled Backlog tickets + 5 Todo carryover (Triage/In Progress empty). The prior sprint's only pick, BUT-1265, is already on `main` (HEAD `f37c9af03`) — confirmed obsolete-vs-open and listed below.
 
-- **BUT-1263/1264 already landed** — HEAD `d4ee51b0f` (`test(realtime-sync): close recoverLocalVersion coverage gaps`) already contains them; the iter-148 scratch describing them as "not yet committed" was stale.
-- **Premise-pending (still not merged):** BUT-530/1258/1259/1260 cite the parallel-session cold-start split (`butlery_app.dart`, `app_initializer.dart`, slimmed main.dart, 832-line veckomeny_view). Re-verified: `main.dart` is still 1395 lines, `butlery_app.dart`/`app_initializer.dart` don't exist, `veckomeny_view.dart` is 606 lines at `lib/views/veckomeny_view.dart`, and `ACCEPTED_LARGE_FILES.md` has no such entry. → hold.
-- **Ops/secret-blocked:** BUT-1169 (drop legacy shopping constants needs prod backfill first — would break rendering on old docs), BUT-840/819/1229/889/814/492/451/486/etc. → not worked.
-- **Self-deferred-until-trigger:** BUT-1067 (ARB descriptions — sleep until translation work), BUT-1011, BUT-1176, BUT-1248, BUT-1149, BUT-610. → hold.
+Selected 5 buildable social tickets: **2 build (Tier A)** + **3 build-review (Tier B)**. The rest of the social pool is `idea`-labeled speculation, ops-blocked, or large GDPR scope → flagged under "Needs you", not built.
 
-The one clean, verified-on-main build slice this iteration: BUT-1265 — the end-to-end test that a real conflict reaches `conflictStream` subscribers. Verified the premise: the emission path is real (`realtime_sync_service.dart:93-94` adds to `_conflictController` via the `onConflict` callback, driven through `resolveConflict` at line 260), the existing test file (`realtime_sync_service_test.dart`) already uses a real `FakeFirebaseFirestore` + real `FirestoreRepository` + real `ConflictResolutionModule`, and no existing test subscribes to `conflictStream` and drives a genuine conflict (the module test feeds an injected sink; the `ConflictBanner` widget test stubs the stream). Single batch — touches only the one test file.
+Batches are file-disjoint so they can run in parallel worktrees without patch collisions.
 
-### Agent A: realtime — conflictStream end-to-end delivery test `[Tier A]`
-- [ ] **A1. End-to-end test: a real losing-local conflict emits exactly one ConflictEvent to a live conflictStream subscriber** `[Tier A]` — `test/unit/services/realtime_sync_service_test.dart`: add a test (new `conflictStream` group) that subscribes to `service.conflictStream` BEFORE calling `updateResource` with a local value that loses to a higher-editCount seeded remote, exercising the real `resolveConflict` path (no injected sink, no pre-seeded controller). (BUT-1265)
-  - Acceptance: the test subscribes to `service.conflictStream` BEFORE the `updateResource` call that triggers the conflict · driving a real losing-local conflict through `updateResource`/`resolveConflict` causes exactly ONE `ConflictEvent` to reach the live subscriber (count asserted == 1, not >= 1) · the emitted event's `chosenStrategy == remoteWon` for the losing-local case · the test does NOT inject a sink or pre-seed `_conflictController` — it drives the real resolution path through `updateResource` · `flutter test test/unit/services/realtime_sync_service_test.dart` passes green with no existing test weakened or removed
+### Agent A: social-realtime — conflict-module cleanup + coverage `[Tier A]`
+- [ ] **A1. Delete dead duplicate `RealtimeSyncService.resolveConflict` + re-point its pinning tests** `[Tier A]` — `lib/services/realtime_sync_service.dart` (delete method, lines ~377-409), `test/unit/services/realtime_sync_service_test.dart` (remove/re-point the 4 last-write-wins tests that exercise the dead copy). (BUT-1267)
+  - Acceptance: `RealtimeSyncService.resolveConflict<T>(T local, T remote)` is removed entirely · no test references the deleted method (the 4 last-write-wins tests are deleted or re-pointed to the live `_conflictModule`/`updateResource` emit path) · `grep` shows zero callers of the bare service-level `resolveConflict` remain · `flutter test test/unit/services/realtime_sync_service_test.dart` passes green
+- [ ] **A2. Module-level tests for the three FALSE branches of `shouldResolveConflict`** `[Tier A]` — `test/unit/services/realtime/conflict_resolution_module_test.dart`: add tests for (a) no prior `recordLocalUpdate` (lastUpdate null), (b) 5000ms window elapsed, (c) remote not after lastUpdate. (BUT-1266)
+  - Acceptance: a test asserts `shouldResolveConflict` returns false when no `recordLocalUpdate` preceded it · a `withClock` test asserts strict window boundary — true/conflict at 4999ms, false at 5000ms (proves `<` not `<=`) · a test asserts false when remote `lastEditedAt` is not after `lastUpdate` · all new tests drive the real `recordLocalUpdate` + `shouldResolveConflict` path (no injected sink, no pre-seeded controller) · `flutter test test/unit/services/realtime/conflict_resolution_module_test.dart` passes green
+
+### Agent B: social-activity — per-event-type feed toggles + first-time hint `[Tier B]`
+- [ ] **B1. Per-event-type activity-feed toggles under the master toggle + one-time onboarding hint** `[Tier B]` — `lib/models/user_profile.dart` (per-type toggle map field, absent=on), `lib/services/social/activity_feed_service.dart` (check master AND per-type before publish), `lib/views/social/user_profile_edit/privacy_section.dart` (toggle UI), one-time hint flag + l10n strings. (BUT-1220)
+  - Acceptance: per-type toggles persist on `UserProfile` as a map where an absent key means ON (no migration needed) · `ActivityFeedService` does NOT publish an event whose type toggle is off, even when the master toggle is on · the first-time hint shows exactly once (gated by a profile flag) and is not re-shown after the flag is set · master-toggle-off still suppresses ALL event types (per-type toggles do not override it)
+  - Sign-off: defaults + Swedish copy + whether per-type granularity is wanted for beta vs master-only.
+
+### Agent C: social-sharing — "recipes shared by friend X" filter view `[Tier B]`
+- [ ] **C1. Per-friend shared-recipes filter view/section** `[Tier B]` — `lib/views/social/shared_with_me/` (new per-friend section/view reusing the shared-content card scaffold), query shared-content where `sharedByUserId == friendId` for the current recipient; viewmodel under `lib/viewmodels/social/`. (BUT-1000)
+  - Acceptance: the view lists only shared content where `sharedByUserId == friendId` AND the current user is a recipient (no leakage of content shared to others) · empty state renders when the friend has shared nothing · reuses the existing `shared_recipe_card`/shared-content scaffold rather than a new bespoke card · follows the square/cream design language (no rounded badges/cards)
+  - Sign-off: placement (friend profile vs shared-with-me tab) + empty-state copy.
+
+### Agent D: social-cooksnap — cook-snap photo album (multi-photo) `[Tier B]`
+- [ ] **D1. Multiple photos per cook snap (album), backward-compatible** `[Tier B]` — `lib/models/cook_snap.dart` (`photoUrls: List<String>`, keep legacy `photoUrl` read-mapped into list, cap 5), `lib/services/cook_snap_service.dart` (upload/storage layout), carousel render in feed + recipe-detail "people who cooked this". (BUT-949)
+  - Acceptance: `CookSnap` exposes a photo list capped at 5 · an old document with only the singular `photoUrl` deserializes into a one-element list (no data loss, no migration required) · the feed/detail renders a carousel when >1 photo and a single image when ==1 · uploading more than 5 photos is rejected/capped, not silently truncated mid-list
+  - Sign-off: carousel interaction + 5-photo cap + editor UX.
 
 ### Needs you (not built — flagged for your call)
-- **BUT-530 / BUT-1258 / BUT-1259 / BUT-1260** — premise-pending: all four assume the cold-start split branch (`butlery_app.dart`, `app_initializer.dart`, slimmed main.dart, 832-line veckomeny_view) that has NOT merged to `main`. Re-verified absent. Recommend: hold until that branch lands (or close 1259 — its premise file/entry doesn't exist).
-- **BUT-1169** — ops-blocked: dropping the legacy `meat_fish`/`fruit_veg` shopping constants while old Firestore docs still carry those strings would break rendering; needs a prod backfill + telemetry first (the ticket says so). Recommend: provision the backfill before the code cleanup.
-- **BUT-1067** — self-deferred: ARB `description` backfill for ~3000 keys; pure translator-context value, no UX/code change. Recommend: sleep until a third locale or external translator is committed.
-- **BUT-1240** — needs a device-capable CI runner for the NER real-signal lane. Recommend: hold until that runner exists.
-- **BUT-1011 / BUT-1248 / BUT-1176** — self-deferred dead-code-until-trigger. Recommend: drop until a real trigger.
-- **BUT-1149** — blocked-on-precondition: floor 55→60 would red main (coverage ~55.5%). Recommend: reframe as "write tests to 60% THEN flip the floor."
-- **BUT-610** — large open-ended offline audit+harden (~1 day + 3–5 days). Recommend: greenlight just Phase 1 if you want it moving.
-- **Ops/secret-blocked (unchanged):** BUT-840, BUT-819, BUT-1229, BUT-889, BUT-814, BUT-492, BUT-451, BUT-486 — need prod/console/secret access this loop can't reach.
+- **BUT-934** — premise likely gone: lapsed-user win-back already shipped via BUT-688 (`detect-lapsed-users.ts`, A/B winback). Recommend: verify against the shipped CF and close as obsolete, or reframe to the specific remaining gap.
+- **BUT-945** — pure `idea`: "recently removed friends" re-add + "past groups". Speculative discoverability feature, no concrete demand. Recommend: drop until a real request.
+- **BUT-840** — ops/infra-adjacent: extend `on-profile-updated.ts` to refresh an Algolia search mirror. Needs confirmation Algolia is wired + the mirror index exists. Recommend: confirm Algolia infra before building.
+- **BUT-674** — large GDPR/security product scope: minors (15-17) parental consent + social restrictions + minimization. Recommend: scope as its own legal/product decision, not an autonomous sprint pick.
+- **BUT-1179** — Tier D manual QA: live concurrent-edit ConflictBanner verification across 3 surfaces; can't be unit/widget-tested. Recommend: run by hand on a device when convenient.
+
+### Obsolete (done in git, still open in Linear)
+- **BUT-1265** — already on `main` at `f37c9af03` ("test(realtime): end-to-end conflictStream delivery test"). Close to Done.
 
 ### Post-Sprint Steps
 - [ ] Run `dart analyze --fatal-infos`
-- [ ] Run `flutter test test/unit/services/realtime_sync_service_test.dart`
-- [ ] Phase 2.7 outcome-grading (fresh-context verifier on BUT-1265 acceptance)
+- [ ] Run relevant unit tests (realtime sync + conflict module; activity feed; cook snap)
+- [ ] Phase 2.7 outcome-grading (fresh-context verifier per agent group)
 - [ ] Commit, push
-- [ ] Linear: BUT-1265 → Done (Tier A) if tests green and acceptance met
+- [ ] Linear: Tier A (BUT-1267, BUT-1266) → Done; Tier B (BUT-1220, BUT-1000, BUT-949) → In Review + notify; BUT-1265 → Done (obsolete close)
 
 ---
-## ARCHIVED — iter-148 (BUT-1263/1264 recoverLocalVersion test-gaps — landed in HEAD d4ee51b0f) · iter-147 (BUT-1262 realtime data-loss-path sign-off) · iter-146 (BUT-1053/1247/1250 — 1247 Done; locale-aware LLM/OCR + 2 test-gap close-outs, b247fad66) · iter-145 (BUT-1251/1246/1249 Done) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done) · äldre i git-historiken
+## ARCHIVED — iter-149 (BUT-1265 conflictStream end-to-end delivery test — landed `f37c9af03`) · iter-148 (BUT-1263/1264 recoverLocalVersion test-gaps — HEAD d4ee51b0f) · iter-147 (BUT-1262 realtime data-loss-path sign-off) · iter-146 (BUT-1053/1247/1250) · iter-145 (BUT-1251/1246/1249 Done) · iter-144 (BUT-648/1057 In Review) · iter-143 (BUT-1245/626 Done) · äldre i git-historiken

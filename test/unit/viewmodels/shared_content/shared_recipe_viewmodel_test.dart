@@ -484,6 +484,63 @@ void main() {
     });
   });
 
+  group('recipesSharedBy', () {
+    /// Per-friend scoping (BUT-1000): the friend-profile filtered view shows
+    /// ONLY the recipes a single sharer sent me. The method must filter on the
+    /// passed-in friendId, NOT the current user — an inverted operand would
+    /// turn "recipes from Anna" into "recipes from me" (always empty) or leak
+    /// everyone's recipes into one friend's page.
+    test('returns only recipes shared by the given friend', () async {
+      final fromAnna1 = _recipe(id: 'a1', sharedBy: 'uid-anna');
+      final fromAnna2 = _recipe(id: 'a2', sharedBy: 'uid-anna');
+      final fromBo = _recipe(id: 'b1', sharedBy: 'uid-bo');
+      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
+          .thenAnswer((_) async => [fromAnna1, fromBo, fromAnna2]);
+
+      final vm = makeVm();
+      await vm.loadContent();
+
+      expect(
+        vm.recipesSharedBy('uid-anna').map((r) => r.id),
+        ['a1', 'a2'],
+      );
+      // Negative space: Bo's recipe must not leak into Anna's page.
+      expect(vm.recipesSharedBy('uid-anna').map((r) => r.id),
+          isNot(contains('b1')));
+      vm.dispose();
+    });
+
+    test('returns empty list when the friend has shared nothing', () async {
+      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
+          .thenAnswer((_) async => [_recipe(id: 'a1', sharedBy: 'uid-anna')]);
+
+      final vm = makeVm();
+      await vm.loadContent();
+
+      // Drives the empty-state branch of SharedRecipesByFriendView.
+      expect(vm.recipesSharedBy('uid-bo'), isEmpty);
+      vm.dispose();
+    });
+
+    /// The per-friend list reuses the already-filtered inbox: a recipe the
+    /// friend shared but that I've since dismissed must NOT reappear on their
+    /// page. Proves the view inherits dismissed-filtering "for free" rather
+    /// than re-querying the raw repository.
+    test('excludes recipes the friend shared but I dismissed', () async {
+      final visible = _recipe(id: 'a-keep', sharedBy: 'uid-anna');
+      final dismissed = _recipe(id: 'a-gone', sharedBy: 'uid-anna');
+      when(() => coordinator.getSharedRecipesForUser(_kCurrentUid))
+          .thenAnswer((_) async => [visible, dismissed]);
+      when(() => coordinator.isRecipeDismissed('a-gone')).thenReturn(true);
+
+      final vm = makeVm();
+      await vm.loadContent();
+
+      expect(vm.recipesSharedBy('uid-anna').map((r) => r.id), ['a-keep']);
+      vm.dispose();
+    });
+  });
+
   group('canEditRecipe', () {
     /// Pinned contract per branch (production code lines 303-312):
     /// - owner ALWAYS edits.

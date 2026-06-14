@@ -25,15 +25,31 @@ enum CookSnapVisibility {
 }
 
 /// A cooking photo posted on a recipe by any authenticated user.
+///
+/// BUT-949: a snap can hold up to [maxPhotos] photos (an album). The wire
+/// format moved from a singular `photoUrl` to a `photoUrls` list; legacy docs
+/// (written before the field existed) are read-mapped into a one-element list,
+/// so existing snaps keep rendering. The singular [photoUrl] getter is retained
+/// for call-sites that only need the cover image.
 class CookSnap {
   final String id;
   final String recipeId;
   final String userId;
   final String userDisplayName;
   final String? userAvatarUrl;
-  final String photoUrl;
+
+  /// The album's photo URLs, cover-first. Always non-empty for a valid snap
+  /// (capped at [maxPhotos]). Legacy single-photo snaps have length 1.
+  final List<String> photoUrls;
   final String? thumbnailUrl;
   final String? caption;
+
+  /// Cover photo — the first URL in the album. Retained for the many
+  /// call-sites that only render a single image.
+  String get photoUrl => photoUrls.first;
+
+  /// Whether this snap is a multi-photo album.
+  bool get hasMultiplePhotos => photoUrls.length > 1;
 
   /// Optimistic client time. Server timestamp is authoritative — see
   /// `FirebaseCookSnapRepository.addCookSnap`, which overwrites this
@@ -51,22 +67,40 @@ class CookSnap {
     required this.userId,
     required this.userDisplayName,
     this.userAvatarUrl,
-    required this.photoUrl,
+    String? photoUrl,
+    List<String>? photoUrls,
     this.thumbnailUrl,
     this.caption,
     this.visibility = CookSnapVisibility.sameAsRecipe,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? clock.now();
+  })  : assert(
+          photoUrl != null || (photoUrls != null && photoUrls.isNotEmpty),
+          'A CookSnap requires at least one photo (photoUrl or photoUrls).',
+        ),
+        photoUrls = _capPhotos(photoUrls ?? <String>[photoUrl!]),
+        createdAt = createdAt ?? clock.now();
 
   /// Maximum caption length.
   static const int maxCaptionLength = 200;
+
+  /// BUT-949: maximum photos per snap (album cap).
+  static const int maxPhotos = 5;
+
+  /// Normalises an album: drops empty URLs, caps at [maxPhotos]. The caller
+  /// guarantees non-emptiness via the constructor assert.
+  static List<String> _capPhotos(List<String> urls) {
+    final cleaned = urls.where((u) => u.trim().isNotEmpty).toList();
+    if (cleaned.isEmpty) return urls.take(maxPhotos).toList();
+    return cleaned.length > maxPhotos ? cleaned.sublist(0, maxPhotos) : cleaned;
+  }
 
   factory CookSnap.create({
     required String recipeId,
     required String userId,
     required String userDisplayName,
     String? userAvatarUrl,
-    required String photoUrl,
+    String? photoUrl,
+    List<String>? photoUrls,
     String? thumbnailUrl,
     String? caption,
     CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
@@ -78,11 +112,26 @@ class CookSnap {
       userDisplayName: userDisplayName,
       userAvatarUrl: userAvatarUrl,
       photoUrl: photoUrl,
+      photoUrls: photoUrls,
       thumbnailUrl: thumbnailUrl,
       caption: _sanitizeCaption(caption),
       visibility: visibility,
       createdAt: clock.now(),
     );
+  }
+
+  /// BUT-949: resolve an album from a Firestore map. Prefers `photoUrls`
+  /// (album format); falls back to the legacy singular `photoUrl`. Always
+  /// returns a non-empty list (one empty-string element for a corrupt/empty
+  /// doc) so the constructor's non-empty invariant holds — a missing photo is
+  /// a degenerate doc, not a crash.
+  static List<String> _photosFromMap(Map<String, dynamic> data) {
+    final urls = SerializationUtils.safeStringList(data, 'photoUrls')
+        .where((u) => u.trim().isNotEmpty)
+        .toList();
+    if (urls.isNotEmpty) return urls;
+    final legacy = SerializationUtils.safeString(data, 'photoUrl');
+    return <String>[legacy];
   }
 
   static String? _sanitizeCaption(String? caption) {
@@ -101,6 +150,10 @@ class CookSnap {
       'userId': userId,
       'userDisplayName': userDisplayName,
       'userAvatarUrl': userAvatarUrl,
+      'photoUrls': photoUrls,
+      // BUT-949: keep the legacy singular cover field so any consumer still
+      // reading `photoUrl` (older clients, activity-feed extraData) keeps
+      // working. New reads prefer `photoUrls`.
       'photoUrl': photoUrl,
       'thumbnailUrl': thumbnailUrl,
       'caption': caption,
@@ -121,7 +174,9 @@ class CookSnap {
       ),
       userAvatarUrl:
           SerializationUtils.safeNullableString(data, 'userAvatarUrl'),
-      photoUrl: SerializationUtils.safeString(data, 'photoUrl'),
+      // BUT-949: prefer the album list; fall back to the legacy singular
+      // `photoUrl` so pre-album docs read into a one-element album.
+      photoUrls: _photosFromMap(data),
       thumbnailUrl: SerializationUtils.safeNullableString(data, 'thumbnailUrl'),
       caption: SerializationUtils.safeNullableString(data, 'caption'),
       visibility: CookSnapVisibility.fromWire(

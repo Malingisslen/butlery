@@ -11,8 +11,6 @@
 /// - deleteResource: enforces canUserDelete (stricter than canUserEdit),
 ///   removes the cached entry and the active listener tracking, propagates
 ///   documentNotFound when the doc has been removed remotely first.
-/// - resolveConflict: deterministic — higher editCount wins; on tie, later
-///   lastEditedAt wins; falls back to remote on internal errors.
 /// - Cache: getCachedResource returns null for unknown ids; cached value is
 ///   the local pre-write copy after a successful updateResource.
 /// - fetchLatestResource: returns null (does not throw) on parser failure.
@@ -662,62 +660,13 @@ void main() {
     });
   });
 
-  group('resolveConflict (last-write-wins by editCount, then timestamp)', () {
-    /// Proves: deterministic conflict resolution — local with higher edit
-    /// count wins. If `>` flipped to `<`, both this and the next test fail,
-    /// which together pin the comparison direction.
-    test('local wins when local.editCount > remote.editCount', () async {
-      final local = _buildResource(id: 'c1', ownerId: 'u', editCount: 5);
-      final remote = _buildResource(id: 'c1', ownerId: 'u', editCount: 2);
-      final winner = await service.resolveConflict(local, remote);
-      expect(identical(winner, local), isTrue);
-    });
-
-    /// Proves the inverse — remote can win too.
-    test('remote wins when remote.editCount > local.editCount', () async {
-      final local = _buildResource(id: 'c2', ownerId: 'u', editCount: 1);
-      final remote = _buildResource(id: 'c2', ownerId: 'u', editCount: 9);
-      final winner = await service.resolveConflict(local, remote);
-      expect(identical(winner, remote), isTrue);
-    });
-
-    /// Proves: tie-break uses `lastEditedAt`. Catches a regression where
-    /// the tiebreaker silently picked one side regardless of timestamp.
-    test('on edit-count tie, later lastEditedAt wins (local newer)', () async {
-      final local = _buildResource(
-        id: 'c3',
-        ownerId: 'u',
-        editCount: 3,
-        lastEditedAt: DateTime(2026, 6, 1),
-      );
-      final remote = _buildResource(
-        id: 'c3',
-        ownerId: 'u',
-        editCount: 3,
-        lastEditedAt: DateTime(2026, 5, 1),
-      );
-      final winner = await service.resolveConflict(local, remote);
-      expect(identical(winner, local), isTrue);
-    });
-
-    /// Proves: on tie + remote newer, remote wins. Companion to the above.
-    test('on edit-count tie, later lastEditedAt wins (remote newer)', () async {
-      final local = _buildResource(
-        id: 'c4',
-        ownerId: 'u',
-        editCount: 3,
-        lastEditedAt: DateTime(2026, 5, 1),
-      );
-      final remote = _buildResource(
-        id: 'c4',
-        ownerId: 'u',
-        editCount: 3,
-        lastEditedAt: DateTime(2026, 6, 1),
-      );
-      final winner = await service.resolveConflict(local, remote);
-      expect(identical(winner, remote), isTrue);
-    });
-  });
+  // BUT-1267: the service-level resolveConflict<T>(local, remote) was dead
+  // (no caller — updateResource routes through _conflictModule.resolveConflict,
+  // which emits ConflictEvents the service-level copy silently omitted). It and
+  // its four last-write-wins pinning tests were removed. The same editCount/
+  // timestamp algorithm is now pinned at the module level (with the conflict
+  // emission it must carry) in
+  // test/unit/services/realtime/conflict_resolution_module_test.dart.
 
   group('conflictStream (BUT-1265 live delivery end-to-end)', () {
     /// BUT-1265: end-to-end proof that a REAL losing-local conflict — driven

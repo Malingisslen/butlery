@@ -2,6 +2,7 @@
 // the parent under the 634-line baseline. Pure relocation — no logic changes.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -66,9 +67,68 @@ class PrivacySettingsSection extends StatelessWidget {
                 onChanged: viewModel.updateShareActivityToFeed,
                 secondary: const Icon(Icons.dynamic_feed),
               ),
+              // BUT-1220: per-event-type toggles sit under the master switch.
+              // They only have effect while the master toggle is on, so we
+              // disable them (greyed, non-interactive) when broadcasting is off.
+              _ActivityTypeToggles(viewModel: viewModel),
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// BUT-1220: nested per-event-type opt-outs under the activity-feed master
+/// toggle. Each row maps to an [ActivityEventType]; an unset entry reads as on.
+class _ActivityTypeToggles extends StatelessWidget {
+  final UserProfileViewModel viewModel;
+
+  const _ActivityTypeToggles({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    final masterOn = viewModel.shareActivityToFeed;
+
+    // Order mirrors a typical cooking flow; addedIngredient is an internal
+    // depth event, intentionally not surfaced as a user-facing broadcast toggle.
+    final rows = <(ActivityEventType, String)>[
+      (ActivityEventType.cooked, context.l10n.privacyActivityTypeCooked),
+      (ActivityEventType.shared, context.l10n.privacyActivityTypeShared),
+      (
+        ActivityEventType.startedCooking,
+        context.l10n.privacyActivityTypeStartedCooking
+      ),
+      (ActivityEventType.pinged, context.l10n.privacyActivityTypePinged),
+    ];
+
+    return Column(
+      children: [
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.spacingL,
+            AppDimensions.spacingM,
+            AppDimensions.spacingL,
+            0,
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              context.l10n.privacyActivityTypesTitle,
+              style: AppTextStyles.labelMedium,
+            ),
+          ),
+        ),
+        for (final (type, label) in rows)
+          SwitchListTile(
+            title: Text(label),
+            value: masterOn && viewModel.isActivityEventTypeEnabled(type),
+            onChanged: masterOn
+                ? (value) => viewModel.updateActivityEventType(type, value)
+                : null,
+            dense: true,
+          ),
       ],
     );
   }

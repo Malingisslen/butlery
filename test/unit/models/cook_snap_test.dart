@@ -198,6 +198,103 @@ void main() {
     });
   });
 
+  // BUT-949: multi-photo albums. Legacy singular `photoUrl` docs read into a
+  // one-element album; new docs prefer `photoUrls`; the album is capped at 5.
+  group('photo album (BUT-949)', () {
+    test('singular photoUrl constructor yields a one-element album', () {
+      final snap = CookSnap(
+        id: 'a',
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrl: 'https://s/1.jpg',
+      );
+      expect(snap.photoUrls, ['https://s/1.jpg']);
+      expect(snap.photoUrl, 'https://s/1.jpg');
+      expect(snap.hasMultiplePhotos, isFalse);
+    });
+
+    test('photoUrls constructor exposes cover via photoUrl', () {
+      final snap = CookSnap(
+        id: 'a',
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrls: const ['cover.jpg', 'b.jpg', 'c.jpg'],
+      );
+      expect(snap.photoUrl, 'cover.jpg');
+      expect(snap.hasMultiplePhotos, isTrue);
+      expect(snap.photoUrls.length, 3);
+    });
+
+    test('album is capped at maxPhotos', () {
+      final many = List.generate(9, (i) => 'p$i.jpg');
+      final snap = CookSnap(
+        id: 'a',
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrls: many,
+      );
+      expect(snap.photoUrls.length, CookSnap.maxPhotos);
+      expect(snap.photoUrls.first, 'p0.jpg');
+    });
+
+    test('empty url entries are dropped', () {
+      final snap = CookSnap(
+        id: 'a',
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrls: const ['', 'real.jpg', '   '],
+      );
+      expect(snap.photoUrls, ['real.jpg']);
+    });
+
+    test('toFirestore writes photoUrls AND a legacy cover photoUrl', () {
+      final snap = CookSnap(
+        id: 'a',
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrls: const ['cover.jpg', 'b.jpg'],
+      );
+      final payload = snap.toFirestore();
+      expect(payload['photoUrls'], ['cover.jpg', 'b.jpg']);
+      expect(payload['photoUrl'], 'cover.jpg');
+    });
+
+    test('fromMap prefers photoUrls over legacy photoUrl', () {
+      final snap = CookSnap.fromMap('a', {
+        'recipeId': 'r',
+        'photoUrl': 'legacy.jpg',
+        'photoUrls': ['new1.jpg', 'new2.jpg'],
+      });
+      expect(snap.photoUrls, ['new1.jpg', 'new2.jpg']);
+      expect(snap.photoUrl, 'new1.jpg');
+    });
+
+    test('legacy doc with only photoUrl reads into a one-element album', () {
+      final snap = CookSnap.fromMap('a', {
+        'recipeId': 'r',
+        'photoUrl': 'legacy.jpg',
+      });
+      expect(snap.photoUrls, ['legacy.jpg']);
+      expect(snap.hasMultiplePhotos, isFalse);
+    });
+
+    test('multi-photo album round-trips through Firestore', () {
+      final original = CookSnap.create(
+        recipeId: 'r',
+        userId: 'u',
+        userDisplayName: 'U',
+        photoUrls: const ['a.jpg', 'b.jpg', 'c.jpg'],
+      );
+      final restored = CookSnap.fromMap(original.id, original.toFirestore());
+      expect(restored.photoUrls, original.photoUrls);
+    });
+  });
+
   group('equality + hash', () {
     test('two CookSnaps with same id are equal', () {
       final a = CookSnap(

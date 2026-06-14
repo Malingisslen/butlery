@@ -181,6 +181,96 @@ void main() {
         expect(profile, isNull);
       });
 
+      test(
+          'fetchProfile merges hasSeenActivityFeedHint from the private '
+          'settings sub-doc (BUT-1220)', () async {
+        // Regression guard: the durable once-only hint flag is written to
+        // toPrivateSettings (users/{uid}/settings/preferences), NOT the public
+        // profile doc. fetchProfile must merge it back, else the flag always
+        // reads as the default false and the one-time hint re-fires every
+        // session. We seed both docs directly (bypassing the merge:true write
+        // path the fake doesn't persist) and assert the merge reads it back.
+        const userId = 'user-123';
+        await _seedUserProfile(
+            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+        await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .set({'hasSeenActivityFeedHint': true});
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(profile!.hasSeenActivityFeedHint, isTrue,
+            reason: 'the hint flag must survive a fetch via the settings '
+                'merge — otherwise the once-only nudge never sticks');
+      });
+
+      test(
+          'fetchProfile defaults hasSeenActivityFeedHint to false when the '
+          'settings sub-doc is absent (BUT-1220)', () async {
+        // Pre-field accounts / fresh users have no settings doc — the merge
+        // must fall back to false (hint not yet shown) rather than throw.
+        const userId = 'user-123';
+        await _seedUserProfile(
+            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(profile!.hasSeenActivityFeedHint, isFalse);
+      });
+
+      test(
+          'markActivityFeedHintSeen writes only the flag to the settings '
+          'sub-doc and never touches the public profile doc (BUT-1220)',
+          () async {
+        // Regression guard against the full-document-set clobber: this
+        // automatic write must be a targeted single-field merge into the
+        // private settings sub-doc (where fetchProfile reads it back), leaving
+        // the public profile doc — and its friendsCount / isHidden, owned by
+        // other writers — completely untouched.
+        const userId = 'user-123';
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore()
+            ..['friendsCount'] = 7
+            ..['isHidden'] = false,
+        );
+
+        await repository.markActivityFeedHintSeen(userId);
+
+        // The flag landed in the settings sub-doc and round-trips on fetch.
+        final settings = await fakeFirestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .get();
+        expect(settings.data()!['hasSeenActivityFeedHint'], isTrue);
+        expect((await repository.fetchProfile(userId))!.hasSeenActivityFeedHint,
+            isTrue);
+
+        // The public profile doc is byte-for-byte unchanged — no clobber of
+        // friendsCount (concurrent friend-creation transactions own it).
+        final publicDoc =
+            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        expect(publicDoc.data()!['friendsCount'], equals(7));
+        expect(
+            publicDoc.data()!.containsKey('hasSeenActivityFeedHint'), isFalse,
+            reason: 'the hint flag must never leak into the friend-readable '
+                'public doc');
+      });
+
+      test('markActivityFeedHintSeen rejects a non-owner caller (BUT-1220)',
+          () async {
+        await expectLater(
+          repository.markActivityFeedHintSeen('other-user'),
+          throwsA(isA<Exception>()),
+        );
+      });
+
       test('should fetch multiple profiles in batches', () async {
         // Arrange
         final userIds = List.generate(15, (i) => 'user-$i');

@@ -603,6 +603,118 @@ void main() {
       });
     });
 
+    group('Per-event-type activity opt-outs (BUT-1220)', () {
+      test('absent type reads as enabled (opt-out semantics)', () {
+        // Empty/missing map = "all types on" — matches pre-field accounts.
+        expect(testProfile.activityFeedEventTypes, isEmpty);
+        expect(testProfile.isActivityEventTypeEnabled('cooked'), isTrue);
+        expect(testProfile.isActivityEventTypeEnabled('shared'), isTrue);
+      });
+
+      test('only an explicit false suppresses a type', () {
+        final profile = testProfile.copyWith(
+          activityFeedEventTypes: const {'cooked': false, 'shared': true},
+        );
+        expect(profile.isActivityEventTypeEnabled('cooked'), isFalse);
+        expect(profile.isActivityEventTypeEnabled('shared'), isTrue);
+        // A type not in the map is still enabled.
+        expect(profile.isActivityEventTypeEnabled('pinged'), isTrue);
+      });
+
+      test('round-trips the map through JSON', () {
+        final profile = testProfile.copyWith(
+          activityFeedEventTypes: const {
+            'cooked': false,
+            'startedCooking': true
+          },
+        );
+        final decoded = UserProfile.fromJson(profile.toJson());
+        expect(decoded.activityFeedEventTypes,
+            equals({'cooked': false, 'startedCooking': true}));
+      });
+
+      test('round-trips the map through the Firestore map', () {
+        final profile = testProfile.copyWith(
+          activityFeedEventTypes: const {'pinged': false},
+        );
+        final decoded = UserProfile.fromMap('user_123', profile.toFirestore());
+        expect(decoded.isActivityEventTypeEnabled('pinged'), isFalse);
+        expect(decoded.isActivityEventTypeEnabled('cooked'), isTrue);
+      });
+
+      test('defensive decode: drops non-bool entries, never throws', () {
+        // Corrupt/legacy data must not crash deserialization. Non-bool values
+        // are dropped (so the absent-key default re-enables them), and the
+        // surviving bool entries are preserved.
+        final json = {
+          'uid': 'u',
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+          'activityFeedEventTypes': {
+            'cooked': false,
+            'shared': 'yes', // wrong type → dropped
+            'pinged': 1, // wrong type → dropped
+          },
+        };
+        final profile = UserProfile.fromJson(json);
+        expect(profile.activityFeedEventTypes, equals({'cooked': false}));
+        // Dropped entries fall back to the enabled default.
+        expect(profile.isActivityEventTypeEnabled('shared'), isTrue);
+        expect(profile.isActivityEventTypeEnabled('pinged'), isTrue);
+      });
+
+      test('defensive decode: a non-map value yields an empty map', () {
+        final json = {
+          'uid': 'u',
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+          'activityFeedEventTypes': 'corrupt',
+        };
+        expect(UserProfile.fromJson(json).activityFeedEventTypes, isEmpty);
+      });
+    });
+
+    group('Activity-feed first-event hint flag (BUT-1220)', () {
+      test('defaults to false (hint not yet shown)', () {
+        expect(testProfile.hasSeenActivityFeedHint, isFalse);
+      });
+
+      test('round-trips through JSON', () {
+        final seen = testProfile.copyWith(hasSeenActivityFeedHint: true);
+        expect(UserProfile.fromJson(seen.toJson()).hasSeenActivityFeedHint,
+            isTrue);
+      });
+
+      test('is persisted to the private settings sub-doc, not the public doc',
+          () {
+        // BUT-1220: the durable once-only guard must live where only the owner
+        // can read it. It is written via toPrivateSettings (private settings
+        // sub-doc), NOT toFirestore (the public profile doc that friends read).
+        // The repository merges it back from private settings on fetch; if it
+        // ever moves into toFirestore, this test flags the privacy regression.
+        final seen = testProfile.copyWith(hasSeenActivityFeedHint: true);
+        expect(seen.toPrivateSettings()['hasSeenActivityFeedHint'], isTrue);
+        expect(
+            seen.toFirestore().containsKey('hasSeenActivityFeedHint'), isFalse,
+            reason: 'the hint flag must not leak into the public profile doc');
+      });
+
+      test('backward-compat: absent key deserializes to false', () {
+        final json = {
+          'uid': 'u',
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+        };
+        expect(UserProfile.fromJson(json).hasSeenActivityFeedHint, isFalse);
+      });
+    });
+
     group('Firestore Serialization', () {
       test('should serialize to Firestore format', () {
         // Act

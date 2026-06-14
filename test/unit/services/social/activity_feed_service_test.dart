@@ -41,13 +41,20 @@ class _RecordingActivityRepo extends Fake implements ActivityEventRepository {
   }
 }
 
-UserProfile _profile({required bool shareActivityToFeed}) => UserProfile(
+UserProfile _profile({
+  required bool shareActivityToFeed,
+  Map<String, bool> activityFeedEventTypes = const {},
+  bool hasSeenActivityFeedHint = false,
+}) =>
+    UserProfile(
       uid: 'actor-1',
       displayName: 'Anna Andersson',
       email: 'anna@butlery.test',
       joinedAt: DateTime(2026, 1, 1),
       lastActiveAt: DateTime(2026, 6, 1),
       shareActivityToFeed: shareActivityToFeed,
+      activityFeedEventTypes: activityFeedEventTypes,
+      hasSeenActivityFeedHint: hasSeenActivityFeedHint,
     );
 
 void main() {
@@ -68,6 +75,9 @@ void main() {
 
     TestServiceLocator.registerMock<PermissionService>(permissionService);
     TestServiceLocator.registerMock<user_svc.UserService>(userService);
+
+    // BUT-1220: emitEvent persists the one-time hint flag on first broadcast.
+    when(() => userService.markActivityFeedHintSeen()).thenAnswer((_) async {});
 
     service = ActivityFeedService(repository: repo);
   });
@@ -165,6 +175,117 @@ void main() {
         ),
         completes,
       );
+    });
+  });
+
+  group('per-event-type gating (BUT-1220)', () {
+    test('a type explicitly disabled is NOT broadcast even with master on',
+        () async {
+      when(() => userService.currentUserProfile).thenReturn(_profile(
+        shareActivityToFeed: true,
+        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+      ));
+
+      await service.emitEvent(
+        ActivityEventType.cooked,
+        'recipe-1',
+        'Köttbullar',
+      );
+
+      expect(repo.addedEvents, isEmpty,
+          reason: 'an explicit per-type opt-out must suppress that type even '
+              'while the master toggle is on');
+    });
+
+    test('a type absent from the map IS broadcast (absent = enabled)',
+        () async {
+      // Only `cooked` is disabled; `shared` is absent → must still broadcast.
+      when(() => userService.currentUserProfile).thenReturn(_profile(
+        shareActivityToFeed: true,
+        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+      ));
+
+      await service.emitEvent(
+        ActivityEventType.shared,
+        'recipe-2',
+        'Pannkakor',
+      );
+
+      expect(repo.addedEvents, hasLength(1),
+          reason: 'an event type with no map entry defaults to enabled');
+      expect(repo.addedEvents.single.type, equals(ActivityEventType.shared));
+    });
+
+    test('master-off suppresses even a per-type-enabled event', () async {
+      when(() => userService.currentUserProfile).thenReturn(_profile(
+        shareActivityToFeed: false,
+        activityFeedEventTypes: {ActivityEventType.cooked.name: true},
+      ));
+
+      await service.emitEvent(
+        ActivityEventType.cooked,
+        'recipe-3',
+        'Lasagne',
+      );
+
+      expect(repo.addedEvents, isEmpty,
+          reason: 'the master toggle overrides per-type opt-ins — off means '
+              'nothing broadcasts');
+    });
+  });
+
+  group('one-time first-event hint (BUT-1220)', () {
+    test('first successful broadcast triggers the hint and persists the flag',
+        () async {
+      when(() => userService.currentUserProfile).thenReturn(
+          _profile(shareActivityToFeed: true, hasSeenActivityFeedHint: false));
+
+      expect(service.firstEventHint.value, isFalse);
+
+      await service.emitEvent(
+        ActivityEventType.cooked,
+        'recipe-1',
+        'Köttbullar',
+      );
+
+      expect(service.firstEventHint.value, isTrue,
+          reason: 'the in-session hint notifier fires on the first broadcast');
+      verify(() => userService.markActivityFeedHintSeen()).called(1);
+    });
+
+    test('a user who already saw the hint does not re-trigger it', () async {
+      when(() => userService.currentUserProfile).thenReturn(
+          _profile(shareActivityToFeed: true, hasSeenActivityFeedHint: true));
+
+      await service.emitEvent(
+        ActivityEventType.cooked,
+        'recipe-1',
+        'Köttbullar',
+      );
+
+      expect(service.firstEventHint.value, isFalse,
+          reason: 'the durable flag suppresses the hint on subsequent runs');
+      verifyNever(() => userService.markActivityFeedHintSeen());
+    });
+
+    test('a suppressed event (per-type off) does NOT trigger the hint',
+        () async {
+      when(() => userService.currentUserProfile).thenReturn(_profile(
+        shareActivityToFeed: true,
+        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+        hasSeenActivityFeedHint: false,
+      ));
+
+      await service.emitEvent(
+        ActivityEventType.cooked,
+        'recipe-1',
+        'Köttbullar',
+      );
+
+      expect(service.firstEventHint.value, isFalse,
+          reason: 'the hint must only fire when an event was actually '
+              'broadcast — a gated-out event is not a first broadcast');
+      verifyNever(() => userService.markActivityFeedHintSeen());
     });
   });
 }

@@ -81,6 +81,7 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
     required ImageSource source,
     String? caption,
     CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
+    bool allowMultiple = false,
   }) async {
     addCalls++;
     lastRecipeId = recipeId;

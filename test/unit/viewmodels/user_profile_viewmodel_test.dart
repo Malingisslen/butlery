@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -282,6 +283,41 @@ void main() {
 
         expect(viewModel.showOnlineStatus, isFalse);
         expect(viewModel.hasUnsavedChanges, isTrue);
+      });
+
+      test(
+          'updateActivityEventType stores an explicit toggle and marks dirty '
+          '(BUT-1220)', () {
+        // Pins that _profileFieldsEqual includes the per-type map (via
+        // mapEquals); toggling one event type alone must register as an
+        // unsaved change, else the save button stays disabled and the choice
+        // is lost on reload.
+        var notificationCount = 0;
+        viewModel.addListener(() => notificationCount++);
+
+        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.cooked),
+            isTrue);
+
+        viewModel.updateActivityEventType(ActivityEventType.cooked, false);
+
+        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.cooked),
+            isFalse);
+        // Other types are untouched and still read as enabled.
+        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.shared),
+            isTrue);
+        expect(viewModel.hasUnsavedChanges, isTrue);
+        expect(notificationCount, greaterThan(0));
+      });
+
+      test('updateActivityEventType stores an explicit "on" (BUT-1220)', () {
+        // A deliberate re-enable must be stored explicitly (true), not merely
+        // left absent — so a later toggle-off is distinguishable and the map
+        // stays readable.
+        viewModel.updateActivityEventType(ActivityEventType.pinged, false);
+        viewModel.updateActivityEventType(ActivityEventType.pinged, true);
+
+        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.pinged),
+            isTrue);
       });
     });
 

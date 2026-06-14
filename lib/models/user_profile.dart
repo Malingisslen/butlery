@@ -47,6 +47,18 @@ class UserProfile with JsonSerializableMixin {
   /// false the user opts out and their cook/share/ping events are not emitted.
   /// Defaults true (existing behaviour) for accounts created before this field.
   final bool shareActivityToFeed;
+
+  /// BUT-1220: per-event-type opt-outs that sit UNDER the master toggle. Keyed
+  /// by [ActivityEventType.name]. A type that is absent from the map counts as
+  /// ENABLED — so an empty/missing map means "all types on" and matches the
+  /// behaviour of accounts created before this field. Only an explicit `false`
+  /// suppresses that one event type; the master toggle still gates everything.
+  final Map<String, bool> activityFeedEventTypes;
+
+  /// BUT-1220: whether the one-time "your activity is now visible to friends"
+  /// hint has already been shown. Flipped true after the first event is
+  /// broadcast so the nudge fires exactly once. Defaults false.
+  final bool hasSeenActivityFeedHint;
   final String? fcmToken;
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
@@ -90,6 +102,8 @@ class UserProfile with JsonSerializableMixin {
     this.isOnline = false,
     this.showOnlineStatus = true,
     this.shareActivityToFeed = true,
+    this.activityFeedEventTypes = const {},
+    this.hasSeenActivityFeedHint = false,
     this.fcmToken,
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
@@ -115,6 +129,12 @@ class UserProfile with JsonSerializableMixin {
     }
   }
 
+  /// BUT-1220: whether a given event type is allowed to broadcast. Absent key
+  /// = enabled (opt-out semantics). The master [shareActivityToFeed] toggle is
+  /// checked separately by the caller and overrides this.
+  bool isActivityEventTypeEnabled(String typeName) =>
+      activityFeedEventTypes[typeName] ?? true;
+
   static const _sentinel = Object();
 
   UserProfile copyWith({
@@ -130,6 +150,8 @@ class UserProfile with JsonSerializableMixin {
     bool? isOnline,
     bool? showOnlineStatus,
     bool? shareActivityToFeed,
+    Map<String, bool>? activityFeedEventTypes,
+    bool? hasSeenActivityFeedHint,
     Object? fcmToken = _sentinel,
     Object? fcmTokenUpdatedAt = _sentinel,
     bool? notificationsEnabled,
@@ -159,6 +181,10 @@ class UserProfile with JsonSerializableMixin {
       isOnline: isOnline ?? this.isOnline,
       showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
       shareActivityToFeed: shareActivityToFeed ?? this.shareActivityToFeed,
+      activityFeedEventTypes:
+          activityFeedEventTypes ?? this.activityFeedEventTypes,
+      hasSeenActivityFeedHint:
+          hasSeenActivityFeedHint ?? this.hasSeenActivityFeedHint,
       fcmToken: fcmToken == _sentinel ? this.fcmToken : fcmToken as String?,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt == _sentinel
           ? this.fcmTokenUpdatedAt
@@ -279,6 +305,7 @@ class UserProfile with JsonSerializableMixin {
       'isOnline': isOnline,
       'showOnlineStatus': showOnlineStatus,
       'shareActivityToFeed': shareActivityToFeed,
+      'activityFeedEventTypes': activityFeedEventTypes,
       'cookingSkillLevel': cookingSkillLevel?.name,
       'cuisineAffinities': cuisineAffinities,
       'isHidden': isHidden,
@@ -305,6 +332,7 @@ class UserProfile with JsonSerializableMixin {
           : null,
       'bio': bio,
       'birthYear': birthYear,
+      'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
     };
   }
 
@@ -324,6 +352,8 @@ class UserProfile with JsonSerializableMixin {
       'isOnline': isOnline,
       'showOnlineStatus': showOnlineStatus,
       'shareActivityToFeed': shareActivityToFeed,
+      'activityFeedEventTypes': activityFeedEventTypes,
+      'hasSeenActivityFeedHint': hasSeenActivityFeedHint,
       // Notification fields
       'fcmToken': fcmToken,
       'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
@@ -372,6 +402,9 @@ class UserProfile with JsonSerializableMixin {
       shareActivityToFeed: utils.SerializationUtils.safeBool(
           data, 'shareActivityToFeed',
           defaultValue: true),
+      activityFeedEventTypes: _readActivityFeedEventTypes(data),
+      hasSeenActivityFeedHint:
+          utils.SerializationUtils.safeBool(data, 'hasSeenActivityFeedHint'),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
       fcmTokenUpdatedAt:
@@ -430,6 +463,9 @@ class UserProfile with JsonSerializableMixin {
       shareActivityToFeed: utils.SerializationUtils.safeBool(
           json, 'shareActivityToFeed',
           defaultValue: true),
+      activityFeedEventTypes: _readActivityFeedEventTypes(json),
+      hasSeenActivityFeedHint:
+          utils.SerializationUtils.safeBool(json, 'hasSeenActivityFeedHint'),
       fcmToken: utils.SerializationUtils.safeNullableString(json, 'fcmToken'),
       fcmTokenUpdatedAt: utils.SerializationUtils.parseDateTimeValue(
           json['fcmTokenUpdatedAt']),
@@ -459,6 +495,20 @@ class UserProfile with JsonSerializableMixin {
       hiddenAt: utils.SerializationUtils.parseDateTimeValue(json['hiddenAt']),
       schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
+  }
+
+  /// BUT-1220: read the per-event-type toggle map defensively. Coerces the raw
+  /// value to `Map<String, bool>`, dropping any non-bool entries so corrupt or
+  /// legacy data never throws. A missing/empty map means "all types enabled".
+  static Map<String, bool> _readActivityFeedEventTypes(
+      Map<String, dynamic> data) {
+    final raw = data['activityFeedEventTypes'];
+    if (raw is! Map) return const {};
+    final result = <String, bool>{};
+    raw.forEach((key, value) {
+      if (value is bool) result[key.toString()] = value;
+    });
+    return result;
   }
 
   /// Read birthYear defensively: drops invalid values (out of range, wrong type)

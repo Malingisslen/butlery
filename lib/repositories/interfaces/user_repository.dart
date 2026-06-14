@@ -89,6 +89,13 @@ abstract class UserRepository extends Repository<UserProfile> {
   Future<void> updateAllergenPreferences(
       String userId, UserAllergenPreferences preferences);
 
+  /// BUT-1220: persist the one-time activity-feed hint flag with a targeted
+  /// single-field `update()` — never a full-document set. A background/automatic
+  /// profile mutation must not clobber fields owned by other writers
+  /// (`friendsCount`, mutated by friend-creation transactions) or moderators
+  /// (`isHidden`/`hiddenAt`), which a stale full-profile set would do.
+  Future<void> markActivityFeedHintSeen(String userId);
+
   /// Delete the `public_profiles/{userId}` document. GDPR Art. 17.
   /// Caller must own the profile (enforced via `validateOwnership`).
   Future<bool> deletePublicProfile(String userId);

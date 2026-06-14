@@ -148,6 +148,17 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     return content.where((recipe) => recipe.sharedByUserId == userId).toList();
   }
 
+  /// Get recipes shared by a specific friend with the current user.
+  /// Used by the per-friend filtered view (BUT-1000): scopes the already-loaded
+  /// shared-recipe inbox to a single sharer, reusing the same content the
+  /// "Shared with me" list renders (dismissed/blocked/imported filtering already
+  /// applied by [loadContentFromRepository]).
+  List<SharedRecipe> recipesSharedBy(String friendId) {
+    return content
+        .where((recipe) => recipe.sharedByUserId == friendId)
+        .toList();
+  }
+
   /// Get recipes that can be imported (using cache - Issue #014)
   List<SharedRecipe> get importableRecipes {
     final userId = currentUserId;

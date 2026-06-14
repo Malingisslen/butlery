@@ -24,6 +24,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -204,6 +205,25 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                               ),
                             ),
                           ],
+
+                          // Recipes this friend has shared with me (BUT-1000)
+                          const SizedBox(height: AppDimensions.spacingM),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => SharedRecipesByFriendView(
+                                    friendId: friend.uid,
+                                    friendDisplayName: friend.displayName,
+                                  ),
+                                ),
+                              ),
+                              icon: const Icon(Icons.folder_shared_outlined),
+                              label: Text(
+                                  context.l10n.sharedRecipesByFriendButton),
+                            ),
+                          ),
 
                           const SizedBox(height: AppDimensions.spacingL),
 

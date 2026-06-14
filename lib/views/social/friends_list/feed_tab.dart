@@ -8,6 +8,7 @@ import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
+import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -272,21 +273,14 @@ class FeedTab {
                 const SizedBox(height: AppDimensions.spacingSm),
                 // Recipe preview
                 _buildRecipePreview(context, event),
-                // CookSnap photo placeholder
-                if (event.photoUrl != null)
+                // CookSnap album — swipeable carousel for multi-photo snaps,
+                // a single image for legacy/single-photo events (BUT-949).
+                if (event.photoUrls.isNotEmpty)
                   Padding(
                     padding:
                         const EdgeInsets.only(top: AppDimensions.spacingSm),
-                    child: Container(
-                      width: double.infinity,
-                      height: 140,
-                      color: cs.onPrimaryContainer,
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.photo_camera,
-                        size: 36,
-                        color: cs.onPrimary.withValues(alpha: 0.4),
-                      ),
+                    child: CookSnapPhotoCarousel(
+                      photoUrls: event.photoUrls,
                     ),
                   ),
               ],

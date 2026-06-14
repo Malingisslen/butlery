@@ -25,6 +25,8 @@ import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/social/activity_feed_service.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -51,6 +53,23 @@ class _CapturingCookSnapRepository extends Fake implements CookSnapRepository {
 class _FakeFriendsRepository extends Fake implements FriendsRepository {}
 
 class _MockImageUploadService extends Mock implements ImageUploadService {}
+
+/// Captures the fire-and-forget activity-feed broadcast so the test can assert
+/// the cooked-event extraData carries the full album. Only [emitEvent] is hit.
+class _CapturingActivityFeedService extends Fake
+    implements ActivityFeedService {
+  final List<Map<String, dynamic>?> emittedExtraData = [];
+
+  @override
+  Future<void> emitEvent(
+    ActivityEventType type,
+    String recipeId,
+    String recipeTitle, {
+    Map<String, dynamic>? extraData,
+  }) async {
+    emittedExtraData.add(extraData);
+  }
+}
 
 const _testUserId = 'test-user-123';
 
@@ -163,6 +182,103 @@ void main() {
         CookSnapVisibility.sameAsRecipe,
         reason: 'omitting the override must keep the inherited audience',
       );
+    });
+  });
+
+  group('CookSnapService — multi-photo album write-chain (BUT-949)', () {
+    test(
+        'allowMultiple gallery pick uploads every file in cover-first order, '
+        'takes the cover thumbnail, and broadcasts the full album to the feed',
+        () async {
+      // Proves the album path end to end: pickMultipleImages → per-file upload
+      // loop preserving pick order → coverThumbnailUrl from the FIRST photo →
+      // photoUrls list persisted AND mirrored into activity-feed extraData. A
+      // regression (uploading only files.first, losing order, using the last
+      // thumbnail, or dropping photoUrls) would otherwise stay green.
+      final imagePicker = production.ServiceLocator.get<ImagePickerService>()
+          as MockImagePickerService;
+      when(() => imagePicker.pickMultipleImages(
+              maxImages: any(named: 'maxImages')))
+          .thenAnswer((_) async =>
+              [File('cover.jpg'), File('second.jpg'), File('third.jpg')]);
+
+      // Distinct url + thumbnail per upload call so order and cover-selection
+      // are observable, not coincidentally equal.
+      final uploadService = production.ServiceLocator.get<ImageUploadService>()
+          as _MockImageUploadService;
+      var call = 0;
+      when(() => uploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          )).thenAnswer((_) async {
+        final i = call++;
+        return UploadResult.success(
+          'https://example.com/photo-$i.jpg',
+          thumbnailUrl: 'https://example.com/thumb-$i.jpg',
+        );
+      });
+
+      // Capture the activity-feed broadcast (cooked event extraData).
+      final activityFeed = _CapturingActivityFeedService();
+      TestServiceLocator.registerMock<ActivityFeedService>(activityFeed);
+
+      final snap = await service.addCookSnap(
+        recipeId: 'recipe-1',
+        recipeAuthorId: _testUserId,
+        recipeName: 'Köttbullar',
+        source: ImageSource.gallery,
+        allowMultiple: true,
+      );
+
+      expect(snap, isNotNull,
+          reason: 'sanity: the full album flow must reach the repo save');
+      expect(repository.saved, hasLength(1));
+      final saved = repository.saved.single;
+
+      expect(
+        saved.photoUrls,
+        equals([
+          'https://example.com/photo-0.jpg',
+          'https://example.com/photo-1.jpg',
+          'https://example.com/photo-2.jpg',
+        ]),
+        reason: 'every picked file is uploaded, cover first, in pick order',
+      );
+      expect(saved.thumbnailUrl, equals('https://example.com/thumb-0.jpg'),
+          reason: 'the album thumbnail is the COVER (first) photo, not the '
+              'last upload');
+
+      expect(activityFeed.emittedExtraData, hasLength(1),
+          reason: 'exactly one cooked event is broadcast');
+      expect(
+        activityFeed.emittedExtraData.single?['photoUrls'],
+        equals(saved.photoUrls),
+        reason: 'the feed carousel renders from extraData[photoUrls]; dropping '
+            'it blanks the carousel',
+      );
+    });
+
+    test(
+        'allowMultiple with the CAMERA source stays single-shot '
+        '(pickImage, not pickMultipleImages)', () async {
+      // The album pick is gallery-only by contract; camera is inherently a
+      // single frame even when allowMultiple is true.
+      final imagePicker = production.ServiceLocator.get<ImagePickerService>()
+          as MockImagePickerService;
+
+      final snap = await service.addCookSnap(
+        recipeId: 'recipe-1',
+        recipeAuthorId: _testUserId,
+        recipeName: 'Köttbullar',
+        source: ImageSource.camera,
+        allowMultiple: true,
+      );
+
+      expect(snap, isNotNull);
+      expect(repository.saved.single.photoUrls, hasLength(1));
+      verifyNever(() =>
+          imagePicker.pickMultipleImages(maxImages: any(named: 'maxImages')));
+      verify(() => imagePicker.pickImage(ImageSource.camera)).called(1);
     });
   });
 }

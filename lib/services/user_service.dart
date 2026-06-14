@@ -116,6 +116,7 @@ class UserService extends ChangeNotifier
     String? bio,
     bool? showOnlineStatus,
     bool? shareActivityToFeed,
+    Map<String, bool>? activityFeedEventTypes,
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
@@ -165,6 +166,10 @@ class UserService extends ChangeNotifier
         if (shareActivityToFeed != null) {
           profile = profile.copyWith(shareActivityToFeed: shareActivityToFeed);
         }
+        if (activityFeedEventTypes != null) {
+          profile =
+              profile.copyWith(activityFeedEventTypes: activityFeedEventTypes);
+        }
       } else {
         final now = clock.now();
         profile = UserProfile(
@@ -181,6 +186,7 @@ class UserService extends ChangeNotifier
           isOnline: true,
           showOnlineStatus: showOnlineStatus ?? true,
           shareActivityToFeed: shareActivityToFeed ?? true,
+          activityFeedEventTypes: activityFeedEventTypes ?? const {},
           cookingSkillLevel: cookingSkillLevel,
           cuisineAffinities: cuisineAffinities,
           bio: bio,
@@ -597,6 +603,33 @@ class UserService extends ChangeNotifier
     } catch (e) {
       AppLogger.error('Failed to mark onboarding complete', e);
       rethrow;
+    }
+  }
+
+  /// BUT-1220: persist that the one-time activity-feed hint has been shown, so
+  /// it never fires again across sessions/devices. Idempotent and best-effort —
+  /// a no-op when there's no profile or the flag is already set.
+  Future<void> markActivityFeedHintSeen() async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) return;
+    if (profile.hasSeenActivityFeedHint) return;
+
+    try {
+      // BUT-1220: targeted single-field write, NOT saveProfile (a full-document
+      // set). This fires automatically on the first activity broadcast, so a
+      // full set built from a possibly-stale in-memory profile would clobber
+      // fields owned by other writers (friendsCount, via friend-creation
+      // transactions) or moderators (isHidden/hiddenAt). The flag itself only
+      // changes locally.
+      await _repository.markActivityFeedHintSeen(userId);
+
+      final updated = profile.copyWith(hasSeenActivityFeedHint: true);
+      _currentUserProfile = updated;
+      _cacheProfile(userId, updated);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.warning('Failed to persist activity-feed hint flag: $e');
     }
   }
 

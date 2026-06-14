@@ -9639,6 +9639,42 @@ abstract class AppLocalizations {
   /// **'När detta är på ser dina vänner när du lagar, delar och pingar recept.'**
   String get privacyShareActivitySubtitle;
 
+  /// Header above the per-event-type activity-feed toggles (BUT-1220)
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad som delas'**
+  String get privacyActivityTypesTitle;
+
+  /// Per-type toggle label for 'cooked' activity events (BUT-1220)
+  ///
+  /// In sv, this message translates to:
+  /// **'När jag lagar ett recept'**
+  String get privacyActivityTypeCooked;
+
+  /// Per-type toggle label for 'shared' activity events (BUT-1220)
+  ///
+  /// In sv, this message translates to:
+  /// **'När jag delar ett recept'**
+  String get privacyActivityTypeShared;
+
+  /// Per-type toggle label for 'startedCooking' activity events (BUT-1220)
+  ///
+  /// In sv, this message translates to:
+  /// **'När jag börjar laga'**
+  String get privacyActivityTypeStartedCooking;
+
+  /// Per-type toggle label for 'pinged' activity events (BUT-1220)
+  ///
+  /// In sv, this message translates to:
+  /// **'När jag pingar en vän'**
+  String get privacyActivityTypePinged;
+
+  /// One-time hint shown the first time the user broadcasts an activity event (BUT-1220)
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart! Dina vänner ser nu din aktivitet i sitt flöde. Du kan stänga av det här när som helst.'**
+  String get privacyActivityFeedHint;
+
   /// No description provided for @profileAddAvatar.
   ///
   /// In sv, this message translates to:
@@ -11606,6 +11642,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Recept som delas med dig visas här'**
   String get sharedNoRecipesDescription;
+
+  /// No description provided for @sharedRecipesByFriendButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept delade med mig'**
+  String get sharedRecipesByFriendButton;
+
+  /// No description provided for @sharedRecipesByFriendTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept från {name}'**
+  String sharedRecipesByFriendTitle(String name);
+
+  /// No description provided for @sharedNoRecipesFromFriend.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har inte delat några recept med dig än'**
+  String sharedNoRecipesFromFriend(String name);
 
   /// No description provided for @sharedNoShoppingLists.
   ///
@@ -22731,6 +22785,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Rapportera foto'**
   String get cookSnapReport;
+
+  /// Position indicator on a multi-photo cook snap album, e.g. 2/5.
+  ///
+  /// In sv, this message translates to:
+  /// **'{current}/{total}'**
+  String cookSnapPhotoCounter(int current, int total);
+
+  /// Screen-reader label for a swipeable cook snap album.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matbild {current} av {total}'**
+  String a11yCookSnapPhotoCarousel(int current, int total);
 
   /// No description provided for @collectionInsightsTitle.
   ///

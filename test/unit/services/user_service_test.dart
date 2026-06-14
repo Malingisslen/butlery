@@ -236,6 +236,75 @@ void main() {
       });
     });
 
+    group('Activity-feed hint flag (BUT-1220)', () {
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockUserRepository.saveProfile(any()))
+            .thenAnswer((_) async {});
+        when(() => mockUserRepository.markActivityFeedHintSeen(any()))
+            .thenAnswer((_) async {});
+      });
+
+      // Loads a profile into the service so currentUserProfile (i.e.
+      // _currentUserProfile) is set — the precondition markActivityFeedHintSeen
+      // guards on. createOrUpdateProfile is the path that populates it; we clear
+      // the recorded writes from that setup so the assertions below only see the
+      // write (if any) made by markActivityFeedHintSeen itself.
+      Future<void> loadProfile({required bool hasSeenHint}) async {
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+            (_) async =>
+                testProfile.copyWith(hasSeenActivityFeedHint: hasSeenHint));
+        await userService.createOrUpdateProfile(displayName: 'Test User');
+        clearInteractions(mockUserRepository);
+        when(() => mockUserRepository.saveProfile(any()))
+            .thenAnswer((_) async {});
+        when(() => mockUserRepository.markActivityFeedHintSeen(any()))
+            .thenAnswer((_) async {});
+      }
+
+      test(
+          'persists via a targeted single-field write, NOT a full-profile '
+          'saveProfile, and updates the in-memory profile', () async {
+        await loadProfile(hasSeenHint: false);
+        expect(
+            userService.currentUserProfile?.hasSeenActivityFeedHint, isFalse);
+
+        await userService.markActivityFeedHintSeen();
+
+        expect(userService.currentUserProfile?.hasSeenActivityFeedHint, isTrue);
+        // The flag must round-trip via the targeted update, never a full set:
+        // a full-profile set built from the in-memory copy could clobber
+        // friendsCount (mutated by friend-creation transactions) or moderator
+        // fields. This fires automatically on the first activity broadcast.
+        verify(() =>
+                mockUserRepository.markActivityFeedHintSeen('test_user_123'))
+            .called(1);
+        verifyNever(() => mockUserRepository.saveProfile(any()));
+      });
+
+      test('is a no-op when the flag is already set (idempotent, no write)',
+          () async {
+        await loadProfile(hasSeenHint: true);
+
+        await userService.markActivityFeedHintSeen();
+
+        verifyNever(() => mockUserRepository.markActivityFeedHintSeen(any()));
+        verifyNever(() => mockUserRepository.saveProfile(any()));
+      });
+
+      test('a failing write is swallowed and does not throw', () async {
+        await loadProfile(hasSeenHint: false);
+        when(() => mockUserRepository.markActivityFeedHintSeen(any()))
+            .thenThrow(Exception('write failed'));
+
+        await expectLater(userService.markActivityFeedHintSeen(), completes);
+      });
+    });
+
     group('User Search', () {
       test('should search users successfully', () async {
         // Arrange

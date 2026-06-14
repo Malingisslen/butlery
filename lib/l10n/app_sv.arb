@@ -3692,6 +3692,30 @@
   "@privacyShareActivitySubtitle": {
     "description": "Subtitle explaining what the activity-broadcast toggle controls (BUT-906)"
   },
+  "privacyActivityTypesTitle": "Vad som delas",
+  "@privacyActivityTypesTitle": {
+    "description": "Header above the per-event-type activity-feed toggles (BUT-1220)"
+  },
+  "privacyActivityTypeCooked": "När jag lagar ett recept",
+  "@privacyActivityTypeCooked": {
+    "description": "Per-type toggle label for 'cooked' activity events (BUT-1220)"
+  },
+  "privacyActivityTypeShared": "När jag delar ett recept",
+  "@privacyActivityTypeShared": {
+    "description": "Per-type toggle label for 'shared' activity events (BUT-1220)"
+  },
+  "privacyActivityTypeStartedCooking": "När jag börjar laga",
+  "@privacyActivityTypeStartedCooking": {
+    "description": "Per-type toggle label for 'startedCooking' activity events (BUT-1220)"
+  },
+  "privacyActivityTypePinged": "När jag pingar en vän",
+  "@privacyActivityTypePinged": {
+    "description": "Per-type toggle label for 'pinged' activity events (BUT-1220)"
+  },
+  "privacyActivityFeedHint": "Klart! Dina vänner ser nu din aktivitet i sitt flöde. Du kan stänga av det här när som helst.",
+  "@privacyActivityFeedHint": {
+    "description": "One-time hint shown the first time the user broadcasts an activity event (BUT-1220)"
+  },
   "profileAddAvatar": "Lägg till avatar",
   "profileAvatarRemoved": "Avatar borttagen",
   "profileAvatarUploaded": "Avatar uppladdad!",
@@ -4407,6 +4431,23 @@
   "sharedNoMenusDescription": "Menyer som delas med dig visas här",
   "sharedNoRecipes": "Inga delade recept",
   "sharedNoRecipesDescription": "Recept som delas med dig visas här",
+  "sharedRecipesByFriendButton": "Recept delade med mig",
+  "sharedRecipesByFriendTitle": "Recept från {name}",
+  "@sharedRecipesByFriendTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedNoRecipesFromFriend": "{name} har inte delat några recept med dig än",
+  "@sharedNoRecipesFromFriend": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "sharedNoShoppingLists": "Inga delade inköpslistor",
   "sharedNoShoppingListsDescription": "Inköpslistor som delas med dig visas här",
   "sharedSearchHint": "Sök delat innehåll...",
@@ -9214,6 +9255,22 @@
     "description": "Snackbar message shown for 7s after the user confirms cook-snap delete (BUT-937). Undo button cancels the delete; timeout commits it."
   },
   "cookSnapReport": "Rapportera foto",
+  "cookSnapPhotoCounter": "{current}/{total}",
+  "@cookSnapPhotoCounter": {
+    "description": "Position indicator on a multi-photo cook snap album, e.g. 2/5.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "a11yCookSnapPhotoCarousel": "Matbild {current} av {total}",
+  "@a11yCookSnapPhotoCarousel": {
+    "description": "Screen-reader label for a swipeable cook snap album.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
 
   "collectionInsightsTitle": "Min samling",
   "collectionInsightsInsufficientData": "Lägg till fler recept för att se mönster",

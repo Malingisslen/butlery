@@ -1,6 +1,8 @@
 /// Service orchestrating CookSnap photo uploads, CRUD, and notifications.
 library;
 
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rxdart/rxdart.dart';
@@ -36,15 +38,21 @@ class CookSnapService extends BaseService {
   @override
   String get serviceName => 'CookSnapService';
 
-  /// Picks an image, uploads it, and creates a CookSnap.
+  /// Picks one or more images, uploads them, and creates a CookSnap.
   ///
-  /// Returns the created CookSnap, or null if the user cancelled or an error occurred.
+  /// BUT-949: when [allowMultiple] is true and [source] is the gallery, the
+  /// user may pick up to [CookSnap.maxPhotos] photos (an album); the camera
+  /// path always yields a single photo. The first photo is the album cover.
+  ///
+  /// Returns the created CookSnap, or null if the user cancelled or an error
+  /// occurred.
   Future<CookSnap?> addCookSnap({
     required String recipeId,
     required String recipeAuthorId,
     required String recipeName,
     required ImageSource source,
     String? caption,
+    bool allowMultiple = false,
     CookSnapVisibility visibility = CookSnapVisibility.sameAsRecipe,
   }) async {
     return executeServiceOperation<CookSnap?>(
@@ -73,24 +81,39 @@ class CookSnapService extends BaseService {
           }
         }
 
-        // Pick image
+        // Pick image(s). BUT-949: album pick is gallery-only; the camera
+        // path is inherently single-shot.
         final imagePicker = ServiceLocator.get<ImagePickerService>();
-        final file = await imagePicker.pickImage(source);
-        if (file == null) return null;
+        final files = <File>[];
+        if (allowMultiple && source == ImageSource.gallery) {
+          files.addAll(
+            await imagePicker.pickMultipleImages(maxImages: CookSnap.maxPhotos),
+          );
+        } else {
+          final file = await imagePicker.pickImage(source);
+          if (file != null) files.add(file);
+        }
+        if (files.isEmpty) return null;
 
-        // Upload image
         final permissionService = ServiceLocator.get<PermissionService>();
         final userId = permissionService.currentUserId;
         if (userId == null) throw Exception('Not authenticated');
 
+        // Upload each photo, preserving pick order (cover first). The first
+        // photo's thumbnail is used as the album thumbnail.
         final uploadService = ServiceLocator.get<ImageUploadService>();
-        final result = await uploadService.uploadImage(
-          file: file,
-          userId: userId,
-        );
-
-        if (!result.success || result.url == null) {
-          throw Exception(result.error ?? 'Upload failed');
+        final photoUrls = <String>[];
+        String? coverThumbnailUrl;
+        for (final file in files) {
+          final result = await uploadService.uploadImage(
+            file: file,
+            userId: userId,
+          );
+          if (!result.success || result.url == null) {
+            throw Exception(result.error ?? 'Upload failed');
+          }
+          photoUrls.add(result.url!);
+          coverThumbnailUrl ??= result.thumbnailUrl;
         }
 
         // Build CookSnap
@@ -102,8 +125,8 @@ class CookSnapService extends BaseService {
           userId: userId,
           userDisplayName: profile?.displayName ?? '?',
           userAvatarUrl: profile?.avatarUrl,
-          photoUrl: result.url!,
-          thumbnailUrl: result.thumbnailUrl,
+          photoUrls: photoUrls,
+          thumbnailUrl: coverThumbnailUrl,
           caption: validCaption,
           visibility: visibility,
         );
@@ -120,7 +143,9 @@ class CookSnapService extends BaseService {
             recipeId,
             recipeName,
             extraData: {
-              'photoUrl': result.url!,
+              'photoUrl': snap.photoUrl,
+              // BUT-949: full album so the feed can render a carousel.
+              'photoUrls': snap.photoUrls,
               if (validCaption != null) 'caption': validCaption,
             },
           );

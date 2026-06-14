@@ -12,6 +12,7 @@ import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
 
 /// Displays cook snaps in a horizontal scrollable gallery.
 ///
@@ -151,6 +152,12 @@ class _SnapThumbnail extends StatelessWidget {
       label: context.l10n.a11yCookSnapOptions(actorName),
       button: true,
       child: GestureDetector(
+        // Tap opens the album full-screen; long-press keeps the
+        // delete/report options sheet (BUT-949).
+        onTap: () => CookSnapPhotoCarousel.openFullScreen(
+          context,
+          snap.photoUrls,
+        ),
         onLongPress: () => _showOptions(context),
         child: SizedBox(
           width: 100,
@@ -160,20 +167,32 @@ class _SnapThumbnail extends StatelessWidget {
               SizedBox(
                 width: 100,
                 height: 100,
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => ColoredBox(
-                    color: colorScheme.surfaceContainerHighest,
-                  ),
-                  errorWidget: (_, __, ___) => ColoredBox(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.broken_image,
-                      color: colorScheme.onSurfaceVariant,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => ColoredBox(
+                          color: colorScheme.surfaceContainerHighest,
+                        ),
+                        errorWidget: (_, __, ___) => ColoredBox(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.broken_image,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (snap.hasMultiplePhotos)
+                      Positioned(
+                        top: AppDimensions.spacingXs,
+                        right: AppDimensions.spacingXs,
+                        child: _PhotoCountBadge(count: snap.photoUrls.length),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 4),
@@ -226,6 +245,35 @@ class _SnapThumbnail extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// BUT-949: small overlay badge marking a multi-photo album thumbnail.
+class _PhotoCountBadge extends StatelessWidget {
+  const _PhotoCountBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      color: Colors.black.withValues(alpha: 0.6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.collections, size: 12, color: Colors.white),
+          const SizedBox(width: 2),
+          Text(
+            '$count',
+            style: AppTextStyles.labelSmall.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

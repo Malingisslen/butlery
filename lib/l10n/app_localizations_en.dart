@@ -5682,6 +5682,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'When on, your friends see when you cook, share, and ping recipes.';
 
   @override
+  String get privacyActivityTypesTitle => 'Vad som delas';
+
+  @override
+  String get privacyActivityTypeCooked => 'När jag lagar ett recept';
+
+  @override
+  String get privacyActivityTypeShared => 'När jag delar ett recept';
+
+  @override
+  String get privacyActivityTypeStartedCooking => 'När jag börjar laga';
+
+  @override
+  String get privacyActivityTypePinged => 'När jag pingar en vän';
+
+  @override
+  String get privacyActivityFeedHint =>
+      'Klart! Dina vänner ser nu din aktivitet i sitt flöde. Du kan stänga av det här när som helst.';
+
+  @override
   String get profileAddAvatar => 'Add avatar';
 
   @override
@@ -6834,6 +6853,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sharedNoRecipesDescription =>
       'Recipes shared with you will appear here';
+
+  @override
+  String get sharedRecipesByFriendButton => 'Recipes shared with me';
+
+  @override
+  String sharedRecipesByFriendTitle(String name) {
+    return 'Recipes from $name';
+  }
+
+  @override
+  String sharedNoRecipesFromFriend(String name) {
+    return '$name hasn\'t shared any recipes with you yet';
+  }
 
   @override
   String get sharedNoShoppingLists => 'No shared shopping lists';
@@ -13524,6 +13556,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookSnapReport => 'Report photo';
+
+  @override
+  String cookSnapPhotoCounter(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String a11yCookSnapPhotoCarousel(int current, int total) {
+    return 'Cooking photo $current of $total';
+  }
 
   @override
   String get collectionInsightsTitle => 'My collection';

@@ -3,6 +3,7 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -101,8 +102,24 @@ class ActivityEvent {
     );
   }
 
-  /// CookSnap photo URL, if this is a cooked event with a photo.
+  /// CookSnap cover photo URL, if this is a cooked event with a photo.
   String? get photoUrl => extraData['photoUrl'] as String?;
+
+  /// BUT-949: the full cook-snap album, cover-first. Falls back to the
+  /// singular [photoUrl] for legacy events written before albums existed.
+  /// Empty when the event has no photo at all.
+  List<String> get photoUrls {
+    final raw = extraData['photoUrls'];
+    if (raw is List) {
+      final urls = raw
+          .map((e) => (e?.toString()).orEmpty())
+          .where((u) => u.trim().isNotEmpty)
+          .toList();
+      if (urls.isNotEmpty) return urls;
+    }
+    final cover = photoUrl;
+    return (cover != null && cover.trim().isNotEmpty) ? [cover] : const [];
+  }
 
   /// CookSnap caption, if present.
   String? get caption => extraData['caption'] as String?;

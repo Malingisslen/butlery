@@ -7,6 +7,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -53,6 +54,11 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   bool get allowEmailSearch => _editedProfile?.allowEmailSearch ?? false;
   bool get showOnlineStatus => _editedProfile?.showOnlineStatus ?? true;
   bool get shareActivityToFeed => _editedProfile?.shareActivityToFeed ?? true;
+
+  /// BUT-1220: per-event-type toggle state. Absent entry = enabled, so a
+  /// missing map reads as "all on" for the four broadcastable event types.
+  bool isActivityEventTypeEnabled(ActivityEventType type) =>
+      _editedProfile?.isActivityEventTypeEnabled(type.name) ?? true;
   bool get isLoading => _isUploadingAvatar;
   bool get isUploadingAvatar => _isUploadingAvatar;
   String? get displayNameError => _displayNameError;
@@ -112,6 +118,17 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   void updateShareActivityToFeed(bool value) {
     _editedProfile = _editedProfile?.copyWith(shareActivityToFeed: value);
+    notifyListeners();
+  }
+
+  /// BUT-1220: set one per-event-type toggle. Stored explicitly (true or false)
+  /// so a deliberate "on" is distinguishable from the absent-key default; this
+  /// keeps the map readable and avoids surprising re-enables after a toggle off.
+  void updateActivityEventType(ActivityEventType type, bool enabled) {
+    final current =
+        Map<String, bool>.from(_editedProfile?.activityFeedEventTypes ?? {});
+    current[type.name] = enabled;
+    _editedProfile = _editedProfile?.copyWith(activityFeedEventTypes: current);
     notifyListeners();
   }
 
@@ -251,7 +268,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             bio: edited.bio?.isEmpty == true ? null : edited.bio,
             showOnlineStatus: edited.showOnlineStatus,
             shareActivityToFeed: edited.shareActivityToFeed,
-          ); // BUT-906: persist the activity-broadcast opt-out
+            activityFeedEventTypes: edited.activityFeedEventTypes,
+          ); // BUT-906/BUT-1220: persist the master opt-out + per-type toggles
 
           if (updatedProfile != null) {
             // Sync both profiles to the fresh server response
@@ -360,7 +378,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         listEquals(a.cuisineAffinities ?? [], b.cuisineAffinities ?? []) &&
         a.bio.orEmpty() == b.bio.orEmpty() &&
         a.showOnlineStatus == b.showOnlineStatus &&
-        a.shareActivityToFeed == b.shareActivityToFeed;
+        a.shareActivityToFeed == b.shareActivityToFeed &&
+        mapEquals(a.activityFeedEventTypes, b.activityFeedEventTypes);
   }
 
   bool _hasDisplayNameChanged() {

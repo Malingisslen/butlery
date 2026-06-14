@@ -373,41 +373,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// Resolve conflicts using edit count and timestamp strategy
-  Future<T> resolveConflict<T extends RealtimeResource>(
-      T local, T remote) async {
-    AppLogger.info('⚠️ Löser konflikt för resurs: ${local.id}');
-
-    try {
-      // Standard conflict resolution: senaste editCount vinner
-      if (local.editCount > remote.editCount) {
-        AppLogger.info(
-            '📝 Lokal version vinner (editCount: ${local.editCount} > ${remote.editCount})');
-        return local;
-      } else if (remote.editCount > local.editCount) {
-        AppLogger.info(
-            '☁️ Remote version vinner (editCount: ${remote.editCount} > ${local.editCount})');
-        return remote;
-      } else {
-        // Same editCount - use timestamp
-        if (local.lastEditedAt.isAfter(remote.lastEditedAt)) {
-          AppLogger.info('📝 Lokal version vinner (nyare timestamp)');
-          return local;
-        } else {
-          AppLogger.info('☁️ Remote version vinner (nyare timestamp)');
-          return remote;
-        }
-      }
-    } catch (e) {
-      AppLogger.error('❌ Fel vid conflict resolution för ${local.id}', e);
-
-      // On conflict resolution error, choose remote version (safer)
-      AppLogger.warning(
-          '🛡️ Väljer remote version vid conflict resolution-fel');
-      return remote;
-    }
-  }
-
   /// Hantera fel och notifiera lyssnare
   void _handleError(
     SyncErrorType type,

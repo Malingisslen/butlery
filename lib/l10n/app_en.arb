@@ -4399,6 +4399,23 @@
   "sharedNoMenusDescription": "Menus shared with you will appear here",
   "sharedNoRecipes": "No shared recipes",
   "sharedNoRecipesDescription": "Recipes shared with you will appear here",
+  "sharedRecipesByFriendButton": "Recipes shared with me",
+  "sharedRecipesByFriendTitle": "Recipes from {name}",
+  "@sharedRecipesByFriendTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedNoRecipesFromFriend": "{name} hasn't shared any recipes with you yet",
+  "@sharedNoRecipesFromFriend": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "sharedNoShoppingLists": "No shared shopping lists",
   "sharedNoShoppingListsDescription": "Shopping lists shared with you will appear here",
   "sharedSearchHint": "Search shared content...",
@@ -9187,6 +9204,22 @@
   "cookSnapDelete": "Delete photo",
   "cookSnapDeletedUndoMessage": "Photo will be deleted — undo?",
   "cookSnapReport": "Report photo",
+  "cookSnapPhotoCounter": "{current}/{total}",
+  "@cookSnapPhotoCounter": {
+    "description": "Position indicator on a multi-photo cook snap album, e.g. 2/5.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "a11yCookSnapPhotoCarousel": "Cooking photo {current} of {total}",
+  "@a11yCookSnapPhotoCarousel": {
+    "description": "Screen-reader label for a swipeable cook snap album.",
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
 
   "collectionInsightsTitle": "My collection",
   "collectionInsightsInsufficientData": "Add more recipes to see patterns",

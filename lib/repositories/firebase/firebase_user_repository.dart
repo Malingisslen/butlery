@@ -183,6 +183,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
                 : null,
             hasCompletedOnboarding:
                 s['hasCompletedOnboarding'] as bool? ?? false,
+            // BUT-1220: the one-time activity-feed hint flag is persisted in
+            // the private settings sub-doc (toPrivateSettings), not the public
+            // profile doc, so it must be merged back here. Without this it
+            // always read as the default false and the hint re-fired forever.
+            hasSeenActivityFeedHint:
+                s['hasSeenActivityFeedHint'] as bool? ?? false,
           );
         }
       } catch (e) {
@@ -575,6 +581,32 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'update_allergen_preferences',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> markActivityFeedHintSeen(String userId) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'mark activity-feed hint seen',
+    );
+
+    // BUT-1220: the hint flag lives in the private settings sub-doc
+    // (toPrivateSettings), which is where fetchProfile reads it back from. A
+    // merge:true single-field set touches only this field — it never overwrites
+    // the public profile doc, so it can't clobber friendsCount (mutated by
+    // friend-creation transactions) or moderator-owned isHidden/hiddenAt.
+    await _settingsDoc(userId).set({
+      'hasSeenActivityFeedHint': true,
+    }, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'mark_activity_feed_hint_seen',
       granted: true,
     );
   }

@@ -85,4 +85,51 @@ void main() {
       }
     });
   });
+
+  group('ActivityEvent.photoUrls getter (BUT-949)', () {
+    ActivityEvent withExtra(Map<String, dynamic> extraData) => ActivityEvent(
+          id: 'e1',
+          actorId: 'a',
+          actorDisplayName: 'A',
+          type: ActivityEventType.cooked,
+          recipeId: 'r',
+          recipeTitle: 'T',
+          extraData: extraData,
+        );
+
+    test('returns the album list as-is, filtering empty/blank entries', () {
+      // feed_tab.dart gates the whole carousel on photoUrls.isNotEmpty, so a
+      // blank entry slipping through would render a broken empty page.
+      final event = withExtra({
+        'photoUrls': ['a.jpg', '', '  ', 'b.jpg'],
+      });
+
+      expect(event.photoUrls, equals(['a.jpg', 'b.jpg']));
+    });
+
+    test('falls back to the legacy singular photoUrl as a one-element list',
+        () {
+      // Events written before albums existed only carry the singular cover —
+      // the carousel must still render that one photo.
+      final event = withExtra({'photoUrl': 'cover.jpg'});
+
+      expect(event.photoUrls, equals(['cover.jpg']));
+    });
+
+    test('returns const [] when neither photoUrls nor photoUrl is present', () {
+      // A no-photo event (e.g. a share/ping) must report an empty album so the
+      // feed suppresses the carousel entirely.
+      expect(withExtra(const {}).photoUrls, isEmpty);
+    });
+
+    test('falls back to the cover when photoUrls is present but all-blank', () {
+      // A corrupt/empty list must not shadow a valid legacy cover.
+      final event = withExtra({
+        'photoUrls': ['', '  '],
+        'photoUrl': 'cover.jpg',
+      });
+
+      expect(event.photoUrls, equals(['cover.jpg']));
+    });
+  });
 }
