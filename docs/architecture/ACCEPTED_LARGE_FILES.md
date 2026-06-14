@@ -115,7 +115,8 @@ Must be self-contained.
 
 | File | Lines | Reason |
 |------|-------|--------|
-| `main.dart` | 954 | App entry point — initialization, routing, providers |
+| `main.dart` | 268 | App entry point — bootstrap sequence only. BUT-530 (2026-06-14) extracted `ButleryApp`/shell → `lib/app/butlery_app.dart` and the auth-routing subtree → `lib/app/auth/auth_wrapper.dart`, bringing this from 1,395 back under the historical 954 ceiling. |
+| `lib/app/butlery_app.dart` | 835 | Cohesive app shell — `ButleryApp` + `_ButleryAppState` (lifecycle, session timeout, theme/locale wiring, analytics observers, clipboard banner, memory pressure) + `ErrorApp` fallback. Extracted from `main.dart` (BUT-530). Further thinning (lifecycle/session/analytics mixins) is a separate follow-up if wanted. |
 
 ## Config / Constants / Data
 
