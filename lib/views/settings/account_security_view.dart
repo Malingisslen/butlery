@@ -101,23 +101,29 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
               constraints: const BoxConstraints(maxWidth: 700),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPasswordSection(),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    const Divider(),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    _buildEmailSection(),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    const Divider(),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    _buildMfaSection(),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    const Divider(),
-                    const SizedBox(height: AppDimensions.spacingXl),
-                    _buildLegalSection(),
-                  ],
+                // BUT-701: scope keyboard tab-order to this form so Tab walks
+                // the password/email fields in visual order. Explicit per-field
+                // order isn't needed — the sections render top-to-bottom in the
+                // same order the user reads them. No visual change.
+                child: FocusTraversalGroup(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPasswordSection(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      const Divider(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildEmailSection(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      const Divider(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildMfaSection(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      const Divider(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      _buildLegalSection(),
+                    ],
+                  ),
                 ),
               ),
             ),

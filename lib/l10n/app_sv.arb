@@ -1308,6 +1308,30 @@
   "@allergenSettingsHubSubtitle": {
     "description": "BUT-923: subtitle on the Settings food entry, signalling that allergen + dietary preferences can be revisited and edited at any time."
   },
+  "settingsAutoAddPantryTitle": "Lägg köpta varor i skafferiet",
+  "@settingsAutoAddPantryTitle": {
+    "description": "BUT-1306: title of the Settings switch that auto-adds checked-off shopping items into the pantry."
+  },
+  "settingsAutoAddPantrySubtitle": "När du bockar av en vara läggs den automatiskt i ditt skafferi",
+  "@settingsAutoAddPantrySubtitle": {
+    "description": "BUT-1306: subtitle explaining the auto-add-to-pantry Settings switch."
+  },
+  "pantryAutoAddPromptTitle": "Lägg till i skafferiet automatiskt?",
+  "@pantryAutoAddPromptTitle": {
+    "description": "BUT-1306: title of the one-time dialog offered on the user's first shopping checkoff."
+  },
+  "pantryAutoAddPromptBody": "Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.",
+  "@pantryAutoAddPromptBody": {
+    "description": "BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry."
+  },
+  "pantryAutoAddPromptEnable": "Ja, lägg till automatiskt",
+  "@pantryAutoAddPromptEnable": {
+    "description": "BUT-1306: confirm button on the first-checkoff prompt that enables auto-add-to-pantry."
+  },
+  "pantryAutoAddPromptDecline": "Inte nu",
+  "@pantryAutoAddPromptDecline": {
+    "description": "BUT-1306: decline button on the first-checkoff prompt."
+  },
   "allergenTrackAllergensTitle": "Spåra allergener",
   "allergenTrackAllergensSubtitle": "Välj vilka allergener du vill se status för på recept.",
   "allergenTrackDietaryTitle": "Spåra specialkost",
@@ -2685,6 +2709,8 @@
     }
   },
   "menuCardNoRecipes": "Inga recept i menyn",
+  "menuCardGeneratedTitle": "Genererad meny",
+  "menuCardUntitled": "Namnlös meny",
   "menuCardRecipeCount": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
   "@menuCardRecipeCount": {
     "placeholders": {

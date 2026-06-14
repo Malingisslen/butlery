@@ -104,12 +104,17 @@ class _NotificationPreferencesViewState
   }
 
   Future<void> _savePreferences(NotificationPreferences updated) async {
+    // Optimistic update, but remember the persisted value so a failed save
+    // can be reverted — otherwise the UI shows a toggle as changed while the
+    // stored value is the opposite, and the user wrongly believes it took.
+    final previous = _preferences;
     setState(() => _preferences = updated);
     try {
       final service = ServiceLocator.get<NotificationService>();
       await service.updatePreferences(updated);
     } catch (e) {
       if (mounted) {
+        setState(() => _preferences = previous);
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -144,19 +149,28 @@ class _NotificationPreferencesViewState
                           child: SingleChildScrollView(
                             padding:
                                 const EdgeInsets.all(AppDimensions.paddingL),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildMasterToggle(),
-                                const SizedBox(height: AppDimensions.spacingXl),
-                                _buildCategorySection(),
-                                const SizedBox(height: AppDimensions.spacingXl),
-                                _buildDigestFrequencySection(),
-                                const SizedBox(height: AppDimensions.spacingXl),
-                                _buildQuietHoursSection(),
-                                const SizedBox(height: AppDimensions.spacingXl),
-                                _buildSoundVibrationSection(),
-                              ],
+                            // BUT-701: scope keyboard tab-order to this
+                            // settings form so Tab walks the toggles and
+                            // pickers in visual order. No visual change.
+                            child: FocusTraversalGroup(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildMasterToggle(),
+                                  const SizedBox(
+                                      height: AppDimensions.spacingXl),
+                                  _buildCategorySection(),
+                                  const SizedBox(
+                                      height: AppDimensions.spacingXl),
+                                  _buildDigestFrequencySection(),
+                                  const SizedBox(
+                                      height: AppDimensions.spacingXl),
+                                  _buildQuietHoursSection(),
+                                  const SizedBox(
+                                      height: AppDimensions.spacingXl),
+                                  _buildSoundVibrationSection(),
+                                ],
+                              ),
                             ),
                           ),
                         ),

@@ -196,7 +196,47 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   }
 
   Future<void> _onItemTap(UnifiedShoppingItem item) async {
-    await _viewModel.toggleItemBought(item.id);
+    // A fresh check-off is a false→true transition. Capture intent BEFORE the
+    // toggle so the one-time prompt only fires on a genuine check-off, not on
+    // un-checking (BUT-1306).
+    final isFreshCheckoff = !item.bought;
+    final shouldPrompt =
+        isFreshCheckoff && _viewModel.shouldShowFirstCheckoffPrompt;
+
+    final success = await _viewModel.toggleItemBought(item.id);
+
+    if (success && shouldPrompt && mounted) {
+      await _maybeShowFirstCheckoffPrompt();
+    }
+  }
+
+  /// BUT-1306: one-time dialog offered on the user's first shopping check-off
+  /// when the auto-add preference is still unset. Marking it prompted (whatever
+  /// the answer) ensures it never re-nags across sessions/devices.
+  Future<void> _maybeShowFirstCheckoffPrompt() async {
+    final enable = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(ctx.l10n.pantryAutoAddPromptTitle),
+        content: Text(ctx.l10n.pantryAutoAddPromptBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(ctx.l10n.pantryAutoAddPromptDecline),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(ctx.l10n.pantryAutoAddPromptEnable),
+          ),
+        ],
+      ),
+    );
+
+    // Record that the prompt was shown regardless of the choice.
+    await _viewModel.markPantryAutoAddPrompted();
+    if (enable == true) {
+      await _viewModel.setAutoAddToPantry(true);
+    }
   }
 
   /// Show edit dialog for item.

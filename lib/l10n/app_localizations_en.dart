@@ -1956,6 +1956,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Update your allergens and dietary preferences anytime';
 
   @override
+  String get settingsAutoAddPantryTitle => 'Add bought items to pantry';
+
+  @override
+  String get settingsAutoAddPantrySubtitle =>
+      'When you check off a shopping item, it\'s added to your pantry automatically';
+
+  @override
+  String get pantryAutoAddPromptTitle => 'Add to pantry automatically?';
+
+  @override
+  String get pantryAutoAddPromptBody =>
+      'Want bought items added to your pantry automatically when you check them off? You can change this later in Settings.';
+
+  @override
+  String get pantryAutoAddPromptEnable => 'Yes, add automatically';
+
+  @override
+  String get pantryAutoAddPromptDecline => 'Not now';
+
+  @override
   String get allergenTrackAllergensTitle => 'Track Allergens';
 
   @override
@@ -4141,6 +4161,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuCardNoRecipes => 'No recipes in menu';
+
+  @override
+  String get menuCardGeneratedTitle => 'Generated menu';
+
+  @override
+  String get menuCardUntitled => 'Untitled menu';
 
   @override
   String menuCardRecipeCount(int count) {

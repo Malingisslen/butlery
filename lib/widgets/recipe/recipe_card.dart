@@ -4,8 +4,10 @@ import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/components/input_themes.dart';
+import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
@@ -87,28 +89,33 @@ class RecipeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
+    // UI Redesign: Left green border + bottom rust border. The selected state
+    // uses its own green-outline decoration and is not affected by hover.
+    final BoxDecoration restDecoration = isSelected
+        ? BoxDecoration(
+            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            border: Border.all(
+              color: cs.primary,
+              width: 2,
+            ),
+          )
+        : InputThemes.recipeCardDecoration;
+
     return RepaintBoundary(
       child: Semantics(
         label: context.l10n.recipeCardSemantics(recipe.title),
         button: onTap != null,
-        child: Container(
+        child: HoverableCard(
+          // Only interactive cards get a hover affordance — a card with no tap
+          // handler shouldn't imply clickability under the cursor.
+          enabled: onTap != null,
           margin: margin ??
               const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingMd,
                   vertical: AppDimensions.borderWidthStandard),
-          // UI Redesign: Left green border + bottom rust border
-          decoration: isSelected
-              ? BoxDecoration(
-                  color: cs.primary
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(
-                    color: cs.primary,
-                    width: 2,
-                  ),
-                )
-              : InputThemes.recipeCardDecoration,
+          restDecoration: restDecoration,
+          hoverDecoration: _hoverDecoration(restDecoration),
           child: Material(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -129,6 +136,13 @@ class RecipeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Hover variant of [base]: a stronger lift (web/desktop only). Reuses the
+  /// base decoration so border + corner treatment stay identical — only the
+  /// shadow deepens, keeping the square design language intact.
+  BoxDecoration _hoverDecoration(BoxDecoration base) {
+    return base.copyWith(boxShadow: AppShadows.elevated);
   }
 
   Widget _buildCardContent(BuildContext context) {

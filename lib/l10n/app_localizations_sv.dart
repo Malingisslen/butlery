@@ -1959,6 +1959,26 @@ class AppLocalizationsSv extends AppLocalizations {
       'Uppdatera dina allergener och kostpreferenser när som helst';
 
   @override
+  String get settingsAutoAddPantryTitle => 'Lägg köpta varor i skafferiet';
+
+  @override
+  String get settingsAutoAddPantrySubtitle =>
+      'När du bockar av en vara läggs den automatiskt i ditt skafferi';
+
+  @override
+  String get pantryAutoAddPromptTitle => 'Lägg till i skafferiet automatiskt?';
+
+  @override
+  String get pantryAutoAddPromptBody =>
+      'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.';
+
+  @override
+  String get pantryAutoAddPromptEnable => 'Ja, lägg till automatiskt';
+
+  @override
+  String get pantryAutoAddPromptDecline => 'Inte nu';
+
+  @override
   String get allergenTrackAllergensTitle => 'Spåra allergener';
 
   @override
@@ -4145,6 +4165,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuCardNoRecipes => 'Inga recept i menyn';
+
+  @override
+  String get menuCardGeneratedTitle => 'Genererad meny';
+
+  @override
+  String get menuCardUntitled => 'Namnlös meny';
 
   @override
   String menuCardRecipeCount(int count) {

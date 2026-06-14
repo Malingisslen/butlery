@@ -1302,6 +1302,30 @@
   "@allergenSettingsHubSubtitle": {
     "description": "BUT-923: subtitle on the Settings food entry, signalling that allergen + dietary preferences can be revisited and edited at any time."
   },
+  "settingsAutoAddPantryTitle": "Add bought items to pantry",
+  "@settingsAutoAddPantryTitle": {
+    "description": "BUT-1306: title of the Settings switch that auto-adds checked-off shopping items into the pantry."
+  },
+  "settingsAutoAddPantrySubtitle": "When you check off a shopping item, it's added to your pantry automatically",
+  "@settingsAutoAddPantrySubtitle": {
+    "description": "BUT-1306: subtitle explaining the auto-add-to-pantry Settings switch."
+  },
+  "pantryAutoAddPromptTitle": "Add to pantry automatically?",
+  "@pantryAutoAddPromptTitle": {
+    "description": "BUT-1306: title of the one-time dialog offered on the user's first shopping checkoff."
+  },
+  "pantryAutoAddPromptBody": "Want bought items added to your pantry automatically when you check them off? You can change this later in Settings.",
+  "@pantryAutoAddPromptBody": {
+    "description": "BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry."
+  },
+  "pantryAutoAddPromptEnable": "Yes, add automatically",
+  "@pantryAutoAddPromptEnable": {
+    "description": "BUT-1306: confirm button on the first-checkoff prompt that enables auto-add-to-pantry."
+  },
+  "pantryAutoAddPromptDecline": "Not now",
+  "@pantryAutoAddPromptDecline": {
+    "description": "BUT-1306: decline button on the first-checkoff prompt."
+  },
   "allergenTrackAllergensTitle": "Track Allergens",
   "allergenTrackAllergensSubtitle": "Select which allergens you want to see status for on recipes.",
   "allergenTrackDietaryTitle": "Track Dietary Preferences",
@@ -2679,6 +2703,8 @@
     }
   },
   "menuCardNoRecipes": "No recipes in menu",
+  "menuCardGeneratedTitle": "Generated menu",
+  "menuCardUntitled": "Untitled menu",
   "menuCardRecipeCount": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",
   "@menuCardRecipeCount": {
     "placeholders": {

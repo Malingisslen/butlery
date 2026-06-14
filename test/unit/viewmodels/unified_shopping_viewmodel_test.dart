@@ -6,13 +6,38 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+
+// Local plain mocks for the BUT-1306 checkoff -> pantry seam. Kept as bare
+// `extends Mock` (no concrete bodies) so `when()`/`verify()` work cleanly,
+// per the Mock-vs-Fake rule.
+class _MockCheckoffPantryService extends Mock
+    implements ShoppingCheckoffPantryService {}
+
+class _MockUserServiceForSeam extends Mock implements UserService {}
+
+UserProfile _seamProfile({
+  required bool autoAdd,
+  required bool prompted,
+}) =>
+    UserProfile(
+      uid: 'test-user-123',
+      displayName: 'Test User',
+      email: 't@example.com',
+      joinedAt: DateTime(2024, 1, 1),
+      lastActiveAt: DateTime(2024, 1, 1),
+      autoAddBoughtToPantry: autoAdd,
+      pantryAutoAddPrompted: prompted,
+    );
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -469,6 +494,162 @@ void main() {
       expect(info, contains('listsCount'));
       expect(info, contains('isInitialized'));
       expect(info, contains('currentUserId'));
+    });
+  });
+
+  // BUT-1306: the VM owns the wiring of the checkoff -> pantry policy seam and
+  // the auto-add opt-in preference. The service-level gating (false->true only,
+  // preference on) is covered in pantry_from_shopping_test.dart; here we prove
+  // the VM (a) captures the pre-toggle bought-state and feeds a faithful
+  // wasBought to the service, and (b) surfaces/persists the preference.
+  group('Auto-add-to-pantry seam (BUT-1306)', () {
+    late _MockCheckoffPantryService mockCheckoff;
+    late _MockUserServiceForSeam mockUserService;
+
+    setUp(() {
+      final getIt = GetIt.instance;
+      mockCheckoff = _MockCheckoffPantryService();
+      mockUserService = _MockUserServiceForSeam();
+
+      when(() => mockCheckoff.onItemCheckedOff(any(), any(),
+          wasBought: any(named: 'wasBought'))).thenAnswer((_) async {});
+      when(() => mockUserService.setAutoAddToPantry(any()))
+          .thenAnswer((_) async {});
+      when(() => mockUserService.markPantryAutoAddPrompted())
+          .thenAnswer((_) async {});
+
+      if (getIt.isRegistered<ShoppingCheckoffPantryService>()) {
+        getIt.unregister<ShoppingCheckoffPantryService>();
+      }
+      getIt.registerSingleton<ShoppingCheckoffPantryService>(mockCheckoff);
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+      getIt.registerSingleton<UserService>(mockUserService);
+
+      // Rebuild the VM so its lazy `tryGet` fields pick up the new registrations.
+      viewModel.dispose();
+      viewModel = UnifiedShoppingViewModel();
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<ShoppingCheckoffPantryService>()) {
+        getIt.unregister<ShoppingCheckoffPantryService>();
+      }
+      if (getIt.isRegistered<UserService>()) {
+        getIt.unregister<UserService>();
+      }
+    });
+
+    test(
+        'toggleItemBought feeds the pre-toggle bought-state as wasBought to the '
+        'pantry seam', () async {
+      // Active item starts NOT bought -> a fresh check-off, wasBought=false.
+      final unbought = ShoppingListFactory.buildItem(
+        id: 'item-1',
+        name: 'Mjolk',
+        bought: false,
+      );
+      mockShoppingService.setShoppingState(
+        lists: [
+          ShoppingListFactory.build(
+            id: testListId,
+            ownerId: testUserId,
+            items: [unbought],
+          )
+        ],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+      );
+
+      await viewModel.toggleItemBought('item-1');
+
+      verify(() => mockCheckoff.onItemCheckedOff(
+            testUserId,
+            any(),
+            wasBought: false,
+          )).called(1);
+    });
+
+    test(
+        'toggleItemBought feeds wasBought=true when un-checking an already-bought '
+        'item (lets the service no-op correctly)', () async {
+      final bought = ShoppingListFactory.buildItem(
+        id: 'item-1',
+        name: 'Mjolk',
+        bought: true,
+      );
+      mockShoppingService.setShoppingState(
+        lists: [
+          ShoppingListFactory.build(
+            id: testListId,
+            ownerId: testUserId,
+            items: [bought],
+          )
+        ],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+      );
+
+      await viewModel.toggleItemBought('item-1');
+
+      verify(() => mockCheckoff.onItemCheckedOff(
+            testUserId,
+            any(),
+            wasBought: true,
+          )).called(1);
+    });
+
+    test('autoAddBoughtToPantry reflects the user profile', () {
+      when(() => mockUserService.currentUserProfile)
+          .thenReturn(_seamProfile(autoAdd: true, prompted: true));
+      expect(viewModel.autoAddBoughtToPantry, isTrue);
+
+      when(() => mockUserService.currentUserProfile)
+          .thenReturn(_seamProfile(autoAdd: false, prompted: true));
+      expect(viewModel.autoAddBoughtToPantry, isFalse);
+    });
+
+    test(
+        'shouldShowFirstCheckoffPrompt is true only when not yet prompted AND '
+        'not already opted in', () {
+      // Never prompted, not opted in -> show.
+      when(() => mockUserService.currentUserProfile)
+          .thenReturn(_seamProfile(autoAdd: false, prompted: false));
+      expect(viewModel.shouldShowFirstCheckoffPrompt, isTrue);
+
+      // Already opted in -> never prompt even if unprompted.
+      when(() => mockUserService.currentUserProfile)
+          .thenReturn(_seamProfile(autoAdd: true, prompted: false));
+      expect(viewModel.shouldShowFirstCheckoffPrompt, isFalse);
+
+      // Already prompted -> never prompt again.
+      when(() => mockUserService.currentUserProfile)
+          .thenReturn(_seamProfile(autoAdd: false, prompted: true));
+      expect(viewModel.shouldShowFirstCheckoffPrompt, isFalse);
+    });
+
+    test('setAutoAddToPantry persists and notifies listeners', () async {
+      var notified = 0;
+      viewModel.addListener(() => notified++);
+
+      await viewModel.setAutoAddToPantry(true);
+
+      verify(() => mockUserService.setAutoAddToPantry(true)).called(1);
+      expect(notified, greaterThanOrEqualTo(1));
+    });
+
+    test('markPantryAutoAddPrompted persists and notifies listeners', () async {
+      var notified = 0;
+      viewModel.addListener(() => notified++);
+
+      await viewModel.markPantryAutoAddPrompted();
+
+      verify(() => mockUserService.markPantryAutoAddPrompted()).called(1);
+      expect(notified, greaterThanOrEqualTo(1));
     });
   });
 }

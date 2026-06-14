@@ -3273,6 +3273,42 @@ abstract class AppLocalizations {
   /// **'Uppdatera dina allergener och kostpreferenser när som helst'**
   String get allergenSettingsHubSubtitle;
 
+  /// BUT-1306: title of the Settings switch that auto-adds checked-off shopping items into the pantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg köpta varor i skafferiet'**
+  String get settingsAutoAddPantryTitle;
+
+  /// BUT-1306: subtitle explaining the auto-add-to-pantry Settings switch.
+  ///
+  /// In sv, this message translates to:
+  /// **'När du bockar av en vara läggs den automatiskt i ditt skafferi'**
+  String get settingsAutoAddPantrySubtitle;
+
+  /// BUT-1306: title of the one-time dialog offered on the user's first shopping checkoff.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till i skafferiet automatiskt?'**
+  String get pantryAutoAddPromptTitle;
+
+  /// BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.'**
+  String get pantryAutoAddPromptBody;
+
+  /// BUT-1306: confirm button on the first-checkoff prompt that enables auto-add-to-pantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ja, lägg till automatiskt'**
+  String get pantryAutoAddPromptEnable;
+
+  /// BUT-1306: decline button on the first-checkoff prompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get pantryAutoAddPromptDecline;
+
   /// No description provided for @allergenTrackAllergensTitle.
   ///
   /// In sv, this message translates to:
@@ -7010,6 +7046,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inga recept i menyn'**
   String get menuCardNoRecipes;
+
+  /// No description provided for @menuCardGeneratedTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Genererad meny'**
+  String get menuCardGeneratedTitle;
+
+  /// No description provided for @menuCardUntitled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namnlös meny'**
+  String get menuCardUntitled;
 
   /// No description provided for @menuCardRecipeCount.
   ///

@@ -6,6 +6,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -48,6 +49,8 @@ class SettingsHubView extends StatelessWidget {
                   onTap: () =>
                       Navigator.pushNamed(context, Routes.settingsPersonalTags),
                 ),
+                // BUT-1306: auto-add checked-off shopping items to the pantry.
+                const AutoAddPantryTile(),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(
                     title: context.l10n.settingsSectionNotifications),
@@ -252,6 +255,64 @@ class _DangerSettingsTile extends StatelessWidget {
       ),
       trailing: Icon(Icons.chevron_right, color: cs.outline),
       onTap: onTap,
+    );
+  }
+}
+
+/// BUT-1306: Settings switch that toggles `autoAddBoughtToPantry`. Listens to
+/// [UserService] so it reflects changes made elsewhere (e.g. the one-time
+/// first-checkoff prompt enabling it). Reads/writes the complete user profile
+/// via UserService per the data-source rule — never PermissionService.
+///
+/// Public (not `_AutoAddPantryTile`) so widget tests can render it in isolation
+/// without the full [SettingsHubView] dependency graph.
+class AutoAddPantryTile extends StatefulWidget {
+  const AutoAddPantryTile({super.key});
+
+  @override
+  State<AutoAddPantryTile> createState() => _AutoAddPantryTileState();
+}
+
+class _AutoAddPantryTileState extends State<AutoAddPantryTile> {
+  late final UserService _userService;
+
+  @override
+  void initState() {
+    super.initState();
+    _userService = ServiceLocator.get<UserService>();
+    _userService.addListener(_onUserChanged);
+  }
+
+  @override
+  void dispose() {
+    _userService.removeListener(_onUserChanged);
+    super.dispose();
+  }
+
+  void _onUserChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _onChanged(bool value) async {
+    await _userService.setAutoAddToPantry(value);
+    // setState driven by the UserService notifyListeners → _onUserChanged.
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final enabled =
+        _userService.currentUserProfile?.autoAddBoughtToPantry ?? false;
+    return SwitchListTile(
+      secondary: Icon(Icons.kitchen_outlined, color: cs.onSurfaceVariant),
+      title: Text(context.l10n.settingsAutoAddPantryTitle,
+          style: AppTextStyles.bodyMedium),
+      subtitle: Text(
+        context.l10n.settingsAutoAddPantrySubtitle,
+        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+      ),
+      value: enabled,
+      onChanged: _onChanged,
     );
   }
 }

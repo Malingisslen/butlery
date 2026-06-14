@@ -175,8 +175,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                             }
                             _saveRecipe(context);
                           },
-                          child: ListView(
-                            children: _buildFormFields(context, viewModel),
+                          // BUT-701: scope keyboard tab-order to this form so
+                          // Tab walks the fields in visual order (matches the
+                          // shopping_item_dialog pattern). No visual change.
+                          child: FocusTraversalGroup(
+                            child: ListView(
+                              children: _buildFormFields(context, viewModel),
+                            ),
                           ),
                         ),
                       ),

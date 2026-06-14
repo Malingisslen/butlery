@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -44,13 +46,25 @@ class MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final restDecoration = BoxDecoration(
+      color: cs.surface,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      border:
+          Border.all(color: cs.outline, width: AppDimensions.borderWidthThin),
+    );
     return RepaintBoundary(
-      child: Container(
+      child: HoverableCard(
+        // Hover lift only when the card is actually tappable.
+        enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
+        restDecoration: restDecoration,
+        // Subtle shadow on hover (web/desktop) — border + square corners
+        // unchanged, matching the design system's reserved hover elevation.
+        hoverDecoration: restDecoration.copyWith(boxShadow: AppShadows.subtle),
         child: Material(
           color: Colors.transparent,
           child: Semantics(
-            label: context.l10n.a11yMenu(_getMenuTitle()),
+            label: context.l10n.a11yMenu(_getMenuTitle(context)),
             button: true,
             child: InkWell(
               onTap: onTap,
@@ -58,13 +72,6 @@ class MenuCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(
-                      color: cs.outline, width: AppDimensions.borderWidthThin),
-                ),
                 child: _buildContent(context),
               ),
             ),
@@ -144,7 +151,7 @@ class MenuCard extends StatelessWidget {
   }
 
   Widget _buildMenuHeader(BuildContext context) {
-    final title = _getMenuTitle();
+    final title = _getMenuTitle(context);
     return Row(
       children: [
         Icon(
@@ -328,7 +335,7 @@ class MenuCard extends StatelessWidget {
   // Helper methods to extract data from the menu object
   // These will need to be updated when the actual menu model is available
 
-  String _getMenuTitle() {
+  String _getMenuTitle(BuildContext context) {
     if (menu is SharedMenu) {
       final sharedMenu = menu as SharedMenu;
       return sharedMenu.menuTitle;
@@ -336,9 +343,9 @@ class MenuCard extends StatelessWidget {
       final realtimeMenu = menu as RealtimeMenu;
       return realtimeMenu.menuTitle;
     } else if (menu is Map<String, List<Recipe>>) {
-      return 'Generated Menu';
+      return context.l10n.menuCardGeneratedTitle;
     }
-    return 'Unnamed Menu';
+    return context.l10n.menuCardUntitled;
   }
 
   int _getRecipeCount() {

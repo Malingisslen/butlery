@@ -19,6 +19,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -114,6 +116,14 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Initializes unified shopping ViewModel with service integration and manager setup
   late final AnalyticsService? _analytics =
       ServiceLocator.tryGet<AnalyticsService>();
+
+  /// BUT-1306: policy seam from checkoff → pantry. Resolved lazily so the
+  /// low-level `toggleItemBought` module stays free of service/userId deps —
+  /// the VM (which already knows the userId and pre-toggle state) owns the wiring.
+  late final ShoppingCheckoffPantryService? _checkoffPantryService =
+      ServiceLocator.tryGet<ShoppingCheckoffPantryService>();
+
+  late final UserService? _userService = ServiceLocator.tryGet<UserService>();
 
   UnifiedShoppingViewModel() {
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
@@ -320,6 +330,11 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       return false;
     }
 
+    // Capture the pre-toggle bought-state HERE (the layer that has it) so the
+    // pantry policy seam can be fed a faithful wasBought without the low-level
+    // module having to grow service/userId dependencies (BUT-1306).
+    final wasBought = items.where((i) => i.id == itemId).firstOrNull?.bought;
+
     final result = await _shoppingService.toggleItemBought(itemId);
     if (result && activeList != null) {
       final checkedCount = activeList!.items.where((i) => i.bought).length;
@@ -334,8 +349,57 @@ class UnifiedShoppingViewModel extends ChangeNotifier
           itemCount: activeList!.items.length,
         );
       }
+
+      // BUT-1306: live wiring of the checkoff → pantry policy seam. The service
+      // itself gates on a genuine false→true checkoff AND the user's opt-in
+      // preference, so an unconditional call here is correct (and a no-op when
+      // un-checking or when the preference is off).
+      if (wasBought != null) {
+        final toggled =
+            activeList!.items.where((i) => i.id == itemId).firstOrNull;
+        final userId = currentUserId;
+        if (toggled != null && userId != null) {
+          unawaited(
+            _checkoffPantryService?.onItemCheckedOff(
+                  userId,
+                  toggled,
+                  wasBought: wasBought,
+                ) ??
+                Future<void>.value(),
+          );
+        }
+      }
     }
     return result;
+  }
+
+  // ── BUT-1306: auto-add-bought-to-pantry preference (Settings toggle + the
+  //    one-time first-checkoff prompt). Reads/writes the complete user profile
+  //    via UserService, not PermissionService (data-source rule). ──
+
+  /// Current value of the "auto-add bought items to pantry" opt-in (default off).
+  bool get autoAddBoughtToPantry =>
+      _userService?.currentUserProfile?.autoAddBoughtToPantry ?? false;
+
+  /// Whether the one-time first-checkoff prompt has already been shown.
+  bool get pantryAutoAddPrompted =>
+      _userService?.currentUserProfile?.pantryAutoAddPrompted ?? true;
+
+  /// True only when the first-checkoff prompt should fire: it hasn't been shown
+  /// yet AND the user hasn't already opted in. Drives the one-time dialog.
+  bool get shouldShowFirstCheckoffPrompt =>
+      !pantryAutoAddPrompted && !autoAddBoughtToPantry;
+
+  /// Persist the Settings toggle. Notifies so a watching settings tile rebuilds.
+  Future<void> setAutoAddToPantry(bool enabled) async {
+    await _userService?.setAutoAddToPantry(enabled);
+    notifyListeners();
+  }
+
+  /// Record that the first-checkoff prompt has been shown so it never re-nags.
+  Future<void> markPantryAutoAddPrompted() async {
+    await _userService?.markPantryAutoAddPrompted();
+    notifyListeners();
   }
 
   Future<bool> removeItem(String itemId) async {

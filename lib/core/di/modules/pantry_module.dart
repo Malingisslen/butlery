@@ -13,7 +13,9 @@ import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
 
 import 'package:butlery/services/ingredient_match_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
+import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/user_service.dart';
 
 class PantryModule implements DIModule {
   @override
@@ -27,6 +29,7 @@ class PantryModule implements DIModule {
         PantryRepository,
         IngredientMatchService,
         PantryService,
+        ShoppingCheckoffPantryService,
       ];
 
   // Priority between TaggingModule (5) and ContentModule (10) so the
@@ -54,6 +57,17 @@ class PantryModule implements DIModule {
         matchService: container<IngredientMatchService>(),
       ),
       dispose: (s) => s.dispose(),
+    );
+
+    // BUT-1306: the policy seam wired from shopping-list checkoff. Resolved
+    // lazily, so UserService (registered by SocialModule, priority 20 — after
+    // this module's priority 7) is available by the time the first checkoff
+    // actually fires it at runtime.
+    container.registerLazySingleton<ShoppingCheckoffPantryService>(
+      () => ShoppingCheckoffPantryService(
+        pantryService: container<PantryService>(),
+        userService: container<UserService>(),
+      ),
     );
   }
 

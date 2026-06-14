@@ -159,50 +159,55 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
             constraints: const BoxConstraints(maxWidth: 500),
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.mark_email_unread_outlined,
-                      size: 80, color: cs.primary),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  Text(
-                    l.emailVerificationTitle,
-                    style: tt.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  Text(
-                    l.emailVerificationMessage(widget.email),
-                    style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: AppDimensions.spacingM),
+              // BUT-701: scope keyboard tab-order to this screen's controls
+              // (resend + continue) so Tab walks them in visual order. No
+              // visual change.
+              child: FocusTraversalGroup(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.mark_email_unread_outlined,
+                        size: 80, color: cs.primary),
+                    const SizedBox(height: AppDimensions.spacingXl),
                     Text(
-                      _errorMessage!,
-                      style: tt.bodyMedium?.copyWith(color: cs.error),
+                      l.emailVerificationTitle,
+                      style: tt.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
-                  ],
-                  const SizedBox(height: AppDimensions.spacingXxl),
-                  ActionButtons.primaryButton(
-                    context,
-                    label: cooldownText,
-                    onPressed: resendDisabled ? null : _resendVerification,
-                    isLoading: _isSending,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  TextButton(
-                    onPressed: () {
-                      _pollTimer?.cancel();
-                      widget.onDismiss?.call();
-                    },
-                    child: Text(
-                      l.emailVerificationContinue,
-                      style: tt.bodyMedium?.copyWith(color: cs.outline),
+                    const SizedBox(height: AppDimensions.spacingM),
+                    Text(
+                      l.emailVerificationMessage(widget.email),
+                      style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: AppDimensions.spacingM),
+                      Text(
+                        _errorMessage!,
+                        style: tt.bodyMedium?.copyWith(color: cs.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    const SizedBox(height: AppDimensions.spacingXxl),
+                    ActionButtons.primaryButton(
+                      context,
+                      label: cooldownText,
+                      onPressed: resendDisabled ? null : _resendVerification,
+                      isLoading: _isSending,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingM),
+                    TextButton(
+                      onPressed: () {
+                        _pollTimer?.cancel();
+                        widget.onDismiss?.call();
+                      },
+                      child: Text(
+                        l.emailVerificationContinue,
+                        style: tt.bodyMedium?.copyWith(color: cs.outline),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
