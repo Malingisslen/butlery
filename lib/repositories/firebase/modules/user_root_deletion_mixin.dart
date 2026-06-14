@@ -41,12 +41,15 @@ mixin UserRootDeletionMixin on BaseFirebaseRepository<UserProfile> {
     AppLogger.info('Deleted users/$userId');
     // GDPR Article 17 erasure must leave an audit entry on the SUCCESS path —
     // validateOwnership only logs on deny. Mirror the granted:true logging that
-    // every other mutating method in this repository does.
+    // every other mutating method in this repository does, and forward
+    // auditRepository so the entry PERSISTS to the Art.30 trail (BUT-1286), not
+    // just the console.
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_root_doc/$userId',
       operation: 'delete',
       granted: true,
+      auditRepository: auditRepository,
     );
     return true;
   }

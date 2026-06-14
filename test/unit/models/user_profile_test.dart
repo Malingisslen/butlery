@@ -729,6 +729,46 @@ void main() {
         expect(firestore.containsKey('uid'), isFalse);
       });
 
+      test(
+          'toFirestoreEditable excludes the three server-owned fields and '
+          'keeps every owner-editable public field (BUT-1285)', () {
+        // Intent: toFirestoreEditable() is the merge-write surface for a
+        // stale-safe profile save. It must drop exactly friendsCount (owned by
+        // other users' friend transactions), isHidden, and hiddenAt (moderator-
+        // owned) so a merge:true write never reverts them — while still carrying
+        // every field the owner is allowed to change. Tested at the model level
+        // because the repository test only seeds friendsCount/isHidden; the
+        // hiddenAt removal has no other guard, so a dropped `remove('hiddenAt')`
+        // would otherwise ship silently and let a stale save null out a
+        // moderation timestamp.
+        final hidden = testProfile.copyWith(
+          isHidden: true,
+          hiddenAt: testDate,
+          friendsCount: 42,
+        );
+
+        final editable = hidden.toFirestoreEditable();
+
+        // The three server-owned keys are absent entirely (so merge:true leaves
+        // the server values untouched — not present in affectedKeys()).
+        expect(editable.containsKey('friendsCount'), isFalse,
+            reason: 'friendsCount is mutated by other users — must not be '
+                'written by an owner profile edit');
+        expect(editable.containsKey('isHidden'), isFalse,
+            reason: 'isHidden is moderator-owned — a stale false trips the '
+                'rules diff() guard and rejects the whole save');
+        expect(editable.containsKey('hiddenAt'), isFalse,
+            reason: 'hiddenAt is moderator-owned — a stale null would clear a '
+                'live moderation timestamp on every owner edit');
+
+        // Owner-editable fields all survive — this is not a blanket strip.
+        expect(editable['displayName'], equals(hidden.displayName));
+        expect(editable['email'], equals(hidden.email));
+        expect(editable['avatarUrl'], equals(hidden.avatarUrl));
+        expect(editable['isSearchable'], equals(hidden.isSearchable));
+        expect(editable['allowEmailSearch'], equals(hidden.allowEmailSearch));
+      });
+
       test('should include cooking identity in correct serialization targets',
           () {
         final profile = testProfile.copyWith(

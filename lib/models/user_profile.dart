@@ -318,8 +318,9 @@ class UserProfile with JsonSerializableMixin {
 
   /// Owner-editable subset of the public profile, for a `merge:true` write.
   ///
-  /// Deliberately EXCLUDES three server-owned fields that a stale in-memory
-  /// profile would otherwise clobber on a full `set()`:
+  /// BUT-1285: this is the merge-write acceptance surface — it deliberately
+  /// EXCLUDES three server-owned fields that a stale in-memory profile would
+  /// otherwise clobber on a full `set()`:
   /// - `friendsCount` — maintained by OTHER users' friend-creation transactions
   ///   (firestore.rules lets any authed user change only this field). A stale
   ///   value in a full overwrite silently reverts a concurrent friend's change.

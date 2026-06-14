@@ -7,6 +7,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 
@@ -168,17 +169,22 @@ void main() {
         // must NOT revert those server values — saveProfile writes only the
         // owner-editable subset with merge:true.
         const userId = 'user-123';
-        // Server state: 9 friends, moderator-hidden.
+        // Server state: 9 friends, moderator-hidden with a live hiddenAt stamp.
+        // The exact stored shape is irrelevant — the contract is that a stale
+        // owner save leaves whatever value the moderator wrote untouched — so we
+        // seed an opaque sentinel and assert it round-trips byte-for-byte.
+        const serverHiddenAt = '__moderator_hidden_at_sentinel__';
         await _seedUserProfile(
           fakeFirestore,
           userId,
           _createUserProfile(userId).toFirestore()
             ..['friendsCount'] = 9
-            ..['isHidden'] = true,
+            ..['isHidden'] = true
+            ..['hiddenAt'] = serverHiddenAt,
         );
 
         // The client saves an edit (new display name) from a stale profile that
-        // still thinks friendsCount == 0 and isHidden == false.
+        // still thinks friendsCount == 0, isHidden == false, hiddenAt == null.
         final staleEdit =
             _createUserProfile(userId).copyWith(displayName: 'Renamed User');
         await repository.saveProfile(staleEdit);
@@ -192,6 +198,10 @@ void main() {
             reason: 'a stale save must not revert a concurrent friend count');
         expect(publicDoc.data()!['isHidden'], equals(true),
             reason: 'a stale save must not un-hide a moderation-hidden user');
+        // hiddenAt has no model-independent guard — a dropped remove('hiddenAt')
+        // would merge a stale null over the live moderation timestamp.
+        expect(publicDoc.data()!['hiddenAt'], equals(serverHiddenAt),
+            reason: 'a stale save must not clear the moderation timestamp');
       });
 
       test('should fetch profile by id', () async {
@@ -830,10 +840,154 @@ void main() {
         expect(after.exists, isTrue);
       });
     });
+
+    group('GDPR success-path audit trail (BUT-1286)', () {
+      // Intent: GDPR Art.17 erasure must leave a granted:true entry on the
+      // Art.30 audit trail when a delete SUCCEEDS — validateOwnership only logs
+      // on DENY, so without an explicit success-path log the erasure of a user
+      // would be invisible to the audit record. We inject a spy audit repository
+      // (a real FirebaseAuditRepository subclass whose persistence method is
+      // recorded, not mocked away) and assert each delete path forwards a
+      // granted:true permission check to it. This tests the repository's
+      // contract — "a successful GDPR delete persists an audit entry" — without
+      // mocking the subject under test.
+      late _SpyAuditRepository spyAudit;
+      late FirebaseUserRepository auditedRepository;
+
+      setUp(() {
+        spyAudit = _SpyAuditRepository(fakeFirestore);
+        auditedRepository = FirebaseUserRepository(
+          firestore: fakeFirestore,
+          authRepository: mockAuthRepo,
+          auditRepository: spyAudit,
+          timestampProvider: const TestTimestampProvider(),
+        );
+      });
+
+      test(
+          'deletePublicProfile emits logPermissionCheck(granted:true) on success',
+          () async {
+        await _seedUserProfile(fakeFirestore, 'user-123', {
+          'displayName': 'Test',
+          'email': 'test@example.com',
+        });
+
+        final ok = await auditedRepository.deletePublicProfile('user-123');
+        expect(ok, isTrue);
+
+        final entry = spyAudit.calls.singleWhere(
+          (c) => c.operation == 'delete' && c.resourceType == 'public_profile',
+          orElse: () => throw TestFailure(
+              'no audit entry persisted for deletePublicProfile success path'),
+        );
+        expect(entry.granted, isTrue,
+            reason:
+                'a successful GDPR profile erasure must record granted:true '
+                'on the audit trail (Art.30)');
+        expect(entry.userId, equals('user-123'));
+        expect(entry.resourceId, equals('user-123'));
+      });
+
+      test(
+          'deleteUserRootDoc emits logPermissionCheck(granted:true) on success',
+          () async {
+        await fakeFirestore
+            .collection('users')
+            .doc('user-123')
+            .set({'baseDoc': true});
+
+        final ok = await auditedRepository.deleteUserRootDoc('user-123');
+        expect(ok, isTrue);
+
+        final entry = spyAudit.calls.singleWhere(
+          (c) => c.operation == 'delete' && c.resourceType == 'user_root_doc',
+          orElse: () => throw TestFailure(
+              'no audit entry persisted for deleteUserRootDoc success path'),
+        );
+        expect(entry.granted, isTrue,
+            reason: 'a successful GDPR root-doc erasure must record '
+                'granted:true on the audit trail (Art.30)');
+        expect(entry.userId, equals('user-123'));
+        expect(entry.resourceId, equals('user-123'));
+      });
+
+      test('a DENIED delete does not emit a granted:true success entry',
+          () async {
+        // Negative control: the audit trail must distinguish a successful
+        // erasure from a rejected one — a non-owner attempt must never produce
+        // a granted:true entry. (PermissionValidationMixin logs the denial via
+        // validateOwnership, which is a separate, denied entry.)
+        await _seedUserProfile(fakeFirestore, 'stranger-uid', {
+          'displayName': 'Stranger',
+          'email': 'stranger@example.com',
+        });
+
+        await expectLater(
+          auditedRepository.deletePublicProfile('stranger-uid'),
+          throwsA(isA<Exception>()),
+        );
+
+        final grantedSuccessEntries = spyAudit.calls.where((c) =>
+            c.operation == 'delete' &&
+            c.resourceType == 'public_profile' &&
+            c.granted);
+        expect(grantedSuccessEntries, isEmpty,
+            reason: 'a rejected erasure must never record a granted:true '
+                'success entry on the audit trail');
+      });
+    });
   });
 }
 
 // ===== TEST HELPERS =====
+
+/// One recorded call to the spy audit repository's logPermissionCheck.
+class _AuditCall {
+  _AuditCall({
+    required this.userId,
+    required this.operation,
+    required this.resourceType,
+    required this.resourceId,
+    required this.granted,
+  });
+
+  final String userId;
+  final String operation;
+  final String resourceType;
+  final String? resourceId;
+  final bool granted;
+}
+
+/// Spy over the real [FirebaseAuditRepository]: records each persistence call
+/// instead of writing to Firestore. We override the persistence method (the
+/// collaborator) rather than mocking the subject (FirebaseUserRepository), and
+/// we bypass the real `_collection.add(...)` write because it embeds
+/// `FieldValue.serverTimestamp()`, which throws under TestServiceLocator's
+/// platform bindings (the production fire-and-forget would swallow that, hiding
+/// whether the call was even made — see firebase_audit_repository_test.dart).
+class _SpyAuditRepository extends FirebaseAuditRepository {
+  _SpyAuditRepository(super.firestore);
+
+  final List<_AuditCall> calls = [];
+
+  @override
+  Future<void> logPermissionCheck({
+    required String userId,
+    required String operation,
+    required String resourceType,
+    String? resourceId,
+    required bool granted,
+    Map<String, dynamic>? metadata,
+  }) async {
+    calls.add(_AuditCall(
+      userId: userId,
+      operation: operation,
+      resourceType: resourceType,
+      resourceId: resourceId,
+      granted: granted,
+    ));
+  }
+}
 
 /// Create a test user profile
 UserProfile _createUserProfile(

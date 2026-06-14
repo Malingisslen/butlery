@@ -143,12 +143,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       resourceType: 'user_profile',
     );
 
-    // BUT-1242 follow-up: write only owner-editable public fields with merge,
-    // so we never clobber friendsCount (mutated by friend-creation transactions)
-    // or moderator-owned isHidden/hiddenAt. A full set() with a stale in-memory
+    // BUT-1285: write only owner-editable public fields with merge, so we never
+    // clobber friendsCount (mutated by friend-creation transactions) or
+    // moderator-owned isHidden/hiddenAt. A full set() with a stale in-memory
     // profile would silently revert a concurrent friend's count, and a stale
     // isHidden:false would trip the rules' diff() guard and reject every edit a
-    // moderation-hidden user tries to make.
+    // moderation-hidden user tries to make. Acceptance (BUT-1285): the write
+    // uses toFirestoreEditable(), which excludes friendsCount/isHidden/hiddenAt
+    // (see the regression guard in firebase_user_repository_test.dart).
     final data = profile.toFirestoreEditable();
     data['displayNameLower'] = profile.displayName.toLowerCase();
     await Future.wait([
@@ -633,12 +635,14 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     AppLogger.info('Deleted public_profiles/$userId');
     // GDPR Article 17 erasure must leave an audit entry on the SUCCESS path —
     // validateOwnership only logs on deny. Mirror the granted:true logging that
-    // every other mutating method here does.
+    // every other mutating method here does, and forward auditRepository so the
+    // entry PERSISTS to the Art.30 trail (BUT-1286), not just the console.
     logPermissionCheck(
       userId: currentUser,
       resource: 'public_profile/$userId',
       operation: 'delete',
       granted: true,
+      auditRepository: auditRepository,
     );
     return true;
   }
