@@ -36,11 +36,17 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   _FakeUrlImportViewModel({
     required List<UrlImportResult> results,
     String batchText = '',
+    bool isMultiUrl = true,
+    String extractedText = '',
   })  : _results = results,
-        _batchText = batchText;
+        _batchText = batchText,
+        _isMultiUrl = isMultiUrl,
+        _extractedText = extractedText;
 
   final List<UrlImportResult> _results;
   final String _batchText;
+  final bool _isMultiUrl;
+  final String _extractedText;
 
   @override
   bool get isLoading => false;
@@ -57,7 +63,7 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   int get successfulUrlCount => _results.where((r) => r.isSuccess).length;
 
   @override
-  bool get isMultiUrl => true;
+  bool get isMultiUrl => _isMultiUrl;
 
   @override
   Future<void> retryUrl(int index) async {
@@ -72,9 +78,9 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   @override
   bool get canFetch => true;
   @override
-  bool get hasExtractedText => false;
+  bool get hasExtractedText => _extractedText.isNotEmpty;
   @override
-  String get extractedText => '';
+  String get extractedText => _extractedText;
   @override
   String get sourceUrl => '';
   @override
@@ -310,5 +316,44 @@ void main() {
 
     // 2 succeeded out of 3 pasted → "2 av 3 hämtade" (Swedish copy).
     expect(find.text('2 av 3 hämtade'), findsOneWidget);
+  });
+
+  // Gap (BUT-1293): every test above exercises the multi-URL batch path. None
+  // proved the *legacy* single-URL path is untouched by BUT-947 — that a single
+  // pasted URL still renders the editable-extracted-text editor and "Gå vidare
+  // till klistra-in" CTA, and crucially does NOT render the per-URL progress row
+  // list or the "Importera N recept" batch CTA. The view branches the batch UI on
+  // `urlResults.isNotEmpty` and the editor on `urlResults.isEmpty &&
+  // hasExtractedText`; this pins that a single-URL VM (isMultiUrl == false, no
+  // urlResults, with extracted text) stays on the legacy branch.
+  testWidgets(
+      'single-URL input renders the legacy editor, not the multi-URL row list',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [],
+      isMultiUrl: false,
+      extractedText: 'Pannkakor\n\n3 ägg\n5 dl mjölk',
+    );
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // Legacy single-URL UI is present: the extracted-text header and the
+    // "proceed to paste" CTA only render on the `urlResults.isEmpty &&
+    // hasExtractedText` branch, so their presence proves we're on the legacy
+    // editor path. (The editor seeds its text via a notifyListeners-driven
+    // listener, not on first build, so we assert the branch markers rather than
+    // the controller contents — which would be a flaky implementation detail.)
+    expect(find.text('Extraherad text:'), findsOneWidget);
+    expect(find.text('Gå vidare till klistra-in'), findsOneWidget);
+
+    // The multi-URL batch surface is entirely absent: no per-URL progress row
+    // (no URL text, no status icons, no retry), no "{n} av {m} hämtade" summary,
+    // and no "Importera N recept" batch CTA.
+    expect(find.text(okUrl), findsNothing);
+    expect(find.text('Försök igen'), findsNothing);
+    expect(find.byIcon(Icons.check_circle), findsNothing);
+    expect(find.byIcon(Icons.error), findsNothing);
+    expect(find.textContaining('hämtade'), findsNothing);
+    expect(find.textContaining('Importera'), findsNothing);
   });
 }

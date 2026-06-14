@@ -32,6 +32,7 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
@@ -79,6 +80,11 @@ class _FakeMenuService extends Fake implements UnifiedMenuService {}
 
 class _FakeShoppingService extends Fake implements UnifiedShoppingService {}
 
+/// The populated list renders [SharedRecipeCard], whose Reply button resolves
+/// MessagingService from the locator in initState. Never invoked in these
+/// render-state tests — it only has to satisfy the lookup so the card builds.
+class _FakeMessagingService extends Fake implements MessagingService {}
+
 class _FakeOfflineService extends Fake implements OfflineService {
   @override
   bool get isOnline => true;
@@ -119,6 +125,14 @@ class _FakeRecipeViewModel extends SharedRecipeViewModel {
 
   @override
   List<SharedRecipe> recipesSharedBy(String friendId) => recipes;
+
+  // The card reads these per-recipe view/import flags from the coordinator
+  // cache; stub them so the populated branch builds without a real coordinator.
+  @override
+  bool isRecipeViewed(SharedRecipe recipe) => false;
+
+  @override
+  bool isRecipeImported(SharedRecipe recipe) => false;
 
   @override
   Future<void> refreshContent() async {}
@@ -168,11 +182,24 @@ class _FakeCoordinator extends SharedContentCoordinatorViewModel {
 void _register(_FakeRecipeViewModel recipeVm) {
   // The view's offline banner resolves OfflineService from the locator.
   GetIt.instance.registerSingleton<OfflineService>(_FakeOfflineService());
+  // The populated list's SharedRecipeCard Reply button resolves this.
+  GetIt.instance.registerSingleton<MessagingService>(_FakeMessagingService());
   GetIt.instance.registerFactory<SharedContentCoordinatorViewModel>(
     () => _FakeCoordinator(recipeVm),
   );
   production.ServiceLocator.initialize(DIContainer());
 }
+
+SharedRecipe _sharedRecipe({required String id, required String title}) =>
+    SharedRecipe(
+      id: id,
+      sharedByUserId: 'friend-1',
+      sharedByDisplayName: 'Erik',
+      originalRecipeId: 'orig-$id',
+      recipeTitle: title,
+      recipePortions: 4,
+      recipeTimeMinutes: 30,
+    );
 
 Widget _wrap() => MaterialApp(
       locale: const Locale('sv'),
@@ -234,6 +261,37 @@ void main() {
       expect(find.byType(StateWidget), findsOneWidget,
           reason: 'an empty friend list must render the empty state');
       expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
+    });
+
+    testWidgets(
+        'populated state renders the list with one card title per shared recipe',
+        (tester) async {
+      _register(_FakeRecipeViewModel(recipes: [
+        _sharedRecipe(id: 'r1', title: 'Köttbullar'),
+        _sharedRecipe(id: 'r2', title: 'Pannkakor'),
+        _sharedRecipe(id: 'r3', title: 'Ärtsoppa'),
+      ]));
+      await tester.pumpWidget(_wrap());
+      await tester.pump();
+
+      // The non-empty branch builds a ListView, NOT the empty StateWidget.
+      expect(find.byType(ListView), findsOneWidget,
+          reason: 'a non-empty friend list must render the scrollable list');
+      expect(find.byType(StateWidget), findsNothing,
+          reason:
+              'the populated branch must not fall through to an empty/error '
+              'state widget');
+
+      // The view keys each card by recipe id — one keyed card per shared
+      // recipe proves the list rendered all N, not a deduped/truncated subset.
+      expect(find.byKey(const ValueKey('r1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r2')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r3')), findsOneWidget);
+
+      // Each recipe's title renders inside its card.
+      expect(find.text('Köttbullar'), findsOneWidget);
+      expect(find.text('Pannkakor'), findsOneWidget);
+      expect(find.text('Ärtsoppa'), findsOneWidget);
     });
 
     testWidgets('the title carries the friend display name', (tester) async {

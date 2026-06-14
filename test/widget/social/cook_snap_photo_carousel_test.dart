@@ -65,6 +65,44 @@ void main() {
       expect(find.text('1/3'), findsOneWidget,
           reason: 'the counter badge must show the current/total page');
     });
+
+    testWidgets(
+        'swiping the multi-photo carousel advances the counter to the next page',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const CookSnapPhotoCarousel(
+          photoUrls: ['https://x/a.jpg', 'https://x/b.jpg', 'https://x/c.jpg'],
+        ),
+      ));
+
+      // Sanity: the carousel starts on page 1 of 3.
+      expect(find.text('1/3'), findsOneWidget,
+          reason: 'the counter must start on the first page before swiping');
+
+      // Drag the PageView left by a full page to advance to the next photo.
+      // onPageChanged updates _index, which the counter badge reads.
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+
+      expect(find.text('2/3'), findsOneWidget,
+          reason: 'swiping forward must advance the counter to the next page');
+      expect(find.text('1/3'), findsNothing,
+          reason: 'the previous page counter must no longer be shown');
+    });
+
+    testWidgets('zero-photo album renders nothing — no PageView and no counter',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        const CookSnapPhotoCarousel(photoUrls: []),
+      ));
+
+      // The empty branch returns SizedBox.shrink(): no swipeable carousel...
+      expect(find.byType(PageView), findsNothing,
+          reason: 'an empty album must not build a PageView');
+      // ...and no counter badge of any page form.
+      expect(find.textContaining('/'), findsNothing,
+          reason: 'an empty album must not render a current/total counter');
+    });
   });
 
   group('CookSnapGallery photo-count badge (BUT-949)', () {
