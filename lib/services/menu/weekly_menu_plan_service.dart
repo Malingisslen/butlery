@@ -142,6 +142,52 @@ class WeeklyMenuPlanService extends BaseService {
     return result ?? 0;
   }
 
+  /// BUT-1043: move multiple entries to the same (toDay, toSlot) in one
+  /// persisted write. Loops the in-memory [moveEntry] primitive over
+  /// [entryIds] against a single loaded plan, then saves once — never one
+  /// write per entry.
+  ///
+  /// Entry ids that aren't present on the loaded plan are skipped (a stale
+  /// selection — e.g. an entry deleted by a parallel edit — must not abort
+  /// the whole move). Returns the number of entries actually moved; 0 short-
+  /// circuits without touching the repository.
+  ///
+  /// Single-slot swap semantics from [moveEntry] still apply per entry, so
+  /// moving several entries onto one lunch/middag cell behaves like repeated
+  /// drops: the last one wins the cell and earlier occupants get shuffled to
+  /// the moved entries' vacated cells. The realistic caller (bulk-move to
+  /// övrigt, or to a free cell) avoids that; the contract is documented for
+  /// completeness.
+  Future<int> bulkMoveEntries({
+    required DateTime weekStart,
+    required List<String> entryIds,
+    required DayOfWeek toDay,
+    required MealSlot toSlot,
+  }) async {
+    if (entryIds.isEmpty) return 0;
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw StateError('No authenticated user for bulkMoveEntries');
+    }
+    var plan = await _loadPlanForWrite(userId: userId, weekStart: weekStart);
+
+    var moved = 0;
+    for (final entryId in entryIds) {
+      if (!plan.entries.any((e) => e.id == entryId)) continue;
+      final updated = moveEntry(
+        plan: plan,
+        entryId: entryId,
+        toDay: toDay,
+        toSlot: toSlot,
+      );
+      if (identical(updated, plan)) continue; // self-drop no-op
+      plan = updated;
+      moved++;
+    }
+    if (moved > 0) await _repository.save(plan);
+    return moved;
+  }
+
   /// BUT-893: scrub [recipeId] from every weekly plan owned by the current
   /// user. Returns the number of plans actually changed. Safe to call on a
   /// recipe that was never on any plan (returns 0). Designed to be invoked

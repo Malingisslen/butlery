@@ -802,4 +802,133 @@ void main() {
       );
     });
   });
+
+  // BUT-1043: bulk-move loops the in-memory moveEntry primitive over a
+  // selection and persists ONCE. The contract: N entry ids → one save with
+  // every present entry relocated to (toDay, toSlot); stale ids skipped;
+  // empty selection touches nothing.
+  group('bulkMoveEntries — BUT-1043', () {
+    setUpAll(() {
+      registerFallbackValue(_FakeWeeklyMenuPlan());
+    });
+
+    WeeklyMenuPlanEntry makeEntry({
+      required String id,
+      required DayOfWeek day,
+      required MealSlot slot,
+    }) {
+      return WeeklyMenuPlanEntry(
+        id: id,
+        day: day,
+        slot: slot,
+        recipeId: 'r-$id',
+        recipeTitle: 'Recipe $id',
+      );
+    }
+
+    setUp(() {
+      when(() => userService.currentUserProfile).thenReturn(_profile('u'));
+      when(() => repo.save(any())).thenAnswer((_) async {});
+    });
+
+    test('moves every selected övrigt entry to one target with a single save',
+        () async {
+      // Three övrigt entries spread across days collapse onto Friday övrigt
+      // in one persisted write — the realistic bulk-move case.
+      final plan = _emptyPlan(mon).copyWith(entries: [
+        makeEntry(id: 'e1', day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+        makeEntry(id: 'e2', day: DayOfWeek.tue, slot: MealSlot.ovrigt),
+        makeEntry(id: 'e3', day: DayOfWeek.wed, slot: MealSlot.ovrigt),
+      ]);
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer((_) async => plan);
+
+      final moved = await service.bulkMoveEntries(
+        weekStart: mon,
+        entryIds: ['e1', 'e2', 'e3'],
+        toDay: DayOfWeek.fri,
+        toSlot: MealSlot.ovrigt,
+      );
+
+      expect(moved, 3);
+      final captured = verify(() => repo.save(captureAny())).captured;
+      expect(captured, hasLength(1)); // one write, not three
+      final saved = captured.single as WeeklyMenuPlan;
+      final fri = saved.entriesAt(DayOfWeek.fri, MealSlot.ovrigt);
+      expect(fri.map((e) => e.id).toSet(), {'e1', 'e2', 'e3'});
+    });
+
+    test('skips stale ids not present on the plan and counts only real moves',
+        () async {
+      final plan = _emptyPlan(mon).copyWith(entries: [
+        makeEntry(id: 'e1', day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+      ]);
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer((_) async => plan);
+
+      final moved = await service.bulkMoveEntries(
+        weekStart: mon,
+        entryIds: ['e1', 'ghost-id'],
+        toDay: DayOfWeek.thu,
+        toSlot: MealSlot.ovrigt,
+      );
+
+      expect(moved, 1); // ghost-id silently skipped, not an error
+    });
+
+    test('empty selection returns 0 without touching the repository', () async {
+      final moved = await service.bulkMoveEntries(
+        weekStart: mon,
+        entryIds: const [],
+        toDay: DayOfWeek.mon,
+        toSlot: MealSlot.middag,
+      );
+
+      expect(moved, 0);
+      verifyNever(() => repo.save(any()));
+      verifyNever(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          ));
+    });
+
+    test('all-stale selection saves nothing (no write for 0 real moves)',
+        () async {
+      final plan = _emptyPlan(mon).copyWith(entries: [
+        makeEntry(id: 'e1', day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+      ]);
+      when(() => repo.fetchForWeek(
+            userId: any(named: 'userId'),
+            weekStart: any(named: 'weekStart'),
+          )).thenAnswer((_) async => plan);
+
+      final moved = await service.bulkMoveEntries(
+        weekStart: mon,
+        entryIds: ['ghost-1', 'ghost-2'],
+        toDay: DayOfWeek.thu,
+        toSlot: MealSlot.ovrigt,
+      );
+
+      expect(moved, 0);
+      verifyNever(() => repo.save(any()));
+    });
+
+    test('throws StateError when no authenticated user', () async {
+      when(() => userService.currentUserProfile).thenReturn(null);
+
+      expect(
+        () => service.bulkMoveEntries(
+          weekStart: mon,
+          entryIds: ['e1'],
+          toDay: DayOfWeek.mon,
+          toSlot: MealSlot.middag,
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+  });
 }

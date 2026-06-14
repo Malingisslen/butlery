@@ -59,6 +59,11 @@ class PantryItem {
   final DateTime addedAt;
   final String? note;
 
+  /// BUT-1279: a "staple" the user always keeps on hand (salt, olja, peppar).
+  /// Staples are excluded from the menu→shopping list so the generated list
+  /// stays focused on what actually needs buying this week.
+  final bool isStaple;
+
   const PantryItem({
     required this.id,
     required this.ingredientName,
@@ -69,6 +74,7 @@ class PantryItem {
     this.ingredientId,
     this.expiryDate,
     this.note,
+    this.isStaple = false,
   });
 
   factory PantryItem.fromFirestore(DocumentSnapshot doc) {
@@ -95,6 +101,7 @@ class PantryItem {
       expiryDate: SerializationUtils.safeDateTime(data, 'expiryDate'),
       addedAt: SerializationUtils.safeRequiredDateTime(data, 'addedAt'),
       note: SerializationUtils.safeNullableString(data, 'note'),
+      isStaple: SerializationUtils.safeBool(data, 'isStaple'),
     );
   }
 
@@ -108,6 +115,7 @@ class PantryItem {
       if (expiryDate != null) 'expiryDate': Timestamp.fromDate(expiryDate!),
       'addedAt': Timestamp.fromDate(addedAt),
       if (note != null) 'note': note,
+      if (isStaple) 'isStaple': true,
     };
   }
 
@@ -121,6 +129,7 @@ class PantryItem {
     DateTime? expiryDate,
     DateTime? addedAt,
     String? note,
+    bool? isStaple,
     bool clearIngredientId = false,
     bool clearExpiryDate = false,
     bool clearNote = false,
@@ -136,6 +145,7 @@ class PantryItem {
       expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
       addedAt: addedAt ?? this.addedAt,
       note: clearNote ? null : (note ?? this.note),
+      isStaple: isStaple ?? this.isStaple,
     );
   }
 

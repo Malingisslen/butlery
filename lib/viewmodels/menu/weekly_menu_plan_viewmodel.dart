@@ -43,9 +43,22 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   List<WeeklyMenuPlanEntry>? _preClearEntries;
   List<Recipe>? _preClearOverflow;
 
+  // BUT-1043: long-press multi-select state for bulk-move. When
+  // [_selectionMode] is on, calendar cells toggle selection on tap instead
+  // of navigating; the selection bar then offers "move N to (day, slot)".
+  // Kept separate from drag-and-drop (which owns long-press) so the two
+  // gestures never collide.
+  bool _selectionMode = false;
+  final Set<String> _selectedEntryIds = <String>{};
+
   WeeklyMenuPlan? get plan => _plan;
   List<Recipe> get overflow => _overflow;
   ParsedMenuRequest? get lastParsedRequest => _lastParsedRequest;
+
+  bool get selectionMode => _selectionMode;
+  Set<String> get selectedEntryIds => Set.unmodifiable(_selectedEntryIds);
+  int get selectedCount => _selectedEntryIds.length;
+  bool isSelected(String entryId) => _selectedEntryIds.contains(entryId);
 
   /// BUT-1241: whether [entryId] was placed by the most recent
   /// auto-distribution (renders the "NY" badge).
@@ -97,6 +110,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         if (isDisposed) return;
         _plan = fetched;
         _recentlyPlacedEntryIds = const {};
+        // A week (re)load is a fresh context — drop any in-progress
+        // selection so it can't apply to entries from a different week.
+        _selectionMode = false;
+        _selectedEntryIds.clear();
         notifyListeners();
       },
       errorPrefix: 'Kunde inte ladda veckomenyn',
@@ -327,5 +344,98 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (pruned.length == _overflow.length) return;
     _overflow = pruned;
     notifyListeners();
+  }
+
+  /// BUT-1043: copy every entry from the visible week into the following
+  /// ISO week, surfacing the additive, duplicate-skipping `copyWeek` service
+  /// primitive as a UI action ("Kopiera denna vecka → nästa vecka").
+  ///
+  /// Returns the number of entries copied (0 when the next week already has
+  /// all of them / this week is empty), or null when the call failed — the
+  /// view distinguishes "nothing to copy" (count 0) from an error (null).
+  /// Does NOT navigate to next week; the user stays on the current week so
+  /// the copy is a non-disruptive background action.
+  Future<int?> copyWeekToNext() async {
+    final from = currentWeekStart;
+    final to = from.add(const Duration(days: 7));
+    int? copied;
+    final ok = await executeAsyncVoid(
+      () async {
+        copied = await _service.copyWeek(
+          fromWeekStart: from,
+          toWeekStart: to,
+        );
+      },
+      errorPrefix: 'Kunde inte kopiera veckan',
+    );
+    if (!ok) return null;
+    return copied;
+  }
+
+  /// BUT-1043: enter multi-select mode with an empty selection (header
+  /// "Välj flera att flytta" button). Cells then toggle selection on tap.
+  /// No-op if already selecting.
+  void beginSelection() {
+    if (_selectionMode) return;
+    _selectionMode = true;
+    notifyListeners();
+  }
+
+  /// Toggle [entryId] in the current selection. Exiting the last selection
+  /// also leaves selection mode so the cells revert to navigate-on-tap.
+  void toggleSelection(String entryId) {
+    if (_selectedEntryIds.contains(entryId)) {
+      _selectedEntryIds.remove(entryId);
+    } else {
+      _selectedEntryIds.add(entryId);
+    }
+    if (_selectedEntryIds.isEmpty) _selectionMode = false;
+    notifyListeners();
+  }
+
+  /// Cancel selection mode and clear every selected id.
+  void clearSelection() {
+    if (!_selectionMode && _selectedEntryIds.isEmpty) return;
+    _selectionMode = false;
+    _selectedEntryIds.clear();
+    notifyListeners();
+  }
+
+  /// BUT-1043: move every selected entry to (toDay, toSlot) in a single
+  /// persisted write via the service's `bulkMoveEntries`, then refresh the
+  /// in-memory plan and leave selection mode. Returns the number moved, or
+  /// null on failure (view shows an error). A no-op selection returns 0.
+  Future<int?> bulkMoveSelected({
+    required DayOfWeek toDay,
+    required MealSlot toSlot,
+  }) async {
+    if (_selectedEntryIds.isEmpty) return 0;
+    final ids = _selectedEntryIds.toList(growable: false);
+    final weekStart = currentWeekStart;
+    int? moved;
+    final ok = await executeAsyncVoid(
+      () async {
+        moved = await _service.bulkMoveEntries(
+          weekStart: weekStart,
+          entryIds: ids,
+          toDay: toDay,
+          toSlot: toSlot,
+        );
+        if (isDisposed) return;
+        // Re-read so the calendar reflects the persisted layout. The plan's
+        // weekStart hasn't changed, so loadWeek would short-circuit — force
+        // a fetch.
+        await _fetchWeek(weekStart);
+      },
+      errorPrefix: 'Kunde inte flytta recepten',
+    );
+    // Clear selection regardless of outcome — a failed move shouldn't leave
+    // the user trapped in selection mode over a now-uncertain plan.
+    _selectionMode = false;
+    _selectedEntryIds.clear();
+    if (isDisposed) return null;
+    notifyListeners();
+    if (!ok) return null;
+    return moved;
   }
 }

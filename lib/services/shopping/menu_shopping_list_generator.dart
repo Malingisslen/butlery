@@ -6,7 +6,9 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -28,12 +30,18 @@ class MenuShoppingGenerationResult {
   /// not yet cached). Logged; carried for observability.
   final int unresolvedRecipes;
 
+  /// BUT-1279: how many aggregated lines were dropped because they matched a
+  /// pantry staple. Surfaced so the UI can reassure the user ("3 skafferivaror
+  /// utelämnade") rather than silently shrinking the list.
+  final int excludedStaples;
+
   const MenuShoppingGenerationResult({
     required this.listId,
     required this.listName,
     required this.itemCount,
     required this.recipeCount,
     required this.unresolvedRecipes,
+    this.excludedStaples = 0,
   });
 
   static const nothingToGenerate = MenuShoppingGenerationResult(
@@ -103,7 +111,21 @@ class MenuShoppingListGenerator extends BaseService {
           return MenuShoppingGenerationResult.nothingToGenerate;
         }
 
-        final aggregated = MenuShoppingAggregator.aggregate(recipes);
+        // BUT-1279: keep pantry staples (salt, olja, …) off the generated
+        // list. Resolve the user's flagged staples and exclude any aggregated
+        // line whose normalized name matches one. The count is surfaced so the
+        // UI can explain the omission instead of the list silently shrinking.
+        final stapleNames = await _stapleNames();
+        final aggregated = MenuShoppingAggregator.aggregate(
+          recipes,
+          excludeNames: stapleNames,
+        );
+        final excludedStaples = stapleNames.isEmpty
+            ? 0
+            : MenuShoppingAggregator.aggregate(recipes)
+                .where((line) => stapleNames
+                    .contains(SwedishCharacterNormalizer.normalize(line.name)))
+                .length;
         final weekKey = IsoWeekUtils.weekKeyOf(date);
         final listName = AppLocale.current
             .menuGeneratedShoppingListName(IsoWeekUtils.isoWeekNumber(date));
@@ -172,9 +194,36 @@ class MenuShoppingListGenerator extends BaseService {
           itemCount: items.length,
           recipeCount: recipes.length,
           unresolvedRecipes: unresolved,
+          excludedStaples: excludedStaples,
         );
       },
       operationName: 'generateForWeek',
     );
+  }
+
+  /// BUT-1279: normalized names of the current user's pantry staples, for
+  /// shopping-list exclusion. Returns an empty set (exclude nothing) when the
+  /// user is unauthenticated, has no staples, or the pantry read fails — the
+  /// list generation must never break just because staples can't be read.
+  Future<Set<String>> _stapleNames() async {
+    try {
+      final userId = ServiceLocator.get<AuthRepository>().currentUserId;
+      if (userId == null) return const {};
+      final items = await ServiceLocator.get<PantryService>().getAll(userId);
+      return {
+        for (final item in items)
+          if (item.isStaple)
+            SwedishCharacterNormalizer.normalize(item.ingredientName),
+      };
+    } catch (e) {
+      // Staple exclusion is a best-effort enhancement — a missing/failing
+      // pantry must never block the user's shopping list. Degrade to "exclude
+      // nothing" and log for observability.
+      AppLogger.warning(
+        '$serviceName: could not resolve pantry staples — generating without '
+        'staple exclusion ($e)',
+      );
+      return const {};
+    }
   }
 }

@@ -18,6 +18,7 @@ PantryItem _item({
   DateTime? expiryDate,
   DateTime? addedAt,
   String? note,
+  bool isStaple = false,
 }) {
   return PantryItem(
     id: id,
@@ -29,6 +30,7 @@ PantryItem _item({
     expiryDate: expiryDate,
     addedAt: addedAt ?? DateTime.utc(2026, 1, 1),
     note: note,
+    isStaple: isStaple,
   );
 }
 
@@ -102,6 +104,43 @@ void main() {
       expect(restored.location, PantryLocation.pantry);
       expect(restored.expiryDate!.toUtc(), DateTime.utc(2026, 2, 1));
       expect(restored.note, 'butik');
+    });
+
+    // BUT-1279: isStaple is the flag the menu→shopping generator reads to
+    // keep pantry staples (salt, olja) off the generated list. Its
+    // persistence must round-trip, and the "omit when false" write keeps the
+    // common case from bloating every pantry document.
+    test('toFirestore omits isStaple when false', () {
+      expect(_item().toFirestore().containsKey('isStaple'), isFalse,
+          reason: 'the default (non-staple) case must not write the field');
+    });
+
+    test('toFirestore writes isStaple: true when set', () {
+      expect(_item(isStaple: true).toFirestore()['isStaple'], true);
+    });
+
+    test('fromMap defaults isStaple to false when absent (legacy docs)', () {
+      // Intent: pantry items written before BUT-1279 have no isStaple field —
+      // they must read back as non-staples, never crash or default to true.
+      final p = PantryItem.fromMap({
+        'ingredientName': 'X',
+        'quantity': 1,
+        'unit': 'st',
+        'location': 'pantry',
+        'addedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+      }, 'p');
+      expect(p.isStaple, isFalse);
+    });
+
+    test('isStaple round-trips through firestore', () async {
+      final firestore = FakeFirebaseFirestore();
+      final original = _item(isStaple: true);
+      await firestore
+          .collection('pantry')
+          .doc(original.id)
+          .set(original.toFirestore());
+      final doc = await firestore.collection('pantry').doc(original.id).get();
+      expect(PantryItem.fromFirestore(doc).isStaple, isTrue);
     });
 
     test('fromMap unknown location → pantry (default)', () {
@@ -245,6 +284,16 @@ void main() {
       expect(copy.quantity, 2);
       expect(copy.unit, 'l');
       expect(copy.id, base.id);
+    });
+
+    test('isStaple is preserved when untouched and toggled when passed', () {
+      // BUT-1279: marking/un-marking a staple goes through copyWith; an
+      // unrelated edit (e.g. quantity) must not silently clear the flag.
+      final staple = _item(isStaple: true);
+      expect(staple.copyWith(quantity: 5).isStaple, isTrue,
+          reason: 'editing another field must not reset the staple flag');
+      expect(staple.copyWith(isStaple: false).isStaple, isFalse);
+      expect(_item().copyWith(isStaple: true).isStaple, isTrue);
     });
   });
 

@@ -6,7 +6,11 @@ import 'dart:async';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/data/recipes/recipe_seeds.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/menu/meal_slot_mapper.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
@@ -140,6 +144,14 @@ class OnboardingViewModel extends BaseViewModel {
 
   void nextPage() {
     if (_currentPage < _lastPageIndex) {
+      // BUT-675: persist the step being LEFT here, because the view calls
+      // nextPage() (which bumps _currentPage) BEFORE the PageController
+      // animation fires onPageChanged -> setPage. By the time setPage(newPage)
+      // runs, _currentPage already equals newPage, so setPage's `page >
+      // _currentPage` guard is false and would never persist forward nav.
+      // Persisting here is the single source of truth for forward progress;
+      // setPage's branch still covers programmatic/non-animated jumps.
+      _persistStepCompletion(_currentPage);
       _currentPage++;
       notifyListeners();
     }
@@ -217,7 +229,13 @@ class OnboardingViewModel extends BaseViewModel {
       // caught by the method's outer try/catch, and that just degrades to
       // zero-seeded silently. Outcome is surfaced via analytics so a
       // post-launch failure-rate is observable.
-      await _seedStarterRecipes();
+      final seededRecipeIds = await _seedStarterRecipes();
+
+      // BUT-930: turn the freshly seeded recipes into a sample weekly menu
+      // plan plus a matching shopping list, so the new user lands on a
+      // populated menu and shopping list instead of two empty screens. Best
+      // effort and idempotent — never blocks onboarding completion.
+      await _seedSampleMenu(seededRecipeIds);
 
       if (isSkip) {
         _analytics?.logEvent(
@@ -263,15 +281,20 @@ class OnboardingViewModel extends BaseViewModel {
   /// failure for observability. Outer infrastructure errors (e.g. service
   /// not registered in tests) are swallowed — onboarding must not fail
   /// because seeding can't run.
-  Future<int> _seedStarterRecipes() async {
+  ///
+  /// Returns the persisted ids of the recipes that seeded successfully, in
+  /// seed order — BUT-930 needs these to build the sample menu plan. The
+  /// id is taken from [UnifiedRecipeService.createPersonalRecipe]'s return
+  /// (the service mints a fresh id; the seed's own id is not the stored one).
+  Future<List<String>> _seedStarterRecipes() async {
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       final seeds = RecipeSeeds.allRecipes;
-      var seeded = 0;
+      final seededIds = <String>[];
 
       for (final seed in seeds) {
         try {
-          await recipeService.createPersonalRecipe(
+          final id = await recipeService.createPersonalRecipe(
             title: seed.core.title,
             description: seed.core.description,
             ingredients: seed.core.ingredients,
@@ -281,12 +304,13 @@ class OnboardingViewModel extends BaseViewModel {
             timeMinutes: seed.core.timeMinutes,
             sourceUrl: 'Butlery starter recipes',
           );
-          seeded++;
+          if (id != null) seededIds.add(id);
         } catch (e) {
           AppLogger.warning('Failed to seed recipe "${seed.core.title}": $e');
         }
       }
 
+      final seeded = seededIds.length;
       _analytics?.logEvent(
         name: AnalyticsEvents.onboardingRecipesSeeded,
         parameters: {'count': seeded, 'attempted': seeds.length},
@@ -308,10 +332,85 @@ class OnboardingViewModel extends BaseViewModel {
         userId: userService?.currentUserId,
         source: 'seed',
       );
-      return seeded;
+      return seededIds;
     } catch (e) {
       AppLogger.warning('Failed to seed starter recipes: $e');
-      return 0;
+      return const [];
+    }
+  }
+
+  /// BUT-930: builds a sample weekly-menu plan from the just-seeded recipes
+  /// and generates its shopping list, so a brand-new user opens the menu and
+  /// shopping tabs to populated content rather than empty states.
+  ///
+  /// Best-effort and idempotent, mirroring [_seedStarterRecipes]:
+  /// - If the menu/shopping services aren't registered (e.g. unit tests that
+  ///   only wire the recipe service) the outer try/catch swallows the lookup
+  ///   failure and onboarding still completes.
+  /// - The plan is only seeded when the current week is empty — re-running
+  ///   onboarding (or a partial retry) never double-stacks entries. The
+  ///   shopping-list generator is itself idempotent per ISO week.
+  ///
+  /// Recipes are placed one-per-day from Monday, routed to the lunch / middag
+  /// / övrigt slot by their `mealType` (single-recipe slots never double-book;
+  /// the seeds are few enough to fit inside one week).
+  Future<void> _seedSampleMenu(List<String> seededRecipeIds) async {
+    if (seededRecipeIds.isEmpty) return;
+    try {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final menuService = ServiceLocator.get<WeeklyMenuPlanService>();
+      final shoppingGenerator = ServiceLocator.get<MenuShoppingListGenerator>();
+      final now = clock.now();
+
+      var plan = await menuService.getWeek(now);
+      // Idempotency: never overwrite or stack onto a plan the user already
+      // has for this week (covers onboarding re-entry / partial retries).
+      if (plan.isNotEmpty) return;
+
+      // Walk Monday→Sunday, dropping one recipe per day. Single-recipe slots
+      // (lunch/middag) skip days they already occupy so two middag recipes
+      // don't collide on Monday; addEntry handles the placement semantics.
+      var dayIndex = 0;
+      var placed = 0;
+      for (final recipeId in seededRecipeIds) {
+        final recipe = recipeService.getRecipeById(recipeId);
+        if (recipe == null) continue;
+        final slot = mapMealTypeToSlot(recipe.mealType);
+        // Advance past days whose single-recipe slot is already taken.
+        while (dayIndex <= DayOfWeek.sun.index &&
+            !slot.isMulti &&
+            plan.isOccupied(DayOfWeek.values[dayIndex], slot)) {
+          dayIndex++;
+        }
+        if (dayIndex > DayOfWeek.sun.index) break;
+        plan = menuService.addEntry(
+          plan: plan,
+          day: DayOfWeek.values[dayIndex],
+          slot: slot,
+          recipe: recipe,
+        );
+        placed++;
+        dayIndex++;
+      }
+
+      if (placed == 0) return;
+      await menuService.save(plan);
+
+      final shoppingResult = await shoppingGenerator.generateForWeek(now);
+      final shoppingItems = shoppingResult?.itemCount ?? 0;
+
+      _analytics?.logEvent(
+        name: AnalyticsEvents.onboardingMenuSeeded,
+        parameters: {
+          'menuEntries': placed,
+          'shoppingItems': shoppingItems,
+        },
+      );
+      AppLogger.info(
+        'Seeded sample menu: $placed entries, $shoppingItems shopping items',
+      );
+    } catch (e) {
+      AppLogger.warning('Failed to seed sample menu: $e');
     }
   }
 }

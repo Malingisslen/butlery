@@ -43,6 +43,12 @@ abstract final class AnalyticsEvents {
   // Distinct from `onboardingRecipesSeeded` (success-side counter) so the
   // failure-rate metric is queryable without `attempted - seeded` math.
   static const onboardingRecipesSeedFailed = 'onboarding_recipes_seed_failed';
+  // BUT-930: emitted once after starter recipes are seeded, when a sample
+  // weekly-menu plan + its shopping list are generated so the new user lands
+  // on a populated menu and shopping list instead of empty screens.
+  // Parameters: `menuEntries` (int), `shoppingItems` (int). Both 0 means
+  // seeding ran but had nothing to place (no recipes seeded / plan non-empty).
+  static const onboardingMenuSeeded = 'onboarding_menu_seeded';
   // BUT-545: dedicated outcome events for the onboarding import page so
   // the activation funnel can distinguish "tried-and-imported" from
   // "tried-and-failed" from "skipped". The generic import_started/success

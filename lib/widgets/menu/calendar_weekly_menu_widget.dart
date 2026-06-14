@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -108,14 +109,26 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        WeekNavHeader(
-          label: _formatWeekLabel(context, vm.currentWeekStart),
-          onPrev: vm.previousWeek,
-          onNext: vm.nextWeek,
-          onClearWeek: vm.hasEntries || vm.hasOverflow
-              ? () => _onClearWeek(context, vm)
-              : null,
-        ),
+        // BUT-1043: while multi-select is active the nav header is replaced
+        // by the selection action bar (count + move + cancel).
+        if (vm.selectionMode)
+          SelectionActionBar(
+            selectedCount: vm.selectedCount,
+            onMove: () => _onMoveSelection(context, vm),
+            onCancel: vm.clearSelection,
+          )
+        else
+          WeekNavHeader(
+            label: _formatWeekLabel(context, vm.currentWeekStart),
+            onPrev: vm.previousWeek,
+            onNext: vm.nextWeek,
+            onClearWeek: vm.hasEntries || vm.hasOverflow
+                ? () => _onClearWeek(context, vm)
+                : null,
+            // Copy + select are only meaningful when the week has entries.
+            onCopyWeek: vm.hasEntries ? () => _onCopyWeek(context, vm) : null,
+            onSelectMode: vm.hasEntries ? () => _onEnterSelection(vm) : null,
+          ),
         chipsWidget,
         if (vm.hasOverflow) OverflowTray(overflow: vm.overflow),
         for (final day in DayOfWeek.values)
@@ -143,6 +156,130 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       actionLabel: context.l10n.commonUndo,
       onAction: () => vm.undoClearWeek(),
       duration: const Duration(seconds: 7),
+    );
+  }
+
+  /// BUT-1043: confirm, then copy the visible week's entries into next week
+  /// via the additive `copyWeek` primitive. The result snackbar distinguishes
+  /// "N copied", "nothing to copy" (count 0), and failure (null).
+  Future<void> _onCopyWeek(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.l10n.weeklyMenuCopyToNextConfirmTitle),
+        content: Text(dialogContext.l10n.weeklyMenuCopyToNextConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(dialogContext.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(dialogContext.l10n.commonContinue),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final copied = await vm.copyWeekToNext();
+    if (!context.mounted) return;
+    if (copied == null) {
+      SnackBarUtils.showError(context, context.l10n.weeklyMenuCopyToNextFailed);
+      return;
+    }
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.weeklyMenuCopyToNextResult(copied),
+    );
+  }
+
+  void _onEnterSelection(WeeklyMenuPlanViewModel vm) {
+    vm.beginSelection();
+  }
+
+  /// BUT-1043: pick a (day, slot) target, then bulk-move every selected entry
+  /// there in a single persisted write. No-op-safe: an empty pick or empty
+  /// selection just returns.
+  Future<void> _onMoveSelection(
+    BuildContext context,
+    WeeklyMenuPlanViewModel vm,
+  ) async {
+    if (vm.selectedCount == 0) return;
+    final target = await _showMoveTargetSheet(context);
+    if (target == null || !context.mounted) return;
+    final moved = await vm.bulkMoveSelected(
+      toDay: target.$1,
+      toSlot: target.$2,
+    );
+    if (!context.mounted) return;
+    if (moved == null) {
+      SnackBarUtils.showError(context, context.l10n.weeklyMenuMoveFailed);
+      return;
+    }
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.weeklyMenuMovedResult(moved),
+    );
+  }
+
+  /// Day + slot target picker for bulk-move. Returns null on dismiss.
+  Future<(DayOfWeek, MealSlot)?> _showMoveTargetSheet(
+    BuildContext context,
+  ) async {
+    return showModalBottomSheet<(DayOfWeek, MealSlot)>(
+      context: context,
+      builder: (sheetContext) {
+        final cs = Theme.of(sheetContext).colorScheme;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                child: Text(
+                  sheetContext.l10n.weeklyMenuMoveSheetTitle,
+                  style: AppTextStyles.titleSmall.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final day in DayOfWeek.values)
+                        for (final slot in MealSlot.values)
+                          Semantics(
+                            button: true,
+                            label: '${day.displayLabel} ${slot.displayLabel}',
+                            child: ListTile(
+                              dense: true,
+                              leading: Icon(
+                                slot.isMulti
+                                    ? Icons.cake_outlined
+                                    : Icons.restaurant_outlined,
+                                color: cs.secondary,
+                              ),
+                              title: Text(
+                                '${day.displayLabel} · ${slot.displayLabel}',
+                              ),
+                              onTap: () =>
+                                  Navigator.of(sheetContext).pop((day, slot)),
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

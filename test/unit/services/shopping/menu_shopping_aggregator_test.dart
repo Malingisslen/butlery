@@ -61,10 +61,12 @@ void main() {
           reason: 'display keeps first-seen casing');
     });
 
-    test('same ingredient with DIFFERENT units stays as separate honest lines',
-        () {
-      // Cross-unit conversion is epic scope — two correct lines beat one
-      // wrong sum. This is a deliberate V1 constraint, pinned.
+    test(
+        'same ingredient across DIFFERENT FAMILIES (weight vs volume) stays '
+        'as separate honest lines', () {
+      // Cross-FAMILY conversion (g↔dl) needs a density we don't have — two
+      // correct lines beat one wrong sum. Pinned: BUT-1278 only merges WITHIN
+      // a family, never across.
       final items = MenuShoppingAggregator.aggregate([
         _recipe('r1', const [
           RecipeIngredient(
@@ -76,6 +78,108 @@ void main() {
         ]),
       ]);
       expect(items, hasLength(2));
+    });
+
+    test(
+        'BUT-1278: compatible VOLUME units merge into one line (3 dl + 200 ml)',
+        () {
+      // The ticket's marquee case: 3 dl + 200 ml is 500 ml of the same thing —
+      // one line, not two. Display reduces to the readable Swedish unit (5 dl).
+      final items = MenuShoppingAggregator.aggregate([
+        _recipe('r1', const [
+          RecipeIngredient(
+              amount: 3, unit: 'dl', name: 'grädde', raw: '3 dl grädde'),
+        ]),
+        _recipe('r2', const [
+          RecipeIngredient(
+              amount: 200, unit: 'ml', name: 'grädde', raw: '200 ml grädde'),
+        ]),
+      ]);
+      expect(items, hasLength(1),
+          reason: 'compatible volume units must collapse to one line');
+      final line = items.single;
+      expect(line.sourceCount, 2);
+      // 3 dl (300 ml) + 200 ml = 500 ml; convertToReadableUnit prefers dl.
+      expect(line.unit, 'dl');
+      expect(line.amount, closeTo(5, 1e-9),
+          reason: '300 ml + 200 ml = 500 ml = 5 dl');
+    });
+
+    test('BUT-1278: compatible WEIGHT units merge into one line (1 kg + 300 g)',
+        () {
+      final items = MenuShoppingAggregator.aggregate([
+        _recipe('r1', const [
+          RecipeIngredient(
+              amount: 1, unit: 'kg', name: 'potatis', raw: '1 kg potatis'),
+        ]),
+        _recipe('r2', const [
+          RecipeIngredient(
+              amount: 300, unit: 'g', name: 'potatis', raw: '300 g potatis'),
+        ]),
+      ]);
+      expect(items, hasLength(1));
+      final line = items.single;
+      // 1000 g + 300 g = 1300 g → 1.3 kg.
+      expect(line.unit, 'kg');
+      expect(line.amount, closeTo(1.3, 1e-9));
+      expect(line.sourceCount, 2);
+    });
+
+    test(
+        'BUT-1278: spoon volumes fold into the volume family (2 msk + 1 dl '
+        'olja)', () {
+      // 2 msk = 30 ml, 1 dl = 100 ml → 130 ml. Proves the Swedish spoon
+      // equivalences participate in volume merging.
+      final items = MenuShoppingAggregator.aggregate([
+        _recipe('r1', const [
+          RecipeIngredient(
+              amount: 2, unit: 'msk', name: 'olja', raw: '2 msk olja'),
+        ]),
+        _recipe('r2', const [
+          RecipeIngredient(
+              amount: 1, unit: 'dl', name: 'olja', raw: '1 dl olja'),
+        ]),
+      ]);
+      expect(items, hasLength(1));
+      // 30 ml + 100 ml = 130 ml → 1.3 dl.
+      expect(items.single.unit, 'dl');
+      expect(items.single.amount, closeTo(1.3, 1e-9));
+    });
+
+    test(
+        'BUT-1278: unit-less counts ("st") still only sum on exact unit match, '
+        'never merged via a family', () {
+      // "st" has no measurement family — it must keep the original
+      // exact-unit-string behavior (sums when identical, separate otherwise).
+      final items = MenuShoppingAggregator.aggregate([
+        _recipe('r1', const [
+          RecipeIngredient(amount: 2, unit: 'st', name: 'ägg', raw: '2 ägg'),
+        ]),
+        _recipe('r2', const [
+          RecipeIngredient(amount: 3, unit: 'st', name: 'ägg', raw: '3 ägg'),
+        ]),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.amount, 5);
+      expect(items.single.unit, 'st');
+    });
+
+    test('BUT-1279: excludeNames drops matching lines from the aggregation',
+        () {
+      // Names passed in excludeNames (already normalized) never reach the
+      // output — this is how pantry staples are kept off the list.
+      final items = MenuShoppingAggregator.aggregate(
+        [
+          _recipe('r1', const [
+            RecipeIngredient(amount: 1, unit: 'tsk', name: 'salt', raw: 'salt'),
+            RecipeIngredient(
+                amount: 2, unit: 'dl', name: 'mjöl', raw: '2 dl mjöl'),
+          ]),
+        ],
+        excludeNames: {'salt'},
+      );
+      expect(items.map((i) => i.name), ['mjöl'],
+          reason: 'the excluded staple "salt" must not appear');
     });
 
     test(

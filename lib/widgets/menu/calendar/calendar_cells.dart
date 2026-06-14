@@ -211,6 +211,10 @@ class _SingleSlotCell extends StatelessWidget {
             onTap: onTapRecipe,
             // BUT-1241: "NY" badge on entries from the latest generation.
             showNewBadge: vm.isRecentlyPlaced(entry.id),
+            // BUT-1043: in multi-select mode, tap toggles selection.
+            selectionMode: vm.selectionMode,
+            isSelected: vm.isSelected(entry.id),
+            onToggleSelection: vm.toggleSelection,
           );
     return wrapAsDropTarget(
       context: context,
@@ -285,32 +289,57 @@ class _AssignedSlot extends StatelessWidget {
   final RecipeNavCallback onTap;
   final bool showNewBadge;
 
+  // BUT-1043: multi-select state. When [selectionMode] is on, tap toggles
+  // selection instead of navigating, a checkbox overlay appears, and the
+  // cell is no longer draggable (selection and drag must not collide).
+  final bool selectionMode;
+  final bool isSelected;
+  final ValueChanged<String> onToggleSelection;
+
   const _AssignedSlot({
     required this.entry,
     required this.onTap,
+    required this.onToggleSelection,
     this.showNewBadge = false,
+    this.selectionMode = false,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final accent = isSelected ? cs.secondary : cs.primary;
     final cell = Semantics(
-      label: context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      label: selectionMode
+          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
+          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
       button: true,
+      selected: selectionMode ? isSelected : null,
       child: GestureDetector(
-        onTap: () => onTap(entry.recipeId),
+        onTap: () =>
+            selectionMode ? onToggleSelection(entry.id) : onTap(entry.recipeId),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: _accentedBorder(context, cs.primary),
+            color: isSelected
+                ? cs.secondaryContainer.withValues(alpha: 0.4)
+                : Theme.of(context).cardColor,
+            border: _accentedBorder(context, accent),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
+                  if (selectionMode)
+                    Icon(
+                      isSelected
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      size: 14,
+                      color: cs.secondary,
+                    ),
                   Expanded(
                     child: _slotLabel(
                         entry.slot.displayLabel, cs.onPrimaryContainer),
@@ -348,6 +377,9 @@ class _AssignedSlot extends StatelessWidget {
         ),
       ),
     );
+    // Drag is suppressed in selection mode so the two long-press/tap gestures
+    // don't fight over the same cell.
+    if (selectionMode) return cell;
     return wrapAsDraggable(
       context: context,
       payload: MovePayload(entry),
@@ -398,6 +430,9 @@ class _OvrigtCell extends StatelessWidget {
                     entry: entry,
                     onTap: onTapRecipe,
                     showNewBadge: vm.isRecentlyPlaced(entry.id),
+                    selectionMode: vm.selectionMode,
+                    isSelected: vm.isSelected(entry.id),
+                    onToggleSelection: vm.toggleSelection,
                   ),
                   const SizedBox(height: 3),
                 ],
@@ -442,42 +477,70 @@ class _OvrigtEntry extends StatelessWidget {
   final RecipeNavCallback onTap;
   final bool showNewBadge;
 
+  // BUT-1043: see _AssignedSlot — in selection mode tap toggles selection
+  // and the chip shows a checkbox; drag is suppressed.
+  final bool selectionMode;
+  final bool isSelected;
+  final ValueChanged<String> onToggleSelection;
+
   const _OvrigtEntry({
     required this.entry,
     required this.onTap,
+    required this.onToggleSelection,
     this.showNewBadge = false,
+    this.selectionMode = false,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final chip = Semantics(
-      label: context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+      label: selectionMode
+          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
+          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
       button: true,
+      selected: selectionMode ? isSelected : null,
       child: GestureDetector(
-        onTap: () => onTap(entry.recipeId),
+        onTap: () =>
+            selectionMode ? onToggleSelection(entry.id) : onTap(entry.recipeId),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
           decoration: BoxDecoration(
-            color: cs.surface,
+            color: isSelected
+                ? cs.secondaryContainer.withValues(alpha: 0.4)
+                : cs.surface,
             border: Border(
               left: BorderSide(color: cs.secondary, width: 2),
             ),
           ),
           child: Row(
             children: [
-              Container(
-                width: 16,
-                height: 16,
-                color: cs.surfaceContainerHighest,
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.cake_outlined,
-                  size: 11,
-                  color: _kSlotIconColor,
+              if (selectionMode)
+                Padding(
+                  padding: const EdgeInsets.only(right: 3),
+                  child: Icon(
+                    isSelected
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    size: 12,
+                    color: cs.secondary,
+                  ),
+                )
+              else ...[
+                Container(
+                  width: 16,
+                  height: 16,
+                  color: cs.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.cake_outlined,
+                    size: 11,
+                    color: _kSlotIconColor,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 3),
+                const SizedBox(width: 3),
+              ],
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
@@ -497,6 +560,7 @@ class _OvrigtEntry extends StatelessWidget {
         ),
       ),
     );
+    if (selectionMode) return chip;
     return wrapAsDraggable(
       context: context,
       payload: MovePayload(entry),

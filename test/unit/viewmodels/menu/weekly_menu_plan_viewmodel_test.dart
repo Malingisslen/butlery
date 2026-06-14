@@ -992,5 +992,169 @@ void main() {
         expect(viewModel.hasError, isTrue);
       });
     });
+
+    group('BUT-1043 copy-week + bulk-move', () {
+      test(
+          'copyWeekToNext delegates to service.copyWeek with current → +7d '
+          'and returns the copied count', () async {
+        final plan = _plan(weekStart: DateTime(2026, 4, 13));
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+        when(() => mockService.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            )).thenAnswer((_) async => 4);
+
+        final copied = await viewModel.copyWeekToNext();
+
+        expect(copied, 4);
+        final from = plan.weekStartDate;
+        verify(() => mockService.copyWeek(
+              fromWeekStart: from,
+              toWeekStart: from.add(const Duration(days: 7)),
+            )).called(1);
+      });
+
+      test('copyWeekToNext returns null and raises error state on failure',
+          () async {
+        final plan = _plan(weekStart: DateTime(2026, 4, 13));
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+        when(() => mockService.copyWeek(
+              fromWeekStart: any(named: 'fromWeekStart'),
+              toWeekStart: any(named: 'toWeekStart'),
+            )).thenThrow(Exception('boom'));
+
+        final copied = await viewModel.copyWeekToNext();
+
+        expect(copied, isNull);
+        expect(viewModel.hasError, isTrue);
+      });
+
+      test('beginSelection enters selection mode with an empty selection',
+          () async {
+        expect(viewModel.selectionMode, isFalse);
+
+        viewModel.beginSelection();
+
+        expect(viewModel.selectionMode, isTrue);
+        expect(viewModel.selectedCount, 0);
+      });
+
+      test('toggleSelection adds then removes; emptying selection exits mode',
+          () async {
+        viewModel.beginSelection();
+
+        viewModel.toggleSelection('e1');
+        expect(viewModel.isSelected('e1'), isTrue);
+        expect(viewModel.selectedCount, 1);
+
+        viewModel.toggleSelection('e1');
+        // Last item removed → selection mode auto-exits so cells revert to
+        // navigate-on-tap.
+        expect(viewModel.isSelected('e1'), isFalse);
+        expect(viewModel.selectionMode, isFalse);
+      });
+
+      test('clearSelection cancels mode and drops all selected ids', () {
+        viewModel.beginSelection();
+        viewModel.toggleSelection('e1');
+        viewModel.toggleSelection('e2');
+
+        viewModel.clearSelection();
+
+        expect(viewModel.selectionMode, isFalse);
+        expect(viewModel.selectedCount, 0);
+      });
+
+      test(
+          'bulkMoveSelected moves the selection via the service, re-fetches '
+          'the week, and exits selection mode', () async {
+        final plan = _plan(
+          weekStart: DateTime(2026, 4, 13),
+          entries: [
+            _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt, id: 'e1'),
+            _entry(day: DayOfWeek.tue, slot: MealSlot.ovrigt, id: 'e2'),
+          ],
+        );
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+        when(() => mockService.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            )).thenAnswer((_) async => 2);
+
+        viewModel.beginSelection();
+        viewModel.toggleSelection('e1');
+        viewModel.toggleSelection('e2');
+
+        final moved = await viewModel.bulkMoveSelected(
+          toDay: DayOfWeek.fri,
+          toSlot: MealSlot.ovrigt,
+        );
+
+        expect(moved, 2);
+        expect(viewModel.selectionMode, isFalse);
+        expect(viewModel.selectedCount, 0);
+        final captured = verify(() => mockService.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: captureAny(named: 'entryIds'),
+              toDay: DayOfWeek.fri,
+              toSlot: MealSlot.ovrigt,
+            )).captured;
+        expect((captured.single as List).toSet(), {'e1', 'e2'});
+      });
+
+      test(
+          'bulkMoveSelected with no selection returns 0 without a service call',
+          () async {
+        final moved = await viewModel.bulkMoveSelected(
+          toDay: DayOfWeek.mon,
+          toSlot: MealSlot.middag,
+        );
+
+        expect(moved, 0);
+        verifyNever(() => mockService.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            ));
+      });
+
+      test(
+          'bulkMoveSelected returns null on failure and still clears selection',
+          () async {
+        final plan = _plan(
+          weekStart: DateTime(2026, 4, 13),
+          entries: [
+            _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt, id: 'e1'),
+          ],
+        );
+        when(() => mockService.getWeek(any())).thenAnswer((_) async => plan);
+        await viewModel.loadWeek(DateTime(2026, 4, 13));
+        when(() => mockService.bulkMoveEntries(
+              weekStart: any(named: 'weekStart'),
+              entryIds: any(named: 'entryIds'),
+              toDay: any(named: 'toDay'),
+              toSlot: any(named: 'toSlot'),
+            )).thenThrow(Exception('boom'));
+
+        viewModel.beginSelection();
+        viewModel.toggleSelection('e1');
+
+        final moved = await viewModel.bulkMoveSelected(
+          toDay: DayOfWeek.fri,
+          toSlot: MealSlot.ovrigt,
+        );
+
+        expect(moved, isNull);
+        // A failed move must not trap the user in selection mode.
+        expect(viewModel.selectionMode, isFalse);
+        expect(viewModel.hasError, isTrue);
+      });
+    });
   });
 }

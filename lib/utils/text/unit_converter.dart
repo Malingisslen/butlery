@@ -287,6 +287,66 @@ class SmartUnitConverter {
     }
     return 0;
   }
+
+  /// BUT-1278: reduces a (quantity, unit) pair to the canonical *base unit* of
+  /// its measurement family, so quantities written in different-but-compatible
+  /// units can be summed before display.
+  ///
+  /// Families and their base unit:
+  /// - Volume → `ml` (l, dl, cl, ml; Swedish spoons krm/tsk/msk via fixed
+  ///   ml equivalences — krm 1, tsk 5, msk 15)
+  /// - Weight → `g`  (kg, hg, g, mg)
+  ///
+  /// Returns `null` for units with no compatible family (e.g. `st`, `klyfta`,
+  /// `förp`, or unknown text) — those must NOT be merged across unit strings,
+  /// only summed when the unit text matches exactly. Volume and weight never
+  /// merge with each other (different base unit), so `200 g + 1 dl` stays two
+  /// honest lines.
+  ///
+  /// American units are intentionally out of scope here — they are converted
+  /// to Swedish units upstream by [convertToReadableUnit]; this reducer
+  /// operates on the Swedish unit space the aggregator sees.
+  static CanonicalMeasure? toCanonicalBase(double quantity, String unit) {
+    final factor = _baseUnitFactors[unit.toLowerCase().trim()];
+    if (factor == null) return null;
+    return CanonicalMeasure(quantity * factor.$1, factor.$2);
+  }
+
+  /// Multiplier to the family base unit + the base unit name, keyed by the
+  /// lowercased Swedish unit string. Spoons use their standard ml equivalence.
+  static const Map<String, (double, String)> _baseUnitFactors = {
+    // Volume → ml
+    'l': (1000.0, 'ml'),
+    'liter': (1000.0, 'ml'),
+    'dl': (100.0, 'ml'),
+    'deciliter': (100.0, 'ml'),
+    'cl': (10.0, 'ml'),
+    'ml': (1.0, 'ml'),
+    'milliliter': (1.0, 'ml'),
+    'msk': (15.0, 'ml'),
+    'matsked': (15.0, 'ml'),
+    'matskedar': (15.0, 'ml'),
+    'tsk': (5.0, 'ml'),
+    'tesked': (5.0, 'ml'),
+    'teskedar': (5.0, 'ml'),
+    'krm': (1.0, 'ml'),
+    'kryddmått': (1.0, 'ml'),
+    // Weight → g
+    'kg': (1000.0, 'g'),
+    'kilo': (1000.0, 'g'),
+    'hg': (100.0, 'g'),
+    'g': (1.0, 'g'),
+    'gram': (1.0, 'g'),
+    'mg': (0.001, 'g'),
+  };
+}
+
+/// BUT-1278: a quantity expressed in the canonical base unit of its family.
+class CanonicalMeasure {
+  final double quantity;
+  final String baseUnit;
+
+  const CanonicalMeasure(this.quantity, this.baseUnit);
 }
 
 class ConvertedMeasurement {

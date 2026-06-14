@@ -24,6 +24,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
@@ -388,6 +389,146 @@ void main() {
         await tester.tap(find.byIcon(Icons.chevron_left));
         await tester.pumpAndSettle();
         expect(vm.currentWeekStart, prevWeek.weekStartDate);
+      });
+    });
+
+    // BUT-1043: multi-select orchestration. These drive the REAL view-model
+    // (selection-mode flips header <-> action bar; copy/select buttons only
+    // appear when the week has entries) rather than the VM in isolation.
+    group('multi-select orchestration (BUT-1043)', () {
+      Future<WeeklyMenuPlanViewModel> pumpPopulated(
+        WidgetTester tester, {
+        required WeeklyMenuPlan plan,
+      }) async {
+        when(() => service.getWeek(any())).thenAnswer((_) async => plan);
+        final vm = WeeklyMenuPlanViewModel(
+          service: service,
+          recipeService: recipeService,
+          shoppingListGenerator: _MockMenuShoppingListGenerator(),
+        );
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(
+          _host(vm: vm, child: const CalendarWeeklyMenuWidget()),
+        );
+        await tester.pumpAndSettle();
+        return vm;
+      }
+
+      testWidgets(
+          'copy + select header buttons are hidden on an empty week and '
+          'shown once the week has entries', (tester) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+
+        // Empty week: the calendar shows its empty hint, so neither the nav
+        // header nor its copy/select buttons are present.
+        await pumpPopulated(tester, plan: _plan(weekStart: weekStart));
+        expect(find.byIcon(Icons.copy_all_outlined), findsNothing,
+            reason: 'copy is meaningless with nothing to copy');
+        expect(find.byIcon(Icons.checklist_outlined), findsNothing,
+            reason: 'select is meaningless with nothing to select');
+      });
+
+      testWidgets(
+          'copy + select header buttons appear once the week has entries',
+          (tester) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        await pumpPopulated(
+          tester,
+          plan: _plan(
+            weekStart: weekStart,
+            entries: [
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                id: 'm',
+                title: 'Pasta',
+              ),
+            ],
+          ),
+        );
+        expect(find.byIcon(Icons.copy_all_outlined), findsOneWidget);
+        expect(find.byIcon(Icons.checklist_outlined), findsOneWidget);
+      });
+
+      testWidgets(
+          'entering selection mode swaps the nav header for the selection '
+          'action bar, and cancelling restores it', (tester) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        final vm = await pumpPopulated(
+          tester,
+          plan: _plan(
+            weekStart: weekStart,
+            entries: [
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                id: 'm',
+                title: 'Pasta',
+              ),
+            ],
+          ),
+        );
+
+        // Baseline: nav header present, action bar absent.
+        expect(find.byType(WeekNavHeader), findsOneWidget);
+        expect(find.byType(SelectionActionBar), findsNothing);
+
+        // Tap the select (checklist) button -> beginSelection().
+        await tester.tap(find.byIcon(Icons.checklist_outlined));
+        await tester.pumpAndSettle();
+        expect(vm.selectionMode, isTrue);
+        expect(find.byType(SelectionActionBar), findsOneWidget);
+        expect(find.byType(WeekNavHeader), findsNothing,
+            reason: 'nav header is replaced while selecting');
+
+        // Tap cancel (close) in the action bar -> clearSelection().
+        await tester.tap(find.byIcon(Icons.close));
+        await tester.pumpAndSettle();
+        expect(vm.selectionMode, isFalse);
+        expect(find.byType(WeekNavHeader), findsOneWidget);
+        expect(find.byType(SelectionActionBar), findsNothing);
+      });
+
+      testWidgets(
+          'in selection mode, tapping an assigned cell toggles its selection '
+          'and does NOT navigate (getRecipeById never called)', (tester) async {
+        final weekStart = IsoWeekUtils.weekStartOf(DateTime(2026, 4, 13));
+        final vm = await pumpPopulated(
+          tester,
+          plan: _plan(
+            weekStart: weekStart,
+            entries: [
+              _entry(
+                day: DayOfWeek.mon,
+                slot: MealSlot.middag,
+                id: 'mon-m',
+                recipeId: 'r-mon',
+                title: 'Pasta',
+              ),
+            ],
+          ),
+        );
+
+        // Enter selection mode.
+        await tester.tap(find.byIcon(Icons.checklist_outlined));
+        await tester.pumpAndSettle();
+
+        // Before tapping: the cell shows an EMPTY checkbox.
+        expect(find.byIcon(Icons.check_box_outline_blank), findsOneWidget);
+        expect(find.byIcon(Icons.check_box), findsNothing);
+
+        // Tap the assigned cell (its lowercased title surfaces the recipe).
+        await tester.tap(find.text('pasta'));
+        await tester.pumpAndSettle();
+
+        // The entry is now selected: filled checkbox, VM agrees, count is 1.
+        expect(vm.isSelected('mon-m'), isTrue);
+        expect(vm.selectedCount, 1);
+        expect(find.byIcon(Icons.check_box), findsOneWidget);
+        expect(find.byIcon(Icons.check_box_outline_blank), findsNothing);
+
+        // Navigation must NOT have fired — the tap toggled instead.
+        verifyNever(() => recipeService.getRecipeById(any()));
       });
     });
   });

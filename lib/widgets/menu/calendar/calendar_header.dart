@@ -25,12 +25,22 @@ class WeekNavHeader extends StatelessWidget {
   /// is shown on the trailing side so the user can clear the visible week.
   final VoidCallback? onClearWeek;
 
+  /// BUT-1043: optional "Kopiera denna vecka → nästa vecka" callback. Shown
+  /// as a copy icon when the visible week has entries to copy forward.
+  final VoidCallback? onCopyWeek;
+
+  /// BUT-1043: optional "Välj flera att flytta" callback that opens
+  /// multi-select mode. Shown when there are entries to select+move.
+  final VoidCallback? onSelectMode;
+
   const WeekNavHeader({
     super.key,
     required this.label,
     required this.onPrev,
     required this.onNext,
     this.onClearWeek,
+    this.onCopyWeek,
+    this.onSelectMode,
   });
 
   @override
@@ -64,6 +74,20 @@ class WeekNavHeader extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
+          if (onSelectMode != null)
+            IconButton(
+              icon: const Icon(Icons.checklist_outlined),
+              color: cs.onPrimaryContainer,
+              onPressed: onSelectMode,
+              tooltip: context.l10n.weeklyMenuSelectAction,
+            ),
+          if (onCopyWeek != null)
+            IconButton(
+              icon: const Icon(Icons.copy_all_outlined),
+              color: cs.onPrimaryContainer,
+              onPressed: onCopyWeek,
+              tooltip: context.l10n.weeklyMenuCopyToNextAction,
+            ),
           if (onClearWeek != null)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined),
@@ -76,6 +100,65 @@ class WeekNavHeader extends StatelessWidget {
             color: cs.onPrimaryContainer,
             onPressed: onNext,
             tooltip: context.l10n.weeklyMenuNextWeek,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// BUT-1043: action bar shown while multi-select mode is active. Renders the
+/// live selection count plus "Flytta" and a cancel affordance. Stateless —
+/// the orchestrator owns the move-picker flow and cancel callback.
+class SelectionActionBar extends StatelessWidget {
+  final int selectedCount;
+  final VoidCallback onMove;
+  final VoidCallback onCancel;
+
+  const SelectionActionBar({
+    super.key,
+    required this.selectedCount,
+    required this.onMove,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
+      ),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer,
+        border: Border(
+          bottom: BorderSide(color: cs.primary, width: 2),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            color: cs.onPrimaryContainer,
+            onPressed: onCancel,
+            tooltip: context.l10n.commonCancel,
+          ),
+          Expanded(
+            child: Text(
+              context.l10n.weeklyMenuSelectionCount(selectedCount),
+              style: AppTextStyles.titleSmall.copyWith(
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+          ),
+          TextButton.icon(
+            onPressed: selectedCount > 0 ? onMove : null,
+            icon: const Icon(Icons.drive_file_move_outline),
+            label: Text(context.l10n.weeklyMenuMoveSelectionAction),
+            style: TextButton.styleFrom(
+              foregroundColor: cs.onPrimaryContainer,
+            ),
           ),
         ],
       ),

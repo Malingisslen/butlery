@@ -28,11 +28,13 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
+import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -45,7 +47,19 @@ import '../../../test_support/base_unit_test.dart';
 class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
 
+class _MockPantryService extends Mock implements PantryService {}
+
 const _testUserId = 'test-user-123';
+
+PantryItem _stapleItem(String name) => PantryItem(
+      id: 'staple-$name',
+      ingredientName: name,
+      quantity: 1,
+      unit: 'st',
+      location: PantryLocation.pantry,
+      addedAt: DateTime(2026, 6, 8),
+      isStaple: true,
+    );
 
 /// 2026-06-10 is a Wednesday in ISO week 24 — the expected list name and
 /// week marker are asserted as LITERALS so this suite independently pins the
@@ -106,6 +120,7 @@ void main() {
   late _MockWeeklyMenuPlanService menuService;
   late MockUnifiedRecipeService recipeService;
   late MockUnifiedShoppingService shoppingService;
+  late _MockPantryService pantryService;
   late MenuShoppingListGenerator generator;
 
   setUpAll(() {
@@ -131,9 +146,14 @@ void main() {
     menuService = _MockWeeklyMenuPlanService();
     recipeService = MockUnifiedRecipeService();
     shoppingService = MockUnifiedShoppingService();
+    pantryService = _MockPantryService();
+    // BUT-1279: default to no staples so the existing generation contracts are
+    // unaffected; the staple-exclusion test overrides this.
+    when(() => pantryService.getAll(any())).thenAnswer((_) async => const []);
     TestServiceLocator.registerMock<WeeklyMenuPlanService>(menuService);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
     TestServiceLocator.registerMock<UnifiedShoppingService>(shoppingService);
+    TestServiceLocator.registerMock<PantryService>(pantryService);
 
     generator = MenuShoppingListGenerator();
   });
@@ -570,6 +590,88 @@ void main() {
           reason: 'raw-only-ingredient weeks must still generate');
       final written = capturedUpdate();
       expect(written.items.single.amount, 1);
+    });
+
+    test(
+        'BUT-1279: pantry staples are dropped from the generated list and '
+        'counted in excludedStaples', () async {
+      // Proves: an ingredient the user marked as a pantry staple (salt) never
+      // lands on the generated shopping list, while non-staples (mjöl) do —
+      // and the omission is reported so the UI can explain it.
+      when(() => menuService.getWeek(any()))
+          .thenAnswer((_) async => _plan(['r1']));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipe('r1', const [
+            RecipeIngredient(amount: 1, unit: 'tsk', name: 'salt', raw: 'salt'),
+            RecipeIngredient(
+                amount: 2, unit: 'dl', name: 'mjöl', raw: '2 dl mjöl'),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      when(() => pantryService.getAll(_testUserId))
+          .thenAnswer((_) async => [_stapleItem('Salt')]);
+      shoppingService.setShoppingState(lists: [], personalLists: []);
+      when(() => shoppingService.createPersonalList(any(),
+          items: any(named: 'items'))).thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [_list('new-list-1', _expectedListName)],
+          personalLists: [_list('new-list-1', _expectedListName)],
+        );
+        return 'new-list-1';
+      });
+      when(() => shoppingService.updateList(any()))
+          .thenAnswer((_) async => true);
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull,
+          reason: 'staple exclusion must not abort generation');
+      expect(result!.excludedStaples, 1,
+          reason: 'one staple line (salt) was kept off the list');
+
+      final written = capturedUpdate();
+      expect(written.items.map((i) => i.name), ['mjöl'],
+          reason: 'salt is a staple and must be excluded; mjöl remains');
+    });
+
+    test(
+        'BUT-1279: a failing/absent pantry never blocks generation — list is '
+        'built with no exclusions', () async {
+      // Proves the defensive degrade: if the pantry read throws, the list is
+      // still generated (every ingredient present, nothing excluded).
+      when(() => menuService.getWeek(any()))
+          .thenAnswer((_) async => _plan(['r1']));
+      recipeService.setRecipeState(
+        recipes: [
+          _recipe('r1', const [
+            RecipeIngredient(amount: 1, unit: 'tsk', name: 'salt', raw: 'salt'),
+          ]),
+        ],
+        isInitialized: true,
+      );
+      when(() => pantryService.getAll(any()))
+          .thenThrow(StateError('pantry unavailable'));
+      shoppingService.setShoppingState(lists: [], personalLists: []);
+      when(() => shoppingService.createPersonalList(any(),
+          items: any(named: 'items'))).thenAnswer((_) async {
+        shoppingService.setShoppingState(
+          lists: [_list('new-list-1', _expectedListName)],
+          personalLists: [_list('new-list-1', _expectedListName)],
+        );
+        return 'new-list-1';
+      });
+      when(() => shoppingService.updateList(any()))
+          .thenAnswer((_) async => true);
+
+      final result = await generator.generateForWeek(_date);
+
+      expect(result, isNotNull,
+          reason: 'a pantry read failure must not fail generation');
+      expect(result!.excludedStaples, 0);
+      expect(capturedUpdate().items.map((i) => i.name), ['salt'],
+          reason: 'with no staple data, every ingredient is kept');
     });
   });
 }

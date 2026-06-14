@@ -531,5 +531,91 @@ void main() {
         expect(measurement.toString(), contains('kg'));
       });
     });
+
+    // BUT-1278: the canonical-base reducer the MenuShoppingAggregator relies
+    // on to sum compatible-but-different units before display. The aggregator
+    // tests exercise the dl+ml / kg+g happy paths end-to-end; these pin the
+    // reducer's OWN contract — every supported unit's factor, the family
+    // separation invariant, and the null return that keeps non-measure units
+    // (st, klyfta, unknown text) from ever being cross-merged.
+    group('toCanonicalBase (BUT-1278)', () {
+      test('reduces every volume unit to ml with the right factor', () {
+        // Intent: a volume line in any supported unit lands in the SAME
+        // base (ml) with the documented multiplier, so two volume lines can
+        // be summed regardless of which unit each was written in.
+        void expectMl(double q, String unit, double ml) {
+          final c = SmartUnitConverter.toCanonicalBase(q, unit);
+          expect(c, isNotNull, reason: '$unit must be a recognized volume');
+          expect(c!.baseUnit, 'ml');
+          expect(c.quantity, closeTo(ml, 1e-9),
+              reason: '$q $unit should be $ml ml');
+        }
+
+        expectMl(1, 'l', 1000);
+        expectMl(1, 'dl', 100);
+        expectMl(1, 'cl', 10);
+        expectMl(1, 'ml', 1);
+        expectMl(1, 'msk', 15);
+        expectMl(1, 'tsk', 5);
+        expectMl(1, 'krm', 1);
+      });
+
+      test('reduces every weight unit to g with the right factor', () {
+        void expectG(double q, String unit, double g) {
+          final c = SmartUnitConverter.toCanonicalBase(q, unit);
+          expect(c, isNotNull, reason: '$unit must be a recognized weight');
+          expect(c!.baseUnit, 'g');
+          expect(c.quantity, closeTo(g, 1e-9),
+              reason: '$q $unit should be $g g');
+        }
+
+        expectG(1, 'kg', 1000);
+        expectG(1, 'hg', 100); // hektogram — only reachable via this reducer
+        expectG(1, 'g', 1);
+        expectG(1000, 'mg', 1); // 1000 mg = 1 g, the mg factor (0.001)
+      });
+
+      test('accepts Swedish full-word + uppercase/whitespace unit forms', () {
+        // Intent: aggregation lowercases/trims, but the reducer must defend
+        // its own input so recipes written "Matsked"/"KILO"/" dl " still fold
+        // into the same family rather than silently falling through to null.
+        expect(SmartUnitConverter.toCanonicalBase(1, 'matsked')!.quantity, 15);
+        expect(SmartUnitConverter.toCanonicalBase(1, 'tesked')!.quantity, 5);
+        expect(SmartUnitConverter.toCanonicalBase(1, 'kilo')!.quantity, 1000);
+        expect(
+            SmartUnitConverter.toCanonicalBase(1, 'deciliter')!.quantity, 100);
+        expect(SmartUnitConverter.toCanonicalBase(1, ' DL ')!.quantity, 100,
+            reason: 'unit string is lowercased + trimmed before lookup');
+      });
+
+      test('returns null for unit-less counts and unknown text', () {
+        // Intent: this is the guard that keeps "2 st ägg" and "1 klyfta
+        // vitlök" from being cross-merged with anything — null means
+        // "only sum on an exact unit-string match", never via a family.
+        for (final unit in ['st', 'klyfta', 'förp', 'paket', '', 'gurkor']) {
+          expect(SmartUnitConverter.toCanonicalBase(2, unit), isNull,
+              reason: '"$unit" has no measurement family');
+        }
+      });
+
+      test('volume and weight reduce to DIFFERENT bases (never cross-merge)',
+          () {
+        // Intent: pins the load-bearing invariant behind "200 g + 1 dl stays
+        // two honest lines" — a regression that mapped g→ml (or shared a
+        // base) would silently sum mass and volume into one wrong number.
+        final vol = SmartUnitConverter.toCanonicalBase(1, 'dl')!;
+        final weight = SmartUnitConverter.toCanonicalBase(100, 'g')!;
+        expect(vol.baseUnit, isNot(weight.baseUnit),
+            reason: 'volume(ml) and weight(g) must never share a base unit');
+      });
+
+      test('preserves sign so a stray negative is not silently zeroed', () {
+        // Intent: the reducer is a multiply, not a threshold — it must carry
+        // the sign through rather than clamping (matches the BUT-899
+        // sign-symmetric posture of the readability converter).
+        final c = SmartUnitConverter.toCanonicalBase(-2, 'dl');
+        expect(c!.quantity, closeTo(-200, 1e-9));
+      });
+    });
   });
 }
