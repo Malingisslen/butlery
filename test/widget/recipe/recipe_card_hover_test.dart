@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
@@ -195,6 +196,120 @@ void main() {
       );
       expect(cursorOf(find.byType(HoverableCard)), MouseCursor.defer,
           reason: 'A card with no onTap should not imply clickability.');
+    });
+
+    // BUT-1313: the isSelected:true branch swaps in a distinct green-outline
+    // decoration (multi-select / bulk-action affordance). It is genuine
+    // user-visible logic — a refactor that dropped the selected styling would
+    // make the user unable to see which cards are selected — and was previously
+    // untested: every other case builds the unselected card.
+    testWidgets('selected card renders the green-outline selected decoration',
+        (tester) async {
+      // Capture the live theme so a forestGreen→cs.primary token migration
+      // does not break this test (the "no hardcoded theme value" rule).
+      late ColorScheme cs;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Scaffold(
+            body: Builder(builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return RecipeCard(
+                recipe: testRecipe,
+                isSelected: true,
+                onTap: (_) {},
+              );
+            }),
+          ),
+        ),
+      );
+
+      final hoverable = tester.widget<HoverableCard>(
+        find.descendant(
+          of: find.byType(RecipeCard),
+          matching: find.byType(HoverableCard),
+        ),
+      );
+      final selected = hoverable.restDecoration as BoxDecoration;
+
+      // Distinct from the unselected square token: the selected state is a
+      // rounded primary-tinted fill with a primary outline (BUT-948 bulk
+      // multi-select affordance).
+      expect(selected, isNot(equals(InputThemes.recipeCardDecoration)),
+          reason: 'Selected card must use its own decoration, not the default '
+              'recipe-card token.');
+      final border = selected.border as Border;
+      expect(border.top.color, cs.primary,
+          reason: 'Selected outline must use the primary token so the user can '
+              'see which cards are selected.');
+      expect(selected.borderRadius, isNotNull,
+          reason: 'Selected state uses a rounded outline (distinct from the '
+              'square unselected card).');
+      expect(
+        selected.color,
+        cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        reason: 'Selected fill is a light primary tint.',
+      );
+    });
+
+    testWidgets(
+        'hover does NOT override the selected decoration under the cursor',
+        (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Scaffold(
+            body: RecipeCard(
+              recipe: testRecipe,
+              isSelected: true,
+              onTap: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      final hoverable = tester.widget<HoverableCard>(
+        find.descendant(
+          of: find.byType(RecipeCard),
+          matching: find.byType(HoverableCard),
+        ),
+      );
+      final selectedRest = hoverable.restDecoration as BoxDecoration;
+
+      Decoration? renderedDecoration() {
+        final container = tester.widget<AnimatedContainer>(
+          find.descendant(
+            of: find.byType(HoverableCard),
+            matching: find.byType(AnimatedContainer),
+          ),
+        );
+        return container.decoration;
+      }
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+
+      await gesture.moveTo(tester.getCenter(find.byType(HoverableCard)));
+      await tester.pumpAndSettle();
+
+      // The card derives its hover variant from the selected decoration, so the
+      // hover shadow may deepen — but the user-visible selected affordance
+      // (primary outline + rounded fill) must NOT be replaced by the plain
+      // unselected square token, and the border/corners must stay the selected
+      // ones so the selection remains visible while hovered.
+      final rendered = renderedDecoration() as BoxDecoration;
+      expect(rendered.border, equals(selectedRest.border),
+          reason: 'Hovering a selected card must keep the selected outline — '
+              'hover must not strip the selection affordance.');
+      expect(rendered.borderRadius, equals(selectedRest.borderRadius),
+          reason: 'Hovering a selected card must keep the selected (rounded) '
+              'corners.');
+      expect(rendered.color, equals(selectedRest.color),
+          reason: 'Hovering a selected card must keep the selected fill tint.');
+      expect(rendered, isNot(equals(InputThemes.recipeCardDecoration)),
+          reason: 'Hover must never replace the selected decoration with the '
+              'unselected recipe-card token.');
     });
   });
 }

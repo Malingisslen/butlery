@@ -35,11 +35,15 @@
 // asserts reading-order over ALL focusable, on-screen controls — so it covers
 // text fields AND buttons with one contract.
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
@@ -53,7 +57,9 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
+import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
+import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 
 import '../../test_support/base_unit_test.dart';
@@ -269,6 +275,19 @@ void main() {
       TestServiceLocator.registerFactory<PersonalTagViewModel>(
         () => PersonalTagViewModel(service: mockTagService),
       );
+
+      // NotificationPreferencesView.initState() calls
+      // NotificationService.getPreferences(); the default registered mock
+      // returns null for it, which would push the view into its error state
+      // (only the retry button focusable). Stub it to return defaults so the
+      // real toggles/pickers render and the harness can walk them.
+      final mockNotificationService = mocks.MockNotificationService();
+      when(() => mockNotificationService.getPreferences()).thenAnswer(
+        (_) async => NotificationPreferences.defaults(),
+      );
+      TestServiceLocator.registerMock<NotificationService>(
+        mockNotificationService,
+      );
     });
 
     tearDown(() async {
@@ -334,24 +353,84 @@ void main() {
     testWidgets(
       'Tab walks the email-verification controls in visual (reading) order',
       (tester) async {
+        // BUT-1314: pin the clock so the minControls=2 floor is deterministic.
+        // The screen's resend button is enabled iff clock.now() is past the
+        // 60s resend cooldown since _lastResendTime; on a fresh mount
+        // _lastResendTime is null so resend is enabled and BOTH buttons are
+        // focusable. By running under a fixed clock, a future change that
+        // starts the cooldown ON MOUNT (resend disabled at t=0, only the
+        // continue button focusable) makes this case fail meaningfully on the
+        // 2-control floor instead of depending on wall-clock timing.
+        await withClock(Clock.fixed(DateTime(2026, 6, 15, 12)), () async {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: const EmailVerificationView(email: 'test@example.com'),
+              // EmailVerificationView ships its own Scaffold.
+              wrapInScaffold: false,
+            ),
+          );
+          // Not pumpAndSettle: the view runs a 5s verification poll Timer, so
+          // the tree never reaches a steady state. A bounded pump renders the
+          // controls without waiting on the recurring timer.
+          await tester.pump();
+
+          // This screen has no text fields — its focusable controls are the two
+          // buttons (resend verification, continue). The shared harness asserts
+          // the same reading-order contract over buttons.
+          await expectTabWalksControlsTopToBottom(
+            tester,
+            viewName: 'email_verification',
+          );
+        });
+      },
+    );
+
+    testWidgets(
+      'Tab walks the notification-preferences controls in visual (reading) '
+      'order',
+      (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: const EmailVerificationView(email: 'test@example.com'),
-            // EmailVerificationView ships its own Scaffold.
+            child: const NotificationPreferencesView(),
+            // NotificationPreferencesView ships its own Scaffold.
             wrapInScaffold: false,
           ),
         );
-        // Not pumpAndSettle: the view runs a 5s verification poll Timer, so the
-        // tree never reaches a steady state. A bounded pump renders the controls
-        // without waiting on the recurring timer.
-        await tester.pump();
+        // getPreferences() is stubbed to resolve immediately with defaults, so
+        // settle lets the loading StateWidget swap for the rendered form.
+        await tester.pumpAndSettle();
 
-        // This screen has no text fields — its focusable controls are the two
-        // buttons (resend verification, continue). The shared harness asserts
-        // the same reading-order contract over buttons.
+        // This settings form is a column of SwitchListTiles (master enable +
+        // per-category toggles + sound/vibration) plus a digest dropdown — no
+        // text fields, so the harness's button-fallback branch walks the
+        // switches. The reading-order contract must hold over the toggles.
         await expectTabWalksControlsTopToBottom(
           tester,
-          viewName: 'email_verification',
+          viewName: 'notification_preferences',
+        );
+      },
+    );
+
+    testWidgets(
+      'Tab walks the skriv-sjalv (manual recipe) form controls in visual '
+      '(reading) order',
+      (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const SkrivSjalvReceptView(),
+            // SkrivSjalvReceptView ships its own Scaffold.
+            wrapInScaffold: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // The manual recipe-entry form is a ListView of TextFormFields (title,
+        // description, portions, time, dynamic ingredient/instruction rows,
+        // rating, source-url) inside a FocusTraversalGroup. Tab must walk the
+        // rendered text fields top-to-bottom.
+        await expectTabWalksControlsTopToBottom(
+          tester,
+          viewName: 'skriv_sjalv_recept',
         );
       },
     );
