@@ -176,7 +176,8 @@ class ButtonThemes {
       foregroundColor: cs.onPrimary,
       elevation: 4,
       highlightElevation: 6,
-      shape: const CircleBorder(),
+      // BUT-964: square design language — FABs are square, not round.
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       iconSize: AppDimensions.iconSizeL,
     );
   }
