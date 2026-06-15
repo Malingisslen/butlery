@@ -62,12 +62,19 @@ class SubstitutionSuggestionService extends BaseService {
   }
 
   Future<List<IngredientSubstitution>> _fetch(String ingredientName) async {
-    final lookup = await _lookupService.lookupFromRaw([ingredientName]);
-    if (lookup.matched.isEmpty) return const [];
-
-    final canonicalId = lookup.matched.first.id;
-
     try {
+      // The ingredient lookup itself touches Firestore (it lazily loads the
+      // global ingredient cache via a one-shot `.get()`), and on a cold offline
+      // cache that read can throw `unavailable` instead of returning data. This
+      // call sits INSIDE the try so a lookup failure resolves to `[]` like every
+      // other failure — otherwise the exception escapes `suggestFor` (violating
+      // its "never throws" contract) and crashes the cooking-mode substitution
+      // tap, which has no try/catch of its own.
+      final lookup = await _lookupService.lookupFromRaw([ingredientName]);
+      if (lookup.matched.isEmpty) return const [];
+
+      final canonicalId = lookup.matched.first.id;
+
       final doc = await _firestoreRepository.firestore
           .collection(_firestoreCollection)
           .doc(canonicalId)
@@ -97,7 +104,7 @@ class SubstitutionSuggestionService extends BaseService {
     } catch (e) {
       AppLogger.warning(
         'BUT-202: substitution fetch failed for "$ingredientName" '
-        '(canonical=$canonicalId): $e',
+        '(offline cold cache or Firestore error): $e',
         serviceName,
       );
       return const [];

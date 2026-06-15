@@ -8,6 +8,7 @@
 /// 4. An unmatched ingredient (null lookup) returns an empty list.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -157,6 +158,29 @@ void main() {
       expect(await service.suggestFor(''), isEmpty);
       expect(await service.suggestFor('   '), isEmpty);
       verifyNever(() => lookup.lookupFromRaw(any()));
+    });
+
+    // BUT-610 (offline hardening): the ingredient lookup lazily loads the
+    // global ingredient cache via a one-shot Firestore `.get()`. On a cold
+    // offline cache that read throws `unavailable` instead of returning data.
+    // suggestFor's docstring promises it "Never throws ... resolve to []", and
+    // the cooking-mode substitution tap (cooking_mode_view._showSubstitutionSheet)
+    // awaits it with NO try/catch — so a propagated throw is an unhandled
+    // exception mid-cook. This proves the lookup failure is swallowed to [].
+    test(
+        'returns empty list (no throw) when the ingredient lookup throws '
+        'offline', () async {
+      when(() => lookup.lookupFromRaw(any())).thenThrow(
+        FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+          message: 'Failed to get document because the client is offline.',
+        ),
+      );
+
+      // Must not throw — the offline cooking-mode tap depends on this contract.
+      final result = await service.suggestFor('smetana');
+      expect(result, isEmpty);
     });
   });
 }
