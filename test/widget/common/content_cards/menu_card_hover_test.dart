@@ -7,6 +7,7 @@
 /// wrapper or swapping the tokenised border/colour for ad-hoc values.
 library;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -113,10 +114,14 @@ void main() {
           reason: 'Hover should add the reserved elevation shadow.');
     });
 
-    testWidgets('hover affordance disabled when card is not tappable',
+    // BUT-1308: drive a real mouse pointer over the card and assert the
+    // RENDERED decoration lifts to the hover variant, then reverts on exit.
+    // Exercises _HoverableCardState's onEnter/onExit wiring directly.
+    testWidgets(
+        'pointer enter lifts rendered decoration to hover variant, exit reverts',
         (tester) async {
       await tester.pumpWidget(_wrap(
-        MenuCard(menu: _menu()),
+        MenuCard(menu: _menu(), onTap: () {}),
       ));
 
       final hoverable = tester.widget<HoverableCard>(
@@ -125,7 +130,69 @@ void main() {
           matching: find.byType(HoverableCard),
         ),
       );
-      expect(hoverable.enabled, isFalse);
+      final restDecoration = hoverable.restDecoration;
+      final hoverDecoration = hoverable.hoverDecoration;
+
+      Decoration? renderedDecoration() {
+        final container = tester.widget<AnimatedContainer>(
+          find.descendant(
+            of: find.byType(HoverableCard),
+            matching: find.byType(AnimatedContainer),
+          ),
+        );
+        return container.decoration;
+      }
+
+      expect(renderedDecoration(), equals(restDecoration));
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+
+      await gesture.moveTo(tester.getCenter(find.byType(HoverableCard)));
+      await tester.pumpAndSettle();
+      expect(renderedDecoration(), equals(hoverDecoration),
+          reason: 'Pointer entering the card must lift the rendered decoration '
+              'to the hover variant (BUT-710 hover feature).');
+
+      // Move to a point guaranteed outside the card's hit area (its MouseRegion
+      // covers the margin, so Offset.zero is not reliably outside).
+      final cardRect = tester.getRect(find.byType(HoverableCard));
+      await gesture.moveTo(cardRect.bottomRight + const Offset(50, 50));
+      await tester.pumpAndSettle();
+      expect(renderedDecoration(), equals(restDecoration),
+          reason: 'Pointer leaving the card must revert to the rest '
+              'decoration.');
+    });
+
+    testWidgets(
+        'tappable card renders a click cursor; non-tappable defers the cursor',
+        (tester) async {
+      // Assert the RENDERED MouseRegion.cursor — the observable affordance —
+      // rather than reading the enabled bool off the constructor.
+      MouseCursor cursorOf() {
+        final mouseRegion = tester.widget<MouseRegion>(
+          find
+              .descendant(
+                of: find.byType(HoverableCard),
+                matching: find.byType(MouseRegion),
+              )
+              .first,
+        );
+        return mouseRegion.cursor;
+      }
+
+      await tester.pumpWidget(_wrap(
+        MenuCard(menu: _menu(), onTap: () {}),
+      ));
+      expect(cursorOf(), SystemMouseCursors.click,
+          reason: 'A card with an onTap must show the click cursor.');
+
+      await tester.pumpWidget(_wrap(
+        MenuCard(menu: _menu()),
+      ));
+      expect(cursorOf(), MouseCursor.defer,
+          reason: 'A card with no onTap should not imply clickability.');
     });
   });
 }
