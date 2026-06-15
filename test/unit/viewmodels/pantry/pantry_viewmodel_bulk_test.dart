@@ -100,12 +100,16 @@ void main() {
     when(() => service.restoreItem(any(), b))
         .thenAnswer((_) async => b.copyWith(id: 'b-new'));
 
+    // An undeleted row is already present — undo must append, not replace.
+    when(() => service.getAll(any())).thenAnswer((_) async => [_item('c')]);
     final vm = buildVm(service);
+    await vm.loadPantry();
 
     await vm.restoreItems([a, b]);
 
-    expect(vm.items.map((i) => i.id), ['a-new', 'b-new'],
-        reason: 'undo must hold the re-persisted ids, not the deleted ones');
+    expect(vm.items.map((i) => i.id), ['c', 'a-new', 'b-new'],
+        reason: 'undo re-adds the removed rows alongside the surviving one, '
+            'with the re-persisted ids — not the deleted ones');
     expect(vm.hasError, isFalse);
     vm.dispose();
   });

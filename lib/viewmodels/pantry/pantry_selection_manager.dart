@@ -30,6 +30,9 @@ class PantrySelectionManager extends ChangeNotifier {
 
   void selectAll(Iterable<String> visibleIds) {
     _selectedIds.addAll(visibleIds);
+    // Keep mode consistent with state: a non-empty selection is always "in
+    // selection mode" (guards against selectAll being called from cold).
+    if (_selectedIds.isNotEmpty) _isSelectionMode = true;
     notifyListeners();
   }
 

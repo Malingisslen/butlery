@@ -161,7 +161,9 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
         for (final id in ids) {
           await _pantryService.removeItem(userId, id);
         }
-        _items.removeWhere((i) => ids.contains(i.id));
+        // Immutable replacement (consistent with every other write here) so a
+        // caller holding a pre-delete snapshot of `items` is never mutated.
+        _items = _items.where((i) => !ids.contains(i.id)).toList();
       },
       errorPrefix: 'Kunde inte ta bort objekten',
     );

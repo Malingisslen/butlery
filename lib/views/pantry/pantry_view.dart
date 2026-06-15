@@ -126,6 +126,9 @@ class _PantryViewContent extends StatelessWidget {
 
     selection.clearSelection();
     await viewModel.bulkRemoveItems(ids);
+    // If the delete failed, the VM surfaces its own error — don't also show a
+    // "N removed" undo snackbar that would restore items still present.
+    if (viewModel.hasError) return;
 
     messenger?.showSnackBar(
       SnackBar(
@@ -355,6 +358,9 @@ class _PantryBulkBar extends StatelessWidget {
               ),
               TextButton.icon(
                 onPressed: count == 0 ? null : onDelete,
+                style: TextButton.styleFrom(
+                  foregroundColor: cs.onPrimaryContainer,
+                ),
                 icon: const Icon(Icons.delete_outline),
                 label: Text(context.l10n.commonDelete),
               ),
