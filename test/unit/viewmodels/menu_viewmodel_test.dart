@@ -9,6 +9,10 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/menu_events_tracker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
@@ -46,6 +50,7 @@ void main() {
     late MockUnifiedRecipeService mockRecipeService;
     late _MockMenuService mockMenuService;
     late _MockAnalyticsService mockAnalyticsService;
+    late MockUserService mockUserService;
 
     final testUserId = 'user123';
     final testFriendId = 'friend456';
@@ -92,6 +97,19 @@ void main() {
       mockRecipeService = MockFactory.createUnifiedRecipeService();
       mockMenuService = _MockMenuService();
       mockAnalyticsService = _MockAnalyticsService();
+
+      // BUT-1317: the personal flow now filters by allergen/dietary prefs by
+      // default, so the VM resolves UserService.allergenPreferences during
+      // availableRecipes. Default to empty prefs (no filtering) for the
+      // baseline tests; the BUT-1317 group overrides this per-test.
+      mockUserService = MockUserService();
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {},
+          trackedDietary: {},
+        ),
+      );
+      TestServiceLocator.registerMock<UserService>(mockUserService);
 
       mockRecipeService.setRecipeState(
         recipes: [testRecipe, testRecipe2],
@@ -401,6 +419,186 @@ void main() {
         );
         vm.dispose();
         expect(() => vm.dispose(), throwsFlutterError);
+      });
+    });
+
+    // -- BUT-1317: Personal flow allergen/dietary safety -----------------------
+    //
+    // The personal weekly-menu flow must filter out recipes containing the
+    // user's tracked allergens / failing dietary prefs BY DEFAULT (sourced
+    // from userService.allergenPreferences, honoring includeUnknownInMenu).
+    // Before BUT-1317 the MenuViewModel constructed MenuGenerator with the
+    // filter flags defaulting OFF, so a nut-allergic user could be served nut
+    // recipes. These tests construct the real MenuViewModel (exercising the
+    // exact wiring the bug lived in) and assert the unsafe recipes are gone.
+    // They would FAIL on the old default (filters off => unsafe recipe kept).
+    group('BUT-1317 personal flow allergen/dietary safety', () {
+      TagResult tagWith({
+        Map<String, TriState>? allergen,
+        Map<String, TriState>? dietary,
+      }) {
+        return TagResult(
+          tags: const {},
+          allergenStatus: allergen ?? const {},
+          dietaryStatus: dietary ?? const {},
+          coverage: 1.0,
+          generatedAt: DateTime.now(),
+        );
+      }
+
+      Recipe recipeWith(String id, TagResult tag) {
+        return RecipeBuilder()
+            .withId(id)
+            .withTitle(id)
+            .withMealType('Middag')
+            .withTagResult(tag)
+            .build();
+      }
+
+      // Re-create the VM with a UserService whose prefs we control, plus a
+      // recipe pool seeded for the scenario under test.
+      MenuViewModel buildVmWith({
+        required UserAllergenPreferences prefs,
+        required List<Recipe> recipes,
+      }) {
+        when(() => mockUserService.allergenPreferences).thenReturn(prefs);
+        mockRecipeService.setRecipeState(
+          recipes: recipes,
+          currentUserId: testUserId,
+          currentUserDisplayName: 'Test User',
+          isInitialized: true,
+          isLoading: false,
+          error: null,
+        );
+        return MenuViewModel(
+          recipeService: mockRecipeService,
+          menuService: mockMenuService,
+          analyticsService: mockAnalyticsService,
+        );
+      }
+
+      test(
+          'criterion 1: excludes a recipe CONTAINING a tracked allergen by default',
+          () {
+        final nutFree = recipeWith(
+          'nut_free',
+          tagWith(allergen: {'nötter': TriState.free}),
+        );
+        final containsNuts = recipeWith(
+          'contains_nuts',
+          tagWith(allergen: {'nötter': TriState.contains}),
+        );
+
+        final vm = buildVmWith(
+          prefs: const UserAllergenPreferences(
+            trackedAllergens: {'nötter'},
+            trackedDietary: {},
+            includeUnknownInMenu: true,
+          ),
+          recipes: [nutFree, containsNuts],
+        );
+        addTearDown(vm.dispose);
+
+        final ids = vm.availableRecipes.map((r) => r.id).toSet();
+        expect(ids, contains('nut_free'));
+        expect(ids, isNot(contains('contains_nuts')),
+            reason:
+                'nut-allergic user must never get a nut recipe in the personal menu');
+      });
+
+      test(
+          'criterion 2: excludes a recipe failing a tracked dietary preference',
+          () {
+        final vegetarian = recipeWith(
+          'vegetarian',
+          tagWith(dietary: {'vegetarisk': TriState.free}),
+        );
+        final notVegetarian = recipeWith(
+          'not_vegetarian',
+          tagWith(dietary: {'vegetarisk': TriState.contains}),
+        );
+
+        final vm = buildVmWith(
+          prefs: const UserAllergenPreferences(
+            trackedAllergens: {},
+            trackedDietary: {'vegetarisk'},
+            includeUnknownInMenu: true,
+          ),
+          recipes: [vegetarian, notVegetarian],
+        );
+        addTearDown(vm.dispose);
+
+        final ids = vm.availableRecipes.map((r) => r.id).toSet();
+        expect(ids, contains('vegetarian'));
+        expect(ids, isNot(contains('not_vegetarian')));
+      });
+
+      test(
+          'criterion 3: includeUnknownInMenu=false excludes UNKNOWN-status recipes',
+          () {
+        final free =
+            recipeWith('free', tagWith(allergen: {'nötter': TriState.free}));
+        final unknown = recipeWith(
+            'unknown', tagWith(allergen: {'nötter': TriState.unknown}));
+
+        final vm = buildVmWith(
+          prefs: const UserAllergenPreferences(
+            trackedAllergens: {'nötter'},
+            trackedDietary: {},
+            includeUnknownInMenu: false,
+          ),
+          recipes: [free, unknown],
+        );
+        addTearDown(vm.dispose);
+
+        final ids = vm.availableRecipes.map((r) => r.id).toSet();
+        expect(ids, equals({'free'}),
+            reason: 'strict mode must drop UNKNOWN-status recipes');
+      });
+
+      test(
+          'criterion 3: includeUnknownInMenu=true keeps UNKNOWN-status recipes',
+          () {
+        final free =
+            recipeWith('free', tagWith(allergen: {'nötter': TriState.free}));
+        final unknown = recipeWith(
+            'unknown', tagWith(allergen: {'nötter': TriState.unknown}));
+
+        final vm = buildVmWith(
+          prefs: const UserAllergenPreferences(
+            trackedAllergens: {'nötter'},
+            trackedDietary: {},
+            includeUnknownInMenu: true,
+          ),
+          recipes: [free, unknown],
+        );
+        addTearDown(vm.dispose);
+
+        final ids = vm.availableRecipes.map((r) => r.id).toSet();
+        expect(ids, equals({'free', 'unknown'}),
+            reason: 'tolerant mode must keep UNKNOWN-status recipes');
+      });
+
+      test(
+          'no-regression: with no tracked prefs the full pool is still available',
+          () {
+        final a = recipeWith('a', tagWith(allergen: {'nötter': TriState.free}));
+        final b =
+            recipeWith('b', tagWith(allergen: {'nötter': TriState.contains}));
+
+        final vm = buildVmWith(
+          prefs: const UserAllergenPreferences(
+            trackedAllergens: {},
+            trackedDietary: {},
+          ),
+          recipes: [a, b],
+        );
+        addTearDown(vm.dispose);
+
+        // Filtering is ON but there is nothing to filter against, so the pool
+        // is unchanged — confirms we didn't over-filter when prefs are empty.
+        final ids = vm.availableRecipes.map((r) => r.id).toSet();
+        expect(ids, equals({'a', 'b'}));
       });
     });
   });

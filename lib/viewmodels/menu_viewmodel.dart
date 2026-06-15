@@ -57,6 +57,13 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       menuService: _menuService,
       recipeService: _recipeService,
       userService: ServiceLocator.get<UserService>(),
+      // BUT-1317 (safety): personal weekly-menu generation must respect the
+      // user's tracked allergens/dietary prefs by default, mirroring the group
+      // flow. Filtering reads userService.allergenPreferences and honors
+      // includeUnknownInMenu; the household toggle and prompt-inline
+      // constraints still layer on top.
+      filterByAllergens: true,
+      filterByDietary: true,
     );
     _storage = MenuStorage();
     _socialManager = MenuSocialManager(
