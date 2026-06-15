@@ -8056,6 +8056,26 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String a11yShoppingSelectItem(String itemText) {
+    return '$itemText, tryck för att markera';
+  }
+
+  @override
+  String a11yShoppingReorderHandle(String itemName) {
+    return '$itemName, dra för att flytta kategori';
+  }
+
+  @override
+  String shoppingSelectedCount(int count) {
+    return '$count markerade';
+  }
+
+  @override
+  String shoppingItemsRemovedUndoMessage(int count) {
+    return '$count borttagna';
+  }
+
+  @override
   String a11yTagSelected(String tagName) {
     return '$tagName, vald. Dubbeltryck för att ta bort.';
   }

@@ -423,6 +423,33 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     );
   }
 
+  /// BUT-948: bulk delete for multi-select. Removes every id sequentially;
+  /// returns true only if all succeeded so the caller can decide whether to
+  /// offer undo. Class-1 reversible (like single delete) — [restoreItems] undoes.
+  Future<bool> bulkRemoveItems(Iterable<String> itemIds) async {
+    if (!canEditActiveList) {
+      AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
+      return false;
+    }
+    var allOk = true;
+    for (final id in itemIds) {
+      final ok = await removeItem(id);
+      if (!ok) allOk = false;
+    }
+    return allOk;
+  }
+
+  /// BUT-948: bulk undo counterpart — re-adds each removed item (mirrors
+  /// [restoreItem]). Returns true only if every restore succeeded.
+  Future<bool> restoreItems(List<UnifiedShoppingItem> items) async {
+    var allOk = true;
+    for (final item in items) {
+      final ok = await restoreItem(item);
+      if (!ok) allOk = false;
+    }
+    return allOk;
+  }
+
   /// Update an existing item in the active list
   Future<bool> updateItem({
     required String itemId,

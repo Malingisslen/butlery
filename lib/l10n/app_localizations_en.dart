@@ -8042,6 +8042,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yShoppingSelectItem(String itemText) {
+    return '$itemText, tap to select';
+  }
+
+  @override
+  String a11yShoppingReorderHandle(String itemName) {
+    return '$itemName, drag to move category';
+  }
+
+  @override
+  String shoppingSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String shoppingItemsRemovedUndoMessage(int count) {
+    return '$count removed';
+  }
+
+  @override
   String a11yTagSelected(String tagName) {
     return '$tagName, selected. Double tap to remove.';
   }

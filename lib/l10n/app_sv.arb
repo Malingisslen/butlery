@@ -5510,6 +5510,42 @@
       }
     }
   },
+  "a11yShoppingSelectItem": "{itemText}, tryck för att markera",
+  "@a11yShoppingSelectItem": {
+    "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode.",
+    "placeholders": {
+      "itemText": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShoppingReorderHandle": "{itemName}, dra för att flytta kategori",
+  "@a11yShoppingReorderHandle": {
+    "description": "BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories.",
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingSelectedCount": "{count} markerade",
+  "@shoppingSelectedCount": {
+    "description": "BUT-948: count label in the shopping multi-select bulk-action bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingItemsRemovedUndoMessage": "{count} borttagna",
+  "@shoppingItemsRemovedUndoMessage": {
+    "description": "BUT-948: snackbar after bulk multi-select delete of shopping items; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yTagSelected": "{tagName}, vald. Dubbeltryck för att ta bort.",
   "@a11yTagSelected": {
     "placeholders": {

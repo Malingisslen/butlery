@@ -652,4 +652,69 @@ void main() {
       expect(notified, greaterThanOrEqualTo(1));
     });
   });
+
+  // BUT-948: multi-select bulk delete + undo. Intent: bulkRemoveItems removes
+  // exactly the selected ids and reports success; restoreItems re-adds each.
+  group('Bulk multi-select delete (BUT-948)', () {
+    test('bulkRemoveItems removes each selected id and returns true', () async {
+      final ok = await viewModel.bulkRemoveItems({'a', 'b', 'c'});
+
+      expect(ok, isTrue);
+      verify(() => mockShoppingService.removeItemFromActiveList('a')).called(1);
+      verify(() => mockShoppingService.removeItemFromActiveList('b')).called(1);
+      verify(() => mockShoppingService.removeItemFromActiveList('c')).called(1);
+    });
+
+    test('bulkRemoveItems denies (no removal) when the user cannot edit',
+        () async {
+      mockPermissionService.setPermissionState(
+        currentUserId: testUserId,
+        userDisplayName: 'Test User',
+        isAuthenticated: true,
+        defaultHasPermission: false,
+      );
+
+      final ok = await viewModel.bulkRemoveItems({'a', 'b'});
+
+      expect(ok, isFalse,
+          reason: 'permission gate must block bulk delete entirely');
+      verifyNever(() => mockShoppingService.removeItemFromActiveList(any()));
+    });
+
+    test('bulkRemoveItems returns false if any single removal fails', () async {
+      when(() => mockShoppingService.removeItemFromActiveList('b'))
+          .thenAnswer((_) async => false);
+
+      final ok = await viewModel.bulkRemoveItems({'a', 'b'});
+
+      expect(ok, isFalse,
+          reason: 'a partial failure must be reported so the caller can skip '
+              'offering an undo that would double-add the survivors');
+    });
+
+    test('restoreItems re-adds every removed item', () async {
+      final a = ShoppingListFactory.buildItem(id: 'a', name: 'Salt');
+      final b = ShoppingListFactory.buildItem(id: 'b', name: 'Peppar');
+
+      final ok = await viewModel.restoreItems([a, b]);
+
+      expect(ok, isTrue);
+      verify(() => mockShoppingService.addItemToActiveList(
+            name: 'Salt',
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            priority: any(named: 'priority'),
+          )).called(1);
+      verify(() => mockShoppingService.addItemToActiveList(
+            name: 'Peppar',
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            priority: any(named: 'priority'),
+          )).called(1);
+    });
+  });
 }

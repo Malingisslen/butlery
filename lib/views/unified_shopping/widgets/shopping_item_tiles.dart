@@ -4,12 +4,14 @@
 // Animated check-off: scale pulse on checkbox, smooth fill transition
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/theme_constants.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Static API surface for shopping item tiles.
@@ -20,7 +22,9 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 ///  - `item-toggle-{index}` on each item row for browser a11y queries
 ///  - `test-shopping-item-{index}` ValueKey for Flutter widget tests
 class ShoppingItemTiles {
-  /// Builds a draggable item tile with long-press drag + optional category menu.
+  /// BUT-948: the whole-tile long-press drag was replaced by a per-row grip
+  /// handle inside [ShoppingItemTile] (so long-press is free for multi-select).
+  /// This now just delegates to [buildItemTile]; the drag lives on the handle.
   static Widget buildDraggableItemTile(
     BuildContext context,
     UnifiedShoppingItem item,
@@ -31,64 +35,15 @@ class ShoppingItemTiles {
     VoidCallback? onMoveToCategory,
     int? visualIndex,
   }) {
-    if (isCompleted) {
-      return buildItemTile(
-        context,
-        item,
-        isCompleted,
-        onItemTap,
-        onEditItem,
-        onDeleteItem,
-        onMoveToCategory: onMoveToCategory,
-        visualIndex: visualIndex,
-      );
-    }
-
-    final cs = Theme.of(context).colorScheme;
-
-    return LongPressDraggable<UnifiedShoppingItem>(
-      data: item,
-      feedback: Material(
-        elevation: 4,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.8,
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            border: Border.all(color: cs.primary, width: 2),
-          ),
-          child: Text(
-            item.displayText,
-            style: AppTextStyles.contentTitle.copyWith(color: cs.onSurface),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-      childWhenDragging: Opacity(
-        opacity: 0.3,
-        child: buildItemTile(
-          context,
-          item,
-          isCompleted,
-          onItemTap,
-          onEditItem,
-          onDeleteItem,
-          onMoveToCategory: onMoveToCategory,
-        ),
-      ),
-      child: buildItemTile(
-        context,
-        item,
-        isCompleted,
-        onItemTap,
-        onEditItem,
-        onDeleteItem,
-        onMoveToCategory: onMoveToCategory,
-        visualIndex: visualIndex,
-      ),
+    return buildItemTile(
+      context,
+      item,
+      isCompleted,
+      onItemTap,
+      onEditItem,
+      onDeleteItem,
+      onMoveToCategory: onMoveToCategory,
+      visualIndex: visualIndex,
     );
   }
 
@@ -238,15 +193,22 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // Nullable: a tile rendered outside a selection context (e.g. in isolation
+    // tests) simply isn't selectable — it degrades to the plain check-off tile.
+    final selection = context.watch<ShoppingSelectionManager?>();
+    final selectionMode = selection?.isSelectionMode ?? false;
+    final selected = selection?.isSelected(widget.item.id) ?? false;
 
     return RepaintBoundary(
       child: Container(
         margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
+          color: selected
+              ? cs.primary.withValues(alpha: 0.12)
+              : cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           border: Border.all(
-            color: cs.outlineVariant,
+            color: selected ? cs.primary : cs.outlineVariant,
             width: AppDimensions.borderWidthStandard,
           ),
         ),
@@ -254,10 +216,15 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           identifier: widget.visualIndex != null
               ? 'item-toggle-${widget.visualIndex}'
               : null,
-          label: widget.isCompleted
-              ? context.l10n.a11yShoppingItemChecked(widget.item.displayText)
-              : context.l10n.a11yShoppingItemUnchecked(widget.item.displayText),
+          label: selectionMode
+              ? context.l10n.a11yShoppingSelectItem(widget.item.displayText)
+              : (widget.isCompleted
+                  ? context.l10n
+                      .a11yShoppingItemChecked(widget.item.displayText)
+                  : context.l10n
+                      .a11yShoppingItemUnchecked(widget.item.displayText)),
           button: true,
+          selected: selectionMode ? selected : null,
           enabled: true,
           child: Material(
             type: MaterialType.transparency,
@@ -265,17 +232,32 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
               key: widget.visualIndex != null
                   ? ValueKey('test-shopping-item-${widget.visualIndex}')
                   : null,
-              onTap: () => widget.onItemTap(widget.item),
+              // BUT-948: in selection mode tap toggles selection; otherwise tap
+              // checks the item off and long-press enters selection.
+              onTap: selectionMode
+                  ? () => selection!.toggleSelection(widget.item.id)
+                  : () => widget.onItemTap(widget.item),
+              onLongPress: (selection == null || selectionMode)
+                  ? null
+                  : () => selection.enterSelectionMode(widget.item.id),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               child: Padding(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 child: Row(
                   children: [
+                    if (selectionMode) ...[
+                      Icon(
+                        selected ? Icons.check_circle : Icons.circle_outlined,
+                        color: selected ? cs.primary : cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                      const SizedBox(width: AppDimensions.paddingM),
+                    ],
                     _buildAnimatedCheckbox(cs),
                     const SizedBox(width: AppDimensions.paddingM),
                     _buildItemDetails(cs),
                     if (widget.item.priority > 3) _buildPriorityIndicator(cs),
-                    _buildActionButtons(context, cs),
+                    if (!selectionMode) _buildActionButtons(context, cs),
                   ],
                 ),
               ),
@@ -373,6 +355,11 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // BUT-948: the drag-to-move shortcut now lives on this grip handle
+        // (long-press is reserved for multi-select). Category-move is also still
+        // available via the move-to-category button below.
+        if (widget.onMoveToCategory != null && !widget.isCompleted)
+          _buildDragHandle(context, cs),
         if (widget.onMoveToCategory != null && !widget.isCompleted)
           AppIconButton(
             icon: Icons.drive_file_move_outline,
@@ -397,6 +384,44 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
           iconSize: AppDimensions.iconSizeS,
         ),
       ],
+    );
+  }
+
+  /// BUT-948: grip handle that initiates the category-move drag (replaces the
+  /// old whole-tile long-press drag). The existing category DragTarget accepts
+  /// the dragged [UnifiedShoppingItem] unchanged.
+  Widget _buildDragHandle(BuildContext context, ColorScheme cs) {
+    return Draggable<UnifiedShoppingItem>(
+      data: widget.item,
+      feedback: Material(
+        elevation: 4,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.8,
+          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            border: Border.all(color: cs.primary, width: 2),
+          ),
+          child: Text(
+            widget.item.displayText,
+            style: AppTextStyles.contentTitle.copyWith(color: cs.onSurface),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+      childWhenDragging: const SizedBox.shrink(),
+      child: Semantics(
+        label: context.l10n.a11yShoppingReorderHandle(widget.item.name),
+        button: true,
+        child: Icon(
+          Icons.drag_handle,
+          color: cs.onSurfaceVariant,
+          size: AppDimensions.iconSizeS,
+        ),
+      ),
     );
   }
 

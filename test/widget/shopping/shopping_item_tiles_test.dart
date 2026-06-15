@@ -864,7 +864,9 @@ void main() {
         expect(find.text(basicItem.displayText), findsOneWidget);
       });
 
-      testWidgets('buildDraggableItemTile wraps in LongPressDraggable',
+      testWidgets(
+          'BUT-948: buildDraggableItemTile no longer wraps the whole tile in '
+          'a long-press drag (freed for multi-select)',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
@@ -882,9 +884,34 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(LongPressDraggable<UnifiedShoppingItem>),
-            findsOneWidget);
-        expect(find.byType(ShoppingItemTile), findsAtLeast(1));
+        expect(
+            find.byType(LongPressDraggable<UnifiedShoppingItem>), findsNothing);
+        expect(find.byType(ShoppingItemTile), findsOneWidget);
+      });
+
+      testWidgets(
+          'BUT-948: a grip-handle drag appears only when category-move is '
+          'allowed', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ShoppingItemTiles.buildItemTile(
+                context,
+                basicItem,
+                false,
+                (_) {},
+                (_) {},
+                (_) {},
+                onMoveToCategory: () {},
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(Draggable<UnifiedShoppingItem>), findsOneWidget,
+            reason: 'reorder moved onto a per-row drag handle');
+        expect(find.byIcon(Icons.drag_handle), findsOneWidget);
       });
 
       testWidgets(

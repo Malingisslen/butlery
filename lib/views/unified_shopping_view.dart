@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
+import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 
@@ -47,6 +49,8 @@ class UnifiedShoppingView extends StatefulWidget {
 class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     with TickerProviderStateMixin {
   late UnifiedShoppingViewModel _viewModel;
+  // BUT-948: view-local multi-select state for the shopping list.
+  final ShoppingSelectionManager _selection = ShoppingSelectionManager();
   late TabController _tabController;
   int _currentTabIndex = 0;
   // Delay instantiating PantryView until the user first visits the tab,
@@ -74,8 +78,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _viewModel),
+        ChangeNotifierProvider.value(value: _selection),
+      ],
       child: Consumer<UnifiedShoppingViewModel>(
         builder: (context, viewModel, child) {
           final itemCount = viewModel.activeList?.items.length ?? 0;
@@ -84,6 +91,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                   0;
 
           final isShoppingTab = _currentTabIndex == 0;
+          final selection = context.watch<ShoppingSelectionManager>();
+          final inSelection = isShoppingTab && selection.isSelectionMode;
           final cs = Theme.of(context).colorScheme;
 
           return Scaffold(
@@ -104,10 +113,21 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
                     )
                   : const <Widget>[],
             ),
-            floatingActionButton: isShoppingTab
+            // BUT-948: the add FAB gives way to the bulk-action bar while
+            // selecting.
+            floatingActionButton: isShoppingTab && !inSelection
                 ? ShoppingAppBar.buildFloatingActionButton(
                     context,
                     _showAddItemDialog,
+                  )
+                : null,
+            bottomNavigationBar: inSelection
+                ? SelectionBulkBar(
+                    count: selection.selectedCount,
+                    label: context.l10n
+                        .shoppingSelectedCount(selection.selectedCount),
+                    onClose: selection.clearSelection,
+                    onDelete: () => _deleteSelectedShopping(selection),
                   )
                 : null,
             body: Column(
@@ -291,6 +311,36 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
           priority: item.priority,
         );
       },
+      duration: const Duration(seconds: 4),
+    );
+  }
+
+  /// BUT-948: bulk delete the selected items with a single undo snackbar.
+  /// Captures the removed items + strings before the await so undo can re-add
+  /// them; no undo is offered if the delete failed (items would still be there).
+  Future<void> _deleteSelectedShopping(
+    ShoppingSelectionManager selection,
+  ) async {
+    // Explicit snapshot copy: decouple from the manager's set so clearSelection
+    // below can't affect the ids we're about to delete.
+    final ids = {...selection.selectedIds};
+    if (ids.isEmpty) return;
+    final removed = _viewModel.items.where((i) => ids.contains(i.id)).toList();
+    // Items may have vanished via real-time sync between selecting and deleting.
+    if (removed.isEmpty) return;
+    final removedMsg =
+        context.l10n.shoppingItemsRemovedUndoMessage(removed.length);
+    final undoLabel = context.l10n.commonUndo;
+
+    selection.clearSelection();
+    final ok = await _viewModel.bulkRemoveItems(ids);
+    if (!mounted || !ok) return;
+
+    SnackBarUtils.showSuccessWithAction(
+      context,
+      removedMsg,
+      actionLabel: undoLabel,
+      onAction: () => _viewModel.restoreItems(removed),
       duration: const Duration(seconds: 4),
     );
   }
@@ -562,6 +612,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   /// - Event handler cleanup with proper subscription management
   @override
   void dispose() {
+    _selection.dispose();
     _tabController.dispose();
     super.dispose();
   }

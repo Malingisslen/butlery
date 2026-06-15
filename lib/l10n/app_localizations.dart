@@ -13521,6 +13521,30 @@ abstract class AppLocalizations {
   /// **'{itemText}, tryck för att bocka av'**
   String a11yShoppingItemUnchecked(String itemText);
 
+  /// BUT-948: screen-reader label for a shopping row while in multi-select mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'{itemText}, tryck för att markera'**
+  String a11yShoppingSelectItem(String itemText);
+
+  /// BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories.
+  ///
+  /// In sv, this message translates to:
+  /// **'{itemName}, dra för att flytta kategori'**
+  String a11yShoppingReorderHandle(String itemName);
+
+  /// BUT-948: count label in the shopping multi-select bulk-action bar.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} markerade'**
+  String shoppingSelectedCount(int count);
+
+  /// BUT-948: snackbar after bulk multi-select delete of shopping items; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} borttagna'**
+  String shoppingItemsRemovedUndoMessage(int count);
+
   /// No description provided for @a11yTagSelected.
   ///
   /// In sv, this message translates to:
