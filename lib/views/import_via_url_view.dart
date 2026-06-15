@@ -128,15 +128,27 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
     _draftManager.save(_urlController.text);
   }
 
-  void _fetchPage() {
+  Future<void> _fetchPage() async {
     final viewModel = context.read<UrlImportViewModel>();
     // BUT-947: a pasted list of URLs takes the batch path; a single URL keeps
     // the original single-fetch flow untouched.
     if (viewModel.isMultiUrl) {
-      viewModel.fetchMultipleUrls();
-    } else {
-      viewModel.fetchFromUrl();
+      await viewModel.fetchMultipleUrls();
+      return;
     }
+    await viewModel.fetchFromUrl();
+    // BUT-1273: when a single URL doesn't yield a recipe it may be a listing
+    // page — probe for harvestable recipe links so we can offer batch
+    // expansion. Gated on the miss so normal recipe imports never pay a second
+    // network round-trip.
+    if (!viewModel.hasExtractedText) {
+      await viewModel.detectIndexPage();
+    }
+  }
+
+  Future<void> _expandIndexPage() async {
+    final viewModel = context.read<UrlImportViewModel>();
+    await viewModel.expandIndexPage();
   }
 
   Future<void> _navigateToTextImport() async {
@@ -257,6 +269,26 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                           isExpanded: true,
                         ),
                       ],
+                    ],
+
+                    // BUT-1273: opt-in recipe-index expansion. Shown only when a
+                    // single-URL fetch detected a listing page; the user must tap
+                    // to import — nothing fans out automatically.
+                    if (viewModel.urlResults.isEmpty &&
+                        viewModel.isIndexPageCandidate) ...[
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      StateWidget.info(
+                        message: context.l10n.importIndexPageDetected,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
+                      ActionButtons.primaryButton(
+                        context,
+                        label: context.l10n.importIndexPageExpand(
+                            viewModel.indexPageLinks.length),
+                        onPressed:
+                            viewModel.isLoading ? null : _expandIndexPage,
+                        isExpanded: true,
+                      ),
                     ],
 
                     // Extraherad text (editable) — single-URL flow only.

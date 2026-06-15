@@ -48,8 +48,9 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   final bool _isMultiUrl;
   final String _extractedText;
 
+  bool loading = false;
   @override
-  bool get isLoading => false;
+  bool get isLoading => loading;
 
   int? retriedIndex;
 
@@ -91,6 +92,27 @@ class _FakeUrlImportViewModel extends ChangeNotifier
   Future<void> fetchMultipleUrls() async {}
   @override
   String get successfulBatchText => _batchText;
+
+  // BUT-1273: the view's build reads these on the single-URL path; default to
+  // "not an index page" so existing batch/single tests are unaffected.
+  bool indexCandidate = false;
+  @override
+  bool get isIndexPageCandidate => indexCandidate;
+  @override
+  List<String> get indexPageLinks => _indexLinks;
+  List<String> _indexLinks = const [];
+  int expandCalls = 0;
+  @override
+  Future<void> expandIndexPage() async {
+    expandCalls++;
+  }
+
+  // Spy on the probe so a test can prove _fetchPage only probes on a fetch miss.
+  int detectCalls = 0;
+  @override
+  Future<void> detectIndexPage() async {
+    detectCalls++;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -355,5 +377,95 @@ void main() {
     expect(find.byIcon(Icons.error), findsNothing);
     expect(find.textContaining('hämtade'), findsNothing);
     expect(find.textContaining('Importera'), findsNothing);
+  });
+
+  // BUT-1273: the opt-in recipe-index banner. Intent: when a single-URL fetch
+  // detected a listing page, the view offers an "import all N" action and tapping
+  // it delegates to expandIndexPage — nothing fans out without the user's tap.
+  testWidgets('shows the index-page banner and expands on tap', (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [])
+      ..indexCandidate = true
+      .._indexLinks = const [
+        'https://ica.se/recept/ett-med-namn',
+        'https://ica.se/recept/tva-med-namn',
+        'https://ica.se/recept/tre-med-namn',
+      ];
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    // Banner + count-bearing CTA are present (count reflects harvested links).
+    expect(find.text('Det här ser ut som en receptsamling.'), findsOneWidget);
+    final cta = find.text('Importera alla 3 recept');
+    expect(cta, findsOneWidget);
+
+    await tester.tap(cta);
+    await tester.pump();
+
+    expect(fakeVm.expandCalls, 1,
+        reason: 'tapping the banner CTA must delegate to expandIndexPage');
+  });
+
+  testWidgets('no index banner when the page is not a listing', (tester) async {
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [],
+      extractedText: 'a single extracted recipe body',
+    )..indexCandidate = false;
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    expect(find.text('Det här ser ut som en receptsamling.'), findsNothing);
+  });
+
+  // BUT-1273 cost guard: a single URL that already yielded a recipe must NOT
+  // trigger the index probe (no spurious second network round-trip / banner).
+  testWidgets('successful single fetch does not probe for an index page',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [],
+      isMultiUrl: false,
+      extractedText: 'a recipe body that means the fetch hit',
+    );
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    await tester.tap(find.text('Hämta text'));
+    await tester.pumpAndSettle();
+
+    expect(fakeVm.detectCalls, 0,
+        reason: 'fetch hit ⇒ no index probe (the !hasExtractedText guard)');
+  });
+
+  testWidgets('a single fetch that yields no recipe probes for an index page',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(
+      results: const [],
+      isMultiUrl: false,
+      extractedText: '', // miss → hasExtractedText false → probe
+    );
+    registerFake(fakeVm);
+    await pumpView(tester);
+
+    await tester.tap(find.text('Hämta text'));
+    await tester.pumpAndSettle();
+
+    expect(fakeVm.detectCalls, 1,
+        reason: 'fetch miss ⇒ probe once for a listing page');
+  });
+
+  testWidgets('index CTA is disabled while loading (no double-expand)',
+      (tester) async {
+    fakeVm = _FakeUrlImportViewModel(results: const [])
+      ..indexCandidate = true
+      ..loading = true
+      .._indexLinks = const ['https://ica.se/recept/ett-med-namn'];
+    registerFake(fakeVm);
+    // Loading holds an animating spinner, so use bounded pumps not settle.
+    await pumpView(tester, settle: false);
+
+    await tester.tap(find.text('Importera alla 1 recept'));
+    await tester.pump();
+
+    expect(fakeVm.expandCalls, 0,
+        reason: 'a loading CTA is onPressed:null — taps must not expand');
   });
 }

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/services/import/index_page_expander.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -43,6 +44,7 @@ class TestableUrlImportViewModel extends UrlImportViewModel {
   TestableUrlImportViewModel({
     required super.importManager,
     this.testHttpClient,
+    super.indexExpander,
   });
 
   @override
@@ -111,6 +113,17 @@ class _LoadingObservingUrlImportViewModel extends UrlImportViewModel {
     }
     return 'recipe content for $url long enough to count as a body';
   }
+}
+
+/// BUT-1273: returns canned harvested links so the VM's detect/expand flow can
+/// be tested without a real network fetch. The link-harvest logic itself is
+/// covered in index_page_detector_test.dart.
+class _FakeIndexExpander extends IndexPageExpander {
+  _FakeIndexExpander(this._links);
+  final List<String> _links;
+
+  @override
+  Future<List<String>> harvest(String url) async => _links;
 }
 
 void main() {
@@ -1397,6 +1410,97 @@ void main() {
               reason: 'no successful rows means nothing to feed the paste '
                   'step — the empty string, not a stray separator');
         });
+      });
+    });
+
+    // BUT-1273: recipe-index / listing-page expansion. Intent: a detected
+    // listing page surfaces an opt-in candidate, and accepting it expands into
+    // the existing multi-URL batch (reusing its per-URL fetch + tolerance).
+    group('index-page expansion (BUT-1273)', () {
+      const harvested = [
+        'https://recept.example.se/recept/kycklinggryta-med-curry',
+        'https://recept.example.se/recept/vegetarisk-lasagne',
+      ];
+
+      TestableUrlImportViewModel buildWith(List<String> links) =>
+          TestableUrlImportViewModel(
+            importManager: mockImportManager,
+            testHttpClient: mockHttpClient,
+            indexExpander: _FakeIndexExpander(links),
+          );
+
+      test('detectIndexPage surfaces an opt-in candidate when links are found',
+          () async {
+        final vm = buildWith(harvested);
+        addTearDown(vm.dispose);
+
+        await vm.detectIndexPage();
+
+        expect(vm.isIndexPageCandidate, isTrue);
+        expect(vm.indexPageLinks, harvested);
+      });
+
+      test('detectIndexPage stays silent for a non-index page (no links)',
+          () async {
+        final vm = buildWith(const []);
+        addTearDown(vm.dispose);
+
+        await vm.detectIndexPage();
+
+        expect(vm.isIndexPageCandidate, isFalse,
+            reason: 'an ordinary recipe page must not show the expand banner');
+      });
+
+      test('expandIndexPage fans the harvested links into the batch flow',
+          () async {
+        final vm = buildWith(harvested);
+        addTearDown(vm.dispose);
+        await vm.detectIndexPage();
+
+        await vm.expandIndexPage();
+
+        expect(vm.urlResults.length, harvested.length,
+            reason: 'each harvested link becomes a batch row');
+        expect(vm.successfulUrlCount, harvested.length,
+            reason: 'the stub HTTP client returns 200 for every URL');
+        expect(vm.isIndexPageCandidate, isFalse,
+            reason: 'expanding consumes the candidate so the banner clears');
+      });
+
+      test('editing the URL clears a pending index candidate', () async {
+        final vm = buildWith(harvested);
+        addTearDown(vm.dispose);
+        await vm.detectIndexPage();
+        expect(vm.isIndexPageCandidate, isTrue);
+
+        vm.updateUrl('https://recept.example.se/recept/en-annan-ratt');
+
+        expect(vm.isIndexPageCandidate, isFalse,
+            reason: 'a stale banner must not survive a fresh URL edit');
+      });
+
+      test('expandIndexPage is a no-op when there is no candidate', () async {
+        final vm = buildWith(const []);
+        addTearDown(vm.dispose);
+
+        await vm.expandIndexPage();
+
+        expect(vm.urlResults, isEmpty);
+      });
+
+      test('a URL edited during the probe discards the stale result', () async {
+        final vm = buildWith(harvested);
+        addTearDown(vm.dispose);
+
+        // Start the probe, then edit the URL before harvest resolves (the await
+        // yields control here before the fake's microtask completes).
+        final probe = vm.detectIndexPage();
+        vm.updateUrl('https://recept.example.se/recept/en-helt-annan-ratt');
+        await probe;
+
+        expect(vm.isIndexPageCandidate, isFalse,
+            reason: 'links harvested for the old URL must not surface after a '
+                'mid-probe edit');
       });
     });
   });

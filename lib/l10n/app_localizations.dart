@@ -9447,6 +9447,18 @@ abstract class AppLocalizations {
   /// **'Importera {count} recept'**
   String importUrlBatchImport(int count);
 
+  /// Banner shown when a pasted URL looks like a recipe-index/listing page (BUT-1273).
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här ser ut som en receptsamling.'**
+  String get importIndexPageDetected;
+
+  /// Button to expand a detected recipe-index page into N individual recipe imports (BUT-1273).
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera alla {count} recept'**
+  String importIndexPageExpand(int count);
+
   /// No description provided for @importUrlFetchPending.
   ///
   /// In sv, this message translates to:

@@ -5571,6 +5571,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get importIndexPageDetected => 'This looks like a recipe collection.';
+
+  @override
+  String importIndexPageExpand(int count) {
+    return 'Import all $count recipes';
+  }
+
+  @override
   String get importUrlFetchPending => 'Waiting...';
 
   @override

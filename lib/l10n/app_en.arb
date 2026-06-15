@@ -3619,6 +3619,19 @@
       }
     }
   },
+  "importIndexPageDetected": "This looks like a recipe collection.",
+  "@importIndexPageDetected": {
+    "description": "Banner shown when a pasted URL looks like a recipe-index/listing page (BUT-1273)."
+  },
+  "importIndexPageExpand": "Import all {count} recipes",
+  "@importIndexPageExpand": {
+    "description": "Button to expand a detected recipe-index page into N individual recipe imports (BUT-1273).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importUrlFetchPending": "Waiting...",
   "importUrlFetchSuccess": "Fetched",
   "importUrlFetchFailed": "Failed",

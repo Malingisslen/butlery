@@ -5577,6 +5577,14 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get importIndexPageDetected => 'Det här ser ut som en receptsamling.';
+
+  @override
+  String importIndexPageExpand(int count) {
+    return 'Importera alla $count recept';
+  }
+
+  @override
   String get importUrlFetchPending => 'Väntar...';
 
   @override

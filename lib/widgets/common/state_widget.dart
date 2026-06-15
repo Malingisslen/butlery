@@ -203,6 +203,20 @@ class StateWidget extends StatelessWidget {
     );
   }
 
+  /// Informational banner (neutral notice, not an error or success).
+  factory StateWidget.info({
+    required String message,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return StateWidget(
+      type: StateType.info,
+      message: message,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
+  }
+
   /// Generic empty state with custom content.
   factory StateWidget.empty({
     required String title,

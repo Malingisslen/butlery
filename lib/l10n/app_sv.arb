@@ -3625,6 +3625,19 @@
       }
     }
   },
+  "importIndexPageDetected": "Det här ser ut som en receptsamling.",
+  "@importIndexPageDetected": {
+    "description": "Banner shown when a pasted URL looks like a recipe-index/listing page (BUT-1273)."
+  },
+  "importIndexPageExpand": "Importera alla {count} recept",
+  "@importIndexPageExpand": {
+    "description": "Button to expand a detected recipe-index page into N individual recipe imports (BUT-1273).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importUrlFetchPending": "Väntar...",
   "importUrlFetchSuccess": "Hämtad",
   "importUrlFetchFailed": "Misslyckades",

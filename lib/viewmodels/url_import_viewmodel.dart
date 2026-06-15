@@ -8,6 +8,8 @@ import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
+import 'package:butlery/services/import/index_page_expander.dart';
+import 'package:butlery/services/import/extracted_content_analyzer.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -37,11 +39,49 @@ class UrlImportResult {
 }
 
 class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
-  UrlImportViewModel({required super.importManager});
+  UrlImportViewModel(
+      {required super.importManager, IndexPageExpander? indexExpander})
+      : _indexExpander = indexExpander ?? IndexPageExpander();
+
+  final IndexPageExpander _indexExpander;
 
   // ---- BUT-947: multiple-URL ("batch") import -----------------------------
 
   List<UrlImportResult> _urlResults = const [];
+
+  // ---- BUT-1273: recipe-index / listing-page expansion --------------------
+
+  List<String> _indexPageLinks = const [];
+
+  /// Recipe links harvested from a detected listing page. Non-empty drives the
+  /// opt-in "import all N recipes" banner; expansion never auto-runs.
+  List<String> get indexPageLinks => List.unmodifiable(_indexPageLinks);
+
+  /// True once the last [detectIndexPage] found a listing page worth expanding.
+  bool get isIndexPageCandidate => _indexPageLinks.isNotEmpty;
+
+  /// Fetches the current single URL and, if it looks like a recipe index,
+  /// stashes the harvested links so the view can offer expansion. Silent when
+  /// it isn't an index page — no error, just no banner.
+  Future<void> detectIndexPage() async {
+    if (isDisposed) return;
+    final targetUrl = url; // guard against the field changing during the await
+    setLoading(true); // keeps the fetch button disabled during the probe fetch
+    final links = await _indexExpander.harvest(targetUrl);
+    if (isDisposed) return;
+    // Drop a stale result if the user edited the URL mid-probe (updateUrl will
+    // have already cleared _indexPageLinks).
+    if (url == targetUrl) _indexPageLinks = links;
+    setLoading(false); // notifies, reflecting the new links
+  }
+
+  /// User opted in: load the harvested links into the URL field and run the
+  /// existing sequential batch fetch (inherits its per-URL failure tolerance).
+  Future<void> expandIndexPage() async {
+    if (_indexPageLinks.isEmpty || isDisposed) return;
+    updateUrl(_indexPageLinks.join('\n')); // clears _indexPageLinks + results
+    await fetchMultipleUrls();
+  }
 
   /// Editing the URL field invalidates any prior batch results. The mixin's
   /// [updateUrl] already resets single-URL extracted text; extend it to also
@@ -49,8 +89,9 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   @override
   void updateUrl(String url) {
     super.updateUrl(url);
-    if (_urlResults.isNotEmpty) {
+    if (_urlResults.isNotEmpty || _indexPageLinks.isNotEmpty) {
       _urlResults = const [];
+      _indexPageLinks = const [];
       notifyListeners();
     }
   }
@@ -384,90 +425,9 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
 
   /// Heuristically scores the extracted text (0-100) by recipe indicators
   /// and length, returning {quality, score, issues, positives} for UI feedback.
-  Map<String, dynamic> analyzeExtractedContent() {
-    if (!hasExtractedText) {
-      return {
-        'quality': 'none',
-        'score': 0,
-        'issues': [AppLocale.current.analysisNoContentExtracted],
-      };
-    }
-
-    final text = extractedText.toLowerCase();
-    int score = 0;
-    final issues = <String>[];
-    final positives = <String>[];
-
-    // Check for recipe indicators (Swedish and English)
-    if (text.contains('ingrediens') || text.contains('ingredient')) {
-      score += 25;
-      positives.add(AppLocale.current.analysisContainsIngredients);
-    } else {
-      issues.add(AppLocale.current.analysisNoIngredientsFound);
-    }
-
-    if (text.contains('instruktion') ||
-        text.contains('instruction') ||
-        text.contains('steg') ||
-        text.contains('step') ||
-        text.contains('gör så här') ||
-        text.contains('method')) {
-      score += 25;
-      positives.add(AppLocale.current.analysisContainsInstructions);
-    } else {
-      issues.add(AppLocale.current.analysisNoInstructionsFound);
-    }
-
-    if (text.contains('minut') ||
-        text.contains('minute') ||
-        text.contains('timme') ||
-        text.contains('hour') ||
-        text.contains('tid') ||
-        text.contains('time')) {
-      score += 15;
-      positives.add(AppLocale.current.analysisContainsTimeInfo);
-    }
-
-    if (text.contains('portion') ||
-        text.contains('serve') ||
-        text.contains('servering') ||
-        text.contains('yield')) {
-      score += 10;
-      positives.add(AppLocale.current.analysisContainsPortionInfo);
-    }
-
-    // Check content length
-    if (extractedText.length > 500) {
-      score += 15;
-      positives.add(AppLocale.current.analysisGoodContentLength);
-    } else if (extractedText.length < 200) {
-      issues.add(AppLocale.current.analysisContentTooShort);
-    }
-
-    // Check for recipe title patterns
-    if (text.contains('recipe') || text.contains('recept')) {
-      score += 10;
-      positives.add(AppLocale.current.analysisContainsRecipeKeywords);
-    }
-
-    String quality;
-    if (score >= 75) {
-      quality = 'excellent';
-    } else if (score >= 50) {
-      quality = 'good';
-    } else if (score >= 25) {
-      quality = 'fair';
-    } else {
-      quality = 'poor';
-    }
-
-    return {
-      'quality': quality,
-      'score': score,
-      'issues': issues,
-      'positives': positives,
-    };
-  }
+  /// Delegates to [ExtractedContentAnalyzer] (BUT-1273 facade extraction).
+  Map<String, dynamic> analyzeExtractedContent() =>
+      ExtractedContentAnalyzer.analyze(hasExtractedText ? extractedText : null);
 
   @override
   Map<String, dynamic> get debugState => {
