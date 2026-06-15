@@ -1439,3 +1439,42 @@ it — variant=undefined is the no-op fallback). No redeploy needed.
   ±10% distribution for 2- and 3-bucket cases over 1000-1500 ids,
   variant-to-bucket mapping correctness, all fallback/malformed paths, and
   the analytics payload shape. Auto-discovered by the run-all-tests.js runner.
+
+### 2026-06-15 — BUT-840 Algolia mirror in on-profile-updated [OPS-BLOCKED]
+
+Ticket asked to extend `social/on-profile-updated.ts` to refresh the Algolia
+user search record (`partialUpdateObject`) on displayName/avatarUrl change, so
+the renamed-user mirror stops going stale. Step-0 feasibility gate halted it:
+the Cloud Functions environment has **no Algolia ADMIN credentials**, so the
+server cannot write the index. Not implemented (did not stub/invent a secret).
+
+Evidence gathered:
+- `functions/package.json` has no `algoliasearch` dependency. No
+  `functions/src/algolia/` directory exists (a stale doc-comment in
+  `lib/repositories/algolia/algolia_search_repository.dart:26` references one
+  — it was never created).
+- No `defineSecret`/params/functions-config entry for any `ALGOLIA_*` key
+  anywhere under `functions/`. The only "Algolia" hits in `functions/src/` are
+  a PII-scrubber regex comment and a test name — coincidental.
+- The Flutter client gets its key via `String.fromEnvironment('ALGOLIA_APP_ID'
+  / 'ALGOLIA_API_KEY')` (compile-time `--dart-define`, from the Flutter-side
+  `.env`). That is the **search-only** key — it cannot write the index. The
+  ticket itself notes the index is written client-side today.
+
+What must be provisioned (the OPS hand-off) before this can be implemented:
+1. An Algolia **Admin API key** (write-scoped) stored in **Secret Manager**,
+   e.g. `firebase functions:secrets:set ALGOLIA_ADMIN_API_KEY`, read in code
+   via `defineSecret("ALGOLIA_ADMIN_API_KEY")`.
+2. The Algolia **App ID** + **users index name** as params/secrets too
+   (`ALGOLIA_APP_ID`, `ALGOLIA_USERS_INDEX`). App ID must be the EU cluster
+   (`-eu`) per the BUT-580 GDPR invariant enforced client-side.
+3. Add the `algoliasearch` SDK (or call the REST `partialUpdateObject`
+   endpoint directly to avoid the cold-start cost of the SDK — preferred,
+   ~one `fetch` PATCH to `/1/indexes/{index}/{objectID}/partial`).
+
+Lesson worth remembering: **a client-side third-party integration using a
+public/search-scoped key does NOT imply the server can write that service.**
+Server-side index writes need an admin key that must be independently
+provisioned in Secret Manager — never assume it exists because the client
+talks to the same vendor. Re-validate creds at Step 0 for any "extend the CF
+to also call <external service>" ticket.
