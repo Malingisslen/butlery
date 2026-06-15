@@ -4,8 +4,10 @@ import 'package:clock/clock.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/core/utils/season_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -52,16 +54,24 @@ class MenuGenerator {
   /// Whether to use aggregated household allergens instead of single-user.
   bool useHouseholdAllergens = false;
 
+  /// Optional source of recent weekly plans for cross-week dedup (BUT-1318).
+  /// When null (e.g. group flow, tests without the service registered) the
+  /// recent-use down-weighting is simply skipped — no Firestore read happens
+  /// and generation behaves exactly as before.
+  final WeeklyMenuPlanService? _weeklyMenuPlanService;
+
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
     required UserService userService,
+    WeeklyMenuPlanService? weeklyMenuPlanService,
     this.filterByAllergens = false,
     this.filterByDietary = false,
     this.useSmartSwap = true,
   })  : _menuService = menuService,
         _recipeService = recipeService,
-        _userService = userService;
+        _userService = userService,
+        _weeklyMenuPlanService = weeklyMenuPlanService;
 
   List<Recipe> get availableRecipes {
     if (!_recipeService.isInitialized) {
@@ -224,9 +234,12 @@ class MenuGenerator {
 
     final pool = _applyPromptKeywordFilter(prompt, availableRecipes);
 
+    final recentIds = await _recentlyUsedRecipeIds();
+
     final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
       pool,
+      recentlyUsedRecipeIds: recentIds,
     );
 
     if (generatedMenu.isEmpty) {
@@ -236,6 +249,37 @@ class MenuGenerator {
     }
 
     return generatedMenu;
+  }
+
+  /// Collects recipe IDs used in the last 1-2 weekly plans so generation can
+  /// down-weight them (BUT-1318). Returns an empty set with no history (first
+  /// menu ever) or when no plan service is wired — generation then uses the
+  /// full pool unchanged. Errors are swallowed: a recent-plan read failure
+  /// must never block menu generation.
+  Future<Set<String>> _recentlyUsedRecipeIds() async {
+    final service = _weeklyMenuPlanService;
+    if (service == null) return const {};
+    try {
+      final now = clock.now();
+      final thisWeek = IsoWeekUtils.weekStartOf(now);
+      final lastWeek = thisWeek.subtract(const Duration(days: 7));
+      // Read this week + last week only (1-2 plans) — bounded, cheap, and the
+      // weeks the user is most likely repeating from.
+      final plans = await Future.wait([
+        service.getWeek(thisWeek),
+        service.getWeek(lastWeek),
+      ]);
+      final ids = <String>{};
+      for (final plan in plans) {
+        for (final entry in plan.entries) {
+          ids.add(entry.recipeId);
+        }
+      }
+      return ids;
+    } catch (e) {
+      AppLogger.warning('Recent-plan dedup skipped: $e');
+      return const {};
+    }
   }
 
   /// Filters or boosts recipes based on prompt keywords.

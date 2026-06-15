@@ -7,6 +7,7 @@ library;
 
 import 'package:clock/clock.dart';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -51,13 +52,18 @@ class MenuService extends BaseService {
   /// Returns empty map if no lexicon is available or the parser finds nothing.
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String input,
-    List<Recipe> allRecipes,
-  ) async {
+    List<Recipe> allRecipes, {
+    Set<String> recentlyUsedRecipeIds = const {},
+  }) async {
     final lexicon = await _loadLexicon();
     if (lexicon == null) return {};
     final parsed = MenuConstraintParser.parse(input, lexicon);
     if (parsed.isEmpty) return {};
-    return generateMenuFromParsedRequest(parsed, allRecipes);
+    return generateMenuFromParsedRequest(
+      parsed,
+      allRecipes,
+      recentlyUsedRecipeIds: recentlyUsedRecipeIds,
+    );
   }
 
   /// Returns the last parsed request for the given prompt, or null if no
@@ -69,11 +75,33 @@ class MenuService extends BaseService {
     return MenuConstraintParser.parse(input, lexicon);
   }
 
-  /// Calculates recipe weight based on recency, with optional season boost.
+  /// Modest rating boost ceiling. A 5★ recipe gets at most this multiplier;
+  /// unrated recipes get 1.0 (no penalty). Kept gentle so ratings nudge but
+  /// never dominate recency — the spread (1.0 → 1.4) is smaller than the
+  /// season boost (1.5) on purpose.
+  static const double _maxRatingBoost = 1.4;
+
+  /// Down-weight applied to a recipe that appears in a recent weekly plan
+  /// (BUT-1318). A decay rather than a hard exclude so the recipe can still
+  /// be picked if the rest of the pool is too thin to fill the menu — this
+  /// mirrors the `_minFilteredPoolSize` fallback philosophy without needing a
+  /// pool-size branch here.
+  static const double _recentUseDecay = 0.15;
+
+  /// Calculates recipe weight based on recency, with optional season, rating,
+  /// and recent-use adjustments.
   ///
   /// Weight = daysSinceLastCooked (capped at 90). Never-cooked recipes get 90.
-  /// Season boost: 1.5x for recipes tagged with the current season.
-  static double _recipeWeight(Recipe recipe, {required String seasonTag}) {
+  /// - Season boost: 1.5x for recipes tagged with the current season.
+  /// - Rating boost (BUT-1319): up to 1.4x for a 5★ recipe, scaled by rating.
+  ///   Unrated (ratingCount 0/null) recipes get 1.0 — never penalized.
+  /// - Recent-use decay (BUT-1318): 0.15x for recipes used in a recent plan,
+  ///   so they rotate out but keep a non-zero chance of being picked.
+  static double _recipeWeight(
+    Recipe recipe, {
+    required String seasonTag,
+    Set<String> recentlyUsedIds = const {},
+  }) {
     const maxDays = 90;
     final lastCooked = recipe.lastCookedAt;
     final daysSince = lastCooked == null
@@ -89,7 +117,28 @@ class MenuService extends BaseService {
       weight *= 1.5;
     }
 
+    weight *= _ratingMultiplier(recipe);
+
+    // Recent-use decay: strongly down-weight (not exclude) recently used
+    // recipes so they keep a small, non-zero probability.
+    if (recentlyUsedIds.contains(recipe.id)) {
+      weight *= _recentUseDecay;
+    }
+
     return weight;
+  }
+
+  /// Gentle rating boost in [1.0, _maxRatingBoost]. Linear in the average
+  /// rating: 1★ → 1.0, 5★ → 1.4. Unrated recipes (ratingCount 0/null or
+  /// rating null) return 1.0, so they are never penalized relative to a
+  /// 1★ recipe — they just don't get the boost.
+  static double _ratingMultiplier(Recipe recipe) {
+    final rating = recipe.core.rating;
+    final count = recipe.core.ratingCount ?? 0;
+    if (rating == null || count <= 0) return 1.0;
+    final clamped = rating.clamp(1.0, 5.0);
+    final fraction = (clamped - 1.0) / 4.0; // 0.0 at 1★, 1.0 at 5★
+    return 1.0 + fraction * (_maxRatingBoost - 1.0);
   }
 
   /// Selects [count] recipes using cumulative-weight random selection.
@@ -101,6 +150,7 @@ class MenuService extends BaseService {
     int count,
     Random rand, {
     required String seasonTag,
+    Set<String> recentlyUsedIds = const {},
   }) {
     if (pool.isEmpty) return [];
     final available = List<Recipe>.from(pool);
@@ -109,8 +159,13 @@ class MenuService extends BaseService {
     for (var i = 0; i < min(count, pool.length); i++) {
       if (available.isEmpty) break;
 
-      final weights =
-          available.map((r) => _recipeWeight(r, seasonTag: seasonTag)).toList();
+      final weights = available
+          .map((r) => _recipeWeight(
+                r,
+                seasonTag: seasonTag,
+                recentlyUsedIds: recentlyUsedIds,
+              ))
+          .toList();
       final totalWeight = weights.fold(0.0, (sum, w) => sum + w);
 
       if (totalWeight <= 0) {
@@ -135,6 +190,21 @@ class MenuService extends BaseService {
     return selected;
   }
 
+  /// Test-only access to the deterministic weight function, so the rating
+  /// boost (BUT-1319) and recent-use decay (BUT-1318) can be asserted on the
+  /// weight math directly instead of through the random draw.
+  @visibleForTesting
+  static double debugRecipeWeight(
+    Recipe recipe, {
+    required String seasonTag,
+    Set<String> recentlyUsedIds = const {},
+  }) =>
+      _recipeWeight(
+        recipe,
+        seasonTag: seasonTag,
+        recentlyUsedIds: recentlyUsedIds,
+      );
+
   static String? _cuisineOf(Recipe recipe) =>
       CuisineConfig.extractCuisineTag(recipe);
 
@@ -149,6 +219,7 @@ class MenuService extends BaseService {
     Random rand, {
     required Set<String> usedIds,
     required String seasonTag,
+    Set<String> recentlyUsedIds = const {},
   }) {
     if (selected.length <= 2) return selected;
 
@@ -188,6 +259,7 @@ class MenuService extends BaseService {
           resultIds,
           counts,
           seasonTag,
+          recentlyUsedIds,
         );
         if (replacement == null) continue;
 
@@ -209,6 +281,7 @@ class MenuService extends BaseService {
     Set<String> usedIds,
     Map<String, int> currentCuisineCounts,
     String seasonTag,
+    Set<String> recentlyUsedIds,
   ) {
     Recipe? best;
     double bestWeight = -1;
@@ -222,7 +295,11 @@ class MenuService extends BaseService {
         continue;
       }
 
-      final weight = _recipeWeight(recipe, seasonTag: seasonTag);
+      final weight = _recipeWeight(
+        recipe,
+        seasonTag: seasonTag,
+        recentlyUsedIds: recentlyUsedIds,
+      );
       if (weight > bestWeight) {
         bestWeight = weight;
         best = recipe;
@@ -238,10 +315,15 @@ class MenuService extends BaseService {
   /// untouched.
   Future<Map<String, List<Recipe>>> generateMenuFromParsedRequest(
     ParsedMenuRequest parsed,
-    List<Recipe> allRecipes,
-  ) async {
+    List<Recipe> allRecipes, {
+    Set<String> recentlyUsedRecipeIds = const {},
+  }) async {
     return await executeServiceOperation(
-          () async => _generateFromParsedInternal(parsed, allRecipes),
+          () async => _generateFromParsedInternal(
+            parsed,
+            allRecipes,
+            recentlyUsedRecipeIds,
+          ),
           operationName: 'Generate menu from parsed request',
           defaultValue: <String, List<Recipe>>{},
           requiresAuth: false,
@@ -252,6 +334,7 @@ class MenuService extends BaseService {
   Map<String, List<Recipe>> _generateFromParsedInternal(
     ParsedMenuRequest parsed,
     List<Recipe> allRecipes,
+    Set<String> recentlyUsedRecipeIds,
   ) {
     final globallyOk =
         allRecipes.where((r) => _passesGlobals(r, parsed)).toList();
@@ -278,7 +361,13 @@ class MenuService extends BaseService {
               !usedIds.contains(r.id))
           .toList();
       if (pool.isEmpty) continue;
-      final pick = _weightedSelect(pool, 1, rand, seasonTag: season);
+      final pick = _weightedSelect(
+        pool,
+        1,
+        rand,
+        seasonTag: season,
+        recentlyUsedIds: recentlyUsedRecipeIds,
+      );
       for (final r in pick) {
         usedIds.add(r.id);
         (result[pin.mealType] ??= []).add(r);
@@ -312,8 +401,13 @@ class MenuService extends BaseService {
         final subPool = slotPool
             .where((r) => _matchesConstraint(r, sub) && !usedIds.contains(r.id))
             .toList();
-        var selected =
-            _weightedSelect(subPool, sub.count, rand, seasonTag: season);
+        var selected = _weightedSelect(
+          subPool,
+          sub.count,
+          rand,
+          seasonTag: season,
+          recentlyUsedIds: recentlyUsedRecipeIds,
+        );
         // Soft constraints fall back to unconstrained pool when empty.
         if (selected.isEmpty && sub.isSoft) {
           selected = _weightedSelect(
@@ -321,6 +415,7 @@ class MenuService extends BaseService {
             sub.count,
             rand,
             seasonTag: season,
+            recentlyUsedIds: recentlyUsedRecipeIds,
           );
         }
         for (final r in selected) {
@@ -335,6 +430,7 @@ class MenuService extends BaseService {
         rand,
         usedIds: usedIds,
         seasonTag: season,
+        recentlyUsedIds: recentlyUsedRecipeIds,
       );
       for (final r in diversified) {
         usedIds.add(r.id);

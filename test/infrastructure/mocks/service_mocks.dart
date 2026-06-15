@@ -104,8 +104,9 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
   @override
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String input,
-    List<Recipe> allRecipes,
-  ) async {
+    List<Recipe> allRecipes, {
+    Set<String> recentlyUsedRecipeIds = const {},
+  }) async {
     if (_shouldThrowError) {
       throw Exception('Mock configured to throw error');
     }

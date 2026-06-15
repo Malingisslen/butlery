@@ -488,6 +488,157 @@ void main() {
       });
     });
 
+    group('Rating boost (BUT-1319)', () {
+      // No season tag so the season boost can't contaminate the comparison;
+      // both recipes are never-cooked (recency weight 90), identical except
+      // for rating. Tests the weight math directly, not the random draw.
+      Recipe rated({
+        required String id,
+        double? rating,
+        int? ratingCount,
+      }) {
+        final base = RecipeFactory.build(id: id, title: id, mealType: 'middag');
+        return Recipe(
+          core: base.core.copyWith(rating: rating, ratingCount: ratingCount),
+          type: base.type,
+        );
+      }
+
+      test('higher-rated recipe gets a strictly higher weight', () {
+        final high = rated(id: 'high', rating: 5.0, ratingCount: 40);
+        final low = rated(id: 'low', rating: 2.0, ratingCount: 40);
+
+        final highWeight =
+            MenuService.debugRecipeWeight(high, seasonTag: 'no_season');
+        final lowWeight =
+            MenuService.debugRecipeWeight(low, seasonTag: 'no_season');
+
+        expect(highWeight, greaterThan(lowWeight),
+            reason: '5-star should outweigh 2-star (same recency, no season)');
+      });
+
+      test('unrated recipe keeps a non-zero, un-penalized weight', () {
+        final unrated = rated(id: 'unrated', rating: null, ratingCount: 0);
+        final oneStar = rated(id: 'one_star', rating: 1.0, ratingCount: 10);
+
+        final unratedWeight =
+            MenuService.debugRecipeWeight(unrated, seasonTag: 'no_season');
+        final oneStarWeight =
+            MenuService.debugRecipeWeight(oneStar, seasonTag: 'no_season');
+
+        expect(unratedWeight, greaterThan(0),
+            reason: 'Unrated recipes must still be selectable');
+        // Unrated == multiplier 1.0; a 1-star recipe also maps to 1.0, so the
+        // unrated recipe is never penalized relative to the lowest rating.
+        expect(unratedWeight, equals(oneStarWeight),
+            reason: 'Unrated must not be worse than a 1-star recipe');
+      });
+
+      test('rating boost is gentle (never dominates recency)', () {
+        // A 5-star never-cooked recipe must not beat a never-cooked unrated
+        // one by more than the modest ceiling — boost is a nudge, not a takeover.
+        final fiveStar = rated(id: '5', rating: 5.0, ratingCount: 50);
+        final unrated = rated(id: 'u', rating: null, ratingCount: 0);
+
+        final fiveWeight =
+            MenuService.debugRecipeWeight(fiveStar, seasonTag: 'no_season');
+        final unratedWeight =
+            MenuService.debugRecipeWeight(unrated, seasonTag: 'no_season');
+
+        expect(fiveWeight / unratedWeight, lessThanOrEqualTo(1.4 + 1e-9),
+            reason: 'Max rating boost capped at 1.4x');
+      });
+    });
+
+    group('Recent-week dedup (BUT-1318)', () {
+      Recipe simple(String id) =>
+          RecipeFactory.build(id: id, title: id, mealType: 'middag');
+
+      test('recipe used last week is down-weighted vs an unused twin', () {
+        final used = simple('used');
+        final unused = simple('unused');
+
+        final usedWeight = MenuService.debugRecipeWeight(
+          used,
+          seasonTag: 'no_season',
+          recentlyUsedIds: {'used'},
+        );
+        final unusedWeight = MenuService.debugRecipeWeight(
+          unused,
+          seasonTag: 'no_season',
+          recentlyUsedIds: {'used'},
+        );
+
+        expect(usedWeight, lessThan(unusedWeight),
+            reason: 'Recently-used recipe must rotate out');
+        // Decayed, not zeroed — still has a chance if the pool is thin.
+        expect(usedWeight, greaterThan(0),
+            reason: 'Down-weight is a decay, not an exclusion');
+      });
+
+      test('no-history path leaves weights unchanged (full pool)', () {
+        final r = simple('r');
+
+        final withEmptyHistory = MenuService.debugRecipeWeight(
+          r,
+          seasonTag: 'no_season',
+          recentlyUsedIds: const {},
+        );
+        final withoutArg =
+            MenuService.debugRecipeWeight(r, seasonTag: 'no_season');
+
+        expect(withEmptyHistory, equals(withoutArg),
+            reason: 'Empty recent-use set must not change any weight');
+      });
+
+      test('generation with no history returns the full requested count',
+          () async {
+        final pool = List.generate(5, (i) => simple('r_$i'));
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 4)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'fyra middagar',
+        );
+
+        // No recentlyUsedRecipeIds passed → first-ever-menu path.
+        final menu =
+            await menuService.generateMenuFromParsedRequest(parsed, pool);
+        expect(menu['middag']?.length, equals(4),
+            reason: 'No history must not shrink the pool');
+      });
+
+      test('decay does not starve a thin pool (graceful fallback)', () async {
+        // Every recipe in the pool was used recently. Because decay keeps a
+        // non-zero weight, generation can still fill the menu rather than fail.
+        final pool = List.generate(4, (i) => simple('r_$i'));
+        final parsed = ParsedMenuRequest(
+          slotRequests: [
+            SlotRequest(
+                mealType: 'middag', subRequests: [RecipeConstraint(count: 4)]),
+          ],
+          globalAllergenAvoid: const {},
+          globalDietaryRequire: const {},
+          dayPins: const [],
+          trace: const ExtractionTrace(),
+          rawPrompt: 'fyra middagar',
+        );
+
+        final menu = await menuService.generateMenuFromParsedRequest(
+          parsed,
+          pool,
+          recentlyUsedRecipeIds: {'r_0', 'r_1', 'r_2', 'r_3'},
+        );
+        expect(menu['middag']?.length, equals(4),
+            reason: 'All-recent pool must still fill via decay, not exclude');
+      });
+    });
+
     group('Performance', () {
       test('should handle large recipe collections efficiently', () async {
         final largeList = List.generate(

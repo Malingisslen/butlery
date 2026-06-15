@@ -12,6 +12,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
@@ -57,6 +58,10 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       menuService: _menuService,
       recipeService: _recipeService,
       userService: ServiceLocator.get<UserService>(),
+      // BUT-1318: reuse the registered plan service to down-weight recipes
+      // used in the last 1-2 weeks. tryGet keeps construction safe in tests
+      // that don't register it (recent-use dedup is simply skipped then).
+      weeklyMenuPlanService: ServiceLocator.tryGet<WeeklyMenuPlanService>(),
       // BUT-1317 (safety): personal weekly-menu generation must respect the
       // user's tracked allergens/dietary prefs by default, mirroring the group
       // flow. Filtering reads userService.allergenPreferences and honors
