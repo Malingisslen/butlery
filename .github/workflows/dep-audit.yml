@@ -83,7 +83,7 @@ jobs:
       - name: Run OSV Scanner on pubspec.lock
         id: osv
         continue-on-error: true
-        uses: google/osv-scanner-action/osv-scanner-action@v2.3.5
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
             --lockfile=pubspec.lock
