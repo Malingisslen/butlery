@@ -169,8 +169,16 @@ class FirebaseIngredientRepository
         'Ingredient cache loaded: ${_cache.length} ingredients in ${stopwatch.elapsedMilliseconds}ms',
       );
     } catch (e, stack) {
+      // BUT-1331: degrade to an empty/stale cache instead of rethrowing.
+      // The global ingredients collection can be absent from Firestore's
+      // persistence cache on a cold offline start, where `.get()` throws
+      // `unavailable`. Rethrowing crashed every caller (cooking-mode
+      // substitution, tagging, import, auto-categorize). `_cacheLoadedAt`
+      // stays null here (it is set only after a successful fetch), so a later
+      // online call retries; any existing stale cache is preserved because
+      // `_cache.clear()` runs only after `.get()` succeeds. Lookups degrade to
+      // empty results rather than throwing.
       AppLogger.error('Failed to load ingredient cache: $e', stack);
-      rethrow;
     }
   }
 
