@@ -18,6 +18,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
@@ -61,8 +62,12 @@ void main() {
 
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: ChangeNotifierProvider<PantryViewModel>.value(
-            value: mockVm,
+          child: MultiProvider(
+            providers: [
+              ChangeNotifierProvider<PantryViewModel>.value(value: mockVm),
+              ChangeNotifierProvider<PantrySelectionManager>.value(
+                  value: PantrySelectionManager()),
+            ],
             child: PantryItemCard(item: item),
           ),
         ),

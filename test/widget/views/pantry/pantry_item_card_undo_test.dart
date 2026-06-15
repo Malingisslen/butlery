@@ -14,6 +14,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
 
@@ -47,8 +48,14 @@ void main() {
 
     await tester.pumpWidget(
       createLocalizedTestApp(
-        child: ChangeNotifierProvider<PantryViewModel>.value(
-          value: mockVm,
+        child: MultiProvider(
+          providers: [
+            ChangeNotifierProvider<PantryViewModel>.value(value: mockVm),
+            // BUT-948: the card now reads selection state; provide a real
+            // (empty) manager so the non-selection swipe path is exercised.
+            ChangeNotifierProvider<PantrySelectionManager>.value(
+                value: PantrySelectionManager()),
+          ],
           child: ListView(children: [PantryItemCard(item: item)]),
         ),
       ),

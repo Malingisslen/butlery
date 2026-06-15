@@ -156,6 +156,21 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String pantryItemsRemovedUndoMessage(int count) {
+    return '$count borttagna ur skafferiet';
+  }
+
+  @override
+  String pantrySelectedCount(int count) {
+    return '$count markerade';
+  }
+
+  @override
+  String a11yPantrySelectItem(String itemName) {
+    return '$itemName, tryck för att markera';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Välj plats i veckomenyn';
 
   @override

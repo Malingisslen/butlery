@@ -156,6 +156,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String pantryItemsRemovedUndoMessage(int count) {
+    return '$count removed from pantry';
+  }
+
+  @override
+  String pantrySelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String a11yPantrySelectItem(String itemName) {
+    return '$itemName, tap to select';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Pick a menu slot';
 
   @override

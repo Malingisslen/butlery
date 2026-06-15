@@ -14,6 +14,7 @@ import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
@@ -30,6 +31,8 @@ class PantryView extends StatefulWidget {
 
 class _PantryViewState extends State<PantryView> {
   late final PantryViewModel _vm;
+  // BUT-948: view-local selection state (mirrors the personal-tags pattern).
+  final PantrySelectionManager _selection = PantrySelectionManager();
 
   @override
   void initState() {
@@ -42,14 +45,18 @@ class _PantryViewState extends State<PantryView> {
 
   @override
   void dispose() {
+    _selection.dispose();
     _vm.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<PantryViewModel>.value(
-      value: _vm,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PantryViewModel>.value(value: _vm),
+        ChangeNotifierProvider<PantrySelectionManager>.value(value: _selection),
+      ],
       child: const _PantryViewContent(),
     );
   }
@@ -61,6 +68,7 @@ class _PantryViewContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PantryViewModel>();
+    final selection = context.watch<PantrySelectionManager>();
 
     return Stack(
       children: [
@@ -77,14 +85,58 @@ class _PantryViewContent extends StatelessWidget {
           ),
           builder: (context, items) => const _PantrySections(),
         ),
-        Positioned(
-          right: AppDimensions.spacingLg,
-          bottom: AppDimensions.spacingLg,
-          child: _PantryFab(
-            onPressed: () => _showAddSheet(context, viewModel),
+        // BUT-948: in selection mode a contextual bulk bar replaces the add FAB.
+        if (selection.isSelectionMode)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _PantryBulkBar(
+              count: selection.selectedCount,
+              onClose: selection.clearSelection,
+              onDelete: () => _deleteSelected(context, viewModel, selection),
+            ),
+          )
+        else
+          Positioned(
+            right: AppDimensions.spacingLg,
+            bottom: AppDimensions.spacingLg,
+            child: _PantryFab(
+              onPressed: () => _showAddSheet(context, viewModel),
+            ),
           ),
-        ),
       ],
+    );
+  }
+
+  /// BUT-948: bulk delete with a single undo snackbar (class-1 reversible).
+  /// Captures the removed items and localized strings before the await so the
+  /// undo can re-add them and no dead-context lookups happen post-clear.
+  Future<void> _deleteSelected(
+    BuildContext context,
+    PantryViewModel viewModel,
+    PantrySelectionManager selection,
+  ) async {
+    final ids = selection.selectedIds;
+    if (ids.isEmpty) return;
+    final removed = viewModel.items.where((i) => ids.contains(i.id)).toList();
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final message = context.l10n.pantryItemsRemovedUndoMessage(removed.length);
+    final undoLabel = context.l10n.commonUndo;
+
+    selection.clearSelection();
+    await viewModel.bulkRemoveItems(ids);
+
+    messenger?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: SnackBarAction(
+          label: undoLabel,
+          onPressed: () => viewModel.restoreItems(removed),
+        ),
+        duration: const Duration(seconds: 7),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -252,6 +304,61 @@ class _PantryFab extends StatelessWidget {
               color: cs.onPrimary,
               size: AppDimensions.iconSizeL,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// BUT-948: contextual bulk-action bar shown at the bottom while items are
+/// selected. Pantry has no app-bar of its own (it's a sub-tab), so the bulk
+/// actions live here instead of in a selection app-bar.
+class _PantryBulkBar extends StatelessWidget {
+  const _PantryBulkBar({
+    required this.count,
+    required this.onClose,
+    required this.onDelete,
+  });
+
+  final int count;
+  final VoidCallback onClose;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.primaryContainer,
+      elevation: 8,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: context.l10n.commonCancel,
+                color: cs.onPrimaryContainer,
+                onPressed: onClose,
+              ),
+              Expanded(
+                child: Text(
+                  context.l10n.pantrySelectedCount(count),
+                  style: AppTextStyles.titleSmall
+                      .copyWith(color: cs.onPrimaryContainer),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: count == 0 ? null : onDelete,
+                icon: const Icon(Icons.delete_outline),
+                label: Text(context.l10n.commonDelete),
+              ),
+            ],
           ),
         ),
       ),

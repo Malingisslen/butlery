@@ -147,6 +147,44 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
     );
   }
 
+  /// BUT-948: bulk delete for multi-select. Removes every id in one pass.
+  /// Class-1 reversible (like single swipe) — the view shows one snackbar whose
+  /// "Ångra" calls [restoreItems] with the captured items.
+  Future<void> bulkRemoveItems(Iterable<String> itemIds) async {
+    final userId = _currentUserId();
+    if (userId == null) return;
+    final ids = itemIds.toSet();
+    if (ids.isEmpty) return;
+
+    await executeAsyncVoid(
+      () async {
+        for (final id in ids) {
+          await _pantryService.removeItem(userId, id);
+        }
+        _items.removeWhere((i) => ids.contains(i.id));
+      },
+      errorPrefix: 'Kunde inte ta bort objekten',
+    );
+  }
+
+  /// BUT-948: bulk undo counterpart to [bulkRemoveItems] — re-persists each
+  /// removed item (each gets a fresh document ID, mirroring [restoreItem]).
+  Future<void> restoreItems(List<PantryItem> items) async {
+    final userId = _currentUserId();
+    if (userId == null || items.isEmpty) return;
+
+    await executeAsyncVoid(
+      () async {
+        final restored = <PantryItem>[];
+        for (final item in items) {
+          restored.add(await _pantryService.restoreItem(userId, item));
+        }
+        _items = [..._items, ...restored];
+      },
+      errorPrefix: 'Kunde inte återställa objekten',
+    );
+  }
+
   Future<void> updateItem(PantryItem item) async {
     final userId = _currentUserId();
     if (userId == null) return;

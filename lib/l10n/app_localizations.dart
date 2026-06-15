@@ -386,6 +386,24 @@ abstract class AppLocalizations {
   /// **'{name} borttagen ur skafferiet'**
   String pantryItemRemovedUndoMessage(String name);
 
+  /// BUT-948: snackbar after bulk multi-select delete of pantry items; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} borttagna ur skafferiet'**
+  String pantryItemsRemovedUndoMessage(int count);
+
+  /// BUT-948: count label in the pantry multi-select bulk-action bar.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} markerade'**
+  String pantrySelectedCount(int count);
+
+  /// BUT-948: screen-reader label for a pantry row while in multi-select mode.
+  ///
+  /// In sv, this message translates to:
+  /// **'{itemName}, tryck för att markera'**
+  String a11yPantrySelectItem(String itemName);
+
   /// BUT-1029: SlotPickerDialog header title.
   ///
   /// In sv, this message translates to:

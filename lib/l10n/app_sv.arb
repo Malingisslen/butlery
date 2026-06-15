@@ -63,6 +63,33 @@
       }
     }
   },
+  "pantryItemsRemovedUndoMessage": "{count} borttagna ur skafferiet",
+  "@pantryItemsRemovedUndoMessage": {
+    "description": "BUT-948: snackbar after bulk multi-select delete of pantry items; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pantrySelectedCount": "{count} markerade",
+  "@pantrySelectedCount": {
+    "description": "BUT-948: count label in the pantry multi-select bulk-action bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yPantrySelectItem": "{itemName}, tryck för att markera",
+  "@a11yPantrySelectItem": {
+    "description": "BUT-948: screen-reader label for a pantry row while in multi-select mode.",
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
   "slotPickerDialogTitle": "Välj plats i veckomenyn",
   "@slotPickerDialogTitle": {
     "description": "BUT-1029: SlotPickerDialog header title."
