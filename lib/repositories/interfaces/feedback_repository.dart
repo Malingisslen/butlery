@@ -7,6 +7,21 @@ abstract class FeedbackRepository {
   Future<void> saveFeedback(FeedbackEntry entry);
   Future<String> uploadScreenshot(String userId, Uint8List bytes);
 
+  /// Admin-only: stream feedback entries newest-first for the admin dashboard.
+  ///
+  /// Optionally filtered to a single [status]. [limit] bounds the result so
+  /// the inbox stays paginated as beta feedback accumulates. Access is
+  /// enforced by Firestore rules (`allow read: if isAdmin()`); non-admins
+  /// receive a permission-denied on the underlying query.
+  Stream<List<FeedbackEntry>> watchFeedback({
+    FeedbackStatus? status,
+    int limit = 50,
+  });
+
+  /// Admin-only: update the triage [status] of a feedback entry. Enforced by
+  /// Firestore rules (`allow update: if isAdmin()`).
+  Future<void> updateStatus(String id, FeedbackStatus status);
+
   /// Export all feedback submissions by [userId] for GDPR Article 20.
   ///
   /// Returns raw `{id, data}` shapes so the data-export pipeline can

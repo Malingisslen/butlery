@@ -62,6 +62,42 @@ void main() {
     });
   });
 
+  group('status', () {
+    test('defaults to newReport and serializes wire value "new"', () {
+      expect(_entry().status, FeedbackStatus.newReport);
+      expect(_entry().toMap()['status'], 'new');
+    });
+
+    test('serializes each status to its stable wire value', () {
+      expect(FeedbackStatus.newReport.wireName, 'new');
+      expect(FeedbackStatus.triaged.wireName, 'triaged');
+      expect(FeedbackStatus.resolved.wireName, 'resolved');
+    });
+
+    test('missing status field reads as newReport (lazy-compat)', () {
+      final restored = FeedbackEntry.fromMap({
+        'id': 'x',
+        'userId': 'u',
+        'category': 'bug',
+        'description': 'd',
+        'recentInteractions': <Map<String, dynamic>>[],
+        'createdAt': DateTime.utc(2026, 1, 1).toIso8601String(),
+      });
+      expect(restored.status, FeedbackStatus.newReport);
+    });
+
+    test('unknown status string falls back to newReport', () {
+      expect(FeedbackStatus.fromWire('bogus'), FeedbackStatus.newReport);
+    });
+
+    test('triaged status round-trips via toMap', () {
+      final restored = FeedbackEntry.fromMap(
+        {..._entry().toMap(), 'status': 'triaged'},
+      );
+      expect(restored.status, FeedbackStatus.triaged);
+    });
+  });
+
   group('fromMap', () {
     test('round-trips a full entry via toMap', () {
       final original = _entry(

@@ -9173,6 +9173,45 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackSendButton => 'Skicka';
 
   @override
+  String get adminLoginButton => 'Logga in';
+
+  @override
+  String get adminPasswordLabel => 'Lösenord';
+
+  @override
+  String get adminLoginFailed => 'Inloggning misslyckades';
+
+  @override
+  String get adminNotAuthorized => 'Du har inte behörighet till adminpanelen.';
+
+  @override
+  String get adminSignOut => 'Logga ut';
+
+  @override
+  String get adminFeedbackInboxTitle => 'Feedback';
+
+  @override
+  String get adminFeedbackEmpty => 'Ingen feedback än';
+
+  @override
+  String get adminFeedbackLoadMore => 'Ladda fler';
+
+  @override
+  String get adminFeedbackInteractions => 'Interaktioner';
+
+  @override
+  String get adminFeedbackFilterAll => 'Alla';
+
+  @override
+  String get adminFeedbackStatusNew => 'Ny';
+
+  @override
+  String get adminFeedbackStatusTriaged => 'Pågår';
+
+  @override
+  String get adminFeedbackStatusResolved => 'Klar';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

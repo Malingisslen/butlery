@@ -80,6 +80,33 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
   }
 
   @override
+  Stream<List<FeedbackEntry>> watchFeedback({
+    FeedbackStatus? status,
+    int limit = 50,
+  }) {
+    Query<Map<String, dynamic>> query =
+        collection.orderBy('createdAt', descending: true).limit(limit);
+    if (status != null) {
+      query = query.where('status', isEqualTo: status.wireName);
+    }
+    return query.snapshots().map(
+          (snapshot) => snapshot.docs.map(fromFirestore).toList(),
+        );
+  }
+
+  @override
+  Future<void> updateStatus(String id, FeedbackStatus status) async {
+    try {
+      requireCurrentUserId();
+      await collection.doc(id).update({'status': status.wireName});
+      AppLogger.info('Feedback $id status set to ${status.wireName}');
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update feedback status: $e', stackTrace);
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> exportFeedbackByUser(
     String userId, {
     int maxDocuments = 1000,

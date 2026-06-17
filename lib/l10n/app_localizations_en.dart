@@ -9154,6 +9154,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackSendButton => 'Send';
 
   @override
+  String get adminLoginButton => 'Log in';
+
+  @override
+  String get adminPasswordLabel => 'Password';
+
+  @override
+  String get adminLoginFailed => 'Login failed';
+
+  @override
+  String get adminNotAuthorized => 'You do not have access to the admin panel.';
+
+  @override
+  String get adminSignOut => 'Log out';
+
+  @override
+  String get adminFeedbackInboxTitle => 'Feedback';
+
+  @override
+  String get adminFeedbackEmpty => 'No feedback yet';
+
+  @override
+  String get adminFeedbackLoadMore => 'Load more';
+
+  @override
+  String get adminFeedbackInteractions => 'Interactions';
+
+  @override
+  String get adminFeedbackFilterAll => 'All';
+
+  @override
+  String get adminFeedbackStatusNew => 'New';
+
+  @override
+  String get adminFeedbackStatusTriaged => 'In progress';
+
+  @override
+  String get adminFeedbackStatusResolved => 'Resolved';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

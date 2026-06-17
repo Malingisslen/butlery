@@ -1,13 +1,14 @@
 /// Service handling beta feedback submission.
 
 import 'package:clock/clock.dart';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/version_info.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
@@ -68,7 +69,12 @@ class FeedbackService extends BaseService {
     }
   }
 
+  /// Builds a reproducible device descriptor for triage, e.g.
+  /// "android · app 1.4.2+318 · CET" or "web · app 1.4.2+318 · CET".
+  /// Reported unconditionally (no exceptions) so it never blocks a submission.
   String _buildDeviceInfo() {
-    return 'Flutter Web - ${clock.now().timeZoneName}';
+    final platform = kIsWeb ? 'web' : defaultTargetPlatform.name;
+    return '$platform · app ${VersionInfo.fullVersion} · '
+        '${clock.now().timeZoneName}';
   }
 }

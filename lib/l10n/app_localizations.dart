@@ -15489,6 +15489,84 @@ abstract class AppLocalizations {
   /// **'Skicka'**
   String get feedbackSendButton;
 
+  /// No description provided for @adminLoginButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in'**
+  String get adminLoginButton;
+
+  /// No description provided for @adminPasswordLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenord'**
+  String get adminPasswordLabel;
+
+  /// No description provided for @adminLoginFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning misslyckades'**
+  String get adminLoginFailed;
+
+  /// No description provided for @adminNotAuthorized.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet till adminpanelen.'**
+  String get adminNotAuthorized;
+
+  /// No description provided for @adminSignOut.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut'**
+  String get adminSignOut;
+
+  /// No description provided for @adminFeedbackInboxTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Feedback'**
+  String get adminFeedbackInboxTitle;
+
+  /// No description provided for @adminFeedbackEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen feedback än'**
+  String get adminFeedbackEmpty;
+
+  /// No description provided for @adminFeedbackLoadMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ladda fler'**
+  String get adminFeedbackLoadMore;
+
+  /// No description provided for @adminFeedbackInteractions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Interaktioner'**
+  String get adminFeedbackInteractions;
+
+  /// No description provided for @adminFeedbackFilterAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla'**
+  String get adminFeedbackFilterAll;
+
+  /// No description provided for @adminFeedbackStatusNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny'**
+  String get adminFeedbackStatusNew;
+
+  /// No description provided for @adminFeedbackStatusTriaged.
+  ///
+  /// In sv, this message translates to:
+  /// **'Pågår'**
+  String get adminFeedbackStatusTriaged;
+
+  /// No description provided for @adminFeedbackStatusResolved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klar'**
+  String get adminFeedbackStatusResolved;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

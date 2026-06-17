@@ -5,6 +5,29 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 /// Category of feedback being submitted.
 enum FeedbackCategory { bug, featureRequest, general }
 
+/// Triage state of a feedback entry, set by an admin in the dashboard.
+/// New submissions default to [newReport]; existing docs without the field
+/// read as [newReport] (lazy-compat, no backfill).
+///
+/// [wireName] is the persisted Firestore value ('new' | 'triaged' |
+/// 'resolved') — kept stable so it never depends on the Dart enum name.
+enum FeedbackStatus {
+  newReport('new'),
+  triaged('triaged'),
+  resolved('resolved');
+
+  const FeedbackStatus(this.wireName);
+
+  final String wireName;
+
+  static FeedbackStatus fromWire(String value) {
+    for (final status in FeedbackStatus.values) {
+      if (status.wireName == value) return status;
+    }
+    return FeedbackStatus.newReport;
+  }
+}
+
 /// A single feedback submission from a beta user.
 class FeedbackEntry {
   final String id;
@@ -16,6 +39,7 @@ class FeedbackEntry {
   final List<Map<String, dynamic>> recentInteractions;
   final DateTime createdAt;
   final String? deviceInfo;
+  final FeedbackStatus status;
 
   FeedbackEntry({
     required this.id,
@@ -27,6 +51,7 @@ class FeedbackEntry {
     required this.recentInteractions,
     required this.createdAt,
     this.deviceInfo,
+    this.status = FeedbackStatus.newReport,
   });
 
   Map<String, dynamic> toMap() => {
@@ -39,6 +64,7 @@ class FeedbackEntry {
         'recentInteractions': recentInteractions,
         'createdAt': createdAt.toIso8601String(),
         'deviceInfo': deviceInfo,
+        'status': status.wireName,
       };
 
   factory FeedbackEntry.fromMap(Map<String, dynamic> map) {
@@ -59,6 +85,9 @@ class FeedbackEntry {
       ),
       createdAt: SerializationUtils.safeRequiredDateTime(map, 'createdAt'),
       deviceInfo: SerializationUtils.safeNullableString(map, 'deviceInfo'),
+      status: FeedbackStatus.fromWire(
+        SerializationUtils.safeString(map, 'status', defaultValue: 'new'),
+      ),
     );
   }
 

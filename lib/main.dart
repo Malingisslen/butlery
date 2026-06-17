@@ -23,23 +23,9 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 // Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/firestore_bootstrap.dart';
-import 'package:butlery/core/bootstrap/stages/platform_stage.dart';
-import 'package:butlery/core/bootstrap/stages/core_stage.dart';
-import 'package:butlery/core/bootstrap/stages/content_stage.dart';
-import 'package:butlery/core/bootstrap/stages/social_stage.dart';
-import 'package:butlery/core/bootstrap/stages/ui_stage.dart';
 
-// DI modules
-import 'package:butlery/core/di/modules/core_module.dart';
-import 'package:butlery/core/di/modules/content_module.dart';
-import 'package:butlery/core/di/modules/social_module.dart';
-import 'package:butlery/core/di/modules/messaging_module.dart';
-import 'package:butlery/core/di/modules/collaboration_module.dart';
-import 'package:butlery/core/di/modules/performance_module.dart';
-import 'package:butlery/core/di/modules/ui_module.dart';
-import 'package:butlery/core/di/modules/search_module.dart';
-import 'package:butlery/core/di/modules/tagging_module.dart';
-import 'package:butlery/core/di/modules/pantry_module.dart';
+// DI modules + bootstrap stages (shared with admin_main.dart)
+import 'package:butlery/core/bootstrap/app_modules.dart';
 
 import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -170,28 +156,10 @@ Future<void> main() async {
 }
 
 Future<void> _initializeModularSystem() async {
-  // Create DI modules in dependency order
-  final modules = [
-    CoreModule(),
-    SearchModule(), // Search provider (Algolia/Firestore fallback)
-    TaggingModule(), // Automatic recipe tagging system
-    PantryModule(), // Skafferiet — user's pantry inventory
-    ContentModule(),
-    SocialModule(),
-    MessagingModule(),
-    CollaborationModule(),
-    PerformanceModule(),
-    UIModule(), // ViewModels and UI services
-  ];
-
-  // Create bootstrap stages
-  final stages = [
-    PlatformStage(),
-    CoreStage(),
-    ContentStage(),
-    SocialStage(),
-    UIStage(),
-  ];
+  // DI modules + bootstrap stages are built by the shared helper so the admin
+  // entry point (lib/admin_main.dart) can reuse the exact same set.
+  final modules = buildDiModules();
+  final stages = buildBootstrapStages();
 
   // Default Performance collection to disabled until consent (GDPR)
   await FirebasePerformance.instance.setPerformanceCollectionEnabled(false);

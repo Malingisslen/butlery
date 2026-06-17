@@ -1323,3 +1323,13 @@ The 4-test file for `ShoppingCheckoffPantryService.onItemCheckedOff` was assesse
 - **`failFirstGet` vs `failAll`:** the repo self-heals — any post-failure call retries because `_cacheLoadedAt` stays null on failure. So a "cache stays empty after failure" assertion needs `failAll:true` (every load fails); a "self-heal" assertion needs `failFirstGet:true` (fail once, then `forceRefresh()` populates). Don't assert emptiness with a single-shot failure firestore — call #2 (`count()`→`_ensureCacheLoaded`→`loadCache`) succeeds and repopulates, which looks like a test bug but is correct production behaviour.
 - **Intent-gate confirmed:** all 3 tests FAIL against a temporary `rethrow` (the `unavailable` exception propagates out of `findByName`); pass once swallowed. Verified by temp-reverting production then restoring. Genuinely gates the fix.
 - **File:** `test/unit/repositories/firebase_ingredient_repository_offline_degrade_test.dart`. Construction pattern reused from the sibling `firebase_ingredient_repository_cache_test.dart` (plain `FakeFirebaseFirestore` injected via the `firestore:` ctor param + mutable `_Clock` for TTL); only the throwing wrapper is new.
+
+### 2026-06-17 — FeedbackInboxViewModel + FeedbackEntry status tests [Pattern]
+**Review of new admin-inbox tests (21 tests, all green).**
+- `_FakeFeedbackRepository` is correctly a `Fake implements` (concrete bodies, no mocktail `when()`), not a Mock. Pattern is sound.
+- `Future.delayed(Duration.zero)` for draining the stream-listen microtask is acceptable per the 2026-05-23 Wave-14 entry — pumpEventQueue is flutter_test-coupled; fakeAsync adds unnecessary complexity for a single yield.
+- **FeedbackEntry status tests**: wire-name stability test asserts `.wireName` directly (not via toMap) for each enum value — this WILL catch a Dart enum rename. Correct layering.
+- **P2 gap identified (not blocking):** `_subscribe` `onError` handler calls `setError(err.toString())`. No test proves a stream error surfaces as `vm.error != null`. A refactor swallowing that error leaves admins with a silent empty list. Worth closing in a follow-up with: `repo.emit via addError + Future.delayed + expect(vm.error, isNotNull)`.
+- **P3 gaps (low priority):** `setStatusFilter(same value)` no-op guard (no re-subscribe); `start()` idempotency (second call is a no-op); `dispose` cancels subscription. All have production guards but no tests. Low priority because the guards are one-liners; only escalate if the VM grows complexity around these paths.
+- `canLoadMore` boundary test probes both sides (length == limit → true; length < limit → false). Correct.
+- `loadMore` limit-arithmetic test is the right level — asserts the parameter passed to the repo, not that more records appeared.
