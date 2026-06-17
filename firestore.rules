@@ -1971,8 +1971,15 @@ service cloud.firestore {
       // Users can submit their own feedback
       allow create: if isAuthenticated()
         && isCreatingOwnDocument();
-      // No read/update/delete for users — admin-only via console
-      allow read, update, delete: if false;
+      // Admins read all feedback for the admin dashboard inbox
+      allow read: if isAdmin();
+      // Admins may only change the triage `status` field — never rewrite the
+      // submission itself
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data)
+             .affectedKeys().hasOnly(['status']);
+      // Feedback is never deleted by clients
+      allow delete: if false;
     }
 
     // ========================================

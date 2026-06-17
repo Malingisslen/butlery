@@ -91,10 +91,15 @@ service firebase.storage {
       allow read: if request.auth != null;
     }
 
-    // Feedback screenshots - submitting user needs read for getDownloadURL()
+    // Feedback screenshots - submitting user needs read for getDownloadURL();
+    // admins read all of them in the dashboard inbox. Storage rules cannot
+    // query Firestore, so admin is recognised via the `admin` custom claim
+    // (kept in sync with the admins/{uid} collection by the syncAdminClaim
+    // Cloud Function).
     match /feedback/{userId}/{allPaths=**} {
       allow read: if request.auth != null
-        && request.auth.uid == userId;
+        && (request.auth.uid == userId
+            || request.auth.token.admin == true);
       allow write: if request.auth != null
         && request.auth.uid == userId
         && isValidImage()

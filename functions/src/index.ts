@@ -128,6 +128,9 @@ export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corr
 // Feedback Functions - Beta user feedback
 export { onFeedbackCreated } from "./feedback/on-feedback-created";
 
+// Admin identity: keep the `admin` custom claim in sync with admins/{uid}
+export { onAdminGranted, onAdminRevoked } from "./admin/sync-admin-claim";
+
 // Content Moderation - Report processing
 export { onReportCreated } from "./feedback/on-report-created";
 
