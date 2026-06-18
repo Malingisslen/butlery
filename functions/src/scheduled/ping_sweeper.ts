@@ -7,8 +7,10 @@
  * as a defence-in-depth backstop in case clients fail to clean up after
  * themselves.
  *
- * Required composite index (firestore.indexes.json):
- *   collectionGroup `pings` on (`expiresAt` ASC).
+ * Required single-field index (firestore.indexes.json fieldOverrides):
+ *   `pings`.`expiresAt` ASC at COLLECTION_GROUP scope. A single-field
+ *   collection-group query needs a fieldOverride, not a composite index —
+ *   Firestore rejects single-field entries in the composite `indexes` array.
  *
  * Region pinned via `setGlobalOptions` in index.ts.
  */

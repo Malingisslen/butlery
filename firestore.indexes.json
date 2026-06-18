@@ -68,6 +68,32 @@
       ]
     },
     {
+      "collectionGroup": "shared_menus",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedWith", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "sharedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "friend_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "toUserId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "sentAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "friend_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fromUserId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "sentAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "shared_content",
       "queryScope": "COLLECTION",
       "fields": [
@@ -292,10 +318,11 @@
       ]
     },
     {
-      "collectionGroup": "pings",
-      "queryScope": "COLLECTION_GROUP",
+      "collectionGroup": "notification_history",
+      "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "sentAt", "order": "DESCENDING" }
       ]
     },
     {
@@ -355,11 +382,10 @@
       ]
     },
     {
-      "collectionGroup": "notification_history",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "sentAt", "order": "DESCENDING" }
+      "collectionGroup": "pings",
+      "fieldPath": "expiresAt",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
       ]
     }
   ]
