@@ -1,0 +1,16 @@
+{
+  "projects": {},
+  "targets": {
+    "butlery-app-1": {
+      "hosting": {
+        "admin": [
+          "butlery-admin"
+        ],
+        "app": [
+          "butlery-app-1"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
