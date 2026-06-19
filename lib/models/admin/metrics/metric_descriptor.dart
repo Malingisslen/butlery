@@ -30,6 +30,11 @@ class MetricDescriptor {
   final String Function(AppLocalizations) label;
   final MetricCategory category;
   final MetricFormat format;
+
+  /// Per-column formats for a [MatrixMetric] (e.g. [number, number, percent]).
+  /// Falls back to [format] for any column not listed. Null = use [format]
+  /// for every column.
+  final List<MetricFormat>? columnFormats;
   final MetricThreshold? threshold;
   final DrilldownSpec? drilldown;
 
@@ -38,6 +43,7 @@ class MetricDescriptor {
     required this.label,
     required this.category,
     required this.format,
+    this.columnFormats,
     this.threshold,
     this.drilldown,
   });

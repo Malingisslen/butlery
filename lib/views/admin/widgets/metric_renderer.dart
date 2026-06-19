@@ -47,8 +47,12 @@ class MetricRenderer extends StatelessWidget {
           format: desc.format,
           rows: [for (final s in stages) (s.label, s.value)],
         ),
-      final MatrixMetric m =>
-        _MatrixTable(title: label, value: m, format: desc.format),
+      final MatrixMetric m => _MatrixTable(
+          title: label,
+          value: m,
+          format: desc.format,
+          columnFormats: desc.columnFormats,
+        ),
     };
   }
 }
@@ -116,11 +120,19 @@ class _MatrixTable extends StatelessWidget {
   final String title;
   final MatrixMetric value;
   final MetricFormat format;
+  final List<MetricFormat>? columnFormats;
   const _MatrixTable({
     required this.title,
     required this.value,
     required this.format,
+    this.columnFormats,
   });
+
+  MetricFormat _formatFor(int column) {
+    final formats = columnFormats;
+    if (formats != null && column < formats.length) return formats[column];
+    return format;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +174,7 @@ class _MatrixTable extends StatelessWidget {
                         style: AppTextStyles.metadataEmphasized)),
                     for (var c = 0; c < value.colLabels.length; c++)
                       DataCell(Text(
-                          formatMetricValue(value.cells[r][c], format),
+                          formatMetricValue(value.cells[r][c], _formatFor(c)),
                           style: AppTextStyles.bodyMedium)),
                   ]),
               ],

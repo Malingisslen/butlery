@@ -9418,6 +9418,66 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows which import paths users actually use — guides where improving import is worth it.';
 
   @override
+  String get metricImportDomainsWhat =>
+      'Number of recipe sites at least one import has been attempted from.';
+
+  @override
+  String get metricImportDomainsHow =>
+      'Counts domains in the import stats with at least one success or failure.';
+
+  @override
+  String get metricImportDomainsWhy =>
+      'Shows the breadth of where users pull recipes from.';
+
+  @override
+  String get metricImportSuccessWhat =>
+      'Total successful recipe imports, summed across all sites.';
+
+  @override
+  String get metricImportSuccessHow =>
+      'The sum of every site\'s success counter.';
+
+  @override
+  String get metricImportSuccessWhy =>
+      'The positive side of import health — how often it actually works.';
+
+  @override
+  String get metricImportFailureWhat =>
+      'Total failed recipe imports, summed across all sites.';
+
+  @override
+  String get metricImportFailureHow =>
+      'The sum of every site\'s failure counter.';
+
+  @override
+  String get metricImportFailureWhy =>
+      'A high number means users hit \'it didn\'t work\' — direct friction.';
+
+  @override
+  String get metricImportRateWhat =>
+      'The share of import attempts that succeed, overall.';
+
+  @override
+  String get metricImportRateHow =>
+      'Successes divided by total attempts (successes + failures), as a percent.';
+
+  @override
+  String get metricImportRateWhy =>
+      'The single most important import-health number; a low value is coloured as a warning.';
+
+  @override
+  String get metricImportTableWhat =>
+      'Per site: successes, failures and success rate — worst first.';
+
+  @override
+  String get metricImportTableHow =>
+      'Each row is a domain; the rate is its own successes divided by its total attempts.';
+
+  @override
+  String get metricImportTableWhy =>
+      'Points out exactly which sites the parser needs to get better at.';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

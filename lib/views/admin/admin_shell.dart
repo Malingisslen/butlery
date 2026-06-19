@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/views/admin/engagement_view.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
-import 'package:butlery/views/admin/import_health_view.dart';
+import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
-import 'package:butlery/views/admin/recipe_overview_view.dart';
 
 /// Top-level admin shell: a NavigationRail switching between the admin tools.
 /// Reached only after the admin gate in `admin_main.dart`.
@@ -20,14 +20,29 @@ class AdminShell extends StatefulWidget {
 class _AdminShellState extends State<AdminShell> {
   int _index = 0;
 
-  static const _pages = [
-    FeedbackInboxView(),
-    ImportHealthView(),
-    EngagementView(),
-    ParsingDetailsView(),
-    RecipeOverviewView(),
-    OpsLogView(),
-  ];
+  // Not const: the registry-driven tabs (MetricTabView) carry a closure for
+  // their localized title, so the list is built per render. Migrating tabs are
+  // swapped to MetricTabView one at a time (Phase 1).
+  List<Widget> get _pages => [
+        const FeedbackInboxView(),
+        MetricTabView(
+          title: (l) => l.adminImportTitle,
+          keys: const [
+            MetricKey.importDomains,
+            MetricKey.importSuccess,
+            MetricKey.importFailure,
+            MetricKey.importSuccessRate,
+            MetricKey.importDomainTable,
+          ],
+        ),
+        const EngagementView(),
+        const ParsingDetailsView(),
+        MetricTabView(
+          title: (l) => l.adminRecipesTitle,
+          keys: const [MetricKey.recipeTotal, MetricKey.recipeByMethod],
+        ),
+        const OpsLogView(),
+      ];
 
   @override
   Widget build(BuildContext context) {

@@ -9438,6 +9438,64 @@ class AppLocalizationsSv extends AppLocalizations {
       'Visar vilka importvägar användarna faktiskt använder — styr var det är värt att förbättra importen.';
 
   @override
+  String get metricImportDomainsWhat =>
+      'Antal receptsajter som det gjorts minst ett importförsök från.';
+
+  @override
+  String get metricImportDomainsHow =>
+      'Räknar domäner i importstatistiken som har minst ett lyckat eller misslyckat försök.';
+
+  @override
+  String get metricImportDomainsWhy =>
+      'Visar bredden på var användarna hämtar recept ifrån.';
+
+  @override
+  String get metricImportSuccessWhat =>
+      'Totalt antal lyckade receptimporter, summerat över alla sajter.';
+
+  @override
+  String get metricImportSuccessHow => 'Summan av varje sajts lyckade-räknare.';
+
+  @override
+  String get metricImportSuccessWhy =>
+      'Den positiva sidan av importhälsan — hur ofta det faktiskt fungerar.';
+
+  @override
+  String get metricImportFailureWhat =>
+      'Totalt antal misslyckade receptimporter, summerat över alla sajter.';
+
+  @override
+  String get metricImportFailureHow =>
+      'Summan av varje sajts misslyckade-räknare.';
+
+  @override
+  String get metricImportFailureWhy =>
+      'Hög siffra betyder att användare stöter på \'det gick inte\' — direkt friktion.';
+
+  @override
+  String get metricImportRateWhat => 'Andelen importförsök som lyckas, totalt.';
+
+  @override
+  String get metricImportRateHow =>
+      'Lyckade delat med totala försök (lyckade + misslyckade), i procent.';
+
+  @override
+  String get metricImportRateWhy =>
+      'Den enskilt viktigaste hälsosiffran för importen; lågt värde färgas varnande.';
+
+  @override
+  String get metricImportTableWhat =>
+      'Per sajt: lyckade, misslyckade och andel lyckade — sämst överst.';
+
+  @override
+  String get metricImportTableHow =>
+      'Varje rad är en domän; andelen är dess egna lyckade delat med dess totala försök.';
+
+  @override
+  String get metricImportTableWhy =>
+      'Pekar ut exakt vilka sajter avläsaren behöver bli bättre på.';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

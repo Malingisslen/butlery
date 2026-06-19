@@ -479,6 +479,7 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<MetricsAssembler>(
         () => MetricsAssembler([
           RecipeCategoryFetcher(container<RecipeStatsRepository>()),
+          ImportCategoryFetcher(container<SiteConfigRepository>()),
         ]),
       );
 

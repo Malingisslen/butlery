@@ -21,9 +21,21 @@ enum MetricCategory {
 enum MetricKey {
   // recipes
   recipeTotal,
-  recipeByMethod;
+  recipeByMethod,
+  // import health
+  importDomains,
+  importSuccess,
+  importFailure,
+  importSuccessRate,
+  importDomainTable;
 
   MetricCategory get category => switch (this) {
         recipeTotal || recipeByMethod => MetricCategory.recipes,
+        importDomains ||
+        importSuccess ||
+        importFailure ||
+        importSuccessRate ||
+        importDomainTable =>
+          MetricCategory.importHealth,
       };
 }

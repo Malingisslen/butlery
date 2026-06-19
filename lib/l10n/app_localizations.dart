@@ -16005,6 +16005,96 @@ abstract class AppLocalizations {
   /// **'Visar vilka importvägar användarna faktiskt använder — styr var det är värt att förbättra importen.'**
   String get metricRecipeByMethodWhy;
 
+  /// No description provided for @metricImportDomainsWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal receptsajter som det gjorts minst ett importförsök från.'**
+  String get metricImportDomainsWhat;
+
+  /// No description provided for @metricImportDomainsHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknar domäner i importstatistiken som har minst ett lyckat eller misslyckat försök.'**
+  String get metricImportDomainsHow;
+
+  /// No description provided for @metricImportDomainsWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar bredden på var användarna hämtar recept ifrån.'**
+  String get metricImportDomainsWhy;
+
+  /// No description provided for @metricImportSuccessWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt antal lyckade receptimporter, summerat över alla sajter.'**
+  String get metricImportSuccessWhat;
+
+  /// No description provided for @metricImportSuccessHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Summan av varje sajts lyckade-räknare.'**
+  String get metricImportSuccessHow;
+
+  /// No description provided for @metricImportSuccessWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den positiva sidan av importhälsan — hur ofta det faktiskt fungerar.'**
+  String get metricImportSuccessWhy;
+
+  /// No description provided for @metricImportFailureWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt antal misslyckade receptimporter, summerat över alla sajter.'**
+  String get metricImportFailureWhat;
+
+  /// No description provided for @metricImportFailureHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Summan av varje sajts misslyckade-räknare.'**
+  String get metricImportFailureHow;
+
+  /// No description provided for @metricImportFailureWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hög siffra betyder att användare stöter på \'det gick inte\' — direkt friktion.'**
+  String get metricImportFailureWhy;
+
+  /// No description provided for @metricImportRateWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Andelen importförsök som lyckas, totalt.'**
+  String get metricImportRateWhat;
+
+  /// No description provided for @metricImportRateHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckade delat med totala försök (lyckade + misslyckade), i procent.'**
+  String get metricImportRateHow;
+
+  /// No description provided for @metricImportRateWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den enskilt viktigaste hälsosiffran för importen; lågt värde färgas varnande.'**
+  String get metricImportRateWhy;
+
+  /// No description provided for @metricImportTableWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Per sajt: lyckade, misslyckade och andel lyckade — sämst överst.'**
+  String get metricImportTableWhat;
+
+  /// No description provided for @metricImportTableHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varje rad är en domän; andelen är dess egna lyckade delat med dess totala försök.'**
+  String get metricImportTableHow;
+
+  /// No description provided for @metricImportTableWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Pekar ut exakt vilka sajter avläsaren behöver bli bättre på.'**
+  String get metricImportTableWhy;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

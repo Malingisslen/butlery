@@ -14,4 +14,29 @@ final Map<MetricKey, MetricExplanation> explanations = Map.unmodifiable({
     howCalculated: (l) => l.metricRecipeByMethodHow,
     whyImportant: (l) => l.metricRecipeByMethodWhy,
   ),
+  MetricKey.importDomains: MetricExplanation(
+    whatIsIt: (l) => l.metricImportDomainsWhat,
+    howCalculated: (l) => l.metricImportDomainsHow,
+    whyImportant: (l) => l.metricImportDomainsWhy,
+  ),
+  MetricKey.importSuccess: MetricExplanation(
+    whatIsIt: (l) => l.metricImportSuccessWhat,
+    howCalculated: (l) => l.metricImportSuccessHow,
+    whyImportant: (l) => l.metricImportSuccessWhy,
+  ),
+  MetricKey.importFailure: MetricExplanation(
+    whatIsIt: (l) => l.metricImportFailureWhat,
+    howCalculated: (l) => l.metricImportFailureHow,
+    whyImportant: (l) => l.metricImportFailureWhy,
+  ),
+  MetricKey.importSuccessRate: MetricExplanation(
+    whatIsIt: (l) => l.metricImportRateWhat,
+    howCalculated: (l) => l.metricImportRateHow,
+    whyImportant: (l) => l.metricImportRateWhy,
+  ),
+  MetricKey.importDomainTable: MetricExplanation(
+    whatIsIt: (l) => l.metricImportTableWhat,
+    howCalculated: (l) => l.metricImportTableHow,
+    whyImportant: (l) => l.metricImportTableWhy,
+  ),
 });

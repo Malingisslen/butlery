@@ -4,7 +4,9 @@ import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/models/admin/metrics/resolvers.dart';
 import 'package:butlery/models/admin/recipe_stats.dart';
+import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
+import 'package:butlery/repositories/site_config_repository.dart';
 
 /// Fetches one category's raw data slice. The adapter over an existing admin
 /// repository — repositories are wrapped, not rewritten.
@@ -22,6 +24,17 @@ class RecipeCategoryFetcher implements CategoryFetcher {
 
   @override
   Future<Object> fetch() => _repository.getRecipeStats();
+}
+
+class ImportCategoryFetcher implements CategoryFetcher {
+  final SiteConfigRepository _repository;
+  ImportCategoryFetcher(this._repository);
+
+  @override
+  MetricCategory get category => MetricCategory.importHealth;
+
+  @override
+  Future<Object> fetch() => _repository.getAllConfigs();
 }
 
 /// Assembles [InsightsData] by fetching ONLY the categories whose metrics are
@@ -72,5 +85,6 @@ class MetricsAssembler {
   /// Build the snapshot from cached slices. Grows one field per migrated tab.
   InsightsData _assemble() => InsightsData(
         recipes: _cache[MetricCategory.recipes] as RecipeStats?,
+        importConfigs: _cache[MetricCategory.importHealth] as List<SiteConfig>?,
       );
 }

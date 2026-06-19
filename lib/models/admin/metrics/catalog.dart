@@ -16,4 +16,40 @@ final Map<MetricKey, MetricDescriptor> catalog = Map.unmodifiable({
     category: MetricCategory.recipes,
     format: MetricFormat.number,
   ),
+  MetricKey.importDomains: MetricDescriptor(
+    key: MetricKey.importDomains,
+    label: (l10n) => l10n.adminImportSummaryDomains,
+    category: MetricCategory.importHealth,
+    format: MetricFormat.number,
+  ),
+  MetricKey.importSuccess: MetricDescriptor(
+    key: MetricKey.importSuccess,
+    label: (l10n) => l10n.adminImportSummarySuccess,
+    category: MetricCategory.importHealth,
+    format: MetricFormat.number,
+  ),
+  MetricKey.importFailure: MetricDescriptor(
+    key: MetricKey.importFailure,
+    label: (l10n) => l10n.adminImportSummaryFailure,
+    category: MetricCategory.importHealth,
+    format: MetricFormat.number,
+  ),
+  MetricKey.importSuccessRate: MetricDescriptor(
+    key: MetricKey.importSuccessRate,
+    label: (l10n) => l10n.adminImportSummaryRate,
+    category: MetricCategory.importHealth,
+    format: MetricFormat.percent,
+    threshold: const MetricThreshold(warnBelow: 90, badBelow: 75),
+  ),
+  MetricKey.importDomainTable: MetricDescriptor(
+    key: MetricKey.importDomainTable,
+    label: (l10n) => l10n.adminImportColDomain,
+    category: MetricCategory.importHealth,
+    format: MetricFormat.number,
+    columnFormats: const [
+      MetricFormat.number,
+      MetricFormat.number,
+      MetricFormat.percent,
+    ],
+  ),
 });

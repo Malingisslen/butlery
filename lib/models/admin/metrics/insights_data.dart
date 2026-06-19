@@ -1,4 +1,5 @@
 import 'package:butlery/models/admin/recipe_stats.dart';
+import 'package:butlery/models/parsing/site_config.dart';
 
 /// A passive, partially-populated snapshot of already-fetched admin data for a
 /// time range. The [MetricsAssembler] fills only the category slices whose
@@ -10,5 +11,8 @@ import 'package:butlery/models/admin/recipe_stats.dart';
 class InsightsData {
   final RecipeStats? recipes;
 
-  const InsightsData({this.recipes});
+  /// All site-config rollups (per-domain cumulative success/failure counts).
+  final List<SiteConfig>? importConfigs;
+
+  const InsightsData({this.recipes, this.importConfigs});
 }
