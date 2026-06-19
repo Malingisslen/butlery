@@ -97,6 +97,7 @@ dependencies:
   archive: ^3.6.1
   http_certificate_pinning: 3.0.1  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
   in_app_review: ^2.0.11            # BUT-678: prompt happy users for store reviews
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

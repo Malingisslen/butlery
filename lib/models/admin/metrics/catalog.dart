@@ -15,6 +15,7 @@ final Map<MetricKey, MetricDescriptor> catalog = Map.unmodifiable({
     label: (l10n) => l10n.adminRecipesColMethod,
     category: MetricCategory.recipes,
     format: MetricFormat.number,
+    chart: MetricChart.bar,
   ),
   MetricKey.importDomains: MetricDescriptor(
     key: MetricKey.importDomains,
@@ -81,5 +82,6 @@ final Map<MetricKey, MetricDescriptor> catalog = Map.unmodifiable({
     label: (l10n) => l10n.adminEngagementColDate,
     category: MetricCategory.engagement,
     format: MetricFormat.number,
+    chart: MetricChart.line,
   ),
 });

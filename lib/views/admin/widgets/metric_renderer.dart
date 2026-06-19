@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/admin/widgets/admin_metric_info_button.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
+import 'package:butlery/views/admin/widgets/metric_charts.dart';
 
 /// Renders one resolved metric by its [MetricValue] kind. The `switch` is
 /// exhaustive over the sealed type — adding a 6th kind is a compile error here,
@@ -35,11 +36,17 @@ class MetricRenderer extends StatelessWidget {
           value: formatMetricValue(v, desc.format),
           action: info,
         ),
-      BreakdownMetric(rows: final rows) => _LabelValueTable(
-          title: label,
-          format: desc.format,
-          action: info,
-          rows: [for (final r in rows) (r.label, r.value)],
+      BreakdownMetric(rows: final rows) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (desc.chart == MetricChart.bar) MetricBarChart(rows: rows),
+            _LabelValueTable(
+              title: label,
+              format: desc.format,
+              action: info,
+              rows: [for (final r in rows) (r.label, r.value)],
+            ),
+          ],
         ),
       SeriesMetric(points: final points) => _LabelValueTable(
           title: label,
@@ -53,12 +60,18 @@ class MetricRenderer extends StatelessWidget {
           action: info,
           rows: [for (final s in stages) (s.label, s.value)],
         ),
-      final MatrixMetric m => _MatrixTable(
-          title: label,
-          value: m,
-          format: desc.format,
-          columnFormats: desc.columnFormats,
-          action: info,
+      final MatrixMetric m => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (desc.chart == MetricChart.line) MetricLineChart(value: m),
+            _MatrixTable(
+              title: label,
+              value: m,
+              format: desc.format,
+              columnFormats: desc.columnFormats,
+              action: info,
+            ),
+          ],
         ),
     };
   }

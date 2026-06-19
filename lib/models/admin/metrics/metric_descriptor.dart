@@ -6,6 +6,11 @@ import 'package:butlery/models/admin/metrics/metric_key.dart';
 /// How a metric's value is formatted for display.
 enum MetricFormat { number, percent, duration, currency }
 
+/// Optional chart shown above a metric's table. `none` = table only; `bar` =
+/// one bar per breakdown row; `line` = one line per matrix column over its rows
+/// (a time series). The table always remains below for exact values.
+enum MetricChart { none, bar, line }
+
 /// Colour-band thresholds for a scalar (e.g. import success-rate). Pure data —
 /// the renderer maps a band to a theme colour, so no colours live here.
 class MetricThreshold {
@@ -38,6 +43,9 @@ class MetricDescriptor {
   final MetricThreshold? threshold;
   final DrilldownSpec? drilldown;
 
+  /// Chart to show above the table (default none).
+  final MetricChart chart;
+
   const MetricDescriptor({
     required this.key,
     required this.label,
@@ -46,6 +54,7 @@ class MetricDescriptor {
     this.columnFormats,
     this.threshold,
     this.drilldown,
+    this.chart = MetricChart.none,
   });
 }
 
