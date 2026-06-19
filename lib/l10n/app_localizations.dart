@@ -15567,6 +15567,84 @@ abstract class AppLocalizations {
   /// **'Klar'**
   String get adminFeedbackStatusResolved;
 
+  /// No description provided for @adminRefresh.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera'**
+  String get adminRefresh;
+
+  /// No description provided for @adminNavFeedback.
+  ///
+  /// In sv, this message translates to:
+  /// **'Feedback'**
+  String get adminNavFeedback;
+
+  /// No description provided for @adminNavImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importhälsa'**
+  String get adminNavImport;
+
+  /// No description provided for @adminImportTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importhälsa'**
+  String get adminImportTitle;
+
+  /// No description provided for @adminImportEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen importdata än'**
+  String get adminImportEmpty;
+
+  /// No description provided for @adminImportColDomain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Domän'**
+  String get adminImportColDomain;
+
+  /// No description provided for @adminImportColSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckade'**
+  String get adminImportColSuccess;
+
+  /// No description provided for @adminImportColFailure.
+  ///
+  /// In sv, this message translates to:
+  /// **'Misslyckade'**
+  String get adminImportColFailure;
+
+  /// No description provided for @adminImportColRate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Andel'**
+  String get adminImportColRate;
+
+  /// No description provided for @adminImportSummaryDomains.
+  ///
+  /// In sv, this message translates to:
+  /// **'Domäner'**
+  String get adminImportSummaryDomains;
+
+  /// No description provided for @adminImportSummarySuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckade'**
+  String get adminImportSummarySuccess;
+
+  /// No description provided for @adminImportSummaryFailure.
+  ///
+  /// In sv, this message translates to:
+  /// **'Misslyckade'**
+  String get adminImportSummaryFailure;
+
+  /// No description provided for @adminImportSummaryRate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Andel lyckade'**
+  String get adminImportSummaryRate;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

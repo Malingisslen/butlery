@@ -9212,6 +9212,45 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminFeedbackStatusResolved => 'Klar';
 
   @override
+  String get adminRefresh => 'Uppdatera';
+
+  @override
+  String get adminNavFeedback => 'Feedback';
+
+  @override
+  String get adminNavImport => 'Importhälsa';
+
+  @override
+  String get adminImportTitle => 'Importhälsa';
+
+  @override
+  String get adminImportEmpty => 'Ingen importdata än';
+
+  @override
+  String get adminImportColDomain => 'Domän';
+
+  @override
+  String get adminImportColSuccess => 'Lyckade';
+
+  @override
+  String get adminImportColFailure => 'Misslyckade';
+
+  @override
+  String get adminImportColRate => 'Andel';
+
+  @override
+  String get adminImportSummaryDomains => 'Domäner';
+
+  @override
+  String get adminImportSummarySuccess => 'Lyckade';
+
+  @override
+  String get adminImportSummaryFailure => 'Misslyckade';
+
+  @override
+  String get adminImportSummaryRate => 'Andel lyckade';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

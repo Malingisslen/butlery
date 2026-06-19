@@ -311,6 +311,27 @@ class SiteConfigRepository {
     return null;
   }
 
+  /// Get every site config in the collection, including auto-created stat-only
+  /// docs that lack `isSupported`/selectors (these are written by the parse
+  /// pipeline and carry success/failure counts). Unordered — callers sort
+  /// client-side. Used by the admin import-health dashboard.
+  Future<List<SiteConfig>> getAllConfigs({int limit = 200}) async {
+    try {
+      final snapshot = await _collection.limit(limit).get();
+      return snapshot.docs.map((doc) {
+        final config = SiteConfig.fromFirestore(doc.data());
+        // Stat-only docs written by the parse pipeline carry no `domain`
+        // field — the domain is the doc id. Backfill it so the UI isn't blank.
+        return config.domain.isEmpty ? config.copyWith(domain: doc.id) : config;
+      }).toList();
+    } catch (e) {
+      AppLogger.warning(
+        'SiteConfigRepository: Failed to load all configs: $e',
+      );
+      return [];
+    }
+  }
+
   /// Get all supported site configs.
   Future<List<SiteConfig>> getSupportedConfigs() async {
     try {

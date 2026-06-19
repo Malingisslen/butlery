@@ -28,7 +28,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/views/admin/feedback_inbox_view.dart';
+import 'package:butlery/views/admin/admin_shell.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 Future<void> main() async {
@@ -118,7 +118,7 @@ class _AdminRootState extends State<_AdminRoot> {
               return Scaffold(body: StateWidget.loading());
             }
             if (snapshot.data ?? false) {
-              return const FeedbackInboxView();
+              return const AdminShell();
             }
             return _AdminNotAuthorized(onSignOut: _authService.signOut);
           },

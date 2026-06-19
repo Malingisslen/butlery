@@ -9193,6 +9193,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminFeedbackStatusResolved => 'Resolved';
 
   @override
+  String get adminRefresh => 'Refresh';
+
+  @override
+  String get adminNavFeedback => 'Feedback';
+
+  @override
+  String get adminNavImport => 'Import health';
+
+  @override
+  String get adminImportTitle => 'Import health';
+
+  @override
+  String get adminImportEmpty => 'No import data yet';
+
+  @override
+  String get adminImportColDomain => 'Domain';
+
+  @override
+  String get adminImportColSuccess => 'Success';
+
+  @override
+  String get adminImportColFailure => 'Failed';
+
+  @override
+  String get adminImportColRate => 'Rate';
+
+  @override
+  String get adminImportSummaryDomains => 'Domains';
+
+  @override
+  String get adminImportSummarySuccess => 'Successful';
+
+  @override
+  String get adminImportSummaryFailure => 'Failed';
+
+  @override
+  String get adminImportSummaryRate => 'Success rate';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override
