@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/admin/engagement_view.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/import_health_view.dart';
+import 'package:butlery/views/admin/parsing_details_view.dart';
 
 /// Top-level admin shell: a NavigationRail switching between the admin tools.
 /// Reached only after the admin gate in `admin_main.dart`.
@@ -21,6 +22,7 @@ class _AdminShellState extends State<AdminShell> {
     FeedbackInboxView(),
     ImportHealthView(),
     EngagementView(),
+    ParsingDetailsView(),
   ];
 
   @override
@@ -48,6 +50,11 @@ class _AdminShellState extends State<AdminShell> {
                 icon: const Icon(Icons.people_outline),
                 selectedIcon: const Icon(Icons.people),
                 label: Text(l10n.adminNavEngagement),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.rule_outlined),
+                selectedIcon: const Icon(Icons.rule),
+                label: Text(l10n.adminNavParsing),
               ),
             ],
           ),

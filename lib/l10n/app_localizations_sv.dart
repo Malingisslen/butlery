@@ -9306,6 +9306,48 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminEngagementColShopped => 'Handlat';
 
   @override
+  String get adminNavParsing => 'Parsing-detaljer';
+
+  @override
+  String get adminParsingTitle => 'Parsing-detaljer';
+
+  @override
+  String get adminParsingEmpty => 'Inga korrigeringar än';
+
+  @override
+  String get adminParsingTotal => 'Korrigeringar';
+
+  @override
+  String get adminParsingDomains => 'Domäner';
+
+  @override
+  String get adminParsingTopDomain => 'Mest rättad';
+
+  @override
+  String get adminParsingColDomain => 'Domän';
+
+  @override
+  String get adminParsingColCount => 'Korrigeringar';
+
+  @override
+  String get adminParsingColIssue => 'Vanligaste fel';
+
+  @override
+  String get adminParsingIssueTitle => 'Titel';
+
+  @override
+  String get adminParsingIssuePortions => 'Portioner';
+
+  @override
+  String get adminParsingIssueTime => 'Tid';
+
+  @override
+  String get adminParsingIssueIngredients => 'Ingredienser';
+
+  @override
+  String get adminParsingIssueInstructions => 'Instruktioner';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

@@ -9286,6 +9286,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEngagementColShopped => 'Shopped';
 
   @override
+  String get adminNavParsing => 'Parsing details';
+
+  @override
+  String get adminParsingTitle => 'Parsing details';
+
+  @override
+  String get adminParsingEmpty => 'No corrections yet';
+
+  @override
+  String get adminParsingTotal => 'Corrections';
+
+  @override
+  String get adminParsingDomains => 'Domains';
+
+  @override
+  String get adminParsingTopDomain => 'Most corrected';
+
+  @override
+  String get adminParsingColDomain => 'Domain';
+
+  @override
+  String get adminParsingColCount => 'Corrections';
+
+  @override
+  String get adminParsingColIssue => 'Top issue';
+
+  @override
+  String get adminParsingIssueTitle => 'Title';
+
+  @override
+  String get adminParsingIssuePortions => 'Portions';
+
+  @override
+  String get adminParsingIssueTime => 'Time';
+
+  @override
+  String get adminParsingIssueIngredients => 'Ingredients';
+
+  @override
+  String get adminParsingIssueInstructions => 'Instructions';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

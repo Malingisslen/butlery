@@ -15753,6 +15753,90 @@ abstract class AppLocalizations {
   /// **'Handlat'**
   String get adminEngagementColShopped;
 
+  /// No description provided for @adminNavParsing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Parsing-detaljer'**
+  String get adminNavParsing;
+
+  /// No description provided for @adminParsingTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Parsing-detaljer'**
+  String get adminParsingTitle;
+
+  /// No description provided for @adminParsingEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga korrigeringar än'**
+  String get adminParsingEmpty;
+
+  /// No description provided for @adminParsingTotal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Korrigeringar'**
+  String get adminParsingTotal;
+
+  /// No description provided for @adminParsingDomains.
+  ///
+  /// In sv, this message translates to:
+  /// **'Domäner'**
+  String get adminParsingDomains;
+
+  /// No description provided for @adminParsingTopDomain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mest rättad'**
+  String get adminParsingTopDomain;
+
+  /// No description provided for @adminParsingColDomain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Domän'**
+  String get adminParsingColDomain;
+
+  /// No description provided for @adminParsingColCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Korrigeringar'**
+  String get adminParsingColCount;
+
+  /// No description provided for @adminParsingColIssue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vanligaste fel'**
+  String get adminParsingColIssue;
+
+  /// No description provided for @adminParsingIssueTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel'**
+  String get adminParsingIssueTitle;
+
+  /// No description provided for @adminParsingIssuePortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner'**
+  String get adminParsingIssuePortions;
+
+  /// No description provided for @adminParsingIssueTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid'**
+  String get adminParsingIssueTime;
+
+  /// No description provided for @adminParsingIssueIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get adminParsingIssueIngredients;
+
+  /// No description provided for @adminParsingIssueInstructions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktioner'**
+  String get adminParsingIssueInstructions;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:
