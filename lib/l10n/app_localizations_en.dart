@@ -9307,6 +9307,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminParsingTopDomain => 'Most corrected';
 
   @override
+  String get adminParsingHelp =>
+      'Shows what the recipe parser most often gets wrong per site — a complement to Import health, which shows which sites fail.';
+
+  @override
+  String get adminOpsHelp =>
+      'Recent runs of the nightly cleanup jobs. Sparse pre-launch; the analytics jobs don\'t log their runs here yet.';
+
+  @override
   String get adminParsingColDomain => 'Domain';
 
   @override

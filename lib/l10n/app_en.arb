@@ -6161,6 +6161,8 @@
   "adminParsingTotal": "Corrections",
   "adminParsingDomains": "Domains",
   "adminParsingTopDomain": "Most corrected",
+  "adminParsingHelp": "Shows what the recipe parser most often gets wrong per site — a complement to Import health, which shows which sites fail.",
+  "adminOpsHelp": "Recent runs of the nightly cleanup jobs. Sparse pre-launch; the analytics jobs don't log their runs here yet.",
   "adminParsingColDomain": "Domain",
   "adminParsingColCount": "Corrections",
   "adminParsingColIssue": "Top issue",

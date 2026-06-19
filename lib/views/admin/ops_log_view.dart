@@ -6,6 +6,7 @@ import 'package:butlery/models/admin/ops_event.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/admin/ops_log_viewmodel.dart';
+import 'package:butlery/views/admin/widgets/admin_help_text.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -81,6 +82,7 @@ class _OpsLogContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        AdminHelpText(text: l10n.adminOpsHelp),
         Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           child: Wrap(

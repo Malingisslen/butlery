@@ -9327,6 +9327,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminParsingTopDomain => 'Mest rättad';
 
   @override
+  String get adminParsingHelp =>
+      'Visar vad receptavläsaren oftast får fel per sajt — ett komplement till Importhälsa som visar vilka sajter som faller.';
+
+  @override
+  String get adminOpsHelp =>
+      'Senaste körningarna av nattens städjobb. Glest i förlanseringsläget; analysjobben loggar ännu inte sina körningar hit.';
+
+  @override
   String get adminParsingColDomain => 'Domän';
 
   @override

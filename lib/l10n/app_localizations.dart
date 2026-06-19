@@ -15795,6 +15795,18 @@ abstract class AppLocalizations {
   /// **'Mest rättad'**
   String get adminParsingTopDomain;
 
+  /// No description provided for @adminParsingHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar vad receptavläsaren oftast får fel per sajt — ett komplement till Importhälsa som visar vilka sajter som faller.'**
+  String get adminParsingHelp;
+
+  /// No description provided for @adminOpsHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senaste körningarna av nattens städjobb. Glest i förlanseringsläget; analysjobben loggar ännu inte sina körningar hit.'**
+  String get adminOpsHelp;
+
   /// No description provided for @adminParsingColDomain.
   ///
   /// In sv, this message translates to:

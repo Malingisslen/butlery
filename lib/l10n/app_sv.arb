@@ -6196,6 +6196,8 @@
   "adminParsingTotal": "Korrigeringar",
   "adminParsingDomains": "Domäner",
   "adminParsingTopDomain": "Mest rättad",
+  "adminParsingHelp": "Visar vad receptavläsaren oftast får fel per sajt — ett komplement till Importhälsa som visar vilka sajter som faller.",
+  "adminOpsHelp": "Senaste körningarna av nattens städjobb. Glest i förlanseringsläget; analysjobben loggar ännu inte sina körningar hit.",
   "adminParsingColDomain": "Domän",
   "adminParsingColCount": "Korrigeringar",
   "adminParsingColIssue": "Vanligaste fel",
