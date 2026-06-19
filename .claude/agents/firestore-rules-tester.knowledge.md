@@ -716,3 +716,39 @@ The two Dart files in this diff (`firebase_user_repository.dart`,
 `user_root_deletion_mixin.dart`) were COMMENT-ONLY changes (BUT-1287 behavioral
 notes about `auditRepository:` persistence) — no rule-testable behavior, nothing
 to assert.
+
+### 2026-06-19 — admin-dashboard-rules.test.ts wired + collection-group read shadow note
+
+Admin-dashboard read surface (Phase 3/4). Test file authored by feature author
+(15 tests, all green on emulator first run). It had NO npm script and was NOT in
+`test:rules:all` — wired both (`test:rules:admin-dashboard`), and added it +
+`feedback-rules.test.ts` (which a prior run also missed) to BOTH path-filter
+blocks in `firestore-rules.yml`. Project id `butlery-rules-admin-dashboard`.
+
+Map rows to add:
+
+| `/analytics/{document=**}` (admin read) | `admin-dashboard-rules.test.ts` | `test:rules:admin-dashboard` |
+| `/metrics/{document=**}` (admin read) | `admin-dashboard-rules.test.ts` | `test:rules:admin-dashboard` |
+| `/system_events/{eventId}` (admin read) | `admin-dashboard-rules.test.ts` | `test:rules:admin-dashboard` |
+| `/{path=**}/recipes/{recipeId}` (admin collection-group read) | `admin-dashboard-rules.test.ts` | `test:rules:admin-dashboard` |
+| `/users/{uid}` read-split + `/parsing_corrections` admin read | `admin-dashboard-rules.test.ts` | `test:rules:admin-dashboard` |
+
+Rule shape: five admin-read additions, all `allow read: if isAdmin()` (where
+`isAdmin()` = authed + `exists(/admins/{uid})`). NO write opened anywhere —
+verified via throwaway probe that every new path's admin/anon write + delete
+falls through to the L2156 default-deny.
+
+**Collection-group read SHADOW (worth pinning):** `match /{path=**}/recipes/{recipeId}
+{ allow read: if isAdmin() }` does double duty — Firestore UNIONS matching rules,
+so it grants the admin BOTH the `collectionGroup("recipes")` query AND a direct
+`get()` on any single `users/{uid}/recipes/{id}` doc, even though the specific
+`users/{uid}/recipes` match only allows owner read. The owner's own-recipe read is
+unaffected (union, not override) — pinned green in the probe. If a future diff
+ever wants admin to query-but-not-direct-get recipes, this collection-group shape
+cannot express that; it's all-or-nothing per doc match.
+
+**Authored-test coverage was already complete** for the diff: each of the 5
+read additions has admin-allow + non-admin-deny, anon-deny on analytics, and the
+`users`/`parsing_corrections` splits keep an owner-still-reads assertion so the
+read-split didn't drop the original grant. The only gaps I closed were
+infra-wiring (npm script + CI), not test coverage. No firestore.rules edits.

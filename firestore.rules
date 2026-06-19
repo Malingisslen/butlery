@@ -220,8 +220,12 @@ service cloud.firestore {
     
     // User's private data (recipes, friends, etc.)
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
-      
+      // Admin dashboard reads the users collection to count accounts
+      // (count() aggregation needs collection-level read). Write stays
+      // owner-only — admin never mutates user docs.
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId);
+
       // User's recipes
       match /recipes/{recipeId} {
         // Read access for owner
@@ -1752,9 +1756,11 @@ service cloud.firestore {
     // ========================================
 
     match /parsing_corrections/{correctionId} {
-      // Users can only read their own corrections (GDPR)
-      allow read: if isAuthenticated()
-        && request.auth.uid == resource.data.userId;
+      // Users can only read their own corrections (GDPR). Admins read across
+      // all corrections to power the parsing-details admin dashboard.
+      allow read: if (isAuthenticated()
+        && request.auth.uid == resource.data.userId)
+        || isAdmin();
 
       // Users can only create corrections for themselves
       // SECURITY: Prevents data poisoning attacks
@@ -1840,6 +1846,14 @@ service cloud.firestore {
     match /{path=**}/ratings/{ratingId} {
       allow read, delete: if isAuthenticated()
         && resource.data.ratedBy == request.auth.uid;
+    }
+
+    // Admin dashboard counts recipes by import method via
+    // collectionGroup('recipes'). The per-user nested rule
+    // (users/{uid}/recipes) does NOT enable collection-group queries, so this
+    // admin-only catch-all is required. Read-only; admins never write here.
+    match /{path=**}/recipes/{recipeId} {
+      allow read: if isAdmin();
     }
 
     // BUT-407: Users can read/delete their OWN pings via collectionGroup.
@@ -2119,6 +2133,23 @@ service cloud.firestore {
     // ========================================
     // DEFAULT DENY - Catch all other paths
     // ========================================
+
+    // ========================================
+    // ADMIN DASHBOARD READS (admin-only aggregate / ops data)
+    // ========================================
+    // These collections are written server-side by scheduled Cloud Functions
+    // (analytics rollups, north-star snapshots, cleanup-job logs) and read by
+    // the admin dashboard. Admin-only, read-only — clients and non-admins are
+    // denied. Writes remain server-side (admin SDK bypasses rules).
+    match /analytics/{document=**} {
+      allow read: if isAdmin();
+    }
+    match /metrics/{document=**} {
+      allow read: if isAdmin();
+    }
+    match /system_events/{eventId} {
+      allow read: if isAdmin();
+    }
 
     // Deny all other document access by default
     match /{document=**} {
