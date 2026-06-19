@@ -9267,6 +9267,45 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminImportSummaryRate => 'Andel lyckade';
 
   @override
+  String get adminNavEngagement => 'Engagemang';
+
+  @override
+  String get adminEngagementTitle => 'Engagemang';
+
+  @override
+  String get adminEngagementUsers => 'Användare totalt';
+
+  @override
+  String get adminEngagementActiveToday => 'Aktiva idag';
+
+  @override
+  String get adminEngagementActive7d => 'Aktiva 7 dagar';
+
+  @override
+  String get adminEngagementActive28d => 'Aktiva 28 dagar';
+
+  @override
+  String get adminEngagementEmpty => 'Ingen aktivitetsdata än';
+
+  @override
+  String get adminEngagementColDate => 'Datum';
+
+  @override
+  String get adminEngagementColCooked => 'Lagat';
+
+  @override
+  String get adminEngagementColImported => 'Importerat';
+
+  @override
+  String get adminEngagementColShared => 'Delat';
+
+  @override
+  String get adminEngagementColPlanned => 'Planerat';
+
+  @override
+  String get adminEngagementColShopped => 'Handlat';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

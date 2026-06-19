@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/views/admin/engagement_view.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/import_health_view.dart';
 
@@ -16,7 +17,11 @@ class AdminShell extends StatefulWidget {
 class _AdminShellState extends State<AdminShell> {
   int _index = 0;
 
-  static const _pages = [FeedbackInboxView(), ImportHealthView()];
+  static const _pages = [
+    FeedbackInboxView(),
+    ImportHealthView(),
+    EngagementView(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +43,11 @@ class _AdminShellState extends State<AdminShell> {
                 icon: const Icon(Icons.cloud_download_outlined),
                 selectedIcon: const Icon(Icons.cloud_download),
                 label: Text(l10n.adminNavImport),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.people_outline),
+                selectedIcon: const Icon(Icons.people),
+                label: Text(l10n.adminNavEngagement),
               ),
             ],
           ),

@@ -9247,6 +9247,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminImportSummaryRate => 'Success rate';
 
   @override
+  String get adminNavEngagement => 'Engagement';
+
+  @override
+  String get adminEngagementTitle => 'Engagement';
+
+  @override
+  String get adminEngagementUsers => 'Total users';
+
+  @override
+  String get adminEngagementActiveToday => 'Active today';
+
+  @override
+  String get adminEngagementActive7d => 'Active 7 days';
+
+  @override
+  String get adminEngagementActive28d => 'Active 28 days';
+
+  @override
+  String get adminEngagementEmpty => 'No activity data yet';
+
+  @override
+  String get adminEngagementColDate => 'Date';
+
+  @override
+  String get adminEngagementColCooked => 'Cooked';
+
+  @override
+  String get adminEngagementColImported => 'Imported';
+
+  @override
+  String get adminEngagementColShared => 'Shared';
+
+  @override
+  String get adminEngagementColPlanned => 'Planned';
+
+  @override
+  String get adminEngagementColShopped => 'Shopped';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

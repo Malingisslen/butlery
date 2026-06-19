@@ -35,6 +35,11 @@ abstract final class FirestoreCollections {
   static const String siteConfigs = 'site_configs';
   static const String tagConfigs = 'tag_configs';
   static const String parsingCorrections = 'parsing_corrections';
+  // Admin-dashboard read surfaces. Written server-side by scheduled functions;
+  // read by the admin app (rules-gated to isAdmin). See firestore.rules.
+  static const String analytics = 'analytics';
+  static const String metrics = 'metrics';
+  static const String systemEvents = 'system_events';
   static const String deepLinks = 'deep_links';
   static const String connectivityTest = 'connectivity_test';
   static const String butleryArchive = 'butlery_archive';

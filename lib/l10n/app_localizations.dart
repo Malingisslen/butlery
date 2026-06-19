@@ -15675,6 +15675,84 @@ abstract class AppLocalizations {
   /// **'Andel lyckade'**
   String get adminImportSummaryRate;
 
+  /// No description provided for @adminNavEngagement.
+  ///
+  /// In sv, this message translates to:
+  /// **'Engagemang'**
+  String get adminNavEngagement;
+
+  /// No description provided for @adminEngagementTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Engagemang'**
+  String get adminEngagementTitle;
+
+  /// No description provided for @adminEngagementUsers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användare totalt'**
+  String get adminEngagementUsers;
+
+  /// No description provided for @adminEngagementActiveToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiva idag'**
+  String get adminEngagementActiveToday;
+
+  /// No description provided for @adminEngagementActive7d.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiva 7 dagar'**
+  String get adminEngagementActive7d;
+
+  /// No description provided for @adminEngagementActive28d.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiva 28 dagar'**
+  String get adminEngagementActive28d;
+
+  /// No description provided for @adminEngagementEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen aktivitetsdata än'**
+  String get adminEngagementEmpty;
+
+  /// No description provided for @adminEngagementColDate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Datum'**
+  String get adminEngagementColDate;
+
+  /// No description provided for @adminEngagementColCooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagat'**
+  String get adminEngagementColCooked;
+
+  /// No description provided for @adminEngagementColImported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerat'**
+  String get adminEngagementColImported;
+
+  /// No description provided for @adminEngagementColShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat'**
+  String get adminEngagementColShared;
+
+  /// No description provided for @adminEngagementColPlanned.
+  ///
+  /// In sv, this message translates to:
+  /// **'Planerat'**
+  String get adminEngagementColPlanned;
+
+  /// No description provided for @adminEngagementColShopped.
+  ///
+  /// In sv, this message translates to:
+  /// **'Handlat'**
+  String get adminEngagementColShopped;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

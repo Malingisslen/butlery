@@ -109,6 +109,7 @@ import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 // Recipe parser services (tier-based architecture)
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
+import 'package:butlery/repositories/engagement_repository.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
@@ -456,6 +457,12 @@ class ContentModule implements DIModule {
       // Site config repository for dynamic CSS selectors from Firestore
       container.registerLazySingleton<SiteConfigRepository>(
         () => SiteConfigRepository(),
+      );
+
+      // Admin-dashboard read-only repositories (engagement, ops log, recipe
+      // stats). Admin-only aggregate reads, gated by isAdmin() in the rules.
+      container.registerLazySingleton<EngagementRepository>(
+        () => EngagementRepository(),
       );
 
       // Firebase Storage instance for model loaders
