@@ -9196,6 +9196,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminScreenshotOpen => 'Open screenshot full size';
 
   @override
+  String get adminScreenshotClose => 'Close';
+
+  @override
   String get adminRefresh => 'Refresh';
 
   @override

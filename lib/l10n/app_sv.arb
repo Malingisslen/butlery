@@ -6159,6 +6159,7 @@
   "adminFeedbackStatusTriaged": "Pågår",
   "adminFeedbackStatusResolved": "Klar",
   "adminScreenshotOpen": "Visa skärmdump i full storlek",
+  "adminScreenshotClose": "Stäng",
   "adminRefresh": "Uppdatera",
   "adminNavFeedback": "Feedback",
   "adminNavImport": "Importhälsa",

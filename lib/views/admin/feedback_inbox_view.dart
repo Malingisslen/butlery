@@ -307,10 +307,31 @@ class _Screenshot extends StatelessWidget {
         insetPadding: const EdgeInsets.all(AppDimensions.paddingM),
         // SizedBox.expand gives the image a definite size (the dialog box) so
         // BoxFit.contain + the <img> fallback can't hit unbounded constraints.
-        child: InteractiveViewer(
-          maxScale: 5,
-          child: SizedBox.expand(
-            child: _image(dialogCtx, BoxFit.contain),
+        // The image fills the dialog, so there's no barrier left to tap —
+        // an explicit close button (and Esc) is the reliable way out.
+        child: SizedBox.expand(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  maxScale: 5,
+                  child: _image(dialogCtx, BoxFit.contain),
+                ),
+              ),
+              Positioned(
+                top: AppDimensions.spacingSm,
+                right: AppDimensions.spacingSm,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  color: Colors.white,
+                  tooltip: dialogCtx.l10n.adminScreenshotClose,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withValues(alpha: 0.5),
+                  ),
+                  onPressed: () => Navigator.of(dialogCtx).pop(),
+                ),
+              ),
+            ],
           ),
         ),
       ),

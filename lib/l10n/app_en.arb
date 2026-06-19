@@ -6124,6 +6124,7 @@
   "adminFeedbackStatusTriaged": "In progress",
   "adminFeedbackStatusResolved": "Resolved",
   "adminScreenshotOpen": "Open screenshot full size",
+  "adminScreenshotClose": "Close",
   "adminRefresh": "Refresh",
   "adminNavFeedback": "Feedback",
   "adminNavImport": "Import health",

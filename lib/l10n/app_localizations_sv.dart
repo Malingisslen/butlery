@@ -9215,6 +9215,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminScreenshotOpen => 'Visa skärmdump i full storlek';
 
   @override
+  String get adminScreenshotClose => 'Stäng';
+
+  @override
   String get adminRefresh => 'Uppdatera';
 
   @override
