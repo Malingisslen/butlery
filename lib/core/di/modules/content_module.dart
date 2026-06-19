@@ -111,6 +111,7 @@ import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/repositories/engagement_repository.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
+import 'package:butlery/repositories/ops_log_repository.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
@@ -467,6 +468,9 @@ class ContentModule implements DIModule {
       );
       container.registerLazySingleton<RecipeStatsRepository>(
         () => RecipeStatsRepository(),
+      );
+      container.registerLazySingleton<OpsLogRepository>(
+        () => OpsLogRepository(),
       );
 
       // Firebase Storage instance for model loaders

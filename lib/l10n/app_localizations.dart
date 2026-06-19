@@ -15915,6 +15915,54 @@ abstract class AppLocalizations {
   /// **'Manuellt / okänt'**
   String get adminRecipesMethodManual;
 
+  /// No description provided for @adminNavOps.
+  ///
+  /// In sv, this message translates to:
+  /// **'Drift'**
+  String get adminNavOps;
+
+  /// No description provided for @adminOpsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Drift'**
+  String get adminOpsTitle;
+
+  /// No description provided for @adminOpsEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga driftshändelser än'**
+  String get adminOpsEmpty;
+
+  /// No description provided for @adminOpsLastRun.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senaste körning'**
+  String get adminOpsLastRun;
+
+  /// No description provided for @adminOpsEventCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Händelser'**
+  String get adminOpsEventCount;
+
+  /// No description provided for @adminOpsColType.
+  ///
+  /// In sv, this message translates to:
+  /// **'Typ'**
+  String get adminOpsColType;
+
+  /// No description provided for @adminOpsColTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tidpunkt'**
+  String get adminOpsColTime;
+
+  /// No description provided for @adminOpsColDeleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Borttaget'**
+  String get adminOpsColDeleted;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

@@ -4,6 +4,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/admin/engagement_view.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/import_health_view.dart';
+import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
 import 'package:butlery/views/admin/recipe_overview_view.dart';
 
@@ -25,6 +26,7 @@ class _AdminShellState extends State<AdminShell> {
     EngagementView(),
     ParsingDetailsView(),
     RecipeOverviewView(),
+    OpsLogView(),
   ];
 
   @override
@@ -62,6 +64,11 @@ class _AdminShellState extends State<AdminShell> {
                 icon: const Icon(Icons.restaurant_menu_outlined),
                 selectedIcon: const Icon(Icons.restaurant_menu),
                 label: Text(l10n.adminNavRecipes),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.dns_outlined),
+                selectedIcon: const Icon(Icons.dns),
+                label: Text(l10n.adminNavOps),
               ),
             ],
           ),

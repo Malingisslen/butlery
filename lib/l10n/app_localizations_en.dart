@@ -9367,6 +9367,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manual / unknown';
 
   @override
+  String get adminNavOps => 'Ops';
+
+  @override
+  String get adminOpsTitle => 'Operations';
+
+  @override
+  String get adminOpsEmpty => 'No operations events yet';
+
+  @override
+  String get adminOpsLastRun => 'Last run';
+
+  @override
+  String get adminOpsEventCount => 'Events';
+
+  @override
+  String get adminOpsColType => 'Type';
+
+  @override
+  String get adminOpsColTime => 'Time';
+
+  @override
+  String get adminOpsColDeleted => 'Deleted';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

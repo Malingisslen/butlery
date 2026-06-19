@@ -9387,6 +9387,30 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminRecipesMethodManual => 'Manuellt / okänt';
 
   @override
+  String get adminNavOps => 'Drift';
+
+  @override
+  String get adminOpsTitle => 'Drift';
+
+  @override
+  String get adminOpsEmpty => 'Inga driftshändelser än';
+
+  @override
+  String get adminOpsLastRun => 'Senaste körning';
+
+  @override
+  String get adminOpsEventCount => 'Händelser';
+
+  @override
+  String get adminOpsColType => 'Typ';
+
+  @override
+  String get adminOpsColTime => 'Tidpunkt';
+
+  @override
+  String get adminOpsColDeleted => 'Borttaget';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override
