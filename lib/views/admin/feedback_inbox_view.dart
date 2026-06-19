@@ -248,6 +248,10 @@ class _Screenshot extends StatelessWidget {
       child: Image.network(
         url,
         fit: BoxFit.contain,
+        // Storage download URLs lack CORS headers for the admin origin, so the
+        // default canvas/XHR path fails. Falling back to an <img> element
+        // displays the cross-origin image without needing bucket CORS.
+        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
           return SizedBox(
