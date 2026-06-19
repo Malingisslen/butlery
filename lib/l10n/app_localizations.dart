@@ -15963,6 +15963,12 @@ abstract class AppLocalizations {
   /// **'Borttaget'**
   String get adminOpsColDeleted;
 
+  /// No description provided for @adminMetricNoData.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen data än'**
+  String get adminMetricNoData;
+
   /// No description provided for @metricRecipeTotalWhat.
   ///
   /// In sv, this message translates to:

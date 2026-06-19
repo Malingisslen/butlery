@@ -112,6 +112,7 @@ import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/repositories/engagement_repository.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
 import 'package:butlery/repositories/ops_log_repository.dart';
+import 'package:butlery/services/admin/metrics_assembler.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
@@ -471,6 +472,14 @@ class ContentModule implements DIModule {
       );
       container.registerLazySingleton<OpsLogRepository>(
         () => OpsLogRepository(),
+      );
+
+      // Metric-registry assembler: fetches admin data per category (lazy) and
+      // runs the pure resolvers. Fetchers wrap the existing admin repositories.
+      container.registerLazySingleton<MetricsAssembler>(
+        () => MetricsAssembler([
+          RecipeCategoryFetcher(container<RecipeStatsRepository>()),
+        ]),
       );
 
       // Firebase Storage instance for model loaders

@@ -9411,6 +9411,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminOpsColDeleted => 'Borttaget';
 
   @override
+  String get adminMetricNoData => 'Ingen data än';
+
+  @override
   String get metricRecipeTotalWhat =>
       'Det totala antalet recept som finns i appen, över alla användare.';
 

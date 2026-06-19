@@ -6224,6 +6224,7 @@
   "adminOpsColType": "Typ",
   "adminOpsColTime": "Tidpunkt",
   "adminOpsColDeleted": "Borttaget",
+  "adminMetricNoData": "Ingen data än",
   "metricRecipeTotalWhat": "Det totala antalet recept som finns i appen, över alla användare.",
   "metricRecipeTotalHow": "Räknas genom att gå igenom alla användares recept och summera dem (taket är 5 000 i förlanseringsläget).",
   "metricRecipeTotalWhy": "Visar hur mycket innehåll som faktiskt byggts upp — en grundläggande hälsosiffra för appen.",

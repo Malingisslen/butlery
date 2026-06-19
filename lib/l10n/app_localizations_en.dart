@@ -9391,6 +9391,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminOpsColDeleted => 'Deleted';
 
   @override
+  String get adminMetricNoData => 'No data yet';
+
+  @override
   String get metricRecipeTotalWhat =>
       'The total number of recipes in the app, across all users.';
 
