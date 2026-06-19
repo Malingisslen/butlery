@@ -12,6 +12,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
+import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 abstract class BaseFirebaseRepository<T>
     with PermissionValidationMixin
@@ -263,8 +264,9 @@ abstract class BaseFirebaseRepository<T>
     // outer catch — the permission loop runs outside it.
     final userId = requireCurrentUserId();
     final ref = getCollectionRef();
-    final batch = _firestore.batch();
 
+    // Validate every entity up front so a permission denial escapes typed
+    // before any write commits.
     for (final entity in entities) {
       final canCreate = await validateCreatePermission(userId, entity);
       if (!canCreate) {
@@ -272,11 +274,18 @@ abstract class BaseFirebaseRepository<T>
           'User $userId does not have permission to create ${T.toString()} ${getId(entity)}',
         );
       }
-      batch.set(ref.doc(getId(entity)), toFirestore(entity));
     }
 
+    // Firestore caps a WriteBatch at 500 ops — split larger sets so the
+    // commit never throws INVALID_ARGUMENT and silently drops writes.
     try {
-      await batch.commit();
+      for (final chunk in entities.chunked(kFirestoreBatchSafeChunkSize)) {
+        final batch = _firestore.batch();
+        for (final entity in chunk) {
+          batch.set(ref.doc(getId(entity)), toFirestore(entity));
+        }
+        await batch.commit();
+      }
       AppLogger.info('${T.toString()} batch created: ${entities.length} items');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to create ${T.toString()} batch: $e', stackTrace);
@@ -426,7 +435,6 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
     // typed, not get re-wrapped.
     final userId = requireCurrentUserId();
     final ref = getCollectionRef();
-    final batch = _firestore.batch();
 
     for (final entity in entities) {
       final docId = getId(entity);
@@ -436,11 +444,17 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
           'User $userId does not have permission to update ${T.toString()} $docId',
         );
       }
-      batch.update(ref.doc(docId), toFirestore(entity));
     }
 
+    // Firestore caps a WriteBatch at 500 ops — chunk to stay under the limit.
     try {
-      await batch.commit();
+      for (final chunk in entities.chunked(kFirestoreBatchSafeChunkSize)) {
+        final batch = _firestore.batch();
+        for (final entity in chunk) {
+          batch.update(ref.doc(getId(entity)), toFirestore(entity));
+        }
+        await batch.commit();
+      }
       AppLogger.info('${T.toString()} batch updated: ${entities.length} items');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update ${T.toString()} batch: $e', stackTrace);
@@ -453,7 +467,6 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
     // typed, not get re-wrapped.
     final userId = requireCurrentUserId();
     final ref = getCollectionRef();
-    final batch = _firestore.batch();
 
     for (final id in ids) {
       final canDelete = await validateDeletePermission(userId, id);
@@ -462,11 +475,17 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
           'User $userId does not have permission to delete ${T.toString()} $id',
         );
       }
-      batch.delete(ref.doc(id));
     }
 
+    // Firestore caps a WriteBatch at 500 ops — chunk to stay under the limit.
     try {
-      await batch.commit();
+      for (final chunk in ids.chunked(kFirestoreBatchSafeChunkSize)) {
+        final batch = _firestore.batch();
+        for (final id in chunk) {
+          batch.delete(ref.doc(id));
+        }
+        await batch.commit();
+      }
       AppLogger.info('${T.toString()} batch deleted: ${ids.length} items');
     } catch (e, stackTrace) {
       AppLogger.error('Failed to delete ${T.toString()} batch: $e', stackTrace);

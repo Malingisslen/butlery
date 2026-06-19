@@ -24,6 +24,13 @@ class OnboardingViewModel extends BaseViewModel {
   // (GDPR Art 8). Under this, sign-up is blocked.
   static const int minAgeYears = 15;
 
+  // BUT-33: upper bound on the onboarding-completion write so a hung Firebase
+  // call surfaces an error (returns false -> the view shows errorGeneric)
+  // instead of leaving the user stuck on the spinner indefinitely. Generous
+  // enough to tolerate a slow-but-alive network; seeding is best-effort and
+  // bounded separately so it can't extend the wait unboundedly either.
+  static const Duration _completionTimeout = Duration(seconds: 20);
+
   /// Optional progress-service hook. When null we skip the persist writes —
   /// keeps existing tests that didn't register the service from breaking.
   final OnboardingProgressService? _progressService;
@@ -80,6 +87,23 @@ class OnboardingViewModel extends BaseViewModel {
   bool get isAgeGatePassed {
     final age = computedAge;
     return age != null && age >= minAgeYears;
+  }
+
+  /// Sensible default shown on the age-gate dropdown (currentYear - 30). The
+  /// dropdown displays this even before the user touches it, so we seed the VM
+  /// with it too (see [seedDefaultBirthYearIfUnset]) — otherwise `Next` stays
+  /// disabled on the first screen for the perfectly valid default.
+  int get defaultBirthYear => clock.now().year - 30;
+
+  /// Seeds [selectedBirthYear] with [defaultBirthYear] the first time the
+  /// age-gate is shown, so the default is a real selection (enables `Next`).
+  /// No-op once the user has made any choice — re-showing the page (back-nav)
+  /// must never clobber a deliberate pick. Returns true if it seeded.
+  bool seedDefaultBirthYearIfUnset() {
+    if (_selectedBirthYear != null) return false;
+    _selectedBirthYear = defaultBirthYear;
+    notifyListeners();
+    return true;
   }
 
   void setBirthYear(int? year) {
@@ -205,11 +229,16 @@ class OnboardingViewModel extends BaseViewModel {
                 )
               : null;
       final isSkip = _currentPage < _lastPageIndex;
-      await userService.completeOnboardingWithPreferences(
-        prefs,
-        onboardingSkippedAt: isSkip ? clock.now() : null,
-        birthYear: _selectedBirthYear,
-      );
+      // BUT-33: bound the critical completion write — a hung call must surface
+      // an error rather than hang the onboarding spinner forever. A timeout
+      // throws TimeoutException, caught below -> returns false.
+      await userService
+          .completeOnboardingWithPreferences(
+            prefs,
+            onboardingSkippedAt: isSkip ? clock.now() : null,
+            birthYear: _selectedBirthYear,
+          )
+          .timeout(_completionTimeout);
 
       // BUT-675: stamp `completed: true` on the progress doc so AuthWrapper
       // routes home (not back into onboarding) on the next cold start.
@@ -351,9 +380,14 @@ class OnboardingViewModel extends BaseViewModel {
   ///   onboarding (or a partial retry) never double-stacks entries. The
   ///   shopping-list generator is itself idempotent per ISO week.
   ///
-  /// Recipes are placed one-per-day from Monday, routed to the lunch / middag
-  /// / övrigt slot by their `mealType` (single-recipe slots never double-book;
-  /// the seeds are few enough to fit inside one week).
+  /// Recipes are routed to the lunch / middag / övrigt slot by their
+  /// `mealType`, then placed deterministically into the first free day for
+  /// THAT slot. Slots are independent — a lunch and a middag can share Monday —
+  /// so placement never silently drops a recipe just because earlier recipes
+  /// used up the leading days (the old "one recipe per day across all slots"
+  /// walk could discard the breakfast/övrigt recipe). Single-recipe slots
+  /// (lunch/middag) hold one per day across the seven days; övrigt is a
+  /// multi-recipe bucket that stacks, so it always has room.
   Future<void> _seedSampleMenu(List<String> seededRecipeIds) async {
     if (seededRecipeIds.isEmpty) return;
     try {
@@ -367,22 +401,33 @@ class OnboardingViewModel extends BaseViewModel {
       // has for this week (covers onboarding re-entry / partial retries).
       if (plan.isNotEmpty) return;
 
-      // Walk Monday→Sunday, dropping one recipe per day. Single-recipe slots
-      // (lunch/middag) skip days they already occupy so two middag recipes
-      // don't collide on Monday; addEntry handles the placement semantics.
-      var dayIndex = 0;
+      // Track the next free day per single-recipe slot so each gets its own
+      // Monday→Sunday fill independent of the other slots. Multi slots (övrigt)
+      // stack on Monday — they're unbounded so there's no day to run out of.
+      final nextDayForSlot = <MealSlot, int>{};
       var placed = 0;
+      var dropped = 0;
       for (final recipeId in seededRecipeIds) {
         final recipe = recipeService.getRecipeById(recipeId);
         if (recipe == null) continue;
         final slot = mapMealTypeToSlot(recipe.mealType);
-        // Advance past days whose single-recipe slot is already taken.
-        while (dayIndex <= DayOfWeek.sun.index &&
-            !slot.isMulti &&
-            plan.isOccupied(DayOfWeek.values[dayIndex], slot)) {
-          dayIndex++;
+
+        final int dayIndex;
+        if (slot.isMulti) {
+          // Multi slot: stack everything on Monday — capacity is unbounded.
+          dayIndex = DayOfWeek.mon.index;
+        } else {
+          // Single slot: take the next free day for this slot specifically.
+          dayIndex = nextDayForSlot[slot] ?? DayOfWeek.mon.index;
+          if (dayIndex > DayOfWeek.sun.index) {
+            // This slot is full across the whole week — skip rather than
+            // double-book. With the current seed set this never triggers.
+            dropped++;
+            continue;
+          }
+          nextDayForSlot[slot] = dayIndex + 1;
         }
-        if (dayIndex > DayOfWeek.sun.index) break;
+
         plan = menuService.addEntry(
           plan: plan,
           day: DayOfWeek.values[dayIndex],
@@ -390,9 +435,13 @@ class OnboardingViewModel extends BaseViewModel {
           recipe: recipe,
         );
         placed++;
-        dayIndex++;
       }
 
+      if (dropped > 0) {
+        AppLogger.warning(
+          'Sample menu: $dropped seeded recipe(s) had no free single-slot day',
+        );
+      }
       if (placed == 0) return;
       await menuService.save(plan);
 

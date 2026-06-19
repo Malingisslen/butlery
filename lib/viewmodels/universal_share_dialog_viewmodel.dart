@@ -340,15 +340,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         );
 
         if (success) {
-          // Set success message that includes info about skipped friends
-          if (validationResult.hasExistingCollaborators) {
-            final invitedCount = filteredFriendUserIds.length;
-            final skippedCount =
-                validationResult.existingCollaboratorIds.length;
-            _setError(AppLocale.current
-                .shareInvitationsSentWithSkipped(invitedCount, skippedCount));
-          }
-
+          _surfaceSkippedSummary(validationResult, filteredFriendUserIds);
           return true;
         } else {
           throw Exception(AppLocale.current.errorCouldNotSendInvitations);
@@ -376,6 +368,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         if (success) {
           AppLogger.success(
               '✅ COPY MODE FIX: Inköpslista invitations sent successfully via invitation system');
+          _surfaceSkippedSummary(validationResult, filteredFriendUserIds);
           return true;
         } else {
           throw Exception(AppLocale.current.errorCouldNotSendInvitations);
@@ -421,6 +414,22 @@ class UniversalShareDialogViewModel extends ChangeNotifier
   void _clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Surfaces the "X inbjudna / Y överhoppade" summary after a successful
+  /// partial share so the dialog reports who was skipped instead of falling
+  /// back to a plain "delad" toast. No-op when no friends were skipped — the
+  /// error/info channel stays clear so a fully-clean share shows the normal
+  /// success state.
+  void _surfaceSkippedSummary(
+    ShareValidationResult validationResult,
+    List<String> filteredFriendUserIds,
+  ) {
+    if (!validationResult.hasExistingCollaborators) return;
+    final invitedCount = filteredFriendUserIds.length;
+    final skippedCount = validationResult.existingCollaboratorIds.length;
+    _setError(AppLocale.current
+        .shareInvitationsSentWithSkipped(invitedCount, skippedCount));
   }
 
   /// Generate a descriptive menu title based on menu content

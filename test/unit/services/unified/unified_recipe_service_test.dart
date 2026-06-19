@@ -406,6 +406,38 @@ void main() {
         expect(success, true);
       });
 
+      // BUG-27: when the recipe is not in the in-memory cache, toggleFavorite
+      // used to bail with `false` (the heart bounced back in the UI). With a
+      // fallback Recipe supplied it must still persist the favorite change.
+      group('toggleFavorite cache-miss fallback', () {
+        test('bails (false) when recipe not cached and no fallback given',
+            () async {
+          final success = await service.toggleFavorite('not-in-cache', true);
+          expect(success, isFalse);
+        });
+
+        test('persists (true) via fallbackRecipe when recipe not in cache',
+            () async {
+          // Recipe is NOT seeded into the service cache — getRecipeById is null.
+          expect(service.getRecipeById('shared-recipe'), isNull);
+
+          final held = RecipeFactory.build(id: 'shared-recipe')
+              .copyWith(isFavorite: false);
+
+          final success = await service.toggleFavorite(
+            'shared-recipe',
+            true,
+            fallbackRecipe: held,
+          );
+
+          // The contract that matters for the UI: the toggle no longer bails on
+          // a cache miss, so the heart stays toggled instead of bouncing back.
+          expect(success, isTrue,
+              reason:
+                  'fallback Recipe lets the toggle persist on a cache miss');
+        });
+      });
+
       test('should delete recipe', () async {
         // Arrange
         final recipeId = 'test-recipe-id';

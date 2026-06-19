@@ -620,15 +620,25 @@ void main() {
     test('should handle fetch error', () async {
       urlViewModel.updateUrl('https://error.com');
 
-      // executeAsync rethrows — catch the exception
-      try {
-        await urlViewModel.fetchFromUrl();
-      } catch (_) {
-        // Expected: rethrown from executeAsync
-      }
+      await urlViewModel.fetchFromUrl();
 
       expect(urlViewModel.hasExtractedText, isFalse);
       expect(urlViewModel.hasError, isTrue);
+    });
+
+    test(
+        'BUG-32: fetch failure surfaces an error state without leaking an '
+        'unhandled async error', () async {
+      urlViewModel.updateUrl('https://error.com');
+
+      // The fetch throws inside executeAsync (which rethrows). fetchFromUrl
+      // must NOT propagate that rethrow — a leaked async error would crash the
+      // zone. It should instead settle with an error state and no spinner.
+      await expectLater(urlViewModel.fetchFromUrl(), completes);
+
+      expect(urlViewModel.hasError, isTrue);
+      expect(urlViewModel.isLoading, isFalse);
+      expect(urlViewModel.hasExtractedText, isFalse);
     });
 
     test('should not fetch with invalid URL', () async {

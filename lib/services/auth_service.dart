@@ -64,7 +64,18 @@ class AuthService extends ChangeNotifier
       onError: (error) {
         final code = error is FirebaseAuthException ? error.code : '';
         AppLogger.warning('Auth state stream error (code: $code): $error');
-        // Invalidate session on any auth stream error to prevent
+        // BUG-31: only force sign-out when the error genuinely means the
+        // credential is revoked/invalid. A transient/one-off auth-stream error
+        // (network blip, a single stream hiccup, no FirebaseAuthException code)
+        // used to nuke the session mid-flow — including during onboarding —
+        // logging the user out for a recoverable error. For those, log and let
+        // the stream recover instead of invalidating the session.
+        if (!_isFatalAuthStreamError(code)) {
+          AppLogger.warning(
+              'Auth stream error treated as transient — keeping session');
+          return;
+        }
+        // Invalidate session on a fatal auth stream error to prevent
         // fake-authenticated state where UI shows logged-in but session is broken.
         _currentUser = null;
         // BUT-966: surface session expiry to the UI. Without this, the user
@@ -226,6 +237,21 @@ class AuthService extends ChangeNotifier
   /// sign-out. [forceSignOut] clears errors in its `finally`, so the
   /// localized message is set *after* forceSignOut and a second
   /// notifyListeners fires so observers can react.
+  /// BUG-31: codes that genuinely mean the credential is gone/revoked and the
+  /// session MUST end. Everything else (empty code, transient/network errors)
+  /// is treated as recoverable so a one-off stream error doesn't sign the user
+  /// out mid-session. Keeps real session-revocation security intact.
+  static const Set<String> _fatalAuthStreamCodes = {
+    'user-disabled',
+    'user-token-expired',
+    'user-not-found',
+    'invalid-user-token',
+    'token-expired',
+  };
+
+  bool _isFatalAuthStreamError(String code) =>
+      _fatalAuthStreamCodes.contains(code);
+
   Future<void> _handleAuthStreamError(String code) async {
     try {
       await forceSignOut();

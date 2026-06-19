@@ -25,6 +25,30 @@
       ]
     },
     {
+      "collectionGroup": "recipes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPublic", "order": "ASCENDING" },
+        { "fieldPath": "core.updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recipes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "core.mealType", "order": "ASCENDING" },
+        { "fieldPath": "core.updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "recipes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "core.personalTagIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "core.updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "public_profiles",
       "queryScope": "COLLECTION",
       "fields": [

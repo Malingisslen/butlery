@@ -222,9 +222,19 @@ class UnifiedRecipeService
     // Initialize legacy interfaces immediately for backward compatibility
     _initializeLegacyInterfaces();
 
-    // Delay module initialization to avoid circular dependencies
+    // Delay module initialization to avoid circular dependencies.
+    // Guard the body: this microtask is unawaited, so a throw here would
+    // surface as an uncaught async error on a fresh first launch (the modules
+    // feed the home recipe stream). Catch + surface it cleanly instead.
     Future.microtask(() {
-      _initializeModules();
+      try {
+        _initializeModules();
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          '❌ [UnifiedRecipeService] Deferred module init failed: $e\n$stackTrace',
+        );
+        _setError(AppLocale.current.errorCouldNotLoadRecipes);
+      }
     });
 
     AppLogger.info(
@@ -420,8 +430,18 @@ class UnifiedRecipeService
       social = initializedSocial;
       _socialInitialized = true;
     } else {
-      // Defer initialization
-      Future.microtask(() => _initializeSocialOperations());
+      // Defer initialization. Guard the unawaited microtask so a deferred
+      // social-init failure surfaces cleanly rather than as an uncaught
+      // async error on first launch.
+      Future.microtask(() {
+        try {
+          _initializeSocialOperations();
+        } catch (e, stackTrace) {
+          AppLogger.error(
+            '❌ [UnifiedRecipeService] Deferred social init failed: $e\n$stackTrace',
+          );
+        }
+      });
     }
   }
 
@@ -850,8 +870,18 @@ class UnifiedRecipeService
   /// analytics. `recipe_id` is hashed by the repository's PII gate; `action`
   /// is `'add'` or `'remove'`. Fire-and-forget so a logging failure cannot
   /// fail the actual toggle.
-  Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
-    final recipe = getRecipeById(recipeId);
+  ///
+  /// [fallbackRecipe]: when the recipe is not in the in-memory cache (e.g. a
+  /// shared/collaborative recipe opened via deep link, or one freshly created
+  /// before sync settles), [getRecipeById] returns null. Without a fallback the
+  /// toggle silently bailed and the heart bounced back in the UI. Callers that
+  /// already hold the Recipe should pass it so the change can still persist.
+  Future<bool> toggleFavorite(
+    String recipeId,
+    bool isFavorite, {
+    Recipe? fallbackRecipe,
+  }) async {
+    final recipe = getRecipeById(recipeId) ?? fallbackRecipe;
     if (recipe == null) return false;
     final updated = recipe.copyWith(isFavorite: isFavorite);
     final result = await updateRecipe(updated);

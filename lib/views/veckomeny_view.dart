@@ -100,12 +100,27 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Future<void> _loadViewModePreference() async {
     final stored =
         await ServiceLocator.get<PersistenceService>().getVeckomenyViewMode();
-    if (stored == null || !mounted) return;
-    final mode = VeckomenyViewMode.values.firstWhere(
-      (m) => m.name == stored,
-      orElse: () => VeckomenyViewMode.lista,
-    );
-    if (mode != _viewMode) setState(() => _viewMode = mode);
+    if (!mounted) return;
+    if (stored != null) {
+      final mode = VeckomenyViewMode.values.firstWhere(
+        (m) => m.name == stored,
+        orElse: () => VeckomenyViewMode.lista,
+      );
+      if (mode != _viewMode) setState(() => _viewMode = mode);
+      return;
+    }
+    // First run (no stored preference): the saved weekly plan only renders in
+    // kalender mode, so defaulting to lista would show a first-time user an
+    // empty prompt screen even though a plan exists. Peek at the current
+    // week and open in kalender when it already has entries — otherwise stay
+    // in lista (the generate-a-menu entry point). This is a transient
+    // first-open default, so it is deliberately NOT persisted.
+    final planVm = context.read<WeeklyMenuPlanViewModel>();
+    await planVm.loadWeek(clock.now());
+    if (!mounted) return;
+    if (planVm.hasEntries && _viewMode != VeckomenyViewMode.kalender) {
+      setState(() => _viewMode = VeckomenyViewMode.kalender);
+    }
   }
 
   /// BUT-1241: the toggle is a pure view switch now. The old silent

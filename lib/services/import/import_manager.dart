@@ -280,6 +280,11 @@ class ImportManager {
           await _saveToCacheIfUrl(input, result);
           return result;
         }
+        // Tier-7: an assisted-import result is a terminal outcome, not a
+        // fallback-worthy miss — return it instead of trying other strategies.
+        if (result.needsAssistance) {
+          return result;
+        }
       }
 
       for (final strategy in _strategies) {
@@ -289,6 +294,9 @@ class ImportManager {
           if (result.isSuccess) {
             onProgress?.call('creating');
             await _saveToCacheIfUrl(input, result);
+            return result;
+          }
+          if (result.needsAssistance) {
             return result;
           }
         }
@@ -581,6 +589,21 @@ class ImportManager {
     try {
       // Execute import strategy to parse recipe
       final importResult = await strategy.import(input, options: options);
+
+      // Tier-7 recovery: a strategy can return `needsAssistance` (extracted
+      // text the parser couldn't structure) instead of a recipe. This is NOT
+      // a plain failure — it carries text + hints the user can finish manually.
+      // Propagate it so URL/Text/Photo imports keep the assisted-import path
+      // (previously this fell into the `!isSuccess` branch and was dropped).
+      if (importResult.needsAssistance) {
+        return ImportManagerResult.assistance(
+          extractedText: importResult.extractedText,
+          suggestedTitle: importResult.suggestedTitle,
+          likelyIngredientLines: importResult.likelyIngredientLines,
+          strategy: strategy.strategyName,
+          metadata: importResult.metadata,
+        );
+      }
 
       if (!importResult.isSuccess) {
         return ImportManagerResult.failure(

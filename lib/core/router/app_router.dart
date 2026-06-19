@@ -356,6 +356,13 @@ class AppRouter {
             '/profile'
           ];
           if (deepLinkPaths.any((p) => routeName.startsWith(p))) {
+            // Gate the fallback on auth: rendering the authenticated main menu
+            // for a signed-out user (e.g. cold-start deep link before sign-in)
+            // would leak the protected home shell. Route them to login instead.
+            if (!_isUserAuthenticated()) {
+              return _buildRoute(
+                  const AuthView(), settings, RouteAnimationType.fade);
+            }
             return _buildRoute(
                 LayoutScaffolds.mainMenu(), settings, RouteAnimationType.fade);
           }

@@ -7,6 +7,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
@@ -1023,6 +1024,50 @@ void main() {
         // Second undo on the cleared snapshot is a safe no-op.
         await viewModel.undoBulkApplyPersonalTag();
         expect(tagIdsOf('r1'), isEmpty);
+      });
+    });
+
+    group('Seeded Recipes vs Allergen/Dietary Filters (seed-content)', () {
+      test(
+          'seeded starter recipes stay visible under a default allergen filter '
+          'even though they have no tagResult', () {
+        // Seeds ship without allergen analysis (tagResult == null). They must
+        // NOT be hidden by a persisted/default allergen filter, or a new user
+        // who selected e.g. gluten-free at onboarding sees an empty library.
+        mockRecipeService.setRecipeState(recipes: RecipeSeeds.allRecipes);
+        expect(RecipeSeeds.allRecipes, isNotEmpty);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(viewModel.recipes, hasLength(RecipeSeeds.allRecipes.length),
+            reason: 'ALL seeded recipes (createdBy == "system") should survive '
+                'allergen filtering despite a missing tagResult — not just some '
+                '(catches a partial-exemption regression).');
+        expect(viewModel.recipes.every((r) => r.createdBy == 'system'), isTrue);
+      });
+
+      test('seeded starter recipes stay visible under a default dietary filter',
+          () {
+        mockRecipeService.setRecipeState(recipes: RecipeSeeds.allRecipes);
+
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(viewModel.recipes, hasLength(RecipeSeeds.allRecipes.length),
+            reason: 'ALL seeded recipes must survive dietary filtering.');
+      });
+
+      test(
+          'non-seed recipes with no tagResult are STILL excluded by an allergen '
+          'filter (safety preserved)', () {
+        // The seed exemption must not weaken safety for ordinary user recipes:
+        // a user recipe with unknown allergen status is correctly hidden.
+        final userRecipe =
+            RecipeFactory.build(id: 'u1', createdBy: 'test_user');
+        mockRecipeService.setRecipeState(recipes: [userRecipe]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(viewModel.recipes, isEmpty);
       });
     });
 

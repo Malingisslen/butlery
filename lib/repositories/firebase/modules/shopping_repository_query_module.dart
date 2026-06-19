@@ -140,13 +140,24 @@ class ShoppingRepositoryQueryModule {
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() {
     try {
       final uid = requireCurrentUserId();
+      // Firestore forbids combining an inequality filter (memberPermissions.$uid
+      // isNotEqualTo null) with an orderBy on a *different* field — it throws and
+      // the stream silently emits nothing. The membership key is also per-user
+      // dynamic, so it can't be the first orderBy. Filter server-side, then sort
+      // by updatedAt client-side (mirrors readAll()). A small limit(20) without
+      // the orderBy would truncate arbitrary docs, so we sort+take(20) for
+      // display — but still cap server-side reads at 200 (in Firestore's natural
+      // doc order) so the listener can never stream an unbounded set. No real
+      // household approaches 200 collaborative lists.
       return sharedListsRef
           .where('memberPermissions.$uid', isNotEqualTo: null)
-          .orderBy('updatedAt', descending: true)
-          .limit(20) // Limit collaborative lists to 20 most recent
+          .limit(200)
           .snapshots()
-          .map((snap) =>
-              snap.docs.map(UnifiedShoppingList.fromFirestore).toList());
+          .map((snap) {
+        final lists = snap.docs.map(UnifiedShoppingList.fromFirestore).toList();
+        lists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        return lists.take(20).toList();
+      });
     } catch (e) {
       return const Stream.empty();
     }

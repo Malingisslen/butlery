@@ -954,7 +954,11 @@ class RecipeListViewModel extends ChangeNotifier {
   List<Recipe> _applyAllergenFilters(List<Recipe> recipes) {
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) return false;
+      // Seeded starter recipes ship without allergen analysis. Treat their
+      // unknown status as "show" so default/persisted filters don't hide the
+      // very first content a new user sees. This does NOT claim allergen-free
+      // — it only declines to exclude system seeds for missing analysis.
+      if (tagResult == null) return _isSeedRecipe(recipe);
 
       // CRIT-9: Don't trust allergen status if tagging needs to be redone
       if (tagResult.needsRetagging) return false;
@@ -985,7 +989,9 @@ class RecipeListViewModel extends ChangeNotifier {
   List<Recipe> _applyDietaryFilters(List<Recipe> recipes) {
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
-      if (tagResult == null) return false;
+      // See _applyAllergenFilters: keep seeded starter recipes visible under
+      // dietary filters rather than excluding them for missing tag analysis.
+      if (tagResult == null) return _isSeedRecipe(recipe);
 
       // CRIT-9: Don't trust dietary status if tagging needs to be redone
       if (tagResult.needsRetagging) return false;
@@ -1008,6 +1014,11 @@ class RecipeListViewModel extends ChangeNotifier {
       return true;
     }).toList();
   }
+
+  /// Identifies system-seeded starter recipes (RecipeSeeds), which ship without
+  /// allergen/dietary analysis. Used to keep them visible under default filters
+  /// instead of excluding them for a missing tagResult.
+  bool _isSeedRecipe(Recipe recipe) => recipe.createdBy == 'system';
 
   /// Applies personal tag filters for user-defined tag-based filtering.
   /// Uses AND logic: recipe must contain ALL selected personal tag IDs.

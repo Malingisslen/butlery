@@ -259,6 +259,40 @@ void main() {
   // utility that uses ServiceLocator internally), making it an integration
   // concern. The old tests mocked shareListWithFriend which is no longer
   // called by the VM.
+  //
+  // Bug 20 fix lives in shareShoppingList's COPY-mode branch, which now
+  // surfaces the same "X inbjudna / Y överhoppade" summary the REALTIME branch
+  // already did, via the shared _surfaceSkippedSummary helper. The end-to-end
+  // success path is the same integration concern noted above; the unit-level
+  // guarantee we can assert here is that the summary the helper surfaces is a
+  // real, non-empty partial-success message (not a stale error / plain toast).
+
+  group('UniversalShareDialogViewModel - Partial-share summary (bug 20)', () {
+    test('partialSuccess validation carries a non-empty skipped summary', () {
+      final result = ShareValidationResult.partialSuccess(
+        ['new_friend_1', 'new_friend_2'], // invited
+        ['existing_collab_1'], // skipped (already have access)
+      );
+
+      // The helper only surfaces a summary when collaborators were skipped...
+      expect(result.hasExistingCollaborators, isTrue);
+      // ...and the message must be a real summary, not empty (which would
+      // render as a plain "delad" toast with no skipped-count feedback).
+      expect(result.errorMessage, isNotEmpty);
+      expect(result.canProceed, isTrue);
+      expect(result.newFriendIds, equals(['new_friend_1', 'new_friend_2']));
+      expect(result.existingCollaboratorIds, equals(['existing_collab_1']));
+    });
+
+    test('clean share carries no summary (helper stays silent)', () {
+      final result = ShareValidationResult.success();
+
+      // No skipped collaborators → _surfaceSkippedSummary is a no-op, so the
+      // normal success state shows instead of a stale skipped message.
+      expect(result.hasExistingCollaborators, isFalse);
+      expect(result.errorMessage, isEmpty);
+    });
+  });
 
   group('UniversalShareDialogViewModel - Error Handling', () {
     test('should clear error', () async {

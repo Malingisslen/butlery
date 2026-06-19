@@ -579,9 +579,13 @@ class _AuthViewState extends State<AuthView> {
 
     FocusScope.of(context).unfocus();
 
+    // Capture the mode before the async gap — toggleAuthMode could in theory
+    // race, and we must branch navigation on the mode the submit ran under.
+    final wasLoginMode = viewModel.isLoginMode;
+
     bool success;
 
-    if (viewModel.isLoginMode) {
+    if (wasLoginMode) {
       success = await viewModel.signIn(
         email: _emailController.text,
         password: _passwordController.text,
@@ -594,7 +598,13 @@ class _AuthViewState extends State<AuthView> {
       );
     }
 
-    if (success && mounted) {
+    // Only a returning user (login) is sent straight to the recipe list.
+    // A successful REGISTER must NOT navigate manually: AuthView lives in the
+    // '/' subtree, so pushReplacement here replaces the whole route and tears
+    // out AuthWrapper — skipping email-verification, the GDPR age gate,
+    // onboarding, and starter-content seeding. Letting the auth-state change
+    // drive AuthWrapper routes the new user through verification -> onboarding.
+    if (success && wasLoginMode && mounted) {
       AppLogger.debug(
           'AuthView: LOGIN SUCCESS - Direct navigation to main app');
 

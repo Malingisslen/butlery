@@ -4,6 +4,7 @@
 // lib/viewmodels/friends_viewmodel.dart
 
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -221,20 +222,21 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Accept incoming friend request
   Future<bool> acceptFriendRequest(String requestId) async {
-    // Find the request to get sender ID for analytics
-    final request = incomingRequests.firstWhere(
-      (r) => r.id == requestId,
-      orElse: () => throw Exception('Request not found'),
-    );
+    // Find the request to get sender ID for analytics. The request may have
+    // already vanished (cancelled on another device / double-tap) — don't
+    // throw; the service safely no-ops on a missing request.
+    final request = incomingRequests.firstWhereOrNull((r) => r.id == requestId);
 
     final success =
         await _friendsService.management.acceptFriendRequest(requestId);
 
     if (success) {
-      // Track friend request accepted
-      await _analyticsService.logFriendRequestAccepted(
-        senderId: request.fromUserId,
-      );
+      // Track friend request accepted (only when we still have the sender id).
+      if (request != null) {
+        await _analyticsService.logFriendRequestAccepted(
+          senderId: request.fromUserId,
+        );
+      }
       // First-friend milestone fires at most once per user (BUT-593).
       await _analyticsService.social.logFirstFriendIfMilestone(
         userId: _userService.currentUserId,
@@ -247,16 +249,15 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Reject incoming friend request
   Future<bool> rejectFriendRequest(String requestId) async {
-    // Look up sender id from the request before mutation removes it from state.
-    final request = incomingRequests.firstWhere(
-      (r) => r.id == requestId,
-      orElse: () => throw Exception('Request not found'),
-    );
+    // Look up sender id before mutation removes it from state. The request may
+    // have already vanished (cancelled on another device / double-tap) — don't
+    // throw; the service safely no-ops on a missing request.
+    final request = incomingRequests.firstWhereOrNull((r) => r.id == requestId);
 
     final success =
         await _friendsService.management.rejectFriendRequest(requestId);
 
-    if (success) {
+    if (success && request != null) {
       await _analyticsService.social
           .logFriendRequestRejected(senderId: request.fromUserId);
     }

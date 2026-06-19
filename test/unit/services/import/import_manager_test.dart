@@ -174,6 +174,65 @@ void main() {
         expect(result.isSuccess, isFalse);
       });
 
+      test('propagates needsAssistance result instead of dropping it',
+          () async {
+        // Tier-7 recovery: a strategy that can extract text but not structure
+        // it returns ImportResult.assistance (isSuccess=false,
+        // needsAssistance=true). The manager must surface this as an assistance
+        // result — previously it collapsed into a plain failure, losing the
+        // extracted text the user could finish manually.
+        when(() => mockStrategy.canHandle(any())).thenReturn(true);
+        mockStrategy.setStrategyState(strategyName: 'assist');
+        when(() => mockStrategy.import(any(), options: any(named: 'options')))
+            .thenAnswer(
+          (_) async => import_strategy.ImportResult.assistance(
+            extractedText: 'Some unstructured recipe text',
+            suggestedTitle: 'Mormors kaka',
+            likelyIngredientLines: [2, 3],
+          ),
+        );
+
+        final mgr = ImportManager.withStrategies(mockPersonalOps, []);
+        final result = await mgr.autoImport(
+          'recipe',
+          preferredStrategy: mockStrategy,
+        );
+
+        expect(result.needsAssistance, isTrue);
+        expect(result.isSuccess, isFalse);
+        expect(result.extractedText, 'Some unstructured recipe text');
+        expect(result.suggestedTitle, 'Mormors kaka');
+        expect(result.likelyIngredientLines, [2, 3]);
+        expect(result.strategy, 'assist');
+      });
+
+      test('needsAssistance short-circuits the strategy fallback loop',
+          () async {
+        // An assistance result is terminal: the manager must NOT keep trying
+        // other strategies after one returns needsAssistance.
+        when(() => mockStrategy.canHandle(any())).thenReturn(true);
+        mockStrategy.setStrategyState(strategyName: 'assist');
+        when(() => mockStrategy.import(any(), options: any(named: 'options')))
+            .thenAnswer(
+          (_) async => import_strategy.ImportResult.assistance(
+            extractedText: 'partial',
+          ),
+        );
+
+        // mockStrategy is in the strategy list (not preferred) so it is reached
+        // via the fallback loop.
+        final mgr = ImportManager.withStrategies(
+          mockPersonalOps,
+          [mockStrategy, textStrategy],
+        );
+        final result = await mgr.autoImport('recipe');
+
+        expect(result.needsAssistance, isTrue);
+        expect(result.extractedText, 'partial');
+        verify(() => mockStrategy.import(any(), options: any(named: 'options')))
+            .called(1);
+      });
+
       test('should pass options to strategy', () async {
         final options = {'lang': 'sv'};
         when(() => mockStrategy.canHandle(any())).thenReturn(true);

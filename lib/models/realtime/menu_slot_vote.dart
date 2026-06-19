@@ -129,10 +129,19 @@ class MenuSlotVote {
   }
 
   /// The option with the most votes (null if no votes).
+  ///
+  /// Tie-break is deterministic: on equal counts the option whose id sorts
+  /// first wins. Without the secondary key the leader could flip between reads
+  /// purely on map iteration order, so two clients viewing the same tied vote
+  /// could disagree on who's "leading".
   VoteOption? get leadingOption {
     if (votes.isEmpty) return null;
     final sorted = tallies.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+      ..sort((a, b) {
+        final byCount = b.value.compareTo(a.value);
+        if (byCount != 0) return byCount;
+        return a.key.compareTo(b.key);
+      });
     final leadingId = sorted.first.key;
     try {
       return alternatives.firstWhere((o) => o.id == leadingId);

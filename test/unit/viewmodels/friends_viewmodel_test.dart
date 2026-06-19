@@ -299,6 +299,43 @@ void main() {
         expect(result, isTrue);
       });
 
+      test('should accept gracefully when request already vanished (no throw)',
+          () async {
+        // Arrange — request is NOT in incomingRequests (cancelled on another
+        // device / double-tap), but the service still no-ops successfully.
+        // Bug 17: firstWhere used to throw here; firstWhereOrNull must not.
+        mockFriendsService.setFriendsState(
+          incomingRequests: [],
+          isInitialized: true,
+          management: mockManagement,
+        );
+        mockManagement.setManagementState(friends: []);
+
+        // Act
+        final result = await viewModel.acceptFriendRequest(testRequestId);
+
+        // Assert — returns the service success flag, no exception thrown.
+        expect(result, isTrue);
+      });
+
+      test('should reject gracefully when request already vanished (no throw)',
+          () async {
+        // Arrange — request absent from incomingRequests but service no-ops ok.
+        // Bug 17: firstWhere used to throw here; firstWhereOrNull must not.
+        mockFriendsService.setFriendsState(
+          incomingRequests: [],
+          isInitialized: true,
+          management: mockManagement,
+        );
+        mockManagement.setManagementState(friends: []);
+
+        // Act
+        final result = await viewModel.rejectFriendRequest(testRequestId);
+
+        // Assert — returns the service success flag, no exception thrown.
+        expect(result, isTrue);
+      });
+
       // Note: unblockUser test skipped — same pre-existing SchedulerBinding issue
       // as sendFriendRequest/removeFriend tests (notifyListeners needs widget binding)
 

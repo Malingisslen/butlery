@@ -8,6 +8,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/star_rating_row.dart';
 
@@ -118,7 +119,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         if ((recipe.rating ?? 0) > 0) ...[
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
-            recipe.rating!.toStringAsFixed(1),
+            // sv-SE decimal comma (4.5 → "4,5"); whole ratings drop the decimal.
+            TextFormatting.formatFractional(recipe.rating!),
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
           ),
           // Remove own rating — only when the user has rated
@@ -244,12 +246,20 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
 
   Future<void> _markAsCooked(BuildContext context) async {
     try {
-      await widget.viewModel.markAsCooked();
+      // false → nothing recorded (already logged today); don't claim success.
+      final recorded = await widget.viewModel.markAsCooked();
       if (!context.mounted) return;
-      SnackBarUtils.showSuccess(
-        context,
-        context.l10n.recipeCookedTodaySuccess,
-      );
+      if (recorded) {
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.recipeCookedTodaySuccess,
+        );
+      } else {
+        SnackBarUtils.showInfo(
+          context,
+          context.l10n.recipeAlreadyCookedToday,
+        );
+      }
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showError(

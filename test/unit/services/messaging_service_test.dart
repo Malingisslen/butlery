@@ -389,6 +389,62 @@ void main() {
         expect(capturedParticipantIds, contains('test-user-id'));
       });
 
+      test(
+          'should not mutate the callers participant maps when adding current user',
+          () async {
+        // Bug 29: createGroupConversation used to add the current user
+        // directly into the caller-owned maps as a side effect.
+        const participantIds = [
+          'user-1',
+          'user-2'
+        ]; // current user not included
+        final callerDisplayNames = <String, String>{
+          'user-1': 'User One',
+          'user-2': 'User Two',
+        };
+        final callerAvatarUrls = <String, String?>{
+          'user-1': null,
+          'user-2': null,
+        };
+        final displayNamesSnapshot =
+            Map<String, String>.from(callerDisplayNames);
+        final avatarUrlsSnapshot = Map<String, String?>.from(callerAvatarUrls);
+
+        when(() => mockMessagingRepo.createGroupConversation(
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: any(named: 'title'),
+              creatorId: 'test-user-id',
+            )).thenAnswer((_) async => 'group-conv-no-mutation');
+
+        // Act
+        await messagingService.createGroupConversation(
+          participantIds: participantIds,
+          participantDisplayNames: callerDisplayNames,
+          participantAvatarUrls: callerAvatarUrls,
+          title: 'Group Chat',
+        );
+
+        // Assert — the caller's maps are untouched (no current-user key added).
+        expect(callerDisplayNames, equals(displayNamesSnapshot));
+        expect(callerAvatarUrls, equals(avatarUrlsSnapshot));
+        expect(callerDisplayNames.containsKey('test-user-id'), isFalse);
+        expect(callerAvatarUrls.containsKey('test-user-id'), isFalse);
+
+        // ...but the repository still received the current user merged in.
+        final captured = verify(() => mockMessagingRepo.createGroupConversation(
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames:
+                  captureAny(named: 'participantDisplayNames'),
+              participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
+              title: any(named: 'title'),
+              creatorId: 'test-user-id',
+            )).captured;
+        final sentDisplayNames = captured[0] as Map<String, String>;
+        expect(sentDisplayNames.containsKey('test-user-id'), isTrue);
+      });
+
       test('should get conversation details', () async {
         // Arrange
         const conversationId = 'conv-789';

@@ -1601,27 +1601,56 @@ void main() {
             events.single.parameters?['error_code'], equals('user-disabled'));
       });
 
-      test('non-FirebaseAuthException: empty error_code, still invalidates',
+      test(
+          'BUG-31: non-FirebaseAuthException is transient — session is preserved',
           () async {
-        // A StateError reaching the auth stream is unexpected — the contract
-        // is that the session must still be invalidated to prevent
-        // fake-authenticated state, with an empty `error_code` so the
-        // analytics row distinguishes "Firebase rejected" from "stream broke".
+        // A StateError reaching the auth stream is a transient/one-off blip
+        // (network hiccup, single stream error), NOT a credential revocation.
+        // Previously this force-signed-out the user mid-session (incl. during
+        // onboarding). The corrected contract: log it, keep the session, let
+        // the stream recover. Real revocation goes through the fatal-code path.
         streamController.addError(StateError('stream broken'));
         await settleStreamError();
 
-        expect(streamAuthService.sessionExpired, isTrue);
-        expect(streamAuthService.currentUser, isNull);
-        expect(streamAuthService.errorMessage, contains('Sessionen'));
-        verify(() => mockAuthRepository.signOut()).called(1);
+        expect(streamAuthService.sessionExpired, isFalse,
+            reason: 'transient error must not invalidate the session');
+        verifyNever(() => mockAuthRepository.signOut());
 
         final events = mockAnalyticsService.capturedEvents
             .where((e) => e.name == 'session_timeout_logout')
             .toList();
-        expect(events, hasLength(1));
-        expect(
-            events.single.parameters?['reason'], equals('auth_stream_error'));
-        expect(events.single.parameters?['error_code'], equals(''));
+        expect(events, isEmpty,
+            reason: 'no logout event for a transient stream error');
+      });
+
+      test(
+          'BUG-31: unknown FirebaseAuthException code is transient — session preserved',
+          () async {
+        // An unrecognized Firebase code (e.g. a momentary 'unavailable') is not
+        // in the fatal set, so it must NOT end the session.
+        streamController.addError(
+          FirebaseAuthException(code: 'unavailable'),
+        );
+        await settleStreamError();
+
+        expect(streamAuthService.sessionExpired, isFalse);
+        verifyNever(() => mockAuthRepository.signOut());
+
+        final events = mockAnalyticsService.capturedEvents
+            .where((e) => e.name == 'session_timeout_logout')
+            .toList();
+        expect(events, isEmpty);
+      });
+
+      test('BUG-31: user-not-found is fatal — invalidates session', () async {
+        streamController.addError(
+          FirebaseAuthException(code: 'user-not-found'),
+        );
+        await settleStreamError();
+
+        expect(streamAuthService.sessionExpired, isTrue);
+        expect(streamAuthService.currentUser, isNull);
+        verify(() => mockAuthRepository.signOut()).called(1);
       });
 
       test('forceSignOut failure does not crash the stream error handler',

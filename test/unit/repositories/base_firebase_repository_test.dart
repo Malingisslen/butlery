@@ -415,6 +415,30 @@ void main() {
           expect(doc.data()?['title'], equals(model.title));
         }
       });
+
+      test(
+          'createBatch persists every doc when the set exceeds the 500-op '
+          'Firestore batch limit (chunked across multiple commits)', () async {
+        // Arrange: 1001 docs > 500 → must span ≥3 chunks. A single un-chunked
+        // WriteBatch would throw INVALID_ARGUMENT and lose writes.
+        final models = List.generate(
+          1001,
+          (i) => TestModel(id: 'chunk_$i', title: 'Chunk $i'),
+        );
+
+        // Act
+        await repository.createBatch(models);
+
+        // Assert: a doc from every chunk boundary survived.
+        for (final id in ['chunk_0', 'chunk_450', 'chunk_900', 'chunk_1000']) {
+          final doc =
+              await fakeFirestore.collection('test_collection').doc(id).get();
+          expect(doc.exists, isTrue, reason: '$id should have been written');
+        }
+        final count =
+            await fakeFirestore.collection('test_collection').count().get();
+        expect(count.count, equals(1001));
+      });
     });
 
     group('Stream Operations', () {

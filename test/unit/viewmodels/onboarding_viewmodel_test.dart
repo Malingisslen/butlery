@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
@@ -203,6 +206,75 @@ void main() {
               name: 'onboarding_import_skipped',
               parameters: any(named: 'parameters'),
             ));
+      });
+    });
+
+    group('birth-year default seeding (bug 2)', () {
+      test(
+          'seedDefaultBirthYearIfUnset seeds currentYear-30 and enables the '
+          'age gate (selectedBirthYear non-null, gate passed)', () {
+        expect(viewModel.selectedBirthYear, isNull,
+            reason: 'no selection before the page is shown');
+
+        final seeded = viewModel.seedDefaultBirthYearIfUnset();
+
+        expect(seeded, isTrue);
+        expect(viewModel.selectedBirthYear, viewModel.defaultBirthYear,
+            reason: 'the displayed default must become a real selection so '
+                'Next is enabled on the first screen');
+        expect(viewModel.isAgeGatePassed, isTrue,
+            reason: 'a 30-year-old default passes the 15-year threshold');
+      });
+
+      test('seedDefaultBirthYearIfUnset is a no-op once the user has picked',
+          () {
+        viewModel.setBirthYear(1990);
+
+        final seeded = viewModel.seedDefaultBirthYearIfUnset();
+
+        expect(seeded, isFalse,
+            reason: 'a deliberate pick must never be clobbered by the default');
+        expect(viewModel.selectedBirthYear, 1990);
+      });
+
+      test('seeding the default still lets the under-15 block engage', () {
+        viewModel.seedDefaultBirthYearIfUnset(); // 30yo default -> passes
+        expect(viewModel.isAgeGatePassed, isTrue);
+
+        // User changes the year to a 10-year-old -> gate must now fail.
+        viewModel.setBirthYear(DateTime.now().year - 10);
+        expect(viewModel.isAgeGatePassed, isFalse,
+            reason: 'seeding the default must not weaken the GDPR age block');
+      });
+    });
+
+    group('completion timeout (bug 33)', () {
+      test(
+          'a hung completion write surfaces an error (returns false) instead '
+          'of hanging forever', () {
+        // The user-prefs write never resolves — without the timeout the whole
+        // onboarding spinner would hang. The bounded write throws
+        // TimeoutException, caught -> returns false. fakeAsync advances the
+        // virtual clock past the internal timeout without a real wall wait.
+        fakeAsync((async) {
+          when(() => mockUserService.completeOnboardingWithPreferences(
+                any(),
+                onboardingSkippedAt: any(named: 'onboardingSkippedAt'),
+                birthYear: any(named: 'birthYear'),
+              )).thenAnswer((_) => Completer<void>().future);
+
+          bool? result;
+          viewModel.completeOnboarding().then((r) => result = r);
+
+          // Before the timeout elapses the call is still pending.
+          async.elapse(const Duration(seconds: 19));
+          expect(result, isNull, reason: 'still waiting inside the timeout');
+
+          // Past the 20s bound the timeout fires -> returns false.
+          async.elapse(const Duration(seconds: 2));
+          expect(result, isFalse,
+              reason: 'a hung completion must degrade to an error, not hang');
+        });
       });
     });
 
@@ -626,6 +698,59 @@ void main() {
         reason: 'each single-slot recipe must occupy a distinct day — no two '
             'middag recipes may collide on the same day/slot',
       );
+    });
+
+    test(
+        'every seeded recipe is placed deterministically — a Frukost recipe '
+        'routes to övrigt and nothing is silently dropped (bug 34)', () async {
+      // Reproduces the seed mix: several single-slot recipes plus one Frukost
+      // (which maps to MealSlot.ovrigt). The old "one recipe per day across
+      // all slots" walk could exhaust the leading days and drop the trailing
+      // övrigt recipe. Slots are now independent, so all recipes land.
+      final ids = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6'];
+      final mealTypes = {
+        'r1': 'Middag',
+        'r2': 'Middag',
+        'r3': 'Middag',
+        'r4': 'Middag',
+        'r5': 'Lunch',
+        'r6': 'Frukost', // -> MealSlot.ovrigt
+      };
+      var created = 0;
+      when(() => mockRecipeService.createPersonalRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            sourceUrl: any(named: 'sourceUrl'),
+          )).thenAnswer(
+        (_) async => created < ids.length ? ids[created++] : null,
+      );
+      for (final id in ids) {
+        when(() => mockRecipeService.getRecipeById(id))
+            .thenReturn(recipeWith(id, mealTypes[id]!));
+      }
+      wireRealAdderOnEmptyWeek();
+
+      await viewModel.completeOnboarding();
+
+      final savedPlan = verify(() => mockMenuService.save(captureAny()))
+          .captured
+          .single as WeeklyMenuPlan;
+      final placedIds = savedPlan.entries.map((e) => e.recipeId).toSet();
+      expect(placedIds, containsAll(ids),
+          reason: 'no seeded recipe may be silently dropped — every recipe, '
+              'including the Frukost->övrigt one, must be placed');
+      // The Frukost recipe must land specifically in the övrigt bucket.
+      final ovrigtIds = savedPlan.entries
+          .where((e) => e.slot == MealSlot.ovrigt)
+          .map((e) => e.recipeId)
+          .toSet();
+      expect(ovrigtIds, contains('r6'),
+          reason: 'a Frukost recipe routes to MealSlot.ovrigt');
     });
 
     test(

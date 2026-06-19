@@ -407,7 +407,15 @@ class UserService extends ChangeNotifier
           AppLogger.success(
               '✅ Profil skapad automatiskt: ${_currentUserProfile!.displayName}');
         } else {
+          // BUG-13: the lazy auto-create returned null (e.g. permission-denied /
+          // App Check / unavailable during createOrUpdateProfile). Surface a
+          // user-visible error so AuthWrapper can show a retryable error state
+          // instead of an indefinite spinner. createOrUpdateProfile already set
+          // a specific _error; only fall back to the generic message if it didn't.
           AppLogger.error('❌ Kunde inte skapa profil automatiskt');
+          if (!hasError) {
+            _setError(AppLocale.current.errorCouldNotLoadProfile);
+          }
         }
       }
 
@@ -426,6 +434,16 @@ class UserService extends ChangeNotifier
       _setError(AppLocale.current.errorCouldNotLoadProfile);
       notifyListeners();
     }
+  }
+
+  /// BUG-13: Clear the load/create error and re-run the profile load.
+  /// Wired to the "Försök igen" button in AuthWrapper's error state so a
+  /// transient profile-load failure (permission-denied / App Check / unavailable)
+  /// is recoverable without a full sign-out. No-op-safe when already loaded.
+  Future<void> retryLoadProfile() async {
+    _clearError();
+    notifyListeners();
+    await _loadCurrentUserProfile();
   }
 
   /// Ensures base user document exists in 'users' collection for friends system

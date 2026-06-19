@@ -145,14 +145,20 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     }
 
     final ratingId = '${recipeId}_$userId';
-    await collection.doc(ratingId).set({
+    final docRef = collection.doc(ratingId);
+
+    // createdAt is write-once: re-rating must not reset the original timestamp.
+    // A plain set() (no merge) overwrites the whole doc, so only stamp
+    // createdAt when the rating doesn't already exist, and merge otherwise.
+    final existing = await docRef.get();
+    await docRef.set({
       'recipeId': recipeId,
       'userId': userId,
       'rating': rating,
       'review': review,
-      'createdAt': timestampProvider.serverTimestamp(),
+      if (!existing.exists) 'createdAt': timestampProvider.serverTimestamp(),
       'updatedAt': timestampProvider.serverTimestamp(),
-    });
+    }, SetOptions(merge: true));
 
     logPermissionCheck(
       userId: currentUser,

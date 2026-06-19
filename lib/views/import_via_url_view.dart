@@ -82,7 +82,12 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   void initState() {
     super.initState();
     _urlController.addListener(_onUrlChanged);
-    _viewModelForListener = ServiceLocator.get<UrlImportViewModel>();
+    // BUG-7: read the VM from the Provider — the SAME instance the fetch
+    // callbacks (context.read) and build (context.watch) use. A fresh
+    // ServiceLocator.get returns a DIFFERENT instance (the VM is registered
+    // as a factory), so the extracted-text editor would listen to a VM that
+    // never runs the fetch — leaving the field blank and 'continue' a no-op.
+    _viewModelForListener = context.read<UrlImportViewModel>();
     _viewModelForListener.addListener(_syncExtractedTextController);
     // Post-frame so the controller is mounted before triggering the
     // listener via .text assignment.

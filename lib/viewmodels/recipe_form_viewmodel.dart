@@ -197,10 +197,26 @@ class RecipeFormViewModel extends ChangeNotifier
         timeMinutes != original.timeMinutes ||
         rating != original.rating ||
         sourceUrl != original.sourceUrl ||
-        !_listEquals(ingredients, original.ingredients) ||
-        !_listEquals(instructions, original.instructions) ||
-        !_listEquals(tags, original.personalTagIds) ||
+        !_dynamicListEquals(ingredients, original.ingredients) ||
+        !_dynamicListEquals(instructions, original.instructions) ||
+        !_dynamicListEquals(tags, original.personalTagIds) ||
         !_listEquals(_imageManager.validImageUrls, original.imageUrls);
+  }
+
+  /// Compares the live form value of a dynamic list (ingredients/instructions/
+  /// tags) against the original recipe's list, ignoring the trailing empty
+  /// "add new" input row the form auto-appends on load. Without this strip,
+  /// a freshly opened recipe always looks edited (one extra empty entry) and
+  /// the discard-changes dialog fires on back with zero real edits.
+  bool _dynamicListEquals(List<String>? current, List<String>? original) {
+    return _listEquals(_stripEmpty(current), _stripEmpty(original));
+  }
+
+  /// Drops empty/whitespace-only entries so the auto-added blank row (and a
+  /// null original) compare equal to an otherwise-unchanged list.
+  List<String> _stripEmpty(List<String>? list) {
+    if (list == null) return const [];
+    return list.where((e) => e.trim().isNotEmpty).toList();
   }
 
   bool _listEquals<T>(List<T>? list1, List<T>? list2) {

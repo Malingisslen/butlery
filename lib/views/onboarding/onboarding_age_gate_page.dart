@@ -16,6 +16,12 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
+    // Seed the VM with the displayed default so `Next` is enabled immediately
+    // for the sensible default (idempotent — no-op once the user has picked).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      viewModel.seedDefaultBirthYearIfUnset();
+    });
+
     final currentYear = clock.now().year;
     // Range: oldest = 100 yrs ago, youngest = 13 (hard floor; 15-year Swedish
     // threshold is enforced by `isAgeGatePassed` after selection).
@@ -24,7 +30,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final years = [
       for (int y = youngestYear; y >= oldestYear; y--) y,
     ];
-    final defaultYear = currentYear - 30;
+    final defaultYear = viewModel.defaultBirthYear;
     final selected = viewModel.selectedBirthYear ?? defaultYear;
 
     return Padding(

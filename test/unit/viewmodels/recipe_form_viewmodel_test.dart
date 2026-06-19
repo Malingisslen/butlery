@@ -315,7 +315,8 @@ void main() {
 
         // Assert
         expect(viewModel.ingredientsManager.values[0], equals('2 dl mjölk'));
-        // hasUnsavedChanges doesn't check ingredients
+        // Not in edit mode → hasUnsavedChanges short-circuits to false (the
+        // getter does now compare ingredients once isEditing is true).
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
 
@@ -354,7 +355,8 @@ void main() {
 
         // Assert
         expect(viewModel.instructionsManager.values[0], equals('Koka pastan'));
-        // hasUnsavedChanges doesn't check instructions
+        // Not in edit mode → hasUnsavedChanges short-circuits to false (the
+        // getter does now compare instructions once isEditing is true).
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
 
@@ -393,7 +395,8 @@ void main() {
 
         // Assert
         expect(viewModel.tagsManager.values[0], equals('vegetarisk'));
-        // hasUnsavedChanges doesn't check tags
+        // Not in edit mode → hasUnsavedChanges short-circuits to false (the
+        // getter does now compare tags once isEditing is true).
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
 
@@ -441,15 +444,38 @@ void main() {
           initialRecipe: testRecipe,
         );
 
-        // Note: hasUnsavedChanges is initially true because _loadRecipeData
-        // appends trailing empty strings to ingredients/instructions/tags
-        // for auto-add behavior, making them differ from the original lists.
-        expect(editViewModel.hasUnsavedChanges, isTrue);
+        // A freshly opened recipe has NO unsaved changes, even though
+        // _loadRecipeData appends a trailing empty "add new" row to
+        // ingredients/instructions/tags. hasUnsavedChanges must strip those
+        // auto-added blanks before comparing, otherwise the discard-changes
+        // dialog fires on back with zero real edits.
+        expect(editViewModel.hasUnsavedChanges, isFalse);
 
-        // Act - change title to verify it still reports unsaved
+        // Act - make a real edit
         editViewModel.setTitle('Changed Title');
 
-        // Assert
+        // Assert - now it must report unsaved changes
+        expect(editViewModel.hasUnsavedChanges, isTrue);
+
+        // Cleanup
+        editViewModel.dispose();
+      });
+
+      test('should detect a real ingredient edit on a freshly opened recipe',
+          () {
+        // Arrange - edit mode with the auto-added trailing empty row present
+        final editViewModel = RecipeFormViewModel(
+          recipeService: mockRecipeService,
+          initialRecipe: testRecipe,
+        );
+
+        // Baseline: no edits yet despite the trailing blank row
+        expect(editViewModel.hasUnsavedChanges, isFalse);
+
+        // Act - change an existing ingredient (not the auto-added blank)
+        editViewModel.updateIngredient(0, 'Completely Different Ingredient');
+
+        // Assert - a genuine content change is still detected
         expect(editViewModel.hasUnsavedChanges, isTrue);
 
         // Cleanup

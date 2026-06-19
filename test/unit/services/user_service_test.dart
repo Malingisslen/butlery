@@ -183,6 +183,43 @@ void main() {
         expect(userService.currentUserProfile, isNull);
         expect(userService.hasError, isTrue);
       });
+
+      test(
+          'BUG-13: retryLoadProfile clears the error and recovers a transient '
+          'profile-load failure', () async {
+        // Arrange — first load fails (e.g. permission-denied / App Check),
+        // leaving the user on a retryable error state instead of a profile.
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockAuthRepository.authStateChanges())
+            .thenAnswer((_) => Stream.value(mockUser));
+        when(() => mockUserRepository.ensureBaseUserDocument(any()))
+            .thenAnswer((_) async {});
+
+        var attempt = 0;
+        when(() => mockUserRepository.fetchProfile('test_user_123'))
+            .thenAnswer((_) async {
+          attempt++;
+          if (attempt == 1) throw Exception('permission-denied');
+          return testProfile;
+        });
+
+        await userService.initialize();
+        expect(userService.hasError, isTrue,
+            reason: 'first load failed → error is observable');
+        expect(userService.currentUserProfile, isNull);
+
+        // Act — the "Försök igen" button calls retryLoadProfile().
+        await userService.retryLoadProfile();
+
+        // Assert — error cleared and the profile is now loaded.
+        expect(userService.hasError, isFalse);
+        expect(userService.currentUserProfile, isNotNull);
+        expect(userService.currentUserProfile?.uid, equals('test_user_123'));
+      });
     });
 
     group('Profile Management', () {

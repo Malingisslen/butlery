@@ -149,6 +149,26 @@ void main() {
       final v = _vote(votes: const {'u1': 'missing-option'});
       expect(v.leadingOption, isNull);
     });
+
+    test('tie-break is deterministic: lowest option id wins on equal counts',
+        () {
+      // Same tally (a:1, b:1) reached via two different vote-map insertion
+      // orders must yield the same leader — otherwise the leader would flip on
+      // map iteration order and two clients could disagree.
+      final order1 = _vote(votes: const {'u1': 'a', 'u2': 'b'});
+      final order2 = _vote(votes: const {'u1': 'b', 'u2': 'a'});
+      expect(order1.leadingOption?.id, 'a');
+      expect(order2.leadingOption?.id, 'a');
+    });
+
+    test('tie-break stays deterministic across more options', () {
+      final v = _vote(
+        alternatives: [_opt('c'), _opt('a'), _opt('b')],
+        votes: const {'u1': 'c', 'u2': 'a', 'u3': 'b'},
+      );
+      // All tied at 1 vote — 'a' sorts first.
+      expect(v.leadingOption?.id, 'a');
+    });
   });
 
   group('winningOption', () {

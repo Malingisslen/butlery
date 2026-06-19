@@ -13,8 +13,11 @@ class ParseEventLogger {
   // would otherwise throw "No Firebase App '[DEFAULT]'" just from creating
   // a UrlImportStrategy.
   FirebaseFunctions? _functionsCache;
+  // logParseEvent deploys to europe-west1 (setGlobalOptions in functions/src
+  // index.ts). The default instance targets us-central1, so calling it there
+  // returns NOT_FOUND and silently drops every parse-event log. Pin the region.
   FirebaseFunctions get _functions =>
-      _functionsCache ??= FirebaseFunctions.instance;
+      _functionsCache ??= FirebaseFunctions.instanceFor(region: 'europe-west1');
 
   void logEvent({
     required String? url,

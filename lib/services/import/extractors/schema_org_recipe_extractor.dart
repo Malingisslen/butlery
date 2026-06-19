@@ -78,18 +78,9 @@ class SchemaOrgRecipeExtractor {
 
     if (instructions is List) {
       final steps = <String>[];
-
       for (final instruction in instructions) {
-        if (instruction is String) {
-          steps.add(instruction.trim());
-        } else if (instruction is Map) {
-          final text = instruction['text'];
-          if (text != null && text.toString().trim().isNotEmpty) {
-            steps.add(text.toString().trim());
-          }
-        }
+        _collectInstructionSteps(instruction, steps);
       }
-
       return steps.where((s) => s.isNotEmpty).toList();
     }
 
@@ -108,6 +99,37 @@ class SchemaOrgRecipeExtractor {
     }
 
     return [];
+  }
+
+  /// Flattens one `recipeInstructions` element into [steps].
+  ///
+  /// schema.org allows three shapes here: a bare string, a `HowToStep`
+  /// ({ text }), and a `HowToSection` whose actual steps live nested under
+  /// `itemListElement`. The previous code only read `text` on the top-level
+  /// map, so HowToSection recipes (common on sites that group steps into
+  /// "Förberedelse"/"Tillagning") yielded ZERO instructions. We recurse into
+  /// `itemListElement` so sectioned steps are collected too.
+  static void _collectInstructionSteps(
+      dynamic instruction, List<String> steps) {
+    if (instruction is String) {
+      steps.add(instruction.trim());
+      return;
+    }
+
+    if (instruction is Map) {
+      final section = instruction['itemListElement'];
+      if (section is List) {
+        for (final child in section) {
+          _collectInstructionSteps(child, steps);
+        }
+        return;
+      }
+
+      final text = instruction['text'];
+      if (text != null && text.toString().trim().isNotEmpty) {
+        steps.add(text.toString().trim());
+      }
+    }
   }
 
   /// Strips price annotations like "($0.18)", "$7.95*" from ingredient text.

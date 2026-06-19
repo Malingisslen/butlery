@@ -71,6 +71,32 @@ function extractDomain(url: unknown): string | null {
 }
 
 /**
+ * Validate a registrable hostname.
+ *
+ * The client supplies `domain` directly, and we use it verbatim as a
+ * site_configs document ID. Without validation a caller could auto-create
+ * config docs from arbitrary or malformed strings (empty, path-like values
+ * containing "/", oversized blobs). Accept only lowercase dotted hostnames:
+ * dot-separated labels of [a-z0-9-], each starting/ending alphanumeric, at
+ * least two labels (a TLD), bounded length. Returns the normalized hostname
+ * or null when invalid.
+ */
+export function validateDomain(domain: unknown): string | null {
+  if (typeof domain !== "string") {
+    return null;
+  }
+  const normalized = domain.toLowerCase().replace(/^www\./, "").trim();
+  // Overall length guard (RFC 1035 caps hostnames at 253 chars) and a strict
+  // label/TLD shape. No "/", no whitespace, no leading/trailing dots.
+  if (normalized.length === 0 || normalized.length > 253) {
+    return null;
+  }
+  const hostnameRegex =
+    /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+  return hostnameRegex.test(normalized) ? normalized : null;
+}
+
+/**
  * Validate and normalize source type
  */
 function validateSource(source: unknown): string {
@@ -183,7 +209,10 @@ export const logParseEvent = onCall(
     const trustedFields = {
       userId,
       url: sanitizedUrl,
-      domain: typeof data.domain === "string" ? data.domain.toLowerCase().replace(/^www\./, "") : extractDomain(data.url),
+      // Validate the client-supplied domain (it becomes a site_configs doc ID
+      // below). Fall back to the domain parsed from the sanitized URL, which
+      // new URL() already guarantees is a real hostname.
+      domain: validateDomain(data.domain) ?? extractDomain(data.url),
       source: validateSource(data.source),
       success: Boolean(data.success),
       fromCache: Boolean(data.fromCache),

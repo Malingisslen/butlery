@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:clock/clock.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
@@ -213,6 +214,46 @@ void main() {
           ),
           throwsA(isA<PermissionDeniedException>()),
         );
+      });
+
+      test('re-rating preserves the original createdAt (write-once)', () async {
+        // Intent: rateRecipe must not reset createdAt when a user changes their
+        // existing rating — a plain set() would clobber the original timestamp.
+        const recipeId = 'recipe-1';
+        const ratingId = '${recipeId}_user-123';
+        final firstRatedAt = DateTime.utc(2024, 1, 1, 12);
+        final secondRatedAt = DateTime.utc(2024, 6, 1, 12);
+
+        await withClock(Clock.fixed(firstRatedAt), () async {
+          await repository.rateRecipe(
+            recipeId: recipeId,
+            userId: 'user-123',
+            rating: 3.0,
+            review: 'First take',
+          );
+        });
+
+        await withClock(Clock.fixed(secondRatedAt), () async {
+          await repository.rateRecipe(
+            recipeId: recipeId,
+            userId: 'user-123',
+            rating: 5.0,
+            review: 'Changed my mind',
+          );
+        });
+
+        final data = (await fakeFirestore
+                .collection('recipe_ratings')
+                .doc(ratingId)
+                .get())
+            .data()!;
+
+        expect((data['createdAt'] as Timestamp).toDate(), equals(firstRatedAt),
+            reason: 'createdAt must stay anchored to the first rating');
+        expect((data['updatedAt'] as Timestamp).toDate(), equals(secondRatedAt),
+            reason: 'updatedAt must advance to the latest rating');
+        expect(data['rating'], equals(5.0));
+        expect(data['review'], equals('Changed my mind'));
       });
     });
 

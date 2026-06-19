@@ -224,9 +224,11 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
       } catch (_) {
         // Standalone page (not inside the wizard) — nothing to mark.
       }
+      // The manualEntry route reads 'initialRecipe' (see app_router.dart) —
+      // 'recipe' was silently dropped, opening the editor blank.
       Navigator.of(context).pushNamed(
         Routes.manualEntry,
-        arguments: {'recipe': result.recipe},
+        arguments: {'initialRecipe': result.recipe},
       );
     }
   }

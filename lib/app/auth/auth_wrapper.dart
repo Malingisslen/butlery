@@ -147,6 +147,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
       // Check if user has completed onboarding
       final profile = _userService.currentUserProfile;
       if (profile == null) {
+        // BUG-12: a null profile can mean "still loading" OR "load/create
+        // failed" (permission-denied / App Check / unavailable). Only show the
+        // bare spinner while genuinely loading — when the load errored, show a
+        // retryable error state so the user isn't stuck on an endless spinner.
+        if (_userService.hasError) {
+          return _ProfileLoadErrorView(
+            message:
+                _userService.error ?? context.l10n.errorCouldNotLoadProfile,
+            onRetry: () => _userService.retryLoadProfile(),
+          );
+        }
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
       if (!profile.hasCompletedOnboarding) {
@@ -304,4 +315,59 @@ class _ResumeResolution {
   final int pageIndex;
   final bool showNudge;
   const _ResumeResolution({required this.pageIndex, required this.showNudge});
+}
+
+/// BUG-12: Retryable error state shown when the user is authenticated but the
+/// profile load/create failed. Replaces the previously un-retryable spinner.
+class _ProfileLoadErrorView extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ProfileLoadErrorView({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingXl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: AppDimensions.iconSizeXxl,
+                  color: cs.error,
+                ),
+                const SizedBox(height: AppDimensions.spacingLg),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingLg),
+                SizedBox(
+                  width: double.infinity,
+                  height: AppDimensions.buttonHeight,
+                  child: ElevatedButton(
+                    onPressed: onRetry,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primary,
+                      foregroundColor: cs.surfaceContainerHighest,
+                      shape: const RoundedRectangleBorder(),
+                    ),
+                    child: Text(context.l10n.commonRetry),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

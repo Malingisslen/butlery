@@ -141,19 +141,54 @@ function getRateLimitRef(
 }
 
 /**
- * Calculate current available tokens based on time elapsed.
+ * Result of refilling a bucket up to `now`.
+ *
+ * `effectiveRefill` is the timestamp that must be persisted as the new
+ * `lastRefill`. It is NOT simply `now`: when only a fraction of a refill
+ * interval has elapsed we credit the corresponding fraction of a token and
+ * carry the unused remainder forward by advancing `lastRefill` only by the
+ * time we actually consumed. Persisting `now` instead would discard that
+ * sub-interval progress, so a user requesting faster than one interval would
+ * never refill and stay locked out far longer than the configured rate.
  */
-function calculateCurrentTokens(
+interface RefillResult {
+  tokens: number;
+  effectiveRefill: Date;
+}
+
+/**
+ * Calculate current available tokens based on time elapsed, crediting
+ * fractional-interval progress instead of flooring it away.
+ *
+ * Exported as a test seam (the refill math is the BUT bug-35 fix); not part
+ * of the public middleware contract.
+ */
+export function calculateCurrentTokens(
   storedTokens: number,
   lastRefill: Date,
   config: RateLimitConfig
-): number {
+): RefillResult {
   const now = Date.now();
-  const elapsed = now - lastRefill.getTime();
-  const intervalsElapsed = Math.floor(elapsed / config.refillIntervalMs);
-  const tokensToAdd = intervalsElapsed * config.refillRate;
+  const elapsed = Math.max(0, now - lastRefill.getTime());
 
-  return Math.min(config.maxTokens, storedTokens + tokensToAdd);
+  // Continuous refill: tokens accrue at refillRate per refillIntervalMs.
+  const tokensPerMs = config.refillRate / config.refillIntervalMs;
+  const refilled = storedTokens + elapsed * tokensPerMs;
+  const tokens = Math.min(config.maxTokens, refilled);
+
+  // If the bucket capped out, anchor lastRefill at `now` (all elapsed time is
+  // accounted for). Otherwise advance it by the whole-millisecond span of the
+  // tokens we actually credited, leaving the sub-token remainder of time to
+  // accrue on the next call.
+  let effectiveRefill: Date;
+  if (tokens >= config.maxTokens) {
+    effectiveRefill = new Date(now);
+  } else {
+    const creditedMs = Math.floor((tokens - storedTokens) / tokensPerMs);
+    effectiveRefill = new Date(lastRefill.getTime() + creditedMs);
+  }
+
+  return { tokens, effectiveRefill };
 }
 
 /**
@@ -179,16 +214,24 @@ export async function checkRateLimit(
       const now = new Date();
 
       let currentTokens: number;
-      let lastRefill: Date;
+      // Timestamp to persist as the new lastRefill. Preserves sub-interval
+      // refill progress (see calculateCurrentTokens) rather than resetting to
+      // `now`, which would strand fractional accrual and lock users out early.
+      let refillAnchor: Date;
 
       if (doc.exists) {
         const data = doc.data() as StoredRateLimit;
-        lastRefill = data.lastRefill.toDate();
-        currentTokens = calculateCurrentTokens(data.tokens, lastRefill, config);
+        const refill = calculateCurrentTokens(
+          data.tokens,
+          data.lastRefill.toDate(),
+          config
+        );
+        currentTokens = refill.tokens;
+        refillAnchor = refill.effectiveRefill;
       } else {
         // First request - start with full bucket
         currentTokens = config.maxTokens;
-        lastRefill = now;
+        refillAnchor = now;
       }
 
       // Check if enough tokens available
@@ -210,7 +253,7 @@ export async function checkRateLimit(
       const newTokens = currentTokens - tokensRequired;
       const updateData: Partial<StoredRateLimit> = {
         tokens: newTokens,
-        lastRefill: admin.firestore.Timestamp.fromDate(now),
+        lastRefill: admin.firestore.Timestamp.fromDate(refillAnchor),
         operationType,
         updatedAt: admin.firestore.Timestamp.now(),
       };

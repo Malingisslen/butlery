@@ -11,6 +11,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/text_formatting.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
@@ -20,6 +21,7 @@ import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -67,6 +69,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   /// Tracks which instruction steps are completed (local state, not persisted).
   final Set<int> _completedSteps = {};
 
+  /// Tag ID → display-name map resolved on-demand from [PersonalTagService]
+  /// when the parent doesn't supply [widget.personalTagNames]. Without this,
+  /// `personalTagIds` never resolve to names and the personal-tags section
+  /// silently never renders (the parent views pass nothing).
+  Map<String, String>? _resolvedTagNames;
+
   RecipeDetailViewModel get viewModel => widget.viewModel;
   List<String> get scaledIngredients => widget.scaledIngredients;
   int get currentPortions => widget.currentPortions;
@@ -75,7 +83,36 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   Set<String>? get userAllergenPrefs => widget.userAllergenPrefs;
   Set<String>? get userDietaryPrefs => widget.userDietaryPrefs;
   bool get showCoverage => widget.showCoverage;
-  Map<String, String>? get personalTagNames => widget.personalTagNames;
+
+  /// Prefer an explicitly-supplied map; otherwise the on-demand resolution.
+  Map<String, String>? get personalTagNames =>
+      widget.personalTagNames ?? _resolvedTagNames;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolvePersonalTagNames();
+  }
+
+  /// Resolves the recipe's personal tag IDs to display names so the
+  /// personal-tags section can render. Skipped when the parent already
+  /// supplied names or the recipe carries no personal tags.
+  Future<void> _resolvePersonalTagNames() async {
+    if (widget.personalTagNames != null) return;
+    final tagIds = viewModel.recipe.personalTagIds;
+    if (tagIds == null || tagIds.isEmpty) return;
+
+    try {
+      final service = ServiceLocator.get<PersonalTagService>();
+      final tags = await service.getTagsByIds(tagIds);
+      if (!mounted) return;
+      setState(() {
+        _resolvedTagNames = {for (final t in tags) t.id: t.name};
+      });
+    } catch (_) {
+      // Non-critical — section just stays hidden if resolution fails.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -445,12 +482,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     return false;
   }
 
-  /// Formats a quantity for display, removing trailing .0 for whole numbers.
+  /// Formats a quantity for display with sv-SE decimal comma (1.5 → "1,5");
+  /// whole numbers render without a decimal.
   String _formatQuantity(double quantity) {
-    if (quantity == quantity.roundToDouble()) {
-      return quantity.toInt().toString();
-    }
-    return quantity.toStringAsFixed(1);
+    return TextFormatting.formatFractional(quantity);
   }
 
   void _showSubstitutionSheet(BuildContext context, String ingredientName) {

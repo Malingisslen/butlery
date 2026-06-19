@@ -154,19 +154,23 @@ class MessagingService extends BaseService with StreamManagementMixin {
         throw AuthenticationException('User must be authenticated');
       }
 
-      // Add current user to participants if not already included
+      // Add current user to participants if not already included. Copy the
+      // caller's maps first so adding the current user never mutates the
+      // caller's passed-in collections as a side effect.
       final allParticipantIds = [...participantIds];
+      final displayNames = Map<String, String>.from(participantDisplayNames);
+      final avatarUrls = Map<String, String?>.from(participantAvatarUrls);
       if (!allParticipantIds.contains(currentUser.uid)) {
         allParticipantIds.add(currentUser.uid);
-        participantDisplayNames[currentUser.uid] =
+        displayNames[currentUser.uid] =
             currentUser.displayName ?? AppLocale.current.displayUnknownUser;
-        participantAvatarUrls[currentUser.uid] = currentUser.photoURL;
+        avatarUrls[currentUser.uid] = currentUser.photoURL;
       }
 
       final conversationId = await _messagingRepository.createGroupConversation(
         participantIds: allParticipantIds,
-        participantDisplayNames: participantDisplayNames,
-        participantAvatarUrls: participantAvatarUrls,
+        participantDisplayNames: displayNames,
+        participantAvatarUrls: avatarUrls,
         title: title,
         creatorId: currentUser.uid,
       );

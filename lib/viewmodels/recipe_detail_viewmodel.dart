@@ -457,7 +457,14 @@ class RecipeDetailViewModel extends ChangeNotifier
     _recipe = _recipe.copyWith(isFavorite: newValue);
     notifyListeners();
 
-    final success = await _recipeService.toggleFavorite(_recipe.id, newValue);
+    // Pass the in-hand recipe as fallback: a shared/deep-linked recipe may not
+    // be in the service's in-memory cache, in which case the toggle would
+    // otherwise bail and the heart would bounce back.
+    final success = await _recipeService.toggleFavorite(
+      _recipe.id,
+      newValue,
+      fallbackRecipe: _recipe,
+    );
     if (!success) {
       _recipe = _recipe.copyWith(isFavorite: !newValue);
       notifyListeners();

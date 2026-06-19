@@ -186,17 +186,19 @@ void main() {
     });
   });
 
-  group('collaborativeListsStream (smoke)', () {
-    test('subscribing does not throw', () async {
-      // We can't reliably exercise the memberPermissions.$uid !=null path
-      // through fake_cloud_firestore — it doesn't index nested map keys
-      // for isNotEqualTo. This test just verifies the stream can be built
-      // and yields the first event (likely empty in the fake).
+  group('collaborativeListsStream', () {
+    test('emits a (possibly empty) list and does not throw', () async {
+      // We can't reliably exercise the memberPermissions.$uid != null path
+      // through fake_cloud_firestore — it doesn't index nested map keys for
+      // isNotEqualTo, so the filter yields no docs here. The behavioural point
+      // of the fix is that the query no longer pairs an inequality filter with
+      // an orderBy on a *different* field (which throws on real Firestore and
+      // silently empties the stream). Awaiting .first proves the stream builds
+      // its first event end-to-end (client-side sort + take(20)) without error.
       final firestore = FakeFirebaseFirestore();
-      final stream = _module(firestore).collaborativeListsStream();
-      // Don't await .first — the fake may never emit; just verify the
-      // stream object materializes.
-      expect(stream, isA<Stream<List<UnifiedShoppingList>>>());
+      final lists = await _module(firestore).collaborativeListsStream().first;
+      expect(lists, isA<List<UnifiedShoppingList>>());
+      expect(lists.length, lessThanOrEqualTo(20));
     });
   });
 }

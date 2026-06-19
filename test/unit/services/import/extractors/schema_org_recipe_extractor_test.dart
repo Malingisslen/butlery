@@ -155,6 +155,48 @@ void main() {
     test('null → empty list', () {
       expect(SchemaOrgRecipeExtractor.extractInstructions({}), isEmpty);
     });
+
+    test('HowToSection → flattens nested itemListElement steps', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractInstructions({
+          'recipeInstructions': [
+            {
+              '@type': 'HowToSection',
+              'name': 'Förberedelse',
+              'itemListElement': [
+                {'@type': 'HowToStep', 'text': 'Koka vatten'},
+                {'@type': 'HowToStep', 'text': 'Hacka lök'},
+              ],
+            },
+            {
+              '@type': 'HowToSection',
+              'name': 'Tillagning',
+              'itemListElement': [
+                {'@type': 'HowToStep', 'text': 'Stek löken'},
+              ],
+            },
+          ],
+        }),
+        ['Koka vatten', 'Hacka lök', 'Stek löken'],
+      );
+    });
+
+    test('mixed HowToSection + bare HowToStep at top level', () {
+      expect(
+        SchemaOrgRecipeExtractor.extractInstructions({
+          'recipeInstructions': [
+            {'@type': 'HowToStep', 'text': 'Värm ugnen'},
+            {
+              '@type': 'HowToSection',
+              'itemListElement': [
+                {'@type': 'HowToStep', 'text': 'Vispa ägg'},
+              ],
+            },
+          ],
+        }),
+        ['Värm ugnen', 'Vispa ägg'],
+      );
+    });
   });
 
   group('extractYield', () {

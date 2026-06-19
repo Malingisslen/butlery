@@ -221,6 +221,20 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
   void registerWarningCallback(VoidCallback callback) {
     _onShowWarning = callback;
     AppLogger.debug('SessionTimeoutService: Warning callback registered');
+
+    // BUG-31: if the warning already fired before the UI registered its
+    // callback, the user would get logged out without ever seeing the warning.
+    // While a warning is still pending and the session is active (i.e. the
+    // inactivity timer hasn't logged out yet — _performLogout/onAppPaused clear
+    // _isActive), replay it now so a late-registered UI still gets the chance.
+    // Gating on _isActive (not timeRemaining) is robust even when activity was
+    // never recorded and _lastActivityTime is still null.
+    if (_warningShown && _isActive) {
+      AppLogger.debug(
+        'SessionTimeoutService: replaying pending warning to newly-registered callback',
+      );
+      callback.call();
+    }
   }
 
   /// Force immediate logout (called from warning dialog "Logout Now" action).
@@ -289,8 +303,20 @@ class SessionTimeoutService with ErrorHandlingMixin, StreamManagementMixin {
       },
     );
 
-    // Invoke UI callback to show warning dialog
-    _onShowWarning?.call();
+    // BUG-31: invoke UI callback to show warning dialog. If no callback is
+    // registered (UI layer not yet wired, or unregistered), the user would
+    // otherwise be logged out with no warning at all. We can't safely skip the
+    // logout (that weakens session-timeout security), but we surface the gap
+    // loudly so it's observable rather than silent.
+    final callback = _onShowWarning;
+    if (callback == null) {
+      AppLogger.warning(
+        'SessionTimeoutService: warning fired but no UI callback registered — '
+        'logout will proceed without a visible warning',
+      );
+      return;
+    }
+    callback.call();
   }
 
   /// Perform logout due to timeout or user request.

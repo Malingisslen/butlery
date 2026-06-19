@@ -1185,6 +1185,39 @@ void main() {
       await serviceNoGoogleKey.dispose();
     });
 
+    test(
+        'returns unavailable (not generic "better lighting") when no provider '
+        'is configured', () async {
+      // BUG-25: with every API key / URL absent, no provider runs, so the
+      // generic failure path used to surface "try better lighting" — wrong for
+      // a missing-credentials misconfiguration. Now it short-circuits to an
+      // "unavailable" classification and never touches the network.
+      final serviceNoKeys = OCRExtractionService.createForTesting(
+        testHttpClient: mockClient,
+        testTimeProvider: () => testTime,
+      );
+
+      final result =
+          await serviceNoKeys.extractText(OCRTestImages.mediumQuality);
+
+      expect(result.isSuccessful, isFalse);
+      expect(result.processingMethod, equals('no_provider_configured'));
+      expect(result.metadata['failure_classification'], equals('unavailable'));
+      // All breakers reported open so the message builder picks the accurate
+      // "services unavailable" Swedish copy rather than the generic tip.
+      final breakers =
+          result.metadata['circuit_breakers'] as Map<String, dynamic>;
+      expect(breakers['ocr_space_state'], equals('open'));
+      expect(breakers['google_vision_state'], equals('open'));
+      expect(breakers['tesseract_state'], equals('open'));
+      // No HTTP attempted at all.
+      verifyNever(() => mockClient.send(any()));
+      verifyNever(() => mockClient.post(any(),
+          headers: any(named: 'headers'), body: any(named: 'body')));
+
+      await serviceNoKeys.dispose();
+    });
+
     test('should record usage for successful provider', () async {
       final imageBytes = OCRTestImages.mediumQuality;
 

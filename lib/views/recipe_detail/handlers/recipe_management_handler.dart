@@ -135,9 +135,16 @@ class RecipeManagementHandler {
     final viewModel = context.read<RecipeDetailViewModel>();
 
     try {
-      await viewModel.markAsCooked();
+      // markAsCooked returns false when nothing was recorded — most commonly
+      // because the recipe was already logged today (per-day dedup). Only show
+      // success on a real write; otherwise a neutral "already logged" message.
+      final recorded = await viewModel.markAsCooked();
       if (!context.mounted) return;
-      SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);
+      if (recorded) {
+        SnackBarUtils.showSuccess(context, context.l10n.recipeMarkedAsCooked);
+      } else {
+        SnackBarUtils.showInfo(context, context.l10n.recipeAlreadyCookedToday);
+      }
     } catch (e) {
       if (!context.mounted) return;
       SnackBarUtils.showError(context, context.l10n.recipeCouldNotMarkAsCooked);

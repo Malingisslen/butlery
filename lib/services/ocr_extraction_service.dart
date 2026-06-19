@@ -351,6 +351,33 @@ class OCRExtractionService extends BaseService {
     // instead of collapsing every failure to "try better lighting."
     final providerErrors = <String, String>{};
 
+    // No provider can run because none is configured (all API keys / URLs
+    // absent). Without this guard the loop below attempts nothing, leaves
+    // [providerErrors] empty, and the failure path classifies as "generic" —
+    // surfacing the misleading "try better lighting" copy for what is actually
+    // a missing-credentials misconfiguration. Mark every breaker `open` so the
+    // message builder's "services unavailable" branch produces accurate copy.
+    final noProviderConfigured = _ocrApiKey.isEmpty &&
+        _googleVisionKey.isEmpty &&
+        _tesseractApiUrl.isEmpty;
+    if (noProviderConfigured) {
+      return OCRResult.failure(
+        method: 'no_provider_configured',
+        error: 'OCR unavailable: no provider is configured (missing API keys)',
+        metadata: {
+          'quality_assessment': qualityAssessment.qualityScore,
+          'recommendations': qualityAssessment.recommendations,
+          'circuit_breakers': {
+            'ocr_space_state': 'open',
+            'google_vision_state': 'open',
+            'tesseract_state': 'open',
+          },
+          'failure_classification': 'unavailable',
+          'provider_errors': const <String, String>{},
+        },
+      );
+    }
+
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
       try {
         result = await _extractWithOCRSpace(preprocessedImage);

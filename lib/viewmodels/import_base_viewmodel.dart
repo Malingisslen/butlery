@@ -394,12 +394,25 @@ mixin UrlImportMixin on ImportBaseViewModel {
     final trimmedUrl = _url.trim();
     setSourceUrl(trimmedUrl);
 
-    final extractedText = await executeAsync<String>(
-      () => fetchContentFromUrl(trimmedUrl),
-    );
-
-    _extractedText = extractedText;
-    notifyListeners();
+    try {
+      final extractedText = await executeAsync<String>(
+        () => fetchContentFromUrl(trimmedUrl),
+      );
+      if (isDisposed) return;
+      _extractedText = extractedText;
+      notifyListeners();
+    } catch (_) {
+      // executeAsync always surfaces a Swedish error banner via setError before
+      // it rethrows. Swallow the rethrow here so a fetch failure (network /
+      // SSRF block / timeout) doesn't escape as an unhandled async error — the
+      // UI error state is the user-facing outcome. _extractedText is left
+      // untouched so any prior extraction is preserved. As a belt-and-braces
+      // guard, surface a generic Swedish error if somehow none was set.
+      if (isDisposed) return;
+      if (!hasError) {
+        setError(AppLocale.current.errorUnexpected);
+      }
+    }
   }
 
   @override
