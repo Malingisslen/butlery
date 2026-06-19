@@ -9414,6 +9414,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminMetricNoData => 'Ingen data än';
 
   @override
+  String get adminMetricInfo => 'Om den här siffran';
+
+  @override
+  String get adminMetricWhat => 'Vad är det';
+
+  @override
+  String get adminMetricHow => 'Hur räknas det';
+
+  @override
+  String get adminMetricWhy => 'Varför viktigt';
+
+  @override
   String get metricRecipeTotalWhat =>
       'Det totala antalet recept som finns i appen, över alla användare.';
 

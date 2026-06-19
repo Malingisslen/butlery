@@ -7,6 +7,7 @@ import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/admin/widgets/admin_metric_info_button.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 
 /// Renders one resolved metric by its [MetricValue] kind. The `switch` is
@@ -27,24 +28,29 @@ class MetricRenderer extends StatelessWidget {
   Widget build(BuildContext context) {
     final desc = catalog[metricKey]!;
     final label = desc.label(context.l10n);
+    final info = AdminMetricInfoButton(metricKey: metricKey);
     return switch (value) {
       ScalarMetric(value: final v) => AdminStatCard(
           label: label,
           value: formatMetricValue(v, desc.format),
+          action: info,
         ),
       BreakdownMetric(rows: final rows) => _LabelValueTable(
           title: label,
           format: desc.format,
+          action: info,
           rows: [for (final r in rows) (r.label, r.value)],
         ),
       SeriesMetric(points: final points) => _LabelValueTable(
           title: label,
           format: desc.format,
+          action: info,
           rows: [for (final p in points) (p.label, p.value)],
         ),
       FunnelMetric(stages: final stages) => _LabelValueTable(
           title: label,
           format: desc.format,
+          action: info,
           rows: [for (final s in stages) (s.label, s.value)],
         ),
       final MatrixMetric m => _MatrixTable(
@@ -52,8 +58,37 @@ class MetricRenderer extends StatelessWidget {
           value: m,
           format: desc.format,
           columnFormats: desc.columnFormats,
+          action: info,
         ),
     };
+  }
+}
+
+/// A titled header bar with an optional trailing action (the info button).
+class _TableHeader extends StatelessWidget {
+  final String title;
+  final Widget? action;
+  const _TableHeader({required this.title, this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      color: cs.surfaceContainerHighest,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.paddingS,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(title, style: AppTextStyles.metadataEmphasized),
+          ),
+          if (action != null) action!,
+        ],
+      ),
+    );
   }
 }
 
@@ -62,10 +97,12 @@ class _LabelValueTable extends StatelessWidget {
   final String title;
   final MetricFormat format;
   final List<(String, num)> rows;
+  final Widget? action;
   const _LabelValueTable({
     required this.title,
     required this.format,
     required this.rows,
+    this.action,
   });
 
   @override
@@ -74,15 +111,7 @@ class _LabelValueTable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          color: cs.surfaceContainerHighest,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-          child: Text(title, style: AppTextStyles.metadataEmphasized),
-        ),
+        _TableHeader(title: title, action: action),
         if (rows.isEmpty)
           Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
@@ -121,11 +150,13 @@ class _MatrixTable extends StatelessWidget {
   final MatrixMetric value;
   final MetricFormat format;
   final List<MetricFormat>? columnFormats;
+  final Widget? action;
   const _MatrixTable({
     required this.title,
     required this.value,
     required this.format,
     this.columnFormats,
+    this.action,
   });
 
   MetricFormat _formatFor(int column) {
@@ -140,15 +171,7 @@ class _MatrixTable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          color: cs.surfaceContainerHighest,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-          child: Text(title, style: AppTextStyles.metadataEmphasized),
-        ),
+        _TableHeader(title: title, action: action),
         if (value.isEmpty)
           Padding(
             padding: const EdgeInsets.all(AppDimensions.paddingM),

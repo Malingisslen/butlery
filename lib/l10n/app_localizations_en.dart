@@ -9394,6 +9394,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminMetricNoData => 'No data yet';
 
   @override
+  String get adminMetricInfo => 'About this number';
+
+  @override
+  String get adminMetricWhat => 'What it is';
+
+  @override
+  String get adminMetricHow => 'How it\'s calculated';
+
+  @override
+  String get adminMetricWhy => 'Why it matters';
+
+  @override
   String get metricRecipeTotalWhat =>
       'The total number of recipes in the app, across all users.';
 

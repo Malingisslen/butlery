@@ -15969,6 +15969,30 @@ abstract class AppLocalizations {
   /// **'Ingen data än'**
   String get adminMetricNoData;
 
+  /// No description provided for @adminMetricInfo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Om den här siffran'**
+  String get adminMetricInfo;
+
+  /// No description provided for @adminMetricWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad är det'**
+  String get adminMetricWhat;
+
+  /// No description provided for @adminMetricHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur räknas det'**
+  String get adminMetricHow;
+
+  /// No description provided for @adminMetricWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varför viktigt'**
+  String get adminMetricWhy;
+
   /// No description provided for @metricRecipeTotalWhat.
   ///
   /// In sv, this message translates to:

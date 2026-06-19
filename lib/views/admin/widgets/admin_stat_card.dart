@@ -10,7 +10,15 @@ import 'package:butlery/theme/app_text_styles.dart';
 class AdminStatCard extends StatelessWidget {
   final String label;
   final String value;
-  const AdminStatCard({super.key, required this.label, required this.value});
+
+  /// Optional top-right control (e.g. the metric info "i" button).
+  final Widget? action;
+  const AdminStatCard({
+    super.key,
+    required this.label,
+    required this.value,
+    this.action,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +33,15 @@ class AdminStatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value, style: AppTextStyles.headlineBold),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(value, style: AppTextStyles.headlineBold),
+              ),
+              if (action != null) action!,
+            ],
+          ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
