@@ -3,8 +3,10 @@ import 'package:butlery/models/admin/metrics/insights_data.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/models/admin/metrics/resolvers.dart';
+import 'package:butlery/models/admin/engagement_stats.dart';
 import 'package:butlery/models/admin/recipe_stats.dart';
 import 'package:butlery/models/parsing/site_config.dart';
+import 'package:butlery/repositories/engagement_repository.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
 
@@ -35,6 +37,21 @@ class ImportCategoryFetcher implements CategoryFetcher {
 
   @override
   Future<Object> fetch() => _repository.getAllConfigs();
+}
+
+class EngagementCategoryFetcher implements CategoryFetcher {
+  final EngagementRepository _repository;
+  EngagementCategoryFetcher(this._repository);
+
+  @override
+  MetricCategory get category => MetricCategory.engagement;
+
+  @override
+  Future<Object> fetch() async {
+    final count = await _repository.getUserCount();
+    final days = await _repository.getDailyFeatureRetention();
+    return EngagementRaw(userCount: count, days: days);
+  }
 }
 
 /// Assembles [InsightsData] by fetching ONLY the categories whose metrics are
@@ -86,5 +103,6 @@ class MetricsAssembler {
   InsightsData _assemble() => InsightsData(
         recipes: _cache[MetricCategory.recipes] as RecipeStats?,
         importConfigs: _cache[MetricCategory.importHealth] as List<SiteConfig>?,
+        engagement: _cache[MetricCategory.engagement] as EngagementRaw?,
       );
 }

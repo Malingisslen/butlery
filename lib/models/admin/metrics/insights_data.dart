@@ -1,3 +1,4 @@
+import 'package:butlery/models/admin/engagement_stats.dart';
 import 'package:butlery/models/admin/recipe_stats.dart';
 import 'package:butlery/models/parsing/site_config.dart';
 
@@ -14,5 +15,8 @@ class InsightsData {
   /// All site-config rollups (per-domain cumulative success/failure counts).
   final List<SiteConfig>? importConfigs;
 
-  const InsightsData({this.recipes, this.importConfigs});
+  /// User count + recent daily feature-retention aggregates.
+  final EngagementRaw? engagement;
+
+  const InsightsData({this.recipes, this.importConfigs, this.engagement});
 }

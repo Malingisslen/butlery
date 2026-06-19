@@ -9478,6 +9478,42 @@ class AppLocalizationsEn extends AppLocalizations {
       'Points out exactly which sites the parser needs to get better at.';
 
   @override
+  String get metricEngagementUsersWhat =>
+      'Total number of registered user accounts.';
+
+  @override
+  String get metricEngagementUsersHow =>
+      'Counts all documents in the users collection.';
+
+  @override
+  String get metricEngagementUsersWhy =>
+      'A basic growth number — how many exist in total.';
+
+  @override
+  String get metricEngagementActiveWhat =>
+      'How many users were active in any feature during the window (today, 7 or 28 days).';
+
+  @override
+  String get metricEngagementActiveHow =>
+      'Taken from the latest day\'s rollup; shows the most active in any single feature (a floor on distinct active users).';
+
+  @override
+  String get metricEngagementActiveWhy =>
+      'Shows whether people actually use the app, not just sign up.';
+
+  @override
+  String get metricEngagementTableWhat =>
+      'Per day: how many cooked, imported, shared, planned and shopped.';
+
+  @override
+  String get metricEngagementTableHow =>
+      'One row per day from the nightly activity rollups.';
+
+  @override
+  String get metricEngagementTableWhy =>
+      'Shows which features drive engagement over time.';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
-import 'package:butlery/views/admin/engagement_view.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
@@ -35,7 +34,16 @@ class _AdminShellState extends State<AdminShell> {
             MetricKey.importDomainTable,
           ],
         ),
-        const EngagementView(),
+        MetricTabView(
+          title: (l) => l.adminEngagementTitle,
+          keys: const [
+            MetricKey.engagementUsers,
+            MetricKey.engagementActiveToday,
+            MetricKey.engagementActive7d,
+            MetricKey.engagementActive28d,
+            MetricKey.engagementDailyTable,
+          ],
+        ),
         const ParsingDetailsView(),
         MetricTabView(
           title: (l) => l.adminRecipesTitle,

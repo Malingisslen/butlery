@@ -87,4 +87,41 @@ final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
       ],
     );
   },
+  MetricKey.engagementUsers: (data, l10n) =>
+      ScalarMetric(data.engagement!.userCount),
+  MetricKey.engagementActiveToday: (data, l10n) {
+    final days = data.engagement!.days;
+    return ScalarMetric(days.isEmpty ? 0 : days.first.dau.max);
+  },
+  MetricKey.engagementActive7d: (data, l10n) {
+    final days = data.engagement!.days;
+    return ScalarMetric(days.isEmpty ? 0 : days.first.wau7d.max);
+  },
+  MetricKey.engagementActive28d: (data, l10n) {
+    final days = data.engagement!.days;
+    return ScalarMetric(days.isEmpty ? 0 : days.first.wau28d.max);
+  },
+  MetricKey.engagementDailyTable: (data, l10n) {
+    final days = data.engagement!.days;
+    return MatrixMetric(
+      [for (final d in days) d.date],
+      [
+        l10n.adminEngagementColCooked,
+        l10n.adminEngagementColImported,
+        l10n.adminEngagementColShared,
+        l10n.adminEngagementColPlanned,
+        l10n.adminEngagementColShopped,
+      ],
+      [
+        for (final d in days)
+          [
+            d.dau.cooked,
+            d.dau.imported,
+            d.dau.shared,
+            d.dau.mealPlanned,
+            d.dau.shopped,
+          ],
+      ],
+    );
+  },
 });

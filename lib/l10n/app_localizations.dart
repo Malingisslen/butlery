@@ -16095,6 +16095,60 @@ abstract class AppLocalizations {
   /// **'Pekar ut exakt vilka sajter avläsaren behöver bli bättre på.'**
   String get metricImportTableWhy;
 
+  /// No description provided for @metricEngagementUsersWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Totalt antal registrerade användarkonton.'**
+  String get metricEngagementUsersWhat;
+
+  /// No description provided for @metricEngagementUsersHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknar alla dokument i användarsamlingen.'**
+  String get metricEngagementUsersHow;
+
+  /// No description provided for @metricEngagementUsersWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grundläggande tillväxtsiffra — hur många som finns totalt.'**
+  String get metricEngagementUsersWhy;
+
+  /// No description provided for @metricEngagementActiveWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur många användare som var aktiva i någon funktion under perioden (idag, 7 eller 28 dagar).'**
+  String get metricEngagementActiveWhat;
+
+  /// No description provided for @metricEngagementActiveHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tas från senaste dygnets sammanställning; visar flest aktiva i någon enskild funktion (en undre gräns för unika aktiva).'**
+  String get metricEngagementActiveHow;
+
+  /// No description provided for @metricEngagementActiveWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar om folk faktiskt använder appen, inte bara registrerar sig.'**
+  String get metricEngagementActiveWhy;
+
+  /// No description provided for @metricEngagementTableWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Per dag: hur många som lagade, importerade, delade, planerade och handlade.'**
+  String get metricEngagementTableWhat;
+
+  /// No description provided for @metricEngagementTableHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'En rad per dag från de nattliga aktivitetssammanställningarna.'**
+  String get metricEngagementTableHow;
+
+  /// No description provided for @metricEngagementTableWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar vilka funktioner som driver engagemang över tid.'**
+  String get metricEngagementTableWhy;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

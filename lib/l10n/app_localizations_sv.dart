@@ -9496,6 +9496,42 @@ class AppLocalizationsSv extends AppLocalizations {
       'Pekar ut exakt vilka sajter avläsaren behöver bli bättre på.';
 
   @override
+  String get metricEngagementUsersWhat =>
+      'Totalt antal registrerade användarkonton.';
+
+  @override
+  String get metricEngagementUsersHow =>
+      'Räknar alla dokument i användarsamlingen.';
+
+  @override
+  String get metricEngagementUsersWhy =>
+      'Grundläggande tillväxtsiffra — hur många som finns totalt.';
+
+  @override
+  String get metricEngagementActiveWhat =>
+      'Hur många användare som var aktiva i någon funktion under perioden (idag, 7 eller 28 dagar).';
+
+  @override
+  String get metricEngagementActiveHow =>
+      'Tas från senaste dygnets sammanställning; visar flest aktiva i någon enskild funktion (en undre gräns för unika aktiva).';
+
+  @override
+  String get metricEngagementActiveWhy =>
+      'Visar om folk faktiskt använder appen, inte bara registrerar sig.';
+
+  @override
+  String get metricEngagementTableWhat =>
+      'Per dag: hur många som lagade, importerade, delade, planerade och handlade.';
+
+  @override
+  String get metricEngagementTableHow =>
+      'En rad per dag från de nattliga aktivitetssammanställningarna.';
+
+  @override
+  String get metricEngagementTableWhy =>
+      'Visar vilka funktioner som driver engagemang över tid.';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

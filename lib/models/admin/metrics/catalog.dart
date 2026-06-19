@@ -52,4 +52,34 @@ final Map<MetricKey, MetricDescriptor> catalog = Map.unmodifiable({
       MetricFormat.percent,
     ],
   ),
+  MetricKey.engagementUsers: MetricDescriptor(
+    key: MetricKey.engagementUsers,
+    label: (l10n) => l10n.adminEngagementUsers,
+    category: MetricCategory.engagement,
+    format: MetricFormat.number,
+  ),
+  MetricKey.engagementActiveToday: MetricDescriptor(
+    key: MetricKey.engagementActiveToday,
+    label: (l10n) => l10n.adminEngagementActiveToday,
+    category: MetricCategory.engagement,
+    format: MetricFormat.number,
+  ),
+  MetricKey.engagementActive7d: MetricDescriptor(
+    key: MetricKey.engagementActive7d,
+    label: (l10n) => l10n.adminEngagementActive7d,
+    category: MetricCategory.engagement,
+    format: MetricFormat.number,
+  ),
+  MetricKey.engagementActive28d: MetricDescriptor(
+    key: MetricKey.engagementActive28d,
+    label: (l10n) => l10n.adminEngagementActive28d,
+    category: MetricCategory.engagement,
+    format: MetricFormat.number,
+  ),
+  MetricKey.engagementDailyTable: MetricDescriptor(
+    key: MetricKey.engagementDailyTable,
+    label: (l10n) => l10n.adminEngagementColDate,
+    category: MetricCategory.engagement,
+    format: MetricFormat.number,
+  ),
 });

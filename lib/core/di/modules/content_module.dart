@@ -480,6 +480,7 @@ class ContentModule implements DIModule {
         () => MetricsAssembler([
           RecipeCategoryFetcher(container<RecipeStatsRepository>()),
           ImportCategoryFetcher(container<SiteConfigRepository>()),
+          EngagementCategoryFetcher(container<EngagementRepository>()),
         ]),
       );
 

@@ -2,6 +2,14 @@
 /// `analytics/feature_retention/daily/{date}` rollups written nightly by the
 /// `computeFeatureRetention` Cloud Function.
 
+/// Raw engagement slice for the metric assembler: the user count plus the
+/// recent daily aggregates. Bundled because the engagement metrics need both.
+class EngagementRaw {
+  final int userCount;
+  final List<DailyEngagement> days;
+  const EngagementRaw({required this.userCount, required this.days});
+}
+
 /// Per-feature activity counts for one window (DAU, WAU-7d, or WAU-28d).
 class FeatureCounts {
   final int cooked;

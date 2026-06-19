@@ -39,4 +39,29 @@ final Map<MetricKey, MetricExplanation> explanations = Map.unmodifiable({
     howCalculated: (l) => l.metricImportTableHow,
     whyImportant: (l) => l.metricImportTableWhy,
   ),
+  MetricKey.engagementUsers: MetricExplanation(
+    whatIsIt: (l) => l.metricEngagementUsersWhat,
+    howCalculated: (l) => l.metricEngagementUsersHow,
+    whyImportant: (l) => l.metricEngagementUsersWhy,
+  ),
+  MetricKey.engagementActiveToday: MetricExplanation(
+    whatIsIt: (l) => l.metricEngagementActiveWhat,
+    howCalculated: (l) => l.metricEngagementActiveHow,
+    whyImportant: (l) => l.metricEngagementActiveWhy,
+  ),
+  MetricKey.engagementActive7d: MetricExplanation(
+    whatIsIt: (l) => l.metricEngagementActiveWhat,
+    howCalculated: (l) => l.metricEngagementActiveHow,
+    whyImportant: (l) => l.metricEngagementActiveWhy,
+  ),
+  MetricKey.engagementActive28d: MetricExplanation(
+    whatIsIt: (l) => l.metricEngagementActiveWhat,
+    howCalculated: (l) => l.metricEngagementActiveHow,
+    whyImportant: (l) => l.metricEngagementActiveWhy,
+  ),
+  MetricKey.engagementDailyTable: MetricExplanation(
+    whatIsIt: (l) => l.metricEngagementTableWhat,
+    howCalculated: (l) => l.metricEngagementTableHow,
+    whyImportant: (l) => l.metricEngagementTableWhy,
+  ),
 });

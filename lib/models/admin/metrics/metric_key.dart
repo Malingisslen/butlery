@@ -27,7 +27,13 @@ enum MetricKey {
   importSuccess,
   importFailure,
   importSuccessRate,
-  importDomainTable;
+  importDomainTable,
+  // engagement
+  engagementUsers,
+  engagementActiveToday,
+  engagementActive7d,
+  engagementActive28d,
+  engagementDailyTable;
 
   MetricCategory get category => switch (this) {
         recipeTotal || recipeByMethod => MetricCategory.recipes,
@@ -37,5 +43,11 @@ enum MetricKey {
         importSuccessRate ||
         importDomainTable =>
           MetricCategory.importHealth,
+        engagementUsers ||
+        engagementActiveToday ||
+        engagementActive7d ||
+        engagementActive28d ||
+        engagementDailyTable =>
+          MetricCategory.engagement,
       };
 }
