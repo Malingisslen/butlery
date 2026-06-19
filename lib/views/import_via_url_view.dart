@@ -9,6 +9,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -379,7 +380,7 @@ class _UrlResultRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _statusIcon(),
+        _statusIcon(context),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: Text(
@@ -398,7 +399,7 @@ class _UrlResultRow extends StatelessWidget {
     );
   }
 
-  Widget _statusIcon() {
+  Widget _statusIcon(BuildContext context) {
     switch (result.status) {
       case UrlFetchStatus.loading:
         return const SizedBox(
@@ -407,10 +408,11 @@ class _UrlResultRow extends StatelessWidget {
           child: CircularProgressIndicator(strokeWidth: 2),
         );
       case UrlFetchStatus.success:
-        return const Icon(Icons.check_circle,
-            color: AppColors.success, size: 20);
+        return Icon(Icons.check_circle,
+            color: context.butleryColors.success, size: 20);
       case UrlFetchStatus.failure:
-        return const Icon(Icons.error, color: AppColors.error, size: 20);
+        return Icon(Icons.error,
+            color: Theme.of(context).colorScheme.error, size: 20);
       case UrlFetchStatus.pending:
         return const Icon(Icons.schedule,
             color: AppColors.greenMuted, size: 20);

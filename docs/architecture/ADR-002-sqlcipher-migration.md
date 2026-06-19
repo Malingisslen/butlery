@@ -10,8 +10,8 @@ open an encrypted database. It is unmaintained — no commits in 18+ months,
 upstream Flutter SDK bumps risk silent breakage, and security patches in
 sqlite3/SQLCipher don't reach us via this package.
 
-`MASTER-wave1.md` finding **CRIT-DEP1** flagged it as the highest-risk
-end-of-life direct dependency.
+A 2026-05 dependency audit (finding **CRIT-DEP1**) flagged it as the
+highest-risk end-of-life direct dependency.
 
 ## Blast-radius audit (verified 2026-05-06)
 

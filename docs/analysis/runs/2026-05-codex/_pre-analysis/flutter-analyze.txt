@@ -1,5 +1,0 @@
-Analyzing butlery...                                            
-
-  error - Undefined name 'ConsentPurpose' - lib\services\notifications\notification_service.dart:648:9 - undefined_identifier
-
-1 issue found. (ran in 220.3s)
