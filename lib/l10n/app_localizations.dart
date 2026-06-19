@@ -15579,6 +15579,24 @@ abstract class AppLocalizations {
   /// **'Stäng'**
   String get adminScreenshotClose;
 
+  /// No description provided for @adminCopyForClaude.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera för Claude'**
+  String get adminCopyForClaude;
+
+  /// No description provided for @adminCopiedForClaude.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopierat — klistra in i en ny Claude-session'**
+  String get adminCopiedForClaude;
+
+  /// No description provided for @adminCopyFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte kopiera till urklipp'**
+  String get adminCopyFailed;
+
   /// No description provided for @adminRefresh.
   ///
   /// In sv, this message translates to:

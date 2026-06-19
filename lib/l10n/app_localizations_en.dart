@@ -9199,6 +9199,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminScreenshotClose => 'Close';
 
   @override
+  String get adminCopyForClaude => 'Copy for Claude';
+
+  @override
+  String get adminCopiedForClaude => 'Copied — paste into a new Claude session';
+
+  @override
+  String get adminCopyFailed => 'Could not copy to clipboard';
+
+  @override
   String get adminRefresh => 'Refresh';
 
   @override

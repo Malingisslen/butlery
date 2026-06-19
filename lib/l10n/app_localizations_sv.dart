@@ -9218,6 +9218,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminScreenshotClose => 'Stäng';
 
   @override
+  String get adminCopyForClaude => 'Kopiera för Claude';
+
+  @override
+  String get adminCopiedForClaude =>
+      'Kopierat — klistra in i en ny Claude-session';
+
+  @override
+  String get adminCopyFailed => 'Kunde inte kopiera till urklipp';
+
+  @override
   String get adminRefresh => 'Uppdatera';
 
   @override

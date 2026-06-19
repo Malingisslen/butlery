@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -214,11 +215,62 @@ class _FeedbackCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: AppDimensions.spacingSm),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => _copyForClaude(context),
+                icon: const Icon(Icons.copy_all_outlined, size: 18),
+                label: Text(context.l10n.adminCopyForClaude),
+                style: TextButton.styleFrom(
+                  shape: const RoundedRectangleBorder(),
+                ),
+              ),
+            ),
             _StatusControl(entry: entry, vm: vm),
           ],
         ),
       ),
     );
+  }
+
+  /// Copies the full report as a ready-to-paste prompt so an admin can hand it
+  /// straight to a fresh Claude session. Deterministic string build — no LLM.
+  Future<void> _copyForClaude(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmation = context.l10n.adminCopiedForClaude;
+    final failure = context.l10n.adminCopyFailed;
+    try {
+      await Clipboard.setData(ClipboardData(text: _buildClaudePrompt(entry)));
+      messenger.showSnackBar(SnackBar(content: Text(confirmation)));
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(failure)));
+    }
+  }
+
+  static String _buildClaudePrompt(FeedbackEntry entry) {
+    final trail = entry.recentInteractions.isEmpty
+        ? '—'
+        : _formatInteractions(entry.recentInteractions);
+    return 'Buggrapport från Butlery-beta. Fixa i detta repo.\n\n'
+        'Kategori: ${_categoryLabel(entry.category)} · '
+        '${_formatDate(entry.createdAt)}\n'
+        'Enhet: ${entry.deviceInfo ?? '—'}\n'
+        'E-post: ${entry.email ?? '—'}\n'
+        'Användaren skrev: "${entry.description}"\n'
+        'Skärmväg innan: $trail\n'
+        'Skärmdump: ${entry.screenshotUrl ?? '—'}\n'
+        'Feedback-ID: ${entry.id}';
+  }
+
+  static String _categoryLabel(FeedbackCategory category) {
+    switch (category) {
+      case FeedbackCategory.bug:
+        return 'Bugg';
+      case FeedbackCategory.featureRequest:
+        return 'Funktionsönskemål';
+      case FeedbackCategory.general:
+        return 'Allmänt';
+    }
   }
 
   static String _formatDate(DateTime d) {
