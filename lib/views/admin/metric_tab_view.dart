@@ -7,8 +7,12 @@ import 'package:butlery/models/admin/metrics/metric_key.dart';
 import 'package:butlery/models/admin/metrics/metric_value.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/admin/metrics_tab_viewmodel.dart';
+import 'package:butlery/views/admin/metrics_csv.dart';
 import 'package:butlery/views/admin/widgets/metric_renderer.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
+    if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
+    if (dart.library.js_interop) 'package:butlery/views/account/data_export_helpers/download_web.dart';
 
 /// A registry-driven admin tab: declare a title + the [MetricKey]s to show, and
 /// this owns the Scaffold/AppBar/Refresh + loading/error states and renders
@@ -71,6 +75,11 @@ class _MetricTabContent extends StatelessWidget {
         title: Text(title(context.l10n)),
         actions: [
           IconButton(
+            icon: const Icon(Icons.download_outlined),
+            tooltip: context.l10n.adminMetricExport,
+            onPressed: vm.values.isEmpty ? null : () => _export(context, vm),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: context.l10n.adminRefresh,
             onPressed: vm.isLoading ? null : vm.refresh,
@@ -79,6 +88,20 @@ class _MetricTabContent extends StatelessWidget {
       ),
       body: _body(context, vm),
     );
+  }
+
+  Future<void> _export(BuildContext context, MetricsTabViewModel vm) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final csv = buildMetricsCsv(keys, vm.values, l10n);
+    final fileName = 'butlery-${keys.first.category.name}.csv';
+    try {
+      await downloadCsvFile(csv, fileName);
+    } catch (_) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.adminMetricExportFailed)),
+      );
+    }
   }
 
   Widget _body(BuildContext context, MetricsTabViewModel vm) {

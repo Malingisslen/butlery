@@ -10191,6 +10191,12 @@ abstract class AppLocalizations {
   /// **'Recept markerat som lagat idag!'**
   String get recipeMarkedAsCooked;
 
+  /// No description provided for @recipeAlreadyCookedToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redan loggad idag'**
+  String get recipeAlreadyCookedToday;
+
   /// No description provided for @recipeShared.
   ///
   /// In sv, this message translates to:
@@ -15974,6 +15980,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Om den här siffran'**
   String get adminMetricInfo;
+
+  /// No description provided for @adminMetricExport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Exportera till Excel'**
+  String get adminMetricExport;
+
+  /// No description provided for @adminMetricExportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte exportera'**
+  String get adminMetricExportFailed;
 
   /// No description provided for @adminMetricWhat.
   ///

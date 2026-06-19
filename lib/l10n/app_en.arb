@@ -3889,6 +3889,7 @@
   "recipeCouldNotShare": "Could not share recipe",
   "recipeDeleted": "Recipe deleted",
   "recipeMarkedAsCooked": "Recipe marked as cooked today!",
+  "recipeAlreadyCookedToday": "Already logged today",
   "recipeShared": "Recipe shared",
   "recipeImportedFrom": "Imported from: {sourceUrl}",
   "@recipeImportedFrom": {
@@ -6191,6 +6192,8 @@
   "adminOpsColDeleted": "Deleted",
   "adminMetricNoData": "No data yet",
   "adminMetricInfo": "About this number",
+  "adminMetricExport": "Export to Excel",
+  "adminMetricExportFailed": "Could not export",
   "adminMetricWhat": "What it is",
   "adminMetricHow": "How it's calculated",
   "adminMetricWhy": "Why it matters",

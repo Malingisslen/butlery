@@ -6000,6 +6000,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeMarkedAsCooked => 'Recept markerat som lagat idag!';
 
   @override
+  String get recipeAlreadyCookedToday => 'Redan loggad idag';
+
+  @override
   String get recipeShared => 'Recept delat';
 
   @override
@@ -9415,6 +9418,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminMetricInfo => 'Om den här siffran';
+
+  @override
+  String get adminMetricExport => 'Exportera till Excel';
+
+  @override
+  String get adminMetricExportFailed => 'Kunde inte exportera';
 
   @override
   String get adminMetricWhat => 'Vad är det';

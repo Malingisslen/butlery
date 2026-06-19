@@ -5995,6 +5995,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeMarkedAsCooked => 'Recipe marked as cooked today!';
 
   @override
+  String get recipeAlreadyCookedToday => 'Already logged today';
+
+  @override
   String get recipeShared => 'Recipe shared';
 
   @override
@@ -9395,6 +9398,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminMetricInfo => 'About this number';
+
+  @override
+  String get adminMetricExport => 'Export to Excel';
+
+  @override
+  String get adminMetricExportFailed => 'Could not export';
 
   @override
   String get adminMetricWhat => 'What it is';

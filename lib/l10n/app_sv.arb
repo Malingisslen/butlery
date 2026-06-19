@@ -3919,6 +3919,7 @@
   "recipeCouldNotShare": "Kunde inte dela recept",
   "recipeDeleted": "Recept borttaget",
   "recipeMarkedAsCooked": "Recept markerat som lagat idag!",
+  "recipeAlreadyCookedToday": "Redan loggad idag",
   "recipeShared": "Recept delat",
   "recipeImportedFrom": "Importerat från: {sourceUrl}",
   "@recipeImportedFrom": {
@@ -6226,6 +6227,8 @@
   "adminOpsColDeleted": "Borttaget",
   "adminMetricNoData": "Ingen data än",
   "adminMetricInfo": "Om den här siffran",
+  "adminMetricExport": "Exportera till Excel",
+  "adminMetricExportFailed": "Kunde inte exportera",
   "adminMetricWhat": "Vad är det",
   "adminMetricHow": "Hur räknas det",
   "adminMetricWhy": "Varför viktigt",
