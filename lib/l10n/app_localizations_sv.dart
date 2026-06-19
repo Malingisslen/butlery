@@ -9411,6 +9411,30 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminOpsColDeleted => 'Borttaget';
 
   @override
+  String get metricRecipeTotalWhat =>
+      'Det totala antalet recept som finns i appen, över alla användare.';
+
+  @override
+  String get metricRecipeTotalHow =>
+      'Räknas genom att gå igenom alla användares recept och summera dem (taket är 5 000 i förlanseringsläget).';
+
+  @override
+  String get metricRecipeTotalWhy =>
+      'Visar hur mycket innehåll som faktiskt byggts upp — en grundläggande hälsosiffra för appen.';
+
+  @override
+  String get metricRecipeByMethodWhat =>
+      'Hur recepten kom in i appen, uppdelat på metod: länk, foto, textinklistring, sociala medier eller manuellt.';
+
+  @override
+  String get metricRecipeByMethodHow =>
+      'Varje recept klassas efter sitt ursprungsfält; recept som saknar fältet (äldre eller manuellt skapade) räknas som manuellt/okänt.';
+
+  @override
+  String get metricRecipeByMethodWhy =>
+      'Visar vilka importvägar användarna faktiskt använder — styr var det är värt att förbättra importen.';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

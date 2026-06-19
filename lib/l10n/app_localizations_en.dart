@@ -9391,6 +9391,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminOpsColDeleted => 'Deleted';
 
   @override
+  String get metricRecipeTotalWhat =>
+      'The total number of recipes in the app, across all users.';
+
+  @override
+  String get metricRecipeTotalHow =>
+      'Counted by scanning every user\'s recipes and summing them (capped at 5,000 pre-launch).';
+
+  @override
+  String get metricRecipeTotalWhy =>
+      'Shows how much content has actually been built up — a basic app-health number.';
+
+  @override
+  String get metricRecipeByMethodWhat =>
+      'How recipes entered the app, split by method: link, photo, text paste, social media or manual.';
+
+  @override
+  String get metricRecipeByMethodHow =>
+      'Each recipe is classified by its source field; recipes without it (older or manually created) count as manual/unknown.';
+
+  @override
+  String get metricRecipeByMethodWhy =>
+      'Shows which import paths users actually use — guides where improving import is worth it.';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

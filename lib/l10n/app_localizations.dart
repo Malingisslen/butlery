@@ -15963,6 +15963,42 @@ abstract class AppLocalizations {
   /// **'Borttaget'**
   String get adminOpsColDeleted;
 
+  /// No description provided for @metricRecipeTotalWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det totala antalet recept som finns i appen, över alla användare.'**
+  String get metricRecipeTotalWhat;
+
+  /// No description provided for @metricRecipeTotalHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknas genom att gå igenom alla användares recept och summera dem (taket är 5 000 i förlanseringsläget).'**
+  String get metricRecipeTotalHow;
+
+  /// No description provided for @metricRecipeTotalWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar hur mycket innehåll som faktiskt byggts upp — en grundläggande hälsosiffra för appen.'**
+  String get metricRecipeTotalWhy;
+
+  /// No description provided for @metricRecipeByMethodWhat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur recepten kom in i appen, uppdelat på metod: länk, foto, textinklistring, sociala medier eller manuellt.'**
+  String get metricRecipeByMethodWhat;
+
+  /// No description provided for @metricRecipeByMethodHow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varje recept klassas efter sitt ursprungsfält; recept som saknar fältet (äldre eller manuellt skapade) räknas som manuellt/okänt.'**
+  String get metricRecipeByMethodHow;
+
+  /// No description provided for @metricRecipeByMethodWhy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar vilka importvägar användarna faktiskt använder — styr var det är värt att förbättra importen.'**
+  String get metricRecipeByMethodWhy;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:
