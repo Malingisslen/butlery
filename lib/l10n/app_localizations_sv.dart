@@ -9348,6 +9348,45 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminParsingIssueInstructions => 'Instruktioner';
 
   @override
+  String get adminNavRecipes => 'Recept';
+
+  @override
+  String get adminRecipesTitle => 'Recept';
+
+  @override
+  String get adminRecipesEmpty => 'Inga recept än';
+
+  @override
+  String get adminRecipesTotal => 'Recept totalt';
+
+  @override
+  String get adminRecipesImported => 'Importerade';
+
+  @override
+  String get adminRecipesManual => 'Manuellt/okänt';
+
+  @override
+  String get adminRecipesColMethod => 'Importmetod';
+
+  @override
+  String get adminRecipesColCount => 'Antal';
+
+  @override
+  String get adminRecipesMethodUrl => 'Länk (URL)';
+
+  @override
+  String get adminRecipesMethodPhoto => 'Foto / OCR';
+
+  @override
+  String get adminRecipesMethodText => 'Textinklistring';
+
+  @override
+  String get adminRecipesMethodSocial => 'Sociala medier';
+
+  @override
+  String get adminRecipesMethodManual => 'Manuellt / okänt';
+
+  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override

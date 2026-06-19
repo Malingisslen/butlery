@@ -15837,6 +15837,84 @@ abstract class AppLocalizations {
   /// **'Instruktioner'**
   String get adminParsingIssueInstructions;
 
+  /// No description provided for @adminNavRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get adminNavRecipes;
+
+  /// No description provided for @adminRecipesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get adminRecipesTitle;
+
+  /// No description provided for @adminRecipesEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept än'**
+  String get adminRecipesEmpty;
+
+  /// No description provided for @adminRecipesTotal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept totalt'**
+  String get adminRecipesTotal;
+
+  /// No description provided for @adminRecipesImported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerade'**
+  String get adminRecipesImported;
+
+  /// No description provided for @adminRecipesManual.
+  ///
+  /// In sv, this message translates to:
+  /// **'Manuellt/okänt'**
+  String get adminRecipesManual;
+
+  /// No description provided for @adminRecipesColMethod.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importmetod'**
+  String get adminRecipesColMethod;
+
+  /// No description provided for @adminRecipesColCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal'**
+  String get adminRecipesColCount;
+
+  /// No description provided for @adminRecipesMethodUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Länk (URL)'**
+  String get adminRecipesMethodUrl;
+
+  /// No description provided for @adminRecipesMethodPhoto.
+  ///
+  /// In sv, this message translates to:
+  /// **'Foto / OCR'**
+  String get adminRecipesMethodPhoto;
+
+  /// No description provided for @adminRecipesMethodText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Textinklistring'**
+  String get adminRecipesMethodText;
+
+  /// No description provided for @adminRecipesMethodSocial.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sociala medier'**
+  String get adminRecipesMethodSocial;
+
+  /// No description provided for @adminRecipesMethodManual.
+  ///
+  /// In sv, this message translates to:
+  /// **'Manuellt / okänt'**
+  String get adminRecipesMethodManual;
+
   /// No description provided for @substitutionEmptyState.
   ///
   /// In sv, this message translates to:

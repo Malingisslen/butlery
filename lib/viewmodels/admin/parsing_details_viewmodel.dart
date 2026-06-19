@@ -68,7 +68,7 @@ class ParsingDetailsViewModel extends BaseViewModel {
         _stats = stats;
         _totalCorrections = total;
       },
-      errorPrefix: 'loadParsingDetails',
+      errorPrefix: 'Kunde inte ladda parsing-statistik',
     );
   }
 

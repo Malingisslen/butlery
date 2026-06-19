@@ -9328,6 +9328,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminParsingIssueInstructions => 'Instructions';
 
   @override
+  String get adminNavRecipes => 'Recipes';
+
+  @override
+  String get adminRecipesTitle => 'Recipes';
+
+  @override
+  String get adminRecipesEmpty => 'No recipes yet';
+
+  @override
+  String get adminRecipesTotal => 'Total recipes';
+
+  @override
+  String get adminRecipesImported => 'Imported';
+
+  @override
+  String get adminRecipesManual => 'Manual/unknown';
+
+  @override
+  String get adminRecipesColMethod => 'Import method';
+
+  @override
+  String get adminRecipesColCount => 'Count';
+
+  @override
+  String get adminRecipesMethodUrl => 'Link (URL)';
+
+  @override
+  String get adminRecipesMethodPhoto => 'Photo / OCR';
+
+  @override
+  String get adminRecipesMethodText => 'Text paste';
+
+  @override
+  String get adminRecipesMethodSocial => 'Social media';
+
+  @override
+  String get adminRecipesMethodManual => 'Manual / unknown';
+
+  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override

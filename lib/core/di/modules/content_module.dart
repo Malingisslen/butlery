@@ -110,6 +110,7 @@ import 'package:butlery/services/import/pipelines/instagram_pipeline.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/repositories/engagement_repository.dart';
+import 'package:butlery/repositories/recipe_stats_repository.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
@@ -463,6 +464,9 @@ class ContentModule implements DIModule {
       // stats). Admin-only aggregate reads, gated by isAdmin() in the rules.
       container.registerLazySingleton<EngagementRepository>(
         () => EngagementRepository(),
+      );
+      container.registerLazySingleton<RecipeStatsRepository>(
+        () => RecipeStatsRepository(),
       );
 
       // Firebase Storage instance for model loaders

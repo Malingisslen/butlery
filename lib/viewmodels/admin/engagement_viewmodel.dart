@@ -36,7 +36,7 @@ class EngagementViewModel extends BaseViewModel {
         _userCount = count;
         _days = days;
       },
-      errorPrefix: 'loadEngagement',
+      errorPrefix: 'Kunde inte ladda engagemangsdata',
     );
   }
 
