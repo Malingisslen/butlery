@@ -20,8 +20,8 @@ All Cloud Functions and the Vertex AI client are pinned to `europe-west1`:
 ## Console-side state (verified 2026-06-14, BUT-819)
 
 The Firestore database region is set via the Firebase Console (or `gcloud
-firestore databases describe`) and is **not** in version control. The
-master-audit ticket (`MASTER-wave2.md` CRIT-INFRA1) flagged a possible
+firestore databases describe`) and is **not** in version control.
+A 2026-05 infrastructure audit (finding CRIT-INFRA1) flagged a possible
 mismatch with the code pin — which is confirmed:
 
 ```sh
