@@ -91,15 +91,22 @@ final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
       ScalarMetric(data.engagement!.userCount),
   MetricKey.engagementActiveToday: (data, l10n) {
     final days = data.engagement!.days;
-    return ScalarMetric(days.isEmpty ? 0 : days.first.dau.max);
+    if (days.isEmpty) return const ScalarMetric(0);
+    // days are newest-first; offset 1 = yesterday.
+    return ScalarMetric(days.first.dau.max,
+        previous: days.length > 1 ? days[1].dau.max : null);
   },
   MetricKey.engagementActive7d: (data, l10n) {
     final days = data.engagement!.days;
-    return ScalarMetric(days.isEmpty ? 0 : days.first.wau7d.max);
+    if (days.isEmpty) return const ScalarMetric(0);
+    return ScalarMetric(days.first.wau7d.max,
+        previous: days.length > 7 ? days[7].wau7d.max : null);
   },
   MetricKey.engagementActive28d: (data, l10n) {
     final days = data.engagement!.days;
-    return ScalarMetric(days.isEmpty ? 0 : days.first.wau28d.max);
+    if (days.isEmpty) return const ScalarMetric(0);
+    return ScalarMetric(days.first.wau28d.max,
+        previous: days.length > 28 ? days[28].wau28d.max : null);
   },
   MetricKey.engagementDailyTable: (data, l10n) {
     final days = data.engagement!.days;

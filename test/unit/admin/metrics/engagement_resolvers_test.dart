@@ -62,6 +62,28 @@ void main() {
         9);
   });
 
+  test('activeToday carries yesterday as previous for a delta', () {
+    final raw = EngagementRaw(userCount: 5, days: [
+      _day('2026-06-19', dau: const FeatureCounts(cooked: 6)), // today
+      _day('2026-06-18', dau: const FeatureCounts(cooked: 4)), // yesterday
+    ]);
+    final value =
+        _resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric;
+    expect(value.value, 6);
+    expect(value.previous, 4);
+    expect(value.deltaPercent, 50); // (6-4)/4*100
+  });
+
+  test('single day has no previous → no delta', () {
+    final raw = EngagementRaw(userCount: 1, days: [
+      _day('2026-06-19', dau: const FeatureCounts(cooked: 3)),
+    ]);
+    final value =
+        _resolve(MetricKey.engagementActiveToday, raw, l10n) as ScalarMetric;
+    expect(value.previous, isNull);
+    expect(value.deltaPercent, isNull);
+  });
+
   test('zero days yields zero active proxies, not a crash', () {
     final raw = const EngagementRaw(userCount: 0, days: []);
     expect(

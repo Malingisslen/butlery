@@ -31,10 +31,11 @@ class MetricRenderer extends StatelessWidget {
     final label = desc.label(context.l10n);
     final info = AdminMetricInfoButton(metricKey: metricKey);
     return switch (value) {
-      ScalarMetric(value: final v) => AdminStatCard(
+      final ScalarMetric s => AdminStatCard(
           label: label,
-          value: formatMetricValue(v, desc.format),
+          value: formatMetricValue(s.value, desc.format),
           action: info,
+          deltaPercent: s.deltaPercent,
         ),
       BreakdownMetric(rows: final rows) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,

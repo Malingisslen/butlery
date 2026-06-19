@@ -49,7 +49,8 @@ class EngagementCategoryFetcher implements CategoryFetcher {
   @override
   Future<Object> fetch() async {
     final count = await _repository.getUserCount();
-    final days = await _repository.getDailyFeatureRetention();
+    // 30 days so the 28-day "active" metric has a prior period to delta against.
+    final days = await _repository.getDailyFeatureRetention(limit: 30);
     return EngagementRaw(userCount: count, days: days);
   }
 }
