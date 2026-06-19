@@ -6158,6 +6158,7 @@
   "adminFeedbackStatusNew": "Ny",
   "adminFeedbackStatusTriaged": "Pågår",
   "adminFeedbackStatusResolved": "Klar",
+  "adminScreenshotOpen": "Visa skärmdump i full storlek",
   "adminRefresh": "Uppdatera",
   "adminNavFeedback": "Feedback",
   "adminNavImport": "Importhälsa",

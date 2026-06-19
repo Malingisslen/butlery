@@ -242,36 +242,75 @@ class _Screenshot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      constraints: const BoxConstraints(maxHeight: AppDimensions.heightXLarge),
-      decoration: BoxDecoration(border: Border.all(color: cs.outlineVariant)),
-      child: Image.network(
-        url,
-        fit: BoxFit.contain,
-        // Storage download URLs lack CORS headers for the admin origin, so the
-        // default canvas/XHR path fails. Falling back to an <img> element
-        // displays the cross-origin image without needing bucket CORS.
-        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return SizedBox(
-            height: AppDimensions.heightXLarge,
-            child: StateWidget.loading(),
-          );
-        },
-        errorBuilder: (context, _, __) => Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
-          child: Row(
-            children: [
-              Icon(Icons.broken_image_outlined, color: cs.outline),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Expanded(
-                child: Text(
-                  url,
-                  style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
-                ),
+    return Semantics(
+      label: context.l10n.adminScreenshotOpen,
+      button: true,
+      child: InkWell(
+        onTap: () => _openFullScreen(context),
+        child: Container(
+          width: double.infinity,
+          constraints:
+              const BoxConstraints(maxHeight: AppDimensions.heightXLarge),
+          decoration:
+              BoxDecoration(border: Border.all(color: cs.outlineVariant)),
+          child: _image(context, BoxFit.contain),
+        ),
+      ),
+    );
+  }
+
+  /// Shared image widget. Storage download URLs lack CORS headers for the admin
+  /// origin, so the default canvas/XHR path fails — falling back to an <img>
+  /// element displays the cross-origin image without needing bucket CORS.
+  Widget _image(BuildContext context, BoxFit fit) {
+    final cs = Theme.of(context).colorScheme;
+    return Image.network(
+      url,
+      fit: fit,
+      webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return SizedBox(
+          height: AppDimensions.heightXLarge,
+          child: StateWidget.loading(),
+        );
+      },
+      errorBuilder: (context, _, __) => Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        child: Row(
+          children: [
+            Icon(Icons.broken_image_outlined, color: cs.outline),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Expanded(
+              child: Text(
+                url,
+                style: AppTextStyles.bodySmall.copyWith(color: cs.outline),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens the screenshot in a zoomable full-screen viewer. Tap the dark
+  /// backdrop to dismiss; pinch/scroll to zoom.
+  void _openFullScreen(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      // Lightbox scrim: a near-opaque dark backdrop is a content-relative
+      // effect (makes the photo readable), not a themed surface — theme tokens
+      // would be invisible against the image, so black is intentional here.
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(AppDimensions.paddingM),
+        // SizedBox.expand gives the image a definite size (the dialog box) so
+        // BoxFit.contain + the <img> fallback can't hit unbounded constraints.
+        child: InteractiveViewer(
+          maxScale: 5,
+          child: SizedBox.expand(
+            child: _image(dialogCtx, BoxFit.contain),
           ),
         ),
       ),

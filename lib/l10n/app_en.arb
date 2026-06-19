@@ -6123,6 +6123,7 @@
   "adminFeedbackStatusNew": "New",
   "adminFeedbackStatusTriaged": "In progress",
   "adminFeedbackStatusResolved": "Resolved",
+  "adminScreenshotOpen": "Open screenshot full size",
   "adminRefresh": "Refresh",
   "adminNavFeedback": "Feedback",
   "adminNavImport": "Import health",

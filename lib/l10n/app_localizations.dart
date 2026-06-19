@@ -15567,6 +15567,12 @@ abstract class AppLocalizations {
   /// **'Klar'**
   String get adminFeedbackStatusResolved;
 
+  /// No description provided for @adminScreenshotOpen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa skärmdump i full storlek'**
+  String get adminScreenshotOpen;
+
   /// No description provided for @adminRefresh.
   ///
   /// In sv, this message translates to:
