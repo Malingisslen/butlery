@@ -27,7 +27,7 @@ After the runbook is executed:
 | Weekly GCS export | SCHEDULED — Sundays 03:00 UTC | Cloud Scheduler job `firestore-weekly-export` (europe-west1) |
 | Backup bucket | CREATED — `gs://butlery-firestore-backups` | europe-west1, uniform bucket-level access |
 | Retention policy | 30 days auto-delete ⚠️ confirm against live GCP object-lifecycle config | lifecycle rule applied via `docs/ops/lifecycle.json` |
-| Firestore region | europe-west1 (Belgium, EU) — **decision value; actual deployment UNVERIFIED** | canonical *decision* per `docs/operations/data-residency.md`. ⚠️ A 2026-05 forensic audit (`docs/analysis/runs/2026-05-claude/03-infrastructure.md`) recorded a `gcloud` reading of **europe-west3 (Frankfurt)** for the actual Firestore region. This conflict is unresolved — confirm via `gcloud firestore databases describe` and reconcile under **BUT-819** before relying on the region for bucket placement. |
+| Firestore region | **europe-west3 (Frankfurt, EU)** — data; compute pinned to europe-west1 | Resolved per `docs/operations/data-residency.md` (**BUT-819**, 2026-06-14): the Firestore database is in `europe-west3` while Cloud Functions/Vertex stay in `europe-west1`. The EU-region split is **accepted** (both EU → GDPR satisfied). ⚠️ Note the backup bucket above is `europe-west1`, so weekly exports are cross-region — confirm that is acceptable for your RPO. |
 | Restore drill | NEVER PERFORMED | schedule one after first successful export |
 
 ---

@@ -1333,3 +1333,15 @@ The 4-test file for `ShoppingCheckoffPantryService.onItemCheckedOff` was assesse
 - **P3 gaps (low priority):** `setStatusFilter(same value)` no-op guard (no re-subscribe); `start()` idempotency (second call is a no-op); `dispose` cancels subscription. All have production guards but no tests. Low priority because the guards are one-liners; only escalate if the VM grows complexity around these paths.
 - `canLoadMore` boundary test probes both sides (length == limit → true; length < limit → false). Correct.
 - `loadMore` limit-arithmetic test is the right level — asserts the parameter passed to the repo, not that more records appeared.
+
+---
+
+## Discovered patterns
+
+### 2026-06-19 — AppColors→theme color-source swap needs NO test change (trigger: BUT-572 guard refactor in import_via_url_view.dart)
+- **Change:** `_UrlResultRow._statusIcon()` in `lib/views/import_via_url_view.dart` now takes `BuildContext` and resolves status-icon colors from the theme (`context.butleryColors.success`, `Theme.of(context).colorScheme.error`) instead of `const AppColors.success/error`. Which icon shows for which `UrlFetchStatus` is unchanged.
+- **Assessment: no test additions or updates required.** This is a pure color-SOURCE swap with identical behaviour — exactly the "harmless refactor" the DO-NOT-WRITE rules say tests must survive.
+- **Existing test:** `test/widget/import/import_via_url_view_multi_test.dart` line 240 ("per-row status icons distinguish success / failure / loading") asserts icon PRESENCE via `find.byIcon(Icons.check_circle)` / `Icons.error` / `CircularProgressIndicator` — never icon color. So it does not break and does not need updating. This is the correct level (behaviour, not theme value).
+- **Rule reinforced:** Do NOT add a color assertion here. Asserting `icon.color == AppColors.success` would be the exact hardcoded-theme-value anti-pattern from BUT-368. If a color assertion were ever wanted, it must capture the live `ColorScheme`/`context.butleryColors` via a `Builder` and compare against that — but for a presence-already-covered status icon it adds no user-visible-behaviour coverage and is not worth writing.
+- **Safety note:** `_wrap` in the multi-test already pins `AppTheme.lightTheme`, which registers the `ButleryColors` ThemeExtension (see `app_theme.dart` `extensions:`), and `context.butleryColors` has a `?? ButleryColors.light` fallback — so even a theme missing the extension can't throw. No runtime risk from the new `context` lookup in tests.
+- **Static-inspection only:** this container has no flutter/dart toolchain; assessment is from reading the diff + grepping test/, not from running `flutter test`.

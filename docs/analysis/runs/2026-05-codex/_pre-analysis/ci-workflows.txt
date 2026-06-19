@@ -1,6 +1,0 @@
-architecture-validation.yml
-build-validation.yml
-dep-audit.yml
-e2e_tests.yml
-firestore-rules.yml
-test.yml

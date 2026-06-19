@@ -1,7 +1,0 @@
- 1788 firestore.rules
-   76 storage.rules
-  302 firestore.indexes.json
- 2166 total
-
-match-rule count in firestore.rules:
-95
