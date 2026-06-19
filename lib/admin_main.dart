@@ -42,11 +42,23 @@ Future<void> main() async {
           options: DefaultFirebaseOptions.currentPlatform,
         );
         await FirestoreBootstrap.configure();
-        await FirebaseAppCheck.instance.activate(
-          providerWeb: ReCaptchaV3Provider(
-            '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
-          ),
-        );
+        // App Check is best-effort here: on the admin hosting domain the
+        // reCAPTCHA script can be CSP-blocked or the domain may not be
+        // registered, in which case activate() never resolves. Guard it with a
+        // timeout + catch so a failed/slow App Check can never hang bootstrap
+        // and leave a blank page. (Anti-abuse matters less for a login- and
+        // admin-claim-gated internal tool.)
+        try {
+          await FirebaseAppCheck.instance
+              .activate(
+                providerWeb: ReCaptchaV3Provider(
+                  '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+                ),
+              )
+              .timeout(const Duration(seconds: 5));
+        } catch (e) {
+          AppLogger.warning('Admin App Check activation skipped: $e');
+        }
         await ApplicationBootstrap.initialize(
           modules: buildDiModules(),
           stages: buildBootstrapStages(),
