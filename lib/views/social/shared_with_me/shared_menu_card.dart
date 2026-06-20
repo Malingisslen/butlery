@@ -74,6 +74,7 @@ class SharedMenuCard {
                   ),
                   onUnshare: () => SharedContentActions.unshareMenu(
                     context,
+                    viewModel,
                     sharedMenu,
                   ),
                 ),

@@ -12,7 +12,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -413,9 +412,11 @@ class SharedContentActions {
     }
   }
 
-  /// Unshare a menu - deletes the shared menu document
+  /// Unshare a menu — routes the delete through the menu view-model (which
+  /// owns the repository call) instead of reaching into a repository here.
   static Future<void> unshareMenu(
     BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) async {
     final confirmed = await CommonDialogActions.showActionConfirmation(
@@ -429,28 +430,23 @@ class SharedContentActions {
 
     if (confirmed != true || !context.mounted) return;
 
-    try {
-      final repo = ServiceLocator.get<FirebaseSharedMenuRepository>();
-      await repo.deleteSharedContent(sharedMenu.id);
+    final ok = await viewModel.menuViewModel.unshareSharedMenu(sharedMenu);
+    if (!context.mounted) return;
 
-      if (!context.mounted) return;
-
+    if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.unshareSuccess(sharedMenu.menuTitle)),
           backgroundColor: context.butleryColors.success,
         ),
       );
-    } catch (e) {
-      AppLogger.error('Failed to unshare menu', e);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.unshareFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.unshareFailed),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

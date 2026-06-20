@@ -31,6 +31,7 @@
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -233,6 +234,26 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       if (!content.any((m) => m.id == sharedMenu.id)) {
         addContent(sharedMenu);
       }
+    }
+
+    return result ?? false;
+  }
+
+  /// Unshare a menu the user shared — deletes the shared-menu document and
+  /// drops it from the local list. Owns the repository call so the view
+  /// doesn't reach into a repository directly (MVVM).
+  Future<bool> unshareSharedMenu(SharedMenu sharedMenu) async {
+    final result = await executeOperation(
+      'Unshare menu "${getContentTitle(sharedMenu)}"',
+      () async {
+        await ServiceLocator.get<FirebaseSharedMenuRepository>()
+            .deleteSharedContent(sharedMenu.id);
+        return true;
+      },
+    );
+
+    if (result == true) {
+      removeContent(sharedMenu);
     }
 
     return result ?? false;
