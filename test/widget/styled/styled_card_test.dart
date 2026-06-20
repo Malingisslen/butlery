@@ -41,6 +41,37 @@ void main() {
         expect(find.text('Card Content'), findsOneWidget);
       });
 
+      test('rejects a non-zero borderRadius (square-by-design guard)', () {
+        // The design system forbids rounded corners; a non-zero radius must
+        // be caught at construction, not silently rendered.
+        expect(
+          () => StyledCard(borderRadius: 8, child: const Text('x')),
+          throwsAssertionError,
+        );
+        // Zero and null are allowed.
+        expect(
+          () => StyledCard(borderRadius: 0, child: const Text('x')),
+          returnsNormally,
+        );
+        expect(
+          () => const StyledCard(child: Text('x')),
+          returnsNormally,
+        );
+      });
+
+      test('AppDimensions border-radius tokens stay 0.0 (square design root)',
+          () {
+        // The named StyledCard constructors hardcode these tokens, so the
+        // main-constructor assert can't see them — pinning the tokens here
+        // guards squareness at its source for every constructor at once.
+        expect(AppDimensions.borderRadiusS, 0.0);
+        expect(AppDimensions.borderRadiusM, 0.0);
+        expect(AppDimensions.borderRadiusL, 0.0);
+        expect(AppDimensions.borderRadius8, 0.0);
+        expect(AppDimensions.borderRadius12, 0.0);
+        expect(AppDimensions.borderRadius16, 0.0);
+      });
+
       testWidgets('should apply custom padding', (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(32);
 

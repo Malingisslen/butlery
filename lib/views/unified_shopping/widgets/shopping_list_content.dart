@@ -417,7 +417,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                       if (progress != null && progress.total > 0) ...[
                         const SizedBox(height: AppDimensions.spacingXs),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusS),
                           child: LinearProgressIndicator(
                             value: progress.completed / progress.total,
                             minHeight: 3,

@@ -41,7 +41,12 @@ class StyledCard extends StatelessWidget {
     this.showBorder = false,
     this.borderColor,
     this.semanticLabel,
-  });
+  }) : assert(
+          borderRadius == null || borderRadius == 0,
+          'StyledCard is square by design — pass null or 0 (all '
+          'AppDimensions.borderRadius* constants are 0.0). A non-zero radius '
+          'would reintroduce rounded corners the design system forbids.',
+        );
 
   /// Standard card with default Material Design styling
   const StyledCard.standard({
