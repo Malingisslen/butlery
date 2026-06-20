@@ -1478,3 +1478,66 @@ Server-side index writes need an admin key that must be independently
 provisioned in Secret Manager — never assume it exists because the client
 talks to the same vendor. Re-validate creds at Step 0 for any "extend the CF
 to also call <external service>" ticket.
+
+### 2026-06-20 — daily-snapshots for dashboard delta/anomaly series [Pattern discovered]
+
+`functions/src/analytics/daily-snapshots.ts` — five `onSchedule` jobs that
+each write ONE doc per UTC day to `analytics/<group>/daily/{date}`, giving
+the admin dashboard's delta-arrow + anomaly engine a historical series for
+the non-time-series tabs (Importhälsa / Recept / Parsing / Drift / Feedback).
+Exports: `snapshotImportHealthDaily`, `snapshotRecipesDaily`,
+`snapshotParsingCorrectionsDaily`, `snapshotOpsDaily`, `snapshotFeedbackDaily`
+(registered in `index.ts` after `computeFeatureRetention`). Compiles clean.
+
+**Patterns worth remembering:**
+
+- **Five structurally-identical aggregators → shared helpers, one file.**
+  `resolveDayWindow(deps)` returns `{db, dateStr, startMs, endMs, dayStart,
+  dayEnd, computedAt}` from the run time once — every job calls it instead of
+  re-deriving UTC boundaries. `dailyDocRef(db, group, dateStr)` centralizes
+  the `analytics/<group>/daily/{date}` (4-segment doc) path so no job
+  miscounts segments (the recurring 3-vs-4 segment trap). `bump(obj, key)`
+  for the per-bucket counters. Kept all five `runX(deps)` seams + thin
+  `onSchedule` wrappers exactly like `compute-feature-retention.ts`.
+
+- **Region is inherited, NOT pinned per-function.** None of these set a
+  `region` in the `onSchedule` options — `setGlobalOptions({region:
+  "europe-west1"})` in `index.ts` governs every function. Pinning a per-
+  function region here would be redundant at best and a drift risk at worst.
+  Confirmed `compute-feature-retention.ts` also omits it. The convention is:
+  global option only, never per-function.
+
+- **`feedback.createdAt` is an ISO-8601 STRING, not a Timestamp.** The other
+  four collections (`parse_events`, `parsing_corrections`, `system_events`)
+  use real `Timestamp` fields (`timestamp`, `timestamp`, `executedAt`
+  respectively) so they range-compare with `Timestamp.fromMillis`. Feedback
+  must range-compare with `new Date(startMs).toISOString()` /
+  `endMs.toISOString()` boundary STRINGS — correct because ISO-8601 sorts
+  lexicographically == chronologically. Mixing the two (passing a Timestamp
+  to the feedback query, or a string to the others) silently returns zero
+  rows — no error, just a wrong snapshot.
+
+- **`system_events` removed-count is dual-named.** `totalDeleted` OR
+  `deletionAuditDeletedCount` depending on which cleanup job wrote the row.
+  The snapshot sums `data.totalDeleted ?? data.deletionAuditDeletedCount`,
+  mirroring `lib/models/admin/ops_event.dart:OpsEvent.fromFirestore` on the
+  dashboard read side. Verified against that model — keep the two in sync.
+
+- **Recipe method classification keys off `core.sourceArtefact.type`** (the
+  `SourceArtefactType.name` string from `lib/models/recipe/source_artefact.dart`):
+  `url→url`, `photoOcr→photo`, `textPaste→textPaste`,
+  `youtubeTranscript|tiktokCaption|instagramCaption→social`, missing/null/
+  unknown→`manual`. Extracted as `classifyRecipeMethod()` so it's unit-
+  testable. Recipes live at `users/{uid}/recipes` (subcollection) → the scan
+  is `db.collectionGroup("recipes")`.
+
+- **Only the recipe snapshot can grow unbounded.** Four of the five are
+  single-day range scans (effectively free at beta scale). The recipe one is
+  a FULL collection-group scan (a stock count, not a per-day delta) → hard-
+  capped at `RECIPE_SCAN_CAP = 5000` with a `logger.warn` if `snap.size >=
+  cap`. When that warn fires, the counts become a floor, not exact — switch
+  to an incremental `core.createdAt`-windowed query. Documented inline.
+
+- **Staggered 05:00–05:40 UTC** to clear the existing 04:00
+  (`track-retention`) / 04:30 (`compute-feature-retention`) jobs that scan
+  big collections. Same scheduling-collision discipline as BUT-599.

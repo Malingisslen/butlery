@@ -111,6 +111,16 @@ export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
 export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
 export { trackDayNRetention } from "./analytics/track-retention";
 export { computeFeatureRetention } from "./analytics/compute-feature-retention";
+
+// Analytics Functions - Daily snapshot aggregates for dashboard delta/anomaly
+// series on the non-time-series tabs (staggered 05:00–05:40 UTC).
+export {
+  snapshotImportHealthDaily,
+  snapshotRecipesDaily,
+  snapshotParsingCorrectionsDaily,
+  snapshotOpsDaily,
+  snapshotFeedbackDaily,
+} from "./analytics/daily-snapshots";
 export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
 export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 
