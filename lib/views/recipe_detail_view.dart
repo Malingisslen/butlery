@@ -1001,8 +1001,8 @@ class _HeroButton extends StatelessWidget {
           onPressed();
         },
         child: SizedBox(
-          width: 40,
-          height: 40,
+          width: AppDimensions.minTouchTarget,
+          height: AppDimensions.minTouchTarget,
           child: Icon(
             icon,
             color: cs.primary,
@@ -1041,8 +1041,8 @@ class _HeroMenuButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return SizedBox(
-      width: 40,
-      height: 40,
+      width: AppDimensions.minTouchTarget,
+      height: AppDimensions.minTouchTarget,
       child: Material(
         color: cs.surface,
         borderRadius: BorderRadius.zero,

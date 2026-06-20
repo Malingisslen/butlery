@@ -137,10 +137,14 @@ class _IngredientChip extends StatelessWidget {
             button: true,
             child: InkWell(
               onTap: onRemove,
-              child: Icon(
-                Icons.close,
-                size: AppDimensions.iconSizeS,
-                color: cs.primary,
+              child: SizedBox(
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
+                child: Icon(
+                  Icons.close,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.primary,
+                ),
               ),
             ),
           ),
