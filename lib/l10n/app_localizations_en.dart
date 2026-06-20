@@ -9405,6 +9405,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminMetricNoData => 'No data yet';
 
   @override
+  String get adminAnomalyTitle => 'Anomalies detected';
+
+  @override
+  String get adminAnomalyHigh => 'unusually high';
+
+  @override
+  String get adminAnomalyLow => 'unusually low';
+
+  @override
+  String get adminAnomalyMetricRecipes => 'Recipes';
+
+  @override
+  String get adminAnomalyMetricImportFailure => 'Import failures';
+
+  @override
+  String get adminAnomalyMetricParsing => 'Parsing corrections';
+
+  @override
+  String get adminAnomalyMetricOps => 'Ops events';
+
+  @override
+  String get adminAnomalyMetricFeedback => 'Feedback';
+
+  @override
   String get adminMetricInfo => 'About this number';
 
   @override

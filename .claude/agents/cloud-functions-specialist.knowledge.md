@@ -1541,3 +1541,115 @@ Exports: `snapshotImportHealthDaily`, `snapshotRecipesDaily`,
 - **Staggered 05:00–05:40 UTC** to clear the existing 04:00
   (`track-retention`) / 04:30 (`compute-feature-retention`) jobs that scan
   big collections. Same scheduling-collision discipline as BUT-599.
+
+### 2026-06-20 — Gen1→Gen2 fleet migration scoping [Pattern discovered]
+
+A `firebase deploy --only functions` aborts with "[onRecipeDeleted(europe-west1)]
+Upgrading from 1st Gen to 2nd Gen is not yet supported." This is NOT a single-
+function problem — it's a whole-fleet stale-generation drift. Firebase aborts
+the ENTIRE deploy on the first gen-conflict it hits, so you only ever see one
+name in the error even when dozens are affected.
+
+**Why it happened**: `index.ts` was migrated wholesale to `firebase-functions/v2/*`
++ `setGlobalOptions({region:"europe-west1"})`, but the matching `delete-then-
+deploy` was never run for the already-deployed 1st-gen copies. Firebase forbids
+in-place gen upgrade, so every function whose deployed copy is still gcfv1 blocks.
+
+**Scoping recipe (reusable)**:
+1. `firebase functions:list --json` — BUT the `version` field (gcfv1/gcfv2) only
+   populates on a DIRECT terminal call. Via `execSync`/piped context it comes
+   back `null`/`undefined`. Capture the gen/region from a direct `functions:list`
+   run, then cross-reference names against `index.ts` exports in code.
+2. Parse `index.ts` exports: `export { ... }` blocks (take the post-`as` alias)
+   + `export const X`. That's the source-of-truth set.
+3. Classify each deployed fn: gcfv1+eu+in-source → DELETE+RECREATE (gen blocker);
+   us-central1+in-source → DELETE(us)+DEPLOY(eu) (region move, also a delete);
+   gcfv2+eu → plain redeploy; deployed-but-not-in-source → DELETE-only orphan.
+
+**This audit's result** (butlery-app-1, 47 deployed): 16 gcfv1 eu gen-blockers,
+17 us-central1 stragglers (all gcfv1), 1 orphan (`cleanupExpiredFriendRequests`,
+renamed to `cleanupExpiredSocialRequests` in source), 13 already-correct,
+17 new-never-deployed.
+
+**Critical exception — auth triggers stay v1.** `onUserDeleted`
+(`cleanup/on-user-deleted.ts`) is `v1.auth.user().onDelete(...)` and imports
+`firebase-functions/v1` BY DESIGN — Firebase Auth `user().onDelete` has NO Gen2
+equivalent. It deploys as gcfv1 and that is CORRECT; it is a plain redeploy, NOT
+a gen migration. Don't "fix" it to v2 — there is no v2 form of it. (`shared/
+batch-update.ts` also imports `firebase-functions/v1` but only for `v1.logger`,
+not a trigger — harmless.) Grep `firebase-functions/v1` to find these before
+assuming "all source is v2".
+
+**Gap-risk classification for delete+recreate**: a delete-then-deploy leaves a
+window where the function doesn't exist.
+- SCHEDULED + CALLABLE → SAFE-GAP. A missed cron tick re-runs next interval; a
+  callable just errors client-side and retries. No silent data loss.
+- EVENT TRIGGERS (Firestore onDocument*, Auth onDelete) → RISKY-GAP. Eventarc
+  does NOT backfill events that fire while the trigger is absent — they're
+  dropped silently. Dangerous ones here: `onRecipeDeleted` (orphaned Storage
+  images = silent cost leak), `onUserDeleted` (GDPR social-cascade cleanup
+  missed — a deletion during the gap leaves PII in other users' docs),
+  `onProfileUpdated` (stale denormalized name/avatar), `onReportCreated`
+  (moderation report dropped). Mitigation: delete + immediately redeploy EACH
+  risky trigger individually (gap ~60-90s, not minutes), do them one at a time
+  last, ideally during low traffic. For pre-launch ~1-user scale the practical
+  risk is near-zero but the discipline matters at scale.
+
+**predeploy hook** (`firebase.json`): runs `npm ci` + `npm audit --audit-level=
+critical` + `npm run build`. `npm ci` does a CLEAN reinstall — slower, and will
+fail the whole deploy if lockfile/registry hiccups. Build was confirmed green
+before planning.
+
+### 2026-06-20 — detectAnomalies nightly outlier job [Pattern discovered]
+
+New scheduled CF `functions/src/analytics/detect-anomalies.ts` (export
+`detectAnomalies`, 06:00 UTC) reading the five `daily-snapshots.ts` series at
+`analytics/<group>/daily/{date}` and writing one report doc at
+`analytics/anomalies/daily/{date}` (4-seg = doc). Same `runDetectAnomalies(deps)`
+test-seam + thin `onSchedule` wrapper shape as `daily-snapshots.ts` /
+`compute-feature-retention.ts`. Test `__tests__/detect-anomalies.test.ts`
+(10 cases, all pass), `test:detect-anomalies` script added (auto-discovered by
+`scripts/run-all-tests.js`). Build + test green.
+
+**Detection rule** (all four gates): baseline count ≥ MIN_SAMPLES(14), sample
+stddev > 0, |z| > 3, AND |today − mean| ≥ a per-series ABSOLUTE_FLOOR (default
+5). The floor is the load-bearing one — without it 3σ on tiny pre-launch counts
+(0→2 feedback rows) fires constantly. `metric` token MUST be exactly
+`<group>_<field>` (e.g. `import_health_totalFailure`, `recipes_total`) — the
+Flutter AnomalyRepository keys its label map off these literals.
+
+**Patterns worth remembering**:
+
+- **Schedule offset for read-after-write CFs.** Pinned 06:00 UTC because it
+  CONSUMES what the 05:00–05:40 snapshot jobs PRODUCE that same morning. A
+  consumer that scans a producer's same-day output must schedule strictly after
+  the producer's slowest run, with margin (snapshots finish in <5 min at scale;
+  20 min margin is cheap insurance). If today's snapshot doc is missing for a
+  series (producer hasn't run / no data), SKIP that series and log info — don't
+  guess a zero, which would manufacture a false "drop" anomaly.
+
+- **Sample stddev (n−1), not population.** Daily series are a sample of an
+  ongoing process, so use the n−1 denominator. `computeBaselineStats` returns
+  stddev 0 for count<2 so the stddev>0 gate naturally absorbs the degenerate
+  case — no separate guard needed.
+
+- **id-desc orderBy on a date-string-keyed subcollection is free.**
+  `orderBy(FieldPath.documentId(), "desc").limit(29)` gives the trailing window
+  with no composite index (doc-id order is intrinsic) because doc ids are
+  `yyyy-mm-dd` which sort lexicographically == chronologically. Same property
+  the feedback snapshot relies on for its ISO-string range query.
+
+- **Pure `evaluateSeries(series, today, baseline)` split out from the I/O.**
+  The four-gate decision is a pure function tested in isolation (cases g/h),
+  while `runDetectAnomalies` only does fetch + split-on-run-day + write. Keeps
+  the statistical logic testable without any fake DB and makes the floor/z
+  thresholds trivially unit-checkable.
+
+- **Empty report is still written.** Even with zero anomalies the job writes
+  `{date, anomalies: [], computedAt}` so the dashboard can distinguish "ran,
+  nothing wrong" from "job never ran" (missing doc). Don't early-return on an
+  empty anomaly list.
+
+- **Idempotency**: deterministic doc id = run-day UTC date + `set()`. Re-run
+  test asserts writeCount=2 but one distinct output path (case i), the canonical
+  idempotency proof for this codebase.

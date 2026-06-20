@@ -6,6 +6,7 @@ import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
+import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
 
 /// Top-level admin shell: a NavigationRail switching between the admin tools.
 /// Reached only after the admin gate in `admin_main.dart`.
@@ -56,47 +57,54 @@ class _AdminShellState extends State<AdminShell> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      body: Row(
+      body: Column(
         children: [
-          NavigationRail(
-            selectedIndex: _index,
-            onDestinationSelected: (i) => setState(() => _index = i),
-            labelType: NavigationRailLabelType.all,
-            destinations: [
-              NavigationRailDestination(
-                icon: const Icon(Icons.feedback_outlined),
-                selectedIcon: const Icon(Icons.feedback),
-                label: Text(l10n.adminNavFeedback),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.cloud_download_outlined),
-                selectedIcon: const Icon(Icons.cloud_download),
-                label: Text(l10n.adminNavImport),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.people_outline),
-                selectedIcon: const Icon(Icons.people),
-                label: Text(l10n.adminNavEngagement),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.rule_outlined),
-                selectedIcon: const Icon(Icons.rule),
-                label: Text(l10n.adminNavParsing),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.restaurant_menu_outlined),
-                selectedIcon: const Icon(Icons.restaurant_menu),
-                label: Text(l10n.adminNavRecipes),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.dns_outlined),
-                selectedIcon: const Icon(Icons.dns),
-                label: Text(l10n.adminNavOps),
-              ),
-            ],
+          const AnomalyBanner(),
+          Expanded(
+            child: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _index,
+                  onDestinationSelected: (i) => setState(() => _index = i),
+                  labelType: NavigationRailLabelType.all,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.feedback_outlined),
+                      selectedIcon: const Icon(Icons.feedback),
+                      label: Text(l10n.adminNavFeedback),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.cloud_download_outlined),
+                      selectedIcon: const Icon(Icons.cloud_download),
+                      label: Text(l10n.adminNavImport),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.people_outline),
+                      selectedIcon: const Icon(Icons.people),
+                      label: Text(l10n.adminNavEngagement),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.rule_outlined),
+                      selectedIcon: const Icon(Icons.rule),
+                      label: Text(l10n.adminNavParsing),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.restaurant_menu_outlined),
+                      selectedIcon: const Icon(Icons.restaurant_menu),
+                      label: Text(l10n.adminNavRecipes),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.dns_outlined),
+                      selectedIcon: const Icon(Icons.dns),
+                      label: Text(l10n.adminNavOps),
+                    ),
+                  ],
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(child: _pages[_index]),
+              ],
+            ),
           ),
-          const VerticalDivider(width: 1),
-          Expanded(child: _pages[_index]),
         ],
       ),
     );

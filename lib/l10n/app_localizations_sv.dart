@@ -8955,40 +8955,40 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get onboardingSkip => 'Hoppa over';
+  String get onboardingSkip => 'Hoppa över';
 
   @override
   String get onboardingBack => 'Tillbaka';
 
   @override
-  String get onboardingNext => 'Nasta';
+  String get onboardingNext => 'Nästa';
 
   @override
-  String get onboardingComplete => 'Slutfor';
+  String get onboardingComplete => 'Slutför';
 
   @override
-  String get onboardingAgeGateTitle => 'Hur gammal ar du?';
+  String get onboardingAgeGateTitle => 'Hur gammal är du?';
 
   @override
   String get onboardingAgeGateSubtitle =>
-      'Vi behover veta ditt fodelsear for att folja svenska regler for sociala appar (GDPR Art 8).';
+      'Vi behöver veta ditt födelseår för att följa svenska regler för sociala appar (GDPR Art 8).';
 
   @override
-  String get onboardingAgeGateBirthYearLabel => 'Fodelsear';
+  String get onboardingAgeGateBirthYearLabel => 'Födelseår';
 
   @override
   String get onboardingAgeGatePrivacyNote =>
-      'Vi lagrar bara aret, inte hela datumet.';
+      'Vi lagrar bara året, inte hela datumet.';
 
   @override
-  String get onboardingAgeGateContinue => 'Fortsatt';
+  String get onboardingAgeGateContinue => 'Fortsätt';
 
   @override
-  String get onboardingAgeGateTooYoungTitle => 'Butlery ar for 15 ar och uppat';
+  String get onboardingAgeGateTooYoungTitle => 'Butlery är för 15 år och uppåt';
 
   @override
   String get onboardingAgeGateTooYoungBody =>
-      'Enligt svensk dataskyddslagstiftning (GDPR Art 8) kravs foraldrasamtycke for att anvanda sociala funktioner under 15 ar. Kom garna tillbaka nar du fyllt 15.';
+      'Enligt svensk dataskyddslagstiftning (GDPR Art 8) krävs föräldrasamtycke för att använda sociala funktioner under 15 år. Kom gärna tillbaka när du fyllt 15.';
 
   @override
   String get onboardingAgeGateSignOut => 'Logga ut';
@@ -9005,34 +9005,34 @@ class AppLocalizationsSv extends AppLocalizations {
       'Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.';
 
   @override
-  String get onboardingWelcomeTitle => 'Valkommen till Butlery!';
+  String get onboardingWelcomeTitle => 'Välkommen till Butlery!';
 
   @override
   String get onboardingWelcomeDescription =>
-      'Lat oss stalla in dina preferenser sa att du far den basta upplevelsen fran borjan.';
+      'Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.';
 
   @override
   String get onboardingWelcomeNote =>
-      'Du kan alltid andra dessa i installningarna senare.';
+      'Du kan alltid ändra dessa i inställningarna senare.';
 
   @override
   String get onboardingAllergenTitle => 'Allergier & intoleranser';
 
   @override
   String get onboardingAllergenDescription =>
-      'Valj de allergener du vill spara och filtrera recept efter.';
+      'Välj de allergener du vill spara och filtrera recept efter.';
 
   @override
   String get onboardingAllergenGluten => 'Gluten';
 
   @override
-  String get onboardingAllergenMilk => 'Mjolk';
+  String get onboardingAllergenMilk => 'Mjölk';
 
   @override
-  String get onboardingAllergenNuts => 'Notter';
+  String get onboardingAllergenNuts => 'Nötter';
 
   @override
-  String get onboardingAllergenEgg => 'Agg';
+  String get onboardingAllergenEgg => 'Ägg';
 
   @override
   String get onboardingAllergenSoy => 'Soja';
@@ -9047,11 +9047,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingAllergenSesame => 'Sesam';
 
   @override
-  String get onboardingDietaryTitle => 'Kostreferenser';
+  String get onboardingDietaryTitle => 'Kostpreferenser';
 
   @override
   String get onboardingDietaryDescription =>
-      'Har du nagra kostreferenser? Vi kan filtrera recept at dig.';
+      'Har du några kostpreferenser? Vi kan filtrera recept åt dig.';
 
   @override
   String get onboardingDietaryVegetarian => 'Vegetarian';
@@ -9064,13 +9064,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get onboardingDietaryVegetarianDesc =>
-      'Inga kott- eller fiskprodukter';
+      'Inga kött- eller fiskprodukter';
 
   @override
   String get onboardingDietaryVeganDesc => 'Inga animaliska produkter';
 
   @override
-  String get onboardingDietaryPescetarianDesc => 'Fisk men inget kott';
+  String get onboardingDietaryPescetarianDesc => 'Fisk men inget kött';
 
   @override
   String get onboardingDietaryGlutenFree => 'Glutenfri';
@@ -9106,29 +9106,29 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingSkippedBannerAction => 'Öppna inställningar';
 
   @override
-  String get onboardingImportTitle => 'Importera ditt forsta recept';
+  String get onboardingImportTitle => 'Importera ditt första recept';
 
   @override
   String get onboardingImportDescription =>
-      'Kom igang snabbt genom att importera ett recept fran webben eller ett foto.';
+      'Kom igång snabbt genom att importera ett recept från webben eller ett foto.';
 
   @override
-  String get onboardingImportUrlTitle => 'Fran en webbadress';
+  String get onboardingImportUrlTitle => 'Från en webbadress';
 
   @override
   String get onboardingImportUrlDescription =>
-      'Klistra in en lank till ett recept';
+      'Klistra in en länk till ett recept';
 
   @override
-  String get onboardingImportPhotoTitle => 'Importera fran foto';
+  String get onboardingImportPhotoTitle => 'Importera från foto';
 
   @override
   String get onboardingImportPhotoDescription =>
-      'Ta ett foto eller valj fran galleriet';
+      'Ta ett foto eller välj från galleriet';
 
   @override
   String get onboardingImportSkipNote =>
-      'Du kan hoppa over detta steg och importera senare.';
+      'Du kan hoppa över detta steg och importera senare.';
 
   @override
   String get onboardingResumeTitle => 'Avsluta din profil';
@@ -9137,7 +9137,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingResumeBody => '30 sekunder kvar';
 
   @override
-  String get onboardingResumeCta => 'Fortsatt';
+  String get onboardingResumeCta => 'Fortsätt';
 
   @override
   String get cookingModePortions => 'Portioner';
@@ -9167,10 +9167,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackEmailLabel => 'E-post (valfritt)';
 
   @override
-  String get feedbackScreenshotLabel => 'Skarmavbild';
+  String get feedbackScreenshotLabel => 'Skärmavbild';
 
   @override
-  String get feedbackRemoveScreenshot => 'Ta bort skarmavbild';
+  String get feedbackRemoveScreenshot => 'Ta bort skärmavbild';
 
   @override
   String get feedbackSendButton => 'Skicka';
@@ -9423,6 +9423,30 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminMetricNoData => 'Ingen data än';
+
+  @override
+  String get adminAnomalyTitle => 'Avvikelser upptäckta';
+
+  @override
+  String get adminAnomalyHigh => 'ovanligt högt';
+
+  @override
+  String get adminAnomalyLow => 'ovanligt lågt';
+
+  @override
+  String get adminAnomalyMetricRecipes => 'Recept';
+
+  @override
+  String get adminAnomalyMetricImportFailure => 'Importfel';
+
+  @override
+  String get adminAnomalyMetricParsing => 'Parsing-korrigeringar';
+
+  @override
+  String get adminAnomalyMetricOps => 'Drifthändelser';
+
+  @override
+  String get adminAnomalyMetricFeedback => 'Feedback';
 
   @override
   String get adminMetricInfo => 'Om den här siffran';

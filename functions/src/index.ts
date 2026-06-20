@@ -121,6 +121,10 @@ export {
   snapshotOpsDaily,
   snapshotFeedbackDaily,
 } from "./analytics/daily-snapshots";
+
+// Analytics Functions - Nightly anomaly detector over the daily snapshot series
+// (06:00 UTC, after the 05:00–05:40 snapshot jobs).
+export { detectAnomalies } from "./analytics/detect-anomalies";
 export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
 export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 

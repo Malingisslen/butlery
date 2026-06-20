@@ -15090,7 +15090,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSkip.
   ///
   /// In sv, this message translates to:
-  /// **'Hoppa over'**
+  /// **'Hoppa över'**
   String get onboardingSkip;
 
   /// No description provided for @onboardingBack.
@@ -15102,55 +15102,55 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingNext.
   ///
   /// In sv, this message translates to:
-  /// **'Nasta'**
+  /// **'Nästa'**
   String get onboardingNext;
 
   /// No description provided for @onboardingComplete.
   ///
   /// In sv, this message translates to:
-  /// **'Slutfor'**
+  /// **'Slutför'**
   String get onboardingComplete;
 
   /// No description provided for @onboardingAgeGateTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Hur gammal ar du?'**
+  /// **'Hur gammal är du?'**
   String get onboardingAgeGateTitle;
 
   /// No description provided for @onboardingAgeGateSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Vi behover veta ditt fodelsear for att folja svenska regler for sociala appar (GDPR Art 8).'**
+  /// **'Vi behöver veta ditt födelseår för att följa svenska regler för sociala appar (GDPR Art 8).'**
   String get onboardingAgeGateSubtitle;
 
   /// No description provided for @onboardingAgeGateBirthYearLabel.
   ///
   /// In sv, this message translates to:
-  /// **'Fodelsear'**
+  /// **'Födelseår'**
   String get onboardingAgeGateBirthYearLabel;
 
   /// No description provided for @onboardingAgeGatePrivacyNote.
   ///
   /// In sv, this message translates to:
-  /// **'Vi lagrar bara aret, inte hela datumet.'**
+  /// **'Vi lagrar bara året, inte hela datumet.'**
   String get onboardingAgeGatePrivacyNote;
 
   /// No description provided for @onboardingAgeGateContinue.
   ///
   /// In sv, this message translates to:
-  /// **'Fortsatt'**
+  /// **'Fortsätt'**
   String get onboardingAgeGateContinue;
 
   /// No description provided for @onboardingAgeGateTooYoungTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Butlery ar for 15 ar och uppat'**
+  /// **'Butlery är för 15 år och uppåt'**
   String get onboardingAgeGateTooYoungTitle;
 
   /// No description provided for @onboardingAgeGateTooYoungBody.
   ///
   /// In sv, this message translates to:
-  /// **'Enligt svensk dataskyddslagstiftning (GDPR Art 8) kravs foraldrasamtycke for att anvanda sociala funktioner under 15 ar. Kom garna tillbaka nar du fyllt 15.'**
+  /// **'Enligt svensk dataskyddslagstiftning (GDPR Art 8) krävs föräldrasamtycke för att använda sociala funktioner under 15 år. Kom gärna tillbaka när du fyllt 15.'**
   String get onboardingAgeGateTooYoungBody;
 
   /// No description provided for @onboardingAgeGateSignOut.
@@ -15180,19 +15180,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Valkommen till Butlery!'**
+  /// **'Välkommen till Butlery!'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Lat oss stalla in dina preferenser sa att du far den basta upplevelsen fran borjan.'**
+  /// **'Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.'**
   String get onboardingWelcomeDescription;
 
   /// No description provided for @onboardingWelcomeNote.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan alltid andra dessa i installningarna senare.'**
+  /// **'Du kan alltid ändra dessa i inställningarna senare.'**
   String get onboardingWelcomeNote;
 
   /// No description provided for @onboardingAllergenTitle.
@@ -15204,7 +15204,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAllergenDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Valj de allergener du vill spara och filtrera recept efter.'**
+  /// **'Välj de allergener du vill spara och filtrera recept efter.'**
   String get onboardingAllergenDescription;
 
   /// No description provided for @onboardingAllergenGluten.
@@ -15216,19 +15216,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAllergenMilk.
   ///
   /// In sv, this message translates to:
-  /// **'Mjolk'**
+  /// **'Mjölk'**
   String get onboardingAllergenMilk;
 
   /// No description provided for @onboardingAllergenNuts.
   ///
   /// In sv, this message translates to:
-  /// **'Notter'**
+  /// **'Nötter'**
   String get onboardingAllergenNuts;
 
   /// No description provided for @onboardingAllergenEgg.
   ///
   /// In sv, this message translates to:
-  /// **'Agg'**
+  /// **'Ägg'**
   String get onboardingAllergenEgg;
 
   /// No description provided for @onboardingAllergenSoy.
@@ -15258,13 +15258,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingDietaryTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Kostreferenser'**
+  /// **'Kostpreferenser'**
   String get onboardingDietaryTitle;
 
   /// No description provided for @onboardingDietaryDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Har du nagra kostreferenser? Vi kan filtrera recept at dig.'**
+  /// **'Har du några kostpreferenser? Vi kan filtrera recept åt dig.'**
   String get onboardingDietaryDescription;
 
   /// No description provided for @onboardingDietaryVegetarian.
@@ -15288,7 +15288,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingDietaryVegetarianDesc.
   ///
   /// In sv, this message translates to:
-  /// **'Inga kott- eller fiskprodukter'**
+  /// **'Inga kött- eller fiskprodukter'**
   String get onboardingDietaryVegetarianDesc;
 
   /// No description provided for @onboardingDietaryVeganDesc.
@@ -15300,7 +15300,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingDietaryPescetarianDesc.
   ///
   /// In sv, this message translates to:
-  /// **'Fisk men inget kott'**
+  /// **'Fisk men inget kött'**
   String get onboardingDietaryPescetarianDesc;
 
   /// No description provided for @onboardingDietaryGlutenFree.
@@ -15366,43 +15366,43 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingImportTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importera ditt forsta recept'**
+  /// **'Importera ditt första recept'**
   String get onboardingImportTitle;
 
   /// No description provided for @onboardingImportDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Kom igang snabbt genom att importera ett recept fran webben eller ett foto.'**
+  /// **'Kom igång snabbt genom att importera ett recept från webben eller ett foto.'**
   String get onboardingImportDescription;
 
   /// No description provided for @onboardingImportUrlTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Fran en webbadress'**
+  /// **'Från en webbadress'**
   String get onboardingImportUrlTitle;
 
   /// No description provided for @onboardingImportUrlDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Klistra in en lank till ett recept'**
+  /// **'Klistra in en länk till ett recept'**
   String get onboardingImportUrlDescription;
 
   /// No description provided for @onboardingImportPhotoTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Importera fran foto'**
+  /// **'Importera från foto'**
   String get onboardingImportPhotoTitle;
 
   /// No description provided for @onboardingImportPhotoDescription.
   ///
   /// In sv, this message translates to:
-  /// **'Ta ett foto eller valj fran galleriet'**
+  /// **'Ta ett foto eller välj från galleriet'**
   String get onboardingImportPhotoDescription;
 
   /// No description provided for @onboardingImportSkipNote.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan hoppa over detta steg och importera senare.'**
+  /// **'Du kan hoppa över detta steg och importera senare.'**
   String get onboardingImportSkipNote;
 
   /// No description provided for @onboardingResumeTitle.
@@ -15420,7 +15420,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingResumeCta.
   ///
   /// In sv, this message translates to:
-  /// **'Fortsatt'**
+  /// **'Fortsätt'**
   String get onboardingResumeCta;
 
   /// No description provided for @cookingModePortions.
@@ -15480,13 +15480,13 @@ abstract class AppLocalizations {
   /// No description provided for @feedbackScreenshotLabel.
   ///
   /// In sv, this message translates to:
-  /// **'Skarmavbild'**
+  /// **'Skärmavbild'**
   String get feedbackScreenshotLabel;
 
   /// No description provided for @feedbackRemoveScreenshot.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort skarmavbild'**
+  /// **'Ta bort skärmavbild'**
   String get feedbackRemoveScreenshot;
 
   /// No description provided for @feedbackSendButton.
@@ -15986,6 +15986,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ingen data än'**
   String get adminMetricNoData;
+
+  /// No description provided for @adminAnomalyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avvikelser upptäckta'**
+  String get adminAnomalyTitle;
+
+  /// No description provided for @adminAnomalyHigh.
+  ///
+  /// In sv, this message translates to:
+  /// **'ovanligt högt'**
+  String get adminAnomalyHigh;
+
+  /// No description provided for @adminAnomalyLow.
+  ///
+  /// In sv, this message translates to:
+  /// **'ovanligt lågt'**
+  String get adminAnomalyLow;
+
+  /// No description provided for @adminAnomalyMetricRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get adminAnomalyMetricRecipes;
+
+  /// No description provided for @adminAnomalyMetricImportFailure.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importfel'**
+  String get adminAnomalyMetricImportFailure;
+
+  /// No description provided for @adminAnomalyMetricParsing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Parsing-korrigeringar'**
+  String get adminAnomalyMetricParsing;
+
+  /// No description provided for @adminAnomalyMetricOps.
+  ///
+  /// In sv, this message translates to:
+  /// **'Drifthändelser'**
+  String get adminAnomalyMetricOps;
+
+  /// No description provided for @adminAnomalyMetricFeedback.
+  ///
+  /// In sv, this message translates to:
+  /// **'Feedback'**
+  String get adminAnomalyMetricFeedback;
 
   /// No description provided for @adminMetricInfo.
   ///
