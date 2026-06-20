@@ -932,7 +932,7 @@
   "recipeSourceTypeTiktok": "TikTok caption",
   "recipeSourceTypeInstagram": "Instagram caption",
   "recipeSourceTypeTextPaste": "Pasted text",
-  "recipeSourceTypePhotoOcr": "Photo text (OCR)",
+  "recipeSourceTypePhotoOcr": "Photo text",
   "recipeSourceReextract": "Re-extract from source",
   "recipeSourceReextractConfirmTitle": "Re-extract recipe?",
   "recipeSourceReextractConfirmMessage": "This overwrites the recipe's current content with a fresh extraction from the source. This cannot be undone.",
@@ -2612,7 +2612,7 @@
   "consentInfoRevoke": "Revoking consents does not affect previous processing",
   "consentSaved": "Consents have been saved",
   "consentRevokeAllTitle": "Revoke all optional consents?",
-  "consentRevokeAllMessage": "This will disable all optional features such as analytics, marketing, social features and push notifications. You can enable them again at any time.",
+  "consentRevokeAllMessage": "This will disable all optional features such as analytics, social features and push notifications. You can enable them again at any time.",
   "consentRevokeAll": "Revoke all",
   "consentAllRevoked": "All optional consents have been revoked",
   "consentRenewalTitle": "We've updated our terms",
@@ -3531,7 +3531,7 @@
     }
   },
   "importContinueWithImport": "Continue with import",
-  "importContinueWithoutOcr": "Continue without OCR",
+  "importContinueWithoutOcr": "Continue without text recognition",
   "importCopyManually": "Copy manually",
   "importCouldNotExtractText": "Could not extract text",
   "importExtraction": "Extraction",
@@ -3580,7 +3580,7 @@
   "importManually": "Import manually",
   "importNoImageSelected": "No image selected",
   "importNoRecipeInfoFound": "No recipe information found in the text.",
-  "importOcrMayFail": "OCR may fail or give poor results.",
+  "importOcrMayFail": "Text recognition may fail or give poor results.",
   "importOtherApp": "another app",
   "importPasteFromClipboard": "Paste from clipboard",
   "importClipboardUrlDetected": "Recipe URL found in clipboard",
@@ -3852,6 +3852,11 @@
   "@privacyShareActivitySubtitle": {
     "description": "Subtitle explaining what the activity-broadcast toggle controls (BUT-906)"
   },
+  "privacyActivityTypesTitle": "What's shared",
+  "privacyActivityTypeCooked": "When I cook a recipe",
+  "privacyActivityTypeShared": "When I share a recipe",
+  "privacyActivityTypeStartedCooking": "When I start cooking",
+  "privacyActivityTypePinged": "When I ping a friend",
   "profileAddAvatar": "Add avatar",
   "profileAvatarRemoved": "Avatar removed",
   "profileAvatarUploaded": "Avatar uploaded!",
@@ -7546,7 +7551,7 @@
       }
     }
   },
-  "errorImageQualityTooLow": "Image quality is too low for OCR ({quality}%).",
+  "errorImageQualityTooLow": "Image quality is too low for text recognition ({quality}%).",
   "@errorImageQualityTooLow": {
     "placeholders": {
       "quality": {
@@ -7554,7 +7559,7 @@
       }
     }
   },
-  "errorOcrServicesUnavailable": "OCR services are temporarily unavailable. Try again in a few minutes.",
+  "errorOcrServicesUnavailable": "Text recognition is temporarily unavailable. Try again in a few minutes.",
   "errorOcrRateLimit": "Too many requests right now. Please wait a minute and try again.",
   "errorOcrTimeout": "Couldn't reach the recipe parser. Check your connection and try again.",
   "errorNoTextExtracted": "No text could be extracted from the image.",
@@ -9701,7 +9706,7 @@
   "ingredientSearchEmpty": "Add ingredients to find recipes",
   "ingredientSearchNoResults": "No recipes match your ingredients",
   "ingredientSearchError": "Could not search recipes",
-  "ingredientSearchResultCount": "{count} recipes found",
+  "ingredientSearchResultCount": "{count, plural, =1{1 recipe found} other{{count} recipes found}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
       "count": {"type": "int"}

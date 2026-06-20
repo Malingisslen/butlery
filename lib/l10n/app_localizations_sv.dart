@@ -1364,7 +1364,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSourceTypeTextPaste => 'Inklistrad text';
 
   @override
-  String get recipeSourceTypePhotoOcr => 'Text från foto (OCR)';
+  String get recipeSourceTypePhotoOcr => 'Text från foto';
 
   @override
   String get recipeSourceReextract => 'Återhämta från källa';
@@ -3965,7 +3965,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get consentRevokeAllMessage =>
-      'Detta kommer att inaktivera alla valfria funktioner som analysdata, marknadsföring, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.';
+      'Detta kommer att inaktivera alla valfria funktioner som analysdata, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.';
 
   @override
   String get consentRevokeAll => 'Återkalla alla';
@@ -5448,7 +5448,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importContinueWithImport => 'Fortsätt med import';
 
   @override
-  String get importContinueWithoutOcr => 'Fortsätt utan OCR';
+  String get importContinueWithoutOcr => 'Fortsätt utan textavläsning';
 
   @override
   String get importCopyManually => 'Kopiera manuellt';
@@ -5520,7 +5520,8 @@ class AppLocalizationsSv extends AppLocalizations {
       'Ingen receptinformation hittades i texten.';
 
   @override
-  String get importOcrMayFail => 'OCR kan misslyckas eller ge dåliga resultat.';
+  String get importOcrMayFail =>
+      'Textavläsningen kan misslyckas eller ge dåliga resultat.';
 
   @override
   String get importOtherApp => 'annan app';
@@ -11609,12 +11610,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String errorImageQualityTooLow(int quality) {
-    return 'Bildkvaliteten är för låg för OCR ($quality%).';
+    return 'Bildkvaliteten är för låg för textavläsning ($quality%).';
   }
 
   @override
   String get errorOcrServicesUnavailable =>
-      'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.';
+      'Textavläsningen är tillfälligt otillgänglig. Försök igen om några minuter.';
 
   @override
   String get errorOcrRateLimit =>
@@ -14565,7 +14566,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String ingredientSearchResultCount(int count) {
-    return '$count recept hittade';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept hittade',
+      one: '1 recept hittat',
+    );
+    return '$_temp0';
   }
 
   @override

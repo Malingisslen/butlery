@@ -938,7 +938,7 @@
   "recipeSourceTypeTiktok": "TikTok-text",
   "recipeSourceTypeInstagram": "Instagram-text",
   "recipeSourceTypeTextPaste": "Inklistrad text",
-  "recipeSourceTypePhotoOcr": "Text från foto (OCR)",
+  "recipeSourceTypePhotoOcr": "Text från foto",
   "recipeSourceReextract": "Återhämta från källa",
   "recipeSourceReextractConfirmTitle": "Återhämta receptet?",
   "recipeSourceReextractConfirmMessage": "Det här skriver över receptets nuvarande innehåll med en ny extrahering från källan. Det går inte att ångra.",
@@ -2618,7 +2618,7 @@
   "consentInfoRevoke": "Att återkalla samtycken påverkar inte tidigare behandling",
   "consentSaved": "Samtycken har sparats",
   "consentRevokeAllTitle": "Återkalla alla valfria samtycken?",
-  "consentRevokeAllMessage": "Detta kommer att inaktivera alla valfria funktioner som analysdata, marknadsföring, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.",
+  "consentRevokeAllMessage": "Detta kommer att inaktivera alla valfria funktioner som analysdata, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.",
   "consentRevokeAll": "Återkalla alla",
   "consentAllRevoked": "Alla valfria samtycken har återkallats",
   "consentRenewalTitle": "Vi har uppdaterat våra användarvillkor",
@@ -3537,7 +3537,7 @@
     }
   },
   "importContinueWithImport": "Fortsätt med import",
-  "importContinueWithoutOcr": "Fortsätt utan OCR",
+  "importContinueWithoutOcr": "Fortsätt utan textavläsning",
   "importCopyManually": "Kopiera manuellt",
   "importCouldNotExtractText": "Kunde inte extrahera text",
   "importExtraction": "Extraktion",
@@ -3586,7 +3586,7 @@
   "importManually": "Importera manuellt",
   "importNoImageSelected": "Ingen bild vald",
   "importNoRecipeInfoFound": "Ingen receptinformation hittades i texten.",
-  "importOcrMayFail": "OCR kan misslyckas eller ge dåliga resultat.",
+  "importOcrMayFail": "Textavläsningen kan misslyckas eller ge dåliga resultat.",
   "importOtherApp": "annan app",
   "importPasteFromClipboard": "Klistra in från urklipp",
   "importClipboardUrlDetected": "Receptlänk hittad i urklipp",
@@ -7602,7 +7602,7 @@
       }
     }
   },
-  "errorImageQualityTooLow": "Bildkvaliteten är för låg för OCR ({quality}%).",
+  "errorImageQualityTooLow": "Bildkvaliteten är för låg för textavläsning ({quality}%).",
   "@errorImageQualityTooLow": {
     "placeholders": {
       "quality": {
@@ -7610,7 +7610,7 @@
       }
     }
   },
-  "errorOcrServicesUnavailable": "OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.",
+  "errorOcrServicesUnavailable": "Textavläsningen är tillfälligt otillgänglig. Försök igen om några minuter.",
   "errorOcrRateLimit": "För många förfrågningar just nu. Vänta en minut och försök igen.",
   "errorOcrTimeout": "Receptläsaren kunde inte nås. Kontrollera anslutningen och försök igen.",
   "errorNoTextExtracted": "Ingen text kunde extraheras från bilden.",
@@ -9752,7 +9752,7 @@
   "ingredientSearchEmpty": "Lägg till ingredienser för att hitta recept",
   "ingredientSearchNoResults": "Inga recept matchar dina ingredienser",
   "ingredientSearchError": "Kunde inte söka recept",
-  "ingredientSearchResultCount": "{count} recept hittade",
+  "ingredientSearchResultCount": "{count, plural, =1{1 recept hittat} other{{count} recept hittade}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
       "count": {"type": "int"}

@@ -1362,7 +1362,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSourceTypeTextPaste => 'Pasted text';
 
   @override
-  String get recipeSourceTypePhotoOcr => 'Photo text (OCR)';
+  String get recipeSourceTypePhotoOcr => 'Photo text';
 
   @override
   String get recipeSourceReextract => 'Re-extract from source';
@@ -3961,7 +3961,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentRevokeAllMessage =>
-      'This will disable all optional features such as analytics, marketing, social features and push notifications. You can enable them again at any time.';
+      'This will disable all optional features such as analytics, social features and push notifications. You can enable them again at any time.';
 
   @override
   String get consentRevokeAll => 'Revoke all';
@@ -5440,7 +5440,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importContinueWithImport => 'Continue with import';
 
   @override
-  String get importContinueWithoutOcr => 'Continue without OCR';
+  String get importContinueWithoutOcr => 'Continue without text recognition';
 
   @override
   String get importCopyManually => 'Copy manually';
@@ -5512,7 +5512,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'No recipe information found in the text.';
 
   @override
-  String get importOcrMayFail => 'OCR may fail or give poor results.';
+  String get importOcrMayFail =>
+      'Text recognition may fail or give poor results.';
 
   @override
   String get importOtherApp => 'another app';
@@ -5872,19 +5873,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'When on, your friends see when you cook, share, and ping recipes.';
 
   @override
-  String get privacyActivityTypesTitle => 'Vad som delas';
+  String get privacyActivityTypesTitle => 'What\'s shared';
 
   @override
-  String get privacyActivityTypeCooked => 'När jag lagar ett recept';
+  String get privacyActivityTypeCooked => 'When I cook a recipe';
 
   @override
-  String get privacyActivityTypeShared => 'När jag delar ett recept';
+  String get privacyActivityTypeShared => 'When I share a recipe';
 
   @override
-  String get privacyActivityTypeStartedCooking => 'När jag börjar laga';
+  String get privacyActivityTypeStartedCooking => 'When I start cooking';
 
   @override
-  String get privacyActivityTypePinged => 'När jag pingar en vän';
+  String get privacyActivityTypePinged => 'When I ping a friend';
 
   @override
   String get privacyActivityFeedHint =>
@@ -11580,12 +11581,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String errorImageQualityTooLow(int quality) {
-    return 'Image quality is too low for OCR ($quality%).';
+    return 'Image quality is too low for text recognition ($quality%).';
   }
 
   @override
   String get errorOcrServicesUnavailable =>
-      'OCR services are temporarily unavailable. Try again in a few minutes.';
+      'Text recognition is temporarily unavailable. Try again in a few minutes.';
 
   @override
   String get errorOcrRateLimit =>
@@ -14530,7 +14531,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String ingredientSearchResultCount(int count) {
-    return '$count recipes found';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes found',
+      one: '1 recipe found',
+    );
+    return '$_temp0';
   }
 
   @override

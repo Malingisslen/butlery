@@ -2345,7 +2345,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeSourceTypePhotoOcr.
   ///
   /// In sv, this message translates to:
-  /// **'Text från foto (OCR)'**
+  /// **'Text från foto'**
   String get recipeSourceTypePhotoOcr;
 
   /// No description provided for @recipeSourceReextract.
@@ -6678,7 +6678,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentRevokeAllMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Detta kommer att inaktivera alla valfria funktioner som analysdata, marknadsföring, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.'**
+  /// **'Detta kommer att inaktivera alla valfria funktioner som analysdata, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.'**
   String get consentRevokeAllMessage;
 
   /// No description provided for @consentRevokeAll.
@@ -9228,7 +9228,7 @@ abstract class AppLocalizations {
   /// No description provided for @importContinueWithoutOcr.
   ///
   /// In sv, this message translates to:
-  /// **'Fortsätt utan OCR'**
+  /// **'Fortsätt utan textavläsning'**
   String get importContinueWithoutOcr;
 
   /// No description provided for @importCopyManually.
@@ -9354,7 +9354,7 @@ abstract class AppLocalizations {
   /// No description provided for @importOcrMayFail.
   ///
   /// In sv, this message translates to:
-  /// **'OCR kan misslyckas eller ge dåliga resultat.'**
+  /// **'Textavläsningen kan misslyckas eller ge dåliga resultat.'**
   String get importOcrMayFail;
 
   /// No description provided for @importOtherApp.
@@ -19602,13 +19602,13 @@ abstract class AppLocalizations {
   /// No description provided for @errorImageQualityTooLow.
   ///
   /// In sv, this message translates to:
-  /// **'Bildkvaliteten är för låg för OCR ({quality}%).'**
+  /// **'Bildkvaliteten är för låg för textavläsning ({quality}%).'**
   String errorImageQualityTooLow(int quality);
 
   /// No description provided for @errorOcrServicesUnavailable.
   ///
   /// In sv, this message translates to:
-  /// **'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.'**
+  /// **'Textavläsningen är tillfälligt otillgänglig. Försök igen om några minuter.'**
   String get errorOcrServicesUnavailable;
 
   /// No description provided for @errorOcrRateLimit.
@@ -24445,7 +24445,7 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientSearchResultCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept hittade'**
+  /// **'{count, plural, =1{1 recept hittat} other{{count} recept hittade}}'**
   String ingredientSearchResultCount(int count);
 
   /// No description provided for @ingredientMatchCount.
