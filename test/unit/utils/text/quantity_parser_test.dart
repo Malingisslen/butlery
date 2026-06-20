@@ -169,6 +169,16 @@ void main() {
       test('should return null for mixed fraction with zero denominator', () {
         expect(QuantityParser.parseAsciiFraction('2 1/0'), isNull);
       });
+
+      test('returns null (no FormatException) for digit runs that overflow int',
+          () {
+        // A 64-bit int cannot hold this; int.parse would throw. tryParse must
+        // make the parser degrade gracefully instead of crashing the caller.
+        final huge = '9' * 40;
+        expect(QuantityParser.parseAsciiFraction('1/$huge'), isNull);
+        expect(QuantityParser.parseAsciiFraction('$huge/2'), isNull);
+        expect(QuantityParser.parseAsciiFraction('$huge $huge/$huge'), isNull);
+      });
     });
   });
 }

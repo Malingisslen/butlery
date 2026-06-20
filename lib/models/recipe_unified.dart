@@ -1047,8 +1047,10 @@ class RecipeSocialData {
             json, 'ownerDisplayName'),
         memberPermissions: json['memberPermissions'] != null
             ? Map<String, ResourcePermission>.from(
-                (json['memberPermissions'] as Map)
-                    .map((k, v) => MapEntry(k, ResourcePermission.values[v])))
+                (json['memberPermissions'] as Map).map((k, v) => MapEntry(
+                    k,
+                    utils.SerializationUtils.safeEnumByIndex(v,
+                        ResourcePermission.values, ResourcePermission.viewer))))
             : null,
         allowGuestViewing:
             utils.SerializationUtils.safeBool(json, 'allowGuestViewing'),

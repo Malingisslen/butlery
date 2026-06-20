@@ -306,6 +306,17 @@ class SerializationUtils {
     }
   }
 
+  /// Safe enum lookup by **index** with fallback — guards against out-of-range
+  /// or non-int stored indices (corrupt data, or a future enum value written
+  /// by a newer client and read by an older one) that would otherwise throw a
+  /// RangeError. Complements [safeEnum], which matches by string name.
+  static T safeEnumByIndex<T>(dynamic index, List<T> values, T defaultValue) {
+    if (index is! int || index < 0 || index >= values.length) {
+      return defaultValue;
+    }
+    return values[index];
+  }
+
   static T? safeNullableEnum<T>(Map<String, dynamic> map, String key,
       List<T> values, String Function(T) enumToString) {
     final value = map[key];

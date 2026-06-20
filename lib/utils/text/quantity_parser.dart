@@ -20,11 +20,18 @@ class QuantityParser {
     final mixedMatch = mixedPattern.firstMatch(trimmed);
 
     if (mixedMatch != null) {
-      final whole = int.parse(mixedMatch.group(1)!);
-      final numerator = int.parse(mixedMatch.group(2)!);
-      final denominator = int.parse(mixedMatch.group(3)!);
+      // tryParse (not parse) guards against pathologically long digit runs
+      // that overflow a 64-bit int and would otherwise throw FormatException.
+      final whole = int.tryParse(mixedMatch.group(1)!);
+      final numerator = int.tryParse(mixedMatch.group(2)!);
+      final denominator = int.tryParse(mixedMatch.group(3)!);
 
-      if (denominator == 0) return null;
+      if (whole == null ||
+          numerator == null ||
+          denominator == null ||
+          denominator == 0) {
+        return null;
+      }
       return whole + (numerator / denominator);
     }
 
@@ -33,10 +40,12 @@ class QuantityParser {
     final simpleMatch = simplePattern.firstMatch(trimmed);
 
     if (simpleMatch != null) {
-      final numerator = int.parse(simpleMatch.group(1)!);
-      final denominator = int.parse(simpleMatch.group(2)!);
+      final numerator = int.tryParse(simpleMatch.group(1)!);
+      final denominator = int.tryParse(simpleMatch.group(2)!);
 
-      if (denominator == 0) return null;
+      if (numerator == null || denominator == null || denominator == 0) {
+        return null;
+      }
       return numerator / denominator;
     }
 

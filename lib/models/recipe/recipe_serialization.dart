@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Recipe serialization (JSON, Firestore, export/import formats).
 class RecipeSerialization {
@@ -20,7 +21,8 @@ class RecipeSerialization {
   static Recipe fromJson(Map<String, dynamic> json) {
     return Recipe(
       core: RecipeCore.fromJson(json['core'] as Map<String, dynamic>? ?? json),
-      type: RecipeType.values[(json['type'] as int?).orZero()],
+      type: SerializationUtils.safeEnumByIndex(
+          json['type'], RecipeType.values, RecipeType.personal),
       socialData: json['socialData'] != null
           ? RecipeSocialData.fromJson(
               json['socialData'] as Map<String, dynamic>)
@@ -54,7 +56,8 @@ class RecipeSerialization {
 
     return Recipe(
       core: RecipeCore.fromMap(id, coreData),
-      type: RecipeType.values[(data['type'] as int?).orZero()],
+      type: SerializationUtils.safeEnumByIndex(
+          data['type'], RecipeType.values, RecipeType.personal),
       socialData: data['socialData'] != null
           ? RecipeSocialData.fromJson(
               data['socialData'] as Map<String, dynamic>)
@@ -329,7 +332,8 @@ class RecipeSerialization {
         thumbnailUrl: compressed['thu']?.toString(),
         sourceUrl: compressed['src']?.toString(),
       ),
-      type: RecipeType.values[(compressed['ty'] as int?).orZero()],
+      type: SerializationUtils.safeEnumByIndex(
+          compressed['ty'], RecipeType.values, RecipeType.personal),
     );
   }
 }
