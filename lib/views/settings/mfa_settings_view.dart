@@ -140,7 +140,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
         _verificationId = null;
       });
       await _loadMfaStatus();
-      if (mounted) _showSuccessSnackBar('MFA aktiverat!');
+      if (mounted) _showSuccessSnackBar(context.l10n.mfaActivated);
     } else {
       setState(() {
         _errorMessage =

@@ -1020,6 +1020,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatAttachmentPhoto => 'Foto';
 
   @override
+  String get chatMessagingDisabled =>
+      'Meddelandefunktionen är tillfälligt inaktiverad.';
+
+  @override
+  String get veckomenyHeaderTitle => 'veckans\nmeny';
+
+  @override
+  String get minaReceptHeaderTitle => 'dina\nrecept';
+
+  @override
   String get chatLoadingImage => 'Laddar bild...';
 
   @override
@@ -13195,7 +13205,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareTypeLabelBold => '**Typ:**';
 
   @override
-  String get shareTagsLabel => 'Tags';
+  String get shareTagsLabel => 'Taggar';
 
   @override
   String get shareInstructionsLabelCompact => 'Instruktioner:';

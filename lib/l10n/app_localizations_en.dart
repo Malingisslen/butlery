@@ -1020,6 +1020,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatAttachmentPhoto => 'Photo';
 
   @override
+  String get chatMessagingDisabled => 'Messaging is temporarily disabled.';
+
+  @override
+  String get veckomenyHeaderTitle => 'weekly\nmenu';
+
+  @override
+  String get minaReceptHeaderTitle => 'your\nrecipes';
+
+  @override
   String get chatLoadingImage => 'Loading image...';
 
   @override

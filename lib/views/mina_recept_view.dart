@@ -361,7 +361,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final PreferredSizeWidget appBar = viewModel.isSelectionMode
         ? buildMinaReceptSelectionAppBar(context, viewModel)
         : MainViewHeader(
-            title: 'dina\nrecept',
+            title: context.l10n.minaReceptHeaderTitle,
             ghostIllustration: VegetableType.broccoli,
             countBadge: context.l10n.recipeCountBadge(recipeCount),
             trailing: const RecipeListAvatarBadge(),

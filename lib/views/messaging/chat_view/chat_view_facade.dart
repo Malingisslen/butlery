@@ -85,7 +85,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
             child: Text(
-              'Meddelandefunktionen är tillfälligt inaktiverad.',
+              context.l10n.chatMessagingDisabled,
               style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),

@@ -280,7 +280,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     return Scaffold(
       appBar: MainViewHeader(
-        title: 'veckans\nmeny',
+        title: context.l10n.veckomenyHeaderTitle,
         ghostIllustration: VegetableType.peaPod,
         countBadge: viewModel.hasMenu
             ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)

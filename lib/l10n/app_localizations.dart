@@ -1766,6 +1766,24 @@ abstract class AppLocalizations {
   /// **'Foto'**
   String get chatAttachmentPhoto;
 
+  /// No description provided for @chatMessagingDisabled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelandefunktionen är tillfälligt inaktiverad.'**
+  String get chatMessagingDisabled;
+
+  /// No description provided for @veckomenyHeaderTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'veckans\nmeny'**
+  String get veckomenyHeaderTitle;
+
+  /// No description provided for @minaReceptHeaderTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'dina\nrecept'**
+  String get minaReceptHeaderTitle;
+
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:
@@ -22075,7 +22093,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareTagsLabel.
   ///
   /// In sv, this message translates to:
-  /// **'Tags'**
+  /// **'Taggar'**
   String get shareTagsLabel;
 
   /// No description provided for @shareInstructionsLabelCompact.

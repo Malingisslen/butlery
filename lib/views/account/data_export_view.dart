@@ -369,7 +369,7 @@ class DataExportView extends StatelessWidget {
             backgroundColor: context.butleryColors.success,
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
-              label: 'OK',
+              label: context.l10n.commonOk,
               textColor: context.butleryColors.onSuccess,
               onPressed: () {},
             ),
