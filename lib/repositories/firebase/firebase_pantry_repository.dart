@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 
@@ -161,7 +162,8 @@ class FirebasePantryRepository
         await batch.commit();
         if (snapshot.docs.length < chunkSize) break;
       }
-      AppLogger.info('All pantry items deleted for user: $userId');
+      AppLogger.info(
+          'All pantry items deleted for user: ${userId.maskedUserId}');
     } catch (e, stack) {
       AppLogger.error('Failed to delete all pantry items: $e', stack);
       rethrow;

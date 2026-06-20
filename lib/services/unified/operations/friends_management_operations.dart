@@ -564,7 +564,7 @@ class FriendsManagementOperations extends BaseService {
       }
 
       AppLogger.success(
-        'Found ${mutualFriends.length} mutual friends with user $userId',
+        'Found ${mutualFriends.length} mutual friends with user ${userId.maskedUserId}',
       );
       return mutualFriends;
     } catch (e) {

@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -34,7 +35,7 @@ class MessageReactionsService extends BaseService {
     final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null || currentUserId != userId) {
       AppLogger.warning(
-          'Unauthorized reaction attempt: $userId != $currentUserId');
+          'Unauthorized reaction attempt: ${userId.maskedUserId} != $currentUserId');
       throw StateError('Cannot toggle reaction for another user');
     }
 

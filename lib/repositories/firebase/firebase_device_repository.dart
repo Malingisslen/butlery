@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/interfaces/device_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -128,7 +129,7 @@ class FirebaseDeviceRepository
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} user_fcm_tokens for user $userId');
+        'Deleted ${snapshot.docs.length} user_fcm_tokens for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 }

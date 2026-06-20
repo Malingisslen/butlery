@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
@@ -109,7 +110,7 @@ class FirebaseWeeklyMenuPlanRepository
 
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-      'Deleted ${snapshot.docs.length} weekly menu plans for user $userId',
+      'Deleted ${snapshot.docs.length} weekly menu plans for user ${userId.maskedUserId}',
     );
     return snapshot.docs.length;
   }
@@ -175,7 +176,7 @@ class FirebaseWeeklyMenuPlanRepository
     await batch.commit();
 
     AppLogger.info(
-      'Scrubbed recipe $recipeId from ${affected.length} weekly plan(s) for $userId',
+      'Scrubbed recipe $recipeId from ${affected.length} weekly plan(s) for ${userId.maskedUserId}',
     );
     return affected.length;
   }

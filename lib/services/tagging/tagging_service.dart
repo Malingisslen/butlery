@@ -383,7 +383,7 @@ class TaggingService extends BaseService {
     // instead of a silent "0 recept omtaggade"
     final recipes = await getRecipes();
     AppLogger.info(
-      'Retag: fetched ${recipes.length} recipes for user $userId'
+      'Retag: fetched ${recipes.length} recipes for user ${userId.maskedUserId}'
           ' (forceRetag: $forceRetag)',
       'TaggingService',
     );

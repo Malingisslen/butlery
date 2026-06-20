@@ -3,6 +3,7 @@
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 
 /// Consolidated recipe permission manager providing comprehensive access control and collaborative sharing.
@@ -128,7 +129,7 @@ class RecipePermissionManager {
     try {
       // Would call: await recipeService.updateRecipePermission(recipeId, userId, permission);
       AppLogger.info(
-          'Permission updated for user $userId on recipe $recipeId: $permission');
+          'Permission updated for user ${userId.maskedUserId} on recipe $recipeId: $permission');
       return true;
     } catch (e) {
       AppLogger.error('Failed to update permission', e);

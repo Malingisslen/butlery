@@ -458,7 +458,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
           .delete();
       return true;
     } catch (e) {
-      AppLogger.error('Failed to delete presence for $userId', e);
+      AppLogger.error(
+          'Failed to delete presence for ${userId.maskedUserId}', e);
       return false;
     }
   }

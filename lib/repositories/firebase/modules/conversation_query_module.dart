@@ -124,7 +124,8 @@ class ConversationQueryModule {
           .length;
     } catch (e) {
       AppLogger.error(
-          'Failed to get unread conversations count for $userId', e);
+          'Failed to get unread conversations count for ${userId.maskedUserId}',
+          e);
       return 0;
     }
   }

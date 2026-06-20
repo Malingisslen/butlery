@@ -316,7 +316,7 @@ class RecipeDiscoveryService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Found ${userRecipes.length} accessible recipes by user $userId');
+          '✅ Found ${userRecipes.length} accessible recipes by user ${userId.maskedUserId}');
       return userRecipes;
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes by user', e);

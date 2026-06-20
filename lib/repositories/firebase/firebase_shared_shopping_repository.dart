@@ -338,11 +338,11 @@ class FirebaseSharedShoppingRepository
       }
 
       AppLogger.info(
-          '📋 User $userId has joined ${joinedLists.length} shopping lists');
+          '📋 User ${userId.maskedUserId} has joined ${joinedLists.length} shopping lists');
       return joinedLists;
     } catch (e) {
       AppLogger.error(
-          'Failed to get joined shopping lists for user $userId: $e');
+          'Failed to get joined shopping lists for user ${userId.maskedUserId}: $e');
       throw RepositoryException('Failed to retrieve joined shopping lists: $e');
     }
   }

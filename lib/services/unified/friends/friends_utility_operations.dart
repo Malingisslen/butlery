@@ -131,7 +131,7 @@ class FriendsUtilityOperations {
       }
 
       AppLogger.debug(
-          'Fetching recent shopping collaborators for user: $userId');
+          'Fetching recent shopping collaborators for user: ${userId.maskedUserId}');
 
       // Get recent shopping lists where user is a collaborator
       final recentShoppingLists = await firestore

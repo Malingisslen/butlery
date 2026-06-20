@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -25,7 +26,7 @@ class CommentReactionsSystem {
   }) async {
     try {
       AppLogger.info(
-          'Toggling reaction "$emoji" on comment $commentId for user $userId');
+          'Toggling reaction "$emoji" on comment $commentId for user ${userId.maskedUserId}');
 
       final docRef = _firestoreRepository.firestore
           .collection(FirestoreCollections.recipeComments)

@@ -8,6 +8,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
 
@@ -153,7 +154,7 @@ class ShoppingItemOperationsModule {
 
       if (!canEdit) {
         AppLogger.warning(
-            'PERMISSION DENIED: User $uid cannot edit collaborative list ${list.id} (permission: $userPermission)',
+            'PERMISSION DENIED: User ${uid.maskedUserId} cannot edit collaborative list ${list.id} (permission: $userPermission)',
             'ShoppingRepository');
         throw PermissionDeniedException(
           AppLocale.current.shoppingListEditPermissionDenied,

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -105,7 +106,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
       });
 
       AppLogger.info(
-        '$metadataType added: $parentCollectionName/$resourceId by $userId',
+        '$metadataType added: $parentCollectionName/$resourceId by ${userId.maskedUserId}',
       );
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -146,7 +147,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
       await getMetadataCollection(resourceId).doc(userId).delete();
 
       AppLogger.info(
-        '$metadataType removed: $parentCollectionName/$resourceId by $userId',
+        '$metadataType removed: $parentCollectionName/$resourceId by ${userId.maskedUserId}',
       );
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -322,7 +323,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
     }
 
     AppLogger.info(
-      'Batch $metadataType added: ${resourceIds.length} resources by $userId',
+      'Batch $metadataType added: ${resourceIds.length} resources by ${userId.maskedUserId}',
     );
   }
 
@@ -335,7 +336,7 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
     }
 
     AppLogger.info(
-      'Batch $metadataType removed: ${resourceIds.length} resources by $userId',
+      'Batch $metadataType removed: ${resourceIds.length} resources by ${userId.maskedUserId}',
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
@@ -101,7 +102,7 @@ class FirebaseGroupWeeklyMenuPlanRepository
       final canWrite = await validateUpdatePermission(userId, plan.id, plan);
       if (!canWrite) {
         AppLogger.warning(
-            'Blocked group menu plan save (permission denied for $userId): ${plan.id}');
+            'Blocked group menu plan save (permission denied for ${userId.maskedUserId}): ${plan.id}');
         return;
       }
     }

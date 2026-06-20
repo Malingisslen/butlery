@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/cook_snap_repository.dart';
@@ -215,7 +216,7 @@ class FirebaseCookSnapRepository extends BaseFirebaseRepository<CookSnap>
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} cook snaps for user $userId');
+        'Deleted ${snapshot.docs.length} cook snaps for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 }

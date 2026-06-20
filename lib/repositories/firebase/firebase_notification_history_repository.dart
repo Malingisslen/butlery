@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/notification_history_repository.
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
@@ -190,7 +191,7 @@ class FirebaseNotificationHistoryRepository
       await batch.commit();
     }
     AppLogger.info(
-        'Marked ${snapshot.docs.length} notifications as opened for user $userId');
+        'Marked ${snapshot.docs.length} notifications as opened for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 
@@ -207,7 +208,7 @@ class FirebaseNotificationHistoryRepository
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} notification_history for user $userId');
+        'Deleted ${snapshot.docs.length} notification_history for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 
@@ -229,7 +230,7 @@ class FirebaseNotificationHistoryRepository
     if (targets.isEmpty) return 0;
     await batchDeleteDocs(firestore, targets);
     AppLogger.info(
-        'Deleted ${targets.length} notification_history by id for user $userId');
+        'Deleted ${targets.length} notification_history by id for user ${userId.maskedUserId}');
     return targets.length;
   }
 }

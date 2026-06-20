@@ -39,6 +39,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Specialized ViewModel for shared shopping list management and operations.
 /// Implements direct collaboration model where users join and edit the same list,
@@ -74,7 +75,7 @@ class SharedShoppingViewModel
     }
 
     AppLogger.info(
-        '🔄 Loading shared shopping lists from coordinator for user: $userId');
+        '🔄 Loading shared shopping lists from coordinator for user: ${userId.maskedUserId}');
     final shoppingLists =
         await _socialShoppingCoordinator.getSharedShoppingListsForUser(userId);
 

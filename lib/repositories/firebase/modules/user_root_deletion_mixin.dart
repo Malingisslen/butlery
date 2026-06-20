@@ -18,6 +18,7 @@ library;
 
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
@@ -38,7 +39,7 @@ mixin UserRootDeletionMixin on BaseFirebaseRepository<UserProfile> {
     // The `collection` getter points at `public_profiles` (collectionName).
     // Root user doc lives in `users/{userId}` — explicit reference here.
     await firestore.collection(FirestoreCollections.users).doc(userId).delete();
-    AppLogger.info('Deleted users/$userId');
+    AppLogger.info('Deleted users/${userId.maskedUserId}');
     // GDPR Article 17 erasure must leave an audit entry on the SUCCESS path —
     // validateOwnership only logs on deny. Mirror the granted:true logging that
     // every other mutating method in this repository does, and forward

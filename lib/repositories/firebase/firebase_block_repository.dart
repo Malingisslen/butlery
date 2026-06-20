@@ -7,6 +7,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
   FirebaseBlockRepository({super.firestore, required super.authRepository});
@@ -144,7 +145,7 @@ class FirebaseBlockRepository extends BaseFirebaseRepository<BlockRecord> {
     if (asBlocker.docs.isNotEmpty || asBlocked.docs.isNotEmpty) {
       await batch.commit();
       AppLogger.info(
-          'Deleted ${asBlocker.docs.length + asBlocked.docs.length} block records for user $userId');
+          'Deleted ${asBlocker.docs.length + asBlocked.docs.length} block records for user ${userId.maskedUserId}');
     }
   }
 }

@@ -7,6 +7,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
 /// Firebase implementation for social activity events.
@@ -186,7 +187,7 @@ class FirebaseActivityEventRepository
 
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} activity events for user $userId');
+        'Deleted ${snapshot.docs.length} activity events for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 }

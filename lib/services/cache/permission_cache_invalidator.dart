@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/cache/permission_cache_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Listens to Firestore document changes and invalidates relevant cache entries.
@@ -82,7 +83,7 @@ class PermissionCacheInvalidator {
     );
 
     AppLogger.debug(
-        'Permission cache invalidator: started listening for user $userId');
+        'Permission cache invalidator: started listening for user ${userId.maskedUserId}');
   }
 
   /// Stop all listeners.

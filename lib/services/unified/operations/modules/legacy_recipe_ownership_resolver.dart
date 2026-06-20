@@ -1,5 +1,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Handles ownership determination for legacy recipes with missing or incomplete ownership data.
 class LegacyRecipeOwnershipResolver {
@@ -76,7 +77,8 @@ class LegacyRecipeOwnershipResolver {
       return true;
     }
 
-    if (recipe.id.contains(userId) || recipe.id.startsWith('user_$userId')) {
+    if (recipe.id.contains(userId) ||
+        recipe.id.startsWith('user_${userId.maskedUserId}')) {
       AppLogger.info(
           '🔍 Recipe ID contains user identifier - assuming ownership');
       return true;

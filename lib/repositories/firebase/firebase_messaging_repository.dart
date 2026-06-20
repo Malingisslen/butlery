@@ -14,6 +14,7 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 // Module imports
 import 'package:butlery/repositories/firebase/modules/conversation_query_module.dart';
@@ -454,7 +455,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     }
 
     AppLogger.info(
-        'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user $userId');
+        'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user ${userId.maskedUserId}');
     return totalMessagesDeleted;
   }
 

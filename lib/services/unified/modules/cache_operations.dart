@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -283,7 +284,7 @@ class CacheOperations {
       }
 
       AppLogger.info(
-          '✅ Cleared cache for user $userId ($removedCount items removed)');
+          '✅ Cleared cache for user ${userId.maskedUserId} ($removedCount items removed)');
     } catch (e) {
       AppLogger.error('Error clearing cache for user: $e');
       rethrow;

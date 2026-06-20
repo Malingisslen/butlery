@@ -37,7 +37,7 @@ class OfflineUserStorage {
       }
 
       AppLogger.info(
-          '📦 Found ${recipes.length} offline recipes for user: $userId');
+          '📦 Found ${recipes.length} offline recipes for user: ${userId.maskedUserId}');
       return recipes;
     } catch (e) {
       AppLogger.error('❌ Error getting user recipes: $e');
@@ -79,7 +79,7 @@ class OfflineUserStorage {
       }
 
       AppLogger.info(
-          '💾 Recipe saved offline for user $userId: ${recipe.title}');
+          '💾 Recipe saved offline for user ${userId.maskedUserId}: ${recipe.title}');
     } catch (e) {
       AppLogger.error('❌ Error saving recipe offline: $e');
       rethrow;
@@ -134,7 +134,7 @@ class OfflineUserStorage {
       await _syncQueueDao.clearForUser(userId);
 
       AppLogger.success(
-          '✅ Cleared offline data for user: $userId ($count recipes)');
+          '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)');
     } catch (e) {
       AppLogger.error('❌ Error clearing user data: $e');
     }

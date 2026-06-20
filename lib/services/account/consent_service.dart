@@ -10,6 +10,7 @@ import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/services/account/consent_broadcast.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Private subclass that just exposes [ChangeNotifier.notifyListeners] to
 /// the surrounding library. ChangeNotifier marks `notifyListeners` as
@@ -129,7 +130,7 @@ class ConsentService extends BaseService implements Listenable {
               _cachedUserId = userId;
               _cachePopulated = true;
               app_logger.AppLogger.info(
-                  '[$_logTag] Consent saved for user $userId');
+                  '[$_logTag] Consent saved for user ${userId.maskedUserId}');
               _changeNotifier.notify();
             }
 

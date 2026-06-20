@@ -340,7 +340,7 @@ class MessageMutationModule {
       await updateConversation(updatedConversation);
 
       AppLogger.debug(
-          'Conversation marked as read: $conversationId by $userId');
+          'Conversation marked as read: $conversationId by ${userId.maskedUserId}');
     } catch (e) {
       AppLogger.error(
           'Failed to mark conversation as read: $conversationId', e);
@@ -401,7 +401,7 @@ class MessageMutationModule {
       await batch.commit();
 
       AppLogger.debug(
-          'Batch marked ${messageIds.length} messages as delivered for $userId');
+          'Batch marked ${messageIds.length} messages as delivered for ${userId.maskedUserId}');
     } catch (e) {
       AppLogger.error('Failed to batch mark messages as delivered', e);
       rethrow;

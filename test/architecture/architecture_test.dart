@@ -393,6 +393,44 @@ void main() {
       );
     });
 
+    // Raw user ids must never reach logs (privacy). Use `.maskedUserId` from
+    // log_sanitizer. The guard is scoped to AppLogger calls so Firestore path
+    // strings (`users/$userId`) outside logging aren't false-flagged; the
+    // masked form `${userId.maskedUserId}` and `$userIds` (word boundary) pass.
+    // Known gap (acceptable, low risk): `[^;]*` stops at a `;` embedded inside
+    // a log STRING literal before the uid, and structured-arg uids (e.g.
+    // `AppLogger.info('m', {'uid': uid})`) aren't interpolation — neither is
+    // caught. Both are zero-instance today; this guards the common case.
+    test(
+        'no raw \$userId / \$uid interpolated into AppLogger calls in lib/ '
+        '(use .maskedUserId)', () {
+      final pattern = RegExp(
+        r'AppLogger\.\w+\([^;]*(\$userId\b|\$\{userId\}|\$uid\b|\$\{uid\})',
+      );
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: 'Raw user ids in logs are a privacy leak. Mask with '
+            '`\${userId.maskedUserId}` (log_sanitizer.dart).\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     // BUT-836: forbid raw `data['x'] as DateTime` / `as Timestamp` casts in
     // lib/models/. They crash if the repository forwards a raw Firestore
     // Timestamp/Map shape rather than a pre-coerced DateTime. The safe path

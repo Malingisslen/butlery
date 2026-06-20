@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/cache/lru_map.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 /// Permission check result that can be cached.
@@ -193,7 +194,7 @@ class PermissionCacheService {
 
     if (count > 0) {
       AppLogger.debug(
-          'Permission cache: invalidated $count entries for user $userId');
+          'Permission cache: invalidated $count entries for user ${userId.maskedUserId}');
     }
   }
 

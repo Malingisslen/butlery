@@ -129,7 +129,7 @@ class FriendsInvitationsOperations {
 
       if (existingInvitation != null) {
         AppLogger.warning(
-            'Invitation already exists for user $userId to group $groupId');
+            'Invitation already exists for user ${userId.maskedUserId} to group $groupId');
         return false;
       }
 
@@ -161,7 +161,7 @@ class FriendsInvitationsOperations {
       _notifyListeners();
 
       AppLogger.success(
-          'Group invitation sent to user $userId for group "${group.name}"');
+          'Group invitation sent to user ${userId.maskedUserId} for group "${group.name}"');
       return true;
     } catch (e) {
       AppLogger.error('Failed to send group invitation', e);

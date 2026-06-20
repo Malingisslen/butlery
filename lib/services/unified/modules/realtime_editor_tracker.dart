@@ -2,6 +2,7 @@
 
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:clock/clock.dart';
 import 'package:get_it/get_it.dart';
 
@@ -125,7 +126,7 @@ class RealtimeEditorTracker {
       final isActive =
           await collaborativeRepo.isUserActivelyEditing(recipeId, userId);
       AppLogger.debug(
-          'User $userId actively editing recipe $recipeId: $isActive');
+          'User ${userId.maskedUserId} actively editing recipe $recipeId: $isActive');
       return isActive;
     } catch (e) {
       AppLogger.error('❌ Error checking if user is actively editing: $e');

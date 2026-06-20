@@ -166,7 +166,7 @@ class ParsingCorrectionRepository {
       await batch.commit();
 
       AppLogger.info(
-        '🗑️ Deleted ${snapshot.docs.length} parsing corrections for user: $userId',
+        '🗑️ Deleted ${snapshot.docs.length} parsing corrections for user: ${userId.maskedUserId}',
       );
     } catch (e) {
       // GDPR deletions should be retried, so we log but also rethrow

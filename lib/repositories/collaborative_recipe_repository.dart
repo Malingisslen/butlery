@@ -36,6 +36,7 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
@@ -437,7 +438,7 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(_firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} realtime_recipes for user $userId');
+        'Deleted ${snapshot.docs.length} realtime_recipes for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 }

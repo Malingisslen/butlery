@@ -20,6 +20,7 @@ import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/account/export/content_export_manager.dart';
 import 'package:butlery/services/account/export/social_export_manager.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
@@ -128,7 +129,7 @@ class DataExportService extends BaseService {
 
     final userId = user.uid;
     app_logger.AppLogger.info(
-        '[$_logTag] Starting data export for user: $userId');
+        '[$_logTag] Starting data export for user: ${userId.maskedUserId}');
 
     // Fan out all collection reads in parallel — wall time becomes max(t)
     // instead of sum(t). Each manager method is read-only, stateless, takes

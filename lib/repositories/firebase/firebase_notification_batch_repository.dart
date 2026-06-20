@@ -5,6 +5,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 
@@ -144,7 +145,7 @@ class FirebaseNotificationBatchRepository
     if (snapshot.docs.isEmpty) return 0;
     await batchDeleteDocs(firestore, snapshot.docs);
     AppLogger.info(
-        'Deleted ${snapshot.docs.length} notification_batches for user $userId');
+        'Deleted ${snapshot.docs.length} notification_batches for user ${userId.maskedUserId}');
     return snapshot.docs.length;
   }
 }

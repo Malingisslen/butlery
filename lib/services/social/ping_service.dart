@@ -17,6 +17,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
@@ -123,7 +124,7 @@ class PingService extends BaseService with PermissionValidationMixin {
 
     AppLogger.info(
       'Ping sent: group=$groupId type=${type.name} '
-      'from=$userId to=${toUserId ?? "broadcast"}',
+      'from=${userId.maskedUserId} to=${toUserId ?? "broadcast"}',
     );
     return ping;
   }
@@ -178,7 +179,7 @@ class PingService extends BaseService with PermissionValidationMixin {
     );
     if (!isMember) {
       AppLogger.warning(
-        'Ping rejected: user $userId not a member of group $groupId',
+        'Ping rejected: user ${userId.maskedUserId} not a member of group $groupId',
       );
       throw PermissionDeniedException(
         'User is not a member of this group',
@@ -203,7 +204,7 @@ class PingService extends BaseService with PermissionValidationMixin {
 
     if (count >= kPingMaxPerHour) {
       AppLogger.warning(
-        'Ping rate-limit hit: user=$userId group=$groupId count=$count',
+        'Ping rate-limit hit: user=${userId.maskedUserId} group=$groupId count=$count',
       );
       throw PingRateLimitedException(
         'Too many pings in the last hour (limit: $kPingMaxPerHour)',

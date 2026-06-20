@@ -128,7 +128,7 @@ class RealtimeParticipantManager {
     }
 
     AppLogger.info(
-        '👤 Updating participant permission: $userId -> $newPermission');
+        '👤 Updating participant permission: ${userId.maskedUserId} -> $newPermission');
 
     try {
       await _menuService.updateParticipantPermission(

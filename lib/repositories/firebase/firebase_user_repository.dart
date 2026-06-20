@@ -678,7 +678,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     );
     // `collection` points at `public_profiles` (per `collectionName` above).
     await collection.doc(userId).delete();
-    AppLogger.info('Deleted public_profiles/$userId');
+    AppLogger.info('Deleted public_profiles/${userId.maskedUserId}');
     // GDPR Article 17 erasure must leave an audit entry on the SUCCESS path —
     // validateOwnership only logs on deny. Mirror the granted:true logging that
     // every other mutating method here does, and forward auditRepository so the

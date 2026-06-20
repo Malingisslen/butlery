@@ -149,7 +149,7 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       if (success) {
         _notifyListeners(); // Notify UI of changes
         AppLogger.success(
-            '✅ Updated member permission: $userId -> $permission');
+            '✅ Updated member permission: ${userId.maskedUserId} -> $permission');
       }
 
       return success;

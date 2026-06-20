@@ -3,6 +3,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Repository for content reports, extending BaseFirebaseRepository for
 /// CRUD + audit logging + permission validation.
@@ -130,7 +131,7 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
       await batch.commit();
 
       AppLogger.info(
-          '[ReportRepository] Deleted ${snapshot.docs.length} reports for user $userId');
+          '[ReportRepository] Deleted ${snapshot.docs.length} reports for user ${userId.maskedUserId}');
       return snapshot.docs.length;
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to delete user reports', e);

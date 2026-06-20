@@ -9,6 +9,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Conversation mutation module for write operations.
 class ConversationMutationModule {
@@ -421,7 +422,7 @@ class ConversationMutationModule {
       );
 
       AppLogger.debug(
-          'Updated conversation settings for user $userId in $conversationId');
+          'Updated conversation settings for user ${userId.maskedUserId} in $conversationId');
     } catch (e) {
       AppLogger.error('Failed to update conversation user settings', e);
       rethrow;

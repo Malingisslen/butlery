@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -46,7 +47,7 @@ class RecipeAuthStateHandler {
         '🔍 [UnifiedRecipeService] 🚨 USER LOGGED IN - RELOADING RECIPES',
       );
       AppLogger.info(
-        '🔍 [UnifiedRecipeService] ✅ Triggering recipe reload for user: $userId',
+        '🔍 [UnifiedRecipeService] ✅ Triggering recipe reload for user: ${userId.maskedUserId}',
       );
       reloadUserRecipes(userId);
     }
@@ -56,7 +57,7 @@ class RecipeAuthStateHandler {
   Future<void> reloadUserRecipes(String userId) async {
     try {
       AppLogger.info(
-        '🔍 [UnifiedRecipeService] Starting user recipe reload for: $userId',
+        '🔍 [UnifiedRecipeService] Starting user recipe reload for: ${userId.maskedUserId}',
       );
 
       setLoading(true);

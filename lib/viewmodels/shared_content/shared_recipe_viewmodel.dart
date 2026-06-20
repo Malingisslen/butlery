@@ -34,6 +34,7 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Specialized ViewModel for shared recipe management and operations.
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
@@ -63,7 +64,7 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     }
 
     AppLogger.info(
-        '🔄 Loading shared recipes from coordinator for user: $userId');
+        '🔄 Loading shared recipes from coordinator for user: ${userId.maskedUserId}');
     final recipes =
         await _socialRecipeCoordinator.getSharedRecipesForUser(userId);
 

@@ -4,6 +4,7 @@ import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/exceptions/storage_upload_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
@@ -249,7 +250,7 @@ class StorageService extends BaseService
     }
 
     AppLogger.info(
-        '🎯 STORAGE_SERVICE: Uploading recipe image for user: $userId');
+        '🎯 STORAGE_SERVICE: Uploading recipe image for user: ${userId.maskedUserId}');
     return await uploadImageFile(imageFile, userId, onProgress: onProgress);
   }
 

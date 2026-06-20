@@ -360,7 +360,7 @@ abstract class BaseSharedContentRepository<T>
       }
 
       AppLogger.success(
-          '✅ Added user $userId as member to $contentTypeName $contentId');
+          '✅ Added user ${userId.maskedUserId} as member to $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to add member to $contentTypeName: $e');
       throw RepositoryException('Failed to add member: $e');
@@ -418,7 +418,7 @@ abstract class BaseSharedContentRepository<T>
       });
 
       AppLogger.success(
-          '✅ Removed user $userId from $contentTypeName $contentId');
+          '✅ Removed user ${userId.maskedUserId} from $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to remove member from $contentTypeName: $e');
       throw RepositoryException('Failed to remove member: $e');
@@ -464,7 +464,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       await viewRepository.markAsViewed(contentId);
       AppLogger.success(
-          '✅ Added view for user $userId on $contentTypeName $contentId');
+          '✅ Added view for user ${userId.maskedUserId} on $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to add view: $e');
       throw RepositoryException('Failed to add view: $e');
@@ -493,7 +493,7 @@ abstract class BaseSharedContentRepository<T>
         targetId: targetId,
       );
       AppLogger.success(
-          '✅ Added $action for user $userId on $contentTypeName $contentId');
+          '✅ Added $action for user ${userId.maskedUserId} on $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to add engagement: $e');
       throw RepositoryException('Failed to add engagement: $e');
@@ -515,7 +515,7 @@ abstract class BaseSharedContentRepository<T>
       await dismissalRepository.dismiss(contentId, reason: reason);
 
       AppLogger.success(
-          '✅ Added dismissal for user $userId on $contentTypeName $contentId');
+          '✅ Added dismissal for user ${userId.maskedUserId} on $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to add dismissal: $e');
       throw RepositoryException('Failed to add dismissal: $e');
@@ -527,7 +527,7 @@ abstract class BaseSharedContentRepository<T>
       await dismissalRepository.undismiss(contentId);
 
       AppLogger.success(
-          '✅ Removed dismissal for user $userId on $contentTypeName $contentId');
+          '✅ Removed dismissal for user ${userId.maskedUserId} on $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to remove dismissal: $e');
       throw RepositoryException('Failed to remove dismissal: $e');
@@ -563,7 +563,7 @@ abstract class BaseSharedContentRepository<T>
       }, SetOptions(merge: true));
 
       AppLogger.success(
-          '✅ Added collaborator $userId to $contentTypeName $contentId');
+          '✅ Added collaborator ${userId.maskedUserId} to $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to add collaborator: $e');
       throw RepositoryException('Failed to add collaborator: $e');
@@ -589,7 +589,7 @@ abstract class BaseSharedContentRepository<T>
           .delete();
 
       AppLogger.success(
-          '✅ Removed collaborator $userId from $contentTypeName $contentId');
+          '✅ Removed collaborator ${userId.maskedUserId} from $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to remove collaborator: $e');
       throw RepositoryException('Failed to remove collaborator: $e');
@@ -699,11 +699,11 @@ abstract class BaseSharedContentRepository<T>
       final limitedContent = allContent.take(limit).toList();
 
       AppLogger.info(
-          '📊 Found ${limitedContent.length} shared $contentTypeName for user $userId');
+          '📊 Found ${limitedContent.length} shared $contentTypeName for user ${userId.maskedUserId}');
       return limitedContent;
     } catch (e) {
       AppLogger.error(
-          'Failed to get shared $contentTypeName for user $userId via subcollections: $e');
+          'Failed to get shared $contentTypeName for user ${userId.maskedUserId} via subcollections: $e');
       throw RepositoryException(
           'Failed to retrieve shared $contentTypeName: $e');
     }

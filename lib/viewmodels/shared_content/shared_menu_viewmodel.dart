@@ -35,6 +35,7 @@ import 'package:butlery/services/unified/modules/social_menu/social_menu_coordin
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Specialized ViewModel for shared menu management and operations.
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
@@ -64,7 +65,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     }
 
     AppLogger.info(
-        '🔄 Loading shared menus from coordinator for user: $userId');
+        '🔄 Loading shared menus from coordinator for user: ${userId.maskedUserId}');
 
     // Clear stale cache before loading fresh status from Firestore
     // Bug fix: Prevents dismissed menus from reappearing after navigation
