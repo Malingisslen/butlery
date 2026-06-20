@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:butlery/core/constants/upload_constants.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/feedback_entry.dart';
@@ -70,7 +71,25 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
   @override
   Future<void> saveFeedback(FeedbackEntry entry) async {
     try {
-      requireCurrentUserId();
+      final userId = requireCurrentUserId();
+
+      // Gate the write behind the create-permission check and record the
+      // decision in the audit trail (the auto-id `collection.add` path skipped
+      // both — every custom write must validate + log, per repos/CLAUDE.md).
+      final canCreate = await validateCreatePermission(userId, entry);
+      await logPermissionCheck(
+        userId: userId,
+        resource: 'FeedbackEntry/${entry.id}',
+        operation: 'create',
+        granted: canCreate,
+        auditRepository: auditRepository,
+      );
+      if (!canCreate) {
+        throw PermissionDeniedException(
+          'User does not have permission to submit this feedback',
+        );
+      }
+
       await collection.add(toFirestore(entry));
       AppLogger.info('Feedback saved: ${entry.category.name}');
     } catch (e, stackTrace) {
