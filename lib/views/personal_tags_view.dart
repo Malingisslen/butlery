@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -384,12 +385,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(context.l10n.commonCancel),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              context.l10n.commonDelete,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -398,10 +399,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     if (confirmed == true && context.mounted) {
       final deleted = await viewModel.deleteUnusedTags();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.personalTagUnusedDeleted(deleted)),
-          ),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.personalTagUnusedDeleted(deleted),
         );
       }
     }
