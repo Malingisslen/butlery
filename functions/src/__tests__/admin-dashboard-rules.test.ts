@@ -70,6 +70,12 @@ async function setup(): Promise<void> {
       domain: "koket.se",
       timestamp: new Date(),
     });
+    // A parse event (per-attempt drill-down source)
+    await db.doc("parse_events/pe1").set({
+      domain: "koket.se",
+      success: false,
+      timestamp: new Date(),
+    });
   });
 }
 
@@ -153,6 +159,26 @@ test("owner can still read their own parsing correction", async () => {
 test("non-owner non-admin cannot read a parsing correction", async () => {
   const ctx = env.authenticatedContext(USER_B_UID);
   await assertFails(ctx.firestore().doc("parsing_corrections/c1").get());
+});
+
+// --- parse_events (drill-down source) ---
+test("admin can read a parse event", async () => {
+  const ctx = env.authenticatedContext(ADMIN_UID);
+  await assertSucceeds(ctx.firestore().doc("parse_events/pe1").get());
+});
+test("admin can query parse_events by domain", async () => {
+  const ctx = env.authenticatedContext(ADMIN_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .collection("parse_events")
+      .where("domain", "==", "koket.se")
+      .get()
+  );
+});
+test("non-admin cannot read parse_events", async () => {
+  const ctx = env.authenticatedContext(USER_A_UID);
+  await assertFails(ctx.firestore().doc("parse_events/pe1").get());
 });
 
 // --- recipes via collection-group ---

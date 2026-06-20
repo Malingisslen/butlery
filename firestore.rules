@@ -2150,6 +2150,12 @@ service cloud.firestore {
     match /system_events/{eventId} {
       allow read: if isAdmin();
     }
+    // Per-attempt parse events (domain/success/timestamp) — admin drill-down
+    // from import health to the underlying failing imports. Written server-side
+    // by logParseEvent; read-only for admins.
+    match /parse_events/{eventId} {
+      allow read: if isAdmin();
+    }
 
     // Deny all other document access by default
     match /{document=**} {

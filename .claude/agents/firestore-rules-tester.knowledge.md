@@ -752,3 +752,25 @@ read additions has admin-allow + non-admin-deny, anon-deny on analytics, and the
 `users`/`parsing_corrections` splits keep an owner-still-reads assertion so the
 read-split didn't drop the original grant. The only gaps I closed were
 infra-wiring (npm script + CI), not test coverage. No firestore.rules edits.
+
+### 2026-06-20 — parse_events admin-read added to admin-dashboard-rules.test.ts
+
+New `match /parse_events/{eventId} { allow read: if isAdmin() }` (admin drill-down
+from import health to per-attempt failing imports; docs carry `domain`/`success`/
+`timestamp`, written server-side by `functions/src/events/log-parse-event.ts` via
+admin SDK). Map row to add:
+
+| `/parse_events/{eventId}` (admin read) | `admin-dashboard-rules.test.ts` | `test:rules:admin-dashboard` |
+
+Feature author added 3 cases (admin get, admin domain-query, non-admin deny) +
+a seeded `parse_events/pe1` in setup. Suite green 18/18 after namespace clear.
+Throwaway probe confirmed admin-read-ONLY: anon read + admin/stranger/anon
+create + admin update + admin delete all fall through to the L2162 default-deny
+(6/6 denied). No firestore.rules edits, no new file/script/CI wiring needed
+(extends the existing admin-dashboard suite).
+
+**Minor coverage note (Low):** the authored non-admin deny uses an authenticated
+non-admin only — no explicit anonymous-read deny case in the suite for
+parse_events. Consistent with how the sibling metrics/system_events/
+parsing_corrections cases are written (anon-deny only spelled out for analytics).
+Probe covered the anon path, so it's proven, just not pinned as a named suite test.
