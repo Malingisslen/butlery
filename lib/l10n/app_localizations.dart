@@ -15219,6 +15219,18 @@ abstract class AppLocalizations {
   /// **'Instruktion {number}'**
   String instructionLabel(int number);
 
+  /// No description provided for @onboardingSkipConfirmTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hoppa över introduktionen?'**
+  String get onboardingSkipConfirmTitle;
+
+  /// No description provided for @onboardingSkipConfirmMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.'**
+  String get onboardingSkipConfirmMessage;
+
   /// No description provided for @onboardingSkip.
   ///
   /// In sv, this message translates to:

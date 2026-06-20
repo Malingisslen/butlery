@@ -9029,6 +9029,13 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get onboardingSkipConfirmTitle => 'Hoppa över introduktionen?';
+
+  @override
+  String get onboardingSkipConfirmMessage =>
+      'Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.';
+
+  @override
   String get onboardingSkip => 'Hoppa över';
 
   @override

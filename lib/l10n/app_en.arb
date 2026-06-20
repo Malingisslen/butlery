@@ -6080,6 +6080,8 @@
       }
     }
   },
+  "onboardingSkipConfirmTitle": "Skip the intro?",
+  "onboardingSkipConfirmMessage": "You won't set up allergies and dietary preferences now. You can do it anytime in settings.",
   "onboardingSkip": "Skip",
   "onboardingBack": "Back",
   "onboardingNext": "Next",

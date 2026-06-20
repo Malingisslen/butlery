@@ -397,7 +397,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(viewModel.currentPage, 2);
 
-      // Skip without selecting anything.
+      // Skip without selecting anything. (This journey uses a stub onboarding
+      // body that mirrors the VM flow; the real OnboardingView's skip-confirm
+      // dialog lives in production UI, not here.)
       await tester.tap(find.byKey(const Key('skip')));
       await tester.pumpAndSettle();
 

@@ -269,6 +269,26 @@ class _OnboardingContentState extends State<_OnboardingContent> {
 
   Future<void> _skipOnboarding(
       BuildContext context, OnboardingViewModel viewModel) async {
+    // Confirm first — skipping means no allergen/dietary setup, which has a
+    // safety implication, so make the choice deliberate.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(ctx.l10n.onboardingSkipConfirmTitle),
+        content: Text(ctx.l10n.onboardingSkipConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(ctx.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(ctx.l10n.onboardingSkip),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
     await _completeOnboarding(context, viewModel);
   }
 

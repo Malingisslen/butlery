@@ -9012,6 +9012,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get onboardingSkipConfirmTitle => 'Skip the intro?';
+
+  @override
+  String get onboardingSkipConfirmMessage =>
+      'You won\'t set up allergies and dietary preferences now. You can do it anytime in settings.';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override

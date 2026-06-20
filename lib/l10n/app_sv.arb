@@ -6110,6 +6110,8 @@
       }
     }
   },
+  "onboardingSkipConfirmTitle": "Hoppa över introduktionen?",
+  "onboardingSkipConfirmMessage": "Du hinner inte ställa in allergier och kostpreferenser nu. Du kan göra det när som helst i inställningarna.",
   "onboardingSkip": "Hoppa över",
   "onboardingBack": "Tillbaka",
   "onboardingNext": "Nästa",
