@@ -635,8 +635,11 @@ service cloud.firestore {
           && hasRequiredFields(['id', 'name', 'amount', 'unit', 'category', 'bought'])
           && request.resource.data.id == itemId
           && request.resource.data.addedByUserId == request.auth.uid;
-        // BUT-238: update covers claim/unclaim (assignedToUserId/DisplayName/At) — the
-        // lastModifiedByUserId check already enforces the actor is the writer.
+        // BUT-238: update covers claim/unclaim (assignedToUserId/DisplayName/At).
+        // Authorization is hasSharedAccess — ANY member may edit a shared
+        // (collaborative) list. The lastModifiedByUserId check is
+        // attribution-only: it forces the writer to stamp their OWN uid; it
+        // does NOT restrict who may write.
         allow update: if isAuthenticated()
           && hasSharedAccess('shared_content', contentId)
           && request.resource.data.lastModifiedByUserId == request.auth.uid;
@@ -1462,11 +1465,14 @@ service cloud.firestore {
         )
         && rateLimitWrite('recipe_ratings', 5);
 
-      // Can update only your own ratings
+      // Can update only your own ratings. Pin identity/anchor fields so a
+      // rating can't be re-pointed to another recipe/user or backdated
+      // (the client only ever changes rating/review/updatedAt).
       allow update: if isAuthenticated()
         && request.auth.uid == resource.data.userId
         && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5;
+        && request.resource.data.rating <= 5
+        && cannotModify(['recipeId', 'userId', 'createdAt']);
 
       // Can delete only your own ratings
       allow delete: if isAuthenticated()
