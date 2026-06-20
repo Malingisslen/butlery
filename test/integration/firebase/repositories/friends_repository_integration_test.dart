@@ -147,7 +147,13 @@ void main() {
         final sentAt = data['sentAt'] as DateTime;
         final acceptedAt = data['acceptedAt'] as DateTime;
         expect(acceptedAt.isAfter(sentAt), isTrue);
-      });
+      },
+          skip:
+              'B1: acceptFriendRequest moved to the acceptFriendRequest Cloud '
+              'Function (mutual write under Admin SDK so the friends-write rule '
+              'could be locked to owner-only). The fake-lane cannot run a Cloud '
+              'Function — covered by functions accept-friend-request.integration'
+              '.test.ts + friends-accept-rules.test.ts.');
     });
 
     group('Friend Count tracking', () {
@@ -188,7 +194,10 @@ void main() {
         final receiverProfile =
             await firestore.collection('public_profiles').doc(toUserId).get();
         expect(receiverProfile.data()?['friendsCount'], equals(4));
-      });
+      },
+          skip: 'B1: friend-count increment on accept moved server-side to the '
+              'acceptFriendRequest Cloud Function. Covered by functions '
+              'accept-friend-request.integration.test.ts.');
 
       test('should decrement friend count when removing friend', () async {
         // Arrange
@@ -295,7 +304,12 @@ void main() {
         final profile2 =
             await firestore.collection('public_profiles').doc(toUserId).get();
         expect(profile2.data()?['friendsCount'], equals(1));
-      });
+      },
+          skip:
+              'B1: mutual-friendship write on accept moved server-side to the '
+              'acceptFriendRequest Cloud Function. Covered by functions '
+              'accept-friend-request.integration.test.ts + friends-accept-rules'
+              '.test.ts.');
     });
 
     group('Complex Queries', () {

@@ -72,6 +72,12 @@ export { requestAccountDeletion } from "./account/request-account-deletion";
 // Social - Profile propagation
 export { onProfileUpdated } from "./social/on-profile-updated";
 
+// Pre-release audit B1: server-side friend-request acceptance. Moves the
+// mutual friend-doc write off the client so the friends-write rule can be
+// tightened to owner-only — closing a hole where a stranger could insert
+// themselves into a victim's friends list and read private cook_snaps.
+export { acceptFriendRequest } from "./social/accept-friend-request";
+
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
 

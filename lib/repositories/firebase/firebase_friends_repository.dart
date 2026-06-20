@@ -10,7 +10,6 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
@@ -129,89 +128,19 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       AppLogger.debug(
           'Accepting friend request $requestId for user $currentUser');
 
-      // Atomic transaction: validate request + create mutual friendships + update counts
-      await firestore.runTransaction((transaction) async {
-        final requestRef = firestore
-            .collection(FirestoreCollections.socialRequests)
-            .doc(requestId);
-        final requestDoc = await transaction.get(requestRef);
-
-        if (!requestDoc.exists) {
-          throw Exception('Friend request not found');
-        }
-
-        final request = SocialRequest.fromMap(requestId, requestDoc.data()!);
-
-        if (currentUser != request.toUserId) {
-          throw Exception('Only the recipient can accept a friend request');
-        }
-        if (request.status != SocialRequestStatus.pending) {
-          throw Exception('Friend request is no longer pending');
-        }
-
-        // Read display names for search index
-        final user1ProfileDoc =
-            await transaction.get(collection.doc(request.fromUserId));
-        final user2ProfileDoc =
-            await transaction.get(collection.doc(request.toUserId));
-        final user1Name = (user1ProfileDoc.data()?['displayName'] as String?)
-            .orEmpty()
-            .toLowerCase();
-        final user2Name = (user2ProfileDoc.data()?['displayName'] as String?)
-            .orEmpty()
-            .toLowerCase();
-
-        final user1FriendRef = firestore
-            .collection(FirestoreCollections.users)
-            .doc(request.fromUserId)
-            .collection(FirestoreCollections.userFriends)
-            .doc(request.toUserId);
-        final user2FriendRef = firestore
-            .collection(FirestoreCollections.users)
-            .doc(request.toUserId)
-            .collection(FirestoreCollections.userFriends)
-            .doc(request.fromUserId);
-
-        final user1FriendDoc = await transaction.get(user1FriendRef);
-        final user2FriendDoc = await transaction.get(user2FriendRef);
-
-        // Update request status
-        transaction.update(requestRef, {
-          'status': SocialRequestStatus.accepted.name,
-          'respondedAt': timestampProvider.serverTimestamp(),
-        });
-
-        // Create friendship docs with displayNameLower (bug #1 fix)
-        int friendsAdded = 0;
-        if (!user1FriendDoc.exists) {
-          transaction.set(user1FriendRef, {
-            'addedAt': timestampProvider.serverTimestamp(),
-            'displayNameLower': user2Name,
-          });
-          friendsAdded++;
-        }
-        if (!user2FriendDoc.exists) {
-          transaction.set(user2FriendRef, {
-            'addedAt': timestampProvider.serverTimestamp(),
-            'displayNameLower': user1Name,
-          });
-          friendsAdded++;
-        }
-
-        if (friendsAdded == 2) {
-          transaction.update(collection.doc(request.fromUserId),
-              {'friendsCount': FieldValue.increment(1)});
-          transaction.update(collection.doc(request.toUserId),
-              {'friendsCount': FieldValue.increment(1)});
-        }
-      });
+      // Pre-release audit B1: the mutual friend-doc write now runs server-side
+      // via the `acceptFriendRequest` callable (validates the request, writes
+      // both sides under Admin SDK). The client can no longer write into
+      // another user's friends subcollection — that's what closed the privacy
+      // hole. The function derives the parties + status from the request doc.
+      await _friendRelationshipRepo.acceptFriendRequestViaFunction(requestId);
 
       logPermissionCheck(
         userId: currentUser,
         resource: 'social_request',
         operation: 'accept',
         granted: true,
-        details: 'Request $requestId accepted atomically',
+        details: 'Request $requestId accepted via acceptFriendRequest function',
       );
       return true;
     } catch (e, stackTrace) {

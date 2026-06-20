@@ -300,14 +300,22 @@ service cloud.firestore {
       }
 
       // User's friends list
-      // BUG-011 fix: Allow bidirectional friend creation
-      // A user can:
-      // - Read/write their own friends (isOwner)
-      // - Read/write to another user's friends subcollection if they ARE the friendId
-      //   (i.e., when accepting a friend request, you can check and add yourself to their friends list)
+      // Pre-release audit B1: a user may only WRITE into their OWN friends
+      // subcollection. The mutual friend-doc write on acceptance moves to the
+      // `acceptFriendRequest` Cloud Function (Admin SDK), which validates the
+      // social_request first. This closes the hole where the old
+      // `request.auth.uid == friendId` write branch let any signed-in user
+      // insert themselves into a victim's friends list (no consent) and thereby
+      // read the victim's private cook_snaps / activity_events.
+      //
+      // Read stays bidirectional (you can see a friend doc that names you).
+      // Delete stays bidirectional so client-side mutual removal still works
+      // (removing yourself from the other party's list is not a privacy
+      // escalation).
       match /friends/{friendId} {
         allow read: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
-        allow write: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
+        allow create, update: if isOwner(userId);
+        allow delete: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
       }
       
       // Friend categories/groups

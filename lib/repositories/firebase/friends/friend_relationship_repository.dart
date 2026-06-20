@@ -24,9 +24,9 @@
 
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -71,11 +71,24 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   /// Creates a friend relationship repository with dependency injection support.
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
+  /// Optionally injected Cloud Functions client (tests). Resolved lazily via
+  /// [_functions] so merely constructing the repo never calls
+  /// `FirebaseFunctions.instanceFor` — that throws `[core/no-app]` in unit
+  /// tests that don't initialise Firebase, and the accept callable is the only
+  /// thing that needs it.
+  final FirebaseFunctions? _injectedFunctions;
+  FirebaseFunctions? _functionsCache;
+
+  FirebaseFunctions get _functions => _functionsCache ??= (_injectedFunctions ??
+      FirebaseFunctions.instanceFor(region: 'europe-west1'));
+
   FriendRelationshipRepository({
     super.firestore,
     AuthRepository? authRepository,
     super.timestampProvider,
-  }) : super(
+    FirebaseFunctions? functions,
+  })  : _injectedFunctions = functions,
+        super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
 
@@ -134,9 +147,13 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   /// Add users to each other's friends collections and update counts.
   ///
-  /// Uses a Firestore transaction to ensure atomicity and prevent race conditions
-  /// when the same friendship is being created from multiple sources simultaneously.
-  /// Stores `displayNameLower` on each friend doc to enable server-side prefix search.
+  /// ⚠️ B1: this client-side cross-user write no longer works against the
+  /// tightened friends-write rule (`create: isOwner` only) — writing into the
+  /// OTHER user's `friends` subcollection is denied (fail-closed). It has no
+  /// production caller; legitimate friending goes through
+  /// [acceptFriendRequestViaFunction] (the `acceptFriendRequest` Cloud
+  /// Function). Kept only for the existing tests. Do not add a production
+  /// caller — route through the callable instead.
   Future<void> addMutualFriends(String userId1, String userId2) async {
     final (user1Name, user2Name) = await _fetchDisplayNames(userId1, userId2);
 
@@ -146,26 +163,31 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     });
   }
 
-  /// Accept a friend request atomically: creates mutual friendship AND marks
-  /// the request as accepted in a single Firestore transaction.
+  /// Accept a friend request via the server-side `acceptFriendRequest`
+  /// callable (pre-release audit B1).
   ///
-  /// [requestDocRef] must be resolved before calling (query by fromUserId/toUserId).
+  /// The mutual friend-doc write moved server-side so the friends-write rule
+  /// could be locked to owner-only — a client can no longer insert itself into
+  /// another user's friends list. The function validates the social_request
+  /// (pending + addressed to the caller) and writes both friend docs under the
+  /// Admin SDK. Throws on failure; the facade maps that to `false`.
+  Future<void> acceptFriendRequestViaFunction(String requestId) async {
+    final callable = _functions.httpsCallable('acceptFriendRequest');
+    await callable.call<Map<String, dynamic>>(
+      <String, dynamic>{'requestId': requestId},
+    );
+  }
+
+  /// Accept a friend request. Delegates to the server-side callable (B1); the
+  /// parties and request status are derived server-side from the request doc,
+  /// so [userId1]/[userId2] are no longer used on the client (kept for the
+  /// existing call sites).
   Future<void> acceptFriendAtomically(
     String userId1,
     String userId2, {
     required DocumentReference requestDocRef,
   }) async {
-    final (user1Name, user2Name) = await _fetchDisplayNames(userId1, userId2);
-
-    await firestore.runTransaction((transaction) async {
-      await _writeMutualFriendDocs(
-          transaction, userId1, userId2, user1Name, user2Name);
-
-      transaction.update(requestDocRef, {
-        'status': FriendRequestStatus.accepted.name,
-        'respondedAt': timestampProvider.serverTimestamp(),
-      });
-    });
+    await acceptFriendRequestViaFunction(requestDocRef.id);
   }
 
   /// Fetch lowercased display names for two users concurrently.
