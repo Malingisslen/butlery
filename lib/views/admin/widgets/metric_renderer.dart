@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/admin/widgets/admin_metric_info_button.dart';
 import 'package:butlery/views/admin/widgets/admin_stat_card.dart';
 import 'package:butlery/views/admin/widgets/metric_charts.dart';
+import 'package:butlery/views/admin/widgets/metric_drilldown.dart';
 
 /// Renders one resolved metric by its [MetricValue] kind. The `switch` is
 /// exhaustive over the sealed type — adding a 6th kind is a compile error here,
@@ -71,6 +72,7 @@ class MetricRenderer extends StatelessWidget {
               format: desc.format,
               columnFormats: desc.columnFormats,
               action: info,
+              drilldown: desc.drilldown,
             ),
           ],
         ),
@@ -165,12 +167,14 @@ class _MatrixTable extends StatelessWidget {
   final MetricFormat format;
   final List<MetricFormat>? columnFormats;
   final Widget? action;
+  final DrilldownSpec? drilldown;
   const _MatrixTable({
     required this.title,
     required this.value,
     required this.format,
     this.columnFormats,
     this.action,
+    this.drilldown,
   });
 
   MetricFormat _formatFor(int column) {
@@ -206,14 +210,22 @@ class _MatrixTable extends StatelessWidget {
               ],
               rows: [
                 for (var r = 0; r < value.rowLabels.length; r++)
-                  DataRow(cells: [
-                    DataCell(Text(value.rowLabels[r],
-                        style: AppTextStyles.metadataEmphasized)),
-                    for (var c = 0; c < value.colLabels.length; c++)
-                      DataCell(Text(
-                          formatMetricValue(value.cells[r][c], _formatFor(c)),
-                          style: AppTextStyles.bodyMedium)),
-                  ]),
+                  DataRow(
+                    // A drillable matrix makes each row tappable → its label
+                    // (e.g. a domain) is passed to the drilldown handler.
+                    onSelectChanged: drilldown == null
+                        ? null
+                        : (_) => handleMetricDrilldown(
+                            context, drilldown!.kind, value.rowLabels[r]),
+                    cells: [
+                      DataCell(Text(value.rowLabels[r],
+                          style: AppTextStyles.metadataEmphasized)),
+                      for (var c = 0; c < value.colLabels.length; c++)
+                        DataCell(Text(
+                            formatMetricValue(value.cells[r][c], _formatFor(c)),
+                            style: AppTextStyles.bodyMedium)),
+                    ],
+                  ),
               ],
             ),
           ),

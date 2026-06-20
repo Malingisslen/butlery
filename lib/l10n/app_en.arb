@@ -6199,6 +6199,17 @@
   "adminMetricWhat": "What it is",
   "adminMetricHow": "How it's calculated",
   "adminMetricWhy": "Why it matters",
+  "adminDrillImportTitle": "Import attempts: {domain}",
+  "@adminDrillImportTitle": {
+    "placeholders": { "domain": { "type": "String" } }
+  },
+  "adminDrillEmpty": "No import attempts logged",
+  "adminDrillTruncated": "Showing {count} (there may be more)",
+  "@adminDrillTruncated": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adminDrillSuccess": "Succeeded",
+  "adminDrillFailure": "Failed",
   "metricRecipeTotalWhat": "The total number of recipes in the app, across all users.",
   "metricRecipeTotalHow": "Counted by scanning every user's recipes and summing them (capped at 5,000 pre-launch).",
   "metricRecipeTotalWhy": "Shows how much content has actually been built up — a basic app-health number.",

@@ -6234,6 +6234,17 @@
   "adminMetricWhat": "Vad är det",
   "adminMetricHow": "Hur räknas det",
   "adminMetricWhy": "Varför viktigt",
+  "adminDrillImportTitle": "Importförsök: {domain}",
+  "@adminDrillImportTitle": {
+    "placeholders": { "domain": { "type": "String" } }
+  },
+  "adminDrillEmpty": "Inga importförsök loggade",
+  "adminDrillTruncated": "Visar {count} (det kan finnas fler)",
+  "@adminDrillTruncated": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adminDrillSuccess": "Lyckades",
+  "adminDrillFailure": "Misslyckades",
   "metricRecipeTotalWhat": "Det totala antalet recept som finns i appen, över alla användare.",
   "metricRecipeTotalHow": "Räknas genom att gå igenom alla användares recept och summera dem (taket är 5 000 i förlanseringsläget).",
   "metricRecipeTotalWhy": "Visar hur mycket innehåll som faktiskt byggts upp — en grundläggande hälsosiffra för appen.",

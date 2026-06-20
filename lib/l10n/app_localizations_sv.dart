@@ -9443,6 +9443,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get adminMetricWhy => 'Varför viktigt';
 
   @override
+  String adminDrillImportTitle(String domain) {
+    return 'Importförsök: $domain';
+  }
+
+  @override
+  String get adminDrillEmpty => 'Inga importförsök loggade';
+
+  @override
+  String adminDrillTruncated(int count) {
+    return 'Visar $count (det kan finnas fler)';
+  }
+
+  @override
+  String get adminDrillSuccess => 'Lyckades';
+
+  @override
+  String get adminDrillFailure => 'Misslyckades';
+
+  @override
   String get metricRecipeTotalWhat =>
       'Det totala antalet recept som finns i appen, över alla användare.';
 

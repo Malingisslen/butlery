@@ -16023,6 +16023,36 @@ abstract class AppLocalizations {
   /// **'Varför viktigt'**
   String get adminMetricWhy;
 
+  /// No description provided for @adminDrillImportTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importförsök: {domain}'**
+  String adminDrillImportTitle(String domain);
+
+  /// No description provided for @adminDrillEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga importförsök loggade'**
+  String get adminDrillEmpty;
+
+  /// No description provided for @adminDrillTruncated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar {count} (det kan finnas fler)'**
+  String adminDrillTruncated(int count);
+
+  /// No description provided for @adminDrillSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckades'**
+  String get adminDrillSuccess;
+
+  /// No description provided for @adminDrillFailure.
+  ///
+  /// In sv, this message translates to:
+  /// **'Misslyckades'**
+  String get adminDrillFailure;
+
   /// No description provided for @metricRecipeTotalWhat.
   ///
   /// In sv, this message translates to:

@@ -52,6 +52,8 @@ final Map<MetricKey, MetricDescriptor> catalog = Map.unmodifiable({
       MetricFormat.number,
       MetricFormat.percent,
     ],
+    drilldown:
+        const DrilldownSpec(kind: MetricDrilldownKind.parseEventsByDomain),
   ),
   MetricKey.engagementUsers: MetricDescriptor(
     key: MetricKey.engagementUsers,

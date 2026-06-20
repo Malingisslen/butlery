@@ -20,12 +20,16 @@ class MetricThreshold {
   const MetricThreshold({this.warnBelow, this.badBelow});
 }
 
-/// Whether/how a metric drills down to underlying rows. [clientFilter] means the
-/// rows are already in the fetched slice; otherwise a separate capped server
-/// query runs (see Phase 5). Null = not drillable.
+/// What a drillable metric row drills into. Each kind maps to a handler in the
+/// drilldown sheet.
+enum MetricDrilldownKind { parseEventsByDomain }
+
+/// Whether/how a metric drills down to underlying rows. Null = not drillable.
+/// For a [MatrixMetric], tapping a row passes its row label (e.g. a domain) to
+/// the handler for [kind].
 class DrilldownSpec {
-  final bool clientFilter;
-  const DrilldownSpec({required this.clientFilter});
+  final MetricDrilldownKind kind;
+  const DrilldownSpec({required this.kind});
 }
 
 /// WHAT a metric is — pure catalog data, no logic, no fetching. [label] is a

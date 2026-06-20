@@ -9423,6 +9423,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminMetricWhy => 'Why it matters';
 
   @override
+  String adminDrillImportTitle(String domain) {
+    return 'Import attempts: $domain';
+  }
+
+  @override
+  String get adminDrillEmpty => 'No import attempts logged';
+
+  @override
+  String adminDrillTruncated(int count) {
+    return 'Showing $count (there may be more)';
+  }
+
+  @override
+  String get adminDrillSuccess => 'Succeeded';
+
+  @override
+  String get adminDrillFailure => 'Failed';
+
+  @override
   String get metricRecipeTotalWhat =>
       'The total number of recipes in the app, across all users.';
 

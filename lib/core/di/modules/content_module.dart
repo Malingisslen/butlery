@@ -112,6 +112,7 @@ import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/repositories/engagement_repository.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
 import 'package:butlery/repositories/ops_log_repository.dart';
+import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/services/admin/metrics_assembler.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
@@ -472,6 +473,9 @@ class ContentModule implements DIModule {
       );
       container.registerLazySingleton<OpsLogRepository>(
         () => OpsLogRepository(),
+      );
+      container.registerLazySingleton<ParseEventsRepository>(
+        () => ParseEventsRepository(),
       );
 
       // Metric-registry assembler: fetches admin data per category (lazy) and
