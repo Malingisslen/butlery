@@ -148,6 +148,10 @@ class FeedTab {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
+          alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
             vertical: AppDimensions.spacingSm,

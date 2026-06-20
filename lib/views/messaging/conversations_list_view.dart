@@ -264,32 +264,37 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           toggled: _archivedExpanded,
           child: InkWell(
             onTap: () => setState(() => _archivedExpanded = !_archivedExpanded),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingL,
-                vertical: AppDimensions.paddingM,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppDimensions.minTouchTarget,
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.archive,
-                    size: AppDimensions.iconSizeM,
-                    color: cs.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Expanded(
-                    child: Text(
-                      context.l10n.messagingArchivedCount(archived.length),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurfaceVariant,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.archive,
+                      size: AppDimensions.iconSizeM,
+                      color: cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Expanded(
+                      child: Text(
+                        context.l10n.messagingArchivedCount(archived.length),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
-                  ),
-                  Icon(
-                    _archivedExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ],
+                    Icon(
+                      _archivedExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
