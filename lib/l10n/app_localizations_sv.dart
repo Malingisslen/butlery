@@ -1030,6 +1030,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get minaReceptHeaderTitle => 'dina\nrecept';
 
   @override
+  String get cookingModeNoInstructions =>
+      'Det här receptet har inga steg att laga efter.';
+
+  @override
   String get feedRecipeUnavailable => 'Receptet är inte tillgängligt';
 
   @override

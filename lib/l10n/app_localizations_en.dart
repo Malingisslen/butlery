@@ -1029,6 +1029,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get minaReceptHeaderTitle => 'your\nrecipes';
 
   @override
+  String get cookingModeNoInstructions =>
+      'This recipe has no steps to cook from.';
+
+  @override
   String get feedRecipeUnavailable => 'This recipe isn\'t available';
 
   @override

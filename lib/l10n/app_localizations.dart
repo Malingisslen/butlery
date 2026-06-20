@@ -1784,6 +1784,12 @@ abstract class AppLocalizations {
   /// **'dina\nrecept'**
   String get minaReceptHeaderTitle;
 
+  /// No description provided for @cookingModeNoInstructions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här receptet har inga steg att laga efter.'**
+  String get cookingModeNoInstructions;
+
   /// No description provided for @feedRecipeUnavailable.
   ///
   /// In sv, this message translates to:

@@ -87,6 +87,44 @@ class _CookingModeContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final vm = context.watch<CookingModeViewModel>();
 
+    // A recipe with no steps would render a broken "Step 1 of 0" cooking UI —
+    // show a clear empty state with a way out instead.
+    if (vm.instructions.isEmpty) {
+      return Scaffold(
+        backgroundColor: cs.primary,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingXl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.no_meals,
+                      color: cs.onPrimary, size: AppDimensions.iconSizeDisplay),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  Text(
+                    context.l10n.cookingModeNoInstructions,
+                    textAlign: TextAlign.center,
+                    style:
+                        AppTextStyles.bodyLarge.copyWith(color: cs.onPrimary),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  TextButton(
+                    // Matches the top-bar close — cooking mode is always pushed.
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      context.l10n.commonClose,
+                      style: TextStyle(color: cs.onPrimary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: cs.primary,
       body: SafeArea(
@@ -545,7 +583,9 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                         padding: const EdgeInsets.only(
                             bottom: AppDimensions.spacingLg),
                         child: Opacity(
-                          opacity: isActive ? 1.0 : 0.4,
+                          // 0.6 (was 0.4): inactive steps stay legible for the
+                          // cook glancing at upcoming steps (WCAG contrast).
+                          opacity: isActive ? 1.0 : 0.6,
                           child: Container(
                             decoration: isActive
                                 ? BoxDecoration(

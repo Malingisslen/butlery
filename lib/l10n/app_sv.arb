@@ -729,6 +729,7 @@
   "chatMessagingDisabled": "Meddelandefunktionen är tillfälligt inaktiverad.",
   "veckomenyHeaderTitle": "veckans\nmeny",
   "minaReceptHeaderTitle": "dina\nrecept",
+  "cookingModeNoInstructions": "Det här receptet har inga steg att laga efter.",
   "feedRecipeUnavailable": "Receptet är inte tillgängligt",
   "chatLoadingImage": "Laddar bild...",
   "chatImageSent": "Bild skickad!",
