@@ -117,6 +117,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingList => 'Inköpslista';
 
   @override
+  String get authInvalidEmail => 'Ange en giltig e-postadress';
+
+  @override
   String get authResetPassword => 'Återställ lösenord';
 
   @override

@@ -37,6 +37,7 @@
   "shoppingAddItem": "Add item",
   "shoppingEditItem": "Edit item",
   "shoppingList": "Shopping list",
+  "authInvalidEmail": "Enter a valid email address",
   "authResetPassword": "Reset password",
   "authForgotPassword": "Forgot password?",
   "authEnterPassword": "Enter your password",

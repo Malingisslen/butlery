@@ -314,6 +314,12 @@ abstract class AppLocalizations {
   /// **'Inköpslista'**
   String get shoppingList;
 
+  /// No description provided for @authInvalidEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange en giltig e-postadress'**
+  String get authInvalidEmail;
+
   /// No description provided for @authResetPassword.
   ///
   /// In sv, this message translates to:

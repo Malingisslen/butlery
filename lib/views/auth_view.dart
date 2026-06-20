@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -629,6 +630,7 @@ class _AuthViewState extends State<AuthView> {
     AuthViewModel viewModel,
   ) async {
     String emailValue = '';
+    String? emailError;
 
     // Capture before async gap (showDialog)
     final messenger = ScaffoldMessenger.of(context);
@@ -655,9 +657,13 @@ class _AuthViewState extends State<AuthView> {
                 decoration: InputDecoration(
                   labelText: context.l10n.authEmail,
                   hintText: context.l10n.authEmailHint,
+                  errorText: emailError,
                 ),
                 onChanged: (value) {
                   emailValue = value;
+                  if (emailError != null) {
+                    setDialogState(() => emailError = null);
+                  }
                 },
               ),
             ],
@@ -673,8 +679,13 @@ class _AuthViewState extends State<AuthView> {
               label: context.l10n.commonSend,
               onPressed: () {
                 final trimmed = emailValue.trim();
-                Navigator.of(dialogContext)
-                    .pop(trimmed.isNotEmpty ? trimmed : null);
+                // Validate inline so a malformed address is caught before we
+                // fire the reset (and surface success for a non-existent one).
+                if (ValidationUtils.validateEmail(trimmed) != null) {
+                  setDialogState(() => emailError = l10n.authInvalidEmail);
+                  return;
+                }
+                Navigator.of(dialogContext).pop(trimmed);
               },
             ),
           ],

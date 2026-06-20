@@ -37,6 +37,7 @@
   "shoppingAddItem": "Lägg till vara",
   "shoppingEditItem": "Redigera vara",
   "shoppingList": "Inköpslista",
+  "authInvalidEmail": "Ange en giltig e-postadress",
   "authResetPassword": "Återställ lösenord",
   "authForgotPassword": "Glömt lösenord?",
   "authEnterPassword": "Ange ditt lösenord",

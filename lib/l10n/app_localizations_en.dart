@@ -117,6 +117,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingList => 'Shopping list';
 
   @override
+  String get authInvalidEmail => 'Enter a valid email address';
+
+  @override
   String get authResetPassword => 'Reset password';
 
   @override
