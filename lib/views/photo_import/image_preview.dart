@@ -49,7 +49,7 @@ class ImagePreview extends StatelessWidget {
                 top: AppDimensions.spacingS,
                 right: AppDimensions.spacingS,
                 child: OverlayButton.remove(
-                  onPressed: viewModel.clearPhoto,
+                  onPressed: () => _handleRemove(context),
                   tooltip: context.l10n.importRemoveImage,
                 ),
               ),
@@ -67,5 +67,36 @@ class ImagePreview extends StatelessWidget {
         icon: Icons.add_photo_alternate,
       ),
     );
+  }
+
+  /// Removes the photo, but first confirms when the heirloom form holds
+  /// user-entered details — clearing the photo also wipes that form (BUT-954
+  /// hard-destructive: the typed origin notes are gone and can't be undone).
+  Future<void> _handleRemove(BuildContext context) async {
+    if (viewModel.hasHeirloomContent) {
+      final l10n = context.l10n;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.importHeirloomClearTitle),
+          content: Text(l10n.importHeirloomClearMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              child: Text(l10n.commonDelete),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+    viewModel.clearPhoto();
   }
 }

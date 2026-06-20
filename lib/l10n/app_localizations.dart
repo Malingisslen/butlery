@@ -9489,6 +9489,18 @@ abstract class AppLocalizations {
   /// **'Ta bort bild'**
   String get importRemoveImage;
 
+  /// No description provided for @importHeirloomClearTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort bilden?'**
+  String get importHeirloomClearTitle;
+
+  /// No description provided for @importHeirloomClearMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har fyllt i uppgifter om receptets ursprung (skribent, år, anteckning). Tas bilden bort försvinner även de. Detta går inte att ångra.'**
+  String get importHeirloomClearMessage;
+
   /// No description provided for @importSharedText.
   ///
   /// In sv, this message translates to:

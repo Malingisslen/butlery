@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -202,12 +203,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppDimensions.paddingXl),
-            child: SelectableText(
-              _policyContent!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                  ),
-            ),
+            child: MarkdownBody(data: _policyContent!),
           ),
         ),
         const LegalContactFooter(),

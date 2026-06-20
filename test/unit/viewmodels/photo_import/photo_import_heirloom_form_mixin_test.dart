@@ -76,6 +76,35 @@ void main() {
       expect(host.isOfflineQueued, isFalse);
     });
 
+    group('hasHeirloomContent (gates the remove-photo confirm)', () {
+      test('false when no origin field is filled', () {
+        expect(host.hasHeirloomContent, isFalse);
+        // The toggle alone, with no typed details, is not "content".
+        host.isHeirloom = true;
+        expect(host.hasHeirloomContent, isFalse);
+      });
+
+      test('true when any single field holds content', () {
+        host.heirloomWriterName = 'Farmor';
+        expect(host.hasHeirloomContent, isTrue);
+
+        host.clearHeirloomForm();
+        host.heirloomYear = 1962;
+        expect(host.hasHeirloomContent, isTrue);
+
+        host.clearHeirloomForm();
+        host.heirloomNote = 'från receptboken';
+        expect(host.hasHeirloomContent, isTrue);
+      });
+
+      test('false again after the form is cleared', () {
+        host.heirloomWriterName = 'Farmor';
+        host.heirloomNote = 'note';
+        host.clearHeirloomForm();
+        expect(host.hasHeirloomContent, isFalse);
+      });
+    });
+
     test('setters no-op after dispose so a late callback cannot mutate state',
         () {
       host.heirloomWriterName = 'Farmor';

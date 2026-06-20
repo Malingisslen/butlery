@@ -3636,6 +3636,8 @@
   "importRecipeTextDetected": "Recipe text detected!",
   "importRecipeTitle": "Import recipe",
   "importRemoveImage": "Remove image",
+  "importHeirloomClearTitle": "Remove the image?",
+  "importHeirloomClearMessage": "You've added heirloom details (writer, year, note). Removing the image discards them too. This can't be undone.",
   "importSharedText": "shared text",
   "importTakePhoto": "Take a photo",
   "importTakePhotoSubtitle": "Use the camera to photograph the recipe",

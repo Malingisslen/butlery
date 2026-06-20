@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/viewmodels/notifications_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
@@ -61,6 +63,26 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     await vm.dismissSelected(Set.of(_selectedIds));
     if (!mounted) return;
     _cancelSelection();
+  }
+
+  /// Marks the entry read and routes to its target by reusing the exact same
+  /// deep-link path an FCM tap takes ([NotificationService.onNotificationTapped]
+  /// → NotificationDeepLinkRouter). Tolerant of legacy entries with no route —
+  /// the router falls back to home in that case.
+  void _handleEntryTap(
+    NotificationsViewModel vm,
+    NotificationHistoryEntry entry,
+  ) {
+    vm.markAsOpened(entry.notificationId);
+    // entry.data values are dynamic — coerce defensively so a legacy non-String
+    // id/route (e.g. an int) can't throw a TypeError on a routine tap.
+    final route = (entry.data['route']?.toString()).orEmpty();
+    final targetId = (entry.data['targetId'] ?? entry.data['id'])?.toString();
+    NotificationService.onNotificationTapped?.call(route, <String, String?>{
+      'id': targetId,
+      'notificationType': entry.type,
+      'notificationId': entry.notificationId,
+    });
   }
 
   @override
@@ -177,7 +199,7 @@ class _NotificationsContentState extends State<_NotificationsContent> {
               isSelected: _selectedIds.contains(entry.id),
               onTap: _selectionMode
                   ? () => _toggle(entry.id)
-                  : () => vm.markAsOpened(entry.notificationId),
+                  : () => _handleEntryTap(vm, entry),
               onLongPress:
                   _selectionMode ? null : () => _enterSelection(entry.id),
             );

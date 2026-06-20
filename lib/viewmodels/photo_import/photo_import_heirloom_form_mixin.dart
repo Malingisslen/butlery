@@ -29,6 +29,14 @@ mixin PhotoImportHeirloomFormMixin on ImportBaseViewModel {
   /// True while an heirloom upload is pending because the device is offline.
   bool get isOfflineQueued => _isOfflineQueued;
 
+  /// Whether the heirloom form holds user-entered content that a clear would
+  /// discard (writer, year, or note). Used to gate a confirm dialog before the
+  /// "remove image" action wipes the form along with the photo.
+  bool get hasHeirloomContent =>
+      _heirloomWriterName.isNotEmpty ||
+      _heirloomYear != null ||
+      _heirloomNote.isNotEmpty;
+
   set isHeirloom(bool value) {
     if (isDisposed || _isHeirloom == value) return;
     _isHeirloom = value;

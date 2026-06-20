@@ -3642,6 +3642,8 @@
   "importRecipeTextDetected": "Recepttext detekterad!",
   "importRecipeTitle": "Importera recept",
   "importRemoveImage": "Ta bort bild",
+  "importHeirloomClearTitle": "Ta bort bilden?",
+  "importHeirloomClearMessage": "Du har fyllt i uppgifter om receptets ursprung (skribent, år, anteckning). Tas bilden bort försvinner även de. Detta går inte att ångra.",
   "importSharedText": "delad text",
   "importTakePhoto": "Ta ett foto",
   "importTakePhotoSubtitle": "Använd kameran för att fota receptet",

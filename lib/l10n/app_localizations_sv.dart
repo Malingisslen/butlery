@@ -5602,6 +5602,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importRemoveImage => 'Ta bort bild';
 
   @override
+  String get importHeirloomClearTitle => 'Ta bort bilden?';
+
+  @override
+  String get importHeirloomClearMessage =>
+      'Du har fyllt i uppgifter om receptets ursprung (skribent, år, anteckning). Tas bilden bort försvinner även de. Detta går inte att ångra.';
+
+  @override
   String get importSharedText => 'delad text';
 
   @override

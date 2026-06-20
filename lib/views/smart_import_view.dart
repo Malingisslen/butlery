@@ -28,7 +28,11 @@ import 'package:butlery/views/smart_import/import_result_handler.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
-  const SmartImportView({super.key});
+  /// URL handed in by the OS share sheet (web-share into the app). When set it
+  /// prefills the import field and takes precedence over the clipboard check.
+  final String? initialUrl;
+
+  const SmartImportView({super.key, this.initialUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +40,15 @@ class SmartImportView extends StatelessWidget {
       create: (_) => SmartImportViewModel(
         importManager: ServiceLocator.get<ImportManager>(),
       ),
-      child: const _SmartImportViewContent(),
+      child: _SmartImportViewContent(initialUrl: initialUrl),
     );
   }
 }
 
 class _SmartImportViewContent extends StatefulWidget {
-  const _SmartImportViewContent();
+  final String? initialUrl;
+
+  const _SmartImportViewContent({this.initialUrl});
 
   @override
   State<_SmartImportViewContent> createState() =>
@@ -60,8 +66,18 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       if (!mounted) return;
       _focusNode.requestFocus();
 
-      // Auto-check clipboard for recipe URLs
       final viewModel = context.read<SmartImportViewModel>();
+
+      // A URL shared into the app (web-share) wins over the clipboard. Prefill
+      // the field and sync the VM (programmatic text doesn't fire onChanged).
+      final shared = widget.initialUrl;
+      if (shared != null && shared.isNotEmpty) {
+        _inputController.text = shared;
+        viewModel.updateInput(shared);
+        return;
+      }
+
+      // Auto-check clipboard for recipe URLs
       await viewModel.checkClipboardForUrl();
       if (!mounted) return;
       final url = viewModel.clipboardUrl;

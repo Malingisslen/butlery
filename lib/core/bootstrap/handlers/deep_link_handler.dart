@@ -312,7 +312,9 @@ class DeepLinkHandler {
   ) {
     final url = params['url'];
     if (url != null && url.isNotEmpty) {
-      Navigator.of(context).pushNamed(Routes.addRecipe, arguments: url);
+      // Land a shared URL on Smart Import (which prefills it), not the generic
+      // add-recipe hub that ignored the argument.
+      Navigator.of(context).pushNamed(Routes.smartImport, arguments: url);
     }
   }
 

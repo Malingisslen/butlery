@@ -60,7 +60,12 @@ class ExtractionDeferredModule implements DeferredModule {
         return import_url.ImportViaUrlView();
 
       case Routes.smartImport:
-        return smart_import.SmartImportView();
+        // A String argument is a URL shared into the app (web-share) to prefill.
+        return smart_import.SmartImportView(
+          initialUrl: settings.arguments is String
+              ? settings.arguments as String
+              : null,
+        );
 
       case Routes.photoImport:
         return photo_import.PhotoImportView();

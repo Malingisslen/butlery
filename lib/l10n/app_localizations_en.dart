@@ -5594,6 +5594,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importRemoveImage => 'Remove image';
 
   @override
+  String get importHeirloomClearTitle => 'Remove the image?';
+
+  @override
+  String get importHeirloomClearMessage =>
+      'You\'ve added heirloom details (writer, year, note). Removing the image discards them too. This can\'t be undone.';
+
+  @override
   String get importSharedText => 'shared text';
 
   @override
