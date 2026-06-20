@@ -232,6 +232,9 @@ class _AddItemDialogState extends State<_AddItemDialog> {
 
   void _onSave() {
     if (_formKey.currentState!.validate()) {
+      // basic() omits note/price, so layer them on with copyWith — otherwise
+      // the price and note the user typed are silently dropped on add (the
+      // edit dialog already preserves both).
       final item = UnifiedShoppingItem.basic(
         name: _nameController.text.trim(),
         amount:
@@ -240,6 +243,13 @@ class _AddItemDialogState extends State<_AddItemDialog> {
         category: _categoryController.text.trim().isEmpty
             ? ShoppingCategory.other
             : _categoryController.text.trim(),
+      ).copyWith(
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+        estimatedPrice: _priceController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_priceController.text.replaceAll(',', '.')),
       );
 
       Navigator.pop(context, item);
