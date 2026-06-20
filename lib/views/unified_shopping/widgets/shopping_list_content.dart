@@ -572,6 +572,11 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         return AnimatedContainer(
           duration: ThemeConstants.durationFast.respectingMotion(context),
           width: double.infinity,
+          // Min 48px so the empty drop zone is a comfortable drag target
+          // (touch-accessibility) rather than a thin, hard-to-hit strip.
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
             vertical: AppDimensions.spacingSm,
