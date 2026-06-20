@@ -1,47 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/services/import/file_import_strategy.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/viewmodels/file_import_viewmodel.dart';
 import 'package:butlery/widgets/import/batch_import_preview.dart';
-
-/// Consolidated state class for FileImportView to reduce setState calls
-class FileImportState {
-  final bool isLoading;
-  final String? statusMessage;
-  final int importedCount;
-  final int failedCount;
-
-  const FileImportState({
-    this.isLoading = false,
-    this.statusMessage,
-    this.importedCount = 0,
-    this.failedCount = 0,
-  });
-
-  FileImportState copyWith({
-    bool? isLoading,
-    String? statusMessage,
-    int? importedCount,
-    int? failedCount,
-  }) {
-    return FileImportState(
-      isLoading: isLoading ?? this.isLoading,
-      statusMessage: statusMessage ?? this.statusMessage,
-      importedCount: importedCount ?? this.importedCount,
-      failedCount: failedCount ?? this.failedCount,
-    );
-  }
-}
 
 /// File import view for CSV and Excel recipe imports
 class FileImportView extends StatefulWidget {
@@ -52,127 +19,52 @@ class FileImportView extends StatefulWidget {
 }
 
 class _FileImportViewState extends State<FileImportView> {
-  final FileImportStrategy _fileImportStrategy = FileImportStrategy();
-  FileImportState _state = const FileImportState();
+  final FileImportViewModel _vm = FileImportViewModel();
 
-  Future<void> _importFile() async {
-    setState(() {
-      _state = _state.copyWith(
-        isLoading: true,
-        statusMessage: context.l10n.importSelectingFile,
-        importedCount: 0,
-        failedCount: 0,
-      );
-    });
+  @override
+  void dispose() {
+    _vm.dispose();
+    super.dispose();
+  }
 
-    try {
-      // Import multiple recipes from file
-      final parsedRecipes = await _fileImportStrategy.importMultiple();
+  /// Orchestrates the flow: the VM parses + imports (business logic + state);
+  /// the view owns the navigation (showing the preview, reading the selection,
+  /// popping on success).
+  Future<void> _handleImport() async {
+    final parsed = await _vm.parseFile();
+    if (!mounted || parsed.isEmpty) return;
 
-      if (parsedRecipes.isEmpty) {
-        if (!mounted) return;
-        setState(() {
-          _state = _state.copyWith(
-            statusMessage: context.l10n.importNoFileOrNoRecipes,
-            isLoading: false,
-          );
-        });
-        return;
-      }
+    final selected = await Navigator.push<List<Recipe>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BatchImportPreview(recipes: parsed),
+      ),
+    );
+    if (!mounted) return;
+    if (selected == null || selected.isEmpty) {
+      _vm.reset();
+      return;
+    }
 
-      if (!mounted) return;
+    await _vm.importSelected(selected);
+    if (!mounted) return;
 
-      // Show preview for user to select which recipes to import
-      setState(() {
-        _state = _state.copyWith(isLoading: false);
-      });
-      final selectedRecipes = await Navigator.push<List<Recipe>>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BatchImportPreview(recipes: parsedRecipes),
-        ),
-      );
-      if (!mounted || selectedRecipes == null || selectedRecipes.isEmpty) {
-        if (mounted) {
-          setState(() {
-            _state = const FileImportState();
-          });
-        }
-        return;
-      }
-
-      setState(() {
-        _state = _state.copyWith(
-          isLoading: true,
-          statusMessage:
-              context.l10n.importImportingRecipes(selectedRecipes.length),
-        );
-      });
-
-      // Get recipe service
-      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-
-      // Import selected recipes
-      for (final recipe in selectedRecipes) {
-        try {
-          await recipeService.createPersonalRecipe(
-            title: recipe.title,
-            description: recipe.description,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            mealType: recipe.mealType,
-            portions: recipe.portions,
-            timeMinutes: recipe.timeMinutes,
-            personalTagIds: recipe.personalTagIds,
-            rating: recipe.rating,
-            sourceUrl: recipe.sourceUrl,
-            imageUrls: recipe.imageUrls,
-          );
-          if (!mounted) return;
-          setState(() {
-            _state = _state.copyWith(importedCount: _state.importedCount + 1);
-          });
-        } catch (e) {
-          AppLogger.error('Failed to import recipe: ${recipe.id}', e);
-          if (!mounted) return;
-          setState(() {
-            _state = _state.copyWith(failedCount: _state.failedCount + 1);
-          });
-        }
-      }
-
-      if (!mounted) return;
-      setState(() {
-        _state = _state.copyWith(
-          isLoading: false,
-          statusMessage: context.l10n
-              .importComplete(_state.importedCount, _state.failedCount),
-        );
-      });
-
-      // Navigate back if all successful
-      if (_state.failedCount == 0 && mounted) {
-        await Future.delayed(const Duration(seconds: 2));
-        if (mounted) {
-          Navigator.pop(context);
-        }
-      }
-    } catch (e) {
-      AppLogger.error('File import failed', e);
-      if (!mounted) return;
-      setState(() {
-        _state = _state.copyWith(
-          isLoading: false,
-          statusMessage: context.l10n.importFailed(
-            SnackBarUtils.userFriendlyMessage(context, e),
-          ),
-        );
-      });
+    // Auto-close once everything imported cleanly.
+    if (_vm.allSucceeded) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _vm,
+      builder: (context, _) => _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.importFromFile),
@@ -235,54 +127,54 @@ class _FileImportViewState extends State<FileImportView> {
                   const SizedBox(height: AppDimensions.spacingXl),
 
                   // Import button
-                  if (!_state.isLoading)
+                  if (!_vm.isLoading)
                     UtilityComponents.primaryButton(
                       context,
                       label: context.l10n.importSelectFileAndImport,
                       icon: Icons.file_upload,
-                      onPressed: _importFile,
+                      onPressed: _handleImport,
                     ),
 
                   // Loading indicator
-                  if (_state.isLoading)
+                  if (_vm.isLoading)
                     Column(
                       children: [
                         const LoadingIndicator(),
                         const SizedBox(height: AppDimensions.spacingL),
-                        if (_state.statusMessage != null)
+                        if (_vm.statusMessage != null)
                           Text(
-                            _state.statusMessage!,
+                            _vm.statusMessage!,
                             style: AppTextStyles.bodyLarge,
                             textAlign: TextAlign.center,
                           ),
-                        if (_state.importedCount > 0 || _state.failedCount > 0)
+                        if (_vm.importedCount > 0 || _vm.failedCount > 0)
                           Padding(
                             padding: const EdgeInsets.only(
                                 top: AppDimensions.spacingM),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (_state.importedCount > 0) ...[
+                                if (_vm.importedCount > 0) ...[
                                   Icon(
                                     Icons.check_circle,
                                     color:
                                         Theme.of(context).colorScheme.primary,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
-                                  Text(context.l10n.importSucceededCount(
-                                      _state.importedCount)),
+                                  Text(context.l10n
+                                      .importSucceededCount(_vm.importedCount)),
                                 ],
-                                if (_state.importedCount > 0 &&
-                                    _state.failedCount > 0)
+                                if (_vm.importedCount > 0 &&
+                                    _vm.failedCount > 0)
                                   const SizedBox(width: AppDimensions.spacingL),
-                                if (_state.failedCount > 0) ...[
+                                if (_vm.failedCount > 0) ...[
                                   Icon(
                                     Icons.error,
                                     color: Theme.of(context).colorScheme.error,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
                                   Text(context.l10n
-                                      .importFailedCount(_state.failedCount)),
+                                      .importFailedCount(_vm.failedCount)),
                                 ],
                               ],
                             ),
@@ -291,18 +183,18 @@ class _FileImportViewState extends State<FileImportView> {
                     ),
 
                   // Status message
-                  if (!_state.isLoading && _state.statusMessage != null)
+                  if (!_vm.isLoading && _vm.statusMessage != null)
                     Padding(
                       padding:
                           const EdgeInsets.only(top: AppDimensions.spacingL),
                       child: Card(
-                        color: _state.failedCount > 0
+                        color: _vm.failedCount > 0
                             ? Theme.of(context).colorScheme.errorContainer
                             : Theme.of(context).colorScheme.primaryContainer,
                         child: Padding(
                           padding: const EdgeInsets.all(AppDimensions.spacingM),
                           child: Text(
-                            _state.statusMessage!,
+                            _vm.statusMessage!,
                             style: AppTextStyles.bodyMedium,
                             textAlign: TextAlign.center,
                           ),
