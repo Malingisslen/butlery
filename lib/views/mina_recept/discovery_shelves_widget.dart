@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
@@ -38,6 +39,11 @@ class MinaReceptDiscoveryShelves extends StatelessWidget {
         FutureBuilder<SeasonalMonth?>(
           future: seasonalMonthFuture,
           builder: (_, snap) {
+            if (snap.hasError) {
+              // Non-critical: log and hide the hero rather than swallow silently.
+              AppLogger.warning('Seasonal hero failed to load: ${snap.error}');
+              return const SizedBox.shrink();
+            }
             final month = snap.data;
             if (month == null) return const SizedBox.shrink();
             final matches = seasonalHeroService.matchUserRecipes(

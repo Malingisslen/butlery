@@ -241,7 +241,6 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 replyToMessage: replyToMessage,
                 showAvatar:
                     viewModel.shouldShowAvatar(message, previousMessage),
-                onTap: () => AppLogger.debug('Message tapped: ${message.id}'),
                 onLongPress: () => widget.onMessageAction(message, 'menu'),
                 onReply: () => viewModel.setReplyToMessage(message),
                 onPollVote: (optionId) =>
