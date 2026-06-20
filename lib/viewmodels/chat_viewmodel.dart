@@ -345,6 +345,52 @@ class ChatViewModel extends ChangeNotifier
     }
   }
 
+  /// Vote on (or toggle off) a poll option. Resolves the poll's
+  /// `allowMultipleChoices` flag from the message metadata before delegating
+  /// to the service, so the caller (a poll widget) only needs the option id.
+  Future<void> votePoll(String messageId, String optionId) async {
+    if (_isDisposed) return;
+
+    Message? target;
+    for (final m in _messages) {
+      if (m.id == messageId) {
+        target = m;
+        break;
+      }
+    }
+    if (target == null) {
+      AppLogger.warning('votePoll: message $messageId not in cache');
+      return;
+    }
+    final pollData = target.metadata?['poll'] as Map<String, dynamic>?;
+    if (pollData == null) {
+      AppLogger.warning('votePoll: no poll metadata on message $messageId');
+      return;
+    }
+    final allowMultiple = pollData['allowMultipleChoices'] == true;
+
+    try {
+      await _messagingService.votePoll(
+        messageId: messageId,
+        optionId: optionId,
+        allowMultiple: allowMultiple,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to vote on poll', e);
+    }
+  }
+
+  /// Close a poll (creator-only; gating enforced by the poll widget).
+  Future<void> closePoll(String messageId) async {
+    if (_isDisposed) return;
+
+    try {
+      await _messagingService.closePoll(messageId: messageId);
+    } catch (e) {
+      AppLogger.error('Failed to close poll', e);
+    }
+  }
+
   Future<bool> deleteMessage(String messageId) async {
     if (_isDisposed) return false;
 

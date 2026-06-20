@@ -9,6 +9,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/messaging_media_service.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
@@ -168,6 +169,22 @@ class ChatActionHandler {
         break;
       default:
         AppLogger.warning('Unknown attachment type: $attachmentType');
+    }
+  }
+
+  /// Handle poll creation from the input section. Receives the serialized
+  /// poll built by [PollCreationDialog] and sends it as a poll message.
+  Future<void> handlePollCreate(Map<String, dynamic> pollData) async {
+    AppLogger.info('Creating poll');
+    try {
+      await _messagingService.sendPollMessage(
+        conversationId: conversationId,
+        pollData: pollData,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to create poll', e);
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatErrorOccurred);
     }
   }
 
@@ -376,12 +393,16 @@ class ChatActionHandler {
       );
 
       if (selectedRecipes != null && selectedRecipes.isNotEmpty) {
-        // Send recipe share using the messaging service
+        final recipeId = selectedRecipes.first;
+        // Look up the real title so the share card shows the recipe name
+        // (read() is user-scoped; falls back to a generic label if null).
+        final recipe =
+            await ServiceLocator.get<RecipeRepository>().read(recipeId);
+        if (!context.mounted) return;
         await _messagingService.sendRecipeShare(
           conversationId: conversationId,
-          recipeId: selectedRecipes.first,
-          recipeTitle:
-              l10n.chatSharedRecipe, // In production, fetch the actual title
+          recipeId: recipeId,
+          recipeTitle: recipe?.title ?? l10n.chatSharedRecipe,
           message: l10n.chatCheckOutRecipe,
         );
       }

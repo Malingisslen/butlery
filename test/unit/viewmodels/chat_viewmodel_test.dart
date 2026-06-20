@@ -519,6 +519,117 @@ void main() {
       });
     });
 
+    group('Poll Operations', () {
+      Message buildPollMessage({
+        required String id,
+        required bool allowMultipleChoices,
+      }) {
+        return MessageBuilder.build(
+          id: id,
+          type: MessageType.poll,
+          content: 'Vad ska vi äta?',
+          data: {
+            'poll': {
+              'id': 'poll_$id',
+              'question': 'Vad ska vi äta?',
+              'allowMultipleChoices': allowMultipleChoices,
+              'creatorId': 'user2',
+              'createdAt': DateTime.now().toIso8601String(),
+              'options': [
+                {'id': 'opt_a', 'text': 'Pizza', 'voterIds': <String>[]},
+                {'id': 'opt_b', 'text': 'Tacos', 'voterIds': <String>[]},
+              ],
+            },
+          },
+        );
+      }
+
+      setUp(() {
+        when(() => mockMessagingService.votePoll(
+              messageId: any(named: 'messageId'),
+              optionId: any(named: 'optionId'),
+              allowMultiple: any(named: 'allowMultiple'),
+            )).thenAnswer((_) async {});
+        when(() => mockMessagingService.closePoll(
+              messageId: any(named: 'messageId'),
+            )).thenAnswer((_) async {});
+      });
+
+      test('votePoll resolves allowMultiple=true from the poll metadata',
+          () async {
+        // Arrange — a multi-choice poll arrives over the stream
+        final poll = buildPollMessage(id: 'p1', allowMultipleChoices: true);
+        messagesStreamController.add([poll]);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Act
+        await viewModel.votePoll('p1', 'opt_a');
+
+        // Assert — the flag read from metadata is forwarded to the service
+        verify(() => mockMessagingService.votePoll(
+              messageId: 'p1',
+              optionId: 'opt_a',
+              allowMultiple: true,
+            )).called(1);
+      });
+
+      test('votePoll resolves allowMultiple=false for single-choice polls',
+          () async {
+        // Arrange
+        final poll = buildPollMessage(id: 'p2', allowMultipleChoices: false);
+        messagesStreamController.add([poll]);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Act
+        await viewModel.votePoll('p2', 'opt_b');
+
+        // Assert
+        verify(() => mockMessagingService.votePoll(
+              messageId: 'p2',
+              optionId: 'opt_b',
+              allowMultiple: false,
+            )).called(1);
+      });
+
+      test('votePoll is a no-op when the message is not in the list', () async {
+        // Act — vote for a message id that never arrived
+        await viewModel.votePoll('missing', 'opt_a');
+
+        // Assert — nothing reaches the service (no poll metadata to resolve)
+        verifyNever(() => mockMessagingService.votePoll(
+              messageId: any(named: 'messageId'),
+              optionId: any(named: 'optionId'),
+              allowMultiple: any(named: 'allowMultiple'),
+            ));
+      });
+
+      test('votePoll is a no-op when the message carries no poll metadata',
+          () async {
+        // Arrange — a plain text message (no 'poll' key) under the target id
+        messagesStreamController
+            .add([MessageBuilder.build(id: 'plain', content: 'hej')]);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Act
+        await viewModel.votePoll('plain', 'opt_a');
+
+        // Assert — the second guard (missing poll metadata) blocks the call
+        verifyNever(() => mockMessagingService.votePoll(
+              messageId: any(named: 'messageId'),
+              optionId: any(named: 'optionId'),
+              allowMultiple: any(named: 'allowMultiple'),
+            ));
+      });
+
+      test('closePoll delegates to the messaging service', () async {
+        // Act
+        await viewModel.closePoll('p1');
+
+        // Assert
+        verify(() => mockMessagingService.closePoll(messageId: 'p1')).called(1);
+      });
+    });
+
     group('Reply Functionality', () {
       test('should set reply to message', () {
         // Arrange

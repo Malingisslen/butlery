@@ -29,6 +29,8 @@ class MessageBubble extends StatefulWidget {
   final bool showAvatar;
   final bool showTimestamp;
   final void Function(String emoji)? onReactionToggle;
+  final void Function(String optionId)? onPollVote;
+  final VoidCallback? onPollClose;
 
   const MessageBubble({
     super.key,
@@ -41,6 +43,8 @@ class MessageBubble extends StatefulWidget {
     this.showAvatar = true,
     this.showTimestamp = true,
     this.onReactionToggle,
+    this.onPollVote,
+    this.onPollClose,
   });
 
   @override
@@ -364,6 +368,9 @@ class _MessageBubbleState extends State<MessageBubble>
       context: context,
       message: widget.message,
       isFromCurrentUser: _isFromCurrentUser,
+      currentUserId: widget.currentUserId,
+      onPollVote: widget.onPollVote,
+      onPollClose: widget.onPollClose,
     );
   }
 

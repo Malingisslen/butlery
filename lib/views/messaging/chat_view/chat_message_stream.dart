@@ -244,6 +244,9 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 onTap: () => AppLogger.debug('Message tapped: ${message.id}'),
                 onLongPress: () => widget.onMessageAction(message, 'menu'),
                 onReply: () => viewModel.setReplyToMessage(message),
+                onPollVote: (optionId) =>
+                    viewModel.votePoll(message.id, optionId),
+                onPollClose: () => viewModel.closePoll(message.id),
               );
             },
           ),

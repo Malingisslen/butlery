@@ -139,6 +139,8 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
                     onAttachment: _actionHandler.handleAttachment,
                     replyToMessage: viewModel.replyToMessage,
                     onCancelReply: viewModel.clearReplyToMessage,
+                    onPollCreate: _actionHandler.handlePollCreate,
+                    currentUserId: viewModel.currentUserId,
                   ),
               ],
             ),
