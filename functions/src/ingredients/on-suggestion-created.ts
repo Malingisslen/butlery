@@ -83,11 +83,25 @@ export const onSuggestionCreated = onDocumentCreated(
         }
       );
 
-      // TODO: Add email notification to admin
-      // await sendAdminNotification({
-      //   subject: `Ny ingrediensförslag: ${suggestion.originalName}`,
-      //   body: `Användare ${suggestion.userId} föreslår att lägga till "${suggestion.originalName}" i ingrediensdatabasen.`,
-      // });
+      // Admin notification — stubbed until email infra lands (BUT-417),
+      // mirroring onReportCreated. We log a structured payload so it's
+      // alertable in Cloud Logging today and trivial to swap for a real send
+      // later. UID is hashed (never log a raw uid — see hash-uid).
+      const adminEmail = process.env.MODERATOR_EMAIL;
+      if (adminEmail) {
+        // Log only stable ids (never the free-text originalName — it's
+        // user-submitted and could carry PII). The admin looks up the
+        // suggested name in the doc by suggestionId.
+        logger.info(
+          `[ingredient-suggestion-email:TODO] would dispatch to ${adminEmail} ` +
+            `— suggestion=${suggestionId} userHash=${hashUid(suggestion.userId)}`,
+        );
+      } else {
+        logger.warn(
+          `[ingredient-suggestion-email] MODERATOR_EMAIL not set; skipping ` +
+            `admin notification for suggestion ${suggestionId}`,
+        );
+      }
 
     } catch (error) {
       logger.error(

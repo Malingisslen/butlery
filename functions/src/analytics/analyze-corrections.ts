@@ -19,6 +19,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
+import { clampLimit } from "../shared/validate-limit";
 
 const getDb = () => admin.firestore();
 
@@ -310,7 +311,7 @@ export const getCorrectionStats = onCall(
     requireAdmin(request);
 
     const db = getDb();
-    const limit = request.data?.limit || 50;
+    const limit = clampLimit(request.data?.limit);
 
     // Get domain stats
     const domainsSnapshot = await db

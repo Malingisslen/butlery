@@ -20,6 +20,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { stripDiacritics } from "../shared/swedish-normalize";
 import { requireAdmin } from "../shared/require-admin";
+import { clampLimit } from "../shared/validate-limit";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
@@ -168,7 +169,7 @@ export const getUnmatchedIngredientStats = onCall(
     requireAdmin(request);
 
     const db = getDb();
-    const limit = request.data?.limit || 50;
+    const limit = clampLimit(request.data?.limit);
 
     const snapshot = await db
       .collection("analytics")
