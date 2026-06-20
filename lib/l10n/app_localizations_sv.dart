@@ -1405,6 +1405,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonMore => 'Mer';
 
   @override
+  String get a11yRecipeMoreActions => 'Fler receptåtgärder';
+
+  @override
   String get commonNext => 'Nästa';
 
   @override

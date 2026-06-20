@@ -2414,6 +2414,12 @@ abstract class AppLocalizations {
   /// **'Mer'**
   String get commonMore;
 
+  /// No description provided for @a11yRecipeMoreActions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler receptåtgärder'**
+  String get a11yRecipeMoreActions;
+
   /// No description provided for @commonNext.
   ///
   /// In sv, this message translates to:

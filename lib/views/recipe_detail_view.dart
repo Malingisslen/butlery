@@ -427,7 +427,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     child: Semantics(
                       identifier: 'btn-recipe-more',
                       button: true,
-                      label: context.l10n.recipeEdit,
+                      // Was mislabelled `recipeEdit` ("Redigera recept") — this
+                      // menu opens Edit/Copy/Delete/Report, so the SR name must
+                      // describe the menu, not one item (WCAG 4.1.2).
+                      label: context.l10n.a11yRecipeMoreActions,
                       child: _HeroMenuButton(
                         icon: Icons.more_horiz,
                         itemBuilder: (context) {

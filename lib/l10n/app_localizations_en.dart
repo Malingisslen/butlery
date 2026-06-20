@@ -1403,6 +1403,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonMore => 'More';
 
   @override
+  String get a11yRecipeMoreActions => 'More recipe actions';
+
+  @override
   String get commonNext => 'Next';
 
   @override

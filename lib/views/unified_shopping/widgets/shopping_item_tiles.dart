@@ -414,8 +414,10 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
       ),
       childWhenDragging: const SizedBox.shrink(),
       child: Semantics(
+        // Drag-only affordance: announce what it is, but NOT as a button —
+        // it doesn't respond to a screen-reader activate/tap (the accessible
+        // path is the move-to-category button). `button: true` was misleading.
         label: context.l10n.a11yShoppingReorderHandle(widget.item.name),
-        button: true,
         child: Icon(
           Icons.drag_handle,
           color: cs.onSurfaceVariant,

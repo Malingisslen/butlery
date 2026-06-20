@@ -754,6 +754,8 @@ class _SkrivSjalvReceptViewContentState
                     if (controllers.length > 1)
                       IconButton(
                         icon: const Icon(Icons.delete),
+                        tooltip: context.l10n
+                            .commonRemoveLabel('$label ${index + 1}'),
                         onPressed: () => onRemove(index),
                       ),
                   ],
@@ -790,6 +792,8 @@ class _SkrivSjalvReceptViewContentState
                     if (controllers.length > 1)
                       IconButton(
                         icon: const Icon(Icons.delete),
+                        tooltip: context.l10n
+                            .commonRemoveLabel('$label ${index + 1}'),
                         onPressed: () => onRemove(index),
                       ),
                   ],

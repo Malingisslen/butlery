@@ -955,6 +955,7 @@
   "commonErrorOccurred": "An error occurred",
   "commonContinue": "Continue",
   "commonMore": "More",
+  "a11yRecipeMoreActions": "More recipe actions",
   "commonNext": "Next",
   "commonPrevious": "Previous",
   "commonSkip": "Skip",
