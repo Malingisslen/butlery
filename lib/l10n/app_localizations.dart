@@ -1688,6 +1688,84 @@ abstract class AppLocalizations {
   /// **'Kunde inte dela inköpslista'**
   String get chatCouldNotShareShoppingList;
 
+  /// No description provided for @chatSelectMenuWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj vecka att dela'**
+  String get chatSelectMenuWeek;
+
+  /// No description provided for @chatMenuWeekOption.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {weekNum}'**
+  String chatMenuWeekOption(int weekNum);
+
+  /// No description provided for @chatWeekCurrentSuffix.
+  ///
+  /// In sv, this message translates to:
+  /// **' (denna vecka)'**
+  String get chatWeekCurrentSuffix;
+
+  /// No description provided for @chatMenuShareTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckomeny v.{weekNum}'**
+  String chatMenuShareTitle(int weekNum);
+
+  /// No description provided for @chatCheckOutMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolla in min veckomeny!'**
+  String get chatCheckOutMenu;
+
+  /// No description provided for @chatNoMenuForWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen meny för den veckan'**
+  String get chatNoMenuForWeek;
+
+  /// No description provided for @chatSelectShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj inköpslista'**
+  String get chatSelectShoppingList;
+
+  /// No description provided for @chatCheckOutShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolla in min inköpslista!'**
+  String get chatCheckOutShoppingList;
+
+  /// No description provided for @chatNoShoppingLists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga inköpslistor än'**
+  String get chatNoShoppingLists;
+
+  /// No description provided for @chatAttachmentRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get chatAttachmentRecipe;
+
+  /// No description provided for @chatAttachmentMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny'**
+  String get chatAttachmentMenu;
+
+  /// No description provided for @chatAttachmentShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslista'**
+  String get chatAttachmentShoppingList;
+
+  /// No description provided for @chatAttachmentPhoto.
+  ///
+  /// In sv, this message translates to:
+  /// **'Foto'**
+  String get chatAttachmentPhoto;
+
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:

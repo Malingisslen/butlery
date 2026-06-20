@@ -10,9 +10,14 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/messaging_media_service.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selection_dialog.dart';
+import 'package:butlery/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart';
 import 'package:butlery/views/messaging/group_detail_view.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -417,11 +422,32 @@ class ChatActionHandler {
     AppLogger.info('Sharing menu');
 
     try {
-      // For menus, we'll send a special message type
-      // The menu selection would be handled by a dedicated dialog
-      _showInfoSnackBar(context.l10n.chatMenuSharingComingSoon);
+      // Weekly menus are keyed by ISO week — pick which week to share.
+      final weekStart = await showDialog<DateTime>(
+        context: context,
+        builder: (_) => const MenuWeekSelectionDialog(),
+      );
+      if (weekStart == null) return;
+
+      final plan =
+          await ServiceLocator.get<WeeklyMenuPlanService>().getWeek(weekStart);
+      if (!context.mounted) return;
+
+      if (plan.isEmpty) {
+        _showInfoSnackBar(context.l10n.chatNoMenuForWeek);
+        return;
+      }
+
+      final weekNum = IsoWeekUtils.isoWeekNumber(weekStart);
+      await _messagingService.sendMenuShare(
+        conversationId: conversationId,
+        menuId: plan.id,
+        menuTitle: context.l10n.chatMenuShareTitle(weekNum),
+        message: context.l10n.chatCheckOutMenu,
+      );
     } catch (e) {
       AppLogger.error('Failed to share menu', e);
+      if (!context.mounted) return;
       _showErrorSnackBar(context.l10n.chatCouldNotShareMenu);
     }
   }
@@ -430,10 +456,21 @@ class ChatActionHandler {
     AppLogger.info('Sharing shopping list');
 
     try {
-      // Shopping list sharing would involve selecting from user's lists
-      _showInfoSnackBar(context.l10n.chatShoppingListSharingComingSoon);
+      final list = await showDialog<UnifiedShoppingList>(
+        context: context,
+        builder: (_) => const ShoppingListSelectionDialog(),
+      );
+      if (list == null || !context.mounted) return;
+
+      await _messagingService.sendShoppingListShare(
+        conversationId: conversationId,
+        listId: list.id,
+        listTitle: list.name,
+        message: context.l10n.chatCheckOutShoppingList,
+      );
     } catch (e) {
       AppLogger.error('Failed to share shopping list', e);
+      if (!context.mounted) return;
       _showErrorSnackBar(context.l10n.chatCouldNotShareShoppingList);
     }
   }

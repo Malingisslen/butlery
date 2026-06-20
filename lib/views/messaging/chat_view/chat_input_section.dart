@@ -189,6 +189,72 @@ class _ChatInputSectionState extends State<ChatInputSection> {
     }
   }
 
+  /// Closes the attachment panel, then routes to the matching share flow.
+  /// Photo reuses the source-picker dialog; the rest delegate to the action
+  /// handler via [widget.onAttachment].
+  void _handleAttachmentTap(String type) {
+    if (mounted) {
+      setState(() {
+        _state = _state.copyWith(showAttachments: false);
+      });
+    }
+    if (type == 'photo') {
+      _handleImagePick();
+    } else {
+      widget.onAttachment(type);
+    }
+  }
+
+  Widget _buildAttachmentsPanel(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildAttachmentOption(context, Icons.restaurant_menu,
+                context.l10n.chatAttachmentRecipe, 'recipe'),
+          ),
+          Expanded(
+            child: _buildAttachmentOption(context, Icons.calendar_month,
+                context.l10n.chatAttachmentMenu, 'menu'),
+          ),
+          Expanded(
+            child: _buildAttachmentOption(context, Icons.shopping_cart,
+                context.l10n.chatAttachmentShoppingList, 'shopping_list'),
+          ),
+          Expanded(
+            child: _buildAttachmentOption(context, Icons.photo_outlined,
+                context.l10n.chatAttachmentPhoto, 'photo'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttachmentOption(
+      BuildContext context, IconData icon, String label, String type) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: () => _handleAttachmentTap(type),
+          icon: Icon(icon),
+          color: cs.primary,
+          tooltip: label,
+        ),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -220,15 +286,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Attachment options (shown above input when active)
-                if (_state.showAttachments)
-                  Container(
-                    margin:
-                        const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingL),
-                      child: Text(context.l10n.chatAttachmentTypes),
-                    ),
-                  ),
+                if (_state.showAttachments) _buildAttachmentsPanel(context),
 
                 // Main input row
                 Row(

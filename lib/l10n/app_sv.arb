@@ -703,6 +703,29 @@
   "chatCouldNotShareMenu": "Kunde inte dela meny",
   "chatShoppingListSharingComingSoon": "Inköpslistedelning kommer snart",
   "chatCouldNotShareShoppingList": "Kunde inte dela inköpslista",
+  "chatSelectMenuWeek": "Välj vecka att dela",
+  "chatMenuWeekOption": "Vecka {weekNum}",
+  "@chatMenuWeekOption": {
+    "placeholders": {
+      "weekNum": {"type": "int"}
+    }
+  },
+  "chatWeekCurrentSuffix": " (denna vecka)",
+  "chatMenuShareTitle": "Veckomeny v.{weekNum}",
+  "@chatMenuShareTitle": {
+    "placeholders": {
+      "weekNum": {"type": "int"}
+    }
+  },
+  "chatCheckOutMenu": "Kolla in min veckomeny!",
+  "chatNoMenuForWeek": "Ingen meny för den veckan",
+  "chatSelectShoppingList": "Välj inköpslista",
+  "chatCheckOutShoppingList": "Kolla in min inköpslista!",
+  "chatNoShoppingLists": "Du har inga inköpslistor än",
+  "chatAttachmentRecipe": "Recept",
+  "chatAttachmentMenu": "Meny",
+  "chatAttachmentShoppingList": "Inköpslista",
+  "chatAttachmentPhoto": "Foto",
   "chatLoadingImage": "Laddar bild...",
   "chatImageSent": "Bild skickad!",
   "chatNoImageSelected": "Ingen bild vald",

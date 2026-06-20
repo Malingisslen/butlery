@@ -977,6 +977,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatCouldNotShareShoppingList => 'Couldn\'t share shopping list';
 
   @override
+  String get chatSelectMenuWeek => 'Choose a week to share';
+
+  @override
+  String chatMenuWeekOption(int weekNum) {
+    return 'Week $weekNum';
+  }
+
+  @override
+  String get chatWeekCurrentSuffix => ' (this week)';
+
+  @override
+  String chatMenuShareTitle(int weekNum) {
+    return 'Weekly menu wk $weekNum';
+  }
+
+  @override
+  String get chatCheckOutMenu => 'Check out my weekly menu!';
+
+  @override
+  String get chatNoMenuForWeek => 'No menu for that week';
+
+  @override
+  String get chatSelectShoppingList => 'Choose a shopping list';
+
+  @override
+  String get chatCheckOutShoppingList => 'Check out my shopping list!';
+
+  @override
+  String get chatNoShoppingLists => 'You have no shopping lists yet';
+
+  @override
+  String get chatAttachmentRecipe => 'Recipe';
+
+  @override
+  String get chatAttachmentMenu => 'Menu';
+
+  @override
+  String get chatAttachmentShoppingList => 'Shopping list';
+
+  @override
+  String get chatAttachmentPhoto => 'Photo';
+
+  @override
   String get chatLoadingImage => 'Loading image...';
 
   @override

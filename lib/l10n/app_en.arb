@@ -697,6 +697,29 @@
   "chatCouldNotShareMenu": "Couldn't share menu",
   "chatShoppingListSharingComingSoon": "Shopping list sharing coming soon",
   "chatCouldNotShareShoppingList": "Couldn't share shopping list",
+  "chatSelectMenuWeek": "Choose a week to share",
+  "chatMenuWeekOption": "Week {weekNum}",
+  "@chatMenuWeekOption": {
+    "placeholders": {
+      "weekNum": {"type": "int"}
+    }
+  },
+  "chatWeekCurrentSuffix": " (this week)",
+  "chatMenuShareTitle": "Weekly menu wk {weekNum}",
+  "@chatMenuShareTitle": {
+    "placeholders": {
+      "weekNum": {"type": "int"}
+    }
+  },
+  "chatCheckOutMenu": "Check out my weekly menu!",
+  "chatNoMenuForWeek": "No menu for that week",
+  "chatSelectShoppingList": "Choose a shopping list",
+  "chatCheckOutShoppingList": "Check out my shopping list!",
+  "chatNoShoppingLists": "You have no shopping lists yet",
+  "chatAttachmentRecipe": "Recipe",
+  "chatAttachmentMenu": "Menu",
+  "chatAttachmentShoppingList": "Shopping list",
+  "chatAttachmentPhoto": "Photo",
   "chatLoadingImage": "Loading image...",
   "chatImageSent": "Image sent!",
   "chatNoImageSelected": "No image selected",

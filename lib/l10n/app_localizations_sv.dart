@@ -977,6 +977,49 @@ class AppLocalizationsSv extends AppLocalizations {
   String get chatCouldNotShareShoppingList => 'Kunde inte dela inköpslista';
 
   @override
+  String get chatSelectMenuWeek => 'Välj vecka att dela';
+
+  @override
+  String chatMenuWeekOption(int weekNum) {
+    return 'Vecka $weekNum';
+  }
+
+  @override
+  String get chatWeekCurrentSuffix => ' (denna vecka)';
+
+  @override
+  String chatMenuShareTitle(int weekNum) {
+    return 'Veckomeny v.$weekNum';
+  }
+
+  @override
+  String get chatCheckOutMenu => 'Kolla in min veckomeny!';
+
+  @override
+  String get chatNoMenuForWeek => 'Ingen meny för den veckan';
+
+  @override
+  String get chatSelectShoppingList => 'Välj inköpslista';
+
+  @override
+  String get chatCheckOutShoppingList => 'Kolla in min inköpslista!';
+
+  @override
+  String get chatNoShoppingLists => 'Du har inga inköpslistor än';
+
+  @override
+  String get chatAttachmentRecipe => 'Recept';
+
+  @override
+  String get chatAttachmentMenu => 'Meny';
+
+  @override
+  String get chatAttachmentShoppingList => 'Inköpslista';
+
+  @override
+  String get chatAttachmentPhoto => 'Foto';
+
+  @override
   String get chatLoadingImage => 'Laddar bild...';
 
   @override
