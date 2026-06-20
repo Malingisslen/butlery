@@ -7,6 +7,8 @@ import 'package:butlery/views/admin/metric_tab_view.dart';
 import 'package:butlery/views/admin/ops_log_view.dart';
 import 'package:butlery/views/admin/parsing_details_view.dart';
 import 'package:butlery/views/admin/widgets/anomaly_banner.dart';
+import 'package:butlery/views/admin/admin_url_state_stub.dart'
+    if (dart.library.js_interop) 'package:butlery/views/admin/admin_url_state_web.dart';
 
 /// Top-level admin shell: a NavigationRail switching between the admin tools.
 /// Reached only after the admin gate in `admin_main.dart`.
@@ -18,7 +20,20 @@ class AdminShell extends StatefulWidget {
 }
 
 class _AdminShellState extends State<AdminShell> {
-  int _index = 0;
+  late int _index = _initialIndex();
+
+  /// Initial tab from the URL (`?tab=<index>`), clamped to a valid tab.
+  int _initialIndex() {
+    final raw = Uri.base.queryParameters['tab'];
+    final parsed = raw == null ? null : int.tryParse(raw);
+    if (parsed == null) return 0;
+    return parsed.clamp(0, _pages.length - 1);
+  }
+
+  void _selectTab(int index) {
+    setState(() => _index = index);
+    writeTabParam(index);
+  }
 
   // Not const: the registry-driven tabs (MetricTabView) carry a closure for
   // their localized title, so the list is built per render. Migrating tabs are
@@ -65,7 +80,7 @@ class _AdminShellState extends State<AdminShell> {
               children: [
                 NavigationRail(
                   selectedIndex: _index,
-                  onDestinationSelected: (i) => setState(() => _index = i),
+                  onDestinationSelected: _selectTab,
                   labelType: NavigationRailLabelType.all,
                   destinations: [
                     NavigationRailDestination(
