@@ -2,21 +2,30 @@
  * BP1: Content moderation pipeline entry point.
  *
  * Triggered when a user submits a report (content moderation report).
- * - Logs the report to functions logger
  * - Increments a strike counter on the reported user (if known)
  * - Writes an admin system_events entry flagging review required
- * - Sends an email notification to the moderator address when configured
+ * - Logs a moderator-email payload when MODERATOR_EMAIL is configured
  *
  * Apple App Store guideline 1.2 and Google Play UGC policy require a
- * moderator path with 24-hour action capability. This trigger is the
- * entry point for that pipeline; actioning is performed via the
- * in-app moderator review screen (see lib/views/admin/).
+ * moderator path with 24-hour action capability. This trigger is the entry
+ * point; actioning happens via the in-app moderator review screen.
  *
- * Email delivery: reads the moderator address from env var MODERATOR_EMAIL.
- * Actual send is TODO — SendGrid / nodemailer / Firebase extension has not
- * been wired up yet. Until it is, the payload is logged at info level so
- * a human operator can monitor via Cloud Logging. Do NOT block report
- * intake on email-infra choice; this is an async notification channel.
+ * IDEMPOTENCY (pre-release audit WS3): `onDocumentCreated` is at-least-once —
+ * the same event can be delivered more than once. The old handler used
+ * `increment(1)` + `arrayUnion({..., createdAt: now()})` + `.add()`, all of
+ * which double-applied on a retry: inflated `totalReports` (could trip the
+ * auto-flag threshold a step early) and duplicate `system_events` rows in the
+ * moderator dashboard. This version is idempotent:
+ *   - the strike increment is guarded by a per-event marker claimed in the
+ *     SAME transaction, so a retried delivery never re-counts;
+ *   - `reportHistory` entries are deterministic (no per-run timestamp) so
+ *     arrayUnion dedupes;
+ *   - system_events use deterministic doc ids + set(merge) so retries
+ *     overwrite rather than duplicate.
+ * Re-throwing for retry is therefore safe.
+ *
+ * Email delivery is still stubbed (logged at info) until email infra lands —
+ * tracked by BUT-417. Do NOT block report intake on that.
  */
 
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
@@ -25,53 +34,94 @@ import * as admin from "firebase-admin";
 
 const db = admin.firestore();
 
-export const onReportCreated = onDocumentCreated(
-  "reports/{reportId}",
-  async (event) => {
-    const reportData = event.data?.data();
-    if (!reportData) return;
-    const reportId = event.params.reportId;
+/** Marker TTL — aligns with the 180-day audit-log retention. */
+const MARKER_RETENTION_DAYS = 180;
 
-    // Field names match the Dart ContentReport model (lib/models/social/content_report.dart).
-    const reporterId = reportData.reporterId as string;
-    const contentOwnerId = reportData.contentOwnerId as string | undefined;
-    const contentType = reportData.contentType as string;
-    const contentId = reportData.contentId as string;
-    const reason = reportData.reason as string;
-    const status = (reportData.status as string) ?? "new";
+const MODERATION_THRESHOLD = 5;
 
-    logger.info(
-      `New report ${reportId}: ${reporterId} reported ${contentType}/${contentId} ` +
-      `(owner=${contentOwnerId ?? "unknown"}, reason=${reason}, status=${status})`
-    );
+export interface ReportData {
+  reporterId: string;
+  contentOwnerId?: string;
+  contentType: string;
+  contentId: string;
+  reason: string;
+  status?: string;
+}
 
-    try {
-      // Strike counter — only meaningful when we know who owns the content.
-      if (contentOwnerId) {
-        const moderationRef = db.collection("user_moderation").doc(contentOwnerId);
-        await moderationRef.set(
+/**
+ * Idempotent core — exposed for tests. Safe to call more than once for the
+ * same [eventId]: the strike counter is incremented at most once per event.
+ */
+export async function processReport(
+  database: admin.firestore.Firestore,
+  params: { reportId: string; eventId: string; report: ReportData },
+): Promise<void> {
+  const { reportId, eventId, report } = params;
+  const { reporterId, contentOwnerId, contentType, contentId, reason } = report;
+  const status = report.status ?? "new";
+
+  let totalReports = 0;
+
+  // Strike counter — only meaningful when we know who owns the content.
+  if (contentOwnerId) {
+    const moderationRef = database.collection("user_moderation").doc(contentOwnerId);
+    const markerRef = database.collection("report_processing_markers").doc(eventId);
+
+    await database.runTransaction(async (tx) => {
+      const [markerSnap, modSnap] = await Promise.all([
+        tx.get(markerRef),
+        tx.get(moderationRef),
+      ]);
+      const current = (modSnap.data()?.totalReports as number | undefined) ?? 0;
+
+      // Already processed on a prior delivery — read the count for the
+      // threshold check below but do NOT re-increment.
+      if (markerSnap.exists) {
+        totalReports = current;
+        return;
+      }
+
+      totalReports = current + 1;
+      tx.set(
+        moderationRef,
+        {
+          totalReports: admin.firestore.FieldValue.increment(1),
+          lastReportedAt: admin.firestore.FieldValue.serverTimestamp(),
+          // Deterministic entry (no per-run timestamp) so arrayUnion dedupes
+          // even if this ever runs outside the marker guard.
+          reportHistory: admin.firestore.FieldValue.arrayUnion({
+            reportId,
+            reporterId,
+            reason,
+            contentType,
+            contentId,
+          }),
+        },
+        { merge: true },
+      );
+      tx.set(markerRef, {
+        reportId,
+        processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        expireAt: admin.firestore.Timestamp.fromDate(
+          new Date(Date.now() + MARKER_RETENTION_DAYS * 24 * 60 * 60 * 1000),
+        ),
+      });
+    });
+
+    if (totalReports >= MODERATION_THRESHOLD) {
+      // Structured + uid-prefix only — never interpolate a full UID (PII) into
+      // a log string (lands unredactable in Cloud Logging textPayload).
+      logger.warn("moderation_threshold_reached", {
+        owner_prefix: contentOwnerId.slice(0, 6),
+        totalReports,
+      });
+      // Deterministic id → retries (or repeated threshold crossings) update one
+      // alert doc instead of spamming duplicates.
+      await database
+        .collection("system_events")
+        .doc(`moderation_threshold_${contentOwnerId}`)
+        .set(
           {
-            totalReports: admin.firestore.FieldValue.increment(1),
-            lastReportedAt: admin.firestore.FieldValue.serverTimestamp(),
-            reportHistory: admin.firestore.FieldValue.arrayUnion({
-              reportId,
-              reporterId,
-              reason,
-              contentType,
-              contentId,
-              createdAt: admin.firestore.Timestamp.now(),
-            }),
-          },
-          { merge: true }
-        );
-
-        const moderationDoc = await moderationRef.get();
-        const totalReports = moderationDoc.data()?.totalReports ?? 0;
-        if (totalReports >= 5) {
-          logger.warn(
-            `User ${contentOwnerId} has ${totalReports} reports — flagged for review`
-          );
-          await db.collection("system_events").add({
             type: "moderation_threshold_reached",
             severity: "critical",
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -80,13 +130,19 @@ export const onReportCreated = onDocumentCreated(
               totalReports,
               action: "review_required",
             },
-          });
-        }
-      }
+          },
+          { merge: true },
+        );
+    }
+  }
 
-      // Admin system event — picked up by the in-app moderator review screen
-      // and by any downstream alerting/Ops dashboards.
-      await db.collection("system_events").add({
+  // Admin system event — deterministic id so a retried delivery overwrites the
+  // same doc rather than duplicating it in the moderator dashboard.
+  await database
+    .collection("system_events")
+    .doc(`content_report_${reportId}`)
+    .set(
+      {
         type: "content_report",
         severity: "warning",
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -100,30 +156,62 @@ export const onReportCreated = onDocumentCreated(
           status,
           requiresReview: true,
         },
-      });
+      },
+      { merge: true },
+    );
+}
 
-      // Email notification. Stubbed until email infra lands (SendGrid /
-      // nodemailer / Firebase Trigger Email extension). Logging the payload
-      // at info level keeps the moderation pipeline functional for now —
-      // operators can subscribe to Cloud Logging alerts on this entry.
+export const onReportCreated = onDocumentCreated(
+  "reports/{reportId}",
+  async (event) => {
+    const reportData = event.data?.data();
+    if (!reportData) return;
+    const reportId = event.params.reportId;
+
+    // Field names match the Dart ContentReport model
+    // (lib/models/social/content_report.dart).
+    const report: ReportData = {
+      reporterId: reportData.reporterId as string,
+      contentOwnerId: reportData.contentOwnerId as string | undefined,
+      contentType: reportData.contentType as string,
+      contentId: reportData.contentId as string,
+      reason: reportData.reason as string,
+      status: (reportData.status as string) ?? "new",
+    };
+
+    // Structured log with uid PREFIXES only (reporterId/contentOwnerId are
+    // Firebase UIDs = PII; contentId/reason/status are not).
+    logger.info("report_received", {
+      reportId,
+      reporter_prefix: report.reporterId?.slice(0, 6),
+      owner_prefix: report.contentOwnerId?.slice(0, 6) ?? "unknown",
+      contentType: report.contentType,
+      contentId: report.contentId,
+      reason: report.reason,
+      status: report.status,
+    });
+
+    try {
+      await processReport(db, { reportId, eventId: event.id, report });
+
+      // Email notification — stubbed until email infra lands (BUT-417).
       const moderatorEmail = process.env.MODERATOR_EMAIL;
       if (moderatorEmail) {
         logger.info(
           `[moderation-email:TODO] would dispatch to ${moderatorEmail} — ` +
-          `report=${reportId} type=${contentType} reason=${reason}`
+            `report=${reportId} type=${report.contentType} reason=${report.reason}`,
         );
-        // TODO(BUT-417): wire actual send (SendGrid / Firebase Trigger Email).
       } else {
         logger.warn(
           `[moderation-email] MODERATOR_EMAIL env var not set; skipping ` +
-          `notification for report ${reportId}`
+            `notification for report ${reportId}`,
         );
       }
 
       logger.info(`Report ${reportId} processed successfully`);
     } catch (error) {
       logger.error(`Failed to process report ${reportId}:`, error);
-      throw error; // Retry
+      throw error; // Retry — idempotent, so re-delivery is safe.
     }
-  }
+  },
 );
