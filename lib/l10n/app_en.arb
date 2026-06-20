@@ -7168,6 +7168,7 @@
   "importErrorCancelled": "Import was cancelled",
   "messagingPoll": "Poll",
   "shoppingListEmpty": "Empty shopping list",
+  "shoppingListEmptyHint": "Add items to get started.",
   "shoppingListAllBought": "All {count} items bought",
   "@shoppingListAllBought": {
     "placeholders": {

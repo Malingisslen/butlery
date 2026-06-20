@@ -557,22 +557,35 @@ class UnifiedShoppingItem {
     String? lastModifiedByDisplayName,
     DateTime? lastModifiedAt,
   }) {
+    // Effective bought state — copyWith callers editing an already-bought
+    // item's name/amount don't pass `bought`, so keying purchase attribution
+    // off the raw `bought` param wiped purchasedBy*/purchasedAt on every edit.
+    final effectiveBought = bought ?? this.bought;
+    // Only a genuine not-bought → bought transition (re)stamps the buyer/time;
+    // edits to an already-bought item preserve the original attribution.
+    final becameBought = bought == true && !this.bought;
     return UnifiedShoppingItem(
       id: id,
       name: name ?? this.name,
       amount: amount ?? this.amount,
       unit: unit ?? this.unit,
       category: category ?? this.category,
-      bought: bought ?? this.bought,
+      bought: effectiveBought,
       addedByUserId: addedByUserId,
       addedByDisplayName: addedByDisplayName,
       addedAt: addedAt,
-      purchasedByUserId:
-          bought == true ? (lastModifiedByUserId ?? purchasedByUserId) : null,
-      purchasedByDisplayName: bought == true
-          ? (lastModifiedByDisplayName ?? purchasedByDisplayName)
+      purchasedByUserId: effectiveBought
+          ? (becameBought
+              ? (lastModifiedByUserId ?? purchasedByUserId)
+              : purchasedByUserId)
           : null,
-      purchasedAt: bought == true ? clock.now() : null,
+      purchasedByDisplayName: effectiveBought
+          ? (becameBought
+              ? (lastModifiedByDisplayName ?? purchasedByDisplayName)
+              : purchasedByDisplayName)
+          : null,
+      purchasedAt:
+          effectiveBought ? (becameBought ? clock.now() : purchasedAt) : null,
       lastModifiedByUserId: lastModifiedByUserId ?? this.lastModifiedByUserId,
       lastModifiedByDisplayName:
           lastModifiedByDisplayName ?? this.lastModifiedByDisplayName,

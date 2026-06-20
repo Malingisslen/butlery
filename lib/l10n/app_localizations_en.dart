@@ -11183,6 +11183,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingListEmpty => 'Empty shopping list';
 
   @override
+  String get shoppingListEmptyHint => 'Add items to get started.';
+
+  @override
   String shoppingListAllBought(int count) {
     return 'All $count items bought';
   }

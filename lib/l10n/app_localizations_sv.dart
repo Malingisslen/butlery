@@ -11210,6 +11210,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingListEmpty => 'Tom handlingslista';
 
   @override
+  String get shoppingListEmptyHint => 'Lägg till varor för att komma igång.';
+
+  @override
   String shoppingListAllBought(int count) {
     return 'Alla $count artiklar köpta';
   }

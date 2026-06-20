@@ -171,6 +171,59 @@ void main() {
         expect(updated.lastModifiedByDisplayName, equals('Modifier Name'));
         expect(updated.lastModifiedAt, isNotNull);
       });
+
+      test('editing a bought item preserves purchase attribution (regression)',
+          () {
+        // A previously-purchased item.
+        final bought = testItem.copyWith(
+          bought: true,
+          lastModifiedByUserId: 'buyer_1',
+          lastModifiedByDisplayName: 'Buyer One',
+        );
+        expect(bought.purchasedByUserId, equals('buyer_1'));
+        final purchasedAt = bought.purchasedAt;
+        expect(purchasedAt, isNotNull);
+
+        // Editing the name WITHOUT passing `bought` must NOT wipe the buyer
+        // or re-stamp the purchase time (the pre-fix bug nulled all three).
+        final renamed = bought.copyWith(name: 'Lättmjölk');
+        expect(renamed.bought, isTrue);
+        expect(renamed.purchasedByUserId, equals('buyer_1'),
+            reason: 'editing a bought item must keep the buyer');
+        expect(renamed.purchasedByDisplayName, equals('Buyer One'));
+        expect(renamed.purchasedAt, equals(purchasedAt),
+            reason: 'must not re-stamp purchasedAt on a non-purchase edit');
+      });
+
+      test('unmarking a bought item clears purchase attribution', () {
+        final bought = testItem.copyWith(
+          bought: true,
+          lastModifiedByUserId: 'buyer_1',
+          lastModifiedByDisplayName: 'Buyer One',
+        );
+        final unbought = bought.copyWith(bought: false);
+        expect(unbought.purchasedByUserId, isNull);
+        expect(unbought.purchasedByDisplayName, isNull);
+        expect(unbought.purchasedAt, isNull);
+      });
+
+      test('re-marking an already-bought item keeps the original buyer/time',
+          () {
+        // Guards the `becameBought = bought == true && !this.bought` clause: a
+        // no-op re-mark must NOT overwrite the original buyer or re-stamp time.
+        final bought = testItem.copyWith(
+          bought: true,
+          lastModifiedByUserId: 'buyer_1',
+          lastModifiedByDisplayName: 'Buyer One',
+        );
+        final reBought = bought.copyWith(
+          bought: true,
+          lastModifiedByUserId: 'someone_else',
+        );
+        expect(reBought.purchasedByUserId, equals('buyer_1'));
+        expect(reBought.purchasedByDisplayName, equals('Buyer One'));
+        expect(reBought.purchasedAt, equals(bought.purchasedAt));
+      });
     });
 
     group('togglePurchased', () {

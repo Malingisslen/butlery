@@ -204,7 +204,11 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     }
 
     if (!viewModel.hasItems) {
-      return StateWidget.noShoppingList(
+      // A list exists but is empty — distinct from "no list at all" above, so
+      // the copy must say "list is empty", not "no list to derive from".
+      return StateWidget.empty(
+        title: context.l10n.shoppingListEmpty,
+        subtitle: context.l10n.shoppingListEmptyHint,
         actionLabel: context.l10n.shoppingAddItem,
         onAction: widget.onAddItem,
       );

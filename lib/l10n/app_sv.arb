@@ -7224,6 +7224,7 @@
   "importErrorCancelled": "Importen avbröts",
   "messagingPoll": "Omröstning",
   "shoppingListEmpty": "Tom handlingslista",
+  "shoppingListEmptyHint": "Lägg till varor för att komma igång.",
   "shoppingListAllBought": "Alla {count} artiklar köpta",
   "@shoppingListAllBought": {
     "placeholders": {

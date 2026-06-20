@@ -18981,6 +18981,12 @@ abstract class AppLocalizations {
   /// **'Tom handlingslista'**
   String get shoppingListEmpty;
 
+  /// No description provided for @shoppingListEmptyHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till varor för att komma igång.'**
+  String get shoppingListEmptyHint;
+
   /// No description provided for @shoppingListAllBought.
   ///
   /// In sv, this message translates to:

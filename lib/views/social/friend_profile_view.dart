@@ -356,12 +356,21 @@ class _FriendProfileViewState extends State<FriendProfileView> {
 
     if (shouldRemove == true && context.mounted) {
       final success = await _friendsViewModel.removeFriend(friend.uid);
-      if (success && context.mounted) {
+      if (!context.mounted) return;
+      if (success) {
         SnackBarUtils.showSuccess(
           context,
           context.l10n.socialFriendRemoved(friend.displayName),
         );
         Navigator.of(context).pop(); // Go back to friends list
+      } else {
+        // Was silently swallowed: a network/permission failure left the
+        // friend in place with no feedback. Surface it (matching the
+        // friend_request_actions sibling flow).
+        SnackBarUtils.showError(
+          context,
+          context.l10n.socialCouldNotRemoveFriend,
+        );
       }
     }
   }
