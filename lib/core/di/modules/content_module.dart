@@ -114,6 +114,7 @@ import 'package:butlery/repositories/recipe_stats_repository.dart';
 import 'package:butlery/repositories/ops_log_repository.dart';
 import 'package:butlery/repositories/parse_events_repository.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
+import 'package:butlery/repositories/daily_snapshot_repository.dart';
 import 'package:butlery/services/admin/metrics_assembler.dart';
 
 // Parser feedback loop (correction tracking + remote weight updates)
@@ -481,15 +482,21 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<AnomalyRepository>(
         () => AnomalyRepository(),
       );
+      container.registerLazySingleton<DailySnapshotRepository>(
+        () => DailySnapshotRepository(),
+      );
 
       // Metric-registry assembler: fetches admin data per category (lazy) and
       // runs the pure resolvers. Fetchers wrap the existing admin repositories.
       container.registerLazySingleton<MetricsAssembler>(
-        () => MetricsAssembler([
-          RecipeCategoryFetcher(container<RecipeStatsRepository>()),
-          ImportCategoryFetcher(container<SiteConfigRepository>()),
-          EngagementCategoryFetcher(container<EngagementRepository>()),
-        ]),
+        () => MetricsAssembler(
+          [
+            RecipeCategoryFetcher(container<RecipeStatsRepository>()),
+            ImportCategoryFetcher(container<SiteConfigRepository>()),
+            EngagementCategoryFetcher(container<EngagementRepository>()),
+          ],
+          snapshots: container<DailySnapshotRepository>(),
+        ),
       );
 
       // Firebase Storage instance for model loaders

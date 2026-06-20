@@ -6,6 +6,7 @@ import 'package:butlery/models/admin/metrics/resolvers.dart';
 import 'package:butlery/models/admin/engagement_stats.dart';
 import 'package:butlery/models/admin/recipe_stats.dart';
 import 'package:butlery/models/parsing/site_config.dart';
+import 'package:butlery/repositories/daily_snapshot_repository.dart';
 import 'package:butlery/repositories/engagement_repository.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
@@ -60,10 +61,21 @@ class EngagementCategoryFetcher implements CategoryFetcher {
 /// every tab), caches each raw slice, then runs the pure resolvers.
 class MetricsAssembler {
   final Map<MetricCategory, CategoryFetcher> _fetchers;
+  final DailySnapshotRepository? _snapshots;
   final Map<MetricCategory, Object> _cache = {};
+  final Map<String, Map<String, dynamic>?> _snapshotCache = {};
 
-  MetricsAssembler(List<CategoryFetcher> fetchers)
-      : _fetchers = {for (final f in fetchers) f.category: f};
+  /// Groups whose latest daily snapshot feeds a delta `previous` (the non-time-
+  /// series tabs). Engagement deltas come from its own daily series instead.
+  static const _snapshotGroups = {
+    MetricCategory.recipes: 'recipes',
+    MetricCategory.importHealth: 'import_health',
+  };
+
+  MetricsAssembler(List<CategoryFetcher> fetchers,
+      {DailySnapshotRepository? snapshots})
+      : _fetchers = {for (final f in fetchers) f.category: f},
+        _snapshots = snapshots;
 
   /// Resolve [keys] for display. Fetches each needed category (cached unless
   /// [force]), assembles the snapshot, runs the pure resolvers.
@@ -78,7 +90,15 @@ class MetricsAssembler {
         _cache.remove(c);
       }
     }
-    await Future.wait(categories.map(_ensureFetched));
+    if (force) {
+      for (final c in categories) {
+        _snapshotCache.remove(_snapshotGroups[c]);
+      }
+    }
+    await Future.wait([
+      ...categories.map(_ensureFetched),
+      ...categories.map(_ensureSnapshot),
+    ]);
     final data = _assemble();
     final result = <MetricKey, MetricValue>{};
     for (final k in keys) {
@@ -100,10 +120,22 @@ class MetricsAssembler {
     _cache[category] = await fetcher.fetch();
   }
 
+  /// Fetch the latest daily snapshot for a category that supports deltas.
+  Future<void> _ensureSnapshot(MetricCategory category) async {
+    final group = _snapshotGroups[category];
+    final repo = _snapshots;
+    if (group == null || repo == null || _snapshotCache.containsKey(group)) {
+      return;
+    }
+    _snapshotCache[group] = await repo.getLatest(group);
+  }
+
   /// Build the snapshot from cached slices. Grows one field per migrated tab.
   InsightsData _assemble() => InsightsData(
         recipes: _cache[MetricCategory.recipes] as RecipeStats?,
         importConfigs: _cache[MetricCategory.importHealth] as List<SiteConfig>?,
         engagement: _cache[MetricCategory.engagement] as EngagementRaw?,
+        recipeSnapshot: _snapshotCache['recipes'],
+        importSnapshot: _snapshotCache['import_health'],
       );
 }

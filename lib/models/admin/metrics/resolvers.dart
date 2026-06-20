@@ -50,8 +50,21 @@ List<SiteConfig> _activeImportConfigs(InsightsData data) {
   return active;
 }
 
+/// Prior success-rate (%) from an import snapshot's totals, or null.
+num? _snapshotRate(Map<String, dynamic>? snapshot) {
+  if (snapshot == null) return null;
+  final success = (snapshot['totalSuccess'] as num?) ?? 0;
+  final failure = (snapshot['totalFailure'] as num?) ?? 0;
+  final total = success + failure;
+  if (total == 0) return null;
+  return (success / total * 100).round();
+}
+
 final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
-  MetricKey.recipeTotal: (data, l10n) => ScalarMetric(data.recipes!.total),
+  MetricKey.recipeTotal: (data, l10n) => ScalarMetric(
+        data.recipes!.total,
+        previous: (data.recipeSnapshot?['total'] as num?),
+      ),
   MetricKey.recipeByMethod: (data, l10n) {
     final stats = data.recipes!;
     return BreakdownMetric([
@@ -59,18 +72,27 @@ final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
         BreakdownRow(_recipeMethodLabel(l10n, m), stats.count(m)),
     ]);
   },
-  MetricKey.importDomains: (data, l10n) =>
-      ScalarMetric(_activeImportConfigs(data).length),
+  MetricKey.importDomains: (data, l10n) => ScalarMetric(
+        _activeImportConfigs(data).length,
+        previous: (data.importSnapshot?['byDomain'] as Map?)?.length,
+      ),
   MetricKey.importSuccess: (data, l10n) => ScalarMetric(
-      _activeImportConfigs(data).fold(0, (s, c) => s + c.successCount)),
+        _activeImportConfigs(data).fold(0, (s, c) => s + c.successCount),
+        previous: data.importSnapshot?['totalSuccess'] as num?,
+      ),
   MetricKey.importFailure: (data, l10n) => ScalarMetric(
-      _activeImportConfigs(data).fold(0, (s, c) => s + c.failureCount)),
+        _activeImportConfigs(data).fold(0, (s, c) => s + c.failureCount),
+        previous: data.importSnapshot?['totalFailure'] as num?,
+      ),
   MetricKey.importSuccessRate: (data, l10n) {
     final active = _activeImportConfigs(data);
     final success = active.fold(0, (s, c) => s + c.successCount);
     final failure = active.fold(0, (s, c) => s + c.failureCount);
     final total = success + failure;
-    return ScalarMetric(total == 0 ? 0 : (success / total * 100).round());
+    return ScalarMetric(
+      total == 0 ? 0 : (success / total * 100).round(),
+      previous: _snapshotRate(data.importSnapshot),
+    );
   },
   MetricKey.importDomainTable: (data, l10n) {
     final active = _activeImportConfigs(data);

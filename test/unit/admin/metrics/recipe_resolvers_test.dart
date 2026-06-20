@@ -31,6 +31,26 @@ void main() {
     expect(value.isEmpty, isFalse);
   });
 
+  test('recipeTotal carries the snapshot total as previous for a delta', () {
+    final data = InsightsData(
+      recipes: const RecipeStats(total: 12, byMethod: {}),
+      recipeSnapshot: const {'total': 10},
+    );
+    final value = resolvers[MetricKey.recipeTotal]!(data, l10n) as ScalarMetric;
+    expect(value.value, 12);
+    expect(value.previous, 10);
+    expect(value.deltaPercent, 20); // (12-10)/10*100
+  });
+
+  test('recipeTotal has no previous when there is no snapshot yet', () {
+    final data = InsightsData(
+      recipes: const RecipeStats(total: 3, byMethod: {}),
+    );
+    final value = resolvers[MetricKey.recipeTotal]!(data, l10n) as ScalarMetric;
+    expect(value.previous, isNull);
+    expect(value.deltaPercent, isNull);
+  });
+
   test('recipeByMethod resolves to a fixed-order localized breakdown', () {
     final data = InsightsData(
       recipes: const RecipeStats(

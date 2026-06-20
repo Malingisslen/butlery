@@ -18,5 +18,16 @@ class InsightsData {
   /// User count + recent daily feature-retention aggregates.
   final EngagementRaw? engagement;
 
-  const InsightsData({this.recipes, this.importConfigs, this.engagement});
+  /// Latest daily snapshot per group (for delta `previous` on the non-time-
+  /// series tabs). Null until the nightly snapshot jobs have written one.
+  final Map<String, dynamic>? recipeSnapshot;
+  final Map<String, dynamic>? importSnapshot;
+
+  const InsightsData({
+    this.recipes,
+    this.importConfigs,
+    this.engagement,
+    this.recipeSnapshot,
+    this.importSnapshot,
+  });
 }

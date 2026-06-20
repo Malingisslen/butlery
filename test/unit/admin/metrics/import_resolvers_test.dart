@@ -23,8 +23,10 @@ SiteConfig _cfg(String domain, {required int success, required int fail}) =>
     );
 
 MetricValue _resolve(
-        MetricKey key, List<SiteConfig> configs, AppLocalizations l10n) =>
-    resolvers[key]!(InsightsData(importConfigs: configs), l10n);
+        MetricKey key, List<SiteConfig> configs, AppLocalizations l10n,
+        {Map<String, dynamic>? snapshot}) =>
+    resolvers[key]!(
+        InsightsData(importConfigs: configs, importSnapshot: snapshot), l10n);
 
 void main() {
   late AppLocalizations l10n;
@@ -84,6 +86,24 @@ void main() {
     expect(value.cells.first, [0, 3, 0]);
     // ok.se row: 5 success, 0 fail, 100% rate
     expect(value.cells.last, [5, 0, 100]);
+  });
+
+  test('import scalars carry snapshot totals as previous for deltas', () {
+    final configs = [_cfg('a.se', success: 8, fail: 2)];
+    const snapshot = {
+      'totalSuccess': 6,
+      'totalFailure': 2,
+      'byDomain': {'a.se': {}, 'b.se': {}},
+    };
+    final success =
+        _resolve(MetricKey.importSuccess, configs, l10n, snapshot: snapshot)
+            as ScalarMetric;
+    expect(success.value, 8);
+    expect(success.previous, 6);
+    final domains =
+        _resolve(MetricKey.importDomains, configs, l10n, snapshot: snapshot)
+            as ScalarMetric;
+    expect(domains.previous, 2); // two domains in the snapshot
   });
 
   test('empty configs yield an empty matrix (no crash)', () {
