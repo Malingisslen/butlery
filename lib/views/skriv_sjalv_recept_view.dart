@@ -739,16 +739,10 @@ class _SkrivSjalvReceptViewContentState
                         maxLines: null,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
-                        onChanged: (value) {
-                          onUpdate(index, value);
-                          if (index == controllers.length - 1 &&
-                              value.trim().isNotEmpty &&
-                              value.length == 1) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              onAdd();
-                            });
-                          }
-                        },
+                        // No auto-grow on the first character — it was jarring
+                        // (a new empty field popped in mid-type). Use the
+                        // explicit "+ Add" button below to add a row.
+                        onChanged: (value) => onUpdate(index, value),
                       ),
                     ),
                     if (controllers.length > 1)
@@ -777,16 +771,10 @@ class _SkrivSjalvReceptViewContentState
                         maxLines: null,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
-                        onChanged: (value) {
-                          onUpdate(index, value);
-                          if (index == controllers.length - 1 &&
-                              value.trim().isNotEmpty &&
-                              value.length == 1) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              onAdd();
-                            });
-                          }
-                        },
+                        // No auto-grow on the first character — it was jarring
+                        // (a new empty field popped in mid-type). Use the
+                        // explicit "+ Add" button below to add a row.
+                        onChanged: (value) => onUpdate(index, value),
                       ),
                     ),
                     if (controllers.length > 1)
