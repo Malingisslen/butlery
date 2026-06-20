@@ -114,6 +114,35 @@ Stek små plättar i plättlagg.''';
       verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
     });
 
+    test('saveSelectedRecipes continues past a failure and counts it',
+        () async {
+      // First save fails, second succeeds → partial: ok stays true (the saved
+      // one is kept), failure count is 1, and BOTH were attempted.
+      var call = 0;
+      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer((_) async {
+        call++;
+        return call == 1
+            ? RecipeOperationResult.failure('boom')
+            : RecipeOperationResult.success('Added');
+      });
+      final ok = await vm.saveSelectedRecipes([
+        RecipeFactory.build(id: 'bad', title: 'Bad'),
+        RecipeFactory.build(id: 'good', title: 'Good'),
+      ]);
+      expect(ok, isTrue);
+      expect(vm.lastSaveFailureCount, 1);
+      verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(2);
+    });
+
+    test('saveSelectedRecipes reports a hard failure when every save fails',
+        () async {
+      when(() => mockPersonalOps.addUnifiedRecipe(any()))
+          .thenAnswer((_) async => RecipeOperationResult.failure('boom'));
+      final ok = await vm
+          .saveSelectedRecipes([RecipeFactory.build(id: 'r1', title: 'A')]);
+      expect(ok, isFalse);
+    });
+
     // BUT-903 multi-page: collect ordered photos, OCR each, concatenate in
     // order before one parse.
     group('multi-page combine (BUT-903)', () {

@@ -228,11 +228,13 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     final ok = await viewModel.saveSelectedRecipes(selected);
     if (!context.mounted) return;
+    final failed = viewModel.lastSaveFailureCount;
+    final saved = selected.length - failed;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           ok
-              ? context.l10n.importComplete(selected.length, 0)
+              ? context.l10n.importComplete(saved, failed)
               : context.l10n.errorGeneric,
         ),
       ),

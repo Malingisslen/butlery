@@ -465,17 +465,28 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// Save the recipes the user ticked in the multi-recipe picker. Uses the
   /// import-layer save per recipe; heirloom attachment is intentionally NOT
   /// applied here — a multi-recipe page is not a single heirloom scan.
+  int _lastSaveFailureCount = 0;
+
+  /// How many recipes failed in the most recent [saveSelectedRecipes] batch.
+  /// Lets the view show a partial-failure summary ("X saved, Y failed").
+  int get lastSaveFailureCount => _lastSaveFailureCount;
+
   Future<bool> saveSelectedRecipes(List<Recipe> recipes) async {
     if (recipes.isEmpty) {
       setError(AppLocale.current.errorNoRecipeToSave);
       return false;
     }
     return executeAsyncVoid(() async {
+      // Save every recipe, continuing past individual failures so one bad
+      // recipe doesn't drop the rest. Only a total failure is a hard error;
+      // a partial one keeps the saved recipes and reports the failed count.
+      _lastSaveFailureCount = 0;
       for (final recipe in recipes) {
         final result = await importManager.saveImportedRecipe(recipe);
-        if (!result.isSuccess) {
-          throw Exception(result.errorMessage ?? 'Failed to save recipe');
-        }
+        if (!result.isSuccess) _lastSaveFailureCount++;
+      }
+      if (_lastSaveFailureCount == recipes.length) {
+        throw Exception(AppLocale.current.errorGeneric);
       }
     });
   }
