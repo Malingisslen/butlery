@@ -3,6 +3,11 @@
 /// Verifies that each known route maps to the expected navigator action,
 /// and that missing/unknown routes default to home + log analytics so push
 /// CTR can be measured even on edge cases.
+///
+/// Recipe-bearing routes (`/recipe`, `/comment_thread`) resolve the id to a
+/// full [Recipe] before navigating — the recipeDetail route requires a
+/// Recipe object, not an id string (the pre-release-audit B2 fix). The fetch
+/// is injected as a test seam so these tests never touch Firebase.
 library;
 
 import 'package:flutter/material.dart';
@@ -11,10 +16,13 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/notifications/notification_deep_link_router.dart';
+
+import '../../../infrastructure/factories/recipe_factory.dart';
 
 class _FakeAnalyticsRepository extends Fake implements AnalyticsRepository {
   final List<_LoggedEvent> events = <_LoggedEvent>[];
@@ -59,6 +67,11 @@ class _RecordingNavigator extends Mock implements NavigatorState {
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) =>
       '_RecordingNavigator';
 
+  // The router guards navigation with `navigator.mounted` after the async
+  // recipe fetch. A live navigator is the default for these routing tests.
+  @override
+  bool get mounted => true;
+
   @override
   Future<T?> pushNamed<T extends Object?>(
     String routeName, {
@@ -96,6 +109,18 @@ void main() {
     late _FakeAnalyticsRepository analyticsRepo;
     late AnalyticsService analytics;
     late NotificationDeepLinkRouter router;
+    late List<String> fetchedIds;
+    // Reassignable per-test so a test can force a null (recipe not accessible)
+    // result. Defaults to resolving any id to a stub Recipe.
+    late Future<Recipe?> Function(String id) fetchRecipe;
+
+    /// Drains the microtask queue enough for the fire-and-forget async
+    /// navigation (`unawaited(_openRecipe...)`) to run: one turn for the
+    /// recipe fetch, one for the subsequent pushNamed.
+    Future<void> drain() async {
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+    }
 
     setUpAll(() {
       registerFallbackValue(ConsentPurpose.analytics);
@@ -105,6 +130,11 @@ void main() {
       nav = _RecordingNavigator();
       analyticsRepo = _FakeAnalyticsRepository();
       analytics = AnalyticsService(repository: analyticsRepo);
+      fetchedIds = <String>[];
+      fetchRecipe = (id) async {
+        fetchedIds.add(id);
+        return RecipeFactory.build(id: id);
+      };
       // Without a consent service the AnalyticsService check-fails-closed
       // and would suppress every event. The router test doesn't care about
       // GDPR — wire a permissive stub so we can observe events directly
@@ -115,19 +145,21 @@ void main() {
       router = NotificationDeepLinkRouter(
         navigatorResolver: () => nav,
         analyticsResolver: () => analytics,
+        fetchRecipe: (id) => fetchRecipe(id),
       );
     });
 
-    test('recipe route pushes recipe detail with target id', () async {
+    test('recipe route resolves id and pushes recipe detail', () async {
       router.handle('/recipe', {'id': 'abc123', 'notificationType': 'share'});
-      // Wait one microtask for the analytics fire-and-forget.
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
+      expect(fetchedIds, <String>['abc123']);
       expect(nav.calls, hasLength(1));
       expect(nav.calls.single.kind, 'push');
       expect(nav.calls.single.route, Routes.recipeDetail);
-      final args = nav.calls.single.arguments as Map<String, String?>;
-      expect(args['id'], 'abc123');
+      final args = nav.calls.single.arguments as Map<String, dynamic>;
+      expect((args['recipe'] as Recipe).id, 'abc123');
+      expect(args['scrollToComments'], isFalse);
 
       final event = analyticsRepo.events
           .firstWhere((e) => e.name == 'notification_opened');
@@ -139,42 +171,67 @@ void main() {
         () async {
       router.handle(
           '/comment_thread', {'id': 'r1', 'notificationType': 'comment'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.recipeDetail);
       final args = nav.calls.single.arguments as Map<String, dynamic>;
-      expect(args['id'], 'r1');
+      expect((args['recipe'] as Recipe).id, 'r1');
       expect(args['scrollToComments'], isTrue);
+    });
+
+    test('recipe route falls back to home when recipe is not accessible',
+        () async {
+      // `read` is user-scoped → returns null for a recipe the current user
+      // can't see (e.g. a stale notification about a friend's recipe). Must
+      // land on home, never the "page not found" error route.
+      fetchRecipe = (id) async => null;
+
+      router.handle('/recipe', {'id': 'gone', 'notificationType': 'share'});
+      await drain();
+
+      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+      expect(nav.calls.single.route, Routes.home);
+    });
+
+    test('recipe route falls back to home when fetch throws', () async {
+      fetchRecipe = (id) async => throw Exception('network down');
+
+      router.handle('/recipe', {'id': 'x', 'notificationType': 'share'});
+      await drain();
+
+      expect(nav.calls.single.route, Routes.home);
     });
 
     test('friend_request route opens friend requests inbox', () async {
       router.handle('/friend_request',
           {'id': null, 'notificationType': 'friend_request'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.friendRequests);
     });
 
-    test('cooking_session route opens cooking mode with session id', () async {
+    test('cooking_session route falls back to home (no live sender)', () async {
+      // `targetId` is a cooking-session id, not a recipeId, and no Cloud
+      // Function emits this route yet — it must land on home, not the error
+      // screen, until a real session→recipe resolver exists.
       router.handle(
           '/cooking_session', {'id': 'sess42', 'notificationType': 'cooking'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
-      expect(nav.calls.single.route, Routes.cookingMode);
-      final args = nav.calls.single.arguments as Map<String, String?>;
-      expect(args['id'], 'sess42');
+      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+      expect(nav.calls.single.route, Routes.home);
     });
 
     test('menu_voting route opens realtime menu', () async {
       router.handle('/menu_voting', {'id': null, 'notificationType': 'menu'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.realtimeMenu);
     });
 
     test('winback route lands on home (push and remove until)', () async {
       router.handle('/winback', {'id': null, 'notificationType': 'winback'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.kind, 'pushAndRemoveUntil');
       expect(nav.calls.single.route, Routes.home);
@@ -184,7 +241,7 @@ void main() {
         () async {
       // Legacy in-flight notification payload — no `route` field.
       router.handle(null, {'id': null, 'notificationType': null});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.home);
       expect(nav.calls.single.kind, 'pushAndRemoveUntil');
@@ -197,7 +254,7 @@ void main() {
       // NotificationService normalizes a null route to '' before forwarding;
       // the router must treat empty the same as null.
       router.handle('', {'id': null, 'notificationType': null});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.home);
       final names = analyticsRepo.events.map((e) => e.name).toList();
@@ -210,7 +267,7 @@ void main() {
       // could ship a new route string before the client knows about it.
       router.handle(
           '/unsupported_route_v9', {'id': 'x', 'notificationType': 'rogue'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.home);
       final names = analyticsRepo.events.map((e) => e.name).toList();
@@ -227,10 +284,11 @@ void main() {
       final routerNoNav = NotificationDeepLinkRouter(
         navigatorResolver: () => null,
         analyticsResolver: () => analytics,
+        fetchRecipe: (id) => fetchRecipe(id),
       );
       // Should not throw.
       routerNoNav.handle('/recipe', {'id': 'abc', 'notificationType': 'x'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls, isEmpty);
       // The event was still logged.
@@ -239,21 +297,23 @@ void main() {
     });
 
     test('recipe route with null/empty target id falls back to home', () async {
-      // Without a recipe id the detail screen has nothing to render.
+      // Without a recipe id there's nothing to resolve — never reaches fetch.
       router.handle('/recipe', {'id': null, 'notificationType': 'share'});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.home);
+      expect(fetchedIds, isEmpty);
     });
 
     test('does not crash on null analytics', () async {
       final routerNoAnalytics = NotificationDeepLinkRouter(
         navigatorResolver: () => nav,
         analyticsResolver: () => null,
+        fetchRecipe: (id) => fetchRecipe(id),
       );
       // Should not throw.
       routerNoAnalytics.handle(null, const <String, String?>{});
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(nav.calls.single.route, Routes.home);
     });
@@ -279,6 +339,7 @@ void main() {
         navigatorResolver: () => nav,
         analyticsResolver: () => analytics,
         recordOpened: seam,
+        fetchRecipe: (id) => fetchRecipe(id),
       );
 
       routerWithSeam.handle('/recipe', const {
@@ -286,8 +347,7 @@ void main() {
         'notificationId': 'msg-abc',
         'notificationType': 'recipe_shared',
       });
-      // One microtask for the fire-and-forget recorder.
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(calls, hasLength(1));
       expect(calls.single.notificationId, 'msg-abc');
@@ -312,6 +372,7 @@ void main() {
         navigatorResolver: () => nav,
         analyticsResolver: () => analytics,
         recordOpened: seam,
+        fetchRecipe: (id) => fetchRecipe(id),
       );
 
       // No `notificationId` key — server-side dedup requires one,
@@ -320,7 +381,7 @@ void main() {
         'id': 'recipe-1',
         'notificationType': 'recipe_shared',
       });
-      await Future<void>.delayed(Duration.zero);
+      await drain();
 
       expect(calls, isEmpty);
       // Navigation still happened — analytics path unaffected.
@@ -347,6 +408,7 @@ void main() {
         navigatorResolver: () => nav,
         analyticsResolver: () => analytics,
         recordOpened: failingSeam,
+        fetchRecipe: (id) => fetchRecipe(id),
       );
 
       routerWithSeam.handle('/recipe', const {
@@ -354,13 +416,9 @@ void main() {
         'notificationId': 'msg-abc',
         'notificationType': 'recipe_shared',
       });
-      // Navigation is synchronous — assert immediately.
+      // Navigation is async now (after the recipe fetch) — drain first.
+      await drain();
       expect(nav.calls.single.route, Routes.recipeDetail);
-
-      // Drain the rejected Future so .catchError fires before the test
-      // ends. Two microtasks: one for the seam, one for the catchError.
-      await Future<void>.delayed(Duration.zero);
-      await Future<void>.delayed(Duration.zero);
     });
   });
 }

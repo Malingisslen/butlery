@@ -92,35 +92,75 @@ class _MenuPlacementViewContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<MenuPlacementViewModel>();
     final cs = Theme.of(context).colorScheme;
-    return BaseScaffold(
-      title: context.l10n.menuPlacementTitle,
-      actions: [
-        Center(
-          child: Container(
-            margin:
-                const EdgeInsetsDirectional.only(end: AppDimensions.spacingMd),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-            decoration: BoxDecoration(
-              border: Border.all(color: cs.onPrimary.withValues(alpha: 0.4)),
-            ),
-            child: Text(
-              context.l10n.menuPlacementProgress(vm.placedCount, vm.totalCount),
-              style: AppTextStyles.labelSmall.copyWith(
-                color: cs.onPrimary,
-                fontWeight: FontWeight.w600,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) return;
+        if (vm.hasPlacements) {
+          final shouldPop = await _showDiscardDialog(context) ?? false;
+          if (shouldPop && context.mounted) {
+            Navigator.of(context).pop();
+          }
+        } else {
+          Navigator.of(context).pop();
+        }
+      },
+      child: BaseScaffold(
+        title: context.l10n.menuPlacementTitle,
+        actions: [
+          Center(
+            child: Container(
+              margin: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.spacingMd),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                border: Border.all(color: cs.onPrimary.withValues(alpha: 0.4)),
+              ),
+              child: Text(
+                context.l10n
+                    .menuPlacementProgress(vm.placedCount, vm.totalCount),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: cs.onPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
-      ],
-      body: vm.plan == null
-          ? (vm.hasError
-              ? StateWidget.error(
-                  message: vm.error ?? context.l10n.errorUnexpected,
-                  onAction: vm.init,
-                )
-              : StateWidget.loading())
-          : _buildBody(context, vm),
+        ],
+        body: vm.plan == null
+            ? (vm.hasError
+                ? StateWidget.error(
+                    message: vm.error ?? context.l10n.errorUnexpected,
+                    onAction: vm.init,
+                  )
+                : StateWidget.loading())
+            : _buildBody(context, vm),
+      ),
+    );
+  }
+
+  /// Confirms before discarding an in-progress placement session — the view
+  /// holds placements in memory until "Klar", so popping otherwise loses them
+  /// silently (BUT-954 hard-destructive: unsaved user work, no undo path).
+  Future<bool?> _showDiscardDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.recipeUnsavedChangesTitle),
+        content: Text(context.l10n.confirmUnsavedChanges),
+        actions: [
+          ActionButtons.secondaryButton(
+            context,
+            label: context.l10n.recipeContinueEditing,
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.recipeLeaveWithoutSaving,
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
     );
   }
 

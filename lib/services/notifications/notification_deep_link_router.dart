@@ -21,11 +21,16 @@
 /// in analytics.
 library;
 
+import 'dart:async';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 
@@ -73,20 +78,36 @@ typedef RecordNotificationOpenedFn = Future<void> Function({
   String? route,
 });
 
+/// Type of the test-seam callback that resolves a recipeId to a full
+/// [Recipe]. Production wiring reads through the user-scoped
+/// [RecipeRepository]; tests inject a fake to drive the navigation branches
+/// without Firebase. Returns null when the recipe is missing or not
+/// accessible to the current user (`read` is user-scoped).
+typedef RecipeFetchFn = Future<Recipe?> Function(String id);
+
 /// Handles a notification tap by navigating using [navigator] and logging
 /// a `notification_opened` analytics event.
 class NotificationDeepLinkRouter {
   final NavigatorState? Function() _navigatorResolver;
   final AnalyticsService? Function() _analyticsResolver;
   final RecordNotificationOpenedFn _recordOpened;
+  final RecipeFetchFn _fetchRecipe;
 
   NotificationDeepLinkRouter({
     required NavigatorState? Function() navigatorResolver,
     required AnalyticsService? Function() analyticsResolver,
     RecordNotificationOpenedFn? recordOpened,
+    RecipeFetchFn? fetchRecipe,
   })  : _navigatorResolver = navigatorResolver,
         _analyticsResolver = analyticsResolver,
-        _recordOpened = recordOpened ?? _defaultRecordOpened;
+        _recordOpened = recordOpened ?? _defaultRecordOpened,
+        _fetchRecipe = fetchRecipe ?? _defaultFetchRecipe;
+
+  /// Default production wiring — resolves a recipeId through the user-scoped
+  /// [RecipeRepository]. Returns null for a recipe the current user can't
+  /// read (e.g. another user's recipe referenced by a stale notification).
+  static Future<Recipe?> _defaultFetchRecipe(String id) =>
+      ServiceLocator.get<RecipeRepository>().read(id);
 
   /// Default production wiring — invokes the `recordNotificationOpened`
   /// callable in the europe-west1 region (where every Cloud Function for
@@ -216,11 +237,9 @@ class NotificationDeepLinkRouter {
     switch (route) {
       case NotificationRoutes.recipe:
         if (_isNonEmpty(targetId)) {
-          // Recipe detail uses Routes.recipeDetail. The screen accepts
-          // either a Recipe object or a recipe-id string under the 'id'
-          // key — we pass the data map verbatim and let the route handler
-          // decide which path to take.
-          navigator.pushNamed(Routes.recipeDetail, arguments: data);
+          // The recipeDetail route requires a resolved Recipe object — an id
+          // string alone routes to the error screen. Resolve it first.
+          unawaited(_openRecipe(navigator, targetId!, scrollToComments: false));
         } else {
           // Without an id we can't resolve a recipe — go home rather than
           // pushing a broken detail screen.
@@ -229,15 +248,9 @@ class NotificationDeepLinkRouter {
         break;
       case NotificationRoutes.commentThread:
         if (_isNonEmpty(targetId)) {
-          // Reuse the recipe detail route; the receiving widget reads
-          // `scrollToComments` from arguments to auto-expand the thread.
-          navigator.pushNamed(
-            Routes.recipeDetail,
-            arguments: <String, dynamic>{
-              'id': targetId,
-              'scrollToComments': true,
-            },
-          );
+          // Same recipeDetail route; the receiving widget reads
+          // `scrollToComments` to auto-expand the thread.
+          unawaited(_openRecipe(navigator, targetId!, scrollToComments: true));
         } else {
           _goHome(navigator);
         }
@@ -246,11 +259,11 @@ class NotificationDeepLinkRouter {
         navigator.pushNamed(Routes.friendRequests);
         break;
       case NotificationRoutes.cookingSession:
-        if (_isNonEmpty(targetId)) {
-          navigator.pushNamed(Routes.cookingMode, arguments: data);
-        } else {
-          _goHome(navigator);
-        }
+        // No Cloud Function emits this route yet, and `targetId` is a cooking
+        // *session* id (not a recipeId), so it can't be resolved to the
+        // Recipe that CookingModeView requires. Land on home rather than the
+        // error screen until a real session→recipe resolver exists.
+        _goHome(navigator);
         break;
       case NotificationRoutes.menuVoting:
         // Menu voting is a section of the realtime menu screen. The
@@ -263,8 +276,45 @@ class NotificationDeepLinkRouter {
     }
   }
 
+  /// Resolves [id] to a full Recipe before navigating, because the
+  /// recipeDetail route requires a Recipe (not an id string). Mirrors
+  /// `DeepLinkHandler._handleRecipeLink`. Fire-and-forget: a fetch error or a
+  /// null result (recipe missing, or owned by another user — `read` is
+  /// user-scoped) falls back to home instead of the "page not found" screen.
+  Future<void> _openRecipe(
+    NavigatorState navigator,
+    String id, {
+    required bool scrollToComments,
+  }) async {
+    Recipe? recipe;
+    try {
+      recipe = await _fetchRecipe(id);
+    } catch (e) {
+      AppLogger.warning('🔔 Notification recipe fetch failed for $id: $e');
+    }
+    if (recipe == null) {
+      AppLogger.info(
+          '🔔 Notification recipe $id unavailable — falling back to home');
+      _goHome(navigator);
+      return;
+    }
+    // The fetch is async — the user may have navigated away (navigator
+    // unmounted) while it ran. Pushing on a detached navigator throws.
+    if (!navigator.mounted) {
+      AppLogger.info('🔔 Navigator unmounted after recipe fetch — skipping');
+      return;
+    }
+    navigator.pushNamed(
+      Routes.recipeDetail,
+      arguments: <String, dynamic>{
+        'recipe': recipe,
+        'scrollToComments': scrollToComments,
+      },
+    );
+  }
+
   void _goHome(NavigatorState? navigator) {
-    if (navigator == null) return;
+    if (navigator == null || !navigator.mounted) return;
     // pushNamedAndRemoveUntil so deep-link traversal doesn't pile screens
     // on the back stack when a user re-enters the app via push.
     navigator.pushNamedAndRemoveUntil(Routes.home, (route) => false);
