@@ -422,8 +422,16 @@ class _AuthViewState extends State<AuthView> {
                 width: double.infinity,
                 height: AppDimensions.buttonHeight,
                 child: OutlinedButton(
-                  onPressed:
-                      viewModel.isLoading ? null : viewModel.toggleAuthMode,
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () {
+                          // Clear mode-specific state so switching login<->signup
+                          // doesn't carry a stale password, name, or age tick.
+                          _passwordController.clear();
+                          _nameController.clear();
+                          setState(() => _ageConfirmed = false);
+                          viewModel.toggleAuthMode();
+                        },
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: cs.primary),
                     shape: const RoundedRectangleBorder(),

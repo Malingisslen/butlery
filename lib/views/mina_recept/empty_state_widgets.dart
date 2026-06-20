@@ -140,6 +140,14 @@ class MinaReceptOnboardingBanner extends StatelessWidget {
               },
               child: Text(context.l10n.onboardingSkippedBannerAction),
             ),
+            // Explicit dismiss — swipe-to-dismiss alone isn't discoverable.
+            IconButton(
+              onPressed: viewModel.dismissOnboardingBanner,
+              icon: const Icon(Icons.close),
+              iconSize: AppDimensions.iconSizeM,
+              tooltip: context.l10n.commonClose,
+              color: cs.primary,
+            ),
           ],
         ),
       ),
