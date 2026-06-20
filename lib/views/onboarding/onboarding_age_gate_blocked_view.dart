@@ -8,9 +8,25 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/loading_indicator.dart';
 
-class OnboardingAgeGateBlockedView extends StatelessWidget {
+class OnboardingAgeGateBlockedView extends StatefulWidget {
   const OnboardingAgeGateBlockedView({super.key});
+
+  @override
+  State<OnboardingAgeGateBlockedView> createState() =>
+      _OnboardingAgeGateBlockedViewState();
+}
+
+class _OnboardingAgeGateBlockedViewState
+    extends State<OnboardingAgeGateBlockedView> {
+  bool _isSigningOut = false;
+
+  Future<void> _handleSignOut() async {
+    setState(() => _isSigningOut = true);
+    await _signOutAndCleanup();
+    if (mounted) setState(() => _isSigningOut = false);
+  }
 
   /// BUT-946: a supportive, parent-mediated path. Shows an info dialog rather
   /// than a real consent flow (that's the larger BUT-674) — it points the child
@@ -31,7 +47,7 @@ class OnboardingAgeGateBlockedView extends StatelessWidget {
     );
   }
 
-  Future<void> _signOutAndCleanup(BuildContext context) async {
+  Future<void> _signOutAndCleanup() async {
     final authService = ServiceLocator.get<AuthService>();
 
     // Best-effort: delete the Firebase Auth user so no orphan account remains
@@ -94,18 +110,24 @@ class OnboardingAgeGateBlockedView extends StatelessWidget {
                       height: AppDimensions.buttonHeight,
                       child: ElevatedButton(
                         key: const Key('onboarding_age_gate_signout_button'),
-                        onPressed: () => _signOutAndCleanup(context),
+                        onPressed: _isSigningOut ? null : _handleSignOut,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: cs.primary,
                           foregroundColor: cs.surfaceContainerHighest,
                           shape: const RoundedRectangleBorder(),
                         ),
-                        child: Text(
-                          context.l10n.onboardingAgeGateSignOut,
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: cs.surfaceContainerHighest,
-                          ),
-                        ),
+                        child: _isSigningOut
+                            ? LoadingIndicator(
+                                size: AppDimensions.iconSizeM,
+                                strokeWidth: 2,
+                                color: cs.surfaceContainerHighest,
+                              )
+                            : Text(
+                                context.l10n.onboardingAgeGateSignOut,
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  color: cs.surfaceContainerHighest,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingMd),

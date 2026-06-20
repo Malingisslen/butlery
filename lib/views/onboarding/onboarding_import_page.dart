@@ -165,6 +165,15 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               viewModel.error!,
               style: AppTextStyles.bodySmall.copyWith(color: cs.error),
             ),
+            const SizedBox(height: AppDimensions.spacingS),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                onPressed: () => _handleImport(viewModel),
+                icon: const Icon(Icons.refresh),
+                label: Text(context.l10n.commonRetry),
+              ),
+            ),
           ],
 
           const SizedBox(height: AppDimensions.spacingMd),
