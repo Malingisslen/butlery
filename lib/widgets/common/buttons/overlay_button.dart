@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/theme_constants.dart';
 
 /// Reusable overlay button component
 /// Provides consistent styling for buttons overlaid on content.
@@ -33,8 +34,9 @@ class OverlayButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor ??
-            cs.surface.withValues(alpha: AppDimensions.opacityVeryDark),
+        // Dark scrim behind the light icon — the previous light-surface scrim
+        // gave a light-on-light icon with poor contrast over photos.
+        color: backgroundColor ?? ThemeConstants.blackOverlay60,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: IconButton(
