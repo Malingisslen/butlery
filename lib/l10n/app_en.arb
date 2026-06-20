@@ -723,6 +723,7 @@
   "chatMessagingDisabled": "Messaging is temporarily disabled.",
   "veckomenyHeaderTitle": "weekly\nmenu",
   "minaReceptHeaderTitle": "your\nrecipes",
+  "feedRecipeUnavailable": "This recipe isn't available",
   "chatLoadingImage": "Loading image...",
   "chatImageSent": "Image sent!",
   "chatNoImageSelected": "No image selected",

@@ -1030,6 +1030,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get minaReceptHeaderTitle => 'dina\nrecept';
 
   @override
+  String get feedRecipeUnavailable => 'Receptet är inte tillgängligt';
+
+  @override
   String get chatLoadingImage => 'Laddar bild...';
 
   @override

@@ -1784,6 +1784,12 @@ abstract class AppLocalizations {
   /// **'dina\nrecept'**
   String get minaReceptHeaderTitle;
 
+  /// No description provided for @feedRecipeUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är inte tillgängligt'**
+  String get feedRecipeUnavailable;
+
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:

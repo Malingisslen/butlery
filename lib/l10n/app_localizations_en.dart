@@ -1029,6 +1029,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get minaReceptHeaderTitle => 'your\nrecipes';
 
   @override
+  String get feedRecipeUnavailable => 'This recipe isn\'t available';
+
+  @override
   String get chatLoadingImage => 'Loading image...';
 
   @override

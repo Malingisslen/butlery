@@ -16,6 +16,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Activity feed tab in the friends view.
 class FeedTab {
@@ -350,14 +351,20 @@ class FeedTab {
     try {
       final recipeRepo = ServiceLocator.get<RecipeRepository>();
       final recipe = await recipeRepo.read(recipeId);
-      if (recipe != null && context.mounted) {
+      if (!context.mounted) return;
+      if (recipe != null) {
         Navigator.of(context).pushNamed(
           Routes.recipeDetail,
           arguments: recipe,
         );
+      } else {
+        // read() is user-scoped: a friend's recipe (or a deleted one) returns
+        // null. Give feedback instead of failing the tap silently.
+        SnackBarUtils.showError(context, context.l10n.feedRecipeUnavailable);
       }
     } catch (_) {
-      // Recipe may have been deleted
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, context.l10n.feedRecipeUnavailable);
     }
   }
 
