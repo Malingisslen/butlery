@@ -39,6 +39,17 @@ void main() {
       );
     });
 
+    testWidgets('does not auto-select a year on render (GDPR Art 8 gate)',
+        (tester) async {
+      await tester.pumpWidget(_testApp(viewModel: viewModel));
+      await tester.pumpAndSettle();
+
+      // Compliance: the gate must not pre-fill an adult default that would let
+      // the user pass without an explicit age declaration.
+      expect(viewModel.selectedBirthYear, isNull);
+      expect(viewModel.isAgeGatePassed, isFalse);
+    });
+
     testWidgets(
         'selecting an adult year updates the viewmodel and clears the gate',
         (tester) async {
@@ -51,9 +62,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final adultYear = DateTime.now().year - 25;
-      // Menu items render multiple matches (selected + option rows). The
-      // last() one is the menu entry; tapping it commits the selection.
+      // No value is pre-selected now (GDPR gate), so the menu opens scrolled
+      // to the top (youngest years first). Pick an adult year near the top so
+      // it renders without scrolling. age 16 >= 15 -> passes the gate.
+      final adultYear = DateTime.now().year - 16;
       await tester.tap(find.text(adultYear.toString()).last);
       await tester.pumpAndSettle();
 

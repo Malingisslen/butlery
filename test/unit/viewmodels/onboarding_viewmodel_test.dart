@@ -209,42 +209,45 @@ void main() {
       });
     });
 
-    group('birth-year default seeding (bug 2)', () {
-      test(
-          'seedDefaultBirthYearIfUnset seeds currentYear-30 and enables the '
-          'age gate (selectedBirthYear non-null, gate passed)', () {
-        expect(viewModel.selectedBirthYear, isNull,
-            reason: 'no selection before the page is shown');
-
-        final seeded = viewModel.seedDefaultBirthYearIfUnset();
-
-        expect(seeded, isTrue);
-        expect(viewModel.selectedBirthYear, viewModel.defaultBirthYear,
-            reason: 'the displayed default must become a real selection so '
-                'Next is enabled on the first screen');
-        expect(viewModel.isAgeGatePassed, isTrue,
-            reason: 'a 30-year-old default passes the 15-year threshold');
+    group('age gate requires an explicit choice (GDPR Art 8)', () {
+      test('does not auto-select a birth year on init', () {
+        // Compliance: pre-seeding an adult default would let anyone tap Next
+        // without declaring their age. The gate must stay unset until a pick.
+        expect(viewModel.selectedBirthYear, isNull);
+        expect(viewModel.isAgeGatePassed, isFalse,
+            reason: 'an unanswered gate must never count as passed');
       });
 
-      test('seedDefaultBirthYearIfUnset is a no-op once the user has picked',
-          () {
-        viewModel.setBirthYear(1990);
-
-        final seeded = viewModel.seedDefaultBirthYearIfUnset();
-
-        expect(seeded, isFalse,
-            reason: 'a deliberate pick must never be clobbered by the default');
-        expect(viewModel.selectedBirthYear, 1990);
+      test('passes only after an adult year is explicitly selected', () {
+        viewModel.setBirthYear(DateTime.now().year - 30);
+        expect(viewModel.isAgeGatePassed, isTrue);
       });
 
-      test('seeding the default still lets the under-15 block engage', () {
-        viewModel.seedDefaultBirthYearIfUnset(); // 30yo default -> passes
+      test('fails when the explicitly selected year is under 15', () {
+        viewModel.setBirthYear(DateTime.now().year - 10);
+        expect(viewModel.selectedBirthYear, isNotNull);
+        expect(viewModel.isAgeGatePassed, isFalse,
+            reason:
+                'the GDPR age block must engage on a deliberate young pick');
+      });
+
+      test('clearing the selection re-locks the gate', () {
+        viewModel.setBirthYear(DateTime.now().year - 30);
         expect(viewModel.isAgeGatePassed, isTrue);
 
-        // User changes the year to a 10-year-old -> gate must now fail.
-        viewModel.setBirthYear(DateTime.now().year - 10);
-        expect(viewModel.isAgeGatePassed, isFalse,
-            reason: 'seeding the default must not weaken the GDPR age block');
+        viewModel.setBirthYear(null);
+        expect(viewModel.selectedBirthYear, isNull);
+        expect(viewModel.isAgeGatePassed, isFalse);
+      });
+
+      test('pins the 15-year threshold exactly (15 passes, 14 fails)', () {
+        // The Swedish DPA / GDPR Art 8 cutoff is a hard legal boundary, so the
+        // exact edge is pinned: a `>=`→`>` or minAge change must fail here.
+        viewModel.setBirthYear(DateTime.now().year - 15);
+        expect(viewModel.isAgeGatePassed, isTrue, reason: 'age 15 must pass');
+
+        viewModel.setBirthYear(DateTime.now().year - 14);
+        expect(viewModel.isAgeGatePassed, isFalse, reason: 'age 14 must fail');
       });
     });
 

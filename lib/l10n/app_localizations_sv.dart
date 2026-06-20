@@ -9023,6 +9023,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get onboardingAgeGateBirthYearLabel => 'Födelseår';
 
   @override
+  String get onboardingAgeGateBirthYearHint => 'Välj ditt födelseår';
+
+  @override
   String get onboardingAgeGatePrivacyNote =>
       'Vi lagrar bara året, inte hela datumet.';
 

@@ -89,22 +89,11 @@ class OnboardingViewModel extends BaseViewModel {
     return age != null && age >= minAgeYears;
   }
 
-  /// Sensible default shown on the age-gate dropdown (currentYear - 30). The
-  /// dropdown displays this even before the user touches it, so we seed the VM
-  /// with it too (see [seedDefaultBirthYearIfUnset]) — otherwise `Next` stays
-  /// disabled on the first screen for the perfectly valid default.
-  int get defaultBirthYear => clock.now().year - 30;
-
-  /// Seeds [selectedBirthYear] with [defaultBirthYear] the first time the
-  /// age-gate is shown, so the default is a real selection (enables `Next`).
-  /// No-op once the user has made any choice — re-showing the page (back-nav)
-  /// must never clobber a deliberate pick. Returns true if it seeded.
-  bool seedDefaultBirthYearIfUnset() {
-    if (_selectedBirthYear != null) return false;
-    _selectedBirthYear = defaultBirthYear;
-    notifyListeners();
-    return true;
-  }
+  // Compliance (GDPR Art 8): the age gate must NOT auto-select a birth year.
+  // Pre-seeding an adult default would let anyone — including an under-age
+  // child — tap "Next" without ever declaring their age, defeating the gate.
+  // `selectedBirthYear` therefore stays null until the user picks explicitly,
+  // and the wizard keeps "Next" disabled while it is null.
 
   void setBirthYear(int? year) {
     _selectedBirthYear = year;

@@ -15213,6 +15213,12 @@ abstract class AppLocalizations {
   /// **'Födelseår'**
   String get onboardingAgeGateBirthYearLabel;
 
+  /// No description provided for @onboardingAgeGateBirthYearHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ditt födelseår'**
+  String get onboardingAgeGateBirthYearHint;
+
   /// No description provided for @onboardingAgeGatePrivacyNote.
   ///
   /// In sv, this message translates to:

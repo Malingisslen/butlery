@@ -9007,6 +9007,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingAgeGateBirthYearLabel => 'Birth year';
 
   @override
+  String get onboardingAgeGateBirthYearHint => 'Choose your birth year';
+
+  @override
   String get onboardingAgeGatePrivacyNote =>
       'We only store the year, not the full date.';
 

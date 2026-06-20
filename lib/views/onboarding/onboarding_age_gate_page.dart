@@ -16,12 +16,9 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    // Seed the VM with the displayed default so `Next` is enabled immediately
-    // for the sensible default (idempotent — no-op once the user has picked).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      viewModel.seedDefaultBirthYearIfUnset();
-    });
-
+    // No default is pre-selected: GDPR Art 8 requires a deliberate age
+    // declaration, so the dropdown starts on a "choose a year" hint and the
+    // wizard keeps `Next` disabled until the user picks (see OnboardingViewModel).
     final currentYear = clock.now().year;
     // Range: oldest = 100 yrs ago, youngest = 13 (hard floor; 15-year Swedish
     // threshold is enforced by `isAgeGatePassed` after selection).
@@ -30,8 +27,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final years = [
       for (int y = youngestYear; y >= oldestYear; y--) y,
     ];
-    final defaultYear = viewModel.defaultBirthYear;
-    final selected = viewModel.selectedBirthYear ?? defaultYear;
+    final selected = viewModel.selectedBirthYear;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
@@ -55,8 +51,9 @@ class OnboardingAgeGatePage extends StatelessWidget {
           // that fails the accessibility contract on wide layouts.
           DropdownButtonFormField<int>(
             key: const Key('onboarding_age_gate_birth_year_dropdown'),
-            initialValue: years.contains(selected) ? selected : defaultYear,
+            initialValue: years.contains(selected) ? selected : null,
             isExpanded: true,
+            hint: Text(context.l10n.onboardingAgeGateBirthYearHint),
             decoration: InputDecoration(
               labelText: context.l10n.onboardingAgeGateBirthYearLabel,
               border: const OutlineInputBorder(),

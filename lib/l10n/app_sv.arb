@@ -6109,6 +6109,7 @@
   "onboardingAgeGateTitle": "Hur gammal är du?",
   "onboardingAgeGateSubtitle": "Vi behöver veta ditt födelseår för att följa svenska regler för sociala appar (GDPR Art 8).",
   "onboardingAgeGateBirthYearLabel": "Födelseår",
+  "onboardingAgeGateBirthYearHint": "Välj ditt födelseår",
   "onboardingAgeGatePrivacyNote": "Vi lagrar bara året, inte hela datumet.",
   "onboardingAgeGateContinue": "Fortsätt",
   "onboardingAgeGateTooYoungTitle": "Butlery är för 15 år och uppåt",
