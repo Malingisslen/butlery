@@ -1,6 +1,6 @@
 # Accepted Large Files
 
-**Last Updated**: 2026-05-06 (135 files >500 lines, re-counted post BUT-768 cleanup)
+**Last Updated**: 2026-06-21 (148 files >500 lines, re-counted; was 135 on 2026-05-06)
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
@@ -10,7 +10,7 @@ Recount with `bash tools/count_large_files.sh` to keep this header honest.
 
 - **31 files refactored** across 10 batches (latest two: facade-extract `mina_recept_view`, module-extract `firebase_recipe_repository`)
 - **~9,500 lines reduced** total (cumulative across the program)
-- **135 files currently >500 lines** in lib/ (documented below with reasons; expect ±2 churn as new module extractions land their helper files above the threshold)
+- **148 files currently >500 lines** in lib/ (documented below with reasons; expect ±2 churn as new module extractions land their helper files above the threshold). The 2026-06-21 +13 drift is largely the WS10 privacy log-masking sweep, which added a `log_sanitizer` import to ~44 files — a few sitting at 499 crossed the line.
 
 ## Generated / Data Files
 

@@ -3,7 +3,7 @@
 ## File Size
 - 500 lines max. Use facade pattern for larger files.
 - Exemplary: `recipe_form_viewmodel.dart` - delegates to 6 focused managers
-- **135 files currently >500 lines** (re-counted 2026-05-06 after BUT-768 cleanup; was claimed as 33) — see `/docs/architecture/ACCEPTED_LARGE_FILES.md` for the rationale per file. Don't refactor these without reviewing the rationale first. Run `bash tools/count_large_files.sh` to recount.
+- **148 files currently >500 lines** (re-counted 2026-06-21; was 135 on 2026-05-06 — drift includes the WS10 privacy log-masking sweep adding an import to ~44 files) — see `/docs/architecture/ACCEPTED_LARGE_FILES.md` for the rationale per file. Don't refactor these without reviewing the rationale first. Run `bash tools/count_large_files.sh` to recount.
 
 ## Service Access
 - `ServiceLocator.get<T>()` — constructor injection in DI modules, ServiceLocator in widgets/ViewModels
