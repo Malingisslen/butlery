@@ -12,7 +12,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/views/mina_recept_view.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/gestures.dart';
@@ -617,9 +617,12 @@ class _AuthViewState extends State<AuthView> {
       AppLogger.debug(
           'AuthView: LOGIN SUCCESS - Direct navigation to main app');
 
+      // Route into the main nav shell (LayoutScaffolds.mainMenu), not the bare
+      // MinaReceptView — the bare view has no bottom navigation bar, so logging
+      // in used to land on a recipe list with no nav until the user moved tabs.
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const MinaReceptView(),
+          builder: (context) => LayoutScaffolds.mainMenu(initialIndex: 0),
         ),
       );
     }
