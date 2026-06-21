@@ -10,21 +10,26 @@
 ///    pending is idempotent: NO second doc write, NO second notification.
 ///    Without this, a double-tap or re-open spams the owner.
 /// 3. `acceptRecipeShareRequest` shares the recipe with the *requester* (by
-///    uid) and flips the request status to accepted. This is the "accept →
-///    share" primitive the owner runs.
+///    uid) by adding them to the ORIGINAL recipe's memberPermissions (via
+///    [SocialRecipeCoordinator.shareRecipeWithUsers]) and flips the request
+///    status to accepted. This is the "accept → share" primitive the owner
+///    runs. Sharing in place (not creating a new collaborative copy) is what
+///    makes the recipe readable to the requester — the read path keys off the
+///    original doc.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/social_request.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
@@ -79,38 +84,11 @@ class _FakeSocialRequestRepository extends Fake
   }
 }
 
-/// Records `shareRecipe` calls and returns a programmable result.
-class _FakeSocialRecipeOperations extends Fake
-    implements SocialRecipeOperations {
-  final List<Map<String, Object?>> shareCalls = [];
-  String? shareResult = 'shared-collab-id';
-
-  @override
-  Future<String?> shareRecipe({
-    required String recipeId,
-    required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
-    String? collaborativeDescription,
-    bool allowGuestViewing = false,
-    bool allowMemberInvites = true,
-    List<String>? categoryIds,
-  }) async {
-    shareCalls.add({
-      'recipeId': recipeId,
-      'memberIds': memberIds,
-      'memberDisplayNames': memberDisplayNames,
-    });
-    return shareResult;
-  }
-}
-
-class _FakeUnifiedRecipeService extends Fake implements UnifiedRecipeService {
-  _FakeUnifiedRecipeService(this._social);
-  final _FakeSocialRecipeOperations _social;
-
-  @override
-  SocialRecipeOperations get social => _social;
-}
+/// Mocktail mock of the coordinator that owns the in-place share. The accept
+/// flow now goes through [SocialRecipeCoordinator.shareRecipeWithUsers], which
+/// adds the requester to the ORIGINAL recipe's memberPermissions.
+class _MockSocialRecipeCoordinator extends Mock
+    implements SocialRecipeCoordinator {}
 
 /// Spy notification service: counts `sendImmediateNotification` invocations and
 /// records the strategy + additionalData so we can assert deterministic content.
@@ -158,31 +136,39 @@ void main() {
   late _FakePermissionService permission;
   late _FakeUserService userService;
   late _FakeSocialRequestRepository requestRepo;
-  late _FakeSocialRecipeOperations socialOps;
-  late _FakeUnifiedRecipeService recipeService;
+  late _MockSocialRecipeCoordinator coordinator;
   late _SpyNotificationService notifier;
   late RecipeShareRequestModule module;
 
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
+    registerFallbackValue(<String>[]);
+    registerFallbackValue(ResourcePermission.viewer);
   });
 
   setUp(() {
     permission = _FakePermissionService()..setUserId('me-uid');
     userService = _FakeUserService();
     requestRepo = _FakeSocialRequestRepository();
-    socialOps = _FakeSocialRecipeOperations();
-    recipeService = _FakeUnifiedRecipeService(socialOps);
+    coordinator = _MockSocialRecipeCoordinator();
     notifier = _SpyNotificationService();
+
+    // Default: the in-place share succeeds. Individual tests override.
+    when(() => coordinator.shareRecipeWithUsers(any(), any(), any()))
+        .thenAnswer((_) async => true);
 
     if (GetIt.instance.isRegistered<NotificationService>()) {
       GetIt.instance.unregister<NotificationService>();
     }
     GetIt.instance.registerSingleton<NotificationService>(notifier);
 
+    if (GetIt.instance.isRegistered<SocialRecipeCoordinator>()) {
+      GetIt.instance.unregister<SocialRecipeCoordinator>();
+    }
+    GetIt.instance.registerSingleton<SocialRecipeCoordinator>(coordinator);
+
     module = RecipeShareRequestModule(
       socialRequestRepository: requestRepo,
-      recipeService: recipeService,
       permissionService: permission,
       userService: userService,
     );
@@ -191,6 +177,9 @@ void main() {
   tearDown(() {
     if (GetIt.instance.isRegistered<NotificationService>()) {
       GetIt.instance.unregister<NotificationService>();
+    }
+    if (GetIt.instance.isRegistered<SocialRecipeCoordinator>()) {
+      GetIt.instance.unregister<SocialRecipeCoordinator>();
     }
   });
 
@@ -304,19 +293,22 @@ void main() {
           fromUserName: 'Alex',
         );
 
-    test('shares recipe with requester and flips status to accepted', () async {
+    test(
+        'adds requester to the ORIGINAL recipe in place and flips status to accepted',
+        () async {
       final req = makeRequest();
 
       final ok = await module.acceptRecipeShareRequest(req);
 
       expect(ok, isTrue);
 
-      // Shared with the requester's uid, carrying their stored display name.
-      expect(socialOps.shareCalls, hasLength(1));
-      final call = socialOps.shareCalls.single;
-      expect(call['recipeId'], 'recipe-1');
-      expect(call['memberIds'], ['requester-uid']);
-      expect((call['memberDisplayNames'] as Map)['requester-uid'], 'Alex');
+      // In-place share: requester added to the ORIGINAL recipe id as viewer.
+      // This is what makes the recipe readable to the requester.
+      verify(() => coordinator.shareRecipeWithUsers(
+            'recipe-1',
+            ['requester-uid'],
+            ResourcePermission.viewer,
+          )).called(1);
 
       // Status flipped to accepted for this request id.
       expect(requestRepo.statusUpdates, hasLength(1));
@@ -337,12 +329,13 @@ void main() {
       final ok = await module.acceptRecipeShareRequest(req);
 
       expect(ok, isFalse);
-      expect(socialOps.shareCalls, isEmpty);
+      verifyNever(() => coordinator.shareRecipeWithUsers(any(), any(), any()));
       expect(requestRepo.statusUpdates, isEmpty);
     });
 
-    test('share fails (null result) → false, status NOT flipped', () async {
-      socialOps.shareResult = null;
+    test('share fails (returns false) → false, status NOT flipped', () async {
+      when(() => coordinator.shareRecipeWithUsers(any(), any(), any()))
+          .thenAnswer((_) async => false);
       final req = makeRequest();
 
       final ok = await module.acceptRecipeShareRequest(req);
@@ -352,9 +345,7 @@ void main() {
           reason: 'must not mark accepted when the share itself failed');
     });
 
-    test(
-        'owner guard: non-owner currentUserId → false, shareRecipe never called',
-        () async {
+    test('owner guard: non-owner currentUserId → false, no share', () async {
       // Current user is someone other than the request's toUserId ('me-uid').
       permission.setUserId('intruder-uid');
       final req = makeRequest(); // toUserId == 'me-uid'
@@ -363,8 +354,7 @@ void main() {
 
       expect(ok, isFalse,
           reason: 'only the recipe owner (toUserId) may accept');
-      expect(socialOps.shareCalls, isEmpty,
-          reason: 'shareRecipe must not be called for a non-owner');
+      verifyNever(() => coordinator.shareRecipeWithUsers(any(), any(), any()));
       expect(requestRepo.statusUpdates, isEmpty,
           reason: 'status must not be flipped for a non-owner');
     });

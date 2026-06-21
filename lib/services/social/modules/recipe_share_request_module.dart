@@ -1,13 +1,13 @@
 // lib/services/social/modules/recipe_share_request_module.dart
 
-import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
@@ -21,13 +21,11 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// same notification payload.
 class RecipeShareRequestModule {
   final FirebaseSocialRequestRepository socialRequestRepository;
-  final UnifiedRecipeService recipeService;
   final PermissionService permissionService;
   final UserService userService;
 
   RecipeShareRequestModule({
     required this.socialRequestRepository,
-    required this.recipeService,
     required this.permissionService,
     required this.userService,
   });
@@ -102,14 +100,14 @@ class RecipeShareRequestModule {
     if (me == null || me != request.toUserId) return false;
 
     try {
-      final sharedId = await recipeService.social.shareRecipe(
-        recipeId: recipeId,
-        memberIds: [request.fromUserId],
-        memberDisplayNames: {
-          request.fromUserId: request.fromUserName.orEmpty()
-        },
-      );
-      if (sharedId == null) return false;
+      // Share in place: add the requester to the ORIGINAL recipe's
+      // memberPermissions. The read path (fetchFriendRecipe) and the firestore
+      // rule both key off the original doc, so a new collaborative copy would
+      // leave the requester unable to open the recipe.
+      final shared = await ServiceLocator.get<SocialRecipeCoordinator>()
+          .shareRecipeWithUsers(
+              recipeId, [request.fromUserId], ResourcePermission.viewer);
+      if (!shared) return false;
 
       await socialRequestRepository.updateRequestStatus(
         request.id,

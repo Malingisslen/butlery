@@ -86,7 +86,6 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     );
     _recipeShareRequestModule = RecipeShareRequestModule(
       socialRequestRepository: _socialRequestRepository,
-      recipeService: _recipeService,
       permissionService: _permissionService,
       userService: _userService,
     );
