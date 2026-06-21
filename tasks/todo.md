@@ -1,5 +1,14 @@
 # Sprint Backlog
 
+## Sprint: Tier-A autonomous backlog — batch 8 (view tests — mostly bounced) — 2026-06-21
+
+### Batch 8 (view-layer widget tests — REALITY CHECK)
+- [partial] **BUT-1340** only EmailVerificationView cleanly testable (shipped); 5 other screens need DI seams → Backlog + BUT-1353
+- [bounced] **BUT-1339** no recipe screen cleanly widget-testable (all resolve VMs from ServiceLocator in build()); → Backlog + BUT-1353
+- Lesson: view-layer widget tests are genuinely B-UI (classifier was right). They need `@visibleForTesting` ctor seams + a hardened widget harness, not a test-only pass. Deleted 5 runtime-failing test files rather than ship flaky tests.
+
+---
+
 ## Sprint: Tier-A autonomous backlog — batch 7 (cold-start deferral) — 2026-06-21
 
 ### Batch 7 (Tier C → In Review)
