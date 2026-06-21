@@ -129,12 +129,37 @@ class MenuSocialManager {
   }
 
   /// Load specific imported menu data
+  ///
+  /// [menuKey] is the shared-menu document id (same key surfaced by
+  /// [loadImportedMenus]). Returns the full menu structure as a
+  /// [SavedMenuData] so the load-menu flow can populate it like a local menu,
+  /// or null when the key isn't among the menus shared with this user.
   Future<SavedMenuData?> loadImportedMenuData(String menuKey) async {
     try {
-      // For now, return null as we need to implement proper menu data loading
-      // This would require getting the full menu recipe data from the shared menu
-      AppLogger.info('Loading imported menu data not fully implemented yet');
-      return null;
+      final sharedData = await _socialMenuOps.getSharedMenuData(menuKey);
+      if (sharedData == null) {
+        AppLogger.debug('Imported menu not found: $menuKey');
+        return null;
+      }
+
+      // getSharedMenuData already parses 'menu' into Recipe objects.
+      final menu = (sharedData['menu'] as Map<String, List<Recipe>>?) ??
+          <String, List<Recipe>>{};
+
+      return SavedMenuData(
+        name: (sharedData['title'] as String?).orEmpty(),
+        savedDate:
+            SerializationUtils.safeRequiredDateTime(sharedData, 'sharedAt'),
+        recipeCount: (sharedData['totalRecipes'] as int?) ??
+            menu.values.fold(0, (total, recipes) => total + recipes.length),
+        menu: menu,
+        lastPrompt: '', // Shared menus don't carry the original prompt.
+        comment: (sharedData['description'] as String?).orEmpty(),
+        originalAuthor: sharedData['sharedByDisplayName'] as String?,
+        originalAuthorId: sharedData['sharedByUserId'] as String?,
+        isModified: false,
+        firebaseId: sharedData['id'] as String?,
+      );
     } catch (e) {
       AppLogger.error('Load imported menu data failed', e);
       return null;

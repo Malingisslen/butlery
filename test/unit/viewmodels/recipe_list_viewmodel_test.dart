@@ -6,7 +6,11 @@ import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/data/recipes/recipe_seeds.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -1068,6 +1072,302 @@ void main() {
         viewModel.toggleAllergenFilter('gluten-free');
 
         expect(viewModel.recipes, isEmpty);
+      });
+    });
+
+    // ---------------------------------------------------------------------------
+    // BUT-1335 — Allergen/Dietary Safety Gate
+    //
+    // Each test proves one safety invariant via the PUBLIC `recipes` getter and
+    // the `untaggedExclusionMessage` getter.  Filter results are cached; toggling
+    // the filter before asserting is the correct way to invalidate the cache.
+    // ---------------------------------------------------------------------------
+    group('BUT-1335 Allergen/Dietary Safety Gate', () {
+      // Helpers -----------------------------------------------------------------
+
+      /// Builds a TagResult that passes EVERY safety gate:
+      /// coverage == 1.0, needsRetagging == false, allergenStatus FREE for gluten,
+      /// dietaryStatus FREE for vegetarisk.
+      TagResult fullyTaggedFree() => TagResult(
+            tags: const {},
+            allergenStatus: const {'gluten': TriState.free},
+            dietaryStatus: const {'vegetarisk': TriState.free},
+            coverage: 1.0,
+            generatedAt: DateTime(2024),
+            generatorVersion: kTagGeneratorVersion,
+            hasCoverageAnomaly: false,
+          );
+
+      /// Builds a TagResult identical to [fullyTaggedFree] but with partial
+      /// coverage (0.6) — the coverage gate must reject this even when status
+      /// says free.
+      TagResult partialCoverageFree() => TagResult(
+            tags: const {},
+            allergenStatus: const {'gluten': TriState.free},
+            dietaryStatus: const {'vegetarisk': TriState.free},
+            coverage: 0.6,
+            generatedAt: DateTime(2024),
+            generatorVersion: kTagGeneratorVersion,
+            hasCoverageAnomaly: false,
+          );
+
+      /// Builds a TagResult that needs retagging (generatorVersion == null
+      /// satisfies the needsRetagging gate) while still carrying a FREE status —
+      /// the needsRetagging gate must reject this before status is consulted.
+      TagResult needsRetaggingFree() => TagResult(
+            tags: const {},
+            allergenStatus: const {'gluten': TriState.free},
+            dietaryStatus: const {'vegetarisk': TriState.free},
+            coverage: 1.0,
+            generatedAt: DateTime(2024),
+            generatorVersion: null, // null → needsRetagging == true
+            hasCoverageAnomaly: false,
+          );
+
+      // -------------------------------------------------------------------------
+      // AC-1: Allergen — coverage < 1.0 → excluded
+      // -------------------------------------------------------------------------
+      test(
+          'AC-1: allergen filter EXCLUDES recipe with coverage < 1.0 even when '
+          'allergenStatus says FREE', () {
+        // This test proves that a recipe that looks "gluten-free" but has only
+        // 60 % ingredient coverage is kept OUT of the filtered list, because the
+        // unmatched 40 % could hide gluten.
+        final partialRecipe = RecipeFactory.build(id: 'partial')
+            .copyWith(tagResult: partialCoverageFree());
+        mockRecipeService.setRecipeState(recipes: [partialRecipe]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          viewModel.recipes,
+          isEmpty,
+          reason: 'A recipe with coverage 0.6 must not pass the allergen-free '
+              'safety gate, even if the known ingredients are all gluten-free.',
+        );
+      });
+
+      // -------------------------------------------------------------------------
+      // AC-2: Allergen — needsRetagging → excluded
+      // -------------------------------------------------------------------------
+      test(
+          'AC-2: allergen filter EXCLUDES recipe with needsRetagging == true even '
+          'when allergenStatus says FREE', () {
+        // This test proves that stale tag data (generatorVersion == null) is
+        // rejected at the safety gate before the allergen status is read.
+        final staleRecipe = RecipeFactory.build(id: 'stale')
+            .copyWith(tagResult: needsRetaggingFree());
+        mockRecipeService.setRecipeState(recipes: [staleRecipe]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          viewModel.recipes,
+          isEmpty,
+          reason: 'A recipe with needsRetagging==true must be excluded even if '
+              'its stored allergenStatus claims FREE — the tag data is unreliable.',
+        );
+      });
+
+      // -------------------------------------------------------------------------
+      // AC-3a: Allergen — null tagResult + non-seed → excluded (safety gate)
+      // AC-3b: Allergen — null tagResult + system seed → kept (seed bypass)
+      // (AC-3 non-seed exclusion is already covered in the existing seed group
+      // above; the positive seed-bypass case is also there.  We add them here
+      // again as explicit contract assertions for BUT-1335.)
+      // -------------------------------------------------------------------------
+      test(
+          'AC-3a: allergen filter EXCLUDES recipe with tagResult == null '
+          '(user recipe — no analysis available)', () {
+        // This test proves that a recipe with absolutely no tag data is hidden
+        // when a safety-critical allergen filter is active.
+        final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
+        // tagResult is null by default from RecipeFactory
+        mockRecipeService.setRecipeState(recipes: [unanalysed]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          viewModel.recipes,
+          isEmpty,
+          reason: 'A user recipe with null tagResult must be excluded; its '
+              'allergen status is completely unknown.',
+        );
+      });
+
+      test(
+          'AC-3b: allergen filter KEEPS a seed recipe with tagResult == null '
+          '(createdBy == "system" — starter content bypass)', () {
+        // This test proves that system-seeded starter recipes survive the
+        // allergen filter even without tag analysis, so a new user who picked
+        // a dietary preference at onboarding still sees the library.
+        final seedRecipe = RecipeFactory.build(id: 's1', createdBy: 'system');
+        mockRecipeService.setRecipeState(recipes: [seedRecipe]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          viewModel.recipes,
+          hasLength(1),
+          reason: 'A seed recipe (createdBy=="system") must survive allergen '
+              'filtering regardless of missing tagResult.',
+        );
+        expect(viewModel.recipes.single.createdBy, equals('system'));
+      });
+
+      // -------------------------------------------------------------------------
+      // AC-1d: Allergen positive case — full coverage + FREE → included
+      // (proves the gate is selective, not always-reject)
+      // -------------------------------------------------------------------------
+      test(
+          'allergen filter KEEPS a recipe that is fully tagged and FREE from '
+          'the selected allergen', () {
+        // This test proves the gate admits recipes that legitimately satisfy
+        // coverage == 1.0 AND needsRetagging == false AND status == FREE.
+        final cleanRecipe = RecipeFactory.build(id: 'clean')
+            .copyWith(tagResult: fullyTaggedFree());
+        mockRecipeService.setRecipeState(recipes: [cleanRecipe]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          viewModel.recipes,
+          hasLength(1),
+          reason: 'A recipe with full coverage, no retagging needed, and FREE '
+              'status must pass the allergen-free filter.',
+        );
+      });
+
+      // -------------------------------------------------------------------------
+      // AC-4: Dietary — same three safety gates (mirrors allergen)
+      // -------------------------------------------------------------------------
+      test(
+          'AC-4a: dietary filter EXCLUDES recipe with coverage < 1.0 even when '
+          'dietaryStatus says FREE', () {
+        final partialRecipe = RecipeFactory.build(id: 'dp')
+            .copyWith(tagResult: partialCoverageFree());
+        mockRecipeService.setRecipeState(recipes: [partialRecipe]);
+
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(
+          viewModel.recipes,
+          isEmpty,
+          reason: 'The dietary safety gate must mirror the allergen gate: '
+              'coverage < 1.0 excludes even when status says FREE.',
+        );
+      });
+
+      test(
+          'AC-4b: dietary filter EXCLUDES recipe with needsRetagging == true '
+          'even when dietaryStatus says FREE', () {
+        final staleRecipe = RecipeFactory.build(id: 'ds')
+            .copyWith(tagResult: needsRetaggingFree());
+        mockRecipeService.setRecipeState(recipes: [staleRecipe]);
+
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(
+          viewModel.recipes,
+          isEmpty,
+          reason: 'The dietary safety gate must reject stale tags just as the '
+              'allergen gate does.',
+        );
+      });
+
+      test(
+          'AC-4c: dietary filter EXCLUDES recipe with tagResult == null '
+          '(user recipe)', () {
+        final unanalysed = RecipeFactory.build(id: 'dn', createdBy: 'user');
+        mockRecipeService.setRecipeState(recipes: [unanalysed]);
+
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(
+          viewModel.recipes,
+          isEmpty,
+          reason: 'A user recipe with null tagResult is unsafe for dietary '
+              'filtering and must be excluded.',
+        );
+      });
+
+      test(
+          'AC-4d: dietary filter KEEPS a recipe with full coverage and FREE '
+          'dietary status', () {
+        final cleanRecipe = RecipeFactory.build(id: 'dc')
+            .copyWith(tagResult: fullyTaggedFree());
+        mockRecipeService.setRecipeState(recipes: [cleanRecipe]);
+
+        viewModel.toggleDietaryFilter('vegetarian');
+
+        expect(
+          viewModel.recipes,
+          hasLength(1),
+          reason: 'A fully-tagged FREE recipe must pass the dietary filter.',
+        );
+      });
+
+      // -------------------------------------------------------------------------
+      // AC-5: untaggedExclusionMessage surfaced / absent
+      // -------------------------------------------------------------------------
+      test(
+          'AC-5a: untaggedExclusionMessage is non-null when a recipe is hidden '
+          'due to missing/incomplete tag analysis', () {
+        // This test proves that the user receives a visible explanation when
+        // recipes are being excluded because they are still being analysed.
+        final analysed = RecipeFactory.build(id: 'a1')
+            .copyWith(tagResult: fullyTaggedFree());
+        final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
+        mockRecipeService.setRecipeState(recipes: [analysed, unanalysed]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        // The unanalysed recipe is hidden; the message must surface.
+        expect(
+          viewModel.untaggedExclusionMessage,
+          isNotNull,
+          reason: 'untaggedExclusionMessage must be non-null when at least one '
+              'recipe is excluded due to missing tag analysis.',
+        );
+        expect(
+          viewModel.untaggedExclusionMessage,
+          contains('1 recept'),
+          reason: 'The message must name the count of hidden recipes.',
+        );
+      });
+
+      test(
+          'AC-5b: untaggedExclusionMessage is null when all recipes are fully '
+          'tagged (nothing hidden for missing analysis)', () {
+        final analysed = RecipeFactory.build(id: 'a1')
+            .copyWith(tagResult: fullyTaggedFree());
+        mockRecipeService.setRecipeState(recipes: [analysed]);
+
+        viewModel.toggleAllergenFilter('gluten-free');
+
+        expect(
+          viewModel.untaggedExclusionMessage,
+          isNull,
+          reason: 'When no recipes are excluded for missing analysis, '
+              'untaggedExclusionMessage must be null so no banner is shown.',
+        );
+      });
+
+      test(
+          'AC-5c: untaggedExclusionMessage is null when no tag-based filter is '
+          'active (even if some recipes lack tags)', () {
+        // Proves that the message is gate-driven, not recipe-state-driven:
+        // without an active allergen/dietary filter, nothing is "hidden."
+        final unanalysed = RecipeFactory.build(id: 'u1', createdBy: 'user');
+        mockRecipeService.setRecipeState(recipes: [unanalysed]);
+
+        // No filter activated — hasTagBasedFilters == false.
+        expect(
+          viewModel.untaggedExclusionMessage,
+          isNull,
+          reason: 'The exclusion message must be absent when no tag-based '
+              'filter is active, regardless of recipe tag state.',
+        );
       });
     });
 

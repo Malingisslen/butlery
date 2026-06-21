@@ -335,9 +335,48 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('should return null for imported menu data (not implemented)',
-        () async {
-      final result = await socialManager.loadImportedMenuData('menu_key_123');
+    test('should load full imported menu data for a shared menu', () async {
+      final menuStructure = createTestMenu();
+      when(() => mockSocialMenuOps.getSharedMenuData('shared_menu_1'))
+          .thenAnswer((_) async => {
+                'id': 'shared_menu_1',
+                'title': 'Veckans meny',
+                'description': 'Trevlig vecka',
+                'menu': menuStructure,
+                'totalRecipes': 3,
+                'sharedByUserId': 'owner_uid',
+                'sharedByDisplayName': 'Friend Anna',
+                'sharedAt': DateTime(2026, 6, 1).toIso8601String(),
+              });
+
+      final result = await socialManager.loadImportedMenuData('shared_menu_1');
+
+      expect(result, isNotNull);
+      expect(result!.name, equals('Veckans meny'));
+      expect(result.menu, equals(menuStructure));
+      expect(result.recipeCount, equals(3));
+      expect(result.comment, equals('Trevlig vecka'));
+      expect(result.originalAuthor, equals('Friend Anna'));
+      expect(result.originalAuthorId, equals('owner_uid'));
+      expect(result.firebaseId, equals('shared_menu_1'));
+      verify(() => mockSocialMenuOps.getSharedMenuData('shared_menu_1'))
+          .called(1);
+    });
+
+    test('should return null when shared menu key is unknown', () async {
+      when(() => mockSocialMenuOps.getSharedMenuData('missing_key'))
+          .thenAnswer((_) async => null);
+
+      final result = await socialManager.loadImportedMenuData('missing_key');
+
+      expect(result, isNull);
+    });
+
+    test('should return null when loading imported menu data throws', () async {
+      when(() => mockSocialMenuOps.getSharedMenuData('boom'))
+          .thenThrow(Exception('Network error'));
+
+      final result = await socialManager.loadImportedMenuData('boom');
 
       expect(result, isNull);
     });

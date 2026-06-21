@@ -269,5 +269,181 @@ void main() {
       expect(result['failedCollections'], contains('residual_data_detected'));
       verify(() => auth.signOut()).called(1);
     });
+
+    // ── BUT-1334 additions ────────────────────────────────────────────────────
+
+    /// Criterion 1 (BUT-1334): no authenticated user produces exactly the
+    /// error string `'No authenticated user'` and the errors list contains
+    /// only that one entry.  Proves the guard clause exits before any CF call.
+    test(
+        'BUT-1334/crit-1: no-auth errors list is exactly '
+        '[\'No authenticated user\']', () async {
+      when(() => auth.currentUserId).thenReturn(null);
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+      );
+
+      final result = await service.deleteUserAccount(reason: 'test');
+
+      final errors = result['errors'] as List;
+      expect(errors, hasLength(1),
+          reason: 'only one error entry expected for no-auth path');
+      expect(errors.first, equals('No authenticated user'));
+      verifyNever(() => callable.call<Map<dynamic, dynamic>>(any()));
+    });
+
+    /// Criterion 2 (BUT-1334): CF throws `unauthenticated` (the second
+    /// re-auth trigger branch in `_handleCfException`) → `requiresReauth`
+    /// is set true.  This branch is distinct from `failed-precondition +
+    /// requires-recent-login` and was previously untested.
+    test('BUT-1334/crit-2: CF unauthenticated exception → requiresReauth=true',
+        () async {
+      when(() => callable.call<Map<dynamic, dynamic>>(any())).thenThrow(
+        FirebaseFunctionsException(
+          code: 'unauthenticated',
+          message: 'Token expired.',
+          details: null,
+        ),
+      );
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+      );
+
+      final result = await service.deleteUserAccount(reason: 'test');
+
+      expect(result['success'], isFalse);
+      expect(result['requiresReauth'], isTrue,
+          reason:
+              'unauthenticated CF exception must set requiresReauth so the UI '
+              'can prompt for re-login');
+      verifyNever(() => auth.signOut());
+    });
+
+    /// Criterion 3 (BUT-1334): BOTH search-index cleanup and offline-cache
+    /// cleanup run BEFORE the CF callable.  `verifyInOrder` asserts the
+    /// three-step ordering: search → offline → CF.
+    test('BUT-1334/crit-3: search AND offline cleanup both run before CF call',
+        () async {
+      final search = _MockSearchRepo();
+      final offline = _MockOfflineService();
+      when(() => search.removeUser(any())).thenAnswer((_) async {});
+      when(() => offline.clearUserData(any())).thenAnswer((_) async {});
+
+      final successResult = _FakeCallableResult({
+        'success': true,
+        'deletedCollections': <String>[],
+        'failedCollections': <String>[],
+        'errors': <String>[],
+        'auditLogId': null,
+      });
+      when(() => callable.call<Map<dynamic, dynamic>>(any()))
+          .thenAnswer((_) async => successResult);
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+        searchRepository: search,
+        offlineService: offline,
+      );
+
+      await service.deleteUserAccount(reason: 'test');
+
+      // Three-step ordering: search cleanup, then offline cleanup, then CF.
+      verifyInOrder([
+        () => search.removeUser('uid-alice'),
+        () => offline.clearUserData('uid-alice'),
+        () => callable.call<Map<dynamic, dynamic>>(any()),
+      ]);
+    });
+  });
+
+  // ── BUT-1334 Criterion 4: post-CF success cascade ─────────────────────────
+  //
+  // Criterion 4 requires verifying that both NotificationService.resetForLogout
+  // AND AuthService.signOut are called after a successful CF response.
+  //
+  // The production code resolves NotificationService via
+  // `ServiceLocator.get<NotificationService>()` (production ServiceLocator,
+  // backed by DIContainer → GetIt.instance).  The test must therefore
+  // initialise the production ServiceLocator so the lookup succeeds;
+  // `setupUnitWithProductionLocator()` does exactly this.
+  group('BUT-1334/crit-4 — post-CF success: notif reset + sign-out', () {
+    late _MockAuthService auth;
+    late _MockFunctions functions;
+    late _MockCallable callable;
+    late _MockNotificationService notifService;
+
+    setUpAll(() async {
+      // Initialises both the test GetIt registry AND the production
+      // ServiceLocator._container so that `ServiceLocator.get<T>()` in
+      // production code resolves from the same GetIt.instance.
+      await BaseUnitTest.setupUnitWithProductionLocator();
+      registerFallbackValue(<String, dynamic>{});
+      registerFallbackValue(HttpsCallableOptions());
+    });
+
+    tearDownAll(() async {
+      await TestServiceLocator.reset();
+    });
+
+    setUp(() async {
+      auth = _MockAuthService();
+      functions = _MockFunctions();
+      callable = _MockCallable();
+      notifService = _MockNotificationService();
+
+      when(() => auth.currentUserId).thenReturn('uid-alice');
+      when(() => auth.signOut()).thenAnswer((_) async {});
+      when(() => notifService.resetForLogout()).thenAnswer((_) async {});
+
+      // Register our mock into GetIt.instance — which DIContainer._container
+      // points at — so the production ServiceLocator.get resolves it.
+      if (GetIt.instance.isRegistered<notif.NotificationService>()) {
+        GetIt.instance.unregister<notif.NotificationService>();
+      }
+      GetIt.instance.registerSingleton<notif.NotificationService>(notifService);
+
+      when(() => functions.httpsCallable(any(), options: any(named: 'options')))
+          .thenReturn(callable);
+    });
+
+    tearDown(() {
+      if (GetIt.instance.isRegistered<notif.NotificationService>()) {
+        GetIt.instance.unregister<notif.NotificationService>();
+      }
+    });
+
+    /// This test proves that a successful CF response triggers both
+    /// `NotificationService.resetForLogout()` and `AuthService.signOut()`.
+    /// It would fail if either post-CF cleanup step were removed or skipped.
+    test(
+        'CF success triggers NotificationService.resetForLogout '
+        'then AuthService.signOut', () async {
+      final successResult = _FakeCallableResult({
+        'success': true,
+        'deletedCollections': ['recipes'],
+        'failedCollections': <String>[],
+        'errors': <String>[],
+        'auditLogId': 'audit-ok',
+      });
+      when(() => callable.call<Map<dynamic, dynamic>>(any()))
+          .thenAnswer((_) async => successResult);
+
+      final service = AccountDeletionService(
+        authService: auth,
+        functions: functions,
+      );
+
+      final result = await service.deleteUserAccount(reason: 'user_request');
+
+      expect(result['success'], isTrue,
+          reason: 'CF result must propagate to caller');
+      verify(() => notifService.resetForLogout()).called(1);
+      verify(() => auth.signOut()).called(1);
+    });
   });
 }
