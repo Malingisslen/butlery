@@ -69,6 +69,7 @@ class SharedShoppingListCard {
                   ),
                   onUnshare: () => SharedContentActions.unshareShoppingList(
                     context,
+                    viewModel,
                     sharedShoppingList,
                   ),
                 ),

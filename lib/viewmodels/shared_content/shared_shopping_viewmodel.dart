@@ -33,6 +33,7 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -224,6 +225,25 @@ class SharedShoppingViewModel
 
     if (result == true) {
       // Remove from local collection
+      removeContent(sharedList);
+    }
+
+    return result ?? false;
+  }
+
+  /// Unshare a shopping list the user shared — deletes the shared document and
+  /// drops it locally. Owns the repository call so the view doesn't (MVVM).
+  Future<bool> unshareSharedShoppingList(SharedShoppingList sharedList) async {
+    final result = await executeOperation(
+      'Unshare shopping list "${getContentTitle(sharedList)}"',
+      () async {
+        await ServiceLocator.get<FirebaseSharedShoppingRepository>()
+            .deleteSharedContent(sharedList.id);
+        return true;
+      },
+    );
+
+    if (result == true) {
       removeContent(sharedList);
     }
 
