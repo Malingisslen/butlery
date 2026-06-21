@@ -11379,6 +11379,21 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String recipeShareRequestBanner(String name) {
+    return '$name vill se det här receptet';
+  }
+
+  @override
+  String recipeShareRequestShareAction(String name) {
+    return 'Dela med $name';
+  }
+
+  @override
+  String recipeShareRequestShared(String name) {
+    return 'Delat med $name';
+  }
+
+  @override
   String notificationDigestRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -7346,6 +7346,30 @@
       }
     }
   },
+  "recipeShareRequestBanner": "{name} vill se det här receptet",
+  "@recipeShareRequestBanner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeShareRequestShareAction": "Dela med {name}",
+  "@recipeShareRequestShareAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeShareRequestShared": "Delat med {name}",
+  "@recipeShareRequestShared": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDigestRecipes": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@notificationDigestRecipes": {
     "placeholders": {

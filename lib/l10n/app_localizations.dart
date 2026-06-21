@@ -19263,6 +19263,24 @@ abstract class AppLocalizations {
   /// **'{name} vill se ditt recept \"{title}\"'**
   String recipeShareRequestNotifBody(String name, String title);
 
+  /// No description provided for @recipeShareRequestBanner.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} vill se det här receptet'**
+  String recipeShareRequestBanner(String name);
+
+  /// No description provided for @recipeShareRequestShareAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med {name}'**
+  String recipeShareRequestShareAction(String name);
+
+  /// No description provided for @recipeShareRequestShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat med {name}'**
+  String recipeShareRequestShared(String name);
+
   /// No description provided for @notificationDigestRecipes.
   ///
   /// In sv, this message translates to:

@@ -28,9 +28,11 @@ import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
+import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -57,6 +59,9 @@ class _FakeCookSnapService extends Fake implements CookSnapService {
 const _testUserId = 'test-user-123';
 const _friendUserId = 'friend-user-456';
 
+// Minimal mock for SocialRecipeService: only acceptRecipeShareRequest needed.
+class _MockSocialRecipeService extends Mock implements SocialRecipeService {}
+
 void main() {
   late MockUnifiedRecipeService recipeService;
   late MockUserService userService;
@@ -67,6 +72,13 @@ void main() {
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
     registerFallbackValue(RecipeFactory.build(id: 'fallback'));
+    // Mocktail requires a fallback value for any() matchers on SocialRequest.
+    registerFallbackValue(SocialRequest(
+      id: 'fallback',
+      type: SocialRequestType.recipeShareRequest,
+      fromUserId: 'from',
+      toUserId: 'to',
+    ));
   });
 
   setUp(() async {
@@ -155,6 +167,103 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
   }
+
+  group('RecipeDetailView — share-request banner (Task 8)', () {
+    testWidgets('banner and share action render when shareRequest is provided',
+        (tester) async {
+      // Proves: when the owner opens their own recipe via a share-request
+      // notification, a banner with the requester's name is shown together with
+      // a one-tap share action button.
+      final socialRecipeService = _MockSocialRecipeService();
+      when(() => socialRecipeService.acceptRecipeShareRequest(any()))
+          .thenAnswer((_) async => true);
+      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+
+      final shareRequest = SocialRequest(
+        id: 'req-001',
+        type: SocialRequestType.recipeShareRequest,
+        fromUserId: _friendUserId,
+        toUserId: _testUserId,
+        fromUserName: 'Anna',
+        recipeId: 'recipe-owned-1',
+      );
+
+      // ownedRecipe.createdBy == _testUserId == PermissionService.currentUserId
+      // so the owner-guard passes and the banner renders.
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe, shareRequest: shareRequest),
+      );
+
+      expect(tester.takeException(), isNull);
+
+      // Banner text: "{name} vill se det här receptet" → "Anna vill se det här receptet"
+      expect(
+        find.textContaining('Anna'),
+        findsWidgets,
+        reason: 'Banner must mention the requester name',
+      );
+
+      // Share action button renders.
+      expect(
+        find.textContaining('Dela med Anna'),
+        findsOneWidget,
+        reason: 'Share-action button must be visible',
+      );
+
+      // Tap the share action.
+      await tester.tap(find.textContaining('Dela med Anna'));
+      await tester.pumpAndSettle();
+
+      verify(() => socialRecipeService.acceptRecipeShareRequest(any()))
+          .called(1);
+    });
+
+    testWidgets(
+        'banner is suppressed when current user is NOT the recipe owner',
+        (tester) async {
+      // Proves: removing the `recipe.createdBy == currentUserId` guard in
+      // production would cause this test to fail — the banner must only render
+      // when the logged-in user owns the recipe.
+      final socialRecipeService = _MockSocialRecipeService();
+      when(() => socialRecipeService.acceptRecipeShareRequest(any()))
+          .thenAnswer((_) async => true);
+      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+
+      // shareRequest targets the friend's recipe (createdBy == _friendUserId),
+      // but the current test user is _testUserId — so the owner guard must fail.
+      final shareRequest = SocialRequest(
+        id: 'req-002',
+        type: SocialRequestType.recipeShareRequest,
+        fromUserId: 'another-user-789',
+        toUserId: _testUserId,
+        fromUserName: 'Björn',
+        recipeId: 'recipe-friend-1',
+      );
+
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: friendRecipe, shareRequest: shareRequest),
+      );
+
+      expect(tester.takeException(), isNull);
+
+      // Banner text must not appear when current user doesn't own the recipe.
+      expect(
+        find.textContaining('Björn vill se'),
+        findsNothing,
+        reason: 'Banner must be suppressed when current user is not the owner',
+      );
+      expect(
+        find.textContaining('Dela med Björn'),
+        findsNothing,
+        reason:
+            'Share action must be suppressed when current user is not the owner',
+      );
+
+      verifyNever(() => socialRecipeService.acceptRecipeShareRequest(any()));
+    });
+  });
 
   group('RecipeDetailView — readOnly mode (Task 4)', () {
     testWidgets('readOnly:true hides the favorite toggle and shows save-copy',

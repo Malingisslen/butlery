@@ -62,6 +62,7 @@ import 'package:butlery/views/faq_view.dart';
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/social_request.dart';
 
 /// Centralized application router managing navigation and route generation for Butlery.
 /// This class implements a comprehensive routing system that handles all navigation
@@ -223,12 +224,14 @@ class AppRouter {
           Recipe? recipe;
           bool scrollToComments = false;
           bool readOnly = false;
+          SocialRequest? shareRequest;
           if (arguments is Recipe) {
             recipe = arguments;
           } else if (arguments is Map<String, dynamic>) {
             recipe = arguments['recipe'] as Recipe?;
             scrollToComments = arguments['scrollToComments'] as bool? ?? false;
             readOnly = arguments['readOnly'] as bool? ?? false;
+            shareRequest = arguments['shareRequest'] as SocialRequest?;
           }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for detail view');
@@ -238,6 +241,7 @@ class AppRouter {
                 recipe: recipe,
                 scrollToComments: scrollToComments,
                 readOnly: readOnly,
+                shareRequest: shareRequest,
               ),
               settings,
               Routes.getAnimationType(routeName));

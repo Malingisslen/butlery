@@ -36,6 +36,10 @@ import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/social_request.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 class FCMService extends BaseService {
   FCMService({
@@ -521,6 +525,9 @@ class FCMService extends BaseService {
           await _navigateToSharedRecipe(navigator, data,
               scrollToComments: true);
           break;
+        case NotificationPayloadType.recipeShareRequest:
+          await _navigateToOwnRecipeForShareRequest(navigator, data);
+          break;
         default:
           AppLogger.warning(
               '⚠️ Unknown notification type for navigation: $notificationType');
@@ -554,6 +561,39 @@ class FCMService extends BaseService {
           : recipe;
       navigator.pushNamed(Routes.recipeDetail, arguments: arguments);
     }
+  }
+
+  /// Opens the owner's own recipe with a one-tap share-back banner.
+  /// Tapped when the owner receives a "X wants your recipe" push notification.
+  Future<void> _navigateToOwnRecipeForShareRequest(
+      NavigatorState navigator, Map<String, dynamic> data) async {
+    final recipeId = data['recipeId'] as String?;
+    final requestId = data['requestId'] as String?;
+    if (recipeId == null || requestId == null) return;
+
+    final fromUserId = data['fromUserId'] as String?;
+    if (fromUserId == null || fromUserId.isEmpty) return;
+    final fromUserName = data['fromUserName'] as String?;
+
+    final recipe =
+        ServiceLocator.get<UnifiedRecipeService>().getRecipeById(recipeId);
+    if (recipe == null) return;
+
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+
+    final request = SocialRequest(
+      id: requestId,
+      type: SocialRequestType.recipeShareRequest,
+      fromUserId: fromUserId.orEmpty(),
+      toUserId: currentUserId.orEmpty(),
+      recipeId: recipeId,
+      fromUserName: fromUserName,
+    );
+
+    navigator.pushNamed(
+      Routes.recipeDetail,
+      arguments: <String, dynamic>{'recipe': recipe, 'shareRequest': request},
+    );
   }
 
   Future<void> _navigateToCollaboration(

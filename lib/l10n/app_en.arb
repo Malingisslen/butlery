@@ -7295,6 +7295,30 @@
       }
     }
   },
+  "recipeShareRequestBanner": "{name} wants to see this recipe",
+  "@recipeShareRequestBanner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeShareRequestShareAction": "Share with {name}",
+  "@recipeShareRequestShareAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeShareRequestShared": "Shared with {name}",
+  "@recipeShareRequestShared": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDigestRecipes": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@notificationDigestRecipes": {
     "placeholders": {

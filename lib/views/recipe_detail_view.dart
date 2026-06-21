@@ -50,7 +50,9 @@ import 'package:butlery/viewmodels/cook_snap_viewmodel.dart';
 import 'package:butlery/services/cook_snap_service.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
+import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
@@ -95,11 +97,17 @@ class RecipeDetailView extends StatefulWidget {
   // Use this when showing a friend's recipe that the current user cannot edit.
   final bool readOnly;
 
+  // When non-null, the owner is viewing their own recipe via a share-request
+  // notification. A banner is shown prompting them to share the recipe with
+  // the requester.
+  final SocialRequest? shareRequest;
+
   const RecipeDetailView({
     super.key,
     required this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
+    this.shareRequest,
   });
 
   @override
@@ -139,6 +147,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
         recipe: widget.recipe,
         scrollToComments: widget.scrollToComments,
         readOnly: widget.readOnly,
+        shareRequest: widget.shareRequest,
       ),
     );
   }
@@ -148,11 +157,13 @@ class _RecipeDetailViewContent extends StatefulWidget {
   final Recipe recipe;
   final bool scrollToComments;
   final bool readOnly;
+  final SocialRequest? shareRequest;
 
   const _RecipeDetailViewContent({
     required this.recipe,
     this.scrollToComments = false,
     this.readOnly = false,
+    this.shareRequest,
   });
 
   @override
@@ -654,6 +665,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ],
               ),
 
+              // Share-request banner: shown when the owner opens their own recipe
+              // via a share-request notification (FCM nav helper). Lets them
+              // accept or dismiss the request inline without navigating away.
+              if (widget.shareRequest != null &&
+                  recipe.createdBy ==
+                      ServiceLocator.get<PermissionService>().currentUserId)
+                SliverToBoxAdapter(
+                  child:
+                      _ShareRequestBanner(shareRequest: widget.shareRequest!),
+                ),
+
               // Recipe content — tablet uses two-column layout, mobile single-column
               SliverToBoxAdapter(
                 child: Breakpoints.isMobile(context)
@@ -1047,6 +1069,75 @@ class _HeroButton extends StatelessWidget {
           )
         : tappable;
     return labelled;
+  }
+}
+
+/// Banner shown when the recipe owner opens their own recipe in response to a
+/// share-request notification. Lets them accept (share) or dismiss inline.
+class _ShareRequestBanner extends StatefulWidget {
+  const _ShareRequestBanner({required this.shareRequest});
+
+  final SocialRequest shareRequest;
+
+  @override
+  State<_ShareRequestBanner> createState() => _ShareRequestBannerState();
+}
+
+class _ShareRequestBannerState extends State<_ShareRequestBanner> {
+  bool _dismissed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_dismissed) return const SizedBox.shrink();
+
+    final cs = Theme.of(context).colorScheme;
+    final name = widget.shareRequest.fromUserName.orEmpty();
+
+    return ColoredBox(
+      color: cs.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingMd,
+          vertical: AppDimensions.spacingM,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                context.l10n.recipeShareRequestBanner(name),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(width: AppDimensions.spacingM),
+            TextButton(
+              onPressed: () => _onShare(name),
+              child: Text(context.l10n.recipeShareRequestShareAction(name)),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() => _dismissed = true),
+              tooltip: context.l10n.commonClose,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onShare(String name) async {
+    final ok = await ServiceLocator.get<SocialRecipeService>()
+        .acceptRecipeShareRequest(widget.shareRequest);
+    if (!mounted) return;
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.recipeShareRequestShared(name))),
+      );
+      setState(() => _dismissed = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.commonErrorOccurred)),
+      );
+    }
   }
 }
 
