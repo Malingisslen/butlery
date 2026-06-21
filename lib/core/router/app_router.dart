@@ -222,11 +222,13 @@ class AppRouter {
           final arguments = settings.arguments;
           Recipe? recipe;
           bool scrollToComments = false;
+          bool readOnly = false;
           if (arguments is Recipe) {
             recipe = arguments;
           } else if (arguments is Map<String, dynamic>) {
             recipe = arguments['recipe'] as Recipe?;
             scrollToComments = arguments['scrollToComments'] as bool? ?? false;
+            readOnly = arguments['readOnly'] as bool? ?? false;
           }
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for detail view');
@@ -235,6 +237,7 @@ class AppRouter {
               RecipeDetailView(
                 recipe: recipe,
                 scrollToComments: scrollToComments,
+                readOnly: readOnly,
               ),
               settings,
               Routes.getAnimationType(routeName));

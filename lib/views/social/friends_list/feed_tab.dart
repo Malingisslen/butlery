@@ -17,6 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/services/permission_service.dart';
 
 /// Activity feed tab in the friends view.
 class FeedTab {
@@ -302,7 +303,7 @@ class FeedTab {
       label: context.l10n.a11yFeedRecipePreview(event.recipeTitle),
       button: true,
       child: GestureDetector(
-        onTap: () => _navigateToRecipe(context, event.recipeId),
+        onTap: () => _navigateToRecipe(context, event.actorId, event.recipeId),
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingSm),
           color: cs.surfaceContainerLow,
@@ -350,18 +351,24 @@ class FeedTab {
     );
   }
 
-  static void _navigateToRecipe(BuildContext context, String recipeId) {
-    // Resolve via the recipe service (service layer, not a repository in the
-    // view). Returns null for a recipe the user can't see — e.g. a friend's,
-    // or a deleted one — so give feedback rather than failing the tap silently.
-    final recipe =
-        ServiceLocator.get<UnifiedRecipeService>().getRecipeById(recipeId);
+  static Future<void> _navigateToRecipe(
+    BuildContext context,
+    String ownerId,
+    String recipeId,
+  ) async {
+    final recipe = await ServiceLocator.get<UnifiedRecipeService>()
+        .fetchFriendRecipe(ownerId: ownerId, recipeId: recipeId);
+    if (!context.mounted) return;
     if (recipe != null) {
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
+      final readOnly = ownerId != currentUserId;
       Navigator.of(context).pushNamed(
         Routes.recipeDetail,
-        arguments: recipe,
+        arguments: {'recipe': recipe, 'readOnly': readOnly},
       );
     } else {
+      // Phase 2 replaces this branch with the request-to-share dialog.
       SnackBarUtils.showError(context, context.l10n.feedRecipeUnavailable);
     }
   }
