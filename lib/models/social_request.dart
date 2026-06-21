@@ -10,7 +10,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:uuid/uuid.dart';
 
-enum SocialRequestType { friend, groupInvitation }
+enum SocialRequestType { friend, groupInvitation, recipeShareRequest }
 
 enum SocialRequestStatus { pending, accepted, rejected, cancelled, expired }
 
@@ -33,6 +33,10 @@ class SocialRequest {
   final String? groupEmoji;
   final String? fromUserName;
 
+  // Recipe share request fields (null for other types)
+  final String? recipeId;
+  final String? recipeTitle;
+
   SocialRequest({
     required this.id,
     required this.type,
@@ -47,6 +51,8 @@ class SocialRequest {
     this.groupName,
     this.groupEmoji,
     this.fromUserName,
+    this.recipeId,
+    this.recipeTitle,
   })  : sentAt = sentAt ?? clock.now().toUtc(),
         expiresAt =
             expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
@@ -95,6 +101,28 @@ class SocialRequest {
     );
   }
 
+  /// Request that [toUserId] share recipe [recipeId] with [fromUserId].
+  factory SocialRequest.recipeShareRequest({
+    required String fromUserId,
+    required String toUserId,
+    required String recipeId,
+    required String recipeTitle,
+    String? fromUserName,
+  }) {
+    final now = clock.now().toUtc();
+    return SocialRequest(
+      id: const Uuid().v4(),
+      type: SocialRequestType.recipeShareRequest,
+      fromUserId: fromUserId,
+      toUserId: toUserId,
+      recipeId: recipeId,
+      recipeTitle: recipeTitle,
+      fromUserName: fromUserName,
+      sentAt: now,
+      expiresAt: now.add(_expiryDuration),
+    );
+  }
+
   factory SocialRequest.fromMap(String id, Map<String, dynamic> data) {
     final sentAt =
         SerializationUtils.safeDateTime(data, 'sentAt') ?? clock.now().toUtc();
@@ -125,6 +153,8 @@ class SocialRequest {
       groupName: SerializationUtils.safeNullableString(data, 'groupName'),
       groupEmoji: SerializationUtils.safeNullableString(data, 'groupEmoji'),
       fromUserName: SerializationUtils.safeNullableString(data, 'fromUserName'),
+      recipeId: SerializationUtils.safeNullableString(data, 'recipeId'),
+      recipeTitle: SerializationUtils.safeNullableString(data, 'recipeTitle'),
     );
   }
 
@@ -144,6 +174,8 @@ class SocialRequest {
       if (groupName != null) 'groupName': groupName,
       if (groupEmoji != null) 'groupEmoji': groupEmoji,
       if (fromUserName != null) 'fromUserName': fromUserName,
+      if (recipeId != null) 'recipeId': recipeId,
+      if (recipeTitle != null) 'recipeTitle': recipeTitle,
     };
   }
 
@@ -165,6 +197,8 @@ class SocialRequest {
       groupName: groupName,
       groupEmoji: groupEmoji,
       fromUserName: fromUserName,
+      recipeId: recipeId,
+      recipeTitle: recipeTitle,
     );
   }
 
@@ -173,6 +207,7 @@ class SocialRequest {
       clock.now().isAfter(expiresAt) || status == SocialRequestStatus.expired;
   bool get isFriendRequest => type == SocialRequestType.friend;
   bool get isGroupInvitation => type == SocialRequestType.groupInvitation;
+  bool get isRecipeShareRequest => type == SocialRequestType.recipeShareRequest;
 
   /// Convert to legacy FriendRequest for backward compatibility with VMs/views
   FriendRequest toFriendRequest() {
