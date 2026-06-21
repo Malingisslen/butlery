@@ -18,6 +18,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/social_recipe_service.dart';
 
 /// Activity feed tab in the friends view.
 class FeedTab {
@@ -303,7 +304,7 @@ class FeedTab {
       label: context.l10n.a11yFeedRecipePreview(event.recipeTitle),
       button: true,
       child: GestureDetector(
-        onTap: () => _navigateToRecipe(context, event.actorId, event.recipeId),
+        onTap: () => _navigateToRecipe(context, event),
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingSm),
           color: cs.surfaceContainerLow,
@@ -353,23 +354,53 @@ class FeedTab {
 
   static Future<void> _navigateToRecipe(
     BuildContext context,
-    String ownerId,
-    String recipeId,
+    ActivityEvent event,
   ) async {
     final recipe = await ServiceLocator.get<UnifiedRecipeService>()
-        .fetchFriendRecipe(ownerId: ownerId, recipeId: recipeId);
+        .fetchFriendRecipe(ownerId: event.actorId, recipeId: event.recipeId);
     if (!context.mounted) return;
     if (recipe != null) {
       final currentUserId =
           ServiceLocator.get<PermissionService>().currentUserId;
-      final readOnly = ownerId != currentUserId;
+      final readOnly = event.actorId != currentUserId;
       Navigator.of(context).pushNamed(
         Routes.recipeDetail,
         arguments: {'recipe': recipe, 'readOnly': readOnly},
       );
     } else {
-      // Phase 2 replaces this branch with the request-to-share dialog.
-      SnackBarUtils.showError(context, context.l10n.feedRecipeUnavailable);
+      // Recipe not shared — offer to request it from the owner.
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(ctx.l10n.feedRequestRecipeTitle),
+          content: Text(
+            ctx.l10n.feedRequestRecipeBody(event.actorDisplayName),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(ctx.l10n.commonCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(ctx.l10n.feedRequestRecipeConfirm),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+      final ok =
+          await ServiceLocator.get<SocialRecipeService>().requestRecipeShare(
+        ownerId: event.actorId,
+        recipeId: event.recipeId,
+        recipeTitle: event.recipeTitle,
+      );
+      if (!context.mounted) return;
+      if (ok) {
+        SnackBarUtils.showSuccess(context, context.l10n.feedRecipeRequestSent);
+      } else {
+        SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
+      }
     }
   }
 

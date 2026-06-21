@@ -1802,6 +1802,30 @@ abstract class AppLocalizations {
   /// **'Receptet är inte tillgängligt'**
   String get feedRecipeUnavailable;
 
+  /// No description provided for @feedRequestRecipeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Be om receptet'**
+  String get feedRequestRecipeTitle;
+
+  /// No description provided for @feedRequestRecipeBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} har inte delat det här receptet. Vill du be om det?'**
+  String feedRequestRecipeBody(String name);
+
+  /// No description provided for @feedRequestRecipeConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Be om receptet'**
+  String get feedRequestRecipeConfirm;
+
+  /// No description provided for @feedRecipeRequestSent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förfrågan skickad'**
+  String get feedRecipeRequestSent;
+
   /// No description provided for @chatLoadingImage.
   ///
   /// In sv, this message translates to:

@@ -732,6 +732,17 @@
   "minaReceptHeaderTitle": "dina\nrecept",
   "cookingModeNoInstructions": "Det här receptet har inga steg att laga efter.",
   "feedRecipeUnavailable": "Receptet är inte tillgängligt",
+  "feedRequestRecipeTitle": "Be om receptet",
+  "feedRequestRecipeBody": "{name} har inte delat det här receptet. Vill du be om det?",
+  "@feedRequestRecipeBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "feedRequestRecipeConfirm": "Be om receptet",
+  "feedRecipeRequestSent": "Förfrågan skickad",
   "chatLoadingImage": "Laddar bild...",
   "chatImageSent": "Bild skickad!",
   "chatNoImageSelected": "Ingen bild vald",

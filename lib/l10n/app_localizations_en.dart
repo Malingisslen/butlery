@@ -1039,6 +1039,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedRecipeUnavailable => 'This recipe isn\'t available';
 
   @override
+  String get feedRequestRecipeTitle => 'Request recipe';
+
+  @override
+  String feedRequestRecipeBody(String name) {
+    return '$name hasn\'t shared this recipe. Ask for it?';
+  }
+
+  @override
+  String get feedRequestRecipeConfirm => 'Request recipe';
+
+  @override
+  String get feedRecipeRequestSent => 'Request sent';
+
+  @override
   String get chatLoadingImage => 'Loading image...';
 
   @override

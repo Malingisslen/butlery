@@ -1040,6 +1040,20 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedRecipeUnavailable => 'Receptet är inte tillgängligt';
 
   @override
+  String get feedRequestRecipeTitle => 'Be om receptet';
+
+  @override
+  String feedRequestRecipeBody(String name) {
+    return '$name har inte delat det här receptet. Vill du be om det?';
+  }
+
+  @override
+  String get feedRequestRecipeConfirm => 'Be om receptet';
+
+  @override
+  String get feedRecipeRequestSent => 'Förfrågan skickad';
+
+  @override
   String get chatLoadingImage => 'Laddar bild...';
 
   @override

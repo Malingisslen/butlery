@@ -2,11 +2,13 @@
 //
 // Task 5 (2026-06-21): Wire feed recipe tap to open a friend's shared recipe
 // read-only.
+// Task 9 (2026-06-21): Replace unavailable-branch with request-recipe dialog.
 //
-// Two behavioral proofs:
+// Behavioral proofs:
 // 1. fetchFriendRecipe returns a recipe → navigation pushes Routes.recipeDetail
 //    with readOnly:true in the route arguments.
-// 2. fetchFriendRecipe returns null → feedRecipeUnavailable SnackBar is shown.
+// 2. fetchFriendRecipe returns null → shows request dialog; confirming calls
+//    requestRecipeShare and shows feedRecipeRequestSent snackbar.
 //
 // Harness: NavigatorObserver (mocktail) captures pushed route settings.
 // Uses production.ServiceLocator.initialize + TestServiceLocator bridge,
@@ -23,6 +25,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
 import 'package:butlery/views/social/friends_list/feed_tab.dart';
@@ -53,6 +56,7 @@ const _recipeTitle = 'Vännens Pasta';
 
 void main() {
   late MockUnifiedRecipeService recipeService;
+  late MockSocialRecipeService socialRecipeService;
   late _MockNavigatorObserver navObserver;
   late Recipe friendRecipe;
   late ActivityEvent sharedEvent;
@@ -91,6 +95,9 @@ void main() {
     recipeService = MockUnifiedRecipeService();
     recipeService.setRecipeState(recipes: [], isInitialized: true);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
+
+    socialRecipeService = MockSocialRecipeService();
+    TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
 
     feedVm = _MockActivityFeedViewModel();
     when(() => feedVm.isLoading).thenReturn(false);
@@ -234,17 +241,25 @@ void main() {
     );
 
     testWidgets(
-      'fetchFriendRecipe returns null → shows feedRecipeUnavailable SnackBar',
+      'fetchFriendRecipe returns null → shows request dialog; confirm calls requestRecipeShare and shows success snackbar',
       (tester) async {
-        // Proves: when the recipe can't be fetched (deleted, not shared, etc.),
-        // the feed gives user feedback via the feedRecipeUnavailable snack bar
-        // instead of navigating or silently doing nothing.
+        // Proves: when the recipe isn't shared yet, tapping it opens a dialog
+        // asking the user if they want to request it. Confirming calls
+        // requestRecipeShare and shows the feedRecipeRequestSent success snackbar.
         when(
           () => recipeService.fetchFriendRecipe(
             ownerId: _ownerUserId,
             recipeId: _recipeId,
           ),
         ).thenAnswer((_) async => null);
+
+        when(
+          () => socialRecipeService.requestRecipeShare(
+            ownerId: _ownerUserId,
+            recipeId: _recipeId,
+            recipeTitle: _recipeTitle,
+          ),
+        ).thenAnswer((_) async => true);
 
         await tester.pumpWidget(buildApp());
         await tester.pump();
@@ -255,11 +270,39 @@ void main() {
         await tester.tap(recipeTile);
         await tester.pumpAndSettle();
 
-        // The SnackBar should appear with the unavailable message.
+        // Dialog should appear with the body text including the actor's name.
+        expect(
+          find.textContaining('Anna'),
+          findsWidgets,
+          reason: 'Dialog body must include the actor display name',
+        );
+        expect(
+          find.byType(AlertDialog),
+          findsOneWidget,
+          reason: 'AlertDialog must be shown when recipe is unavailable',
+        );
+
+        // Tap the confirm button.
+        final confirmButton = find.text('Be om receptet');
+        // The button text appears in both title and action; tap the last one
+        // (actions row).
+        await tester.tap(confirmButton.last);
+        await tester.pumpAndSettle();
+
+        // requestRecipeShare must have been called exactly once.
+        verify(
+          () => socialRecipeService.requestRecipeShare(
+            ownerId: _ownerUserId,
+            recipeId: _recipeId,
+            recipeTitle: _recipeTitle,
+          ),
+        ).called(1);
+
+        // Success snackbar must appear.
         expect(
           find.byType(SnackBar),
           findsOneWidget,
-          reason: 'SnackBar must appear when recipe is unavailable',
+          reason: 'Success SnackBar must appear after request is sent',
         );
       },
     );

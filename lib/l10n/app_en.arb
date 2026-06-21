@@ -726,6 +726,17 @@
   "minaReceptHeaderTitle": "your\nrecipes",
   "cookingModeNoInstructions": "This recipe has no steps to cook from.",
   "feedRecipeUnavailable": "This recipe isn't available",
+  "feedRequestRecipeTitle": "Request recipe",
+  "feedRequestRecipeBody": "{name} hasn't shared this recipe. Ask for it?",
+  "@feedRequestRecipeBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "feedRequestRecipeConfirm": "Request recipe",
+  "feedRecipeRequestSent": "Request sent",
   "chatLoadingImage": "Loading image...",
   "chatImageSent": "Image sent!",
   "chatNoImageSelected": "No image selected",
