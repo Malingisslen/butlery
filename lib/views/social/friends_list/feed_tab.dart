@@ -14,7 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -350,24 +350,18 @@ class FeedTab {
     );
   }
 
-  static Future<void> _navigateToRecipe(
-      BuildContext context, String recipeId) async {
-    try {
-      final recipeRepo = ServiceLocator.get<RecipeRepository>();
-      final recipe = await recipeRepo.read(recipeId);
-      if (!context.mounted) return;
-      if (recipe != null) {
-        Navigator.of(context).pushNamed(
-          Routes.recipeDetail,
-          arguments: recipe,
-        );
-      } else {
-        // read() is user-scoped: a friend's recipe (or a deleted one) returns
-        // null. Give feedback instead of failing the tap silently.
-        SnackBarUtils.showError(context, context.l10n.feedRecipeUnavailable);
-      }
-    } catch (_) {
-      if (!context.mounted) return;
+  static void _navigateToRecipe(BuildContext context, String recipeId) {
+    // Resolve via the recipe service (service layer, not a repository in the
+    // view). Returns null for a recipe the user can't see — e.g. a friend's,
+    // or a deleted one — so give feedback rather than failing the tap silently.
+    final recipe =
+        ServiceLocator.get<UnifiedRecipeService>().getRecipeById(recipeId);
+    if (recipe != null) {
+      Navigator.of(context).pushNamed(
+        Routes.recipeDetail,
+        arguments: recipe,
+      );
+    } else {
       SnackBarUtils.showError(context, context.l10n.feedRecipeUnavailable);
     }
   }
