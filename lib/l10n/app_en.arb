@@ -7283,6 +7283,18 @@
   "notificationActionOpenApp": "Open app",
   "notificationDefaultTitle": "New activity",
   "notificationDefaultBody": "You have new activity in Butlery",
+  "recipeShareRequestNotifTitle": "Recipe request",
+  "recipeShareRequestNotifBody": "{name} wants to see your recipe \"{title}\"",
+  "@recipeShareRequestNotifBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDigestRecipes": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@notificationDigestRecipes": {
     "placeholders": {

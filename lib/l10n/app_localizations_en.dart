@@ -11342,6 +11342,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationDefaultBody => 'You have new activity in Butlery';
 
   @override
+  String get recipeShareRequestNotifTitle => 'Recipe request';
+
+  @override
+  String recipeShareRequestNotifBody(String name, String title) {
+    return '$name wants to see your recipe \"$title\"';
+  }
+
+  @override
   String notificationDigestRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

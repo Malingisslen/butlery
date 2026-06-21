@@ -240,6 +240,26 @@ class FirebaseSocialRequestRepository
     return query.docs.isNotEmpty;
   }
 
+  /// Check if a pending recipe-share request already exists for the
+  /// (requester, owner, recipe) triple. Mirrors [friendRequestExists] —
+  /// used to make "ask a friend for a recipe" idempotent so a double-tap
+  /// can't write two requests or fire two notifications.
+  Future<bool> recipeShareRequestExists(
+    String fromUserId,
+    String toUserId,
+    String recipeId,
+  ) async {
+    final query = await _requestsRef
+        .where('fromUserId', isEqualTo: fromUserId)
+        .where('toUserId', isEqualTo: toUserId)
+        .where('recipeId', isEqualTo: recipeId)
+        .where('type', isEqualTo: SocialRequestType.recipeShareRequest.name)
+        .where('status', isEqualTo: SocialRequestStatus.pending.name)
+        .limit(1)
+        .get();
+    return query.docs.isNotEmpty;
+  }
+
   // ── Friend request streams ──
 
   Stream<List<FriendRequest>> incomingFriendRequestsStream(String userId) {

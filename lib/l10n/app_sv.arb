@@ -7334,6 +7334,18 @@
   "notificationActionOpenApp": "Öppna app",
   "notificationDefaultTitle": "Ny aktivitet",
   "notificationDefaultBody": "Du har ny aktivitet i Butlery",
+  "recipeShareRequestNotifTitle": "Receptförfrågan",
+  "recipeShareRequestNotifBody": "{name} vill se ditt recept \"{title}\"",
+  "@recipeShareRequestNotifBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDigestRecipes": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@notificationDigestRecipes": {
     "placeholders": {

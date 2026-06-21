@@ -11371,6 +11371,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get notificationDefaultBody => 'Du har ny aktivitet i Butlery';
 
   @override
+  String get recipeShareRequestNotifTitle => 'Receptförfrågan';
+
+  @override
+  String recipeShareRequestNotifBody(String name, String title) {
+    return '$name vill se ditt recept \"$title\"';
+  }
+
+  @override
   String notificationDigestRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

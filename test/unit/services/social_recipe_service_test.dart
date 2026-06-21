@@ -42,6 +42,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
 
 // -------------------- Fakes (no FakeAuthRepository antipattern, BUT-1074) --
 
@@ -57,6 +58,11 @@ class _FakePermissionService extends Fake implements PermissionService {
 }
 
 class _FakeUserService extends Fake implements UserService {}
+
+/// Recipe-share requests aren't exercised by this suite; a bare fake satisfies
+/// the constructor dependency added for the request/accept flow.
+class _FakeSocialRequestRepository extends Fake
+    implements FirebaseSocialRequestRepository {}
 
 /// Records calls + lets each method be configured to throw a specific error.
 class _FakeSharedRecipeRepository extends Fake
@@ -327,6 +333,7 @@ void main() {
       permissionService: permission,
       sharedRecipeRepository: recipeRepo,
       sharedMenuRepository: menuRepo,
+      socialRequestRepository: _FakeSocialRequestRepository(),
     );
   });
 

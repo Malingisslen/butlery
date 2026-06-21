@@ -22,6 +22,7 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
@@ -78,6 +79,7 @@ class SocialModule implements DIModule {
         UserRepository,
         UserService,
         FriendsRepository,
+        FirebaseSocialRequestRepository,
         UnifiedFriendsService,
         CommentsRepository,
         RatingsRepository,
@@ -135,6 +137,7 @@ class SocialModule implements DIModule {
         permissionService: app<PermissionService>(),
         sharedRecipeRepository: app<FirebaseSharedRecipeRepository>(),
         sharedMenuRepository: app<FirebaseSharedMenuRepository>(),
+        socialRequestRepository: app<FirebaseSocialRequestRepository>(),
       ),
     );
 
@@ -319,6 +322,14 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<FirebaseSharedShoppingRepository>(
         () => FirebaseSharedShoppingRepository(
+            authRepository: container<AuthRepository>()),
+      );
+
+      // Recipe-share requests reuse the unified social_requests collection.
+      // SocialRecipeService injects this for the "ask a friend for a recipe"
+      // + accept flow (idempotent recipeShareRequest writes).
+      container.registerLazySingleton<FirebaseSocialRequestRepository>(
+        () => FirebaseSocialRequestRepository(
             authRepository: container<AuthRepository>()),
       );
 

@@ -88,6 +88,8 @@ abstract final class NotificationPayloadType {
   // First-class FCM payload type so receivers can route taps into the
   // ping ack flow instead of borrowing the friend_request handler.
   static const String ping = 'ping';
+  // Recipe-share request from a friend asking the owner to share a recipe.
+  static const String recipeShareRequest = 'recipe_share_request';
 }
 
 /// Notification delivery strategy configuration

@@ -29,6 +29,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
+import 'package:butlery/models/social_request.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
@@ -36,6 +38,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
+import 'package:butlery/services/social/modules/recipe_share_request_module.dart';
 
 class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final UserService _userService;
@@ -43,6 +46,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   final PermissionService _permissionService;
   final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   final FirebaseSharedMenuRepository _sharedMenuRepository;
+  final FirebaseSocialRequestRepository _socialRequestRepository;
 
   /// Resolved lazily to avoid cross-module dependency ordering issues
   /// (UnifiedShoppingService lives in CollaborationModule)
@@ -51,6 +55,7 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
   // Modules
   late final SocialParticipantResolverModule _participantResolver;
+  late final RecipeShareRequestModule _recipeShareRequestModule;
 
   // State
   List<SharedRecipe> _sharedRecipes = [];
@@ -64,11 +69,13 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
     required PermissionService permissionService,
     required FirebaseSharedRecipeRepository sharedRecipeRepository,
     required FirebaseSharedMenuRepository sharedMenuRepository,
+    required FirebaseSocialRequestRepository socialRequestRepository,
   })  : _userService = userService,
         _recipeService = recipeService,
         _permissionService = permissionService,
         _sharedRecipeRepository = sharedRecipeRepository,
-        _sharedMenuRepository = sharedMenuRepository {
+        _sharedMenuRepository = sharedMenuRepository,
+        _socialRequestRepository = socialRequestRepository {
     _participantResolver = SocialParticipantResolverModule(
       userService: _userService,
       getSharedRecipes: () => _sharedRecipes,
@@ -76,6 +83,12 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
       sharedRecipeRepository: _sharedRecipeRepository,
       sharedMenuRepository: _sharedMenuRepository,
       getShoppingService: () => _shoppingService,
+    );
+    _recipeShareRequestModule = RecipeShareRequestModule(
+      socialRequestRepository: _socialRequestRepository,
+      recipeService: _recipeService,
+      permissionService: _permissionService,
+      userService: _userService,
     );
   }
 
@@ -446,6 +459,20 @@ class SocialRecipeService with StreamManagementMixin, ErrorHandlingMixin {
 
   Future<List<UserProfile>> getShoppingListParticipants(String listId) =>
       _participantResolver.getShoppingListParticipants(listId);
+
+  Future<bool> requestRecipeShare({
+    required String ownerId,
+    required String recipeId,
+    required String recipeTitle,
+  }) =>
+      _recipeShareRequestModule.requestRecipeShare(
+        ownerId: ownerId,
+        recipeId: recipeId,
+        recipeTitle: recipeTitle,
+      );
+
+  Future<bool> acceptRecipeShareRequest(SocialRequest request) =>
+      _recipeShareRequestModule.acceptRecipeShareRequest(request);
 
   void dispose() {
     disposeStreamResources();

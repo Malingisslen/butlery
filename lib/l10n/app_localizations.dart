@@ -19251,6 +19251,18 @@ abstract class AppLocalizations {
   /// **'Du har ny aktivitet i Butlery'**
   String get notificationDefaultBody;
 
+  /// No description provided for @recipeShareRequestNotifTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptförfrågan'**
+  String get recipeShareRequestNotifTitle;
+
+  /// No description provided for @recipeShareRequestNotifBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} vill se ditt recept \"{title}\"'**
+  String recipeShareRequestNotifBody(String name, String title);
+
   /// No description provided for @notificationDigestRecipes.
   ///
   /// In sv, this message translates to:
