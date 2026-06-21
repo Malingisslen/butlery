@@ -330,9 +330,15 @@ class MenuGenerator {
     // Preserve original constraints (e.g. "utan linser") on refresh
     final prompt = originalPrompt ?? '$currentCount $section';
 
+    // BUT-1329: a single-slot re-roll must get the same cross-week freshness
+    // down-weighting as a full generation, so last-week recipes are deprioritised
+    // here too. Empty set / no plan service → behaves exactly as before.
+    final recentIds = await _recentlyUsedRecipeIds();
+
     final newRecipes = await _menuService.generateMenuFromPrompt(
       prompt,
       availableRecipes,
+      recentlyUsedRecipeIds: recentIds,
     );
 
     if (newRecipes.containsKey(section)) {

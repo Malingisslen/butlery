@@ -1,8 +1,21 @@
 # Sprint Backlog
 
-## Sprint: Tier-A autonomous backlog — batch 1 (security/test cluster) — 2026-06-21
+## Sprint: Tier-A autonomous backlog — batch 2 (menu cross-week freshness) — 2026-06-21
 
-Goal (session): finish all 50 Tier-A tickets across successive batches. This is batch 1 of ~9.
+Goal (session): finish all 50 Tier-A tickets across successive batches.
+
+### Agent F: menu_generator recently-used plumbing (BUT-1329 + BUT-1330)
+- [ ] **F1. Thread recentlyUsedRecipeIds into regenerateMenuSection** `[Tier A]` (BUT-1329)
+  - Acceptance: regenerateMenuSection reuses `_recentlyUsedRecipeIds()` and passes it into `generateMenuFromPrompt` · a single-section re-roll down-weights last-week recipes the same as full generation · existing menu_service/menu_generator tests stay green
+- [ ] **F2. Unit-test `_recentlyUsedRecipeIds()` plumbing** `[Tier A]` (BUT-1330)
+  - Acceptance: null/unregistered service → empty set · read throws → empty set AND generation still proceeds · correct this-week+last-week docs requested under a fixed clock
+
+### Post-Sprint: analyze · test · grade · commit · push · Done
+
+---
+
+## (archived) Sprint: Tier-A batch 1 (security/test cluster) — 2026-06-21 — SHIPPED dd64b9461
+Closed Done: BUT-1335, BUT-1334, BUT-1333, BUT-1337, BUT-1336. Follow-up filed: BUT-1348.
 
 ### Agent A: testing-specialist — recipe-list allergen safety (BUT-1335)
 - [ ] **A1. Dedicated tests for allergen-free / dietary-safe recipe-list filter** `[Tier A]` (BUT-1335)

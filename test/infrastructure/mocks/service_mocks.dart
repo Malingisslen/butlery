@@ -83,6 +83,7 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
   Map<String, List<Recipe>>? _generateMenuResult;
   String? _lastGeneratePrompt;
   List<Recipe>? _lastGenerateRecipes;
+  Set<String>? _lastRecentlyUsedRecipeIds;
   bool _shouldThrowError = false;
 
   /// Configure the result for generateMenuFromPrompt
@@ -101,6 +102,10 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
   /// Get the last recipes list used in generateMenuFromPrompt
   List<Recipe>? get lastGenerateRecipes => _lastGenerateRecipes;
 
+  /// Get the last recent-used recipe-id set threaded into generateMenuFromPrompt
+  /// (used to assert BUT-1318/BUT-1329 cross-week freshness plumbing).
+  Set<String>? get lastRecentlyUsedRecipeIds => _lastRecentlyUsedRecipeIds;
+
   @override
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
     String input,
@@ -113,6 +118,7 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
 
     _lastGeneratePrompt = input;
     _lastGenerateRecipes = allRecipes;
+    _lastRecentlyUsedRecipeIds = recentlyUsedRecipeIds;
 
     return _generateMenuResult ?? <String, List<Recipe>>{};
   }

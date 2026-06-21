@@ -1,17 +1,24 @@
 // test/unit/viewmodels/menu/menu_generator_test.dart
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/core/utils/iso_week_utils.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
+
+class _MockWeeklyMenuPlanService extends Mock
+    implements WeeklyMenuPlanService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +29,7 @@ void main() {
   late MockUserService mockUserService;
 
   setUpAll(() async {
+    registerFallbackValue(DateTime(2026));
     await TestServiceLocator.initialize();
   });
 
@@ -1082,6 +1090,146 @@ void main() {
       final suggestions = menuGenerator.getGenerationSuggestions();
       expect(suggestions, contains('Veckomeny från favoriter'));
       expect(suggestions, contains('Meny med senaste recept'));
+    });
+  });
+
+  // BUT-1330: cross-week recent-used plumbing (`_recentlyUsedRecipeIds`).
+  // Tested via the observable effect on the MenuService call — the recent set
+  // is private, so we assert what gets threaded into generateMenuFromPrompt and
+  // that graceful-degradation paths never block generation.
+  group('MenuGenerator - Recent-used recipe plumbing (BUT-1318/1329)', () {
+    // Tuesday inside ISO week 15, 2026 (week starts Mon 2026-04-06).
+    final fixedNow = DateTime(2026, 4, 7, 9);
+    final thisWeekStart = IsoWeekUtils.weekStartOf(fixedNow);
+    final lastWeekStart = thisWeekStart.subtract(const Duration(days: 7));
+
+    late _MockWeeklyMenuPlanService mockPlanService;
+
+    WeeklyMenuPlan planWithRecipeIds(DateTime weekStart, List<String> ids) {
+      final empty = WeeklyMenuPlan.empty(userId: 'u', date: weekStart);
+      return empty.copyWith(
+        entries: [
+          for (final id in ids)
+            WeeklyMenuPlanEntry.create(
+              day: DayOfWeek.mon,
+              slot: MealSlot.ovrigt,
+              recipeId: id,
+              recipeTitle: id,
+            ),
+        ],
+      );
+    }
+
+    MenuGenerator generatorWithPlanService(WeeklyMenuPlanService? planService) {
+      return MenuGenerator(
+        menuService: mockMenuService,
+        recipeService: mockRecipeService,
+        userService: mockUserService,
+        weeklyMenuPlanService: planService,
+      );
+    }
+
+    setUp(() {
+      mockPlanService = _MockWeeklyMenuPlanService();
+      mockMenuService.setGenerateMenuResult(createTestMenu());
+    });
+
+    test('no plan service wired -> empty recent set, generation still proceeds',
+        () async {
+      final generator = generatorWithPlanService(null);
+
+      final result = await generator.generateMenuFromPrompt('veckomeny');
+
+      expect(result, isNotEmpty);
+      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+    });
+
+    test(
+        'plan-service read throws -> error swallowed, empty set, generation proceeds',
+        () async {
+      when(() => mockPlanService.getWeek(any()))
+          .thenThrow(StateError('boom — recent-plan read failed'));
+      final generator = generatorWithPlanService(mockPlanService);
+
+      final result = await generator.generateMenuFromPrompt('veckomeny');
+
+      expect(result, isNotEmpty,
+          reason: 'a recent-plan read failure must never block generation');
+      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+    });
+
+    test(
+        'reads this-week + last-week plans under a fixed clock and unions their recipe ids',
+        () async {
+      when(() => mockPlanService.getWeek(thisWeekStart))
+          .thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
+      when(() => mockPlanService.getWeek(lastWeekStart)).thenAnswer(
+          (_) async => planWithRecipeIds(lastWeekStart, ['r2', 'r3']));
+      final generator = generatorWithPlanService(mockPlanService);
+
+      await withClock(Clock.fixed(fixedNow), () async {
+        await generator.generateMenuFromPrompt('veckomeny');
+      });
+
+      // 1-2 week window only: this week + last week, no other weeks.
+      verify(() => mockPlanService.getWeek(thisWeekStart)).called(1);
+      verify(() => mockPlanService.getWeek(lastWeekStart)).called(1);
+      verifyNoMoreInteractions(mockPlanService);
+      expect(
+        mockMenuService.lastRecentlyUsedRecipeIds,
+        equals({'r1', 'r2', 'r3'}),
+      );
+    });
+
+    test('empty history -> empty set, generation still proceeds', () async {
+      when(() => mockPlanService.getWeek(any())).thenAnswer((invocation) async {
+        final week = invocation.positionalArguments.first as DateTime;
+        return WeeklyMenuPlan.empty(userId: 'u', date: week);
+      });
+      final generator = generatorWithPlanService(mockPlanService);
+
+      await withClock(Clock.fixed(fixedNow), () async {
+        final result = await generator.generateMenuFromPrompt('veckomeny');
+        expect(result, isNotEmpty);
+      });
+
+      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+    });
+
+    test(
+        'BUT-1329: regenerateMenuSection threads the same recent set as full generation',
+        () async {
+      when(() => mockPlanService.getWeek(thisWeekStart))
+          .thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
+      when(() => mockPlanService.getWeek(lastWeekStart))
+          .thenAnswer((_) async => planWithRecipeIds(lastWeekStart, ['r2']));
+      final generator = generatorWithPlanService(mockPlanService);
+      mockMenuService.setGenerateMenuResult({
+        'Monday': [RecipeFactory.build(title: 'New')]
+      });
+
+      await withClock(Clock.fixed(fixedNow), () async {
+        await generator.regenerateMenuSection('Monday', createTestMenu());
+      });
+
+      expect(
+        mockMenuService.lastRecentlyUsedRecipeIds,
+        equals({'r1', 'r2'}),
+        reason: 'a single-slot re-roll must get cross-week freshness too',
+      );
+    });
+
+    test(
+        'BUT-1329: regenerateMenuSection with no plan service passes empty set',
+        () async {
+      final generator = generatorWithPlanService(null);
+      mockMenuService.setGenerateMenuResult({
+        'Monday': [RecipeFactory.build(title: 'New')]
+      });
+
+      await generator.regenerateMenuSection('Monday', createTestMenu());
+
+      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
     });
   });
 }
