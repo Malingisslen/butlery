@@ -1,15 +1,19 @@
 # Sprint Backlog
 
-## Sprint: Tier-A autonomous backlog — batch 3 (small test buckets) — 2026-06-21
+## Sprint: Tier-A autonomous backlog — batch 4 (social + import VM tests) — 2026-06-21
 
 Goal (session): finish the 11 genuinely code-and-ship-now Tier-A tickets (per 2026-06-21 re-classification → `.claude/state/backlog-scan.json`). 26 others are ops/console/key/legal-blocked → flag in final report.
 
-### Batch 3 (test buckets + tiny print refactor)
-- [x] **BUT-1346** menu swap scoring hierarchy (+3/+2/+1) + SharedShoppingListsViewModel `[Tier A]`
-- [x] **BUT-1347** recipe-print HTML builder extracted (VM-testable) + real HTML/XSS tests; PWA stub safety `[Tier A]` (PWA web-only logic → follow-up BUT-1350)
-- [x] **BUT-1344** IngredientLookupService article/adjective stripping + AddPantryItemSheet widget `[Tier A]`
+### Batch 4 (test-only)
+- [x] **BUT-1341** SOC-04 unblockUser VM gap (SOC-06/08/12 already covered → premise mostly stale); SOC-07/18 deferred to view-tests `[Tier A]`
+- [x] **BUT-1345** archive search/selection/operations managers + AssistedImportViewModel (IMP-02 expander already covered; IMP-11 ONNX excluded → BUT-1240) `[Tier A]`
 
-### Remaining A-CODE-NOW (next batches): BUT-1341, BUT-1342, BUT-1345, BUT-1343 (test buckets), BUT-840 + BUT-1167 (functions/src), BUT-431 (DI cold-start → Tier C/In Review), BUT-1149 (coverage floor — LAST)
+### Remaining A-CODE-NOW (next batches): BUT-1342, BUT-1343 (test buckets), BUT-840 + BUT-1167 (functions/src), BUT-431 (DI cold-start → Tier C/In Review), BUT-1149 (coverage floor — LAST)
+
+---
+
+## (archived) batch 3 (small test buckets) — SHIPPED 4db30718c
+Closed Done: BUT-1346, BUT-1347, BUT-1344. Follow-up: BUT-1350.
 
 ---
 

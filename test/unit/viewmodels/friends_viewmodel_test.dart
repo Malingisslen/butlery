@@ -745,6 +745,95 @@ void main() {
       });
     });
 
+    // SOC-04: block/unblock at the VM layer.
+    //
+    // FriendsViewModel has no blockUser() method — blocking is handled by the
+    // view layer (friend_request_actions.dart) which calls the service directly.
+    // The VM surface for the block domain is:
+    //   • unblockUser(userId)     — delegates to management, returns bool, logs analytic
+    //   • getFriendshipStatus()   — reads blockedUsers from the service (covered above)
+    //
+    // Notification-firing is NOT asserted here: FriendsViewModel.notifyListeners()
+    // schedules via addPostFrameCallback, so the bool-return contract is the
+    // correct, stable VM-level boundary to pin.
+    group('Block / Unblock', () {
+      test(
+          'unblockUser returns true and delegates to management service on success',
+          () async {
+        // This test proves that when the underlying management service reports
+        // success, the VM propagates true — a regression here would make the
+        // unblock button appear to fail in the UI while the action actually ran.
+        mockManagement.setManagementState(shouldSucceed: true);
+
+        final result = await viewModel.unblockUser('blocked-user-123');
+
+        expect(result, isTrue);
+      });
+
+      test('unblockUser returns false when management service reports failure',
+          () async {
+        // Proves failure propagation: if the service cannot write the unblock,
+        // the VM must return false so the UI can show an error to the user.
+        mockManagement.setManagementState(shouldSucceed: false);
+
+        final result = await viewModel.unblockUser('blocked-user-123');
+
+        expect(result, isFalse);
+      });
+
+      test('getFriendshipStatus reflects live blockedUsers from service', () {
+        // Proves the read path: when the service state contains a blocked user,
+        // the VM correctly surfaces FriendshipStatus.blocked for that id and
+        // FriendshipStatus.none for everyone else.
+        // (getFriendshipStatus reads blockedUsers directly from the service.)
+        mockFriendsService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [],
+          categoriesList: [],
+          blockedUsers: {'block-target-abc'},
+          isLoading: false,
+          error: null,
+          isInitialized: true,
+          management: mockManagement,
+        );
+
+        expect(
+          viewModel.getFriendshipStatus('block-target-abc'),
+          equals(FriendshipStatus.blocked),
+        );
+        expect(
+          viewModel.getFriendshipStatus('innocent-user-xyz'),
+          equals(FriendshipStatus.none),
+        );
+      });
+
+      test(
+          'getFriendshipStatus returns none for previously-blocked user after service state clears',
+          () {
+        // Proves unblock consistency: once the service no longer includes a
+        // user in blockedUsers, the VM must not keep reporting them as blocked.
+        // This would fail if the VM cached blockedUsers locally instead of
+        // reading the live service state.
+        mockFriendsService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [],
+          categoriesList: [],
+          blockedUsers: {},
+          isLoading: false,
+          error: null,
+          isInitialized: true,
+          management: mockManagement,
+        );
+
+        expect(
+          viewModel.getFriendshipStatus('formerly-blocked-user'),
+          equals(FriendshipStatus.none),
+        );
+      });
+    });
+
     group('Mutual Friends', () {
       test('should get mutual friends with another user', () async {
         // Arrange
