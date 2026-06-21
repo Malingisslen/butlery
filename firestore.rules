@@ -228,8 +228,13 @@ service cloud.firestore {
 
       // User's recipes
       match /recipes/{recipeId} {
-        // Read access for owner
-        allow read: if isOwner(userId);
+        // Read access for the owner, OR any uid the owner explicitly shared
+        // this recipe with (key in socialData.memberPermissions). Read-only —
+        // the allergen-critical create/update validation below stays owner-only.
+        allow read: if isOwner(userId)
+          || (isAuthenticated()
+              && request.auth.uid in resource.data.get('socialData', {})
+                                             .get('memberPermissions', {}));
 
         // TagResult validation on create/update (allergen safety critical)
         allow create: if isOwner(userId)

@@ -753,6 +753,38 @@ read additions has admin-allow + non-admin-deny, anon-deny on analytics, and the
 read-split didn't drop the original grant. The only gaps I closed were
 infra-wiring (npm script + CI), not test coverage. No firestore.rules edits.
 
+### 2026-06-21 — recipe shared-read widening (memberPermissions key gate)
+
+New `allow read` branch on `users/{userId}/recipes/{recipeId}`:
+
+```
+allow read: if isOwner(userId)
+  || (isAuthenticated()
+      && request.auth.uid in resource.data.get('socialData', {})
+                                     .get('memberPermissions', {}));
+```
+
+CEL analysis (all four edge-cases verified on emulator):
+1. `socialData` absent → `get('socialData', {})` returns `{}` → `get('memberPermissions', {})` returns `{}` → `uid in {}` = false. SAFE.
+2. `memberPermissions` absent → same empty-map default path. SAFE.
+3. UID is a VALUE, not a key (e.g. `{other-key: uid}`) → CEL `in` on maps checks KEYS only → false. SAFE.
+4. Unauthenticated → `isAuthenticated()` short-circuits → false. SAFE.
+Chained `.get()` on an intermediate map result is valid CEL — returns the nested value or default.
+
+Write paths (`allow create`, `allow update`, `allow delete`) are all `isOwner(userId)` — unchanged. Admin override `allow read, delete: if isAdmin()` at L264 is unchanged (no write loosened).
+
+Test file: `functions/src/__tests__/recipe-shared-read-rules.test.ts` (6 tests).
+Wired as `test:rules:recipe-shared-read`; appended to `test:rules:all`; added to both path-filter blocks in `.github/workflows/firestore-rules.yml`.
+
+Map row to add:
+
+| `users/{userId}/recipes/{recipeId}` (shared-read branch) | `recipe-shared-read-rules.test.ts` | `test:rules:recipe-shared-read` |
+
+**Coverage gaps found in the authored 4-test file (I added 2 to fix):**
+- Missing: `unauthenticated` read deny (SR5) — Critical for a privacy-sensitive collection.
+- Missing: recipe WITH NO `socialData` field — stranger denied (SR6). Low-risk given CEL default-map analysis, but pinned.
+- Remaining uncovered (Low): uid-as-value-not-key attack; owner update-still-works positive. Rule analysis confirms both are safe without explicit test.
+
 ### 2026-06-20 — parse_events admin-read added to admin-dashboard-rules.test.ts
 
 New `match /parse_events/{eventId} { allow read: if isAdmin() }` (admin drill-down
