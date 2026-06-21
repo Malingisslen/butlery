@@ -722,6 +722,163 @@ void main() {
       });
     });
   });
+
+  // BUT-1344 COOK-12: covers fuzzy-variation behaviors not exercised above.
+  // Scoped to two concrete production paths in _cleanForLookup (article removal)
+  // and _generateLookupVariations (adjective prefix/suffix removal).
+  //
+  // Each test proves: if the corresponding code line were removed, the
+  // ingredient would NOT be found and the test would turn red.
+
+  group('BUT-1344 COOK-12: Swedish article removal (_cleanForLookup)', () {
+    // The regex `^(en|ett|den|det|de)\s+` in _cleanForLookup strips leading
+    // articles so "en tomat" resolves the same canonical ingredient as "tomat".
+
+    test('strips leading "en" article before lookup', () async {
+      // "en tomat" → cleaned to "tomat" → found
+      final tomato = _createIngredient('tomato', 'tomat');
+      when(() => mockIngredientRepo.findByName('tomat'))
+          .thenAnswer((_) async => tomato);
+
+      final result = await service.lookupIngredients(['en tomat']);
+
+      expect(result.matchedCount, 1,
+          reason: '"en tomat" must resolve via article-stripping to "tomat"');
+      expect(result.matched.first.id, 'tomato');
+    });
+
+    test('strips leading "ett" article before lookup', () async {
+      // "ett ägg" → SwedishCharacterNormalizer: "ett agg" → strip "ett " → "agg"
+      final egg = _createIngredient('egg', 'agg');
+      when(() => mockIngredientRepo.findByName('agg'))
+          .thenAnswer((_) async => egg);
+
+      final result = await service.lookupIngredients(['ett ägg']);
+
+      expect(result.matchedCount, 1,
+          reason: '"ett ägg" must resolve via article-stripping to "agg"');
+      expect(result.matched.first.id, 'egg');
+    });
+
+    test('strips leading "den" article before lookup', () async {
+      // "den vitlöken" → "den vitloken" → strip "den " → "vitloken"
+      final garlic = _createIngredient('garlic', 'vitloken');
+      when(() => mockIngredientRepo.findByName('vitloken'))
+          .thenAnswer((_) async => garlic);
+
+      final result = await service.lookupIngredients(['den vitlöken']);
+
+      expect(result.matchedCount, 1,
+          reason: '"den vitlöken" must strip "den " before lookup');
+      expect(result.matched.first.id, 'garlic');
+    });
+  });
+
+  group(
+      'BUT-1344 COOK-12: adjective stripping variations (_generateLookupVariations)',
+      () {
+    // The adjective lists in _generateLookupVariations strip leading/trailing
+    // descriptors so "färsk lax" or "lax färsk" resolves the canonical "lax".
+    // Each test would fail if the relevant adjective entry were removed from the list.
+
+    test('strips leading adjective "farsk" (från "färsk") to find ingredient',
+        () async {
+      // "färsk lax" → _cleanForLookup → "farsk lax"
+      // Exact name not found, alias not found, variations tried:
+      // - "farsk lax" (space-removed: "farsklax" — not matching)
+      // - adjective prefix "farsk ": produces variation "lax" → found
+      final salmon = _createIngredient('salmon', 'lax');
+
+      when(() => mockIngredientRepo.findByName('farsk lax'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('farsk lax'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('farsklax'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('farsklax'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('lax'))
+          .thenAnswer((_) async => salmon);
+
+      final result = await service.lookupIngredients(['färsk lax']);
+
+      expect(result.matchedCount, 1,
+          reason: '"färsk lax" must find "lax" via adjective-prefix stripping');
+      expect(result.matched.first.id, 'salmon');
+    });
+
+    test('strips leading adjective "torkad" to find ingredient', () async {
+      // "torkad oregano" → _cleanForLookup → "torkad oregano"
+      // adjective prefix "torkad ": produces variation "oregano" → found
+      final oregano = _createIngredient('oregano', 'oregano');
+
+      when(() => mockIngredientRepo.findByName('torkad oregano'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('torkad oregano'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('torkadoregano'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('torkadoregano'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('oregano'))
+          .thenAnswer((_) async => oregano);
+
+      final result = await service.lookupIngredients(['torkad oregano']);
+
+      expect(result.matchedCount, 1,
+          reason:
+              '"torkad oregano" must find "oregano" via adjective stripping');
+      expect(result.matched.first.id, 'oregano');
+    });
+
+    test('strips trailing adjective "riven" to find ingredient', () async {
+      // "parmesan riven" → _cleanForLookup → "parmesan riven"
+      // adjective suffix " riven": produces variation "parmesan" → found
+      final parmesan = _createIngredient('parmesan', 'parmesan');
+
+      when(() => mockIngredientRepo.findByName('parmesan riven'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('parmesan riven'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('parmesanriven'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('parmesanriven'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('parmesan'))
+          .thenAnswer((_) async => parmesan);
+
+      final result = await service.lookupIngredients(['parmesan riven']);
+
+      expect(result.matchedCount, 1,
+          reason:
+              '"parmesan riven" must find "parmesan" via adjective-suffix stripping');
+      expect(result.matched.first.id, 'parmesan');
+    });
+
+    test('strips trailing adjective "hackad" to find ingredient', () async {
+      // "lök hackad" → adjective suffix " hackad" → variation "lok"
+      final onion = _createIngredient('onion', 'lok');
+
+      when(() => mockIngredientRepo.findByName('lok hackad'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('lok hackad'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('lokhackad'))
+          .thenAnswer((_) async => null);
+      when(() => mockIngredientRepo.findByAlias('lokhackad'))
+          .thenAnswer((_) async => []);
+      when(() => mockIngredientRepo.findByName('lok'))
+          .thenAnswer((_) async => onion);
+
+      // "lök hackad" normalises to "lok hackad" (ö→o)
+      final result = await service.lookupIngredients(['lök hackad']);
+
+      expect(result.matchedCount, 1,
+          reason:
+              '"lök hackad" must find "lök" via trailing adjective stripping');
+      expect(result.matched.first.id, 'onion');
+    });
+  });
 }
 
 /// Helper to create test ingredient data
