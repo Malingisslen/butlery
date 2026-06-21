@@ -677,6 +677,30 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
+  Future<Recipe?> readSharedRecipe({
+    required String ownerId,
+    required String recipeId,
+  }) async {
+    // Traced like the other cross-user reads (fetchUserRecipes /
+    // fetchPublicUserRecipes) so the feed-tap path is visible in Performance.
+    try {
+      return await FirebasePerformanceService.traceFirebaseQuery(
+        (_) async {
+          final doc = await getCollectionForUser(ownerId).doc(recipeId).get();
+          if (!doc.exists) return null;
+          return fromFirestore(doc);
+        },
+        collection: 'recipes',
+        resultCount: null,
+      );
+    } on FirebaseException catch (e) {
+      // permission-denied → the recipe isn't shared with us; treat as absent.
+      if (e.code == 'permission-denied') return null;
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<Recipe>> fetchAllUserRecipes(
     String userId, {
     int batchSize = 500,
