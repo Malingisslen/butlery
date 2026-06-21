@@ -24,6 +24,13 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 /// - Offline content synchronization
 /// - Automatic retagging of failed recipes
 class ContentStage implements BootstrapStage {
+  /// BUT-431 cold-start: when true, [execute] skips the Firestore ingredient
+  /// enrich so it can run after the first frame. The registry already falls
+  /// back to static [KnownIngredients] until enrichment lands, so deferring
+  /// only delays enrichment — it never throws. Defaults to false so the admin
+  /// entry point keeps the original eager behavior.
+  static bool deferIngredientEnrich = false;
+
   /// Retagging scheduler instance - kept alive for periodic checks.
   RetaggingScheduler? _retaggingScheduler;
 
@@ -50,8 +57,12 @@ class ContentStage implements BootstrapStage {
       // No duplicate initialization needed here - the early return guard would prevent it anyway
 
       // Enrich ingredient registry from Firestore (Firebase = source of truth).
-      // Must run before CRF parser initializes so enriched ingredients are available.
-      await _enrichIngredientRegistry();
+      // BUT-431: when deferral is on, main() runs this after the first frame
+      // via [enrichIngredientRegistry]; the registry falls back to static
+      // KnownIngredients until then, so parsing still works in the meantime.
+      if (!deferIngredientEnrich) {
+        await enrichIngredientRegistry();
+      }
 
       // CRIT-5 FIX: Initialize RetaggingScheduler for automatic retry of failed tagging
       await _initializeRetaggingScheduler();
@@ -67,7 +78,10 @@ class ContentStage implements BootstrapStage {
 
   /// Loads Firestore ingredients into the registry so CRF and normalizer
   /// can use Firebase as the source of truth for ingredient recognition.
-  Future<void> _enrichIngredientRegistry() async {
+  /// Static + public so the deferred post-frame path (BUT-431) can invoke the
+  /// exact same work. Idempotent: [IngredientRegistryService.enrichFromFirestore]
+  /// guards on its internal enriched flag.
+  static Future<void> enrichIngredientRegistry() async {
     try {
       final registry = ServiceLocator.tryGet<IngredientRegistryService>();
       if (registry != null) {

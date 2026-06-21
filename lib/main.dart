@@ -136,6 +136,14 @@ Future<void> main() async {
         final initialThemeMode = await ThemeService.readCachedThemeMode();
 
         runApp(ButleryApp(initialThemeMode: initialThemeMode));
+
+        // BUT-431: run the two deferred non-critical init side-effects
+        // (perf-monitoring start + Firestore ingredient enrich) AFTER the first
+        // frame rasterizes, so cold-start to first paint isn't blocked on them.
+        // Registration stayed eager, so nothing depends on these synchronously.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          unawaited(runDeferredBootstrap());
+        });
       } catch (e, stackTrace) {
         runApp(
           ErrorApp(
@@ -156,6 +164,11 @@ Future<void> main() async {
 }
 
 Future<void> _initializeModularSystem() async {
+  // BUT-431: defer the two non-critical init side-effects out of the
+  // pre-runApp path. Must be set BEFORE bootstrap so the eager paths skip
+  // them; main() re-runs them in a post-frame callback after runApp.
+  enableDeferredBootstrap();
+
   // DI modules + bootstrap stages are built by the shared helper so the admin
   // entry point (lib/admin_main.dart) can reuse the exact same set.
   final modules = buildDiModules();

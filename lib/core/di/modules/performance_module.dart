@@ -29,6 +29,13 @@ import 'package:butlery/core/di/modules/content_module.dart';
 /// This module provides advanced performance optimization features
 /// and should be loaded after core services are initialized.
 class PerformanceModule implements DIModule {
+  /// BUT-431 cold-start: when true, [initialize] skips its non-critical
+  /// side-effects (perf-monitoring start + Firebase perf-collection toggle) so
+  /// they can run after the first frame. Registration via [configure] is
+  /// unaffected and stays eager. Defaults to false so the admin entry point and
+  /// the post-login re-init path keep the original eager behavior.
+  static bool deferInitSideEffects = false;
+
   @override
   String get name => 'Performance';
 
@@ -101,14 +108,13 @@ class PerformanceModule implements DIModule {
   @override
   Future<void> initialize() async {
     try {
-      final container = GetIt.instance;
+      // BUT-431: nothing resolves these side-effects during first paint, so
+      // when deferral is on we skip them here and main() re-runs them in a
+      // post-frame callback via [runInitSideEffects]. Registration already
+      // happened in configure(); this only delays perf-monitoring start.
+      if (deferInitSideEffects) return;
 
-      // Initialize performance monitoring first
-      final performanceMonitoring = container<PerformanceMonitoringService>();
-      performanceMonitoring.initialize();
-
-      // Disabled by default — consent-gated via _enableCollectionIfConsented()
-      await FirebasePerformanceService.setPerformanceCollectionEnabled(false);
+      await runInitSideEffects();
 
       // Note: IntelligentCacheManager is lazy and will initialize on first use
     } catch (e) {
@@ -119,6 +125,21 @@ class PerformanceModule implements DIModule {
         e,
       );
     }
+  }
+
+  /// The non-critical init side-effects, split out of [initialize] so the
+  /// deferred post-frame path (BUT-431) can invoke the exact same work.
+  /// Both calls are idempotent: PerformanceMonitoringService guards on its
+  /// internal monitoring flag, and the collection toggle is safe to repeat.
+  static Future<void> runInitSideEffects() async {
+    final container = GetIt.instance;
+
+    // Initialize performance monitoring first
+    final performanceMonitoring = container<PerformanceMonitoringService>();
+    performanceMonitoring.initialize();
+
+    // Disabled by default — consent-gated via _enableCollectionIfConsented()
+    await FirebasePerformanceService.setPerformanceCollectionEnabled(false);
   }
 
   @override

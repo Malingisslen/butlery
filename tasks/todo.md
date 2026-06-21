@@ -1,6 +1,15 @@
 # Sprint Backlog
 
-## Sprint: Tier-A autonomous backlog — batch 6 (Cloud Functions: AI8 CI gate) — 2026-06-21
+## Sprint: Tier-A autonomous backlog — batch 7 (cold-start deferral) — 2026-06-21
+
+### Batch 7 (Tier C → In Review)
+- [x] **BUT-431** defer PerformanceModule.initialize side-effects + ContentStage ingredient-enrich Firestore round-trip to a post-frame callback (registration stays eager; MessagingModule untouched; admin path unaffected). Premise was stale (main.dart already 237 lines via BUT-530; heavy services already auth-scope-deferred). Boot e2e tests 22/1-skip/0-fail; both gates clean. → In Review (startup change — needs your cold-start smoke).
+
+### Remaining: BUT-1149 (coverage floor) — left OPEN: documented multi-batch effort to reach 60%; bumping floor now would break CI.
+
+---
+
+## (archived) batch 6 (Cloud Functions: AI8 CI gate) — SHIPPED e1ac06cc3
 
 Goal (session): finish the genuinely code-and-ship-now Tier-A tickets (per 2026-06-21 re-classification → `.claude/state/backlog-scan.json`). Reclassification corrected: BUT-840 is actually Tier-D (no server-side Algolia + needs admin key + deploy → flagged on ticket).
 
