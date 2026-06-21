@@ -990,6 +990,98 @@ void main() {
       });
     });
 
+    // -----------------------------------------------------------------------
+    // GRP-11 — edge cases for startDirectConversation
+    // -----------------------------------------------------------------------
+    group('Direct Conversation — edge cases', () {
+      // Intent: when the service returns the SAME conversation ID for two calls
+      // with the same participant (get-or-create contract), the VM must surface
+      // that existing ID unchanged — it must not try to create a duplicate.
+      test(
+          'returns existing conversation ID when service returns same ID twice (get-or-create)',
+          () async {
+        when(() => mockMessagingService.startDirectConversation(
+              otherUserId: 'known_user',
+              otherUserDisplayName: 'Known User',
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenAnswer((_) async => 'conv_existing_123');
+
+        final first = await viewModel.startDirectConversation(
+          otherUserId: 'known_user',
+          otherUserDisplayName: 'Known User',
+        );
+        final second = await viewModel.startDirectConversation(
+          otherUserId: 'known_user',
+          otherUserDisplayName: 'Known User',
+        );
+
+        // Both calls must surface the same ID (no duplicate created).
+        expect(first, equals('conv_existing_123'));
+        expect(second, equals('conv_existing_123'));
+        // The VM must have forwarded BOTH calls — the dedup is in the service.
+        verify(() => mockMessagingService.startDirectConversation(
+              otherUserId: 'known_user',
+              otherUserDisplayName: 'Known User',
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).called(2);
+      });
+
+      // Intent: calling startDirectConversation with the current user's own ID
+      // is an input the service layer is responsible for handling. The VM must
+      // not silently swallow the resulting error — it must surface it so the
+      // caller knows the operation failed rather than succeeding silently.
+      test('surfaces error when service rejects self-conversation attempt',
+          () async {
+        when(() => mockMessagingService.startDirectConversation(
+              otherUserId: testUserId, // same as current user
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenThrow(Exception('Cannot start conversation with yourself'));
+
+        final result = await viewModel.startDirectConversation(
+          otherUserId: testUserId,
+          otherUserDisplayName: 'Test User',
+        );
+
+        expect(result, isNull);
+        expect(viewModel.error, isNotNull);
+        expect(viewModel.isLoading, isFalse);
+      });
+
+      // Intent: if the service succeeds after a prior error, the error state
+      // must be cleared so the user does not see a stale error message alongside
+      // a freshly opened conversation. (Regression guard for AsyncOperationMixin
+      // error-clearing semantics — already proven for group creation above,
+      // but the direct-conversation path goes through a separate executeAsync call.)
+      test('clears prior error on successful retry', () async {
+        when(() => mockMessagingService.startDirectConversation(
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenThrow(Exception('Timeout'));
+
+        await viewModel.startDirectConversation(
+          otherUserId: 'user_a',
+          otherUserDisplayName: 'User A',
+        );
+        expect(viewModel.error, isNotNull);
+
+        when(() => mockMessagingService.startDirectConversation(
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenAnswer((_) async => 'conv_retry');
+
+        final result = await viewModel.startDirectConversation(
+          otherUserId: 'user_a',
+          otherUserDisplayName: 'User A',
+        );
+
+        expect(result, equals('conv_retry'));
+        expect(viewModel.error, isNull);
+      });
+    });
+
     group('Lifecycle Management', () {
       test('should dispose and cancel stream subscription', () async {
         // Arrange

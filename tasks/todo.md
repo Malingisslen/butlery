@@ -1,14 +1,19 @@
 # Sprint Backlog
 
-## Sprint: Tier-A autonomous backlog — batch 4 (social + import VM tests) — 2026-06-21
+## Sprint: Tier-A autonomous backlog — batch 5 (groups + engine tests) — 2026-06-21
 
 Goal (session): finish the 11 genuinely code-and-ship-now Tier-A tickets (per 2026-06-21 re-classification → `.claude/state/backlog-scan.json`). 26 others are ops/console/key/legal-blocked → flag in final report.
 
-### Batch 4 (test-only)
-- [x] **BUT-1341** SOC-04 unblockUser VM gap (SOC-06/08/12 already covered → premise mostly stale); SOC-07/18 deferred to view-tests `[Tier A]`
-- [x] **BUT-1345** archive search/selection/operations managers + AssistedImportViewModel (IMP-02 expander already covered; IMP-11 ONNX excluded → BUT-1240) `[Tier A]`
+### Batch 5 (test-only)
+- [x] **BUT-1342** CreateGroupConversationViewModel (17 tests) + direct-conversation edge cases (GRP-09 poll already covered; GRP-12 facade → view-test) `[Tier A]`
+- [x] **BUT-1343** PersonalTagRuleEvaluator + tag-preview invariants + cache eviction (ENG-14 already covered; ENG-08/24 → follow-up BUT-1351; ENG-09 ONNX → BUT-1240) `[Tier A]`
 
-### Remaining A-CODE-NOW (next batches): BUT-1342, BUT-1343 (test buckets), BUT-840 + BUT-1167 (functions/src), BUT-431 (DI cold-start → Tier C/In Review), BUT-1149 (coverage floor — LAST)
+### Remaining A-CODE-NOW (next batches): BUT-840 + BUT-1167 (functions/src), BUT-431 (DI cold-start → Tier C/In Review), BUT-1149 (coverage floor — LAST)
+
+---
+
+## (archived) batch 4 (social + import VM tests) — SHIPPED 3edc46172
+Closed Done: BUT-1341, BUT-1345.
 
 ---
 

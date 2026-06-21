@@ -133,6 +133,43 @@ void main() {
       // Both have 0 access count, but old has older cachedAt
       expect(old.evictionScore, lessThanOrEqualTo(recent.evictionScore));
     });
+
+    // ENG-15: eviction-score formula uses clock.now() for recency,
+    // so an entry that was accessed long ago should score lower than one
+    // accessed just now — even if their access counts are equal.
+    test(
+      'recently accessed entry scores higher than stale entry with same access count',
+      () {
+        // Intent: the evictionScore denominator includes recency
+        // (clock.now() - lastAccessed).  If this breaks and recency is
+        // ignored, stale entries would survive eviction and fresh ones
+        // would be dropped — inverting LRU behaviour.
+        final stale = CacheEntry<Recipe>(
+          key: 'stale',
+          data: RecipeFactory.build(),
+          size: 1000,
+        );
+        // Manually back-date lastAccessed to simulate a long-ago access.
+        stale.lastAccessed =
+            stale.lastAccessed.subtract(const Duration(hours: 12));
+        stale.accessCount = 5;
+
+        final fresh = CacheEntry<Recipe>(
+          key: 'fresh',
+          data: RecipeFactory.build(),
+          size: 1000,
+        );
+        // lastAccessed defaults to clock.now() — accessed moments ago.
+        fresh.accessCount = 5;
+
+        expect(
+          fresh.evictionScore,
+          greaterThan(stale.evictionScore),
+          reason: 'Entry accessed recently must score higher (harder to evict) '
+              'than an equally-counted entry last accessed 12 h ago',
+        );
+      },
+    );
   });
 
   group('IntelligentCacheManager', () {

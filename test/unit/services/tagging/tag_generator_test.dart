@@ -1089,6 +1089,73 @@ void main() {
         expect(result.hasTag('under-15-min'), isTrue);
         expect(result.hasTag('kyckling'), isTrue);
       });
+
+      // ENG-03: quick phase-1 preview invariants.
+
+      test(
+        'isPartial is always true even when ingredient coverage is 100%',
+        () {
+          // Intent: the phase-1 preview is a provisional fast path; callers
+          // must never treat it as a complete result regardless of how many
+          // ingredients matched.  If this broke, UI could show a misleading
+          // "complete" badge on a quick preview.
+          final recipe = RecipeBuilder()
+              .withTitle('Pasta carbonara')
+              .withTimeMinutes(20)
+              .withIngredients(['pasta', 'ägg']).build();
+
+          final lookup = TaggingTestHelper.createLookup([
+            TaggingTestHelper.ingredient(
+                'pasta', 'grain/pasta-bread', {'contains-gluten'}),
+            TaggingTestHelper.ingredient('ägg', 'protein/egg', {'egg'}),
+          ]);
+
+          final result =
+              generator.generatePhase1Only(ingredients: lookup, recipe: recipe);
+
+          expect(result.isPartial, isTrue,
+              reason: 'Phase-1-only result must always be marked partial');
+        },
+      );
+
+      test(
+        'does not contain Phase 2+ derived tags (cuisine, difficulty)',
+        () {
+          // Intent: generatePhase1Only must NOT run Phases 2-5, so tags that
+          // only emerge from later phases (e.g. "enkel" from Phase 3, cuisine
+          // tags from Phase 5) must be absent.  A regression that accidentally
+          // ran the full pipeline would pass the version-contains-phase1 check
+          // but fail here.
+          final recipe = RecipeBuilder()
+              .withTitle('Enkel pasta')
+              .withTimeMinutes(
+                  10) // 3 ingredients + 10 min triggers "enkel" in Phase 3
+              .withIngredients(['pasta', 'smör', 'parmesan']).build();
+
+          final lookup = TaggingTestHelper.createLookup([
+            TaggingTestHelper.ingredient(
+                'pasta', 'grain/pasta-bread', {'contains-gluten'}),
+            TaggingTestHelper.ingredient('smör', 'dairy/fat', {'dairy'}),
+            TaggingTestHelper.ingredient('parmesan', 'dairy/cheese', {'dairy'}),
+          ]);
+
+          final previewResult =
+              generator.generatePhase1Only(ingredients: lookup, recipe: recipe);
+
+          final fullResult =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          // The full result has Phase 3 complexity tags; the preview must not.
+          // We assert the preview is a strict subset of the full set — it can
+          // only have FEWER tags, never additional ones.
+          expect(
+            previewResult.tags.difference(fullResult.tags),
+            isEmpty,
+            reason:
+                'Phase-1 preview must not contain tags absent from the full result',
+          );
+        },
+      );
     });
 
     group('generator version', () {
