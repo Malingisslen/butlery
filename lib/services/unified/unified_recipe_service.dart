@@ -945,6 +945,21 @@ class UnifiedRecipeService
     return _recipeById[id];
   }
 
+  /// Resolve a recipe that may belong to a friend. Returns a locally-cached
+  /// recipe (the user's own) when present, otherwise reads the owner's doc via
+  /// the repository (authorized by Firestore rules). Null = not visible to us.
+  Future<Recipe?> fetchFriendRecipe({
+    required String ownerId,
+    required String recipeId,
+  }) async {
+    final cached = getRecipeById(recipeId);
+    if (cached != null) return cached;
+    return _getRecipeRepository().readSharedRecipe(
+      ownerId: ownerId,
+      recipeId: recipeId,
+    );
+  }
+
   // Optimistic local-only list mutations for undo delete support
   void optimisticRemove(String recipeId) {
     _recipes.removeWhere((r) => r.id == recipeId);
