@@ -90,10 +90,16 @@ class RecipeDetailView extends StatefulWidget {
   final Recipe recipe;
   final bool scrollToComments;
 
+  // When true, owner actions (favorite, edit, edit-tags, delete) are hidden.
+  // Non-owner actions (save-a-copy, comments, ratings) remain visible.
+  // Use this when showing a friend's recipe that the current user cannot edit.
+  final bool readOnly;
+
   const RecipeDetailView({
     super.key,
     required this.recipe,
     this.scrollToComments = false,
+    this.readOnly = false,
   });
 
   @override
@@ -132,6 +138,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
       child: _RecipeDetailViewContent(
         recipe: widget.recipe,
         scrollToComments: widget.scrollToComments,
+        readOnly: widget.readOnly,
       ),
     );
   }
@@ -140,10 +147,12 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
 class _RecipeDetailViewContent extends StatefulWidget {
   final Recipe recipe;
   final bool scrollToComments;
+  final bool readOnly;
 
   const _RecipeDetailViewContent({
     required this.recipe,
     this.scrollToComments = false,
+    this.readOnly = false,
   });
 
   @override
@@ -334,38 +343,39 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       ),
                     ),
                   ),
-                  // Favorite toggle
-                  Padding(
-                    key: const ValueKey('test-recipe-detail-favorite'),
-                    padding: AppDimensions.paddingVertical8,
-                    child: Semantics(
-                      identifier: 'btn-favorite-recipe',
-                      button: true,
-                      label: recipe.isFavorite
-                          ? context.l10n.favoritesRemove
-                          : context.l10n.favoritesAdd,
-                      child: _HeroButton(
-                        icon: recipe.isFavorite
-                            ? AdaptiveIcons.favouriteFilled
-                            : AdaptiveIcons.favouriteOutline,
-                        onPressed: () async {
-                          await viewModel.toggleFavorite();
-                          if (!context.mounted) return;
-                          // BUT-905: announce the new state to screen readers,
-                          // which the icon swap alone doesn't convey.
-                          SemanticsService.announce(
-                            viewModel.recipe.isFavorite
-                                ? context.l10n.a11yRecipeFavorited
-                                : context.l10n.a11yRecipeUnfavorited,
-                            Directionality.of(context),
-                          );
-                        },
-                        tooltip: recipe.isFavorite
+                  // Favorite toggle — owner-only (hidden for a friend's recipe)
+                  if (!widget.readOnly)
+                    Padding(
+                      key: const ValueKey('test-recipe-detail-favorite'),
+                      padding: AppDimensions.paddingVertical8,
+                      child: Semantics(
+                        identifier: 'btn-favorite-recipe',
+                        button: true,
+                        label: recipe.isFavorite
                             ? context.l10n.favoritesRemove
                             : context.l10n.favoritesAdd,
+                        child: _HeroButton(
+                          icon: recipe.isFavorite
+                              ? AdaptiveIcons.favouriteFilled
+                              : AdaptiveIcons.favouriteOutline,
+                          onPressed: () async {
+                            await viewModel.toggleFavorite();
+                            if (!context.mounted) return;
+                            // BUT-905: announce the new state to screen readers,
+                            // which the icon swap alone doesn't convey.
+                            SemanticsService.announce(
+                              viewModel.recipe.isFavorite
+                                  ? context.l10n.a11yRecipeFavorited
+                                  : context.l10n.a11yRecipeUnfavorited,
+                              Directionality.of(context),
+                            );
+                          },
+                          tooltip: recipe.isFavorite
+                              ? context.l10n.favoritesRemove
+                              : context.l10n.favoritesAdd,
+                        ),
                       ),
                     ),
-                  ),
                   // Internal sharing with friends and groups
                   Padding(
                     key: const ValueKey('test-recipe-detail-share-friends'),
@@ -436,19 +446,22 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         itemBuilder: (context) {
                           final menuCs = Theme.of(context).colorScheme;
                           return [
-                            PopupMenuItem(
-                              key: const ValueKey('test-recipe-detail-edit'),
-                              value: _MenuAction.edit,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipeEdit),
-                                ],
+                            // Edit — owner-only (hidden for a friend's recipe)
+                            if (!widget.readOnly)
+                              PopupMenuItem(
+                                key: const ValueKey('test-recipe-detail-edit'),
+                                value: _MenuAction.edit,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeEdit),
+                                  ],
+                                ),
                               ),
-                            ),
                             // Owned/local recipes keep "Create copy" here as a
                             // secondary action; shared recipes promote it to the
                             // app-bar instead (BUT-972).
@@ -497,49 +510,57 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
-                            PopupMenuItem(
-                              value: _MenuAction.reTag,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.local_offer_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipeUpdateTags),
-                                ],
+                            // reTag/editTags/delete — owner-only
+                            if (!widget.readOnly)
+                              PopupMenuItem(
+                                value: _MenuAction.reTag,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.local_offer_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeUpdateTags),
+                                  ],
+                                ),
                               ),
-                            ),
-                            PopupMenuItem(
-                              value: _MenuAction.editTags,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_note,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.primary),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipeEditTags),
-                                ],
+                            if (!widget.readOnly)
+                              PopupMenuItem(
+                                value: _MenuAction.editTags,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_note,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.primary),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeEditTags),
+                                  ],
+                                ),
                               ),
-                            ),
-                            PopupMenuItem(
-                              key: const ValueKey('test-recipe-detail-delete'),
-                              value: _MenuAction.delete,
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete_outlined,
-                                      size: AppDimensions.iconSizeM,
-                                      color: menuCs.error),
-                                  const SizedBox(width: AppDimensions.spacingM),
-                                  Text(context.l10n.recipeDelete,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: menuCs.error,
-                                          )),
-                                ],
+                            if (!widget.readOnly)
+                              PopupMenuItem(
+                                key:
+                                    const ValueKey('test-recipe-detail-delete'),
+                                value: _MenuAction.delete,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete_outlined,
+                                        size: AppDimensions.iconSizeM,
+                                        color: menuCs.error),
+                                    const SizedBox(
+                                        width: AppDimensions.spacingM),
+                                    Text(context.l10n.recipeDelete,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: menuCs.error,
+                                            )),
+                                  ],
+                                ),
                               ),
-                            ),
                             // Collaboration toggle (owner only)
                             if (recipe.createdBy ==
                                 ServiceLocator.get<PermissionService>()
@@ -879,6 +900,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       RecipeDetailViewModel viewModel, Recipe recipe) async {
     switch (action) {
       case _MenuAction.edit:
+        assert(!widget.readOnly, 'edit must be unreachable in readOnly mode');
         _actions.editRecipe(context);
       case _MenuAction.fork:
         Navigator.pushNamed(context, Routes.manualEntry, arguments: {
@@ -892,8 +914,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.generateShoppingList:
         await _actions.generateShoppingListFromRecipe(context);
       case _MenuAction.reTag:
+        assert(!widget.readOnly, 'reTag must be unreachable in readOnly mode');
         await _actions.retagRecipe(context);
       case _MenuAction.editTags:
+        assert(
+            !widget.readOnly, 'editTags must be unreachable in readOnly mode');
         final overrides = await TagEditorDialog.show(context, recipe);
         if (overrides != null && context.mounted) {
           // BUT-1304: route the persist through the ViewModel (MVVM) instead of
@@ -905,6 +930,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           }
         }
       case _MenuAction.delete:
+        assert(!widget.readOnly, 'delete must be unreachable in readOnly mode');
         await _actions.deleteRecipe(context);
       case _MenuAction.toggleCollaboration:
         await _actions.toggleCollaboration(context);
