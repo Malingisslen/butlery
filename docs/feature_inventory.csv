@@ -1,0 +1,138 @@
+Feature ID,Feature Name,Area,Test Coverage,User Story,Notes
+AUTH-01,Email/password sign-in,Auth & Onboarding,Verified,"Returning user logs in with email + password to reach their account",
+AUTH-02,Email/password registration,Auth & Onboarding,Verified,"New user creates an account with email, password and display name",
+AUTH-03,Password reset email,Auth & Onboarding,Partial,"User who forgot their password requests a reset link by email","No dedicated reset-flow widget test"
+AUTH-04,Sign-out (manual/inactivity/forced),Auth & Onboarding,Verified,"User is securely signed out by action, inactivity, or invalid session",
+AUTH-05,Email-verification gate,Auth & Onboarding,Untested,"New user verifies their email (and can resend) to unlock the app","Gate UI untested"
+AUTH-06,GDPR age gate (under-15 block),Auth & Onboarding,Verified,"Minors under 15 are blocked at signup for GDPR Art. 8 compliance",
+AUTH-07,Onboarding allergen & dietary selection,Auth & Onboarding,Verified,"New user picks allergens/diets so recipes are filtered from day one",
+AUTH-08,Onboarding completion & resume,Auth & Onboarding,Verified,"Onboarding remembers progress and lands the user on a populated app",
+AUTH-09,Change password,Auth & Onboarding,Verified,"Signed-in user changes password after confirming the current one",
+AUTH-10,Change email,Auth & Onboarding,Verified,"Signed-in user changes account email (verify-before-update)",
+AUTH-11,Multi-factor authentication (SMS),Auth & Onboarding,Untested,"User adds a phone-based second factor to protect their account","SECURITY — no test on enroll/unenroll/challenge"
+AUTH-12,GDPR consent management,Auth & Onboarding,Verified,"User grants/revokes consent for analytics, marketing, social, push",
+AUTH-13,GDPR data export,Auth & Onboarding,Verified,"User exports all personal data as JSON (data portability)",
+AUTH-14,Account deletion (client trigger),Auth & Onboarding,Untested,"User permanently deletes their account (GDPR right to erasure)","COMPLIANCE — client path untested (server cascade ENG-23 is tested)"
+REC-01,Browse recipe collection (list/grid),Recipe Management,Partial,"Home cook browses saved recipes in list or grid to find something to cook","No view-level test (toggle/scroll/pagination)"
+REC-02,Recipe search with history,Recipe Management,Partial,"Home cook searches recipes by text and reuses recent searches",
+REC-03,Multi-criteria filtering + sort,Recipe Management,Partial,"Home cook filters by time, meal, rating, allergens, diet, tags, pantry","SAFETY — allergen-free filtering needs dedicated assertions"
+REC-04,Favorite toggle,Recipe Management,Partial,"Home cook marks recipes as favorites to find loved recipes quickly",
+REC-05,Swipe-to-edit / swipe-to-delete,Recipe Management,Partial,"Home cook swipes a card to quickly edit or delete it","Gesture behavior not in a widget test"
+REC-06,Bulk selection + bulk actions,Recipe Management,Partial,"Home cook selects multiple recipes to share, tag, add-to-menu or delete",
+REC-07,Quick capture (title only),Recipe Management,Untested,"Busy cook instantly saves just a recipe name to capture an idea","No test for view or VM"
+REC-08,Add-recipe hub,Recipe Management,Untested,"Home cook sees all the ways to add a recipe in one screen","No widget test"
+REC-09,Manual recipe entry (create),Recipe Management,Partial,"Home cook writes a recipe from scratch with full detail","View-level form interaction untested"
+REC-10,Edit recipe,Recipe Management,Partial,"Recipe owner edits any field of an existing recipe","No EditRecipeView widget test"
+REC-11,Recipe detail view,Recipe Management,Partial,"Home cook sees a full recipe page with image, steps and actions","Reasonably covered"
+REC-12,Cook-snap gallery (recipe surface),Recipe Management,Untested,"Cook attaches photos of the cooked dish on the recipe page","Same feature as SOC-16; untested at this surface"
+REC-13,Re-extract recipe from source,Recipe Management,Verified,"Cook re-parses a recipe from its captured source after a bad parse",
+REC-14,Personal tags & collections,Recipe Management,Partial,"Home cook creates and automates personal tags (collections)","View untested"
+REC-15,Tag detail + automation rules,Recipe Management,Partial,"Home cook defines rules that auto-apply a tag to matching recipes","View untested"
+IMP-01,URL import (single + batch),Recipe Import,Verified,"Home cook pastes one or several recipe links to import them",
+IMP-02,Recipe-index (listing-page) expansion,Recipe Import,Partial,"User pasting a category page imports every recipe it links to","No dedicated expander test"
+IMP-03,Smart (unified) import,Recipe Import,Verified,"User pastes a URL or text and the app figures out what to do",
+IMP-04,Photo / OCR import (multi-page),Recipe Import,Verified,"User photographs cookbook pages to digitize heirloom recipes",
+IMP-05,Text / paste import,Recipe Import,Verified,"User pastes recipe text from anywhere and it gets structured",
+IMP-06,Receive-share (share intent),Recipe Import,Untested,"User shares a link/text from another app and it's routed to import","No dedicated test; real-world entry point"
+IMP-07,Social-media URL extraction,Recipe Import,Partial,"User pulls recipe text out of an Instagram/TikTok/YouTube post","Instagram/TikTok pipelines untested"
+IMP-08,File import (CSV/Excel),Recipe Import,Verified,"User uploads a spreadsheet of recipes and picks which to import",
+IMP-09,Import from archive (restore),Recipe Import,Partial,"Returning user re-imports recipes they previously archived",
+IMP-10,Assisted import wizard,Recipe Import,Partial,"User taps which lines are ingredients vs instructions for messy content","No dedicated assisted-import VM test"
+IMP-11,Ingredient-line parsing (CRF/NER/ONNX),Recipe Import,Partial,"Ingredient lines split into quantity/unit/name for scaling and lists","Engine view in ENG-09"
+MENU-01,Generate weekly menu from prompt,Menu & Shopping,Verified,"Planner types a request and gets a full week auto-distributed",
+MENU-02,Manual menu placement mode,Menu & Shopping,Verified,"Planner hand-places each generated recipe onto specific days",
+MENU-03,Edit weekly menu calendar,Menu & Shopping,Verified,"Planner adds, drags and removes recipes on the week grid",
+MENU-04,Bulk move + copy week to next,Menu & Shopping,Verified,"Planner bulk-moves entries and copies this week into next",
+MENU-05,Swap single menu recipe,Menu & Shopping,Partial,"Planner swaps one recipe for a similar alternative","Scoring path not separately asserted"
+MENU-06,Generate shopping list from menu,Menu & Shopping,Verified,"Planner turns the week's recipes into one aggregated shopping list",
+MENU-07,Real-time collaborative menu,Menu & Shopping,Verified,"Household members edit a shared menu live together",
+MENU-08,Menu slot voting,Menu & Shopping,Verified,"Group votes between recipe alternatives for a menu slot",
+MENU-09,Conflict resolution + diff/recovery,Menu & Shopping,Verified,"Collaborator sees which fields differed and re-applies their version",
+MENU-10,Share / import a menu,Menu & Shopping,Verified,"User sends a weekly menu to friends and imports menus they send","loadImportedMenuData is a stub (returns null)"
+MENU-11,Unified shopping list management,Menu & Shopping,Verified,"Shopper manages lists, items, categories and export end to end",
+MENU-12,Create shared shopping list,Menu & Shopping,Verified,"User creates a list shared with chosen friends",
+MENU-13,Collaborative shopping view,Menu & Shopping,Verified,"Co-shoppers claim items, see who's live, and split the list",
+MENU-14,Browse shared shopping lists,Menu & Shopping,Partial,"User sees all collaborative lists they participate in","No dedicated VM test"
+MENU-15,Share an existing shopping list,Menu & Shopping,Verified,"List owner shares their existing list with selected friends",
+SOC-01,Send friend request,Social,Verified,"User searches for and sends a friend request to connect",
+SOC-02,Accept / reject / cancel request,Social,Verified,"User accepts, rejects or cancels friend requests",
+SOC-03,Friends list & remove friend,Social,Verified,"User views friends and removes someone to curate their network",
+SOC-04,Block / unblock user,Social,Partial,"User blocks a user so they can't interact, and unblocks later","No dedicated block/unblock VM test"
+SOC-05,Friend groups / categories,Social,Verified,"User organizes friends into named groups to share with a subset","Same subsystem as GRP-01"
+SOC-06,View public profile,Social,Untested,"User views another user's public profile and public recipes","No VM test"
+SOC-07,View friend profile,Social,Untested,"User views a friend's profile with stats and quick actions","Untested at view level"
+SOC-08,Edit own profile (identity, privacy),Social,Partial,"User edits display name, bio, avatar, cooking identity and privacy","user_profile VM validation/privacy paths untested"
+SOC-09,Share recipe with friends,Social,Verified,"User shares a recipe with selected friends to view/collaborate",
+SOC-10,Request a recipe share,Social,Verified,"User asks a friend to share a recipe they saw them cook",
+SOC-11,Accept a recipe-share request,Social,Verified,"Recipe owner accepts a friend's request, granting read access",
+SOC-12,Shared-with-me browsing,Social,Partial,"User browses an inbox of content others shared with them","No dedicated coordinator-VM test"
+SOC-13,Comment on recipes,Social,Verified,"User comments on and replies to recipes to discuss them",
+SOC-14,Like / unlike comments,Social,Verified,"User likes a friend's comment to acknowledge it",
+SOC-15,Rate recipes (1-5 stars),Social,Verified,"User rates a recipe and contributes to a shared aggregate",
+SOC-16,Cook-snaps (social surface),Social,Verified,"User posts photos of a dish they cooked for friends to see",
+SOC-17,Activity feed,Social,Verified,"User sees a feed of friends' cooking activity with photos",
+SOC-18,Report content / user,Social,Untested,"User reports a profile or content so it can be moderated","Dialog untested"
+GRP-01,Create social group,Groups & Messaging,Partial,"User creates a named friend group and invites initial friends",
+GRP-02,Group detail - manage & share,Groups & Messaging,Verified,"Group member views members/stats and (admin) manages and shares",
+GRP-03,Leave group / transfer ownership,Groups & Messaging,Verified,"Member leaves a group with safe ownership succession",
+GRP-04,Add members / send invitations,Groups & Messaging,Verified,"Group admin searches, selects and invites friends to the group",
+GRP-05,Group invitations - browse & join,Groups & Messaging,Verified,"User sees available groups/invitations and accepts/declines/joins",
+GRP-06,Create group conversation (chat),Groups & Messaging,Untested,"User names a group chat and selects friends to message together","Viewmodel untested"
+GRP-07,Group conversation member management,Groups & Messaging,Verified,"Group-chat participant views/adds/removes members, renames, leaves",
+GRP-08,Share recipes with a group,Groups & Messaging,Verified,"Group member shares multiple recipes with the whole group at once",
+GRP-09,Meal-vote poll,Groups & Messaging,Partial,"Group member launches a poll of recipe suggestions to vote on",
+GRP-10,Conversations list,Groups & Messaging,Verified,"User browses, searches, pins, archives and deletes conversations",
+GRP-11,Direct (1:1) conversation start,Groups & Messaging,Partial,"User starts a one-to-one chat with a friend",
+GRP-12,Chat (message/reply/edit/attach/poll),Groups & Messaging,Partial,"Participant sends, replies, edits, attaches, reacts, polls and sees typing","No widget test for the chat facade"
+COOK-01,Cooking mode (landscape split-view),Cooking/Pantry/Search,Verified,"Cook follows a recipe hands-free with ingredients beside instructions",
+COOK-02,Portion scaling in cooking mode,Cooking/Pantry/Search,Verified,"Cook scales the recipe up/down while cooking",
+COOK-03,Step timers (concurrent),Cooking/Pantry/Search,Verified,"Cook sets countdown timers tied to steps, running concurrently",
+COOK-04,Ingredient substitution suggestions,Cooking/Pantry/Search,Partial,"Cook out of an ingredient gets substitute suggestions","View-level long-press flow untested"
+COOK-05,Cooking-session presence + analytics,Cooking/Pantry/Search,Verified,"Friends see the user is cooking now; product gets session analytics",
+COOK-06,Pantry item management,Cooking/Pantry/Search,Verified,"User tracks ingredients at home by storage location and expiry",
+COOK-07,Pantry add/edit via autocomplete,Cooking/Pantry/Search,Partial,"User adds a pantry item via ingredient autocomplete or free text","Sheet not in a dedicated behavioral test"
+COOK-08,Pantry swipe-delete with undo,Cooking/Pantry/Search,Verified,"User swipes to remove a pantry item with undo",
+COOK-09,Pantry multi-select bulk delete,Cooking/Pantry/Search,Verified,"User selects several pantry items and deletes them with undo",
+COOK-10,Auto-add bought items to pantry,Cooking/Pantry/Search,Verified,"Bought shopping items flow automatically into the pantry",
+COOK-11,Ingredient-set recipe search,Cooking/Pantry/Search,Verified,"User picks ingredients they have and sees recipes they can make",
+COOK-12,Ingredient lookup / normalization,Cooking/Pantry/Search,Partial,"Fuzzy Swedish ingredient matching resolves names to the right item","Lookup/variation/cache logic has no dedicated test"
+SET-01,Settings hub,Settings/Legal/Admin,Partial,"User finds food, notification, account, language and legal options",
+SET-02,Allergen & dietary preferences,Settings/Legal/Admin,Verified,"Allergic user chooses which allergens/diets to track and display",
+SET-03,Notification preferences,Settings/Legal/Admin,Partial,"User controls notification categories, digest, quiet hours, sound","View untested"
+SET-04,Account security screen,Settings/Legal/Admin,Partial,"User changes password/email, manages MFA, reaches legal in one screen","View untested"
+SET-05,MFA enrollment screen,Settings/Legal/Admin,Untested,"User enrolls/unenrolls phone-based MFA","SECURITY — UI untested (see AUTH-11)"
+SET-06,Collection statistics,Settings/Legal/Admin,Untested,"User sees stats about their recipe collection","No test"
+SET-07,In-app notification inbox,Settings/Legal/Admin,Verified,"User reads notification history, deep-links, marks read, bulk-dismisses",
+SET-08,Notification deep-link routing,Settings/Legal/Admin,Verified,"Tapping a notification opens the right screen, not a crash or blank",
+SET-09,Beta feedback FAB,Settings/Legal/Admin,Verified,"One-tap feedback button captures a screenshot from anywhere",
+SET-10,Beta feedback form,Settings/Legal/Admin,Verified,"Beta user submits a categorized report with optional screenshot",
+SET-11,Legal documents,Settings/Legal/Admin,Untested,"User reads terms, privacy policy and community guidelines","Views untested"
+SET-12,FAQ / help,Settings/Legal/Admin,Untested,"User reads common-question answers without contacting support","Hardcoded Swedish, not l10n"
+SET-13,My reports (status tracking),Settings/Legal/Admin,Verified,"User who reported content sees its lifecycle status (UGC policy)",
+SET-14,Content moderation queue (admin),Settings/Legal/Admin,Verified,"Moderator works a queue of open reports with state-machine actions",
+ENG-01,Automatic recipe tagging (5-phase),Engine & Background,Verified,"Recipes auto-labeled with allergen/dietary/method/mood/cuisine tags",
+ENG-02,Allergen/dietary status detection,Engine & Background,Verified,"Each recipe marked FREE/CONTAINS/UNKNOWN per allergen","Safety-critical core"
+ENG-03,Quick phase-1 tag preview,Engine & Background,Partial,"Import preview shows allergen/dietary status immediately","No dedicated preview test"
+ENG-04,Automatic retagging scheduler,Engine & Background,Partial,"Failed/stale recipes are re-tagged automatically","No dedicated scheduler test"
+ENG-05,Bulk / manual retag-all,Engine & Background,Verified,"User force-retags their whole library on demand",
+ENG-06,Personal-tag rule engine,Engine & Background,Partial,"Custom tag rules auto-apply to matching recipes","No dedicated rule-evaluator test"
+ENG-07,Tiered recipe parsing (import engine),Engine & Background,Verified,"Imports extract reliably and cheaply via 4 cost-ordered tiers",
+ENG-08,Selective ingredient-line LLM enhancement,Engine & Background,Partial,"AI fixes only the few uncertain lines, not the whole recipe","~6x fewer tokens; no dedicated test"
+ENG-09,On-device parsing cascade (CRF->NER->LLM),Engine & Background,Partial,"Ingredients parsed on-device first, cloud only when uncertain","ONNX NER path untested"
+ENG-10,Parse-correction feedback (active learning),Engine & Background,Verified,"User corrections to bad imports improve future parsing",
+ENG-11,Recipe search routing (Algolia/Firestore),Engine & Background,Verified,"Search finds matches across the whole library (Algolia or Firestore)",
+ENG-12,Allergen filtering in menu generation,Engine & Background,Verified,"Menu generator never proposes recipes with the user's allergens",
+ENG-13,Offline sync & connectivity monitoring,Engine & Background,Verified,"App works offline and syncs changes automatically on reconnect",
+ENG-14,Image optimization & progressive loading,Engine & Background,Partial,"Recipe images load fast and smoothly without blowing data/memory","No dedicated loader test"
+ENG-15,Predictive cache / prefetch,Engine & Background,Partial,"Recipes the user is likely to open next load instantly","No dedicated manager test"
+ENG-16,Ingredient-change stale-marking cascade,Engine & Background,Verified,"Allergen badges update automatically when the ingredient DB changes",
+ENG-17,LLM recipe extraction (server fallback),Engine & Background,Verified,"Messy/unstructured sources import cleanly via guarded Gemini","Biggest running-cost surface; kill switches + rate limits"
+ENG-18,Social push notifications,Engine & Background,Verified,"User is notified when friends interact with them or their recipes",
+ENG-19,Notification gating (RC/quiet-hours/cap),Engine & Background,Verified,"Notifications respect preferences and never spam or wake at night",
+ENG-20,Re-engagement - win-back & digest,Engine & Background,Verified,"Lapsed users get a nudge; active users get a weekly recap",
+ENG-21,Rating aggregation (debounced),Engine & Background,Verified,"Recipe ratings show an accurate average and count",
+ENG-22,Upload & content moderation,Engine & Background,Verified,"Malicious uploads and spammy duplicate posts are blocked",
+ENG-23,Account deletion cascade / GDPR engine,Engine & Background,Verified,"Deleting an account truly erases data (server cascade + audit logs)",
+ENG-24,Scheduled storage & data cleanup jobs,Engine & Background,Partial,"Orphaned files and stale data cleaned up automatically","Several cleanup jobs lack dedicated tests"
+ENG-25,PWA install prompt (web),Engine & Background,Untested,"Web user adds Butlery to their home screen","Web-only, low risk"
+ENG-26,Recipe print (web),Engine & Background,Untested,"Web user prints a clean copy of a recipe or saves as PDF","Web-only, low risk"

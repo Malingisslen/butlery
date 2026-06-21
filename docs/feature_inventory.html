@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butlery — Feature Map</title>
+<style>
+  :root{
+    --cream:#E8E2D6; --cream-light:#F2EEE5; --card:#FFFFFF;
+    --green:#4A7C59; --green-dark:#2F5A3F; --green-muted:#8AA892;
+    --rust:#B5532E; --gold:#D4A03C;
+    --ink:#1A1A1A; --ink2:#666666; --ink3:#999999;
+  }
+  *{box-sizing:border-box; border-radius:0 !important;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:var(--cream); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:24px 18px 80px;}
+
+  header h1{font-size:30px; margin:0 0 2px; letter-spacing:-0.5px;}
+  header .sub{color:var(--ink2); font-size:14px; margin-bottom:20px;}
+
+  /* coverage bar */
+  .coverage{background:var(--card); border:1px solid #d8d2c4; padding:18px; margin-bottom:22px;}
+  .covbar{display:flex; height:30px; width:100%; overflow:hidden; border:1px solid #d8d2c4;}
+  .covbar span{display:block; height:100%;}
+  .seg-v{background:var(--green);} .seg-p{background:var(--gold);} .seg-u{background:var(--rust);}
+  .covlegend{display:flex; gap:22px; margin-top:12px; flex-wrap:wrap; font-size:13px; color:var(--ink2);}
+  .covlegend b{color:var(--ink); font-size:15px;}
+  .dot{display:inline-block; width:12px; height:12px; margin-right:7px; vertical-align:-1px;}
+  .d-v{background:var(--green);} .d-p{background:var(--gold);} .d-u{background:var(--rust);}
+
+  /* health map */
+  h2.section{font-size:13px; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink2); margin:26px 0 12px;}
+  .map{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px;}
+  .tile{background:var(--card); border:1px solid #d8d2c4; border-left:4px solid var(--green); padding:12px 13px; cursor:pointer; transition:transform .06s ease, box-shadow .1s ease;}
+  .tile:hover{box-shadow:0 2px 0 var(--green-dark); transform:translateY(-1px);}
+  .tile.active{border-left-color:var(--rust); background:var(--cream-light);}
+  .tile .tname{font-weight:700; font-size:14px;}
+  .tile .tcount{color:var(--ink3); font-size:12px; margin-bottom:8px;}
+  .minibar{display:flex; height:8px; width:100%; border:1px solid #e2dccd; overflow:hidden;}
+  .minibar span{display:block; height:100%;}
+  .tnums{font-size:11px; color:var(--ink2); margin-top:6px;}
+
+  /* controls */
+  .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0 18px; position:sticky; top:0; background:var(--cream); padding:12px 0; z-index:5; border-bottom:1px solid #d8d2c4;}
+  .chip{background:var(--card); border:1px solid #cfc8b8; color:var(--green-dark); font-size:13px; font-weight:600; padding:7px 13px; cursor:pointer; min-height:34px;}
+  .chip.active{background:var(--green-dark); color:#fff; border-color:var(--green-dark);}
+  .chip .c{opacity:.7; font-weight:400; margin-left:4px;}
+  input.search{flex:1; min-width:180px; border:2px solid var(--green); padding:8px 12px; font-size:14px; background:#fff; outline:none;}
+  input.search:focus{border-color:var(--rust);}
+  .clearfilter{font-size:12px; color:var(--rust); cursor:pointer; text-decoration:underline; background:none; border:none;}
+
+  /* feature list */
+  .areahead{font-weight:800; font-size:15px; margin:22px 0 8px; padding-bottom:5px; border-bottom:3px solid var(--rust); display:flex; justify-content:space-between; align-items:baseline;}
+  .areahead small{font-weight:400; color:var(--ink3); font-size:12px;}
+  .feat{background:var(--card); border:1px solid #d8d2c4; border-left:4px solid var(--green); margin-bottom:6px; padding:11px 13px; cursor:pointer;}
+  .feat[data-status=partial]{border-left-color:var(--gold);}
+  .feat[data-status=untested]{border-left-color:var(--rust);}
+  .feat .row1{display:flex; align-items:center; gap:10px;}
+  .sdot{width:11px; height:11px; flex:none;}
+  .fid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--ink3); flex:none; min-width:64px;}
+  .fname{font-weight:700; font-size:14px;}
+  .fstory{color:var(--ink2); font-size:13px; margin-left:auto; text-align:right; max-width:48%;}
+  .caret{flex:none; color:var(--ink3); font-size:11px; transition:transform .1s;}
+  .feat.open .caret{transform:rotate(90deg);}
+  .fdetail{display:none; margin-top:9px; padding-top:9px; border-top:1px dashed #e0dac9; font-size:13px; color:var(--ink2);}
+  .feat.open .fdetail{display:block;}
+  .badge{display:inline-block; font-size:11px; font-weight:700; padding:2px 7px; color:#fff; margin-left:8px;}
+  .b-v{background:var(--green);} .b-p{background:var(--gold);} .b-u{background:var(--rust);}
+  .empty{color:var(--ink3); padding:30px 0; text-align:center;}
+  @media(max-width:620px){ .fstory{display:none;} }
+  footer{margin-top:40px; color:var(--ink3); font-size:12px; border-top:1px solid #d8d2c4; padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Butlery — Feature Map</h1>
+    <div class="sub">Every user-facing feature in the app, in plain language, colour-coded by whether a test currently proves it works. &nbsp;Built 2026-06-21 · mirrors <code>docs/FEATURE_INVENTORY.md</code></div>
+  </header>
+
+  <div class="coverage">
+    <div class="covbar" id="covbar"></div>
+    <div class="covlegend" id="covlegend"></div>
+  </div>
+
+  <h2 class="section">Health map — tap an area to filter</h2>
+  <div class="map" id="map"></div>
+
+  <h2 class="section">Features</h2>
+  <div class="controls">
+    <button class="chip active" data-f="all">All</button>
+    <button class="chip" data-f="verified"><span class="dot d-v"></span>Verified<span class="c" id="c-v"></span></button>
+    <button class="chip" data-f="partial"><span class="dot d-p"></span>Partial<span class="c" id="c-p"></span></button>
+    <button class="chip" data-f="untested"><span class="dot d-u"></span>Untested<span class="c" id="c-u"></span></button>
+    <input class="search" id="search" placeholder="Search feature, ID, or what it does…">
+    <button class="clearfilter" id="clear" style="display:none">clear area ✕</button>
+  </div>
+
+  <div id="list"></div>
+
+  <footer>
+    <span class="dot d-v"></span>Verified — a test would catch it if this broke &nbsp;·&nbsp;
+    <span class="dot d-p"></span>Partial — logic tested, the screen/flow on top isn't (or only part is) &nbsp;·&nbsp;
+    <span class="dot d-u"></span>Untested — no test found.<br>
+    137 features · 80 verified · 40 partial · 17 untested. Gaps are filed under Linear epic BUT-1332.
+  </footer>
+</div>
+
+<script>
+const AREAS = [
+  ["auth","Auth & Onboarding"],
+  ["recipe","Recipe Management"],
+  ["import","Recipe Import"],
+  ["menu","Menu & Shopping"],
+  ["social","Social"],
+  ["groups","Groups & Messaging"],
+  ["cooking","Cooking, Pantry & Search"],
+  ["settings","Settings, Legal & Admin"],
+  ["engine","Engine & Background"],
+];
+const F = [
+["AUTH-01","auth","Email/password sign-in","verified","Log in with email + password to reach your account.","Validates inputs, then routes on the auth-state change. Well tested."],
+["AUTH-02","auth","Registration","verified","Create an account with email, password and a display name.","Creates the user, sends a verification email, routes to the verification gate. Tested."],
+["AUTH-03","auth","Password reset email","partial","Request a reset link when you forget your password.","Service/VM tested; no dedicated reset-flow widget test."],
+["AUTH-04","auth","Sign-out","verified","Securely sign out — manually, after inactivity, or on an invalid session.","Fatal vs transient session errors handled differently. Tested."],
+["AUTH-05","auth","Email-verification gate","untested","Verify your email (and resend) to unlock the rest of the app.","The gate screen and the unverified-routing branch have no test."],
+["AUTH-06","auth","GDPR age gate","verified","Under-15s are blocked at signup (Swedish GDPR rule).","Birth year required; blocked screen deletes the account. Tested."],
+["AUTH-07","auth","Onboarding allergen & diet","verified","Pick the allergens and diets you care about at signup.","Saved as preferences if you choose any. Tested."],
+["AUTH-08","auth","Onboarding completion & resume","verified","Onboarding remembers your progress and seeds a starter app.","Seeds recipes + a sample menu; resumes at the saved step. Tested."],
+["AUTH-09","auth","Change password","verified","Change your password after confirming the current one.","Re-authentication required first. Tested."],
+["AUTH-10","auth","Change email","verified","Change your account email (verify-before-update).","New email only takes effect after you verify it. Tested."],
+["AUTH-11","auth","Two-factor login (SMS)","untested","Add a phone-based second factor to protect your account.","Enroll, unenroll and the sign-in challenge all exist but have NO test. Security-sensitive."],
+["AUTH-12","auth","GDPR consent management","verified","Grant or revoke consent for analytics, marketing, social, push.","Four toggles + two always-on purposes. Tested."],
+["AUTH-13","auth","GDPR data export","verified","Export all your personal data as a JSON file.","Per-platform download; cleared from memory afterwards. Tested."],
+["AUTH-14","auth","Account deletion (client trigger)","untested","Permanently delete your account (right to erasure).","The server cascade IS tested; the button-press side that triggers it is not."],
+
+["REC-01","recipe","Browse recipe collection","partial","Browse your saved recipes in a list or grid.","List/grid toggle, pagination, scroll restore. View-level test missing."],
+["REC-02","recipe","Search with history","partial","Search recipes by text and reuse recent searches.","Debounce + history persistence not explicitly asserted."],
+["REC-03","recipe","Filtering + sort","partial","Filter by time, meal, rating, allergens, diet, tags, pantry.","The allergen-free SAFETY logic needs dedicated tests."],
+["REC-04","recipe","Favorite toggle","partial","Mark recipes as favorites to find loved ones fast.","Optimistic with revert; no dedicated favorites test."],
+["REC-05","recipe","Swipe to edit / delete","partial","Swipe a card to quickly edit or delete it.","Delete logic tested; the swipe gesture isn't in a widget test."],
+["REC-06","recipe","Bulk actions","partial","Select multiple recipes to share, tag, add-to-menu or delete.","Selection bar UI untested."],
+["REC-07","recipe","Quick capture","untested","Instantly save just a recipe name to capture an idea.","No test for the view or its viewmodel."],
+["REC-08","recipe","Add-recipe hub","untested","One screen with all the ways to add a recipe.","No widget test."],
+["REC-09","recipe","Write a recipe (create)","partial","Write a recipe from scratch with full detail.","Logic tested; the form screen interaction is untested."],
+["REC-10","recipe","Edit recipe","partial","Edit any field of an existing recipe.","Logic tested; no edit-screen widget test."],
+["REC-11","recipe","Recipe detail page","partial","Full recipe page: image, steps, metadata, actions.","Reasonably covered; a few surfaces untested."],
+["REC-12","recipe","Cook-snap gallery","untested","Attach photos of the cooked dish on the recipe page.","Untested at this surface (see Social cook-snaps)."],
+["REC-13","recipe","Re-extract from source","verified","Re-parse a recipe from its captured source after a bad parse.","Tested."],
+["REC-14","recipe","Personal tags & collections","partial","Create and automate personal tags (collections).","Viewmodel tested; the screen isn't."],
+["REC-15","recipe","Tag rules (automation)","partial","Define rules that auto-apply a tag to matching recipes.","Viewmodel tested; the screen isn't."],
+
+["IMP-01","import","URL import","verified","Paste one or several recipe links to import them.","Sequential batch fetch + SSRF guard. Tested."],
+["IMP-02","import","Index-page expansion","partial","Import every recipe a category page links to.","No dedicated test for the expander."],
+["IMP-03","import","Smart import","verified","Paste a URL or text and the app figures out what to do.","Phase machine + offline-pending retry. Tested."],
+["IMP-04","import","Photo / OCR import","verified","Photograph cookbook pages to digitize recipes.","Multi-page, multi-provider OCR, draft recovery. Tested."],
+["IMP-05","import","Text / paste import","verified","Paste recipe text from anywhere and structure it.","Recipe-likeness check before a paid AI parse. Tested."],
+["IMP-06","import","Receive-share","untested","Share a link or text from another app into Butlery.","No dedicated test — and it's a common entry point."],
+["IMP-07","import","Social-media extraction","partial","Pull recipe text out of an Instagram/TikTok/YouTube post.","YouTube tested; Instagram/TikTok pipelines untested."],
+["IMP-08","import","File import (CSV/Excel)","verified","Upload a spreadsheet of recipes and pick which to import.","Tested."],
+["IMP-09","import","Import from archive","partial","Re-import recipes you previously archived.","Viewmodel tested; helper classes not confirmed."],
+["IMP-10","import","Assisted import wizard","partial","Tap which lines are ingredients vs instructions for messy content.","No dedicated viewmodel test."],
+["IMP-11","import","Ingredient-line parsing","partial","Split lines like '2 dl mjöl' into quantity/unit/name.","Covered indirectly; engine view is ENG-09."],
+
+["MENU-01","menu","Generate weekly menu","verified","Type a request and get a full week auto-distributed.","Deterministic distribution; avoids recently-used recipes. Tested."],
+["MENU-02","menu","Manual placement","verified","Hand-place each generated recipe onto specific days.","All in-memory until you confirm. Tested."],
+["MENU-03","menu","Edit the calendar","verified","Add, drag and remove recipes on the week grid.","Clear-the-week with undo. Tested."],
+["MENU-04","menu","Bulk move + copy week","verified","Bulk-move entries and copy this week into next.","Tested."],
+["MENU-05","menu","Swap a single recipe","partial","Swap one recipe for a similar alternative.","The smart-scoring path isn't separately asserted."],
+["MENU-06","menu","Shopping list from menu","verified","One tap turns the week into one aggregated shopping list.","Idempotent; pantry staples excluded. Tested."],
+["MENU-07","menu","Real-time collaborative menu","verified","Edit a shared menu live alongside others.","Optimistic edits + reconcile; presence. Tested."],
+["MENU-08","menu","Slot voting","verified","Vote between recipe alternatives for a menu slot.","Tested."],
+["MENU-09","menu","Conflict resolution + diff","verified","See which fields differed and re-apply your version.","Permission-checked recovery. Tested."],
+["MENU-10","menu","Share / import a menu","verified","Send a menu to friends and import menus they send.","NOTE: importing a shared menu's data is a stub (returns nothing) — BUT-1337."],
+["MENU-11","menu","Shopping list management","verified","Create lists, items, categories and export end to end.","Permission-gated; can auto-add to pantry. Tested."],
+["MENU-12","menu","Create shared shopping list","verified","Create a list shared with chosen friends.","Tested."],
+["MENU-13","menu","Collaborative shopping view","verified","Claim items, see who's live, split the list.","Real-time presence + claim conflicts. Tested."],
+["MENU-14","menu","Browse shared lists","partial","See all collaborative lists you participate in.","No dedicated viewmodel test."],
+["MENU-15","menu","Share an existing list","verified","Share an existing list with selected friends.","Tested."],
+
+["SOC-01","social","Send friend request","verified","Search for and send a friend request.","Privacy-gated by the other person's searchable flags. Tested."],
+["SOC-02","social","Accept / reject / cancel","verified","Accept, reject or cancel friend requests.","First-friend milestone fires once. Tested."],
+["SOC-03","social","Friends list & unfriend","verified","View friends and remove someone.","Stream-reactive list. Tested."],
+["SOC-04","social","Block / unblock","partial","Block a user so they can't interact; unblock later.","No dedicated block/unblock viewmodel test."],
+["SOC-05","social","Friend groups","verified","Organize friends into named groups.","Same subsystem as Groups. Tested."],
+["SOC-06","social","View public profile","untested","View another user's public profile and recipes.","No viewmodel test."],
+["SOC-07","social","View friend profile","untested","View a friend's profile with stats and actions.","Untested at the view level."],
+["SOC-08","social","Edit own profile","partial","Edit name, bio, avatar, cooking identity, privacy.","Privacy/validation paths untested."],
+["SOC-09","social","Share recipe with friends","verified","Share a recipe with selected friends.","Creates a new collaborative copy. Tested."],
+["SOC-10","social","Request a recipe share","verified","Ask a friend to share a recipe you saw them cook.","Idempotent; sends a critical notification. Tested."],
+["SOC-11","social","Accept a recipe-share request","verified","Accept a friend's request, granting them read access.","Grants access on the original recipe in place. Tested."],
+["SOC-12","social","Shared-with-me inbox","partial","An inbox of content others shared with you.","No coordinator-viewmodel test."],
+["SOC-13","social","Comment on recipes","verified","Comment on and reply to recipes.","Threaded, profanity- and blocked-user-filtered. Tested."],
+["SOC-14","social","Like comments","verified","Like a friend's comment.","Tested."],
+["SOC-15","social","Rate recipes","verified","Rate a recipe (1–5 stars).","Personal rating + shared aggregate. Tested."],
+["SOC-16","social","Cook-snaps","verified","Post photos of a dish you cooked for friends.","Visibility inheritance + per-snap override. Tested."],
+["SOC-17","social","Activity feed","verified","A feed of friends' cooking activity with photos.","Respects each person's sharing privacy. Tested."],
+["SOC-18","social","Report content / user","untested","Report a profile or content for moderation.","The report dialog is untested."],
+
+["GRP-01","groups","Create social group","partial","Create a named friend group and invite friends.","Viewmodel tested; sends invitations to accept."],
+["GRP-02","groups","Group detail — manage & share","verified","View members/stats and (admin) manage and share.","Household toggle, sharing, polls. Tested."],
+["GRP-03","groups","Leave / transfer ownership","verified","Leave a group with safe ownership succession.","Atomic ownership transfer. Tested."],
+["GRP-04","groups","Add members / invite","verified","Search, select and invite friends to the group.","Tested."],
+["GRP-05","groups","Group invitations","verified","See available groups/invitations and accept/join.","Concurrency-guarded. Tested."],
+["GRP-06","groups","Create group conversation","untested","Name a group chat and select friends to message.","Viewmodel untested."],
+["GRP-07","groups","Group-chat member management","verified","View/add/remove members, rename, leave a group chat.","Admin-gated. Tested."],
+["GRP-08","groups","Share recipes with a group","verified","Share multiple recipes with the whole group at once.","Tested."],
+["GRP-09","groups","Meal-vote poll","partial","Launch a poll of recipe suggestions to vote on.","Partial coverage of the poll path."],
+["GRP-10","groups","Conversations list","verified","Browse, search, pin, archive, delete conversations.","Optimistic pin/archive. Tested."],
+["GRP-11","groups","Start a direct chat","partial","Start a one-to-one chat with a friend.","Only the happy path is covered."],
+["GRP-12","groups","Chat","partial","Send, reply, edit, attach, react, poll, see typing.","No widget test for the chat facade itself."],
+
+["COOK-01","cooking","Cooking mode","verified","Hands-free cooking view: ingredients beside instructions.","Landscape, keeps screen awake, font-scale. Tested."],
+["COOK-02","cooking","Portion scaling","verified","Scale the recipe up/down while cooking.","Structured-first scaling. Tested."],
+["COOK-03","cooking","Step timers","verified","Countdown timers tied to steps, running concurrently.","OS notification on expiry. Tested."],
+["COOK-04","cooking","Substitution suggestions","partial","Get substitute ideas when you're out of an ingredient.","Service tested; the in-view replace flow isn't."],
+["COOK-05","cooking","Cooking-session presence","verified","Friends see you're cooking now; session analytics.","Tested."],
+["COOK-06","cooking","Pantry management","verified","Track ingredients at home by location and expiry.","Expiring-soon section. Tested."],
+["COOK-07","cooking","Pantry add/edit","partial","Add a pantry item via autocomplete or free text.","The add sheet isn't in a dedicated test."],
+["COOK-08","cooking","Pantry swipe-delete","verified","Swipe to remove a pantry item with undo.","Tested."],
+["COOK-09","cooking","Pantry bulk delete","verified","Select several pantry items and delete with undo.","Tested."],
+["COOK-10","cooking","Auto-add bought to pantry","verified","Bought shopping items flow into the pantry.","Dedup by name + unit. Tested."],
+["COOK-11","cooking","Cook-from-what-I-have search","verified","Pick ingredients you have, see recipes you can make.","Ranked by ingredient match %. Tested."],
+["COOK-12","cooking","Ingredient lookup","partial","Fuzzy Swedish ingredient-name matching.","The variation/cache logic has no dedicated test."],
+
+["SET-01","settings","Settings hub","partial","Find food, notification, account, language, legal options.","Only the food tile is tested."],
+["SET-02","settings","Allergen & dietary prefs","verified","Choose which allergens/diets to track and display.","Includes a retag-all section. Tested."],
+["SET-03","settings","Notification preferences","partial","Control categories, digest, quiet hours, sound.","The view is untested."],
+["SET-04","settings","Account security","partial","Change password/email, MFA, reach legal in one screen.","The view is untested."],
+["SET-05","settings","MFA enrollment screen","untested","Enroll/unenroll phone-based two-factor.","UI untested (security — see AUTH-11)."],
+["SET-06","settings","Collection statistics","untested","Stats about your recipe collection.","No test."],
+["SET-07","settings","Notification inbox","verified","Notification history: deep-link, mark read, dismiss.","Tested."],
+["SET-08","settings","Notification deep-link routing","verified","Tapping a notification opens the right screen.","Tested."],
+["SET-09","settings","Beta feedback button","verified","One-tap feedback button captures a screenshot.","Tested."],
+["SET-10","settings","Beta feedback form","verified","Submit a categorized report with optional screenshot.","Tested."],
+["SET-11","settings","Legal documents","untested","Read terms, privacy policy, community guidelines.","The views are untested."],
+["SET-12","settings","FAQ / help","untested","Common-question answers without contacting support.","Untested; copy is hardcoded Swedish, not translated — BUT-1338."],
+["SET-13","settings","My reports","verified","See your reports' status (Google Play UGC policy).","Tested."],
+["SET-14","settings","Moderation queue (admin)","verified","Moderator works a queue of open reports.","Admin-gated. Tested."],
+
+["ENG-01","engine","Auto recipe tagging","verified","Auto-label recipes with allergen/diet/method/mood/cuisine.","5-phase deterministic pipeline. Tested."],
+["ENG-02","engine","Allergen status detection","verified","Mark each recipe FREE/CONTAINS/UNKNOWN per allergen.","Safety-critical core. Tested."],
+["ENG-03","engine","Quick tag preview","partial","Show allergen status instantly during import preview.","No dedicated preview test."],
+["ENG-04","engine","Retagging scheduler","partial","Re-tag failed or stale recipes automatically.","No dedicated scheduler test."],
+["ENG-05","engine","Bulk retag-all","verified","Force-retag your whole library on demand.","Tested."],
+["ENG-06","engine","Personal-tag rule engine","partial","Your custom tag rules auto-apply to matching recipes.","No dedicated rule-evaluator test."],
+["ENG-07","engine","Tiered recipe parsing","verified","Reliable + cheap import via 4 cost-ordered tiers.","AI is the last resort. Tested."],
+["ENG-08","engine","Selective AI line-fixing","partial","AI fixes only the few uncertain ingredient lines.","~6× fewer tokens; no dedicated test."],
+["ENG-09","engine","On-device ingredient parsing","partial","Parse ingredients on-device first, cloud only if unsure.","The on-device neural (ONNX) path is untested."],
+["ENG-10","engine","Parse-correction learning","verified","Your corrections quietly improve future parsing.","Tested."],
+["ENG-11","engine","Search routing","verified","Search across your whole library (Algolia or fallback).","Tested."],
+["ENG-12","engine","Allergen filtering in menus","verified","The menu generator never proposes your allergens.","Tested."],
+["ENG-13","engine","Offline sync","verified","Work offline; changes sync automatically on reconnect.","Extensively tested."],
+["ENG-14","engine","Image optimization","partial","Recipe images load fast and smoothly.","No dedicated loader test."],
+["ENG-15","engine","Predictive cache","partial","Likely-next recipes load instantly.","No dedicated test."],
+["ENG-16","engine","Ingredient stale-marking","verified","Allergen badges refresh when the ingredient DB changes.","Tested."],
+["ENG-17","engine","AI recipe extraction (server)","verified","Messy sources import cleanly via guarded AI.","Biggest cost surface; kill switches + rate limits. Tested."],
+["ENG-18","engine","Social push notifications","verified","Get notified when friends interact with you.","Friend-only authorization. Tested."],
+["ENG-19","engine","Notification gating","verified","Notifications respect prefs; never spam or wake you at night.","Flags, quiet hours, rate cap. Tested."],
+["ENG-20","engine","Re-engagement nudges","verified","A gentle nudge for lapsed users; weekly recap.","Deterministic targeting + A/B copy. Tested."],
+["ENG-21","engine","Rating aggregation","verified","Recipe ratings show an accurate average and count.","Debounced to control cost. Tested."],
+["ENG-22","engine","Upload & content moderation","verified","Block malicious uploads and spammy duplicate posts.","Magic-byte + duplicate guard. Tested."],
+["ENG-23","engine","Account-deletion cascade","verified","Deleting an account truly erases data (server side).","3-tier cascade + audit logs. Tested."],
+["ENG-24","engine","Scheduled cleanup jobs","partial","Orphaned files + stale data cleaned up automatically.","Several jobs lack dedicated tests."],
+["ENG-25","engine","PWA install prompt (web)","untested","Add Butlery to your home screen on the web.","Web-only, low risk."],
+["ENG-26","engine","Recipe print (web)","untested","Print a clean copy of a recipe on the web.","Web-only, low risk."],
+];
+
+const STAT = {verified:"v", partial:"p", untested:"u"};
+const areaLabel = Object.fromEntries(AREAS);
+let fStatus = "all", fArea = null, fText = "";
+
+function counts(list){
+  return {
+    verified:list.filter(f=>f[3]==="verified").length,
+    partial:list.filter(f=>f[3]==="partial").length,
+    untested:list.filter(f=>f[3]==="untested").length,
+    total:list.length
+  };
+}
+function pct(n,t){ return t? (n/t*100):0; }
+
+function renderCoverage(){
+  const c = counts(F);
+  document.getElementById("covbar").innerHTML =
+    `<span class="seg-v" style="width:${pct(c.verified,c.total)}%"></span>`+
+    `<span class="seg-p" style="width:${pct(c.partial,c.total)}%"></span>`+
+    `<span class="seg-u" style="width:${pct(c.untested,c.total)}%"></span>`;
+  document.getElementById("covlegend").innerHTML =
+    `<span><span class="dot d-v"></span><b>${c.verified}</b> verified</span>`+
+    `<span><span class="dot d-p"></span><b>${c.partial}</b> partial</span>`+
+    `<span><span class="dot d-u"></span><b>${c.untested}</b> untested</span>`+
+    `<span style="margin-left:auto"><b>${c.total}</b> features total</span>`;
+  document.getElementById("c-v").textContent = "("+c.verified+")";
+  document.getElementById("c-p").textContent = "("+c.partial+")";
+  document.getElementById("c-u").textContent = "("+c.untested+")";
+}
+
+function renderMap(){
+  const map = document.getElementById("map");
+  map.innerHTML = "";
+  AREAS.forEach(([id,label])=>{
+    const list = F.filter(f=>f[1]===id);
+    const c = counts(list);
+    const t = document.createElement("div");
+    t.className = "tile" + (fArea===id?" active":"");
+    t.innerHTML =
+      `<div class="tname">${label}</div>`+
+      `<div class="tcount">${c.total} features</div>`+
+      `<div class="minibar">`+
+        `<span class="seg-v" style="width:${pct(c.verified,c.total)}%"></span>`+
+        `<span class="seg-p" style="width:${pct(c.partial,c.total)}%"></span>`+
+        `<span class="seg-u" style="width:${pct(c.untested,c.total)}%"></span>`+
+      `</div>`+
+      `<div class="tnums">${c.verified} ✓ &nbsp; ${c.partial} ◐ &nbsp; ${c.untested} ✗</div>`;
+    t.onclick = ()=>{ fArea = (fArea===id? null : id); render(); };
+    map.appendChild(t);
+  });
+}
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  document.getElementById("clear").style.display = fArea? "inline":"none";
+  document.querySelectorAll(".chip").forEach(ch=>ch.classList.toggle("active", ch.dataset.f===fStatus));
+  renderMap();
+
+  const txt = fText.trim().toLowerCase();
+  let shown = 0;
+  AREAS.forEach(([id,label])=>{
+    if(fArea && fArea!==id) return;
+    let items = F.filter(f=>f[1]===id);
+    if(fStatus!=="all") items = items.filter(f=>f[3]===fStatus);
+    if(txt) items = items.filter(f=>(f[0]+" "+f[2]+" "+f[4]+" "+f[5]).toLowerCase().includes(txt));
+    if(!items.length) return;
+    const c = counts(items);
+    const head = document.createElement("div");
+    head.className = "areahead";
+    head.innerHTML = `<span>${label}</span><small>${c.total} shown · ${c.verified}✓ ${c.partial}◐ ${c.untested}✗</small>`;
+    list.appendChild(head);
+    items.forEach(f=>{
+      shown++;
+      const el = document.createElement("div");
+      el.className = "feat"; el.dataset.status = f[3];
+      const badge = f[3]==="verified"?"b-v":f[3]==="partial"?"b-p":"b-u";
+      const blabel = f[3].charAt(0).toUpperCase()+f[3].slice(1);
+      el.innerHTML =
+        `<div class="row1">`+
+          `<span class="sdot d-${STAT[f[3]]}"></span>`+
+          `<span class="fid">${f[0]}</span>`+
+          `<span class="fname">${f[2]}</span>`+
+          `<span class="fstory">${f[4]}</span>`+
+          `<span class="caret">▶</span>`+
+        `</div>`+
+        `<div class="fdetail"><b>What it does:</b> ${f[4]} <span class="badge ${badge}">${blabel}</span><br><b>Test status:</b> ${f[5]}</div>`;
+      el.onclick = ()=> el.classList.toggle("open");
+      list.appendChild(el);
+    });
+  });
+  if(!shown) list.innerHTML = `<div class="empty">No features match — try clearing the search or filter.</div>`;
+}
+
+document.querySelectorAll(".chip").forEach(ch=>{
+  ch.onclick = ()=>{ fStatus = ch.dataset.f; render(); };
+});
+document.getElementById("search").addEventListener("input", e=>{ fText = e.target.value; render(); });
+document.getElementById("clear").onclick = ()=>{ fArea=null; render(); };
+
+renderCoverage();
+render();
+</script>
+</body>
+</html>
