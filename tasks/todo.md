@@ -1,14 +1,19 @@
 # Sprint Backlog
 
-## Sprint: Tier-A autonomous backlog — batch 5 (groups + engine tests) — 2026-06-21
+## Sprint: Tier-A autonomous backlog — batch 6 (Cloud Functions: AI8 CI gate) — 2026-06-21
 
-Goal (session): finish the 11 genuinely code-and-ship-now Tier-A tickets (per 2026-06-21 re-classification → `.claude/state/backlog-scan.json`). 26 others are ops/console/key/legal-blocked → flag in final report.
+Goal (session): finish the genuinely code-and-ship-now Tier-A tickets (per 2026-06-21 re-classification → `.claude/state/backlog-scan.json`). Reclassification corrected: BUT-840 is actually Tier-D (no server-side Algolia + needs admin key + deploy → flagged on ticket).
 
-### Batch 5 (test-only)
-- [x] **BUT-1342** CreateGroupConversationViewModel (17 tests) + direct-conversation edge cases (GRP-09 poll already covered; GRP-12 facade → view-test) `[Tier A]`
-- [x] **BUT-1343** PersonalTagRuleEvaluator + tag-preview invariants + cache eviction (ENG-14 already covered; ENG-08/24 → follow-up BUT-1351; ENG-09 ONNX → BUT-1240) `[Tier A]`
+### Batch 6 (functions/src TypeScript)
+- [x] **BUT-1167 AI8** prompt-changelog CI gate: pure detector + CLI + workflow + 10-case test (10/10). AI1 = live deploy verify (your action); AI6 → follow-up BUT-1352. `[Tier A slice]` → BUT-1167 to In Review (AI1 remains)
+- [flagged] **BUT-840** Tier-D: needs Algolia admin key + algoliasearch dep + deploy → commented, stays Backlog
 
-### Remaining A-CODE-NOW (next batches): BUT-840 + BUT-1167 (functions/src), BUT-431 (DI cold-start → Tier C/In Review), BUT-1149 (coverage floor — LAST)
+### Remaining A-CODE-NOW: BUT-431 (DI cold-start → Tier C/In Review), BUT-1149 (coverage floor — LAST)
+
+---
+
+## (archived) batch 5 (groups + engine tests) — SHIPPED e2ed4281c
+Closed Done: BUT-1342, BUT-1343. Follow-up: BUT-1351.
 
 ---
 

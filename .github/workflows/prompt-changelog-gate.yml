@@ -1,0 +1,82 @@
+name: Prompt Changelog Gate
+
+# BUT-1167 (AI8): fail when an LLM prompt in gemini-client.ts changes
+# without a matching entry in PROMPT_CHANGELOG.md. Keeps parse-quality
+# regressions correlatable to a specific prompt edit. Lightweight — Node
+# only, no Flutter.
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'functions/src/llm/**'
+      - 'functions/src/ci/**'
+      - '.github/workflows/prompt-changelog-gate.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'functions/src/llm/**'
+      - 'functions/src/ci/**'
+      - '.github/workflows/prompt-changelog-gate.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prompt-changelog-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+
+    steps:
+      # fetch-depth: 0 so the base ref (PR base / previous commit) is available
+      # locally for the diff — a shallow clone would not contain it.
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install functions dependencies
+        working-directory: functions
+        run: npm ci
+
+      - name: Build functions
+        working-directory: functions
+        run: npm run build
+
+      # Unit-test the pure gate logic so the gate itself can't silently rot.
+      - name: Test prompt-changelog guard
+        working-directory: functions
+        run: npm run test:prompt-changelog-guard
+
+      # Diff-base resolution:
+      #   - pull_request: compare against the PR base branch
+      #     (github.event.pull_request.base.sha), which fetch-depth: 0 makes
+      #     available. The CLI takes merge-base(base, HEAD) internally.
+      #   - push: compare against the commit before this push
+      #     (github.event.before). For the very first push to a branch that is
+      #     the all-zero SHA; fall back to HEAD^ in that case.
+      - name: Run prompt-changelog gate
+        working-directory: functions
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -e
+          if [ -n "$PR_BASE_SHA" ]; then
+            BASE="$PR_BASE_SHA"
+          elif [ -n "$PUSH_BEFORE_SHA" ] && [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            BASE="$PUSH_BEFORE_SHA"
+          else
+            BASE="HEAD^"
+          fi
+          echo "Diffing against base: $BASE"
+          node lib/ci/prompt-changelog-guard-cli.js "$BASE"
