@@ -1,0 +1,109 @@
+name: Model Version Guard
+
+# BUT-1239: nightly guard that fails when a model family's published
+# `latest_version.txt` in Firebase Storage exceeds the maximum version in
+# the local hash registry (lib/services/parsing/_expected_model_hashes.dart).
+#
+# Clients fail-close on any model version they have no SHA-256 hash for
+# (BUT-877). If `latest_version.txt` is bumped before the matching hash
+# lands in the registry + ships in a client, every client silently drops
+# to the slower rule-based / LLM parsing tier. This catches that drift.
+#
+# ──────────────────────────────────────────────────────────────────────
+# ONE-TIME SETUP (required before this workflow can pass):
+#
+#   Provision a READ-ONLY Storage service account scoped to models/**,
+#   download its JSON key, and add it as the GitHub secret
+#   `MODELS_RO_SA_KEY`. Concretely:
+#
+#   1. In Google Cloud Console for project butlery-app-1, create a service
+#      account, e.g. "models-ro-ci".
+#   2. Grant it READ-ONLY access to the model objects only — grant
+#      "Storage Object Viewer" (roles/storage.objectViewer) on the bucket
+#      gs://butlery-app-1.firebasestorage.app (optionally scope tighter to
+#      the models/ prefix via an IAM condition on resource name).
+#   3. Create a JSON key for that service account and download it.
+#   4. In GitHub: repo Settings → Secrets and variables → Actions → New
+#      repository secret. Name it MODELS_RO_SA_KEY and paste the full JSON
+#      key file contents as the value.
+#
+#   Until the secret exists, the job fails fast with a clear message
+#   (not a cryptic gcloud auth error).
+# ──────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0 — BUT-790 SHA-pin
+        with:
+          python-version: '3.12'
+
+      - name: Verify service-account secret is configured
+        env:
+          KEY: ${{ secrets.MODELS_RO_SA_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Secret MODELS_RO_SA_KEY is not configured. See the" \
+                 "ONE-TIME SETUP comment at the top of" \
+                 ".github/workflows/model-version-guard.yml — a read-only" \
+                 "Storage service-account JSON key must be added as the" \
+                 "MODELS_RO_SA_KEY repository secret."
+            exit 1
+          fi
+
+      - name: Write service-account key file
+        env:
+          KEY: ${{ secrets.MODELS_RO_SA_KEY }}
+        run: |
+          printf '%s' "$KEY" > "$RUNNER_TEMP/sa-key.json"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/setup-gcloud@77e7a554d41e2ee56fc945c52dfd3f33d12def9a # v2.1.4 — BUT-790 SHA-pin
+
+      - name: Activate service account
+        run: |
+          gcloud auth activate-service-account \
+            --key-file="$RUNNER_TEMP/sa-key.json"
+
+      - name: Run model-version guard
+        id: guard
+        run: |
+          set -o pipefail
+          python tools/ci/check_model_versions.py | tee "$RUNNER_TEMP/guard-output.txt"
+
+      - name: Post result to job summary
+        if: always()
+        run: |
+          {
+            echo "## Model Version Guard"
+            echo ""
+            if [ -f "$RUNNER_TEMP/guard-output.txt" ]; then
+              echo '```'
+              cat "$RUNNER_TEMP/guard-output.txt"
+              echo '```'
+            else
+              echo "Guard did not produce output (failed before running —" \
+                   "likely a missing secret or auth error; see the failing step)."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up key file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa-key.json"

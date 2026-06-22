@@ -1,5 +1,15 @@
 # Sprint Backlog
 
+## Credential-gated cluster prep (2026-06-22)
+- [x] **BUT-491** desktop CI build jobs (linux/macos/windows added to build-validation matrix + shell:bash for Windows). No secret needed → Done; first run may surface desktop widget issues (→ follow-up tickets).
+- [~] **BUT-486** deploy-firebase.yml written (target-selectable, rules-test-gate, production approval env). → In Review: needs `FIREBASE_SERVICE_ACCOUNT` secret + `production` GitHub environment.
+- [~] **BUT-1239** model-version guard (tools/ci/check_model_versions.py + model-version-guard.yml nightly). Parses registry (ner/line_classifier max=1) vs Storage latest_version.txt. → In Review: needs read-only `MODELS_RO_SA_KEY` secret.
+- [partial] **BUT-889** similarity scorer wired (deterministic trigram-cosine `lexicalSimilarity`, 14 tests). Residual (the bulk): 4 hand-curated corpora + Vertex WIF creds + cost-guard. Stays open.
+- [partial] **BUT-1240** integration_test/ner_golden_integration_test.dart skeleton (analyze-clean, self-skips headless). Residual: device-capable CI lane + model provisioning. Stays open.
+
+---
+
+
 ## Follow-up tickets batch (2026-06-22)
 - [x] **BUT-1167** closed (AI8 shipped + signed off; AI1 accepted).
 - [x] **BUT-1348** every social-extraction failure now stamps a stable `metadata['reason']` (unknown_platform/no_content/network/parse_failed) → analytics no longer logs null errorType. Fixed an order-dependent assertion the agent introduced (assert known-code-set, not exact 'network').

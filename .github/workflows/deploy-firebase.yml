@@ -1,0 +1,180 @@
+# BUT-486: Firebase deploy CI.
+#
+# Deploys Firestore rules + indexes, Cloud Functions, and Storage rules to the
+# butlery-app-1 project. Runs on a release tag (v*) or on manual dispatch with a
+# selectable target. Hosting is intentionally NOT deployed here — the web apps
+# (`app` → build/web, `admin` → build/web-admin) need a Flutter build first and
+# deploy via their own pipeline.
+#
+# ─── ONE-TIME USER SETUP (two steps) ─────────────────────────────────────────
+#
+# 1. Service-account secret `FIREBASE_SERVICE_ACCOUNT`:
+#    Firebase console → Project Settings → Service accounts → "Generate new
+#    private key". This downloads a JSON key. In GitHub: repo Settings →
+#    Secrets and variables → Actions → New repository secret, name it
+#    FIREBASE_SERVICE_ACCOUNT, and paste the entire JSON as the value.
+#    The service account needs deploy permissions (e.g. Firebase Admin, or the
+#    granular Firebase Rules Admin + Cloud Functions Admin + Storage Admin).
+#
+# 2. `production` GitHub Environment (the manual-approval gate):
+#    repo Settings → Environments → New environment → name it `production`.
+#    Under "Deployment protection rules" enable "Required reviewers" and add
+#    yourself. Every deploy then pauses for your approval before running.
+#
+# SECURITY NOTE: a long-lived service-account JSON is the simplest auth, but
+# Workload Identity Federation (google-github-actions/auth with WIF) is more
+# secure — it issues short-lived tokens with no stored key. Swap to WIF once the
+# pipeline is proven; the deploy steps stay the same once
+# GOOGLE_APPLICATION_CREDENTIALS is populated.
+name: Deploy Firebase
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "What to deploy"
+        type: choice
+        default: all
+        options: [all, rules, indexes, functions, storage]
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to butlery-app-1
+    runs-on: ubuntu-latest
+    # `production` is the manual-approval gate: configure required reviewers on
+    # this GitHub Environment so deploys pause until approved.
+    environment: production
+    timeout-minutes: 30
+
+    # A tag push always deploys everything; dispatch uses the chosen target.
+    env:
+      DEPLOY_TARGET: ${{ github.event.inputs.target || 'all' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      # firebase-tools requires Java 21+ for the Firestore/Storage emulators
+      # used by the pre-deploy rules gate.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@15.13.0
+
+      # Write the service-account JSON to a temp file and point ADC at it. Fail
+      # loudly if the secret is missing rather than letting `firebase deploy`
+      # emit a cryptic auth error later.
+      - name: Authenticate to Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret not configured. Add the service-account JSON as a repo secret (see header comment, step 1)." >&2
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+
+      # Pre-deploy gate: only run the rules-unit-testing suite when rules are in
+      # scope (target rules or all). If the suite fails the job stops here, so a
+      # broken ruleset is never deployed.
+      - name: Install function deps
+        if: env.DEPLOY_TARGET == 'rules' || env.DEPLOY_TARGET == 'all'
+        working-directory: functions
+        run: npm ci
+
+      - name: Start Firestore + Storage emulators
+        if: env.DEPLOY_TARGET == 'rules' || env.DEPLOY_TARGET == 'all'
+        run: |
+          firebase emulators:start --only firestore,storage --project demo-test &
+          echo "Waiting for Firestore emulator on 127.0.0.1:8080..."
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080 >/dev/null 2>&1; then
+              echo "Firestore emulator is up."
+              break
+            fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8080 >/dev/null
+          echo "Waiting for Storage emulator on 127.0.0.1:9199..."
+          for i in $(seq 1 60); do
+            # Storage emulator answers 501 to a bare GET — any HTTP response
+            # proves the port is live, so check connectivity not a 2xx.
+            if curl -s -o /dev/null http://127.0.0.1:9199 2>/dev/null; then
+              echo "Storage emulator is up."
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run rules unit tests (pre-deploy gate)
+        if: env.DEPLOY_TARGET == 'rules' || env.DEPLOY_TARGET == 'all'
+        working-directory: functions
+        run: npm run test:rules:all
+
+      - name: Stop emulators
+        if: always()
+        run: pkill -f "firebase" || true
+
+      # Deploy by target. `--non-interactive` keeps the CLI from prompting.
+      # `all` deploys firestore (rules + indexes), functions, and storage — but
+      # NOT hosting (hosting needs a web build and deploys separately).
+      - name: Deploy
+        run: |
+          set -euo pipefail
+          PROJECT=butlery-app-1
+          echo "Deploying target: $DEPLOY_TARGET"
+          case "$DEPLOY_TARGET" in
+            rules)
+              firebase deploy --only firestore:rules --project "$PROJECT" --non-interactive
+              ;;
+            indexes)
+              firebase deploy --only firestore:indexes --project "$PROJECT" --non-interactive
+              ;;
+            functions)
+              firebase deploy --only functions --project "$PROJECT" --non-interactive
+              ;;
+            storage)
+              firebase deploy --only storage --project "$PROJECT" --non-interactive
+              ;;
+            all)
+              firebase deploy --only firestore,functions,storage --project "$PROJECT" --non-interactive
+              ;;
+            *)
+              echo "::error::Unknown deploy target '$DEPLOY_TARGET'" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Firebase deploy"
+            echo ""
+            echo "- Project: \`butlery-app-1\`"
+            echo "- Target: \`${DEPLOY_TARGET}\`"
+            echo "- Trigger: \`${{ github.event_name }}\` (\`${{ github.ref }}\`)"
+            echo "- Status: \`${{ job.status }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
