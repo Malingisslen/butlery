@@ -45,6 +45,7 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/trackers/recipe_events_tracker.dart';
@@ -667,6 +668,14 @@ class MockNotificationsRepository extends Mock
 
   // All other methods left without implementation to allow stubbing with when()
 }
+
+/// Mock implementation of NotificationPermissionService.
+///
+/// The Android 13+ runtime-permission gate. Stub `requestIfNeeded` with
+/// `when(() => mock.requestIfNeeded(any())).thenAnswer((_) async => true/false)`
+/// to drive the master-toggle grant/deny branch in [NotificationPreferencesView].
+class MockNotificationPermissionService extends Mock
+    implements NotificationPermissionService {}
 
 /// Mock implementation of NotificationService
 class MockNotificationService extends Mock implements NotificationService {

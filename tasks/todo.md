@@ -6,8 +6,10 @@
 - [x] **BUT-1350** extracted PwaInstallGate (pure) out of the web-only file → install-prompt gating now VM-tested (7 tests).
 - [x] **BUT-1351** ENG-08: extracted `shouldEnhanceSelectively` gate → selective-vs-full LLM decision now unit-tested (behavior-preserving). ENG-24 stays for emulator lane.
 - [x] **BUT-1352** AI6 → Canceled (premise stale; no real splitter duplication).
-- [ ] **BUT-1349** menu_generator facade extraction — next.
-- [ ] **BUT-1353** remaining view-test screens (seams) — next.
+- [x] **BUT-1349** extracted MenuQualityAnalyzer → menu_generator.dart 565→499 lines (under limit); public API preserved via delegates; 101 menu tests green.
+- [x] **BUT-1353** QuickCaptureView (REC-07) + NotificationPreferencesView (SET-03) view tests via @visibleForTesting seam + MockNotificationPermissionService; journey-level screens deferred.
+- [x] **BUT-1354** filed (ENG-24 emulator lane).
+- ALL follow-ups resolved. Next: review the ~26 blocked tickets with Malin.
 
 ---
 

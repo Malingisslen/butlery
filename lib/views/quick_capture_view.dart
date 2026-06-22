@@ -18,12 +18,18 @@ import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 
 /// Lightweight recipe quick capture — just a title and optional meal type.
 class QuickCaptureView extends StatelessWidget {
-  const QuickCaptureView({super.key});
+  const QuickCaptureView({super.key, @visibleForTesting this.recipeService});
+
+  /// Test seam: when supplied, the quick-capture VM uses this service instead
+  /// of resolving [UnifiedRecipeService] from the [ServiceLocator]. Production
+  /// callers pass nothing, so the default ServiceLocator lookup is unchanged.
+  @visibleForTesting
+  final UnifiedRecipeService? recipeService;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => _QuickCaptureViewModel(),
+      create: (_) => _QuickCaptureViewModel(recipeService: recipeService),
       child: const _QuickCaptureViewContent(),
     );
   }
@@ -178,8 +184,11 @@ class _MealTypeSelector extends StatelessWidget {
 
 /// Minimal ViewModel for quick capture — handles save + loading/error state.
 class _QuickCaptureViewModel extends ChangeNotifier {
-  final UnifiedRecipeService _recipeService =
-      ServiceLocator.get<UnifiedRecipeService>();
+  _QuickCaptureViewModel({UnifiedRecipeService? recipeService})
+      : _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+
+  final UnifiedRecipeService _recipeService;
 
   String _mealType = 'Middag';
   bool _isSaving = false;

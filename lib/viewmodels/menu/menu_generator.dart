@@ -15,6 +15,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/viewmodels/menu/menu_quality_analyzer.dart';
 
 /// Result of a recipe swap operation, including alternatives info.
 class SwapResult {
@@ -348,8 +349,6 @@ class MenuGenerator {
     return null;
   }
 
-  // Delegate to CuisineConfig.allTags for cuisine tag lookup
-
   /// Swap a single recipe with the best-scoring alternative.
   ///
   /// When [useSmartSwap] is true, candidates are scored:
@@ -473,93 +472,28 @@ class MenuGenerator {
   static String? _extractCuisine(Recipe recipe) =>
       CuisineConfig.extractCuisineTag(recipe);
 
-  /// Validate menu generation prerequisites
+  /// Validate menu generation prerequisites.
+  ///
+  /// Facade over [MenuQualityAnalyzer.validatePromptNotEmpty]; the
+  /// availability check stays here because it depends on generator state.
   void validateGenerationPrerequisites(String prompt) {
-    if (prompt.trim().isEmpty) {
-      throw ArgumentError(AppLocale.current.errorFillRequiredFields);
-    }
+    MenuQualityAnalyzer.validatePromptNotEmpty(prompt);
 
     if (availableRecipes.isEmpty) {
       throw Exception(AppLocale.current.errorNoRecipesAvailable);
     }
   }
 
-  /// Analyze generated menu quality
-  Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) {
-    final analysis = <String, dynamic>{
-      'totalRecipes':
-          menu.values.fold(0, (sum, recipes) => sum + recipes.length),
-      'sections': menu.keys.length,
-      'averageRecipesPerSection': 0.0,
-      'hasVariety': false,
-      'mealTypes': <String>{},
-    };
+  /// Analyze generated menu quality (delegates to [MenuQualityAnalyzer]).
+  Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) =>
+      MenuQualityAnalyzer.analyzeMenuQuality(menu);
 
-    if (menu.isNotEmpty) {
-      analysis['averageRecipesPerSection'] =
-          analysis['totalRecipes'] / analysis['sections'];
-
-      // Analyze meal type variety
-      final mealTypes = <String>{};
-      for (final recipes in menu.values) {
-        for (final recipe in recipes) {
-          mealTypes.add(recipe.mealType);
-        }
-      }
-
-      analysis['mealTypes'] = mealTypes;
-      analysis['hasVariety'] = mealTypes.length > 1;
-    }
-
-    return analysis;
-  }
-
-  /// Get menu generation suggestions
-  List<String> getGenerationSuggestions() {
-    return [
-      AppLocale.current.menuSuggestionVegetarian,
-      AppLocale.current.menuSuggestionQuickDinners,
-      AppLocale.current.menuSuggestionMeatFish,
-      AppLocale.current.menuSuggestionFamily,
-      AppLocale.current.menuSuggestionHealthy,
-      AppLocale.current.menuSuggestionBudget,
-      AppLocale.current.menuSuggestionItalian,
-      AppLocale.current.menuSuggestionAsian,
-      AppLocale.current.menuSuggestionFavorites,
-      AppLocale.current.menuSuggestionRecent,
-    ];
-  }
+  /// Get menu generation suggestions (delegates to [MenuQualityAnalyzer]).
+  List<String> getGenerationSuggestions() =>
+      MenuQualityAnalyzer.getGenerationSuggestions();
 
   /// Check if prompt is likely to generate good results
-  bool isPromptOptimal(String prompt) {
-    final lowerPrompt = prompt.toLowerCase();
-
-    // Good indicators
-    final goodKeywords = [
-      'veckomeny',
-      'meny',
-      'middag',
-      'lunch',
-      'frukost',
-      'vegetarisk',
-      'kött',
-      'fisk',
-      'familj',
-      'person',
-      'snabb',
-      'hälsosam',
-      'budget',
-      'tema',
-      'favoriter',
-      'senaste',
-    ];
-
-    final hasGoodKeywords =
-        goodKeywords.any((keyword) => lowerPrompt.contains(keyword));
-
-    // Length check
-    final hasGoodLength = prompt.length >= 10 && prompt.length <= 200;
-
-    return hasGoodKeywords && hasGoodLength;
-  }
+  /// (delegates to [MenuQualityAnalyzer]).
+  bool isPromptOptimal(String prompt) =>
+      MenuQualityAnalyzer.isPromptOptimal(prompt);
 }
