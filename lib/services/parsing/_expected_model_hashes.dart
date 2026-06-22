@@ -53,6 +53,15 @@ const Map<int, String> kExpectedLineClassifierModelHashes = <int, String>{
   // signed-URL download (size: 20,754,122 B). Matches local
   // `scripts/line_classifier/output/onnx/model.onnx` exactly.
   1: 'd155becda1cf586d9e1ee86fac6e81c5f999404aa8741d0f1a9223ec5f57f085',
+  // BUT-1355: hash captured 2026-06-22 from the production
+  // `models/line_classifier/v2/model.onnx` bytes (size: 20,754,122 B).
+  // v2 is the "expand golden dataset and retrain" model (commit f0a769027,
+  // 2026-03-05) that was deliberately set as latest_version.txt=2. The app
+  // had been accidentally pinned to v1 (BUT-822 hashed v1 without noticing
+  // latest already pointed at v2), so clients were fail-closing on v2 and
+  // falling back to the slower rule-based classifier. Adopting v2 as the
+  // trusted live model per Malin's decision (2026-06-22).
+  2: 'c38c95211632f93dd548fd742fcb71a56acbeda53220cc7394a6a3920bfd53b5',
 };
 
 /// SHA-256 hashes of the CRF ingredient-weight JSON, keyed by the `version`
