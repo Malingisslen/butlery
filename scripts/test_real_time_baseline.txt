@@ -151,6 +151,7 @@ test/unit/viewmodels/menu/menu_state_manager_test.dart
 test/unit/viewmodels/menu/menu_storage_test.dart
 test/unit/viewmodels/menu_viewmodel_test.dart
 test/unit/viewmodels/menu_voting_viewmodel_test.dart
+test/unit/viewmodels/onboarding_viewmodel_test.dart
 test/unit/viewmodels/realtime/participant_tracker_test.dart
 test/unit/viewmodels/realtime_menu/realtime_stream_manager_test.dart
 test/unit/viewmodels/realtime_menu_state_test.dart

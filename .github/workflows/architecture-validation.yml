@@ -142,14 +142,21 @@ jobs:
     - name: Check for TODO/FIXME comments
       run: |
         echo "🔍 Checking for TODO/FIXME comments in critical files..."
-        # Count TODOs in services and repositories (not including test files)
+        # BUT-813 INFRA5: ratchet, not a warning. Count files carrying a
+        # TODO/FIXME in services + repositories. The ceiling is today's
+        # baseline; any increase fails the job so debt can only shrink.
+        # To intentionally raise it, bump TODO_BASELINE in the same PR (code
+        # review catches an unjustified bump) — same discipline as the
+        # test_real_time_baseline allow-list.
+        TODO_BASELINE=5
         TODO_COUNT=$(find lib/services lib/repositories -name "*.dart" -exec grep -l "TODO\|FIXME" {} \; | wc -l || echo "0")
-        echo "Found $TODO_COUNT files with TODO/FIXME comments in critical directories"
-        if [ "$TODO_COUNT" -gt 10 ]; then
-          echo "⚠️ Warning: High number of TODO/FIXME comments found"
-          echo "Consider addressing some of these before merging"
+        echo "Found $TODO_COUNT files with TODO/FIXME comments (baseline ceiling: $TODO_BASELINE)"
+        if [ "$TODO_COUNT" -gt "$TODO_BASELINE" ]; then
+          echo "::error::TODO/FIXME files in lib/services + lib/repositories rose to $TODO_COUNT (ceiling $TODO_BASELINE)."
+          echo "Resolve a TODO, or — if the new TODO is justified — raise TODO_BASELINE in this PR."
+          exit 1
         fi
-        
+
     - name: Upload architecture report
       if: always()
       uses: actions/upload-artifact@v7

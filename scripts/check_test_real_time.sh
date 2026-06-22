@@ -32,7 +32,11 @@ cd "$(dirname "$0")/.."
 fail=0
 
 DATETIME_SCOPE=("test/unit")
-DELAYED_SCOPE=("test/unit" "test/widget" "test/views" "test/integration")
+# BUT-813 INFRA7: e2e journey tests are the most timing-sensitive of all (full
+# navigation flows) — a long Future.delayed there is the worst flake source, so
+# they get the strict no-real-delay guard too. (Left out of DATETIME_SCOPE: e2e
+# fixtures legitimately seed DateTime; only the long-delay rule applies here.)
+DELAYED_SCOPE=("test/unit" "test/widget" "test/views" "test/integration" "test/e2e")
 
 BASELINE_FILE="scripts/test_real_time_baseline.txt"
 

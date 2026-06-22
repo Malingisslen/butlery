@@ -45,6 +45,17 @@ pre-commit:
       fail_text: "Architecture guard violation (see above). Use .orEmpty() etc."
       priority: 3
 
+    # BUT-813 INFRA6 (lefthook<->CI parity): the flaky-test real-time guard ran
+    # only in CI (test.yml). Mirror it pre-commit so DateTime.now()/long
+    # Future.delayed regressions fail at commit time, not after a CI round-trip.
+    # Grep-only -> sub-second. Heavyweight CI-only scanners (Trivy/TruffleHog,
+    # full arch-validation) stay CI-only by design: they'd add minutes to every
+    # local commit for marginal gain.
+    real-time-guard:
+      run: bash scripts/check_test_real_time.sh
+      fail_text: "Flaky-test real-time regression (see above): use fakeAsync/clock, not DateTime.now()/long Future.delayed."
+      priority: 4
+
 commit-msg:
   commands:
     # Validate conventional commit format
