@@ -57,6 +57,7 @@ Sev-3 that's actually Sev-1 means hours of silent harm.
 | OCR / import broken | Verify OCR.space + Vertex AI status pages. Check `lib/services/ocr_extraction_service.dart` for a recent change in the last 24h. |
 | App crashes on launch (single platform) | Crashlytics → filter by platform. If <hour old: pull the offending build off Play / TestFlight (see `DEPLOY_ROLLBACK.md` §6). |
 | Functions 5xx on a specific trigger | `gcloud functions logs read --project=butlery-app-1 --filter='resource.labels.function_name=<FN>' --limit=50`. Look for unhandled exception. |
+| **BUT-821 alert: "moderate-upload errors > 5 in 5 min"** | Cloud Logging, `service_name="moderateupload"`, `severity=ERROR`. `"failed to read head bytes"` = fail-open (uploads accepted WITHOUT byte-level moderation — treat as Sev-2, a content-safety bypass). `"rejected upload with unresolvable uploader"` = Storage-rule drift or an Admin-SDK upload bypassing the rule layer. Check recent `storage.rules` + `functions/src/storage/moderate-upload.ts` changes. |
 | Sudden Firestore cost spike | Console → Usage → identify which collection. Likely a new infinite-loop subscription or unbounded query. Disable the offending feature flag if available; hotfix the query otherwise. |
 
 ## Mitigation patterns
