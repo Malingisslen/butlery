@@ -72,6 +72,63 @@ void main() {
     });
   });
 
+  group('shouldEnhanceSelectively (minority gate)', () {
+    test('no uncertain lines → full path (no selective enhancement)', () {
+      // All 4 lines confident → nothing to selectively enhance.
+      expect(
+        IngredientParsingStrategy.shouldEnhanceSelectively(
+          uncertainCount: 0,
+          totalCount: 4,
+        ),
+        isFalse,
+      );
+    });
+
+    test('small minority uncertain → selective path chosen', () {
+      // 1 of 8 lines uncertain → cheap to re-parse just that line.
+      expect(
+        IngredientParsingStrategy.shouldEnhanceSelectively(
+          uncertainCount: 1,
+          totalCount: 8,
+        ),
+        isTrue,
+      );
+    });
+
+    test('exactly half uncertain → still selective (boundary, not majority)',
+        () {
+      // 2 of 4 is not a *majority*, so selective remains worthwhile.
+      expect(
+        IngredientParsingStrategy.shouldEnhanceSelectively(
+          uncertainCount: 2,
+          totalCount: 4,
+        ),
+        isTrue,
+      );
+    });
+
+    test('majority uncertain → full enhancement, not selective', () {
+      // 3 of 4 uncertain → a full LLM pass is better than patching most lines.
+      expect(
+        IngredientParsingStrategy.shouldEnhanceSelectively(
+          uncertainCount: 3,
+          totalCount: 4,
+        ),
+        isFalse,
+      );
+    });
+
+    test('empty recipe → no selective enhancement', () {
+      expect(
+        IngredientParsingStrategy.shouldEnhanceSelectively(
+          uncertainCount: 0,
+          totalCount: 0,
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('getUncertainLines', () {
     test('should return map of uncertain line indices to original text',
         () async {

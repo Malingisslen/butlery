@@ -84,6 +84,7 @@ class WebScraper {
             success: false,
             error:
                 'Timeout: Could not load page within ${_extractionTimeout.inSeconds} seconds',
+            metadata: const {'reason': 'network'},
           ),
         );
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -144,6 +145,7 @@ class WebScraper {
                         ExtractionResult(
                           success: false,
                           error: 'No text could be extracted from the page',
+                          metadata: const {'reason': 'no_content'},
                         ),
                       );
                     }
@@ -159,6 +161,7 @@ class WebScraper {
                       ExtractionResult(
                         success: false,
                         error: 'Text extraction error: ${e.toString()}',
+                        metadata: const {'reason': 'parse_failed'},
                       ),
                     );
                   }
@@ -210,6 +213,7 @@ class WebScraper {
               ExtractionResult(
                 success: false,
                 error: 'Could not load page: ${error.description}',
+                metadata: const {'reason': 'network'},
               ),
             );
           }
@@ -231,6 +235,7 @@ class WebScraper {
           ExtractionResult(
             success: false,
             error: 'Technical error: ${e.toString()}',
+            metadata: const {'reason': 'parse_failed'},
           ),
         );
       }

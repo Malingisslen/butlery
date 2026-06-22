@@ -105,6 +105,7 @@ class ExtractionManager extends BaseService {
           return ExtractionResult(
             success: false,
             error: 'Unknown platform for URL: $webUrl',
+            metadata: const {'reason': 'unknown_platform'},
           );
         }
 
@@ -123,7 +124,7 @@ class ExtractionManager extends BaseService {
         ExtractionResult(
           success: false,
           error: 'Extraction operation failed',
-          metadata: {'url': url},
+          metadata: {'url': url, 'reason': 'network'},
         );
   }
 

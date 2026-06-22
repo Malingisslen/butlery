@@ -251,6 +251,24 @@ class IngredientParsingStrategy {
     return uncertain;
   }
 
+  /// Decides whether selective ingredient enhancement should run instead of
+  /// a full LLM re-parse, given how many lines came back uncertain.
+  ///
+  /// Selective enhancement only pays off when a *minority* of lines are
+  /// uncertain: re-parsing just those lines is far cheaper than the whole
+  /// recipe. When the majority (more than half) are uncertain, a full LLM
+  /// pass produces better results, so this returns false.
+  ///
+  /// Pure decision function — no I/O, no LLM. Returns false when there are no
+  /// uncertain lines (nothing to enhance) or no parsed lines at all.
+  static bool shouldEnhanceSelectively({
+    required int uncertainCount,
+    required int totalCount,
+  }) {
+    if (uncertainCount <= 0 || totalCount <= 0) return false;
+    return uncertainCount <= totalCount / 2;
+  }
+
   /// Returns uncertain lines that still need LLM help after BERT NER.
   ///
   /// If BERT NER is available, tries it on uncertain CRF lines first.

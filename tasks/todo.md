@@ -1,5 +1,16 @@
 # Sprint Backlog
 
+## Follow-up tickets batch (2026-06-22)
+- [x] **BUT-1167** closed (AI8 shipped + signed off; AI1 accepted).
+- [x] **BUT-1348** every social-extraction failure now stamps a stable `metadata['reason']` (unknown_platform/no_content/network/parse_failed) → analytics no longer logs null errorType. Fixed an order-dependent assertion the agent introduced (assert known-code-set, not exact 'network').
+- [x] **BUT-1350** extracted PwaInstallGate (pure) out of the web-only file → install-prompt gating now VM-tested (7 tests).
+- [x] **BUT-1351** ENG-08: extracted `shouldEnhanceSelectively` gate → selective-vs-full LLM decision now unit-tested (behavior-preserving). ENG-24 stays for emulator lane.
+- [x] **BUT-1352** AI6 → Canceled (premise stale; no real splitter duplication).
+- [ ] **BUT-1349** menu_generator facade extraction — next.
+- [ ] **BUT-1353** remaining view-test screens (seams) — next.
+
+---
+
 ## Follow-up session (2026-06-22): fix BUT-840 + redo BUT-1339/1340 view tests
 - [x] **BUT-431 / BUT-1167** In-Review sign-off received from Malin → BUT-431 Done; BUT-1167 open only for AI1 (your deploy-verify).
 - [x] **BUT-840** — NOT an Algolia problem. Algolia is OFF (feature flag); live search uses FirestoreSearchRepository, which read the bare `users/{uid}` doc (no displayName) filtered by non-existent `isPublic`. Fixed: query `public_profiles` (`isSearchable==true`, exclude `isHidden`), map publicRecipeCount/friendsCount. Makes user-search work AND fresh-on-rename, no Algolia key. 5/5 tests + firebase-security clean. (Algolia-write-on-rename remains future work when Algolia is enabled.)

@@ -4,6 +4,7 @@ import 'dart:js_interop_unsafe';
 import 'package:web/web.dart' as web;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/services/pwa/pwa_install_gate.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 class PwaInstallService extends BaseService {
@@ -12,16 +13,11 @@ class PwaInstallService extends BaseService {
 
   static const _sessionCountKey = 'butlery_pwa_session_count';
   static const _installDismissedKey = 'butlery_pwa_install_dismissed';
-  static const _minSessions = 3;
 
-  bool _dismissed = false;
-  int _sessionCount = 0;
+  final PwaInstallGate _gate = PwaInstallGate();
 
-  bool get canPromptInstall {
-    if (_dismissed) return false;
-    if (_sessionCount < _minSessions) return false;
-    return _hasDeferredPrompt;
-  }
+  bool get canPromptInstall =>
+      _gate.canPrompt(hasDeferredPrompt: _hasDeferredPrompt);
 
   bool get _hasDeferredPrompt {
     try {
@@ -36,11 +32,13 @@ class PwaInstallService extends BaseService {
   Future<void> onInitialize() async {
     try {
       final persistence = ServiceLocator.get<PersistenceService>();
-      _dismissed = await persistence.getBool(_installDismissedKey) ?? false;
-      if (_dismissed) return;
-      _sessionCount = await persistence.getInt(_sessionCountKey) ?? 0;
-      _sessionCount++;
-      await persistence.setInt(_sessionCountKey, _sessionCount);
+      final alreadyDismissed = _gate.restore(
+        sessionCount: await persistence.getInt(_sessionCountKey) ?? 0,
+        dismissed: await persistence.getBool(_installDismissedKey) ?? false,
+      );
+      if (alreadyDismissed) return;
+      final count = _gate.incrementSession();
+      await persistence.setInt(_sessionCountKey, count);
     } catch (_) {}
   }
 
@@ -57,7 +55,7 @@ class PwaInstallService extends BaseService {
   }
 
   void dismissInstall() {
-    _dismissed = true;
+    _gate.markDismissed();
     try {
       ServiceLocator.get<PersistenceService>()
           .setBool(_installDismissedKey, true);

@@ -593,7 +593,10 @@ class RecipeParserService extends BaseService {
     if (uncertainLines.isEmpty) return false;
 
     // Skip if majority of lines are uncertain — full LLM is better
-    if (uncertainLines.length > parsed.length / 2) {
+    if (!IngredientParsingStrategy.shouldEnhanceSelectively(
+      uncertainCount: uncertainLines.length,
+      totalCount: parsed.length,
+    )) {
       AppLogger.debug(
         '$serviceName: ${uncertainLines.length}/${parsed.length} lines uncertain '
         '— skipping selective enhancement, using full LLM',

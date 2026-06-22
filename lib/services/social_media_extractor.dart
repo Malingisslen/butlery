@@ -171,7 +171,7 @@ class SocialMediaExtractor extends BaseService {
         ExtractionResult(
           success: false,
           error: 'Extraction operation failed',
-          metadata: {'url': url},
+          metadata: {'url': url, 'reason': 'network'},
         );
   }
 
