@@ -110,9 +110,15 @@ class FirestoreSearchRepository implements SearchRepository {
     int hitsPerPage = 20,
   }) async {
     try {
+      // BUT-840: read the canonical `public_profiles` doc — written on every
+      // profile save (incl. rename) by FirebaseUserRepository.saveProfile — so
+      // search results stay fresh when a user changes their name/avatar. The
+      // bare `users/{uid}` root doc this previously queried never carries
+      // displayName/avatarUrl, and the discoverability field is `isSearchable`
+      // (the user's own toggle), not `isPublic`.
       final snapshot = await _firestore
-          .collection(FirestoreCollections.users)
-          .where('isPublic', isEqualTo: true)
+          .collection(FirestoreCollections.publicProfiles)
+          .where('isSearchable', isEqualTo: true)
           .limit(hitsPerPage)
           .get();
 
@@ -121,6 +127,8 @@ class FirestoreSearchRepository implements SearchRepository {
       final hits = snapshot.docs
           .map((doc) {
             final data = doc.data();
+            // Exclude moderation-hidden profiles from search results.
+            if (data['isHidden'] == true) return null;
             final displayName = (data['displayName'] as String?).orEmpty();
 
             if (query.isEmpty ||
@@ -129,8 +137,8 @@ class FirestoreSearchRepository implements SearchRepository {
                 id: doc.id,
                 displayName: displayName,
                 avatarUrl: data['avatarUrl'] as String?,
-                recipeCount: data['recipeCount'] as int? ?? 0,
-                followerCount: data['followerCount'] as int? ?? 0,
+                recipeCount: data['publicRecipeCount'] as int? ?? 0,
+                followerCount: data['friendsCount'] as int? ?? 0,
               );
             }
             return null;

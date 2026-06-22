@@ -1,5 +1,13 @@
 # Sprint Backlog
 
+## Follow-up session (2026-06-22): fix BUT-840 + redo BUT-1339/1340 view tests
+- [x] **BUT-431 / BUT-1167** In-Review sign-off received from Malin → BUT-431 Done; BUT-1167 open only for AI1 (your deploy-verify).
+- [x] **BUT-840** — NOT an Algolia problem. Algolia is OFF (feature flag); live search uses FirestoreSearchRepository, which read the bare `users/{uid}` doc (no displayName) filtered by non-existent `isPublic`. Fixed: query `public_profiles` (`isSearchable==true`, exclude `isHidden`), map publicRecipeCount/friendsCount. Makes user-search work AND fresh-on-rename, no Algolia key. 5/5 tests + firebase-security clean. (Algolia-write-on-rename remains future work when Algolia is enabled.)
+- [ ] **BUT-1339 / BUT-1340** — redoing view tests with run-to-green discipline (agents in flight).
+
+---
+
+
 ## Sprint: Tier-A autonomous backlog — batch 8 (view tests — mostly bounced) — 2026-06-21
 
 ### Batch 8 (view-layer widget tests — REALITY CHECK)
