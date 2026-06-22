@@ -27,6 +27,12 @@
 - For layout/UI bugs: test the fix in Chrome before declaring done
 - If first fix fails: STOP guessing. Find 3 similar working views, compare their layout pattern to the broken view, then fix based on the working pattern.
 
+## Demand Diagnosis (Balanced)
+- For non-trivial changes, before presenting: ask "is there a more elegant way to do this?"
+- If a fix feels hacky, redo it: "Knowing everything I know now, implement the clean solution from scratch."
+- **Balance clause (do not skip):** for simple, obvious, or one-line fixes, ship it — don't gold-plate. This rule serves quality on substantial work; on trivial work it would just fight rule #7 (don't over-estimate complexity) and "minimal impact".
+- Trigger: applies when a change touches 3+ files, adds a service/viewmodel, or the first working version felt like a workaround. Skip otherwise.
+
 ## Self-Improvement Loop (automatic)
 - After ANY user correction → add entry to `/tasks/lessons.md`
 - Format: `### [Category] Title` + Date, Trigger, Rule, Example

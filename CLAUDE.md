@@ -76,6 +76,12 @@ If on CLI < 2.1.146, use `/simplify` (same effect, no effort param).
 
 ## Agent Usage Rules
 
+**Before filing review findings — consult `.claude/rules/accepted-deviations.md`.** It lists
+deliberate, decided deviations from otherwise-applicable rules (e.g. equality-only Firestore
+queries needing no composite index, accepted large files, intentional mockup departures). Do
+not re-flag anything listed there; when dispatching a review agent, point it at this file so
+it does the same. A genuinely new deviation gets appended there (dated), not argued in a review.
+
 **Tier 1 — Strongly Recommended (debugging / investigation):**
 - **debugger** — bug reports, errors, test failures, unexpected behavior
 
