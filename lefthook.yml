@@ -51,7 +51,11 @@ pre-commit:
     # Grep-only -> sub-second. Heavyweight CI-only scanners (Trivy/TruffleHog,
     # full arch-validation) stay CI-only by design: they'd add minutes to every
     # local commit for marginal gain.
+    # glob-gated: the guard only inspects test-file *content*, so it only needs
+    # to run when a test file is actually staged. This keeps non-test commits
+    # (lib-only, docs, config) free of its full-tree grep.
     real-time-guard:
+      glob: "*_test.dart"
       run: bash scripts/check_test_real_time.sh
       fail_text: "Flaky-test real-time regression (see above): use fakeAsync/clock, not DateTime.now()/long Future.delayed."
       priority: 4
