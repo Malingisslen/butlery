@@ -32,8 +32,15 @@ class RecipeQueryViewModel extends ChangeNotifier
         StreamManagementMixin,
         StateNotifierMixin,
         AsyncOperationMixin {
-  final UnifiedRecipeService _recipeService =
-      ServiceLocator.get<UnifiedRecipeService>();
+  /// The recipe service is resolved from the ServiceLocator by default so the
+  /// zero-arg production constructor is unchanged. Tests can inject a fake via
+  /// [recipeService] to drive `recipeInsights` / `getMostUsed*` projections
+  /// without standing up the full DI graph.
+  RecipeQueryViewModel({@visibleForTesting UnifiedRecipeService? recipeService})
+      : _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+
+  final UnifiedRecipeService _recipeService;
   late final AnalyticsService? _analyticsService =
       ServiceLocator.tryGet<AnalyticsService>();
   late final UserService? _userService = ServiceLocator.tryGet<UserService>();

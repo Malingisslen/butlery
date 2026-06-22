@@ -25,9 +25,11 @@ import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/l10n/app_localizations_en.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/settings/settings_hub_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockReportService extends Mock implements ReportService {}
 
@@ -50,6 +52,9 @@ void main() {
       container.container.registerSingleton<ReportService>(reportService);
       // The embedded LanguageTile resolves LocaleProvider from DI in initState.
       container.container.registerSingleton<LocaleProvider>(LocaleProvider());
+      // BUT-1306's AutoAddPantryTile resolves UserService in initState; without
+      // it the whole settings ListView throws (stale-harness drift).
+      container.container.registerSingleton<UserService>(MockUserService());
       ServiceLocator.initialize(container);
     });
 
