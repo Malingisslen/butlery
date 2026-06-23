@@ -1094,10 +1094,10 @@ packages:
     dependency: "direct main"
     description:
       name: freerasp
-      sha256: "5b9a3402a7a30d928897e2264e2700a30db1df14de289f500b3a0cf50dc19df2"
+      sha256: "10dac84c12896a641ba6159f799e1cb9cb4529b928af4813b013dc9d1c172f5d"
       url: "https://pub.dev"
     source: hosted
-    version: "7.5.1"
+    version: "8.0.0"
   frontend_server_client:
     dependency: transitive
     description:
