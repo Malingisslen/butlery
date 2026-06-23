@@ -74,6 +74,9 @@ class MenuPreviewView extends StatelessWidget {
   }
 
   Widget _buildAppBar(BuildContext context) {
+    // BUT-706: stays a Material SliverAppBar for now. A CupertinoSliverNavigationBar
+    // (iOS large-title) is possible here but is a visual/UX decision, not a
+    // mechanical swap — deferred (see BUT-1362).
     return SliverAppBar(
       title: Text(sharedMenu.menuTitle),
       floating: true,

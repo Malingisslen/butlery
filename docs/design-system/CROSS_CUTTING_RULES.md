@@ -100,6 +100,21 @@ use `HoverableCard` to gain a subtle pointer-hover lift + click cursor on web/de
 
 ---
 
+## Platform-adaptive top bars (BUT-706 / BUT-1362)
+
+Use `AdaptiveAppBar` (`lib/widgets/common/adaptive_app_bar.dart`) for `Scaffold.appBar` — it
+renders a native `CupertinoNavigationBar` on iOS and a Material `AppBar` everywhere else. It
+supports title (nullable, auto-ellipsized) / actions / leading / centerTitle / backgroundColor /
+foregroundColor / titleStyle / bottom / iconTheme / actionsIconTheme / systemOverlayStyle /
+elevation. ~39 screens are migrated; new screens should use it rather than a raw `AppBar`.
+
+**Exception — collapsing `SliverAppBar` headers stay Material.** Bars inside a `CustomScrollView`
+(recipe-detail's Hero-image header, `butlery_header`, the shared-content and menu-preview headers)
+keep a Material `SliverAppBar`: an image/flexibleSpace header or a custom-widget title has no
+`CupertinoSliverNavigationBar` equivalent, and the simple ones' iOS large-title treatment is a
+visual/UX decision (tracked in BUT-1362), not a mechanical swap. Each carries a `// BUT-706:`
+comment explaining why.
+
 ## Status of the BUT-1159 children
 
 - **BUT-954** (destructive-confirm) — rule documented (§1), applied across the canonical sites.

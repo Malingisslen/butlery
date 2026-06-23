@@ -11,6 +11,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 class SharedContentAppBar {
   static Widget build(
       BuildContext context, SharedContentCoordinatorViewModel viewModel) {
+    // BUT-706: stays a Material SliverAppBar for now. A CupertinoSliverNavigationBar
+    // (iOS large-title) is possible here but is a visual/UX decision, not a
+    // mechanical swap — deferred (see BUT-1362).
     return SliverAppBar(
       title: Text(context.l10n.sharedContent),
       floating: true,

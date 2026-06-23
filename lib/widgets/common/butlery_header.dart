@@ -215,6 +215,10 @@ class SliverButleryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // BUT-706: stays a Material SliverAppBar (not AdaptiveAppBar) — its tappable
+    // custom-widget title plus pinned/floating/snap collapse have no
+    // CupertinoSliverNavigationBar equivalent. AdaptiveAppBar covers the
+    // non-sliver bars; collapsing headers like this remain Material by design.
     return SliverAppBar(
       backgroundColor: cs.primary,
       foregroundColor: cs.onPrimary,
