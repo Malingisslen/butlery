@@ -6,10 +6,11 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/messaging/builders/message_content_builder.dart';
 import 'package:butlery/widgets/messaging/components/message_status_widget.dart';
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
@@ -316,25 +317,7 @@ class _MessageBubbleState extends State<MessageBubble>
               }
               widget.onLongPress?.call();
             },
-            child: StyledCard(
-              backgroundColor: _isFromCurrentUser
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: AppDimensions.borderRadiusM,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.message.isReply && widget.replyToMessage != null)
-                    _buildReplyPreview(context),
-                  _buildMessageContent(context),
-                  if (_isFromCurrentUser) _buildMessageStatus(context),
-                ],
-              ),
-            ),
+            child: _buildBubble(context),
           ),
         ),
 
@@ -376,6 +359,45 @@ class _MessageBubbleState extends State<MessageBubble>
 
   Widget _buildMessageStatus(BuildContext context) {
     return MessageStatusWidget(status: widget.message.status);
+  }
+
+  /// The chat bubble itself, wrapped in [HoverableCard] so it gains a subtle
+  /// hover affordance on web/desktop when interactive. The rest
+  /// decoration reproduces the previous [StyledCard] exactly — a flat filled
+  /// square with no shadow — so there's no visual change at rest.
+  Widget _buildBubble(BuildContext context) {
+    final restDecoration = BoxDecoration(
+      color: _isFromCurrentUser
+          ? Theme.of(context).colorScheme.primary
+          : Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    );
+    return HoverableCard(
+      restDecoration: restDecoration,
+      // Only imply clickability when the bubble actually does something on tap
+      // (own tap handler, long-press, or a reaction toggle). A display-only
+      // bubble defers the cursor, matching FriendCard/ShoppingListCard.
+      enabled: widget.onTap != null ||
+          widget.onLongPress != null ||
+          widget.onReactionToggle != null,
+      // Subtle shadow on hover (web/desktop) — fill + square corners unchanged.
+      hoverDecoration: restDecoration.copyWith(boxShadow: AppShadows.subtle),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingS,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.message.isReply && widget.replyToMessage != null)
+              _buildReplyPreview(context),
+            _buildMessageContent(context),
+            if (_isFromCurrentUser) _buildMessageStatus(context),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildTimestamp(BuildContext context) {

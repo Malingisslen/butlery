@@ -13659,6 +13659,12 @@ abstract class AppLocalizations {
   /// **'Lägg till vara'**
   String get a11yAddItem;
 
+  /// No description provided for @a11yAddFriend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till vän'**
+  String get a11yAddFriend;
+
   /// No description provided for @a11yTagStatusInfo.
   ///
   /// In sv, this message translates to:

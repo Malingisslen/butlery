@@ -8121,6 +8121,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yAddItem => 'Lägg till vara';
 
   @override
+  String get a11yAddFriend => 'Lägg till vän';
+
+  @override
   String a11yTagStatusInfo(String status) {
     return 'Mer information om $status';
   }

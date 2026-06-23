@@ -6,6 +6,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 
 /// Focused module for friend card components
@@ -47,9 +49,21 @@ class FriendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final restDecoration = BoxDecoration(
+      color: cs.surface,
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+      border:
+          Border.all(color: cs.outline, width: AppDimensions.borderWidthThin),
+    );
     return RepaintBoundary(
-      child: Container(
+      child: HoverableCard(
+        // Hover lift only when the card is actually tappable.
+        enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
+        restDecoration: restDecoration,
+        // Subtle shadow on hover (web/desktop) — border + square corners
+        // unchanged, matching the menu card's reserved hover elevation.
+        hoverDecoration: restDecoration.copyWith(boxShadow: AppShadows.subtle),
         child: Material(
           type: MaterialType.transparency,
           child: Semantics(
@@ -61,13 +75,6 @@ class FriendCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(
-                      color: cs.outline, width: AppDimensions.borderWidthThin),
-                ),
                 child: _buildContent(context),
               ),
             ),

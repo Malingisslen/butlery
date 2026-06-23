@@ -83,6 +83,26 @@ handle.dispose();
 
 Skip tests that need heavy ViewModel scaffolding — those are covered by the audit script + manual screen-reader passes.
 
+## Long-press semantics (BUT-948)
+
+On **list-selection surfaces**, long-press enters multi-select (mirrors the pantry /
+shopping / personal-tags / group-member pattern: long-press → `enterSelection`, then a
+contextual bulk-action bar replaces the FAB). Canonical implementations:
+`pantry/pantry_item_card.dart`, `unified_shopping/widgets/shopping_item_tiles.dart`,
+`personal_tags/personal_tag_widgets.dart`, `social/group_detail/group_member_card.dart`.
+
+**Documented exceptions** (long-press is a contextual menu or feature affordance, NOT
+multi-select — each carries a `// BUT-948 exception:` code comment):
+- **Conversations list** (`messaging/conversations_list_view.dart`) — opens the conversation
+  action menu (mute/delete/mark-read).
+- **Chat messages** (`messaging/chat_view/chat_message_stream.dart`) — opens the message
+  action menu.
+- **Cooking mode** (`cooking_mode_view.dart`) — long-press on an ingredient opens
+  substitutions; on an instruction step opens the step timer.
+
+When adding a new long-press: if the surface is a selectable list, wire it to multi-select.
+Otherwise, add a `// BUT-948 exception:` comment explaining the contextual/feature intent.
+
 ## Destructive-action confirmation (BUT-954)
 
 Three severity classes decide the friction pattern. Pick by **recoverability**, not by how scary the verb sounds:

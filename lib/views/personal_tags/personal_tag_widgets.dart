@@ -136,6 +136,7 @@ class PersonalTagTile extends StatelessWidget {
           onTap: inSelectionMode
               ? () => selection.toggle(tag.id)
               : () => _navigateToTagDetail(context),
+          // BUT-948: long-press = multi-select (convention).
           onLongPress:
               inSelectionMode ? null : () => selection.enterSelection(tag.id),
         ),

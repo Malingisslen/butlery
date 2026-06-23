@@ -336,30 +336,63 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               ),
             ),
           ),
-          floatingActionButton: _currentTabIndex == 2
-              ? FloatingActionButton(
-                  onPressed: () => _showCreateGroupDialog(viewModel),
-                  tooltip: context.l10n.groupCreateGroup,
-                  child: const Stack(
-                    children: [
-                      Center(
-                        child: Icon(
-                          Icons.groups,
-                          size: AppDimensions.iconSizeL,
-                        ),
-                      ),
-                      Positioned(
-                        top: AppDimensions.spacingXs,
-                        right: AppDimensions.spacingXs,
-                        child: CircularIconBadge.add(),
-                      ),
-                    ],
-                  ),
-                )
-              : null,
+          floatingActionButton: _buildFloatingActionButton(viewModel),
         );
       },
     );
+  }
+
+  /// BUT-1357: primary-action FAB resolves per selected tab.
+  /// - Friends tab (1): "Add friend" — reuses the EXISTING add-friend entry
+  ///   point (the Find Friends tab at index 3, same target as the friends-tab
+  ///   empty-state `onFindByUsername` CTA). No new flow is introduced.
+  /// - Groups tab (2): create-group FAB, unchanged.
+  /// Feed (0) and Find Friends (3) tabs have no FAB — Find Friends already
+  /// carries its own primary action (the search field).
+  /// FAB squareness comes from the global FloatingActionButtonThemeData
+  /// (BUT-964 square design language); no per-widget shape override needed.
+  Widget? _buildFloatingActionButton(FriendsViewModel viewModel) {
+    switch (_currentTabIndex) {
+      case 1:
+        return Semantics(
+          label: context.l10n.a11yAddFriend,
+          button: true,
+          child: FloatingActionButton(
+            onPressed: () => _tabController.animateTo(3),
+            tooltip: context.l10n.socialAddFriend,
+            child: const Icon(
+              Icons.person_add_alt_1,
+              size: AppDimensions.iconSizeL,
+            ),
+          ),
+        );
+      case 2:
+        return Semantics(
+          label: context.l10n.groupCreateGroup,
+          button: true,
+          child: FloatingActionButton(
+            onPressed: () => _showCreateGroupDialog(viewModel),
+            tooltip: context.l10n.groupCreateGroup,
+            child: const Stack(
+              children: [
+                Center(
+                  child: Icon(
+                    Icons.groups,
+                    size: AppDimensions.iconSizeL,
+                  ),
+                ),
+                Positioned(
+                  top: AppDimensions.spacingXs,
+                  right: AppDimensions.spacingXs,
+                  child: CircularIconBadge.add(),
+                ),
+              ],
+            ),
+          ),
+        );
+      default:
+        return null;
+    }
   }
 
   Widget _buildFriendsTab(FriendsViewModel viewModel) {

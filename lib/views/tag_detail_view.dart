@@ -191,6 +191,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         tooltip: context.l10n.commonBack,
       ),
       title: Text(tag.name),
+      // BUT-964/BUT-1357 exception: this is a detail view, not a list surface,
+      // so its primary actions (edit/share/add-rule) intentionally stay in the
+      // app bar rather than moving to a FAB. Do NOT add a FAB here.
       actions: [
         IconButton(
           icon: const Icon(Icons.share),

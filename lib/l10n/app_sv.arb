@@ -5522,6 +5522,7 @@
   "a11yNoItemsToShare": "Inga artiklar att dela",
   "a11yShareExternally": "Dela externt",
   "a11yAddItem": "Lägg till vara",
+  "a11yAddFriend": "Lägg till vän",
   "a11yTagStatusInfo": "Mer information om {status}",
   "@a11yTagStatusInfo": {
     "placeholders": {

@@ -307,6 +307,8 @@ class _IngredientsPanel extends StatelessWidget {
                 return Semantics(
                   label: context.l10n.a11yCookingModeIngredient(ingredientText),
                   // BUT-202: long-press → substitution suggestions sheet.
+                  // BUT-948 exception: long-press activates substitutions
+                  // (feature affordance), not multi-select.
                   child: GestureDetector(
                     onLongPress: () =>
                         _showSubstitutionSheet(context, vm, index),
@@ -636,6 +638,9 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                       // sheet, pre-filled with the duration
                                       // parsed from this instruction (5 min
                                       // default fallback).
+                                      // BUT-948 exception: long-press activates
+                                      // the step timer (feature affordance),
+                                      // not multi-select.
                                       onLongPress: () => _openStepTimer(
                                           context, index, instruction),
                                       // BUT-604: the duration phrase renders

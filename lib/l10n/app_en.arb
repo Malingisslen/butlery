@@ -5492,6 +5492,7 @@
   "a11yNoItemsToShare": "No items to share",
   "a11yShareExternally": "Share externally",
   "a11yAddItem": "Add item",
+  "a11yAddFriend": "Add friend",
   "a11yTagStatusInfo": "More information about {status}",
   "@a11yTagStatusInfo": {
     "placeholders": {

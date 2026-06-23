@@ -269,8 +269,42 @@ void main() {
       await tester.tap(find.text(_tabGroups));
       await tester.pumpAndSettle();
 
-      // The Groups tab (index 2) is the only one with a create-group FAB.
+      // The Groups tab (index 2) carries the create-group FAB. (The Friends tab
+      // also carries an Add-friend FAB now — see the BUT-1357 test below — so
+      // the FAB is no longer Groups-exclusive; presence here is what matters.)
       expect(find.byType(FloatingActionButton), findsOneWidget);
+    });
+
+    testWidgets(
+        'BUT-1357: Friends tab shows an Add-friend FAB that jumps to the Find friends tab',
+        (tester) async {
+      await pumpView(tester);
+
+      // No FAB on the default Feed tab (index 0).
+      expect(find.byType(FloatingActionButton), findsNothing);
+
+      // Switch to the Friends tab (index 1).
+      await tester.tap(find.text(_tabFriends));
+      await tester.pumpAndSettle();
+
+      // The Friends tab now surfaces its own primary-action FAB, labelled for
+      // screen readers via the a11yAddFriend semantics key.
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      final addFriendFab =
+          find.bySemanticsLabel('Lägg till vän'); // a11yAddFriend
+      expect(addFriendFab, findsOneWidget);
+
+      // Tapping it animates the tab controller to the Find friends tab (index 3)
+      // — the same target as the empty-state "find by username" CTA, no new flow.
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+      expect(tabBar.controller?.index, 3);
+
+      // On the Find friends tab the Add-friend FAB is gone (that tab carries its
+      // own search field instead).
+      expect(find.byType(FloatingActionButton), findsNothing);
     });
 
     testWidgets(

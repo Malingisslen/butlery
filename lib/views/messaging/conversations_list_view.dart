@@ -314,6 +314,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           conversation: conversation,
           currentUserId: vm.currentUserId.orEmpty(),
           onTap: () => _navigateToChat(conversation),
+          // BUT-948 exception: long-press opens the conversation action menu
+          // (contextual), not multi-select — messaging convention.
           onLongPress: () => _showConversationActions(vm, conversation),
           onPin: () => vm.togglePin(conversation.id),
           onArchive: () => vm.toggleArchive(conversation.id),

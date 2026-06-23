@@ -241,6 +241,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 replyToMessage: replyToMessage,
                 showAvatar:
                     viewModel.shouldShowAvatar(message, previousMessage),
+                // BUT-948 exception: long-press opens the message action menu
+                // (contextual), not multi-select — messaging convention.
                 onLongPress: () => widget.onMessageAction(message, 'menu'),
                 onReply: () => viewModel.setReplyToMessage(message),
                 onPollVote: (optionId) =>

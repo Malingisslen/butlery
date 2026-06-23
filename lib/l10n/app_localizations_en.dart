@@ -8106,6 +8106,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yAddItem => 'Add item';
 
   @override
+  String get a11yAddFriend => 'Add friend';
+
+  @override
   String a11yTagStatusInfo(String status) {
     return 'More information about $status';
   }

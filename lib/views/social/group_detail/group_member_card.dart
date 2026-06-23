@@ -50,6 +50,7 @@ class GroupMemberCard {
         selected: isSelectionMode && isSelected,
         selectedTileColor: cs.primary.withValues(alpha: 0.08),
         onTap: isSelectionMode && selectable ? onSelectionToggle : null,
+        // BUT-948: long-press = multi-select (convention).
         onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
         leading: isSelectionMode && selectable
             ? Icon(
