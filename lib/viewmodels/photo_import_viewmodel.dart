@@ -12,8 +12,6 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
-import 'package:butlery/services/connectivity_monitoring_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Photo-import ViewModel: camera/gallery capture → multi-provider OCR →
@@ -66,18 +64,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
   PhotoImportViewModel({
     required super.importManager,
     AutoSaveManager<PhotoImportDraft>? draftManager,
-    ConnectivityMonitoringService? connectivity,
-  }) : _connectivity = connectivity ??
-            ServiceLocator.tryGet<ConnectivityMonitoringService>() {
+    // BUT-1360: connectivity + the isOnline getter now live on
+    // ImportBaseViewModel; forward the injection to super (no local copy).
+    super.connectivity,
+  }) {
     initDraftPersistence(manager: draftManager);
     _initializeOCRService();
   }
-
-  final ConnectivityMonitoringService? _connectivity;
-
-  /// BUT-610 offline pre-check: unknown/missing connectivity defaults to online
-  /// so the OCR path is never blocked when DI isn't wired.
-  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   /// Initialize OCR service for universal device compatibility
   Future<void> _initializeOCRService() async {

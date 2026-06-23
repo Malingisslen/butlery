@@ -121,6 +121,41 @@ void main() {
     });
   });
 
+  group('fetchForWeek (cache-first)', () {
+    test('returns a seeded plan for the requested week', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+
+      await _seed(firestore, _plan(userId: _alice, date: week1));
+
+      final fetched = await repo.fetchForWeek(
+        userId: _alice,
+        weekStart: IsoWeekUtils.weekStartOf(week1),
+      );
+
+      expect(fetched, isNotNull);
+      expect(
+        fetched!.id,
+        IsoWeekUtils.weekIdFor(_alice, IsoWeekUtils.weekStartOf(week1)),
+      );
+    });
+
+    test('returns null for a never-cached week without throwing', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+
+      // Nothing seeded: the cache-first read misses, falls back, and the
+      // !exists check must yield null rather than an uncaught throw — the
+      // graceful-offline contract for BUT-1360 item 7.
+      final fetched = await repo.fetchForWeek(
+        userId: _alice,
+        weekStart: IsoWeekUtils.weekStartOf(week2),
+      );
+
+      expect(fetched, isNull);
+    });
+  });
+
   group('exportAllByUser (GDPR, doc-ID prefix range)', () {
     test('exports every plan owned by the user', () async {
       final firestore = FakeFirebaseFirestore();

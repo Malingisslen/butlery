@@ -22837,31 +22837,31 @@ abstract class AppLocalizations {
   /// FAQ answer 1: how to import recipes
   ///
   /// In sv, this message translates to:
-  /// **'Du kan importera recept pa flera satt: klistra in en URL fran en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck pa \"Lagg till\" pa startsidan och valj metod.'**
+  /// **'Du kan importera recept på flera sätt: klistra in en URL från en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck på \"Lägg till\" på startsidan och välj metod.'**
   String get faqA1;
 
   /// FAQ question 2: how to share recipes with friends
   ///
   /// In sv, this message translates to:
-  /// **'Hur delar jag recept med vanner?'**
+  /// **'Hur delar jag recept med vänner?'**
   String get faqQ2;
 
   /// FAQ answer 2: how to share recipes with friends
   ///
   /// In sv, this message translates to:
-  /// **'Oppna ett recept och tryck pa dela-ikonen. Du kan skicka receptet till vanner som anvander Butlery, eller dela en lank. Dina vanner kan sedan spara receptet till sin egen samling.'**
+  /// **'Öppna ett recept och tryck på dela-ikonen. Du kan skicka receptet till vänner som använder Butlery, eller dela en länk. Dina vänner kan sedan spara receptet till sin egen samling.'**
   String get faqA2;
 
   /// FAQ question 3: how to use the weekly menu
   ///
   /// In sv, this message translates to:
-  /// **'Hur anvander jag veckomeny?'**
+  /// **'Hur använder jag veckomeny?'**
   String get faqQ3;
 
   /// FAQ answer 3: how to use the weekly menu
   ///
   /// In sv, this message translates to:
-  /// **'Ga till veckomeny via navigeringen. Dar kan du planera veckans maltider genom att lagga till recept fran din samling. Ingredienser fran menyn kan skickas direkt till inkopslistan.'**
+  /// **'Gå till veckomeny via navigeringen. Där kan du planera veckans måltider genom att lägga till recept från din samling. Ingredienser från menyn kan skickas direkt till inköpslistan.'**
   String get faqA3;
 
   /// FAQ question 4: how to create personal tags
@@ -22873,7 +22873,7 @@ abstract class AppLocalizations {
   /// FAQ answer 4: how to create personal tags
   ///
   /// In sv, this message translates to:
-  /// **'Ga till profilen och valj \"Mina taggar\". Dar kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept for enkel filtrering.'**
+  /// **'Gå till profilen och välj \"Mina taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.'**
   String get faqA4;
 
   /// FAQ question 5: how to report problems
@@ -22885,7 +22885,7 @@ abstract class AppLocalizations {
   /// FAQ answer 5: how to report problems
   ///
   /// In sv, this message translates to:
-  /// **'Tryck pa \"!\"-knappen som syns langst ner till hoger pa varje sida. Dar kan du beskriva problemet, valja kategori och bifoga en skarmavbild. Vi laser all feedback!'**
+  /// **'Tryck på \"!\"-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all feedback!'**
   String get faqA5;
 
   /// No description provided for @sharedWithYou.

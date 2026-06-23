@@ -9303,23 +9303,23 @@
   "@faqQ1": {
     "description": "FAQ question 1: how to import recipes"
   },
-  "faqA1": "Du kan importera recept pa flera satt: klistra in en URL fran en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck pa \"Lagg till\" pa startsidan och valj metod.",
+  "faqA1": "Du kan importera recept på flera sätt: klistra in en URL från en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck på \"Lägg till\" på startsidan och välj metod.",
   "@faqA1": {
     "description": "FAQ answer 1: how to import recipes"
   },
-  "faqQ2": "Hur delar jag recept med vanner?",
+  "faqQ2": "Hur delar jag recept med vänner?",
   "@faqQ2": {
     "description": "FAQ question 2: how to share recipes with friends"
   },
-  "faqA2": "Oppna ett recept och tryck pa dela-ikonen. Du kan skicka receptet till vanner som anvander Butlery, eller dela en lank. Dina vanner kan sedan spara receptet till sin egen samling.",
+  "faqA2": "Öppna ett recept och tryck på dela-ikonen. Du kan skicka receptet till vänner som använder Butlery, eller dela en länk. Dina vänner kan sedan spara receptet till sin egen samling.",
   "@faqA2": {
     "description": "FAQ answer 2: how to share recipes with friends"
   },
-  "faqQ3": "Hur anvander jag veckomeny?",
+  "faqQ3": "Hur använder jag veckomeny?",
   "@faqQ3": {
     "description": "FAQ question 3: how to use the weekly menu"
   },
-  "faqA3": "Ga till veckomeny via navigeringen. Dar kan du planera veckans maltider genom att lagga till recept fran din samling. Ingredienser fran menyn kan skickas direkt till inkopslistan.",
+  "faqA3": "Gå till veckomeny via navigeringen. Där kan du planera veckans måltider genom att lägga till recept från din samling. Ingredienser från menyn kan skickas direkt till inköpslistan.",
   "@faqA3": {
     "description": "FAQ answer 3: how to use the weekly menu"
   },
@@ -9327,7 +9327,7 @@
   "@faqQ4": {
     "description": "FAQ question 4: how to create personal tags"
   },
-  "faqA4": "Ga till profilen och valj \"Mina taggar\". Dar kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept for enkel filtrering.",
+  "faqA4": "Gå till profilen och välj \"Mina taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.",
   "@faqA4": {
     "description": "FAQ answer 4: how to create personal tags"
   },
@@ -9335,7 +9335,7 @@
   "@faqQ5": {
     "description": "FAQ question 5: how to report problems"
   },
-  "faqA5": "Tryck pa \"!\"-knappen som syns langst ner till hoger pa varje sida. Dar kan du beskriva problemet, valja kategori och bifoga en skarmavbild. Vi laser all feedback!",
+  "faqA5": "Tryck på \"!\"-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all feedback!",
   "@faqA5": {
     "description": "FAQ answer 5: how to report problems"
   },

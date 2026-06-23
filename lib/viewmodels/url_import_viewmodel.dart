@@ -11,8 +11,6 @@ import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/index_page_expander.dart';
 import 'package:butlery/services/import/extracted_content_analyzer.dart';
 import 'package:butlery/services/social_media_extractor.dart';
-import 'package:butlery/services/connectivity_monitoring_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Per-URL lifecycle state for batch ("multiple URLs") imports.
@@ -44,20 +42,12 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   UrlImportViewModel({
     required super.importManager,
     IndexPageExpander? indexExpander,
-    ConnectivityMonitoringService? connectivity,
-  })  : _indexExpander = indexExpander ?? IndexPageExpander(),
-        // BUT-610: default-resolve from ServiceLocator so existing callers
-        // need no change; tests inject an offline double. tryGet (not get)
-        // keeps the VM usable when connectivity DI is absent (treated online).
-        _connectivity = connectivity ??
-            ServiceLocator.tryGet<ConnectivityMonitoringService>();
+    // BUT-1360: connectivity + the isOnline getter now live on
+    // ImportBaseViewModel; forward the injection to super (no local copy).
+    super.connectivity,
+  }) : _indexExpander = indexExpander ?? IndexPageExpander();
 
   final IndexPageExpander _indexExpander;
-  final ConnectivityMonitoringService? _connectivity;
-
-  /// BUT-610 offline pre-check: unknown/missing connectivity defaults to online
-  /// so the legacy network path is never blocked when DI isn't wired.
-  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   // ---- BUT-947: multiple-URL ("batch") import -----------------------------
 

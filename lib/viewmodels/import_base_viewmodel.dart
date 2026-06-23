@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -20,12 +21,25 @@ import 'package:butlery/core/utils/logger.dart';
 abstract class ImportBaseViewModel extends BaseViewModel
     with AsyncOperationMixin {
   final ImportManager _importManager;
+  final ConnectivityMonitoringService? _connectivity;
 
   Recipe? _parsedRecipe;
   String? _sourceUrl;
 
-  ImportBaseViewModel({required ImportManager importManager})
-      : _importManager = importManager;
+  ImportBaseViewModel({
+    required ImportManager importManager,
+    ConnectivityMonitoringService? connectivity,
+  })  : _importManager = importManager,
+        // BUT-1360 (mirrors BUT-610): default-resolve from ServiceLocator so
+        // existing subclass `super(importManager: ...)` calls need no change;
+        // tests inject an offline double. tryGet (not get) keeps the VM usable
+        // when connectivity DI is absent — that case is treated as online.
+        _connectivity = connectivity ??
+            ServiceLocator.tryGet<ConnectivityMonitoringService>();
+
+  /// BUT-1360 offline pre-check: unknown/missing connectivity defaults to online
+  /// so the legacy parse path is never blocked when DI isn't wired.
+  bool get isOnline => _connectivity?.isConnectedToInternet ?? true;
 
   Recipe? get parsedRecipe => _parsedRecipe;
   bool get hasParsedRecipe => _parsedRecipe != null;
@@ -63,6 +77,15 @@ abstract class ImportBaseViewModel extends BaseViewModel
 
   @protected
   Future<Recipe?> parseTextToRecipe(String text, {String? url}) async {
+    // BUT-1360 (mirrors BUT-610): offline pre-check — fail fast before the
+    // Cloud-Function parse round-trip. Without this an offline parse spins ~60s
+    // on the client timeout above before the user sees anything. Covers both
+    // call sites (TextImportMixin and UrlImportMixin performImport).
+    if (!isOnline) {
+      setError(AppLocale.current.importOfflineMessage);
+      return null;
+    }
+
     return await executeAsync<Recipe?>(
       () async {
         final strategy = importManager.getTextImportStrategy();
