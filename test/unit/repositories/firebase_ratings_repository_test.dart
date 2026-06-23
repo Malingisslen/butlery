@@ -273,12 +273,12 @@ void main() {
                 .data()!;
 
         expect(
-          (data['createdAt'] as Timestamp).toDate(),
+          (data['createdAt'] as Timestamp).toDate().toUtc(),
           equals(firstRatedAt),
           reason: 'createdAt must stay anchored to the first rating',
         );
         expect(
-          (data['updatedAt'] as Timestamp).toDate(),
+          (data['updatedAt'] as Timestamp).toDate().toUtc(),
           equals(secondRatedAt),
           reason: 'updatedAt must advance to the latest rating',
         );

@@ -148,6 +148,7 @@ void main() {
           bio: any(named: 'bio'),
           showOnlineStatus: any(named: 'showOnlineStatus'),
           shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
         ),
       ).thenAnswer((_) async => UserProfileBuilder.build());
 
@@ -589,6 +590,7 @@ void main() {
             bio: any(named: 'bio'),
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
           ),
         ).thenAnswer((_) async => savedProfile);
 
@@ -607,6 +609,7 @@ void main() {
             bio: any(named: 'bio'),
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
           ),
         ).called(1);
       });
@@ -628,6 +631,7 @@ void main() {
             bio: any(named: 'bio'),
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
           ),
         );
       });
@@ -668,6 +672,7 @@ void main() {
             bio: any(named: 'bio'),
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
           ),
         ).thenAnswer((_) async => savedProfile);
 
@@ -691,6 +696,7 @@ void main() {
             bio: any(named: 'bio'),
             showOnlineStatus: any(named: 'showOnlineStatus'),
             shareActivityToFeed: any(named: 'shareActivityToFeed'),
+            activityFeedEventTypes: any(named: 'activityFeedEventTypes'),
           ),
         ).thenAnswer((_) async => null);
 

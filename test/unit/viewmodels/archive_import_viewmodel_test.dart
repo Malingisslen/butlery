@@ -126,18 +126,18 @@ void main() {
       });
 
       test('should find recipes by ingredient', () {
-        // Real recipes have 'chicken breast' as ingredient
-        viewModel.updateSearch('chicken');
+        // Kycklingcurry has 'kycklingfilé' as ingredient (seed data is Swedish).
+        viewModel.updateSearch('kyckling');
 
         expect(viewModel.filteredRecipes.length, equals(1));
-        expect(viewModel.filteredRecipes[0].title, contains('Chicken'));
+        expect(viewModel.filteredRecipes[0].title, contains('Kyckling'));
       });
 
       test('should handle case-insensitive search', () {
-        viewModel.updateSearch('PANCAKES');
+        viewModel.updateSearch('PANNKAKOR');
 
         expect(viewModel.filteredRecipes.length, equals(1));
-        expect(viewModel.filteredRecipes[0].title, contains('Pancakes'));
+        expect(viewModel.filteredRecipes[0].title, contains('Pannkakor'));
       });
 
       test('should clear search query', () {
@@ -194,14 +194,14 @@ void main() {
       });
 
       test('should filter recipes by multiple tags with AND logic', () {
-        // 'snabbt' AND 'vegetariskt' -> Vegetable Stir Fry only
+        // 'snabbt' AND 'vegetariskt' -> Wokade grönsaker only
         viewModel.toggleTag('snabbt');
         viewModel.toggleTag('vegetariskt');
 
         expect(viewModel.filteredRecipes.length, equals(1));
         expect(
           viewModel.filteredRecipes[0].title,
-          equals('Vegetable Stir Fry'),
+          equals('Wokade grönsaker'),
         );
       });
 
@@ -277,11 +277,11 @@ void main() {
       test('should combine all filter types', () {
         viewModel.toggleTag('snabbt');
         viewModel.setTimeFilter(TimeFilter.under30);
-        viewModel.updateSearch('salad');
+        viewModel.updateSearch('sallad');
 
-        // 'snabbt' + <=30min + 'salad' -> Caesar Salad
+        // 'snabbt' + <=30min + 'sallad' -> Caesarsallad
         expect(viewModel.filteredRecipes.length, equals(1));
-        expect(viewModel.filteredRecipes[0].title, equals('Caesar Salad'));
+        expect(viewModel.filteredRecipes[0].title, equals('Caesarsallad'));
       });
 
       test('should handle no matching results', () {

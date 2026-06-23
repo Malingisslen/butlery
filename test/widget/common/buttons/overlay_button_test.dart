@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/buttons/overlay_button.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/theme_constants.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 
 // Comprehensive widget test for OverlayButton following ultrathink methodology
@@ -62,13 +63,11 @@ void main() {
       testWidgets('uses default background color when not specified', (
         WidgetTester tester,
       ) async {
-        late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) {
-                  cs = Theme.of(context).colorScheme;
                   return OverlayButton(
                     child: const Icon(Icons.edit),
                     onPressed: () {},
@@ -85,7 +84,7 @@ void main() {
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(
           decoration.color,
-          equals(cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)),
+          equals(ThemeConstants.blackOverlay60),
         );
       });
 
@@ -268,13 +267,11 @@ void main() {
       testWidgets('uses default background color for remove variant', (
         WidgetTester tester,
       ) async {
-        late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) {
-                  cs = Theme.of(context).colorScheme;
                   return OverlayButton.remove(onPressed: () {});
                 },
               ),
@@ -289,7 +286,7 @@ void main() {
         // Remove variant sets backgroundColor to null → default theme surface.
         expect(
           decoration.color,
-          equals(cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)),
+          equals(ThemeConstants.blackOverlay60),
         );
       });
 
@@ -415,14 +412,12 @@ void main() {
       testWidgets('uses theme surface color when no background specified', (
         WidgetTester tester,
       ) async {
-        late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(primarySwatch: Colors.green),
             home: Scaffold(
               body: Builder(
                 builder: (context) {
-                  cs = Theme.of(context).colorScheme;
                   return OverlayButton(
                     child: const Icon(Icons.edit),
                     onPressed: () {},
@@ -440,7 +435,7 @@ void main() {
         // The button resolves its background from the ambient theme.
         expect(
           decoration.color,
-          equals(cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)),
+          equals(ThemeConstants.blackOverlay60),
         );
       });
     });

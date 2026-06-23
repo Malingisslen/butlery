@@ -197,7 +197,7 @@ void main() {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Skarmavbild'), findsNothing);
+      expect(find.text('Skärmavbild'), findsNothing);
       expect(find.byType(Image), findsNothing);
     });
 
@@ -207,13 +207,13 @@ void main() {
         await tester.pumpWidget(_wrap(_hostDialog(screenshot: _tinyPng())));
         await tester.pumpAndSettle();
 
-        expect(find.text('Skarmavbild'), findsOneWidget);
+        expect(find.text('Skärmavbild'), findsOneWidget);
         expect(find.byType(Image), findsOneWidget);
 
         // Remove screenshot IconButton with tooltip — two Icons.close exist
         // (AppBar leading + screenshot remove) so we scope by tooltip.
         expect(
-          find.byTooltip('Ta bort skarmavbild'),
+          find.byTooltip('Ta bort skärmavbild'),
           findsOneWidget,
         );
       },
@@ -227,11 +227,11 @@ void main() {
 
       expect(find.byType(Image), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Ta bort skarmavbild'));
+      await tester.tap(find.byTooltip('Ta bort skärmavbild'));
       await tester.pumpAndSettle();
 
       // After removal, label and preview should both be gone.
-      expect(find.text('Skarmavbild'), findsNothing);
+      expect(find.text('Skärmavbild'), findsNothing);
       expect(find.byType(Image), findsNothing);
     });
   });
