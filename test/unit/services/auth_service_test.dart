@@ -1900,5 +1900,109 @@ void main() {
         },
       );
     });
+
+    group('Account security operations', () {
+      test('reauthenticateWithPassword returns true on success', () async {
+        when(
+          () => mockAuthRepository.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async {});
+
+        expect(await authService.reauthenticateWithPassword('pw'), isTrue);
+        verify(
+          () => mockAuthRepository.reauthenticateWithPassword('pw'),
+        ).called(1);
+      });
+
+      test('reauthenticateWithPassword returns false on auth error', () async {
+        when(
+          () => mockAuthRepository.reauthenticateWithPassword(any()),
+        ).thenThrow(FirebaseAuthException(code: 'wrong-password'));
+
+        expect(await authService.reauthenticateWithPassword('pw'), isFalse);
+      });
+
+      test(
+        'reauthenticateWithPassword returns false on unexpected error',
+        () async {
+          when(
+            () => mockAuthRepository.reauthenticateWithPassword(any()),
+          ).thenThrow(Exception('boom'));
+
+          expect(await authService.reauthenticateWithPassword('pw'), isFalse);
+        },
+      );
+
+      test('changePassword returns true on success', () async {
+        when(
+          () => mockAuthRepository.updatePassword(any()),
+        ).thenAnswer((_) async {});
+
+        expect(await authService.changePassword('newPw1!'), isTrue);
+        verify(() => mockAuthRepository.updatePassword('newPw1!')).called(1);
+      });
+
+      test('changePassword returns false on auth error', () async {
+        when(
+          () => mockAuthRepository.updatePassword(any()),
+        ).thenThrow(FirebaseAuthException(code: 'requires-recent-login'));
+
+        expect(await authService.changePassword('newPw1!'), isFalse);
+      });
+
+      test('changeEmail returns true on success', () async {
+        when(
+          () => mockAuthRepository.verifyBeforeUpdateEmail(any()),
+        ).thenAnswer((_) async {});
+
+        expect(await authService.changeEmail('new@example.com'), isTrue);
+        verify(
+          () => mockAuthRepository.verifyBeforeUpdateEmail('new@example.com'),
+        ).called(1);
+      });
+
+      test('changeEmail returns false on auth error', () async {
+        when(
+          () => mockAuthRepository.verifyBeforeUpdateEmail(any()),
+        ).thenThrow(FirebaseAuthException(code: 'invalid-email'));
+
+        expect(await authService.changeEmail('bad'), isFalse);
+      });
+
+      test('sendEmailVerification completes on success', () async {
+        when(
+          () => mockAuthRepository.sendEmailVerification(),
+        ).thenAnswer((_) async {});
+
+        await authService.sendEmailVerification();
+        verify(() => mockAuthRepository.sendEmailVerification()).called(1);
+      });
+
+      test('sendEmailVerification rethrows on auth error', () async {
+        when(
+          () => mockAuthRepository.sendEmailVerification(),
+        ).thenThrow(FirebaseAuthException(code: 'too-many-requests'));
+
+        await expectLater(
+          authService.sendEmailVerification(),
+          throwsA(isA<FirebaseAuthException>()),
+        );
+      });
+
+      test('reloadUser calls reloadCurrentUser and swallows errors', () async {
+        when(
+          () => mockAuthRepository.reloadCurrentUser(),
+        ).thenAnswer((_) async {});
+        when(() => mockAuthRepository.currentUser).thenReturn(null);
+
+        await authService.reloadUser();
+        verify(() => mockAuthRepository.reloadCurrentUser()).called(1);
+
+        // Error path is swallowed (logged, no rethrow).
+        when(
+          () => mockAuthRepository.reloadCurrentUser(),
+        ).thenThrow(Exception('reload failed'));
+        await authService.reloadUser();
+      });
+    });
   });
 }
