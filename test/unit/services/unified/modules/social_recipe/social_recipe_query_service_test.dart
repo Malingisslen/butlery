@@ -179,8 +179,9 @@ void main() {
       ];
 
       // Stub the pure-Mock adapter (no concrete overrides to interfere)
-      when(() => mockServiceAdapter.getRecipesForUser(any()))
-          .thenAnswer((invocation) async {
+      when(() => mockServiceAdapter.getRecipesForUser(any())).thenAnswer((
+        invocation,
+      ) async {
         final userId = invocation.positionalArguments[0] as String;
         if (userId == currentUserId) {
           return testRecipes;
@@ -215,10 +216,13 @@ void main() {
         expect(recipes.length, equals(4)); // 2 owned + 2 member
         expect(recipes.every((r) => r.isCollaborative), isTrue);
         expect(
-            recipes.every((r) =>
+          recipes.every(
+            (r) =>
                 r.socialData?.memberPermissions?.containsKey(currentUserId) ==
-                true),
-            isTrue);
+                true,
+          ),
+          isTrue,
+        );
       });
 
       test('should return empty list when user not authenticated', () async {
@@ -235,16 +239,20 @@ void main() {
       });
 
       test('should get recipes shared by specific user', () async {
-        final sharedByCurrentUser =
-            await queryService.getRecipesSharedByUser(currentUserId);
-        final sharedByFriend1 =
-            await queryService.getRecipesSharedByUser('friend-1');
+        final sharedByCurrentUser = await queryService.getRecipesSharedByUser(
+          currentUserId,
+        );
+        final sharedByFriend1 = await queryService.getRecipesSharedByUser(
+          'friend-1',
+        );
 
         expect(sharedByCurrentUser.length, equals(2));
         expect(
-            sharedByCurrentUser
-                .every((r) => r.socialData?.ownerId == currentUserId),
-            isTrue);
+          sharedByCurrentUser.every(
+            (r) => r.socialData?.ownerId == currentUserId,
+          ),
+          isTrue,
+        );
 
         expect(sharedByFriend1.length, equals(1));
         expect(sharedByFriend1.first.socialData?.ownerId, equals('friend-1'));
@@ -255,45 +263,54 @@ void main() {
 
         expect(ownedRecipes.length, equals(2));
         expect(
-            ownedRecipes.every((r) => r.socialData?.ownerId == currentUserId),
-            isTrue);
+          ownedRecipes.every((r) => r.socialData?.ownerId == currentUserId),
+          isTrue,
+        );
         expect(ownedRecipes.every((r) => r.isCollaborative), isTrue);
       });
     });
 
     group('Permission-Based Queries', () {
       test('should get recipes with admin permission', () async {
-        final adminRecipes = await queryService
-            .getRecipesWithPermission(ResourcePermission.admin);
+        final adminRecipes = await queryService.getRecipesWithPermission(
+          ResourcePermission.admin,
+        );
 
         expect(adminRecipes.length, equals(2));
         expect(
-            adminRecipes.every((r) =>
+          adminRecipes.every(
+            (r) =>
                 r.socialData?.memberPermissions?[currentUserId] ==
-                ResourcePermission.admin),
-            isTrue);
+                ResourcePermission.admin,
+          ),
+          isTrue,
+        );
       });
 
       test('should get recipes with editor permission', () async {
-        final editorRecipes = await queryService
-            .getRecipesWithPermission(ResourcePermission.editor);
+        final editorRecipes = await queryService.getRecipesWithPermission(
+          ResourcePermission.editor,
+        );
 
         expect(editorRecipes.length, equals(1));
         expect(editorRecipes.first.id, equals('member-collab-1'));
         expect(
-            editorRecipes.first.socialData?.memberPermissions?[currentUserId],
-            equals(ResourcePermission.editor));
+          editorRecipes.first.socialData?.memberPermissions?[currentUserId],
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should get recipes with viewer permission', () async {
-        final viewerRecipes = await queryService
-            .getRecipesWithPermission(ResourcePermission.viewer);
+        final viewerRecipes = await queryService.getRecipesWithPermission(
+          ResourcePermission.viewer,
+        );
 
         expect(viewerRecipes.length, equals(1));
         expect(viewerRecipes.first.id, equals('member-collab-2'));
         expect(
-            viewerRecipes.first.socialData?.memberPermissions?[currentUserId],
-            equals(ResourcePermission.viewer));
+          viewerRecipes.first.socialData?.memberPermissions?[currentUserId],
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should return empty list when user not authenticated', () async {
@@ -304,8 +321,9 @@ void main() {
           serviceAdapter: mockServiceAdapter,
         );
 
-        final recipes = await queryService
-            .getRecipesWithPermission(ResourcePermission.admin);
+        final recipes = await queryService.getRecipesWithPermission(
+          ResourcePermission.admin,
+        );
 
         expect(recipes, isEmpty);
       });
@@ -313,18 +331,23 @@ void main() {
 
     group('Search Operations', () {
       test('should search collaborative recipes by title', () async {
-        final swedishRecipes =
-            await queryService.searchCollaborativeRecipes('swedish');
-        final pastaRecipes =
-            await queryService.searchCollaborativeRecipes('pasta');
-        final pizzaRecipes = await queryService
-            .searchCollaborativeRecipes('PIZZA'); // Case insensitive
+        final swedishRecipes = await queryService.searchCollaborativeRecipes(
+          'swedish',
+        );
+        final pastaRecipes = await queryService.searchCollaborativeRecipes(
+          'pasta',
+        );
+        final pizzaRecipes = await queryService.searchCollaborativeRecipes(
+          'PIZZA',
+        ); // Case insensitive
 
         expect(swedishRecipes.length, equals(2));
         expect(
-            swedishRecipes
-                .every((r) => r.title.toLowerCase().contains('swedish')),
-            isTrue);
+          swedishRecipes.every(
+            (r) => r.title.toLowerCase().contains('swedish'),
+          ),
+          isTrue,
+        );
 
         expect(pastaRecipes.length, equals(1));
         expect(pastaRecipes.first.title, contains('Pasta'));
@@ -334,8 +357,9 @@ void main() {
       });
 
       test('should return empty list for no matches', () async {
-        final results =
-            await queryService.searchCollaborativeRecipes('nonexistent');
+        final results = await queryService.searchCollaborativeRecipes(
+          'nonexistent',
+        );
 
         expect(results, isEmpty);
       });
@@ -343,8 +367,10 @@ void main() {
       test('should handle empty search query', () async {
         final results = await queryService.searchCollaborativeRecipes('');
 
-        expect(results.length,
-            equals(4)); // All collaborative recipes user has access to
+        expect(
+          results.length,
+          equals(4),
+        ); // All collaborative recipes user has access to
       });
     });
 
@@ -374,8 +400,9 @@ void main() {
       });
 
       test('should get most active collaborators', () async {
-        final collaborators =
-            await queryService.getMostActiveCollaborators(limit: 5);
+        final collaborators = await queryService.getMostActiveCollaborators(
+          limit: 5,
+        );
 
         expect(collaborators, isNotEmpty);
         expect(collaborators.contains('friend-1'), isTrue);
@@ -383,8 +410,9 @@ void main() {
       });
 
       test('should limit active collaborators list', () async {
-        final collaborators =
-            await queryService.getMostActiveCollaborators(limit: 1);
+        final collaborators = await queryService.getMostActiveCollaborators(
+          limit: 1,
+        );
 
         expect(collaborators.length, lessThanOrEqualTo(1));
       });
@@ -411,14 +439,20 @@ void main() {
 
       test('should load cached collaborative recipes', () async {
         await mockCacheHelper.saveJson(
-            'owned-collab-1', testRecipes[1].toJson());
+          'owned-collab-1',
+          testRecipes[1].toJson(),
+        );
         await mockCacheHelper.saveJson(
-            'owned-collab-2', testRecipes[2].toJson());
+          'owned-collab-2',
+          testRecipes[2].toJson(),
+        );
         await mockCacheHelper.saveJson(
-            'personal-1', testRecipes[0].toJson()); // Personal recipe
+          'personal-1',
+          testRecipes[0].toJson(),
+        ); // Personal recipe
 
-        final cachedRecipes =
-            await queryService.loadCachedCollaborativeRecipes();
+        final cachedRecipes = await queryService
+            .loadCachedCollaborativeRecipes();
 
         expect(cachedRecipes.length, equals(2)); // Only collaborative
         expect(cachedRecipes.every((r) => r.isCollaborative), isTrue);
@@ -427,8 +461,8 @@ void main() {
       test('should handle corrupted cache data', () async {
         await mockCacheHelper.saveJson('corrupted-1', {'invalid': 'data'});
 
-        final cachedRecipes =
-            await queryService.loadCachedCollaborativeRecipes();
+        final cachedRecipes = await queryService
+            .loadCachedCollaborativeRecipes();
 
         expect(cachedRecipes, isEmpty);
       });
@@ -456,8 +490,9 @@ void main() {
 
     group('Error Handling', () {
       test('should handle service adapter errors gracefully', () async {
-        when(() => mockServiceAdapter.getRecipesForUser(any()))
-            .thenThrow(Exception('Database error'));
+        when(
+          () => mockServiceAdapter.getRecipesForUser(any()),
+        ).thenThrow(Exception('Database error'));
 
         final recipes = await queryService.getCollaborativeRecipesForUser();
         final stats = await queryService.getCollaborationStats();
@@ -480,8 +515,8 @@ void main() {
 
         await mockCacheHelper.clear();
 
-        final cachedRecipes =
-            await queryService.loadCachedCollaborativeRecipes();
+        final cachedRecipes = await queryService
+            .loadCachedCollaborativeRecipes();
         expect(cachedRecipes, isEmpty);
 
         await expectLater(

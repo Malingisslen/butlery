@@ -73,36 +73,49 @@ void main() {
 
       // Configure mock streams
       when(() => mockFriendsRepository.currentUserId).thenReturn(testUserId);
-      when(() => mockFriendsRepository.incomingRequestsStream(testUserId))
-          .thenAnswer((_) => incomingRequestsController.stream);
-      when(() => mockFriendsRepository.sentRequestsStream(testUserId))
-          .thenAnswer((_) => sentRequestsController.stream);
-      when(() => mockFriendsRepository.receivedInvitationsStream(testUserId))
-          .thenAnswer((_) => invitationsController.stream);
-      when(() => mockCategoryRepository.categoriesStream(testUserId))
-          .thenAnswer((_) => categoriesController.stream);
-      when(() => mockFriendsRepository.friendProfilesStream(testUserId))
-          .thenAnswer((_) => friendsController.stream);
+      when(
+        () => mockFriendsRepository.incomingRequestsStream(testUserId),
+      ).thenAnswer((_) => incomingRequestsController.stream);
+      when(
+        () => mockFriendsRepository.sentRequestsStream(testUserId),
+      ).thenAnswer((_) => sentRequestsController.stream);
+      when(
+        () => mockFriendsRepository.receivedInvitationsStream(testUserId),
+      ).thenAnswer((_) => invitationsController.stream);
+      when(
+        () => mockCategoryRepository.categoriesStream(testUserId),
+      ).thenAnswer((_) => categoriesController.stream);
+      when(
+        () => mockFriendsRepository.friendProfilesStream(testUserId),
+      ).thenAnswer((_) => friendsController.stream);
 
       // Configure mock data loading methods
-      when(() => mockFriendsRepository.fetchFriendIds(testUserId))
-          .thenAnswer((_) async => <String>[]);
-      when(() => mockFriendsRepository.getIncomingRequests())
-          .thenAnswer((_) async => <FriendRequest>[]);
-      when(() => mockFriendsRepository.getSentRequests())
-          .thenAnswer((_) async => <FriendRequest>[]);
-      when(() => mockCategoryRepository.fetchCategories(testUserId))
-          .thenAnswer((_) async => <FriendCategory>[]);
-      when(() => mockFriendsRepository.fetchReceivedInvitations(testUserId))
-          .thenAnswer((_) async => <GroupInvitation>[]);
-      when(() => mockFriendsRepository.fetchSentInvitations(testUserId))
-          .thenAnswer((_) async => <GroupInvitation>[]);
+      when(
+        () => mockFriendsRepository.fetchFriendIds(testUserId),
+      ).thenAnswer((_) async => <String>[]);
+      when(
+        () => mockFriendsRepository.getIncomingRequests(),
+      ).thenAnswer((_) async => <FriendRequest>[]);
+      when(
+        () => mockFriendsRepository.getSentRequests(),
+      ).thenAnswer((_) async => <FriendRequest>[]);
+      when(
+        () => mockCategoryRepository.fetchCategories(testUserId),
+      ).thenAnswer((_) async => <FriendCategory>[]);
+      when(
+        () => mockFriendsRepository.fetchReceivedInvitations(testUserId),
+      ).thenAnswer((_) async => <GroupInvitation>[]);
+      when(
+        () => mockFriendsRepository.fetchSentInvitations(testUserId),
+      ).thenAnswer((_) async => <GroupInvitation>[]);
 
       // Configure block repository mock
-      when(() => mockBlockRepository.getBlockedUserIds())
-          .thenAnswer((_) async => <String>{});
-      when(() => mockBlockRepository.watchBlockedUserIds())
-          .thenAnswer((_) => Stream.value(<String>{}));
+      when(
+        () => mockBlockRepository.getBlockedUserIds(),
+      ).thenAnswer((_) async => <String>{});
+      when(
+        () => mockBlockRepository.watchBlockedUserIds(),
+      ).thenAnswer((_) => Stream.value(<String>{}));
 
       // Create state manager
       stateManager = FriendsStateManager(
@@ -153,8 +166,9 @@ void main() {
         await stateManager.initialize();
 
         // Assert - fetchFriendIds should only be called once
-        verify(() => mockFriendsRepository.fetchFriendIds(testUserId))
-            .called(1);
+        verify(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).called(1);
       });
 
       test('should handle initialization when not authenticated', () async {
@@ -177,10 +191,12 @@ void main() {
           displayName: 'Test Friend',
         );
 
-        when(() => mockFriendsRepository.fetchFriendIds(testUserId))
-            .thenAnswer((_) async => [friendId]);
-        when(() => mockFriendsRepository.fetchFriendProfiles([friendId]))
-            .thenAnswer((_) async => [friendProfile]);
+        when(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).thenAnswer((_) async => [friendId]);
+        when(
+          () => mockFriendsRepository.fetchFriendProfiles([friendId]),
+        ).thenAnswer((_) async => [friendProfile]);
 
         // Act
         await stateManager.initialize();
@@ -248,7 +264,9 @@ void main() {
         // Assert
         expect(stateManager.outgoingRequests, hasLength(1));
         expect(
-            stateManager.outgoingRequests.first.id, equals('sent_request_123'));
+          stateManager.outgoingRequests.first.id,
+          equals('sent_request_123'),
+        );
       });
 
       test('should update categories when stream emits', () async {
@@ -413,8 +431,9 @@ void main() {
         await stateManager.refresh();
 
         // Assert - methods should be called twice (init + refresh)
-        verify(() => mockFriendsRepository.fetchFriendIds(testUserId))
-            .called(2);
+        verify(
+          () => mockFriendsRepository.fetchFriendIds(testUserId),
+        ).called(2);
         verify(() => mockFriendsRepository.getIncomingRequests()).called(2);
       });
 
@@ -504,26 +523,27 @@ void main() {
       // as disposed, which prevents new subscriptions and clears the registry.
       // We assert via the public `getStreamStats()` API exposed by the mixin.
       test(
-          'should report 0 active subscriptions and isDisposed=true after dispose',
-          () async {
-        final disposableManager = FriendsStateManager(
-          repository: mockFriendsRepository,
-          categoryRepository: mockCategoryRepository,
-          blockRepository: mockBlockRepository,
-        );
-        await disposableManager.initialize();
+        'should report 0 active subscriptions and isDisposed=true after dispose',
+        () async {
+          final disposableManager = FriendsStateManager(
+            repository: mockFriendsRepository,
+            categoryRepository: mockCategoryRepository,
+            blockRepository: mockBlockRepository,
+          );
+          await disposableManager.initialize();
 
-        // Act
-        disposableManager.dispose();
-        // disposeStreamResources is fire-and-forget from dispose(); allow
-        // microtasks + cancellation futures to drain.
-        await Future<void>.delayed(Duration.zero);
+          // Act
+          disposableManager.dispose();
+          // disposeStreamResources is fire-and-forget from dispose(); allow
+          // microtasks + cancellation futures to drain.
+          await Future<void>.delayed(Duration.zero);
 
-        // Assert
-        final stats = disposableManager.getStreamStats();
-        expect(stats['activeSubscriptions'], equals(0));
-        expect(stats['isDisposed'], isTrue);
-      });
+          // Assert
+          final stats = disposableManager.getStreamStats();
+          expect(stats['activeSubscriptions'], equals(0));
+          expect(stats['isDisposed'], isTrue);
+        },
+      );
     });
 
     group('Notification on State Changes', () {
@@ -574,8 +594,7 @@ void main() {
     // We assert the user-visible contract: a stale ViewModel listener
     // can't be re-entered post-dispose.
     group('BUT-815: listener cleanup on dispose', () {
-      test(
-          'addListener callback does not fire after dispose, even if a state '
+      test('addListener callback does not fire after dispose, even if a state '
           'mutation method is called', () async {
         // Use a dedicated instance so the outer-group tearDown's
         // stateManager.dispose() doesn't double-dispose this one.
@@ -597,8 +616,11 @@ void main() {
             displayName: 'Pre',
           ),
         );
-        expect(fireCount, greaterThanOrEqualTo(1),
-            reason: 'pre-dispose mutation must reach the listener');
+        expect(
+          fireCount,
+          greaterThanOrEqualTo(1),
+          reason: 'pre-dispose mutation must reach the listener',
+        );
         final preDisposeCount = fireCount;
 
         // Act: dispose, then attempt to mutate state.
@@ -621,9 +643,13 @@ void main() {
           // Acceptable: ChangeNotifier guards against post-dispose notifies.
         }
 
-        expect(fireCount, equals(preDisposeCount),
-            reason: 'post-dispose mutation must NOT reach the listener — '
-                'BUT-797 leak regression gate');
+        expect(
+          fireCount,
+          equals(preDisposeCount),
+          reason:
+              'post-dispose mutation must NOT reach the listener — '
+              'BUT-797 leak regression gate',
+        );
       });
     });
   });

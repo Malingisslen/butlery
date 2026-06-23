@@ -87,8 +87,9 @@ class MultiRecipeSplitter {
     final blocks = <String>[];
     for (var i = 0; i < boundaries.length; i++) {
       final start = boundaries[i];
-      final end =
-          i + 1 < boundaries.length ? boundaries[i + 1] : rawLines.length;
+      final end = i + 1 < boundaries.length
+          ? boundaries[i + 1]
+          : rawLines.length;
       final block = rawLines.sublist(start, end).join('\n').trim();
       if (block.isNotEmpty) blocks.add(block);
     }
@@ -154,8 +155,10 @@ class MultiRecipeSplitter {
   /// enough length, an ingredient cluster, and an instruction signal.
   bool _isCompleteRecipeBlock(String block) {
     if (block.length < _minBlockChars) return false;
-    final lines =
-        block.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty);
+    final lines = block
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty);
     // Validation is intentionally LOOSER than boundary detection: here we just
     // confirm a sliced block is recipe-shaped, so countable ingredients without
     // a unit ("2 ägg") still count. Strict measurement matching is only needed

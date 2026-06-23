@@ -29,8 +29,12 @@ class AsyncRouteBuilder {
   /// Get the appropriate transition builder for the animation type
   /// Respects reduced motion accessibility preference (WCAG 2.3.3)
   static Widget Function(
-          BuildContext, Animation<double>, Animation<double>, Widget)
-      _getTransitionsBuilder(RouteAnimationType animationType) {
+    BuildContext,
+    Animation<double>,
+    Animation<double>,
+    Widget,
+  )
+  _getTransitionsBuilder(RouteAnimationType animationType) {
     switch (animationType) {
       case RouteAnimationType.fade:
         return (context, animation, secondaryAnimation, child) {
@@ -45,8 +49,10 @@ class AsyncRouteBuilder {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
-          final tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          final tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           final offsetAnimation = animation.drive(tween);
           return SlideTransition(position: offsetAnimation, child: child);
         };
@@ -57,8 +63,10 @@ class AsyncRouteBuilder {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
-          final tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          final tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           final offsetAnimation = animation.drive(tween);
           return SlideTransition(position: offsetAnimation, child: child);
         };
@@ -69,8 +77,10 @@ class AsyncRouteBuilder {
           const begin = 0.0;
           const end = 1.0;
           const curve = Curves.elasticOut;
-          final tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          final tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           final scaleAnimation = animation.drive(tween);
           return ScaleTransition(scale: scaleAnimation, child: child);
         };

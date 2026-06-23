@@ -100,8 +100,7 @@ void main() {
         expect(data.containsKey('timestamp'), isTrue);
       });
 
-      test('should handle logging failure gracefully without throwing',
-          () async {
+      test('should handle logging failure gracefully without throwing', () async {
         // Arrange - This test verifies fire-and-forget behavior
         // This test works because it only checks that the method doesn't throw,
         // not that data was written successfully
@@ -124,15 +123,27 @@ void main() {
         // Arrange
         final now = DateTime.now();
         await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 5))),
-          _createAuditLog('user-123', 'write', 'user',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 3))),
-          _createAuditLog('user-456', 'delete', 'recipe',
-              granted: false,
-              timestamp: now.subtract(const Duration(minutes: 1))),
+          _createAuditLog(
+            'user-123',
+            'read',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 5)),
+          ),
+          _createAuditLog(
+            'user-123',
+            'write',
+            'user',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 3)),
+          ),
+          _createAuditLog(
+            'user-456',
+            'delete',
+            'recipe',
+            granted: false,
+            timestamp: now.subtract(const Duration(minutes: 1)),
+          ),
         ]);
 
         // Act
@@ -164,18 +175,34 @@ void main() {
         // Arrange
         final now = DateTime.now();
         await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 5))),
-          _createAuditLog('user-123', 'write', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 4))),
-          _createAuditLog('user-123', 'delete', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 3))),
-          _createAuditLog('user-123', 'read', 'user',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 2))),
+          _createAuditLog(
+            'user-123',
+            'read',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 5)),
+          ),
+          _createAuditLog(
+            'user-123',
+            'write',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 4)),
+          ),
+          _createAuditLog(
+            'user-123',
+            'delete',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 3)),
+          ),
+          _createAuditLog(
+            'user-123',
+            'read',
+            'user',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 2)),
+          ),
         ]);
 
         // Act
@@ -194,20 +221,34 @@ void main() {
         final cutoff = now.subtract(const Duration(minutes: 3));
 
         await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 5))),
-          _createAuditLog('user-123', 'write', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 2))),
-          _createAuditLog('user-123', 'delete', 'recipe',
-              granted: true,
-              timestamp: now.subtract(const Duration(minutes: 1))),
+          _createAuditLog(
+            'user-123',
+            'read',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 5)),
+          ),
+          _createAuditLog(
+            'user-123',
+            'write',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 2)),
+          ),
+          _createAuditLog(
+            'user-123',
+            'delete',
+            'recipe',
+            granted: true,
+            timestamp: now.subtract(const Duration(minutes: 1)),
+          ),
         ]);
 
         // Act - Using startAfter for pagination
-        final logs =
-            await repository.getUserAuditLogs('user-123', startAfter: cutoff);
+        final logs = await repository.getUserAuditLogs(
+          'user-123',
+          startAfter: cutoff,
+        );
 
         // Assert - FakeFirebaseFirestore may not fully support startAfter, so just verify it doesn't crash
         expect(logs, isNotNull);
@@ -225,8 +266,9 @@ void main() {
         ]);
 
         // Act
-        final logs =
-            await repository.getResourceAuditLogs(resourceType: 'recipe');
+        final logs = await repository.getResourceAuditLogs(
+          resourceType: 'recipe',
+        );
 
         // Assert
         expect(logs.length, equals(2));
@@ -236,12 +278,27 @@ void main() {
       test('should retrieve audit logs for specific resource ID', () async {
         // Arrange
         await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: true, resourceId: 'recipe-1'),
-          _createAuditLog('user-456', 'write', 'recipe',
-              granted: true, resourceId: 'recipe-1'),
-          _createAuditLog('user-789', 'delete', 'recipe',
-              granted: false, resourceId: 'recipe-2'),
+          _createAuditLog(
+            'user-123',
+            'read',
+            'recipe',
+            granted: true,
+            resourceId: 'recipe-1',
+          ),
+          _createAuditLog(
+            'user-456',
+            'write',
+            'recipe',
+            granted: true,
+            resourceId: 'recipe-1',
+          ),
+          _createAuditLog(
+            'user-789',
+            'delete',
+            'recipe',
+            granted: false,
+            resourceId: 'recipe-2',
+          ),
         ]);
 
         // Act
@@ -299,15 +356,27 @@ void main() {
         final cutoff = now.subtract(const Duration(minutes: 3));
 
         await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-123', 'read', 'recipe',
-              granted: false,
-              timestamp: now.subtract(const Duration(minutes: 5))),
-          _createAuditLog('user-456', 'delete', 'recipe',
-              granted: false,
-              timestamp: now.subtract(const Duration(minutes: 2))),
-          _createAuditLog('user-789', 'write', 'user',
-              granted: false,
-              timestamp: now.subtract(const Duration(minutes: 1))),
+          _createAuditLog(
+            'user-123',
+            'read',
+            'recipe',
+            granted: false,
+            timestamp: now.subtract(const Duration(minutes: 5)),
+          ),
+          _createAuditLog(
+            'user-456',
+            'delete',
+            'recipe',
+            granted: false,
+            timestamp: now.subtract(const Duration(minutes: 2)),
+          ),
+          _createAuditLog(
+            'user-789',
+            'write',
+            'user',
+            granted: false,
+            timestamp: now.subtract(const Duration(minutes: 1)),
+          ),
         ]);
 
         // Act
@@ -380,24 +449,42 @@ void main() {
         expect(logs.every((log) => log.userId == 'user-123'), isTrue);
       });
 
-      test('should support security monitoring for unauthorized access',
-          () async {
-        // Arrange - Potential security incident
-        await _seedAuditLogs(fakeFirestore, [
-          _createAuditLog('user-suspicious', 'delete', 'recipe',
-              granted: false),
-          _createAuditLog('user-suspicious', 'delete', 'user', granted: false),
-          _createAuditLog('user-suspicious', 'write', 'recipe', granted: false),
-        ]);
+      test(
+        'should support security monitoring for unauthorized access',
+        () async {
+          // Arrange - Potential security incident
+          await _seedAuditLogs(fakeFirestore, [
+            _createAuditLog(
+              'user-suspicious',
+              'delete',
+              'recipe',
+              granted: false,
+            ),
+            _createAuditLog(
+              'user-suspicious',
+              'delete',
+              'user',
+              granted: false,
+            ),
+            _createAuditLog(
+              'user-suspicious',
+              'write',
+              'recipe',
+              granted: false,
+            ),
+          ]);
 
-        // Act - Security team checks for unauthorized attempts
-        final deniedAttempts = await repository.getDeniedAccessAttempts();
+          // Act - Security team checks for unauthorized attempts
+          final deniedAttempts = await repository.getDeniedAccessAttempts();
 
-        // Assert - All unauthorized attempts are logged
-        expect(deniedAttempts.length, equals(3));
-        expect(deniedAttempts.every((log) => log.userId == 'user-suspicious'),
-            isTrue);
-      });
+          // Assert - All unauthorized attempts are logged
+          expect(deniedAttempts.length, equals(3));
+          expect(
+            deniedAttempts.every((log) => log.userId == 'user-suspicious'),
+            isTrue,
+          );
+        },
+      );
     });
   });
 }

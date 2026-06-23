@@ -26,7 +26,7 @@ class FirebaseMenuLexiconRepository {
   static const _cacheDuration = Duration(hours: 1);
 
   FirebaseMenuLexiconRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection(FirestoreCollections.menuLexicon);

@@ -69,14 +69,16 @@ void main() {
         expect(initialization.isOnline, isTrue); // Defaults to online
       });
 
-      test('should throw error when accessing database before initialization',
-          () {
-        // Assert - database getter throws before initialization
-        expect(
-          () => initialization.database,
-          throwsA(isA<Error>()),
-        );
-      });
+      test(
+        'should throw error when accessing database before initialization',
+        () {
+          // Assert - database getter throws before initialization
+          expect(
+            () => initialization.database,
+            throwsA(isA<Error>()),
+          );
+        },
+      );
 
       test('should initialize Drift database', () async {
         // Note: Actual initialization requires Drift setup
@@ -111,17 +113,18 @@ void main() {
       });
 
       test(
-          'should trigger onReconnected callback when going from offline to online',
-          () async {
-        // Arrange
-        int reconnectCount = 0;
-        initialization = OfflineInitialization(
-          onReconnected: () => reconnectCount++,
-        );
+        'should trigger onReconnected callback when going from offline to online',
+        () async {
+          // Arrange
+          int reconnectCount = 0;
+          initialization = OfflineInitialization(
+            onReconnected: () => reconnectCount++,
+          );
 
-        // Verify initialization accepts callbacks
-        expect(initialization, isNotNull);
-      });
+          // Verify initialization accepts callbacks
+          expect(initialization, isNotNull);
+        },
+      );
     });
 
     group('Resource Management', () {

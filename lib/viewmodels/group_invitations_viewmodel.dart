@@ -49,10 +49,11 @@ class GroupInvitationsViewModel extends ChangeNotifier
   bool isJoiningGroup(String groupId) => _joiningGroupIds.contains(groupId);
 
   /// Received group invitations (pending)
-  List<GroupInvitation> get receivedInvitations =>
-      List.unmodifiable(_receivedInvitations
-          .where((inv) => inv.status == GroupInvitationStatus.pending)
-          .toList());
+  List<GroupInvitation> get receivedInvitations => List.unmodifiable(
+    _receivedInvitations
+        .where((inv) => inv.status == GroupInvitationStatus.pending)
+        .toList(),
+  );
 
   /// Alla mottagna inbjudningar (inklusive avslutade)
   List<GroupInvitation> get allReceivedInvitations =>
@@ -158,24 +159,29 @@ class GroupInvitationsViewModel extends ChangeNotifier
       // Add detailed debugging information
       AppLogger.info('📊 Invitation loading details:');
       AppLogger.info(
-          '  - Raw invitations count: ${_receivedInvitations.length}');
+        '  - Raw invitations count: ${_receivedInvitations.length}',
+      );
       AppLogger.info(
-          '  - Pending invitations count: ${receivedInvitations.length}');
+        '  - Pending invitations count: ${receivedInvitations.length}',
+      );
 
       // Log individual invitations for debugging
       for (int i = 0; i < _receivedInvitations.length && i < 5; i++) {
         final invitation = _receivedInvitations[i];
         AppLogger.info(
-            '  - Invitation $i: from=${invitation.fromUserName}, group=${invitation.groupName}, status=${invitation.status}');
+          '  - Invitation $i: from=${invitation.fromUserName}, group=${invitation.groupName}, status=${invitation.status}',
+        );
       }
 
       if (_receivedInvitations.length > 5) {
         AppLogger.info(
-            '  - And ${_receivedInvitations.length - 5} more invitations...');
+          '  - And ${_receivedInvitations.length - 5} more invitations...',
+        );
       }
 
       AppLogger.success(
-          '✅ Successfully loaded ${receivedInvitations.length} pending invitations');
+        '✅ Successfully loaded ${receivedInvitations.length} pending invitations',
+      );
     } catch (e, stackTrace) {
       AppLogger.error('❌ Failed to load received invitations', e);
       AppLogger.debug('Stack trace: $stackTrace');
@@ -232,7 +238,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
         // Logga analytics event
         _logJoinGroupEvent(group);
       } else {
-        final errorMessage = _friendsService.error ??
+        final errorMessage =
+            _friendsService.error ??
             AppLocale.current.errorCouldNotUpdate('grupp');
         throw Exception(errorMessage);
       }
@@ -249,7 +256,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
   Future<void> acceptInvitation(String invitationId) async {
     if (_respondingInvitationIds.contains(invitationId)) {
       AppLogger.warning(
-          '⚠️ Redan håller på att besvara inbjudan $invitationId');
+        '⚠️ Redan håller på att besvara inbjudan $invitationId',
+      );
       return;
     }
 
@@ -265,16 +273,19 @@ class GroupInvitationsViewModel extends ChangeNotifier
       );
 
       AppLogger.info(
-          '🔄 Accepterar inbjudan från "${invitation.fromUserName}"...');
+        '🔄 Accepterar inbjudan från "${invitation.fromUserName}"...',
+      );
 
       // Use UnifiedFriendsService to accept invitation and join the group
       // BUG-018 FIX: Use acceptGroupInvitation which adds user to friendUserIds
-      final success =
-          await _friendsService.invitations.acceptGroupInvitation(invitationId);
+      final success = await _friendsService.invitations.acceptGroupInvitation(
+        invitationId,
+      );
 
       if (success) {
         AppLogger.success(
-            '✅ Inbjudan accepterad från "${invitation.fromUserName}"');
+          '✅ Inbjudan accepterad från "${invitation.fromUserName}"',
+        );
 
         // Update local state - remove from pending invitations
         await _loadReceivedInvitations();
@@ -285,7 +296,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
         // Logga analytics event
         _logAcceptInvitationEvent(invitation);
       } else {
-        final errorMessage = _friendsService.error ??
+        final errorMessage =
+            _friendsService.error ??
             AppLocale.current.errorCouldNotUpdate('inbjudan');
         throw Exception(errorMessage);
       }
@@ -302,7 +314,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
   Future<void> rejectInvitation(String invitationId) async {
     if (_respondingInvitationIds.contains(invitationId)) {
       AppLogger.warning(
-          '⚠️ Redan håller på att besvara inbjudan $invitationId');
+        '⚠️ Redan håller på att besvara inbjudan $invitationId',
+      );
       return;
     }
 
@@ -318,11 +331,13 @@ class GroupInvitationsViewModel extends ChangeNotifier
       );
 
       AppLogger.info(
-          '🔄 Avvisar inbjudan från "${invitation.fromUserName}"...');
+        '🔄 Avvisar inbjudan från "${invitation.fromUserName}"...',
+      );
 
       // Use UnifiedFriendsService to decline
-      final success =
-          await _friendsService.invitations.cancelInvitation(invitationId);
+      final success = await _friendsService.invitations.cancelInvitation(
+        invitationId,
+      );
 
       if (success) {
         AppLogger.info('❌ Inbjudan avvisad från "${invitation.fromUserName}"');
@@ -333,7 +348,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
         // Logga analytics event
         _logRejectInvitationEvent(invitation);
       } else {
-        final errorMessage = _friendsService.error ??
+        final errorMessage =
+            _friendsService.error ??
             AppLocale.current.errorCouldNotDelete('inbjudan');
         throw Exception(errorMessage);
       }
@@ -370,12 +386,14 @@ class GroupInvitationsViewModel extends ChangeNotifier
       'availableGroups': _availableGroups.length,
       'pendingInvitations': receivedInvitations.length,
       'totalInvitations': _receivedInvitations.length,
-      'totalMembers':
-          _groupMembers.values.expand((members) => members).toSet().length,
+      'totalMembers': _groupMembers.values
+          .expand((members) => members)
+          .toSet()
+          .length,
       'averageMembersPerGroup': _availableGroups.isEmpty
           ? 0
           : _availableGroups.map((g) => g.friendCount).reduce((a, b) => a + b) /
-              _availableGroups.length,
+                _availableGroups.length,
     };
   }
 

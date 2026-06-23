@@ -90,7 +90,9 @@ class SocialRecipePermissionService extends BaseService {
 
   /// Get user's permission level for a recipe
   Future<ResourcePermission?> getUserPermissionForRecipe(
-      String recipeId, String userId) async {
+    String recipeId,
+    String userId,
+  ) async {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return null;
@@ -160,7 +162,9 @@ class SocialRecipePermissionService extends BaseService {
 
   /// Get all users with specific permission level for a recipe
   Future<List<String>> getUsersWithPermission(
-      String recipeId, ResourcePermission permission) async {
+    String recipeId,
+    ResourcePermission permission,
+  ) async {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null || !recipe.isCollaborative) return [];

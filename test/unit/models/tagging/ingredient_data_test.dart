@@ -67,7 +67,7 @@ void main() {
           group: 'vegetables/fruits', // Different group
           properties: const {
             'plant-based',
-            'vegan-friendly'
+            'vegan-friendly',
           }, // Different properties
         );
 
@@ -460,7 +460,7 @@ void main() {
           properties: const {
             'c',
             'b',
-            'a'
+            'a',
           }, // Same elements, different insertion order
         );
 
@@ -593,8 +593,11 @@ void main() {
 
         final ingredient = IngredientData.fromMap(map);
 
-        expect(ingredient.properties,
-            {'plant-based', 'vegan-friendly', 'gluten-free'});
+        expect(ingredient.properties, {
+          'plant-based',
+          'vegan-friendly',
+          'gluten-free',
+        });
       });
 
       test('fromMap handles semicolon-separated aliases string', () {
@@ -1146,8 +1149,10 @@ void main() {
 
           expect(restored.seasonAvailability, original.seasonAvailability);
           expect(restored.priceCategory, original.priceCategory);
-          expect(restored.carbonFootprintCategory,
-              original.carbonFootprintCategory);
+          expect(
+            restored.carbonFootprintCategory,
+            original.carbonFootprintCategory,
+          );
           expect(restored.notesSv, original.notesSv);
           expect(restored.notesEn, original.notesEn);
           expect(restored.typicalStorage, original.typicalStorage);

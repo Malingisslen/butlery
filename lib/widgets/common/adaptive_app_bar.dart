@@ -91,9 +91,9 @@ class AdaptiveAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(
-        (_useCupertino ? _iosBarHeight : kToolbarHeight) +
-            (bottom?.preferredSize.height ?? 0.0),
-      );
+    (_useCupertino ? _iosBarHeight : kToolbarHeight) +
+        (bottom?.preferredSize.height ?? 0.0),
+  );
 
   @override
   Widget build(BuildContext context) =>
@@ -150,13 +150,14 @@ class AdaptiveAppBar extends StatelessWidget implements PreferredSizeWidget {
       trailing: (actions == null || actions!.isEmpty)
           ? null
           : Row(mainAxisSize: MainAxisSize.min, children: actions!),
-      backgroundColor: backgroundColor ??
+      backgroundColor:
+          backgroundColor ??
           theme.appBarTheme.backgroundColor ??
           theme.colorScheme.surface,
       brightness:
           systemOverlayStyle?.statusBarIconBrightness == Brightness.light
-              ? Brightness.dark
-              : (systemOverlayStyle == null ? null : Brightness.light),
+          ? Brightness.dark
+          : (systemOverlayStyle == null ? null : Brightness.light),
     );
     // foregroundColor also tints the back chevron + trailing controls, which
     // CupertinoNavigationBar reads from the ambient Cupertino primaryColor.

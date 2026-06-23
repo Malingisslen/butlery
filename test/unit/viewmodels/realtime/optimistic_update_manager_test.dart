@@ -29,15 +29,18 @@ void main() {
     await TestServiceLocator.reset();
   });
 
-  List<Recipe> createTestRecipes(
-      {int count = 3, String namePrefix = 'Recipe'}) {
+  List<Recipe> createTestRecipes({
+    int count = 3,
+    String namePrefix = 'Recipe',
+  }) {
     return List.generate(
-        count,
-        (index) => RecipeFactory.build(
-              id: '${namePrefix.toLowerCase()}_${index + 1}',
-              title: '$namePrefix ${index + 1}',
-              description: 'Description for $namePrefix ${index + 1}',
-            ));
+      count,
+      (index) => RecipeFactory.build(
+        id: '${namePrefix.toLowerCase()}_${index + 1}',
+        title: '$namePrefix ${index + 1}',
+        description: 'Description for $namePrefix ${index + 1}',
+      ),
+    );
   }
 
   Map<String, List<Recipe>> createTestMenu() {
@@ -75,11 +78,12 @@ void main() {
       final manager = OptimisticUpdateManager();
 
       expect(
-          () => manager.applyChange(
-                'Test Category',
-                (recipes) => [...recipes, RecipeFactory.build()],
-              ),
-          returnsNormally);
+        () => manager.applyChange(
+          'Test Category',
+          (recipes) => [...recipes, RecipeFactory.build()],
+        ),
+        returnsNormally,
+      );
 
       manager.dispose();
     });
@@ -124,7 +128,9 @@ void main() {
       updateManager.applyChange('Måndag', (recipes) => updatedRecipes);
       expect(updateManager.allChanges['Måndag']!.length, equals(3));
       expect(
-          updateManager.allChanges['Måndag']!.first.title, contains('Updated'));
+        updateManager.allChanges['Måndag']!.first.title,
+        contains('Updated'),
+      );
     });
 
     test('should apply change with current recipes as base', () {
@@ -138,8 +144,10 @@ void main() {
       );
 
       expect(updateManager.allChanges['Måndag']!.length, equals(3));
-      expect(updateManager.allChanges['Måndag']!.last.title,
-          equals('Additional Recipe'));
+      expect(
+        updateManager.allChanges['Måndag']!.last.title,
+        equals('Additional Recipe'),
+      );
     });
 
     test('should handle empty recipe lists', () {
@@ -222,8 +230,10 @@ void main() {
 
     test('should apply optimistic changes to base menu', () {
       final baseMenu = createTestMenu();
-      final optimisticRecipes =
-          createTestRecipes(count: 1, namePrefix: 'Optimistic');
+      final optimisticRecipes = createTestRecipes(
+        count: 1,
+        namePrefix: 'Optimistic',
+      );
 
       updateManager.applyChange('Måndag', (recipes) => optimisticRecipes);
 
@@ -250,10 +260,14 @@ void main() {
 
     test('should handle multiple optimistic categories', () {
       final baseMenu = createTestMenu();
-      final mondayOptimistic =
-          createTestRecipes(count: 1, namePrefix: 'MondayOpt');
-      final thursdayRecipes =
-          createTestRecipes(count: 2, namePrefix: 'Thursday');
+      final mondayOptimistic = createTestRecipes(
+        count: 1,
+        namePrefix: 'MondayOpt',
+      );
+      final thursdayRecipes = createTestRecipes(
+        count: 2,
+        namePrefix: 'Thursday',
+      );
 
       updateManager.applyChange('Måndag', (recipes) => mondayOptimistic);
       updateManager.applyChange('Torsdag', (recipes) => thursdayRecipes);
@@ -485,11 +499,12 @@ void main() {
     test('should not trigger callback when no callback provided', () {
       // Should not crash
       expect(
-          () => updateManager.applyChange(
-                'Test',
-                (recipes) => createTestRecipes(count: 1),
-              ),
-          returnsNormally);
+        () => updateManager.applyChange(
+          'Test',
+          (recipes) => createTestRecipes(count: 1),
+        ),
+        returnsNormally,
+      );
     });
 
     test('should propagate callback exceptions', () {
@@ -499,11 +514,12 @@ void main() {
 
       // Should throw the callback exception
       expect(
-          () => manager.applyChange(
-                'Test',
-                (recipes) => createTestRecipes(count: 1),
-              ),
-          throwsA(isA<Exception>()));
+        () => manager.applyChange(
+          'Test',
+          (recipes) => createTestRecipes(count: 1),
+        ),
+        throwsA(isA<Exception>()),
+      );
 
       // Dispose will also throw since it calls clear() which triggers callback
       expect(() => manager.dispose(), throwsA(isA<Exception>()));
@@ -578,8 +594,10 @@ void main() {
       for (int i = 0; i < 10; i++) {
         updateManager.applyChange(
           'Måndag',
-          (recipes) =>
-              [...baseRecipes, RecipeFactory.build(title: 'Recipe $i')],
+          (recipes) => [
+            ...baseRecipes,
+            RecipeFactory.build(title: 'Recipe $i'),
+          ],
         );
       }
 
@@ -643,9 +661,13 @@ void main() {
 
       // Apply optimistic changes
       updateManager.applyChange(
-          'Måndag', (recipes) => createTestRecipes(count: 1));
+        'Måndag',
+        (recipes) => createTestRecipes(count: 1),
+      );
       updateManager.applyChange(
-          'Fredag', (recipes) => createTestRecipes(count: 2));
+        'Fredag',
+        (recipes) => createTestRecipes(count: 2),
+      );
 
       // Test state consistency
       expect(updateManager.hasChanges, isTrue);
@@ -654,8 +676,10 @@ void main() {
       final menuResult = updateManager.applyToMenu(baseMenu);
       expect(menuResult.length, equals(4)); // 3 original + 1 new (Fredag)
 
-      final mondayResult =
-          updateManager.getRecipesForDay('Måndag', baseMenu['Måndag']!);
+      final mondayResult = updateManager.getRecipesForDay(
+        'Måndag',
+        baseMenu['Måndag']!,
+      );
       expect(mondayResult.length, equals(1)); // Optimistic override
 
       // Clear one category
@@ -700,16 +724,22 @@ void main() {
       final baseMenu = createTestMenu();
 
       // Apply optimistic changes
-      manager.applyChange('Måndag',
-          (recipes) => createTestRecipes(count: 1, namePrefix: 'Opt1'));
+      manager.applyChange(
+        'Måndag',
+        (recipes) => createTestRecipes(count: 1, namePrefix: 'Opt1'),
+      );
       expect(callbackTriggered, isTrue);
 
-      manager.applyChange('Torsdag',
-          (recipes) => createTestRecipes(count: 2, namePrefix: 'Opt2'));
+      manager.applyChange(
+        'Torsdag',
+        (recipes) => createTestRecipes(count: 2, namePrefix: 'Opt2'),
+      );
 
       // Test retrieval methods
-      final mondayRecipes =
-          manager.getRecipesForDay('Måndag', baseMenu['Måndag']!);
+      final mondayRecipes = manager.getRecipesForDay(
+        'Måndag',
+        baseMenu['Måndag']!,
+      );
       expect(mondayRecipes.first.title, contains('Opt1'));
 
       final updatedMenu = manager.applyToMenu(baseMenu);

@@ -52,9 +52,9 @@ class RetaggingScheduler with StreamManagementMixin {
     required TaggingService taggingService,
     required Future<List<Recipe>> Function() getRecipes,
     required Future<void> Function(Recipe) saveRecipe,
-  })  : _taggingService = taggingService,
-        _getRecipes = getRecipes,
-        _saveRecipe = saveRecipe;
+  }) : _taggingService = taggingService,
+       _getRecipes = getRecipes,
+       _saveRecipe = saveRecipe;
 
   /// Schedules a retagging check after the startup delay.
   ///
@@ -83,7 +83,8 @@ class RetaggingScheduler with StreamManagementMixin {
       name: 'periodic',
     );
     AppLogger.info(
-        '📅 Started periodic retagging checks every $intervalHours hours');
+      '📅 Started periodic retagging checks every $intervalHours hours',
+    );
   }
 
   /// Stops periodic retagging checks.
@@ -117,8 +118,9 @@ class RetaggingScheduler with StreamManagementMixin {
       }
 
       // Limit to prevent runaway retagging
-      final recipesToProcess =
-          recipesNeedingRetag.take(_maxRetagsPerSession).toList();
+      final recipesToProcess = recipesNeedingRetag
+          .take(_maxRetagsPerSession)
+          .toList();
       final totalToProcess = recipesToProcess.length;
 
       AppLogger.info(

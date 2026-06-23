@@ -11,7 +11,7 @@ class DailySnapshotRepository {
   final FirebaseFirestore _firestore;
 
   DailySnapshotRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// The most recent daily snapshot doc for [group] (e.g. 'recipes',
   /// 'import_health'), or null when none exist yet / on error. Doc id = date,

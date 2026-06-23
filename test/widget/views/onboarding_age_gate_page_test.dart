@@ -39,8 +39,9 @@ void main() {
       );
     });
 
-    testWidgets('does not auto-select a year on render (GDPR Art 8 gate)',
-        (tester) async {
+    testWidgets('does not auto-select a year on render (GDPR Art 8 gate)', (
+      tester,
+    ) async {
       await tester.pumpWidget(_testApp(viewModel: viewModel));
       await tester.pumpAndSettle();
 
@@ -51,43 +52,45 @@ void main() {
     });
 
     testWidgets(
-        'selecting an adult year updates the viewmodel and clears the gate',
-        (tester) async {
-      await tester.pumpWidget(_testApp(viewModel: viewModel));
-      await tester.pumpAndSettle();
+      'selecting an adult year updates the viewmodel and clears the gate',
+      (tester) async {
+        await tester.pumpWidget(_testApp(viewModel: viewModel));
+        await tester.pumpAndSettle();
 
-      // Open the dropdown.
-      await tester.tap(
-        find.byKey(const Key('onboarding_age_gate_birth_year_dropdown')),
-      );
-      await tester.pumpAndSettle();
+        // Open the dropdown.
+        await tester.tap(
+          find.byKey(const Key('onboarding_age_gate_birth_year_dropdown')),
+        );
+        await tester.pumpAndSettle();
 
-      // No value is pre-selected now (GDPR gate), so the menu opens scrolled
-      // to the top (youngest years first). Pick an adult year near the top so
-      // it renders without scrolling. age 16 >= 15 -> passes the gate.
-      final adultYear = DateTime.now().year - 16;
-      await tester.tap(find.text(adultYear.toString()).last);
-      await tester.pumpAndSettle();
+        // No value is pre-selected now (GDPR gate), so the menu opens scrolled
+        // to the top (youngest years first). Pick an adult year near the top so
+        // it renders without scrolling. age 16 >= 15 -> passes the gate.
+        final adultYear = DateTime.now().year - 16;
+        await tester.tap(find.text(adultYear.toString()).last);
+        await tester.pumpAndSettle();
 
-      expect(viewModel.selectedBirthYear, equals(adultYear));
-      expect(viewModel.isAgeGatePassed, isTrue);
-    });
+        expect(viewModel.selectedBirthYear, equals(adultYear));
+        expect(viewModel.isAgeGatePassed, isTrue);
+      },
+    );
 
     testWidgets(
-        'selecting a too-young year fails the gate without touching birthYear rules',
-        (tester) async {
-      await tester.pumpWidget(_testApp(viewModel: viewModel));
-      await tester.pumpAndSettle();
+      'selecting a too-young year fails the gate without touching birthYear rules',
+      (tester) async {
+        await tester.pumpWidget(_testApp(viewModel: viewModel));
+        await tester.pumpAndSettle();
 
-      // Drive the gate directly via the viewmodel — the dropdown only offers
-      // years >= currentYear-13, but the under-15 case is
-      // currentYear-14 ... currentYear-13. Both are reachable via the picker.
-      final tooYoung = DateTime.now().year - 13; // age 13, under 15
-      viewModel.setBirthYear(tooYoung);
-      await tester.pumpAndSettle();
+        // Drive the gate directly via the viewmodel — the dropdown only offers
+        // years >= currentYear-13, but the under-15 case is
+        // currentYear-14 ... currentYear-13. Both are reachable via the picker.
+        final tooYoung = DateTime.now().year - 13; // age 13, under 15
+        viewModel.setBirthYear(tooYoung);
+        await tester.pumpAndSettle();
 
-      expect(viewModel.selectedBirthYear, equals(tooYoung));
-      expect(viewModel.isAgeGatePassed, isFalse);
-    });
+        expect(viewModel.selectedBirthYear, equals(tooYoung));
+        expect(viewModel.isAgeGatePassed, isFalse);
+      },
+    );
   });
 }

@@ -72,7 +72,8 @@ class CollaborativeShoppingItems extends StatelessWidget {
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
-      itemCount: activeItems.length +
+      itemCount:
+          activeItems.length +
           (completedItems.isNotEmpty ? completedItems.length + 1 : 0),
       itemBuilder: (context, index) {
         if (index < activeItems.length) {
@@ -126,17 +127,20 @@ class CollaborativeShoppingItems extends StatelessWidget {
   }
 
   String _othersSectionTitle(
-      BuildContext context, List<UnifiedShoppingItem> others) {
+    BuildContext context,
+    List<UnifiedShoppingItem> others,
+  ) {
     // Plan: "Annas del". When >1 assignee, collapse to "Andra".
     final uniqueAssignees = <String>{
       for (final i in others)
-        if (i.assignedToDisplayName != null) i.assignedToDisplayName!
+        if (i.assignedToDisplayName != null) i.assignedToDisplayName!,
     };
     if (uniqueAssignees.length == 1) {
       return context.l10n.annasDel(uniqueAssignees.first);
     }
-    return context.l10n
-        .annasDel(context.l10n.commonYou == 'Du' ? 'andra' : 'others');
+    return context.l10n.annasDel(
+      context.l10n.commonYou == 'Du' ? 'andra' : 'others',
+    );
   }
 
   // --- Mode: Efter zon ----------------------------------------------------
@@ -196,8 +200,9 @@ class CollaborativeShoppingItems extends StatelessWidget {
             child: Divider(color: Theme.of(context).colorScheme.outline),
           ),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingS,
+            ),
             child: Text(
               '${context.l10n.collaborativeCompleted} (${viewModel.completedItemsCount})',
               style: AppTextStyles.bodyBold,
@@ -340,8 +345,9 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final base = greyed ? cs.onSurfaceVariant : cs.onSurface;
-    final color =
-        greyed ? base.withValues(alpha: AppDimensions.opacityHalf) : base;
+    final color = greyed
+        ? base.withValues(alpha: AppDimensions.opacityHalf)
+        : base;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -351,8 +357,10 @@ class _SectionHeader extends StatelessWidget {
       ),
       child: Text(
         '${text.toUpperCase()} ($count)',
-        style:
-            AppTextStyles.bodyBold.copyWith(color: color, letterSpacing: 0.5),
+        style: AppTextStyles.bodyBold.copyWith(
+          color: color,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -378,7 +386,8 @@ class _CollaborativeItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final uid = viewModel.currentUserId;
-    final isMine = item.assignedToUserId != null &&
+    final isMine =
+        item.assignedToUserId != null &&
         item.assignedToUserId == uid &&
         !isCompleted;
     final isClaimableByMe =
@@ -386,12 +395,14 @@ class _CollaborativeItemCard extends StatelessWidget {
     final canRelease = isMine && viewModel.canEdit;
 
     final bodyColor = greyed
-        ? cs.surfaceContainerHighest
-            .withValues(alpha: AppDimensions.opacityHalf)
+        ? cs.surfaceContainerHighest.withValues(
+            alpha: AppDimensions.opacityHalf,
+          )
         : (isCompleted
-            ? cs.surfaceContainerHighest
-                .withValues(alpha: AppDimensions.opacityHalf)
-            : null);
+              ? cs.surfaceContainerHighest.withValues(
+                  alpha: AppDimensions.opacityHalf,
+                )
+              : null);
 
     return Card(
       key: ValueKey('collab-item-${item.id}'),
@@ -493,17 +504,20 @@ class _CollaborativeItemCard extends StatelessWidget {
   Widget _buildTrailing(BuildContext context) {
     final widgets = <Widget>[];
     if (item.assignedToUserId != null) {
-      widgets.add(_AssigneeBadge(
-        displayName: item.assignedToDisplayName ?? '?',
-        isSelf: item.assignedToUserId == viewModel.currentUserId,
-      ));
+      widgets.add(
+        _AssigneeBadge(
+          displayName: item.assignedToDisplayName ?? '?',
+          isSelf: item.assignedToUserId == viewModel.currentUserId,
+        ),
+      );
       widgets.add(const SizedBox(width: AppDimensions.spacingXs));
     } else if (viewModel.canEdit && !item.bought) {
       widgets.add(
         TextButton(
           style: TextButton.styleFrom(
-            shape:
-                const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingS,
             ),

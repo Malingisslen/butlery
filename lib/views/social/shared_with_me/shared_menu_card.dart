@@ -25,8 +25,9 @@ class SharedMenuCard {
     final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
 
     return Material(
-      elevation:
-          isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      elevation: isRead
+          ? AppDimensions.elevationLow
+          : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Semantics(
         label: context.l10n.a11ySharedMenu(sharedMenu.menuTitle),
@@ -64,8 +65,10 @@ class SharedMenuCard {
                 // Header med delningsinfo
                 SharedCardHeader(
                   displayName: sharedMenu.sharedByDisplayName,
-                  timestampText:
-                      timeago.format(sharedMenu.sharedAt, locale: 'sv'),
+                  timestampText: timeago.format(
+                    sharedMenu.sharedAt,
+                    locale: 'sv',
+                  ),
                   isRead: isRead,
                   onDismiss: () => SharedContentActions.dismissMenu(
                     context,
@@ -151,11 +154,12 @@ class SharedMenuCard {
                     decoration: BoxDecoration(
                       color: isCollaborative
                           ? Theme.of(context).colorScheme.tertiaryContainer
-                          : Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusXs),
+                          : Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusXs,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -164,9 +168,9 @@ class SharedMenuCard {
                           isCollaborative ? Icons.sync : Icons.content_copy,
                           size: AppDimensions.iconSizeXs,
                           color: isCollaborative
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .onTertiaryContainer
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.onTertiaryContainer
                               : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: AppDimensions.spacingXxs),
@@ -176,12 +180,12 @@ class SharedMenuCard {
                               : context.l10n.sharedCopy,
                           style: AppTextStyles.labelSmall.copyWith(
                             color: isCollaborative
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onTertiaryContainer
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onTertiaryContainer
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -217,8 +221,9 @@ class SharedMenuCard {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    context.l10n
-                        .sharedCategoryCount(sharedMenu.categories.length),
+                    context.l10n.sharedCategoryCount(
+                      sharedMenu.categories.length,
+                    ),
                     style: AppTextStyles.bodySmall,
                   ),
                 ],
@@ -279,26 +284,28 @@ class SharedMenuCard {
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
-          child: Builder(builder: (context) {
-            // Use per-item loading state to avoid spinner on all items
-            final isThisMenuOperating =
-                viewModel.menuViewModel.isItemOperating(sharedMenu.id);
-            return ActionButtons.primaryButton(
-              context,
-              label: isImported
-                  ? context.l10n.sharedImported
-                  : context.l10n.sharedImport,
-              icon: isImported ? Icons.check : Icons.download,
-              isLoading: isThisMenuOperating,
-              onPressed: isImported || isThisMenuOperating
-                  ? null
-                  : () => SharedContentActions.importMenu(
+          child: Builder(
+            builder: (context) {
+              // Use per-item loading state to avoid spinner on all items
+              final isThisMenuOperating = viewModel.menuViewModel
+                  .isItemOperating(sharedMenu.id);
+              return ActionButtons.primaryButton(
+                context,
+                label: isImported
+                    ? context.l10n.sharedImported
+                    : context.l10n.sharedImport,
+                icon: isImported ? Icons.check : Icons.download,
+                isLoading: isThisMenuOperating,
+                onPressed: isImported || isThisMenuOperating
+                    ? null
+                    : () => SharedContentActions.importMenu(
                         context,
                         viewModel,
                         sharedMenu,
                       ),
-            );
-          }),
+              );
+            },
+          ),
         ),
       ],
     );

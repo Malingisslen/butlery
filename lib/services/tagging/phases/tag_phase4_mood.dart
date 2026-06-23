@@ -140,7 +140,8 @@ class TagPhase4Mood {
     // Exclude false positives like "julienne" (French cooking technique)
     final christmasKeywords = ['julskinka', 'lutfisk', 'jansson', 'julbord'];
     final julFalsePositives = ['julienne'];
-    final hasTrueJul = title.contains('jul') &&
+    final hasTrueJul =
+        title.contains('jul') &&
         !julFalsePositives.any((fp) => title.contains(fp));
     if (hasTrueJul ||
         christmasKeywords.any((k) => title.contains(k)) ||
@@ -272,21 +273,26 @@ class TagPhase4Mood {
   }
 
   bool _hasMidsummerIngredients(Phase1Result p1) {
-    final hasSill =
-        p1.lookup.matched.any((i) => i.swedish.toLowerCase().contains('sill'));
-    final hasNewPotatoes = p1.lookup.matched.any((i) =>
-        i.swedish.toLowerCase().contains('färskpotatis') ||
-        i.swedish.toLowerCase().contains('nypotatis'));
-    final hasStrawberries = p1.lookup.matched
-        .any((i) => i.swedish.toLowerCase().contains('jordgubb'));
+    final hasSill = p1.lookup.matched.any(
+      (i) => i.swedish.toLowerCase().contains('sill'),
+    );
+    final hasNewPotatoes = p1.lookup.matched.any(
+      (i) =>
+          i.swedish.toLowerCase().contains('färskpotatis') ||
+          i.swedish.toLowerCase().contains('nypotatis'),
+    );
+    final hasStrawberries = p1.lookup.matched.any(
+      (i) => i.swedish.toLowerCase().contains('jordgubb'),
+    );
 
     return (hasSill && hasNewPotatoes) ||
         (hasStrawberries && p1.hasProperty('dairy'));
   }
 
   bool _hasCrawfishIngredients(Phase1Result p1) {
-    return p1.lookup.matched
-        .any((i) => i.swedish.toLowerCase().contains('kräft'));
+    return p1.lookup.matched.any(
+      (i) => i.swedish.toLowerCase().contains('kräft'),
+    );
   }
 
   bool _hasNewYearsIngredients(Phase1Result p1) {
@@ -406,9 +412,9 @@ class Phase4Result {
 
   /// Gets all tags from all phases combined.
   Set<String> get allTags => {
-        ...phase1.tags,
-        ...phase2.tags,
-        ...phase3.tags,
-        ...tags,
-      };
+    ...phase1.tags,
+    ...phase2.tags,
+    ...phase3.tags,
+    ...tags,
+  };
 }

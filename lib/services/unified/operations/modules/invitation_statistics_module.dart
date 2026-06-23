@@ -40,8 +40,10 @@ class InvitationStatisticsModule {
   Map<String, dynamic> getInvitationMetrics(List<GroupInvitation> invitations) {
     final stats = getInvitationStats(invitations);
     final recentInvitations = invitations
-        .where((i) =>
-            i.sentAt.isAfter(clock.now().subtract(const Duration(days: 30))))
+        .where(
+          (i) =>
+              i.sentAt.isAfter(clock.now().subtract(const Duration(days: 30))),
+        )
         .length;
 
     return {
@@ -53,7 +55,8 @@ class InvitationStatisticsModule {
 
   /// Get expired invitations
   List<GroupInvitation> getExpiredInvitations(
-      List<GroupInvitation> invitations) {
+    List<GroupInvitation> invitations,
+  ) {
     final now = clock.now();
     return invitations.where((i) => i.expiresAt.isBefore(now)).toList();
   }
@@ -61,9 +64,11 @@ class InvitationStatisticsModule {
   /// Calculate average response time in hours
   double calculateAverageResponseTime(List<GroupInvitation> invitations) {
     final respondedInvitations = invitations
-        .where((i) =>
-            i.status == GroupInvitationStatus.accepted ||
-            i.status == GroupInvitationStatus.rejected)
+        .where(
+          (i) =>
+              i.status == GroupInvitationStatus.accepted ||
+              i.status == GroupInvitationStatus.rejected,
+        )
         .where((i) => i.respondedAt != null)
         .toList();
 
@@ -78,25 +83,32 @@ class InvitationStatisticsModule {
 
   /// Search invitations by query
   List<GroupInvitation> searchInvitations(
-      List<GroupInvitation> invitations, String query) {
+    List<GroupInvitation> invitations,
+    String query,
+  ) {
     final searchTerm = query.toLowerCase();
     return invitations
-        .where((i) =>
-            (i.toUserId.toLowerCase().contains(searchTerm)) ||
-            (i.fromUserName.toLowerCase().contains(searchTerm)) ||
-            (i.groupName.toLowerCase().contains(searchTerm)))
+        .where(
+          (i) =>
+              (i.toUserId.toLowerCase().contains(searchTerm)) ||
+              (i.fromUserName.toLowerCase().contains(searchTerm)) ||
+              (i.groupName.toLowerCase().contains(searchTerm)),
+        )
         .toList();
   }
 
   /// Get invitations by status
   List<GroupInvitation> getInvitationsByStatus(
-      List<GroupInvitation> invitations, GroupInvitationStatus status) {
+    List<GroupInvitation> invitations,
+    GroupInvitationStatus status,
+  ) {
     return invitations.where((i) => i.status == status).toList();
   }
 
   /// Get pending invitations
   List<GroupInvitation> getPendingInvitations(
-      List<GroupInvitation> invitations) {
+    List<GroupInvitation> invitations,
+  ) {
     return invitations
         .where((i) => i.status == GroupInvitationStatus.pending)
         .toList();

@@ -85,11 +85,13 @@ void main() {
     // .pendingReceivedInvitations; the default mock returns an unstubbed ops
     // object, so seed an empty-invitations ops instance.
     invitationsOps = MockFriendsInvitationsOperations();
-    when(() => invitationsOps.pendingReceivedInvitations)
-        .thenReturn(<GroupInvitation>[]);
+    when(
+      () => invitationsOps.pendingReceivedInvitations,
+    ).thenReturn(<GroupInvitation>[]);
 
-    friendsService = TestServiceLocator.get<UnifiedFriendsService>()
-        as MockUnifiedFriendsService;
+    friendsService =
+        TestServiceLocator.get<UnifiedFriendsService>()
+            as MockUnifiedFriendsService;
     friendsService.setFriendsState(
       friends: const [],
       categoriesList: const [],
@@ -130,8 +132,9 @@ void main() {
     // isEnabled(enableSocialFeatures) in the content state's initState. Default
     // to ON (the main behaviour); the "off" test re-stubs it.
     featureFlags = _MockFeatureFlagService();
-    when(() => featureFlags.isEnabled(FeatureFlags.enableSocialFeatures))
-        .thenReturn(true);
+    when(
+      () => featureFlags.isEnabled(FeatureFlags.enableSocialFeatures),
+    ).thenReturn(true);
     TestServiceLocator.registerMock<FeatureFlagService>(featureFlags);
 
     // LayoutComponents.offlineIndicator() resolves OfflineService and reads
@@ -222,105 +225,112 @@ void main() {
     });
 
     testWidgets(
-        'Friends tab with no friends shows the branded empty state, not the feed',
-        (tester) async {
-      await pumpView(tester);
+      'Friends tab with no friends shows the branded empty state, not the feed',
+      (tester) async {
+        await pumpView(tester);
 
-      // Default tab is Feed (index 0); switch to the Friends tab.
-      await tester.tap(find.text(_tabFriends));
-      await tester.pumpAndSettle();
+        // Default tab is Feed (index 0); switch to the Friends tab.
+        await tester.tap(find.text(_tabFriends));
+        await tester.pumpAndSettle();
 
-      // The branded FriendsEmptyState renders its headline + the
-      // "find by username" secondary CTA.
-      expect(find.text(_friendsEmptyHeadline), findsOneWidget);
-      expect(find.text(_friendsEmptyFindByUsername), findsOneWidget);
-    });
-
-    testWidgets(
-        'tapping the Friends-empty "find by username" CTA switches to the Find friends tab',
-        (tester) async {
-      await pumpView(tester);
-
-      await tester.tap(find.text(_tabFriends));
-      await tester.pumpAndSettle();
-
-      // The branded empty state offers a secondary CTA that animates the tab
-      // controller to index 3 (Find friends). Before tapping, the Find-friends
-      // tab content (the RequestsTab search hub) is not the active body.
-      await tester.tap(find.text(_friendsEmptyFindByUsername));
-      await tester.pumpAndSettle();
-
-      // After the jump, the active tab is index 3 — the friends-empty headline
-      // is gone (we left the Friends tab) and the search box for finding new
-      // friends is now shown.
-      expect(find.text(_friendsEmptyHeadline), findsNothing);
-      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-      expect(tabBar.controller?.index, 3);
-    });
+        // The branded FriendsEmptyState renders its headline + the
+        // "find by username" secondary CTA.
+        expect(find.text(_friendsEmptyHeadline), findsOneWidget);
+        expect(find.text(_friendsEmptyFindByUsername), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'switching to the Groups tab surfaces the create-group FloatingActionButton',
-        (tester) async {
-      await pumpView(tester);
+      'tapping the Friends-empty "find by username" CTA switches to the Find friends tab',
+      (tester) async {
+        await pumpView(tester);
 
-      // No FAB on the default Feed tab.
-      expect(find.byType(FloatingActionButton), findsNothing);
+        await tester.tap(find.text(_tabFriends));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text(_tabGroups));
-      await tester.pumpAndSettle();
+        // The branded empty state offers a secondary CTA that animates the tab
+        // controller to index 3 (Find friends). Before tapping, the Find-friends
+        // tab content (the RequestsTab search hub) is not the active body.
+        await tester.tap(find.text(_friendsEmptyFindByUsername));
+        await tester.pumpAndSettle();
 
-      // The Groups tab (index 2) carries the create-group FAB. (The Friends tab
-      // also carries an Add-friend FAB now — see the BUT-1357 test below — so
-      // the FAB is no longer Groups-exclusive; presence here is what matters.)
-      expect(find.byType(FloatingActionButton), findsOneWidget);
-    });
-
-    testWidgets(
-        'BUT-1357: Friends tab shows an Add-friend FAB that jumps to the Find friends tab',
-        (tester) async {
-      await pumpView(tester);
-
-      // No FAB on the default Feed tab (index 0).
-      expect(find.byType(FloatingActionButton), findsNothing);
-
-      // Switch to the Friends tab (index 1).
-      await tester.tap(find.text(_tabFriends));
-      await tester.pumpAndSettle();
-
-      // The Friends tab now surfaces its own primary-action FAB, labelled for
-      // screen readers via the a11yAddFriend semantics key.
-      expect(find.byType(FloatingActionButton), findsOneWidget);
-      final addFriendFab =
-          find.bySemanticsLabel('Lägg till vän'); // a11yAddFriend
-      expect(addFriendFab, findsOneWidget);
-
-      // Tapping it animates the tab controller to the Find friends tab (index 3)
-      // — the same target as the empty-state "find by username" CTA, no new flow.
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-
-      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-      expect(tabBar.controller?.index, 3);
-
-      // On the Find friends tab the Add-friend FAB is gone (that tab carries its
-      // own search field instead).
-      expect(find.byType(FloatingActionButton), findsNothing);
-    });
+        // After the jump, the active tab is index 3 — the friends-empty headline
+        // is gone (we left the Friends tab) and the search box for finding new
+        // friends is now shown.
+        expect(find.text(_friendsEmptyHeadline), findsNothing);
+        final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+        expect(tabBar.controller?.index, 3);
+      },
+    );
 
     testWidgets(
-        'with social features flagged OFF the view renders the disabled fallback and no tabs',
-        (tester) async {
-      // Flip the gate the content state reads in initState.
-      when(() => featureFlags.isEnabled(FeatureFlags.enableSocialFeatures))
-          .thenReturn(false);
+      'switching to the Groups tab surfaces the create-group FloatingActionButton',
+      (tester) async {
+        await pumpView(tester);
 
-      await pumpView(tester);
+        // No FAB on the default Feed tab.
+        expect(find.byType(FloatingActionButton), findsNothing);
 
-      // The hardcoded Swedish "temporarily disabled" message replaces the whole
-      // tabbed UI.
-      expect(find.text(_socialDisabled), findsOneWidget);
-      expect(find.byType(TabBar), findsNothing);
-      expect(find.text(_tabFeed), findsNothing);
-    });
+        await tester.tap(find.text(_tabGroups));
+        await tester.pumpAndSettle();
+
+        // The Groups tab (index 2) carries the create-group FAB. (The Friends tab
+        // also carries an Add-friend FAB now — see the BUT-1357 test below — so
+        // the FAB is no longer Groups-exclusive; presence here is what matters.)
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'BUT-1357: Friends tab shows an Add-friend FAB that jumps to the Find friends tab',
+      (tester) async {
+        await pumpView(tester);
+
+        // No FAB on the default Feed tab (index 0).
+        expect(find.byType(FloatingActionButton), findsNothing);
+
+        // Switch to the Friends tab (index 1).
+        await tester.tap(find.text(_tabFriends));
+        await tester.pumpAndSettle();
+
+        // The Friends tab now surfaces its own primary-action FAB, labelled for
+        // screen readers via the a11yAddFriend semantics key.
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        final addFriendFab = find.bySemanticsLabel(
+          'Lägg till vän',
+        ); // a11yAddFriend
+        expect(addFriendFab, findsOneWidget);
+
+        // Tapping it animates the tab controller to the Find friends tab (index 3)
+        // — the same target as the empty-state "find by username" CTA, no new flow.
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pumpAndSettle();
+
+        final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+        expect(tabBar.controller?.index, 3);
+
+        // On the Find friends tab the Add-friend FAB is gone (that tab carries its
+        // own search field instead).
+        expect(find.byType(FloatingActionButton), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'with social features flagged OFF the view renders the disabled fallback and no tabs',
+      (tester) async {
+        // Flip the gate the content state reads in initState.
+        when(
+          () => featureFlags.isEnabled(FeatureFlags.enableSocialFeatures),
+        ).thenReturn(false);
+
+        await pumpView(tester);
+
+        // The hardcoded Swedish "temporarily disabled" message replaces the whole
+        // tabbed UI.
+        expect(find.text(_socialDisabled), findsOneWidget);
+        expect(find.byType(TabBar), findsNothing);
+        expect(find.text(_tabFeed), findsNothing);
+      },
+    );
   });
 }

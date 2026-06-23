@@ -91,30 +91,32 @@ class RealtimeRecipeBuilder {
         .withTitle('Avancerad Fransk Rätt')
         .withDescription('En mycket komplex rätt som kräver flera tekniker')
         .withIngredients([
-      '500g kalvkött',
-      '200g foie gras',
-      '100ml cognac',
-      '50g tryffel',
-      '300ml kalvfond',
-      '200g smör',
-      '4 äggulor',
-      '100ml grädde',
-      '1 bukett garni',
-      '12 små potatiser',
-      '200g morötter',
-      '150g haricots verts',
-    ]).withInstructions([
-      'Förbered mise en place för alla ingredienser',
-      'Reducera kalvfonden till hälften',
-      'Sous vide kalvköttet i 2 timmar vid 56°C',
-      'Förbered en klassisk béarnaisesås',
-      'Sautera foie gras snabbt i het panna',
-      'Flambera med cognac',
-      'Montera såsen med kallt smör',
-      'Tournera grönsakerna',
-      'Glasera grönsakerna i smör',
-      'Arrangera på tallrik med precision',
-    ]).withTimeMinutes(180);
+          '500g kalvkött',
+          '200g foie gras',
+          '100ml cognac',
+          '50g tryffel',
+          '300ml kalvfond',
+          '200g smör',
+          '4 äggulor',
+          '100ml grädde',
+          '1 bukett garni',
+          '12 små potatiser',
+          '200g morötter',
+          '150g haricots verts',
+        ])
+        .withInstructions([
+          'Förbered mise en place för alla ingredienser',
+          'Reducera kalvfonden till hälften',
+          'Sous vide kalvköttet i 2 timmar vid 56°C',
+          'Förbered en klassisk béarnaisesås',
+          'Sautera foie gras snabbt i het panna',
+          'Flambera med cognac',
+          'Montera såsen med kallt smör',
+          'Tournera grönsakerna',
+          'Glasera grönsakerna i smör',
+          'Arrangera på tallrik med precision',
+        ])
+        .withTimeMinutes(180);
 
     editCount = 50;
 
@@ -126,7 +128,9 @@ class RealtimeRecipeBuilder {
     _recipeBuilder = RecipeBuilder()
         .withTitle('M')
         .withDescription('D')
-        .withIngredients(['I']).withInstructions(['S']).withTimeMinutes(1);
+        .withIngredients(['I'])
+        .withInstructions(['S'])
+        .withTimeMinutes(1);
 
     editCount = 0;
 
@@ -161,7 +165,9 @@ class RealtimeRecipeBuilder {
 
   /// Add a participant with specific permission
   RealtimeRecipeBuilder withParticipant(
-      String userId, ResourcePermission permission) {
+    String userId,
+    ResourcePermission permission,
+  ) {
     participants[userId] = permission;
     return this;
   }

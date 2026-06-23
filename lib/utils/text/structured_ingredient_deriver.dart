@@ -28,9 +28,11 @@ class StructuredIngredientDeriver {
     // IngredientParser has no failure mode: an unparseable line comes back
     // as quantity 1.0 + empty unit + the whole (normalized, lowercased)
     // line as name. Same guard as IngredientParser.scaleAndFormatIngredient.
-    final normalizedLower =
-        trimmed.replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
-    final isFallback = parsed.quantity == 1.0 &&
+    final normalizedLower = trimmed
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .toLowerCase();
+    final isFallback =
+        parsed.quantity == 1.0 &&
         parsed.unit.isEmpty &&
         parsed.name == normalizedLower;
     if (isFallback || parsed.name.isEmpty) {

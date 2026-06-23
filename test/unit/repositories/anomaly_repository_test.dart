@@ -51,8 +51,9 @@ void main() {
   });
 
   test('no anomaly docs yields an empty report', () async {
-    final report =
-        await AnomalyRepository(firestore: FakeFirebaseFirestore()).getLatest();
+    final report = await AnomalyRepository(
+      firestore: FakeFirebaseFirestore(),
+    ).getLatest();
     expect(report.hasAnomalies, isFalse);
     expect(report.anomalies, isEmpty);
   });

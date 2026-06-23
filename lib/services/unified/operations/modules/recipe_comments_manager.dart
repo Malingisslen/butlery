@@ -37,10 +37,10 @@ class RecipeCommentsManager {
     required String? Function() getCurrentUserDisplayName,
     required List<Recipe> Function() getRecipes,
     required NotificationService? notificationService,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _getRecipes = getRecipes,
-        _notificationService = notificationService {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _getRecipes = getRecipes,
+       _notificationService = notificationService {
     _crudOperations = CommentCrudOperations();
   }
   String? get currentUserId => _getCurrentUserId();
@@ -294,7 +294,8 @@ class RecipeCommentsManager {
     // The Firestore listeners will automatically update the streams
     // This method is kept for potential future use
     AppLogger.debug(
-        '🔄 Comment streams will update automatically for recipe $recipeId');
+      '🔄 Comment streams will update automatically for recipe $recipeId',
+    );
   }
 
   /// Dispose of all comment streams

@@ -50,8 +50,10 @@ class _ThrowingOnnxRuntime extends OnnxRuntime {
   _ThrowingOnnxRuntime(this.error);
 
   @override
-  Future<OrtSession> createSession(String modelPath,
-      {OrtSessionOptions? options}) async {
+  Future<OrtSession> createSession(
+    String modelPath, {
+    OrtSessionOptions? options,
+  }) async {
     throw error;
   }
 }
@@ -64,8 +66,10 @@ class _CountingOnnxRuntime extends OnnxRuntime {
   _CountingOnnxRuntime(this.build);
 
   @override
-  Future<OrtSession> createSession(String modelPath,
-      {OrtSessionOptions? options}) async {
+  Future<OrtSession> createSession(
+    String modelPath, {
+    OrtSessionOptions? options,
+  }) async {
     createCount++;
     return build();
   }
@@ -103,8 +107,10 @@ class _ScriptedOnnxPlatform extends FlutterOnnxruntimePlatform
   final Map<String, List<int>> _valueShape = {};
 
   @override
-  Future<Map<String, dynamic>> createSession(String modelPath,
-      {Map<String, dynamic>? sessionOptions}) async {
+  Future<Map<String, dynamic>> createSession(
+    String modelPath, {
+    Map<String, dynamic>? sessionOptions,
+  }) async {
     sessionCreateCount++;
     return {
       'sessionId': 'test-session-$sessionCreateCount',
@@ -115,7 +121,10 @@ class _ScriptedOnnxPlatform extends FlutterOnnxruntimePlatform
 
   @override
   Future<Map<String, dynamic>> createOrtValue(
-      String sourceType, dynamic data, List<int> shape) async {
+    String sourceType,
+    dynamic data,
+    List<int> shape,
+  ) async {
     final id = 'val-${valueIdCounter++}';
     _valueShape[id] = List<int>.from(shape);
     return {'valueId': id, 'dataType': sourceType, 'shape': shape};
@@ -129,7 +138,8 @@ class _ScriptedOnnxPlatform extends FlutterOnnxruntimePlatform
   }) async {
     if (scriptedLogits.isEmpty) {
       throw StateError(
-          'Test scripted no logits but production called runInference');
+        'Test scripted no logits but production called runInference',
+      );
     }
     final logits = scriptedLogits.removeAt(0);
     // Infer shape from the first input tensor.
@@ -169,7 +179,8 @@ class _ScriptedOnnxPlatform extends FlutterOnnxruntimePlatform
 
 /// Minimal cased BERT-style vocab. Index = line number (0-based).
 /// Special tokens first to mirror real KB-BERT vocab.
-const String _testVocab = '[PAD]\n' // 0
+const String _testVocab =
+    '[PAD]\n' // 0
     '[UNK]\n' // 1
     '[CLS]\n' // 2  (but real BERT has [CLS] at 101; the service uses
     //     vocab[_clsToken] so the index here is what matters)
@@ -223,17 +234,19 @@ void main() {
 
     /// Same contract for batch — and crucially, returns a list of correct
     /// length so callers can zip results back to inputs.
-    test('predictBatch returns same-length list of nulls when uninitialized',
-        () async {
-      final service = OnnxNerService();
-      final results = await service.predictBatch([
-        ['2', 'dl', 'mjölk'],
-        ['salt'],
-        ['1', 'st', 'tomat'],
-      ]);
-      expect(results, hasLength(3));
-      expect(results, everyElement(isNull));
-    });
+    test(
+      'predictBatch returns same-length list of nulls when uninitialized',
+      () async {
+        final service = OnnxNerService();
+        final results = await service.predictBatch([
+          ['2', 'dl', 'mjölk'],
+          ['salt'],
+          ['1', 'st', 'tomat'],
+        ]);
+        expect(results, hasLength(3));
+        expect(results, everyElement(isNull));
+      },
+    );
 
     test('predictBatch returns empty list for empty batch', () async {
       final service = OnnxNerService();
@@ -280,88 +293,101 @@ void main() {
     /// fallback take over. This is the contract that the user-visible
     /// "ingredient parsing still works without ML" relies on.
     test(
-        'initialize returns false and isAvailable stays false when session creation throws',
-        () async {
-      final runtime = _ThrowingOnnxRuntime(
-        StateError('model file not found'),
-      );
-      final service = OnnxNerService(runtime: runtime);
+      'initialize returns false and isAvailable stays false when session creation throws',
+      () async {
+        final runtime = _ThrowingOnnxRuntime(
+          StateError('model file not found'),
+        );
+        final service = OnnxNerService(runtime: runtime);
 
-      final ok = await service.initialize(
-        modelPath: '/no/such/model.onnx',
-        vocabContent: _testVocab,
-      );
+        final ok = await service.initialize(
+          modelPath: '/no/such/model.onnx',
+          vocabContent: _testVocab,
+        );
 
-      expect(ok, isFalse);
-      expect(service.isAvailable, isFalse);
-    });
+        expect(ok, isFalse);
+        expect(service.isAvailable, isFalse);
+      },
+    );
 
     /// After a failed initialize, subsequent predict()/predictBatch() must
     /// still return null/list-of-nulls (not throw). Without this, every
     /// parse after a flaky model load would crash.
-    test('predict and predictBatch return null after failed initialize',
-        () async {
-      final runtime = _ThrowingOnnxRuntime(Exception('boom'));
-      final service = OnnxNerService(runtime: runtime);
-      await service.initialize(modelPath: 'x', vocabContent: _testVocab);
+    test(
+      'predict and predictBatch return null after failed initialize',
+      () async {
+        final runtime = _ThrowingOnnxRuntime(Exception('boom'));
+        final service = OnnxNerService(runtime: runtime);
+        await service.initialize(modelPath: 'x', vocabContent: _testVocab);
 
-      expect(await service.predict(['salt']), isNull);
-      final batch = await service.predictBatch([
-        ['salt'],
-        ['tomat'],
-      ]);
-      expect(batch, [null, null]);
-    });
+        expect(await service.predict(['salt']), isNull);
+        final batch = await service.predictBatch([
+          ['salt'],
+          ['tomat'],
+        ]);
+        expect(batch, [null, null]);
+      },
+    );
 
     /// A second initialize() call on an already-initialised service must
     /// not re-run createSession — that would leak native session handles.
     /// (The production guard is `if (_initialized) return !_initFailed;`.)
-    test('initialize is idempotent — second call does not re-create session',
-        () async {
-      final platform = _ScriptedOnnxPlatform(
-        inputNames: ['input_ids', 'attention_mask'],
-        outputName: 'logits',
-        numLabels: _productionLabelOrder.length,
-      );
-
-      await _withPlatform(platform, () async {
-        final service = OnnxNerService();
-        final first = await service.initialize(
-          modelPath: 'x',
-          vocabContent: _testVocab,
-        );
-        final second = await service.initialize(
-          modelPath: 'y', // different path — must still be ignored
-          vocabContent: _testVocab,
+    test(
+      'initialize is idempotent — second call does not re-create session',
+      () async {
+        final platform = _ScriptedOnnxPlatform(
+          inputNames: ['input_ids', 'attention_mask'],
+          outputName: 'logits',
+          numLabels: _productionLabelOrder.length,
         );
 
-        expect(first, isTrue);
-        expect(second, isTrue);
-        expect(platform.sessionCreateCount, 1,
-            reason: 'initialize() must short-circuit after success');
-      });
-    });
+        await _withPlatform(platform, () async {
+          final service = OnnxNerService();
+          final first = await service.initialize(
+            modelPath: 'x',
+            vocabContent: _testVocab,
+          );
+          final second = await service.initialize(
+            modelPath: 'y', // different path — must still be ignored
+            vocabContent: _testVocab,
+          );
+
+          expect(first, isTrue);
+          expect(second, isTrue);
+          expect(
+            platform.sessionCreateCount,
+            1,
+            reason: 'initialize() must short-circuit after success',
+          );
+        });
+      },
+    );
 
     /// Repeat for the failure case: a service that failed init should not
     /// retry on its own — caller has to dispose() first.
-    test('initialize is idempotent on failure (returns cached false)',
-        () async {
-      final runtime = _ThrowingOnnxRuntime(Exception('boom'));
-      // Wrap in counting runtime to count attempts.
-      final counting = _CountingOnnxRuntime(() => throw Exception('boom'));
-      final service = OnnxNerService(runtime: counting);
+    test(
+      'initialize is idempotent on failure (returns cached false)',
+      () async {
+        final runtime = _ThrowingOnnxRuntime(Exception('boom'));
+        // Wrap in counting runtime to count attempts.
+        final counting = _CountingOnnxRuntime(() => throw Exception('boom'));
+        final service = OnnxNerService(runtime: counting);
 
-      final a = await service.initialize(modelPath: 'x', vocabContent: 'tok');
-      final b = await service.initialize(modelPath: 'y', vocabContent: 'tok');
+        final a = await service.initialize(modelPath: 'x', vocabContent: 'tok');
+        final b = await service.initialize(modelPath: 'y', vocabContent: 'tok');
 
-      expect(a, isFalse);
-      expect(b, isFalse);
-      expect(counting.createCount, 1,
-          reason: 'second initialize must not retry without dispose()');
+        expect(a, isFalse);
+        expect(b, isFalse);
+        expect(
+          counting.createCount,
+          1,
+          reason: 'second initialize must not retry without dispose()',
+        );
 
-      // Silence unused-warning safely.
-      expect(runtime, isNotNull);
-    });
+        // Silence unused-warning safely.
+        expect(runtime, isNotNull);
+      },
+    );
   });
 
   group('OnnxNerService — end-to-end inference contract', () {
@@ -371,41 +397,46 @@ void main() {
     /// even though BioLabel.bName is enum index 3 in the enum declaration.
     /// This is the test that catches the classic "labels list re-ordered
     /// but enum not" bug.
-    test('predict maps argmax index through the production label ordering',
-        () async {
-      final platform = _ScriptedOnnxPlatform(
-        inputNames: ['input_ids', 'attention_mask'],
-        outputName: 'logits',
-        numLabels: _productionLabelOrder.length,
-      );
+    test(
+      'predict maps argmax index through the production label ordering',
+      () async {
+        final platform = _ScriptedOnnxPlatform(
+          inputNames: ['input_ids', 'attention_mask'],
+          outputName: 'logits',
+          numLabels: _productionLabelOrder.length,
+        );
 
-      // Build logits for [1, 128, 9]: pad with zeros, but at the position of
-      // the first subword of the single input word, put a big peak at index 4
-      // → BioLabel.bName in the production label ordering.
-      // The tokenizer puts [CLS] at position 0, then the word's first
-      // subword at position 1.
-      const seqLen = 128;
-      const numLabels = 9;
-      final logits = List<double>.filled(seqLen * numLabels, 0.0);
-      const firstSubwordPos = 1; // after [CLS]
-      const peakLabel = 4; // → BioLabel.bName
-      logits[firstSubwordPos * numLabels + peakLabel] = 10.0;
-      platform.scriptedLogits.add(logits);
+        // Build logits for [1, 128, 9]: pad with zeros, but at the position of
+        // the first subword of the single input word, put a big peak at index 4
+        // → BioLabel.bName in the production label ordering.
+        // The tokenizer puts [CLS] at position 0, then the word's first
+        // subword at position 1.
+        const seqLen = 128;
+        const numLabels = 9;
+        final logits = List<double>.filled(seqLen * numLabels, 0.0);
+        const firstSubwordPos = 1; // after [CLS]
+        const peakLabel = 4; // → BioLabel.bName
+        logits[firstSubwordPos * numLabels + peakLabel] = 10.0;
+        platform.scriptedLogits.add(logits);
 
-      await _withPlatform(platform, () async {
-        final service = OnnxNerService();
-        await service.initialize(modelPath: 'm', vocabContent: _testVocab);
-        final result = await service.predict(['salt']);
+        await _withPlatform(platform, () async {
+          final service = OnnxNerService();
+          await service.initialize(modelPath: 'm', vocabContent: _testVocab);
+          final result = await service.predict(['salt']);
 
-        expect(result, isNotNull);
-        expect(result!.labels, hasLength(1));
-        expect(result.labels[0], BioLabel.bName,
-            reason: 'label index 4 in _labels is BioLabel.bName');
-        // Softmax of (10, 0, 0, ..., 0) is e^10 / (e^10 + 8) ≈ ~1.0
-        expect(result.confidence, greaterThan(0.99));
-        expect(result.confidence, lessThanOrEqualTo(1.0));
-      });
-    });
+          expect(result, isNotNull);
+          expect(result!.labels, hasLength(1));
+          expect(
+            result.labels[0],
+            BioLabel.bName,
+            reason: 'label index 4 in _labels is BioLabel.bName',
+          );
+          // Softmax of (10, 0, 0, ..., 0) is e^10 / (e^10 + 8) ≈ ~1.0
+          expect(result.confidence, greaterThan(0.99));
+          expect(result.confidence, lessThanOrEqualTo(1.0));
+        });
+      },
+    );
 
     /// Confidence is the average softmax probability across words. Two
     /// words with the same logit profile must have the same per-word
@@ -435,8 +466,11 @@ void main() {
         expect(result, isNotNull);
         expect(result!.labels, [BioLabel.bQty, BioLabel.bName]);
         expect(result.confidence, greaterThan(0.0));
-        expect(result.confidence, lessThan(1.0),
-            reason: 'second word is not maximally confident');
+        expect(
+          result.confidence,
+          lessThan(1.0),
+          reason: 'second word is not maximally confident',
+        );
       });
     });
 
@@ -485,63 +519,70 @@ void main() {
     /// split into multiple inference calls, but still return one result
     /// per input. Off-by-one in the chunking bound is a classic ML wrapper
     /// bug — this test catches it.
-    test('predictBatch chunks inputs exceeding the internal batch size',
-        () async {
-      final platform = _ScriptedOnnxPlatform(
-        inputNames: ['input_ids', 'attention_mask'],
-        outputName: 'logits',
-        numLabels: _productionLabelOrder.length,
-      );
-      const seqLen = 128;
-      const numLabels = 9;
-      // 40 valid lines → 32 + 8 chunks.
-      // Each chunk gets its own scripted logits batch.
-      List<double> zerosFor(int batch) =>
-          List<double>.filled(batch * seqLen * numLabels, 0.0);
-      platform.scriptedLogits.add(zerosFor(32));
-      platform.scriptedLogits.add(zerosFor(8));
+    test(
+      'predictBatch chunks inputs exceeding the internal batch size',
+      () async {
+        final platform = _ScriptedOnnxPlatform(
+          inputNames: ['input_ids', 'attention_mask'],
+          outputName: 'logits',
+          numLabels: _productionLabelOrder.length,
+        );
+        const seqLen = 128;
+        const numLabels = 9;
+        // 40 valid lines → 32 + 8 chunks.
+        // Each chunk gets its own scripted logits batch.
+        List<double> zerosFor(int batch) =>
+            List<double>.filled(batch * seqLen * numLabels, 0.0);
+        platform.scriptedLogits.add(zerosFor(32));
+        platform.scriptedLogits.add(zerosFor(8));
 
-      await _withPlatform(platform, () async {
-        final service = OnnxNerService();
-        await service.initialize(modelPath: 'm', vocabContent: _testVocab);
+        await _withPlatform(platform, () async {
+          final service = OnnxNerService();
+          await service.initialize(modelPath: 'm', vocabContent: _testVocab);
 
-        final inputs = List<List<String>>.generate(40, (_) => ['salt']);
-        final results = await service.predictBatch(inputs);
+          final inputs = List<List<String>>.generate(40, (_) => ['salt']);
+          final results = await service.predictBatch(inputs);
 
-        expect(results, hasLength(40));
-        expect(results, everyElement(isNotNull),
-            reason: 'no chunk boundary should produce null');
-        // Verify the two batch shapes recorded.
-        expect(platform.runShapes, hasLength(2));
-        expect(platform.runShapes[0], [32, 128]);
-        expect(platform.runShapes[1], [8, 128]);
-      });
-    });
+          expect(results, hasLength(40));
+          expect(
+            results,
+            everyElement(isNotNull),
+            reason: 'no chunk boundary should produce null',
+          );
+          // Verify the two batch shapes recorded.
+          expect(platform.runShapes, hasLength(2));
+          expect(platform.runShapes[0], [32, 128]);
+          expect(platform.runShapes[1], [8, 128]);
+        });
+      },
+    );
 
     /// If runInference throws, predictBatch must degrade to nulls for
     /// the affected chunk (not propagate the exception). Other chunks
     /// in the same call should still get their result if scripted.
-    test('predictBatch returns nulls for a chunk whose inference throws',
-        () async {
-      final platform = _ScriptedOnnxPlatform(
-        inputNames: ['input_ids', 'attention_mask'],
-        outputName: 'logits',
-        numLabels: _productionLabelOrder.length,
-      );
-      // No scripted logits — the _ScriptedOnnxPlatform throws StateError
-      // on runInference when scriptedLogits is empty. predictBatch should
-      // catch and return nulls.
-      await _withPlatform(platform, () async {
-        final service = OnnxNerService();
-        await service.initialize(modelPath: 'm', vocabContent: _testVocab);
+    test(
+      'predictBatch returns nulls for a chunk whose inference throws',
+      () async {
+        final platform = _ScriptedOnnxPlatform(
+          inputNames: ['input_ids', 'attention_mask'],
+          outputName: 'logits',
+          numLabels: _productionLabelOrder.length,
+        );
+        // No scripted logits — the _ScriptedOnnxPlatform throws StateError
+        // on runInference when scriptedLogits is empty. predictBatch should
+        // catch and return nulls.
+        await _withPlatform(platform, () async {
+          final service = OnnxNerService();
+          await service.initialize(modelPath: 'm', vocabContent: _testVocab);
 
-        final results = await service.predictBatch([
-          ['salt'],
-          ['tomat'],
-        ]);
-        expect(results, [null, null]);
-      });
-    });
+          final results = await service.predictBatch([
+            ['salt'],
+            ['tomat'],
+          ]);
+          expect(results, [null, null]);
+        });
+      },
+    );
 
     /// dispose() must call into the session close on the platform. This is
     /// the only way the user knows native memory is freed.
@@ -584,8 +625,11 @@ void main() {
         await service.initialize(modelPath: 'm', vocabContent: _testVocab);
 
         expect(service.isAvailable, isTrue);
-        expect(platform.sessionCreateCount, 2,
-            reason: 'dispose + initialize must rebuild the session');
+        expect(
+          platform.sessionCreateCount,
+          2,
+          reason: 'dispose + initialize must rebuild the session',
+        );
       });
     });
   });

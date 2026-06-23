@@ -89,28 +89,38 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   String getId(RecipeRating entity) => entity.id;
   @override
   Future<bool> validateCreatePermission(
-      String userId, RecipeRating entity) async {
+    String userId,
+    RecipeRating entity,
+  ) async {
     // Users can only create ratings for themselves
     return entity.userId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, RecipeRating? entity) async {
+    String userId,
+    String resourceId,
+    RecipeRating? entity,
+  ) async {
     // All authenticated users can read ratings (public social feature)
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, RecipeRating entity) async {
+    String userId,
+    String resourceId,
+    RecipeRating entity,
+  ) async {
     // Users can only update their own ratings
     return entity.userId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Users can only delete their own ratings
     try {
       final rating = await read(resourceId);
@@ -330,12 +340,14 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
-      List<String> recipeIds) async {
+    List<String> recipeIds,
+  ) async {
     final Map<String, RatingStatistics> results = {};
 
     for (final batch in recipeIds.chunked(kFirestoreWhereInLimit)) {
-      final ratingsQuery =
-          await collection.where('recipeId', whereIn: batch).get();
+      final ratingsQuery = await collection
+          .where('recipeId', whereIn: batch)
+          .get();
 
       final ratingsByRecipe = <String, List<RecipeRating>>{};
 
@@ -414,7 +426,9 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   }
 
   RatingStatistics _calculateRatingStatistics(
-      String recipeId, List<RecipeRating> ratings) {
+    String recipeId,
+    List<RecipeRating> ratings,
+  ) {
     if (ratings.isEmpty) {
       return RatingStatistics(
         recipeId: recipeId,
@@ -424,8 +438,10 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       );
     }
 
-    final totalRating =
-        ratings.fold<double>(0, (total, rating) => total + rating.rating);
+    final totalRating = ratings.fold<double>(
+      0,
+      (total, rating) => total + rating.rating,
+    );
     final averageRating = totalRating / ratings.length;
 
     final Map<int, int> distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};

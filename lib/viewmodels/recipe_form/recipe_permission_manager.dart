@@ -19,7 +19,7 @@ class RecipePermissionManager {
 
   /// Initializes permission manager with parent ViewModel coordination.
   RecipePermissionManager({PermissionService? permissionService})
-      : _testPermissionService = permissionService;
+    : _testPermissionService = permissionService;
 
   /// Gets permission service - either injected for testing or from ServiceLocator
   PermissionService get _permissionService =>
@@ -116,11 +116,15 @@ class RecipePermissionManager {
   /// [permission] Permission level for access control
   /// Returns true ONLY if user has permission management rights and operation succeeds.
   bool updateUserPermission(
-      String recipeId, String userId, dynamic permission) {
+    String recipeId,
+    String userId,
+    dynamic permission,
+  ) {
     // Only recipe owners can update permissions
     if (!_permissionService.isRecipeOwner(recipeId)) {
       AppLogger.warning(
-          'Permission denied: User cannot manage permissions for recipe $recipeId');
+        'Permission denied: User cannot manage permissions for recipe $recipeId',
+      );
       return false;
     }
 
@@ -129,7 +133,8 @@ class RecipePermissionManager {
     try {
       // Would call: await recipeService.updateRecipePermission(recipeId, userId, permission);
       AppLogger.info(
-          'Permission updated for user ${userId.maskedUserId} on recipe $recipeId: $permission');
+        'Permission updated for user ${userId.maskedUserId} on recipe $recipeId: $permission',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to update permission', e);
@@ -143,8 +148,10 @@ class RecipePermissionManager {
   /// [permission] Permission level for shared access
   /// Returns true indicating successful recipe sharing for collaborative features.
   bool shareRecipeWithUser(
-          String recipeId, String userId, dynamic permission) =>
-      true;
+    String recipeId,
+    String userId,
+    dynamic permission,
+  ) => true;
 
   /// Validates action permission for specific recipe operations and UI interactions.
   /// [action] Action identifier for permission validation

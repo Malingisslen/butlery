@@ -37,9 +37,10 @@ void main() {
   late MockLlmService mockLlmService;
   late LlmTier tier;
 
-  ParsingContext createContext(
-      {String content =
-          'A long enough recipe text for testing purposes that exceeds the minimum length requirement of fifty chars'}) {
+  ParsingContext createContext({
+    String content =
+        'A long enough recipe text for testing purposes that exceeds the minimum length requirement of fifty chars',
+  }) {
     return ParsingContext.fromText(
       text: content,
       source: ImportSource.text,
@@ -61,13 +62,15 @@ void main() {
       portions: portions,
       prepTimeMinutes: prepTime,
       cookTimeMinutes: cookTime,
-      ingredients: ingredients ??
+      ingredients:
+          ingredients ??
           const [
             ExtractedIngredient(name: 'mjol', amount: 3, unit: 'dl'),
             ExtractedIngredient(name: 'mjolk', amount: 6, unit: 'dl'),
             ExtractedIngredient(name: 'agg', amount: 3),
           ],
-      instructions: instructions ??
+      instructions:
+          instructions ??
           const [
             'Blanda mjol och halva mjolken till en slat smet.',
             'Tillsatt resten av mjolken och aggen.',
@@ -239,36 +242,40 @@ void main() {
       expect(nullTier.shouldSkip(context), isTrue);
     });
 
-    test('threads promptVersion from response into successful TierResult',
-        () async {
-      mockLlmService.nextResponse = StructureRecipeResponse(
-        success: true,
-        recipe: validRecipe(),
-        estimatedCost: 0.01,
-        promptVersion: 'v3.1',
-      );
+    test(
+      'threads promptVersion from response into successful TierResult',
+      () async {
+        mockLlmService.nextResponse = StructureRecipeResponse(
+          success: true,
+          recipe: validRecipe(),
+          estimatedCost: 0.01,
+          promptVersion: 'v3.1',
+        );
 
-      final context = createContext();
-      final result = await tier.parse(context);
+        final context = createContext();
+        final result = await tier.parse(context);
 
-      expect(result.success, isTrue);
-      expect(result.promptVersion, 'v3.1');
-    });
+        expect(result.success, isTrue);
+        expect(result.promptVersion, 'v3.1');
+      },
+    );
 
-    test('threads promptVersion into failed TierResult (no recipe path)',
-        () async {
-      mockLlmService.nextResponse = const StructureRecipeResponse(
-        success: false,
-        estimatedCost: 0.01,
-        promptVersion: 'v3.1',
-      );
+    test(
+      'threads promptVersion into failed TierResult (no recipe path)',
+      () async {
+        mockLlmService.nextResponse = const StructureRecipeResponse(
+          success: false,
+          estimatedCost: 0.01,
+          promptVersion: 'v3.1',
+        );
 
-      final context = createContext();
-      final result = await tier.parse(context);
+        final context = createContext();
+        final result = await tier.parse(context);
 
-      expect(result.success, isFalse);
-      expect(result.promptVersion, 'v3.1');
-    });
+        expect(result.success, isFalse);
+        expect(result.promptVersion, 'v3.1');
+      },
+    );
 
     // BUT-512: per-unit amount validation
     group('per-unit amount ceilings (BUT-512)', () {
@@ -360,8 +367,9 @@ void main() {
 
         expect(result.success, isTrue);
         // 3 input → 1 dropped (glass) → 2 kept (mjol + agg)
-        final names =
-            result.recipe!.ingredients.value!.map((i) => i.name).toList();
+        final names = result.recipe!.ingredients.value!
+            .map((i) => i.name)
+            .toList();
         expect(names, contains('mjol'));
         expect(names, contains('agg'));
         expect(names, isNot(contains('vatten')));
@@ -467,8 +475,9 @@ void main() {
       });
 
       test('rejects Jinja / Twig template {% %}', () async {
-        final result =
-            await parseWithTitle('Pannkakor {% if admin %}leak{% endif %}');
+        final result = await parseWithTitle(
+          'Pannkakor {% if admin %}leak{% endif %}',
+        );
         expect(result.success, isFalse);
         expect(result.failureReason, TierFailureReason.invalidResponse);
       });

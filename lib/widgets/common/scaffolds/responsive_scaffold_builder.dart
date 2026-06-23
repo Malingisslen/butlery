@@ -13,17 +13,17 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
   final ResponsiveWidgetBuilder? tablet;
   final ResponsiveWidgetBuilder? desktop;
   final Widget Function(BuildContext context, DeviceCategory category)?
-      categoryBuilder;
+  categoryBuilder;
 
   /// Simple mobile/desktop boolean check (backward compatible).
   /// Uses 600px breakpoint: < 600px = mobile, >= 600px = desktop
   const ResponsiveScaffoldBuilder({
     super.key,
     required this.builder,
-  })  : mobile = null,
-        tablet = null,
-        desktop = null,
-        categoryBuilder = null;
+  }) : mobile = null,
+       tablet = null,
+       desktop = null,
+       categoryBuilder = null;
 
   /// Full mobile/tablet/desktop builder functions.
   /// Breakpoints:
@@ -36,8 +36,8 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
     required this.mobile,
     this.tablet,
     this.desktop,
-  })  : builder = null,
-        categoryBuilder = null;
+  }) : builder = null,
+       categoryBuilder = null;
 
   /// Device category for fine-grained control.
   /// Provides all 6 device categories:
@@ -45,10 +45,10 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
   const ResponsiveScaffoldBuilder.category({
     super.key,
     required this.categoryBuilder,
-  })  : builder = null,
-        mobile = null,
-        tablet = null,
-        desktop = null;
+  }) : builder = null,
+       mobile = null,
+       tablet = null,
+       desktop = null;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +78,7 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
     }
 
     throw StateError(
-        'ResponsiveScaffoldBuilder requires one of: builder, mobile, or categoryBuilder');
+      'ResponsiveScaffoldBuilder requires one of: builder, mobile, or categoryBuilder',
+    );
   }
 }

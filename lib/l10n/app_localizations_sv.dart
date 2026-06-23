@@ -1860,7 +1860,11 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String personalTagTileSemantics(
-      String name, int count, int enabled, int total) {
+    String name,
+    int count,
+    int enabled,
+    int total,
+  ) {
     return '$name, $count recept, $enabled av $total regler aktiva';
   }
 
@@ -12569,13 +12573,20 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupInvitationNotificationWithMessage(
-      String sender, String emoji, String group, String message) {
+    String sender,
+    String emoji,
+    String group,
+    String message,
+  ) {
     return '$sender bjöd in dig till gruppen $emoji $group: \"$message\"';
   }
 
   @override
   String groupInvitationNotificationSimple(
-      String sender, String emoji, String group) {
+    String sender,
+    String emoji,
+    String group,
+  ) {
     return '$sender bjöd in dig till gruppen $emoji $group';
   }
 
@@ -12855,13 +12866,19 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String notificationCommentMultipleSameAuthor(
-      String author, int count, String recipe) {
+    String author,
+    int count,
+    String recipe,
+  ) {
     return '$author skrev $count kommentarer på \"$recipe\"';
   }
 
   @override
   String notificationCommentMultipleAuthors(
-      int authorCount, int commentCount, String recipe) {
+    int authorCount,
+    int commentCount,
+    String recipe,
+  ) {
     return '$authorCount personer skrev $commentCount kommentarer på \"$recipe\"';
   }
 
@@ -12872,7 +12889,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String notificationRatingMultiple(
-      int totalRatings, int recipeCount, String period) {
+    int totalRatings,
+    int recipeCount,
+    String period,
+  ) {
     return 'Dina recept fick totalt $totalRatings nya betyg på $recipeCount recept denna $period!';
   }
 
@@ -13185,7 +13205,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String errorDuringActionRecovery(
-      String action, String issue, String recovery) {
+    String action,
+    String issue,
+    String recovery,
+  ) {
     return 'Problem medan $action: $issue\n\nFörslag: $recovery';
   }
 
@@ -13223,7 +13246,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String errorInvalidCategoryNamesFromTo(
-      String fromCategory, String toCategory) {
+    String fromCategory,
+    String toCategory,
+  ) {
     return 'Ogiltiga kategorinamn: $fromCategory -> $toCategory';
   }
 

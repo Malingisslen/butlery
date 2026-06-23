@@ -23,14 +23,15 @@ void main() {
       expect(showForkInOverflow(someoneElse, me), isFalse);
     });
 
-    test('owned (createdBy == currentUser) → overflow item, no app-bar button',
-        () {
-      expect(showForkInAppBar(me, me), isFalse);
-      expect(showForkInOverflow(me, me), isTrue);
-    });
+    test(
+      'owned (createdBy == currentUser) → overflow item, no app-bar button',
+      () {
+        expect(showForkInAppBar(me, me), isFalse);
+        expect(showForkInOverflow(me, me), isTrue);
+      },
+    );
 
-    test('local recipe (empty createdBy) → overflow item, no app-bar button',
-        () {
+    test('local recipe (empty createdBy) → overflow item, no app-bar button', () {
       // Negative control: a local recipe with no author is the owned-side path.
       expect(showForkInAppBar('', me), isFalse);
       expect(showForkInOverflow('', me), isTrue);
@@ -40,8 +41,7 @@ void main() {
       expect(showForkInOverflow(null, me), isTrue);
     });
 
-    test(
-        'the two placements are exhaustive complements for every '
+    test('the two placements are exhaustive complements for every '
         'ownership combination', () {
       // The invariant itself: showInAppBar == !showInOverflow, always.
       const cases = <(String?, String?)>[
@@ -56,7 +56,8 @@ void main() {
         expect(
           showForkInAppBar(createdBy, currentUserId),
           isNot(showForkInOverflow(createdBy, currentUserId)),
-          reason: 'fork must show in exactly one place for '
+          reason:
+              'fork must show in exactly one place for '
               '(createdBy: $createdBy, currentUserId: $currentUserId)',
         );
       }

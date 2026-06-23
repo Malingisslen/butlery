@@ -26,8 +26,8 @@ class OverlayButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.tooltip,
-  })  : child = const Icon(Icons.clear),
-        backgroundColor = null;
+  }) : child = const Icon(Icons.clear),
+       backgroundColor = null;
 
   @override
   Widget build(BuildContext context) {

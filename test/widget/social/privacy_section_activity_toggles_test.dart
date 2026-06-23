@@ -62,20 +62,20 @@ UserProfile _profile({Map<String, bool> activityFeedEventTypes = const {}}) =>
     );
 
 Widget _wrap(UserProfileViewModel vm) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(
-        // The real profile-edit view rebuilds this section on VM changes; mirror
-        // that with a ListenableBuilder so notifyListeners() repaints the rows.
-        body: SingleChildScrollView(
-          child: ListenableBuilder(
-            listenable: vm,
-            builder: (_, __) => PrivacySettingsSection(viewModel: vm),
-          ),
-        ),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(
+    // The real profile-edit view rebuilds this section on VM changes; mirror
+    // that with a ListenableBuilder so notifyListeners() repaints the rows.
+    body: SingleChildScrollView(
+      child: ListenableBuilder(
+        listenable: vm,
+        builder: (_, __) => PrivacySettingsSection(viewModel: vm),
       ),
-    );
+    ),
+  ),
+);
 
 UserProfileViewModel _buildVm(UserProfile profile) {
   GetIt.instance.registerSingleton<UserService>(_FakeUserService(profile));
@@ -109,39 +109,56 @@ void main() {
   });
 
   group('PrivacySettingsSection — activity-type toggles (BUT-1220)', () {
-    testWidgets('a type with no stored entry defaults to ON (absent = enabled)',
-        (tester) async {
-      // Empty map → every per-type toggle must read as on.
-      final vm = _buildVm(_profile(activityFeedEventTypes: const {}));
-      await tester.pumpWidget(_wrap(vm));
-      await tester.pump();
+    testWidgets(
+      'a type with no stored entry defaults to ON (absent = enabled)',
+      (tester) async {
+        // Empty map → every per-type toggle must read as on.
+        final vm = _buildVm(_profile(activityFeedEventTypes: const {}));
+        await tester.pumpWidget(_wrap(vm));
+        await tester.pump();
 
-      final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
-      expect(cooked.value, isTrue,
-          reason: 'an unset event type must default to ON');
-      // Master switch is on, so the row is interactive.
-      expect(cooked.onChanged, isNotNull,
-          reason: 'rows are enabled while broadcasting is on');
-    });
+        final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
+        expect(
+          cooked.value,
+          isTrue,
+          reason: 'an unset event type must default to ON',
+        );
+        // Master switch is on, so the row is interactive.
+        expect(
+          cooked.onChanged,
+          isNotNull,
+          reason: 'rows are enabled while broadcasting is on',
+        );
+      },
+    );
 
     testWidgets('a stored false renders the row OFF', (tester) async {
-      final vm = _buildVm(_profile(
-        activityFeedEventTypes: {ActivityEventType.cooked.name: false},
-      ));
+      final vm = _buildVm(
+        _profile(
+          activityFeedEventTypes: {ActivityEventType.cooked.name: false},
+        ),
+      );
       await tester.pumpWidget(_wrap(vm));
       await tester.pump();
 
       final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
-      expect(cooked.value, isFalse,
-          reason: 'an explicitly-disabled type must render OFF');
+      expect(
+        cooked.value,
+        isFalse,
+        reason: 'an explicitly-disabled type must render OFF',
+      );
       // Sibling rows that were never set still default ON.
       final shared = _switchByTitle(tester, 'När jag delar ett recept');
-      expect(shared.value, isTrue,
-          reason: 'disabling one type must not affect untouched siblings');
+      expect(
+        shared.value,
+        isTrue,
+        reason: 'disabling one type must not affect untouched siblings',
+      );
     });
 
-    testWidgets('toggling a type OFF persists through the ViewModel',
-        (tester) async {
+    testWidgets('toggling a type OFF persists through the ViewModel', (
+      tester,
+    ) async {
       final vm = _buildVm(_profile(activityFeedEventTypes: const {}));
       await tester.pumpWidget(_wrap(vm));
       await tester.pump();
@@ -158,15 +175,19 @@ void main() {
       await tester.pump();
 
       // The toggle persisted on the ViewModel...
-      expect(vm.isActivityEventTypeEnabled(ActivityEventType.cooked), isFalse,
-          reason: 'tapping the row must persist the new value');
+      expect(
+        vm.isActivityEventTypeEnabled(ActivityEventType.cooked),
+        isFalse,
+        reason: 'tapping the row must persist the new value',
+      );
       // ...and the rebuilt switch reflects it.
       final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
       expect(cooked.value, isFalse);
     });
 
-    testWidgets('per-type rows are disabled while the master switch is off',
-        (tester) async {
+    testWidgets('per-type rows are disabled while the master switch is off', (
+      tester,
+    ) async {
       final vm = _buildVm(_profile(activityFeedEventTypes: const {}));
       await tester.pumpWidget(_wrap(vm));
       await tester.pump();
@@ -176,10 +197,16 @@ void main() {
       await tester.pump();
 
       final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
-      expect(cooked.onChanged, isNull,
-          reason: 'per-type rows are non-interactive when broadcasting is off');
-      expect(cooked.value, isFalse,
-          reason: 'rows read OFF while the master toggle is off');
+      expect(
+        cooked.onChanged,
+        isNull,
+        reason: 'per-type rows are non-interactive when broadcasting is off',
+      );
+      expect(
+        cooked.value,
+        isFalse,
+        reason: 'rows read OFF while the master toggle is off',
+      );
     });
   });
 }

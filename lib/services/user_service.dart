@@ -34,10 +34,10 @@ class UserService extends ChangeNotifier
     required UserRepository repository,
     required AuthRepository authRepository,
     FirestoreRepository? firestoreRepository,
-  })  : _repository = repository,
-        _authRepository = authRepository,
-        _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+  }) : _repository = repository,
+       _authRepository = authRepository,
+       _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
@@ -167,8 +167,9 @@ class UserService extends ChangeNotifier
           profile = profile.copyWith(shareActivityToFeed: shareActivityToFeed);
         }
         if (activityFeedEventTypes != null) {
-          profile =
-              profile.copyWith(activityFeedEventTypes: activityFeedEventTypes);
+          profile = profile.copyWith(
+            activityFeedEventTypes: activityFeedEventTypes,
+          );
         }
       } else {
         final now = clock.now();
@@ -392,9 +393,11 @@ class UserService extends ChangeNotifier
       // NY: Om profil inte finns, skapa en automatiskt
       if (_currentUserProfile == null && user.email != null) {
         AppLogger.info(
-            '👤 Ingen profil hittad - skapar automatiskt för ${user.email}');
+          '👤 Ingen profil hittad - skapar automatiskt för ${user.email}',
+        );
 
-        final displayName = user.displayName ??
+        final displayName =
+            user.displayName ??
             user.email!.split('@')[0]; // Use email prefix as default
 
         _currentUserProfile = await createOrUpdateProfile(
@@ -405,7 +408,8 @@ class UserService extends ChangeNotifier
 
         if (_currentUserProfile != null) {
           AppLogger.success(
-              '✅ Profil skapad automatiskt: ${_currentUserProfile!.displayName}');
+            '✅ Profil skapad automatiskt: ${_currentUserProfile!.displayName}',
+          );
         } else {
           // BUG-13: the lazy auto-create returned null (e.g. permission-denied /
           // App Check / unavailable during createOrUpdateProfile). Surface a
@@ -422,10 +426,12 @@ class UserService extends ChangeNotifier
       if (_currentUserProfile != null) {
         _cacheProfile(user.uid, _currentUserProfile!);
         AppLogger.info(
-            '👤 Nuvarande profil laddad: ${_currentUserProfile!.displayName}');
+          '👤 Nuvarande profil laddad: ${_currentUserProfile!.displayName}',
+        );
       } else {
         AppLogger.warning(
-            '⚠️ Kunde inte ladda eller skapa profil för användare');
+          '⚠️ Kunde inte ladda eller skapa profil för användare',
+        );
       }
 
       notifyListeners();
@@ -452,7 +458,8 @@ class UserService extends ChangeNotifier
       await _repository.ensureBaseUserDocument(userId);
 
       AppLogger.info(
-          '✅ Base user document ensured for: ${userId.maskedUserId}');
+        '✅ Base user document ensured for: ${userId.maskedUserId}',
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Could not ensure base user document: $e');
       // Don't throw - this is not critical for user functionality
@@ -542,13 +549,15 @@ class UserService extends ChangeNotifier
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
       AppLogger.warning(
-          '⚠️ Cannot update notification settings - no current user');
+        '⚠️ Cannot update notification settings - no current user',
+      );
       return;
     }
 
     try {
       AppLogger.info(
-          '🔔 Updating notification settings for user: ${userId.maskedUserId}');
+        '🔔 Updating notification settings for user: ${userId.maskedUserId}',
+      );
 
       await _repository.updateNotificationSettings(userId, enabled);
 
@@ -568,11 +577,13 @@ class UserService extends ChangeNotifier
 
   /// Update user's allergen preferences.
   Future<bool> updateAllergenPreferences(
-      UserAllergenPreferences preferences) async {
+    UserAllergenPreferences preferences,
+  ) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
       AppLogger.warning(
-          '⚠️ Cannot update allergen preferences - no current user');
+        '⚠️ Cannot update allergen preferences - no current user',
+      );
       return false;
     }
 
@@ -580,7 +591,8 @@ class UserService extends ChangeNotifier
       _setLoading(true);
       _clearError();
       AppLogger.info(
-          '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}');
+        '🍽️ Updating allergen preferences for user: ${userId.maskedUserId}',
+      );
 
       await _repository.updateAllergenPreferences(userId, preferences);
 

@@ -109,123 +109,162 @@ void main() {
 
   group('BUT-953: heirloom draft → upload → attach → save', () {
     test(
-        'pending draft + upload OK → recipe saved with HeirloomMetadata attached',
-        () async {
-      bridge.setDraft(HeirloomDraft(
-        imageBytes: Uint8List.fromList(List<int>.generate(64, (i) => i)),
-        writerName: 'Farmor Elsa',
-        year: 1972,
-        note: 'Från receptboken',
-      ));
-      when(() => mockStorage.uploadImageData(
+      'pending draft + upload OK → recipe saved with HeirloomMetadata attached',
+      () async {
+        bridge.setDraft(
+          HeirloomDraft(
+            imageBytes: Uint8List.fromList(List<int>.generate(64, (i) => i)),
+            writerName: 'Farmor Elsa',
+            year: 1972,
+            note: 'Från receptboken',
+          ),
+        );
+        when(
+          () => mockStorage.uploadImageData(
             imageData: any(named: 'imageData'),
             userId: any(named: 'userId'),
             path: any(named: 'path'),
             metadata: any(named: 'metadata'),
             cacheControl: any(named: 'cacheControl'),
-          )).thenAnswer((_) async => 'https://storage/heirloom/abc.jpg');
+          ),
+        ).thenAnswer((_) async => 'https://storage/heirloom/abc.jpg');
 
-      final ok = await vm.saveImportedRecipe();
+        final ok = await vm.saveImportedRecipe();
 
-      expect(ok, isTrue);
-      expect(vm.hasError, isFalse);
-      expect(vm.parsedRecipe?.heirloom, isNotNull,
-          reason: 'metadata must be stitched onto the recipe before save');
-      expect(vm.parsedRecipe!.heirloom!.sourceImageUrl,
-          'https://storage/heirloom/abc.jpg');
-      expect(vm.parsedRecipe!.heirloom!.writerName, 'Farmor Elsa');
-      expect(vm.parsedRecipe!.heirloom!.year, 1972);
-      expect(vm.parsedRecipe!.heirloom!.addedByUserId, 'user-abc');
-      // Bridge must be drained — a second save shouldn't re-upload.
-      expect(bridge.hasPending, isFalse);
-      verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
-    });
-
-    test('pending draft + upload returns null → save blocked, error surfaced',
-        () async {
-      bridge.setDraft(HeirloomDraft(
-        imageBytes: Uint8List.fromList([1, 2, 3, 4]),
-      ));
-      when(() => mockStorage.uploadImageData(
-            imageData: any(named: 'imageData'),
-            userId: any(named: 'userId'),
-            path: any(named: 'path'),
-            metadata: any(named: 'metadata'),
-            cacheControl: any(named: 'cacheControl'),
-          )).thenAnswer((_) async => null);
-
-      final ok = await vm.saveImportedRecipe();
-
-      expect(ok, isFalse,
-          reason: 'save must fail if heirloom upload returns null');
-      expect(vm.hasError, isTrue);
-      expect(vm.parsedRecipe?.heirloom, isNull,
-          reason: 'no metadata when upload failed');
-      // Save must NOT have been called — the user sees the upload error
-      // instead of a false success toast.
-      verifyNever(() => mockImportManager.saveImportedRecipe(any()));
-      // Draft is restored on failure so the user can retry without
-      // re-filling the heirloom form (post-review: was previously consumed).
-      expect(bridge.hasPending, isTrue,
-          reason: 'failed upload restores the draft for retry');
-    });
+        expect(ok, isTrue);
+        expect(vm.hasError, isFalse);
+        expect(
+          vm.parsedRecipe?.heirloom,
+          isNotNull,
+          reason: 'metadata must be stitched onto the recipe before save',
+        );
+        expect(
+          vm.parsedRecipe!.heirloom!.sourceImageUrl,
+          'https://storage/heirloom/abc.jpg',
+        );
+        expect(vm.parsedRecipe!.heirloom!.writerName, 'Farmor Elsa');
+        expect(vm.parsedRecipe!.heirloom!.year, 1972);
+        expect(vm.parsedRecipe!.heirloom!.addedByUserId, 'user-abc');
+        // Bridge must be drained — a second save shouldn't re-upload.
+        expect(bridge.hasPending, isFalse);
+        verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
+      },
+    );
 
     test(
-        'pending draft + currentUserId null → save blocked, no upload attempted',
-        () async {
-      // Regression guard (review finding): if the auth guard is removed or
-      // moved after the storage call, this test catches it.
-      fakePermission.setPermissionState(currentUserId: null);
-      bridge.setDraft(HeirloomDraft(
-        imageBytes: Uint8List.fromList([1, 2, 3]),
-      ));
-
-      final ok = await vm.saveImportedRecipe();
-
-      expect(ok, isFalse);
-      expect(vm.hasError, isTrue);
-      verifyNever(() => mockStorage.uploadImageData(
+      'pending draft + upload returns null → save blocked, error surfaced',
+      () async {
+        bridge.setDraft(
+          HeirloomDraft(
+            imageBytes: Uint8List.fromList([1, 2, 3, 4]),
+          ),
+        );
+        when(
+          () => mockStorage.uploadImageData(
             imageData: any(named: 'imageData'),
             userId: any(named: 'userId'),
             path: any(named: 'path'),
             metadata: any(named: 'metadata'),
             cacheControl: any(named: 'cacheControl'),
-          ));
-      verifyNever(() => mockImportManager.saveImportedRecipe(any()));
-      // Draft restored — sign-in then retry should pick up where we left off.
-      expect(bridge.hasPending, isTrue);
-    });
+          ),
+        ).thenAnswer((_) async => null);
 
-    test('BUT-1161: PNG draft uploads to a .png path (not hardcoded .jpg)',
-        () async {
-      // 8-byte PNG magic header + filler so ImageFormatUtils.detectFormat
-      // classifies these bytes as PNG, not JPEG.
-      final pngBytes = Uint8List.fromList(<int>[
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-        0x00, 0x00, 0x00, 0x0D, // filler beyond the 12-byte sniff window
-      ]);
-      bridge.setDraft(HeirloomDraft(imageBytes: pngBytes));
-      when(() => mockStorage.uploadImageData(
+        final ok = await vm.saveImportedRecipe();
+
+        expect(
+          ok,
+          isFalse,
+          reason: 'save must fail if heirloom upload returns null',
+        );
+        expect(vm.hasError, isTrue);
+        expect(
+          vm.parsedRecipe?.heirloom,
+          isNull,
+          reason: 'no metadata when upload failed',
+        );
+        // Save must NOT have been called — the user sees the upload error
+        // instead of a false success toast.
+        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
+        // Draft is restored on failure so the user can retry without
+        // re-filling the heirloom form (post-review: was previously consumed).
+        expect(
+          bridge.hasPending,
+          isTrue,
+          reason: 'failed upload restores the draft for retry',
+        );
+      },
+    );
+
+    test(
+      'pending draft + currentUserId null → save blocked, no upload attempted',
+      () async {
+        // Regression guard (review finding): if the auth guard is removed or
+        // moved after the storage call, this test catches it.
+        fakePermission.setPermissionState(currentUserId: null);
+        bridge.setDraft(
+          HeirloomDraft(
+            imageBytes: Uint8List.fromList([1, 2, 3]),
+          ),
+        );
+
+        final ok = await vm.saveImportedRecipe();
+
+        expect(ok, isFalse);
+        expect(vm.hasError, isTrue);
+        verifyNever(
+          () => mockStorage.uploadImageData(
             imageData: any(named: 'imageData'),
             userId: any(named: 'userId'),
             path: any(named: 'path'),
             metadata: any(named: 'metadata'),
             cacheControl: any(named: 'cacheControl'),
-          )).thenAnswer((_) async => 'https://storage/heirloom/abc.png');
+          ),
+        );
+        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
+        // Draft restored — sign-in then retry should pick up where we left off.
+        expect(bridge.hasPending, isTrue);
+      },
+    );
 
-      final ok = await vm.saveImportedRecipe();
+    test(
+      'BUT-1161: PNG draft uploads to a .png path (not hardcoded .jpg)',
+      () async {
+        // 8-byte PNG magic header + filler so ImageFormatUtils.detectFormat
+        // classifies these bytes as PNG, not JPEG.
+        final pngBytes = Uint8List.fromList(<int>[
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+          0x00, 0x00, 0x00, 0x0D, // filler beyond the 12-byte sniff window
+        ]);
+        bridge.setDraft(HeirloomDraft(imageBytes: pngBytes));
+        when(
+          () => mockStorage.uploadImageData(
+            imageData: any(named: 'imageData'),
+            userId: any(named: 'userId'),
+            path: any(named: 'path'),
+            metadata: any(named: 'metadata'),
+            cacheControl: any(named: 'cacheControl'),
+          ),
+        ).thenAnswer((_) async => 'https://storage/heirloom/abc.png');
 
-      expect(ok, isTrue);
-      final captured = verify(() => mockStorage.uploadImageData(
+        final ok = await vm.saveImportedRecipe();
+
+        expect(ok, isTrue);
+        final captured = verify(
+          () => mockStorage.uploadImageData(
             imageData: any(named: 'imageData'),
             userId: any(named: 'userId'),
             path: captureAny(named: 'path'),
             metadata: any(named: 'metadata'),
             cacheControl: any(named: 'cacheControl'),
-          )).captured;
-      expect(captured.single, endsWith('.png'),
-          reason: 'PNG bytes must produce a .png suffix, not hardcoded .jpg');
-    });
+          ),
+        ).captured;
+        expect(
+          captured.single,
+          endsWith('.png'),
+          reason: 'PNG bytes must produce a .png suffix, not hardcoded .jpg',
+        );
+      },
+    );
 
     test('no pending draft → save proceeds normally with no upload', () async {
       // Bridge intentionally empty.
@@ -233,13 +272,15 @@ void main() {
 
       expect(ok, isTrue);
       expect(vm.parsedRecipe?.heirloom, isNull);
-      verifyNever(() => mockStorage.uploadImageData(
-            imageData: any(named: 'imageData'),
-            userId: any(named: 'userId'),
-            path: any(named: 'path'),
-            metadata: any(named: 'metadata'),
-            cacheControl: any(named: 'cacheControl'),
-          ));
+      verifyNever(
+        () => mockStorage.uploadImageData(
+          imageData: any(named: 'imageData'),
+          userId: any(named: 'userId'),
+          path: any(named: 'path'),
+          metadata: any(named: 'metadata'),
+          cacheControl: any(named: 'cacheControl'),
+        ),
+      );
       verify(() => mockImportManager.saveImportedRecipe(any())).called(1);
     });
   });

@@ -43,15 +43,19 @@ void main() {
         currentUserId: 'u1',
         recipes: [
           RecipeFactory.build(
-              id: 'r1', title: 'Pannkakor', mealType: 'Frukost'),
+            id: 'r1',
+            title: 'Pannkakor',
+            mealType: 'Frukost',
+          ),
           RecipeFactory.build(id: 'r2', title: 'Lasagne', mealType: 'Middag'),
           RecipeFactory.build(id: 'r3', title: 'Soppa', mealType: 'Middag'),
         ],
       );
 
       final container = DIContainer();
-      container.container
-          .registerSingleton<UnifiedRecipeService>(recipeService);
+      container.container.registerSingleton<UnifiedRecipeService>(
+        recipeService,
+      );
       ServiceLocator.initialize(container);
     });
 
@@ -60,36 +64,46 @@ void main() {
       await GetIt.instance.reset();
     });
 
-    testWidgets('hero banner shows the live total recipe count',
-        (tester) async {
+    testWidgets('hero banner shows the live total recipe count', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false, // view supplies its own Scaffold.
-        child: const CollectionStatsView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false, // view supplies its own Scaffold.
+          child: const CollectionStatsView(),
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Three recipes were registered; the hero banner must surface "3".
-      expect(find.text('3'), findsWidgets,
-          reason: 'The total-recipes hero stat must reflect the registered '
-              'recipe set (3), proving the view reads the live service.');
+      expect(
+        find.text('3'),
+        findsWidgets,
+        reason:
+            'The total-recipes hero stat must reflect the registered '
+            'recipe set (3), proving the view reads the live service.',
+      );
     });
 
-    testWidgets('meal-type chart lists the two distinct meal types',
-        (tester) async {
+    testWidgets('meal-type chart lists the two distinct meal types', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const CollectionStatsView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const CollectionStatsView(),
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Frukost x1, Middag x2 — both labels must render in the chart.
@@ -99,43 +113,48 @@ void main() {
   });
 
   group('RecipeQueryViewModel insights via seam (BUT-1340 SET-06)', () {
-    test('recipeInsights and meal-type counts reflect the injected service',
-        () async {
-      await GetIt.instance.reset();
-      ServiceLocator.reset();
-      // tryGet<AnalyticsService>/<UserService> must resolve to null cleanly
-      // when nothing is registered — the seam test proves the VM works with
-      // ONLY the recipe service injected.
-      ServiceLocator.initialize(DIContainer());
+    test(
+      'recipeInsights and meal-type counts reflect the injected service',
+      () async {
+        await GetIt.instance.reset();
+        ServiceLocator.reset();
+        // tryGet<AnalyticsService>/<UserService> must resolve to null cleanly
+        // when nothing is registered — the seam test proves the VM works with
+        // ONLY the recipe service injected.
+        ServiceLocator.initialize(DIContainer());
 
-      final service = MockUnifiedRecipeService();
-      service.setRecipeState(
-        isInitialized: true,
-        currentUserId: 'u1',
-        recipes: [
-          RecipeFactory.build(id: 'r1', mealType: 'Frukost'),
-          RecipeFactory.build(id: 'r2', mealType: 'Middag'),
-          RecipeFactory.build(id: 'r3', mealType: 'Middag'),
-        ],
-      );
+        final service = MockUnifiedRecipeService();
+        service.setRecipeState(
+          isInitialized: true,
+          currentUserId: 'u1',
+          recipes: [
+            RecipeFactory.build(id: 'r1', mealType: 'Frukost'),
+            RecipeFactory.build(id: 'r2', mealType: 'Middag'),
+            RecipeFactory.build(id: 'r3', mealType: 'Middag'),
+          ],
+        );
 
-      final vm = RecipeQueryViewModel(recipeService: service);
-      addTearDown(vm.dispose);
+        final vm = RecipeQueryViewModel(recipeService: service);
+        addTearDown(vm.dispose);
 
-      expect(vm.recipeInsights.totalRecipes, 3,
-          reason: 'totalRecipes must equal the injected recipe count.');
+        expect(
+          vm.recipeInsights.totalRecipes,
+          3,
+          reason: 'totalRecipes must equal the injected recipe count.',
+        );
 
-      final mealTypes = vm.getMostUsedMealTypes();
-      // Middag has 2 recipes and must rank first; Frukost has 1.
-      expect(mealTypes.first.key, 'Middag');
-      expect(mealTypes.first.value, 2);
-      expect(
-        mealTypes.firstWhere((e) => e.key == 'Frukost').value,
-        1,
-      );
+        final mealTypes = vm.getMostUsedMealTypes();
+        // Middag has 2 recipes and must rank first; Frukost has 1.
+        expect(mealTypes.first.key, 'Middag');
+        expect(mealTypes.first.value, 2);
+        expect(
+          mealTypes.firstWhere((e) => e.key == 'Frukost').value,
+          1,
+        );
 
-      await GetIt.instance.reset();
-      ServiceLocator.reset();
-    });
+        await GetIt.instance.reset();
+        ServiceLocator.reset();
+      },
+    );
   });
 }

@@ -26,8 +26,8 @@ class NeuralLineClassifier {
   NeuralLineClassifier({
     required OnnxLineClassifierService classifierService,
     required LineClassifierModelManager modelManager,
-  })  : _classifierService = classifierService,
-        _modelManager = modelManager;
+  }) : _classifierService = classifierService,
+       _modelManager = modelManager;
 
   /// Whether the neural model is ready for inference.
   bool get isAvailable => !_isDisposed && _classifierService.isAvailable;

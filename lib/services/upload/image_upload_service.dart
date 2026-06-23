@@ -96,11 +96,10 @@ class ImageUploadService extends BaseService {
     UploadRetryManager? retryManager,
     UploadProgressTracker? progressTracker,
     StorageService? storageService,
-  })  : _queueManager = queueManager ?? UploadQueueManager(),
-        _retryManager = retryManager ?? UploadRetryManager(),
-        _progressTracker = progressTracker ?? UploadProgressTracker(),
-        _storageService =
-            storageService ?? ServiceLocator.get<StorageService>();
+  }) : _queueManager = queueManager ?? UploadQueueManager(),
+       _retryManager = retryManager ?? UploadRetryManager(),
+       _progressTracker = progressTracker ?? UploadProgressTracker(),
+       _storageService = storageService ?? ServiceLocator.get<StorageService>();
 
   /// Upload a single image with automatic retry and progress tracking.
   /// Path construction is handled by StorageService — callers should not specify paths.
@@ -284,14 +283,16 @@ class ImageUploadService extends BaseService {
     AppLogger.success('✅ UPLOAD_SERVICE: Upload completed for $filePath');
 
     // Send notification
-    _sendNotificationEvent(UploadNotificationEvent(
-      trigger: UploadNotificationTrigger.retrySuccess,
-      title: AppLocale.current.uploadNotificationComplete,
-      message: AppLocale.current.uploadNotificationCompleteBody,
-      priority: NotificationPriority.low,
-      data: {'filePath': filePath, 'url': url},
-      timestamp: clock.now(),
-    ));
+    _sendNotificationEvent(
+      UploadNotificationEvent(
+        trigger: UploadNotificationTrigger.retrySuccess,
+        title: AppLocale.current.uploadNotificationComplete,
+        message: AppLocale.current.uploadNotificationCompleteBody,
+        priority: NotificationPriority.low,
+        data: {'filePath': filePath, 'url': url},
+        timestamp: clock.now(),
+      ),
+    );
   }
 
   /// Handle upload failure and determine if retry should happen
@@ -339,14 +340,16 @@ class ImageUploadService extends BaseService {
       );
 
       // Send failure notification
-      _sendNotificationEvent(UploadNotificationEvent(
-        trigger: UploadNotificationTrigger.majorFailure,
-        title: AppLocale.current.uploadNotificationFailed,
-        message: AppLocale.current.uploadNotificationFailedBody,
-        priority: NotificationPriority.high,
-        data: {'filePath': filePath, 'error': error.toString()},
-        timestamp: clock.now(),
-      ));
+      _sendNotificationEvent(
+        UploadNotificationEvent(
+          trigger: UploadNotificationTrigger.majorFailure,
+          title: AppLocale.current.uploadNotificationFailed,
+          message: AppLocale.current.uploadNotificationFailedBody,
+          priority: NotificationPriority.high,
+          data: {'filePath': filePath, 'error': error.toString()},
+          timestamp: clock.now(),
+        ),
+      );
 
       return false;
     }
@@ -385,7 +388,8 @@ class ImageUploadService extends BaseService {
     String prefix = 'recipe',
   }) async {
     AppLogger.info(
-        '🆙 UPLOAD_SERVICE: Starting $prefix bytes upload for $fileName');
+      '🆙 UPLOAD_SERVICE: Starting $prefix bytes upload for $fileName',
+    );
 
     try {
       if (bytes.isEmpty) {

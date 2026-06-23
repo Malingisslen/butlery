@@ -67,8 +67,9 @@ void main() {
     });
 
     test('parses calorie numeric prefix from "270 calories"', () {
-      final info =
-          NutritionInfo.fromSchemaOrg(const {'calories': '270 calories'});
+      final info = NutritionInfo.fromSchemaOrg(const {
+        'calories': '270 calories',
+      });
       expect(info.calories, 270);
     });
 
@@ -79,13 +80,17 @@ void main() {
 
     test('returns null for empty/null calorie strings', () {
       expect(
-          NutritionInfo.fromSchemaOrg(const {'calories': ''}).calories, isNull);
+        NutritionInfo.fromSchemaOrg(const {'calories': ''}).calories,
+        isNull,
+      );
       expect(NutritionInfo.fromSchemaOrg(const {}).calories, isNull);
     });
 
     test('returns null when no digits found in calorie string', () {
-      expect(NutritionInfo.fromSchemaOrg(const {'calories': 'abc'}).calories,
-          isNull);
+      expect(
+        NutritionInfo.fromSchemaOrg(const {'calories': 'abc'}).calories,
+        isNull,
+      );
     });
 
     test('caps long string fields at 200 chars', () {
@@ -100,8 +105,9 @@ void main() {
     });
 
     test('preserves short content strings verbatim', () {
-      final info =
-          NutritionInfo.fromSchemaOrg(const {'fatContent': '12 grams'});
+      final info = NutritionInfo.fromSchemaOrg(const {
+        'fatContent': '12 grams',
+      });
       expect(info.fat, '12 grams');
     });
 

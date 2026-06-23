@@ -36,7 +36,9 @@ class TextImportNormalizer {
     result = result.replaceAll('ev.', 'ev$_abbreviationMarker');
     result = result.replaceAll('st.', 'st$_abbreviationMarker');
     result = result.replaceAll(
-        't.ex.', 't${_abbreviationMarker}ex$_abbreviationMarker');
+      't.ex.',
+      't${_abbreviationMarker}ex$_abbreviationMarker',
+    );
 
     // Step 3: Split at period + space + capital letter (new sentence)
     result = result.replaceAllMapped(
@@ -60,7 +62,9 @@ class TextImportNormalizer {
     result = result.replaceAll('ev$_abbreviationMarker', 'ev.');
     result = result.replaceAll('st$_abbreviationMarker', 'st.');
     result = result.replaceAll(
-        't${_abbreviationMarker}ex$_abbreviationMarker', 't.ex.');
+      't${_abbreviationMarker}ex$_abbreviationMarker',
+      't.ex.',
+    );
 
     // Step 6: Restore decimals
     result = restoreDecimals(result);
@@ -147,8 +151,10 @@ class TextImportNormalizer {
     processed = processed.replaceAll(RegExp(r' {2,}'), ' ');
 
     // Remove Instagram/Facebook line separators
-    processed =
-        processed.replaceAll(RegExp(r'^[-_=]{3,}$', multiLine: true), '');
+    processed = processed.replaceAll(
+      RegExp(r'^[-_=]{3,}$', multiLine: true),
+      '',
+    );
 
     return processed;
   }

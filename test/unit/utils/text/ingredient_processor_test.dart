@@ -86,33 +86,38 @@ void main() {
       });
 
       test('should return high confidence for compound names', () {
-        final result =
-            IngredientProcessor.processRawIngredient('1 tsk vitpeppar');
+        final result = IngredientProcessor.processRawIngredient(
+          '1 tsk vitpeppar',
+        );
         expect(result.confidence, 1.0);
         expect(result.normalizedName, 'vitpeppar');
       });
 
-      test('should return 0.95 confidence for additionalKnown-only ingredients',
-          () {
-        // Use an item NOT in the static set
-        final result = IngredientProcessor.processRawIngredient(
-          '1 msk xyzuniqueitem',
-          additionalKnown: {'xyzuniqueitem'},
-        );
-        expect(result.confidence, 0.95);
-        expect(result.isKnown, isTrue);
-      });
+      test(
+        'should return 0.95 confidence for additionalKnown-only ingredients',
+        () {
+          // Use an item NOT in the static set
+          final result = IngredientProcessor.processRawIngredient(
+            '1 msk xyzuniqueitem',
+            additionalKnown: {'xyzuniqueitem'},
+          );
+          expect(result.confidence, 0.95);
+          expect(result.isKnown, isTrue);
+        },
+      );
 
       test('should return low confidence for unknown ingredients', () {
-        final result =
-            IngredientProcessor.processRawIngredient('1 st xyzfooditem');
+        final result = IngredientProcessor.processRawIngredient(
+          '1 st xyzfooditem',
+        );
         expect(result.confidence, 0.3);
         expect(result.isKnown, isFalse);
       });
 
       test('should parse quantity and unit correctly', () {
-        final result =
-            IngredientProcessor.processRawIngredient('2 dl hackad lök');
+        final result = IngredientProcessor.processRawIngredient(
+          '2 dl hackad lök',
+        );
         expect(result.quantity, 2.0);
         expect(result.unit, 'dl');
         expect(result.normalizedName, 'lök');
@@ -276,15 +281,17 @@ void main() {
 
     group('preprocessing metadata accessors', () {
       test('processRawIngredient with optional marker sets isOptional', () {
-        final result =
-            IngredientProcessor.processRawIngredient('ev. 2 dl mjölk');
+        final result = IngredientProcessor.processRawIngredient(
+          'ev. 2 dl mjölk',
+        );
         expect(result.isOptional, isTrue);
         expect(result.isApproximate, isFalse);
       });
 
       test('processRawIngredient with approximation sets isApproximate', () {
-        final result =
-            IngredientProcessor.processRawIngredient('ca 3 dl mjölk');
+        final result = IngredientProcessor.processRawIngredient(
+          'ca 3 dl mjölk',
+        );
         expect(result.isApproximate, isTrue);
         expect(result.isOptional, isFalse);
       });
@@ -296,14 +303,16 @@ void main() {
       });
 
       test('processRawIngredient with parentheses sets preparationHint', () {
-        final result =
-            IngredientProcessor.processRawIngredient('lime (saften)');
+        final result = IngredientProcessor.processRawIngredient(
+          'lime (saften)',
+        );
         expect(result.preparationHint, 'saften');
       });
 
       test('substitutes propagate through Pattern A', () {
         final result = IngredientProcessor.processRawIngredient(
-            '2 dl grädde (eller kokosmjölk)');
+          '2 dl grädde (eller kokosmjölk)',
+        );
         expect(result.substitutes, ['kokosmjölk']);
         expect(result.preparationHint, isNull);
       });
@@ -324,8 +333,9 @@ void main() {
       });
 
       test('combined optional + approximation flags', () {
-        final result =
-            IngredientProcessor.processRawIngredient('ev. ca 2 dl grädde');
+        final result = IngredientProcessor.processRawIngredient(
+          'ev. ca 2 dl grädde',
+        );
         expect(result.isOptional, isTrue);
         expect(result.isApproximate, isTrue);
       });
@@ -349,15 +359,17 @@ void main() {
 
     group('toString with preprocessing metadata', () {
       test('toString includes optional flag', () {
-        final result =
-            IngredientProcessor.processRawIngredient('ev. 2 dl mjölk');
+        final result = IngredientProcessor.processRawIngredient(
+          'ev. 2 dl mjölk',
+        );
         final str = result.toString();
         expect(str, contains('optional'));
       });
 
       test('toString includes approximate flag', () {
-        final result =
-            IngredientProcessor.processRawIngredient('ca 3 dl mjölk');
+        final result = IngredientProcessor.processRawIngredient(
+          'ca 3 dl mjölk',
+        );
         final str = result.toString();
         expect(str, contains('approximate'));
       });
@@ -369,15 +381,17 @@ void main() {
       });
 
       test('toString includes preparation hint', () {
-        final result =
-            IngredientProcessor.processRawIngredient('lime (saften)');
+        final result = IngredientProcessor.processRawIngredient(
+          'lime (saften)',
+        );
         final str = result.toString();
         expect(str, contains('hint: "saften"'));
       });
 
       test('toString includes substitutes', () {
         final result = IngredientProcessor.processRawIngredient(
-            'grädde (eller kokosmjölk)');
+          'grädde (eller kokosmjölk)',
+        );
         final str = result.toString();
         expect(str, contains('substitutes'));
         expect(str, contains('kokosmjölk'));
@@ -401,8 +415,9 @@ void main() {
 
     group('helper methods', () {
       test('preprocessOnly should clean text', () {
-        final result =
-            IngredientProcessor.preprocessOnly('ca 3 dl mjölk (kall)');
+        final result = IngredientProcessor.preprocessOnly(
+          'ca 3 dl mjölk (kall)',
+        );
         expect(result, isNotEmpty);
         expect(result, isNot(contains('ca')));
         expect(result, isNot(contains('(kall)')));
@@ -420,8 +435,9 @@ void main() {
       });
 
       test('getPreprocessingChanges should report changes', () {
-        final changes =
-            IngredientProcessor.getPreprocessingChanges('ca 3-5 dl mjölk');
+        final changes = IngredientProcessor.getPreprocessingChanges(
+          'ca 3-5 dl mjölk',
+        );
         expect(changes['hadApproximation'], isTrue);
         expect(changes['hadRange'], isTrue);
         expect(changes['before'], 'ca 3-5 dl mjölk');

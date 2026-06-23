@@ -62,7 +62,8 @@ class CacheOperations {
       final cachedRecipes = await loadAllCachedRecipes(cacheHelper);
 
       AppLogger.success(
-          '✅ Recipe cache initialized with ${cachedRecipes.length} recipes');
+        '✅ Recipe cache initialized with ${cachedRecipes.length} recipes',
+      );
       return cachedRecipes;
     } catch (e) {
       AppLogger.error('❌ Cache initialization error: $e');
@@ -121,7 +122,8 @@ class CacheOperations {
 
   /// Load all cached recipes
   static Future<List<Recipe>> loadAllCachedRecipes(
-      JsonCacheHelper cacheHelper) async {
+    JsonCacheHelper cacheHelper,
+  ) async {
     try {
       final cachedRecipeIds = await cacheHelper.getAllKeys();
       final recipes = <Recipe>[];
@@ -157,7 +159,8 @@ class CacheOperations {
 
   /// Get all cached recipe IDs
   static Future<List<String>> getCachedRecipeIds(
-      JsonCacheHelper cacheHelper) async {
+    JsonCacheHelper cacheHelper,
+  ) async {
     try {
       return await cacheHelper.getAllKeys();
     } catch (e) {
@@ -198,10 +201,12 @@ class CacheOperations {
     required JsonCacheHelper cacheHelper,
     required List<Recipe> recipes,
   }) async {
-    final futures = recipes.map((recipe) => saveRecipeToCache(
-          cacheHelper: cacheHelper,
-          recipe: recipe,
-        ));
+    final futures = recipes.map(
+      (recipe) => saveRecipeToCache(
+        cacheHelper: cacheHelper,
+        recipe: recipe,
+      ),
+    );
 
     await Future.wait(futures);
     AppLogger.debug('✅ ${recipes.length} recipes saved to cache');
@@ -212,17 +217,22 @@ class CacheOperations {
     required JsonCacheHelper cacheHelper,
     required List<String> recipeIds,
   }) async {
-    final futures = recipeIds.map((id) => loadRecipeFromCache(
-          cacheHelper: cacheHelper,
-          recipeId: id,
-        ));
+    final futures = recipeIds.map(
+      (id) => loadRecipeFromCache(
+        cacheHelper: cacheHelper,
+        recipeId: id,
+      ),
+    );
 
     final results = await Future.wait(futures);
-    final recipes =
-        results.where((recipe) => recipe != null).cast<Recipe>().toList();
+    final recipes = results
+        .where((recipe) => recipe != null)
+        .cast<Recipe>()
+        .toList();
 
     AppLogger.debug(
-        '✅ ${recipes.length}/${recipeIds.length} recipes loaded from cache');
+      '✅ ${recipes.length}/${recipeIds.length} recipes loaded from cache',
+    );
     return recipes;
   }
 
@@ -231,10 +241,12 @@ class CacheOperations {
     required JsonCacheHelper cacheHelper,
     required List<String> recipeIds,
   }) async {
-    final futures = recipeIds.map((id) => removeRecipeFromCache(
-          cacheHelper: cacheHelper,
-          recipeId: id,
-        ));
+    final futures = recipeIds.map(
+      (id) => removeRecipeFromCache(
+        cacheHelper: cacheHelper,
+        recipeId: id,
+      ),
+    );
 
     await Future.wait(futures);
     AppLogger.debug('✅ ${recipeIds.length} recipes removed from cache');
@@ -248,7 +260,8 @@ class CacheOperations {
         await cacheHelper.delete(key);
       }
       AppLogger.success(
-          '✅ Recipe cache cleared (${keys.length} items removed)');
+        '✅ Recipe cache cleared (${keys.length} items removed)',
+      );
     } catch (e) {
       AppLogger.error('Error clearing cache: $e');
       rethrow;
@@ -284,7 +297,8 @@ class CacheOperations {
       }
 
       AppLogger.info(
-          '✅ Cleared cache for user ${userId.maskedUserId} ($removedCount items removed)');
+        '✅ Cleared cache for user ${userId.maskedUserId} ($removedCount items removed)',
+      );
     } catch (e) {
       AppLogger.error('Error clearing cache for user: $e');
       rethrow;
@@ -293,7 +307,8 @@ class CacheOperations {
 
   /// Validate cache integrity
   static Future<Map<String, dynamic>> validateCacheIntegrity(
-      JsonCacheHelper cacheHelper) async {
+    JsonCacheHelper cacheHelper,
+  ) async {
     try {
       final allKeys = await cacheHelper.getAllKeys();
       final validRecipes = <String>[];
@@ -326,7 +341,8 @@ class CacheOperations {
       };
 
       AppLogger.debug(
-          'Cache validation: ${result['validRecipes']}/${result['totalEntries']} entries valid');
+        'Cache validation: ${result['validRecipes']}/${result['totalEntries']} entries valid',
+      );
       return result;
     } catch (e) {
       AppLogger.error('Error validating cache integrity: $e');
@@ -349,7 +365,8 @@ class CacheOperations {
 
       if (allCorruptedKeys.isNotEmpty) {
         AppLogger.info(
-            '✅ Fixed cache corruption: removed ${allCorruptedKeys.length} invalid entries');
+          '✅ Fixed cache corruption: removed ${allCorruptedKeys.length} invalid entries',
+        );
       }
 
       return allCorruptedKeys.length;
@@ -361,7 +378,8 @@ class CacheOperations {
 
   /// Get cache size information
   static Future<Map<String, dynamic>> getCacheSizeInfo(
-      JsonCacheHelper cacheHelper) async {
+    JsonCacheHelper cacheHelper,
+  ) async {
     try {
       final allKeys = await cacheHelper.getAllKeys();
       int totalDataSize = 0;
@@ -384,8 +402,9 @@ class CacheOperations {
       return {
         'totalEntries': allKeys.length,
         'totalDataSize': totalDataSize,
-        'averageRecipeSize':
-            allKeys.isNotEmpty ? (totalDataSize / allKeys.length).round() : 0,
+        'averageRecipeSize': allKeys.isNotEmpty
+            ? (totalDataSize / allKeys.length).round()
+            : 0,
         'recipeSizes': recipeSizes,
       };
     } catch (e) {

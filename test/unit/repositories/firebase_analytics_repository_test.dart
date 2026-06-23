@@ -29,21 +29,27 @@ void main() {
       mockAnalytics = MockFirebaseAnalytics();
 
       // Setup default stubs
-      when(() => mockAnalytics.setAnalyticsCollectionEnabled(any()))
-          .thenAnswer((_) async {});
-      when(() => mockAnalytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
-      when(() => mockAnalytics.logLogin(loginMethod: any(named: 'loginMethod')))
-          .thenAnswer((_) async {});
-      when(() =>
-              mockAnalytics.logSignUp(signUpMethod: any(named: 'signUpMethod')))
-          .thenAnswer((_) async {});
-      when(() => mockAnalytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.setAnalyticsCollectionEnabled(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.logLogin(loginMethod: any(named: 'loginMethod')),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.logSignUp(signUpMethod: any(named: 'signUpMethod')),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
 
       // Create repository with a fixed salt so hashed values are deterministic
       // across the suite. Using a literal keeps the tests readable.
@@ -60,27 +66,30 @@ void main() {
 
     group('initialize', () {
       test(
-          'initialize disables analytics collection at bootstrap (consent-gated)',
-          () async {
-        // Arrange
-        debugDefaultTargetPlatformOverride = null; // Reset to default
+        'initialize disables analytics collection at bootstrap (consent-gated)',
+        () async {
+          // Arrange
+          debugDefaultTargetPlatformOverride = null; // Reset to default
 
-        // Act
-        await repository.initialize();
+          // Act
+          await repository.initialize();
 
-        // Assert
-        // GDPR Art. 7 — bootstrap must start DENIED regardless of debug mode.
-        // The caller re-enables only after consent check in main.dart.
-        expect(repository.observer, isNotNull);
-        verify(() => mockAnalytics.setAnalyticsCollectionEnabled(false))
-            .called(1);
-        verifyNever(() => mockAnalytics.setAnalyticsCollectionEnabled(true));
-      });
+          // Assert
+          // GDPR Art. 7 — bootstrap must start DENIED regardless of debug mode.
+          // The caller re-enables only after consent check in main.dart.
+          expect(repository.observer, isNotNull);
+          verify(
+            () => mockAnalytics.setAnalyticsCollectionEnabled(false),
+          ).called(1);
+          verifyNever(() => mockAnalytics.setAnalyticsCollectionEnabled(true));
+        },
+      );
 
       test('should handle initialization errors gracefully', () async {
         // Arrange
-        when(() => mockAnalytics.setAnalyticsCollectionEnabled(any()))
-            .thenThrow(Exception('Firebase not initialized'));
+        when(
+          () => mockAnalytics.setAnalyticsCollectionEnabled(any()),
+        ).thenThrow(Exception('Firebase not initialized'));
 
         // Act & Assert
         expect(
@@ -106,18 +115,22 @@ void main() {
         );
 
         // Assert
-        verify(() => mockAnalytics.logEvent(
-              name: eventName,
-              parameters: parameters,
-            )).called(1);
+        verify(
+          () => mockAnalytics.logEvent(
+            name: eventName,
+            parameters: parameters,
+          ),
+        ).called(1);
       });
 
       test('should handle event logging errors gracefully', () async {
         // Arrange
-        when(() => mockAnalytics.logEvent(
-              name: any(named: 'name'),
-              parameters: any(named: 'parameters'),
-            )).thenThrow(Exception('Analytics error'));
+        when(
+          () => mockAnalytics.logEvent(
+            name: any(named: 'name'),
+            parameters: any(named: 'parameters'),
+          ),
+        ).thenThrow(Exception('Analytics error'));
 
         // Act - Should not throw
         await repository.logEvent(
@@ -126,10 +139,12 @@ void main() {
         );
 
         // Assert - Method was called despite error
-        verify(() => mockAnalytics.logEvent(
-              name: 'test_event',
-              parameters: null,
-            )).called(1);
+        verify(
+          () => mockAnalytics.logEvent(
+            name: 'test_event',
+            parameters: null,
+          ),
+        ).called(1);
       });
     });
 
@@ -145,28 +160,38 @@ void main() {
           parameters: {'mealType': 'dinner'},
         );
 
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_viewed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_viewed',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['session_id'], equals('sess-abc'));
         expect(captured['mealType'], equals('dinner'));
       });
 
-      test('logEvent merges session_id even when caller passes null params',
-          () async {
-        repository.setSessionId('sess-xyz');
+      test(
+        'logEvent merges session_id even when caller passes null params',
+        () async {
+          repository.setSessionId('sess-xyz');
 
-        await repository.logEvent(name: 'app_opened');
+          await repository.logEvent(name: 'app_opened');
 
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'app_opened',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'app_opened',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['session_id'], equals('sess-xyz'));
-      });
+          expect(captured['session_id'], equals('sess-xyz'));
+        },
+      );
 
       test('logEvent merges session_id even on the PII slow-path', () async {
         repository.setSessionId('sess-pii');
@@ -176,10 +201,14 @@ void main() {
           parameters: {'recipe_id': 'recipe-1', 'method': 'native'},
         );
 
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_shared',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['session_id'], equals('sess-pii'));
         // recipe_id is hashed by the existing PII gate.
@@ -197,10 +226,14 @@ void main() {
           parameters: {'k': 'v'},
         );
 
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'test_event',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'test_event',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured.containsKey('session_id'), isFalse);
       });
@@ -223,8 +256,9 @@ void main() {
         await repository.logLogin(loginMethod: loginMethod);
 
         // Assert
-        verify(() => mockAnalytics.logLogin(loginMethod: loginMethod))
-            .called(1);
+        verify(
+          () => mockAnalytics.logLogin(loginMethod: loginMethod),
+        ).called(1);
       });
 
       test('should log sign up event', () async {
@@ -235,8 +269,9 @@ void main() {
         await repository.logSignUp(signUpMethod: signUpMethod);
 
         // Assert
-        verify(() => mockAnalytics.logSignUp(signUpMethod: signUpMethod))
-            .called(1);
+        verify(
+          () => mockAnalytics.logSignUp(signUpMethod: signUpMethod),
+        ).called(1);
       });
 
       test('should log logout event', () async {
@@ -261,10 +296,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockAnalytics.setUserProperty(
-              name: propertyName,
-              value: propertyValue,
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: propertyName,
+            value: propertyValue,
+          ),
+        ).called(1);
       });
 
       test('should set multiple user properties', () async {
@@ -283,26 +320,36 @@ void main() {
         );
 
         // Assert
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'user_type',
-              value: 'active', // 25 recipes = active user
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'recipe_count_range',
-              value: '21-50',
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'has_used_import',
-              value: 'true',
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'has_shared_recipe',
-              value: 'false',
-            )).called(1);
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'has_marked_cooked',
-              value: 'true',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'user_type',
+            value: 'active', // 25 recipes = active user
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'recipe_count_range',
+            value: '21-50',
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'has_used_import',
+            value: 'true',
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'has_shared_recipe',
+            value: 'false',
+          ),
+        ).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'has_marked_cooked',
+            value: 'true',
+          ),
+        ).called(1);
       });
 
       test('should categorize user types correctly', () async {
@@ -320,14 +367,18 @@ void main() {
           await repository.setUserProperties(recipeCount: testCase.count);
 
           // Assert
-          verify(() => mockAnalytics.setUserProperty(
-                name: 'user_type',
-                value: testCase.expectedType,
-              )).called(1);
-          verify(() => mockAnalytics.setUserProperty(
-                name: 'recipe_count_range',
-                value: testCase.expectedRange,
-              )).called(1);
+          verify(
+            () => mockAnalytics.setUserProperty(
+              name: 'user_type',
+              value: testCase.expectedType,
+            ),
+          ).called(1);
+          verify(
+            () => mockAnalytics.setUserProperty(
+              name: 'recipe_count_range',
+              value: testCase.expectedRange,
+            ),
+          ).called(1);
         }
       });
     });
@@ -345,10 +396,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'import_started',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'import_started',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['source'], equals(source));
         expect(captured['platform'], equals(platform));
@@ -370,10 +425,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'import_success',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'import_success',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['source'], equals(source));
         expect(captured['platform'], equals(platform));
@@ -398,10 +457,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'extraction_error',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'extraction_error',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['platform'], equals(platform));
         expect(captured['error_category'], equals('timeout'));
@@ -432,10 +495,14 @@ void main() {
           );
 
           // Assert
-          final captured = verify(() => mockAnalytics.logEvent(
-                name: 'extraction_error',
-                parameters: captureAny(named: 'parameters'),
-              )).captured.last as Map<String, Object>;
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'extraction_error',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.last
+                  as Map<String, Object>;
 
           expect(captured['error_category'], equals(expectedCategory));
         }
@@ -453,10 +520,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'manual_copy_fallback',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'manual_copy_fallback',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['platform'], equals(platform));
         expect(captured['reason'], equals(reason));
@@ -478,10 +549,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_created',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_created',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['source'], equals(source));
         expect(captured['has_image'], equals(hasImage));
@@ -497,10 +572,14 @@ void main() {
         await repository.logRecipeShared(method: method);
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_shared',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['method'], equals(method));
         // BUT-518: redundant — Firebase Analytics server-stamps every event.
@@ -523,10 +602,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_cooked',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_cooked',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         // recipe_id must be hashed — never the raw id in BigQuery export.
         expect(captured['recipe_id'], isNot(equals(recipeId)));
@@ -537,10 +620,12 @@ void main() {
         expect(captured['days_since_last'], equals(daysSinceLastCooked));
 
         // Also verify user property was set
-        verify(() => mockAnalytics.setUserProperty(
-              name: 'has_marked_cooked',
-              value: 'true',
-            )).called(1);
+        verify(
+          () => mockAnalytics.setUserProperty(
+            name: 'has_marked_cooked',
+            value: 'true',
+          ),
+        ).called(1);
       });
 
       test('should log recipe deleted event', () async {
@@ -561,10 +646,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_deleted',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_deleted',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         // recipe_id hashed; other dimensions pass through.
         expect(captured['recipe_id'], isNot(equals(recipeId)));
@@ -593,15 +682,21 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_deleted',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_deleted',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['recipe_type'], equals('collaborative'));
         // Should calculate approximately 15 days
-        expect(captured['days_since_created'],
-            allOf(greaterThanOrEqualTo(14), lessThanOrEqualTo(16)));
+        expect(
+          captured['days_since_created'],
+          allOf(greaterThanOrEqualTo(14), lessThanOrEqualTo(16)),
+        );
       });
     });
 
@@ -618,10 +713,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'menu_generated',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'menu_generated',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['recipe_count'], equals(recipeCount));
         expect(captured['method'], equals(method));
@@ -644,10 +743,14 @@ void main() {
         await repository.logAccountDeleted(parameters);
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'account_deleted',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'account_deleted',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         // user_id is hashed by the PII gate (never raw in event payloads).
         expect(captured['user_id'], isNot(equals('user-123')));
@@ -657,31 +760,37 @@ void main() {
         expect(captured['reason'], equals('user_request'));
       });
 
-      test('should filter out null values from account deletion parameters',
-          () async {
-        // Arrange
-        final parameters = {
-          'user_id': 'user-456',
-          'account_age_days': null,
-          'recipe_count': 10,
-          'reason': null,
-        };
+      test(
+        'should filter out null values from account deletion parameters',
+        () async {
+          // Arrange
+          final parameters = {
+            'user_id': 'user-456',
+            'account_age_days': null,
+            'recipe_count': 10,
+            'reason': null,
+          };
 
-        // Act
-        await repository.logAccountDeleted(parameters);
+          // Act
+          await repository.logAccountDeleted(parameters);
 
-        // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'account_deleted',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          // Assert
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'account_deleted',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['user_id'], isNot(equals('user-456')));
-        expect((captured['user_id'] as String).length, equals(64));
-        expect(captured['recipe_count'], equals(10));
-        expect(captured.containsKey('account_age_days'), isFalse);
-        expect(captured.containsKey('reason'), isFalse);
-      });
+          expect(captured['user_id'], isNot(equals('user-456')));
+          expect((captured['user_id'] as String).length, equals(64));
+          expect(captured['recipe_count'], equals(10));
+          expect(captured.containsKey('account_age_days'), isFalse);
+          expect(captured.containsKey('reason'), isFalse);
+        },
+      );
     });
 
     group('analytics settings', () {
@@ -690,8 +799,9 @@ void main() {
         await repository.setAnalyticsCollectionEnabled(true);
 
         // Assert
-        verify(() => mockAnalytics.setAnalyticsCollectionEnabled(true))
-            .called(1);
+        verify(
+          () => mockAnalytics.setAnalyticsCollectionEnabled(true),
+        ).called(1);
       });
 
       test('should disable analytics collection', () async {
@@ -699,34 +809,42 @@ void main() {
         await repository.setAnalyticsCollectionEnabled(false);
 
         // Assert
-        verify(() => mockAnalytics.setAnalyticsCollectionEnabled(false))
-            .called(1);
+        verify(
+          () => mockAnalytics.setAnalyticsCollectionEnabled(false),
+        ).called(1);
       });
     });
 
     group('PII sanitization (BUT-421)', () {
       test(
-          'logEvent with raw recipe_id replaces it with salted SHA-256 hash, not raw value',
-          () async {
-        // Act
-        await repository.logEvent(
-          name: 'recipe_viewed',
-          parameters: {'recipe_id': 'abc123', 'recipe_type': 'personal'},
-        );
+        'logEvent with raw recipe_id replaces it with salted SHA-256 hash, not raw value',
+        () async {
+          // Act
+          await repository.logEvent(
+            name: 'recipe_viewed',
+            parameters: {'recipe_id': 'abc123', 'recipe_type': 'personal'},
+          );
 
-        // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_viewed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          // Assert
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'recipe_viewed',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['recipe_id'], isNot(equals('abc123')));
-        expect((captured['recipe_id'] as String).length, equals(64));
-        expect((captured['recipe_id'] as String),
-            matches(RegExp(r'^[0-9a-f]{64}$')));
-        // Non-PII keys pass through untouched.
-        expect(captured['recipe_type'], equals('personal'));
-      });
+          expect(captured['recipe_id'], isNot(equals('abc123')));
+          expect((captured['recipe_id'] as String).length, equals(64));
+          expect(
+            (captured['recipe_id'] as String),
+            matches(RegExp(r'^[0-9a-f]{64}$')),
+          );
+          // Non-PII keys pass through untouched.
+          expect(captured['recipe_type'], equals('personal'));
+        },
+      );
 
       test('same raw id hashes to the same value (cohort retention)', () async {
         await repository.logEvent(
@@ -738,47 +856,58 @@ void main() {
           parameters: {'recipe_id': 'abc123'},
         );
 
-        final captures = verify(() => mockAnalytics.logEvent(
-              name: any(named: 'name'),
-              parameters: captureAny(named: 'parameters'),
-            )).captured.cast<Map<String, Object>>();
+        final captures = verify(
+          () => mockAnalytics.logEvent(
+            name: any(named: 'name'),
+            parameters: captureAny(named: 'parameters'),
+          ),
+        ).captured.cast<Map<String, Object>>();
 
         expect(captures.length, equals(2));
         expect(captures[0]['recipe_id'], equals(captures[1]['recipe_id']));
       });
 
       test(
-          'search_query is dropped entirely and replaced with length bucket (unbounded PII)',
-          () async {
-        // Act
-        await repository.logEvent(
-          name: 'recipe_search_performed',
-          parameters: {
-            'search_query': 'chicken parmesan recipe with bacon',
-            'results_count': 5,
-          },
-        );
+        'search_query is dropped entirely and replaced with length bucket (unbounded PII)',
+        () async {
+          // Act
+          await repository.logEvent(
+            name: 'recipe_search_performed',
+            parameters: {
+              'search_query': 'chicken parmesan recipe with bacon',
+              'results_count': 5,
+            },
+          );
 
-        // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_search_performed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          // Assert
+          final captured =
+              verify(
+                    () => mockAnalytics.logEvent(
+                      name: 'recipe_search_performed',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured.containsKey('search_query'), isFalse);
-        expect(captured['search_query_len_bucket'], equals('21+'));
-        expect(captured['results_count'], equals(5));
-      });
+          expect(captured.containsKey('search_query'), isFalse);
+          expect(captured['search_query_len_bucket'], equals('21+'));
+          expect(captured['results_count'], equals(5));
+        },
+      );
 
       test('short search_query falls in 1-3 bucket', () async {
         await repository.logEvent(
           name: 'recipe_search_performed',
           parameters: {'search_query': 'ab'},
         );
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'recipe_search_performed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'recipe_search_performed',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
         expect(captured['search_query_len_bucket'], equals('1-3'));
       });
 
@@ -798,16 +927,26 @@ void main() {
 
         await repository.logEvent(name: 'any_event', parameters: piiPayload);
 
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'any_event',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'any_event',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         for (final key in piiPayload.keys) {
-          expect(captured[key], isNot(equals(piiPayload[key])),
-              reason: '$key must not be the raw value');
-          expect((captured[key] as String).length, equals(64),
-              reason: '$key must be a 64-char SHA-256 hex digest');
+          expect(
+            captured[key],
+            isNot(equals(piiPayload[key])),
+            reason: '$key must not be the raw value',
+          );
+          expect(
+            (captured[key] as String).length,
+            equals(64),
+            reason: '$key must be a 64-char SHA-256 hex digest',
+          );
         }
       });
 
@@ -820,10 +959,14 @@ void main() {
             'source': 'url',
           },
         );
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'menu_generated',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'menu_generated',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
         expect(captured['recipe_count'], equals(7));
         expect(captured['method'], equals('auto'));
         expect(captured['source'], equals('url'));
@@ -843,10 +986,14 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'extraction_error',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'extraction_error',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         final errorMessage = captured['error_message'] as String;
         expect(errorMessage.length, equals(100)); // Truncated to 100 chars
@@ -865,16 +1012,22 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockAnalytics.logEvent(
-              name: 'extraction_error',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => mockAnalytics.logEvent(
+                    name: 'extraction_error',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         // For invalid URLs, Uri.tryParse may succeed but return empty host
         // The production code should handle this case better, but for now
         // we'll test the actual behavior
         expect(
-            captured['url_domain'], anyOf(equals('invalid_url'), equals('')));
+          captured['url_domain'],
+          anyOf(equals('invalid_url'), equals('')),
+        );
       });
     });
   });

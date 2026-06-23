@@ -18,8 +18,8 @@ class _FakeGateway implements PermissionGateway {
   _FakeGateway({
     required List<PermissionStatus> statusQueue,
     PermissionStatus requestOutcome = PermissionStatus.granted,
-  })  : _statusQueue = List.of(statusQueue),
-        _requestOutcome = requestOutcome;
+  }) : _statusQueue = List.of(statusQueue),
+       _requestOutcome = requestOutcome;
 
   final List<PermissionStatus> _statusQueue;
   final PermissionStatus _requestOutcome;
@@ -86,8 +86,9 @@ Future<bool> _invoke({
 
 void main() {
   group('OsPermissionHelper.requestWithRationale', () {
-    testWidgets('already-granted returns true, no dialog, no request',
-        (tester) async {
+    testWidgets('already-granted returns true, no dialog, no request', (
+      tester,
+    ) async {
       final gateway = _FakeGateway(
         statusQueue: const [PermissionStatus.granted],
       );
@@ -109,8 +110,9 @@ void main() {
       expect(gateway.openSettingsCalls, 0);
     });
 
-    testWidgets('first-denial → rationale accept → OS grant returns true',
-        (tester) async {
+    testWidgets('first-denial → rationale accept → OS grant returns true', (
+      tester,
+    ) async {
       var rationaleShown = 0;
       final gateway = _FakeGateway(
         statusQueue: const [PermissionStatus.denied],
@@ -136,8 +138,9 @@ void main() {
       expect(gateway.openSettingsCalls, 0);
     });
 
-    testWidgets('first-denial → rationale decline → false, no OS request',
-        (tester) async {
+    testWidgets('first-denial → rationale decline → false, no OS request', (
+      tester,
+    ) async {
       final gateway = _FakeGateway(
         statusQueue: const [PermissionStatus.denied],
       );
@@ -153,8 +156,11 @@ void main() {
       );
 
       expect(granted, isFalse);
-      expect(gateway.requestCalls, 0,
-          reason: 'OS request must only fire on rationale accept');
+      expect(
+        gateway.requestCalls,
+        0,
+        reason: 'OS request must only fire on rationale accept',
+      );
       expect(gateway.openSettingsCalls, 0);
     });
 
@@ -178,8 +184,11 @@ void main() {
 
         expect(granted, isFalse);
         expect(gateway.requestCalls, 1);
-        expect(snackbarShown, 0,
-            reason: 'Plain denial (not permanent) must NOT trigger snackbar');
+        expect(
+          snackbarShown,
+          0,
+          reason: 'Plain denial (not permanent) must NOT trigger snackbar',
+        );
       },
     );
 
@@ -237,8 +246,11 @@ void main() {
 
         expect(granted, isFalse);
         expect(snackbarShown, 1);
-        expect(gateway.requestCalls, 0,
-            reason: 'Do not burn the OS prompt when already permanent');
+        expect(
+          gateway.requestCalls,
+          0,
+          reason: 'Do not burn the OS prompt when already permanent',
+        );
       },
     );
   });

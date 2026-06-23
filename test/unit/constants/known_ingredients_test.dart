@@ -82,12 +82,18 @@ void main() {
 
     group('getIngredientsInCategory', () {
       test('should return correct set for valid categories', () {
-        expect(KnownIngredients.getIngredientsInCategory('dairy'),
-            KnownIngredients.dairy);
-        expect(KnownIngredients.getIngredientsInCategory('spices'),
-            KnownIngredients.spices);
-        expect(KnownIngredients.getIngredientsInCategory('eggs'),
-            KnownIngredients.eggs);
+        expect(
+          KnownIngredients.getIngredientsInCategory('dairy'),
+          KnownIngredients.dairy,
+        );
+        expect(
+          KnownIngredients.getIngredientsInCategory('spices'),
+          KnownIngredients.spices,
+        );
+        expect(
+          KnownIngredients.getIngredientsInCategory('eggs'),
+          KnownIngredients.eggs,
+        );
       });
 
       test('should return null for invalid category', () {

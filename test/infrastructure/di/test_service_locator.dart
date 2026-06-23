@@ -111,7 +111,8 @@ class TestServiceLocator {
     // Skip production ServiceLocator initialization for E2E tests to avoid circular dependencies
     if (kDebugMode) {
       debugPrint(
-          '✅ TestServiceLocator initialized - skipping production ServiceLocator for E2E testing');
+        '✅ TestServiceLocator initialized - skipping production ServiceLocator for E2E testing',
+      );
     }
   }
 
@@ -660,8 +661,10 @@ class MockViewNavigationService {
   List<String> get navigationHistory => List.from(_navigationHistory);
   String? get currentRoute => _currentRoute;
 
-  Future<void> navigateTo(String route,
-      {Map<String, dynamic>? arguments}) async {
+  Future<void> navigateTo(
+    String route, {
+    Map<String, dynamic>? arguments,
+  }) async {
     _navigationHistory.add(route);
     _currentRoute = route;
   }
@@ -669,8 +672,9 @@ class MockViewNavigationService {
   Future<void> goBack() async {
     if (_navigationHistory.isNotEmpty) {
       _navigationHistory.removeLast();
-      _currentRoute =
-          _navigationHistory.isNotEmpty ? _navigationHistory.last : null;
+      _currentRoute = _navigationHistory.isNotEmpty
+          ? _navigationHistory.last
+          : null;
     }
   }
 

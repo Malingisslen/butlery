@@ -58,9 +58,9 @@ class FieldCorrection {
   }
 
   Map<String, dynamic> toJson() => {
-        if (originalValue != null) 'original': originalValue,
-        if (correctedValue != null) 'corrected': correctedValue,
-      };
+    if (originalValue != null) 'original': originalValue,
+    if (correctedValue != null) 'corrected': correctedValue,
+  };
 
   factory FieldCorrection.fromJson(Map<String, dynamic> json) {
     return FieldCorrection(

@@ -22,7 +22,9 @@ void main() {
 
     test('"ca 20 minuter" → 20 minutes (prefix tolerated)', () {
       expect(
-          parseSwedishDuration('ca 20 minuter'), const Duration(minutes: 20));
+        parseSwedishDuration('ca 20 minuter'),
+        const Duration(minutes: 20),
+      );
     });
 
     test('"Låt koka i 10 min" → 10 minutes (instruction prefix tolerated)', () {
@@ -87,7 +89,8 @@ void main() {
     test('Arla: "grädda i 175°C i ca 45 minuter."', () {
       expect(
         parseSwedishDuration(
-            'Häll smeten i en smord form och grädda i 175°C i ca 45 minuter.'),
+          'Häll smeten i en smord form och grädda i 175°C i ca 45 minuter.',
+        ),
         const Duration(minutes: 45),
       );
     });
@@ -205,9 +208,13 @@ void main() {
       final match = parseSwedishDurationMatch(line)!;
 
       expect(match.duration, const Duration(minutes: 25));
-      expect(line.substring(match.start, match.end), '25 min',
-          reason: 'The chip renders this substring — it must cover the '
-              'value + unit, nothing else.');
+      expect(
+        line.substring(match.start, match.end),
+        '25 min',
+        reason:
+            'The chip renders this substring — it must cover the '
+            'value + unit, nothing else.',
+      );
     });
 
     test('word phrase span covers exactly the phrase', () {
@@ -223,9 +230,13 @@ void main() {
       final match = parseSwedishDurationMatch(line)!;
 
       expect(match.duration, const Duration(minutes: 15));
-      expect(line.substring(match.start, match.end), '10-15 min',
-          reason: 'Chipping only "15 min" out of "10-15 min" would read '
-              'as a different instruction.');
+      expect(
+        line.substring(match.start, match.end),
+        '10-15 min',
+        reason:
+            'Chipping only "15 min" out of "10-15 min" would read '
+            'as a different instruction.',
+      );
     });
 
     test('earliest mention wins when numeric and word phrases coexist', () {

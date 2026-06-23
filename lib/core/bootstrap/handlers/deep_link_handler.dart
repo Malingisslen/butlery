@@ -60,8 +60,9 @@ class DeepLinkHandler {
               'butlery://import?url=${Uri.encodeComponent(sharedUrl)}';
         } else if (sharedText != null && sharedText.isNotEmpty) {
           // Text might contain a URL
-          final urlMatch =
-              RegExp(r'https?://[^\s<>"{}|\\^`\[\]]+').firstMatch(sharedText);
+          final urlMatch = RegExp(
+            r'https?://[^\s<>"{}|\\^`\[\]]+',
+          ).firstMatch(sharedText);
           if (urlMatch != null) {
             _pendingDeepLink =
                 'butlery://import?url=${Uri.encodeComponent(urlMatch.group(0)!)}';
@@ -273,8 +274,9 @@ class DeepLinkHandler {
 
       if (context.mounted) {
         // Navigate to collaborative shopping view
-        Navigator.of(context)
-            .pushNamed(Routes.collaborativeShopping, arguments: listId);
+        Navigator.of(
+          context,
+        ).pushNamed(Routes.collaborativeShopping, arguments: listId);
       }
     }
   }
@@ -299,8 +301,9 @@ class DeepLinkHandler {
     final userId = params['id'];
     if (userId != null && _isValidFirestoreId(userId)) {
       if (context.mounted) {
-        Navigator.of(context)
-            .pushNamed(Routes.publicProfile, arguments: userId);
+        Navigator.of(
+          context,
+        ).pushNamed(Routes.publicProfile, arguments: userId);
       }
     }
   }

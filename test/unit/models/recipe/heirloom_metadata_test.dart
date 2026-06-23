@@ -18,13 +18,13 @@ void main() {
         'https://firebasestorage.googleapis.com/v0/b/x/o/users%2Fuser_abc%2Frecipes%2Fr1%2Fheirloom%2Fdeadbeefcafef00d.jpg';
 
     HeirloomMetadata buildFull() => HeirloomMetadata(
-          sourceImageUrl: baseImageUrl,
-          writerName: 'Farmor Elsa',
-          year: 1978,
-          note: 'Skriven på bakbordet i köket i Lund.',
-          addedAt: baseAddedAt,
-          addedByUserId: baseUserId,
-        );
+      sourceImageUrl: baseImageUrl,
+      writerName: 'Farmor Elsa',
+      year: 1978,
+      note: 'Skriven på bakbordet i köket i Lund.',
+      addedAt: baseAddedAt,
+      addedByUserId: baseUserId,
+    );
 
     group('construction', () {
       test('accepts all fields populated', () {

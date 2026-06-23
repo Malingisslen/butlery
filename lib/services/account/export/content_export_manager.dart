@@ -49,16 +49,16 @@ class ContentExportManager {
     FirebasePersonalTagRepository? personalTagRepository,
     FirebasePersonalTagGroupRepository? personalTagGroupRepository,
     FirebaseDataExportRepository? dataExportRepository,
-  })  : _cookSnapRepo = cookSnapRepository,
-        _cookEventRepo = cookEventRepository,
-        _activityEventRepo = activityEventRepository,
-        _weeklyMenuRepo = weeklyMenuPlanRepository,
-        _groupMenuRepo = groupWeeklyMenuPlanRepository,
-        _pantryRepo = pantryRepository,
-        _recipeRepo = recipeRepository,
-        _personalTagRepo = personalTagRepository,
-        _personalTagGroupRepo = personalTagGroupRepository,
-        _exportRepo = dataExportRepository;
+  }) : _cookSnapRepo = cookSnapRepository,
+       _cookEventRepo = cookEventRepository,
+       _activityEventRepo = activityEventRepository,
+       _weeklyMenuRepo = weeklyMenuPlanRepository,
+       _groupMenuRepo = groupWeeklyMenuPlanRepository,
+       _pantryRepo = pantryRepository,
+       _recipeRepo = recipeRepository,
+       _personalTagRepo = personalTagRepository,
+       _personalTagGroupRepo = personalTagGroupRepository,
+       _exportRepo = dataExportRepository;
 
   CookSnapRepository get _cookSnaps =>
       _cookSnapRepo ?? ServiceLocator.get<CookSnapRepository>();
@@ -174,8 +174,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportShoppingLists(String userId) async {
     try {
       final lists = <Map<String, dynamic>>[];
-      final listLimit =
-          ExportPaginationHelper.getLimitForType('shopping_lists');
+      final listLimit = ExportPaginationHelper.getLimitForType(
+        'shopping_lists',
+      );
 
       final results = await _exports.exportPersonalShoppingLists(
         userId,
@@ -185,10 +186,12 @@ class ContentExportManager {
       for (final entry in results) {
         final items = (entry['items'] as List)
             .cast<Map<String, dynamic>>()
-            .map((item) => {
-                  'item_id': item['id'],
-                  'data': sanitizeForJson(item['data']),
-                })
+            .map(
+              (item) => {
+                'item_id': item['id'],
+                'data': sanitizeForJson(item['data']),
+              },
+            )
             .toList();
 
         lists.add({
@@ -205,7 +208,9 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export shopping lists', e);
+        '[$_logTag] Failed to export shopping lists',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -234,7 +239,9 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export personal tags', e);
+        '[$_logTag] Failed to export personal tags',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -243,8 +250,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportPersonalTagGroups(String userId) async {
     try {
       final groups = <Map<String, dynamic>>[];
-      final groupLimit =
-          ExportPaginationHelper.getLimitForType('personal_tag_groups');
+      final groupLimit = ExportPaginationHelper.getLimitForType(
+        'personal_tag_groups',
+      );
 
       final entries = await _personalTagGroups.exportAllByUser(
         userId,
@@ -264,7 +272,9 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export personal tag groups', e);
+        '[$_logTag] Failed to export personal tag groups',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -302,8 +312,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportCookEvents(String userId) async {
     try {
       final events = <Map<String, dynamic>>[];
-      final eventLimit =
-          ExportPaginationHelper.getLimitForType('recipe_cook_events');
+      final eventLimit = ExportPaginationHelper.getLimitForType(
+        'recipe_cook_events',
+      );
 
       final entries = await _cookEvents.exportCookEventsByUser(
         userId,
@@ -332,8 +343,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportPantryItems(String userId) async {
     try {
       final items = <Map<String, dynamic>>[];
-      final pantryLimit =
-          ExportPaginationHelper.getLimitForType('pantry_items');
+      final pantryLimit = ExportPaginationHelper.getLimitForType(
+        'pantry_items',
+      );
 
       final entries = await _pantry.exportAllByUser(userId);
 
@@ -359,8 +371,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportActivityEvents(String userId) async {
     try {
       final events = <Map<String, dynamic>>[];
-      final eventLimit =
-          ExportPaginationHelper.getLimitForType('activity_events');
+      final eventLimit = ExportPaginationHelper.getLimitForType(
+        'activity_events',
+      );
 
       final entries = await _activityEvents.exportEventsByUser(
         userId,
@@ -381,7 +394,9 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export activity events', e);
+        '[$_logTag] Failed to export activity events',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -390,8 +405,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportWeeklyMenuPlans(String userId) async {
     try {
       final plans = <Map<String, dynamic>>[];
-      final planLimit =
-          ExportPaginationHelper.getLimitForType('weekly_menu_plans');
+      final planLimit = ExportPaginationHelper.getLimitForType(
+        'weekly_menu_plans',
+      );
 
       final entries = await _weeklyMenus.exportAllByUser(
         userId,
@@ -412,7 +428,9 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export weekly menu plans', e);
+        '[$_logTag] Failed to export weekly menu plans',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -421,8 +439,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportGroupWeeklyMenuPlans(String userId) async {
     try {
       final plans = <Map<String, dynamic>>[];
-      final planLimit =
-          ExportPaginationHelper.getLimitForType('weekly_menu_plans');
+      final planLimit = ExportPaginationHelper.getLimitForType(
+        'weekly_menu_plans',
+      );
 
       final entries = await _groupMenus.exportPlansForParticipant(
         userId,
@@ -443,7 +462,9 @@ class ContentExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export group weekly menu plans', e);
+        '[$_logTag] Failed to export group weekly menu plans',
+        e,
+      );
       return {'error': e.toString()};
     }
   }

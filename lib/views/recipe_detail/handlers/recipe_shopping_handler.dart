@@ -37,7 +37,9 @@ class RecipeShoppingHandler {
 
     if (shoppingItems.isEmpty) {
       SnackBarUtils.showWarning(
-          context, context.l10n.shoppingNoIngredientsToAdd);
+        context,
+        context.l10n.shoppingNoIngredientsToAdd,
+      );
       return;
     }
 
@@ -54,7 +56,9 @@ class RecipeShoppingHandler {
             children: [
               Text(
                 context.l10n.shoppingIngredientsFromRecipe(
-                    shoppingItems.length, recipe.title),
+                  shoppingItems.length,
+                  recipe.title,
+                ),
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: AppDimensions.spacingL),
@@ -148,14 +152,16 @@ class RecipeShoppingHandler {
       // Generate shopping items from recipe using current portions
       final shoppingItems =
           ShoppingListGenerator.generateShoppingItemsFromRecipe(
-        recipe,
-        portions: currentPortions,
-      );
+            recipe,
+            portions: currentPortions,
+          );
 
       if (shoppingItems.isEmpty) {
         if (!context.mounted) return;
         SnackBarUtils.showWarning(
-            context, context.l10n.shoppingNoIngredientsToAdd);
+          context,
+          context.l10n.shoppingNoIngredientsToAdd,
+        );
         return;
       }
 
@@ -178,7 +184,8 @@ class RecipeShoppingHandler {
 
       if (selectedListResult['action'] == 'create_new') {
         // Create new shopping list with recipe name
-        final newListName = selectedListResult['name'] as String? ??
+        final newListName =
+            selectedListResult['name'] as String? ??
             '${recipe.title} - Ingredienser';
         targetListId = await shoppingService.createPersonalList(newListName);
         targetListName = newListName;
@@ -191,7 +198,9 @@ class RecipeShoppingHandler {
       if (targetListId == null) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.shoppingCouldNotCreateOrSelectList);
+            context,
+            context.l10n.shoppingCouldNotCreateOrSelectList,
+          );
         }
         return;
       }
@@ -206,7 +215,9 @@ class RecipeShoppingHandler {
       if (!permissionService.canEditShoppingList(targetListId)) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.shoppingNoEditPermission);
+            context,
+            context.l10n.shoppingNoEditPermission,
+          );
         }
         return;
       }
@@ -219,11 +230,16 @@ class RecipeShoppingHandler {
         final shouldNavigate = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(context.l10n.shoppingListCreated(
-                targetListName ?? context.l10n.shoppingYourList)),
+            title: Text(
+              context.l10n.shoppingListCreated(
+                targetListName ?? context.l10n.shoppingYourList,
+              ),
+            ),
             content: Text(
-              context.l10n.shoppingIngredientsAddedToList(shoppingItems.length,
-                  targetListName ?? context.l10n.shoppingYourList),
+              context.l10n.shoppingIngredientsAddedToList(
+                shoppingItems.length,
+                targetListName ?? context.l10n.shoppingYourList,
+              ),
             ),
             actions: [
               ActionButtons.secondaryButton(
@@ -246,7 +262,9 @@ class RecipeShoppingHandler {
         }
       } else {
         SnackBarUtils.showError(
-            context, context.l10n.shoppingCouldNotAddIngredients);
+          context,
+          context.l10n.shoppingCouldNotAddIngredients,
+        );
       }
     } catch (e) {
       if (!context.mounted) return;
@@ -254,7 +272,9 @@ class RecipeShoppingHandler {
       // Handle specific permission errors with clear Swedish messages
       if (e is PermissionDeniedException) {
         SnackBarUtils.showError(
-            context, context.l10n.shoppingNoEditPermissionShared);
+          context,
+          context.l10n.shoppingNoEditPermissionShared,
+        );
       } else {
         SnackBarUtils.showError(
           context,

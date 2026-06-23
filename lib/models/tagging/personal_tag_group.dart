@@ -117,10 +117,12 @@ class PersonalTagGroup {
         'isExclusive',
         defaultValue: false,
       ),
-      createdAt:
-          SerializationUtils.parseRequiredDateTimeValue(json['createdAt']),
-      updatedAt:
-          SerializationUtils.parseRequiredDateTimeValue(json['updatedAt']),
+      createdAt: SerializationUtils.parseRequiredDateTimeValue(
+        json['createdAt'],
+      ),
+      updatedAt: SerializationUtils.parseRequiredDateTimeValue(
+        json['updatedAt'],
+      ),
     );
   }
 

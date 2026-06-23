@@ -172,19 +172,21 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('should fall back to regular edit without realtime service',
-          () async {
-        // Arrange
-        editingModule = RealtimeEditingModule(
-          getCurrentUserId: () => mockParentService.currentUserId,
-          getCurrentUserDisplayName: () =>
-              mockParentService.currentUserDisplayName,
-          getRecipes: () => mockParentService.recipes,
-          updateRecipeContent: mockParentService.updateRecipeContent,
-        );
-        // Stub the underlying update to succeed; without this mocktail
-        // returns the default (false) and the fallback path appears broken.
-        when(() => mockParentService.updateRecipeContent(
+      test(
+        'should fall back to regular edit without realtime service',
+        () async {
+          // Arrange
+          editingModule = RealtimeEditingModule(
+            getCurrentUserId: () => mockParentService.currentUserId,
+            getCurrentUserDisplayName: () =>
+                mockParentService.currentUserDisplayName,
+            getRecipes: () => mockParentService.recipes,
+            updateRecipeContent: mockParentService.updateRecipeContent,
+          );
+          // Stub the underlying update to succeed; without this mocktail
+          // returns the default (false) and the fallback path appears broken.
+          when(
+            () => mockParentService.updateRecipeContent(
               recipeId: any(named: 'recipeId'),
               title: any(named: 'title'),
               description: any(named: 'description'),
@@ -197,18 +199,20 @@ void main() {
               rating: any(named: 'rating'),
               personalTagIds: any(named: 'personalTagIds'),
               sourceUrl: any(named: 'sourceUrl'),
-            )).thenAnswer((_) async => true);
-        final changes = {'title': 'Updated Title'};
+            ),
+          ).thenAnswer((_) async => true);
+          final changes = {'title': 'Updated Title'};
 
-        // Act
-        final result = await editingModule.makeRealtimeEdit(
-          recipeId: 'recipe_1',
-          changes: changes,
-        );
+          // Act
+          final result = await editingModule.makeRealtimeEdit(
+            recipeId: 'recipe_1',
+            changes: changes,
+          );
 
-        // Assert
-        expect(result, isTrue);
-      });
+          // Assert
+          expect(result, isTrue);
+        },
+      );
     });
   });
 }

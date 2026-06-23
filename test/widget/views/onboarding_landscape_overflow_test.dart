@@ -42,31 +42,33 @@ void main() {
     });
 
     testWidgets(
-        'OnboardingWelcomePage scrolls instead of overflowing at landscape',
-        (tester) async {
-      await _pumpAtSize(
-        tester,
-        _wrap(const OnboardingWelcomePage(), viewModel),
-        _landscapePhone,
-      );
+      'OnboardingWelcomePage scrolls instead of overflowing at landscape',
+      (tester) async {
+        await _pumpAtSize(
+          tester,
+          _wrap(const OnboardingWelcomePage(), viewModel),
+          _landscapePhone,
+        );
 
-      // No RenderFlex overflow exception was thrown during pumpAndSettle.
-      expect(tester.takeException(), isNull);
-      // SingleChildScrollView is now the page's outermost layout widget.
-      expect(find.byType(SingleChildScrollView), findsOneWidget);
-    });
+        // No RenderFlex overflow exception was thrown during pumpAndSettle.
+        expect(tester.takeException(), isNull);
+        // SingleChildScrollView is now the page's outermost layout widget.
+        expect(find.byType(SingleChildScrollView), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'OnboardingDietaryPage scrolls instead of overflowing at landscape',
-        (tester) async {
-      await _pumpAtSize(
-        tester,
-        _wrap(const OnboardingDietaryPage(), viewModel),
-        _landscapePhone,
-      );
+      'OnboardingDietaryPage scrolls instead of overflowing at landscape',
+      (tester) async {
+        await _pumpAtSize(
+          tester,
+          _wrap(const OnboardingDietaryPage(), viewModel),
+          _landscapePhone,
+        );
 
-      expect(tester.takeException(), isNull);
-      expect(find.byType(SingleChildScrollView), findsOneWidget);
-    });
+        expect(tester.takeException(), isNull);
+        expect(find.byType(SingleChildScrollView), findsOneWidget);
+      },
+    );
   });
 }

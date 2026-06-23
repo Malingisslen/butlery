@@ -52,11 +52,13 @@ class _RecordingStrategy extends IngredientParsingStrategy {
     // Echo back as ParsedIngredient list so the tier sees "success".
     return FieldResult.success(
       lines
-          .map((l) => ParsedIngredient(
-                name: l,
-                originalLine: l,
-                confidence: ParseConfidence.high,
-              ))
+          .map(
+            (l) => ParsedIngredient(
+              name: l,
+              originalLine: l,
+              confidence: ParseConfidence.high,
+            ),
+          )
           .toList(),
     );
   }
@@ -77,8 +79,10 @@ $jsonLdLiteral
 ''';
 }
 
-ParsingContext urlContextFor(String html,
-    {String url = 'https://example.com/recipe'}) {
+ParsingContext urlContextFor(
+  String html, {
+  String url = 'https://example.com/recipe',
+}) {
   return ParsingContext.fromUrl(
     url: url,
     htmlContent: html,
@@ -181,8 +185,11 @@ void main() {
 
       // Ingredient lines were forwarded to the strategy as-is.
       expect(strategy.receivedLines, ['3 dl mjol', '6 dl mjolk', '3 agg']);
-      expect(strategy.receivedOcrFlag, isFalse,
-          reason: 'URL source must not request OCR correction');
+      expect(
+        strategy.receivedOcrFlag,
+        isFalse,
+        reason: 'URL source must not request OCR correction',
+      );
 
       // Instructions: 3 steps, in order.
       expect(recipe.instructions.value, hasLength(3));
@@ -261,27 +268,34 @@ void main() {
     /// (e.g. an Article without a Recipe sibling) MUST return parseError
     /// (had structured data, but not a recipe) rather than success.
     /// This pins the tier's contract for "JSON-LD present but no recipe."
-    test('returns parseError when JSON-LD has structured data but no Recipe',
-        () async {
-      final jsonLd = '''
+    test(
+      'returns parseError when JSON-LD has structured data but no Recipe',
+      () async {
+        final jsonLd = '''
 {"@type": "Article", "headline": "Just an article"}
 ''';
-      final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
+        final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
 
-      final result = await tier.parse(ctx);
+        final result = await tier.parse(ctx);
 
-      expect(result.success, isFalse);
-      expect(result.failureReason, TierFailureReason.parseError,
-          reason: 'BUT-1070 contract: structured data present but no Recipe '
-              'must surface as parseError, not silently downgrade');
-    });
+        expect(result.success, isFalse);
+        expect(
+          result.failureReason,
+          TierFailureReason.parseError,
+          reason:
+              'BUT-1070 contract: structured data present but no Recipe '
+              'must surface as parseError, not silently downgrade',
+        );
+      },
+    );
 
     /// Page with no JSON-LD at all → distinct failure reason (`noData`),
     /// so the orchestrator can route to site-config / rule-based tiers
     /// instead of treating it as a hard failure.
     test('returns noData when no structured data found', () async {
-      final ctx =
-          urlContextFor('<html><body><p>nothing here</p></body></html>');
+      final ctx = urlContextFor(
+        '<html><body><p>nothing here</p></body></html>',
+      );
 
       final result = await tier.parse(ctx);
 
@@ -375,9 +389,12 @@ void main() {
     /// 0-minute recipe.
     test('PT30S → totalTime is failed (sub-minute rejected)', () async {
       final dur = await totalTimeFor('PT30S');
-      expect(dur, isNull,
-          reason:
-              'sub-minute totalTime must NOT surface; would render as "0 min"');
+      expect(
+        dur,
+        isNull,
+        reason:
+            'sub-minute totalTime must NOT surface; would render as "0 min"',
+      );
     });
 
     /// Malformed strings must not throw or return Duration.zero — they
@@ -404,8 +421,11 @@ void main() {
       final result = await tier.parse(ctx);
 
       expect(result.recipe!.totalTime.value, const Duration(minutes: 30));
-      expect(result.recipe!.totalTime.confidence, ParseConfidence.medium,
-          reason: 'derived value should not claim high confidence');
+      expect(
+        result.recipe!.totalTime.confidence,
+        ParseConfidence.medium,
+        reason: 'derived value should not claim high confidence',
+      );
     });
   });
 
@@ -445,9 +465,11 @@ void main() {
     test('zero portions → falls back to default (defends > 0 guard)', () async {
       final p = await portionsFor('"Serves 0"');
       expect(p!.value, 4);
-      expect(p.confidence, ParseConfidence.low,
-          reason:
-              'fallback must be low-confidence so consumer can prompt user');
+      expect(
+        p.confidence,
+        ParseConfidence.low,
+        reason: 'fallback must be low-confidence so consumer can prompt user',
+      );
     });
 
     /// `recipeYield: "Serves 9999"` would crash menu generation if it
@@ -481,28 +503,35 @@ void main() {
     }
 
     test('plain string URL', () async {
-      expect(await imageFor('"https://example.com/a.jpg"'),
-          'https://example.com/a.jpg');
+      expect(
+        await imageFor('"https://example.com/a.jpg"'),
+        'https://example.com/a.jpg',
+      );
     });
 
     test('array of string URLs → takes first', () async {
       expect(
-          await imageFor(
-              '["https://example.com/a.jpg","https://example.com/b.jpg"]'),
-          'https://example.com/a.jpg');
+        await imageFor(
+          '["https://example.com/a.jpg","https://example.com/b.jpg"]',
+        ),
+        'https://example.com/a.jpg',
+      );
     });
 
     test('object with url field', () async {
       expect(
-          await imageFor('{"@type":"ImageObject","url":"https://x.com/i.jpg"}'),
-          'https://x.com/i.jpg');
+        await imageFor('{"@type":"ImageObject","url":"https://x.com/i.jpg"}'),
+        'https://x.com/i.jpg',
+      );
     });
 
     test('array of ImageObject → takes first url', () async {
       expect(
-          await imageFor(
-              '[{"@type":"ImageObject","url":"https://x.com/1.jpg"},{"@type":"ImageObject","url":"https://x.com/2.jpg"}]'),
-          'https://x.com/1.jpg');
+        await imageFor(
+          '[{"@type":"ImageObject","url":"https://x.com/1.jpg"},{"@type":"ImageObject","url":"https://x.com/2.jpg"}]',
+        ),
+        'https://x.com/1.jpg',
+      );
     });
 
     /// Relative paths and `javascript:` URLs MUST be rejected — the
@@ -599,8 +628,11 @@ void main() {
       final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
       final result = await tier.parse(ctx);
 
-      expect(result.success, isTrue,
-          reason: 'title alone is enough for a tier-level success');
+      expect(
+        result.success,
+        isTrue,
+        reason: 'title alone is enough for a tier-level success',
+      );
       expect(result.recipe!.instructions.confidence, ParseConfidence.failed);
     });
   });
@@ -611,30 +643,38 @@ void main() {
     /// Empty `recipeIngredient: []` is functionally equivalent to "missing"
     /// — both should produce a failed field, not pass empty list to the
     /// strategy (which would itself fail).
-    test('empty recipeIngredient array → strategy NOT called, field failed',
-        () async {
-      final jsonLd =
-          '{"@type":"Recipe","name":"x","recipeIngredient":[],"recipeInstructions":["s"]}';
-      final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
+    test(
+      'empty recipeIngredient array → strategy NOT called, field failed',
+      () async {
+        final jsonLd =
+            '{"@type":"Recipe","name":"x","recipeIngredient":[],"recipeInstructions":["s"]}';
+        final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
 
-      final result = await tier.parse(ctx);
+        final result = await tier.parse(ctx);
 
-      expect(strategy.receivedLines, isNull,
-          reason: 'should short-circuit before invoking strategy');
-      expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
-    });
+        expect(
+          strategy.receivedLines,
+          isNull,
+          reason: 'should short-circuit before invoking strategy',
+        );
+        expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
+      },
+    );
 
     /// Missing field → same outcome as empty.
-    test('missing recipeIngredient → strategy not called, field failed',
-        () async {
-      final jsonLd = '{"@type":"Recipe","name":"x","recipeInstructions":["s"]}';
-      final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
+    test(
+      'missing recipeIngredient → strategy not called, field failed',
+      () async {
+        final jsonLd =
+            '{"@type":"Recipe","name":"x","recipeInstructions":["s"]}';
+        final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
 
-      final result = await tier.parse(ctx);
+        final result = await tier.parse(ctx);
 
-      expect(strategy.receivedLines, isNull);
-      expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
-    });
+        expect(strategy.receivedLines, isNull);
+        expect(result.recipe!.ingredients.confidence, ParseConfidence.failed);
+      },
+    );
 
     /// Price-annotated ingredient lines (common on US food blogs that
     /// integrate affiliate grocery pricing). The "$0.18" suffix MUST be
@@ -654,8 +694,11 @@ void main() {
 
       expect(strategy.receivedLines, hasLength(3));
       for (final line in strategy.receivedLines!) {
-        expect(line, isNot(contains(r'$')),
-            reason: 'dollar amounts must be stripped before tier handoff');
+        expect(
+          line,
+          isNot(contains(r'$')),
+          reason: 'dollar amounts must be stripped before tier handoff',
+        );
       }
       // Spot-check exact cleanup.
       expect(strategy.receivedLines![0], '1 cup flour');
@@ -665,9 +708,10 @@ void main() {
     /// Non-string entries (e.g. structured Ingredient objects) are
     /// filtered out via `whereType<String>()`. This prevents crashes
     /// on malformed JSON-LD.
-    test('non-string ingredient entries are filtered, not crashed on',
-        () async {
-      final jsonLd = '''
+    test(
+      'non-string ingredient entries are filtered, not crashed on',
+      () async {
+        final jsonLd = '''
 {"@type":"Recipe","name":"x","recipeIngredient":[
   "1 cup flour",
   {"@type":"Ingredient","name":"sugar"},
@@ -675,13 +719,14 @@ void main() {
   null
 ],"recipeInstructions":["s"]}
 ''';
-      final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
+        final ctx = urlContextFor(htmlWithJsonLd(jsonLd));
 
-      final result = await tier.parse(ctx);
+        final result = await tier.parse(ctx);
 
-      expect(result.success, isTrue);
-      expect(strategy.receivedLines, ['1 cup flour', '2 eggs']);
-    });
+        expect(result.success, isTrue);
+        expect(strategy.receivedLines, ['1 cup flour', '2 eggs']);
+      },
+    );
   });
 
   // ----- cuisine / category / difficulty / nutrition ------------------------

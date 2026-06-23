@@ -44,11 +44,11 @@ class _Model
 
   @override
   Map<String, dynamic> toJson() => {
-        ...serializeId(),
-        ...serializeTimestamps(),
-        ...serializeOwnership(),
-        'name': name,
-      };
+    ...serializeId(),
+    ...serializeTimestamps(),
+    ...serializeOwnership(),
+    'name': name,
+  };
 }
 
 void main() {
@@ -107,14 +107,18 @@ void main() {
 
     test('serializeDateTime null safety', () {
       expect(m.serializeDateTime(null), isNull);
-      expect(m.serializeDateTime(DateTime.utc(2026, 1, 1)),
-          startsWith('2026-01-01'));
+      expect(
+        m.serializeDateTime(DateTime.utc(2026, 1, 1)),
+        startsWith('2026-01-01'),
+      );
     });
 
     test('deserializeDateTime parses ISO + handles null + invalid', () {
       expect(m.deserializeDateTime(null), isNull);
-      expect(m.deserializeDateTime('2026-01-01T00:00:00Z'),
-          DateTime.utc(2026, 1, 1));
+      expect(
+        m.deserializeDateTime('2026-01-01T00:00:00Z'),
+        DateTime.utc(2026, 1, 1),
+      );
       expect(m.deserializeDateTime('not-a-date'), isNull);
       expect(m.deserializeDateTime(42), isNull);
     });
@@ -135,8 +139,10 @@ void main() {
     });
 
     test('serializeList throws ArgumentError for non-serializable items', () {
-      expect(() => m.serializeList<String>(const ['a']),
-          throwsA(isA<ArgumentError>()));
+      expect(
+        () => m.serializeList<String>(const ['a']),
+        throwsA(isA<ArgumentError>()),
+      );
     });
 
     test('deserializeList returns empty for null / non-list', () {
@@ -190,7 +196,7 @@ void main() {
     test('extractList returns converted items, skips errors', () {
       final result = m.extractList<int>(
         const {
-          'k': [1, 2, 'bad', 4]
+          'k': [1, 2, 'bad', 4],
         },
         'k',
         (item) => item as int,
@@ -200,15 +206,20 @@ void main() {
 
     test('extractList returns default for non-list', () {
       expect(
-          m.extractList<int>(const {'k': 'str'}, 'k', (item) => item as int,
-              defaultValue: const [99]),
-          [99]);
+        m.extractList<int>(
+          const {'k': 'str'},
+          'k',
+          (item) => item as int,
+          defaultValue: const [99],
+        ),
+        [99],
+      );
     });
 
     test('extractMap converts entries, skips errors', () {
       final result = m.extractMap<int>(
         const {
-          'k': {'a': 1, 'b': 'bad', 'c': 3}
+          'k': {'a': 1, 'b': 'bad', 'c': 3},
         },
         'k',
         (v) => v as int,
@@ -218,9 +229,14 @@ void main() {
 
     test('extractMap returns default for non-map', () {
       expect(
-          m.extractMap<int>(const {'k': 'str'}, 'k', (v) => v as int,
-              defaultValue: const {'def': 1}),
-          {'def': 1});
+        m.extractMap<int>(
+          const {'k': 'str'},
+          'k',
+          (v) => v as int,
+          defaultValue: const {'def': 1},
+        ),
+        {'def': 1},
+      );
     });
   });
 
@@ -297,8 +313,10 @@ void main() {
     });
 
     test('encodeJson returns JSON string for map', () {
-      expect(mixin_lib.SerializationUtils.encodeJson(const {'a': 1}),
-          contains('"a":1'));
+      expect(
+        mixin_lib.SerializationUtils.encodeJson(const {'a': 1}),
+        contains('"a":1'),
+      );
     });
 
     test('deepCopyJson returns null for null', () {
@@ -318,25 +336,37 @@ void main() {
 
     test('validateRequiredFields true when all present + non-null', () {
       expect(
-          mixin_lib.SerializationUtils.validateRequiredFields(
-              const {'a': 1, 'b': 2}, ['a', 'b']),
-          isTrue);
+        mixin_lib.SerializationUtils.validateRequiredFields(
+          const {'a': 1, 'b': 2},
+          ['a', 'b'],
+        ),
+        isTrue,
+      );
     });
 
     test('validateRequiredFields false when missing or null', () {
       expect(
-          mixin_lib.SerializationUtils.validateRequiredFields(
-              const {'a': 1}, ['a', 'b']),
-          isFalse);
+        mixin_lib.SerializationUtils.validateRequiredFields(
+          const {'a': 1},
+          ['a', 'b'],
+        ),
+        isFalse,
+      );
       expect(
-          mixin_lib.SerializationUtils.validateRequiredFields(
-              const {'a': null}, ['a']),
-          isFalse);
+        mixin_lib.SerializationUtils.validateRequiredFields(
+          const {'a': null},
+          ['a'],
+        ),
+        isFalse,
+      );
     });
 
     test('cleanJson removes top-level null', () {
-      final cleaned = mixin_lib.SerializationUtils.cleanJson(
-          const {'a': 1, 'b': null, 'c': 'x'});
+      final cleaned = mixin_lib.SerializationUtils.cleanJson(const {
+        'a': 1,
+        'b': null,
+        'c': 'x',
+      });
       expect(cleaned.keys.toSet(), {'a', 'c'});
     });
 

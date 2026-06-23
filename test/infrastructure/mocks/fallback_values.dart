@@ -299,20 +299,24 @@ void registerAllFallbackValues() {
   registerFallbackValue(FakeRecipe());
 
   // ===== Conversation Types =====
-  registerFallbackValue(Conversation.direct(
-    user1Id: 'user1',
-    user1DisplayName: 'User 1',
-    user2Id: 'user2',
-    user2DisplayName: 'User 2',
-  ));
+  registerFallbackValue(
+    Conversation.direct(
+      user1Id: 'user1',
+      user1DisplayName: 'User 1',
+      user2Id: 'user2',
+      user2DisplayName: 'User 2',
+    ),
+  );
 
   // ===== Message Types =====
-  registerFallbackValue(Message.text(
-    conversationId: 'fake-conversation',
-    senderId: 'fake-sender',
-    senderDisplayName: 'Fake Sender',
-    content: 'Fake message',
-  ));
+  registerFallbackValue(
+    Message.text(
+      conversationId: 'fake-conversation',
+      senderId: 'fake-sender',
+      senderDisplayName: 'Fake Sender',
+      content: 'Fake message',
+    ),
+  );
 
   // ===== Operation Results =====
   registerFallbackValue(RecipeOperationResult.success('test'));

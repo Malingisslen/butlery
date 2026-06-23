@@ -28,7 +28,7 @@ Conversation _conv({
     participantIds: participants,
     participantDisplayNames: {for (final p in participants) p: p.toUpperCase()},
     participantAvatarUrls: {
-      for (final p in participants) p: 'https://avatar/$p'
+      for (final p in participants) p: 'https://avatar/$p',
     },
     lastReadTimestamps: lastReads ?? const {},
     isGroup: isGroup,
@@ -60,10 +60,14 @@ void main() {
 
       expect(restored.id, 'c1');
       expect(restored.participantIds, ['alice', 'bob']);
-      expect(
-          restored.participantDisplayNames, {'alice': 'ALICE', 'bob': 'BOB'});
-      expect(restored.participantAvatarUrls,
-          {'alice': 'https://avatar/alice', 'bob': 'https://avatar/bob'});
+      expect(restored.participantDisplayNames, {
+        'alice': 'ALICE',
+        'bob': 'BOB',
+      });
+      expect(restored.participantAvatarUrls, {
+        'alice': 'https://avatar/alice',
+        'bob': 'https://avatar/bob',
+      });
       expect(restored.isGroup, isTrue);
       expect(restored.title, 'Squad');
       expect(restored.createdAt.toUtc(), DateTime.utc(2026, 1, 1));
@@ -91,8 +95,10 @@ void main() {
       expect(restored.lastMessage, isNotNull);
       expect(restored.lastMessage!.id, 'm1');
       expect(restored.lastMessage!.content, 'hej');
-      expect(restored.lastMessage!.sentAt.toUtc(),
-          DateTime.utc(2026, 1, 2, 9, 30));
+      expect(
+        restored.lastMessage!.sentAt.toUtc(),
+        DateTime.utc(2026, 1, 2, 9, 30),
+      );
     });
 
     test('lastReadTimestamps round-trips per-user dates', () async {
@@ -135,12 +141,9 @@ void main() {
 
     test('metadata preserved when present, null when absent', () async {
       final firestore = FakeFirebaseFirestore();
-      final docA = await _writeAndRead(
-          firestore,
-          {
-            'metadata': {'key': 'value'},
-          },
-          id: 'a');
+      final docA = await _writeAndRead(firestore, {
+        'metadata': {'key': 'value'},
+      }, id: 'a');
       expect(ConversationDto.fromFirestore(docA).metadata, {'key': 'value'});
 
       final docB = await _writeAndRead(firestore, <String, dynamic>{}, id: 'b');
@@ -152,8 +155,10 @@ void main() {
     test('flags default to false when no perUserSettings present', () async {
       final firestore = FakeFirebaseFirestore();
       final doc = await _writeAndRead(firestore, <String, dynamic>{});
-      final restored =
-          ConversationDto.fromFirestore(doc, currentUserId: 'alice');
+      final restored = ConversationDto.fromFirestore(
+        doc,
+        currentUserId: 'alice',
+      );
       expect(restored.isArchived, isFalse);
       expect(restored.isPinned, isFalse);
       expect(restored.isMuted, isFalse);
@@ -161,39 +166,43 @@ void main() {
       expect(restored.pinnedAt, isNull);
     });
 
-    test('only surfaces the calling user\'s flags from denormalized map',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final doc = await _writeAndRead(firestore, {
-        'perUserSettings': {
-          'alice': {
-            'isArchived': true,
-            'isPinned': true,
-            'isMuted': false,
-            'archivedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 5)),
-            'pinnedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 4)),
+    test(
+      'only surfaces the calling user\'s flags from denormalized map',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final doc = await _writeAndRead(firestore, {
+          'perUserSettings': {
+            'alice': {
+              'isArchived': true,
+              'isPinned': true,
+              'isMuted': false,
+              'archivedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 5)),
+              'pinnedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 4)),
+            },
+            'bob': {
+              'isArchived': false,
+              'isPinned': false,
+              'isMuted': true,
+            },
           },
-          'bob': {
-            'isArchived': false,
-            'isPinned': false,
-            'isMuted': true,
-          },
-        },
-      });
+        });
 
-      final asAlice =
-          ConversationDto.fromFirestore(doc, currentUserId: 'alice');
-      expect(asAlice.isArchived, isTrue);
-      expect(asAlice.isPinned, isTrue);
-      expect(asAlice.isMuted, isFalse);
-      expect(asAlice.archivedAt!.toUtc(), DateTime.utc(2026, 1, 5));
-      expect(asAlice.pinnedAt!.toUtc(), DateTime.utc(2026, 1, 4));
+        final asAlice = ConversationDto.fromFirestore(
+          doc,
+          currentUserId: 'alice',
+        );
+        expect(asAlice.isArchived, isTrue);
+        expect(asAlice.isPinned, isTrue);
+        expect(asAlice.isMuted, isFalse);
+        expect(asAlice.archivedAt!.toUtc(), DateTime.utc(2026, 1, 5));
+        expect(asAlice.pinnedAt!.toUtc(), DateTime.utc(2026, 1, 4));
 
-      final asBob = ConversationDto.fromFirestore(doc, currentUserId: 'bob');
-      expect(asBob.isArchived, isFalse);
-      expect(asBob.isPinned, isFalse);
-      expect(asBob.isMuted, isTrue);
-    });
+        final asBob = ConversationDto.fromFirestore(doc, currentUserId: 'bob');
+        expect(asBob.isArchived, isFalse);
+        expect(asBob.isPinned, isFalse);
+        expect(asBob.isMuted, isTrue);
+      },
+    );
 
     test('flags ignored when currentUserId is null', () async {
       final firestore = FakeFirebaseFirestore();

@@ -138,8 +138,10 @@ class AppStrings {
     String? reason,
     String? suggestedAction,
   }) {
-    final baseMessage =
-        AppLocale.current.permissionErrorAction(action, resource);
+    final baseMessage = AppLocale.current.permissionErrorAction(
+      action,
+      resource,
+    );
     final reasonText = reason != null
         ? ' ${AppLocale.current.permissionErrorBecause(reason)}'
         : '';
@@ -153,8 +155,10 @@ class AppStrings {
   static String actionSpecificError(String action, String issue) =>
       AppLocale.current.errorDuringAction(action, issue);
   static String actionWithRecovery(
-          String action, String issue, String recovery) =>
-      AppLocale.current.errorDuringActionRecovery(action, issue, recovery);
+    String action,
+    String issue,
+    String recovery,
+  ) => AppLocale.current.errorDuringActionRecovery(action, issue, recovery);
 
   /// Format a duration in minutes to a human-readable string
   static String formatDuration(int minutes) {

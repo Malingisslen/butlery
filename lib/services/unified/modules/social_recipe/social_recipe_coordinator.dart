@@ -61,9 +61,10 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
     RecipeServiceAdapter? serviceAdapter,
-  })  : _serviceAdapter = serviceAdapter ??
-            SocialRecipeCoordinator._createDefaultServiceAdapter(),
-        _getCurrentUserId = getCurrentUserId {
+  }) : _serviceAdapter =
+           serviceAdapter ??
+           SocialRecipeCoordinator._createDefaultServiceAdapter(),
+       _getCurrentUserId = getCurrentUserId {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
 
@@ -139,9 +140,15 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   Future<bool> addMemberToRecipe(
-      String recipeId, String userId, ResourcePermission permission) async {
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async {
     final result = await _membershipService.addMemberToRecipe(
-        recipeId, userId, permission);
+      recipeId,
+      userId,
+      permission,
+    );
 
     // Send notification after successful addition
     if (result) {
@@ -154,14 +161,25 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async =>
       await _membershipService.removeMemberFromRecipe(recipeId, userId);
 
-  Future<bool> updateMemberPermission(String recipeId, String userId,
-          ResourcePermission permission) async =>
-      await _membershipService.updateMemberPermission(
-          recipeId, userId, permission);
-  Future<bool> shareRecipeWithUsers(String recipeId, List<String> userIds,
-      ResourcePermission permission) async {
+  Future<bool> updateMemberPermission(
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async => await _membershipService.updateMemberPermission(
+    recipeId,
+    userId,
+    permission,
+  );
+  Future<bool> shareRecipeWithUsers(
+    String recipeId,
+    List<String> userIds,
+    ResourcePermission permission,
+  ) async {
     final result = await _sharingService.shareRecipeWithUsers(
-        recipeId, userIds, permission);
+      recipeId,
+      userIds,
+      permission,
+    );
 
     // Send notifications after successful sharing
     if (result) {
@@ -171,10 +189,15 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     return result;
   }
 
-  Future<bool> shareRecipeWithGroups(String recipeId, List<String> groupIds,
-          ResourcePermission permission) async =>
-      await _sharingService.shareRecipeWithGroups(
-          recipeId, groupIds, permission);
+  Future<bool> shareRecipeWithGroups(
+    String recipeId,
+    List<String> groupIds,
+    ResourcePermission permission,
+  ) async => await _sharingService.shareRecipeWithGroups(
+    recipeId,
+    groupIds,
+    permission,
+  );
 
   Future<bool> unshareRecipe(String recipeId) async =>
       await _sharingService.unshareRecipe(recipeId);
@@ -188,7 +211,9 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       await _permissionService.canViewRecipe(recipeId, userId);
 
   Future<ResourcePermission?> getUserPermissionForRecipe(
-          String recipeId, String userId) async =>
+    String recipeId,
+    String userId,
+  ) async =>
       await _permissionService.getUserPermissionForRecipe(recipeId, userId);
   Future<List<Recipe>> getCollaborativeRecipesForUser() async =>
       await _queryService.getCollaborativeRecipesForUser();
@@ -197,8 +222,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       await _queryService.getRecipesSharedByUser(userId);
 
   Future<List<Recipe>> getRecipesWithPermission(
-          ResourcePermission permission) async =>
-      await _queryService.getRecipesWithPermission(permission);
+    ResourcePermission permission,
+  ) async => await _queryService.getRecipesWithPermission(permission);
 
   Future<Map<String, int>> getCollaborationStats() async =>
       await _queryService.getCollaborationStats();
@@ -209,25 +234,34 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   Future<List<Recipe>> loadCachedCollaborativeRecipes() async =>
       await _queryService.loadCachedCollaborativeRecipes();
   Future<void> sendCollaborationInvitations(
-      String recipeId, List<String> userIds) async {
+    String recipeId,
+    List<String> userIds,
+  ) async {
     AppLogger.info(
-        '📧 Sending collaboration invitations to ${userIds.length} users for recipe $recipeId');
+      '📧 Sending collaboration invitations to ${userIds.length} users for recipe $recipeId',
+    );
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in this coordinator
   }
 
   Future<void> sendMemberAdditionNotification(
-      String recipeId, String addedUserId) async {
+    String recipeId,
+    String addedUserId,
+  ) async {
     AppLogger.info(
-        '📧 Sending member addition notification for recipe $recipeId to user $addedUserId');
+      '📧 Sending member addition notification for recipe $recipeId to user $addedUserId',
+    );
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in this coordinator
   }
 
   Future<void> sendRecipeSharingNotifications(
-      String recipeId, List<String> sharedWithUserIds) async {
+    String recipeId,
+    List<String> sharedWithUserIds,
+  ) async {
     AppLogger.info(
-        '📧 Sending sharing notifications to ${sharedWithUserIds.length} users for recipe $recipeId');
+      '📧 Sending sharing notifications to ${sharedWithUserIds.length} users for recipe $recipeId',
+    );
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in this coordinator
   }
@@ -247,7 +281,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info(
-          '📨 Creating recipe invitation for recipe $recipeId to ${inviteeUserIds.length} users');
+        '📨 Creating recipe invitation for recipe $recipeId to ${inviteeUserIds.length} users',
+      );
 
       final recipe = await _serviceAdapter.getRecipeById(recipeId);
       if (recipe == null) {
@@ -279,9 +314,11 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       );
 
       AppLogger.success(
-          ' Recipe invitation created successfully: $invitationId');
+        ' Recipe invitation created successfully: $invitationId',
+      );
       AppLogger.info(
-          '📥 Recipients will see invitation in "Delat med mig" view');
+        '📥 Recipients will see invitation in "Delat med mig" view',
+      );
 
       await sendRecipeInvitationNotifications(recipeId, inviteeUserIds);
 
@@ -319,7 +356,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info(
-          '📤 Getting sent recipe invitations for user $currentUserId');
+        '📤 Getting sent recipe invitations for user $currentUserId',
+      );
       return []; // Placeholder - would need additional repository method
     } catch (e) {
       AppLogger.error('Failed to get sent recipe invitations: $e');
@@ -332,15 +370,18 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       AppLogger.warning(
-          'Cannot get received invitations: No authenticated user');
+        'Cannot get received invitations: No authenticated user',
+      );
       return [];
     }
 
     try {
       AppLogger.info(
-          '📥 Getting received recipe invitations for user $currentUserId');
-      return await _sharedRecipeRepository
-          .getSharedRecipesForUser(currentUserId);
+        '📥 Getting received recipe invitations for user $currentUserId',
+      );
+      return await _sharedRecipeRepository.getSharedRecipesForUser(
+        currentUserId,
+      );
     } catch (e) {
       AppLogger.error('Failed to get received recipe invitations: $e');
       return [];
@@ -353,11 +394,14 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   Future<List<SharedRecipe>> getSharedRecipesForUser(String userId) async {
     try {
       AppLogger.info(
-          '📥 Loading shared recipes for user ${userId.maskedUserId}');
+        '📥 Loading shared recipes for user ${userId.maskedUserId}',
+      );
       return await _sharedRecipeRepository.getSharedRecipesForUser(userId);
     } catch (e) {
       AppLogger.error(
-          'Failed to load shared recipes for user ${userId.maskedUserId}', e);
+        'Failed to load shared recipes for user ${userId.maskedUserId}',
+        e,
+      );
       return [];
     }
   }
@@ -396,12 +440,15 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
   /// Loads status for multiple recipes to populate cache efficiently.
   Future<void> loadStatusForAllRecipes(
-      List<SharedRecipe> recipes, String userId) async {
+    List<SharedRecipe> recipes,
+    String userId,
+  ) async {
     // Batch to avoid unbounded concurrent Firestore reads (3 reads per recipe)
     const batchSize = 5;
     for (var i = 0; i < recipes.length; i += batchSize) {
-      final end =
-          (i + batchSize < recipes.length) ? i + batchSize : recipes.length;
+      final end = (i + batchSize < recipes.length)
+          ? i + batchSize
+          : recipes.length;
       final batch = recipes.sublist(i, end);
       await Future.wait(
         batch.map((recipe) => loadStatusForRecipe(recipe.id, userId)),
@@ -449,18 +496,22 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     try {
       AppLogger.info('📥 Joining shared recipe $sharedRecipeId for viewing');
 
-      final sharedRecipe =
-          await _sharedRecipeRepository.getSharedRecipe(sharedRecipeId);
+      final sharedRecipe = await _sharedRecipeRepository.getSharedRecipe(
+        sharedRecipeId,
+      );
       if (sharedRecipe == null) {
         AppLogger.error('Shared recipe not found: $sharedRecipeId');
         return null;
       }
 
       await _sharedRecipeRepository.markAsImported(
-          sharedRecipeId, currentUserId);
+        sharedRecipeId,
+        currentUserId,
+      );
 
       AppLogger.success(
-          ' Joined shared recipe as viewer (copy-on-write ready)');
+        ' Joined shared recipe as viewer (copy-on-write ready)',
+      );
       AppLogger.info('💡 Copy will be created when you first edit the recipe');
 
       return sharedRecipeId;
@@ -477,16 +528,19 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       AppLogger.error(
-          'Cannot start collaborative editing: No authenticated user');
+        'Cannot start collaborative editing: No authenticated user',
+      );
       return null;
     }
 
     try {
       AppLogger.info(
-          '🔄 Triggering copy-on-write for shared recipe $sharedRecipeId');
+        '🔄 Triggering copy-on-write for shared recipe $sharedRecipeId',
+      );
 
-      final sharedRecipe =
-          await _sharedRecipeRepository.getSharedRecipe(sharedRecipeId);
+      final sharedRecipe = await _sharedRecipeRepository.getSharedRecipe(
+        sharedRecipeId,
+      );
       if (sharedRecipe == null) {
         AppLogger.error('Shared recipe not found: $sharedRecipeId');
         return null;
@@ -494,7 +548,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
       if (sharedRecipe.copyOnWriteTriggered) {
         AppLogger.info(
-            'Copy-on-write already triggered, adding as collaborator');
+          'Copy-on-write already triggered, adding as collaborator',
+        );
         final updatedRecipe = sharedRecipe.addActiveCollaborator(currentUserId);
         await _sharedRecipeRepository.update(updatedRecipe);
         return sharedRecipeId;
@@ -528,7 +583,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
       AppLogger.success(' Copy-on-write triggered successfully');
       AppLogger.info(
-          '📄 Static copy created for original owner: $staticCopyId');
+        '📄 Static copy created for original owner: $staticCopyId',
+      );
       AppLogger.info('👥 Shared version is now collaborative');
 
       return sharedRecipeId; // Return collaborative version ID
@@ -549,7 +605,9 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     try {
       AppLogger.info('🗑️ Dismissing shared recipe $sharedRecipeId');
       await _sharedRecipeRepository.markAsDismissed(
-          sharedRecipeId, currentUserId);
+        sharedRecipeId,
+        currentUserId,
+      );
       AppLogger.success(' Shared recipe dismissed');
       return true;
     } catch (e) {
@@ -598,9 +656,12 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
   /// Send recipe invitation notifications (placeholder)
   Future<void> sendRecipeInvitationNotifications(
-      String recipeId, List<String> inviteeUserIds) async {
+    String recipeId,
+    List<String> inviteeUserIds,
+  ) async {
     AppLogger.info(
-        '📧 Sending recipe invitation notifications to ${inviteeUserIds.length} users for recipe $recipeId');
+      '📧 Sending recipe invitation notifications to ${inviteeUserIds.length} users for recipe $recipeId',
+    );
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in this coordinator
   }
@@ -619,7 +680,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
   RecipeOperationResult createSuccessResult([String? message]) {
     return RecipeOperationResult.success(
-        message ?? 'Operation completed successfully');
+      message ?? 'Operation completed successfully',
+    );
   }
 
   RecipeOperationResult createFailureResult(String error) {

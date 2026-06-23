@@ -25,11 +25,14 @@ class NotificationBatch {
 
   /// Create from repository data map (removes Firebase dependency)
   factory NotificationBatch.fromMap(String id, Map<String, dynamic> data) {
-    final notificationsList =
-        (data['notifications'] as List<dynamic>?).orEmpty();
+    final notificationsList = (data['notifications'] as List<dynamic>?)
+        .orEmpty();
     final notifications = notificationsList
-        .map((item) => NotificationTemplateSerializer.fromMap(
-            item as Map<String, dynamic>))
+        .map(
+          (item) => NotificationTemplateSerializer.fromMap(
+            item as Map<String, dynamic>,
+          ),
+        )
         .toList();
 
     return NotificationBatch(
@@ -39,28 +42,30 @@ class NotificationBatch {
       createdAt: data['createdAt'] is DateTime
           ? data['createdAt'] as DateTime
           : data['createdAt'] != null
-              ? AppTimestamp.fromFirestore(data['createdAt']).dateTime
-              : clock.now(),
+          ? AppTimestamp.fromFirestore(data['createdAt']).dateTime
+          : clock.now(),
       scheduledFor: data['scheduledFor'] is DateTime
           ? data['scheduledFor'] as DateTime
           : data['scheduledFor'] != null
-              ? AppTimestamp.fromFirestore(data['scheduledFor']).dateTime
-              : clock.now(),
+          ? AppTimestamp.fromFirestore(data['scheduledFor']).dateTime
+          : clock.now(),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'batchKey': batchKey,
-        'userId': userId,
-        'notifications': notifications.map((n) => n.toMap()).toList(),
-        'createdAt': Timestamp.fromDate(createdAt),
-        'scheduledFor': Timestamp.fromDate(scheduledFor),
-      };
+    'batchKey': batchKey,
+    'userId': userId,
+    'notifications': notifications.map((n) => n.toMap()).toList(),
+    'createdAt': Timestamp.fromDate(createdAt),
+    'scheduledFor': Timestamp.fromDate(scheduledFor),
+  };
 
   /// Create from Firestore document
   factory NotificationBatch.fromFirestore(DocumentSnapshot doc) {
     return NotificationBatch.fromMap(
-        doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
+      doc.id,
+      ((doc.data() as Map<String, dynamic>?).orEmpty()),
+    );
   }
 }
 
@@ -73,11 +78,13 @@ extension NotificationTemplateExtension on NotificationTemplate {
       'data': data,
       'imageUrl': imageUrl,
       'actions': actions
-          ?.map((a) => {
-                'id': a.id,
-                'title': a.title,
-                'data': a.data,
-              })
+          ?.map(
+            (a) => {
+              'id': a.id,
+              'title': a.title,
+              'data': a.data,
+            },
+          )
           .toList(),
     };
   }

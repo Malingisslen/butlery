@@ -60,19 +60,18 @@ class _FakeFeedbackRepository implements FeedbackRepository {
   Future<List<Map<String, dynamic>>> exportFeedbackByUser(
     String userId, {
     int maxDocuments = 1000,
-  }) async =>
-      throw UnimplementedError();
+  }) async => throw UnimplementedError();
 }
 
 FeedbackEntry _entry(String id, {FeedbackStatus? status}) => FeedbackEntry(
-      id: id,
-      userId: 'u',
-      category: FeedbackCategory.bug,
-      description: 'd',
-      recentInteractions: const [],
-      createdAt: DateTime.utc(2026, 1, 1),
-      status: status ?? FeedbackStatus.newReport,
-    );
+  id: id,
+  userId: 'u',
+  category: FeedbackCategory.bug,
+  description: 'd',
+  recentInteractions: const [],
+  createdAt: DateTime.utc(2026, 1, 1),
+  status: status ?? FeedbackStatus.newReport,
+);
 
 void main() {
   late _FakeFeedbackRepository repo;
@@ -105,16 +104,18 @@ void main() {
     expect(vm.entries.map((e) => e.id), ['a', 'b']);
   });
 
-  test('setStatusFilter re-subscribes with that status from the first page',
-      () async {
-    vm.start();
-    repo.emit([_entry('a')]);
-    await Future<void>.delayed(Duration.zero);
+  test(
+    'setStatusFilter re-subscribes with that status from the first page',
+    () async {
+      vm.start();
+      repo.emit([_entry('a')]);
+      await Future<void>.delayed(Duration.zero);
 
-    vm.setStatusFilter(FeedbackStatus.resolved);
-    expect(repo.lastStatus, FeedbackStatus.resolved);
-    expect(repo.lastLimit, 50); // page reset
-  });
+      vm.setStatusFilter(FeedbackStatus.resolved);
+      expect(repo.lastStatus, FeedbackStatus.resolved);
+      expect(repo.lastLimit, 50); // page reset
+    },
+  );
 
   test('canLoadMore is true only when the page is full', () async {
     vm.start();

@@ -96,8 +96,10 @@ void main() {
         final category = createTestCategory();
 
         // Act
-        final hasPermission =
-            await repository.validateCreatePermission(testUserId, category);
+        final hasPermission = await repository.validateCreatePermission(
+          testUserId,
+          category,
+        );
 
         // Assert
         expect(hasPermission, isTrue);
@@ -109,7 +111,10 @@ void main() {
 
         // Act
         final hasPermission = await repository.validateReadPermission(
-            testUserId, testCategoryId, category);
+          testUserId,
+          testCategoryId,
+          category,
+        );
 
         // Assert
         expect(hasPermission, isTrue);
@@ -121,7 +126,10 @@ void main() {
 
         // Act
         final hasPermission = await repository.validateUpdatePermission(
-            testUserId, testCategoryId, category);
+          testUserId,
+          testCategoryId,
+          category,
+        );
 
         // Assert
         expect(hasPermission, isTrue);
@@ -134,7 +142,9 @@ void main() {
 
         // Act
         final hasPermission = await repository.validateDeletePermission(
-            testUserId, testCategoryId);
+          testUserId,
+          testCategoryId,
+        );
 
         // Assert
         expect(hasPermission, isTrue);
@@ -271,7 +281,10 @@ void main() {
 
         // Act
         await repository.addFriendToCategory(
-            testUserId, testCategoryId, newFriendId);
+          testUserId,
+          testCategoryId,
+          newFriendId,
+        );
 
         // Assert
         final doc = await fakeFirestore
@@ -286,13 +299,17 @@ void main() {
 
       test('should remove friend from category', () async {
         // Arrange
-        final category =
-            createTestCategory(friendUserIds: [testFriendId, testOtherUserId]);
+        final category = createTestCategory(
+          friendUserIds: [testFriendId, testOtherUserId],
+        );
         await seedCategory(testUserId, category);
 
         // Act
         await repository.removeFriendFromCategory(
-            testUserId, testCategoryId, testFriendId);
+          testUserId,
+          testCategoryId,
+          testFriendId,
+        );
 
         // Assert
         final doc = await fakeFirestore
@@ -314,7 +331,10 @@ void main() {
 
         // Act
         await repository.updateCategoryMembers(
-            testUserId, testCategoryId, newMemberIds);
+          testUserId,
+          testCategoryId,
+          newMemberIds,
+        );
 
         // Assert
         final doc = await fakeFirestore
@@ -355,8 +375,10 @@ void main() {
         await seedCategory(testUserId, category);
 
         // Act
-        final results =
-            await repository.searchCategories(testUserId, 'nonexistent');
+        final results = await repository.searchCategories(
+          testUserId,
+          'nonexistent',
+        );
 
         // Assert
         expect(results, isEmpty);
@@ -377,28 +399,38 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<FriendCategory>>((categories) {
-            return categories.length == 1 && categories.first.name == 'Family';
-          })),
+          completion(
+            predicate<List<FriendCategory>>((categories) {
+              return categories.length == 1 &&
+                  categories.first.name == 'Family';
+            }),
+          ),
         );
       });
 
-      test('BUT-478: stream is bounded to 100 categories (defence-in-depth)',
-          () async {
-        // Seed 110 categories so the limit is observable.
-        for (var i = 0; i < 110; i++) {
-          await seedCategory(
-              testUserId, createTestCategory(id: 'cat-$i', name: 'Cat $i'));
-        }
+      test(
+        'BUT-478: stream is bounded to 100 categories (defence-in-depth)',
+        () async {
+          // Seed 110 categories so the limit is observable.
+          for (var i = 0; i < 110; i++) {
+            await seedCategory(
+              testUserId,
+              createTestCategory(id: 'cat-$i', name: 'Cat $i'),
+            );
+          }
 
-        final stream = repository.categoriesStream(testUserId);
+          final stream = repository.categoriesStream(testUserId);
 
-        await expectLater(
-          stream.first,
-          completion(predicate<List<FriendCategory>>(
-              (categories) => categories.length == 100)),
-        );
-      });
+          await expectLater(
+            stream.first,
+            completion(
+              predicate<List<FriendCategory>>(
+                (categories) => categories.length == 100,
+              ),
+            ),
+          );
+        },
+      );
 
       test('should stream empty list if no categories', () async {
         // Act
@@ -407,9 +439,11 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<FriendCategory>>((categories) {
-            return categories.isEmpty;
-          })),
+          completion(
+            predicate<List<FriendCategory>>((categories) {
+              return categories.isEmpty;
+            }),
+          ),
         );
       });
     });

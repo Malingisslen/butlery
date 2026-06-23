@@ -40,8 +40,8 @@ class StarRatingRow extends StatelessWidget {
           isFilled
               ? Icons.star
               : isHalf
-                  ? Icons.star_half
-                  : Icons.star_border,
+              ? Icons.star_half
+              : Icons.star_border,
           color: isFilled || isHalf ? starColor : cs.onSurfaceVariant,
           size: size,
         );

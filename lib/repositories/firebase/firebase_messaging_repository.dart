@@ -45,8 +45,8 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     super.timestampProvider,
     FeatureFlagService? featureFlagService,
   }) : super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        ) {
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       ) {
     // Initialize participant module if feature flag service is provided
     _participantModule = featureFlagService != null
         ? ConversationParticipantModule(
@@ -100,14 +100,19 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   String getId(Conversation entity) => entity.id;
   @override
   Future<bool> validateCreatePermission(
-      String userId, Conversation entity) async {
+    String userId,
+    Conversation entity,
+  ) async {
     // User must be a participant in conversations they create
     return entity.participantIds.contains(userId);
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, Conversation? entity) async {
+    String userId,
+    String resourceId,
+    Conversation? entity,
+  ) async {
     if (entity == null) return false;
     // Only participants can read the conversation
     return entity.participantIds.contains(userId);
@@ -115,14 +120,19 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, Conversation entity) async {
+    String userId,
+    String resourceId,
+    Conversation entity,
+  ) async {
     // Only participants can update conversation metadata
     return entity.participantIds.contains(userId);
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Only participants can delete conversations
     try {
       final conversation = await read(resourceId);
@@ -152,15 +162,14 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required String user2Id,
     required String user2DisplayName,
     String? user2AvatarUrl,
-  }) async =>
-      _conversationMutationModule.createDirectConversation(
-        user1Id: user1Id,
-        user1DisplayName: user1DisplayName,
-        user1AvatarUrl: user1AvatarUrl,
-        user2Id: user2Id,
-        user2DisplayName: user2DisplayName,
-        user2AvatarUrl: user2AvatarUrl,
-      );
+  }) async => _conversationMutationModule.createDirectConversation(
+    user1Id: user1Id,
+    user1DisplayName: user1DisplayName,
+    user1AvatarUrl: user1AvatarUrl,
+    user2Id: user2Id,
+    user2DisplayName: user2DisplayName,
+    user2AvatarUrl: user2AvatarUrl,
+  );
 
   @override
   Future<String> createGroupConversation({
@@ -169,25 +178,26 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required Map<String, String?> participantAvatarUrls,
     required String title,
     required String creatorId,
-  }) async =>
-      _conversationMutationModule.createGroupConversation(
-        participantIds: participantIds,
-        participantDisplayNames: participantDisplayNames,
-        participantAvatarUrls: participantAvatarUrls,
-        title: title,
-        creatorId: creatorId,
-      );
+  }) async => _conversationMutationModule.createGroupConversation(
+    participantIds: participantIds,
+    participantDisplayNames: participantDisplayNames,
+    participantAvatarUrls: participantAvatarUrls,
+    title: title,
+    creatorId: creatorId,
+  );
 
   @override
   @Deprecated(
-      'Use createDirectConversation directly - it handles "get or create" with deterministic IDs')
+    'Use createDirectConversation directly - it handles "get or create" with deterministic IDs',
+  )
   Future<String?> findDirectConversation({
     required String user1Id,
     required String user2Id,
   }) async {
     try {
       AppLogger.warning(
-          '⚠️ findDirectConversation is DEPRECATED - use createDirectConversation instead');
+        '⚠️ findDirectConversation is DEPRECATED - use createDirectConversation instead',
+      );
 
       final query = await firestore
           .collection(collectionName)
@@ -216,12 +226,11 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required String conversationId,
     String? title,
     Map<String, dynamic>? metadata,
-  }) async =>
-      _conversationMutationModule.updateConversation(
-        conversationId: conversationId,
-        title: title,
-        metadata: metadata,
-      );
+  }) async => _conversationMutationModule.updateConversation(
+    conversationId: conversationId,
+    title: title,
+    metadata: metadata,
+  );
 
   @override
   Future<void> addParticipants({
@@ -229,28 +238,28 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required List<String> participantIds,
     required Map<String, String> participantDisplayNames,
     required Map<String, String?> participantAvatarUrls,
-  }) async =>
-      _conversationMutationModule.addParticipants(
-        conversationId: conversationId,
-        participantIds: participantIds,
-        participantDisplayNames: participantDisplayNames,
-        participantAvatarUrls: participantAvatarUrls,
-      );
+  }) async => _conversationMutationModule.addParticipants(
+    conversationId: conversationId,
+    participantIds: participantIds,
+    participantDisplayNames: participantDisplayNames,
+    participantAvatarUrls: participantAvatarUrls,
+  );
 
   @override
   Future<void> removeParticipant({
     required String conversationId,
     required String participantId,
-  }) async =>
-      _conversationMutationModule.removeParticipant(
-        conversationId: conversationId,
-        participantId: participantId,
-      );
+  }) async => _conversationMutationModule.removeParticipant(
+    conversationId: conversationId,
+    participantId: participantId,
+  );
 
   @override
   Future<void> deleteConversation(String conversationId) async =>
       _conversationMutationModule.deleteConversation(
-          conversationId, _messagesRef);
+        conversationId,
+        _messagesRef,
+      );
 
   @override
   Future<void> votePoll({
@@ -258,41 +267,40 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required String optionId,
     required String voterId,
     required bool allowMultiple,
-  }) async =>
-      _messageMutationModule.votePoll(
-        messageId: messageId,
-        optionId: optionId,
-        voterId: voterId,
-        allowMultiple: allowMultiple,
-      );
+  }) async => _messageMutationModule.votePoll(
+    messageId: messageId,
+    optionId: optionId,
+    voterId: voterId,
+    allowMultiple: allowMultiple,
+  );
 
   @override
   Future<void> closePoll({
     required String messageId,
     required String closerId,
-  }) async =>
-      _messageMutationModule.closePoll(
-        messageId: messageId,
-        closerId: closerId,
-      );
+  }) async => _messageMutationModule.closePoll(
+    messageId: messageId,
+    closerId: closerId,
+  );
 
   @override
   Future<void> updateConversationUserSettings({
     required String conversationId,
     required String userId,
     required Map<String, dynamic> settings,
-  }) async =>
-      _conversationMutationModule.updateConversationUserSettings(
-        conversationId: conversationId,
-        userId: userId,
-        settings: settings,
-      );
+  }) async => _conversationMutationModule.updateConversationUserSettings(
+    conversationId: conversationId,
+    userId: userId,
+    settings: settings,
+  );
 
   @override
   Future<List<String>> getConversationParticipants(
-          String conversationId) async =>
-      _conversationQueryModule.getConversationParticipants(
-          conversationId, read);
+    String conversationId,
+  ) async => _conversationQueryModule.getConversationParticipants(
+    conversationId,
+    read,
+  );
 
   @override
   Future<int> getUnreadMessageCount(String userId) async =>
@@ -305,23 +313,21 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
     int limit = 50,
-  }) =>
-      _messageQueryModule.getConversationMessages(
-        conversationId: conversationId,
-        limit: limit,
-      );
+  }) => _messageQueryModule.getConversationMessages(
+    conversationId: conversationId,
+    limit: limit,
+  );
 
   @override
   Future<List<Message>> getConversationMessagesPage({
     required String conversationId,
     int limit = 50,
     DateTime? startAfter,
-  }) async =>
-      _messageQueryModule.getConversationMessagesPage(
-        conversationId: conversationId,
-        limit: limit,
-        startAfter: startAfter,
-      );
+  }) async => _messageQueryModule.getConversationMessagesPage(
+    conversationId: conversationId,
+    limit: limit,
+    startAfter: startAfter,
+  );
 
   @override
   Future<Message?> getMessage(String messageId) async =>
@@ -332,12 +338,11 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required String conversationId,
     required String query,
     int limit = 20,
-  }) async =>
-      _messageQueryModule.searchMessages(
-        conversationId: conversationId,
-        query: query,
-        limit: limit,
-      );
+  }) async => _messageQueryModule.searchMessages(
+    conversationId: conversationId,
+    query: query,
+    limit: limit,
+  );
 
   @override
   Future<void> sendMessage(Message message) async =>
@@ -348,43 +353,39 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     required String messageId,
     required MessageStatus status,
     DateTime? timestamp,
-  }) async =>
-      _messageMutationModule.updateMessageStatus(
-        messageId: messageId,
-        status: status,
-        timestamp: timestamp,
-      );
+  }) async => _messageMutationModule.updateMessageStatus(
+    messageId: messageId,
+    status: status,
+    timestamp: timestamp,
+  );
 
   @override
   Future<void> markMessageAsRead({
     required String messageId,
     required String userId,
-  }) async =>
-      _messageMutationModule.markMessageAsRead(
-        messageId: messageId,
-        userId: userId,
-      );
+  }) async => _messageMutationModule.markMessageAsRead(
+    messageId: messageId,
+    userId: userId,
+  );
 
   @override
   Future<void> markConversationAsRead({
     required String conversationId,
     required String userId,
-  }) async =>
-      _messageMutationModule.markConversationAsRead(
-        conversationId: conversationId,
-        userId: userId,
-        updateConversation: update,
-      );
+  }) async => _messageMutationModule.markConversationAsRead(
+    conversationId: conversationId,
+    userId: userId,
+    updateConversation: update,
+  );
 
   @override
   Future<void> updateMessageContent({
     required String messageId,
     required String newContent,
-  }) async =>
-      _messageMutationModule.updateMessageContent(
-        messageId: messageId,
-        newContent: newContent,
-      );
+  }) async => _messageMutationModule.updateMessageContent(
+    messageId: messageId,
+    newContent: newContent,
+  );
 
   @override
   Future<void> deleteMessage(String messageId) async =>
@@ -394,11 +395,10 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   Future<void> batchMarkAsDelivered({
     required List<String> messageIds,
     required String userId,
-  }) async =>
-      _messageMutationModule.batchMarkAsDelivered(
-        messageIds: messageIds,
-        userId: userId,
-      );
+  }) async => _messageMutationModule.batchMarkAsDelivered(
+    messageIds: messageIds,
+    userId: userId,
+  );
 
   /// Called by the DI module's dispose hook (`messaging_module.dart`).
   /// BUT-778: lastMessage sync moved to the `syncConversationLastMessage`
@@ -455,7 +455,8 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     }
 
     AppLogger.info(
-        'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user ${userId.maskedUserId}');
+      'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user ${userId.maskedUserId}',
+    );
     return totalMessagesDeleted;
   }
 
@@ -472,8 +473,9 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       deleted = messagesSnapshot.docs.length;
     }
 
-    final participants =
-        List<String>.from(convoDoc.data()['participantIds'] ?? const []);
+    final participants = List<String>.from(
+      convoDoc.data()['participantIds'] ?? const [],
+    );
     if (participants.length <= 2) {
       // 1:1 conversation (or solo) — delete the conversation doc itself.
       await convoDoc.reference.delete();

@@ -89,7 +89,8 @@ void main() {
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedFriendsService>(
-          mockFriendsService);
+        mockFriendsService,
+      );
       TestServiceLocator.registerMock<UserService>(mockUserService);
 
       // Configure service state using state-based approach (ultrathink gold standard)
@@ -148,38 +149,40 @@ void main() {
     });
 
     group('Initialization and Default State', () {
-      test('should initialize with correct default state for all properties',
-          () {
-        // Assert
-        expect(viewModel.friends, isEmpty);
-        expect(viewModel.incomingRequests, isEmpty);
-        expect(viewModel.sentRequests, isEmpty);
-        expect(viewModel.friendsCount, equals(0));
-        expect(viewModel.pendingRequestsCount, equals(0));
-        expect(viewModel.groups, isEmpty);
-        expect(viewModel.groupsWithFriends, isEmpty);
-        expect(viewModel.isLoadingGroups, isFalse);
-        expect(viewModel.groupsError, isNull);
-        expect(viewModel.groupsCount, equals(0));
-        expect(viewModel.searchQuery, isEmpty);
-        expect(viewModel.searchResults, isEmpty);
-        expect(viewModel.isSearching, isFalse);
-        expect(viewModel.searchError, isNull);
-        expect(viewModel.hasSearchResults, isFalse);
-        expect(viewModel.hasSearchQuery, isFalse);
-        expect(viewModel.isLoading, isFalse);
-        expect(viewModel.error, isNull);
-        expect(viewModel.hasError, isFalse);
-        expect(viewModel.selectedFriendIds, isEmpty);
-        expect(viewModel.hasSelectedFriends, isFalse);
-        expect(viewModel.selectedFriendsCount, equals(0));
-        expect(viewModel.isCreatingGroup, isFalse);
-        expect(viewModel.groupCreationError, isNull);
-        expect(viewModel.isLoadingUserProfiles, isFalse);
-        // Auth state from PermissionService (via TestServiceLocator)
-        expect(viewModel.isAuthenticated, isTrue);
-        expect(viewModel.currentUserId, equals('test-user-123'));
-      });
+      test(
+        'should initialize with correct default state for all properties',
+        () {
+          // Assert
+          expect(viewModel.friends, isEmpty);
+          expect(viewModel.incomingRequests, isEmpty);
+          expect(viewModel.sentRequests, isEmpty);
+          expect(viewModel.friendsCount, equals(0));
+          expect(viewModel.pendingRequestsCount, equals(0));
+          expect(viewModel.groups, isEmpty);
+          expect(viewModel.groupsWithFriends, isEmpty);
+          expect(viewModel.isLoadingGroups, isFalse);
+          expect(viewModel.groupsError, isNull);
+          expect(viewModel.groupsCount, equals(0));
+          expect(viewModel.searchQuery, isEmpty);
+          expect(viewModel.searchResults, isEmpty);
+          expect(viewModel.isSearching, isFalse);
+          expect(viewModel.searchError, isNull);
+          expect(viewModel.hasSearchResults, isFalse);
+          expect(viewModel.hasSearchQuery, isFalse);
+          expect(viewModel.isLoading, isFalse);
+          expect(viewModel.error, isNull);
+          expect(viewModel.hasError, isFalse);
+          expect(viewModel.selectedFriendIds, isEmpty);
+          expect(viewModel.hasSelectedFriends, isFalse);
+          expect(viewModel.selectedFriendsCount, equals(0));
+          expect(viewModel.isCreatingGroup, isFalse);
+          expect(viewModel.groupCreationError, isNull);
+          expect(viewModel.isLoadingUserProfiles, isFalse);
+          // Auth state from PermissionService (via TestServiceLocator)
+          expect(viewModel.isAuthenticated, isTrue);
+          expect(viewModel.currentUserId, equals('test-user-123'));
+        },
+      );
 
       test('should properly register service listeners', () {
         // Assert - test ViewModel behavior, not implementation details
@@ -299,42 +302,46 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('should accept gracefully when request already vanished (no throw)',
-          () async {
-        // Arrange — request is NOT in incomingRequests (cancelled on another
-        // device / double-tap), but the service still no-ops successfully.
-        // Bug 17: firstWhere used to throw here; firstWhereOrNull must not.
-        mockFriendsService.setFriendsState(
-          incomingRequests: [],
-          isInitialized: true,
-          management: mockManagement,
-        );
-        mockManagement.setManagementState(friends: []);
+      test(
+        'should accept gracefully when request already vanished (no throw)',
+        () async {
+          // Arrange — request is NOT in incomingRequests (cancelled on another
+          // device / double-tap), but the service still no-ops successfully.
+          // Bug 17: firstWhere used to throw here; firstWhereOrNull must not.
+          mockFriendsService.setFriendsState(
+            incomingRequests: [],
+            isInitialized: true,
+            management: mockManagement,
+          );
+          mockManagement.setManagementState(friends: []);
 
-        // Act
-        final result = await viewModel.acceptFriendRequest(testRequestId);
+          // Act
+          final result = await viewModel.acceptFriendRequest(testRequestId);
 
-        // Assert — returns the service success flag, no exception thrown.
-        expect(result, isTrue);
-      });
+          // Assert — returns the service success flag, no exception thrown.
+          expect(result, isTrue);
+        },
+      );
 
-      test('should reject gracefully when request already vanished (no throw)',
-          () async {
-        // Arrange — request absent from incomingRequests but service no-ops ok.
-        // Bug 17: firstWhere used to throw here; firstWhereOrNull must not.
-        mockFriendsService.setFriendsState(
-          incomingRequests: [],
-          isInitialized: true,
-          management: mockManagement,
-        );
-        mockManagement.setManagementState(friends: []);
+      test(
+        'should reject gracefully when request already vanished (no throw)',
+        () async {
+          // Arrange — request absent from incomingRequests but service no-ops ok.
+          // Bug 17: firstWhere used to throw here; firstWhereOrNull must not.
+          mockFriendsService.setFriendsState(
+            incomingRequests: [],
+            isInitialized: true,
+            management: mockManagement,
+          );
+          mockManagement.setManagementState(friends: []);
 
-        // Act
-        final result = await viewModel.rejectFriendRequest(testRequestId);
+          // Act
+          final result = await viewModel.rejectFriendRequest(testRequestId);
 
-        // Assert — returns the service success flag, no exception thrown.
-        expect(result, isTrue);
-      });
+          // Assert — returns the service success flag, no exception thrown.
+          expect(result, isTrue);
+        },
+      );
 
       // Note: unblockUser test skipped — same pre-existing SchedulerBinding issue
       // as sendFriendRequest/removeFriend tests (notifyListeners needs widget binding)
@@ -406,16 +413,18 @@ void main() {
         expect(viewModel.searchQuery, equals('Test User'));
       });
 
-      test('should reject search with short query and set Swedish error',
-          () async {
-        // Act
-        await viewModel.updateSearch('T');
+      test(
+        'should reject search with short query and set Swedish error',
+        () async {
+          // Act
+          await viewModel.updateSearch('T');
 
-        // Assert
-        expect(viewModel.searchQuery, equals('T'));
-        expect(viewModel.searchResults, isEmpty);
-        expect(viewModel.searchError, isNotNull);
-      });
+          // Assert
+          expect(viewModel.searchQuery, equals('T'));
+          expect(viewModel.searchResults, isEmpty);
+          expect(viewModel.searchError, isNotNull);
+        },
+      );
 
       test('should trim search query', () async {
         // Arrange - use state-based configuration (ultrathink gold standard)
@@ -491,7 +500,7 @@ void main() {
         mockCategories.setCategoriesState(
           shouldSucceed: true,
           friendsByCategory: {
-            testGroupId: [testFriendProfile]
+            testGroupId: [testFriendProfile],
           },
         );
 
@@ -661,10 +670,14 @@ void main() {
         );
 
         // Act & Assert
-        expect(viewModel.getFriendshipStatus(testFriendId),
-            equals(FriendshipStatus.friends));
-        expect(viewModel.getFriendshipStatus('unknown_id'),
-            equals(FriendshipStatus.none));
+        expect(
+          viewModel.getFriendshipStatus(testFriendId),
+          equals(FriendshipStatus.friends),
+        );
+        expect(
+          viewModel.getFriendshipStatus('unknown_id'),
+          equals(FriendshipStatus.none),
+        );
       });
 
       test('should detect outgoing request status', () {
@@ -681,8 +694,10 @@ void main() {
         );
 
         // Act & Assert
-        expect(viewModel.getFriendshipStatus(testUserId),
-            equals(FriendshipStatus.requestSent));
+        expect(
+          viewModel.getFriendshipStatus(testUserId),
+          equals(FriendshipStatus.requestSent),
+        );
       });
 
       test('should detect incoming request status', () {
@@ -699,8 +714,10 @@ void main() {
         );
 
         // Act & Assert
-        expect(viewModel.getFriendshipStatus(testFriendId),
-            equals(FriendshipStatus.requestReceived));
+        expect(
+          viewModel.getFriendshipStatus(testFriendId),
+          equals(FriendshipStatus.requestReceived),
+        );
       });
 
       test('should detect blocked user status', () {
@@ -718,10 +735,14 @@ void main() {
         );
 
         // Act & Assert
-        expect(viewModel.getFriendshipStatus('blocked-user-123'),
-            equals(FriendshipStatus.blocked));
-        expect(viewModel.getFriendshipStatus('non-blocked-user'),
-            equals(FriendshipStatus.none));
+        expect(
+          viewModel.getFriendshipStatus('blocked-user-123'),
+          equals(FriendshipStatus.blocked),
+        );
+        expect(
+          viewModel.getFriendshipStatus('non-blocked-user'),
+          equals(FriendshipStatus.none),
+        );
       });
 
       test('should check if can send friend request', () {
@@ -740,7 +761,9 @@ void main() {
         // Act & Assert
         expect(viewModel.canSendFriendRequest('new_user'), isTrue);
         expect(
-            viewModel.canSendFriendRequest('test-user-123'), isFalse); // Self
+          viewModel.canSendFriendRequest('test-user-123'),
+          isFalse,
+        ); // Self
         expect(viewModel.canSendFriendRequest(testFriendId), isTrue);
       });
     });
@@ -758,28 +781,31 @@ void main() {
     // correct, stable VM-level boundary to pin.
     group('Block / Unblock', () {
       test(
-          'unblockUser returns true and delegates to management service on success',
-          () async {
-        // This test proves that when the underlying management service reports
-        // success, the VM propagates true — a regression here would make the
-        // unblock button appear to fail in the UI while the action actually ran.
-        mockManagement.setManagementState(shouldSucceed: true);
+        'unblockUser returns true and delegates to management service on success',
+        () async {
+          // This test proves that when the underlying management service reports
+          // success, the VM propagates true — a regression here would make the
+          // unblock button appear to fail in the UI while the action actually ran.
+          mockManagement.setManagementState(shouldSucceed: true);
 
-        final result = await viewModel.unblockUser('blocked-user-123');
+          final result = await viewModel.unblockUser('blocked-user-123');
 
-        expect(result, isTrue);
-      });
+          expect(result, isTrue);
+        },
+      );
 
-      test('unblockUser returns false when management service reports failure',
-          () async {
-        // Proves failure propagation: if the service cannot write the unblock,
-        // the VM must return false so the UI can show an error to the user.
-        mockManagement.setManagementState(shouldSucceed: false);
+      test(
+        'unblockUser returns false when management service reports failure',
+        () async {
+          // Proves failure propagation: if the service cannot write the unblock,
+          // the VM must return false so the UI can show an error to the user.
+          mockManagement.setManagementState(shouldSucceed: false);
 
-        final result = await viewModel.unblockUser('blocked-user-123');
+          final result = await viewModel.unblockUser('blocked-user-123');
 
-        expect(result, isFalse);
-      });
+          expect(result, isFalse);
+        },
+      );
 
       test('getFriendshipStatus reflects live blockedUsers from service', () {
         // Proves the read path: when the service state contains a blocked user,
@@ -809,29 +835,30 @@ void main() {
       });
 
       test(
-          'getFriendshipStatus returns none for previously-blocked user after service state clears',
-          () {
-        // Proves unblock consistency: once the service no longer includes a
-        // user in blockedUsers, the VM must not keep reporting them as blocked.
-        // This would fail if the VM cached blockedUsers locally instead of
-        // reading the live service state.
-        mockFriendsService.setFriendsState(
-          friends: [],
-          incomingRequests: [],
-          outgoingRequests: [],
-          categoriesList: [],
-          blockedUsers: {},
-          isLoading: false,
-          error: null,
-          isInitialized: true,
-          management: mockManagement,
-        );
+        'getFriendshipStatus returns none for previously-blocked user after service state clears',
+        () {
+          // Proves unblock consistency: once the service no longer includes a
+          // user in blockedUsers, the VM must not keep reporting them as blocked.
+          // This would fail if the VM cached blockedUsers locally instead of
+          // reading the live service state.
+          mockFriendsService.setFriendsState(
+            friends: [],
+            incomingRequests: [],
+            outgoingRequests: [],
+            categoriesList: [],
+            blockedUsers: {},
+            isLoading: false,
+            error: null,
+            isInitialized: true,
+            management: mockManagement,
+          );
 
-        expect(
-          viewModel.getFriendshipStatus('formerly-blocked-user'),
-          equals(FriendshipStatus.none),
-        );
-      });
+          expect(
+            viewModel.getFriendshipStatus('formerly-blocked-user'),
+            equals(FriendshipStatus.none),
+          );
+        },
+      );
     });
 
     group('Mutual Friends', () {
@@ -998,8 +1025,10 @@ void main() {
 
         // Assert - verify behavior, not implementation details
         // ViewModel should be properly disposed without errors
-        expect(() => testViewModel.dispose(),
-            throwsFlutterError); // Second dispose should throw
+        expect(
+          () => testViewModel.dispose(),
+          throwsFlutterError,
+        ); // Second dispose should throw
       });
 
       test('should not perform operations after disposal', () async {

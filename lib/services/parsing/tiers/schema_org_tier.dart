@@ -23,7 +23,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   final IngredientParsingStrategy _ingredientStrategy;
 
   SchemaOrgTier({IngredientParsingStrategy? ingredientStrategy})
-      : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
+    : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
 
   static const tierIdentifier = 'SchemaOrg';
 
@@ -425,8 +425,9 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       }
     }
     if (nutrition is Map) {
-      final info =
-          NutritionInfo.fromSchemaOrg(Map<String, dynamic>.from(nutrition));
+      final info = NutritionInfo.fromSchemaOrg(
+        Map<String, dynamic>.from(nutrition),
+      );
       if (!info.isEmpty) {
         return FieldResult.success(info);
       }

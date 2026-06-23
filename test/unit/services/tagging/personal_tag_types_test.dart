@@ -78,7 +78,10 @@ void main() {
 
     test('totalTagCount sums all values regardless of key', () {
       final tags = PersonalTagsWithGroups(
-        groups: [_group(id: 'g1'), _group(id: 'g2')],
+        groups: [
+          _group(id: 'g1'),
+          _group(id: 'g2'),
+        ],
         tagsByGroup: {
           'g1': [_tag(id: 't1'), _tag(id: 't2')],
           'g2': [_tag(id: 't3')],

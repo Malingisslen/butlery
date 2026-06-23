@@ -58,31 +58,31 @@ class QuickFilterChips extends StatelessWidget {
 
   /// Default recipe quick filters for the recipe list view.
   static List<QuickFilterOption> getDefaultRecipeFilters(
-          BuildContext context) =>
-      [
-        QuickFilterOption(
-          id: RecipeFilters.filterFavorites,
-          label: context.l10n.filterFavorites,
-        ),
-        QuickFilterOption(
-          id: RecipeFilters.filterQuick,
-          label: context.l10n.filterUnder30Min,
-        ),
-        QuickFilterOption(
-          id: RecipeFilters.filterVegetarian,
-          label: context.l10n.filterVegetarianQuick,
-        ),
-        QuickFilterOption(
-          id: RecipeFilters.filterPantry,
-          label: context.l10n.filterWithMyIngredients,
-          icon: Icons.kitchen_outlined,
-        ),
-        QuickFilterOption(
-          id: RecipeFilters.filterIngredientSearch,
-          label: context.l10n.ingredientSearchChip,
-          icon: Icons.search_outlined,
-        ),
-      ];
+    BuildContext context,
+  ) => [
+    QuickFilterOption(
+      id: RecipeFilters.filterFavorites,
+      label: context.l10n.filterFavorites,
+    ),
+    QuickFilterOption(
+      id: RecipeFilters.filterQuick,
+      label: context.l10n.filterUnder30Min,
+    ),
+    QuickFilterOption(
+      id: RecipeFilters.filterVegetarian,
+      label: context.l10n.filterVegetarianQuick,
+    ),
+    QuickFilterOption(
+      id: RecipeFilters.filterPantry,
+      label: context.l10n.filterWithMyIngredients,
+      icon: Icons.kitchen_outlined,
+    ),
+    QuickFilterOption(
+      id: RecipeFilters.filterIngredientSearch,
+      label: context.l10n.ingredientSearchChip,
+      icon: Icons.search_outlined,
+    ),
+  ];
 
   /// Dynamic allergen quick-filter chips based on user's tracked allergens.
   /// Uses RecipeFilters.allergenKeyToFilterId as single source of truth.
@@ -131,22 +131,26 @@ class QuickFilterChips extends StatelessWidget {
             ),
 
           // Individual filter chips
-          ...options.map((option) => Padding(
-                padding: const EdgeInsetsDirectional.only(
-                    start: AppDimensions.spacingSm),
-                child: _QuickChip(
-                  label: option.label,
-                  icon: option.icon,
-                  isSelected: selectedIds.contains(option.id),
-                  onTap: () => onFilterToggle(option.id),
-                ),
-              )),
+          ...options.map(
+            (option) => Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: AppDimensions.spacingSm,
+              ),
+              child: _QuickChip(
+                label: option.label,
+                icon: option.icon,
+                isSelected: selectedIds.contains(option.id),
+                onTap: () => onFilterToggle(option.id),
+              ),
+            ),
+          ),
 
           // Trailing widget (e.g. sort button)
           if (trailing != null)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                  start: AppDimensions.spacingSm),
+                start: AppDimensions.spacingSm,
+              ),
               child: trailing!,
             ),
         ],
@@ -185,7 +189,9 @@ class _QuickChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
           child: AnimatedContainer(
             duration: AnimationUtils.getDuration(
-                context, AppDimensions.animationDurationFast),
+              context,
+              AppDimensions.animationDurationFast,
+            ),
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
               vertical: AppDimensions.spacingSm,
@@ -214,8 +220,9 @@ class _QuickChip extends StatelessWidget {
                 Text(
                   label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color:
-                        isSelected ? cs.surfaceContainerHighest : cs.onSurface,
+                    color: isSelected
+                        ? cs.surfaceContainerHighest
+                        : cs.onSurface,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),

@@ -29,8 +29,8 @@ void main() {
         final ingredients = (entry['ingredients'] as List).cast<String>();
         final instructions = (entry['instructions'] as List).cast<String>();
         final timeMinutes = entry['timeMinutes'] as int?;
-        final matchedRaw =
-            (entry['matched'] as List).cast<Map<String, dynamic>>();
+        final matchedRaw = (entry['matched'] as List)
+            .cast<Map<String, dynamic>>();
         final unmatchedRaw = (entry['unmatched'] as List).cast<String>();
         final expected = entry['expected'] as Map<String, dynamic>;
 
@@ -70,8 +70,8 @@ void main() {
         if (expected.containsKey('allergens')) {
           final expectedAllergens =
               (expected['allergens'] as Map<String, dynamic>).map(
-            (k, v) => MapEntry(k, _parseTriState(v as String)),
-          );
+                (k, v) => MapEntry(k, _parseTriState(v as String)),
+              );
           for (final allergen in expectedAllergens.entries) {
             expect(
               result.getAllergenStatus(allergen.key),
@@ -84,10 +84,10 @@ void main() {
 
         // Assert dietary
         if (expected.containsKey('dietary')) {
-          final expectedDietary =
-              (expected['dietary'] as Map<String, dynamic>).map(
-            (k, v) => MapEntry(k, _parseTriState(v as String)),
-          );
+          final expectedDietary = (expected['dietary'] as Map<String, dynamic>)
+              .map(
+                (k, v) => MapEntry(k, _parseTriState(v as String)),
+              );
           for (final diet in expectedDietary.entries) {
             expect(
               result.getDietaryStatus(diet.key),

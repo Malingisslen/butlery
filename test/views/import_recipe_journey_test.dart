@@ -195,8 +195,9 @@ class _UrlImportBodyState extends State<_UrlImportBody> {
                       final ok = await viewModel.saveImportedRecipe();
                       if (!mounted) return;
                       setState(() {
-                        _lastSaveMessage =
-                            ok ? 'Recept sparat' : 'Sparande misslyckades';
+                        _lastSaveMessage = ok
+                            ? 'Recept sparat'
+                            : 'Sparande misslyckades';
                       });
                     },
                     child: const Text('Spara'),
@@ -308,66 +309,72 @@ Gör så här:
 
   group('URL import journey', () {
     testWidgets(
-        'paste URL → fetch+parse → edit title → save persists edited recipe',
-        (tester) async {
-      await tester.pumpWidget(_testApp(viewModel));
-      await tester.pumpAndSettle();
+      'paste URL → fetch+parse → edit title → save persists edited recipe',
+      (tester) async {
+        await tester.pumpWidget(_testApp(viewModel));
+        await tester.pumpAndSettle();
 
-      // Save button hidden until a recipe is parsed.
-      expect(find.byKey(const Key('save')), findsNothing);
+        // Save button hidden until a recipe is parsed.
+        expect(find.byKey(const Key('save')), findsNothing);
 
-      // Paste URL → fetch button enables.
-      await tester.enterText(find.byKey(const Key('url_field')), testUrl);
-      await tester.pumpAndSettle();
-      expect(viewModel.canFetch, isTrue);
+        // Paste URL → fetch button enables.
+        await tester.enterText(find.byKey(const Key('url_field')), testUrl);
+        await tester.pumpAndSettle();
+        expect(viewModel.canFetch, isTrue);
 
-      // Trigger fetch+parse.
-      await tester.tap(find.byKey(const Key('fetch')));
-      await tester.pumpAndSettle();
+        // Trigger fetch+parse.
+        await tester.tap(find.byKey(const Key('fetch')));
+        await tester.pumpAndSettle();
 
-      // VM reached the parsed state and the editable title is now visible.
-      expect(viewModel.hasParsedRecipe, isTrue);
-      expect(viewModel.parsedRecipe!.title, 'Pannkakor');
-      expect(viewModel.sourceUrl, testUrl);
-      expect(find.byKey(const Key('title_field')), findsOneWidget);
-      expect(find.byKey(const Key('save')), findsOneWidget);
+        // VM reached the parsed state and the editable title is now visible.
+        expect(viewModel.hasParsedRecipe, isTrue);
+        expect(viewModel.parsedRecipe!.title, 'Pannkakor');
+        expect(viewModel.sourceUrl, testUrl);
+        expect(find.byKey(const Key('title_field')), findsOneWidget);
+        expect(find.byKey(const Key('save')), findsOneWidget);
 
-      // User edits the title.
-      await tester.enterText(
-          find.byKey(const Key('title_field')), 'Mina pannkakor');
-      await tester.pumpAndSettle();
-      expect(viewModel.parsedRecipe!.title, 'Mina pannkakor');
+        // User edits the title.
+        await tester.enterText(
+          find.byKey(const Key('title_field')),
+          'Mina pannkakor',
+        );
+        await tester.pumpAndSettle();
+        expect(viewModel.parsedRecipe!.title, 'Mina pannkakor');
 
-      // Save → VM returns true, body shows success message.
-      // The save routes through the VM's executeAsyncVoid, which writes to
-      // FakeFirebaseFirestore on the REAL event loop. pumpAndSettle drives the
-      // fake-async zone only, so the write never completes under it — drive the
-      // real async work via runAsync, then pump to rebuild with the new message.
-      await tester.tap(find.byKey(const Key('save')));
-      await tester.runAsync(() async {
-        // Let the FakeFirestore write + the VM's executeAsyncVoid resolve.
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-      });
-      await tester.pump(); // rebuild with the updated _lastSaveMessage
+        // Save → VM returns true, body shows success message.
+        // The save routes through the VM's executeAsyncVoid, which writes to
+        // FakeFirebaseFirestore on the REAL event loop. pumpAndSettle drives the
+        // fake-async zone only, so the write never completes under it — drive the
+        // real async work via runAsync, then pump to rebuild with the new message.
+        await tester.tap(find.byKey(const Key('save')));
+        await tester.runAsync(() async {
+          // Let the FakeFirestore write + the VM's executeAsyncVoid resolve.
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        });
+        await tester.pump(); // rebuild with the updated _lastSaveMessage
 
-      expect(find.text('Recept sparat'), findsOneWidget);
+        expect(find.text('Recept sparat'), findsOneWidget);
 
-      // The saved document in the fake repo carries the user's edited title,
-      // not the originally parsed one. The read is itself real async work, so
-      // it must run inside runAsync to observe the written doc.
-      late final Map<String, dynamic>? savedData;
-      await tester.runAsync(() async {
-        final snapshot =
-            await firestore.collection('recipes').doc('pannkakor_parsed').get();
-        expect(snapshot.exists, isTrue);
-        savedData = snapshot.data();
-      });
-      expect(savedData!['title'], 'Mina pannkakor');
-      expect(savedData!['sourceUrl'], testUrl);
-    });
+        // The saved document in the fake repo carries the user's edited title,
+        // not the originally parsed one. The read is itself real async work, so
+        // it must run inside runAsync to observe the written doc.
+        late final Map<String, dynamic>? savedData;
+        await tester.runAsync(() async {
+          final snapshot = await firestore
+              .collection('recipes')
+              .doc('pannkakor_parsed')
+              .get();
+          expect(snapshot.exists, isTrue);
+          savedData = snapshot.data();
+        });
+        expect(savedData!['title'], 'Mina pannkakor');
+        expect(savedData!['sourceUrl'], testUrl);
+      },
+    );
 
-    testWidgets('fetch failure surfaces theme-resolved error banner',
-        (tester) async {
+    testWidgets('fetch failure surfaces theme-resolved error banner', (
+      tester,
+    ) async {
       // Re-create VM with a fetch that throws.
       viewModel.dispose();
       viewModel = _TestableUrlImportViewModel(
@@ -393,10 +400,12 @@ Gör så här:
               GlobalCupertinoLocalizations.delegate,
             ],
             theme: AppTheme.lightTheme,
-            home: Builder(builder: (ctx) {
-              capturedScheme = Theme.of(ctx).colorScheme;
-              return const _UrlImportBody();
-            }),
+            home: Builder(
+              builder: (ctx) {
+                capturedScheme = Theme.of(ctx).colorScheme;
+                return const _UrlImportBody();
+              },
+            ),
           ),
         ),
       );

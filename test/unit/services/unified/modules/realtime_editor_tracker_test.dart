@@ -44,7 +44,8 @@ void main() {
         getIt.unregister<CollaborativeRecipeRepository>();
       }
       getIt.registerSingleton<CollaborativeRecipeRepository>(
-          mockCollaborativeRepo);
+        mockCollaborativeRepo,
+      );
     });
 
     tearDown(() async {
@@ -70,11 +71,13 @@ void main() {
         const currentUserId = 'user-123';
         const currentUserDisplayName = 'Test User';
 
-        when(() => mockCollaborativeRepo.setPresence(
-              any(),
-              any(),
-              any(),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockCollaborativeRepo.setPresence(
+            any(),
+            any(),
+            any(),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await RealtimeEditorTracker.registerActiveEditor(
@@ -85,16 +88,19 @@ void main() {
         );
 
         // Assert
-        verify(() => mockCollaborativeRepo.setPresence(
-              recipeId,
-              currentUserId,
-              any(
-                  that: allOf(
+        verify(
+          () => mockCollaborativeRepo.setPresence(
+            recipeId,
+            currentUserId,
+            any(
+              that: allOf(
                 containsPair('displayName', currentUserDisplayName),
                 containsPair('isActive', true),
                 contains('lastSeen'),
-              )),
-            )).called(1);
+              ),
+            ),
+          ),
+        ).called(1);
       });
 
       test('should unregister active editor', () async {
@@ -102,8 +108,9 @@ void main() {
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.removePresence(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCollaborativeRepo.removePresence(any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
         await RealtimeEditorTracker.registerActiveEditor(
@@ -114,9 +121,9 @@ void main() {
         );
 
         // Assert
-        verify(() =>
-                mockCollaborativeRepo.removePresence(recipeId, currentUserId))
-            .called(1);
+        verify(
+          () => mockCollaborativeRepo.removePresence(recipeId, currentUserId),
+        ).called(1);
       });
 
       test('should handle registration with null display name', () async {
@@ -124,11 +131,13 @@ void main() {
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.setPresence(
-              any(),
-              any(),
-              any(),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockCollaborativeRepo.setPresence(
+            any(),
+            any(),
+            any(),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await RealtimeEditorTracker.registerActiveEditor(
@@ -139,11 +148,13 @@ void main() {
         );
 
         // Assert
-        verify(() => mockCollaborativeRepo.setPresence(
-              recipeId,
-              currentUserId,
-              any(that: containsPair('displayName', 'Okänd användare')),
-            )).called(1);
+        verify(
+          () => mockCollaborativeRepo.setPresence(
+            recipeId,
+            currentUserId,
+            any(that: containsPair('displayName', 'Okänd användare')),
+          ),
+        ).called(1);
       });
 
       test('should handle registration errors', () async {
@@ -151,8 +162,9 @@ void main() {
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.setPresence(any(), any(), any()))
-            .thenThrow(Exception('Registration failed'));
+        when(
+          () => mockCollaborativeRepo.setPresence(any(), any(), any()),
+        ).thenThrow(Exception('Registration failed'));
 
         // Act & Assert
         await expectLater(
@@ -173,8 +185,9 @@ void main() {
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
         await RealtimeEditorTracker.updateActiveEditorPresence(
@@ -183,10 +196,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockCollaborativeRepo.updatePresenceHeartbeat(
-              recipeId,
-              currentUserId,
-            )).called(1);
+        verify(
+          () => mockCollaborativeRepo.updatePresenceHeartbeat(
+            recipeId,
+            currentUserId,
+          ),
+        ).called(1);
       });
 
       test('should handle presence update errors silently', () async {
@@ -194,8 +209,9 @@ void main() {
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()))
-            .thenThrow(Exception('Update failed'));
+        when(
+          () => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()),
+        ).thenThrow(Exception('Update failed'));
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -212,8 +228,9 @@ void main() {
         final recipeIds = ['recipe-1', 'recipe-2', 'recipe-3'];
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()),
+        ).thenAnswer((_) async {});
 
         // Act
         await RealtimeEditorTracker.updatePresenceForMultipleRecipes(
@@ -223,10 +240,12 @@ void main() {
 
         // Assert
         for (final recipeId in recipeIds) {
-          verify(() => mockCollaborativeRepo.updatePresenceHeartbeat(
-                recipeId,
-                currentUserId,
-              )).called(1);
+          verify(
+            () => mockCollaborativeRepo.updatePresenceHeartbeat(
+              recipeId,
+              currentUserId,
+            ),
+          ).called(1);
         }
       });
 
@@ -235,8 +254,9 @@ void main() {
         final recipeIds = ['recipe-1', 'recipe-2'];
         const currentUserId = 'user-123';
 
-        when(() => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()))
-            .thenThrow(Exception('Batch update failed'));
+        when(
+          () => mockCollaborativeRepo.updatePresenceHeartbeat(any(), any()),
+        ).thenThrow(Exception('Batch update failed'));
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -258,8 +278,9 @@ void main() {
           {'userId': 'user-2', 'displayName': 'User 2', 'isActive': true},
         ];
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenAnswer((_) async => mockEditors);
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenAnswer((_) async => mockEditors);
 
         // Act
         final result = await RealtimeEditorTracker.getActiveEditors(
@@ -268,16 +289,18 @@ void main() {
 
         // Assert
         expect(result, equals(mockEditors));
-        verify(() => mockCollaborativeRepo.getActiveEditors(recipeId))
-            .called(1);
+        verify(
+          () => mockCollaborativeRepo.getActiveEditors(recipeId),
+        ).called(1);
       });
 
       test('should return empty list on error', () async {
         // Arrange
         const recipeId = 'recipe-1';
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenThrow(Exception('Query failed'));
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenThrow(Exception('Query failed'));
 
         // Act
         final result = await RealtimeEditorTracker.getActiveEditors(
@@ -297,8 +320,9 @@ void main() {
           {'userId': 'user-3', 'isCurrentlyActive': true},
         ];
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenAnswer((_) async => mockEditors);
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenAnswer((_) async => mockEditors);
 
         // Act
         final result = await RealtimeEditorTracker.getCurrentlyActiveEditors(
@@ -319,8 +343,9 @@ void main() {
           {'userId': 'user-3', 'isCurrentlyActive': false},
         ];
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenAnswer((_) async => mockEditors);
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenAnswer((_) async => mockEditors);
 
         // Act
         final count = await RealtimeEditorTracker.getActiveEditorCount(
@@ -336,8 +361,9 @@ void main() {
         const recipeId = 'recipe-1';
         const userId = 'user-123';
 
-        when(() => mockCollaborativeRepo.isUserActivelyEditing(any(), any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockCollaborativeRepo.isUserActivelyEditing(any(), any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await RealtimeEditorTracker.isUserActivelyEditing(
@@ -347,10 +373,12 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockCollaborativeRepo.isUserActivelyEditing(
-              recipeId,
-              userId,
-            )).called(1);
+        verify(
+          () => mockCollaborativeRepo.isUserActivelyEditing(
+            recipeId,
+            userId,
+          ),
+        ).called(1);
       });
 
       test('should return false when checking active editing fails', () async {
@@ -358,8 +386,9 @@ void main() {
         const recipeId = 'recipe-1';
         const userId = 'user-123';
 
-        when(() => mockCollaborativeRepo.isUserActivelyEditing(any(), any()))
-            .thenThrow(Exception('Check failed'));
+        when(
+          () => mockCollaborativeRepo.isUserActivelyEditing(any(), any()),
+        ).thenThrow(Exception('Check failed'));
 
         // Act
         final result = await RealtimeEditorTracker.isUserActivelyEditing(
@@ -381,8 +410,9 @@ void main() {
           {'userId': 'user-2', 'isCurrentlyActive': true},
         ];
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenAnswer((_) async => mockEditors);
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenAnswer((_) async => mockEditors);
 
         // Act
         final stats = await RealtimeEditorTracker.getEditorStatistics(
@@ -399,8 +429,9 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenThrow(Exception('Stats failed'));
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenThrow(Exception('Stats failed'));
 
         // Act
         final stats = await RealtimeEditorTracker.getEditorStatistics(
@@ -420,52 +451,57 @@ void main() {
           {'userId': 'user-2', 'isCurrentlyActive': true},
         ];
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenAnswer((_) async => mockEditors);
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenAnswer((_) async => mockEditors);
 
         // Act
         final hasActivity =
             await RealtimeEditorTracker.hasCollaborativeActivity(
-          recipeId: recipeId,
-        );
+              recipeId: recipeId,
+            );
 
         // Assert
         expect(hasActivity, isTrue); // More than 1 editor
       });
 
-      test('should detect no collaborative activity with single editor',
-          () async {
-        // Arrange
-        const recipeId = 'recipe-1';
-        final mockEditors = [
-          {'userId': 'user-1', 'isCurrentlyActive': true},
-        ];
+      test(
+        'should detect no collaborative activity with single editor',
+        () async {
+          // Arrange
+          const recipeId = 'recipe-1';
+          final mockEditors = [
+            {'userId': 'user-1', 'isCurrentlyActive': true},
+          ];
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenAnswer((_) async => mockEditors);
+          when(
+            () => mockCollaborativeRepo.getActiveEditors(any()),
+          ).thenAnswer((_) async => mockEditors);
 
-        // Act
-        final hasActivity =
-            await RealtimeEditorTracker.hasCollaborativeActivity(
-          recipeId: recipeId,
-        );
+          // Act
+          final hasActivity =
+              await RealtimeEditorTracker.hasCollaborativeActivity(
+                recipeId: recipeId,
+              );
 
-        // Assert
-        expect(hasActivity, isFalse); // Only 1 editor
-      });
+          // Assert
+          expect(hasActivity, isFalse); // Only 1 editor
+        },
+      );
 
       test('should return false for collaborative activity on error', () async {
         // Arrange
         const recipeId = 'recipe-1';
 
-        when(() => mockCollaborativeRepo.getActiveEditors(any()))
-            .thenThrow(Exception('Activity check failed'));
+        when(
+          () => mockCollaborativeRepo.getActiveEditors(any()),
+        ).thenThrow(Exception('Activity check failed'));
 
         // Act
         final hasActivity =
             await RealtimeEditorTracker.hasCollaborativeActivity(
-          recipeId: recipeId,
-        );
+              recipeId: recipeId,
+            );
 
         // Assert
         expect(hasActivity, isFalse);
@@ -477,8 +513,9 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
 
-        when(() => mockCollaborativeRepo.cleanupInactiveEditors(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockCollaborativeRepo.cleanupInactiveEditors(any()),
+        ).thenAnswer((_) async {});
 
         // Act
         await RealtimeEditorTracker.cleanupInactiveEditors(
@@ -486,16 +523,18 @@ void main() {
         );
 
         // Assert
-        verify(() => mockCollaborativeRepo.cleanupInactiveEditors(recipeId))
-            .called(1);
+        verify(
+          () => mockCollaborativeRepo.cleanupInactiveEditors(recipeId),
+        ).called(1);
       });
 
       test('should handle cleanup errors', () async {
         // Arrange
         const recipeId = 'recipe-1';
 
-        when(() => mockCollaborativeRepo.cleanupInactiveEditors(any()))
-            .thenThrow(Exception('Cleanup failed'));
+        when(
+          () => mockCollaborativeRepo.cleanupInactiveEditors(any()),
+        ).thenThrow(Exception('Cleanup failed'));
 
         // Act & Assert - Should not throw
         await expectLater(

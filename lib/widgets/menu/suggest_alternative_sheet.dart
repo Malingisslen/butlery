@@ -61,9 +61,11 @@ class _SheetContentState extends State<_SheetContent> {
   List<Recipe> _getFilteredRecipes(String query) {
     return widget.availableRecipes
         .where((r) => !widget.excludeRecipeIds.contains(r.id))
-        .where((r) =>
-            query.isEmpty ||
-            r.title.toLowerCase().contains(query.toLowerCase()))
+        .where(
+          (r) =>
+              query.isEmpty ||
+              r.title.toLowerCase().contains(query.toLowerCase()),
+        )
         .take(20)
         .toList();
   }
@@ -94,14 +96,16 @@ class _SheetContentState extends State<_SheetContent> {
                   // Handle
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.spacingM),
+                      vertical: AppDimensions.spacingM,
+                    ),
                     child: Container(
                       width: AppDimensions.spacingXl * 2,
                       height: AppDimensions.spacingXxs,
                       decoration: BoxDecoration(
                         color: cs.onSurfaceVariant,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.spacingXxs),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.spacingXxs,
+                        ),
                       ),
                     ),
                   ),
@@ -109,7 +113,8 @@ class _SheetContentState extends State<_SheetContent> {
                   // Title
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingL),
+                      horizontal: AppDimensions.paddingL,
+                    ),
                     child: Text(
                       context.l10n.menuVoteSuggestAlternative,
                       style: AppTextStyles.sectionHeader,
@@ -120,7 +125,8 @@ class _SheetContentState extends State<_SheetContent> {
                   // Search field
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingL),
+                      horizontal: AppDimensions.paddingL,
+                    ),
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
@@ -141,15 +147,17 @@ class _SheetContentState extends State<_SheetContent> {
                         ? Center(
                             child: Text(
                               context.l10n.menuVoteNoAlternatives,
-                              style: AppTextStyles.bodyMedium
-                                  .copyWith(color: cs.onSurfaceVariant),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
                             ),
                           )
                         : ListView.builder(
                             controller: scrollController,
                             itemCount: _filtered.length,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimensions.paddingL),
+                              horizontal: AppDimensions.paddingL,
+                            ),
                             itemBuilder: (context, index) {
                               final recipe = _filtered[index];
                               return ListTile(
@@ -160,7 +168,8 @@ class _SheetContentState extends State<_SheetContent> {
                                           imageUrl: recipe.imageUrls.first,
                                           cacheKey:
                                               FirebaseUrlUtils.stableCacheKey(
-                                                  recipe.imageUrls.first),
+                                                recipe.imageUrls.first,
+                                              ),
                                           width: AppDimensions.avatarSizeM,
                                           height: AppDimensions.avatarSizeM,
                                           fit: BoxFit.cover,
@@ -183,8 +192,9 @@ class _SheetContentState extends State<_SheetContent> {
                                 ),
                                 subtitle: Text(
                                   recipe.mealType,
-                                  style: AppTextStyles.bodySmall
-                                      .copyWith(color: cs.onSurfaceVariant),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
                                 ),
                               );
                             },

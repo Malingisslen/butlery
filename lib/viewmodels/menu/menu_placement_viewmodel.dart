@@ -68,9 +68,9 @@ class MenuPlacementViewModel extends BaseViewModel {
     required DateTime weekStart,
     ParsedMenuRequest? parsedRequest,
     this.startFromEmptyWeek = false,
-  })  : _service = service,
-        _parsedRequest = parsedRequest,
-        _originalWeekStart = IsoWeekUtils.weekStartOf(weekStart) {
+  }) : _service = service,
+       _parsedRequest = parsedRequest,
+       _originalWeekStart = IsoWeekUtils.weekStartOf(weekStart) {
     _items = [
       for (final entry in generated.entries)
         for (final recipe in entry.value)
@@ -217,8 +217,9 @@ class MenuPlacementViewModel extends BaseViewModel {
     // unplaced item with the same recipe AND slot — recipeId alone would
     // cross-wire a recipe generated under two meal types (un-placing the
     // lunch card would then remove the dinner cell).
-    final newEntries =
-        result.plan.entries.where((e) => !beforeIds.contains(e.id));
+    final newEntries = result.plan.entries.where(
+      (e) => !beforeIds.contains(e.id),
+    );
     for (final entry in newEntries) {
       for (final item in unplaced) {
         if (!item.isPlaced &&

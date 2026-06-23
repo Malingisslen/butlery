@@ -213,7 +213,7 @@ class TagEditingService extends BaseService {
     for (final entry in tagResult.allergenStatus.entries) {
       effectiveAllergens[entry.key] =
           overrides?.getEffectiveAllergenStatus(entry.key, entry.value) ??
-              entry.value;
+          entry.value;
     }
 
     // Merge dietary statuses
@@ -221,11 +221,12 @@ class TagEditingService extends BaseService {
     for (final entry in tagResult.dietaryStatus.entries) {
       effectiveDietary[entry.key] =
           overrides?.getEffectiveDietaryStatus(entry.key, entry.value) ??
-              entry.value;
+          entry.value;
     }
 
     // Merge tags
-    final effectiveTags = overrides?.getEffectiveTags(tagResult.tags.toSet()) ??
+    final effectiveTags =
+        overrides?.getEffectiveTags(tagResult.tags.toSet()) ??
         tagResult.tags.toSet();
 
     return EffectiveTagData(

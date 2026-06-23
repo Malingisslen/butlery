@@ -23,11 +23,14 @@ class CommentLikesSystem {
   }) async {
     try {
       AppLogger.info(
-          '👍 Toggling like on comment $commentId for user $currentUserId');
+        '👍 Toggling like on comment $commentId for user $currentUserId',
+      );
 
       // Check current like status
       final wasLiked = await _commentsRepository.hasUserLikedComment(
-          commentId, currentUserId);
+        commentId,
+        currentUserId,
+      );
 
       // Toggle the like
       await _commentsRepository.toggleCommentLike(commentId, currentUserId);
@@ -50,8 +53,10 @@ class CommentLikesSystem {
       AppLogger.info('👍 Adding like to comment $commentId');
 
       // Check if already liked
-      final alreadyLiked =
-          await _commentsRepository.hasUserLikedComment(commentId, userId);
+      final alreadyLiked = await _commentsRepository.hasUserLikedComment(
+        commentId,
+        userId,
+      );
 
       if (!alreadyLiked) {
         await _commentsRepository.toggleCommentLike(commentId, userId);
@@ -76,8 +81,10 @@ class CommentLikesSystem {
       AppLogger.info('👎 Removing like from comment $commentId');
 
       // Check if currently liked
-      final currentlyLiked =
-          await _commentsRepository.hasUserLikedComment(commentId, userId);
+      final currentlyLiked = await _commentsRepository.hasUserLikedComment(
+        commentId,
+        userId,
+      );
 
       if (currentlyLiked) {
         await _commentsRepository.toggleCommentLike(commentId, userId);
@@ -124,8 +131,10 @@ class CommentLikesSystem {
     int limit = 100,
   }) async {
     try {
-      return await _commentsRepository.getCommentLikers(commentId,
-          limit: limit);
+      return await _commentsRepository.getCommentLikers(
+        commentId,
+        limit: limit,
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to get comment likers', e);
       return [];
@@ -219,10 +228,12 @@ class CommentLikesSystem {
         'totalLikes': totalLikes,
         'totalComments': comments.length,
         'commentsWithLikes': commentsWithLikes,
-        'averageLikesPerComment':
-            comments.isEmpty ? 0.0 : totalLikes / comments.length,
-        'likeEngagementRate':
-            comments.isEmpty ? 0.0 : commentsWithLikes / comments.length,
+        'averageLikesPerComment': comments.isEmpty
+            ? 0.0
+            : totalLikes / comments.length,
+        'likeEngagementRate': comments.isEmpty
+            ? 0.0
+            : commentsWithLikes / comments.length,
         'mostLikedCommentId': mostLikedComment?.id,
         'mostLikedCommentLikes': mostLikedComment?.likeCount ?? 0,
       };

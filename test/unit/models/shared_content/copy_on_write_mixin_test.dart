@@ -46,8 +46,7 @@ class _Stub extends BaseSharedContentModel<String> with CopyOnWriteSupport {
     int? viewCount,
     int? engagementCount,
     int? dismissalCount,
-  }) =>
-      this;
+  }) => this;
 
   @override
   _Stub triggerCopyOnWrite({
@@ -115,7 +114,9 @@ void main() {
 
     test('hasActiveCollaborators true iff count > 0', () {
       expect(
-          _stub(cow: true, collaborators: 0).hasActiveCollaborators, isFalse);
+        _stub(cow: true, collaborators: 0).hasActiveCollaborators,
+        isFalse,
+      );
       expect(_stub(cow: true, collaborators: 1).hasActiveCollaborators, isTrue);
       expect(_stub(cow: true, collaborators: 5).hasActiveCollaborators, isTrue);
     });

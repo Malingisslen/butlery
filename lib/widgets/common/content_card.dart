@@ -240,8 +240,9 @@ class ContentCard extends StatelessWidget {
       recipe: recipe,
       onTap: onTap != null ? (_) => onTap!() : null,
       onLongPress: onLongPress != null ? (_) => onLongPress!() : null,
-      onFavoriteToggle:
-          onFavoriteToggle != null ? (_) => onFavoriteToggle!() : null,
+      onFavoriteToggle: onFavoriteToggle != null
+          ? (_) => onFavoriteToggle!()
+          : null,
       showImage: showImage,
       showTags: showTags,
       showMetadata: showMetadata,
@@ -286,8 +287,10 @@ class ContentCard extends StatelessWidget {
   /// Returns configured FriendRequestCard widget with action handlers
   /// Throws AssertionError if item is not a FriendRequest instance
   Widget _buildFriendRequestCard() {
-    assert(item is FriendRequest,
-        'Friend request card requires FriendRequest item');
+    assert(
+      item is FriendRequest,
+      'Friend request card requires FriendRequest item',
+    );
     final friendRequest = item as FriendRequest;
 
     return FriendRequestCard(

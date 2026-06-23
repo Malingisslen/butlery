@@ -57,9 +57,9 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     required FirebaseFriendsRepository repository,
     required FriendCategoryRepository categoryRepository,
     required FirebaseBlockRepository blockRepository,
-  })  : _repository = repository,
-        _categoryRepository = categoryRepository,
-        _blockRepository = blockRepository;
+  }) : _repository = repository,
+       _categoryRepository = categoryRepository,
+       _blockRepository = blockRepository;
 
   List<UserProfile> get friends => List.unmodifiable(_friends);
   List<FriendRequest> get incomingRequests =>
@@ -112,13 +112,16 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       _isInitialized = true;
       _isLoading = false;
       AppLogger.warning(
-          'FriendsStateManager init timed out, proceeding with partial data');
+        'FriendsStateManager init timed out, proceeding with partial data',
+      );
     } catch (e, stackTrace) {
       _isInitialized = true;
       _isLoading = false;
       _error = 'Failed to load friends data: $e';
       AppLogger.error(
-          'Failed to initialize FriendsStateManager: $e', stackTrace);
+        'Failed to initialize FriendsStateManager: $e',
+        stackTrace,
+      );
     }
 
     notifyListeners();
@@ -129,12 +132,14 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       final friendIds = await _repository.fetchFriendIds(userId);
 
       if (friendIds.isNotEmpty) {
-        final filteredFriendIds =
-            friendIds.where((id) => id != userId).toList();
+        final filteredFriendIds = friendIds
+            .where((id) => id != userId)
+            .toList();
 
         if (filteredFriendIds.isNotEmpty) {
-          final friendProfiles =
-              await _repository.fetchFriendProfiles(filteredFriendIds);
+          final friendProfiles = await _repository.fetchFriendProfiles(
+            filteredFriendIds,
+          );
           _friends = friendProfiles;
         } else {
           _friends = [];
@@ -159,7 +164,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       _outgoingRequests = results[1];
 
       AppLogger.debug(
-          'Loaded ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests');
+        'Loaded ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests',
+      );
     } catch (e) {
       AppLogger.warning('Failed to load friend requests: $e');
       _incomingRequests = [];
@@ -173,7 +179,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       // is a member (across all users' collections), not just categories they own
       _categories = await _categoryRepository.fetchMemberCategories(userId);
       AppLogger.debug(
-          'Loaded ${_categories.length} member categories (BUG-018 fix)');
+        'Loaded ${_categories.length} member categories (BUG-018 fix)',
+      );
     } catch (e) {
       AppLogger.warning('Failed to load categories: $e');
       _categories = [];
@@ -182,8 +189,9 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
 
   Future<void> _loadGroupInvitations(String userId) async {
     try {
-      final receivedInvitations =
-          await _repository.fetchReceivedInvitations(userId);
+      final receivedInvitations = await _repository.fetchReceivedInvitations(
+        userId,
+      );
       _receivedInvitations = receivedInvitations;
 
       final sentInvitations = await _repository.fetchSentInvitations(userId);
@@ -201,7 +209,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
         ..clear()
         ..addAll(blocked);
       AppLogger.debug(
-          'Loaded ${_blockedUsers.length} blocked users from blocks collection');
+        'Loaded ${_blockedUsers.length} blocked users from blocks collection',
+      );
     } catch (e) {
       AppLogger.warning('Failed to load blocked users: $e');
     }
@@ -241,7 +250,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
         (requests) {
           _incomingRequests = requests;
           AppLogger.debug(
-              'Real-time update: ${_incomingRequests.length} incoming requests');
+            'Real-time update: ${_incomingRequests.length} incoming requests',
+          );
           notifyListeners();
         },
         name: _kIncomingRequests,
@@ -255,7 +265,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
         (requests) {
           _outgoingRequests = requests;
           AppLogger.debug(
-              'Real-time update: ${_outgoingRequests.length} outgoing requests');
+            'Real-time update: ${_outgoingRequests.length} outgoing requests',
+          );
           notifyListeners();
         },
         name: _kSentRequests,
@@ -292,7 +303,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
             ..clear()
             ..addAll(blockedIds);
           AppLogger.debug(
-              'Real-time update: ${_blockedUsers.length} blocked users');
+            'Real-time update: ${_blockedUsers.length} blocked users',
+          );
           notifyListeners();
         },
         name: _kBlockedUsers,
@@ -314,7 +326,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       (invitations) {
         _receivedInvitations = invitations;
         AppLogger.debug(
-            'Real-time update: ${invitations.length} received invitations');
+          'Real-time update: ${invitations.length} received invitations',
+        );
         notifyListeners();
       },
       name: _kGroupInvitations,
@@ -325,16 +338,20 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
             errorString.contains('Unexpected state')) {
           if (retryCount < maxRetries) {
             AppLogger.warning(
-                '⚠️ Firestore assertion in invitations stream, retry ${retryCount + 1}/$maxRetries...');
+              '⚠️ Firestore assertion in invitations stream, retry ${retryCount + 1}/$maxRetries...',
+            );
             Future.delayed(const Duration(milliseconds: 500), () {
               if (_isInitialized && !isStreamDisposed) {
-                _setupGroupInvitationsStream(userId,
-                    retryCount: retryCount + 1);
+                _setupGroupInvitationsStream(
+                  userId,
+                  retryCount: retryCount + 1,
+                );
               }
             });
           } else {
             AppLogger.error(
-                '❌ Max retries exceeded for invitations stream after $maxRetries attempts');
+              '❌ Max retries exceeded for invitations stream after $maxRetries attempts',
+            );
           }
         } else {
           AppLogger.warning('Group invitations stream error: $e');
@@ -356,10 +373,12 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     // When refresh() calls _loadCategories first, the streams may fire with stale
     // data before both have updated. Pre-populating ensures we don't lose data
     // when only one stream fires initially after a refresh.
-    List<FriendCategory> ownedCategories =
-        _categories.where((cat) => cat.ownerId == userId).toList();
-    List<FriendCategory> memberCategories =
-        _categories.where((cat) => cat.ownerId != userId).toList();
+    List<FriendCategory> ownedCategories = _categories
+        .where((cat) => cat.ownerId == userId)
+        .toList();
+    List<FriendCategory> memberCategories = _categories
+        .where((cat) => cat.ownerId != userId)
+        .toList();
 
     void mergeAndNotify() {
       // Combine both lists, avoiding duplicates by ID
@@ -372,7 +391,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
       }
       _categories = allCategories.values.toList();
       AppLogger.debug(
-          'Real-time update: ${_categories.length} categories (${ownedCategories.length} owned + ${memberCategories.length} member, BUG-018 fix)');
+        'Real-time update: ${_categories.length} categories (${ownedCategories.length} owned + ${memberCategories.length} member, BUG-018 fix)',
+      );
       notifyListeners();
     }
 
@@ -390,7 +410,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
             errorString.contains('Unexpected state')) {
           if (retryCount < maxRetries) {
             AppLogger.warning(
-                '⚠️ Firestore assertion in owned categories stream, retry ${retryCount + 1}/$maxRetries...');
+              '⚠️ Firestore assertion in owned categories stream, retry ${retryCount + 1}/$maxRetries...',
+            );
             Future.delayed(const Duration(milliseconds: 500), () {
               if (_isInitialized && !isStreamDisposed) {
                 _setupCategoriesStream(userId, retryCount: retryCount + 1);
@@ -398,7 +419,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
             });
           } else {
             AppLogger.error(
-                '❌ Max retries exceeded for owned categories stream after $maxRetries attempts');
+              '❌ Max retries exceeded for owned categories stream after $maxRetries attempts',
+            );
           }
         } else {
           AppLogger.warning('Owned categories stream error: $e');
@@ -471,7 +493,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     if (!_friends.any((f) => f.uid == friend.uid)) {
       _friends.add(friend);
       AppLogger.debug(
-          'Added friend to state: ${friend.displayName} (${friend.uid})');
+        'Added friend to state: ${friend.displayName} (${friend.uid})',
+      );
       notifyListeners();
     }
   }
@@ -529,7 +552,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
   void removeBlockedUser(String userId) {
     if (_blockedUsers.remove(userId)) {
       AppLogger.debug(
-          'Removed blocked user from state: ${userId.maskedUserId}');
+        'Removed blocked user from state: ${userId.maskedUserId}',
+      );
       notifyListeners();
     }
   }
@@ -595,7 +619,9 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   void updateReceivedInvitation(
-      String invitationId, GroupInvitation invitation) {
+    String invitationId,
+    GroupInvitation invitation,
+  ) {
     final index = _receivedInvitations.indexWhere((i) => i.id == invitationId);
     if (index != -1) {
       _receivedInvitations[index] = invitation;
@@ -613,7 +639,8 @@ class FriendsStateManager extends ChangeNotifier with StreamManagementMixin {
     unawaited(disposeStreamResources());
 
     AppLogger.debug(
-        'FriendsStateManager disposed - cleaned up ${_friends.length} friends data');
+      'FriendsStateManager disposed - cleaned up ${_friends.length} friends data',
+    );
     super.dispose();
   }
 }

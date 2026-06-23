@@ -31,7 +31,8 @@ class SiteConfigRepository {
   late final LruMap<String, _CachedConfig> _cache = LruMap(
     maxSize: _maxCacheSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=SiteConfigRepository key=$key bound=$_maxCacheSize'),
+      'cache_eviction service=SiteConfigRepository key=$key bound=$_maxCacheSize',
+    ),
   );
 
   /// Whether default configs have been ensured this session.
@@ -44,7 +45,7 @@ class SiteConfigRepository {
   static const int _maxCacheSize = 50;
 
   SiteConfigRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Collection reference for site configs.
   CollectionReference<Map<String, dynamic>> get _collection =>
@@ -302,8 +303,9 @@ class SiteConfigRepository {
     }
 
     // Fallback: check built-in defaults (Firestore write may not have completed yet)
-    final builtIn =
-        _defaultConfigs.where((c) => c.domain == normalizedDomain).firstOrNull;
+    final builtIn = _defaultConfigs
+        .where((c) => c.domain == normalizedDomain)
+        .firstOrNull;
     if (builtIn != null && builtIn.isSupported && builtIn.hasSelectors) {
       return builtIn;
     }

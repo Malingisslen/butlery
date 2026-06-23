@@ -29,21 +29,23 @@ class DraftMetadata {
   });
 
   Map<String, dynamic> toJson() => {
-        'draftId': draftId,
-        'createdAt': createdAt.toIso8601String(),
-        'lastModifiedAt': lastModifiedAt.toIso8601String(),
-        'title': title,
-        'fieldCount': fieldCount,
-      };
+    'draftId': draftId,
+    'createdAt': createdAt.toIso8601String(),
+    'lastModifiedAt': lastModifiedAt.toIso8601String(),
+    'title': title,
+    'fieldCount': fieldCount,
+  };
 
   factory DraftMetadata.fromJson(Map<String, dynamic> json) => DraftMetadata(
-        draftId: (json['draftId'] as String?).orEmpty(),
-        createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
-        lastModifiedAt:
-            SerializationUtils.safeRequiredDateTime(json, 'lastModifiedAt'),
-        title: (json['title'] as String?).orEmpty(),
-        fieldCount: (json['fieldCount'] as int?).orZero(),
-      );
+    draftId: (json['draftId'] as String?).orEmpty(),
+    createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
+    lastModifiedAt: SerializationUtils.safeRequiredDateTime(
+      json,
+      'lastModifiedAt',
+    ),
+    title: (json['title'] as String?).orEmpty(),
+    fieldCount: (json['fieldCount'] as int?).orZero(),
+  );
 
   /// Check if draft is recent (within last 24 hours)
   bool get isRecent => clock.now().difference(lastModifiedAt).inHours < 24;
@@ -101,7 +103,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
     if (isTemplate) {
       AppLogger.info(
-          '🔄 AUTO_SAVE: Manager initialized for TEMPLATE (auto-save disabled until edit)');
+        '🔄 AUTO_SAVE: Manager initialized for TEMPLATE (auto-save disabled until edit)',
+      );
     } else {
       AppLogger.info('🔄 AUTO_SAVE: Manager initialized for regular form');
     }
@@ -109,15 +112,19 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
   /// Schedule debounced auto-save with intelligent timing
   /// [skipIfBusy] - Skip scheduling if other operations are in progress
-  void scheduleAutoSave(Map<String, dynamic> formData,
-      {bool isQuickSave = false, bool skipIfBusy = false}) {
+  void scheduleAutoSave(
+    Map<String, dynamic> formData, {
+    bool isQuickSave = false,
+    bool skipIfBusy = false,
+  }) {
     // BUT-1136: guard BEFORE cancel — when skipIfBusy returns early, the
     // existing debounce timer survives so the queued edit eventually fires
     // when the in-flight save completes. The pre-fix order silently dropped
     // the queued timer.
     if (_isAutoSaving && skipIfBusy) {
       AppLogger.debug(
-          '🔄 AUTO_SAVE: Skipping schedule - auto-save already in progress (existing timer preserved)');
+        '🔄 AUTO_SAVE: Skipping schedule - auto-save already in progress (existing timer preserved)',
+      );
       return;
     }
 
@@ -129,20 +136,23 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     _autoSaveTimer = Timer(delay, () => _performAutoSave(formData));
 
     AppLogger.debug(
-        '🔄 AUTO_SAVE: Scheduled auto-save in ${delay.inSeconds}s (quick: $isQuickSave)');
+      '🔄 AUTO_SAVE: Scheduled auto-save in ${delay.inSeconds}s (quick: $isQuickSave)',
+    );
   }
 
   /// Perform intelligent auto-save with content validation
   Future<void> _performAutoSave(Map<String, dynamic> formData) async {
     if (_isAutoSaving) {
       AppLogger.debug(
-          '🔄 AUTO_SAVE: Already saving, skipping duplicate request');
+        '🔄 AUTO_SAVE: Already saving, skipping duplicate request',
+      );
       return;
     }
 
     if (!_shouldAutoSave(formData)) {
       AppLogger.debug(
-          '🔄 AUTO_SAVE: Content not significant enough for auto-save');
+        '🔄 AUTO_SAVE: Content not significant enough for auto-save',
+      );
       return;
     }
 
@@ -178,7 +188,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       }
 
       AppLogger.info(
-          '🔄 AUTO_SAVE: Draft saved successfully - ID: $draftId, fields: ${metadata.fieldCount}');
+        '🔄 AUTO_SAVE: Draft saved successfully - ID: $draftId, fields: ${metadata.fieldCount}',
+      );
     } catch (e) {
       AppLogger.error('🔄 AUTO_SAVE: Failed to save draft: $e');
       // Don't show error to user for auto-save failures - it's background operation
@@ -198,10 +209,12 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       if (_hasSignificantTemplateChanges(formData)) {
         _isTemplate = false; // Convert template to regular form
         AppLogger.info(
-            '🔄 AUTO_SAVE: Template promoted to regular form after significant changes');
+          '🔄 AUTO_SAVE: Template promoted to regular form after significant changes',
+        );
       } else {
         AppLogger.debug(
-            '🔄 AUTO_SAVE: Skipping auto-save for template (insufficient changes)');
+          '🔄 AUTO_SAVE: Skipping auto-save for template (insufficient changes)',
+        );
         return false; // Don't auto-save templates until they're significantly modified
       }
     }
@@ -279,8 +292,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
     // Fallback to first ingredient if no title
     final ingredients = (formData['ingredients'] as List<String>?).orEmpty();
-    final firstIngredient =
-        ingredients.firstWhere((i) => i.trim().isNotEmpty, orElse: () => '');
+    final firstIngredient = ingredients.firstWhere(
+      (i) => i.trim().isNotEmpty,
+      orElse: () => '',
+    );
 
     if (firstIngredient.isNotEmpty) {
       return AppLocale.current.recipeAutoTitleWithIngredient(firstIngredient);
@@ -291,7 +306,9 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
   /// Save draft data to local storage
   Future<void> _saveDraftData(
-      String draftId, Map<String, dynamic> formData) async {
+    String draftId,
+    Map<String, dynamic> formData,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final draftKey = '$_draftPrefix$draftId';
     final jsonData = jsonEncode(formData);
@@ -314,8 +331,9 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       existingMetadata.removeWhere((m) => m.draftId == metadata.draftId);
       existingMetadata.add(metadata);
 
-      existingMetadata
-          .sort((a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt));
+      existingMetadata.sort(
+        (a, b) => b.lastModifiedAt.compareTo(a.lastModifiedAt),
+      );
       if (existingMetadata.length > _maxDrafts) {
         final draftsToRemove = existingMetadata.sublist(_maxDrafts);
         for (final draft in draftsToRemove) {
@@ -324,8 +342,9 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
         existingMetadata.removeRange(_maxDrafts, existingMetadata.length);
       }
 
-      final metadataJson =
-          jsonEncode(existingMetadata.map((m) => m.toJson()).toList());
+      final metadataJson = jsonEncode(
+        existingMetadata.map((m) => m.toJson()).toList(),
+      );
       await prefs.setString(_draftsKey, metadataJson);
     } finally {
       thisLock.complete();
@@ -365,7 +384,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       return jsonDecode(jsonData) as Map<String, dynamic>;
     } catch (e) {
       AppLogger.error(
-          '🔄 AUTO_SAVE: Failed to load draft data for $draftId: $e');
+        '🔄 AUTO_SAVE: Failed to load draft data for $draftId: $e',
+      );
       return null;
     }
   }
@@ -430,8 +450,9 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
       // Update metadata to remove old drafts
       final remainingMetadata = metadata.where((m) => m.isRecent).toList();
       final prefs = await SharedPreferences.getInstance();
-      final metadataJson =
-          jsonEncode(remainingMetadata.map((m) => m.toJson()).toList());
+      final metadataJson = jsonEncode(
+        remainingMetadata.map((m) => m.toJson()).toList(),
+      );
       await prefs.setString(_draftsKey, metadataJson);
 
       AppLogger.info('🔄 AUTO_SAVE: Cleaned up ${oldDrafts.length} old drafts');
@@ -452,7 +473,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     _feedbackTimer = Timer(const Duration(milliseconds: 1500), () {
       // This would be called in context where BuildContext is available
       AppLogger.info(
-          '🔄 AUTO_SAVE: Auto-save enabled - drafts saved automatically');
+        '🔄 AUTO_SAVE: Auto-save enabled - drafts saved automatically',
+      );
     });
   }
 

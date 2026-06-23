@@ -31,14 +31,18 @@ void main() {
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
       repo = _MockAnalyticsRepo();
-      when(() => repo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
-      when(() => repo.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
 
       consent = _MockConsentService();
       when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
@@ -55,35 +59,43 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    test('fires first_search + sets search_activated user prop on first call',
-        () async {
-      final joinedAt = DateTime.now().subtract(const Duration(minutes: 45));
+    test(
+      'fires first_search + sets search_activated user prop on first call',
+      () async {
+        final joinedAt = DateTime.now().subtract(const Duration(minutes: 45));
 
-      final fired = await tracker.logFirstSearchIfMilestone(
-        userId: 'user-1',
-        recipeCountAtTime: 12,
-        joinedAt: joinedAt,
-      );
+        final fired = await tracker.logFirstSearchIfMilestone(
+          userId: 'user-1',
+          recipeCountAtTime: 12,
+          joinedAt: joinedAt,
+        );
 
-      expect(fired, isTrue);
+        expect(fired, isTrue);
 
-      final captured = verify(() => repo.logEvent(
-            name: 'first_search',
-            parameters: captureAny(named: 'parameters'),
-          )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'first_search',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
-      expect(captured['recipe_count_at_time'], 12);
-      // Allow 1-min slack for clock drift between setUp and the call.
-      expect(captured['minutes_since_signup'], inInclusiveRange(44, 46));
-      // BUT-421: raw query MUST NOT appear in milestone params.
-      expect(captured.containsKey('query'), isFalse);
-      expect(captured.containsKey('search_query'), isFalse);
+        expect(captured['recipe_count_at_time'], 12);
+        // Allow 1-min slack for clock drift between setUp and the call.
+        expect(captured['minutes_since_signup'], inInclusiveRange(44, 46));
+        // BUT-421: raw query MUST NOT appear in milestone params.
+        expect(captured.containsKey('query'), isFalse);
+        expect(captured.containsKey('search_query'), isFalse);
 
-      verify(() => repo.setUserProperty(
+        verify(
+          () => repo.setUserProperty(
             name: 'search_activated',
             value: 'true',
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
     test('omits minutes_since_signup when joinedAt is null', () async {
       await tracker.logFirstSearchIfMilestone(
@@ -92,10 +104,14 @@ void main() {
         joinedAt: null,
       );
 
-      final captured = verify(() => repo.logEvent(
-            name: 'first_search',
-            parameters: captureAny(named: 'parameters'),
-          )).captured.single as Map<String, Object>;
+      final captured =
+          verify(
+                () => repo.logEvent(
+                  name: 'first_search',
+                  parameters: captureAny(named: 'parameters'),
+                ),
+              ).captured.single
+              as Map<String, Object>;
 
       expect(captured.containsKey('minutes_since_signup'), isFalse);
       expect(captured['recipe_count_at_time'], 0);
@@ -119,14 +135,18 @@ void main() {
       );
       expect(secondFired, isFalse);
 
-      verifyNever(() => repo.logEvent(
-            name: 'first_search',
-            parameters: any(named: 'parameters'),
-          ));
-      verifyNever(() => repo.setUserProperty(
-            name: 'search_activated',
-            value: any(named: 'value'),
-          ));
+      verifyNever(
+        () => repo.logEvent(
+          name: 'first_search',
+          parameters: any(named: 'parameters'),
+        ),
+      );
+      verifyNever(
+        () => repo.setUserProperty(
+          name: 'search_activated',
+          value: any(named: 'value'),
+        ),
+      );
     });
 
     test('dedupe is per-user — different uid still fires', () async {
@@ -144,10 +164,12 @@ void main() {
       );
 
       expect(fired, isTrue);
-      verify(() => repo.logEvent(
-            name: 'first_search',
-            parameters: any(named: 'parameters'),
-          )).called(1);
+      verify(
+        () => repo.logEvent(
+          name: 'first_search',
+          parameters: any(named: 'parameters'),
+        ),
+      ).called(1);
     });
 
     test('skips when userId is null/empty', () async {
@@ -162,10 +184,12 @@ void main() {
 
       expect(firedNull, isFalse);
       expect(firedEmpty, isFalse);
-      verifyNever(() => repo.logEvent(
-            name: 'first_search',
-            parameters: any(named: 'parameters'),
-          ));
+      verifyNever(
+        () => repo.logEvent(
+          name: 'first_search',
+          parameters: any(named: 'parameters'),
+        ),
+      );
     });
 
     test('skips when consent not granted', () async {
@@ -177,10 +201,12 @@ void main() {
       );
 
       expect(fired, isFalse);
-      verifyNever(() => repo.logEvent(
-            name: 'first_search',
-            parameters: any(named: 'parameters'),
-          ));
+      verifyNever(
+        () => repo.logEvent(
+          name: 'first_search',
+          parameters: any(named: 'parameters'),
+        ),
+      );
     });
   });
 }

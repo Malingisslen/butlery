@@ -16,7 +16,7 @@ class DismissalMetadata {
   final String userId;
   final DateTime dismissedAt;
   final String?
-      reason; // Optional reason for dismissal ('not_interested', 'already_have', etc.)
+  reason; // Optional reason for dismissal ('not_interested', 'already_have', etc.)
 
   DismissalMetadata({
     required this.userId,

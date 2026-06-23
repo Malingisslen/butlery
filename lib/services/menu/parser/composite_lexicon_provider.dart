@@ -9,8 +9,8 @@ class CompositeLexiconProvider implements LexiconProvider {
   const CompositeLexiconProvider({
     required LexiconProvider code,
     required LexiconProvider firestore,
-  })  : _code = code,
-        _firestore = firestore;
+  }) : _code = code,
+       _firestore = firestore;
 
   @override
   Future<Lexicon> load() async {

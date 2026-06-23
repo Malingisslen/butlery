@@ -52,7 +52,9 @@ class CategoryPickerSheet extends StatelessWidget {
                 final category = ShoppingCategory.all[index];
                 final isSelected = category == currentCategory;
                 final color = ShoppingListContentWidget.getCategoryColor(
-                    context, category);
+                  context,
+                  category,
+                );
 
                 return ListTile(
                   leading: Container(
@@ -60,19 +62,22 @@ class CategoryPickerSheet extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       color: color,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusS),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusS,
+                      ),
                     ),
                   ),
                   title: Text(
                     ShoppingCategory.displayName(category),
                     style: AppTextStyles.contentTitle.copyWith(
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w400,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w400,
                     ),
                   ),
-                  trailing:
-                      isSelected ? Icon(Icons.check, color: cs.primary) : null,
+                  trailing: isSelected
+                      ? Icon(Icons.check, color: cs.primary)
+                      : null,
                   onTap: isSelected ? null : () => onCategorySelected(category),
                 );
               },

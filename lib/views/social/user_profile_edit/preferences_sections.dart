@@ -53,7 +53,8 @@ class LanguageSettingsSection extends StatelessWidget {
                     SnackBarUtils.showSuccess(
                       context,
                       context.l10n.profileLanguageChangedTo(
-                          LocaleProvider.getLocaleName(value)),
+                        LocaleProvider.getLocaleName(value),
+                      ),
                     );
                   }
                 },
@@ -153,8 +154,9 @@ class ProfileActionButtons extends StatelessWidget {
           context,
           label: context.l10n.profileSaveProfile,
           icon: Icons.save,
-          onPressed:
-              viewModel.isLoading || !viewModel.isFormValid ? null : onSave,
+          onPressed: viewModel.isLoading || !viewModel.isFormValid
+              ? null
+              : onSave,
           isLoading: viewModel.isLoading,
           loadingText: context.l10n.commonSaving,
           isExpanded: true,
@@ -177,12 +179,14 @@ class ProfileActionButtons extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              color: context.butleryColors.warning
-                  .withValues(alpha: AppDimensions.opacityVeryLight),
+              color: context.butleryColors.warning.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
-                color: context.butleryColors.warning
-                    .withValues(alpha: AppDimensions.opacityMediumLight),
+                color: context.butleryColors.warning.withValues(
+                  alpha: AppDimensions.opacityMediumLight,
+                ),
               ),
             ),
             child: Row(

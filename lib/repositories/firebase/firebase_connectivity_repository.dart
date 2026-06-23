@@ -97,8 +97,8 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
     FirebaseFirestore? firestore,
     AuthRepository? authRepository,
     Connectivity? connectivity,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _connectivity = connectivity ?? Connectivity();
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _connectivity = connectivity ?? Connectivity();
 
   @override
   Stream<bool> get connectionStream {
@@ -133,9 +133,9 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
         .snapshots()
         .map<bool>((snapshot) => snapshot.data()?['connected'] ?? false)
         .handleError((error) {
-      AppLogger.error('Firebase connection monitoring error', error);
-      return false;
-    });
+          AppLogger.error('Firebase connection monitoring error', error);
+          return false;
+        });
   }
 
   @override
@@ -186,8 +186,9 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
   }
 
   void _startMonitoring() {
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen((results) {
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
+      results,
+    ) {
       final hasConnection = !results.contains(ConnectivityResult.none);
       _connectionController?.add(hasConnection);
 

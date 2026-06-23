@@ -48,17 +48,31 @@ void main() {
       final messagesRef = firestore.collection('messages');
 
       // 3 in target conversation, 1 in another → other must be excluded.
-      await _seedMessage(messagesRef,
-          id: 'm-old', content: 'oldest', sentAt: DateTime.utc(2026, 1, 1, 10));
-      await _seedMessage(messagesRef,
-          id: 'm-mid', content: 'middle', sentAt: DateTime.utc(2026, 1, 1, 11));
-      await _seedMessage(messagesRef,
-          id: 'm-new', content: 'newest', sentAt: DateTime.utc(2026, 1, 1, 12));
-      await _seedMessage(messagesRef,
-          id: 'other',
-          content: 'unrelated',
-          sentAt: DateTime.utc(2026, 1, 1, 11),
-          conversationId: 'conv-other');
+      await _seedMessage(
+        messagesRef,
+        id: 'm-old',
+        content: 'oldest',
+        sentAt: DateTime.utc(2026, 1, 1, 10),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm-mid',
+        content: 'middle',
+        sentAt: DateTime.utc(2026, 1, 1, 11),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm-new',
+        content: 'newest',
+        sentAt: DateTime.utc(2026, 1, 1, 12),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'other',
+        content: 'unrelated',
+        sentAt: DateTime.utc(2026, 1, 1, 11),
+        conversationId: 'conv-other',
+      );
 
       final module = MessageQueryModule(messagesRef: messagesRef);
       final messages = await module
@@ -67,7 +81,9 @@ void main() {
 
       expect(messages.map((m) => m.id), ['m-old', 'm-mid', 'm-new']);
       expect(
-          messages.every((m) => m.conversationId == _conversationId), isTrue);
+        messages.every((m) => m.conversationId == _conversationId),
+        isTrue,
+      );
     });
 
     test('respects limit (only N newest, but emitted oldest-first)', () async {
@@ -75,10 +91,12 @@ void main() {
       final messagesRef = firestore.collection('messages');
 
       for (var i = 0; i < 5; i++) {
-        await _seedMessage(messagesRef,
-            id: 'm$i',
-            content: 'msg $i',
-            sentAt: DateTime.utc(2026, 1, 1, 10 + i));
+        await _seedMessage(
+          messagesRef,
+          id: 'm$i',
+          content: 'msg $i',
+          sentAt: DateTime.utc(2026, 1, 1, 10 + i),
+        );
       }
 
       final module = MessageQueryModule(messagesRef: messagesRef);
@@ -93,11 +111,13 @@ void main() {
 
     test('emits empty list when no messages match', () async {
       final firestore = FakeFirebaseFirestore();
-      final module =
-          MessageQueryModule(messagesRef: firestore.collection('messages'));
+      final module = MessageQueryModule(
+        messagesRef: firestore.collection('messages'),
+      );
 
-      final messages =
-          await module.getConversationMessages(conversationId: 'nope').first;
+      final messages = await module
+          .getConversationMessages(conversationId: 'nope')
+          .first;
       expect(messages, isEmpty);
     });
   });
@@ -108,10 +128,12 @@ void main() {
       final messagesRef = firestore.collection('messages');
 
       for (var i = 0; i < 3; i++) {
-        await _seedMessage(messagesRef,
-            id: 'm$i',
-            content: 'msg $i',
-            sentAt: DateTime.utc(2026, 1, 1, 10 + i));
+        await _seedMessage(
+          messagesRef,
+          id: 'm$i',
+          content: 'msg $i',
+          sentAt: DateTime.utc(2026, 1, 1, 10 + i),
+        );
       }
 
       final module = MessageQueryModule(messagesRef: messagesRef);
@@ -131,12 +153,24 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final messagesRef = firestore.collection('messages');
 
-      await _seedMessage(messagesRef,
-          id: 'm0', content: 'a', sentAt: DateTime.utc(2026, 1, 1, 10));
-      await _seedMessage(messagesRef,
-          id: 'm1', content: 'b', sentAt: DateTime.utc(2026, 1, 1, 11));
-      await _seedMessage(messagesRef,
-          id: 'm2', content: 'c', sentAt: DateTime.utc(2026, 1, 1, 12));
+      await _seedMessage(
+        messagesRef,
+        id: 'm0',
+        content: 'a',
+        sentAt: DateTime.utc(2026, 1, 1, 10),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm1',
+        content: 'b',
+        sentAt: DateTime.utc(2026, 1, 1, 11),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm2',
+        content: 'c',
+        sentAt: DateTime.utc(2026, 1, 1, 12),
+      );
 
       final module = MessageQueryModule(messagesRef: messagesRef);
       final page = await module.getConversationMessagesPage(
@@ -150,10 +184,12 @@ void main() {
 
     test('empty list when no messages exist', () async {
       final firestore = FakeFirebaseFirestore();
-      final module =
-          MessageQueryModule(messagesRef: firestore.collection('messages'));
+      final module = MessageQueryModule(
+        messagesRef: firestore.collection('messages'),
+      );
       final page = await module.getConversationMessagesPage(
-          conversationId: _conversationId);
+        conversationId: _conversationId,
+      );
       expect(page, isEmpty);
     });
   });
@@ -161,16 +197,21 @@ void main() {
   group('getMessage', () {
     test('returns null when document does not exist', () async {
       final firestore = FakeFirebaseFirestore();
-      final module =
-          MessageQueryModule(messagesRef: firestore.collection('messages'));
+      final module = MessageQueryModule(
+        messagesRef: firestore.collection('messages'),
+      );
       expect(await module.getMessage('missing'), isNull);
     });
 
     test('returns the message when document exists', () async {
       final firestore = FakeFirebaseFirestore();
       final messagesRef = firestore.collection('messages');
-      await _seedMessage(messagesRef,
-          id: 'm1', content: 'hello', sentAt: DateTime.utc(2026, 1, 1));
+      await _seedMessage(
+        messagesRef,
+        id: 'm1',
+        content: 'hello',
+        sentAt: DateTime.utc(2026, 1, 1),
+      );
 
       final module = MessageQueryModule(messagesRef: messagesRef);
       final msg = await module.getMessage('m1');
@@ -184,14 +225,24 @@ void main() {
     test('case-insensitive substring match on content', () async {
       final firestore = FakeFirebaseFirestore();
       final messagesRef = firestore.collection('messages');
-      await _seedMessage(messagesRef,
-          id: 'm1',
-          content: 'Hello World',
-          sentAt: DateTime.utc(2026, 1, 1, 10));
-      await _seedMessage(messagesRef,
-          id: 'm2', content: 'goodbye', sentAt: DateTime.utc(2026, 1, 1, 11));
-      await _seedMessage(messagesRef,
-          id: 'm3', content: 'helmet', sentAt: DateTime.utc(2026, 1, 1, 12));
+      await _seedMessage(
+        messagesRef,
+        id: 'm1',
+        content: 'Hello World',
+        sentAt: DateTime.utc(2026, 1, 1, 10),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm2',
+        content: 'goodbye',
+        sentAt: DateTime.utc(2026, 1, 1, 11),
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm3',
+        content: 'helmet',
+        sentAt: DateTime.utc(2026, 1, 1, 12),
+      );
 
       final module = MessageQueryModule(messagesRef: messagesRef);
       final hits = await module.searchMessages(
@@ -205,10 +256,12 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final messagesRef = firestore.collection('messages');
       for (var i = 0; i < 5; i++) {
-        await _seedMessage(messagesRef,
-            id: 'm$i',
-            content: 'pizza topping $i',
-            sentAt: DateTime.utc(2026, 1, 1, 10 + i));
+        await _seedMessage(
+          messagesRef,
+          id: 'm$i',
+          content: 'pizza topping $i',
+          sentAt: DateTime.utc(2026, 1, 1, 10 + i),
+        );
       }
 
       final module = MessageQueryModule(messagesRef: messagesRef);
@@ -223,8 +276,12 @@ void main() {
     test('returns empty when no content matches', () async {
       final firestore = FakeFirebaseFirestore();
       final messagesRef = firestore.collection('messages');
-      await _seedMessage(messagesRef,
-          id: 'm1', content: 'apple', sentAt: DateTime.utc(2026, 1, 1, 10));
+      await _seedMessage(
+        messagesRef,
+        id: 'm1',
+        content: 'apple',
+        sentAt: DateTime.utc(2026, 1, 1, 10),
+      );
 
       final module = MessageQueryModule(messagesRef: messagesRef);
       final hits = await module.searchMessages(

@@ -27,318 +27,349 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
-  group('FirebaseSharedRecipeRepository - FieldValue Integration (emulator)',
-      () {
-    late FirebaseFirestore firestore;
-    late FirebaseSharedRecipeRepository repository;
-    late FakeAuthRepository mockAuthRepo;
-    late FakeUser mockUser;
+  group(
+    'FirebaseSharedRecipeRepository - FieldValue Integration (emulator)',
+    () {
+      late FirebaseFirestore firestore;
+      late FirebaseSharedRecipeRepository repository;
+      late FakeAuthRepository mockAuthRepo;
+      late FakeUser mockUser;
 
-    // Test data
-    const testUserId = 'user-123';
-    const testOtherUserId = 'other-user-456';
-    const testFriendId = 'friend-789';
-    const testRecipeId = 'shared-recipe-1';
-    const testOriginalRecipeId = 'original-recipe-1';
+      // Test data
+      const testUserId = 'user-123';
+      const testOtherUserId = 'other-user-456';
+      const testFriendId = 'friend-789';
+      const testRecipeId = 'shared-recipe-1';
+      const testOriginalRecipeId = 'original-recipe-1';
 
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-    });
+      setUpAll(() async {
+        await BaseUnitTest.setupUnit();
+      });
 
-    setUp(() async {
-      firestore = await firestoreForLane();
-      await clearLane();
+      setUp(() async {
+        firestore = await firestoreForLane();
+        await clearLane();
 
-      mockAuthRepo = FakeAuthRepository();
-      mockUser = FakeUser(uid: testUserId, displayName: 'Test User');
+        mockAuthRepo = FakeAuthRepository();
+        mockUser = FakeUser(uid: testUserId, displayName: 'Test User');
 
-      mockAuthRepo.setAuthState(
-        user: mockUser,
-        userId: testUserId,
-        isAuthenticated: true,
-      );
+        mockAuthRepo.setAuthState(
+          user: mockUser,
+          userId: testUserId,
+          isAuthenticated: true,
+        );
 
-      repository = FirebaseSharedRecipeRepository(
-        firestore: firestore,
-        authRepository: mockAuthRepo,
-      );
-    });
+        repository = FirebaseSharedRecipeRepository(
+          firestore: firestore,
+          authRepository: mockAuthRepo,
+        );
+      });
 
-    tearDown(() async {
-      BaseUnitTest.resetMocks();
-      await TestServiceLocator.reset();
-    });
+      tearDown(() async {
+        BaseUnitTest.resetMocks();
+        await TestServiceLocator.reset();
+      });
 
-    Recipe createTestRecipe(String id, String userId) {
-      return Recipe(
-        core: RecipeCore(
-          id: id,
-          title: 'Test Recipe $id',
-          description: 'A delicious test recipe',
-          ingredients: ['Ingredient 1', 'Ingredient 2'],
-          instructions: ['Step 1', 'Step 2'],
-          mealType: 'Dinner',
-          createdBy: userId,
-          createdAt: DateTime(2025, 1, 1),
-          updatedAt: DateTime(2025, 1, 1),
-        ),
-        type: RecipeType.personal,
-      );
-    }
+      Recipe createTestRecipe(String id, String userId) {
+        return Recipe(
+          core: RecipeCore(
+            id: id,
+            title: 'Test Recipe $id',
+            description: 'A delicious test recipe',
+            ingredients: ['Ingredient 1', 'Ingredient 2'],
+            instructions: ['Step 1', 'Step 2'],
+            mealType: 'Dinner',
+            createdBy: userId,
+            createdAt: DateTime(2025, 1, 1),
+            updatedAt: DateTime(2025, 1, 1),
+          ),
+          type: RecipeType.personal,
+        );
+      }
 
-    SharedRecipe createSharedRecipe({
-      String? id,
-      String? originalRecipeId,
-      String? sharedByUserId,
-      String? sharedByDisplayName,
-      Recipe? recipeSnapshot,
-      String? shareMessage,
-      bool allowCollaboration = false,
-      int? viewCount,
-      int? engagementCount,
-      int? dismissalCount,
-    }) {
-      final recipe = recipeSnapshot ??
-          createTestRecipe(originalRecipeId ?? testOriginalRecipeId,
-              sharedByUserId ?? testUserId);
+      SharedRecipe createSharedRecipe({
+        String? id,
+        String? originalRecipeId,
+        String? sharedByUserId,
+        String? sharedByDisplayName,
+        Recipe? recipeSnapshot,
+        String? shareMessage,
+        bool allowCollaboration = false,
+        int? viewCount,
+        int? engagementCount,
+        int? dismissalCount,
+      }) {
+        final recipe =
+            recipeSnapshot ??
+            createTestRecipe(
+              originalRecipeId ?? testOriginalRecipeId,
+              sharedByUserId ?? testUserId,
+            );
 
-      return SharedRecipe(
-        id: id ?? testRecipeId,
-        originalRecipeId: originalRecipeId ?? testOriginalRecipeId,
-        recipeTitle: recipe.title,
-        recipeImageUrl:
-            recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
-        recipePortions: recipe.portions,
-        recipeTimeMinutes: recipe.timeMinutes,
-        recipeDescription: recipe.description,
-        recipeSnapshot: recipe,
-        sharedByUserId: sharedByUserId ?? testUserId,
-        sharedByDisplayName: sharedByDisplayName ?? 'Test User',
-        shareMessage: shareMessage,
-        sharedAt: DateTime(2025, 1, 15),
-        allowCollaboration: allowCollaboration,
-        viewCount: viewCount ?? 0,
-        engagementCount: engagementCount ?? 0,
-        dismissalCount: dismissalCount ?? 0,
-      );
-    }
+        return SharedRecipe(
+          id: id ?? testRecipeId,
+          originalRecipeId: originalRecipeId ?? testOriginalRecipeId,
+          recipeTitle: recipe.title,
+          recipeImageUrl: recipe.imageUrls.isNotEmpty
+              ? recipe.imageUrls.first
+              : null,
+          recipePortions: recipe.portions,
+          recipeTimeMinutes: recipe.timeMinutes,
+          recipeDescription: recipe.description,
+          recipeSnapshot: recipe,
+          sharedByUserId: sharedByUserId ?? testUserId,
+          sharedByDisplayName: sharedByDisplayName ?? 'Test User',
+          shareMessage: shareMessage,
+          sharedAt: DateTime(2025, 1, 15),
+          allowCollaboration: allowCollaboration,
+          viewCount: viewCount ?? 0,
+          engagementCount: engagementCount ?? 0,
+          dismissalCount: dismissalCount ?? 0,
+        );
+      }
 
-    /// Seeds a SharedRecipe into Firestore with optional subcollection data.
-    /// Includes 'contentType': 'recipe' discriminator required by
-    /// getSharedContentForUserViaSubcollection filtering.
-    Future<void> seedSharedRecipe(
-      SharedRecipe sharedRecipe, {
-      List<String>? memberUserIds,
-      List<String>? viewedByUserIds,
-      List<String>? engagedByUserIds,
-      List<String>? dismissedByUserIds,
-    }) async {
-      // Create main document with contentType discriminator
-      final data = sharedRecipe.toFirestore();
-      data['contentType'] = 'recipe';
-      await firestore
-          .collection('shared_content')
-          .doc(sharedRecipe.id)
-          .set(data);
+      /// Seeds a SharedRecipe into Firestore with optional subcollection data.
+      /// Includes 'contentType': 'recipe' discriminator required by
+      /// getSharedContentForUserViaSubcollection filtering.
+      Future<void> seedSharedRecipe(
+        SharedRecipe sharedRecipe, {
+        List<String>? memberUserIds,
+        List<String>? viewedByUserIds,
+        List<String>? engagedByUserIds,
+        List<String>? dismissedByUserIds,
+      }) async {
+        // Create main document with contentType discriminator
+        final data = sharedRecipe.toFirestore();
+        data['contentType'] = 'recipe';
+        await firestore
+            .collection('shared_content')
+            .doc(sharedRecipe.id)
+            .set(data);
 
-      final recipeRef =
-          firestore.collection('shared_content').doc(sharedRecipe.id);
+        final recipeRef = firestore
+            .collection('shared_content')
+            .doc(sharedRecipe.id);
 
-      if (memberUserIds != null) {
-        for (final userId in memberUserIds) {
-          await recipeRef.collection('members').doc(userId).set({
-            'userId': userId,
-            'addedBy': sharedRecipe.sharedByUserId,
-            'addedAt': DateTime.now().millisecondsSinceEpoch,
-            'role': 'member',
-          });
+        if (memberUserIds != null) {
+          for (final userId in memberUserIds) {
+            await recipeRef.collection('members').doc(userId).set({
+              'userId': userId,
+              'addedBy': sharedRecipe.sharedByUserId,
+              'addedAt': DateTime.now().millisecondsSinceEpoch,
+              'role': 'member',
+            });
+          }
+        }
+
+        if (viewedByUserIds != null) {
+          for (final userId in viewedByUserIds) {
+            await recipeRef.collection('views').doc(userId).set({
+              'userId': userId,
+              'viewedAt': DateTime.now().millisecondsSinceEpoch,
+            });
+          }
+        }
+
+        if (engagedByUserIds != null) {
+          for (final userId in engagedByUserIds) {
+            await recipeRef.collection('engagements').doc(userId).set({
+              'userId': userId,
+              'action': 'import',
+              'engagedAt': DateTime.now().millisecondsSinceEpoch,
+            });
+          }
+        }
+
+        if (dismissedByUserIds != null) {
+          for (final userId in dismissedByUserIds) {
+            await recipeRef.collection('dismissals').doc(userId).set({
+              'userId': userId,
+              'dismissedAt': DateTime.now().millisecondsSinceEpoch,
+            });
+          }
         }
       }
 
-      if (viewedByUserIds != null) {
-        for (final userId in viewedByUserIds) {
-          await recipeRef.collection('views').doc(userId).set({
-            'userId': userId,
-            'viewedAt': DateTime.now().millisecondsSinceEpoch,
-          });
-        }
-      }
+      // createSharedRecipe — exercises addMember's arrayUnion + increment.
 
-      if (engagedByUserIds != null) {
-        for (final userId in engagedByUserIds) {
-          await recipeRef.collection('engagements').doc(userId).set({
-            'userId': userId,
-            'action': 'import',
-            'engagedAt': DateTime.now().millisecondsSinceEpoch,
-          });
-        }
-      }
+      test(
+        'should allow user to create shared recipe with recipients',
+        () async {
+          final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
 
-      if (dismissedByUserIds != null) {
-        for (final userId in dismissedByUserIds) {
-          await recipeRef.collection('dismissals').doc(userId).set({
-            'userId': userId,
-            'dismissedAt': DateTime.now().millisecondsSinceEpoch,
-          });
-        }
-      }
-    }
+          final recipeId = await repository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: [testFriendId],
+          );
 
-    // createSharedRecipe — exercises addMember's arrayUnion + increment.
-
-    test('should allow user to create shared recipe with recipients', () async {
-      final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
-
-      final recipeId = await repository.createSharedRecipe(
-        sharedRecipe,
-        recipientIds: [testFriendId],
+          // Verify members subcollection created (Issue #014)
+          final memberDoc = await firestore
+              .collection('shared_content')
+              .doc(recipeId)
+              .collection('members')
+              .doc(testFriendId)
+              .get();
+          expect(memberDoc.exists, isTrue);
+        },
       );
 
-      // Verify members subcollection created (Issue #014)
-      final memberDoc = await firestore
-          .collection('shared_content')
-          .doc(recipeId)
-          .collection('members')
-          .doc(testFriendId)
-          .get();
-      expect(memberDoc.exists, isTrue);
-    });
+      test('should create shared recipe with members subcollection', () async {
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testUserId,
+          shareMessage: 'Check out this amazing recipe!',
+        );
 
-    test('should create shared recipe with members subcollection', () async {
-      final sharedRecipe = createSharedRecipe(
-        sharedByUserId: testUserId,
-        shareMessage: 'Check out this amazing recipe!',
-      );
+        final recipeId = await repository.createSharedRecipe(
+          sharedRecipe,
+          recipientIds: [testFriendId, testOtherUserId],
+        );
 
-      final recipeId = await repository.createSharedRecipe(
-        sharedRecipe,
-        recipientIds: [testFriendId, testOtherUserId],
-      );
+        expect(recipeId, isNotEmpty);
 
-      expect(recipeId, isNotEmpty);
+        final doc = await firestore
+            .collection('shared_content')
+            .doc(recipeId)
+            .get();
+        expect(doc.exists, isTrue);
+        expect(doc.data()?['sharedByUserId'], testUserId);
 
-      final doc =
-          await firestore.collection('shared_content').doc(recipeId).get();
-      expect(doc.exists, isTrue);
-      expect(doc.data()?['sharedByUserId'], testUserId);
+        final membersSnapshot = await firestore
+            .collection('shared_content')
+            .doc(recipeId)
+            .collection('members')
+            .get();
+        expect(membersSnapshot.docs.length, 2);
+        expect(membersSnapshot.docs.any((d) => d.id == testFriendId), isTrue);
+        expect(
+          membersSnapshot.docs.any((d) => d.id == testOtherUserId),
+          isTrue,
+        );
+      });
 
-      final membersSnapshot = await firestore
-          .collection('shared_content')
-          .doc(recipeId)
-          .collection('members')
-          .get();
-      expect(membersSnapshot.docs.length, 2);
-      expect(membersSnapshot.docs.any((d) => d.id == testFriendId), isTrue);
-      expect(membersSnapshot.docs.any((d) => d.id == testOtherUserId), isTrue);
-    });
+      // BUT-1132: idempotent share — the post-query consume branch.
 
-    // BUT-1132: idempotent share — the post-query consume branch.
-
-    test(
+      test(
         'calling createSharedRecipe twice with same (sharedByUserId, originalRecipeId) reuses the existing doc',
         () async {
-      final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
+          final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
 
-      final firstId = await repository.createSharedRecipe(
-        sharedRecipe,
-        recipientIds: [testFriendId],
-      );
-      final secondId = await repository.createSharedRecipe(
-        sharedRecipe,
-        recipientIds: [testFriendId],
-      );
+          final firstId = await repository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: [testFriendId],
+          );
+          final secondId = await repository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: [testFriendId],
+          );
 
-      expect(secondId, equals(firstId),
-          reason:
-              'BUT-1132: idempotent — same shared_content doc reused for same (sharedByUserId, originalRecipeId)');
+          expect(
+            secondId,
+            equals(firstId),
+            reason:
+                'BUT-1132: idempotent — same shared_content doc reused for same (sharedByUserId, originalRecipeId)',
+          );
 
-      // Verify only ONE doc exists in shared_content collection despite 2 calls.
-      // The dedup query lookup on (sharedByUserId + originalRecipeId) prevents
-      // the createSharedContent path from running a second time.
-      final snapshot = await firestore.collection('shared_content').get();
-      expect(snapshot.docs.length, equals(1),
-          reason:
-              'Only one shared_content doc must exist despite 2 createSharedRecipe calls');
-    });
-
-    // Status management — exercises addMetadata's serverTimestamp.
-
-    test('should add view to views subcollection', () async {
-      final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
-      await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
-
-      await repository.markAsViewed(testRecipeId, testUserId);
-
-      final viewDoc = await firestore
-          .collection('shared_content')
-          .doc(testRecipeId)
-          .collection('views')
-          .doc(testUserId)
-          .get();
-      expect(viewDoc.exists, isTrue);
-      expect(viewDoc.data()?['userId'], testUserId);
-    });
-
-    test('should add engagement to engagements subcollection', () async {
-      final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
-      await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
-
-      await repository.markAsImported(testRecipeId, testUserId);
-
-      final engagementDoc = await firestore
-          .collection('shared_content')
-          .doc(testRecipeId)
-          .collection('engagements')
-          .doc(testUserId)
-          .get();
-      expect(engagementDoc.exists, isTrue);
-      expect(engagementDoc.data()?['userId'], testUserId);
-      expect(engagementDoc.data()?['action'], 'import');
-    });
-
-    test('should add dismissal to dismissals subcollection', () async {
-      final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
-      await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
-
-      await repository.markAsDismissed(testRecipeId, testUserId);
-
-      final dismissalDoc = await firestore
-          .collection('shared_content')
-          .doc(testRecipeId)
-          .collection('dismissals')
-          .doc(testUserId)
-          .get();
-      expect(dismissalDoc.exists, isTrue);
-      expect(dismissalDoc.data()?['userId'], testUserId);
-    });
-
-    test('should remove dismissal from dismissals subcollection', () async {
-      final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
-      await seedSharedRecipe(
-        sharedRecipe,
-        memberUserIds: [testUserId],
-        dismissedByUserIds: [testUserId],
+          // Verify only ONE doc exists in shared_content collection despite 2 calls.
+          // The dedup query lookup on (sharedByUserId + originalRecipeId) prevents
+          // the createSharedContent path from running a second time.
+          final snapshot = await firestore.collection('shared_content').get();
+          expect(
+            snapshot.docs.length,
+            equals(1),
+            reason:
+                'Only one shared_content doc must exist despite 2 createSharedRecipe calls',
+          );
+        },
       );
 
-      await repository.undismiss(testRecipeId, testUserId);
+      // Status management — exercises addMetadata's serverTimestamp.
 
-      final dismissalDoc = await firestore
-          .collection('shared_content')
-          .doc(testRecipeId)
-          .collection('dismissals')
-          .doc(testUserId)
-          .get();
-      expect(dismissalDoc.exists, isFalse);
-    });
+      test('should add view to views subcollection', () async {
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
 
-    test('should throw when marking non-existent recipe as viewed', () async {
-      // markAsViewed -> addView -> viewRepository.markAsViewed ->
-      // addMetadata -> validateMetadataAccess returns false for non-existent doc
-      // -> throws PermissionDeniedException wrapped in RepositoryException
-      expect(
-        () => repository.markAsViewed('non-existent', testUserId),
-        throwsA(anything),
-      );
-    });
-  }, skip: emulatorOnlySkip);
+        await repository.markAsViewed(testRecipeId, testUserId);
+
+        final viewDoc = await firestore
+            .collection('shared_content')
+            .doc(testRecipeId)
+            .collection('views')
+            .doc(testUserId)
+            .get();
+        expect(viewDoc.exists, isTrue);
+        expect(viewDoc.data()?['userId'], testUserId);
+      });
+
+      test('should add engagement to engagements subcollection', () async {
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
+
+        await repository.markAsImported(testRecipeId, testUserId);
+
+        final engagementDoc = await firestore
+            .collection('shared_content')
+            .doc(testRecipeId)
+            .collection('engagements')
+            .doc(testUserId)
+            .get();
+        expect(engagementDoc.exists, isTrue);
+        expect(engagementDoc.data()?['userId'], testUserId);
+        expect(engagementDoc.data()?['action'], 'import');
+      });
+
+      test('should add dismissal to dismissals subcollection', () async {
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
+
+        await repository.markAsDismissed(testRecipeId, testUserId);
+
+        final dismissalDoc = await firestore
+            .collection('shared_content')
+            .doc(testRecipeId)
+            .collection('dismissals')
+            .doc(testUserId)
+            .get();
+        expect(dismissalDoc.exists, isTrue);
+        expect(dismissalDoc.data()?['userId'], testUserId);
+      });
+
+      test('should remove dismissal from dismissals subcollection', () async {
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testUserId],
+          dismissedByUserIds: [testUserId],
+        );
+
+        await repository.undismiss(testRecipeId, testUserId);
+
+        final dismissalDoc = await firestore
+            .collection('shared_content')
+            .doc(testRecipeId)
+            .collection('dismissals')
+            .doc(testUserId)
+            .get();
+        expect(dismissalDoc.exists, isFalse);
+      });
+
+      test('should throw when marking non-existent recipe as viewed', () async {
+        // markAsViewed -> addView -> viewRepository.markAsViewed ->
+        // addMetadata -> validateMetadataAccess returns false for non-existent doc
+        // -> throws PermissionDeniedException wrapped in RepositoryException
+        expect(
+          () => repository.markAsViewed('non-existent', testUserId),
+          throwsA(anything),
+        );
+      });
+    },
+    skip: emulatorOnlySkip,
+  );
 }

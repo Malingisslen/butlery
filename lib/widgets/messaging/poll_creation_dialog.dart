@@ -63,8 +63,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
   bool get _isValid {
     if (_questionController.text.trim().isEmpty) return false;
     if (_isRecipeMode) return true;
-    final filledOptions =
-        _optionControllers.where((c) => c.text.trim().isNotEmpty).length;
+    final filledOptions = _optionControllers
+        .where((c) => c.text.trim().isNotEmpty)
+        .length;
     return filledOptions >= 2;
   }
 
@@ -89,12 +90,14 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
     late final Poll poll;
     if (_isRecipeMode) {
       final options = widget.recipeOptions!
-          .map((r) => PollOption.create(
-                text: r.title,
-                recipeId: r.id,
-                recipeImageUrl: r.primaryImageUrl,
-                recipePortions: r.portions,
-              ))
+          .map(
+            (r) => PollOption.create(
+              text: r.title,
+              recipeId: r.id,
+              recipeImageUrl: r.primaryImageUrl,
+              recipePortions: r.portions,
+            ),
+          )
           .toList();
       poll = Poll.fromOptions(
         question: _questionController.text.trim(),
@@ -123,8 +126,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
     final cs = Theme.of(context).colorScheme;
     return Dialog(
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.all(Radius.circular(AppDimensions.borderRadiusS)),
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppDimensions.borderRadiusS),
+        ),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
@@ -150,10 +154,12 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   hintText: context.l10n.pollQuestionHint,
                   border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(
-                        Radius.circular(AppDimensions.borderRadiusS)),
+                      Radius.circular(AppDimensions.borderRadiusS),
+                    ),
                   ),
-                  labelStyle: AppTextStyles.labelMedium
-                      .copyWith(color: cs.onSurfaceVariant),
+                  labelStyle: AppTextStyles.labelMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
                 onChanged: (_) => setState(() {}),
                 maxLines: 2,
@@ -166,22 +172,26 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                 // Option fields
                 ...List.generate(_optionControllers.length, (index) {
                   return Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                    padding: const EdgeInsets.only(
+                      bottom: AppDimensions.spacingSm,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _optionControllers[index],
                             decoration: InputDecoration(
-                              labelText:
-                                  context.l10n.pollOptionLabel(index + 1),
-                              border: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(
-                                    AppDimensions.borderRadiusS)),
+                              labelText: context.l10n.pollOptionLabel(
+                                index + 1,
                               ),
-                              labelStyle: AppTextStyles.labelMedium
-                                  .copyWith(color: cs.onSurfaceVariant),
+                              border: const OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(AppDimensions.borderRadiusS),
+                                ),
+                              ),
+                              labelStyle: AppTextStyles.labelMedium.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
                             ),
                             onChanged: (_) => setState(() {}),
                           ),
@@ -206,8 +216,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       icon: const Icon(Icons.add, size: 18),
                       label: Text(
                         context.l10n.pollAddOption,
-                        style: AppTextStyles.labelMedium
-                            .copyWith(color: cs.primary),
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: cs.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -241,8 +252,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(
                       context.l10n.pollCancel,
-                      style: AppTextStyles.labelMedium
-                          .copyWith(color: cs.onSurfaceVariant),
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
@@ -253,7 +265,8 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       foregroundColor: cs.surfaceContainerHighest,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(
-                            Radius.circular(AppDimensions.borderRadiusS)),
+                          Radius.circular(AppDimensions.borderRadiusS),
+                        ),
                       ),
                     ),
                     child: Text(context.l10n.pollCreate),
@@ -286,7 +299,8 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     ? CachedNetworkImage(
                         imageUrl: recipe.primaryImageUrl!,
                         cacheKey: FirebaseUrlUtils.stableCacheKey(
-                            recipe.primaryImageUrl!),
+                          recipe.primaryImageUrl!,
+                        ),
                         fit: BoxFit.cover,
                         placeholder: (_, __) => _fallbackThumb(cs),
                         errorWidget: (_, __, ___) => _fallbackThumb(cs),
@@ -308,8 +322,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     if (recipe.portions != null)
                       Text(
                         '${recipe.portions} ${context.l10n.portionsUnit}',
-                        style: AppTextStyles.labelSmall
-                            .copyWith(color: cs.onSurfaceVariant),
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                   ],
                 ),

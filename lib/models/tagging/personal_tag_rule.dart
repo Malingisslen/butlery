@@ -124,8 +124,9 @@ class PersonalTagRule {
       tagId: SerializationUtils.safeString(data, 'tagId', defaultValue: ''),
       name: SerializationUtils.safeString(data, 'name', defaultValue: ''),
       conditions: _parseConditions(data['conditions']),
-      matchMode:
-          MatchModeExtension.fromFirestore(data['matchMode']?.toString()),
+      matchMode: MatchModeExtension.fromFirestore(
+        data['matchMode']?.toString(),
+      ),
       isEnabled: SerializationUtils.safeBool(
         data,
         'isEnabled',
@@ -156,17 +157,20 @@ class PersonalTagRule {
       tagId: SerializationUtils.safeString(json, 'tagId', defaultValue: ''),
       name: SerializationUtils.safeString(json, 'name', defaultValue: ''),
       conditions: _parseConditions(json['conditions']),
-      matchMode:
-          MatchModeExtension.fromFirestore(json['matchMode']?.toString()),
+      matchMode: MatchModeExtension.fromFirestore(
+        json['matchMode']?.toString(),
+      ),
       isEnabled: SerializationUtils.safeBool(
         json,
         'isEnabled',
         defaultValue: true,
       ),
-      createdAt:
-          SerializationUtils.parseRequiredDateTimeValue(json['createdAt']),
-      updatedAt:
-          SerializationUtils.parseRequiredDateTimeValue(json['updatedAt']),
+      createdAt: SerializationUtils.parseRequiredDateTimeValue(
+        json['createdAt'],
+      ),
+      updatedAt: SerializationUtils.parseRequiredDateTimeValue(
+        json['updatedAt'],
+      ),
     );
   }
 
@@ -174,22 +178,28 @@ class PersonalTagRule {
   /// Does not require tagId since the parent tag provides context.
   factory PersonalTagRule.fromEmbeddedMap(Map<String, dynamic> data) {
     return PersonalTagRule(
-      id: SerializationUtils.safeString(data, 'id',
-          defaultValue: const Uuid().v4()),
+      id: SerializationUtils.safeString(
+        data,
+        'id',
+        defaultValue: const Uuid().v4(),
+      ),
       tagId: '', // Not needed for embedded rules
       name: SerializationUtils.safeString(data, 'name', defaultValue: ''),
       conditions: _parseConditions(data['conditions']),
-      matchMode:
-          MatchModeExtension.fromFirestore(data['matchMode']?.toString()),
+      matchMode: MatchModeExtension.fromFirestore(
+        data['matchMode']?.toString(),
+      ),
       isEnabled: SerializationUtils.safeBool(
         data,
         'isEnabled',
         defaultValue: true,
       ),
-      createdAt:
-          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
-      updatedAt:
-          SerializationUtils.parseRequiredDateTimeValue(data['updatedAt']),
+      createdAt: SerializationUtils.parseRequiredDateTimeValue(
+        data['createdAt'],
+      ),
+      updatedAt: SerializationUtils.parseRequiredDateTimeValue(
+        data['updatedAt'],
+      ),
     );
   }
 
@@ -262,10 +272,12 @@ class PersonalTagRule {
     switch (matchMode) {
       case MatchMode.all:
         return conditions.every(
-            (c) => c.evaluate(recipe, lookup, currentUserId: currentUserId));
+          (c) => c.evaluate(recipe, lookup, currentUserId: currentUserId),
+        );
       case MatchMode.any:
         return conditions.any(
-            (c) => c.evaluate(recipe, lookup, currentUserId: currentUserId));
+          (c) => c.evaluate(recipe, lookup, currentUserId: currentUserId),
+        );
     }
   }
 

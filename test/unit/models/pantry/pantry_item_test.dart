@@ -37,24 +37,32 @@ PantryItem _item({
 void main() {
   group('PantryLocation.fromTypicalStorage', () {
     test('"refrigerated" → fridge', () {
-      expect(PantryLocation.fromTypicalStorage('refrigerated'),
-          PantryLocation.fridge);
+      expect(
+        PantryLocation.fromTypicalStorage('refrigerated'),
+        PantryLocation.fridge,
+      );
     });
 
     test('"frozen" → freezer', () {
       expect(
-          PantryLocation.fromTypicalStorage('frozen'), PantryLocation.freezer);
+        PantryLocation.fromTypicalStorage('frozen'),
+        PantryLocation.freezer,
+      );
     });
 
     test('"ambient" → pantry', () {
       expect(
-          PantryLocation.fromTypicalStorage('ambient'), PantryLocation.pantry);
+        PantryLocation.fromTypicalStorage('ambient'),
+        PantryLocation.pantry,
+      );
     });
 
     test('null / unknown → pantry (default fallback)', () {
       expect(PantryLocation.fromTypicalStorage(null), PantryLocation.pantry);
-      expect(PantryLocation.fromTypicalStorage('something-new'),
-          PantryLocation.pantry);
+      expect(
+        PantryLocation.fromTypicalStorage('something-new'),
+        PantryLocation.pantry,
+      );
     });
   });
 
@@ -111,8 +119,11 @@ void main() {
     // persistence must round-trip, and the "omit when false" write keeps the
     // common case from bloating every pantry document.
     test('toFirestore omits isStaple when false', () {
-      expect(_item().toFirestore().containsKey('isStaple'), isFalse,
-          reason: 'the default (non-staple) case must not write the field');
+      expect(
+        _item().toFirestore().containsKey('isStaple'),
+        isFalse,
+        reason: 'the default (non-staple) case must not write the field',
+      );
     });
 
     test('toFirestore writes isStaple: true when set', () {
@@ -260,8 +271,9 @@ void main() {
     });
 
     test('clearExpiryDate wipes existing expiryDate', () {
-      final copy = _item(expiryDate: DateTime.utc(2026, 1, 1))
-          .copyWith(clearExpiryDate: true);
+      final copy = _item(
+        expiryDate: DateTime.utc(2026, 1, 1),
+      ).copyWith(clearExpiryDate: true);
       expect(copy.expiryDate, isNull);
     });
 
@@ -273,8 +285,9 @@ void main() {
     test('field overrides win over clear flags only when both present', () {
       // Edge case: passing clearIngredientId=true + ingredientId='new'.
       // Per impl: clear flag wins (`clearIngredientId ? null : (... ?? ...)`).
-      final copy = _item(ingredientId: 'old')
-          .copyWith(clearIngredientId: true, ingredientId: 'new');
+      final copy = _item(
+        ingredientId: 'old',
+      ).copyWith(clearIngredientId: true, ingredientId: 'new');
       expect(copy.ingredientId, isNull);
     });
 
@@ -290,8 +303,11 @@ void main() {
       // BUT-1279: marking/un-marking a staple goes through copyWith; an
       // unrelated edit (e.g. quantity) must not silently clear the flag.
       final staple = _item(isStaple: true);
-      expect(staple.copyWith(quantity: 5).isStaple, isTrue,
-          reason: 'editing another field must not reset the staple flag');
+      expect(
+        staple.copyWith(quantity: 5).isStaple,
+        isTrue,
+        reason: 'editing another field must not reset the staple flag',
+      );
       expect(staple.copyWith(isStaple: false).isStaple, isFalse);
       expect(_item().copyWith(isStaple: true).isStaple, isTrue);
     });
@@ -311,13 +327,15 @@ void main() {
     });
   });
 
-  test('toString includes id + ingredientName + quantity + unit + location',
-      () {
-    final s = _item(quantity: 1.5).toString();
-    expect(s, contains('p1'));
-    expect(s, contains('Mjölk'));
-    expect(s, contains('1.5'));
-    expect(s, contains('l'));
-    expect(s, contains('fridge'));
-  });
+  test(
+    'toString includes id + ingredientName + quantity + unit + location',
+    () {
+      final s = _item(quantity: 1.5).toString();
+      expect(s, contains('p1'));
+      expect(s, contains('Mjölk'));
+      expect(s, contains('1.5'));
+      expect(s, contains('l'));
+      expect(s, contains('fridge'));
+    },
+  );
 }

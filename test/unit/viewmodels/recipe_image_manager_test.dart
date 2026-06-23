@@ -26,7 +26,7 @@ void main() {
   group('RecipeImageManager - Ultrathink Enhanced Tests', () {
     late RecipeImageManager imageManager;
     late StorageService
-        mockStorageService; // Using interface type for centralized mock
+    mockStorageService; // Using interface type for centralized mock
     late MockImageUploadService mockUploadService;
 
     // Test data
@@ -57,16 +57,21 @@ void main() {
       mockUploadService = MockImageUploadService();
 
       // Configure default upload service behavior - success scenarios
-      when(() => mockUploadService.uploadImage(
-                file: any(named: 'file'),
-                userId: any(named: 'userId'),
-              ))
-          .thenAnswer((_) async => UploadResult.success(
-              'https://storage.firebase.com/uploaded_image.jpg'));
+      when(
+        () => mockUploadService.uploadImage(
+          file: any(named: 'file'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer(
+        (_) async => UploadResult.success(
+          'https://storage.firebase.com/uploaded_image.jpg',
+        ),
+      );
 
       // Configure default storage service behavior
-      when(() => mockStorageService.deleteRecipeImage(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockStorageService.deleteRecipeImage(any()),
+      ).thenAnswer((_) async {});
 
       imageManager = RecipeImageManager(
         uploadService: mockUploadService,
@@ -186,7 +191,7 @@ void main() {
           testImageUrl2,
           testImageUrl3,
           testImageUrl4,
-          testImageUrl5
+          testImageUrl5,
         ]);
         var notificationCount = 0;
         imageManager.addListener(() => notificationCount++);
@@ -229,8 +234,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls.length, equals(3)); // No change
-        expect(notificationCount,
-            equals(0)); // No notification when removing non-existent item
+        expect(
+          notificationCount,
+          equals(0),
+        ); // No notification when removing non-existent item
       });
 
       test('should move image to first position correctly', () {
@@ -260,7 +267,9 @@ void main() {
         // Assert
         expect(imageManager.imageUrls, equals(testImageUrls)); // No change
         expect(
-            notificationCount, equals(0)); // Should not notify for non-existent
+          notificationCount,
+          equals(0),
+        ); // Should not notify for non-existent
       });
 
       test('should reorder images correctly', () {
@@ -273,8 +282,10 @@ void main() {
         imageManager.reorderImages(0, 2);
 
         // Assert
-        expect(imageManager.imageUrls[2],
-            equals(testImageUrl1)); // First moved to last
+        expect(
+          imageManager.imageUrls[2],
+          equals(testImageUrl1),
+        ); // First moved to last
         expect(imageManager.imageUrls.length, equals(3));
         expect(notificationCount, equals(1));
       });
@@ -292,8 +303,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls, equals(testImageUrls)); // No change
-        expect(notificationCount,
-            equals(0)); // Should not notify for invalid indices
+        expect(
+          notificationCount,
+          equals(0),
+        ); // Should not notify for invalid indices
       });
     });
 
@@ -330,8 +343,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls, isEmpty);
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorFillRequiredFields));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorFillRequiredFields),
+        );
         expect(imageManager.hasImageUploadError, isTrue);
       });
 
@@ -341,8 +356,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls, isEmpty);
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorFillRequiredFields));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorFillRequiredFields),
+        );
       });
 
       test('should reject invalid URL format', () async {
@@ -351,8 +368,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls, isEmpty);
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorGeneric));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorGeneric),
+        );
       });
 
       test('should reject duplicate URL', () async {
@@ -364,8 +383,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls.length, equals(1));
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorGeneric));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorGeneric),
+        );
       });
 
       test('should reject URL when at max images', () async {
@@ -375,7 +396,7 @@ void main() {
           testImageUrl2,
           testImageUrl3,
           testImageUrl4,
-          testImageUrl5
+          testImageUrl5,
         ]);
 
         // Act - try to add 6th image
@@ -383,8 +404,10 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls.length, equals(5));
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorGeneric));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorGeneric),
+        );
       });
 
       test('should handle URL parsing exceptions gracefully', () async {
@@ -396,9 +419,9 @@ void main() {
 
         // Assert - should either succeed or fail gracefully
         expect(
-            imageManager.hasImageUploadError ||
-                imageManager.imageUrls.isNotEmpty,
-            isTrue);
+          imageManager.hasImageUploadError || imageManager.imageUrls.isNotEmpty,
+          isTrue,
+        );
       });
     });
 
@@ -414,30 +437,38 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls.length, equals(1));
-        expect(imageManager.imageUrls.first,
-            equals('https://storage.firebase.com/uploaded_image.jpg'));
+        expect(
+          imageManager.imageUrls.first,
+          equals('https://storage.firebase.com/uploaded_image.jpg'),
+        );
         expect(imageManager.isUploadingImage, isFalse);
         expect(imageManager.imageUploadError, isNull);
         expect(notificationCount, greaterThan(0));
 
-        verify(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            )).called(1);
+        verify(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        ).called(1);
       });
 
       test('should handle upload state correctly during file upload', () async {
         // Arrange
         final testFile = MockFactory.createXFile('/test/image.jpg');
         final completer = Completer<UploadResult>();
-        when(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            )).thenAnswer((_) => completer.future);
+        when(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) => completer.future);
 
         // Act
-        final uploadFuture =
-            imageManager.uploadImageFromFile(testFile, testRecipeId);
+        final uploadFuture = imageManager.uploadImageFromFile(
+          testFile,
+          testRecipeId,
+        );
 
         // Assert - should be uploading while awaiting
         expect(imageManager.isUploadingImage, isTrue);
@@ -460,7 +491,7 @@ void main() {
           testImageUrl2,
           testImageUrl3,
           testImageUrl4,
-          testImageUrl5
+          testImageUrl5,
         ]);
         final testFile = MockFactory.createXFile('/test/image.jpg');
 
@@ -469,21 +500,27 @@ void main() {
 
         // Assert
         expect(imageManager.imageUrls.length, equals(5)); // No change
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorGeneric));
-        verifyNever(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            ));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorGeneric),
+        );
+        verifyNever(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        );
       });
 
       test('should handle upload failure gracefully', () async {
         // Arrange
         final testFile = MockFactory.createXFile('/test/image.jpg');
-        when(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            )).thenThrow(Exception('Storage error'));
+        when(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(Exception('Storage error'));
 
         // Act
         await imageManager.uploadImageFromFile(testFile, testRecipeId);
@@ -491,20 +528,26 @@ void main() {
         // Assert
         expect(imageManager.imageUrls, isEmpty);
         expect(imageManager.isUploadingImage, isFalse);
-        expect(imageManager.imageUploadError,
-            equals(AppLocale.current.errorGeneric));
+        expect(
+          imageManager.imageUploadError,
+          equals(AppLocale.current.errorGeneric),
+        );
       });
 
       test('should handle failed upload result', () async {
         // Arrange
         final testFile = MockFactory.createXFile('/test/image.jpg');
-        when(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            )).thenAnswer((_) async => const UploadResult(
-              success: false,
-              error: 'Upload failed',
-            ));
+        when(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer(
+          (_) async => const UploadResult(
+            success: false,
+            error: 'Upload failed',
+          ),
+        );
 
         // Act
         await imageManager.uploadImageFromFile(testFile, testRecipeId);
@@ -517,13 +560,17 @@ void main() {
       test('should handle upload result with no URL', () async {
         // Arrange
         final testFile = MockFactory.createXFile('/test/image.jpg');
-        when(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            )).thenAnswer((_) async => const UploadResult(
-              success: false,
-              error: 'No URL returned',
-            ));
+        when(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer(
+          (_) async => const UploadResult(
+            success: false,
+            error: 'No URL returned',
+          ),
+        );
 
         // Act
         await imageManager.uploadImageFromFile(testFile, testRecipeId);
@@ -545,8 +592,11 @@ void main() {
 
       test('should limit files to available slots', () async {
         // Arrange - already have 3 images, only 2 slots left
-        imageManager
-            .setImageUrls([testImageUrl1, testImageUrl2, testImageUrl3]);
+        imageManager.setImageUrls([
+          testImageUrl1,
+          testImageUrl2,
+          testImageUrl3,
+        ]);
         final testFiles = [
           MockFactory.createXFile('/test/image1.jpg'),
           MockFactory.createXFile('/test/image2.png'),
@@ -559,29 +609,38 @@ void main() {
         await imageManager.uploadMultipleImages(testFiles, testRecipeId);
 
         // Assert - limitation message is set even though files fail validation
-        expect(imageManager.imageUploadError,
-            contains('Bara 2 av 4 bilder kunde laddas upp'));
+        expect(
+          imageManager.imageUploadError,
+          contains('Bara 2 av 4 bilder kunde laddas upp'),
+        );
       });
 
       test(
-          'should report slot limitation message when files exceed available slots',
-          () async {
-        // Arrange - 4 existing images, only 1 slot left
-        imageManager.setImageUrls(
-            [testImageUrl1, testImageUrl2, testImageUrl3, testImageUrl4]);
-        final testFiles = [
-          MockFactory.createXFile('/test/image1.jpg'),
-          MockFactory.createXFile('/test/image2.jpg'),
-          MockFactory.createXFile('/test/image3.jpg'),
-        ];
+        'should report slot limitation message when files exceed available slots',
+        () async {
+          // Arrange - 4 existing images, only 1 slot left
+          imageManager.setImageUrls([
+            testImageUrl1,
+            testImageUrl2,
+            testImageUrl3,
+            testImageUrl4,
+          ]);
+          final testFiles = [
+            MockFactory.createXFile('/test/image1.jpg'),
+            MockFactory.createXFile('/test/image2.jpg'),
+            MockFactory.createXFile('/test/image3.jpg'),
+          ];
 
-        // Act
-        await imageManager.uploadMultipleImages(testFiles, testRecipeId);
+          // Act
+          await imageManager.uploadMultipleImages(testFiles, testRecipeId);
 
-        // Assert - limitation message reports correct counts
-        expect(imageManager.imageUploadError,
-            contains('Bara 1 av 3 bilder kunde laddas upp'));
-      });
+          // Assert - limitation message reports correct counts
+          expect(
+            imageManager.imageUploadError,
+            contains('Bara 1 av 3 bilder kunde laddas upp'),
+          );
+        },
+      );
 
       test('should not set limitation message when all files fit', () async {
         // Arrange - 2 existing images, 3 slots left, only 2 files
@@ -598,8 +657,10 @@ void main() {
         // don't exist on disk, but the slot limiting logic works correctly)
         // The error, if any, comes from file validation -- not slot limiting
         if (imageManager.imageUploadError != null) {
-          expect(imageManager.imageUploadError,
-              isNot(contains('bilder kunde laddas upp')));
+          expect(
+            imageManager.imageUploadError,
+            isNot(contains('bilder kunde laddas upp')),
+          );
         }
       });
     });
@@ -612,8 +673,7 @@ void main() {
       // invariant matters because mid-form abandonment must leave Storage
       // intact. End-to-end undo + commit behaviour is covered in
       // `recipe_image_deletion_undo_test.dart`.
-      test(
-          'should remove image from state and DEFER storage cleanup '
+      test('should remove image from state and DEFER storage cleanup '
           '(BUT-932)', () async {
         const firebaseImageUrl = 'https://firebase.com/storage/image.jpg';
         imageManager.addUploadedImageUrl(firebaseImageUrl);
@@ -626,8 +686,9 @@ void main() {
 
         // The deferred delete fires only on explicit commit.
         await imageManager.commitPendingStorageDeletes();
-        verify(() => mockStorageService.deleteRecipeImage(firebaseImageUrl))
-            .called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(firebaseImageUrl),
+        ).called(1);
         expect(imageManager.pendingDeleteCount, 0);
       });
 
@@ -642,43 +703,50 @@ void main() {
         verifyNever(() => mockStorageService.deleteRecipeImage(any()));
 
         await imageManager.commitPendingStorageDeletes();
-        verify(() => mockStorageService.deleteRecipeImage(externalUrl))
-            .called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(externalUrl),
+        ).called(1);
       });
 
-      test('should defer cleanup for google storage images (BUT-932)',
-          () async {
-        const storageUrl = 'https://storage.googleapis.com/image.jpg';
-        imageManager.addUploadedImageUrl(storageUrl);
+      test(
+        'should defer cleanup for google storage images (BUT-932)',
+        () async {
+          const storageUrl = 'https://storage.googleapis.com/image.jpg';
+          imageManager.addUploadedImageUrl(storageUrl);
 
-        await imageManager.removeImageAndCleanup(storageUrl);
+          await imageManager.removeImageAndCleanup(storageUrl);
 
-        expect(imageManager.imageUrls, isNot(contains(storageUrl)));
-        verifyNever(() => mockStorageService.deleteRecipeImage(any()));
+          expect(imageManager.imageUrls, isNot(contains(storageUrl)));
+          verifyNever(() => mockStorageService.deleteRecipeImage(any()));
 
-        await imageManager.commitPendingStorageDeletes();
-        verify(() => mockStorageService.deleteRecipeImage(storageUrl))
-            .called(1);
-      });
+          await imageManager.commitPendingStorageDeletes();
+          verify(
+            () => mockStorageService.deleteRecipeImage(storageUrl),
+          ).called(1);
+        },
+      );
 
-      test('should handle commit cleanup failure gracefully (BUT-932)',
-          () async {
-        // Failure surface moved from `removeImageAndCleanup` to
-        // `commitPendingStorageDeletes`: a Storage delete error must NOT
-        // break a successful recipe save. Orphan bytes in Storage are
-        // acceptable; data loss in the recipe is not.
-        const firebaseImageUrl = 'https://firebase.com/storage/image.jpg';
-        imageManager.addUploadedImageUrl(firebaseImageUrl);
-        when(() => mockStorageService.deleteRecipeImage(any()))
-            .thenThrow(Exception('Delete error'));
+      test(
+        'should handle commit cleanup failure gracefully (BUT-932)',
+        () async {
+          // Failure surface moved from `removeImageAndCleanup` to
+          // `commitPendingStorageDeletes`: a Storage delete error must NOT
+          // break a successful recipe save. Orphan bytes in Storage are
+          // acceptable; data loss in the recipe is not.
+          const firebaseImageUrl = 'https://firebase.com/storage/image.jpg';
+          imageManager.addUploadedImageUrl(firebaseImageUrl);
+          when(
+            () => mockStorageService.deleteRecipeImage(any()),
+          ).thenThrow(Exception('Delete error'));
 
-        await imageManager.removeImageAndCleanup(firebaseImageUrl);
-        // commit must not throw even when the Storage call fails.
-        await imageManager.commitPendingStorageDeletes();
+          await imageManager.removeImageAndCleanup(firebaseImageUrl);
+          // commit must not throw even when the Storage call fails.
+          await imageManager.commitPendingStorageDeletes();
 
-        expect(imageManager.imageUrls, isNot(contains(firebaseImageUrl)));
-        expect(imageManager.pendingDeleteCount, 0);
-      });
+          expect(imageManager.imageUrls, isNot(contains(firebaseImageUrl)));
+          expect(imageManager.pendingDeleteCount, 0);
+        },
+      );
 
       test('should clear all images and cleanup storage', () async {
         // Arrange
@@ -696,12 +764,15 @@ void main() {
         expect(imageManager.imageUrls, isEmpty);
 
         // _isUploadedUrl treats all HTTP URLs as uploaded, so all get cleanup
-        verify(() => mockStorageService.deleteRecipeImage(mixedUrls[0]))
-            .called(1);
-        verify(() => mockStorageService.deleteRecipeImage(mixedUrls[1]))
-            .called(1);
-        verify(() => mockStorageService.deleteRecipeImage(mixedUrls[2]))
-            .called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(mixedUrls[0]),
+        ).called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(mixedUrls[1]),
+        ).called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(mixedUrls[2]),
+        ).called(1);
       });
 
       test('should handle cleanup failures during clear all', () async {
@@ -713,20 +784,24 @@ void main() {
         imageManager.setImageUrls(uploadedUrls);
 
         // First cleanup succeeds, second fails
-        when(() => mockStorageService.deleteRecipeImage(uploadedUrls[0]))
-            .thenAnswer((_) async {});
-        when(() => mockStorageService.deleteRecipeImage(uploadedUrls[1]))
-            .thenThrow(Exception('Delete error'));
+        when(
+          () => mockStorageService.deleteRecipeImage(uploadedUrls[0]),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockStorageService.deleteRecipeImage(uploadedUrls[1]),
+        ).thenThrow(Exception('Delete error'));
 
         // Act - should not throw
         await imageManager.clearAllImages();
 
         // Assert
         expect(imageManager.imageUrls, isEmpty);
-        verify(() => mockStorageService.deleteRecipeImage(uploadedUrls[0]))
-            .called(1);
-        verify(() => mockStorageService.deleteRecipeImage(uploadedUrls[1]))
-            .called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(uploadedUrls[0]),
+        ).called(1);
+        verify(
+          () => mockStorageService.deleteRecipeImage(uploadedUrls[1]),
+        ).called(1);
       });
     });
 
@@ -745,8 +820,11 @@ void main() {
 
         // Assert
         for (final url in validFormats) {
-          expect(imageManager.isValidImageFormat(url), isTrue,
-              reason: 'Should accept $url as valid image format');
+          expect(
+            imageManager.isValidImageFormat(url),
+            isTrue,
+            reason: 'Should accept $url as valid image format',
+          );
         }
       });
 
@@ -763,20 +841,25 @@ void main() {
 
         // Assert
         for (final url in invalidFormats) {
-          expect(imageManager.isValidImageFormat(url), isFalse,
-              reason: 'Should reject $url as invalid image format');
+          expect(
+            imageManager.isValidImageFormat(url),
+            isFalse,
+            reason: 'Should reject $url as invalid image format',
+          );
         }
       });
 
       test('should validate image size correctly', () async {
         // Arrange - use MockXFile with stubbed length()
         final validSizeFile = MockXFile();
-        when(() => validSizeFile.length())
-            .thenAnswer((_) async => 1024 * 1024); // 1MB
+        when(
+          () => validSizeFile.length(),
+        ).thenAnswer((_) async => 1024 * 1024); // 1MB
 
         final largeSizeFile = MockXFile();
-        when(() => largeSizeFile.length())
-            .thenAnswer((_) async => 10 * 1024 * 1024); // 10MB
+        when(
+          () => largeSizeFile.length(),
+        ).thenAnswer((_) async => 10 * 1024 * 1024); // 10MB
 
         // Act & Assert
         expect(await imageManager.isValidImageSize(validSizeFile), isTrue);
@@ -814,10 +897,12 @@ void main() {
           testImageUrl2,
           testImageUrl3,
           testImageUrl4,
-          testImageUrl5
+          testImageUrl5,
         ]);
         await imageManager.uploadImageFromFile(
-            MockFactory.createXFile('/test/image.jpg'), testRecipeId);
+          MockFactory.createXFile('/test/image.jpg'),
+          testRecipeId,
+        );
         expect(imageManager.hasImageUploadError, isTrue);
 
         // Remove one image to make space
@@ -825,7 +910,9 @@ void main() {
 
         // Act
         await imageManager.uploadImageFromFile(
-            MockFactory.createXFile('/test/image.jpg'), testRecipeId);
+          MockFactory.createXFile('/test/image.jpg'),
+          testRecipeId,
+        );
 
         // Assert
         expect(imageManager.imageUploadError, isNull);
@@ -837,7 +924,8 @@ void main() {
           // Arrange
           final errorStates = <String?>[];
           imageManager.addListener(
-              () => errorStates.add(imageManager.imageUploadError));
+            () => errorStates.add(imageManager.imageUploadError),
+          );
 
           // Act - trigger error
           imageManager.addImageFromUrl('invalid-url');
@@ -870,25 +958,32 @@ void main() {
         imageManager.reorderImages(0, 0); // No change, but still notifies
 
         // Assert
-        expect(notificationCount,
-            equals(4)); // reorderImages doesn't change anything
+        expect(
+          notificationCount,
+          equals(4),
+        ); // reorderImages doesn't change anything
       });
 
       test('should notify listeners when upload state changes', () async {
         // Arrange
         final uploadingStates = <bool>[];
         imageManager.addListener(
-            () => uploadingStates.add(imageManager.isUploadingImage));
+          () => uploadingStates.add(imageManager.isUploadingImage),
+        );
 
         final completer = Completer<UploadResult>();
-        when(() => mockUploadService.uploadImage(
-              file: any(named: 'file'),
-              userId: any(named: 'userId'),
-            )).thenAnswer((_) => completer.future);
+        when(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) => completer.future);
 
         // Act
         final uploadFuture = imageManager.uploadImageFromFile(
-            MockFactory.createXFile('/test/image.jpg'), testRecipeId);
+          MockFactory.createXFile('/test/image.jpg'),
+          testRecipeId,
+        );
 
         // Complete upload
         completer.complete(UploadResult.success('https://uploaded.jpg'));
@@ -907,7 +1002,8 @@ void main() {
           // Arrange
           final hasErrorStates = <bool>[];
           imageManager.addListener(
-              () => hasErrorStates.add(imageManager.hasImageUploadError));
+            () => hasErrorStates.add(imageManager.hasImageUploadError),
+          );
 
           // Act - trigger error
           imageManager.addImageFromUrl('invalid-url');
@@ -932,9 +1028,9 @@ void main() {
         // Act & Assert - should not crash
         await imageManager.addImageFromUrl(longUrl);
         expect(
-            imageManager.imageUrls.isNotEmpty ||
-                imageManager.hasImageUploadError,
-            isTrue);
+          imageManager.imageUrls.isNotEmpty || imageManager.hasImageUploadError,
+          isTrue,
+        );
       });
 
       test('should handle special characters in URLs', () async {
@@ -950,9 +1046,10 @@ void main() {
           // Act & Assert - should handle gracefully
           await imageManager.addImageFromUrl(url);
           expect(
-              imageManager.imageUrls.isNotEmpty ||
-                  imageManager.hasImageUploadError,
-              isTrue);
+            imageManager.imageUrls.isNotEmpty ||
+                imageManager.hasImageUploadError,
+            isTrue,
+          );
 
           // Reset for next test
           imageManager.setImageUrls([]);
@@ -971,9 +1068,10 @@ void main() {
           // Act & Assert - should handle gracefully
           await imageManager.addImageFromUrl(url);
           expect(
-              imageManager.imageUrls.isNotEmpty ||
-                  imageManager.hasImageUploadError,
-              isTrue);
+            imageManager.imageUrls.isNotEmpty ||
+                imageManager.hasImageUploadError,
+            isTrue,
+          );
 
           // Reset for next test
           imageManager.setImageUrls([]);
@@ -990,14 +1088,18 @@ void main() {
 
         // Configure mock to return different URLs for each call
         var callCount = 0;
-        when(() => mockUploadService.uploadImage(
-                  file: any(named: 'file'),
-                  userId: any(named: 'userId'),
-                  maxRetryAttempts: any(named: 'maxRetryAttempts'),
-                  onProgress: any(named: 'onProgress'),
-                ))
-            .thenAnswer((_) async => UploadResult.success(
-                'https://storage.firebase.com/uploaded_image${++callCount}.jpg'));
+        when(
+          () => mockUploadService.uploadImage(
+            file: any(named: 'file'),
+            userId: any(named: 'userId'),
+            maxRetryAttempts: any(named: 'maxRetryAttempts'),
+            onProgress: any(named: 'onProgress'),
+          ),
+        ).thenAnswer(
+          (_) async => UploadResult.success(
+            'https://storage.firebase.com/uploaded_image${++callCount}.jpg',
+          ),
+        );
 
         // Act - start multiple uploads concurrently
         final futures = testFiles
@@ -1021,8 +1123,10 @@ void main() {
         imageManager.moveImageToFirst(testImageUrl3);
 
         // Assert - state should be consistent
-        expect(imageManager.imageUrls.length,
-            equals(initialCount)); // Added 1, removed 1
+        expect(
+          imageManager.imageUrls.length,
+          equals(initialCount),
+        ); // Added 1, removed 1
         expect(imageManager.imageUrls.first, equals(testImageUrl3));
         expect(imageManager.canAddMoreImages, isTrue);
         expect(imageManager.remainingImageSlots, equals(3));
@@ -1038,10 +1142,14 @@ void main() {
         imageManager.dispose();
 
         // Additional operations after disposal should throw FlutterError (correct Flutter behavior)
-        expect(() => imageManager.setImageUrls([testImageUrl1]),
-            throwsA(isA<FlutterError>()));
-        expect(() => imageManager.addUploadedImageUrl(testImageUrl2),
-            throwsA(isA<FlutterError>()));
+        expect(
+          () => imageManager.setImageUrls([testImageUrl1]),
+          throwsA(isA<FlutterError>()),
+        );
+        expect(
+          () => imageManager.addUploadedImageUrl(testImageUrl2),
+          throwsA(isA<FlutterError>()),
+        );
       });
 
       test('should handle multiple dispose calls', () {
@@ -1068,7 +1176,9 @@ void main() {
 
         // 3. Upload file
         await imageManager.uploadImageFromFile(
-            MockFactory.createXFile('/test/image.jpg'), testRecipeId);
+          MockFactory.createXFile('/test/image.jpg'),
+          testRecipeId,
+        );
         expect(imageManager.imageUrls.length, equals(3));
 
         // 4. Reorder images
@@ -1100,16 +1210,20 @@ void main() {
           testImageUrl2,
           testImageUrl3,
           testImageUrl4,
-          testImageUrl5
+          testImageUrl5,
         ]);
         await imageManager.uploadImageFromFile(
-            MockFactory.createXFile('/test/image.jpg'), testRecipeId);
+          MockFactory.createXFile('/test/image.jpg'),
+          testRecipeId,
+        );
         expect(imageManager.hasImageUploadError, isTrue);
 
         // 4. Make space and retry
         imageManager.removeImageUrl(testImageUrl1);
         await imageManager.uploadImageFromFile(
-            MockFactory.createXFile('/test/image.jpg'), testRecipeId);
+          MockFactory.createXFile('/test/image.jpg'),
+          testRecipeId,
+        );
         expect(imageManager.hasImageUploadError, isFalse);
       });
 
@@ -1120,7 +1234,7 @@ void main() {
           testImageUrl2,
           testImageUrl3,
           testImageUrl4,
-          testImageUrl5
+          testImageUrl5,
         ];
         imageManager.setImageUrls(maxUrls);
 

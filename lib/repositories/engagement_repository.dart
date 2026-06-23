@@ -23,14 +23,16 @@ class EngagementRepository {
   static const String _dailySubcollection = 'daily';
 
   EngagementRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Total registered user accounts via a `count()` aggregate (cheap — ~1 read).
   /// Returns 0 on error so the tab degrades to an empty state, never crashes.
   Future<int> getUserCount() async {
     try {
-      final snapshot =
-          await _firestore.collection(FirestoreCollections.users).count().get();
+      final snapshot = await _firestore
+          .collection(FirestoreCollections.users)
+          .count()
+          .get();
       return snapshot.count ?? 0;
     } catch (e) {
       AppLogger.warning('EngagementRepository: failed to count users: $e');
@@ -40,8 +42,9 @@ class EngagementRepository {
 
   /// The most recent [limit] daily aggregates, newest first. The doc id is the
   /// UTC date, so ordering by document id descending yields newest-first.
-  Future<List<DailyEngagement>> getDailyFeatureRetention(
-      {int limit = 14}) async {
+  Future<List<DailyEngagement>> getDailyFeatureRetention({
+    int limit = 14,
+  }) async {
     try {
       final snapshot = await _firestore
           .collection(FirestoreCollections.analytics)

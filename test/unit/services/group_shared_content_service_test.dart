@@ -27,14 +27,14 @@ void main() {
         .collection(FirestoreCollections.sharedContent)
         .doc(id)
         .set({
-      'contentType': 'recipe',
-      'sharedByUserId': sharedByUserId,
-      'sharedByDisplayName': 'Test User',
-      'recipeTitle': recipeTitle,
-      'originalRecipeId': 'original-$id',
-      'sharedToUserIds': sharedToUserIds,
-      'sharedAt': Timestamp.fromDate(sharedAt ?? DateTime(2026, 3, 1)),
-    });
+          'contentType': 'recipe',
+          'sharedByUserId': sharedByUserId,
+          'sharedByDisplayName': 'Test User',
+          'recipeTitle': recipeTitle,
+          'originalRecipeId': 'original-$id',
+          'sharedToUserIds': sharedToUserIds,
+          'sharedAt': Timestamp.fromDate(sharedAt ?? DateTime(2026, 3, 1)),
+        });
   }
 
   setUp(() {
@@ -45,8 +45,9 @@ void main() {
       isAuthenticated: true,
     );
     service = GroupSharedContentService(
-      repository:
-          FirebaseGroupSharedContentRepository(firestore: fakeFirestore),
+      repository: FirebaseGroupSharedContentRepository(
+        firestore: fakeFirestore,
+      ),
       permissionService: mockPermissionService,
     );
   });

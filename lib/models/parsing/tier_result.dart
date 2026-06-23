@@ -89,84 +89,78 @@ class TierResult {
     double? costSek,
     int? tokensUsed,
     String? promptVersion,
-  }) =>
-      TierResult(
-        tierName: tierName,
-        recipe: recipe,
-        success: true,
-        quality: recipe.overallQuality,
-        duration: duration,
-        costSek: costSek,
-        tokensUsed: tokensUsed,
-        promptVersion: promptVersion,
-      );
+  }) => TierResult(
+    tierName: tierName,
+    recipe: recipe,
+    success: true,
+    quality: recipe.overallQuality,
+    duration: duration,
+    costSek: costSek,
+    tokensUsed: tokensUsed,
+    promptVersion: promptVersion,
+  );
 
   /// Creates a failed tier result.
   factory TierResult.failure({
     required String tierName,
     required TierFailureReason reason,
     required Duration duration,
-  }) =>
-      TierResult(
-        tierName: tierName,
-        success: false,
-        quality: 0.0,
-        duration: duration,
-        failureReason: reason,
-      );
+  }) => TierResult(
+    tierName: tierName,
+    success: false,
+    quality: 0.0,
+    duration: duration,
+    failureReason: reason,
+  );
 
   /// Creates a skipped tier result (tier not applicable).
   factory TierResult.skipped({
     required String tierName,
     Duration duration = Duration.zero,
-  }) =>
-      TierResult(
-        tierName: tierName,
-        success: false,
-        quality: 0.0,
-        duration: duration,
-        failureReason: TierFailureReason.skipped,
-      );
+  }) => TierResult(
+    tierName: tierName,
+    success: false,
+    quality: 0.0,
+    duration: duration,
+    failureReason: TierFailureReason.skipped,
+  );
 
   /// Creates a no-data tier result.
   factory TierResult.noData({
     required String tierName,
     required Duration duration,
-  }) =>
-      TierResult(
-        tierName: tierName,
-        success: false,
-        quality: 0.0,
-        duration: duration,
-        failureReason: TierFailureReason.noData,
-      );
+  }) => TierResult(
+    tierName: tierName,
+    success: false,
+    quality: 0.0,
+    duration: duration,
+    failureReason: TierFailureReason.noData,
+  );
 
   /// Creates a timeout tier result.
   factory TierResult.timeout({
     required String tierName,
     required Duration duration,
-  }) =>
-      TierResult(
-        tierName: tierName,
-        success: false,
-        quality: 0.0,
-        duration: duration,
-        failureReason: TierFailureReason.timeout,
-      );
+  }) => TierResult(
+    tierName: tierName,
+    success: false,
+    quality: 0.0,
+    duration: duration,
+    failureReason: TierFailureReason.timeout,
+  );
 
   /// Creates a parse error tier result.
   factory TierResult.parseError({
     required String tierName,
     required Duration duration,
     String? message,
-  }) =>
-      TierResult(
-        tierName: tierName,
-        success: false,
-        quality: 0.0,
-        duration: duration,
-        failureReason: TierFailureReason.parseError,
-      );
+  }) => TierResult(
+    tierName: tierName,
+    success: false,
+    quality: 0.0,
+    duration: duration,
+    failureReason: TierFailureReason.parseError,
+  );
 
   /// Creates a copy with updated fields.
   TierResult copyWith({
@@ -179,18 +173,17 @@ class TierResult {
     TierFailureReason? failureReason,
     int? tokensUsed,
     String? promptVersion,
-  }) =>
-      TierResult(
-        tierName: tierName ?? this.tierName,
-        recipe: recipe ?? this.recipe,
-        success: success ?? this.success,
-        quality: quality ?? this.quality,
-        duration: duration ?? this.duration,
-        costSek: costSek ?? this.costSek,
-        failureReason: failureReason ?? this.failureReason,
-        tokensUsed: tokensUsed ?? this.tokensUsed,
-        promptVersion: promptVersion ?? this.promptVersion,
-      );
+  }) => TierResult(
+    tierName: tierName ?? this.tierName,
+    recipe: recipe ?? this.recipe,
+    success: success ?? this.success,
+    quality: quality ?? this.quality,
+    duration: duration ?? this.duration,
+    costSek: costSek ?? this.costSek,
+    failureReason: failureReason ?? this.failureReason,
+    tokensUsed: tokensUsed ?? this.tokensUsed,
+    promptVersion: promptVersion ?? this.promptVersion,
+  );
 
   /// Whether this tier was skipped.
   bool get wasSkipped => failureReason == TierFailureReason.skipped;
@@ -219,21 +212,19 @@ class TierResult {
 /// Used by RecipeParserService to surface actionable feedback.
 extension TierFailureReasonMessage on TierFailureReason {
   String get userMessage => switch (this) {
-        TierFailureReason.rateLimited =>
-          'Daglig gräns nådd. Försök igen imorgon.',
-        TierFailureReason.noData => 'Kunde inte hitta receptinformation.',
-        TierFailureReason.invalidResponse => 'AI-svaret kunde inte tolkas.',
-        TierFailureReason.schemaValidationFailed =>
-          'Receptet hade ogiltiga värden.',
-        TierFailureReason.parseError => 'Ett tekniskt fel uppstod.',
-        TierFailureReason.timeout => 'Tidsgränsen överskreds. Försök igen.',
-        TierFailureReason.networkError =>
-          'Nätverksfel. Kontrollera din anslutning.',
-        TierFailureReason.securityBlocked =>
-          'Innehållet blockerades av säkerhetsskäl.',
-        TierFailureReason.inputTooLarge =>
-          'Texten är för lång för bearbetning.',
-        TierFailureReason.deadlineExceeded => 'Bearbetningen tog för lång tid.',
-        TierFailureReason.skipped => 'Kunde inte hitta receptinformation.',
-      };
+    TierFailureReason.rateLimited => 'Daglig gräns nådd. Försök igen imorgon.',
+    TierFailureReason.noData => 'Kunde inte hitta receptinformation.',
+    TierFailureReason.invalidResponse => 'AI-svaret kunde inte tolkas.',
+    TierFailureReason.schemaValidationFailed =>
+      'Receptet hade ogiltiga värden.',
+    TierFailureReason.parseError => 'Ett tekniskt fel uppstod.',
+    TierFailureReason.timeout => 'Tidsgränsen överskreds. Försök igen.',
+    TierFailureReason.networkError =>
+      'Nätverksfel. Kontrollera din anslutning.',
+    TierFailureReason.securityBlocked =>
+      'Innehållet blockerades av säkerhetsskäl.',
+    TierFailureReason.inputTooLarge => 'Texten är för lång för bearbetning.',
+    TierFailureReason.deadlineExceeded => 'Bearbetningen tog för lång tid.',
+    TierFailureReason.skipped => 'Kunde inte hitta receptinformation.',
+  };
 }

@@ -37,8 +37,9 @@ class CrfGoldenEntry {
       input: json['input'] as String,
       tokens: (json['tokens'] as List<dynamic>).cast<String>(),
       labels: (json['labels'] as List<dynamic>).cast<String>(),
-      expected: (json['expected'] as Map<String, dynamic>)
-          .map((k, v) => MapEntry(k, v.toString())),
+      expected: (json['expected'] as Map<String, dynamic>).map(
+        (k, v) => MapEntry(k, v.toString()),
+      ),
       tags: (json['tags'] as List<dynamic>).cast<String>(),
       description: json['description'] as String,
     );
@@ -175,21 +176,23 @@ class CrfEvaluationResult {
     }
 
     if (!allMatch) {
-      failures.add(FailureEntry(
-        input: entry.input,
-        tags: entry.tags,
-        description: entry.description,
-        expectedQty: expQty,
-        expectedUnit: expUnit,
-        expectedName: expName,
-        expectedSize: expSize,
-        expectedPrep: expPrep,
-        actualQty: predQuantity,
-        actualUnit: predUnit,
-        actualName: predName,
-        actualSize: predSize,
-        actualPrep: predPrep,
-      ));
+      failures.add(
+        FailureEntry(
+          input: entry.input,
+          tags: entry.tags,
+          description: entry.description,
+          expectedQty: expQty,
+          expectedUnit: expUnit,
+          expectedName: expName,
+          expectedSize: expSize,
+          expectedPrep: expPrep,
+          actualQty: predQuantity,
+          actualUnit: predUnit,
+          actualName: predName,
+          actualSize: predSize,
+          actualPrep: predPrep,
+        ),
+      );
     }
   }
 
@@ -240,28 +243,42 @@ class CrfEvaluationResult {
       ..writeln('=== CRF EVALUATION REPORT ===')
       ..writeln('')
       ..writeln('FIELD-LEVEL EXACT MATCH:')
-      ..writeln('  All fields:   $allFieldsExact/$totalEntries '
-          '(${_pct(allFieldsExact, totalEntries)})')
-      ..writeln('  Quantity:     $quantityExact/$totalEntries '
-          '(${_pct(quantityExact, totalEntries)})')
-      ..writeln('  Unit:         $unitExact/$totalEntries '
-          '(${_pct(unitExact, totalEntries)})')
-      ..writeln('  Name:         $nameExact/$totalEntries '
-          '(${_pct(nameExact, totalEntries)})')
-      ..writeln('  Size:         $sizeExact/$totalEntries '
-          '(${_pct(sizeExact, totalEntries)})')
-      ..writeln('  Preparation:  $prepExact/$totalEntries '
-          '(${_pct(prepExact, totalEntries)})')
+      ..writeln(
+        '  All fields:   $allFieldsExact/$totalEntries '
+        '(${_pct(allFieldsExact, totalEntries)})',
+      )
+      ..writeln(
+        '  Quantity:     $quantityExact/$totalEntries '
+        '(${_pct(quantityExact, totalEntries)})',
+      )
+      ..writeln(
+        '  Unit:         $unitExact/$totalEntries '
+        '(${_pct(unitExact, totalEntries)})',
+      )
+      ..writeln(
+        '  Name:         $nameExact/$totalEntries '
+        '(${_pct(nameExact, totalEntries)})',
+      )
+      ..writeln(
+        '  Size:         $sizeExact/$totalEntries '
+        '(${_pct(sizeExact, totalEntries)})',
+      )
+      ..writeln(
+        '  Preparation:  $prepExact/$totalEntries '
+        '(${_pct(prepExact, totalEntries)})',
+      )
       ..writeln('')
       ..writeln('TOKEN-LEVEL METRICS (per label):');
 
     final sortedLabels = tokenMetrics.keys.toList()..sort();
     for (final label in sortedLabels) {
       final m = tokenMetrics[label]!;
-      buf.writeln('  $label: P=${m.precision.toStringAsFixed(3)} '
-          'R=${m.recall.toStringAsFixed(3)} '
-          'F1=${m.f1.toStringAsFixed(3)} '
-          '(support=${m.support})');
+      buf.writeln(
+        '  $label: P=${m.precision.toStringAsFixed(3)} '
+        'R=${m.recall.toStringAsFixed(3)} '
+        'F1=${m.f1.toStringAsFixed(3)} '
+        '(support=${m.support})',
+      );
     }
 
     // Macro-average F1
@@ -279,10 +296,12 @@ class CrfEvaluationResult {
     final sortedSpans = spanMetrics.keys.toList()..sort();
     for (final type in sortedSpans) {
       final m = spanMetrics[type]!;
-      buf.writeln('  $type: P=${m.precision.toStringAsFixed(3)} '
-          'R=${m.recall.toStringAsFixed(3)} '
-          'F1=${m.f1.toStringAsFixed(3)} '
-          '(support=${m.support})');
+      buf.writeln(
+        '  $type: P=${m.precision.toStringAsFixed(3)} '
+        'R=${m.recall.toStringAsFixed(3)} '
+        'F1=${m.f1.toStringAsFixed(3)} '
+        '(support=${m.support})',
+      );
     }
 
     buf.writeln('');
@@ -290,8 +309,10 @@ class CrfEvaluationResult {
     final sortedTags = tagStats.keys.toList()..sort();
     for (final tag in sortedTags) {
       final s = tagStats[tag]!;
-      buf.writeln('  $tag: ${s.exact}/${s.total} '
-          '(${_pct(s.exact, s.total)})');
+      buf.writeln(
+        '  $tag: ${s.exact}/${s.total} '
+        '(${_pct(s.exact, s.total)})',
+      );
     }
 
     if (failures.isNotEmpty) {
@@ -302,24 +323,34 @@ class CrfEvaluationResult {
         buf.writeln('  INPUT: "${f.input}" [${f.tags.join(", ")}]');
         buf.writeln('  DESC:  ${f.description}');
         if (f.expectedQty != f.actualQty) {
-          buf.writeln('    qty:  expected="${f.expectedQty}" '
-              'actual="${f.actualQty}"');
+          buf.writeln(
+            '    qty:  expected="${f.expectedQty}" '
+            'actual="${f.actualQty}"',
+          );
         }
         if (f.expectedUnit != f.actualUnit) {
-          buf.writeln('    unit: expected="${f.expectedUnit}" '
-              'actual="${f.actualUnit}"');
+          buf.writeln(
+            '    unit: expected="${f.expectedUnit}" '
+            'actual="${f.actualUnit}"',
+          );
         }
         if (f.expectedName?.toLowerCase() != f.actualName?.toLowerCase()) {
-          buf.writeln('    name: expected="${f.expectedName}" '
-              'actual="${f.actualName}"');
+          buf.writeln(
+            '    name: expected="${f.expectedName}" '
+            'actual="${f.actualName}"',
+          );
         }
         if (f.expectedSize?.toLowerCase() != f.actualSize?.toLowerCase()) {
-          buf.writeln('    size: expected="${f.expectedSize}" '
-              'actual="${f.actualSize}"');
+          buf.writeln(
+            '    size: expected="${f.expectedSize}" '
+            'actual="${f.actualSize}"',
+          );
         }
         if (f.expectedPrep?.toLowerCase() != f.actualPrep?.toLowerCase()) {
-          buf.writeln('    prep: expected="${f.expectedPrep}" '
-              'actual="${f.actualPrep}"');
+          buf.writeln(
+            '    prep: expected="${f.expectedPrep}" '
+            'actual="${f.actualPrep}"',
+          );
         }
       }
       if (failures.length > 20) {
@@ -502,7 +533,8 @@ void main() {
     expect(
       fieldPct,
       greaterThanOrEqualTo(85.0),
-      reason: 'All-fields exact match should be at least 85%. '
+      reason:
+          'All-fields exact match should be at least 85%. '
           'Got ${fieldPct.toStringAsFixed(1)}% '
           '(${result.allFieldsExact}/${result.totalEntries})',
     );

@@ -62,8 +62,9 @@ void main() {
       expect(params.progressive, isFalse);
     });
 
-    testWidgets('should calculate optimal cache size based on pixel ratio',
-        (WidgetTester tester) async {
+    testWidgets('should calculate optimal cache size based on pixel ratio', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const params = ImageOptimizationParams(
         targetSize: Size(100, 150),
@@ -218,8 +219,8 @@ void main() {
       expect(totalMisses - initialMisses, equals(1));
 
       // Hit rate should be calculated correctly
-      final hitRate =
-          (totalHits / (totalHits + totalMisses) * 100).toStringAsFixed(1);
+      final hitRate = (totalHits / (totalHits + totalMisses) * 100)
+          .toStringAsFixed(1);
       expect(stats['hitRate'], equals('$hitRate%'));
     });
 
@@ -261,15 +262,17 @@ void main() {
     setUp(() {
       mockConfig = MockImageConfig();
       when(() => mockConfig.borderRadius).thenReturn(null);
-      when(() => mockConfig.effectiveBorderRadius)
-          .thenReturn(BorderRadius.circular(8));
+      when(
+        () => mockConfig.effectiveBorderRadius,
+      ).thenReturn(BorderRadius.circular(8));
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(200, 150),
       );
     });
 
-    testWidgets('should build with required parameters',
-        (WidgetTester tester) async {
+    testWidgets('should build with required parameters', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -286,8 +289,9 @@ void main() {
       expect(find.byType(SizedBox), findsWidgets);
     });
 
-    testWidgets('should apply border radius when config has borderRadius',
-        (WidgetTester tester) async {
+    testWidgets('should apply border radius when config has borderRadius', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       when(() => mockConfig.borderRadius).thenReturn(BorderRadius.circular(12));
 
@@ -306,8 +310,9 @@ void main() {
       expect(find.byType(ClipRRect), findsOneWidget);
     });
 
-    testWidgets('should wrap with GestureDetector when onTap provided',
-        (WidgetTester tester) async {
+    testWidgets('should wrap with GestureDetector when onTap provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       final mockCallback = MockVoidCallback();
 
@@ -331,8 +336,9 @@ void main() {
       verify(() => mockCallback.call()).called(1);
     });
 
-    testWidgets('should show placeholder when provided',
-        (WidgetTester tester) async {
+    testWidgets('should show placeholder when provided', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const placeholder = CircularProgressIndicator();
 
@@ -353,8 +359,9 @@ void main() {
       expect(find.byType(Stack), findsWidgets);
     });
 
-    testWidgets('should create thumbnail URL when enableThumbnail is true',
-        (WidgetTester tester) async {
+    testWidgets('should create thumbnail URL when enableThumbnail is true', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -373,8 +380,9 @@ void main() {
       expect(find.byType(AnimatedOpacity), findsWidgets);
     });
 
-    testWidgets('should not create thumbnail when enableThumbnail is false',
-        (WidgetTester tester) async {
+    testWidgets('should not create thumbnail when enableThumbnail is false', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -393,8 +401,9 @@ void main() {
       expect(find.byType(FadeTransition), findsOneWidget);
     });
 
-    testWidgets('should use correct size from targetSize',
-        (WidgetTester tester) async {
+    testWidgets('should use correct size from targetSize', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -416,17 +425,18 @@ void main() {
       expect(mainSizedBox.height, equals(200));
     });
 
-    testWidgets('should handle double.infinity width correctly',
-        (WidgetTester tester) async {
-      // Skip this test - CachedNetworkImage's memCacheWidth/Height
-      // cannot handle infinity values (toInt() fails)
-      // This is a known limitation when using infinity for targetSize
+    testWidgets(
+      'should handle double.infinity width correctly',
+      (WidgetTester tester) async {
+        // Skip this test - CachedNetworkImage's memCacheWidth/Height
+        // cannot handle infinity values (toInt() fails)
+        // This is a known limitation when using infinity for targetSize
 
-      // In production, the getOptimalCacheSize method should handle this
-      // by converting infinity to a reasonable finite value before caching
-    },
-        skip:
-            true); // CachedNetworkImage cannot handle infinity for cache dimensions
+        // In production, the getOptimalCacheSize method should handle this
+        // by converting infinity to a reasonable finite value before caching
+      },
+      skip: true,
+    ); // CachedNetworkImage cannot handle infinity for cache dimensions
   });
 
   group('OptimizedImageLoader Factory Constructors', () {
@@ -435,15 +445,17 @@ void main() {
     setUp(() {
       mockConfig = MockImageConfig();
       when(() => mockConfig.borderRadius).thenReturn(null);
-      when(() => mockConfig.effectiveBorderRadius)
-          .thenReturn(BorderRadius.circular(8));
+      when(
+        () => mockConfig.effectiveBorderRadius,
+      ).thenReturn(BorderRadius.circular(8));
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(double.infinity, 200),
       );
     });
 
-    testWidgets('recipeCard factory should create with correct settings',
-        (WidgetTester tester) async {
+    testWidgets('recipeCard factory should create with correct settings', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -458,15 +470,17 @@ void main() {
       expect(find.byType(OptimizedImageLoader), findsOneWidget);
 
       // Verify the widget was created with correct parameters
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.targetSize.width, equals(400)); // Default for infinity
       expect(widget.targetSize.height, equals(200));
       expect(widget.enableThumbnail, isTrue);
     });
 
-    testWidgets('recipeCard factory should handle finite width',
-        (WidgetTester tester) async {
+    testWidgets('recipeCard factory should handle finite width', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(250, 180),
@@ -483,14 +497,16 @@ void main() {
       );
 
       // Assert
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.targetSize.width, equals(250));
       expect(widget.targetSize.height, equals(180));
     });
 
-    testWidgets('recipeDetail factory should create with correct settings',
-        (WidgetTester tester) async {
+    testWidgets('recipeDetail factory should create with correct settings', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -505,16 +521,18 @@ void main() {
       expect(find.byType(OptimizedImageLoader), findsOneWidget);
 
       // Verify the widget was created with correct parameters
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.targetSize.width, equals(800)); // Default for infinity
       expect(widget.targetSize.height, equals(200));
       expect(widget.enableProgressive, isTrue);
       expect(widget.enableThumbnail, isFalse);
     });
 
-    testWidgets('recipeDetail factory should handle finite width',
-        (WidgetTester tester) async {
+    testWidgets('recipeDetail factory should handle finite width', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(600, 400),
@@ -531,14 +549,16 @@ void main() {
       );
 
       // Assert
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.targetSize.width, equals(600));
       expect(widget.targetSize.height, equals(400));
     });
 
-    testWidgets('factories should pass onTap callback',
-        (WidgetTester tester) async {
+    testWidgets('factories should pass onTap callback', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       final mockCallback = MockVoidCallback();
 
@@ -554,8 +574,9 @@ void main() {
       );
 
       // Assert
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.onTap, equals(mockCallback.call));
     });
   });
@@ -566,15 +587,17 @@ void main() {
     setUp(() {
       mockConfig = MockImageConfig();
       when(() => mockConfig.borderRadius).thenReturn(null);
-      when(() => mockConfig.effectiveBorderRadius)
-          .thenReturn(BorderRadius.circular(8));
+      when(
+        () => mockConfig.effectiveBorderRadius,
+      ).thenReturn(BorderRadius.circular(8));
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(double.infinity, 250),
       );
     });
 
-    testWidgets('buildOptimizedImage should create OptimizedImageLoader',
-        (WidgetTester tester) async {
+    testWidgets('buildOptimizedImage should create OptimizedImageLoader', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(
         TestApp(
@@ -588,14 +611,16 @@ void main() {
       expect(find.byType(OptimizedImageLoader), findsOneWidget);
 
       // Verify default size for infinity width
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.targetSize.width, equals(800));
       expect(widget.targetSize.height, equals(250));
     });
 
-    testWidgets('buildOptimizedImage should handle finite dimensions',
-        (WidgetTester tester) async {
+    testWidgets('buildOptimizedImage should handle finite dimensions', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(320, 240),
@@ -611,14 +636,16 @@ void main() {
       );
 
       // Assert
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.targetSize.width, equals(320));
       expect(widget.targetSize.height, equals(240));
     });
 
-    testWidgets('buildOptimizedImage should pass optional parameters',
-        (WidgetTester tester) async {
+    testWidgets('buildOptimizedImage should pass optional parameters', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       final mockCallback = MockVoidCallback();
       const placeholder = CircularProgressIndicator();
@@ -637,8 +664,9 @@ void main() {
       );
 
       // Assert
-      final widget = tester
-          .widget<OptimizedImageLoader>(find.byType(OptimizedImageLoader));
+      final widget = tester.widget<OptimizedImageLoader>(
+        find.byType(OptimizedImageLoader),
+      );
       expect(widget.onTap, equals(mockCallback.call));
       expect(widget.placeholder, equals(placeholder));
       expect(widget.errorWidget, equals(errorWidget));
@@ -651,15 +679,17 @@ void main() {
     setUp(() {
       mockConfig = MockImageConfig();
       when(() => mockConfig.borderRadius).thenReturn(null);
-      when(() => mockConfig.effectiveBorderRadius)
-          .thenReturn(BorderRadius.circular(8));
+      when(
+        () => mockConfig.effectiveBorderRadius,
+      ).thenReturn(BorderRadius.circular(8));
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(200, 150),
       );
     });
 
-    testWidgets('should properly dispose animation controller',
-        (WidgetTester tester) async {
+    testWidgets('should properly dispose animation controller', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(
         TestApp(
@@ -678,8 +708,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should show error widget on image load failure',
-        (WidgetTester tester) async {
+    testWidgets('should show error widget on image load failure', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const customError = Icon(Icons.error_outline, key: Key('custom_error'));
 
@@ -700,32 +731,35 @@ void main() {
     });
 
     testWidgets(
-        'should show default error widget when no custom error provided',
-        (WidgetTester tester) async {
-      // Arrange & Act
-      await tester.pumpWidget(
-        TestApp(
-          child: OptimizedImageLoader(
-            imageUrl: 'https://invalid-url.com/image.jpg',
-            config: mockConfig,
-            targetSize: const Size(200, 150),
+      'should show default error widget when no custom error provided',
+      (WidgetTester tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(
+          TestApp(
+            child: OptimizedImageLoader(
+              imageUrl: 'https://invalid-url.com/image.jpg',
+              config: mockConfig,
+              targetSize: const Size(200, 150),
+            ),
           ),
-        ),
-      );
+        );
 
-      // Assert - Should have stack for layered content
-      expect(find.byType(Stack), findsWidgets);
-    });
+        // Assert - Should have stack for layered content
+        expect(find.byType(Stack), findsWidgets);
+      },
+    );
   });
 
   group('Image Optimization Features', () {
-    testWidgets('should use CachedNetworkImage for image loading',
-        (WidgetTester tester) async {
+    testWidgets('should use CachedNetworkImage for image loading', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       final mockConfig = MockImageConfig();
       when(() => mockConfig.borderRadius).thenReturn(null);
-      when(() => mockConfig.effectiveBorderRadius)
-          .thenReturn(BorderRadius.circular(8));
+      when(
+        () => mockConfig.effectiveBorderRadius,
+      ).thenReturn(BorderRadius.circular(8));
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(200, 150),
       );
@@ -749,8 +783,9 @@ void main() {
       // Arrange
       final mockConfig = MockImageConfig();
       when(() => mockConfig.borderRadius).thenReturn(null);
-      when(() => mockConfig.effectiveBorderRadius)
-          .thenReturn(BorderRadius.circular(8));
+      when(
+        () => mockConfig.effectiveBorderRadius,
+      ).thenReturn(BorderRadius.circular(8));
       when(() => mockConfig.getDimensions()).thenReturn(
         const Size(200, 150),
       );
@@ -768,8 +803,9 @@ void main() {
       );
 
       // Assert
-      final cachedImages = tester
-          .widgetList<CachedNetworkImage>(find.byType(CachedNetworkImage));
+      final cachedImages = tester.widgetList<CachedNetworkImage>(
+        find.byType(CachedNetworkImage),
+      );
       expect(cachedImages.isNotEmpty, isTrue);
       expect(cachedImages.first.fit, equals(BoxFit.contain));
     });

@@ -76,8 +76,7 @@ void main() {
   });
 
   group('FirebaseActivityEventRepository.addEvent', () {
-    test(
-        'rejects an event whose actorId is not the authenticated user and '
+    test('rejects an event whose actorId is not the authenticated user and '
         'writes nothing', () async {
       final firestore = FakeFirebaseFirestore();
       // Authenticated as alice, but the event claims bob is the actor.
@@ -105,8 +104,7 @@ void main() {
       expect(markerDoc.exists, isFalse);
     });
 
-    test(
-        'commits both the event doc and the rate-limit marker for an owned '
+    test('commits both the event doc and the rate-limit marker for an owned '
         'event', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore, authedUserId: _alice);
@@ -137,31 +135,37 @@ void main() {
       expect(marker.containsKey('expireAt'), isTrue);
     });
 
-    test('records the granted permission check via the audit repository',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final audit = MockAuditRepository();
-      when(() => audit.logPermissionCheck(
+    test(
+      'records the granted permission check via the audit repository',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final audit = MockAuditRepository();
+        when(
+          () => audit.logPermissionCheck(
             userId: any(named: 'userId'),
             operation: any(named: 'operation'),
             resourceType: any(named: 'resourceType'),
             resourceId: any(named: 'resourceId'),
             granted: any(named: 'granted'),
             metadata: any(named: 'metadata'),
-          )).thenAnswer((_) async {});
+          ),
+        ).thenAnswer((_) async {});
 
-      final repo = _repo(firestore, authedUserId: _alice, audit: audit);
-      await repo.addEvent(_event(id: 'evt-audit', actorId: _alice));
+        final repo = _repo(firestore, authedUserId: _alice, audit: audit);
+        await repo.addEvent(_event(id: 'evt-audit', actorId: _alice));
 
-      verify(() => audit.logPermissionCheck(
+        verify(
+          () => audit.logPermissionCheck(
             userId: _alice,
             operation: 'create',
             resourceType: FirestoreCollections.activityEvents,
             resourceId: 'evt-audit',
             granted: true,
             metadata: any(named: 'metadata'),
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
   });
 
   group('FirebaseActivityEventRepository.fetchFriendActivity', () {
@@ -192,8 +196,7 @@ void main() {
       return actorIds;
     }
 
-    test(
-        'merges across two whereIn batches and returns the globally newest, '
+    test('merges across two whereIn batches and returns the globally newest, '
         'descending, limit-capped page', () async {
       final firestore = FakeFirebaseFirestore();
       // 31 actors → two whereIn batches (30 + 1) under kFirestoreWhereInLimit.
@@ -201,8 +204,10 @@ void main() {
       final repo = _repo(firestore);
 
       const limit = 10;
-      final result =
-          await repo.fetchFriendActivity(friendIds: actorIds, limit: limit);
+      final result = await repo.fetchFriendActivity(
+        friendIds: actorIds,
+        limit: limit,
+      );
 
       // Capped at limit even though 31 events exist.
       expect(result.length, limit);
@@ -227,15 +232,17 @@ void main() {
       );
     });
 
-    test('returns an empty list for an empty friend list without querying',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
+    test(
+      'returns an empty list for an empty friend list without querying',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
 
-      final result = await repo.fetchFriendActivity(friendIds: const []);
+        final result = await repo.fetchFriendActivity(friendIds: const []);
 
-      expect(result, isEmpty);
-    });
+        expect(result, isEmpty);
+      },
+    );
   });
 
   group('FirebaseActivityEventRepository.deleteAllByUser', () {
@@ -263,43 +270,49 @@ void main() {
       return snap.docs.length;
     }
 
-    test('owner deletes own events: returns the count and removes the docs',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await seedEvents(firestore, _alice, 3);
-      final repo = _repo(firestore, authedUserId: _alice);
+    test(
+      'owner deletes own events: returns the count and removes the docs',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await seedEvents(firestore, _alice, 3);
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      final deleted = await repo.deleteAllByUser(_alice);
+        final deleted = await repo.deleteAllByUser(_alice);
 
-      expect(deleted, 3);
-      expect(await countEventsFor(firestore, _alice), 0);
-    });
+        expect(deleted, 3);
+        expect(await countEventsFor(firestore, _alice), 0);
+      },
+    );
 
     test(
-        'foreign caller cannot bulk-delete another user feed: throws and leaves '
-        "the victim's docs intact", () async {
-      final firestore = FakeFirebaseFirestore();
-      await seedEvents(firestore, _bob, 3);
-      // Authenticated as alice, attempting to wipe bob's feed.
-      final repo = _repo(firestore, authedUserId: _alice);
+      'foreign caller cannot bulk-delete another user feed: throws and leaves '
+      "the victim's docs intact",
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await seedEvents(firestore, _bob, 3);
+        // Authenticated as alice, attempting to wipe bob's feed.
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      await expectLater(
-        repo.deleteAllByUser(_bob),
-        throwsA(isA<PermissionDeniedException>()),
-      );
+        await expectLater(
+          repo.deleteAllByUser(_bob),
+          throwsA(isA<PermissionDeniedException>()),
+        );
 
-      // Bob's events must all survive the denied cascade.
-      expect(await countEventsFor(firestore, _bob), 3);
-    });
+        // Bob's events must all survive the denied cascade.
+        expect(await countEventsFor(firestore, _bob), 3);
+      },
+    );
 
-    test('returns 0 when the owner has no events (empty-match early return)',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _alice);
+    test(
+      'returns 0 when the owner has no events (empty-match early return)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      final deleted = await repo.deleteAllByUser(_alice);
+        final deleted = await repo.deleteAllByUser(_alice);
 
-      expect(deleted, 0);
-    });
+        expect(deleted, 0);
+      },
+    );
   });
 }

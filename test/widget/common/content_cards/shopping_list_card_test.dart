@@ -97,11 +97,14 @@ void main() {
     }
 
     group('Basic Rendering', () {
-      testWidgets('renders with list name and cart icon',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-        ));
+      testWidgets('renders with list name and cart icon', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(ShoppingListCard), findsOneWidget);
@@ -109,20 +112,24 @@ void main() {
         expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
       });
 
-      testWidgets('displays item count in metadata',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          showMetadata: true,
-        ));
+      testWidgets('displays item count in metadata', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            showMetadata: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Metadata joins with bullet: "3 artiklar . 1 slutf\u00f6rda . Idag"
         expect(find.textContaining('3 artiklar'), findsOneWidget);
       });
 
-      testWidgets('shows empty preview when no items',
-          (WidgetTester tester) async {
+      testWidgets('shows empty preview when no items', (
+        WidgetTester tester,
+      ) async {
         final emptyList = UnifiedShoppingList(
           id: 'empty123',
           name: 'Tom lista',
@@ -135,10 +142,12 @@ void main() {
           type: ListType.personal,
         );
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: emptyList,
-          showPreview: true,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: emptyList,
+            showPreview: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
@@ -146,14 +155,17 @@ void main() {
     });
 
     group('Card Styles', () {
-      testWidgets('renders detailed style with preview',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          style: ShoppingListCardStyle.detailed,
-          showPreview: true,
-          showMetadata: true,
-        ));
+      testWidgets('renders detailed style with preview', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            style: ShoppingListCardStyle.detailed,
+            showPreview: true,
+            showMetadata: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Preview shows item names via displayText
@@ -162,11 +174,13 @@ void main() {
       });
 
       testWidgets('renders compact style', (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          style: ShoppingListCardStyle.compact,
-          showMetadata: true,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            style: ShoppingListCardStyle.compact,
+            showMetadata: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Veckans ink\u00f6p'), findsOneWidget);
@@ -174,10 +188,12 @@ void main() {
       });
 
       testWidgets('renders grid style', (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          style: ShoppingListCardStyle.grid,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            style: ShoppingListCardStyle.grid,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(ShoppingListCard), findsOneWidget);
@@ -185,8 +201,9 @@ void main() {
     });
 
     group('Item Preview', () {
-      testWidgets('shows first 4 items and overflow count',
-          (WidgetTester tester) async {
+      testWidgets('shows first 4 items and overflow count', (
+        WidgetTester tester,
+      ) async {
         final manyItems = List.generate(
           10,
           (i) => UnifiedShoppingItem(
@@ -201,10 +218,12 @@ void main() {
 
         final longList = testShoppingList.copyWith(items: manyItems);
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: longList,
-          showPreview: true,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: longList,
+            showPreview: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // displayText format: "1 st F\u00f6rem\u00e5l N"
@@ -215,12 +234,15 @@ void main() {
         expect(find.textContaining('F\u00f6rem\u00e5l 4'), findsNothing);
       });
 
-      testWidgets('shows check icons for completed items',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          showPreview: true,
-        ));
+      testWidgets('shows check icons for completed items', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            showPreview: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // 1 bought (Br\u00f6d) = check_circle, 2 not bought = radio_button_unchecked
@@ -228,24 +250,30 @@ void main() {
         expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2));
       });
 
-      testWidgets('hides preview when showPreview is false',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          showPreview: false,
-        ));
+      testWidgets('hides preview when showPreview is false', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            showPreview: false,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // No item text should appear in preview
         expect(find.textContaining('Mj\u00f6lk'), findsNothing);
       });
 
-      testWidgets('applies strikethrough to completed items',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          showPreview: true,
-        ));
+      testWidgets('applies strikethrough to completed items', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            showPreview: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Find the completed item text (Br\u00f6d) and check decoration
@@ -253,18 +281,23 @@ void main() {
         if (breadTexts.isNotEmpty) {
           final breadText = breadTexts.first.widget as Text;
           expect(
-              breadText.style?.decoration, equals(TextDecoration.lineThrough));
+            breadText.style?.decoration,
+            equals(TextDecoration.lineThrough),
+          );
         }
       });
     });
 
     group('Completion Indicator', () {
-      testWidgets('shows percentage for incomplete list in compact style',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          style: ShoppingListCardStyle.compact,
-        ));
+      testWidgets('shows percentage for incomplete list in compact style', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            style: ShoppingListCardStyle.compact,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // 1/3 = 33%
@@ -272,24 +305,29 @@ void main() {
         expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
       });
 
-      testWidgets('shows complete state when all items bought',
-          (WidgetTester tester) async {
+      testWidgets('shows complete state when all items bought', (
+        WidgetTester tester,
+      ) async {
         final completedItems = testItems
-            .map((item) => UnifiedShoppingItem(
-                  id: item.id,
-                  name: item.name,
-                  amount: item.amount,
-                  unit: item.unit,
-                  category: item.category,
-                  bought: true,
-                ))
+            .map(
+              (item) => UnifiedShoppingItem(
+                id: item.id,
+                name: item.name,
+                amount: item.amount,
+                unit: item.unit,
+                category: item.category,
+                bought: true,
+              ),
+            )
             .toList();
         final completedList = testShoppingList.copyWith(items: completedItems);
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: completedList,
-          style: ShoppingListCardStyle.compact,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: completedList,
+            style: ShoppingListCardStyle.compact,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Klar'), findsOneWidget);
@@ -298,10 +336,12 @@ void main() {
       testWidgets('hides indicator when no items', (WidgetTester tester) async {
         final emptyList = testShoppingList.copyWith(items: []);
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: emptyList,
-          style: ShoppingListCardStyle.compact,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: emptyList,
+            style: ShoppingListCardStyle.compact,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.hourglass_empty), findsNothing);
@@ -310,8 +350,9 @@ void main() {
     });
 
     group('Sharing Status', () {
-      testWidgets('shows sharing indicator for collaborative list',
-          (WidgetTester tester) async {
+      testWidgets('shows sharing indicator for collaborative list', (
+        WidgetTester tester,
+      ) async {
         final sharedList = UnifiedShoppingList(
           id: testShoppingList.id,
           name: testShoppingList.name,
@@ -325,21 +366,26 @@ void main() {
           },
         );
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: sharedList,
-          showSharingStatus: true,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: sharedList,
+            showSharingStatus: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.people), findsOneWidget);
       });
 
-      testWidgets('hides sharing indicator for personal list',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          showSharingStatus: true,
-        ));
+      testWidgets('hides sharing indicator for personal list', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            showSharingStatus: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.people), findsNothing);
@@ -350,10 +396,12 @@ void main() {
       testWidgets('handles tap callback', (WidgetTester tester) async {
         bool wasTapped = false;
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          onTap: () => wasTapped = true,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            onTap: () => wasTapped = true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byType(InkWell));
@@ -363,10 +411,12 @@ void main() {
       testWidgets('handles long press callback', (WidgetTester tester) async {
         bool wasLongPressed = false;
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          onLongPress: () => wasLongPressed = true,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            onLongPress: () => wasLongPressed = true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.longPress(find.byType(InkWell));
@@ -375,19 +425,23 @@ void main() {
     });
 
     group('Date Formatting', () {
-      testWidgets('displays today for current date',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          showMetadata: true,
-        ));
+      testWidgets('displays today for current date', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            showMetadata: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Idag'), findsOneWidget);
       });
 
-      testWidgets('displays yesterday for one day ago',
-          (WidgetTester tester) async {
+      testWidgets('displays yesterday for one day ago', (
+        WidgetTester tester,
+      ) async {
         await withClock(Clock.fixed(_kFixedNow), () async {
           final yesterdayList = UnifiedShoppingList(
             id: testShoppingList.id,
@@ -398,18 +452,21 @@ void main() {
             createdAt: clock.now().subtract(const Duration(days: 1)),
           );
 
-          await tester.pumpWidget(createCardApp(
-            shoppingList: yesterdayList,
-            showMetadata: true,
-          ));
+          await tester.pumpWidget(
+            createCardApp(
+              shoppingList: yesterdayList,
+              showMetadata: true,
+            ),
+          );
           await tester.pumpAndSettle();
 
           expect(find.textContaining('Ig\u00e5r'), findsOneWidget);
         });
       });
 
-      testWidgets('displays days ago for recent lists',
-          (WidgetTester tester) async {
+      testWidgets('displays days ago for recent lists', (
+        WidgetTester tester,
+      ) async {
         await withClock(Clock.fixed(_kFixedNow), () async {
           final oldList = UnifiedShoppingList(
             id: testShoppingList.id,
@@ -420,10 +477,12 @@ void main() {
             createdAt: clock.now().subtract(const Duration(days: 5)),
           );
 
-          await tester.pumpWidget(createCardApp(
-            shoppingList: oldList,
-            showMetadata: true,
-          ));
+          await tester.pumpWidget(
+            createCardApp(
+              shoppingList: oldList,
+              showMetadata: true,
+            ),
+          );
           await tester.pumpAndSettle();
 
           expect(find.textContaining('5 dagar sedan'), findsOneWidget);
@@ -435,10 +494,12 @@ void main() {
       testWidgets('applies custom margin', (WidgetTester tester) async {
         const customMargin = EdgeInsets.all(20.0);
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: testShoppingList,
-          margin: customMargin,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            margin: customMargin,
+          ),
+        );
         await tester.pumpAndSettle();
 
         // The outermost Container inside RepaintBoundary has the margin
@@ -454,22 +515,26 @@ void main() {
         expect(container.margin, equals(customMargin));
       });
 
-      testWidgets('handles very long list name with ellipsis',
-          (WidgetTester tester) async {
+      testWidgets('handles very long list name with ellipsis', (
+        WidgetTester tester,
+      ) async {
         final longNameList = testShoppingList.copyWith(
           name:
               'Detta \u00e4r en v\u00e4ldigt l\u00e5ng lista namn som borde trunkeras',
         );
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: longNameList,
-          style: ShoppingListCardStyle.compact,
-          constrainedWidth: 300,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: longNameList,
+            style: ShoppingListCardStyle.compact,
+            constrainedWidth: 300,
+          ),
+        );
         await tester.pumpAndSettle();
 
-        final titleTexts =
-            find.textContaining('Detta \u00e4r en v\u00e4ldigt').evaluate();
+        final titleTexts = find
+            .textContaining('Detta \u00e4r en v\u00e4ldigt')
+            .evaluate();
         if (titleTexts.isNotEmpty) {
           final titleText = titleTexts.first.widget as Text;
           expect(titleText.overflow, equals(TextOverflow.ellipsis));
@@ -489,9 +554,11 @@ void main() {
           memberPermissions: {},
         );
 
-        await tester.pumpWidget(createCardApp(
-          shoppingList: noMembersList,
-        ));
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: noMembersList,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(ShoppingListCard), findsOneWidget);

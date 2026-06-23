@@ -34,14 +34,19 @@ void main() {
         );
 
         // Recipe with matching ingredient
-        final matchingRecipe = RecipeBuilder()
-            .withIngredients(['500g kyckling', 'salt', 'peppar']).build();
+        final matchingRecipe = RecipeBuilder().withIngredients([
+          '500g kyckling',
+          'salt',
+          'peppar',
+        ]).build();
 
         expect(condition.evaluate(matchingRecipe, null), isTrue);
 
         // Recipe without matching ingredient
-        final nonMatchingRecipe =
-            RecipeBuilder().withIngredients(['500g fläskfilé', 'salt']).build();
+        final nonMatchingRecipe = RecipeBuilder().withIngredients([
+          '500g fläskfilé',
+          'salt',
+        ]).build();
 
         expect(condition.evaluate(nonMatchingRecipe, null), isFalse);
       });
@@ -54,14 +59,17 @@ void main() {
         );
 
         // Recipe without fish - returns true (at least one ingredient doesn't contain 'fisk')
-        final meatRecipe =
-            RecipeBuilder().withIngredients(['kyckling', 'potatis']).build();
+        final meatRecipe = RecipeBuilder().withIngredients([
+          'kyckling',
+          'potatis',
+        ]).build();
 
         expect(condition.evaluate(meatRecipe, null), isTrue);
 
         // Recipe with ONLY fish - all ingredients contain 'fisk'
-        final onlyFishRecipe =
-            RecipeBuilder().withIngredients(['500g fisk']).build();
+        final onlyFishRecipe = RecipeBuilder().withIngredients([
+          '500g fisk',
+        ]).build();
 
         expect(condition.evaluate(onlyFishRecipe, null), isFalse);
       });
@@ -75,8 +83,9 @@ void main() {
           value: 'pasta',
         );
 
-        final pastaRecipe =
-            RecipeBuilder().withTitle('Krämig pasta carbonara').build();
+        final pastaRecipe = RecipeBuilder()
+            .withTitle('Krämig pasta carbonara')
+            .build();
 
         expect(condition.evaluate(pastaRecipe, null), isTrue);
 
@@ -107,8 +116,9 @@ void main() {
           value: 'PASTA',
         );
 
-        final recipe =
-            RecipeBuilder().withTitle('Krämig pasta carbonara').build();
+        final recipe = RecipeBuilder()
+            .withTitle('Krämig pasta carbonara')
+            .build();
 
         expect(condition.evaluate(recipe, null), isTrue);
       });
@@ -187,25 +197,29 @@ void main() {
         );
 
         final matchingRecipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {'italian', 'pasta'},
-              allergenStatus: {},
-              dietaryStatus: {},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {'italian', 'pasta'},
+                allergenStatus: {},
+                dietaryStatus: {},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(matchingRecipe, null), isTrue);
 
         final nonMatchingRecipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {'swedish', 'meatballs'},
-              allergenStatus: {},
-              dietaryStatus: {},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {'swedish', 'meatballs'},
+                allergenStatus: {},
+                dietaryStatus: {},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(nonMatchingRecipe, null), isFalse);
@@ -219,13 +233,15 @@ void main() {
         );
 
         final matchingRecipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {'asian-fusion', 'noodles'},
-              allergenStatus: {},
-              dietaryStatus: {},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {'asian-fusion', 'noodles'},
+                allergenStatus: {},
+                dietaryStatus: {},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(matchingRecipe, null), isTrue);
@@ -251,13 +267,15 @@ void main() {
         );
 
         final recipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {'italian'},
-              allergenStatus: {},
-              dietaryStatus: {},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {'italian'},
+                allergenStatus: {},
+                dietaryStatus: {},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(recipe, null), isTrue);
@@ -273,25 +291,29 @@ void main() {
         );
 
         final vegRecipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {},
-              allergenStatus: {},
-              dietaryStatus: {'vegetarian': TriState.free},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {},
+                allergenStatus: {},
+                dietaryStatus: {'vegetarian': TriState.free},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(vegRecipe, null), isTrue);
 
         final meatRecipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {},
-              allergenStatus: {},
-              dietaryStatus: {'vegetarian': TriState.contains},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {},
+                allergenStatus: {},
+                dietaryStatus: {'vegetarian': TriState.contains},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(meatRecipe, null), isFalse);
@@ -305,13 +327,15 @@ void main() {
         );
 
         final veganRecipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {},
-              allergenStatus: {},
-              dietaryStatus: {'vegan': TriState.free},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {},
+                allergenStatus: {},
+                dietaryStatus: {'vegan': TriState.free},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(veganRecipe, null), isTrue);
@@ -325,13 +349,15 @@ void main() {
         );
 
         final recipe = RecipeBuilder()
-            .withTagResult(TagResult(
-              tags: {},
-              allergenStatus: {},
-              dietaryStatus: {'vegetarian': TriState.free},
-              coverage: 1.0,
-              generatedAt: DateTime.now(),
-            ))
+            .withTagResult(
+              TagResult(
+                tags: {},
+                allergenStatus: {},
+                dietaryStatus: {'vegetarian': TriState.free},
+                coverage: 1.0,
+                generatedAt: DateTime.now(),
+              ),
+            )
             .build();
 
         expect(condition.evaluate(recipe, null), isFalse);
@@ -491,8 +517,9 @@ void main() {
         expect(condition.evaluate(recentRecipe, null), isTrue);
 
         // Recipe created today
-        final todayRecipe =
-            RecipeBuilder().withCreatedAt(DateTime.now()).build();
+        final todayRecipe = RecipeBuilder()
+            .withCreatedAt(DateTime.now())
+            .build();
         expect(condition.evaluate(todayRecipe, null), isTrue);
 
         // Recipe created 10 days ago
@@ -639,7 +666,8 @@ void main() {
       test('validates empty conditions', () {
         final rule = PersonalTagRuleBuilder()
             .withName('Test Rule')
-            .withConditions([]).build();
+            .withConditions([])
+            .build();
 
         expect(PersonalTagRule.validate(rule), isNotNull);
       });
@@ -687,14 +715,16 @@ void main() {
         // Both conditions match
         final matchingRecipe = RecipeBuilder()
             .withTitle('Svensk laxgryta')
-            .withIngredients(['lax', 'grädde']).build();
+            .withIngredients(['lax', 'grädde'])
+            .build();
 
         expect(rule.evaluate(matchingRecipe, null), isTrue);
 
         // Only one condition matches (has lax but not svensk in title)
         final partialRecipe = RecipeBuilder()
             .withTitle('Laxsoppa')
-            .withIngredients(['lax']).build();
+            .withIngredients(['lax'])
+            .build();
 
         expect(rule.evaluate(partialRecipe, null), isFalse);
       });
@@ -708,20 +738,23 @@ void main() {
             .build();
 
         // First condition matches
-        final salmonRecipe =
-            RecipeBuilder().withIngredients(['400g lax']).build();
+        final salmonRecipe = RecipeBuilder().withIngredients([
+          '400g lax',
+        ]).build();
 
         expect(rule.evaluate(salmonRecipe, null), isTrue);
 
         // Second condition matches
-        final codRecipe =
-            RecipeBuilder().withIngredients(['färsk torsk']).build();
+        final codRecipe = RecipeBuilder().withIngredients([
+          'färsk torsk',
+        ]).build();
 
         expect(rule.evaluate(codRecipe, null), isTrue);
 
         // No conditions match
-        final chickenRecipe =
-            RecipeBuilder().withIngredients(['kyckling']).build();
+        final chickenRecipe = RecipeBuilder().withIngredients([
+          'kyckling',
+        ]).build();
 
         expect(rule.evaluate(chickenRecipe, null), isFalse);
       });
@@ -745,8 +778,9 @@ void main() {
 
     group('requiresLookup', () {
       test('returns true when has property condition', () {
-        final rule =
-            PersonalTagRuleBuilder().withPropertyCondition('seafood').build();
+        final rule = PersonalTagRuleBuilder()
+            .withPropertyCondition('seafood')
+            .build();
 
         expect(rule.requiresLookup, isTrue);
       });
@@ -791,7 +825,7 @@ void main() {
               'operator': 'contains',
               'value': 'lax',
               'caseSensitive': false,
-            }
+            },
           ],
           'matchMode': 'ANY',
           'isEnabled': true,
@@ -861,7 +895,8 @@ void main() {
       test('validateEmbedded requires at least one condition', () {
         final rule = PersonalTagRuleBuilder()
             .withName('No Conditions')
-            .withConditions([]).build();
+            .withConditions([])
+            .build();
 
         expect(PersonalTagRule.validateEmbedded(rule), isNotNull);
       });
@@ -942,8 +977,9 @@ void main() {
       test('all operators serialize correctly', () {
         for (final op in ConditionOperator.values) {
           final firestoreValue = op.toFirestore();
-          final restored =
-              ConditionOperatorExtension.fromFirestore(firestoreValue);
+          final restored = ConditionOperatorExtension.fromFirestore(
+            firestoreValue,
+          );
           expect(restored, op, reason: 'Failed for $op');
         }
       });
@@ -1023,8 +1059,9 @@ void main() {
           operator: ConditionOperator.equals,
         );
 
-        final recipe =
-            RecipeBuilder().withType(RecipeType.collaborative).build();
+        final recipe = RecipeBuilder()
+            .withType(RecipeType.collaborative)
+            .build();
 
         expect(
           condition.evaluate(recipe, null, currentUserId: 'other-user'),
@@ -1076,8 +1113,9 @@ void main() {
           operator: ConditionOperator.equals,
         );
 
-        final recipe = RecipeBuilder()
-            .withImageUrls(['https://example.com/image.jpg']).build();
+        final recipe = RecipeBuilder().withImageUrls([
+          'https://example.com/image.jpg',
+        ]).build();
 
         expect(condition.evaluate(recipe, null), isTrue);
       });
@@ -1177,8 +1215,10 @@ void main() {
             .build();
 
         // Missing both
-        final missingBoth =
-            RecipeBuilder().withImageUrls([]).withDescription('').build();
+        final missingBoth = RecipeBuilder()
+            .withImageUrls([])
+            .withDescription('')
+            .build();
 
         expect(condition.evaluate(missingImage, null), isTrue);
         expect(condition.evaluate(missingDesc, null), isTrue);
@@ -1237,8 +1277,10 @@ void main() {
           operator: ConditionOperator.notEquals,
         );
 
-        final incompleteRecipe =
-            RecipeBuilder().withImageUrls([]).withDescription('').build();
+        final incompleteRecipe = RecipeBuilder()
+            .withImageUrls([])
+            .withDescription('')
+            .build();
 
         // Should match because recipe is NOT complete
         expect(condition.evaluate(incompleteRecipe, null), isTrue);

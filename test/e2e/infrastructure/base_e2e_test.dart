@@ -172,8 +172,10 @@ void main() {
         await BaseE2ETest.waitForReady(tester);
 
         // Verify config-specific elements
-        expect(find.text('Butlery E2E Test - ${config.name.toUpperCase()}'),
-            findsOneWidget);
+        expect(
+          find.text('Butlery E2E Test - ${config.name.toUpperCase()}'),
+          findsOneWidget,
+        );
         expect(find.text('Test Button'), findsOneWidget);
       }
     });

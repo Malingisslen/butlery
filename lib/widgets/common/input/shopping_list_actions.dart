@@ -60,8 +60,8 @@ class ShoppingListActions {
                 Text(
                   context.l10n.commonDelete,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 ),
               ],
             ),
@@ -177,7 +177,8 @@ class ShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)),
+              context.l10n.errorCouldNotUpdate(context.l10n.shoppingList),
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

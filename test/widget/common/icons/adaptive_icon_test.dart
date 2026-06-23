@@ -38,12 +38,15 @@ T onPlatformSync<T>(TargetPlatform platform, T Function() body) {
 
 void main() {
   group('default constructor', () {
-    testWidgets('uses materialIcon when no cupertinoIcon provided',
-        (tester) async {
+    testWidgets('uses materialIcon when no cupertinoIcon provided', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.iOS, () async {
-        await tester.pumpWidget(_wrap(
-          const AdaptiveIcon(materialIcon: Icons.alarm),
-        ));
+        await tester.pumpWidget(
+          _wrap(
+            const AdaptiveIcon(materialIcon: Icons.alarm),
+          ),
+        );
         final icon = tester.widget<Icon>(find.byType(Icon));
         expect(icon.icon, Icons.alarm);
       });
@@ -51,12 +54,14 @@ void main() {
 
     testWidgets('uses cupertinoIcon on iOS when provided', (tester) async {
       await onPlatform(TargetPlatform.iOS, () async {
-        await tester.pumpWidget(_wrap(
-          const AdaptiveIcon(
-            materialIcon: Icons.alarm,
-            cupertinoIcon: CupertinoIcons.alarm,
+        await tester.pumpWidget(
+          _wrap(
+            const AdaptiveIcon(
+              materialIcon: Icons.alarm,
+              cupertinoIcon: CupertinoIcons.alarm,
+            ),
           ),
-        ));
+        );
         expect(
           tester.widget<Icon>(find.byType(Icon)).icon,
           CupertinoIcons.alarm,
@@ -64,29 +69,34 @@ void main() {
       });
     });
 
-    testWidgets('uses materialIcon on Android even when cupertinoIcon set',
-        (tester) async {
+    testWidgets('uses materialIcon on Android even when cupertinoIcon set', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.android, () async {
-        await tester.pumpWidget(_wrap(
-          const AdaptiveIcon(
-            materialIcon: Icons.alarm,
-            cupertinoIcon: CupertinoIcons.alarm,
+        await tester.pumpWidget(
+          _wrap(
+            const AdaptiveIcon(
+              materialIcon: Icons.alarm,
+              cupertinoIcon: CupertinoIcons.alarm,
+            ),
           ),
-        ));
+        );
         expect(tester.widget<Icon>(find.byType(Icon)).icon, Icons.alarm);
       });
     });
 
     testWidgets('forwards size + color + semanticLabel', (tester) async {
       await onPlatform(TargetPlatform.android, () async {
-        await tester.pumpWidget(_wrap(
-          const AdaptiveIcon(
-            materialIcon: Icons.alarm,
-            size: 36,
-            color: Colors.red,
-            semanticLabel: 'alarm-label',
+        await tester.pumpWidget(
+          _wrap(
+            const AdaptiveIcon(
+              materialIcon: Icons.alarm,
+              size: 36,
+              color: Colors.red,
+              semanticLabel: 'alarm-label',
+            ),
           ),
-        ));
+        );
         final icon = tester.widget<Icon>(find.byType(Icon));
         expect(icon.size, 36);
         expect(icon.color, Colors.red);
@@ -98,8 +108,9 @@ void main() {
   group('named factories — Material side', () {
     testWidgets('AdaptiveIcon.book → Icons.book', (tester) async {
       await onPlatform(TargetPlatform.android, () async {
-        await tester
-            .pumpWidget(_wrap(const AdaptiveIcon.book(semanticLabel: 'l')));
+        await tester.pumpWidget(
+          _wrap(const AdaptiveIcon.book(semanticLabel: 'l')),
+        );
         expect(tester.widget<Icon>(find.byType(Icon)).icon, Icons.book);
       });
     });
@@ -125,8 +136,9 @@ void main() {
       });
     });
 
-    testWidgets('outlined variants map to *_outlined material icons',
-        (tester) async {
+    testWidgets('outlined variants map to *_outlined material icons', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.android, () async {
         await tester.pumpWidget(_wrap(const AdaptiveIcon.bookOutlined()));
         expect(
@@ -138,8 +150,9 @@ void main() {
   });
 
   group('named factories — iOS side picks Cupertino', () {
-    testWidgets('AdaptiveIcon.book on iOS → CupertinoIcons.book',
-        (tester) async {
+    testWidgets('AdaptiveIcon.book on iOS → CupertinoIcons.book', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.iOS, () async {
         await tester.pumpWidget(_wrap(const AdaptiveIcon.book()));
         expect(
@@ -149,8 +162,9 @@ void main() {
       });
     });
 
-    testWidgets('AdaptiveIcon.delete on iOS → CupertinoIcons.trash',
-        (tester) async {
+    testWidgets('AdaptiveIcon.delete on iOS → CupertinoIcons.trash', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.iOS, () async {
         await tester.pumpWidget(_wrap(const AdaptiveIcon.delete()));
         expect(
@@ -160,8 +174,9 @@ void main() {
       });
     });
 
-    testWidgets('AdaptiveIcon.edit on iOS → CupertinoIcons.pencil',
-        (tester) async {
+    testWidgets('AdaptiveIcon.edit on iOS → CupertinoIcons.pencil', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.iOS, () async {
         await tester.pumpWidget(_wrap(const AdaptiveIcon.edit()));
         expect(
@@ -171,8 +186,9 @@ void main() {
       });
     });
 
-    testWidgets('AdaptiveIcon.close on iOS → CupertinoIcons.xmark',
-        (tester) async {
+    testWidgets('AdaptiveIcon.close on iOS → CupertinoIcons.xmark', (
+      tester,
+    ) async {
       await onPlatform(TargetPlatform.iOS, () async {
         await tester.pumpWidget(_wrap(const AdaptiveIcon.close()));
         expect(
@@ -250,8 +266,7 @@ void main() {
       });
     });
 
-    test('iOS side: concepts follow their underlying adaptive shape getter',
-        () {
+    test('iOS side: concepts follow their underlying adaptive shape getter', () {
       onPlatformSync(TargetPlatform.iOS, () {
         expect(AdaptiveIcons.favouriteFilled, CupertinoIcons.heart_fill);
         expect(AdaptiveIcons.primaryFilled, CupertinoIcons.star_fill);
@@ -260,23 +275,28 @@ void main() {
       });
     });
 
-    test('aliases are exactly equivalent to the shape getters they replaced',
-        () {
-      // Holds on the test platform (Android) and, because both sides resolve
-      // through the same `_isIOS` branch, on iOS too — proving the codemod is
-      // glyph-preserving rather than glyph-changing.
-      onPlatformSync(TargetPlatform.android, () {
-        expect(AdaptiveIcons.favouriteFilled, AdaptiveIcons.favorite);
-        expect(AdaptiveIcons.favouriteOutline, AdaptiveIcons.favoriteOutlined);
-        expect(AdaptiveIcons.primaryFilled, AdaptiveIcons.star);
-        expect(AdaptiveIcons.primaryOutline, AdaptiveIcons.starOutlined);
-        expect(AdaptiveIcons.savedTemplate, AdaptiveIcons.bookmark);
-        expect(
-          AdaptiveIcons.savedTemplateOutline,
-          AdaptiveIcons.bookmarkOutlined,
-        );
-      });
-    });
+    test(
+      'aliases are exactly equivalent to the shape getters they replaced',
+      () {
+        // Holds on the test platform (Android) and, because both sides resolve
+        // through the same `_isIOS` branch, on iOS too — proving the codemod is
+        // glyph-preserving rather than glyph-changing.
+        onPlatformSync(TargetPlatform.android, () {
+          expect(AdaptiveIcons.favouriteFilled, AdaptiveIcons.favorite);
+          expect(
+            AdaptiveIcons.favouriteOutline,
+            AdaptiveIcons.favoriteOutlined,
+          );
+          expect(AdaptiveIcons.primaryFilled, AdaptiveIcons.star);
+          expect(AdaptiveIcons.primaryOutline, AdaptiveIcons.starOutlined);
+          expect(AdaptiveIcons.savedTemplate, AdaptiveIcons.bookmark);
+          expect(
+            AdaptiveIcons.savedTemplateOutline,
+            AdaptiveIcons.bookmarkOutlined,
+          );
+        });
+      },
+    );
 
     test('concepts are distinct — no two semantic names share a glyph', () {
       onPlatformSync(TargetPlatform.android, () {
@@ -285,8 +305,11 @@ void main() {
           AdaptiveIcons.primaryFilled,
           AdaptiveIcons.savedTemplate,
         };
-        expect(glyphs, hasLength(3),
-            reason: 'favourite, primary and saved-template must not collide');
+        expect(
+          glyphs,
+          hasLength(3),
+          reason: 'favourite, primary and saved-template must not collide',
+        );
       });
     });
   });

@@ -76,8 +76,9 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? cs.surfaceContainerHighest
-                      .withValues(alpha: AppDimensions.opacityVeryDark)
+                  ? cs.surfaceContainerHighest.withValues(
+                      alpha: AppDimensions.opacityVeryDark,
+                    )
                   : cs.primary,
             ),
           ),
@@ -86,8 +87,9 @@ class ReplyPreviewWidget extends StatelessWidget {
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? cs.surfaceContainerHighest
-                      .withValues(alpha: AppDimensions.opacityDark)
+                  ? cs.surfaceContainerHighest.withValues(
+                      alpha: AppDimensions.opacityDark,
+                    )
                   : cs.onSurfaceVariant,
             ),
             maxLines: 2,

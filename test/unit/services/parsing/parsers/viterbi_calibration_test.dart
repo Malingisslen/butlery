@@ -100,41 +100,43 @@ void main() {
 
   group('ViterbiContextProcessor — confidence calibration', () {
     test(
-        'input confidence is monotone with empirical accuracy on golden corpus',
-        () {
-      final calibration = _calibrationByBand(goldenScored, bandEdges);
-      print(_formatCalibrationTable('Golden', calibration));
+      'input confidence is monotone with empirical accuracy on golden corpus',
+      () {
+        final calibration = _calibrationByBand(goldenScored, bandEdges);
+        print(_formatCalibrationTable('Golden', calibration));
 
-      // A miscalibrated classifier shows a flat or inverted curve — that
-      // means confidence is uncorrelated with correctness, which would make
-      // the 0.75 anchor meaningless. Allow one inversion to absorb noise on
-      // small bands; flag two as a real calibration failure.
-      final populated =
-          calibration.where((b) => b.total > 0).toList(growable: false);
-      var inversions = 0;
-      for (var i = 1; i < populated.length; i++) {
-        if (populated[i].accuracy < populated[i - 1].accuracy) inversions++;
-      }
-      expect(
-        inversions,
-        lessThanOrEqualTo(1),
-        reason:
-            'Confidence is not monotonically informative: more than one band '
-            'inversion. Threshold-based anchoring assumes monotonicity. '
-            'Calibration table:\n${_formatCalibrationTable('Golden', calibration)}',
-      );
+        // A miscalibrated classifier shows a flat or inverted curve — that
+        // means confidence is uncorrelated with correctness, which would make
+        // the 0.75 anchor meaningless. Allow one inversion to absorb noise on
+        // small bands; flag two as a real calibration failure.
+        final populated = calibration
+            .where((b) => b.total > 0)
+            .toList(growable: false);
+        var inversions = 0;
+        for (var i = 1; i < populated.length; i++) {
+          if (populated[i].accuracy < populated[i - 1].accuracy) inversions++;
+        }
+        expect(
+          inversions,
+          lessThanOrEqualTo(1),
+          reason:
+              'Confidence is not monotonically informative: more than one band '
+              'inversion. Threshold-based anchoring assumes monotonicity. '
+              'Calibration table:\n${_formatCalibrationTable('Golden', calibration)}',
+        );
 
-      final lowest = populated.first;
-      final highest = populated.last;
-      expect(
-        highest.accuracy + 0.05,
-        greaterThanOrEqualTo(lowest.accuracy),
-        reason:
-            'Top-confidence band (${highest.label}) has lower accuracy than '
-            'lowest band (${lowest.label}) by more than 5pp — confidence is '
-            'inverted. The threshold cannot be calibrated.',
-      );
-    });
+        final lowest = populated.first;
+        final highest = populated.last;
+        expect(
+          highest.accuracy + 0.05,
+          greaterThanOrEqualTo(lowest.accuracy),
+          reason:
+              'Top-confidence band (${highest.label}) has lower accuracy than '
+              'lowest band (${lowest.label}) by more than 5pp — confidence is '
+              'inverted. The threshold cannot be calibrated.',
+        );
+      },
+    );
 
     test('held-out corpus matches golden within 5pp aggregate', () {
       final goldenAcc = _aggregateAccuracy(goldenScored);
@@ -143,18 +145,27 @@ void main() {
       // Print the held-out band table here too — the per-band Wilson CI on
       // 59 trials is too wide to support per-band assertions, but emitting
       // the table keeps drift visible in test logs alongside the golden one.
-      print(_formatCalibrationTable(
-          'Held-out', _calibrationByBand(heldOutScored, bandEdges)));
+      print(
+        _formatCalibrationTable(
+          'Held-out',
+          _calibrationByBand(heldOutScored, bandEdges),
+        ),
+      );
       print('\nAggregate accuracy comparison (default threshold = 0.75):');
-      print('  Golden:   ${(goldenAcc * 100).toStringAsFixed(1)}% '
-          '(${goldenScored.length} lines)');
-      print('  Held-out: ${(heldOutAcc * 100).toStringAsFixed(1)}% '
-          '(${heldOutScored.length} lines)');
+      print(
+        '  Golden:   ${(goldenAcc * 100).toStringAsFixed(1)}% '
+        '(${goldenScored.length} lines)',
+      );
+      print(
+        '  Held-out: ${(heldOutAcc * 100).toStringAsFixed(1)}% '
+        '(${heldOutScored.length} lines)',
+      );
 
       expect(
         (goldenAcc - heldOutAcc).abs(),
         lessThan(0.05),
-        reason: 'Held-out corpus accuracy diverges from golden by >5pp. The '
+        reason:
+            'Held-out corpus accuracy diverges from golden by >5pp. The '
             'algorithm may be overfit to golden-specific phrasings. '
             'Golden=$goldenAcc, HeldOut=$heldOutAcc.',
       );
@@ -172,8 +183,7 @@ void main() {
       _assertSweepValid(heldOutSweep, label: 'held-out');
     });
 
-    test(
-        '0.75 is within 2pp of the accuracy-optimal threshold on BOTH '
+    test('0.75 is within 2pp of the accuracy-optimal threshold on BOTH '
         'corpora (decision rule: keep current threshold)', () {
       // The decision: only change the constant if a different anchor
       // threshold gives strictly better END-TO-END ACCURACY by >2pp on BOTH
@@ -204,12 +214,16 @@ void main() {
       }
 
       print('\nDecision diagnostics (end-to-end post-Viterbi accuracy):');
-      print('  Golden  acc@0.75 = '
-          '${(goldenAccAtDefault * 100).toStringAsFixed(2)}% | '
-          'best = ${(bestGolden * 100).toStringAsFixed(2)}% @ $bestGoldenAt');
-      print('  HeldOut acc@0.75 = '
-          '${(heldOutAccAtDefault * 100).toStringAsFixed(2)}% | '
-          'best = ${(bestHeldOut * 100).toStringAsFixed(2)}% @ $bestHeldOutAt');
+      print(
+        '  Golden  acc@0.75 = '
+        '${(goldenAccAtDefault * 100).toStringAsFixed(2)}% | '
+        'best = ${(bestGolden * 100).toStringAsFixed(2)}% @ $bestGoldenAt',
+      );
+      print(
+        '  HeldOut acc@0.75 = '
+        '${(heldOutAccAtDefault * 100).toStringAsFixed(2)}% | '
+        'best = ${(bestHeldOut * 100).toStringAsFixed(2)}% @ $bestHeldOutAt',
+      );
 
       const noiseFloor = 0.02;
       final goldenGap = bestGolden - goldenAccAtDefault;
@@ -217,7 +231,8 @@ void main() {
 
       // A non-default threshold "wins" only when the gap exceeds the noise
       // floor on BOTH corpora and at the SAME threshold.
-      final consistentWinner = bestGoldenAt == bestHeldOutAt &&
+      final consistentWinner =
+          bestGoldenAt == bestHeldOutAt &&
           bestGoldenAt != 0.75 &&
           goldenGap > noiseFloor &&
           heldOutGap > noiseFloor;
@@ -225,7 +240,8 @@ void main() {
       expect(
         consistentWinner,
         isFalse,
-        reason: 'A non-default anchor threshold ($bestGoldenAt) beat 0.75 '
+        reason:
+            'A non-default anchor threshold ($bestGoldenAt) beat 0.75 '
             'by more than ${(noiseFloor * 100).toStringAsFixed(0)}pp '
             'end-to-end accuracy on BOTH golden (gap='
             '${(goldenGap * 100).toStringAsFixed(2)}pp) and held-out '
@@ -302,18 +318,21 @@ List<_ScoredLine> _scoreCorpus(
   final viterbi = processor ?? const ViterbiContextProcessor();
   final out = <_ScoredLine>[];
   for (final recipe in corpus) {
-    final classified =
-        recipe.lines.map((e) => classifier.classifyLine(e.line)).toList();
+    final classified = recipe.lines
+        .map((e) => classifier.classifyLine(e.line))
+        .toList();
     final contextual = viterbi.classifyWithContext(classified);
     for (var i = 0; i < recipe.lines.length; i++) {
       final expected = recipe.lines[i].expected;
       if (expected == null) continue;
-      out.add(_ScoredLine(
-        // Input confidence (pre-Viterbi) is what the threshold gates.
-        inputConfidence: classified[i].confidence,
-        predictedType: contextual[i].type,
-        expectedType: expected,
-      ));
+      out.add(
+        _ScoredLine(
+          // Input confidence (pre-Viterbi) is what the threshold gates.
+          inputConfidence: classified[i].confidence,
+          predictedType: contextual[i].type,
+          expectedType: expected,
+        ),
+      );
     }
   }
   return out;
@@ -329,11 +348,13 @@ List<_Band> _calibrationByBand(List<_ScoredLine> scored, List<double> edges) {
         .toList(growable: false);
     final correct = inBand.where((s) => s.correct).length;
     final hiLabel = hi > 1.0 ? '1.00]' : '${hi.toStringAsFixed(2)})';
-    bands.add(_Band(
-      '[${lo.toStringAsFixed(2)}, $hiLabel',
-      inBand.length,
-      correct,
-    ));
+    bands.add(
+      _Band(
+        '[${lo.toStringAsFixed(2)}, $hiLabel',
+        inBand.length,
+        correct,
+      ),
+    );
   }
   return bands;
 }
@@ -358,8 +379,9 @@ Map<double, _ThresholdMetrics> _sweepCorpus(
 ) {
   final out = <double, _ThresholdMetrics>{};
   for (final t in thresholds) {
-    final processor =
-        ViterbiContextProcessor.withTuning(highConfidenceThreshold: t);
+    final processor = ViterbiContextProcessor.withTuning(
+      highConfidenceThreshold: t,
+    );
     final scored = _scoreCorpus(corpus, classifier, processor: processor);
     var aboveThreshold = 0;
     var aboveAndCorrect = 0;
@@ -392,13 +414,21 @@ void _assertSweepValid(
   // measurement itself has a bug, not that the algorithm is broken.
   for (final entry in results.entries) {
     final m = entry.value;
-    expect(m.aboveThreshold, greaterThan(0),
-        reason: '$label corpus: threshold ${entry.key} excluded every line (no '
-            'positives — calibration math is undefined).');
-    expect(m.accuracy, greaterThan(0.85),
-        reason: '$label corpus: end-to-end accuracy at threshold ${entry.key} '
-            'is suspiciously low (${m.accuracy.toStringAsFixed(3)}). Either '
-            'the corpus is broken or the algorithm regressed.');
+    expect(
+      m.aboveThreshold,
+      greaterThan(0),
+      reason:
+          '$label corpus: threshold ${entry.key} excluded every line (no '
+          'positives — calibration math is undefined).',
+    );
+    expect(
+      m.accuracy,
+      greaterThan(0.85),
+      reason:
+          '$label corpus: end-to-end accuracy at threshold ${entry.key} '
+          'is suspiciously low (${m.accuracy.toStringAsFixed(3)}). Either '
+          'the corpus is broken or the algorithm regressed.',
+    );
   }
 }
 
@@ -422,11 +452,15 @@ String _formatSweepTable(String label, Map<double, _ThresholdMetrics> results) {
   final sb = StringBuffer()
     ..writeln()
     ..writeln('=== Threshold sweep — $label corpus ===')
-    ..writeln('(accuracy = end-to-end post-Viterbi correctness; '
-        'P/R/F1 = supplementary diagnostics treating above-threshold as '
-        'positive class)')
-    ..writeln('threshold   above    correct   accuracy   '
-        'precision   recall   F1');
+    ..writeln(
+      '(accuracy = end-to-end post-Viterbi correctness; '
+      'P/R/F1 = supplementary diagnostics treating above-threshold as '
+      'positive class)',
+    )
+    ..writeln(
+      'threshold   above    correct   accuracy   '
+      'precision   recall   F1',
+    );
   final keys = results.keys.toList()..sort();
   for (final t in keys) {
     final m = results[t]!;

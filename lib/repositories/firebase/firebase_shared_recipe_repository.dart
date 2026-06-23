@@ -73,24 +73,27 @@ class FirebaseSharedRecipeRepository
     SharedRecipeViewRepository? viewRepository,
     SharedRecipeEngagementRepository? engagementRepository,
     SharedRecipeDismissalRepository? dismissalRepository,
-  })  : _viewRepository = viewRepository ??
-            SharedRecipeViewRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        _engagementRepository = engagementRepository ??
-            SharedRecipeEngagementRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        _dismissalRepository = dismissalRepository ??
-            SharedRecipeDismissalRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+  }) : _viewRepository =
+           viewRepository ??
+           SharedRecipeViewRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       _engagementRepository =
+           engagementRepository ??
+           SharedRecipeEngagementRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       _dismissalRepository =
+           dismissalRepository ??
+           SharedRecipeDismissalRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       super(
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
 
   @override
   String get collectionName => FirestoreCollections.sharedContent;
@@ -185,7 +188,8 @@ class FirebaseSharedRecipeRepository
     // Recipe-specific validations
     if (sharedRecipe.sharedByUserId != uid) {
       throw PermissionDeniedException(
-          'Cannot create shared recipe for another user');
+        'Cannot create shared recipe for another user',
+      );
     }
 
     if (recipientIds.isEmpty) {
@@ -207,13 +211,16 @@ class FirebaseSharedRecipeRepository
         recipientIds.map((id) => addMember(existingId, id, addedBy: uid)),
       );
       AppLogger.info(
-          '♻️ Reusing existing shared recipe $existingId (idempotent)');
+        '♻️ Reusing existing shared recipe $existingId (idempotent)',
+      );
       return existingId;
     }
 
     // Create the shared recipe document (seed creator in sharedToUserIds to avoid extra write)
-    final recipeId = await createSharedContent(sharedRecipe,
-        initialSharedToUserIds: [sharedRecipe.sharedByUserId]);
+    final recipeId = await createSharedContent(
+      sharedRecipe,
+      initialSharedToUserIds: [sharedRecipe.sharedByUserId],
+    );
 
     // Add all recipients concurrently — each addMember also appends to sharedToUserIds
     await Future.wait(
@@ -221,7 +228,8 @@ class FirebaseSharedRecipeRepository
     );
 
     AppLogger.success(
-        '✅ Created shared recipe with ${recipientIds.length} members in subcollection');
+      '✅ Created shared recipe with ${recipientIds.length} members in subcollection',
+    );
 
     return recipeId;
   }
@@ -314,7 +322,8 @@ class FirebaseSharedRecipeRepository
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot get imported recipes for another user');
+        'Cannot get imported recipes for another user',
+      );
     }
 
     try {
@@ -328,7 +337,8 @@ class FirebaseSharedRecipeRepository
 
       if (engagementsSnapshot.docs.isEmpty) {
         AppLogger.info(
-            '📋 User ${userId.maskedUserId} has no imported recipes');
+          '📋 User ${userId.maskedUserId} has no imported recipes',
+        );
         return [];
       }
 
@@ -354,11 +364,13 @@ class FirebaseSharedRecipeRepository
       }
 
       AppLogger.info(
-          '📋 User ${userId.maskedUserId} has imported ${importedRecipes.length} shared recipes');
+        '📋 User ${userId.maskedUserId} has imported ${importedRecipes.length} shared recipes',
+      );
       return importedRecipes;
     } catch (e) {
       AppLogger.error(
-          'Failed to get imported recipes for user ${userId.maskedUserId}: $e');
+        'Failed to get imported recipes for user ${userId.maskedUserId}: $e',
+      );
       throw RepositoryException('Failed to get imported recipes: $e');
     }
   }

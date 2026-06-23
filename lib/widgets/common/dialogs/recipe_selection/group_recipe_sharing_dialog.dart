@@ -52,8 +52,10 @@ class GroupRecipeSharingDialog extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(context.l10n.commonCancel,
-                    style: AppTextStyles.labelLarge),
+                child: Text(
+                  context.l10n.commonCancel,
+                  style: AppTextStyles.labelLarge,
+                ),
               ),
               if (viewModel.hasSelectedRecipes)
                 FilledButton.icon(
@@ -62,15 +64,17 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                       : () => _shareSelectedRecipes(context, viewModel),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusM,
+                      ),
                     ),
                   ),
                   icon: viewModel.isSharing
@@ -80,9 +84,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                           child: LoadingIndicator(
                             size: AppDimensions.iconSizeS,
                             strokeWidth: 2,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                           ),
                         )
                       : const Icon(Icons.share),
@@ -101,7 +105,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
   }
 
   Widget _buildContent(
-      BuildContext context, GroupRecipeSelectionViewModel viewModel) {
+    BuildContext context,
+    GroupRecipeSelectionViewModel viewModel,
+  ) {
     if (viewModel.isLoading) {
       return StateWidget.loading(message: context.l10n.dialogLoadingRecipes);
     }
@@ -141,8 +147,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingS),
 
         Divider(
-            height: AppDimensions.borderWidthThin,
-            color: Theme.of(context).colorScheme.outlineVariant),
+          height: AppDimensions.borderWidthThin,
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
 
         // Recipe list
         Expanded(
@@ -154,8 +161,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                     return GroupRecipeListItem(
                       recipe: unifiedRecipe,
                       isSelected: viewModel.isRecipeSelected(unifiedRecipe.id),
-                      isAlreadyShared:
-                          viewModel.isRecipeAlreadyShared(unifiedRecipe.id),
+                      isAlreadyShared: viewModel.isRecipeAlreadyShared(
+                        unifiedRecipe.id,
+                      ),
                       onSelectionChanged: (selected) {
                         viewModel.toggleRecipeSelection(unifiedRecipe.id);
                       },
@@ -169,7 +177,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
   }
 
   Widget _buildInfo(
-      BuildContext context, GroupRecipeSelectionViewModel viewModel) {
+    BuildContext context,
+    GroupRecipeSelectionViewModel viewModel,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Row(
@@ -177,7 +187,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
           if (viewModel.searchQuery.isNotEmpty)
             Text(
               context.l10n.dialogFilteredRecipeCount(
-                  viewModel.filteredCount, viewModel.totalCount),
+                viewModel.filteredCount,
+                viewModel.totalCount,
+              ),
               style: AppTextStyles.bodySmall,
             ),
           if (viewModel.hasSelectedRecipes) ...[
@@ -188,10 +200,9 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
+                color: Theme.of(context).colorScheme.primary.withValues(
+                  alpha: AppDimensions.opacityVeryLight,
+                ),
                 borderRadius: BorderRadius.zero,
               ),
               child: Text(
@@ -206,14 +217,18 @@ class GroupRecipeSharingDialog extends StatelessWidget {
           if (viewModel.hasSelectedRecipes)
             TextButton(
               onPressed: viewModel.clearSelections,
-              child: Text(context.l10n.dialogClearSelection,
-                  style: AppTextStyles.labelLarge),
+              child: Text(
+                context.l10n.dialogClearSelection,
+                style: AppTextStyles.labelLarge,
+              ),
             )
           else if (viewModel.searchQuery.isNotEmpty)
             TextButton(
               onPressed: viewModel.clearSearch,
-              child: Text(context.l10n.commonClear,
-                  style: AppTextStyles.labelLarge),
+              child: Text(
+                context.l10n.commonClear,
+                style: AppTextStyles.labelLarge,
+              ),
             ),
         ],
       ),
@@ -303,11 +318,14 @@ class GroupRecipeListItem extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: successColor.withValues(
-                    alpha: AppDimensions.opacityVeryLight),
+                  alpha: AppDimensions.opacityVeryLight,
+                ),
                 borderRadius: BorderRadius.zero,
                 border: Border.all(
-                    color: successColor.withValues(
-                        alpha: AppDimensions.opacityMediumLight)),
+                  color: successColor.withValues(
+                    alpha: AppDimensions.opacityMediumLight,
+                  ),
+                ),
               ),
               child: Text(
                 context.l10n.dialogAlreadyShared,

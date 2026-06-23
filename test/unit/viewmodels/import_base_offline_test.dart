@@ -20,8 +20,10 @@ class _CountingTextImportStrategy extends Mock implements TextImportStrategy {
   int importCalls = 0;
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     importCalls++;
     return ImportResult.success(
       Recipe.personal(
@@ -46,66 +48,75 @@ class _TestTextImportViewModel extends ImportBaseViewModel
 }
 
 void main() {
-  group('ImportBaseViewModel.parseTextToRecipe offline pre-check (BUT-1360)',
-      () {
-    late MockImportManager mockImportManager;
-    late MockConnectivityMonitoringService mockConnectivity;
-    late _CountingTextImportStrategy strategy;
-    late _TestTextImportViewModel viewModel;
+  group(
+    'ImportBaseViewModel.parseTextToRecipe offline pre-check (BUT-1360)',
+    () {
+      late MockImportManager mockImportManager;
+      late MockConnectivityMonitoringService mockConnectivity;
+      late _CountingTextImportStrategy strategy;
+      late _TestTextImportViewModel viewModel;
 
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-    });
+      setUpAll(() async {
+        await BaseUnitTest.setupUnit();
+      });
 
-    setUp(() async {
-      await TestServiceLocator.initialize();
-      strategy = _CountingTextImportStrategy();
-      mockImportManager = MockImportManager();
-      mockImportManager.setImportManagerState(textImportStrategy: strategy);
-      mockConnectivity = MockConnectivityMonitoringService();
-      // Offline by default; the online test flips this.
-      when(() => mockConnectivity.isConnectedToInternet).thenReturn(false);
+      setUp(() async {
+        await TestServiceLocator.initialize();
+        strategy = _CountingTextImportStrategy();
+        mockImportManager = MockImportManager();
+        mockImportManager.setImportManagerState(textImportStrategy: strategy);
+        mockConnectivity = MockConnectivityMonitoringService();
+        // Offline by default; the online test flips this.
+        when(() => mockConnectivity.isConnectedToInternet).thenReturn(false);
 
-      viewModel = _TestTextImportViewModel(
-        importManager: mockImportManager,
-        connectivity: mockConnectivity,
-      );
-    });
+        viewModel = _TestTextImportViewModel(
+          importManager: mockImportManager,
+          connectivity: mockConnectivity,
+        );
+      });
 
-    tearDown(() async {
-      viewModel.dispose();
-      BaseUnitTest.resetMocks();
-      await TestServiceLocator.reset();
-    });
+      tearDown(() async {
+        viewModel.dispose();
+        BaseUnitTest.resetMocks();
+        await TestServiceLocator.reset();
+      });
 
-    tearDownAll(() async {
-      await BaseUnitTest.teardownUnit();
-    });
+      tearDownAll(() async {
+        await BaseUnitTest.teardownUnit();
+      });
 
-    test(
+      test(
         'offline: performImport sets the offline message, parses no recipe, and '
-        'never calls the import strategy', () async {
-      viewModel.updateInputText('Pannkakor\n3 ägg\nVispa ihop allt');
-
-      await viewModel.performImport();
-
-      expect(viewModel.error, AppLocale.current.importOfflineMessage);
-      expect(viewModel.hasParsedRecipe, isFalse);
-      expect(strategy.importCalls, 0,
-          reason: 'strategy must not run while offline');
-      expect(viewModel.isLoading, isFalse);
-    });
-
-    test('online: performImport reaches the strategy and parses a recipe',
+        'never calls the import strategy',
         () async {
-      when(() => mockConnectivity.isConnectedToInternet).thenReturn(true);
-      viewModel.updateInputText('Pannkakor\n3 ägg\nVispa ihop allt');
+          viewModel.updateInputText('Pannkakor\n3 ägg\nVispa ihop allt');
 
-      await viewModel.performImport();
+          await viewModel.performImport();
 
-      expect(strategy.importCalls, 1);
-      expect(viewModel.hasParsedRecipe, isTrue);
-      expect(viewModel.error, isNull);
-    });
-  });
+          expect(viewModel.error, AppLocale.current.importOfflineMessage);
+          expect(viewModel.hasParsedRecipe, isFalse);
+          expect(
+            strategy.importCalls,
+            0,
+            reason: 'strategy must not run while offline',
+          );
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
+
+      test(
+        'online: performImport reaches the strategy and parses a recipe',
+        () async {
+          when(() => mockConnectivity.isConnectedToInternet).thenReturn(true);
+          viewModel.updateInputText('Pannkakor\n3 ägg\nVispa ihop allt');
+
+          await viewModel.performImport();
+
+          expect(strategy.importCalls, 1);
+          expect(viewModel.hasParsedRecipe, isTrue);
+          expect(viewModel.error, isNull);
+        },
+      );
+    },
+  );
 }

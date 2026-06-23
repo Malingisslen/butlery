@@ -105,23 +105,26 @@ class RealtimeMenuOperations {
     required String categoryName,
     required List<Recipe> newRecipes,
   }) {
-    return updateWholeCategory(data,
-        categoryName: categoryName, recipes: newRecipes);
+    return updateWholeCategory(
+      data,
+      categoryName: categoryName,
+      recipes: newRecipes,
+    );
   }
 
   /// Common Swedish menu categories.
   static List<String> get commonCategories => [
-        'Frukost',
-        'Lunch',
-        'Middag',
-        'Huvudrätter',
-        'Förrätter',
-        'Efterrätter',
-        'Mellanmål',
-        'Drycker',
-        'Bakverk',
-        'Sallader'
-      ];
+    'Frukost',
+    'Lunch',
+    'Middag',
+    'Huvudrätter',
+    'Förrätter',
+    'Efterrätter',
+    'Mellanmål',
+    'Drycker',
+    'Bakverk',
+    'Sallader',
+  ];
 
   /// Get categories sorted in logical order
   static List<String> getCategoriesSorted(RealtimeMenuData data) {
@@ -235,7 +238,9 @@ class RealtimeMenuOperations {
 
   /// Create personal copy of menu
   static Map<String, List<Recipe>> createPersonalMenuCopy(
-      RealtimeMenuData data, String sourceDisplayName) {
+    RealtimeMenuData data,
+    String sourceDisplayName,
+  ) {
     return Map.from(data.menuSnapshot);
   }
 }

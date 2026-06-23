@@ -40,20 +40,23 @@ class DuplicateMergeResult {
   Recipe buildMergedRecipe() {
     return existingRecipe.copyWith(
       title: _preferNonEmpty(newRecipe.title, existingRecipe.title),
-      description:
-          _preferLonger(newRecipe.description, existingRecipe.description),
+      description: _preferLonger(
+        newRecipe.description,
+        existingRecipe.description,
+      ),
       ingredients:
           newRecipe.ingredients.length >= existingRecipe.ingredients.length
-              ? newRecipe.ingredients
-              : existingRecipe.ingredients,
+          ? newRecipe.ingredients
+          : existingRecipe.ingredients,
       instructions:
           newRecipe.instructions.length >= existingRecipe.instructions.length
-              ? newRecipe.instructions
-              : existingRecipe.instructions,
+          ? newRecipe.instructions
+          : existingRecipe.instructions,
       timeMinutes: newRecipe.timeMinutes ?? existingRecipe.timeMinutes,
       portions: newRecipe.portions ?? existingRecipe.portions,
-      imageUrls:
-          newRecipe.hasImages ? newRecipe.imageUrls : existingRecipe.imageUrls,
+      imageUrls: newRecipe.hasImages
+          ? newRecipe.imageUrls
+          : existingRecipe.imageUrls,
       sourceUrl: newRecipe.sourceUrl ?? existingRecipe.sourceUrl,
     );
   }
@@ -129,8 +132,9 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              color: cs.onSurfaceVariant
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              color: cs.onSurfaceVariant.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
             ),
           ),
           // Header
@@ -139,8 +143,10 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(l10n.duplicateMergeTitle,
-                      style: AppTextStyles.titleLarge),
+                  child: Text(
+                    l10n.duplicateMergeTitle,
+                    style: AppTextStyles.titleLarge,
+                  ),
                 ),
                 _SimilarityBadge(percent: percent),
               ],
@@ -156,23 +162,35 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
                 // Column headers
                 _threeColumnRow(
                   label: '',
-                  existing: Text(l10n.duplicateMergeExisting,
-                      style:
-                          AppTextStyles.labelMedium.copyWith(color: cs.primary),
-                      textAlign: TextAlign.center),
-                  incoming: Text(l10n.duplicateMergeNew,
-                      style: AppTextStyles.labelMedium
-                          .copyWith(color: cs.secondary),
-                      textAlign: TextAlign.center),
+                  existing: Text(
+                    l10n.duplicateMergeExisting,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: cs.primary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  incoming: Text(
+                    l10n.duplicateMergeNew,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: cs.secondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
                 // Images
                 _threeColumnRow(
                   label: '',
-                  existing:
-                      _buildImage(existingRecipe.displayThumbnailUrl, cs, l10n),
-                  incoming:
-                      _buildImage(newRecipe.displayThumbnailUrl, cs, l10n),
+                  existing: _buildImage(
+                    existingRecipe.displayThumbnailUrl,
+                    cs,
+                    l10n,
+                  ),
+                  incoming: _buildImage(
+                    newRecipe.displayThumbnailUrl,
+                    cs,
+                    l10n,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
                 // Field rows
@@ -198,23 +216,31 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
                 _FieldRow(
                   label: l10n.duplicateMergeFieldIngredients,
                   existingValue: l10n.duplicateMergeItemCount(
-                      existingRecipe.ingredients.length),
-                  newValue: l10n
-                      .duplicateMergeItemCount(newRecipe.ingredients.length),
-                  highlightNew: newRecipe.ingredients.length >
+                    existingRecipe.ingredients.length,
+                  ),
+                  newValue: l10n.duplicateMergeItemCount(
+                    newRecipe.ingredients.length,
+                  ),
+                  highlightNew:
+                      newRecipe.ingredients.length >
                       existingRecipe.ingredients.length,
-                  highlightExisting: existingRecipe.ingredients.length >
+                  highlightExisting:
+                      existingRecipe.ingredients.length >
                       newRecipe.ingredients.length,
                 ),
                 _FieldRow(
                   label: l10n.duplicateMergeFieldSteps,
                   existingValue: l10n.duplicateMergeItemCount(
-                      existingRecipe.instructions.length),
-                  newValue: l10n
-                      .duplicateMergeItemCount(newRecipe.instructions.length),
-                  highlightNew: newRecipe.instructions.length >
+                    existingRecipe.instructions.length,
+                  ),
+                  newValue: l10n.duplicateMergeItemCount(
+                    newRecipe.instructions.length,
+                  ),
+                  highlightNew:
+                      newRecipe.instructions.length >
                       existingRecipe.instructions.length,
-                  highlightExisting: existingRecipe.instructions.length >
+                  highlightExisting:
+                      existingRecipe.instructions.length >
                       newRecipe.instructions.length,
                 ),
                 _FieldRow(
@@ -240,9 +266,11 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
         height: AppDimensions.heightThumbnail,
         color: cs.surfaceContainerHighest,
         alignment: Alignment.center,
-        child: Text(l10n.duplicateMergeNoImage,
-            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-            textAlign: TextAlign.center),
+        child: Text(
+          l10n.duplicateMergeNoImage,
+          style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
       );
     }
     return SizedBox(
@@ -267,8 +295,9 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
 
   String _formatUrl(String? url, AppLocalizations l10n) {
     if (url == null || url.isEmpty) return l10n.duplicateMergeNoSource;
-    final s =
-        url.replaceFirst(RegExp(r'https?://'), '').replaceFirst('www.', '');
+    final s = url
+        .replaceFirst(RegExp(r'https?://'), '')
+        .replaceFirst('www.', '');
     return s.length <= 35 ? s : '${s.substring(0, 32)}...';
   }
 
@@ -280,10 +309,11 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-            width: _labelWidth,
-            child: label.isNotEmpty
-                ? Text(label, style: AppTextStyles.labelMedium)
-                : const SizedBox.shrink()),
+          width: _labelWidth,
+          child: label.isNotEmpty
+              ? Text(label, style: AppTextStyles.labelMedium)
+              : const SizedBox.shrink(),
+        ),
         Expanded(child: existing),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(child: incoming),
@@ -340,35 +370,58 @@ class _FieldRow extends StatelessWidget {
         children: [
           SizedBox(
             width: _labelWidth,
-            child: Text(label,
-                style: AppTextStyles.labelMedium
-                    .copyWith(color: cs.onSurfaceVariant)),
+            child: Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
           ),
           Expanded(
-              child: _cell(existingValue, isDifferent, highlightExisting, cs,
-                  highlightColor)),
+            child: _cell(
+              existingValue,
+              isDifferent,
+              highlightExisting,
+              cs,
+              highlightColor,
+            ),
+          ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
-              child: _cell(
-                  newValue, isDifferent, highlightNew, cs, highlightColor)),
+            child: _cell(
+              newValue,
+              isDifferent,
+              highlightNew,
+              cs,
+              highlightColor,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _cell(String value, bool isDifferent, bool highlight, ColorScheme cs,
-      Color highlightColor) {
+  Widget _cell(
+    String value,
+    bool isDifferent,
+    bool highlight,
+    ColorScheme cs,
+    Color highlightColor,
+  ) {
     return Container(
       padding: AppDimensions.paddingSymmetric4x2,
       color: highlight
           ? highlightColor
           : (isDifferent ? cs.surfaceContainerHighest : Colors.transparent),
-      child: Text(value,
-          style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: highlight ? FontWeight.w600 : FontWeight.normal),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis),
+      child: Text(
+        value,
+        style: AppTextStyles.bodySmall.copyWith(
+          fontWeight: highlight ? FontWeight.w600 : FontWeight.normal,
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }
@@ -390,49 +443,62 @@ class _ActionButtons extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () =>
-                      onChoice(DuplicateMergeChoice.mergeBestFields),
-                  icon: const Icon(Icons.merge_type, size: 18),
-                  label: Text(l10n.duplicateMergeBestFields),
-                  style: FilledButton.styleFrom(
-                      minimumSize: minSize, shape: shape),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        onChoice(DuplicateMergeChoice.mergeBestFields),
+                    icon: const Icon(Icons.merge_type, size: 18),
+                    label: Text(l10n.duplicateMergeBestFields),
+                    style: FilledButton.styleFrom(
+                      minimumSize: minSize,
+                      shape: shape,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => onChoice(DuplicateMergeChoice.saveAsNew),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text(l10n.duplicateMergeSaveAsNew),
-                  style: OutlinedButton.styleFrom(
-                      minimumSize: minSize, shape: shape),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => onChoice(DuplicateMergeChoice.saveAsNew),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(l10n.duplicateMergeSaveAsNew),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: minSize,
+                      shape: shape,
+                    ),
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
             const SizedBox(height: AppDimensions.spacingSm),
-            Row(children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => onChoice(DuplicateMergeChoice.keepExisting),
-                  style:
-                      TextButton.styleFrom(minimumSize: minSize, shape: shape),
-                  child: Text(l10n.duplicateMergeKeepExisting),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () =>
+                        onChoice(DuplicateMergeChoice.keepExisting),
+                    style: TextButton.styleFrom(
+                      minimumSize: minSize,
+                      shape: shape,
+                    ),
+                    child: Text(l10n.duplicateMergeKeepExisting),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Expanded(
-                child: TextButton(
-                  onPressed: () =>
-                      onChoice(DuplicateMergeChoice.replaceWithNew),
-                  style:
-                      TextButton.styleFrom(minimumSize: minSize, shape: shape),
-                  child: Text(l10n.duplicateMergeReplaceWithNew),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () =>
+                        onChoice(DuplicateMergeChoice.replaceWithNew),
+                    style: TextButton.styleFrom(
+                      minimumSize: minSize,
+                      shape: shape,
+                    ),
+                    child: Text(l10n.duplicateMergeReplaceWithNew),
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ],
         ),
       ),

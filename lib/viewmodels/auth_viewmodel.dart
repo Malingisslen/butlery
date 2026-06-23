@@ -282,8 +282,9 @@ class AuthViewModel extends ChangeNotifier
 
     // Email validation with Unicode support for international characters
     final emailRegex = RegExp(
-        r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
-        unicode: true);
+      r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
+      unicode: true,
+    );
     if (!emailRegex.hasMatch(email)) {
       _setError(l.errorFillRequiredFieldsCorrectly);
       return false;

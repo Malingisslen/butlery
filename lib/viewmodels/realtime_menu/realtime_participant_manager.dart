@@ -26,10 +26,10 @@ class RealtimeParticipantManager {
     required RealtimeMenuService menuService,
     required ParticipantTracker participantTracker,
     PermissionService? permissionService,
-  })  : _menuService = menuService,
-        _participantTracker = participantTracker,
-        _permissionService =
-            permissionService ?? ServiceLocator.get<PermissionService>();
+  }) : _menuService = menuService,
+       _participantTracker = participantTracker,
+       _permissionService =
+           permissionService ?? ServiceLocator.get<PermissionService>();
 
   /// Current user ID
   String? get currentUserId => _permissionService.currentUserId;
@@ -61,7 +61,8 @@ class RealtimeParticipantManager {
     }
 
     AppLogger.info(
-        '👤 Adding participant: ${userDisplayName.maskedName} ($permission)');
+      '👤 Adding participant: ${userDisplayName.maskedName} ($permission)',
+    );
 
     try {
       await _menuService.addParticipant(
@@ -77,7 +78,9 @@ class RealtimeParticipantManager {
       AppLogger.success('✅ Participant added: ${userDisplayName.maskedName}');
     } catch (e) {
       AppLogger.error(
-          '❌ Failed to add participant: ${userDisplayName.maskedName}', e);
+        '❌ Failed to add participant: ${userDisplayName.maskedName}',
+        e,
+      );
       rethrow;
     }
   }
@@ -128,7 +131,8 @@ class RealtimeParticipantManager {
     }
 
     AppLogger.info(
-        '👤 Updating participant permission: ${userId.maskedUserId} -> $newPermission');
+      '👤 Updating participant permission: ${userId.maskedUserId} -> $newPermission',
+    );
 
     try {
       await _menuService.updateParticipantPermission(
@@ -232,7 +236,9 @@ class RealtimeParticipantManager {
 
   /// Get participant permission level
   ResourcePermission? getParticipantPermission(
-      String userId, RealtimeMenu menu) {
+    String userId,
+    RealtimeMenu menu,
+  ) {
     return menu.participants[userId];
   }
 

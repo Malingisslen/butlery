@@ -37,12 +37,13 @@ Conversation _fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
             content: '',
             type: MessageType.text,
             status: MessageStatus.sent,
-            sentAt:
-                ((data['lastMessage'] as Map)['sentAt'] as Timestamp).toDate(),
+            sentAt: ((data['lastMessage'] as Map)['sentAt'] as Timestamp)
+                .toDate(),
           )
         : null,
-    lastReadTimestamps: ((data['lastReadTimestamps'] as Map?) ?? const {})
-        .map((k, v) => MapEntry(k as String, (v as Timestamp).toDate())),
+    lastReadTimestamps: ((data['lastReadTimestamps'] as Map?) ?? const {}).map(
+      (k, v) => MapEntry(k as String, (v as Timestamp).toDate()),
+    ),
     isGroup: data['isGroup'] as bool? ?? false,
     createdAt:
         (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.utc(2026, 1, 1),
@@ -71,8 +72,9 @@ Future<void> _seedConvo(
         'sentAt': Timestamp.fromDate(lastMessageAt),
       },
     if (lastReads != null)
-      'lastReadTimestamps':
-          lastReads.map((k, v) => MapEntry(k, Timestamp.fromDate(v))),
+      'lastReadTimestamps': lastReads.map(
+        (k, v) => MapEntry(k, Timestamp.fromDate(v)),
+      ),
   });
 }
 
@@ -90,14 +92,18 @@ void main() {
   group('getUserConversations (stream)', () {
     test('emits only conversations the user participates in', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedConvo(firestore,
-          id: 'c1',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 2));
-      await _seedConvo(firestore,
-          id: 'c2',
-          participants: ['carol', 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 3));
+      await _seedConvo(
+        firestore,
+        id: 'c1',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 2),
+      );
+      await _seedConvo(
+        firestore,
+        id: 'c2',
+        participants: ['carol', 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
 
       final list = await _module(firestore).getUserConversations(_userId).first;
       expect(list.map((c) => c.id), ['c1']);
@@ -111,18 +117,24 @@ void main() {
 
     test('sorted by updatedAt descending', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedConvo(firestore,
-          id: 'old',
-          participants: [_userId],
-          updatedAt: DateTime.utc(2026, 1, 1));
-      await _seedConvo(firestore,
-          id: 'new',
-          participants: [_userId],
-          updatedAt: DateTime.utc(2026, 1, 5));
-      await _seedConvo(firestore,
-          id: 'mid',
-          participants: [_userId],
-          updatedAt: DateTime.utc(2026, 1, 3));
+      await _seedConvo(
+        firestore,
+        id: 'old',
+        participants: [_userId],
+        updatedAt: DateTime.utc(2026, 1, 1),
+      );
+      await _seedConvo(
+        firestore,
+        id: 'new',
+        participants: [_userId],
+        updatedAt: DateTime.utc(2026, 1, 5),
+      );
+      await _seedConvo(
+        firestore,
+        id: 'mid',
+        participants: [_userId],
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
 
       final list = await _module(firestore).getUserConversations(_userId).first;
       expect(list.map((c) => c.id), ['new', 'mid', 'old']);
@@ -142,8 +154,9 @@ void main() {
         createdAt: DateTime.utc(2026, 1, 1),
         updatedAt: DateTime.utc(2026, 1, 1),
       );
-      final result =
-          await _module(firestore).getConversation('c1', (_) async => expected);
+      final result = await _module(
+        firestore,
+      ).getConversation('c1', (_) async => expected);
       expect(result, same(expected));
     });
 
@@ -170,15 +183,17 @@ void main() {
         createdAt: DateTime.utc(2026, 1, 1),
         updatedAt: DateTime.utc(2026, 1, 1),
       );
-      final ids = await _module(firestore)
-          .getConversationParticipants('c1', (_) async => convo);
+      final ids = await _module(
+        firestore,
+      ).getConversationParticipants('c1', (_) async => convo);
       expect(ids, ['alice', 'bob', 'carol']);
     });
 
     test('returns empty list when conversation is null', () async {
       final firestore = FakeFirebaseFirestore();
-      final ids = await _module(firestore)
-          .getConversationParticipants('c1', (_) async => null);
+      final ids = await _module(
+        firestore,
+      ).getConversationParticipants('c1', (_) async => null);
       expect(ids, isEmpty);
     });
 
@@ -196,24 +211,30 @@ void main() {
     test('counts only conversations with unread messages', () async {
       final firestore = FakeFirebaseFirestore();
       // c1: has a newer message than user's lastReadTimestamps → unread
-      await _seedConvo(firestore,
-          id: 'c1',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 5),
-          lastMessageAt: DateTime.utc(2026, 1, 5),
-          lastReads: {_userId: DateTime.utc(2026, 1, 1)});
+      await _seedConvo(
+        firestore,
+        id: 'c1',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 5),
+        lastMessageAt: DateTime.utc(2026, 1, 5),
+        lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+      );
       // c2: lastRead is after lastMessage → read
-      await _seedConvo(firestore,
-          id: 'c2',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 4),
-          lastMessageAt: DateTime.utc(2026, 1, 2),
-          lastReads: {_userId: DateTime.utc(2026, 1, 3)});
+      await _seedConvo(
+        firestore,
+        id: 'c2',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 4),
+        lastMessageAt: DateTime.utc(2026, 1, 2),
+        lastReads: {_userId: DateTime.utc(2026, 1, 3)},
+      );
       // c3: no lastMessage → not unread
-      await _seedConvo(firestore,
-          id: 'c3',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 3));
+      await _seedConvo(
+        firestore,
+        id: 'c3',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
 
       final count = await _module(firestore).getUnreadMessageCount(_userId);
       expect(count, 1);
@@ -228,25 +249,32 @@ void main() {
   group('getUnreadConversationsCount (legacy path)', () {
     test('falls back to arrayContains query when no inverse index', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedConvo(firestore,
-          id: 'c1',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 5),
-          lastMessageAt: DateTime.utc(2026, 1, 5),
-          lastReads: {_userId: DateTime.utc(2026, 1, 1)});
-      await _seedConvo(firestore,
-          id: 'c2',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 4),
-          lastMessageAt: DateTime.utc(2026, 1, 4),
-          lastReads: {_userId: DateTime.utc(2026, 1, 1)});
-      await _seedConvo(firestore,
-          id: 'c3',
-          participants: [_userId, 'bob'],
-          updatedAt: DateTime.utc(2026, 1, 3));
+      await _seedConvo(
+        firestore,
+        id: 'c1',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 5),
+        lastMessageAt: DateTime.utc(2026, 1, 5),
+        lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+      );
+      await _seedConvo(
+        firestore,
+        id: 'c2',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 4),
+        lastMessageAt: DateTime.utc(2026, 1, 4),
+        lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+      );
+      await _seedConvo(
+        firestore,
+        id: 'c3',
+        participants: [_userId, 'bob'],
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
 
-      final count =
-          await _module(firestore).getUnreadConversationsCount(_userId);
+      final count = await _module(
+        firestore,
+      ).getUnreadConversationsCount(_userId);
       expect(count, 2);
     });
 
@@ -259,8 +287,9 @@ void main() {
   group('getConversationIdsViaInverseIndex', () {
     test('returns empty list when no participantModule is wired', () async {
       final firestore = FakeFirebaseFirestore();
-      final ids =
-          await _module(firestore).getConversationIdsViaInverseIndex(_userId);
+      final ids = await _module(
+        firestore,
+      ).getConversationIdsViaInverseIndex(_userId);
       expect(ids, isEmpty);
     });
   });

@@ -142,8 +142,10 @@ void main() {
       expect(itemDoc.exists, isTrue);
       expect(itemDoc.data()?['name'], 'Mjölk');
 
-      final listDoc =
-          await firestore.collection('shared_content').doc(_listId).get();
+      final listDoc = await firestore
+          .collection('shared_content')
+          .doc(_listId)
+          .get();
       expect(listDoc.data()?['itemCount'], 1);
     });
 
@@ -166,8 +168,10 @@ void main() {
       await _seedList(firestore);
       await repo.addItemsBatch(_listId, const []);
 
-      final listDoc =
-          await firestore.collection('shared_content').doc(_listId).get();
+      final listDoc = await firestore
+          .collection('shared_content')
+          .doc(_listId)
+          .get();
       expect(listDoc.data()?['itemCount'], 0);
     });
 
@@ -189,8 +193,10 @@ void main() {
           .get();
       expect(items.docs.length, 3);
 
-      final listDoc =
-          await firestore.collection('shared_content').doc(_listId).get();
+      final listDoc = await firestore
+          .collection('shared_content')
+          .doc(_listId)
+          .get();
       expect(listDoc.data()?['itemCount'], 3);
     });
   });

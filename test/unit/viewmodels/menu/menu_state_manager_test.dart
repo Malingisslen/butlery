@@ -250,14 +250,17 @@ void main() {
 
       // Try to modify the returned list - should throw or have no effect
       expect(
-          () => menusCopy.add(SavedMenuInfo(
-                key: 'menu_2',
-                name: 'Another Menu',
-                savedDate: DateTime.now(),
-                recipeCount: 2,
-                comment: 'Another comment',
-              )),
-          throwsUnsupportedError);
+        () => menusCopy.add(
+          SavedMenuInfo(
+            key: 'menu_2',
+            name: 'Another Menu',
+            savedDate: DateTime.now(),
+            recipeCount: 2,
+            comment: 'Another comment',
+          ),
+        ),
+        throwsUnsupportedError,
+      );
     });
   });
 

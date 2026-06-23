@@ -44,10 +44,14 @@ void main() {
       final fromContainer = container.get<LocaleProvider>();
       final fromLocator = ServiceLocator.get<LocaleProvider>();
 
-      expect(identical(fromContainer, fromLocator), isTrue,
-          reason: 'Both lookup paths must resolve to the same '
-              'DIContainer-backed singleton; otherwise locale writes from one '
-              'path are invisible to listeners on the other (BUT-801 regression).');
+      expect(
+        identical(fromContainer, fromLocator),
+        isTrue,
+        reason:
+            'Both lookup paths must resolve to the same '
+            'DIContainer-backed singleton; otherwise locale writes from one '
+            'path are invisible to listeners on the other (BUT-801 regression).',
+      );
     });
 
     test('repeated lookups return the same instance across both paths', () {

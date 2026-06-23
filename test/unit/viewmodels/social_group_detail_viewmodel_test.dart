@@ -80,11 +80,13 @@ void main() {
 
       // Stubs on mock (not concrete overrides -- safe to use when())
       when(() => mockFriendsService.refresh()).thenAnswer((_) async {});
-      when(() => mockFriendsService.getCategoryById(testGroupId))
-          .thenReturn(testGroup);
+      when(
+        () => mockFriendsService.getCategoryById(testGroupId),
+      ).thenReturn(testGroup);
       when(() => mockFriendsService.sentInvitations).thenReturn([]);
-      when(() => mockFriendsService.friendsCategoryRepositoryInternal)
-          .thenReturn(mockCategoryRepo);
+      when(
+        () => mockFriendsService.friendsCategoryRepositoryInternal,
+      ).thenReturn(mockCategoryRepo);
 
       // MockUserService.getUserProfiles is a concrete override using _users map
       mockUserService.setUserState(
@@ -105,11 +107,13 @@ void main() {
       // Default is `true` for all groups, matching the prior stub intent.
       mockPermissionService.setGroupAdmin(isAdmin: true);
 
-      when(() => mockCategoriesOps.removeFriendFromCategory(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockCategoriesOps.removeFriendFromCategory(any(), any()),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockCategoryRepo.transferOwnership(any(), any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockCategoryRepo.transferOwnership(any(), any(), any()),
+      ).thenAnswer((_) async {});
 
       viewModel = SocialGroupDetailViewModel(
         groupId: testGroupId,
@@ -140,8 +144,10 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         expect(viewModel.members, hasLength(2));
-        expect(viewModel.members.map((m) => m.uid),
-            containsAll([testUserId, otherUserId]));
+        expect(
+          viewModel.members.map((m) => m.uid),
+          containsAll([testUserId, otherUserId]),
+        );
       });
     });
 
@@ -154,7 +160,9 @@ void main() {
 
       test('isAdmin returns false when user is not admin', () async {
         mockPermissionService.setGroupAdmin(
-            groupId: testGroupId, isAdmin: false);
+          groupId: testGroupId,
+          isAdmin: false,
+        );
 
         await viewModel.loadGroupData();
 
@@ -190,8 +198,9 @@ void main() {
       });
 
       test('handles null group gracefully', () async {
-        when(() => mockFriendsService.getCategoryById(testGroupId))
-            .thenReturn(null);
+        when(
+          () => mockFriendsService.getCategoryById(testGroupId),
+        ).thenReturn(null);
 
         await viewModel.loadGroupData();
 
@@ -212,7 +221,9 @@ void main() {
     group('checkLeaveGroupRequirements', () {
       test('returns no transfer needed for non-owner', () async {
         mockPermissionService.setGroupAdmin(
-            groupId: testGroupId, isAdmin: false);
+          groupId: testGroupId,
+          isAdmin: false,
+        );
 
         await viewModel.loadGroupData();
         final decision = viewModel.checkLeaveGroupRequirements();
@@ -224,8 +235,9 @@ void main() {
 
       test('returns empty group for owner with no other members', () async {
         final emptyGroup = testGroup.copyWith(friendUserIds: [testUserId]);
-        when(() => mockFriendsService.getCategoryById(testGroupId))
-            .thenReturn(emptyGroup);
+        when(
+          () => mockFriendsService.getCategoryById(testGroupId),
+        ).thenReturn(emptyGroup);
 
         // getUserProfiles will return only currentUser based on _users map
         await viewModel.loadGroupData();
@@ -249,25 +261,33 @@ void main() {
 
     group('leaveGroup', () {
       test('successfully leaves group', () async {
-        when(() => mockCategoriesOps.removeFriendFromCategory(
-              testUserId,
-              testGroupId,
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockCategoriesOps.removeFriendFromCategory(
+            testUserId,
+            testGroupId,
+          ),
+        ).thenAnswer((_) async => true);
 
         await viewModel.loadGroupData();
         final result = await viewModel.leaveGroup();
 
         expect(result, isTrue);
         expect(viewModel.group, isNull);
-        verify(() => mockCategoriesOps.removeFriendFromCategory(
-            testUserId, testGroupId)).called(1);
+        verify(
+          () => mockCategoriesOps.removeFriendFromCategory(
+            testUserId,
+            testGroupId,
+          ),
+        ).called(1);
       });
 
       test('returns false when leave fails', () async {
-        when(() => mockCategoriesOps.removeFriendFromCategory(
-              testUserId,
-              testGroupId,
-            )).thenAnswer((_) async => false);
+        when(
+          () => mockCategoriesOps.removeFriendFromCategory(
+            testUserId,
+            testGroupId,
+          ),
+        ).thenAnswer((_) async => false);
 
         await viewModel.loadGroupData();
         final result = await viewModel.leaveGroup();
@@ -276,8 +296,9 @@ void main() {
       });
 
       test('throws StateError when group is null', () async {
-        when(() => mockFriendsService.getCategoryById(testGroupId))
-            .thenReturn(null);
+        when(
+          () => mockFriendsService.getCategoryById(testGroupId),
+        ).thenReturn(null);
 
         await viewModel.loadGroupData();
 
@@ -294,13 +315,19 @@ void main() {
         final result = await viewModel.transferGroupOwnership(otherMember);
 
         expect(result, isTrue);
-        verify(() => mockCategoryRepo.transferOwnership(
-            testUserId, testGroupId, otherUserId)).called(1);
+        verify(
+          () => mockCategoryRepo.transferOwnership(
+            testUserId,
+            testGroupId,
+            otherUserId,
+          ),
+        ).called(1);
       });
 
       test('returns false when transfer fails', () async {
-        when(() => mockCategoryRepo.transferOwnership(any(), any(), any()))
-            .thenThrow(Exception('Transfer failed'));
+        when(
+          () => mockCategoryRepo.transferOwnership(any(), any(), any()),
+        ).thenThrow(Exception('Transfer failed'));
 
         await viewModel.loadGroupData();
         final result = await viewModel.transferGroupOwnership(otherMember);
@@ -309,8 +336,9 @@ void main() {
       });
 
       test('throws StateError when group is null', () async {
-        when(() => mockFriendsService.getCategoryById(testGroupId))
-            .thenReturn(null);
+        when(
+          () => mockFriendsService.getCategoryById(testGroupId),
+        ).thenReturn(null);
 
         await viewModel.loadGroupData();
 
@@ -334,12 +362,14 @@ void main() {
         expect(viewModel.canShareMenuWithGroup(), isTrue);
       });
 
-      test('canShareShoppingListWithGroup returns true when authenticated',
-          () async {
-        await viewModel.loadGroupData();
+      test(
+        'canShareShoppingListWithGroup returns true when authenticated',
+        () async {
+          await viewModel.loadGroupData();
 
-        expect(viewModel.canShareShoppingListWithGroup(), isTrue);
-      });
+          expect(viewModel.canShareShoppingListWithGroup(), isTrue);
+        },
+      );
 
       test('sharing methods return false when not authenticated', () async {
         mockPermissionService.setPermissionState(isAuthenticated: false);

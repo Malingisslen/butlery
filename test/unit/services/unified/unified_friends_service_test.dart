@@ -135,10 +135,10 @@ void main() {
 
     test('should return friends list for a user', () async {
       final friendIds = ['friend-1', 'friend-2'];
-      await fakeFirestore
-          .collection('users')
-          .doc('user-456')
-          .set({'displayName': 'Target User', 'friends': friendIds});
+      await fakeFirestore.collection('users').doc('user-456').set({
+        'displayName': 'Target User',
+        'friends': friendIds,
+      });
 
       for (final friendId in friendIds) {
         await fakeFirestore.collection('users').doc(friendId).set({
@@ -156,10 +156,10 @@ void main() {
     });
 
     test('should return empty list when user has no friends', () async {
-      await fakeFirestore
-          .collection('users')
-          .doc('lonely-user')
-          .set({'displayName': 'Lonely User', 'friends': []});
+      await fakeFirestore.collection('users').doc('lonely-user').set({
+        'displayName': 'Lonely User',
+        'friends': [],
+      });
 
       final friends = await utilityOps.getFriendsOfUser('lonely-user');
       expect(friends, isEmpty);
@@ -186,45 +186,49 @@ void main() {
       );
     });
 
-    test('should return recent collaborators from members subcollection',
-        () async {
-      const collaborator1 = 'collab-1';
-      const collaborator2 = 'collab-2';
+    test(
+      'should return recent collaborators from members subcollection',
+      () async {
+        const collaborator1 = 'collab-1';
+        const collaborator2 = 'collab-2';
 
-      await fakeFirestore
-          .collection('shared_content')
-          .doc('recipe-1')
-          .collection('members')
-          .add({
-        'userId': 'test-user-id',
-        'addedBy': collaborator1,
-      });
+        await fakeFirestore
+            .collection('shared_content')
+            .doc('recipe-1')
+            .collection('members')
+            .add({
+              'userId': 'test-user-id',
+              'addedBy': collaborator1,
+            });
 
-      await fakeFirestore
-          .collection('shared_content')
-          .doc('recipe-2')
-          .collection('members')
-          .add({
-        'userId': 'test-user-id',
-        'addedBy': collaborator2,
-      });
+        await fakeFirestore
+            .collection('shared_content')
+            .doc('recipe-2')
+            .collection('members')
+            .add({
+              'userId': 'test-user-id',
+              'addedBy': collaborator2,
+            });
 
-      await fakeFirestore.collection('users').doc(collaborator1).set({
-        'displayName': 'Collaborator 1',
-        'email': 'c1@example.com',
-      });
+        await fakeFirestore.collection('users').doc(collaborator1).set({
+          'displayName': 'Collaborator 1',
+          'email': 'c1@example.com',
+        });
 
-      await fakeFirestore.collection('users').doc(collaborator2).set({
-        'displayName': 'Collaborator 2',
-        'email': 'c2@example.com',
-      });
+        await fakeFirestore.collection('users').doc(collaborator2).set({
+          'displayName': 'Collaborator 2',
+          'email': 'c2@example.com',
+        });
 
-      final collaborators = await utilityOps.getRecentCollaborators();
+        final collaborators = await utilityOps.getRecentCollaborators();
 
-      expect(collaborators.length, equals(2));
-      expect(collaborators.map((c) => c.uid),
-          containsAll([collaborator1, collaborator2]));
-    });
+        expect(collaborators.length, equals(2));
+        expect(
+          collaborators.map((c) => c.uid),
+          containsAll([collaborator1, collaborator2]),
+        );
+      },
+    );
 
     test('should return empty list when no collaborators', () async {
       final collaborators = await utilityOps.getRecentCollaborators();
@@ -250,9 +254,9 @@ void main() {
           .doc('recipe-self')
           .collection('members')
           .add({
-        'userId': 'test-user-id',
-        'addedBy': 'test-user-id',
-      });
+            'userId': 'test-user-id',
+            'addedBy': 'test-user-id',
+          });
 
       final collaborators = await utilityOps.getRecentCollaborators();
       expect(collaborators, isEmpty);
@@ -297,8 +301,10 @@ void main() {
       final collaborators = await utilityOps.getRecentShoppingCollaborators();
 
       expect(collaborators.length, equals(2));
-      expect(collaborators.map((c) => c.uid),
-          containsAll([collaborator1, collaborator2]));
+      expect(
+        collaborators.map((c) => c.uid),
+        containsAll([collaborator1, collaborator2]),
+      );
     });
 
     test('should return empty list when no shopping collaborators', () async {

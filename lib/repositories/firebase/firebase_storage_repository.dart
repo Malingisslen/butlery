@@ -279,8 +279,10 @@ class FirebaseStorageRepository extends BaseStorageRepository
           final storageRef = storage.ref().child(path);
 
           // Create upload task
-          final contentType =
-              ImageFormatUtils.detectMimeTypeWithFallback(imageData, path);
+          final contentType = ImageFormatUtils.detectMimeTypeWithFallback(
+            imageData,
+            path,
+          );
 
           final uploadTask = storageRef.putData(
             imageData,
@@ -371,8 +373,10 @@ class FirebaseStorageRepository extends BaseStorageRepository
     final results = await Future.wait(uploadFutures);
 
     // Filter out null results
-    final successfulUploads =
-        results.where((url) => url != null).cast<String>().toList();
+    final successfulUploads = results
+        .where((url) => url != null)
+        .cast<String>()
+        .toList();
 
     AppLogger.info(
       '✅ Parallel upload completed: ${successfulUploads.length}/$total successful',
@@ -521,8 +525,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
         );
       }
 
-      final reduction =
-          ((1 - (compressed.length / originalSize)) * 100).toStringAsFixed(1);
+      final reduction = ((1 - (compressed.length / originalSize)) * 100)
+          .toStringAsFixed(1);
       AppLogger.info(
         '✅ Image compressed: ${formatBytes(originalSize)} → ${formatBytes(compressed.length)} ($reduction% reduction)',
       );
@@ -608,8 +612,9 @@ class FirebaseStorageRepository extends BaseStorageRepository
 
     // If no extension or unsupported, use .jpg
     final validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    final fileExtension =
-        validExtensions.contains(extension) ? extension : '.jpg';
+    final fileExtension = validExtensions.contains(extension)
+        ? extension
+        : '.jpg';
 
     final filePrefix = prefix ?? 'recipe';
     return '${filePrefix}_${timestamp}_$uniqueId$fileExtension';

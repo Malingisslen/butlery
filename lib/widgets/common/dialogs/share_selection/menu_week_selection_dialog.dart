@@ -43,8 +43,9 @@ class _MenuWeekSelectionDialogState extends State<MenuWeekSelectionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(context.l10n.chatSelectMenuWeek),
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      contentPadding: const EdgeInsets.symmetric(
+        vertical: AppDimensions.spacingS,
+      ),
       content: SizedBox(
         width: double.maxFinite,
         child: RadioGroup<DateTime>(
@@ -57,10 +58,12 @@ class _MenuWeekSelectionDialogState extends State<MenuWeekSelectionDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: _weekStarts
-                .map((weekStart) => RadioListTile<DateTime>(
-                      value: weekStart,
-                      title: Text(_label(context, weekStart)),
-                    ))
+                .map(
+                  (weekStart) => RadioListTile<DateTime>(
+                    value: weekStart,
+                    title: Text(_label(context, weekStart)),
+                  ),
+                )
                 .toList(),
           ),
         ),
@@ -79,8 +82,9 @@ class _MenuWeekSelectionDialogState extends State<MenuWeekSelectionDialog> {
   }
 
   String _label(BuildContext context, DateTime weekStart) {
-    final base =
-        context.l10n.chatMenuWeekOption(IsoWeekUtils.isoWeekNumber(weekStart));
+    final base = context.l10n.chatMenuWeekOption(
+      IsoWeekUtils.isoWeekNumber(weekStart),
+    );
     return weekStart == _currentWeekStart
         ? '$base${context.l10n.chatWeekCurrentSuffix}'
         : base;

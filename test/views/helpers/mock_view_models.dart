@@ -127,7 +127,9 @@ class TestableViewModelBase extends MockBaseViewModel {
 
   /// Measure time for state change operations.
   Future<T> _measureStateChange<T>(
-      String operation, Future<T> Function() fn) async {
+    String operation,
+    Future<T> Function() fn,
+  ) async {
     final stopwatch = Stopwatch()..start();
     try {
       final result = await fn();
@@ -137,7 +139,8 @@ class TestableViewModelBase extends MockBaseViewModel {
     } catch (e) {
       stopwatch.stop();
       _recordStateTransition(
-          '$operation failed (${stopwatch.elapsedMilliseconds}ms)');
+        '$operation failed (${stopwatch.elapsedMilliseconds}ms)',
+      );
       rethrow;
     }
   }
@@ -202,7 +205,8 @@ class TestableAuthViewModel extends TestableViewModelBase
     if (isAuthenticated != null) {
       _isAuthenticated = isAuthenticated;
       _recordStateTransition(
-          'auth_state_${isAuthenticated ? 'authenticated' : 'unauthenticated'}');
+        'auth_state_${isAuthenticated ? 'authenticated' : 'unauthenticated'}',
+      );
     }
     if (isLoading != null) {
       _isLoading = isLoading;
@@ -459,7 +463,8 @@ class TestableRecipeFormViewModel extends TestableViewModelBase
       _isFormValid = isValid;
     }
     _recordStateTransition(
-        'form_validation_${_isFormValid ? 'passed' : 'failed'}');
+      'form_validation_${_isFormValid ? 'passed' : 'failed'}',
+    );
     notifyListeners();
   }
 
@@ -482,7 +487,8 @@ class TestableRecipeFormViewModel extends TestableViewModelBase
         throw Exception(injectedError);
       } else if (shouldFail) {
         setError(
-            'Kunde inte spara recept. Kontrollera din internetanslutning.');
+          'Kunde inte spara recept. Kontrollera din internetanslutning.',
+        );
         setRecipeFormState(isLoading: false);
         throw Exception('Save failed');
       } else {
@@ -596,7 +602,8 @@ class TestableUnifiedShoppingViewModel extends TestableViewModelBase
     _hasConflicts = hasConflicts;
     _pendingChanges = pendingChanges;
     _recordStateTransition(
-        'collaborative_editing_${collaborators.length}_users');
+      'collaborative_editing_${collaborators.length}_users',
+    );
     notifyListeners();
   }
 
@@ -641,7 +648,9 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
 
   // Measure state changes for testing
   Future<T> _measureStateChange<T>(
-      String operation, Future<T> Function() fn) async {
+    String operation,
+    Future<T> Function() fn,
+  ) async {
     final result = await fn();
     _recordStateTransition('$operation completed');
     return result;
@@ -833,10 +842,12 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
         // Toggle completion count
         final isCompleting = _completedItems < _totalItems;
         setCollaborativeShoppingState(
-          completedItems:
-              isCompleting ? _completedItems + 1 : _completedItems - 1,
-          lastActivity:
-              isCompleting ? 'Markerade vara som köpt' : 'Avmarkerade vara',
+          completedItems: isCompleting
+              ? _completedItems + 1
+              : _completedItems - 1,
+          lastActivity: isCompleting
+              ? 'Markerade vara som köpt'
+              : 'Avmarkerade vara',
         );
         _recordStateTransition('item_toggled');
         return true;
@@ -967,7 +978,7 @@ class TestableViewModelFactory {
 
   /// Create testable CollaborativeShoppingViewModel for collaborative shopping tests.
   static TestableCollaborativeShoppingViewModel
-      createCollaborativeShoppingViewModel({
+  createCollaborativeShoppingViewModel({
     String? listId,
     UnifiedShoppingList? currentList,
     bool hasData = true,

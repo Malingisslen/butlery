@@ -25,22 +25,26 @@ void main() {
 
     setUpAll(() async {
       // Register fallback values for mocktail
-      registerFallbackValue(FriendCategory(
-        id: 'test',
-        name: 'Test',
-        description: '',
-        ownerId: 'test',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        friendUserIds: [],
-      ));
-      registerFallbackValue(UserProfile(
-        uid: 'test',
-        displayName: 'Test',
-        email: 'test@example.com',
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        FriendCategory(
+          id: 'test',
+          name: 'Test',
+          description: '',
+          ownerId: 'test',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          friendUserIds: [],
+        ),
+      );
+      registerFallbackValue(
+        UserProfile(
+          uid: 'test',
+          displayName: 'Test',
+          email: 'test@example.com',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -71,7 +75,7 @@ void main() {
         updatedAt: DateTime.now(),
         emoji: '💼',
         friendUserIds: [
-          'friend_1'
+          'friend_1',
         ], // memberIds is a getter that returns friendUserIds
       );
 
@@ -84,7 +88,7 @@ void main() {
         updatedAt: DateTime.now(),
         emoji: '👨‍👩‍👧‍👦',
         friendUserIds: [
-          'friend_2'
+          'friend_2',
         ], // memberIds is a getter that returns friendUserIds
       );
 
@@ -139,16 +143,21 @@ void main() {
           return;
         },
       );
-      when(() => mockParentService.updateCategoryInternal(any(), any()))
-          .thenReturn(null);
-      when(() => mockParentService.removeCategoryInternal(any()))
-          .thenReturn(null);
-      when(() => mockParentService.syncCategoryToFirebaseInternal(any()))
-          .thenAnswer((_) async => {});
-      when(() => mockParentService.deleteCategoryFromFirebaseInternal(any()))
-          .thenAnswer((_) async => {});
-      when(() => mockParentService.addFriendToCategoryInternal(any(), any()))
-          .thenReturn(null);
+      when(
+        () => mockParentService.updateCategoryInternal(any(), any()),
+      ).thenReturn(null);
+      when(
+        () => mockParentService.removeCategoryInternal(any()),
+      ).thenReturn(null);
+      when(
+        () => mockParentService.syncCategoryToFirebaseInternal(any()),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockParentService.deleteCategoryFromFirebaseInternal(any()),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockParentService.addFriendToCategoryInternal(any(), any()),
+      ).thenReturn(null);
       when(() => mockParentService.refresh()).thenAnswer((_) async => {});
 
       // Create operations instance with typed deps from mock
@@ -198,8 +207,9 @@ void main() {
         // Assert
         expect(categoryId, isNotNull);
         verify(() => mockParentService.addCategoryInternal(any())).called(1);
-        verify(() => mockParentService.syncCategoryToFirebaseInternal(any()))
-            .called(1);
+        verify(
+          () => mockParentService.syncCategoryToFirebaseInternal(any()),
+        ).called(1);
       });
 
       test('should not create category with empty name', () async {
@@ -237,13 +247,14 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() =>
-                mockParentService.updateCategoryInternal('category_1', any()))
-            .called(1);
+        verify(
+          () => mockParentService.updateCategoryInternal('category_1', any()),
+        ).called(1);
         // BUG FIX: Should only call syncCategoryToFirebaseInternal once
         // (duplicate call was causing false failure even when Firebase write succeeded)
-        verify(() => mockParentService.syncCategoryToFirebaseInternal(any()))
-            .called(1);
+        verify(
+          () => mockParentService.syncCategoryToFirebaseInternal(any()),
+        ).called(1);
       });
 
       test('should not update non-existent category', () async {
@@ -256,7 +267,8 @@ void main() {
         // Assert
         expect(result, isFalse);
         verifyNever(
-            () => mockParentService.updateCategoryInternal(any(), any()));
+          () => mockParentService.updateCategoryInternal(any(), any()),
+        );
       });
 
       test('should delete category successfully', () async {
@@ -265,10 +277,14 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService
-            .deleteCategoryFromFirebaseInternal('category_1')).called(1);
-        verify(() => mockParentService.removeCategoryInternal('category_1'))
-            .called(1);
+        verify(
+          () => mockParentService.deleteCategoryFromFirebaseInternal(
+            'category_1',
+          ),
+        ).called(1);
+        verify(
+          () => mockParentService.removeCategoryInternal('category_1'),
+        ).called(1);
       });
 
       test('should not delete without permission', () async {
@@ -282,12 +298,19 @@ void main() {
           updatedAt: DateTime.now(),
           friendUserIds: [],
         );
-        mockParentService.updateCategoriesList(
-            [testCategory1, testCategory2, otherCategory]);
+        mockParentService.updateCategoriesList([
+          testCategory1,
+          testCategory2,
+          otherCategory,
+        ]);
         mockPermissionService.setGroupAdmin(
-            groupId: 'other_cat', isAdmin: false);
+          groupId: 'other_cat',
+          isAdmin: false,
+        );
         mockPermissionService.setCanDeleteGroup(
-            groupId: 'other_cat', canDelete: false);
+          groupId: 'other_cat',
+          canDelete: false,
+        );
 
         // Act
         final result = await operations.deleteCategory('other_cat');
@@ -295,7 +318,8 @@ void main() {
         // Assert
         expect(result, isFalse);
         verifyNever(
-            () => mockParentService.deleteCategoryFromFirebaseInternal(any()));
+          () => mockParentService.deleteCategoryFromFirebaseInternal(any()),
+        );
       });
     });
 
@@ -307,39 +331,51 @@ void main() {
         );
 
         // Act
-        final result =
-            await operations.addFriendToCategory('friend_2', 'category_1');
+        final result = await operations.addFriendToCategory(
+          'friend_2',
+          'category_1',
+        );
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.addFriendToCategoryInternal(
-            'friend_2', 'category_1')).called(1);
+        verify(
+          () => mockParentService.addFriendToCategoryInternal(
+            'friend_2',
+            'category_1',
+          ),
+        ).called(1);
       });
 
       test('should not add non-friend to category', () async {
         // Act
-        final result =
-            await operations.addFriendToCategory('friend_3', 'category_1');
+        final result = await operations.addFriendToCategory(
+          'friend_3',
+          'category_1',
+        );
 
         // Assert
         expect(result, isFalse);
         verifyNever(
-            () => mockParentService.addFriendToCategoryInternal(any(), any()));
+          () => mockParentService.addFriendToCategoryInternal(any(), any()),
+        );
       });
 
       test('should remove friend from category', () async {
         // Act
-        final result =
-            await operations.removeFriendFromCategory('friend_1', 'category_1');
+        final result = await operations.removeFriendFromCategory(
+          'friend_1',
+          'category_1',
+        );
 
         // Assert
         expect(result, isTrue);
-        verify(() =>
-                mockParentService.updateCategoryInternal('category_1', any()))
-            .called(1);
+        verify(
+          () => mockParentService.updateCategoryInternal('category_1', any()),
+        ).called(1);
         // Single sync call after removing friend from category
-        verify(() => mockParentService.syncCategoryToFirebaseInternal(any()))
-            .called(1);
+        verify(
+          () => mockParentService.syncCategoryToFirebaseInternal(any()),
+        ).called(1);
       });
 
       test('should move friend between categories', () async {
@@ -492,8 +528,11 @@ void main() {
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         );
-        mockParentService
-            .updateFriendsList([testFriend1, testFriend2, friend3]);
+        mockParentService.updateFriendsList([
+          testFriend1,
+          testFriend2,
+          friend3,
+        ]);
 
         // Act
         final uncategorized = operations.getUncategorizedFriends();
@@ -509,7 +548,9 @@ void main() {
         // Act & Assert
         expect(operations.isFriendInCategory('friend_1', 'category_1'), isTrue);
         expect(
-            operations.isFriendInCategory('friend_2', 'category_1'), isFalse);
+          operations.isFriendInCategory('friend_2', 'category_1'),
+          isFalse,
+        );
       });
 
       test('should get category member count', () {
@@ -533,7 +574,7 @@ void main() {
         );
         mockParentService.updateCategoriesList([
           emptyCategory,
-          testCategory1
+          testCategory1,
         ]); // Include testCategory1 for second assertion
 
         // Act & Assert
@@ -555,14 +596,16 @@ void main() {
     });
 
     group('Privacy Features', () {
-      test('should handle privacy settings gracefully (not yet implemented)',
-          () async {
-        // Production code logs a warning and returns without error
-        await expectLater(
-          operations.setCategoryPrivacy('category_1', isPublic: true),
-          completes,
-        );
-      });
+      test(
+        'should handle privacy settings gracefully (not yet implemented)',
+        () async {
+          // Production code logs a warning and returns without error
+          await expectLater(
+            operations.setCategoryPrivacy('category_1', isPublic: true),
+            completes,
+          );
+        },
+      );
     });
 
     group('ViewModel Compatibility', () {
@@ -581,8 +624,10 @@ void main() {
         );
 
         // Act
-        final result =
-            await operations.assignFriendToCategory('friend_2', 'category_1');
+        final result = await operations.assignFriendToCategory(
+          'friend_2',
+          'category_1',
+        );
 
         // Assert
         expect(result, isTrue);
@@ -591,7 +636,9 @@ void main() {
       test('should not add friend to non-existent category', () async {
         // Act
         final result = await operations.assignFriendToCategory(
-            'friend_1', 'invalid_category');
+          'friend_1',
+          'invalid_category',
+        );
 
         // Assert
         expect(result, isFalse);

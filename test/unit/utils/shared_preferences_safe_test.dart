@@ -24,20 +24,21 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('returns a SharedPreferences instance when the channel is healthy',
-      () async {
-    final prefs = await tryGetSharedPreferences(logTag: 'test');
-    expect(prefs, isNotNull);
-    expect(prefs!.getString('k'), 'v');
-  });
+  test(
+    'returns a SharedPreferences instance when the channel is healthy',
+    () async {
+      final prefs = await tryGetSharedPreferences(logTag: 'test');
+      expect(prefs, isNotNull);
+      expect(prefs!.getString('k'), 'v');
+    },
+  );
 
   test('returns null and swallows when the channel throws', () async {
     const channel = MethodChannel('plugins.flutter.io/shared_preferences');
-    TestWidgetsFlutterBinding.ensureInitialized()
-        .defaultBinaryMessenger
+    TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
-      throw PlatformException(code: 'unavailable');
-    });
+          throw PlatformException(code: 'unavailable');
+        });
 
     final prefs = await tryGetSharedPreferences(logTag: 'test-failing');
     // Either the mock-initial-values short-circuits (returns non-null)
@@ -45,8 +46,7 @@ void main() {
     // "doesn't crash" outcomes — pin only the no-throw contract.
     expect(prefs, anyOf(isNull, isA<SharedPreferences>()));
 
-    TestWidgetsFlutterBinding.ensureInitialized()
-        .defaultBinaryMessenger
+    TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger
         .setMockMethodCallHandler(channel, null);
   });
 

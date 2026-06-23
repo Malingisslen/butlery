@@ -82,25 +82,23 @@ class ParseResult {
     ParsedRecipe recipe, {
     bool fromCache = false,
     required Duration totalTime,
-  }) =>
-      ParseResult(
-        recipe: recipe,
-        success: true,
-        fromCache: fromCache,
-        totalTime: totalTime,
-      );
+  }) => ParseResult(
+    recipe: recipe,
+    success: true,
+    fromCache: fromCache,
+    totalTime: totalTime,
+  );
 
   factory ParseResult.failure(
     String error, {
     required Duration totalTime,
     String? userMessage,
-  }) =>
-      ParseResult(
-        success: false,
-        error: error,
-        userMessage: userMessage,
-        totalTime: totalTime,
-      );
+  }) => ParseResult(
+    success: false,
+    error: error,
+    userMessage: userMessage,
+    totalTime: totalTime,
+  );
 }
 
 /// Main recipe parsing service with tier-based architecture.
@@ -140,7 +138,8 @@ class RecipeParserService extends BaseService {
   LocalRecipeCache get _cache {
     if (_cacheField == null) {
       throw StateError(
-          'RecipeParserService not initialized - call init() first');
+        'RecipeParserService not initialized - call init() first',
+      );
     }
     return _cacheField!;
   }
@@ -183,16 +182,17 @@ class RecipeParserService extends BaseService {
     // without relying on production tier implementations. When null, the
     // production factory builds the standard 4-tier stack.
     List<ParsingTier>? tiers,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _siteConfigRepository = siteConfigRepository,
-        _llmService = llmService,
-        _neuralLineClassifier = neuralLineClassifier,
-        _cacheField = cache {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _siteConfigRepository = siteConfigRepository,
+       _llmService = llmService,
+       _neuralLineClassifier = neuralLineClassifier,
+       _cacheField = cache {
     // Shared strategy: CRF when weights available, regex fallback
     final strategy = ingredientStrategy ?? IngredientParsingStrategy();
     _ingredientStrategy = strategy;
 
-    _tiers = tiers ??
+    _tiers =
+        tiers ??
         [
           SchemaOrgTier(ingredientStrategy: strategy),
           SiteConfigTier(
@@ -306,11 +306,14 @@ class RecipeParserService extends BaseService {
     var effectiveThreshold = qualityThreshold;
     var isUnknownDomain = false;
     if (_siteConfigRepository != null && context.domain != null) {
-      final config =
-          await _siteConfigRepository.getConfigIfExists(context.domain!);
+      final config = await _siteConfigRepository.getConfigIfExists(
+        context.domain!,
+      );
       if (config != null && config.isReliable) {
-        effectiveThreshold = (qualityThreshold + _reliableDomainBoost)
-            .clamp(0.0, _maxEffectiveThreshold);
+        effectiveThreshold = (qualityThreshold + _reliableDomainBoost).clamp(
+          0.0,
+          _maxEffectiveThreshold,
+        );
       } else if (config == null && context.source == ImportSource.url) {
         // Track domains without site configs to prioritize adding them
         isUnknownDomain = true;
@@ -348,8 +351,9 @@ class RecipeParserService extends BaseService {
       await _cacheResult(context, result);
     }
 
-    final successfulTier =
-        tierData.tierResults.where((t) => t.success).lastOrNull;
+    final successfulTier = tierData.tierResults
+        .where((t) => t.success)
+        .lastOrNull;
     _logParseEvent(
       url: url,
       source: context.source.name,
@@ -411,8 +415,9 @@ class RecipeParserService extends BaseService {
       );
     }
 
-    final successfulTier =
-        tierData.tierResults.where((t) => t.success).lastOrNull;
+    final successfulTier = tierData.tierResults
+        .where((t) => t.success)
+        .lastOrNull;
     _logParseEvent(
       url: null,
       source: source.name,
@@ -511,9 +516,9 @@ class RecipeParserService extends BaseService {
     return results
         .where((r) => r.success && r.recipe != null)
         .fold<TierResult?>(null, (best, r) {
-      if (best == null || r.quality > best.quality) return r;
-      return best;
-    });
+          if (best == null || r.quality > best.quality) return r;
+          return best;
+        });
   }
 
   /// Extract good fields from the best partial result and set them on the
@@ -541,8 +546,9 @@ class RecipeParserService extends BaseService {
       goodFields['portions'] = recipe.portions.value;
     }
     if (recipe.ingredients.hasValue && !weakFields.contains('ingredients')) {
-      goodFields['ingredients'] =
-          recipe.ingredients.value!.map((i) => i.originalLine).toList();
+      goodFields['ingredients'] = recipe.ingredients.value!
+          .map((i) => i.originalLine)
+          .toList();
     }
     if (recipe.instructions.hasValue && !weakFields.contains('instructions')) {
       goodFields['instructions'] = recipe.instructions.value;
@@ -587,8 +593,10 @@ class RecipeParserService extends BaseService {
     final originalLines = parsed.map((p) => p.originalLine).toList();
 
     // Get uncertain lines (CRF → BERT NER → remaining for LLM)
-    final uncertainLines =
-        await _ingredientStrategy.getUncertainLines(parsed, originalLines);
+    final uncertainLines = await _ingredientStrategy.getUncertainLines(
+      parsed,
+      originalLines,
+    );
 
     if (uncertainLines.isEmpty) return false;
 
@@ -630,9 +638,11 @@ class RecipeParserService extends BaseService {
       final patchedList = List<ParsedIngredient>.from(parsed);
       final uncertainIndices = uncertainLines.keys.toList();
 
-      for (var i = 0;
-          i < uncertainIndices.length && i < llmIngredients.length;
-          i++) {
+      for (
+        var i = 0;
+        i < uncertainIndices.length && i < llmIngredients.length;
+        i++
+      ) {
         final idx = uncertainIndices[i];
         final llmIng = llmIngredients[i];
         patchedList[idx] = parsedIngredientFromExtracted(
@@ -642,7 +652,8 @@ class RecipeParserService extends BaseService {
       }
 
       // Recalculate ingredient confidence
-      final avgConfidence = patchedList.fold<double>(
+      final avgConfidence =
+          patchedList.fold<double>(
             0.0,
             (sum, p) => sum + p.confidence.score,
           ) /
@@ -676,12 +687,14 @@ class RecipeParserService extends BaseService {
       );
 
       if (newQuality >= (qualityThreshold - discount)) {
-        results.add(TierResult.success(
-          tierName: _selectiveEnhanceTierName,
-          recipe: patchedRecipe,
-          duration: stopwatch.elapsed,
-          costSek: response.estimatedCost,
-        ));
+        results.add(
+          TierResult.success(
+            tierName: _selectiveEnhanceTierName,
+            recipe: patchedRecipe,
+            duration: stopwatch.elapsed,
+            costSek: response.estimatedCost,
+          ),
+        );
         return true;
       }
 
@@ -716,8 +729,9 @@ class RecipeParserService extends BaseService {
     ];
 
     for (final reason in priority) {
-      final match =
-          _lastTierFailures.where((r) => r.failureReason == reason).firstOrNull;
+      final match = _lastTierFailures
+          .where((r) => r.failureReason == reason)
+          .firstOrNull;
       if (match != null) {
         return reason.userMessage;
       }
@@ -885,12 +899,14 @@ class RecipeParserService extends BaseService {
       usedLlm: usedLlm,
       totalCostSek: totalCostSek,
       tierAttempts: tierResults
-          ?.map((t) => <String, dynamic>{
-                'tier': t.tierName,
-                'success': t.success,
-                'quality': t.quality,
-                'durationMs': t.duration.inMilliseconds,
-              })
+          ?.map(
+            (t) => <String, dynamic>{
+              'tier': t.tierName,
+              'success': t.success,
+              'quality': t.quality,
+              'durationMs': t.duration.inMilliseconds,
+            },
+          )
           .toList(),
       unknownDomain: unknownDomain,
       promptVersion: promptVersion,

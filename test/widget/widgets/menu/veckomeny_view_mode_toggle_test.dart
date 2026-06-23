@@ -23,8 +23,9 @@ import '../../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('VeckomenyViewModeToggle', () {
-    testWidgets('tapping the calendar segment fires onSelect(kalender)',
-        (tester) async {
+    testWidgets('tapping the calendar segment fires onSelect(kalender)', (
+      tester,
+    ) async {
       VeckomenyViewMode? selected;
 
       await tester.pumpWidget(
@@ -44,8 +45,9 @@ void main() {
       expect(selected, VeckomenyViewMode.kalender);
     });
 
-    testWidgets('tapping the list segment fires onSelect(lista)',
-        (tester) async {
+    testWidgets('tapping the list segment fires onSelect(lista)', (
+      tester,
+    ) async {
       VeckomenyViewMode? selected;
 
       await tester.pumpWidget(
@@ -63,8 +65,9 @@ void main() {
       expect(selected, VeckomenyViewMode.lista);
     });
 
-    testWidgets('active segment is announced selected, inactive is not',
-        (tester) async {
+    testWidgets('active segment is announced selected, inactive is not', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
@@ -96,19 +99,22 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('active segment background resolves from the live theme',
-        (tester) async {
+    testWidgets('active segment background resolves from the live theme', (
+      tester,
+    ) async {
       late ColorScheme cs;
 
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: Builder(builder: (context) {
-            cs = Theme.of(context).colorScheme;
-            return const VeckomenyViewModeToggle(
-              mode: VeckomenyViewMode.kalender,
-              onSelect: _noop,
-            );
-          }),
+          child: Builder(
+            builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return const VeckomenyViewModeToggle(
+                mode: VeckomenyViewMode.kalender,
+                onSelect: _noop,
+              );
+            },
+          ),
         ),
       );
 

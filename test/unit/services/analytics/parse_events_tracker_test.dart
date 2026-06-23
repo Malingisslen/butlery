@@ -27,10 +27,12 @@ void main() {
 
     setUp(() {
       repo = _MockAnalyticsRepo();
-      when(() => repo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
 
       consent = _MockConsentService();
       when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
@@ -48,24 +50,30 @@ void main() {
     });
 
     group('logTierSucceeded', () {
-      test('emits import_tier_succeeded with site_config tier params',
-          () async {
-        await tracker.logTierSucceeded(
-          tier: ParseEventsTracker.tierSiteConfig,
-          durationMs: 142,
-          platformBucket: 'ica',
-        );
+      test(
+        'emits import_tier_succeeded with site_config tier params',
+        () async {
+          await tracker.logTierSucceeded(
+            tier: ParseEventsTracker.tierSiteConfig,
+            durationMs: 142,
+            platformBucket: 'ica',
+          );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_succeeded',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          final captured =
+              verify(
+                    () => repo.logEvent(
+                      name: 'import_tier_succeeded',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['tier'], 'site_config');
-        expect(captured['duration_ms'], 142);
-        expect(captured['platform_bucket'], 'ica');
-        expect(captured.containsKey('session_id'), isFalse);
-      });
+          expect(captured['tier'], 'site_config');
+          expect(captured['duration_ms'], 142);
+          expect(captured['platform_bucket'], 'ica');
+          expect(captured.containsKey('session_id'), isFalse);
+        },
+      );
 
       test('emits import_tier_succeeded with regex tier label', () async {
         await tracker.logTierSucceeded(
@@ -74,10 +82,14 @@ void main() {
           platformBucket: 'other',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_succeeded',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_succeeded',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['tier'], 'regex');
       });
@@ -89,10 +101,14 @@ void main() {
           platformBucket: 'other',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_succeeded',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_succeeded',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['tier'], 'llm');
         expect(captured['duration_ms'], 1820);
@@ -106,10 +122,14 @@ void main() {
           sessionId: 'sess-abc-123',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_succeeded',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_succeeded',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['session_id'], 'sess-abc-123');
       });
@@ -121,10 +141,14 @@ void main() {
           platformBucket: 'other',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_succeeded',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_succeeded',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['duration_ms'], 0);
       });
@@ -138,10 +162,14 @@ void main() {
           platformBucket: 'allrecipes',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_failed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_failed',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['tier'], 'site_config');
         expect(captured['duration_ms'], 75);
@@ -155,10 +183,14 @@ void main() {
           platformBucket: 'other',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_failed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_failed',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['tier'], 'regex');
       });
@@ -170,10 +202,14 @@ void main() {
           platformBucket: 'other',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'import_tier_failed',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'import_tier_failed',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['tier'], 'llm');
       });
@@ -194,10 +230,12 @@ void main() {
           platformBucket: 'other',
         );
 
-        verifyNever(() => repo.logEvent(
-              name: any(named: 'name'),
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: any(named: 'name'),
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
     });
   });

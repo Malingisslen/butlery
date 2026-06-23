@@ -192,11 +192,15 @@ void main() {
       test('should validate instructions list correctly', () {
         // Valid instructions
         expect(
-            validator.isValidInstructions(['Mix ingredients', 'Bake']), isTrue);
+          validator.isValidInstructions(['Mix ingredients', 'Bake']),
+          isTrue,
+        );
         expect(validator.isValidInstructions(['single step']), isTrue);
         expect(validator.isValidInstructions(['', 'valid step']), isTrue);
         expect(
-            validator.isValidInstructions(['  spaced instruction  ']), isTrue);
+          validator.isValidInstructions(['  spaced instruction  ']),
+          isTrue,
+        );
 
         // Invalid instructions
         expect(validator.isValidInstructions([]), isFalse);

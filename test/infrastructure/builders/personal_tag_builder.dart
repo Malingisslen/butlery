@@ -125,11 +125,13 @@ class PersonalTagRuleBuilder {
     String value, {
     ConditionOperator operator = ConditionOperator.contains,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.ingredient,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.ingredient,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -138,11 +140,13 @@ class PersonalTagRuleBuilder {
     String value, {
     ConditionOperator operator = ConditionOperator.contains,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.property,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.property,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -151,11 +155,13 @@ class PersonalTagRuleBuilder {
     String value, {
     ConditionOperator operator = ConditionOperator.contains,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.keyword,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.keyword,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -164,11 +170,13 @@ class PersonalTagRuleBuilder {
     String value, {
     ConditionOperator operator = ConditionOperator.contains,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.sourceUrl,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.sourceUrl,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -177,11 +185,13 @@ class PersonalTagRuleBuilder {
     String value, {
     ConditionOperator operator = ConditionOperator.equals,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.cuisine,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.cuisine,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -190,11 +200,13 @@ class PersonalTagRuleBuilder {
     String value, {
     ConditionOperator operator = ConditionOperator.equals,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.dietary,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.dietary,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -203,11 +215,13 @@ class PersonalTagRuleBuilder {
     num value, {
     ConditionOperator operator = ConditionOperator.lessThan,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.time,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.time,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -216,11 +230,13 @@ class PersonalTagRuleBuilder {
     num value, {
     ConditionOperator operator = ConditionOperator.greaterThanOrEqual,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.rating,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.rating,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 
@@ -229,11 +245,13 @@ class PersonalTagRuleBuilder {
     num value, {
     ConditionOperator operator = ConditionOperator.withinDays,
   }) {
-    conditions.add(RuleCondition(
-      type: ConditionType.recency,
-      operator: operator,
-      value: value,
-    ));
+    conditions.add(
+      RuleCondition(
+        type: ConditionType.recency,
+        operator: operator,
+        value: value,
+      ),
+    );
     return this;
   }
 

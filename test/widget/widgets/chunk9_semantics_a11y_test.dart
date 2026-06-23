@@ -32,81 +32,84 @@ void main() {
   });
 
   group('BUT-739 chunk-9 widget Semantics labels', () {
-    testWidgets('PollMessageWidget — text option exposes localized vote label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+    testWidgets(
+      'PollMessageWidget — text option exposes localized vote label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      final poll = Poll(
-        id: 'poll_1',
-        question: 'Vad ska vi äta?',
-        options: const [
-          PollOption(id: 'opt_1', text: 'Pasta'),
-          PollOption(id: 'opt_2', text: 'Sallad'),
-        ],
-        creatorId: 'u_1',
-        createdAt: DateTime(2026, 4, 29),
-      );
+        final poll = Poll(
+          id: 'poll_1',
+          question: 'Vad ska vi äta?',
+          options: const [
+            PollOption(id: 'opt_1', text: 'Pasta'),
+            PollOption(id: 'opt_2', text: 'Sallad'),
+          ],
+          creatorId: 'u_1',
+          createdAt: DateTime(2026, 4, 29),
+        );
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: PollMessageWidget(
-            poll: poll,
-            currentUserId: 'u_1',
-            isFromCurrentUser: true,
-            onVote: (_) {},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: PollMessageWidget(
+              poll: poll,
+              currentUserId: 'u_1',
+              isFromCurrentUser: true,
+              onVote: (_) {},
+            ),
           ),
-        ),
-      );
+        );
 
-      // Swedish: "Rösta på Pasta"
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Rösta på Pasta')),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Rösta på Sallad')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        // Swedish: "Rösta på Pasta"
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Rösta på Pasta')),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Rösta på Sallad')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'PollMessageWidget — recipe option thumbnail exposes open-recipe label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'PollMessageWidget — recipe option thumbnail exposes open-recipe label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      final poll = Poll(
-        id: 'poll_2',
-        question: 'Vad ska vi äta?',
-        options: const [
-          PollOption(
-            id: 'opt_a',
-            text: 'Köttbullar',
-            recipeId: 'r_kb',
+        final poll = Poll(
+          id: 'poll_2',
+          question: 'Vad ska vi äta?',
+          options: const [
+            PollOption(
+              id: 'opt_a',
+              text: 'Köttbullar',
+              recipeId: 'r_kb',
+            ),
+          ],
+          creatorId: 'u_1',
+          createdAt: DateTime(2026, 4, 29),
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: PollMessageWidget(
+              poll: poll,
+              currentUserId: 'u_1',
+              isFromCurrentUser: true,
+              onVote: (_) {},
+              onRecipeTap: (_) {},
+            ),
           ),
-        ],
-        creatorId: 'u_1',
-        createdAt: DateTime(2026, 4, 29),
-      );
+        );
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: PollMessageWidget(
-            poll: poll,
-            currentUserId: 'u_1',
-            isFromCurrentUser: true,
-            onVote: (_) {},
-            onRecipeTap: (_) {},
-          ),
-        ),
-      );
-
-      // The recipe-thumbnail wrapper announces "Visa receptet Köttbullar".
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Visa receptet Köttbullar')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        // The recipe-thumbnail wrapper announces "Visa receptet Köttbullar".
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Visa receptet Köttbullar')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
   });
 }

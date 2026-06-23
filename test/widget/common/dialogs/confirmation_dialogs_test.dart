@@ -17,12 +17,12 @@ import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 /// Wraps a child in MaterialApp with the project's l10n delegates so the
 /// dialogs can resolve `context.l10n.commonCancel` etc.
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 /// Gives the tester a generous logical surface so dialogs that contain
 /// scroll viewports (showListSelectionDialog) and intrinsic-width-incompatible
@@ -56,17 +56,22 @@ Widget _triggerButton<T>({
 
 void main() {
   group('showConfirmationDialog', () {
-    testWidgets('renders title, message, and confirm button label',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
-          ctx,
-          title: 'Bekräfta',
-          message: 'Är du säker?',
-          confirmText: 'Ja, gör det',
+    testWidgets('renders title, message, and confirm button label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
+              ctx,
+              title: 'Bekräfta',
+              message: 'Är du säker?',
+              confirmText: 'Ja, gör det',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -76,14 +81,18 @@ void main() {
     });
 
     testWidgets('default cancel label is the localized Avbryt', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
+              ctx,
+              title: 't',
+              message: 'm',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -91,17 +100,22 @@ void main() {
       expect(find.text('Avbryt'), findsOneWidget);
     });
 
-    testWidgets('custom cancelText is used instead of the localized default',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
-          cancelText: 'Nej tack',
+    testWidgets('custom cancelText is used instead of the localized default', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
+              ctx,
+              title: 't',
+              message: 'm',
+              cancelText: 'Nej tack',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -111,15 +125,19 @@ void main() {
 
     testWidgets('confirm tap resolves the future with true', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
-          confirmText: 'Bekräfta',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
+              ctx,
+              title: 't',
+              message: 'm',
+              confirmText: 'Bekräfta',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -131,15 +149,19 @@ void main() {
 
     testWidgets('cancel tap resolves the future with false', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
-          cancelText: 'Avbryt',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) => ConfirmationDialogs.showConfirmationDialog(
+              ctx,
+              title: 't',
+              message: 'm',
+              cancelText: 'Avbryt',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -153,15 +175,19 @@ void main() {
 
   group('showDestructiveConfirmationDialog', () {
     testWidgets('renders the title and message', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showDestructiveConfirmationDialog(
-          ctx,
-          title: 'Radera receptet',
-          message: 'Detta kan inte ångras',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showDestructiveConfirmationDialog(
+                  ctx,
+                  title: 'Radera receptet',
+                  message: 'Detta kan inte ångras',
+                ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -179,16 +205,20 @@ void main() {
 
     testWidgets('confirm tap resolves the future with true', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showDestructiveConfirmationDialog(
-          ctx,
-          title: 'Radera',
-          message: 'Säkert?',
-          confirmText: 'Ta bort',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showDestructiveConfirmationDialog(
+                  ctx,
+                  title: 'Radera',
+                  message: 'Säkert?',
+                  confirmText: 'Ta bort',
+                ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -200,16 +230,20 @@ void main() {
 
     testWidgets('cancel tap resolves the future with false', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showDestructiveConfirmationDialog(
-          ctx,
-          title: 'Radera',
-          message: 'Säkert?',
-          cancelText: 'Avbryt',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showDestructiveConfirmationDialog(
+                  ctx,
+                  title: 'Radera',
+                  message: 'Säkert?',
+                  cancelText: 'Avbryt',
+                ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -231,14 +265,19 @@ void main() {
     }
 
     testWidgets('renders title, message, hint, and a spinner', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showLoadingConfirmationDialog(
-          ctx,
-          title: 'Vänta',
-          message: 'Det kan dröja',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showLoadingConfirmationDialog(
+                  ctx,
+                  title: 'Vänta',
+                  message: 'Det kan dröja',
+                ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await openAndPump(tester);
 
       expect(find.text('Vänta'), findsOneWidget);
@@ -249,14 +288,19 @@ void main() {
     });
 
     testWidgets('default action labels come from l10n', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showLoadingConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showLoadingConfirmationDialog(
+                  ctx,
+                  title: 't',
+                  message: 'm',
+                ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await openAndPump(tester);
 
       // commonCancel + commonContinue
@@ -265,16 +309,21 @@ void main() {
     });
 
     testWidgets('custom button labels override defaults', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showLoadingConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
-          confirmText: 'Kör',
-          cancelText: 'Stopp',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showLoadingConfirmationDialog(
+                  ctx,
+                  title: 't',
+                  message: 'm',
+                  confirmText: 'Kör',
+                  cancelText: 'Stopp',
+                ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await openAndPump(tester);
 
       expect(find.text('Kör'), findsOneWidget);
@@ -285,15 +334,20 @@ void main() {
 
     testWidgets('confirm tap resolves the future with true', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showLoadingConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
-          confirmText: 'Kör',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showLoadingConfirmationDialog(
+                  ctx,
+                  title: 't',
+                  message: 'm',
+                  confirmText: 'Kör',
+                ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await openAndPump(tester);
 
       await tester.tap(find.text('Kör'));
@@ -307,15 +361,20 @@ void main() {
 
     testWidgets('cancel tap resolves the future with false', (tester) async {
       bool? result;
-      await tester.pumpWidget(_wrap(_triggerButton<bool>(
-        openDialog: (ctx) => ConfirmationDialogs.showLoadingConfirmationDialog(
-          ctx,
-          title: 't',
-          message: 'm',
-          cancelText: 'Stopp',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool>(
+            openDialog: (ctx) =>
+                ConfirmationDialogs.showLoadingConfirmationDialog(
+                  ctx,
+                  title: 't',
+                  message: 'm',
+                  cancelText: 'Stopp',
+                ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await openAndPump(tester);
 
       await tester.tap(find.text('Stopp'));
@@ -344,138 +403,179 @@ void main() {
       assert(ConfirmationDialogs.showListSelectionDialog is Function);
     });
 
-    testWidgets('renders title, optional message, and one tile per item',
-        // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-        skip: true, (tester) async {
-      _useLargeSurface(tester);
-      await tester.pumpWidget(_wrap(_triggerButton<int?>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showListSelectionDialog<String>(
-          ctx,
-          title: 'Välj en',
-          message: 'Plocka ett alternativ',
-          items: const ['Alfa', 'Beta', 'Gamma'],
-          itemBuilder: (s) => s,
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'renders title, optional message, and one tile per item',
+      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
+      skip: true,
+      (tester) async {
+        _useLargeSurface(tester);
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<int?>(
+              openDialog: (ctx) =>
+                  ConfirmationDialogs.showListSelectionDialog<String>(
+                    ctx,
+                    title: 'Välj en',
+                    message: 'Plocka ett alternativ',
+                    items: const ['Alfa', 'Beta', 'Gamma'],
+                    itemBuilder: (s) => s,
+                  ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Välj en'), findsOneWidget);
-      expect(find.text('Plocka ett alternativ'), findsOneWidget);
-      expect(find.text('Alfa'), findsOneWidget);
-      expect(find.text('Beta'), findsOneWidget);
-      expect(find.text('Gamma'), findsOneWidget);
-      expect(find.byType(ListTile), findsNWidgets(3));
-    });
+        expect(find.text('Välj en'), findsOneWidget);
+        expect(find.text('Plocka ett alternativ'), findsOneWidget);
+        expect(find.text('Alfa'), findsOneWidget);
+        expect(find.text('Beta'), findsOneWidget);
+        expect(find.text('Gamma'), findsOneWidget);
+        expect(find.byType(ListTile), findsNWidgets(3));
+      },
+    );
 
-    testWidgets('itemBuilder controls the visible text per item',
-        // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-        skip: true, (tester) async {
-      _useLargeSurface(tester);
-      await tester.pumpWidget(_wrap(_triggerButton<int?>(
-        openDialog: (ctx) => ConfirmationDialogs.showListSelectionDialog<int>(
-          ctx,
-          title: 'Pick',
-          items: const [1, 2, 3],
-          itemBuilder: (n) => 'Item #$n',
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'itemBuilder controls the visible text per item',
+      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
+      skip: true,
+      (tester) async {
+        _useLargeSurface(tester);
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<int?>(
+              openDialog: (ctx) =>
+                  ConfirmationDialogs.showListSelectionDialog<int>(
+                    ctx,
+                    title: 'Pick',
+                    items: const [1, 2, 3],
+                    itemBuilder: (n) => 'Item #$n',
+                  ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Item #1'), findsOneWidget);
-      expect(find.text('Item #2'), findsOneWidget);
-      expect(find.text('Item #3'), findsOneWidget);
-    });
+        expect(find.text('Item #1'), findsOneWidget);
+        expect(find.text('Item #2'), findsOneWidget);
+        expect(find.text('Item #3'), findsOneWidget);
+      },
+    );
 
-    testWidgets('tapping a tile resolves the future with its index',
-        // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-        skip: true, (tester) async {
-      _useLargeSurface(tester);
-      int? result;
-      await tester.pumpWidget(_wrap(_triggerButton<int?>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showListSelectionDialog<String>(
-          ctx,
-          title: 'Pick',
-          items: const ['Alfa', 'Beta', 'Gamma'],
-          itemBuilder: (s) => s,
-        ),
-        onResult: (v) => result = v,
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'tapping a tile resolves the future with its index',
+      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
+      skip: true,
+      (tester) async {
+        _useLargeSurface(tester);
+        int? result;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<int?>(
+              openDialog: (ctx) =>
+                  ConfirmationDialogs.showListSelectionDialog<String>(
+                    ctx,
+                    title: 'Pick',
+                    items: const ['Alfa', 'Beta', 'Gamma'],
+                    itemBuilder: (s) => s,
+                  ),
+              onResult: (v) => result = v,
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Beta'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Beta'));
+        await tester.pumpAndSettle();
 
-      expect(result, 1);
-    });
+        expect(result, 1);
+      },
+    );
 
-    testWidgets('cancel button resolves the future with null',
-        // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-        skip: true, (tester) async {
-      _useLargeSurface(tester);
-      int? result = -1;
-      await tester.pumpWidget(_wrap(_triggerButton<int?>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showListSelectionDialog<String>(
-          ctx,
-          title: 'Pick',
-          items: const ['A'],
-          itemBuilder: (s) => s,
-          cancelText: 'Avbryt',
-        ),
-        onResult: (v) => result = v,
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'cancel button resolves the future with null',
+      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
+      skip: true,
+      (tester) async {
+        _useLargeSurface(tester);
+        int? result = -1;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<int?>(
+              openDialog: (ctx) =>
+                  ConfirmationDialogs.showListSelectionDialog<String>(
+                    ctx,
+                    title: 'Pick',
+                    items: const ['A'],
+                    itemBuilder: (s) => s,
+                    cancelText: 'Avbryt',
+                  ),
+              onResult: (v) => result = v,
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Avbryt'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Avbryt'));
+        await tester.pumpAndSettle();
 
-      expect(result, isNull);
-    });
+        expect(result, isNull);
+      },
+    );
 
-    testWidgets('omitting message hides the message paragraph',
-        // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
-        skip: true, (tester) async {
-      _useLargeSurface(tester);
-      await tester.pumpWidget(_wrap(_triggerButton<int?>(
-        openDialog: (ctx) =>
-            ConfirmationDialogs.showListSelectionDialog<String>(
-          ctx,
-          title: 'NoMsg',
-          items: const ['A'],
-          itemBuilder: (s) => s,
-        ),
-        onResult: (_) {},
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'omitting message hides the message paragraph',
+      // SKIP REASON: AlertDialog+ListView intrinsic-width incompat — see group rationale
+      skip: true,
+      (tester) async {
+        _useLargeSurface(tester);
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<int?>(
+              openDialog: (ctx) =>
+                  ConfirmationDialogs.showListSelectionDialog<String>(
+                    ctx,
+                    title: 'NoMsg',
+                    items: const ['A'],
+                    itemBuilder: (s) => s,
+                  ),
+              onResult: (_) {},
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
 
-      // Title still there, but no extra paragraph above the list.
-      expect(find.text('NoMsg'), findsOneWidget);
-      // Only the title + the single tile carry visible text widgets in the
-      // dialog content area.
-      expect(find.text('A'), findsOneWidget);
-    });
+        // Title still there, but no extra paragraph above the list.
+        expect(find.text('NoMsg'), findsOneWidget);
+        // Only the title + the single tile carry visible text widgets in the
+        // dialog content area.
+        expect(find.text('A'), findsOneWidget);
+      },
+    );
   });
 
   group('showTextInputDialog', () {
-    testWidgets('renders title, hint, and a focused text field',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
-          ctx,
-          title: 'Namnge',
-          hintText: 'Skriv något',
+    testWidgets('renders title, hint, and a focused text field', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
+              ctx,
+              title: 'Namnge',
+              hintText: 'Skriv något',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -485,14 +585,18 @@ void main() {
     });
 
     testWidgets('initialValue prefills the controller', (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
-          ctx,
-          title: 't',
-          initialValue: 'förvalt',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
+              ctx,
+              title: 't',
+              initialValue: 'förvalt',
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -502,14 +606,18 @@ void main() {
 
     testWidgets('confirm tap returns the trimmed entered text', (tester) async {
       String? result;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
-          ctx,
-          title: 't',
-          confirmText: 'Spara',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
+              ctx,
+              title: 't',
+              confirmText: 'Spara',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -523,14 +631,18 @@ void main() {
 
     testWidgets('cancel tap resolves the future with null', (tester) async {
       String? result = 'sentinel';
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
-          ctx,
-          title: 't',
-          cancelText: 'Avbryt',
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
+              ctx,
+              title: 't',
+              cancelText: 'Avbryt',
+            ),
+            onResult: (v) => result = v,
+          ),
         ),
-        onResult: (v) => result = v,
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
@@ -542,46 +654,56 @@ void main() {
     });
 
     testWidgets(
-        'isRequired blocks confirm when the entered text is empty/whitespace',
-        (tester) async {
-      String? result = 'untouched';
-      var resolved = false;
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
-          ctx,
-          title: 't',
-          confirmText: 'Spara',
-          isRequired: true,
+      'isRequired blocks confirm when the entered text is empty/whitespace',
+      (tester) async {
+        String? result = 'untouched';
+        var resolved = false;
+        await tester.pumpWidget(
+          _wrap(
+            _triggerButton<String?>(
+              openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
+                ctx,
+                title: 't',
+                confirmText: 'Spara',
+                isRequired: true,
+              ),
+              onResult: (v) {
+                result = v;
+                resolved = true;
+              },
+            ),
+          ),
+        );
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
+
+        // Empty (well, only whitespace) — confirm should be a no-op.
+        await tester.enterText(find.byType(TextField), '   ');
+        await tester.tap(find.text('Spara'));
+        await tester.pumpAndSettle();
+
+        // Dialog must still be on screen and the future must not have resolved.
+        expect(find.byType(TextField), findsOneWidget);
+        expect(resolved, isFalse);
+        expect(result, 'untouched');
+      },
+    );
+
+    testWidgets('maxLength is forwarded to the underlying TextField', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<String?>(
+            openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
+              ctx,
+              title: 't',
+              maxLength: 12,
+            ),
+            onResult: (_) {},
+          ),
         ),
-        onResult: (v) {
-          result = v;
-          resolved = true;
-        },
-      )));
-      await tester.tap(find.text('Show'));
-      await tester.pumpAndSettle();
-
-      // Empty (well, only whitespace) — confirm should be a no-op.
-      await tester.enterText(find.byType(TextField), '   ');
-      await tester.tap(find.text('Spara'));
-      await tester.pumpAndSettle();
-
-      // Dialog must still be on screen and the future must not have resolved.
-      expect(find.byType(TextField), findsOneWidget);
-      expect(resolved, isFalse);
-      expect(result, 'untouched');
-    });
-
-    testWidgets('maxLength is forwarded to the underlying TextField',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_triggerButton<String?>(
-        openDialog: (ctx) => ConfirmationDialogs.showTextInputDialog(
-          ctx,
-          title: 't',
-          maxLength: 12,
-        ),
-        onResult: (_) {},
-      )));
+      );
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 

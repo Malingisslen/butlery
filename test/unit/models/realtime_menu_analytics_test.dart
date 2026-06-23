@@ -102,54 +102,74 @@ void main() {
       });
 
       test('should search in recipe titles', () {
-        final results =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'köttbullar');
+        final results = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'köttbullar',
+        );
 
         expect(results.length, equals(1));
         expect(results.first.id, equals('medium_recipe'));
       });
 
       test('should search in recipe descriptions', () {
-        final results =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'mustig');
+        final results = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'mustig',
+        );
 
         expect(results.length, equals(1));
         expect(results.first.id, equals('long_recipe'));
       });
 
       test('should search in ingredients', () {
-        final results =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'räkor');
+        final results = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'räkor',
+        );
 
         expect(results.length, equals(1));
         expect(results.first.id, equals('quick_recipe'));
       });
 
       test('should search in meal types', () {
-        final results =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'lunch');
+        final results = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'lunch',
+        );
 
         expect(results.length, equals(3));
         expect(
-            results.map((r) => r.core.mealType), everyElement(equals('Lunch')));
+          results.map((r) => r.core.mealType),
+          everyElement(equals('Lunch')),
+        );
       });
 
       test('should search in tags', () {
-        final results =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'fisk');
+        final results = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'fisk',
+        );
 
         expect(results.length, equals(2));
-        expect(results.map((r) => r.id),
-            containsAll(['quick_recipe', 'high_rated']));
+        expect(
+          results.map((r) => r.id),
+          containsAll(['quick_recipe', 'high_rated']),
+        );
       });
 
       test('should be case-insensitive', () {
-        final results1 =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'KÖTTBULLAR');
-        final results2 =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'köttbullar');
-        final results3 =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'KöTtBuLlAr');
+        final results1 = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'KÖTTBULLAR',
+        );
+        final results2 = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'köttbullar',
+        );
+        final results3 = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'KöTtBuLlAr',
+        );
 
         expect(results1.length, equals(1));
         expect(results2.length, equals(1));
@@ -158,8 +178,10 @@ void main() {
 
       test('should deduplicate results', () {
         // quickRecipe appears in both Måndag and Fredag
-        final results =
-            RealtimeMenuAnalytics.searchRecipes(testMenuData, 'räkmacka');
+        final results = RealtimeMenuAnalytics.searchRecipes(
+          testMenuData,
+          'räkmacka',
+        );
 
         expect(results.length, equals(1)); // Should only appear once
       });
@@ -174,8 +196,10 @@ void main() {
         );
 
         expect(results.length, equals(2));
-        expect(results.map((r) => r.id),
-            containsAll(['medium_recipe', 'long_recipe']));
+        expect(
+          results.map((r) => r.id),
+          containsAll(['medium_recipe', 'long_recipe']),
+        );
       });
 
       test('should filter by max time', () {
@@ -196,8 +220,10 @@ void main() {
         );
 
         expect(results.length, equals(2));
-        expect(results.map((r) => r.id),
-            containsAll(['medium_recipe', 'low_rated']));
+        expect(
+          results.map((r) => r.id),
+          containsAll(['medium_recipe', 'low_rated']),
+        );
       });
 
       test('should filter by minimum rating', () {
@@ -217,8 +243,10 @@ void main() {
         );
 
         expect(results.length, equals(2));
-        expect(results.map((r) => r.id),
-            containsAll(['medium_recipe', 'long_recipe']));
+        expect(
+          results.map((r) => r.id),
+          containsAll(['medium_recipe', 'long_recipe']),
+        );
       });
 
       test('should combine multiple filters', () {
@@ -230,8 +258,10 @@ void main() {
         );
 
         expect(results.length, equals(2));
-        expect(results.map((r) => r.id),
-            containsAll(['quick_recipe', 'high_rated']));
+        expect(
+          results.map((r) => r.id),
+          containsAll(['quick_recipe', 'high_rated']),
+        );
       });
 
       test('should return empty list when no matches', () {
@@ -247,8 +277,10 @@ void main() {
 
     group('Filter Methods', () {
       test('should filter by meal type', () {
-        final filtered =
-            RealtimeMenuAnalytics.filterByMealType(testMenuData, 'Middag');
+        final filtered = RealtimeMenuAnalytics.filterByMealType(
+          testMenuData,
+          'Middag',
+        );
 
         expect(filtered.keys.length, equals(2)); // Tisdag and Onsdag
         expect(filtered['Tisdag']!.first.id, equals('medium_recipe'));
@@ -256,37 +288,50 @@ void main() {
       });
 
       test('should filter by max time', () {
-        final filtered =
-            RealtimeMenuAnalytics.filterByMaxTime(testMenuData, 30);
+        final filtered = RealtimeMenuAnalytics.filterByMaxTime(
+          testMenuData,
+          30,
+        );
 
         expect(filtered.keys.length, equals(3)); // Måndag, Torsdag, Fredag
         expect(filtered['Måndag']!.length, equals(2)); // Both quick recipes
         expect(
-            filtered.containsKey('Tisdag'), isFalse); // 45 min recipe excluded
+          filtered.containsKey('Tisdag'),
+          isFalse,
+        ); // 45 min recipe excluded
         expect(
-            filtered.containsKey('Onsdag'), isFalse); // 120 min recipe excluded
+          filtered.containsKey('Onsdag'),
+          isFalse,
+        ); // 120 min recipe excluded
       });
 
       test('should filter by minimum rating', () {
-        final filtered =
-            RealtimeMenuAnalytics.filterByMinRating(testMenuData, 4.0);
+        final filtered = RealtimeMenuAnalytics.filterByMinRating(
+          testMenuData,
+          4.0,
+        );
 
         expect(filtered.keys.length, equals(4)); // All except Torsdag
-        expect(filtered.containsKey('Torsdag'),
-            isFalse); // Low rated recipe excluded
+        expect(
+          filtered.containsKey('Torsdag'),
+          isFalse,
+        ); // Low rated recipe excluded
       });
 
       test('should filter by tags', () {
-        final filtered =
-            RealtimeMenuAnalytics.filterByTags(testMenuData, ['fisk']);
+        final filtered = RealtimeMenuAnalytics.filterByTags(testMenuData, [
+          'fisk',
+        ]);
 
         expect(filtered.keys.length, equals(2)); // Måndag and Fredag
         expect(filtered['Måndag']!.length, equals(2)); // Both fish recipes
       });
 
       test('should handle empty results in filters', () {
-        final filtered = RealtimeMenuAnalytics.filterByTags(
-            testMenuData, ['nonexistent', 'tags']);
+        final filtered = RealtimeMenuAnalytics.filterByTags(testMenuData, [
+          'nonexistent',
+          'tags',
+        ]);
 
         expect(filtered, isEmpty);
       });
@@ -294,19 +339,23 @@ void main() {
 
     group('Distribution Analytics', () {
       test('should get cooking time distribution', () {
-        final distribution =
-            RealtimeMenuAnalytics.getCookingTimeDistribution(testMenuData);
+        final distribution = RealtimeMenuAnalytics.getCookingTimeDistribution(
+          testMenuData,
+        );
 
         expect(distribution['Snabb (≤15 min)'], equals(1)); // quickRecipe
-        expect(distribution['Medel (16-30 min)'],
-            equals(2)); // highRatedRecipe, lowRatedRecipe
+        expect(
+          distribution['Medel (16-30 min)'],
+          equals(2),
+        ); // highRatedRecipe, lowRatedRecipe
         expect(distribution['Längre (31-60 min)'], equals(1)); // mediumRecipe
         expect(distribution['Lång (>60 min)'], equals(1)); // longRecipe
       });
 
       test('should get difficulty distribution', () {
-        final distribution =
-            RealtimeMenuAnalytics.getDifficultyDistribution(testMenuData);
+        final distribution = RealtimeMenuAnalytics.getDifficultyDistribution(
+          testMenuData,
+        );
 
         // quickRecipe: 10min=Lätt, highRated: 20min=Medel,
         // lowRated: 25min=Medel, mediumRecipe: 45min=Avancerad,
@@ -318,11 +367,14 @@ void main() {
       });
 
       test('should get rating distribution', () {
-        final distribution =
-            RealtimeMenuAnalytics.getRatingDistribution(testMenuData);
+        final distribution = RealtimeMenuAnalytics.getRatingDistribution(
+          testMenuData,
+        );
 
-        expect(distribution['Excellent (4.5+)'],
-            equals(3)); // medium, long, high rated
+        expect(
+          distribution['Excellent (4.5+)'],
+          equals(3),
+        ); // medium, long, high rated
         expect(distribution['Very Good (4.0+)'], equals(1)); // quickRecipe
         expect(distribution['Fair (<3.0)'], equals(1)); // lowRatedRecipe
         expect(distribution['Good (3.0+)'], isNull); // None in this range
@@ -352,8 +404,10 @@ void main() {
       });
 
       test('should get most popular tags', () {
-        final popular =
-            RealtimeMenuAnalytics.getMostPopularTags(testMenuData, limit: 3);
+        final popular = RealtimeMenuAnalytics.getMostPopularTags(
+          testMenuData,
+          limit: 3,
+        );
 
         expect(popular.length, lessThanOrEqualTo(3));
         // Should be ordered by frequency
@@ -364,8 +418,10 @@ void main() {
       });
 
       test('should handle limit in popular tags', () {
-        final popular =
-            RealtimeMenuAnalytics.getMostPopularTags(testMenuData, limit: 100);
+        final popular = RealtimeMenuAnalytics.getMostPopularTags(
+          testMenuData,
+          limit: 100,
+        );
         final allTags = RealtimeMenuAnalytics.getAllTags(testMenuData);
 
         expect(popular.length, lessThanOrEqualTo(allTags.length));
@@ -402,8 +458,10 @@ void main() {
 
         expect(RealtimeMenuAnalytics.searchRecipes(emptyMenu, 'test'), isEmpty);
         expect(RealtimeMenuAnalytics.getAllTags(emptyMenu), isEmpty);
-        expect(RealtimeMenuAnalytics.getCookingTimeDistribution(emptyMenu),
-            isEmpty);
+        expect(
+          RealtimeMenuAnalytics.getCookingTimeDistribution(emptyMenu),
+          isEmpty,
+        );
       });
 
       test('should handle recipes with null values', () {
@@ -420,23 +478,30 @@ void main() {
           menuTitle: 'Null Test',
           createdForDate: DateTime.now(),
           menuSnapshot: {
-            'Monday': [recipeWithNulls]
+            'Monday': [recipeWithNulls],
           },
         );
 
         // Should not crash with null values
-        final timeFiltered =
-            RealtimeMenuAnalytics.filterByMaxTime(menuWithNulls, 30);
+        final timeFiltered = RealtimeMenuAnalytics.filterByMaxTime(
+          menuWithNulls,
+          30,
+        );
         expect(timeFiltered['Monday']!.length, equals(1)); // 0 <= 30
 
-        final ratingFiltered =
-            RealtimeMenuAnalytics.filterByMinRating(menuWithNulls, 3.0);
+        final ratingFiltered = RealtimeMenuAnalytics.filterByMinRating(
+          menuWithNulls,
+          3.0,
+        );
         expect(ratingFiltered, isEmpty); // 0.0 < 3.0
 
-        final distribution =
-            RealtimeMenuAnalytics.getCookingTimeDistribution(menuWithNulls);
+        final distribution = RealtimeMenuAnalytics.getCookingTimeDistribution(
+          menuWithNulls,
+        );
         expect(
-            distribution['Snabb (≤15 min)'], equals(1)); // null -> 0 -> Snabb
+          distribution['Snabb (≤15 min)'],
+          equals(1),
+        ); // null -> 0 -> Snabb
       });
 
       test('should handle Swedish characters in search', () {
@@ -452,28 +517,37 @@ void main() {
           menuTitle: 'Swedish',
           createdForDate: DateTime.now(),
           menuSnapshot: {
-            'Måndag': [swedishRecipe]
+            'Måndag': [swedishRecipe],
           },
         );
 
         expect(
-            RealtimeMenuAnalytics.searchRecipes(swedishMenu, 'räksmörgås')
-                .length,
-            equals(1));
+          RealtimeMenuAnalytics.searchRecipes(swedishMenu, 'räksmörgås').length,
+          equals(1),
+        );
         expect(
-            RealtimeMenuAnalytics.searchRecipes(swedishMenu, 'löjrom').length,
-            equals(1));
-        expect(RealtimeMenuAnalytics.searchRecipes(swedishMenu, 'ägg').length,
-            equals(1));
+          RealtimeMenuAnalytics.searchRecipes(swedishMenu, 'löjrom').length,
+          equals(1),
+        );
+        expect(
+          RealtimeMenuAnalytics.searchRecipes(swedishMenu, 'ägg').length,
+          equals(1),
+        );
       });
 
       test('should handle case-insensitive meal type filtering', () {
-        final filtered1 =
-            RealtimeMenuAnalytics.filterByMealType(testMenuData, 'lunch');
-        final filtered2 =
-            RealtimeMenuAnalytics.filterByMealType(testMenuData, 'LUNCH');
-        final filtered3 =
-            RealtimeMenuAnalytics.filterByMealType(testMenuData, 'Lunch');
+        final filtered1 = RealtimeMenuAnalytics.filterByMealType(
+          testMenuData,
+          'lunch',
+        );
+        final filtered2 = RealtimeMenuAnalytics.filterByMealType(
+          testMenuData,
+          'LUNCH',
+        );
+        final filtered3 = RealtimeMenuAnalytics.filterByMealType(
+          testMenuData,
+          'Lunch',
+        );
 
         expect(filtered1.keys.length, equals(filtered2.keys.length));
         expect(filtered2.keys.length, equals(filtered3.keys.length));

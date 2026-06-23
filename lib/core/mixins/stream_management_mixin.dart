@@ -209,7 +209,8 @@ mixin StreamManagementMixin {
     }
 
     AppLogger.debug(
-        '📡 Subscription added${name != null ? ' ($name)' : ''}: ${_subscriptions.length} active');
+      '📡 Subscription added${name != null ? ' ($name)' : ''}: ${_subscriptions.length} active',
+    );
   }
 
   /// Remove and cancel specific subscription
@@ -261,7 +262,8 @@ mixin StreamManagementMixin {
     }
 
     AppLogger.debug(
-        '⏰ Timer added${name != null ? ' ($name)' : ''}: ${_timers.length} active');
+      '⏰ Timer added${name != null ? ' ($name)' : ''}: ${_timers.length} active',
+    );
   }
 
   /// Remove and cancel specific timer
@@ -338,7 +340,8 @@ mixin StreamManagementMixin {
     }
 
     AppLogger.debug(
-        '🎛️ StreamController added${name != null ? ' ($name)' : ''}: ${_controllers.length} active');
+      '🎛️ StreamController added${name != null ? ' ($name)' : ''}: ${_controllers.length} active',
+    );
   }
 
   /// Remove and close specific StreamController
@@ -350,7 +353,8 @@ mixin StreamManagementMixin {
 
     await controller.close();
     AppLogger.debug(
-        '🎛️ StreamController removed: ${_controllers.length} active');
+      '🎛️ StreamController removed: ${_controllers.length} active',
+    );
   }
 
   /// Close named StreamController
@@ -408,10 +412,12 @@ mixin StreamManagementMixin {
   }) {
     final subscription = stream.listen(
       onData,
-      onError: onError ??
+      onError:
+          onError ??
           (error) {
             AppLogger.error(
-                '❌ Stream error${name != null ? ' ($name)' : ''}: $error');
+              '❌ Stream error${name != null ? ' ($name)' : ''}: $error',
+            );
           },
       onDone: onDone,
       cancelOnError: cancelOnError,
@@ -493,7 +499,8 @@ mixin StreamManagementMixin {
 
     if (_isDisposed && _subscriptions.isNotEmpty) {
       warnings.add(
-          '${_subscriptions.length} subscriptions not cleaned up after disposal');
+        '${_subscriptions.length} subscriptions not cleaned up after disposal',
+      );
     }
 
     if (_isDisposed && _timers.isNotEmpty) {
@@ -502,7 +509,8 @@ mixin StreamManagementMixin {
 
     if (_isDisposed && _controllers.isNotEmpty) {
       warnings.add(
-          '${_controllers.length} controllers not cleaned up after disposal');
+        '${_controllers.length} controllers not cleaned up after disposal',
+      );
     }
 
     // Check for cancelled subscriptions still in registry

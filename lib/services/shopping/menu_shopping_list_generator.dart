@@ -98,8 +98,10 @@ class MenuShoppingListGenerator extends BaseService {
           return MenuShoppingGenerationResult.nothingToGenerate;
         }
 
-        final recipes =
-            recipeIds.map(recipeService.getRecipeById).nonNulls.toList();
+        final recipes = recipeIds
+            .map(recipeService.getRecipeById)
+            .nonNulls
+            .toList();
         final unresolved = recipeIds.length - recipes.length;
         if (unresolved > 0) {
           AppLogger.warning(
@@ -123,12 +125,16 @@ class MenuShoppingListGenerator extends BaseService {
         final excludedStaples = stapleNames.isEmpty
             ? 0
             : MenuShoppingAggregator.aggregate(recipes)
-                .where((line) => stapleNames
-                    .contains(SwedishCharacterNormalizer.normalize(line.name)))
-                .length;
+                  .where(
+                    (line) => stapleNames.contains(
+                      SwedishCharacterNormalizer.normalize(line.name),
+                    ),
+                  )
+                  .length;
         final weekKey = IsoWeekUtils.weekKeyOf(date);
-        final listName = AppLocale.current
-            .menuGeneratedShoppingListName(IsoWeekUtils.isoWeekNumber(date));
+        final listName = AppLocale.current.menuGeneratedShoppingListName(
+          IsoWeekUtils.isoWeekNumber(date),
+        );
 
         // Idempotency: reuse this week's generated list when it exists.
         // Lookup is by the generatedForWeek marker, never by name — a
@@ -164,15 +170,17 @@ class MenuShoppingListGenerator extends BaseService {
             : const <String, bool>{};
 
         final items = aggregated
-            .map((a) => UnifiedShoppingItem(
-                  name: a.name,
-                  // Amount-less lines (raw-only/ranges) follow the manual-add
-                  // default of 1 rather than rendering a misleading "0".
-                  amount: a.amount ?? 1,
-                  unit: a.unit,
-                  category: a.category,
-                  bought: previous[boughtKey(a.name, a.unit)] ?? false,
-                ))
+            .map(
+              (a) => UnifiedShoppingItem(
+                name: a.name,
+                // Amount-less lines (raw-only/ranges) follow the manual-add
+                // default of 1 rather than rendering a misleading "0".
+                amount: a.amount ?? 1,
+                unit: a.unit,
+                category: a.category,
+                bought: previous[boughtKey(a.name, a.unit)] ?? false,
+              ),
+            )
             .toList();
 
         final list = shoppingService.lists.firstWhere((l) => l.id == listId);

@@ -67,10 +67,10 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
     PermissionService? permissionService,
     UnifiedFriendsService? friendsService,
     UserService? userService,
-  })  : _repository = repository,
-        _permissionServiceOverride = permissionService,
-        _friendsServiceOverride = friendsService,
-        _userServiceOverride = userService;
+  }) : _repository = repository,
+       _permissionServiceOverride = permissionService,
+       _friendsServiceOverride = friendsService,
+       _userServiceOverride = userService;
 
   PermissionService get _permissionService =>
       _permissionServiceOverride ?? ServiceLocator.get<PermissionService>();
@@ -110,10 +110,12 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
     // swallowed inside the repository, so a single bad group doesn't take
     // down the rest.
     await Future.wait(
-      groups.map((g) => _repository.startSession(
-            groupId: g.id,
-            session: session,
-          )),
+      groups.map(
+        (g) => _repository.startSession(
+          groupId: g.id,
+          session: session,
+        ),
+      ),
       eagerError: false,
     );
     _activeGroupIds
@@ -146,10 +148,12 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
     }
 
     await Future.wait(
-      targetGroupIds.map((id) => _repository.endSession(
-            groupId: id,
-            userId: userId,
-          )),
+      targetGroupIds.map(
+        (id) => _repository.endSession(
+          groupId: id,
+          userId: userId,
+        ),
+      ),
       eagerError: false,
     );
     _activeGroupIds.clear();
@@ -196,12 +200,14 @@ class FirebaseCookingSessionModule implements CookingSessionModule {
 
     try {
       await Future.wait(
-        _activeGroupIds.map((groupId) => _repository.updateStep(
-              groupId: groupId,
-              userId: userId,
-              currentStep: current,
-              totalSteps: total,
-            )),
+        _activeGroupIds.map(
+          (groupId) => _repository.updateStep(
+            groupId: groupId,
+            userId: userId,
+            currentStep: current,
+            totalSteps: total,
+          ),
+        ),
         eagerError: false,
       );
       _lastFlushedCurrentStep = current;

@@ -33,18 +33,19 @@ class RecipeServiceAdapter {
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
     StorageService? storageService,
-  })  : _recipeRepository = recipeRepository,
-        _commentsRepository = commentsRepository,
-        _ratingsRepository = ratingsRepository,
-        _notificationsRepository = notificationsRepository,
-        _firestoreRepository = firestoreRepository,
-        _storageService = storageService;
+  }) : _recipeRepository = recipeRepository,
+       _commentsRepository = commentsRepository,
+       _ratingsRepository = ratingsRepository,
+       _notificationsRepository = notificationsRepository,
+       _firestoreRepository = firestoreRepository,
+       _storageService = storageService;
 
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
     try {
       AppLogger.info(
-          '🔄 [RecipeServiceAdapter] Creating recipe: ${recipe.title}, id: ${recipe.id}');
+        '🔄 [RecipeServiceAdapter] Creating recipe: ${recipe.title}, id: ${recipe.id}',
+      );
       final createdRecipe = await _recipeRepository.create(recipe);
       AppLogger.success('✅ Recipe created via repository: ${createdRecipe.id}');
       return createdRecipe.id;
@@ -85,13 +86,16 @@ class RecipeServiceAdapter {
 
   /// Delete images from Firebase Storage. Failures do not block recipe deletion.
   Future<void> _deleteRecipeImages(
-      String recipeId, List<String> imageUrls) async {
+    String recipeId,
+    List<String> imageUrls,
+  ) async {
     if (_storageService == null || imageUrls.isEmpty) return;
 
     try {
       await _storageService.deleteMultipleImages(imageUrls);
       AppLogger.info(
-          'Deleted ${imageUrls.length} image(s) for recipe $recipeId');
+        'Deleted ${imageUrls.length} image(s) for recipe $recipeId',
+      );
     } catch (e) {
       AppLogger.warning('Storage cleanup failed for recipe $recipeId: $e');
     }
@@ -272,7 +276,8 @@ class RecipeServiceAdapter {
 
   /// Get bulk rating statistics using repository pattern
   Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
-      List<String> recipeIds) async {
+    List<String> recipeIds,
+  ) async {
     if (_ratingsRepository == null) {
       AppLogger.warning('⚠️ RatingsRepository not available');
       return {};
@@ -281,7 +286,9 @@ class RecipeServiceAdapter {
       return await _ratingsRepository.getBulkRatingStatistics(recipeIds);
     } catch (e) {
       AppLogger.error(
-          '❌ Failed to get bulk rating statistics via repository', e);
+        '❌ Failed to get bulk rating statistics via repository',
+        e,
+      );
       return {};
     }
   }
@@ -299,12 +306,14 @@ class RecipeServiceAdapter {
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId) {
     if (_ratingsRepository == null) {
       AppLogger.warning('⚠️ RatingsRepository not available');
-      return Stream.value(RatingStatistics(
-        recipeId: recipeId,
-        averageRating: 0.0,
-        totalRatings: 0,
-        ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
-      ));
+      return Stream.value(
+        RatingStatistics(
+          recipeId: recipeId,
+          averageRating: 0.0,
+          totalRatings: 0,
+          ratingDistribution: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+        ),
+      );
     }
     return _ratingsRepository.getRatingStatisticsStream(recipeId);
   }

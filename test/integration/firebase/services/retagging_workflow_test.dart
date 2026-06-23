@@ -69,7 +69,8 @@ void main() {
       test('recipe with null tagResult needs tagging', () {
         final recipe = RecipeBuilder()
             .withTitle('Untagged Recipe')
-            .withIngredients(['ingredient1', 'ingredient2']).build();
+            .withIngredients(['ingredient1', 'ingredient2'])
+            .build();
 
         expect(recipe.core.tagResult, isNull);
       });

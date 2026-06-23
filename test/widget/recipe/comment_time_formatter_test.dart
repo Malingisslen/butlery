@@ -16,7 +16,8 @@ void main() {
       at(() {
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(seconds: 30))),
+            fixedNow.subtract(const Duration(seconds: 30)),
+          ),
           'nu',
         );
       });
@@ -26,7 +27,8 @@ void main() {
       at(() {
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(minutes: 1))),
+            fixedNow.subtract(const Duration(minutes: 1)),
+          ),
           '1m',
         );
       });
@@ -36,12 +38,14 @@ void main() {
       at(() {
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(minutes: 5))),
+            fixedNow.subtract(const Duration(minutes: 5)),
+          ),
           '5m',
         );
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(minutes: 59))),
+            fixedNow.subtract(const Duration(minutes: 59)),
+          ),
           '59m',
         );
       });
@@ -51,12 +55,14 @@ void main() {
       at(() {
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(hours: 1))),
+            fixedNow.subtract(const Duration(hours: 1)),
+          ),
           '1h',
         );
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(hours: 23))),
+            fixedNow.subtract(const Duration(hours: 23)),
+          ),
           '23h',
         );
       });
@@ -66,12 +72,14 @@ void main() {
       at(() {
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(days: 1))),
+            fixedNow.subtract(const Duration(days: 1)),
+          ),
           '1d',
         );
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(days: 6))),
+            fixedNow.subtract(const Duration(days: 6)),
+          ),
           '6d',
         );
       });
@@ -94,7 +102,8 @@ void main() {
       at(() {
         expect(
           CommentTimeFormatter.format(
-              fixedNow.subtract(const Duration(days: 7))),
+            fixedNow.subtract(const Duration(days: 7)),
+          ),
           '${fixedNow.subtract(const Duration(days: 7)).day}/${fixedNow.subtract(const Duration(days: 7)).month}',
         );
       });

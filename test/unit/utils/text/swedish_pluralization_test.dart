@@ -43,32 +43,52 @@ void main() {
 
     group('Irregular Plurals Database', () {
       test('should contain liquid measurement invariants', () {
-        expect(SwedishPluralization.irregularPlurals['dl mjölk'],
-            equals('dl mjölk'));
-        expect(SwedishPluralization.irregularPlurals['l vatten'],
-            equals('l vatten'));
-        expect(SwedishPluralization.irregularPlurals['dl grädde'],
-            equals('dl grädde')); // Changed ml to dl
         expect(
-            SwedishPluralization.irregularPlurals['cl vin'], equals('cl vin'));
+          SwedishPluralization.irregularPlurals['dl mjölk'],
+          equals('dl mjölk'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['l vatten'],
+          equals('l vatten'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['dl grädde'],
+          equals('dl grädde'),
+        ); // Changed ml to dl
+        expect(
+          SwedishPluralization.irregularPlurals['cl vin'],
+          equals('cl vin'),
+        );
       });
 
       test('should contain spice and powder invariants', () {
-        expect(SwedishPluralization.irregularPlurals['msk olja'],
-            equals('msk olja'));
-        expect(SwedishPluralization.irregularPlurals['tsk salt'],
-            equals('tsk salt'));
-        expect(SwedishPluralization.irregularPlurals['krm peppar'],
-            equals('krm peppar'));
-        expect(SwedishPluralization.irregularPlurals['tsk vaniljsocker'],
-            equals('tsk vaniljsocker'));
+        expect(
+          SwedishPluralization.irregularPlurals['msk olja'],
+          equals('msk olja'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['tsk salt'],
+          equals('tsk salt'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['krm peppar'],
+          equals('krm peppar'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['tsk vaniljsocker'],
+          equals('tsk vaniljsocker'),
+        );
       });
 
       test('should contain weight measurement invariants', () {
         expect(
-            SwedishPluralization.irregularPlurals['g mjöl'], equals('g mjöl'));
-        expect(SwedishPluralization.irregularPlurals['kg socker'],
-            equals('kg socker'));
+          SwedishPluralization.irregularPlurals['g mjöl'],
+          equals('g mjöl'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['kg socker'],
+          equals('kg socker'),
+        );
         expect(SwedishPluralization.irregularPlurals['g ris'], equals('g ris'));
       });
 
@@ -78,155 +98,245 @@ void main() {
         expect(SwedishPluralization.irregularPlurals['pasta'], equals('pasta'));
         expect(SwedishPluralization.irregularPlurals['bröd'], equals('bröd'));
         expect(
-            SwedishPluralization.irregularPlurals['vatten'], equals('vatten'));
+          SwedishPluralization.irregularPlurals['vatten'],
+          equals('vatten'),
+        );
       });
 
       test('should contain common irregular plurals', () {
         expect(SwedishPluralization.irregularPlurals['lök'], equals('lökar'));
-        expect(SwedishPluralization.irregularPlurals['potatis'],
-            equals('potatisar'));
         expect(
-            SwedishPluralization.irregularPlurals['tomat'], equals('tomater'));
+          SwedishPluralization.irregularPlurals['potatis'],
+          equals('potatisar'),
+        );
         expect(
-            SwedishPluralization.irregularPlurals['morot'], equals('morötter'));
+          SwedishPluralization.irregularPlurals['tomat'],
+          equals('tomater'),
+        );
         expect(
-            SwedishPluralization.irregularPlurals['gurka'], equals('gurkor'));
+          SwedishPluralization.irregularPlurals['morot'],
+          equals('morötter'),
+        );
         expect(
-            SwedishPluralization.irregularPlurals['äpple'], equals('äpplen'));
+          SwedishPluralization.irregularPlurals['gurka'],
+          equals('gurkor'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['äpple'],
+          equals('äpplen'),
+        );
       });
 
       test('should contain compound -socker/-pulver invariants (Phase 1)', () {
-        expect(SwedishPluralization.irregularPlurals['vaniljsocker'],
-            equals('vaniljsocker'));
-        expect(SwedishPluralization.irregularPlurals['strösocker'],
-            equals('strösocker'));
-        expect(SwedishPluralization.irregularPlurals['florsocker'],
-            equals('florsocker'));
-        expect(SwedishPluralization.irregularPlurals['farinsocker'],
-            equals('farinsocker'));
-        expect(SwedishPluralization.irregularPlurals['muscovadosocker'],
-            equals('muscovadosocker'));
-        expect(SwedishPluralization.irregularPlurals['pärlsocker'],
-            equals('pärlsocker'));
-        expect(SwedishPluralization.irregularPlurals['bakpulver'],
-            equals('bakpulver'));
+        expect(
+          SwedishPluralization.irregularPlurals['vaniljsocker'],
+          equals('vaniljsocker'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['strösocker'],
+          equals('strösocker'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['florsocker'],
+          equals('florsocker'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['farinsocker'],
+          equals('farinsocker'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['muscovadosocker'],
+          equals('muscovadosocker'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['pärlsocker'],
+          equals('pärlsocker'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['bakpulver'],
+          equals('bakpulver'),
+        );
         expect(SwedishPluralization.irregularPlurals['kakao'], equals('kakao'));
       });
 
       test('should contain compound irregular forms', () {
-        expect(SwedishPluralization.irregularPlurals['lasagneplatt'],
-            equals('lasagneplattor'));
-        expect(SwedishPluralization.irregularPlurals['burk krossade tomater'],
-            equals('burkar krossade tomater'));
+        expect(
+          SwedishPluralization.irregularPlurals['lasagneplatt'],
+          equals('lasagneplattor'),
+        );
+        expect(
+          SwedishPluralization.irregularPlurals['burk krossade tomater'],
+          equals('burkar krossade tomater'),
+        );
       });
     });
 
     group('Normalize to Singular', () {
       test('should normalize regular plurals with -ar ending', () {
-        expect(SwedishPluralization.normalizeToSingular('gurkor'),
-            equals('gurka'));
-        expect(SwedishPluralization.normalizeToSingular('paprikor'),
-            equals('paprika'));
         expect(
-            SwedishPluralization.normalizeToSingular('burkar'), equals('burk'));
+          SwedishPluralization.normalizeToSingular('gurkor'),
+          equals('gurka'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('paprikor'),
+          equals('paprika'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('burkar'),
+          equals('burk'),
+        );
       });
 
       test('should normalize regular plurals with -or ending', () {
-        expect(SwedishPluralization.normalizeToSingular('flaskor'),
-            equals('flaska')); // Now correctly returns flaska
-        expect(SwedishPluralization.normalizeToSingular('flickor'),
-            equals('flicka')); // Now correctly returns flicka
+        expect(
+          SwedishPluralization.normalizeToSingular('flaskor'),
+          equals('flaska'),
+        ); // Now correctly returns flaska
+        expect(
+          SwedishPluralization.normalizeToSingular('flickor'),
+          equals('flicka'),
+        ); // Now correctly returns flicka
       });
 
       test('should normalize regular plurals with -er ending', () {
-        expect(SwedishPluralization.normalizeToSingular('bananer'),
-            equals('banan'));
-        expect(SwedishPluralization.normalizeToSingular('citroner'),
-            equals('citron'));
+        expect(
+          SwedishPluralization.normalizeToSingular('bananer'),
+          equals('banan'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('citroner'),
+          equals('citron'),
+        );
       });
 
       test('should normalize complex plural endings', () {
-        expect(SwedishPluralization.normalizeToSingular('förpackningar'),
-            equals('förpackning'));
-        expect(SwedishPluralization.normalizeToSingular('tillsättningar'),
-            equals('tillsättning'));
+        expect(
+          SwedishPluralization.normalizeToSingular('förpackningar'),
+          equals('förpackning'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('tillsättningar'),
+          equals('tillsättning'),
+        );
       });
 
       test('should handle irregular plurals via reverse lookup', () {
         expect(
-            SwedishPluralization.normalizeToSingular('lökar'), equals('lök'));
-        expect(SwedishPluralization.normalizeToSingular('potatisar'),
-            equals('potatis'));
-        expect(SwedishPluralization.normalizeToSingular('tomater'),
-            equals('tomat'));
-        expect(SwedishPluralization.normalizeToSingular('morötter'),
-            equals('morot'));
+          SwedishPluralization.normalizeToSingular('lökar'),
+          equals('lök'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('potatisar'),
+          equals('potatis'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('tomater'),
+          equals('tomat'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('morötter'),
+          equals('morot'),
+        );
       });
 
       test('should preserve invariant forms', () {
         expect(
-            SwedishPluralization.normalizeToSingular('mjöl'), equals('mjöl'));
+          SwedishPluralization.normalizeToSingular('mjöl'),
+          equals('mjöl'),
+        );
         expect(SwedishPluralization.normalizeToSingular('ris'), equals('ris'));
         expect(
-            SwedishPluralization.normalizeToSingular('pasta'), equals('pasta'));
-        expect(SwedishPluralization.normalizeToSingular('vatten'),
-            equals('vatten'));
+          SwedishPluralization.normalizeToSingular('pasta'),
+          equals('pasta'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('vatten'),
+          equals('vatten'),
+        );
       });
 
       test('should preserve compound -socker invariants (Phase 1)', () {
-        expect(SwedishPluralization.normalizeToSingular('vaniljsocker'),
-            equals('vaniljsocker'));
-        expect(SwedishPluralization.normalizeToSingular('strösocker'),
-            equals('strösocker'));
-        expect(SwedishPluralization.normalizeToSingular('florsocker'),
-            equals('florsocker'));
-        expect(SwedishPluralization.normalizeToSingular('farinsocker'),
-            equals('farinsocker'));
-        expect(SwedishPluralization.normalizeToSingular('muscovadosocker'),
-            equals('muscovadosocker'));
-        expect(SwedishPluralization.normalizeToSingular('pärlsocker'),
-            equals('pärlsocker'));
+        expect(
+          SwedishPluralization.normalizeToSingular('vaniljsocker'),
+          equals('vaniljsocker'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('strösocker'),
+          equals('strösocker'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('florsocker'),
+          equals('florsocker'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('farinsocker'),
+          equals('farinsocker'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('muscovadosocker'),
+          equals('muscovadosocker'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('pärlsocker'),
+          equals('pärlsocker'),
+        );
       });
 
       test('should preserve compound -pulver invariants (Phase 1)', () {
-        expect(SwedishPluralization.normalizeToSingular('bakpulver'),
-            equals('bakpulver'));
+        expect(
+          SwedishPluralization.normalizeToSingular('bakpulver'),
+          equals('bakpulver'),
+        );
       });
 
       test('should preserve kakao invariant (Phase 1)', () {
         expect(
-            SwedishPluralization.normalizeToSingular('kakao'), equals('kakao'));
+          SwedishPluralization.normalizeToSingular('kakao'),
+          equals('kakao'),
+        );
       });
 
       test('should preserve socker and peppar base invariants', () {
-        expect(SwedishPluralization.normalizeToSingular('socker'),
-            equals('socker'));
-        expect(SwedishPluralization.normalizeToSingular('peppar'),
-            equals('peppar'));
+        expect(
+          SwedishPluralization.normalizeToSingular('socker'),
+          equals('socker'),
+        );
+        expect(
+          SwedishPluralization.normalizeToSingular('peppar'),
+          equals('peppar'),
+        );
       });
 
       test('should handle edge cases', () {
         expect(SwedishPluralization.normalizeToSingular(''), equals(''));
         expect(SwedishPluralization.normalizeToSingular('x'), equals('x'));
-        expect(SwedishPluralization.normalizeToSingular('ar'),
-            equals('ar')); // Too short to strip
-        expect(SwedishPluralization.normalizeToSingular('or'),
-            equals('or')); // Too short to strip
+        expect(
+          SwedishPluralization.normalizeToSingular('ar'),
+          equals('ar'),
+        ); // Too short to strip
+        expect(
+          SwedishPluralization.normalizeToSingular('or'),
+          equals('or'),
+        ); // Too short to strip
       });
     });
 
     group('Pluralize', () {
       test('should return singular for count of 1.0', () {
         expect(
-            SwedishPluralization.pluralize('potatis', 1.0), equals('potatis'));
+          SwedishPluralization.pluralize('potatis', 1.0),
+          equals('potatis'),
+        );
         expect(SwedishPluralization.pluralize('tomat', 1.0), equals('tomat'));
         expect(SwedishPluralization.pluralize('lök', 1.0), equals('lök'));
       });
 
       test('should handle irregular plurals from database', () {
         expect(SwedishPluralization.pluralize('lök', 2.0), equals('lökar'));
-        expect(SwedishPluralization.pluralize('potatis', 3.0),
-            equals('potatisar'));
+        expect(
+          SwedishPluralization.pluralize('potatis', 3.0),
+          equals('potatisar'),
+        );
         expect(SwedishPluralization.pluralize('tomat', 4.0), equals('tomater'));
         expect(SwedishPluralization.pluralize('äpple', 5.0), equals('äpplen'));
       });
@@ -236,38 +346,58 @@ void main() {
         expect(SwedishPluralization.pluralize('mjöl', 2.0), equals('mjöl'));
         expect(SwedishPluralization.pluralize('pasta', 5.0), equals('pasta'));
         expect(
-            SwedishPluralization.pluralize('vatten', 10.0), equals('vatten'));
+          SwedishPluralization.pluralize('vatten', 10.0),
+          equals('vatten'),
+        );
       });
 
       test('should handle measurement units in compound ingredients', () {
-        expect(SwedishPluralization.pluralize('dl mjölk', 2.0),
-            equals('dl mjölk'));
         expect(
-            SwedishPluralization.pluralize('g mjöl', 500.0), equals('g mjöl'));
-        expect(SwedishPluralization.pluralize('msk olja', 3.0),
-            equals('msk olja'));
+          SwedishPluralization.pluralize('dl mjölk', 2.0),
+          equals('dl mjölk'),
+        );
+        expect(
+          SwedishPluralization.pluralize('g mjöl', 500.0),
+          equals('g mjöl'),
+        );
+        expect(
+          SwedishPluralization.pluralize('msk olja', 3.0),
+          equals('msk olja'),
+        );
       });
 
       test('should pluralize compound ingredients without units', () {
-        expect(SwedishPluralization.pluralize('stor lök', 2.0),
-            equals('storar lök'));
-        expect(SwedishPluralization.pluralize('grön paprika', 3.0),
-            equals('grönar paprika'));
+        expect(
+          SwedishPluralization.pluralize('stor lök', 2.0),
+          equals('storar lök'),
+        );
+        expect(
+          SwedishPluralization.pluralize('grön paprika', 3.0),
+          equals('grönar paprika'),
+        );
       });
 
       test('should apply regular pluralization rules', () {
-        expect(SwedishPluralization.pluralize('förpackning', 2.0),
-            equals('förpackningar'));
-        expect(SwedishPluralization.pluralize('tillsättning', 3.0),
-            equals('tillsättningar'));
+        expect(
+          SwedishPluralization.pluralize('förpackning', 2.0),
+          equals('förpackningar'),
+        );
+        expect(
+          SwedishPluralization.pluralize('tillsättning', 3.0),
+          equals('tillsättningar'),
+        );
         expect(SwedishPluralization.pluralize('skiva', 4.0), equals('skivor'));
       });
 
       test('should handle case preservation', () {
-        expect(SwedishPluralization.pluralize('Lök', 2.0),
-            equals('Lökar')); // Now preserves case
-        expect(SwedishPluralization.pluralize('Potatis', 3.0),
-            equals('Potatisar')); // Now preserves case
+        expect(
+          SwedishPluralization.pluralize('Lök', 2.0),
+          equals('Lökar'),
+        ); // Now preserves case
+        expect(
+          SwedishPluralization.pluralize('Potatis', 3.0),
+          equals('Potatisar'),
+        ); // Now preserves case
       });
     });
 
@@ -418,20 +548,30 @@ void main() {
     group('Edge Cases and Complex Scenarios', () {
       test('should handle empty and whitespace strings', () {
         expect(SwedishPluralization.normalizeToSingular(''), equals(''));
-        expect(SwedishPluralization.normalizeToSingular('  ').trim(),
-            equals('')); // Need to trim result
-        expect(SwedishPluralization.pluralize('', 2.0),
-            equals('ar')); // Empty string gets 'ar' added
+        expect(
+          SwedishPluralization.normalizeToSingular('  ').trim(),
+          equals(''),
+        ); // Need to trim result
+        expect(
+          SwedishPluralization.pluralize('', 2.0),
+          equals('ar'),
+        ); // Empty string gets 'ar' added
         expect(SwedishPluralization.formatIngredient('', 3.0), contains('3'));
       });
 
       test('should handle mixed case correctly', () {
-        expect(SwedishPluralization.normalizeToSingular('Tomater'),
-            equals('tomat')); // Database key is lowercase
-        expect(SwedishPluralization.pluralize('Potatis', 2.0),
-            equals('Potatisar')); // Now preserves case
         expect(
-            SwedishPluralization.normalizeToSingular('LÖKAR'), equals('lök'));
+          SwedishPluralization.normalizeToSingular('Tomater'),
+          equals('tomat'),
+        ); // Database key is lowercase
+        expect(
+          SwedishPluralization.pluralize('Potatis', 2.0),
+          equals('Potatisar'),
+        ); // Now preserves case
+        expect(
+          SwedishPluralization.normalizeToSingular('LÖKAR'),
+          equals('lök'),
+        );
       });
 
       test('should handle compound ingredients with multiple words', () {
@@ -445,10 +585,14 @@ void main() {
       });
 
       test('should handle numeric edge cases', () {
-        expect(SwedishPluralization.formatIngredient('potatis', 0.001),
-            contains('0')); // formatFractional rounds to 2 decimals
-        expect(SwedishPluralization.formatIngredient('tomat', 999.99),
-            contains('999,99'));
+        expect(
+          SwedishPluralization.formatIngredient('potatis', 0.001),
+          contains('0'),
+        ); // formatFractional rounds to 2 decimals
+        expect(
+          SwedishPluralization.formatIngredient('tomat', 999.99),
+          contains('999,99'),
+        );
         // Skip infinity test - causes error in truncate
         // expect(SwedishPluralization.formatIngredient('lök', double.infinity), contains('∞'));
       });

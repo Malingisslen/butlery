@@ -17,10 +17,10 @@ class InteractionEntry {
   });
 
   Map<String, dynamic> toJson() => {
-        'screenName': screenName,
-        'actionType': actionType,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'screenName': screenName,
+    'actionType': actionType,
+    'timestamp': timestamp.toIso8601String(),
+  };
 }
 
 /// Tracks recent user interactions in a fixed-size circular buffer.
@@ -29,8 +29,10 @@ class InteractionEntry {
 class InteractionLogger {
   static const int _bufferSize = 20;
 
-  final List<InteractionEntry?> _buffer =
-      List<InteractionEntry?>.filled(_bufferSize, null);
+  final List<InteractionEntry?> _buffer = List<InteractionEntry?>.filled(
+    _bufferSize,
+    null,
+  );
   int _head = 0;
   int _count = 0;
 

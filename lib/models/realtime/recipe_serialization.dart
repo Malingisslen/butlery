@@ -48,7 +48,9 @@ class RecipeSerialization {
       'ownerDisplayName': ownerDisplayName,
       'participants': participants.map(
         (userId, permission) => MapEntry(
-            userId, ResourcePermissionHelper.permissionToString(permission)),
+          userId,
+          ResourcePermissionHelper.permissionToString(permission),
+        ),
       ),
       'createdAt': createdAt ?? clock.now(),
       'lastEditedAt': lastEditedAt ?? clock.now(),
@@ -66,18 +68,25 @@ class RecipeSerialization {
   }
 
   static Recipe deserializeRecipe(
-      Map<String, dynamic> recipeData, String fallbackId) {
+    Map<String, dynamic> recipeData,
+    String fallbackId,
+  ) {
     final coreData = recipeData['core'] as Map<String, dynamic>? ?? recipeData;
 
     return Recipe(
       core: RecipeCore(
-        id: SerializationUtils.safeString(coreData, 'id',
-            defaultValue: fallbackId),
+        id: SerializationUtils.safeString(
+          coreData,
+          'id',
+          defaultValue: fallbackId,
+        ),
         title: SerializationUtils.safeString(coreData, 'title'),
         description: SerializationUtils.safeString(coreData, 'description'),
         portions: SerializationUtils.safeNullableInt(coreData, 'portions'),
-        timeMinutes:
-            SerializationUtils.safeNullableInt(coreData, 'timeMinutes'),
+        timeMinutes: SerializationUtils.safeNullableInt(
+          coreData,
+          'timeMinutes',
+        ),
         ingredients: List<String>.from(coreData['ingredients'] ?? []),
         instructions: List<String>.from(coreData['instructions'] ?? []),
         personalTagIds: coreData['personalTagIds'] != null
@@ -85,19 +94,23 @@ class RecipeSerialization {
             : null,
         rating: (coreData['rating'] as num?)?.toDouble(),
         imageUrls: List<String>.from(coreData['imageUrls'] ?? []),
-        mealType: SerializationUtils.safeString(coreData, 'mealType',
-            defaultValue: 'Middag'),
+        mealType: SerializationUtils.safeString(
+          coreData,
+          'mealType',
+          defaultValue: 'Middag',
+        ),
         sourceUrl: SerializationUtils.safeNullableString(coreData, 'sourceUrl'),
         createdAt:
             SerializationUtils.parseDateTimeValue(coreData['createdAt']) ??
-                clock.now(),
+            clock.now(),
         updatedAt:
             SerializationUtils.parseDateTimeValue(coreData['updatedAt']) ??
-                clock.now(),
+            clock.now(),
         createdBy: SerializationUtils.safeNullableString(coreData, 'createdBy'),
         isPublic: SerializationUtils.safeBool(coreData, 'isPublic'),
-        lastCookedAt:
-            SerializationUtils.parseDateTimeValue(coreData['lastCookedAt']),
+        lastCookedAt: SerializationUtils.parseDateTimeValue(
+          coreData['lastCookedAt'],
+        ),
       ),
       type: RecipeType.realtime,
       socialData: _deserializeSocialData(recipeData),
@@ -108,7 +121,7 @@ class RecipeSerialization {
   /// @deprecated Repositories should use fromData() constructors instead.
   /// This maintains backward compatibility during repository updates.
   static (Recipe recipe, Map<String, dynamic> metadata)
-      deserializeRealtimeRecipe(String id, Map<String, dynamic> data) {
+  deserializeRealtimeRecipe(String id, Map<String, dynamic> data) {
     // Parse recipe data
     final recipeData = data['recipe'] as Map<String, dynamic>? ?? {};
     final recipe = deserializeRecipe(recipeData, id);
@@ -117,17 +130,24 @@ class RecipeSerialization {
     final metadataMap = {
       'id': id,
       'ownerId': SerializationUtils.safeString(data, 'ownerId'),
-      'ownerDisplayName':
-          SerializationUtils.safeString(data, 'ownerDisplayName'),
+      'ownerDisplayName': SerializationUtils.safeString(
+        data,
+        'ownerDisplayName',
+      ),
       'participants': data['participants'] as Map<String, dynamic>? ?? {},
       'createdAt': data['createdAt'],
       'lastEditedAt': data['lastEditedAt'],
       'lastEditedBy': SerializationUtils.safeString(data, 'lastEditedBy'),
-      'lastEditedByDisplayName':
-          SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      'lastEditedByDisplayName': SerializationUtils.safeString(
+        data,
+        'lastEditedByDisplayName',
+      ),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
-      'isActive':
-          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'isActive': SerializationUtils.safeBool(
+        data,
+        'isActive',
+        defaultValue: true,
+      ),
       'metadata': SerializationUtils.safeMap(data, 'metadata'),
     };
 
@@ -201,15 +221,16 @@ class RecipeSerialization {
         SerializationUtils.parseDateTimeValue(data['createdAt']) ?? clock.now();
     sanitized['updatedAt'] =
         SerializationUtils.parseDateTimeValue(data['updatedAt']) ?? clock.now();
-    sanitized['lastCookedAt'] =
-        SerializationUtils.parseDateTimeValue(data['lastCookedAt']);
+    sanitized['lastCookedAt'] = SerializationUtils.parseDateTimeValue(
+      data['lastCookedAt'],
+    );
 
     // String fields
     sanitized['sourceUrl'] = data['sourceUrl']?.toString();
     sanitized['createdBy'] = data['createdBy']?.toString();
     sanitized['lastEditedByUserId'] = data['lastEditedByUserId']?.toString();
-    sanitized['lastEditedByDisplayName'] =
-        data['lastEditedByDisplayName']?.toString();
+    sanitized['lastEditedByDisplayName'] = data['lastEditedByDisplayName']
+        ?.toString();
 
     // Boolean fields
     sanitized['isPublic'] = SerializationUtils.safeBool(data, 'isPublic');
@@ -263,11 +284,15 @@ class RecipeSerialization {
       ownerId: socialData['ownerId']?.toString(),
       ownerDisplayName: socialData['ownerDisplayName']?.toString(),
       memberPermissions: _parsePermissions(socialData['memberPermissions']),
-      allowGuestViewing:
-          SerializationUtils.safeBool(socialData, 'allowGuestViewing'),
+      allowGuestViewing: SerializationUtils.safeBool(
+        socialData,
+        'allowGuestViewing',
+      ),
       allowMemberInvites: SerializationUtils.safeBool(
-          socialData, 'allowMemberInvites',
-          defaultValue: true),
+        socialData,
+        'allowMemberInvites',
+        defaultValue: true,
+      ),
       categoryIds: _sanitizeStringList(socialData['categoryIds']),
       descriptionCollaborative: socialData['description']?.toString(),
     );
@@ -275,7 +300,8 @@ class RecipeSerialization {
 
   /// Parse permissions map
   static Map<String, ResourcePermission>? _parsePermissions(
-      dynamic permissions) {
+    dynamic permissions,
+  ) {
     if (permissions == null) return null;
     if (permissions is! Map) return null;
 
@@ -297,7 +323,8 @@ class RecipeSerialization {
 
   /// Deserialize multiple recipes from batch data
   static List<Recipe> deserializeRecipeBatch(
-      List<Map<String, dynamic>> recipesData) {
+    List<Map<String, dynamic>> recipesData,
+  ) {
     return recipesData.asMap().entries.map((entry) {
       final index = entry.key;
       final data = entry.value;
@@ -307,7 +334,8 @@ class RecipeSerialization {
 
   /// Validate batch recipe data
   static List<String> validateRecipeBatch(
-      List<Map<String, dynamic>> recipesData) {
+    List<Map<String, dynamic>> recipesData,
+  ) {
     final errors = <String>[];
 
     for (int i = 0; i < recipesData.length; i++) {

@@ -60,7 +60,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   Future<void> _initializeMessageStream() async {
     try {
       AppLogger.debug(
-          'Initializing message stream for conversation: ${widget.conversationId}');
+        'Initializing message stream for conversation: ${widget.conversationId}',
+      );
 
       // Load initial messages from MessagingService
       final messages = await _messagingService.getConversationMessagesPage(
@@ -213,8 +214,9 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           onRefresh: _refreshMessages,
           child: ListView.builder(
             controller: _scrollController,
-            padding:
-                const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingS,
+            ),
             itemCount: _messages.length,
             itemBuilder: (context, index) {
               final message = _messages[index];
@@ -230,7 +232,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 } catch (e) {
                   // Reply message not found in current messages
                   AppLogger.warning(
-                      'Reply message not found: ${message.replyToMessageId}');
+                    'Reply message not found: ${message.replyToMessageId}',
+                  );
                 }
               }
 
@@ -239,8 +242,10 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 message: message,
                 currentUserId: viewModel.currentUserId.orEmpty(),
                 replyToMessage: replyToMessage,
-                showAvatar:
-                    viewModel.shouldShowAvatar(message, previousMessage),
+                showAvatar: viewModel.shouldShowAvatar(
+                  message,
+                  previousMessage,
+                ),
                 // BUT-948 exception: long-press opens the message action menu
                 // (contextual), not multi-select — messaging convention.
                 onLongPress: () => widget.onMessageAction(message, 'menu'),

@@ -82,8 +82,9 @@ class GroupMemberCard {
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusS),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusS,
+                      ),
                     ),
                     child: Text(
                       context.l10n.groupOwner,
@@ -105,8 +106,9 @@ class GroupMemberCard {
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondary,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusS),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusS,
+                      ),
                     ),
                     child: Text(
                       context.l10n.groupCreator,
@@ -149,9 +151,7 @@ class GroupMemberCard {
                           const SizedBox(width: AppDimensions.spacingXs),
                           Text(
                             context.l10n.groupRemoveFromGroup,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.error,
                                 ),

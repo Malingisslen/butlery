@@ -47,10 +47,11 @@ class PerFieldCorrection {
 /// Type signature for the function that actually invokes the callable.
 /// Injected in tests; defaults to a real `FirebaseFunctions.httpsCallable`
 /// invocation in production.
-typedef CallableInvoker = Future<void> Function(
-  String name,
-  Map<String, dynamic> body,
-);
+typedef CallableInvoker =
+    Future<void> Function(
+      String name,
+      Map<String, dynamic> body,
+    );
 
 /// Fan-out a [ParsingCorrection] aggregate into per-field upload jobs and
 /// fire each one through the `logParseCorrection` Cloud Function.
@@ -65,7 +66,7 @@ class ParseCorrectionUploader {
   final CallableInvoker _invoker;
 
   ParseCorrectionUploader({CallableInvoker? invoker})
-      : _invoker = invoker ?? _defaultInvoker;
+    : _invoker = invoker ?? _defaultInvoker;
 
   static Future<void> _defaultInvoker(
     String name,
@@ -107,11 +108,13 @@ class ParseCorrectionUploader {
       final fromVal = truncate(from.orEmpty());
       final toVal = truncate(to.orEmpty());
       if (isWhitespaceOrCaseOnly(fromVal, toVal)) return;
-      out.add(PerFieldCorrection(
-        correctedField: field,
-        fromValue: fromVal,
-        toValue: toVal,
-      ));
+      out.add(
+        PerFieldCorrection(
+          correctedField: field,
+          fromValue: fromVal,
+          toValue: toVal,
+        ),
+      );
     }
 
     if (correction.titleCorrection != null) {
@@ -242,11 +245,13 @@ class ParseCorrectionUploader {
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final salt =
-          prefs.getString(FirebaseAnalyticsRepository.saltPrefsKey).orEmpty();
+      final salt = prefs
+          .getString(FirebaseAnalyticsRepository.saltPrefsKey)
+          .orEmpty();
       if (salt.isEmpty) {
         AppLogger.debug(
-            '📊 No analytics salt available yet — skipping per-field upload');
+          '📊 No analytics salt available yet — skipping per-field upload',
+        );
         return 0;
       }
       return upload(

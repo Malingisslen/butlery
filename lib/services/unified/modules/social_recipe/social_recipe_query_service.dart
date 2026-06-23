@@ -26,10 +26,11 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     RecipeServiceAdapter? serviceAdapter,
-  })  : _getCacheHelper = getCacheHelper,
-        _getCurrentUserId = getCurrentUserId,
-        _serviceAdapter = serviceAdapter ??
-            SocialRecipeQueryService._createDefaultServiceAdapter() {
+  }) : _getCacheHelper = getCacheHelper,
+       _getCurrentUserId = getCurrentUserId,
+       _serviceAdapter =
+           serviceAdapter ??
+           SocialRecipeQueryService._createDefaultServiceAdapter() {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
@@ -42,11 +43,14 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
       return allRecipes
-          .where((recipe) =>
-              recipe.isCollaborative &&
-              recipe.socialData?.memberPermissions
-                      ?.containsKey(currentUserId) ==
-                  true)
+          .where(
+            (recipe) =>
+                recipe.isCollaborative &&
+                recipe.socialData?.memberPermissions?.containsKey(
+                      currentUserId,
+                    ) ==
+                    true,
+          )
           .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get collaborative recipes', e);
@@ -59,8 +63,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(userId);
       return allRecipes
-          .where((recipe) =>
-              recipe.isCollaborative && recipe.socialData?.ownerId == userId)
+          .where(
+            (recipe) =>
+                recipe.isCollaborative && recipe.socialData?.ownerId == userId,
+          )
           .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes shared by user', e);
@@ -70,17 +76,20 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
 
   /// Get recipes with specific permission level using repository pattern
   Future<List<Recipe>> getRecipesWithPermission(
-      ResourcePermission permission) async {
+    ResourcePermission permission,
+  ) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return [];
 
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
       return allRecipes
-          .where((recipe) =>
-              recipe.isCollaborative &&
-              recipe.socialData?.memberPermissions?[currentUserId] ==
-                  permission)
+          .where(
+            (recipe) =>
+                recipe.isCollaborative &&
+                recipe.socialData?.memberPermissions?[currentUserId] ==
+                    permission,
+          )
           .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes with permission', e);
@@ -96,9 +105,11 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
       return allRecipes
-          .where((recipe) =>
-              recipe.isCollaborative &&
-              recipe.socialData?.ownerId == currentUserId)
+          .where(
+            (recipe) =>
+                recipe.isCollaborative &&
+                recipe.socialData?.ownerId == currentUserId,
+          )
           .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get owned collaborative recipes', e);
@@ -141,15 +152,19 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
           .length;
 
       final editorAccess = collaborativeRecipes
-          .where((r) =>
-              r.socialData?.memberPermissions?[currentUserId] ==
-              ResourcePermission.editor)
+          .where(
+            (r) =>
+                r.socialData?.memberPermissions?[currentUserId] ==
+                ResourcePermission.editor,
+          )
           .length;
 
       final viewerAccess = collaborativeRecipes
-          .where((r) =>
-              r.socialData?.memberPermissions?[currentUserId] ==
-              ResourcePermission.viewer)
+          .where(
+            (r) =>
+                r.socialData?.memberPermissions?[currentUserId] ==
+                ResourcePermission.viewer,
+          )
           .length;
 
       return {
@@ -248,7 +263,8 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
       }
 
       AppLogger.success(
-          'Loaded ${cachedRecipes.length} cached collaborative recipes');
+        'Loaded ${cachedRecipes.length} cached collaborative recipes',
+      );
       return cachedRecipes;
     } catch (e) {
       AppLogger.error('Failed to load cached collaborative recipes: $e');

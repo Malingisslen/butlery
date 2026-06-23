@@ -44,34 +44,36 @@ void main() {
       // and _saveTokenLocally in production code). The handler is keyed
       // by `arguments.options.key` so the per-test secureStore map can
       // simulate the migration sentinel correctly.
-      const channel =
-          MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+      const channel = MethodChannel(
+        'plugins.it_nomads.com/flutter_secure_storage',
+      );
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall call) async {
-        final args = (call.arguments as Map?) ?? const {};
-        final key = args['key'] as String?;
-        switch (call.method) {
-          case 'read':
-            // Provide deterministic values for known keys; default is the
-            // legacy device-id fallback used by `_getDeviceId`.
-            if (key == null) return null;
-            if (secureStore.containsKey(key)) return secureStore[key];
-            // The fallback device-id reader uses `butlery_fallback_device_id`.
-            // Anything we haven't written yet → null (matches real plugin).
-            if (key == 'butlery_fallback_device_id') return 'test-device-id';
-            return null;
-          case 'write':
-            if (key != null) {
-              secureStore[key] = args['value'] as String?;
+            final args = (call.arguments as Map?) ?? const {};
+            final key = args['key'] as String?;
+            switch (call.method) {
+              case 'read':
+                // Provide deterministic values for known keys; default is the
+                // legacy device-id fallback used by `_getDeviceId`.
+                if (key == null) return null;
+                if (secureStore.containsKey(key)) return secureStore[key];
+                // The fallback device-id reader uses `butlery_fallback_device_id`.
+                // Anything we haven't written yet → null (matches real plugin).
+                if (key == 'butlery_fallback_device_id')
+                  return 'test-device-id';
+                return null;
+              case 'write':
+                if (key != null) {
+                  secureStore[key] = args['value'] as String?;
+                }
+                return true;
+              case 'delete':
+                if (key != null) secureStore.remove(key);
+                return true;
+              default:
+                return null;
             }
-            return true;
-          case 'delete':
-            if (key != null) secureStore.remove(key);
-            return true;
-          default:
-            return null;
-        }
-      });
+          });
 
       await BaseUnitTest.setupUnit();
       registerFallbackValue(DateTime.now());
@@ -87,15 +89,19 @@ void main() {
       mockMessaging = MockFirebaseMessaging();
 
       // Configure device repository stubs
-      when(() => mockRepo.saveTokenToFirestore(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepo.updateDeviceInfo(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepo.saveTokenToFirestore(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.updateDeviceInfo(any(), any()),
+      ).thenAnswer((_) async {});
       when(() => mockRepo.updateTokenTimestamp(any())).thenAnswer((_) async {});
-      when(() => mockRepo.removeOldToken(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepo.cleanupOldDevices(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepo.removeOldToken(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.cleanupOldDevices(any(), any()),
+      ).thenAnswer((_) async {});
       when(() => mockRepo.getAllUserTokens(any())).thenAnswer((_) async => []);
       when(() => mockRepo.markDeviceInactive(any())).thenAnswer((_) async {});
 
@@ -128,8 +134,9 @@ void main() {
         await tokenManager.initialize();
 
         expect(tokenManager.isInitialized, isTrue);
-        verify(() => mockRepo.saveTokenToFirestore(any(), any()))
-            .called(greaterThanOrEqualTo(1));
+        verify(
+          () => mockRepo.saveTokenToFirestore(any(), any()),
+        ).called(greaterThanOrEqualTo(1));
         verify(() => mockRepo.updateDeviceInfo(any(), any())).called(1);
         verify(() => mockRepo.cleanupOldDevices(any(), any())).called(1);
       });
@@ -152,8 +159,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 50));
 
         // Initial + refresh = 2+ saves
-        verify(() => mockRepo.saveTokenToFirestore(any(), any()))
-            .called(greaterThanOrEqualTo(2));
+        verify(
+          () => mockRepo.saveTokenToFirestore(any(), any()),
+        ).called(greaterThanOrEqualTo(2));
 
         await controller.close();
       });
@@ -186,14 +194,16 @@ void main() {
         await tokenManager.initialize();
 
         // Verify save was called for initial registration
-        verify(() => mockRepo.saveTokenToFirestore(any(), any()))
-            .called(greaterThanOrEqualTo(1));
+        verify(
+          () => mockRepo.saveTokenToFirestore(any(), any()),
+        ).called(greaterThanOrEqualTo(1));
 
         // Force refresh - token unchanged so only timestamp update
         await tokenManager.refreshToken();
 
-        verify(() => mockRepo.updateTokenTimestamp(any()))
-            .called(greaterThanOrEqualTo(1));
+        verify(
+          () => mockRepo.updateTokenTimestamp(any()),
+        ).called(greaterThanOrEqualTo(1));
       });
     });
 
@@ -237,8 +247,9 @@ void main() {
       });
 
       test('should handle repository save failure', () async {
-        when(() => mockRepo.saveTokenToFirestore(any(), any()))
-            .thenThrow(Exception('Firestore error'));
+        when(
+          () => mockRepo.saveTokenToFirestore(any(), any()),
+        ).thenThrow(Exception('Firestore error'));
 
         await expectLater(
           tokenManager.initialize(),
@@ -259,8 +270,9 @@ void main() {
       });
 
       test('should get all user tokens', () async {
-        when(() => mockRepo.getAllUserTokens(any()))
-            .thenAnswer((_) async => ['t1', 't2']);
+        when(
+          () => mockRepo.getAllUserTokens(any()),
+        ).thenAnswer((_) async => ['t1', 't2']);
 
         final tokens = await tokenManager.getAllUserTokens();
         expect(tokens, equals(['t1', 't2']));
@@ -291,8 +303,7 @@ void main() {
         expect(age, greaterThanOrEqualTo(0));
       });
 
-      test(
-          'BUT-457: should migrate legacy token from SharedPreferences and '
+      test('BUT-457: should migrate legacy token from SharedPreferences and '
           'scrub the legacy keys on first init', () async {
         // Seed a legacy SharedPreferences token (simulates a user upgrading
         // from a build that wrote the FCM token in plaintext).
@@ -305,20 +316,28 @@ void main() {
 
         // SharedPreferences must be scrubbed.
         final prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString('fcm_token'), isNull,
-            reason: 'legacy SP token must be removed');
-        expect(prefs.getString('fcm_token_timestamp'), isNull,
-            reason: 'legacy SP timestamp must be removed');
+        expect(
+          prefs.getString('fcm_token'),
+          isNull,
+          reason: 'legacy SP token must be removed',
+        );
+        expect(
+          prefs.getString('fcm_token_timestamp'),
+          isNull,
+          reason: 'legacy SP timestamp must be removed',
+        );
 
         // SecureStorage now holds the migrated token (until _refreshToken
         // overwrites it with the freshly-fetched value), or at minimum the
         // migration sentinel.
-        expect(secureStore['fcm_token_sp_migration_done'], equals('true'),
-            reason: 'migration sentinel must be set');
+        expect(
+          secureStore['fcm_token_sp_migration_done'],
+          equals('true'),
+          reason: 'migration sentinel must be set',
+        );
       });
 
-      test(
-          'BUT-457: migration must run only once — sentinel keeps subsequent '
+      test('BUT-457: migration must run only once — sentinel keeps subsequent '
           'inits a no-op against SharedPreferences', () async {
         // Seed legacy token + run init once to set the sentinel.
         SharedPreferences.setMockInitialValues(<String, Object>{
@@ -342,17 +361,19 @@ void main() {
         secondManager.dispose();
 
         final prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString('fcm_token'),
-            equals('someone-elses-key-please-leave-alone'),
-            reason: 'sentinel must stop a second migration sweep');
+        expect(
+          prefs.getString('fcm_token'),
+          equals('someone-elses-key-please-leave-alone'),
+          reason: 'sentinel must stop a second migration sweep',
+        );
       });
 
-      test(
-          'BUT-457: on Firestore save failure, no plaintext write to '
+      test('BUT-457: on Firestore save failure, no plaintext write to '
           'SharedPreferences happens (token never falls back)', () async {
         // Make every Firestore save fail.
-        when(() => mockRepo.saveTokenToFirestore(any(), any()))
-            .thenThrow(Exception('simulated Firestore outage'));
+        when(
+          () => mockRepo.saveTokenToFirestore(any(), any()),
+        ).thenThrow(Exception('simulated Firestore outage'));
 
         // initialize() rethrows the wrapped exception — that's fine; the
         // assertion is that no plaintext SP write smuggles the token to
@@ -364,11 +385,18 @@ void main() {
         }
 
         final prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString('fcm_token'), isNull,
-            reason: 'token MUST NOT be mirrored to SharedPreferences on '
-                'Firestore failure (security regression guard)');
-        expect(prefs.getString('fcm_token_timestamp'), isNull,
-            reason: 'timestamp MUST NOT be mirrored either');
+        expect(
+          prefs.getString('fcm_token'),
+          isNull,
+          reason:
+              'token MUST NOT be mirrored to SharedPreferences on '
+              'Firestore failure (security regression guard)',
+        );
+        expect(
+          prefs.getString('fcm_token_timestamp'),
+          isNull,
+          reason: 'timestamp MUST NOT be mirrored either',
+        );
       });
 
       test('should clear state on dispose', () async {
@@ -379,38 +407,57 @@ void main() {
     });
 
     group('Consent revoke (BUT-754)', () {
-      test('clearLocalToken removes both SecureStorage keys + nulls memory',
-          () async {
-        // Arrange — initialize so the token + timestamp land in secure store.
-        await tokenManager.initialize();
-        expect(secureStore['fcm_token'], equals('test-token-001'),
-            reason: 'precondition: token landed in SecureStorage');
-        expect(secureStore['fcm_token_timestamp'], isNotNull);
-        expect(tokenManager.isInitialized, isTrue);
+      test(
+        'clearLocalToken removes both SecureStorage keys + nulls memory',
+        () async {
+          // Arrange — initialize so the token + timestamp land in secure store.
+          await tokenManager.initialize();
+          expect(
+            secureStore['fcm_token'],
+            equals('test-token-001'),
+            reason: 'precondition: token landed in SecureStorage',
+          );
+          expect(secureStore['fcm_token_timestamp'], isNotNull);
+          expect(tokenManager.isInitialized, isTrue);
 
-        // Act — simulate consent revoke (NotificationService calls this).
-        await tokenManager.clearLocalToken();
+          // Act — simulate consent revoke (NotificationService calls this).
+          await tokenManager.clearLocalToken();
 
-        // Assert — both keys gone, in-memory cache nulled, but the manager
-        // is NOT torn down (no dispose, no topic unsubscribe — that's
-        // cleanup()'s job, not clearLocalToken()'s).
-        expect(secureStore.containsKey('fcm_token'), isFalse,
-            reason: 'token MUST be deleted from SecureStorage');
-        expect(secureStore.containsKey('fcm_token_timestamp'), isFalse,
-            reason: 'timestamp MUST be deleted from SecureStorage');
-        expect(tokenManager.isInitialized, isFalse,
-            reason: '_currentToken nulled → isInitialized flips false');
-        expect(tokenManager.tokenAgeMinutes, isNull,
-            reason: '_lastTokenRefresh nulled → tokenAgeMinutes is null');
-      });
+          // Assert — both keys gone, in-memory cache nulled, but the manager
+          // is NOT torn down (no dispose, no topic unsubscribe — that's
+          // cleanup()'s job, not clearLocalToken()'s).
+          expect(
+            secureStore.containsKey('fcm_token'),
+            isFalse,
+            reason: 'token MUST be deleted from SecureStorage',
+          );
+          expect(
+            secureStore.containsKey('fcm_token_timestamp'),
+            isFalse,
+            reason: 'timestamp MUST be deleted from SecureStorage',
+          );
+          expect(
+            tokenManager.isInitialized,
+            isFalse,
+            reason: '_currentToken nulled → isInitialized flips false',
+          );
+          expect(
+            tokenManager.tokenAgeMinutes,
+            isNull,
+            reason: '_lastTokenRefresh nulled → tokenAgeMinutes is null',
+          );
+        },
+      );
 
-      test('clearLocalToken is idempotent — safe to call when nothing stored',
-          () async {
-        // No initialize(). secureStore is empty.
-        await expectLater(tokenManager.clearLocalToken(), completes);
-        expect(secureStore.containsKey('fcm_token'), isFalse);
-        expect(tokenManager.isInitialized, isFalse);
-      });
+      test(
+        'clearLocalToken is idempotent — safe to call when nothing stored',
+        () async {
+          // No initialize(). secureStore is empty.
+          await expectLater(tokenManager.clearLocalToken(), completes);
+          expect(secureStore.containsKey('fcm_token'), isFalse);
+          expect(tokenManager.isInitialized, isFalse);
+        },
+      );
     });
   });
 }

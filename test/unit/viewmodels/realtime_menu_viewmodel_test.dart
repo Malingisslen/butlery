@@ -47,15 +47,21 @@ void main() {
     registerFallbackValue(ResourcePermission.viewer);
     registerFallbackValue(RecipeFactory.build());
     final fbData = RealtimeMenuData(
-        menuTitle: 'fb', createdForDate: DateTime.now(), menuSnapshot: {});
-    registerFallbackValue(RealtimeMenu(
+      menuTitle: 'fb',
+      createdForDate: DateTime.now(),
+      menuSnapshot: {},
+    );
+    registerFallbackValue(
+      RealtimeMenu(
         id: 'fb',
         ownerId: 'fb',
         ownerDisplayName: 'fb',
         participants: {},
         lastEditedBy: 'fb',
         lastEditedByDisplayName: 'fb',
-        data: fbData));
+        data: fbData,
+      ),
+    );
   });
 
   setUp(() async {
@@ -83,8 +89,9 @@ void main() {
 
     // Sync service stubs
     when(() => mockSyncService.isConnected).thenReturn(true);
-    when(() => mockSyncService.connectionStream)
-        .thenAnswer((_) => connectionController.stream);
+    when(
+      () => mockSyncService.connectionStream,
+    ).thenAnswer((_) => connectionController.stream);
     when(() => mockSyncService.lastError).thenReturn(null);
 
     // Auth service stubs
@@ -95,63 +102,87 @@ void main() {
     when(() => mockMenuService.lastError).thenReturn(null);
     when(() => mockMenuService.addListener(any())).thenReturn(null);
     when(() => mockMenuService.removeListener(any())).thenReturn(null);
-    when(() => mockMenuService.watchRealtimeMenu(any()))
-        .thenAnswer((_) => menuStreamController.stream);
-    when(() => mockMenuService.deleteRealtimeMenu(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => mockMenuService.watchRealtimeMenu(any()),
+    ).thenAnswer((_) => menuStreamController.stream);
+    when(
+      () => mockMenuService.deleteRealtimeMenu(any()),
+    ).thenAnswer((_) async {});
     when(() => mockMenuService.createPersonalCopy(any())).thenReturn({
       'Förrätt': <Recipe>[],
       'Huvudrätt': <Recipe>[],
     });
-    when(() => mockMenuService.updateBasicInfo(
-          resourceId: any(named: 'resourceId'),
-          menuTitle: any(named: 'menuTitle'),
-          createdForDate: any(named: 'createdForDate'),
-          menuNotes: any(named: 'menuNotes'),
-          originalPrompt: any(named: 'originalPrompt'),
-          favoriteRecipeIds: any(named: 'favoriteRecipeIds'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.addRecipeToCategory(
-          resourceId: any(named: 'resourceId'),
-          categoryName: any(named: 'categoryName'),
-          recipe: any(named: 'recipe'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.removeRecipeFromCategory(
-          resourceId: any(named: 'resourceId'),
-          categoryName: any(named: 'categoryName'),
-          recipeIndex: any(named: 'recipeIndex'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.moveRecipeBetweenCategories(
-          resourceId: any(named: 'resourceId'),
-          fromCategory: any(named: 'fromCategory'),
-          fromIndex: any(named: 'fromIndex'),
-          toCategory: any(named: 'toCategory'),
-          toIndex: any(named: 'toIndex'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.clearCategory(
-          resourceId: any(named: 'resourceId'),
-          categoryName: any(named: 'categoryName'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.regenerateCategory(
-          resourceId: any(named: 'resourceId'),
-          categoryName: any(named: 'categoryName'),
-          newRecipes: any(named: 'newRecipes'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.addParticipant(
-          resourceId: any(named: 'resourceId'),
-          userId: any(named: 'userId'),
-          userDisplayName: any(named: 'userDisplayName'),
-          permission: any(named: 'permission'),
-        )).thenAnswer((_) async {});
-    when(() => mockMenuService.removeParticipant(
-          resourceId: any(named: 'resourceId'),
-          userId: any(named: 'userId'),
-        )).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.updateBasicInfo(
+        resourceId: any(named: 'resourceId'),
+        menuTitle: any(named: 'menuTitle'),
+        createdForDate: any(named: 'createdForDate'),
+        menuNotes: any(named: 'menuNotes'),
+        originalPrompt: any(named: 'originalPrompt'),
+        favoriteRecipeIds: any(named: 'favoriteRecipeIds'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.addRecipeToCategory(
+        resourceId: any(named: 'resourceId'),
+        categoryName: any(named: 'categoryName'),
+        recipe: any(named: 'recipe'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.removeRecipeFromCategory(
+        resourceId: any(named: 'resourceId'),
+        categoryName: any(named: 'categoryName'),
+        recipeIndex: any(named: 'recipeIndex'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.moveRecipeBetweenCategories(
+        resourceId: any(named: 'resourceId'),
+        fromCategory: any(named: 'fromCategory'),
+        fromIndex: any(named: 'fromIndex'),
+        toCategory: any(named: 'toCategory'),
+        toIndex: any(named: 'toIndex'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.clearCategory(
+        resourceId: any(named: 'resourceId'),
+        categoryName: any(named: 'categoryName'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.regenerateCategory(
+        resourceId: any(named: 'resourceId'),
+        categoryName: any(named: 'categoryName'),
+        newRecipes: any(named: 'newRecipes'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.addParticipant(
+        resourceId: any(named: 'resourceId'),
+        userId: any(named: 'userId'),
+        userDisplayName: any(named: 'userDisplayName'),
+        permission: any(named: 'permission'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockMenuService.removeParticipant(
+        resourceId: any(named: 'resourceId'),
+        userId: any(named: 'userId'),
+      ),
+    ).thenAnswer((_) async {});
 
     testRecipe1 = RecipeFactory.build(
-        id: 'recipe-1', title: 'Tomatsoppa', mealType: 'Förrätt');
+      id: 'recipe-1',
+      title: 'Tomatsoppa',
+      mealType: 'Förrätt',
+    );
     final r2 = RecipeFactory.build(
-        id: 'recipe-2', title: 'Köttbullar', mealType: 'Huvudrätt');
+      id: 'recipe-2',
+      title: 'Köttbullar',
+      mealType: 'Huvudrätt',
+    );
     testMenu = RealtimeMenu(
       id: 'menu-123',
       ownerId: 'test-user-123',
@@ -168,7 +199,7 @@ void main() {
         createdForDate: DateTime.now(),
         menuSnapshot: {
           'Förrätt': [testRecipe1],
-          'Huvudrätt': [r2]
+          'Huvudrätt': [r2],
         },
       ),
     );
@@ -233,9 +264,10 @@ void main() {
         lastEditedBy: 'test-user-123',
         lastEditedByDisplayName: 'Test User',
         data: RealtimeMenuData(
-            menuTitle: 'Uppdaterad Meny',
-            createdForDate: DateTime.now(),
-            menuSnapshot: testMenu.menuSnapshot),
+          menuTitle: 'Uppdaterad Meny',
+          createdForDate: DateTime.now(),
+          menuSnapshot: testMenu.menuSnapshot,
+        ),
       );
       menuStreamController.add(updated);
       await Future.delayed(const Duration(milliseconds: 50));
@@ -260,62 +292,89 @@ void main() {
     setUp(() async => await watchAndEmit());
 
     test('should add, remove, move, clear recipes', () async {
-      final nr =
-          RecipeFactory.build(id: 'new', title: 'Ny', mealType: 'Förrätt');
+      final nr = RecipeFactory.build(
+        id: 'new',
+        title: 'Ny',
+        mealType: 'Förrätt',
+      );
       await viewModel.addRecipeToCategory(categoryName: 'Förrätt', recipe: nr);
-      verify(() => mockMenuService.addRecipeToCategory(
+      verify(
+        () => mockMenuService.addRecipeToCategory(
           resourceId: 'menu-123',
           categoryName: 'Förrätt',
-          recipe: nr)).called(1);
+          recipe: nr,
+        ),
+      ).called(1);
 
       await viewModel.removeRecipeFromCategory(
-          categoryName: 'Huvudrätt', recipeIndex: 0);
-      verify(() => mockMenuService.removeRecipeFromCategory(
+        categoryName: 'Huvudrätt',
+        recipeIndex: 0,
+      );
+      verify(
+        () => mockMenuService.removeRecipeFromCategory(
           resourceId: 'menu-123',
           categoryName: 'Huvudrätt',
-          recipeIndex: 0)).called(1);
+          recipeIndex: 0,
+        ),
+      ).called(1);
 
       await viewModel.moveRecipeBetweenCategories(
-          fromCategory: 'Förrätt',
-          fromIndex: 0,
-          toCategory: 'Huvudrätt',
-          toIndex: 1);
-      verify(() => mockMenuService.moveRecipeBetweenCategories(
+        fromCategory: 'Förrätt',
+        fromIndex: 0,
+        toCategory: 'Huvudrätt',
+        toIndex: 1,
+      );
+      verify(
+        () => mockMenuService.moveRecipeBetweenCategories(
           resourceId: 'menu-123',
           fromCategory: 'Förrätt',
           fromIndex: 0,
           toCategory: 'Huvudrätt',
-          toIndex: 1)).called(1);
+          toIndex: 1,
+        ),
+      ).called(1);
 
       await viewModel.clearCategory('Huvudrätt');
-      verify(() => mockMenuService.clearCategory(
-          resourceId: 'menu-123', categoryName: 'Huvudrätt')).called(1);
+      verify(
+        () => mockMenuService.clearCategory(
+          resourceId: 'menu-123',
+          categoryName: 'Huvudrätt',
+        ),
+      ).called(1);
     });
 
     test('should guard: no menu, no permission, offline', () async {
       await viewModel.stopWatching();
       await viewModel.addRecipeToCategory(
-          categoryName: 'Förrätt', recipe: testRecipe1);
+        categoryName: 'Förrätt',
+        recipe: testRecipe1,
+      );
       expect(viewModel.errorMessage, equals('Ingen meny laddad'));
 
       await watchAndEmit();
       mockPermission.setPermissionState(
-          currentUserId: 'test-user-123',
-          isAuthenticated: true,
-          defaultHasPermission: false);
+        currentUserId: 'test-user-123',
+        isAuthenticated: true,
+        defaultHasPermission: false,
+      );
       await viewModel.addRecipeToCategory(
-          categoryName: 'Förrätt', recipe: testRecipe1);
+        categoryName: 'Förrätt',
+        recipe: testRecipe1,
+      );
       expect(viewModel.errorMessage, equals('Ingen redigeringsbehörighet'));
 
       mockPermission.setPermissionState(
-          currentUserId: 'test-user-123',
-          isAuthenticated: true,
-          defaultHasPermission: true);
+        currentUserId: 'test-user-123',
+        isAuthenticated: true,
+        defaultHasPermission: true,
+      );
       when(() => mockSyncService.isConnected).thenReturn(false);
       connectionController.add(false);
       await Future.delayed(const Duration(milliseconds: 200));
       await viewModel.addRecipeToCategory(
-          categoryName: 'Förrätt', recipe: testRecipe1);
+        categoryName: 'Förrätt',
+        recipe: testRecipe1,
+      );
       expect(viewModel.errorMessage, equals('Ingen internetanslutning'));
     });
   });
@@ -324,24 +383,33 @@ void main() {
     test('should add and remove participants, error without menu', () async {
       await watchAndEmit();
       await viewModel.addParticipant(
-          userId: 'new-user',
-          userDisplayName: 'New User',
-          permission: ResourcePermission.editor);
-      verify(() => mockMenuService.addParticipant(
+        userId: 'new-user',
+        userDisplayName: 'New User',
+        permission: ResourcePermission.editor,
+      );
+      verify(
+        () => mockMenuService.addParticipant(
           resourceId: 'menu-123',
           userId: 'new-user',
           userDisplayName: 'New User',
-          permission: ResourcePermission.editor)).called(1);
+          permission: ResourcePermission.editor,
+        ),
+      ).called(1);
 
       await viewModel.removeParticipant('user-789');
-      verify(() => mockMenuService.removeParticipant(
-          resourceId: 'menu-123', userId: 'user-789')).called(1);
+      verify(
+        () => mockMenuService.removeParticipant(
+          resourceId: 'menu-123',
+          userId: 'user-789',
+        ),
+      ).called(1);
 
       await viewModel.stopWatching();
       await viewModel.addParticipant(
-          userId: 'x',
-          userDisplayName: 'X',
-          permission: ResourcePermission.editor);
+        userId: 'x',
+        userDisplayName: 'X',
+        permission: ResourcePermission.editor,
+      );
       expect(viewModel.errorMessage, equals('Ingen meny laddad'));
     });
   });
@@ -355,7 +423,9 @@ void main() {
       viewModel.selectCategory('Huvudrätt');
       expect(viewModel.selectedCategory, equals('Huvudrätt'));
       expect(
-          viewModel.selectedCategoryRecipes.first.title, equals('Köttbullar'));
+        viewModel.selectedCategoryRecipes.first.title,
+        equals('Köttbullar'),
+      );
       viewModel.selectCategory(null);
       expect(viewModel.selectedCategory, isNull);
     });
@@ -405,7 +475,9 @@ void main() {
     test('should handle null user', () async {
       when(() => mockAuthService.currentUserId).thenReturn(null);
       mockPermission.setPermissionState(
-          currentUserId: null, isAuthenticated: false);
+        currentUserId: null,
+        isAuthenticated: false,
+      );
       await watchAndEmit();
       expect(viewModel.currentUserId, isNull);
       expect(viewModel.canEdit, isFalse);
@@ -441,28 +513,36 @@ void main() {
 
     test('should update basic info', () async {
       await viewModel.updateBasicInfo(
-          menuTitle: 'Ny Meny', menuNotes: 'Anteckningar');
-      verify(() => mockMenuService.updateBasicInfo(
-            resourceId: 'menu-123',
-            menuTitle: 'Ny Meny',
-            createdForDate: any(named: 'createdForDate'),
-            menuNotes: 'Anteckningar',
-            originalPrompt: any(named: 'originalPrompt'),
-          )).called(1);
+        menuTitle: 'Ny Meny',
+        menuNotes: 'Anteckningar',
+      );
+      verify(
+        () => mockMenuService.updateBasicInfo(
+          resourceId: 'menu-123',
+          menuTitle: 'Ny Meny',
+          createdForDate: any(named: 'createdForDate'),
+          menuNotes: 'Anteckningar',
+          originalPrompt: any(named: 'originalPrompt'),
+        ),
+      ).called(1);
     });
   });
 
   group('Error Handling', () {
     test('should handle service errors and permission changes', () async {
-      when(() => mockMenuService.addRecipeToCategory(
-            resourceId: any(named: 'resourceId'),
-            categoryName: any(named: 'categoryName'),
-            recipe: any(named: 'recipe'),
-          )).thenThrow(Exception('Service error'));
+      when(
+        () => mockMenuService.addRecipeToCategory(
+          resourceId: any(named: 'resourceId'),
+          categoryName: any(named: 'categoryName'),
+          recipe: any(named: 'recipe'),
+        ),
+      ).thenThrow(Exception('Service error'));
 
       await watchAndEmit();
       await viewModel.addRecipeToCategory(
-          categoryName: 'Förrätt', recipe: testRecipe1);
+        categoryName: 'Förrätt',
+        recipe: testRecipe1,
+      );
       expect(viewModel.errorMessage, isNotNull);
 
       // Permission changes mid-session
@@ -484,7 +564,10 @@ void main() {
         lastEditedBy: 'test-user-123',
         lastEditedByDisplayName: 'Test User',
         data: RealtimeMenuData(
-            menuTitle: 'Tom', createdForDate: DateTime.now(), menuSnapshot: {}),
+          menuTitle: 'Tom',
+          createdForDate: DateTime.now(),
+          menuSnapshot: {},
+        ),
       );
       await viewModel.startWatching('empty');
       menuStreamController.add(emptyMenu);

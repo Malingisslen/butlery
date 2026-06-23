@@ -228,8 +228,9 @@ class ShoppingListGenerator {
         for (final rawIngredient in recipe.ingredients) {
           if (rawIngredient.trim().isEmpty) continue;
 
-          final processed =
-              IngredientProcessor.parseAndNormalize(rawIngredient);
+          final processed = IngredientProcessor.parseAndNormalize(
+            rawIngredient,
+          );
           final key = processed.unit.isEmpty
               ? processed.normalizedName
               : '${processed.unit}_${processed.normalizedName}';
@@ -237,21 +238,25 @@ class ShoppingListGenerator {
           quantities[key] = (quantities[key] ?? 0.0) + processed.quantity;
           units.putIfAbsent(key, () => processed.unit);
           displayNames.putIfAbsent(key, () => processed.originalName.trim());
-          categories.putIfAbsent(key,
-              () => IngredientCategorizer.categorize(processed.normalizedName));
+          categories.putIfAbsent(
+            key,
+            () => IngredientCategorizer.categorize(processed.normalizedName),
+          );
         }
       }
     }
 
     final sortedKeys = quantities.keys.toList()..sort();
     return sortedKeys
-        .map((key) => UnifiedShoppingItem(
-              name: displayNames[key]!,
-              amount: quantities[key]!,
-              unit: units[key]!,
-              category: categories[key]!,
-              bought: false,
-            ))
+        .map(
+          (key) => UnifiedShoppingItem(
+            name: displayNames[key]!,
+            amount: quantities[key]!,
+            unit: units[key]!,
+            category: categories[key]!,
+            bought: false,
+          ),
+        )
         .toList();
   }
 
@@ -291,8 +296,9 @@ class ShoppingListGenerator {
     final List<UnifiedShoppingItem> shoppingItems = [];
     final targetPortions = portions ?? recipe.portions ?? 1;
     final originalPortions = recipe.portions ?? 1;
-    final scalingFactor =
-        originalPortions > 0 ? targetPortions / originalPortions : 1.0;
+    final scalingFactor = originalPortions > 0
+        ? targetPortions / originalPortions
+        : 1.0;
 
     for (final rawIngredient in recipe.ingredients) {
       // Skip empty or whitespace-only ingredients
@@ -308,8 +314,9 @@ class ShoppingListGenerator {
 
         // Determine category using normalized name for better accuracy
         // Example: "hackad lök" → normalized to "lök" → correctly categorized as vegetable
-        final category =
-            IngredientCategorizer.categorize(processed.normalizedName);
+        final category = IngredientCategorizer.categorize(
+          processed.normalizedName,
+        );
 
         // Create UnifiedShoppingItem with original name for display
         // but use normalized name for better categorization

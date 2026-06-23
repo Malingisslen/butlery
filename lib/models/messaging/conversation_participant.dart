@@ -90,8 +90,11 @@ class ConversationParticipant {
     return ConversationParticipant(
       conversationId: SerializationUtils.safeString(data, 'conversationId'),
       participantId: doc.id,
-      displayName: SerializationUtils.safeString(data, 'displayName',
-          defaultValue: 'Unknown'),
+      displayName: SerializationUtils.safeString(
+        data,
+        'displayName',
+        defaultValue: 'Unknown',
+      ),
       avatarUrl: SerializationUtils.safeNullableString(data, 'avatarUrl'),
       joinedAt:
           SerializationUtils.safeDateTime(data, 'joinedAt') ?? clock.now(),

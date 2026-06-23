@@ -48,10 +48,10 @@ class PingService extends BaseService with PermissionValidationMixin {
     PermissionService? permissionService,
     UnifiedFriendsService? friendsService,
     NotificationService? notificationService,
-  })  : _firestoreRepository = firestoreRepository,
-        _permissionServiceOverride = permissionService,
-        _friendsServiceOverride = friendsService,
-        _notificationServiceOverride = notificationService;
+  }) : _firestoreRepository = firestoreRepository,
+       _permissionServiceOverride = permissionService,
+       _friendsServiceOverride = friendsService,
+       _notificationServiceOverride = notificationService;
 
   @override
   String get serviceName => 'PingService';
@@ -135,11 +135,13 @@ class PingService extends BaseService with PermissionValidationMixin {
         .where('expiresAt', isGreaterThan: Timestamp.fromDate(now))
         .orderBy('expiresAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => Ping.fromMap(d.id, d.data()))
-            // Long-lived streams outlive the query-time `now` boundary.
-            .where((p) => !p.isExpired)
-            .toList(growable: false));
+        .map(
+          (snap) => snap.docs
+              .map((d) => Ping.fromMap(d.id, d.data()))
+              // Long-lived streams outlive the query-time `now` boundary.
+              .where((p) => !p.isExpired)
+              .toList(growable: false),
+        );
   }
 
   Future<void> acknowledge({
@@ -224,8 +226,9 @@ class PingService extends BaseService with PermissionValidationMixin {
     if (ping.toUserId != null) {
       targets.add(ping.toUserId!);
     } else {
-      final group = _friendsService.categoriesList
-          .firstWhereOrNull((c) => c.id == ping.groupId);
+      final group = _friendsService.categoriesList.firstWhereOrNull(
+        (c) => c.id == ping.groupId,
+      );
       if (group != null) {
         final recipients = group.allMemberIds.toSet()..remove(ping.fromUserId);
         targets.addAll(recipients);
@@ -259,8 +262,8 @@ class PingService extends BaseService with PermissionValidationMixin {
   }
 
   String _resolveSenderDisplayName(String uid) {
-    final name =
-        (_friendsService.friendByUid(uid)?.displayName.trim()).orEmpty();
+    final name = (_friendsService.friendByUid(uid)?.displayName.trim())
+        .orEmpty();
     // Fall back to the UID when the sender isn't a known friend — better
     // than a blank name. The recipient will at least see SOMETHING.
     return name.isEmpty ? uid : name;

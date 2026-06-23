@@ -441,11 +441,20 @@ void main() {
         // Arrange
         final recipes = [
           RecipeFactory.build(
-              id: 'recipe-1', title: 'Recipe 1', createdBy: 'test-user-123'),
+            id: 'recipe-1',
+            title: 'Recipe 1',
+            createdBy: 'test-user-123',
+          ),
           RecipeFactory.build(
-              id: 'recipe-2', title: 'Recipe 2', createdBy: 'test-user-123'),
+            id: 'recipe-2',
+            title: 'Recipe 2',
+            createdBy: 'test-user-123',
+          ),
           RecipeFactory.build(
-              id: 'recipe-3', title: 'Recipe 3', createdBy: 'test-user-123'),
+            id: 'recipe-3',
+            title: 'Recipe 3',
+            createdBy: 'test-user-123',
+          ),
         ];
 
         // Act
@@ -528,32 +537,46 @@ void main() {
             .doc('user-1')
             .collection('recipes')
             .doc('recipe-1')
-            .set(RecipeFactory.build(id: 'recipe-1', createdBy: 'user-1')
-                .toFirestore());
+            .set(
+              RecipeFactory.build(
+                id: 'recipe-1',
+                createdBy: 'user-1',
+              ).toFirestore(),
+            );
 
         await fakeFirestore
             .collection('users')
             .doc('user-1')
             .collection('recipes')
             .doc('recipe-2')
-            .set(RecipeFactory.build(id: 'recipe-2', createdBy: 'user-1')
-                .toFirestore());
+            .set(
+              RecipeFactory.build(
+                id: 'recipe-2',
+                createdBy: 'user-1',
+              ).toFirestore(),
+            );
 
         await fakeFirestore
             .collection('users')
             .doc('user-2')
             .collection('recipes')
             .doc('recipe-3')
-            .set(RecipeFactory.build(id: 'recipe-3', createdBy: 'user-2')
-                .toFirestore());
+            .set(
+              RecipeFactory.build(
+                id: 'recipe-3',
+                createdBy: 'user-2',
+              ).toFirestore(),
+            );
 
         // Act
         final user1Recipes = await repository.fetchUserRecipes('user-1');
 
         // Assert
         expect(user1Recipes, hasLength(2));
-        expect(user1Recipes.map((r) => r.id),
-            containsAll(['recipe-1', 'recipe-2']));
+        expect(
+          user1Recipes.map((r) => r.id),
+          containsAll(['recipe-1', 'recipe-2']),
+        );
       });
     });
 

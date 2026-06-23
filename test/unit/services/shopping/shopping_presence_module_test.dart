@@ -108,23 +108,25 @@ void main() {
       expect(before == null || after != before || after == before, isTrue);
     });
 
-    test('per-list isolation — presence on list A does not leak to list B',
-        () async {
-      await module.showPresence('list_A');
-      final listB = await fake
-          .collection(FirestoreCollections.shoppingPresence)
-          .doc('list_B')
-          .collection(FirestoreCollections.activeUsers)
-          .get();
-      expect(listB.docs, isEmpty);
+    test(
+      'per-list isolation — presence on list A does not leak to list B',
+      () async {
+        await module.showPresence('list_A');
+        final listB = await fake
+            .collection(FirestoreCollections.shoppingPresence)
+            .doc('list_B')
+            .collection(FirestoreCollections.activeUsers)
+            .get();
+        expect(listB.docs, isEmpty);
 
-      final listA = await fake
-          .collection(FirestoreCollections.shoppingPresence)
-          .doc('list_A')
-          .collection(FirestoreCollections.activeUsers)
-          .get();
-      expect(listA.docs, hasLength(1));
-    });
+        final listA = await fake
+            .collection(FirestoreCollections.shoppingPresence)
+            .doc('list_A')
+            .collection(FirestoreCollections.activeUsers)
+            .get();
+        expect(listA.docs, hasLength(1));
+      },
+    );
 
     test('watchListPresence drops rows older than the TTL window', () async {
       // Seed two rows: one fresh, one stale (lastSeen = past).
@@ -137,22 +139,22 @@ void main() {
           .collection(FirestoreCollections.activeUsers)
           .doc('fresh_user')
           .set({
-        'userId': 'fresh_user',
-        'displayName': 'Fresh',
-        'isActive': true,
-        'lastSeen': Timestamp.fromDate(now),
-      });
+            'userId': 'fresh_user',
+            'displayName': 'Fresh',
+            'isActive': true,
+            'lastSeen': Timestamp.fromDate(now),
+          });
       await fake
           .collection(FirestoreCollections.shoppingPresence)
           .doc(listId)
           .collection(FirestoreCollections.activeUsers)
           .doc('stale_user')
           .set({
-        'userId': 'stale_user',
-        'displayName': 'Stale',
-        'isActive': true,
-        'lastSeen': Timestamp.fromDate(stale),
-      });
+            'userId': 'stale_user',
+            'displayName': 'Stale',
+            'isActive': true,
+            'lastSeen': Timestamp.fromDate(stale),
+          });
 
       final rows = await module.watchListPresence(listId).first;
       expect(

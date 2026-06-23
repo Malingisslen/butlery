@@ -68,8 +68,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _socialViewModel ??=
-        Provider.of<SocialRecipeViewModel>(context, listen: false);
+    _socialViewModel ??= Provider.of<SocialRecipeViewModel>(
+      context,
+      listen: false,
+    );
   }
 
   @override
@@ -135,8 +137,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   children: [
                     Semantics(
                       header: true,
-                      child: Text(context.l10n.socialComments,
-                          style: AppTextStyles.titleMedium),
+                      child: Text(
+                        context.l10n.socialComments,
+                        style: AppTextStyles.titleMedium,
+                      ),
                     ),
                     if ((vm.commentCount ?? 0) > 0) ...[
                       const SizedBox(height: AppDimensions.spacingXs),
@@ -180,9 +184,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   /// so neither the inline label nor the dialog can under-state who sees the
   /// comment. Empty total for non-collaborative recipes (no shared audience).
   ({List<String> resolved, int total}) _resolveCommentAudience(
-      SocialRecipeViewModel vm) {
+    SocialRecipeViewModel vm,
+  ) {
     final audienceIds = commentVisibilityAudience(
-        widget.recipe, (vm.currentUser?.uid).orEmpty());
+      widget.recipe,
+      (vm.currentUser?.uid).orEmpty(),
+    );
 
     final friendNames = <String, String>{};
     try {
@@ -232,14 +239,18 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           onTap: () => _showAudienceDialog(context, vm),
           child: Row(
             children: [
-              Icon(Icons.visibility_outlined,
-                  size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+              Icon(
+                Icons.visibility_outlined,
+                size: AppDimensions.iconSizeS,
+                color: cs.onSurfaceVariant,
+              ),
               const SizedBox(width: AppDimensions.spacingXxs),
               Flexible(
                 child: Text(
                   context.l10n.recipeCommentVisibleTo(audienceStr),
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: cs.onSurfaceVariant),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -255,7 +266,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   /// comment. Members whose name didn't resolve are shown as a trailing count —
   /// never hidden, preserving the same privacy invariant as the inline label.
   Future<void> _showAudienceDialog(
-      BuildContext context, SocialRecipeViewModel vm) async {
+    BuildContext context,
+    SocialRecipeViewModel vm,
+  ) async {
     final audience = _resolveCommentAudience(vm);
     if (audience.total <= 0) return;
     final unresolved = audience.total - audience.resolved.length;
@@ -267,8 +280,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.visibility_outlined,
-                  size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+              Icon(
+                Icons.visibility_outlined,
+                size: AppDimensions.iconSizeS,
+                color: cs.onSurfaceVariant,
+              ),
               const SizedBox(width: AppDimensions.spacingXs),
               Text(ctx.l10n.recipeCommentAudienceTitle),
             ],
@@ -289,16 +305,21 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       for (final name in audience.resolved)
                         Padding(
                           padding: const EdgeInsets.only(
-                              bottom: AppDimensions.spacingXs),
+                            bottom: AppDimensions.spacingXs,
+                          ),
                           child: Row(
                             children: [
-                              Icon(Icons.person_outline,
-                                  size: AppDimensions.iconSizeS,
-                                  color: cs.onSurfaceVariant),
+                              Icon(
+                                Icons.person_outline,
+                                size: AppDimensions.iconSizeS,
+                                color: cs.onSurfaceVariant,
+                              ),
                               const SizedBox(width: AppDimensions.spacingM),
                               Flexible(
-                                child:
-                                    Text(name, style: AppTextStyles.bodyMedium),
+                                child: Text(
+                                  name,
+                                  style: AppTextStyles.bodyMedium,
+                                ),
                               ),
                             ],
                           ),
@@ -306,11 +327,13 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       if (unresolved > 0)
                         Padding(
                           padding: const EdgeInsets.only(
-                              top: AppDimensions.spacingXxs),
+                            top: AppDimensions.spacingXxs,
+                          ),
                           child: Text(
                             ctx.l10n.recipeCommentAudienceOthers(unresolved),
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: cs.onSurfaceVariant),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
                         ),
                     ],
@@ -426,7 +449,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Widget _buildCommentWithReplies(
-      RecipeComment comment, SocialRecipeViewModel vm) {
+    RecipeComment comment,
+    SocialRecipeViewModel vm,
+  ) {
     final replies = vm.getReplies(comment.id);
     final currentUserId = vm.currentUser?.uid;
 
@@ -441,8 +466,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           comment: c,
           authorDisplayName: vm.getAuthorDisplayName(c.authorId),
           authorAvatarUrl: vm.getAuthorAvatarUrl(c.authorId),
-          formattedTime:
-              CommentItemWidgets.formatCommentTime(context, c.createdAt),
+          formattedTime: CommentItemWidgets.formatCommentTime(
+            context,
+            c.createdAt,
+          ),
           onReply: () => vm.setReplyTo(c.id),
           onToggleLike: () => _toggleLike(c, vm),
           onShowLikes: c.likeCount > 0 ? () => _showLikesDialog(c, vm) : null,
@@ -461,7 +488,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _deleteComment(
-      RecipeComment comment, SocialRecipeViewModel vm) async {
+    RecipeComment comment,
+    SocialRecipeViewModel vm,
+  ) async {
     final confirmed = await CommonDialogActions.showDeleteConfirmation(
       context: context,
       itemName: comment.text.length > 40
@@ -501,7 +530,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _editComment(
-      RecipeComment comment, SocialRecipeViewModel vm) async {
+    RecipeComment comment,
+    SocialRecipeViewModel vm,
+  ) async {
     final controller = TextEditingController(text: comment.text);
     final newText = await showDialog<String>(
       context: context,
@@ -546,7 +577,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _toggleLike(
-      RecipeComment comment, SocialRecipeViewModel vm) async {
+    RecipeComment comment,
+    SocialRecipeViewModel vm,
+  ) async {
     if (vm.currentUser == null) {
       _showMessage(context.l10n.socialMustBeLoggedInToLike, isError: true);
       return;
@@ -561,7 +594,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _toggleReaction(
-      RecipeComment comment, SocialRecipeViewModel vm, String emoji) async {
+    RecipeComment comment,
+    SocialRecipeViewModel vm,
+    String emoji,
+  ) async {
     if (vm.currentUser == null) return;
     try {
       final success = await CommentReactionsSystem.toggleCommentReaction(
@@ -581,7 +617,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Future<void> _showLikesDialog(
-      RecipeComment comment, SocialRecipeViewModel vm) async {
+    RecipeComment comment,
+    SocialRecipeViewModel vm,
+  ) async {
     if (!mounted) return;
 
     // Fetch likers from subcollection

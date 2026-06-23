@@ -61,39 +61,43 @@ void main() {
     });
 
     testWidgets(
-        'close button hit region is at least 48x48dp after TappableWrapper '
-        'migration', (tester) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Center(
-            child: Builder(
-              builder: (ctx) => _cookingModeCloseButton(ctx, () {}),
+      'close button hit region is at least 48x48dp after TappableWrapper '
+      'migration',
+      (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Center(
+              child: Builder(
+                builder: (ctx) => _cookingModeCloseButton(ctx, () {}),
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final size = tester.getSize(find.byType(TappableWrapper));
-      expect(size.width, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-      expect(size.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-    });
+        final size = tester.getSize(find.byType(TappableWrapper));
+        expect(size.width, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+        expect(size.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+      },
+    );
 
     testWidgets(
-        'font-scale toggle hit region is at least 48x48dp even when the '
-        'child is a short Text glyph', (tester) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Center(
-            child: Builder(
-              builder: (ctx) => _cookingModeFontScaleToggle(ctx, () {}),
+      'font-scale toggle hit region is at least 48x48dp even when the '
+      'child is a short Text glyph',
+      (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Center(
+              child: Builder(
+                builder: (ctx) => _cookingModeFontScaleToggle(ctx, () {}),
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final size = tester.getSize(find.byType(TappableWrapper));
-      expect(size.width, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-      expect(size.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
-    });
+        final size = tester.getSize(find.byType(TappableWrapper));
+        expect(size.width, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+        expect(size.height, greaterThanOrEqualTo(AppDimensions.minTouchTarget));
+      },
+    );
   });
 }

@@ -70,8 +70,9 @@ void main() {
       test('should expose email from auth service when stubbed', () {
         // currentUserEmail is not concretely overridden in MockAuthService,
         // so stub it to verify the VM delegates correctly.
-        when(() => mockAuthService.currentUserEmail)
-            .thenReturn('test@example.com');
+        when(
+          () => mockAuthService.currentUserEmail,
+        ).thenReturn('test@example.com');
         expect(viewModel.email, equals('test@example.com'));
       });
 
@@ -108,8 +109,9 @@ void main() {
       // Behavior: falls back to auth display name when profile is null
       test('should fall back to auth display name when no profile', () {
         when(() => mockUserService.currentUserProfile).thenReturn(null);
-        when(() => mockAuthService.currentUserDisplayName)
-            .thenReturn('Auth User');
+        when(
+          () => mockAuthService.currentUserDisplayName,
+        ).thenReturn('Auth User');
         expect(viewModel.displayName, equals('Auth User'));
       });
     });
@@ -133,10 +135,16 @@ void main() {
 
         await viewModel.logout();
 
-        expect(loadingStates, contains(true),
-            reason: 'Loading should be true during logout');
-        expect(viewModel.isLoading, isFalse,
-            reason: 'Loading should be false after logout');
+        expect(
+          loadingStates,
+          contains(true),
+          reason: 'Loading should be true during logout',
+        );
+        expect(
+          viewModel.isLoading,
+          isFalse,
+          reason: 'Loading should be false after logout',
+        );
       });
 
       // Behavior: propagates error when signOut fails
@@ -162,13 +170,16 @@ void main() {
     group('deleteAccount', () {
       // Behavior: returns true when account deletion succeeds
       test('should return true when deletion succeeds', () async {
-        when(() => mockAccountDeletionService.deleteUserAccount(
-              reason: any(named: 'reason'),
-              createAuditLog: any(named: 'createAuditLog'),
-            )).thenAnswer((_) async => {'success': true});
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenAnswer((_) async => {'success': true});
 
-        final result =
-            await viewModel.deleteAccount(reason: 'No longer needed');
+        final result = await viewModel.deleteAccount(
+          reason: 'No longer needed',
+        );
 
         expect(result, isTrue);
         expect(viewModel.isLoading, isFalse);
@@ -176,34 +187,44 @@ void main() {
 
       // Behavior: passes reason and audit log flag to deletion service
       test('should pass reason to deletion service', () async {
-        when(() => mockAccountDeletionService.deleteUserAccount(
-              reason: any(named: 'reason'),
-              createAuditLog: any(named: 'createAuditLog'),
-            )).thenAnswer((_) async => {'success': true});
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenAnswer((_) async => {'success': true});
 
         await viewModel.deleteAccount(reason: 'Privacy concerns');
 
-        verify(() => mockAccountDeletionService.deleteUserAccount(
-              reason: 'Privacy concerns',
-              createAuditLog: true,
-            )).called(1);
+        verify(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: 'Privacy concerns',
+            createAuditLog: true,
+          ),
+        ).called(1);
       });
 
       // Behavior: returns false when deletion reports failure
-      test('should return false when deletion result is not successful',
-          () async {
-        when(() => mockAccountDeletionService.deleteUserAccount(
+      test(
+        'should return false when deletion result is not successful',
+        () async {
+          when(
+            () => mockAccountDeletionService.deleteUserAccount(
               reason: any(named: 'reason'),
               createAuditLog: any(named: 'createAuditLog'),
-            )).thenAnswer((_) async => {
+            ),
+          ).thenAnswer(
+            (_) async => {
               'success': false,
-              'errors': ['profile: deletion failed']
-            });
+              'errors': ['profile: deletion failed'],
+            },
+          );
 
-        final result = await viewModel.deleteAccount(reason: 'Testing');
+          final result = await viewModel.deleteAccount(reason: 'Testing');
 
-        expect(result, isFalse);
-      });
+          expect(result, isFalse);
+        },
+      );
 
       // Behavior: returns false when no user is logged in
       test('should return false when no user is logged in', () async {
@@ -227,10 +248,12 @@ void main() {
 
       // Behavior: returns false when deletion service throws
       test('should return false when deletion service throws', () async {
-        when(() => mockAccountDeletionService.deleteUserAccount(
-              reason: any(named: 'reason'),
-              createAuditLog: any(named: 'createAuditLog'),
-            )).thenThrow(Exception('Network error'));
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenThrow(Exception('Network error'));
 
         bool result = false;
         try {
@@ -249,28 +272,38 @@ void main() {
           loadingStates.add(viewModel.isLoading);
         });
 
-        when(() => mockAccountDeletionService.deleteUserAccount(
-              reason: any(named: 'reason'),
-              createAuditLog: any(named: 'createAuditLog'),
-            )).thenAnswer((_) async => {'success': true});
+        when(
+          () => mockAccountDeletionService.deleteUserAccount(
+            reason: any(named: 'reason'),
+            createAuditLog: any(named: 'createAuditLog'),
+          ),
+        ).thenAnswer((_) async => {'success': true});
 
         await viewModel.deleteAccount(reason: 'Test');
 
-        expect(loadingStates, contains(true),
-            reason: 'Loading should be true during deletion');
-        expect(viewModel.isLoading, isFalse,
-            reason: 'Loading should be false after deletion');
+        expect(
+          loadingStates,
+          contains(true),
+          reason: 'Loading should be true during deletion',
+        );
+        expect(
+          viewModel.isLoading,
+          isFalse,
+          reason: 'Loading should be false after deletion',
+        );
       });
     });
 
     group('updateProfile', () {
       // Behavior: calls createOrUpdateProfile on user service with correct args
       test('should call user service with profile data', () async {
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: any(named: 'displayName'),
-              isSearchable: any(named: 'isSearchable'),
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+          ),
+        ).thenAnswer((_) async => null);
 
         await viewModel.updateProfile(
           displayName: 'New Name',
@@ -278,20 +311,24 @@ void main() {
           allowEmailSearch: false,
         );
 
-        verify(() => mockUserService.createOrUpdateProfile(
-              displayName: 'New Name',
-              isSearchable: true,
-              allowEmailSearch: false,
-            )).called(1);
+        verify(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: 'New Name',
+            isSearchable: true,
+            allowEmailSearch: false,
+          ),
+        ).called(1);
       });
 
       // Behavior: completes without error on success
       test('should not have error after successful update', () async {
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: any(named: 'displayName'),
-              isSearchable: any(named: 'isSearchable'),
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+          ),
+        ).thenAnswer((_) async => null);
 
         await viewModel.updateProfile(
           displayName: 'Updated Name',
@@ -303,11 +340,13 @@ void main() {
 
       // Behavior: sets error when user service throws
       test('should set error when update fails', () async {
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: any(named: 'displayName'),
-              isSearchable: any(named: 'isSearchable'),
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-            )).thenThrow(Exception('Update failed'));
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+          ),
+        ).thenThrow(Exception('Update failed'));
 
         try {
           await viewModel.updateProfile(displayName: 'Fail');
@@ -326,18 +365,26 @@ void main() {
           loadingStates.add(viewModel.isLoading);
         });
 
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: any(named: 'displayName'),
-              isSearchable: any(named: 'isSearchable'),
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+          ),
+        ).thenAnswer((_) async => null);
 
         await viewModel.updateProfile(displayName: 'Name');
 
-        expect(loadingStates, contains(true),
-            reason: 'Loading should be true during update');
-        expect(viewModel.isLoading, isFalse,
-            reason: 'Loading should be false after update');
+        expect(
+          loadingStates,
+          contains(true),
+          reason: 'Loading should be true during update',
+        );
+        expect(
+          viewModel.isLoading,
+          isFalse,
+          reason: 'Loading should be false after update',
+        );
       });
     });
 

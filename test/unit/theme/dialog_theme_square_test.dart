@@ -22,10 +22,14 @@ void main() {
 
         expect(theme.shape, isA<RoundedRectangleBorder>());
         final shape = theme.shape! as RoundedRectangleBorder;
-        expect(shape.borderRadius, BorderRadius.zero,
-            reason: 'SQUARE-everywhere design rule ($brightness): new '
-                'dialogs must not silently render rounded corners — that '
-                'was the BUT-1237 bug.');
+        expect(
+          shape.borderRadius,
+          BorderRadius.zero,
+          reason:
+              'SQUARE-everywhere design rule ($brightness): new '
+              'dialogs must not silently render rounded corners — that '
+              'was the BUT-1237 bug.',
+        );
       }
     });
 
@@ -33,10 +37,14 @@ void main() {
       final cs = ColorScheme.fromSeed(seedColor: Colors.green);
       final theme = NavigationThemes.dialogTheme(cs);
 
-      expect(theme.backgroundColor, cs.surface,
-          reason: 'Mockup spec §4.17: dialog box renders on cream — '
-              'cs.surface maps to cream in the app light scheme and stays '
-              'scheme-correct in dark mode.');
+      expect(
+        theme.backgroundColor,
+        cs.surface,
+        reason:
+            'Mockup spec §4.17: dialog box renders on cream — '
+            'cs.surface maps to cream in the app light scheme and stays '
+            'scheme-correct in dark mode.',
+      );
     });
   });
 }

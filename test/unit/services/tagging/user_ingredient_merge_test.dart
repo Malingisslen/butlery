@@ -28,12 +28,15 @@ void main() {
     mockUserIngredientRepo = MockUserIngredientRepository();
 
     // Default stubs for all repository methods
-    when(() => mockIngredientRepo.findByName(any()))
-        .thenAnswer((_) async => null);
-    when(() => mockIngredientRepo.findByAlias(any()))
-        .thenAnswer((_) async => []);
-    when(() => mockUserIngredientRepo.findByName(any(), any()))
-        .thenAnswer((_) async => null);
+    when(
+      () => mockIngredientRepo.findByName(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => mockIngredientRepo.findByAlias(any()),
+    ).thenAnswer((_) async => []);
+    when(
+      () => mockUserIngredientRepo.findByName(any(), any()),
+    ).thenAnswer((_) async => null);
 
     lookupService = IngredientLookupService(
       ingredientRepository: mockIngredientRepo,
@@ -47,39 +50,43 @@ void main() {
   });
 
   group('M2: User ingredient override behavior', () {
-    test('user ingredient with same name overrides global ingredient',
-        () async {
-      // Global ingredient: Tofu is plant-based
-      final globalTofu = _createIngredient(
-        'tofu-global',
-        'tofu',
-        properties: {'plant-based'},
-      );
+    test(
+      'user ingredient with same name overrides global ingredient',
+      () async {
+        // Global ingredient: Tofu is plant-based
+        final globalTofu = _createIngredient(
+          'tofu-global',
+          'tofu',
+          properties: {'plant-based'},
+        );
 
-      // User ingredient: User's custom tofu has extra properties
-      final userTofu = _createIngredient(
-        'tofu-user-custom',
-        'tofu',
-        properties: {'plant-based', 'high-protein', 'fermented'},
-        status: 'user-defined',
-      );
+        // User ingredient: User's custom tofu has extra properties
+        final userTofu = _createIngredient(
+          'tofu-user-custom',
+          'tofu',
+          properties: {'plant-based', 'high-protein', 'fermented'},
+          status: 'user-defined',
+        );
 
-      // Setup: global exists, user also has custom definition
-      when(() => mockIngredientRepo.findByName('tofu'))
-          .thenAnswer((_) async => globalTofu);
-      when(() => mockUserIngredientRepo.findByName('user1', 'tofu'))
-          .thenAnswer((_) async => userTofu);
+        // Setup: global exists, user also has custom definition
+        when(
+          () => mockIngredientRepo.findByName('tofu'),
+        ).thenAnswer((_) async => globalTofu);
+        when(
+          () => mockUserIngredientRepo.findByName('user1', 'tofu'),
+        ).thenAnswer((_) async => userTofu);
 
-      // When looking up with userId, user ingredient should take priority
-      final result = await lookupService.lookupIngredients(
-        ['tofu'],
-        userId: 'user1',
-      );
+        // When looking up with userId, user ingredient should take priority
+        final result = await lookupService.lookupIngredients(
+          ['tofu'],
+          userId: 'user1',
+        );
 
-      expect(result.matchedCount, 1);
-      expect(result.matched.first.id, 'tofu-user-custom');
-      expect(result.matched.first.hasProperty('fermented'), isTrue);
-    });
+        expect(result.matchedCount, 1);
+        expect(result.matched.first.id, 'tofu-user-custom');
+        expect(result.matched.first.hasProperty('fermented'), isTrue);
+      },
+    );
 
     test('user ingredient allows custom allergen properties', () async {
       // Global pasta has gluten
@@ -97,10 +104,12 @@ void main() {
         status: 'user-defined',
       );
 
-      when(() => mockIngredientRepo.findByName('pasta'))
-          .thenAnswer((_) async => globalPasta);
-      when(() => mockUserIngredientRepo.findByName('user1', 'pasta'))
-          .thenAnswer((_) async => userGlutenFreePasta);
+      when(
+        () => mockIngredientRepo.findByName('pasta'),
+      ).thenAnswer((_) async => globalPasta);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'pasta'),
+      ).thenAnswer((_) async => userGlutenFreePasta);
 
       final result = await lookupService.lookupIngredients(
         ['pasta'],
@@ -129,10 +138,12 @@ void main() {
       );
 
       // Note: _cleanForLookup normalizes ä→a, so 'ägg' becomes 'agg'
-      when(() => mockIngredientRepo.findByName('agg'))
-          .thenAnswer((_) async => globalEgg);
-      when(() => mockUserIngredientRepo.findByName('user1', 'agg'))
-          .thenAnswer((_) async => userVeganEgg);
+      when(
+        () => mockIngredientRepo.findByName('agg'),
+      ).thenAnswer((_) async => globalEgg);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'agg'),
+      ).thenAnswer((_) async => userVeganEgg);
 
       // Lookup with user context
       final lookup = await lookupService.lookupIngredients(
@@ -161,13 +172,16 @@ void main() {
       );
 
       // Setup: tofu only in user, ris and lök only in global
-      when(() => mockIngredientRepo.findByName('ris'))
-          .thenAnswer((_) async => globalRis);
+      when(
+        () => mockIngredientRepo.findByName('ris'),
+      ).thenAnswer((_) async => globalRis);
       // Note: _cleanForLookup normalizes ö→o, so 'lök' becomes 'lok'
-      when(() => mockIngredientRepo.findByName('lok'))
-          .thenAnswer((_) async => globalLok);
-      when(() => mockUserIngredientRepo.findByName('user1', 'tofu'))
-          .thenAnswer((_) async => userTofu);
+      when(
+        () => mockIngredientRepo.findByName('lok'),
+      ).thenAnswer((_) async => globalLok);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'tofu'),
+      ).thenAnswer((_) async => userTofu);
 
       final result = await lookupService.lookupIngredients(
         ['ris', 'tofu', 'lök'],
@@ -192,8 +206,9 @@ void main() {
       );
 
       // User has no custom tomat
-      when(() => mockIngredientRepo.findByName('tomat'))
-          .thenAnswer((_) async => globalTomat);
+      when(
+        () => mockIngredientRepo.findByName('tomat'),
+      ).thenAnswer((_) async => globalTomat);
       // mockUserIngredientRepo returns null by default
 
       final result = await lookupService.lookupIngredients(
@@ -207,47 +222,51 @@ void main() {
   });
 
   group('M2: User ingredient tag generation integration', () {
-    test('user-defined gluten-free pasta generates FREE gluten status',
-        () async {
-      // User's gluten-free pasta
-      final userGlutenFreePasta = _createIngredient(
-        'gf-pasta',
-        'pasta',
-        properties: {'pasta-base'}, // No contains-gluten
-        status: 'user-defined',
-      );
+    test(
+      'user-defined gluten-free pasta generates FREE gluten status',
+      () async {
+        // User's gluten-free pasta
+        final userGlutenFreePasta = _createIngredient(
+          'gf-pasta',
+          'pasta',
+          properties: {'pasta-base'}, // No contains-gluten
+          status: 'user-defined',
+        );
 
-      final userTomat = _createIngredient(
-        'tomat-user',
-        'tomat',
-        properties: {},
-        status: 'user-defined',
-      );
+        final userTomat = _createIngredient(
+          'tomat-user',
+          'tomat',
+          properties: {},
+          status: 'user-defined',
+        );
 
-      when(() => mockUserIngredientRepo.findByName('user1', 'pasta'))
-          .thenAnswer((_) async => userGlutenFreePasta);
-      when(() => mockUserIngredientRepo.findByName('user1', 'tomat'))
-          .thenAnswer((_) async => userTomat);
+        when(
+          () => mockUserIngredientRepo.findByName('user1', 'pasta'),
+        ).thenAnswer((_) async => userGlutenFreePasta);
+        when(
+          () => mockUserIngredientRepo.findByName('user1', 'tomat'),
+        ).thenAnswer((_) async => userTomat);
 
-      final recipe = RecipeBuilder()
-          .withTitle('GF Pasta')
-          .withIngredients(['pasta', 'tomat'])
-          .withTimeMinutes(20)
-          .build();
+        final recipe = RecipeBuilder()
+            .withTitle('GF Pasta')
+            .withIngredients(['pasta', 'tomat'])
+            .withTimeMinutes(20)
+            .build();
 
-      final lookup = await lookupService.lookupIngredients(
-        ['pasta', 'tomat'],
-        userId: 'user1',
-      );
+        final lookup = await lookupService.lookupIngredients(
+          ['pasta', 'tomat'],
+          userId: 'user1',
+        );
 
-      final result = tagGenerator.generate(
-        ingredients: lookup,
-        recipe: recipe,
-      );
+        final result = tagGenerator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+        );
 
-      // Should be gluten-free since user's pasta has no gluten property
-      expect(result.allergenStatus['gluten'], isNot(TriState.contains));
-    });
+        // Should be gluten-free since user's pasta has no gluten property
+        expect(result.allergenStatus['gluten'], isNot(TriState.contains));
+      },
+    );
 
     test('user-defined vegan product changes dietary status', () async {
       // User defined vegan mayo (no animal products)
@@ -265,10 +284,12 @@ void main() {
         status: 'user-defined',
       );
 
-      when(() => mockUserIngredientRepo.findByName('user1', 'majonnäs'))
-          .thenAnswer((_) async => userVeganMayo);
-      when(() => mockUserIngredientRepo.findByName('user1', 'sallad'))
-          .thenAnswer((_) async => userLettuce);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'majonnäs'),
+      ).thenAnswer((_) async => userVeganMayo);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'sallad'),
+      ).thenAnswer((_) async => userLettuce);
 
       final recipe = RecipeBuilder()
           .withTitle('Vegan Salad')
@@ -292,43 +313,64 @@ void main() {
   });
 
   group('M2: Cache behavior with user ingredients', () {
-    test('same ingredient name has different cache for different users',
-        () async {
-      final user1Tofu =
-          _createIngredient('tofu-u1', 'tofu', properties: {'extra1'});
-      final user2Tofu =
-          _createIngredient('tofu-u2', 'tofu', properties: {'extra2'});
+    test(
+      'same ingredient name has different cache for different users',
+      () async {
+        final user1Tofu = _createIngredient(
+          'tofu-u1',
+          'tofu',
+          properties: {'extra1'},
+        );
+        final user2Tofu = _createIngredient(
+          'tofu-u2',
+          'tofu',
+          properties: {'extra2'},
+        );
 
-      when(() => mockUserIngredientRepo.findByName('user1', 'tofu'))
-          .thenAnswer((_) async => user1Tofu);
-      when(() => mockUserIngredientRepo.findByName('user2', 'tofu'))
-          .thenAnswer((_) async => user2Tofu);
+        when(
+          () => mockUserIngredientRepo.findByName('user1', 'tofu'),
+        ).thenAnswer((_) async => user1Tofu);
+        when(
+          () => mockUserIngredientRepo.findByName('user2', 'tofu'),
+        ).thenAnswer((_) async => user2Tofu);
 
-      // Lookup for user1
-      final result1 =
-          await lookupService.lookupIngredients(['tofu'], userId: 'user1');
-      expect(result1.matched.first.id, 'tofu-u1');
+        // Lookup for user1
+        final result1 = await lookupService.lookupIngredients([
+          'tofu',
+        ], userId: 'user1');
+        expect(result1.matched.first.id, 'tofu-u1');
 
-      // Lookup for user2 - should not get user1's cached result
-      final result2 =
-          await lookupService.lookupIngredients(['tofu'], userId: 'user2');
-      expect(result2.matched.first.id, 'tofu-u2');
-    });
+        // Lookup for user2 - should not get user1's cached result
+        final result2 = await lookupService.lookupIngredients([
+          'tofu',
+        ], userId: 'user2');
+        expect(result2.matched.first.id, 'tofu-u2');
+      },
+    );
 
     test('global lookup not affected by user cache', () async {
-      final globalTofu =
-          _createIngredient('tofu-global', 'tofu', properties: {});
-      final userTofu =
-          _createIngredient('tofu-user', 'tofu', properties: {'custom'});
+      final globalTofu = _createIngredient(
+        'tofu-global',
+        'tofu',
+        properties: {},
+      );
+      final userTofu = _createIngredient(
+        'tofu-user',
+        'tofu',
+        properties: {'custom'},
+      );
 
-      when(() => mockIngredientRepo.findByName('tofu'))
-          .thenAnswer((_) async => globalTofu);
-      when(() => mockUserIngredientRepo.findByName('user1', 'tofu'))
-          .thenAnswer((_) async => userTofu);
+      when(
+        () => mockIngredientRepo.findByName('tofu'),
+      ).thenAnswer((_) async => globalTofu);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'tofu'),
+      ).thenAnswer((_) async => userTofu);
 
       // First, lookup with user context
-      final userResult =
-          await lookupService.lookupIngredients(['tofu'], userId: 'user1');
+      final userResult = await lookupService.lookupIngredients([
+        'tofu',
+      ], userId: 'user1');
       expect(userResult.matched.first.id, 'tofu-user');
 
       // Then, global lookup should still work independently
@@ -337,14 +379,19 @@ void main() {
     });
 
     test('cache clear resets both user and global caches', () async {
-      final globalTofu =
-          _createIngredient('tofu-global', 'tofu', properties: {});
+      final globalTofu = _createIngredient(
+        'tofu-global',
+        'tofu',
+        properties: {},
+      );
       final userTofu = _createIngredient('tofu-user', 'tofu', properties: {});
 
-      when(() => mockIngredientRepo.findByName('tofu'))
-          .thenAnswer((_) async => globalTofu);
-      when(() => mockUserIngredientRepo.findByName('user1', 'tofu'))
-          .thenAnswer((_) async => userTofu);
+      when(
+        () => mockIngredientRepo.findByName('tofu'),
+      ).thenAnswer((_) async => globalTofu);
+      when(
+        () => mockUserIngredientRepo.findByName('user1', 'tofu'),
+      ).thenAnswer((_) async => userTofu);
 
       // Populate caches
       await lookupService.lookupIngredients(['tofu']);

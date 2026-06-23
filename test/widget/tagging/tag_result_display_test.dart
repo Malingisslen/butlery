@@ -8,10 +8,12 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('TagResultDisplay', () {
-    testWidgets('empty allergen/dietary shows tagResultNoAllergens text',
-        (tester) async {
-      final result =
-          TaggingTestHelper.createTagResult(generatorVersion: '2.0.0');
+    testWidgets('empty allergen/dietary shows tagResultNoAllergens text', (
+      tester,
+    ) async {
+      final result = TaggingTestHelper.createTagResult(
+        generatorVersion: '2.0.0',
+      );
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,
@@ -30,8 +32,9 @@ void main() {
     });
 
     testWidgets('isDegraded: true shows degraded warning', (tester) async {
-      final result =
-          TaggingTestHelper.createTagResult(generatorVersion: '2.0.0');
+      final result = TaggingTestHelper.createTagResult(
+        generatorVersion: '2.0.0',
+      );
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,
@@ -45,35 +48,39 @@ void main() {
     });
 
     testWidgets(
-        'outdated version shows retag banner and update button calls onRetagRequested',
-        (tester) async {
-      bool retagCalled = false;
-      final result =
-          TaggingTestHelper.createTagResult(generatorVersion: '0.0.1');
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScrollView: true,
-          child: TagResultDisplay(
-            tagResult: result,
-            onRetagRequested: () => retagCalled = true,
+      'outdated version shows retag banner and update button calls onRetagRequested',
+      (tester) async {
+        bool retagCalled = false;
+        final result = TaggingTestHelper.createTagResult(
+          generatorVersion: '0.0.1',
+        );
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
+            child: TagResultDisplay(
+              tagResult: result,
+              onRetagRequested: () => retagCalled = true,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Retag banner has an update icon
-      expect(find.byIcon(Icons.update), findsOneWidget);
+        // Retag banner has an update icon
+        expect(find.byIcon(Icons.update), findsOneWidget);
 
-      // Find and tap the update button
-      final updateButton = find.byType(TextButton);
-      expect(updateButton, findsOneWidget);
-      await tester.tap(updateButton);
-      expect(retagCalled, isTrue);
-    });
+        // Find and tap the update button
+        final updateButton = find.byType(TextButton);
+        expect(updateButton, findsOneWidget);
+        await tester.tap(updateButton);
+        expect(retagCalled, isTrue);
+      },
+    );
 
     testWidgets('hasDraftIngredients shows unverified warning', (tester) async {
       final result = TaggingTestHelper.createTagResult(
-          hasDraftIngredients: true, generatorVersion: '2.0.0');
+        hasDraftIngredients: true,
+        generatorVersion: '2.0.0',
+      );
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,
@@ -105,8 +112,9 @@ void main() {
       expect(find.byIcon(Icons.analytics_outlined), findsNothing);
     });
 
-    testWidgets('coverage section visible when showCoverage: true',
-        (tester) async {
+    testWidgets('coverage section visible when showCoverage: true', (
+      tester,
+    ) async {
       final result = TaggingTestHelper.createTagResult(
         allergenStatus: {'gluten': TriState.free},
         coverage: 0.8,
@@ -125,8 +133,9 @@ void main() {
       expect(find.text('80%'), findsOneWidget);
     });
 
-    testWidgets('unknown ingredients row tappable when callback provided',
-        (tester) async {
+    testWidgets('unknown ingredients row tappable when callback provided', (
+      tester,
+    ) async {
       bool tapped = false;
       final result = TaggingTestHelper.createTagResult(
         allergenStatus: {'gluten': TriState.free},
@@ -179,8 +188,9 @@ void main() {
     });
 
     testWidgets('AllergenDisclaimer always renders', (tester) async {
-      final result =
-          TaggingTestHelper.createTagResult(generatorVersion: '2.0.0');
+      final result = TaggingTestHelper.createTagResult(
+        generatorVersion: '2.0.0',
+      );
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScrollView: true,

@@ -64,11 +64,14 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-            Size(double.infinity, AppDimensions.minTouchTarget)),
-        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingLg,
-          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        )),
+          Size(double.infinity, AppDimensions.minTouchTarget),
+        ),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingLg,
+            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
+        ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -88,11 +91,14 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-            Size(double.infinity, AppDimensions.minTouchTarget)),
-        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingLg,
-          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        )),
+          Size(double.infinity, AppDimensions.minTouchTarget),
+        ),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingLg,
+            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
+        ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -115,11 +121,14 @@ class ButtonThemes {
           ),
         ),
         minimumSize: const WidgetStatePropertyAll(
-            Size(double.infinity, AppDimensions.minTouchTarget)),
-        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingLg,
-          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        )),
+          Size(double.infinity, AppDimensions.minTouchTarget),
+        ),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingLg,
+            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
+        ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -140,12 +149,15 @@ class ButtonThemes {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
         ),
-        minimumSize:
-            const WidgetStatePropertyAll(Size(0, AppDimensions.minTouchTarget)),
-        padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        )),
+        minimumSize: const WidgetStatePropertyAll(
+          Size(0, AppDimensions.minTouchTarget),
+        ),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
+        ),
         textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
       ),
     );
@@ -162,7 +174,8 @@ class ButtonThemes {
         side: _focusSide(unfocused: BorderSide.none),
         overlayColor: _focusOverlay(alpha: 0.16),
         minimumSize: const WidgetStatePropertyAll(
-            Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget)),
+          Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
+        ),
         iconSize: const WidgetStatePropertyAll(AppDimensions.iconSizeL),
       ),
     );
@@ -170,7 +183,8 @@ class ButtonThemes {
 
   /// Floating action button theme
   static FloatingActionButtonThemeData floatingActionButtonTheme(
-      ColorScheme cs) {
+    ColorScheme cs,
+  ) {
     return FloatingActionButtonThemeData(
       backgroundColor: cs.primary,
       foregroundColor: cs.onPrimary,
@@ -189,21 +203,25 @@ class ButtonThemes {
         foregroundColor: cs.onPrimary,
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM),
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
       );
 
   /// Text button style
   static ButtonStyle textButtonStyle(ColorScheme cs) => TextButton.styleFrom(
-        foregroundColor: cs.primary,
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
-      );
+    foregroundColor: cs.primary,
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppDimensions.paddingL,
+      vertical: AppDimensions.paddingM,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+    ),
+  );
 
   /// Secondary button style
   static ButtonStyle secondaryButtonStyle(ColorScheme cs) =>
@@ -213,10 +231,12 @@ class ButtonThemes {
         elevation: 0,
         side: BorderSide(color: cs.primary, width: 1.5),
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM),
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
       );
 
   /// Danger button style
@@ -226,10 +246,12 @@ class ButtonThemes {
         foregroundColor: cs.onError,
         elevation: 0,
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM),
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
       );
 
   /// Outlined button style
@@ -238,10 +260,12 @@ class ButtonThemes {
         foregroundColor: cs.primary,
         backgroundColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM),
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
         side: BorderSide(color: cs.primary, width: 1.5),
       );
 
@@ -251,10 +275,12 @@ class ButtonThemes {
         foregroundColor: cs.error,
         backgroundColor: Colors.transparent,
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM),
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
         side: BorderSide(color: cs.error, width: 1.5),
       );
 
@@ -266,8 +292,9 @@ class ButtonThemes {
         elevation: AppDimensions.elevationMedium,
         shadowColor: cs.shadow,
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingXl,
-            vertical: AppDimensions.paddingM),
+          horizontal: AppDimensions.paddingXl,
+          vertical: AppDimensions.paddingM,
+        ),
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         minimumSize: const Size(200, 56),
         textStyle: AppTextStyles.buttonText,

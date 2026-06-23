@@ -33,12 +33,12 @@ class TestModel {
   }) : createdAt = createdAt ?? DateTime.now();
 
   Map<String, dynamic> toFirestore() => {
-        'id': id,
-        'title': title,
-        'ownerId': ownerId,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'metadata': metadata,
-      };
+    'id': id,
+    'title': title,
+    'ownerId': ownerId,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'metadata': metadata,
+  };
 
   factory TestModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -85,21 +85,29 @@ class TestFirebaseRepository extends BaseFirebaseRepository<TestModel> {
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, TestModel? entity) async {
+    String userId,
+    String resourceId,
+    TestModel? entity,
+  ) async {
     // For tests: allow all reads
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, TestModel entity) async {
+    String userId,
+    String resourceId,
+    TestModel entity,
+  ) async {
     // For tests: allow update if ownerId matches
     return entity.ownerId == null || entity.ownerId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // For tests: allow all deletes
     return true;
   }
@@ -138,21 +146,29 @@ class UserScopedTestRepository extends BaseFirebaseRepository<TestModel> {
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, TestModel? entity) async {
+    String userId,
+    String resourceId,
+    TestModel? entity,
+  ) async {
     // For tests: allow all reads
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, TestModel entity) async {
+    String userId,
+    String resourceId,
+    TestModel entity,
+  ) async {
     // For tests: allow update if ownerId matches
     return entity.ownerId == null || entity.ownerId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // For tests: allow all deletes
     return true;
   }
@@ -227,17 +243,19 @@ void main() {
         expect(repository.requireCurrentUserId(), equals('user_123'));
       });
 
-      test('should return null for optional auth check when not authenticated',
-          () {
-        // Arrange
-        mockAuthRepository.setAuthState(userId: null);
+      test(
+        'should return null for optional auth check when not authenticated',
+        () {
+          // Arrange
+          mockAuthRepository.setAuthState(userId: null);
 
-        // Act
-        final userId = repository.currentUserId;
+          // Act
+          final userId = repository.currentUserId;
 
-        // Assert
-        expect(userId, isNull);
-      });
+          // Assert
+          expect(userId, isNull);
+        },
+      );
     });
 
     group('Collection References', () {
@@ -268,7 +286,9 @@ void main() {
 
         // Assert
         expect(
-            userCollection.path, equals('users/specific_user/test_collection'));
+          userCollection.path,
+          equals('users/specific_user/test_collection'),
+        );
       });
     });
 
@@ -348,8 +368,10 @@ void main() {
 
         // Assert
         expect(results.length, equals(3));
-        expect(results.map((m) => m.title),
-            containsAll(['First', 'Second', 'Third']));
+        expect(
+          results.map((m) => m.title),
+          containsAll(['First', 'Second', 'Third']),
+        );
       });
 
       test('should update entity with authentication', () async {
@@ -416,8 +438,7 @@ void main() {
         }
       });
 
-      test(
-          'createBatch persists every doc when the set exceeds the 500-op '
+      test('createBatch persists every doc when the set exceeds the 500-op '
           'Firestore batch limit (chunked across multiple commits)', () async {
         // Arrange: 1001 docs > 500 → must span ≥3 chunks. A single un-chunked
         // WriteBatch would throw INVALID_ARGUMENT and lose writes.
@@ -431,12 +452,16 @@ void main() {
 
         // Assert: a doc from every chunk boundary survived.
         for (final id in ['chunk_0', 'chunk_450', 'chunk_900', 'chunk_1000']) {
-          final doc =
-              await fakeFirestore.collection('test_collection').doc(id).get();
+          final doc = await fakeFirestore
+              .collection('test_collection')
+              .doc(id)
+              .get();
           expect(doc.exists, isTrue, reason: '$id should have been written');
         }
-        final count =
-            await fakeFirestore.collection('test_collection').count().get();
+        final count = await fakeFirestore
+            .collection('test_collection')
+            .count()
+            .get();
         expect(count.count, equals(1001));
       });
     });
@@ -462,8 +487,10 @@ void main() {
         // Assert
         final items = await stream.first;
         expect(items.length, equals(2));
-        expect(items.map((m) => m.title),
-            containsAll(['Stream Item 1', 'Stream Item 2']));
+        expect(
+          items.map((m) => m.title),
+          containsAll(['Stream Item 1', 'Stream Item 2']),
+        );
       });
 
       test('should support ordered streaming', () async {
@@ -471,10 +498,16 @@ void main() {
         final now = DateTime.now();
         final models = [
           TestModel(
-              id: '1', title: 'C Item', createdAt: now.add(Duration(days: 2))),
+            id: '1',
+            title: 'C Item',
+            createdAt: now.add(Duration(days: 2)),
+          ),
           TestModel(id: '2', title: 'A Item', createdAt: now),
           TestModel(
-              id: '3', title: 'B Item', createdAt: now.add(Duration(days: 1))),
+            id: '3',
+            title: 'B Item',
+            createdAt: now.add(Duration(days: 1)),
+          ),
         ];
 
         for (final model in models) {
@@ -485,13 +518,17 @@ void main() {
         }
 
         // Act
-        final stream =
-            repository.watchAll(orderBy: 'createdAt', descending: false);
+        final stream = repository.watchAll(
+          orderBy: 'createdAt',
+          descending: false,
+        );
 
         // Assert
         final items = await stream.first;
-        expect(items.map((m) => m.title).toList(),
-            equals(['A Item', 'B Item', 'C Item']));
+        expect(
+          items.map((m) => m.title).toList(),
+          equals(['A Item', 'B Item', 'C Item']),
+        );
       });
     });
 

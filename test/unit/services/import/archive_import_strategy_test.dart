@@ -94,10 +94,16 @@ void main() {
 
         // Act & Assert
         for (final input in validInputs) {
-          expect(strategy.canHandle(input), isTrue,
-              reason: 'Should handle: $input');
-          expect(strategy.validateInput(input), isTrue,
-              reason: 'Should validate: $input');
+          expect(
+            strategy.canHandle(input),
+            isTrue,
+            reason: 'Should handle: $input',
+          );
+          expect(
+            strategy.validateInput(input),
+            isTrue,
+            reason: 'Should validate: $input',
+          );
         }
       });
 
@@ -112,8 +118,11 @@ void main() {
 
         // Act & Assert
         for (final input in invalidInputs) {
-          expect(strategy.canHandle(input), isFalse,
-              reason: 'Should not handle: $input');
+          expect(
+            strategy.canHandle(input),
+            isFalse,
+            reason: 'Should not handle: $input',
+          );
         }
       });
 
@@ -124,8 +133,10 @@ void main() {
 
         // Act & Assert
         expect(strategy.validateInput(validInput), isTrue);
-        expect(strategy.validateInput(invalidInput),
-            isTrue); // archive: prefix is considered valid
+        expect(
+          strategy.validateInput(invalidInput),
+          isTrue,
+        ); // archive: prefix is considered valid
       });
     });
 
@@ -367,7 +378,8 @@ void main() {
         for (final result in results) {
           if (result.isSuccess && result.recipe != null) {
             final recipe = result.recipe!;
-            final matchesQuery = recipe.title.toLowerCase().contains(query) ||
+            final matchesQuery =
+                recipe.title.toLowerCase().contains(query) ||
                 recipe.description.toLowerCase().contains(query);
             expect(matchesQuery, isTrue);
           }
@@ -391,8 +403,9 @@ void main() {
           // Check if Swedish measurements are preserved
           final swedishUnits = ['dl', 'msk', 'tsk', 'krm'];
           recipe.ingredients.any((ingredient) {
-            return swedishUnits
-                .any((unit) => ingredient.toLowerCase().contains(unit));
+            return swedishUnits.any(
+              (unit) => ingredient.toLowerCase().contains(unit),
+            );
           });
           // May or may not have Swedish units depending on recipe
           expect(recipe.ingredients, isNotEmpty);
@@ -429,8 +442,10 @@ void main() {
 
         // Act & Assert
         expect(strategy.canHandle(emptyInput), isFalse);
-        expect(strategy.validateInput(emptyInput),
-            isFalse); // Empty input is invalid
+        expect(
+          strategy.validateInput(emptyInput),
+          isFalse,
+        ); // Empty input is invalid
 
         final result = await strategy.import(emptyInput);
         // Empty string actually matches all recipes (contains('') is true)
@@ -456,17 +471,26 @@ void main() {
           // 'archive::123' searches for ':123' which won't match
           if (input == 'archive') {
             // Searches for recipe named 'archive'
-            expect(result.isSuccess, isFalse,
-                reason: 'Should fail for: $input (no recipe named "archive")');
+            expect(
+              result.isSuccess,
+              isFalse,
+              reason: 'Should fail for: $input (no recipe named "archive")',
+            );
           } else if (input == 'archive:' || input == 'archive: ') {
             // Empty search matches first recipe (contains('') is true)
-            expect(result.isSuccess, isTrue,
-                reason: 'Should succeed for: $input (empty matches all)');
+            expect(
+              result.isSuccess,
+              isTrue,
+              reason: 'Should succeed for: $input (empty matches all)',
+            );
             expect(result.recipe, isNotNull);
           } else if (input == 'archive::123') {
             // Searches for ':123'
-            expect(result.isSuccess, isFalse,
-                reason: 'Should fail for: $input (no recipe named ":123")');
+            expect(
+              result.isSuccess,
+              isFalse,
+              reason: 'Should fail for: $input (no recipe named ":123")',
+            );
           }
         }
       });
@@ -482,8 +506,10 @@ void main() {
         expect(result.isSuccess, isFalse);
         expect(result.errorMessage, isNotNull);
         expect(result.errorMessage, isNotEmpty);
-        expect(result.errorMessage!.toLowerCase(),
-            anyOf(contains('not found'), contains('invalid')));
+        expect(
+          result.errorMessage!.toLowerCase(),
+          anyOf(contains('not found'), contains('invalid')),
+        );
       });
 
       test('should handle very long recipe names', () async {

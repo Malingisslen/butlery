@@ -15,8 +15,8 @@ class AccountMaturityHelper {
   AccountMaturityHelper({
     Duration window = kAccountMaturityWindow,
     DateTime Function() now = _defaultNow,
-  })  : _window = window,
-        _now = now;
+  }) : _window = window,
+       _now = now;
 
   final Duration _window;
   final DateTime Function() _now;

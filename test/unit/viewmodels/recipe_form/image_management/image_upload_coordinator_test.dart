@@ -103,59 +103,64 @@ void main() {
     /// Disposed flag at entry must short-circuit and NOT call the storage
     /// backend even once — otherwise a disposed coordinator could still
     /// queue uploads against a destroyed parent ViewModel.
-    test('disposed=true short-circuits to empty list without calling storage',
-        () async {
-      final h = _Harness();
-      final file = File('/a.jpg');
+    test(
+      'disposed=true short-circuits to empty list without calling storage',
+      () async {
+        final h = _Harness();
+        final file = File('/a.jpg');
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [file],
-        'recipe-1',
-        imageStates: {'/a.jpg': _pending()},
-        isDisposedNow: () => true,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [file],
+          'recipe-1',
+          imageStates: {'/a.jpg': _pending()},
+          isDisposedNow: () => true,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(result, isEmpty);
-      verifyNever(() => h.storage.uploadRecipeImage(any(), any()));
-    });
+        expect(result, isEmpty);
+        verifyNever(() => h.storage.uploadRecipeImage(any(), any()));
+      },
+    );
 
     /// uploadsCanceled flag at entry must short-circuit too — same reason.
     test(
-        'uploadsCanceled=true short-circuits to empty list without calling storage',
-        () async {
-      final h = _Harness();
-      final file = File('/a.jpg');
+      'uploadsCanceled=true short-circuits to empty list without calling storage',
+      () async {
+        final h = _Harness();
+        final file = File('/a.jpg');
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [file],
-        'recipe-1',
-        imageStates: {'/a.jpg': _pending()},
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => true,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [file],
+          'recipe-1',
+          imageStates: {'/a.jpg': _pending()},
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => true,
+        );
 
-      expect(result, isEmpty);
-      verifyNever(() => h.storage.uploadRecipeImage(any(), any()));
-    });
+        expect(result, isEmpty);
+        verifyNever(() => h.storage.uploadRecipeImage(any(), any()));
+      },
+    );
 
     /// Empty input must return empty list and NOT call storage. Guards
     /// against a 0-item Future.wait spawning a phantom upload attempt.
-    test('empty pendingImages returns empty list without calling storage',
-        () async {
-      final h = _Harness();
+    test(
+      'empty pendingImages returns empty list without calling storage',
+      () async {
+        final h = _Harness();
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [],
-        'recipe-1',
-        imageStates: {},
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [],
+          'recipe-1',
+          imageStates: {},
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(result, isEmpty);
-      verifyNever(() => h.storage.uploadRecipeImage(any(), any()));
-    });
+        expect(result, isEmpty);
+        verifyNever(() => h.storage.uploadRecipeImage(any(), any()));
+      },
+    );
   });
 
   group('uploadPendingImagesInBackground — happy path', () {
@@ -163,42 +168,50 @@ void main() {
     /// filePath key in `imageStates` with the URL key in completed state.
     /// This is the contract the form view relies on to know which images
     /// are persistable (only URL-keyed completed entries get saved).
-    test('all-success batch returns URLs and rekeys state map by URL',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      final fileB = File('/b.jpg');
-      final imageStates = {
-        '/a.jpg': _pending(),
-        '/b.jpg': _pending(),
-      };
+    test(
+      'all-success batch returns URLs and rekeys state map by URL',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        final fileB = File('/b.jpg');
+        final imageStates = {
+          '/a.jpg': _pending(),
+          '/b.jpg': _pending(),
+        };
 
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
-        (_) async => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
-      );
-      when(() => h.storage.uploadRecipeImage(fileB, 'r-1')).thenAnswer(
-        (_) async => const ImageUploadResult(imageUrl: 'https://x/b.jpg'),
-      );
+        when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+          (_) async => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+        );
+        when(() => h.storage.uploadRecipeImage(fileB, 'r-1')).thenAnswer(
+          (_) async => const ImageUploadResult(imageUrl: 'https://x/b.jpg'),
+        );
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [fileA, fileB],
-        'r-1',
-        imageStates: imageStates,
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [fileA, fileB],
+          'r-1',
+          imageStates: imageStates,
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(
-        result.toSet(),
-        {'https://x/a.jpg', 'https://x/b.jpg'},
-      );
-      // Old path keys are gone; URL keys are present and completed.
-      expect(imageStates.containsKey('/a.jpg'), isFalse);
-      expect(imageStates.containsKey('/b.jpg'), isFalse);
-      expect(imageStates['https://x/a.jpg']!.state, ImageUploadState.completed);
-      expect(imageStates['https://x/a.jpg']!.progress, 1.0);
-      expect(imageStates['https://x/b.jpg']!.state, ImageUploadState.completed);
-    });
+        expect(
+          result.toSet(),
+          {'https://x/a.jpg', 'https://x/b.jpg'},
+        );
+        // Old path keys are gone; URL keys are present and completed.
+        expect(imageStates.containsKey('/a.jpg'), isFalse);
+        expect(imageStates.containsKey('/b.jpg'), isFalse);
+        expect(
+          imageStates['https://x/a.jpg']!.state,
+          ImageUploadState.completed,
+        );
+        expect(imageStates['https://x/a.jpg']!.progress, 1.0);
+        expect(
+          imageStates['https://x/b.jpg']!.state,
+          ImageUploadState.completed,
+        );
+      },
+    );
 
     /// Thumbnail URLs are populated only when the storage result carries
     /// one, and the map is keyed by image URL → thumbnail URL.
@@ -297,57 +310,62 @@ void main() {
     /// onProgress is invoked once per successfully-started file with a
     /// monotonically-rising `completed` count, and `total` matches input.
     /// Off-by-one in either argument would silently break the progress bar.
-    test('onProgress is called once per file with monotonic completed counts',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      final fileB = File('/b.jpg');
-      when(() => h.storage.uploadRecipeImage(any(), any())).thenAnswer(
-        (i) async => ImageUploadResult(
-          imageUrl: 'https://x/${(i.positionalArguments[0] as File).path}',
-        ),
-      );
+    test(
+      'onProgress is called once per file with monotonic completed counts',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        final fileB = File('/b.jpg');
+        when(() => h.storage.uploadRecipeImage(any(), any())).thenAnswer(
+          (i) async => ImageUploadResult(
+            imageUrl: 'https://x/${(i.positionalArguments[0] as File).path}',
+          ),
+        );
 
-      final progressLog = <(int, int)>[];
-      await h.coordinator.uploadPendingImagesInBackground(
-        [fileA, fileB],
-        'r-1',
-        imageStates: {'/a.jpg': _pending(), '/b.jpg': _pending()},
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-        onProgress: (c, t) => progressLog.add((c, t)),
-      );
+        final progressLog = <(int, int)>[];
+        await h.coordinator.uploadPendingImagesInBackground(
+          [fileA, fileB],
+          'r-1',
+          imageStates: {'/a.jpg': _pending(), '/b.jpg': _pending()},
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+          onProgress: (c, t) => progressLog.add((c, t)),
+        );
 
-      expect(progressLog.length, 2);
-      // Both calls report total=2.
-      for (final p in progressLog) {
-        expect(p.$2, 2);
-      }
-      // Counts are 1 and 2 (in some order — uploads are parallel).
-      expect(progressLog.map((p) => p.$1).toSet(), {1, 2});
-    });
+        expect(progressLog.length, 2);
+        // Both calls report total=2.
+        for (final p in progressLog) {
+          expect(p.$2, 2);
+        }
+        // Counts are 1 and 2 (in some order — uploads are parallel).
+        expect(progressLog.map((p) => p.$1).toSet(), {1, 2});
+      },
+    );
 
     /// notifyListeners is invoked at least once via the finally-block — UI
     /// must repaint after the batch even if every upload failed.
-    test('notifyListeners is called in the finally block after the batch',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1'))
-          .thenAnswer((_) async => null);
+    test(
+      'notifyListeners is called in the finally block after the batch',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        when(
+          () => h.storage.uploadRecipeImage(fileA, 'r-1'),
+        ).thenAnswer((_) async => null);
 
-      final notifyBefore = h.notifyCount;
-      await h.coordinator.uploadPendingImagesInBackground(
-        [fileA],
-        'r-1',
-        imageStates: {'/a.jpg': _pending()},
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final notifyBefore = h.notifyCount;
+        await h.coordinator.uploadPendingImagesInBackground(
+          [fileA],
+          'r-1',
+          imageStates: {'/a.jpg': _pending()},
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      // At minimum the finally-block notify must fire.
-      expect(h.notifyCount, greaterThan(notifyBefore));
-    });
+        // At minimum the finally-block notify must fire.
+        expect(h.notifyCount, greaterThan(notifyBefore));
+      },
+    );
   });
 
   group('uploadPendingImagesInBackground — partial failure isolation', () {
@@ -355,121 +373,136 @@ void main() {
     /// batch from succeeding (Future.wait eagerError: false). The failed
     /// file stays under its filePath key as failed; the success rekeys to
     /// URL. This is the spec for "save what we can".
-    test('null storage result fails one file but the rest still succeed',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      final fileB = File('/b.jpg');
-      final imageStates = {'/a.jpg': _pending(), '/b.jpg': _pending()};
+    test(
+      'null storage result fails one file but the rest still succeed',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        final fileB = File('/b.jpg');
+        final imageStates = {'/a.jpg': _pending(), '/b.jpg': _pending()};
 
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1'))
-          .thenAnswer((_) async => null);
-      when(() => h.storage.uploadRecipeImage(fileB, 'r-1')).thenAnswer(
-        (_) async => const ImageUploadResult(imageUrl: 'https://x/b.jpg'),
-      );
+        when(
+          () => h.storage.uploadRecipeImage(fileA, 'r-1'),
+        ).thenAnswer((_) async => null);
+        when(() => h.storage.uploadRecipeImage(fileB, 'r-1')).thenAnswer(
+          (_) async => const ImageUploadResult(imageUrl: 'https://x/b.jpg'),
+        );
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [fileA, fileB],
-        'r-1',
-        imageStates: imageStates,
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [fileA, fileB],
+          'r-1',
+          imageStates: imageStates,
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(result, ['https://x/b.jpg']);
-      expect(imageStates['/a.jpg']!.state, ImageUploadState.failed);
-      expect(imageStates['/a.jpg']!.error, 'Upload failed');
-      expect(imageStates['https://x/b.jpg']!.state, ImageUploadState.completed);
-    });
+        expect(result, ['https://x/b.jpg']);
+        expect(imageStates['/a.jpg']!.state, ImageUploadState.failed);
+        expect(imageStates['/a.jpg']!.error, 'Upload failed');
+        expect(
+          imageStates['https://x/b.jpg']!.state,
+          ImageUploadState.completed,
+        );
+      },
+    );
 
     /// A storage call that THROWS must be caught per-file (not propagate to
     /// the batch). The thrown exception's text is captured in `error`. The
     /// other file still succeeds. This guards against a cascading-failure
     /// bug where a single thrown call could abort the whole batch.
     test(
-        'thrown storage exception is caught per-file; batch continues for others',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      final fileB = File('/b.jpg');
-      final imageStates = {'/a.jpg': _pending(), '/b.jpg': _pending()};
+      'thrown storage exception is caught per-file; batch continues for others',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        final fileB = File('/b.jpg');
+        final imageStates = {'/a.jpg': _pending(), '/b.jpg': _pending()};
 
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1'))
-          .thenThrow(Exception('quota exceeded'));
-      when(() => h.storage.uploadRecipeImage(fileB, 'r-1')).thenAnswer(
-        (_) async => const ImageUploadResult(imageUrl: 'https://x/b.jpg'),
-      );
+        when(
+          () => h.storage.uploadRecipeImage(fileA, 'r-1'),
+        ).thenThrow(Exception('quota exceeded'));
+        when(() => h.storage.uploadRecipeImage(fileB, 'r-1')).thenAnswer(
+          (_) async => const ImageUploadResult(imageUrl: 'https://x/b.jpg'),
+        );
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [fileA, fileB],
-        'r-1',
-        imageStates: imageStates,
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [fileA, fileB],
+          'r-1',
+          imageStates: imageStates,
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(result, ['https://x/b.jpg']);
-      expect(imageStates['/a.jpg']!.state, ImageUploadState.failed);
-      expect(imageStates['/a.jpg']!.error, contains('quota exceeded'));
-      // Fatal-error setError must NOT have been invoked — per-file
-      // failures route through state, not through the global error sink.
-      expect(h.errorsSet, isEmpty);
-    });
+        expect(result, ['https://x/b.jpg']);
+        expect(imageStates['/a.jpg']!.state, ImageUploadState.failed);
+        expect(imageStates['/a.jpg']!.error, contains('quota exceeded'));
+        // Fatal-error setError must NOT have been invoked — per-file
+        // failures route through state, not through the global error sink.
+        expect(h.errorsSet, isEmpty);
+      },
+    );
 
     /// Empty-string URL is treated as failure even though the result was
     /// not-null. Guards against a backend bug that returns `''` instead of
     /// null on certain edge cases — the contract is "URL must be
     /// non-empty to count as success."
-    test('empty-string imageUrl is treated as failure (not a success)',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      final imageStates = {'/a.jpg': _pending()};
+    test(
+      'empty-string imageUrl is treated as failure (not a success)',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        final imageStates = {'/a.jpg': _pending()};
 
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
-        (_) async => const ImageUploadResult(imageUrl: ''),
-      );
+        when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+          (_) async => const ImageUploadResult(imageUrl: ''),
+        );
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [fileA],
-        'r-1',
-        imageStates: imageStates,
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [fileA],
+          'r-1',
+          imageStates: imageStates,
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(result, isEmpty);
-      expect(imageStates['/a.jpg']!.state, ImageUploadState.failed);
-    });
+        expect(result, isEmpty);
+        expect(imageStates['/a.jpg']!.state, ImageUploadState.failed);
+      },
+    );
 
     /// When a file path is NOT pre-registered in imageStates, the per-file
     /// upload path tolerates that (no NPE on the containsKey check) and
     /// still returns the URL if storage succeeds. Defensive — guards
     /// against a future refactor that forgets to register the path first.
-    test('missing imageStates entry does NOT crash on successful upload',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      // Empty state map on purpose.
-      final imageStates = <String, ImageUploadStatus>{};
+    test(
+      'missing imageStates entry does NOT crash on successful upload',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        // Empty state map on purpose.
+        final imageStates = <String, ImageUploadStatus>{};
 
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
-        (_) async => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
-      );
+        when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+          (_) async => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+        );
 
-      final result = await h.coordinator.uploadPendingImagesInBackground(
-        [fileA],
-        'r-1',
-        imageStates: imageStates,
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => false,
-      );
+        final result = await h.coordinator.uploadPendingImagesInBackground(
+          [fileA],
+          'r-1',
+          imageStates: imageStates,
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => false,
+        );
 
-      expect(result, ['https://x/a.jpg']);
-      // The URL entry is still added because the success branch does
-      // `imageStates[imageUrl] = ImageUploadStatus(...)` unconditionally.
-      expect(imageStates['https://x/a.jpg']!.state, ImageUploadState.completed);
-    });
+        expect(result, ['https://x/a.jpg']);
+        // The URL entry is still added because the success branch does
+        // `imageStates[imageUrl] = ImageUploadStatus(...)` unconditionally.
+        expect(
+          imageStates['https://x/a.jpg']!.state,
+          ImageUploadState.completed,
+        );
+      },
+    );
   });
 
   group('retryAllFailedUploads', () {
@@ -477,20 +510,22 @@ void main() {
     /// Without this guard a phantom Future.wait([]) would still fire but the
     /// behavioural risk is calling a callback with no arg → potential NPE
     /// in the caller's retry-counter logic.
-    test('empty failedUploads is a silent no-op (retry callback not called)',
-        () async {
-      var calls = 0;
-      final h = _Harness();
+    test(
+      'empty failedUploads is a silent no-op (retry callback not called)',
+      () async {
+        var calls = 0;
+        final h = _Harness();
 
-      await h.coordinator.retryAllFailedUploads(
-        failedUploads: const {},
-        retryFailedUpload: (_) async {
-          calls++;
-        },
-      );
+        await h.coordinator.retryAllFailedUploads(
+          failedUploads: const {},
+          retryFailedUpload: (_) async {
+            calls++;
+          },
+        );
 
-      expect(calls, 0);
-    });
+        expect(calls, 0);
+      },
+    );
 
     /// Each failed key triggers exactly one retry callback. Exact-count
     /// guard prevents a double-iteration regression.
@@ -516,25 +551,27 @@ void main() {
     /// A retry callback that throws for ONE key must NOT abort the others.
     /// `.catchError` on each future provides per-key isolation. Without it
     /// one bad retry would skip every subsequent retry in the batch.
-    test('a thrown retry does NOT cascade — every key still gets a call',
-        () async {
-      final h = _Harness();
-      final calls = <String>[];
+    test(
+      'a thrown retry does NOT cascade — every key still gets a call',
+      () async {
+        final h = _Harness();
+        final calls = <String>[];
 
-      await h.coordinator.retryAllFailedUploads(
-        failedUploads: {
-          '/a.jpg': _pending(),
-          '/b.jpg': _pending(),
-          '/c.jpg': _pending(),
-        },
-        retryFailedUpload: (key) async {
-          calls.add(key);
-          if (key == '/b.jpg') throw Exception('boom');
-        },
-      );
+        await h.coordinator.retryAllFailedUploads(
+          failedUploads: {
+            '/a.jpg': _pending(),
+            '/b.jpg': _pending(),
+            '/c.jpg': _pending(),
+          },
+          retryFailedUpload: (key) async {
+            calls.add(key);
+            if (key == '/b.jpg') throw Exception('boom');
+          },
+        );
 
-      expect(calls.toSet(), {'/a.jpg', '/b.jpg', '/c.jpg'});
-    });
+        expect(calls.toSet(), {'/a.jpg', '/b.jpg', '/c.jpg'});
+      },
+    );
   });
 
   group('cancelAllActiveUploads', () {
@@ -576,48 +613,51 @@ void main() {
     /// notifyListeners or checkCompletionEvents. Spurious notifications
     /// cause UI rebuilds with no state change → wasted work and
     /// occasionally flicker.
-    test('empty failedUploads triggers neither notify nor completion-events',
-        () {
-      final h = _Harness();
-      final notifyBefore = h.notifyCount;
-      final compBefore = h.completionEventsCount;
+    test(
+      'empty failedUploads triggers neither notify nor completion-events',
+      () {
+        final h = _Harness();
+        final notifyBefore = h.notifyCount;
+        final compBefore = h.completionEventsCount;
 
-      h.coordinator.clearAllFailedUploads(
-        imageStates: {},
-        failedUploads: const {},
-      );
+        h.coordinator.clearAllFailedUploads(
+          imageStates: {},
+          failedUploads: const {},
+        );
 
-      expect(h.notifyCount, notifyBefore);
-      expect(h.completionEventsCount, compBefore);
-    });
+        expect(h.notifyCount, notifyBefore);
+        expect(h.completionEventsCount, compBefore);
+      },
+    );
 
     /// Non-empty path: every failed key is removed from imageStates AND
     /// both notify + completion-events fire exactly once each.
     test(
-        'non-empty path removes from imageStates and fires notify + completion events',
-        () {
-      final h = _Harness();
-      final imageStates = <String, ImageUploadStatus>{
-        '/a.jpg': _pending(),
-        '/b.jpg': _pending(),
-        '/keep.jpg': _pending(),
-      };
-
-      final notifyBefore = h.notifyCount;
-      final compBefore = h.completionEventsCount;
-
-      h.coordinator.clearAllFailedUploads(
-        imageStates: imageStates,
-        failedUploads: {
+      'non-empty path removes from imageStates and fires notify + completion events',
+      () {
+        final h = _Harness();
+        final imageStates = <String, ImageUploadStatus>{
           '/a.jpg': _pending(),
           '/b.jpg': _pending(),
-        },
-      );
+          '/keep.jpg': _pending(),
+        };
 
-      expect(imageStates.keys, ['/keep.jpg']);
-      expect(h.notifyCount, notifyBefore + 1);
-      expect(h.completionEventsCount, compBefore + 1);
-    });
+        final notifyBefore = h.notifyCount;
+        final compBefore = h.completionEventsCount;
+
+        h.coordinator.clearAllFailedUploads(
+          imageStates: imageStates,
+          failedUploads: {
+            '/a.jpg': _pending(),
+            '/b.jpg': _pending(),
+          },
+        );
+
+        expect(imageStates.keys, ['/keep.jpg']);
+        expect(h.notifyCount, notifyBefore + 1);
+        expect(h.completionEventsCount, compBefore + 1);
+      },
+    );
   });
 
   group('getUploadManagementSummary', () {
@@ -667,47 +707,51 @@ void main() {
     /// BUT-1127: canBulkRetry threshold is `>= 1`, not `> 1`. A queue with
     /// exactly one failure must still expose the bulk-retry affordance —
     /// withholding it on the single-item state was a UX gap.
-    test('BUT-1127: canBulkRetry is true when failed >= 1 (single included)',
-        () {
-      final h = _Harness();
+    test(
+      'BUT-1127: canBulkRetry is true when failed >= 1 (single included)',
+      () {
+        final h = _Harness();
 
-      final oneFailed = h.coordinator.getUploadManagementSummary(
-        imageStates: {},
-        failedUploads: {'/a.jpg': _pending()},
-        activeUploads: {},
-      );
-      expect(oneFailed['hasRetryableFailures'], isTrue);
-      expect(oneFailed['canBulkRetry'], isTrue);
+        final oneFailed = h.coordinator.getUploadManagementSummary(
+          imageStates: {},
+          failedUploads: {'/a.jpg': _pending()},
+          activeUploads: {},
+        );
+        expect(oneFailed['hasRetryableFailures'], isTrue);
+        expect(oneFailed['canBulkRetry'], isTrue);
 
-      final twoFailed = h.coordinator.getUploadManagementSummary(
-        imageStates: {},
-        failedUploads: {'/a.jpg': _pending(), '/b.jpg': _pending()},
-        activeUploads: {},
-      );
-      expect(twoFailed['canBulkRetry'], isTrue);
-    });
+        final twoFailed = h.coordinator.getUploadManagementSummary(
+          imageStates: {},
+          failedUploads: {'/a.jpg': _pending(), '/b.jpg': _pending()},
+          activeUploads: {},
+        );
+        expect(twoFailed['canBulkRetry'], isTrue);
+      },
+    );
 
     /// BUT-1127: canBulkCancel threshold is `>= 1`, not `> 1`. A single
     /// in-flight upload must still expose the bulk-cancel affordance.
-    test('BUT-1127: canBulkCancel is true when active >= 1 (single included)',
-        () {
-      final h = _Harness();
+    test(
+      'BUT-1127: canBulkCancel is true when active >= 1 (single included)',
+      () {
+        final h = _Harness();
 
-      final oneActive = h.coordinator.getUploadManagementSummary(
-        imageStates: {},
-        failedUploads: {},
-        activeUploads: {'/a.jpg': _pending()},
-      );
-      expect(oneActive['hasActiveUploads'], isTrue);
-      expect(oneActive['canBulkCancel'], isTrue);
+        final oneActive = h.coordinator.getUploadManagementSummary(
+          imageStates: {},
+          failedUploads: {},
+          activeUploads: {'/a.jpg': _pending()},
+        );
+        expect(oneActive['hasActiveUploads'], isTrue);
+        expect(oneActive['canBulkCancel'], isTrue);
 
-      final twoActive = h.coordinator.getUploadManagementSummary(
-        imageStates: {},
-        failedUploads: {},
-        activeUploads: {'/a.jpg': _pending(), '/b.jpg': _pending()},
-      );
-      expect(twoActive['canBulkCancel'], isTrue);
-    });
+        final twoActive = h.coordinator.getUploadManagementSummary(
+          imageStates: {},
+          failedUploads: {},
+          activeUploads: {'/a.jpg': _pending(), '/b.jpg': _pending()},
+        );
+        expect(twoActive['canBulkCancel'], isTrue);
+      },
+    );
   });
 
   group('BUT-1129: mid-flight soft-cancel (fresh-read closure semantics)', () {
@@ -718,74 +762,82 @@ void main() {
     /// With the callback closures, every check re-reads live caller state
     /// → the post-upload guard short-circuits and the URL is dropped.
     test(
-        'BUT-1129: mid-flight isDisposedNow flip short-circuits in-progress uploads',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      bool disposedFlag = false;
+      'BUT-1129: mid-flight isDisposedNow flip short-circuits in-progress uploads',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        bool disposedFlag = false;
 
-      // Slow upload — gives us a window to flip the flag mid-flight.
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
-        (_) => Future.delayed(
-          const Duration(milliseconds: 50),
-          () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
-        ),
-      );
+        // Slow upload — gives us a window to flip the flag mid-flight.
+        when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+          (_) => Future.delayed(
+            const Duration(milliseconds: 50),
+            () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+          ),
+        );
 
-      final futureUrls = h.coordinator.uploadPendingImagesInBackground(
-        [fileA],
-        'r-1',
-        imageStates: {'/a.jpg': _pending()},
-        isDisposedNow: () => disposedFlag,
-        isUploadsCanceledNow: () => false,
-      );
+        final futureUrls = h.coordinator.uploadPendingImagesInBackground(
+          [fileA],
+          'r-1',
+          imageStates: {'/a.jpg': _pending()},
+          isDisposedNow: () => disposedFlag,
+          isUploadsCanceledNow: () => false,
+        );
 
-      // Flip BEFORE the storage Future resolves. The pre-flight check
-      // already passed, but the post-upload check must now observe `true`.
-      disposedFlag = true;
+        // Flip BEFORE the storage Future resolves. The pre-flight check
+        // already passed, but the post-upload check must now observe `true`.
+        disposedFlag = true;
 
-      final urls = await futureUrls;
+        final urls = await futureUrls;
 
-      // Old behaviour (captured-by-value): would return ['https://x/a.jpg'].
-      // New behaviour (closure fresh-read): post-upload guard fires → empty.
-      expect(urls, isEmpty,
+        // Old behaviour (captured-by-value): would return ['https://x/a.jpg'].
+        // New behaviour (closure fresh-read): post-upload guard fires → empty.
+        expect(
+          urls,
+          isEmpty,
           reason:
-              'mid-flight disposedFlag flip must short-circuit the post-upload guard');
-    });
+              'mid-flight disposedFlag flip must short-circuit the post-upload guard',
+        );
+      },
+    );
 
     /// Symmetric case for the uploadsCanceled flag — same fresh-read
     /// contract via `isUploadsCanceledNow`. The user-initiated cancel path
     /// is the more common trigger than dispose.
     test(
-        'BUT-1129: mid-flight isUploadsCanceledNow flip short-circuits in-progress uploads',
-        () async {
-      final h = _Harness();
-      final fileA = File('/a.jpg');
-      bool canceledFlag = false;
+      'BUT-1129: mid-flight isUploadsCanceledNow flip short-circuits in-progress uploads',
+      () async {
+        final h = _Harness();
+        final fileA = File('/a.jpg');
+        bool canceledFlag = false;
 
-      when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
-        (_) => Future.delayed(
-          const Duration(milliseconds: 50),
-          () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
-        ),
-      );
+        when(() => h.storage.uploadRecipeImage(fileA, 'r-1')).thenAnswer(
+          (_) => Future.delayed(
+            const Duration(milliseconds: 50),
+            () => const ImageUploadResult(imageUrl: 'https://x/a.jpg'),
+          ),
+        );
 
-      final futureUrls = h.coordinator.uploadPendingImagesInBackground(
-        [fileA],
-        'r-1',
-        imageStates: {'/a.jpg': _pending()},
-        isDisposedNow: () => false,
-        isUploadsCanceledNow: () => canceledFlag,
-      );
+        final futureUrls = h.coordinator.uploadPendingImagesInBackground(
+          [fileA],
+          'r-1',
+          imageStates: {'/a.jpg': _pending()},
+          isDisposedNow: () => false,
+          isUploadsCanceledNow: () => canceledFlag,
+        );
 
-      canceledFlag = true;
+        canceledFlag = true;
 
-      final urls = await futureUrls;
+        final urls = await futureUrls;
 
-      expect(urls, isEmpty,
+        expect(
+          urls,
+          isEmpty,
           reason:
-              'mid-flight canceledFlag flip must short-circuit the post-upload guard');
-    });
+              'mid-flight canceledFlag flip must short-circuit the post-upload guard',
+        );
+      },
+    );
   });
 
   group('dispose', () {

@@ -43,7 +43,8 @@ mixin FirebaseSyncMixin<T> {
     }
 
     AppLogger.info(
-        '🔄 Starting Firebase sync for ${syncCollections.length} collections...');
+      '🔄 Starting Firebase sync for ${syncCollections.length} collections...',
+    );
 
     try {
       for (final collection in syncCollections) {
@@ -102,10 +103,13 @@ mixin FirebaseSyncMixin<T> {
   }
 
   void _handleCollectionSnapshot(
-      SyncCollection collection, QuerySnapshot snapshot) {
+    SyncCollection collection,
+    QuerySnapshot snapshot,
+  ) {
     try {
       AppLogger.debug(
-          'Handling snapshot for ${collection.name}: ${snapshot.docChanges.length} changes');
+        'Handling snapshot for ${collection.name}: ${snapshot.docChanges.length} changes',
+      );
 
       for (final change in snapshot.docChanges) {
         switch (change.type) {
@@ -149,7 +153,8 @@ mixin FirebaseSyncMixin<T> {
 
     try {
       AppLogger.debug(
-          'Processing ${_pendingSyncIds.length} pending sync items');
+        'Processing ${_pendingSyncIds.length} pending sync items',
+      );
 
       final itemsToSync = List<String>.from(_pendingSyncIds);
       _pendingSyncIds.clear();
@@ -178,8 +183,11 @@ mixin FirebaseSyncMixin<T> {
   }
 
   // Document listeners
-  void addDocumentListener(String key, DocumentReference docRef,
-      void Function(DocumentSnapshot) handler) {
+  void addDocumentListener(
+    String key,
+    DocumentReference docRef,
+    void Function(DocumentSnapshot) handler,
+  ) {
     // Cancel existing listener if any
     _documentListeners[key]?.cancel();
 

@@ -221,11 +221,14 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             PopupMenuItem(
               value: 'delete',
               child: ListTile(
-                leading: Icon(Icons.delete,
-                    color: Theme.of(context).colorScheme.error),
-                title: Text(context.l10n.commonDelete,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.error)),
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  context.l10n.commonDelete,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -247,8 +250,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final contentWidth =
-              constraints.maxWidth > 700 ? 700.0 : constraints.maxWidth;
+          final contentWidth = constraints.maxWidth > 700
+              ? 700.0
+              : constraints.maxWidth;
           return Align(
             alignment: Alignment.topCenter,
             child: SizedBox(
@@ -284,8 +288,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final contentWidth =
-              constraints.maxWidth > 700 ? 700.0 : constraints.maxWidth;
+          final contentWidth = constraints.maxWidth > 700
+              ? 700.0
+              : constraints.maxWidth;
           return Align(
             alignment: Alignment.topCenter,
             child: SizedBox(
@@ -293,8 +298,10 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
               child: ListView(
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 children: [
-                  Text(context.l10n.commonName,
-                      style: AppTextStyles.labelLarge),
+                  Text(
+                    context.l10n.commonName,
+                    style: AppTextStyles.labelLarge,
+                  ),
                   const SizedBox(height: AppDimensions.spacingSm),
                   TextField(
                     controller: _nameController,
@@ -357,7 +364,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       } catch (e) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.tagDetailCouldNotCreateRule);
+            context,
+            context.l10n.tagDetailCouldNotCreateRule,
+          );
         }
       }
     }
@@ -379,7 +388,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       } catch (e) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.tagDetailCouldNotUpdateRule);
+            context,
+            context.l10n.tagDetailCouldNotUpdateRule,
+          );
         }
       }
     }
@@ -412,7 +423,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     } catch (e) {
       if (context.mounted) {
         SnackBarUtils.showError(
-            context, context.l10n.tagDetailCouldNotChangeRuleStatus);
+          context,
+          context.l10n.tagDetailCouldNotChangeRuleStatus,
+        );
       }
     }
   }
@@ -434,7 +447,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(context.l10n.commonDelete),
           ),
@@ -452,7 +466,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       } catch (e) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.tagDetailCouldNotDeleteRule);
+            context,
+            context.l10n.tagDetailCouldNotDeleteRule,
+          );
         }
       }
     }
@@ -499,7 +515,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             content: Text(
               result.hasChanges
                   ? context.l10n.tagDetailRulesAppliedSuccess(
-                      result.tagsApplied, result.recipesModified)
+                      result.tagsApplied,
+                      result.recipesModified,
+                    )
                   : context.l10n.tagDetailNoRecipesMatched,
             ),
           ),
@@ -507,11 +525,17 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       }
     } catch (e, stackTrace) {
       AppLogger.error(
-          'Failed to apply rules to recipes', e, 'TagDetailView', stackTrace);
+        'Failed to apply rules to recipes',
+        e,
+        'TagDetailView',
+        stackTrace,
+      );
       if (context.mounted) {
         Navigator.pop(context);
         SnackBarUtils.showError(
-            context, context.l10n.tagDetailCouldNotApplyRules);
+          context,
+          context.l10n.tagDetailCouldNotApplyRules,
+        );
       }
     }
   }
@@ -537,7 +561,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(context.l10n.commonDelete),
           ),
@@ -556,7 +581,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       } catch (e) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.tagDetailCouldNotDelete);
+            context,
+            context.l10n.tagDetailCouldNotDelete,
+          );
         }
       }
     }

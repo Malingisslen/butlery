@@ -34,17 +34,16 @@ class CollaborativeShoppingOperations {
     List<String>? categoryIds,
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
-  }) =>
-      lifecycle.createList(
-        name: name,
-        description: description,
-        memberIds: memberIds,
-        memberDisplayNames: memberDisplayNames,
-        items: items,
-        categoryIds: categoryIds,
-        allowGuestEditing: allowGuestEditing,
-        autoRemoveCompleted: autoRemoveCompleted,
-      );
+  }) => lifecycle.createList(
+    name: name,
+    description: description,
+    memberIds: memberIds,
+    memberDisplayNames: memberDisplayNames,
+    items: items,
+    categoryIds: categoryIds,
+    allowGuestEditing: allowGuestEditing,
+    autoRemoveCompleted: autoRemoveCompleted,
+  );
 
   List<UnifiedShoppingList> getAllLists() => lifecycle.getAllLists();
   UnifiedShoppingList? getListById(String id) => lifecycle.getListById(id);
@@ -55,13 +54,12 @@ class CollaborativeShoppingOperations {
     required List<String> memberIds,
     required Map<String, String> memberDisplayNames,
     String? description,
-  }) =>
-      lifecycle.convertPersonalToCollaborative(
-        personalListId: personalListId,
-        memberIds: memberIds,
-        memberDisplayNames: memberDisplayNames,
-        description: description,
-      );
+  }) => lifecycle.convertPersonalToCollaborative(
+    personalListId: personalListId,
+    memberIds: memberIds,
+    memberDisplayNames: memberDisplayNames,
+    description: description,
+  );
   Future<String?> convertCollaborativeToPersonal(String collaborativeListId) =>
       lifecycle.convertCollaborativeToPersonal(collaborativeListId);
 
@@ -71,25 +69,25 @@ class CollaborativeShoppingOperations {
     required String userId,
     required String userDisplayName,
     SharedListPermission permission = SharedListPermission.edit,
-  }) =>
-      members.addMember(
-        listId: listId,
-        userId: userId,
-        userDisplayName: userDisplayName,
-        permission: permission,
-      );
+  }) => members.addMember(
+    listId: listId,
+    userId: userId,
+    userDisplayName: userDisplayName,
+    permission: permission,
+  );
   Future<bool> removeMember({
     required String listId,
     required String userId,
-  }) =>
-      members.removeMember(listId: listId, userId: userId);
+  }) => members.removeMember(listId: listId, userId: userId);
   Future<bool> updateMemberPermission({
     required String listId,
     required String userId,
     required SharedListPermission permission,
-  }) =>
-      members.updateMemberPermission(
-          listId: listId, userId: userId, permission: permission);
+  }) => members.updateMemberPermission(
+    listId: listId,
+    userId: userId,
+    permission: permission,
+  );
   Map<String, SharedListPermission> getListMembers(String listId) =>
       members.getListMembers(listId);
   Future<bool> leaveList(String listId) => members.leaveList(listId);
@@ -105,27 +103,24 @@ class CollaborativeShoppingOperations {
     String? note,
     double? estimatedPrice,
     int priority = 3,
-  }) =>
-      items.addItem(
-        listId: listId,
-        name: name,
-        amount: amount,
-        unit: unit,
-        category: category,
-        note: note,
-        estimatedPrice: estimatedPrice,
-        priority: priority,
-      );
+  }) => items.addItem(
+    listId: listId,
+    name: name,
+    amount: amount,
+    unit: unit,
+    category: category,
+    note: note,
+    estimatedPrice: estimatedPrice,
+    priority: priority,
+  );
   Future<bool> toggleItemBought({
     required String listId,
     required String itemId,
-  }) =>
-      items.toggleItemBought(listId: listId, itemId: itemId);
+  }) => items.toggleItemBought(listId: listId, itemId: itemId);
   Future<bool> removeItem({
     required String listId,
     required String itemId,
-  }) =>
-      items.removeItem(listId: listId, itemId: itemId);
+  }) => items.removeItem(listId: listId, itemId: itemId);
 
   // Activity delegation
   List<Map<String, dynamic>> getRecentActivity(String listId) =>

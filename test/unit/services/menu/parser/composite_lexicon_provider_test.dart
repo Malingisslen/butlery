@@ -26,14 +26,18 @@ class _StubLexiconProvider implements LexiconProvider {
 void main() {
   group('CompositeLexiconProvider', () {
     test('merges code and firestore — firestore wins on conflict', () async {
-      final code = _StubLexiconProvider(Lexicon({
-        LexiconCategory.dietaryStems: {'vegansk': 'vegan', 'lchf': 'lchf'},
-        LexiconCategory.cuisineStems: {'japanskt': 'japanese'},
-      }));
+      final code = _StubLexiconProvider(
+        Lexicon({
+          LexiconCategory.dietaryStems: {'vegansk': 'vegan', 'lchf': 'lchf'},
+          LexiconCategory.cuisineStems: {'japanskt': 'japanese'},
+        }),
+      );
 
-      final firestore = _StubLexiconProvider(Lexicon({
-        LexiconCategory.dietaryStems: {'vegansk': 'vegan_override'},
-      }));
+      final firestore = _StubLexiconProvider(
+        Lexicon({
+          LexiconCategory.dietaryStems: {'vegansk': 'vegan_override'},
+        }),
+      );
 
       final composite = CompositeLexiconProvider(
         code: code,
@@ -44,7 +48,9 @@ void main() {
 
       // Firestore override wins
       expect(
-          result.of(LexiconCategory.dietaryStems)['vegansk'], 'vegan_override');
+        result.of(LexiconCategory.dietaryStems)['vegansk'],
+        'vegan_override',
+      );
       // Code-only entry passes through
       expect(result.of(LexiconCategory.dietaryStems)['lchf'], 'lchf');
       // Code-only category passes through
@@ -52,9 +58,11 @@ void main() {
     });
 
     test('empty firestore returns pure code lexicon', () async {
-      final code = _StubLexiconProvider(Lexicon({
-        LexiconCategory.mealStems: {'middag': 'middag'},
-      }));
+      final code = _StubLexiconProvider(
+        Lexicon({
+          LexiconCategory.mealStems: {'middag': 'middag'},
+        }),
+      );
       final firestore = _StubLexiconProvider(const Lexicon.empty());
 
       final composite = CompositeLexiconProvider(
@@ -68,12 +76,16 @@ void main() {
     });
 
     test('firestore adds new category not in code', () async {
-      final code = _StubLexiconProvider(Lexicon({
-        LexiconCategory.mealStems: {'lunch': 'lunch'},
-      }));
-      final firestore = _StubLexiconProvider(Lexicon({
-        LexiconCategory.themeStems: {'festmat': 'festive'},
-      }));
+      final code = _StubLexiconProvider(
+        Lexicon({
+          LexiconCategory.mealStems: {'lunch': 'lunch'},
+        }),
+      );
+      final firestore = _StubLexiconProvider(
+        Lexicon({
+          LexiconCategory.themeStems: {'festmat': 'festive'},
+        }),
+      );
 
       final composite = CompositeLexiconProvider(
         code: code,

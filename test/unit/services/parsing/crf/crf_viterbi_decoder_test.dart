@@ -49,7 +49,9 @@ void main() {
 
       expect(restored.featureWeights.length, original.featureWeights.length);
       expect(
-          restored.transitionWeights.length, original.transitionWeights.length);
+        restored.transitionWeights.length,
+        original.transitionWeights.length,
+      );
 
       // Spot-check a feature weight
       expect(

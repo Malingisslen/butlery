@@ -126,87 +126,86 @@ class SiteConfig {
     int? failureCount,
     DateTime? lastUpdated,
     String? notes,
-  }) =>
-      SiteConfig(
-        domain: domain ?? this.domain,
-        titleSelector: titleSelector ?? this.titleSelector,
-        ingredientsSelector: ingredientsSelector ?? this.ingredientsSelector,
-        instructionsSelector: instructionsSelector ?? this.instructionsSelector,
-        portionsSelector: portionsSelector ?? this.portionsSelector,
-        timeSelector: timeSelector ?? this.timeSelector,
-        imageSelector: imageSelector ?? this.imageSelector,
-        descriptionSelector: descriptionSelector ?? this.descriptionSelector,
-        titleSelectorFallback:
-            titleSelectorFallback ?? this.titleSelectorFallback,
-        ingredientsSelectorFallback:
-            ingredientsSelectorFallback ?? this.ingredientsSelectorFallback,
-        instructionsSelectorFallback:
-            instructionsSelectorFallback ?? this.instructionsSelectorFallback,
-        isSupported: isSupported ?? this.isSupported,
-        qualityScore: qualityScore ?? this.qualityScore,
-        successCount: successCount ?? this.successCount,
-        failureCount: failureCount ?? this.failureCount,
-        lastUpdated: lastUpdated ?? this.lastUpdated,
-        notes: notes ?? this.notes,
-      );
+  }) => SiteConfig(
+    domain: domain ?? this.domain,
+    titleSelector: titleSelector ?? this.titleSelector,
+    ingredientsSelector: ingredientsSelector ?? this.ingredientsSelector,
+    instructionsSelector: instructionsSelector ?? this.instructionsSelector,
+    portionsSelector: portionsSelector ?? this.portionsSelector,
+    timeSelector: timeSelector ?? this.timeSelector,
+    imageSelector: imageSelector ?? this.imageSelector,
+    descriptionSelector: descriptionSelector ?? this.descriptionSelector,
+    titleSelectorFallback: titleSelectorFallback ?? this.titleSelectorFallback,
+    ingredientsSelectorFallback:
+        ingredientsSelectorFallback ?? this.ingredientsSelectorFallback,
+    instructionsSelectorFallback:
+        instructionsSelectorFallback ?? this.instructionsSelectorFallback,
+    isSupported: isSupported ?? this.isSupported,
+    qualityScore: qualityScore ?? this.qualityScore,
+    successCount: successCount ?? this.successCount,
+    failureCount: failureCount ?? this.failureCount,
+    lastUpdated: lastUpdated ?? this.lastUpdated,
+    notes: notes ?? this.notes,
+  );
 
   /// Converts to Firestore document.
   Map<String, dynamic> toFirestore() => {
-        'domain': domain,
-        if (titleSelector != null) 'titleSelector': titleSelector,
-        if (ingredientsSelector != null)
-          'ingredientsSelector': ingredientsSelector,
-        if (instructionsSelector != null)
-          'instructionsSelector': instructionsSelector,
-        if (portionsSelector != null) 'portionsSelector': portionsSelector,
-        if (timeSelector != null) 'timeSelector': timeSelector,
-        if (imageSelector != null) 'imageSelector': imageSelector,
-        if (descriptionSelector != null)
-          'descriptionSelector': descriptionSelector,
-        if (titleSelectorFallback != null)
-          'titleSelectorFallback': titleSelectorFallback,
-        if (ingredientsSelectorFallback != null)
-          'ingredientsSelectorFallback': ingredientsSelectorFallback,
-        if (instructionsSelectorFallback != null)
-          'instructionsSelectorFallback': instructionsSelectorFallback,
-        'isSupported': isSupported,
-        'qualityScore': qualityScore,
-        'successCount': successCount,
-        'failureCount': failureCount,
-        'lastUpdated': FieldValue.serverTimestamp(),
-        if (notes != null) 'notes': notes,
-      };
+    'domain': domain,
+    if (titleSelector != null) 'titleSelector': titleSelector,
+    if (ingredientsSelector != null) 'ingredientsSelector': ingredientsSelector,
+    if (instructionsSelector != null)
+      'instructionsSelector': instructionsSelector,
+    if (portionsSelector != null) 'portionsSelector': portionsSelector,
+    if (timeSelector != null) 'timeSelector': timeSelector,
+    if (imageSelector != null) 'imageSelector': imageSelector,
+    if (descriptionSelector != null) 'descriptionSelector': descriptionSelector,
+    if (titleSelectorFallback != null)
+      'titleSelectorFallback': titleSelectorFallback,
+    if (ingredientsSelectorFallback != null)
+      'ingredientsSelectorFallback': ingredientsSelectorFallback,
+    if (instructionsSelectorFallback != null)
+      'instructionsSelectorFallback': instructionsSelectorFallback,
+    'isSupported': isSupported,
+    'qualityScore': qualityScore,
+    'successCount': successCount,
+    'failureCount': failureCount,
+    'lastUpdated': FieldValue.serverTimestamp(),
+    if (notes != null) 'notes': notes,
+  };
 
   /// Creates from Firestore document.
   factory SiteConfig.fromFirestore(Map<String, dynamic> data) => SiteConfig(
-        domain: (data['domain'] as String?).orEmpty(),
-        titleSelector: data['titleSelector']?.toString(),
-        ingredientsSelector: data['ingredientsSelector']?.toString(),
-        instructionsSelector: data['instructionsSelector']?.toString(),
-        portionsSelector: data['portionsSelector']?.toString(),
-        timeSelector: data['timeSelector']?.toString(),
-        imageSelector: data['imageSelector']?.toString(),
-        descriptionSelector: data['descriptionSelector']?.toString(),
-        titleSelectorFallback: data['titleSelectorFallback']?.toString(),
-        ingredientsSelectorFallback:
-            data['ingredientsSelectorFallback']?.toString(),
-        instructionsSelectorFallback:
-            data['instructionsSelectorFallback']?.toString(),
-        isSupported: SerializationUtils.safeBool(data, 'isSupported',
-            defaultValue: true),
-        qualityScore: (data['qualityScore'] as num?)?.toDouble() ?? 0.5,
-        successCount: SerializationUtils.safeInt(data, 'successCount'),
-        failureCount: SerializationUtils.safeInt(data, 'failureCount'),
-        lastUpdated: SerializationUtils.parseDateTimeValue(data['lastUpdated']),
-        notes: data['notes']?.toString(),
-      );
+    domain: (data['domain'] as String?).orEmpty(),
+    titleSelector: data['titleSelector']?.toString(),
+    ingredientsSelector: data['ingredientsSelector']?.toString(),
+    instructionsSelector: data['instructionsSelector']?.toString(),
+    portionsSelector: data['portionsSelector']?.toString(),
+    timeSelector: data['timeSelector']?.toString(),
+    imageSelector: data['imageSelector']?.toString(),
+    descriptionSelector: data['descriptionSelector']?.toString(),
+    titleSelectorFallback: data['titleSelectorFallback']?.toString(),
+    ingredientsSelectorFallback: data['ingredientsSelectorFallback']
+        ?.toString(),
+    instructionsSelectorFallback: data['instructionsSelectorFallback']
+        ?.toString(),
+    isSupported: SerializationUtils.safeBool(
+      data,
+      'isSupported',
+      defaultValue: true,
+    ),
+    qualityScore: (data['qualityScore'] as num?)?.toDouble() ?? 0.5,
+    successCount: SerializationUtils.safeInt(data, 'successCount'),
+    failureCount: SerializationUtils.safeInt(data, 'failureCount'),
+    lastUpdated: SerializationUtils.parseDateTimeValue(data['lastUpdated']),
+    notes: data['notes']?.toString(),
+  );
 
   /// Creates default config for a domain.
   factory SiteConfig.defaultFor(String domain) => SiteConfig(
-        domain: domain,
-        isSupported: false,
-        qualityScore: 0.0,
-      );
+    domain: domain,
+    isSupported: false,
+    qualityScore: 0.0,
+  );
 
   @override
   bool operator ==(Object other) =>

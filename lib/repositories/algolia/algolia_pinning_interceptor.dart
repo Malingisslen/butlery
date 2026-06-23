@@ -49,9 +49,9 @@ class PinningDioInterceptor extends Interceptor {
     PinCheckFn? pinCheck,
     PinMismatchTelemetry? onPinMismatch,
     Map<String, List<String>>? pinOverrides,
-  })  : _pinCheck = pinCheck ?? _defaultPinCheck,
-        _onPinMismatch = onPinMismatch,
-        _pinOverrides = pinOverrides ?? const <String, List<String>>{};
+  }) : _pinCheck = pinCheck ?? _defaultPinCheck,
+       _onPinMismatch = onPinMismatch,
+       _pinOverrides = pinOverrides ?? const <String, List<String>>{};
 
   List<String> _pinsFor(String host) {
     final normalized = host.trim().toLowerCase();
@@ -126,7 +126,8 @@ class PinningDioInterceptor extends Interceptor {
         );
       }
       AppLogger.warning(
-          'PinningDioInterceptor: pin check platform error for $host: $e');
+        'PinningDioInterceptor: pin check platform error for $host: $e',
+      );
       _onPinMismatch?.call(host, 'check_failed', e);
       return handler.reject(
         DioException(
@@ -136,13 +137,15 @@ class PinningDioInterceptor extends Interceptor {
       );
     } catch (e) {
       AppLogger.warning(
-          'PinningDioInterceptor: pin check failed for $host: $e — failing closed');
+        'PinningDioInterceptor: pin check failed for $host: $e — failing closed',
+      );
       _onPinMismatch?.call(host, 'check_failed', e);
       return handler.reject(
         DioException(
           requestOptions: options,
           error: CertificateCouldNotBeVerifiedException(
-              e is Exception ? e : Exception(e.toString())),
+            e is Exception ? e : Exception(e.toString()),
+          ),
         ),
       );
     } finally {
@@ -156,7 +159,8 @@ class PinningDioInterceptor extends Interceptor {
 
     if (!checkResult.contains('CONNECTION_SECURE')) {
       AppLogger.warning(
-          'PinningDioInterceptor: pin mismatch for $host (result=$checkResult)');
+        'PinningDioInterceptor: pin mismatch for $host (result=$checkResult)',
+      );
       _onPinMismatch?.call(host, 'mismatch', null);
       return handler.reject(
         DioException(

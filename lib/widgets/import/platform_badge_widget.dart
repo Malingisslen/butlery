@@ -36,7 +36,9 @@ class PlatformBadgeWidget extends StatelessWidget {
 
     return AnimatedOpacity(
       duration: AnimationUtils.getDuration(
-          context, AppDimensions.animationDurationMedium),
+        context,
+        AppDimensions.animationDurationMedium,
+      ),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
         padding: AppDimensions.paddingSymmetric12x6,
@@ -93,8 +95,9 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.instagram:
         return BrandColors.instagramBackground;
       case Platform.website:
-        return colorScheme.primaryContainer
-            .withValues(alpha: AppDimensions.opacityHalf);
+        return colorScheme.primaryContainer.withValues(
+          alpha: AppDimensions.opacityHalf,
+        );
       case Platform.unknown:
         return colorScheme.surfaceContainerHighest;
     }
@@ -103,16 +106,19 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getBorderColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return BrandColors.youtube
-            .withValues(alpha: AppDimensions.opacityMediumLight);
+        return BrandColors.youtube.withValues(
+          alpha: AppDimensions.opacityMediumLight,
+        );
       case Platform.tiktok:
         return BrandColors.tiktok.withValues(alpha: AppDimensions.opacityHalf);
       case Platform.instagram:
-        return BrandColors.instagram
-            .withValues(alpha: AppDimensions.opacityMediumLight);
+        return BrandColors.instagram.withValues(
+          alpha: AppDimensions.opacityMediumLight,
+        );
       case Platform.website:
-        return colorScheme.primary
-            .withValues(alpha: AppDimensions.opacityMediumLight);
+        return colorScheme.primary.withValues(
+          alpha: AppDimensions.opacityMediumLight,
+        );
       case Platform.unknown:
         return colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf);
     }

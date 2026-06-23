@@ -46,7 +46,8 @@ void main() {
     );
 
     final resourceParticipants = <String, ResourcePermission>{};
-    final participantMap = participants ??
+    final participantMap =
+        participants ??
         {
           'owner_123': true,
           'editor_123': true,
@@ -148,8 +149,10 @@ void main() {
     test('should work without callback', () {
       final tracker = ParticipantTracker();
 
-      expect(() => tracker.markActiveNow('test_user', 'Test User'),
-          returnsNormally);
+      expect(
+        () => tracker.markActiveNow('test_user', 'Test User'),
+        returnsNormally,
+      );
 
       tracker.dispose();
     });
@@ -168,8 +171,10 @@ void main() {
 
       expect(participantTracker.activeCount, equals(1));
       expect(participantTracker.activeParticipantIds, contains('editor_456'));
-      expect(participantTracker.getDisplayName('editor_456'),
-          equals('Menu Editor'));
+      expect(
+        participantTracker.getDisplayName('editor_456'),
+        equals('Menu Editor'),
+      );
       expect(participantTracker.getLastActivity('editor_456'), equals(now));
     });
 
@@ -187,11 +192,17 @@ void main() {
       participantTracker.updateFromMenu(menu);
 
       expect(
-          participantTracker.getDisplayName('owner_789'), equals('Menu Owner'));
-      expect(participantTracker.getDisplayName('participant_1'),
-          equals('Deltagare'));
-      expect(participantTracker.getDisplayName('participant_2'),
-          equals('Deltagare'));
+        participantTracker.getDisplayName('owner_789'),
+        equals('Menu Owner'),
+      );
+      expect(
+        participantTracker.getDisplayName('participant_1'),
+        equals('Deltagare'),
+      );
+      expect(
+        participantTracker.getDisplayName('participant_2'),
+        equals('Deltagare'),
+      );
     });
 
     test('should handle menu updates with empty editor', () {
@@ -226,9 +237,13 @@ void main() {
 
       expect(participantTracker.activeCount, equals(1));
       expect(
-          participantTracker.getLastActivity('user_1'), equals(secondUpdate));
-      expect(participantTracker.getDisplayName('user_1'),
-          equals('User One Updated'));
+        participantTracker.getLastActivity('user_1'),
+        equals(secondUpdate),
+      );
+      expect(
+        participantTracker.getDisplayName('user_1'),
+        equals('User One Updated'),
+      );
     });
 
     test('should trigger callback on menu updates', () {
@@ -262,7 +277,9 @@ void main() {
 
       expect(participantTracker.getLastActivity('user_1'), isNotNull);
       expect(
-          participantTracker.getLastActivity('user_2'), equals(specificTime));
+        participantTracker.getLastActivity('user_2'),
+        equals(specificTime),
+      );
       expect(participantTracker.getLastActivity('nonexistent'), isNull);
     });
 
@@ -283,17 +300,23 @@ void main() {
       participantTracker.updateFromMenu(oldMenu);
 
       expect(
-          participantTracker.wasRecentlyActive(
-              'recent_user', Duration(minutes: 5)),
-          isTrue);
+        participantTracker.wasRecentlyActive(
+          'recent_user',
+          Duration(minutes: 5),
+        ),
+        isTrue,
+      );
       expect(
-          participantTracker.wasRecentlyActive(
-              'old_user', Duration(minutes: 5)),
-          isFalse);
+        participantTracker.wasRecentlyActive('old_user', Duration(minutes: 5)),
+        isFalse,
+      );
       expect(
-          participantTracker.wasRecentlyActive(
-              'nonexistent', Duration(minutes: 5)),
-          isFalse);
+        participantTracker.wasRecentlyActive(
+          'nonexistent',
+          Duration(minutes: 5),
+        ),
+        isFalse,
+      );
     });
 
     test('should get online participants (active within 5 minutes)', () {
@@ -343,7 +366,9 @@ void main() {
 
       final recentParticipants = participantTracker.recentlyActiveParticipants;
       expect(
-          recentParticipants.length, equals(2)); // current_user + recent_user
+        recentParticipants.length,
+        equals(2),
+      ); // current_user + recent_user
       expect(recentParticipants, contains('current_user'));
       expect(recentParticipants, contains('recent_user'));
       expect(recentParticipants, isNot(contains('old_user')));
@@ -390,9 +415,13 @@ void main() {
       participantTracker.markActiveNow('user_123', 'Known User');
 
       expect(
-          participantTracker.getDisplayName('user_123'), equals('Known User'));
-      expect(participantTracker.getDisplayName('unknown_user'),
-          equals('Okänd användare'));
+        participantTracker.getDisplayName('user_123'),
+        equals('Known User'),
+      );
+      expect(
+        participantTracker.getDisplayName('unknown_user'),
+        equals('Okänd användare'),
+      );
     });
 
     test('should update display name and trigger callback', () {
@@ -431,8 +460,10 @@ void main() {
     test('should update display name for unknown users', () {
       participantTracker.updateDisplayName('new_user', 'New User Name');
 
-      expect(participantTracker.getDisplayName('new_user'),
-          equals('New User Name'));
+      expect(
+        participantTracker.getDisplayName('new_user'),
+        equals('New User Name'),
+      );
     });
   });
 
@@ -442,12 +473,17 @@ void main() {
 
       expect(participantTracker.activeCount, equals(1));
       expect(participantTracker.activeParticipantIds, contains('active_user'));
-      expect(participantTracker.getDisplayName('active_user'),
-          equals('Active User'));
       expect(
-          participantTracker.wasRecentlyActive(
-              'active_user', Duration(seconds: 10)),
-          isTrue);
+        participantTracker.getDisplayName('active_user'),
+        equals('Active User'),
+      );
+      expect(
+        participantTracker.wasRecentlyActive(
+          'active_user',
+          Duration(seconds: 10),
+        ),
+        isTrue,
+      );
     });
 
     test('should remove specific participant', () {
@@ -461,9 +497,13 @@ void main() {
       expect(participantTracker.activeCount, equals(1));
       expect(participantTracker.activeParticipantIds, contains('user_2'));
       expect(
-          participantTracker.activeParticipantIds, isNot(contains('user_1')));
-      expect(participantTracker.getDisplayName('user_1'),
-          equals('Okänd användare'));
+        participantTracker.activeParticipantIds,
+        isNot(contains('user_1')),
+      );
+      expect(
+        participantTracker.getDisplayName('user_1'),
+        equals('Okänd användare'),
+      );
     });
 
     test('should handle removing non-existent participant', () {
@@ -559,7 +599,9 @@ void main() {
 
       // Old activity should be immediately cleaned up, recent should remain
       expect(
-          participantTracker.activeParticipantIds, isNot(contains('old_user')));
+        participantTracker.activeParticipantIds,
+        isNot(contains('old_user')),
+      );
       expect(participantTracker.activeParticipantIds, contains('recent_user'));
     });
 
@@ -610,7 +652,9 @@ void main() {
       // Both should be preserved as they're within 1 hour
       expect(participantTracker.activeParticipantIds, contains('recent_user'));
       expect(
-          participantTracker.activeParticipantIds, contains('another_recent'));
+        participantTracker.activeParticipantIds,
+        contains('another_recent'),
+      );
     });
   });
 
@@ -637,7 +681,9 @@ void main() {
 
       // Should not crash
       expect(
-          () => tracker.markActiveNow('user_1', 'User One'), returnsNormally);
+        () => tracker.markActiveNow('user_1', 'User One'),
+        returnsNormally,
+      );
       expect(() => tracker.updateFromMenu(createTestMenu()), returnsNormally);
 
       tracker.dispose();
@@ -649,8 +695,10 @@ void main() {
       );
 
       // Should throw the callback exception
-      expect(() => tracker.markActiveNow('user_1', 'User One'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => tracker.markActiveNow('user_1', 'User One'),
+        throwsA(isA<Exception>()),
+      );
 
       // Dispose will also throw since it calls clear() which triggers callback
       expect(() => tracker.dispose(), throwsA(isA<Exception>()));
@@ -681,10 +729,14 @@ void main() {
 
       expect(participantTracker.activeCount, equals(0));
       expect(participantTracker.allActivities, isEmpty);
-      expect(participantTracker.getDisplayName('user_1'),
-          equals('Okänd användare'));
-      expect(participantTracker.getDisplayName('user_2'),
-          equals('Okänd användare'));
+      expect(
+        participantTracker.getDisplayName('user_1'),
+        equals('Okänd användare'),
+      );
+      expect(
+        participantTracker.getDisplayName('user_2'),
+        equals('Okänd användare'),
+      );
     });
   });
 
@@ -702,8 +754,10 @@ void main() {
       }
 
       expect(participantTracker.activeCount, equals(10));
-      expect(participantTracker.onlineParticipants.length,
-          equals(10)); // All within 5 minutes
+      expect(
+        participantTracker.onlineParticipants.length,
+        equals(10),
+      ); // All within 5 minutes
     });
 
     test('should handle concurrent operations', () {
@@ -716,7 +770,9 @@ void main() {
 
       // Should maintain consistent state
       expect(
-          participantTracker.activeParticipantIds, isNot(contains('user_1')));
+        participantTracker.activeParticipantIds,
+        isNot(contains('user_1')),
+      );
       expect(participantTracker.activeParticipantIds, contains('user_2'));
     });
 
@@ -726,10 +782,13 @@ void main() {
       expect(participantTracker.getDisplayName(''), equals('Okänd användare'));
 
       expect(
-          () => participantTracker.wasRecentlyActive('', Duration(minutes: 1)),
-          returnsNormally);
-      expect(participantTracker.wasRecentlyActive('', Duration(minutes: 1)),
-          isFalse);
+        () => participantTracker.wasRecentlyActive('', Duration(minutes: 1)),
+        returnsNormally,
+      );
+      expect(
+        participantTracker.wasRecentlyActive('', Duration(minutes: 1)),
+        isFalse,
+      );
 
       expect(() => participantTracker.removeParticipant(''), returnsNormally);
     });
@@ -849,7 +908,9 @@ void main() {
       // Step 4: Activity queries
       expect(tracker.onlineParticipants.length, equals(2));
       expect(
-          tracker.wasRecentlyActive('editor_1', Duration(minutes: 1)), isTrue);
+        tracker.wasRecentlyActive('editor_1', Duration(minutes: 1)),
+        isTrue,
+      );
 
       // Step 5: All activities overview
       final activities = tracker.allActivities;

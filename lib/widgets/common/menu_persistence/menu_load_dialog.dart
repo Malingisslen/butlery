@@ -69,8 +69,9 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius:
-            BorderRadius.circular(AppDimensions.bottomSheetBorderRadius),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.bottomSheetBorderRadius,
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -79,21 +80,22 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           Container(
             width: AppDimensions.iconSizeDisplay,
             height: AppDimensions.spacingXs,
-            margin:
-                const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
+            margin: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingL,
+            ),
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurfaceVariant
-                  .withValues(alpha: AppDimensions.opacityMedium),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
+                alpha: AppDimensions.opacityMedium,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
             ),
           ),
 
           // Title row with close button
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingL,
+            ),
             child: Row(
               children: [
                 Icon(
@@ -120,8 +122,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             child: _isLoading
                 ? const Center(child: LoadingIndicator())
                 : _savedMenus.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMenuList(),
+                ? _buildEmptyState()
+                : _buildMenuList(),
           ),
         ],
       ),
@@ -199,14 +201,16 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               child: Builder(
                 builder: (context) => Row(
                   children: [
-                    Icon(Icons.delete,
-                        color: Theme.of(context).colorScheme.error),
+                    Icon(
+                      Icons.delete,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(
                       context.l10n.commonDelete,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ],
                 ),
@@ -246,8 +250,9 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(widget.viewModel.error ?? context.l10n.menuLoadFailed),
+              content: Text(
+                widget.viewModel.error ?? context.l10n.menuLoadFailed,
+              ),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -306,7 +311,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    widget.viewModel.error ?? context.l10n.menuDeleteFailed),
+                  widget.viewModel.error ?? context.l10n.menuDeleteFailed,
+                ),
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
@@ -316,8 +322,9 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(context.l10n.errorDeletingWithDetails(e.toString())),
+              content: Text(
+                context.l10n.errorDeletingWithDetails(e.toString()),
+              ),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

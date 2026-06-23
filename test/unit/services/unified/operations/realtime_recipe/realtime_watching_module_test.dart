@@ -25,19 +25,21 @@ void main() {
 
     setUpAll(() async {
       // Register fallback values for mocktail
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
       registerFallbackValue(RealtimeRecipeBuilder().build());
     });
 
@@ -91,8 +93,10 @@ void main() {
     group('Single Recipe Watching', () {
       test('should watch recipe with realtime service', () async {
         // Arrange
-        when(() => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
-            'recipe_1')).thenAnswer((_) => Stream.value(testRealtimeRecipe));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_1'),
+        ).thenAnswer((_) => Stream.value(testRealtimeRecipe));
 
         // Act
         final stream = watchingModule.watchRecipe('recipe_1');
@@ -102,27 +106,31 @@ void main() {
         expect(recipe.id, equals('recipe_1'));
       });
 
-      test('should fall back to polling when realtime service unavailable',
-          () async {
-        // Arrange
-        watchingModule = RealtimeWatchingModule(
-          getRecipes: () => mockParentService.recipes,
-        );
+      test(
+        'should fall back to polling when realtime service unavailable',
+        () async {
+          // Arrange
+          watchingModule = RealtimeWatchingModule(
+            getRecipes: () => mockParentService.recipes,
+          );
 
-        // Act
-        final stream = watchingModule.watchRecipe('recipe_1');
+          // Act
+          final stream = watchingModule.watchRecipe('recipe_1');
 
-        // Assert
-        await expectLater(
-          stream.take(1),
-          emitsInOrder([isA<Recipe>()]),
-        );
-      });
+          // Assert
+          await expectLater(
+            stream.take(1),
+            emitsInOrder([isA<Recipe>()]),
+          );
+        },
+      );
 
       test('should watch recipe with retry on failure', () async {
         // Arrange
-        when(() => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
-            'recipe_1')).thenAnswer((_) => Stream.value(testRealtimeRecipe));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_1'),
+        ).thenAnswer((_) => Stream.value(testRealtimeRecipe));
 
         // Act
         final stream = watchingModule.watchRecipeWithRetry(
@@ -138,9 +146,10 @@ void main() {
 
       test('should handle watch errors gracefully', () async {
         // Arrange
-        when(() => mockRealtimeSyncService
-                .watchResource<RealtimeRecipe>('recipe_1'))
-            .thenAnswer((_) => Stream.error(Exception('Watch failed')));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_1'),
+        ).thenAnswer((_) => Stream.error(Exception('Watch failed')));
 
         // Act
         final stream = watchingModule.watchRecipe('recipe_1');
@@ -156,22 +165,31 @@ void main() {
     group('Multiple Recipe Watching', () {
       test('should watch multiple recipes simultaneously', () async {
         // Arrange
-        final recipe2 =
-            RecipeBuilder().withId('recipe_2').withTitle('Recipe 2').build();
+        final recipe2 = RecipeBuilder()
+            .withId('recipe_2')
+            .withTitle('Recipe 2')
+            .build();
         mockParentService.setRecipeState(
           recipes: [testRecipe, recipe2],
         );
 
-        when(() => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
-            'recipe_1')).thenAnswer((_) => Stream.value(testRealtimeRecipe));
-        when(() =>
-            mockRealtimeSyncService
-                .watchResource<RealtimeRecipe>('recipe_2')).thenAnswer((_) =>
-            Stream.value(RealtimeRecipeBuilder().withId('recipe_2').build()));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_1'),
+        ).thenAnswer((_) => Stream.value(testRealtimeRecipe));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_2'),
+        ).thenAnswer(
+          (_) =>
+              Stream.value(RealtimeRecipeBuilder().withId('recipe_2').build()),
+        );
 
         // Act
-        final stream =
-            watchingModule.watchMultipleRecipes(['recipe_1', 'recipe_2']);
+        final stream = watchingModule.watchMultipleRecipes([
+          'recipe_1',
+          'recipe_2',
+        ]);
 
         // Assert — production emits whenever any subscription updates
         // currentRecipes. The first emission contains 1 recipe (whichever
@@ -181,24 +199,33 @@ void main() {
         expect(recipes.length, equals(2));
       });
 
-      test('should watch multiple recipes individually with error handling',
-          () async {
-        // Arrange
-        when(() => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
-            'recipe_1')).thenAnswer((_) => Stream.value(testRealtimeRecipe));
-        when(() => mockRealtimeSyncService
-                .watchResource<RealtimeRecipe>('recipe_2'))
-            .thenAnswer((_) => Stream.error(Exception('Recipe 2 error')));
+      test(
+        'should watch multiple recipes individually with error handling',
+        () async {
+          // Arrange
+          when(
+            () => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
+              'recipe_1',
+            ),
+          ).thenAnswer((_) => Stream.value(testRealtimeRecipe));
+          when(
+            () => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
+              'recipe_2',
+            ),
+          ).thenAnswer((_) => Stream.error(Exception('Recipe 2 error')));
 
-        // Act
-        final stream = watchingModule
-            .watchMultipleRecipesIndividually(['recipe_1', 'recipe_2']);
+          // Act
+          final stream = watchingModule.watchMultipleRecipesIndividually([
+            'recipe_1',
+            'recipe_2',
+          ]);
 
-        // Assert
-        final result = await stream.first;
-        expect(result['recipe_1'], isNotNull);
-        expect(result['recipe_2'], isNull);
-      });
+          // Assert
+          final result = await stream.first;
+          expect(result['recipe_1'], isNotNull);
+          expect(result['recipe_2'], isNull);
+        },
+      );
 
       test('should fall back to polling for multiple recipes', () async {
         // Arrange
@@ -229,8 +256,9 @@ void main() {
       test('should stream connection status changes', () async {
         // Arrange
         final connectionController = StreamController<bool>();
-        when(() => mockRealtimeSyncService.connectionStream)
-            .thenAnswer((_) => connectionController.stream);
+        when(
+          () => mockRealtimeSyncService.connectionStream,
+        ).thenAnswer((_) => connectionController.stream);
 
         // Act
         final stream = watchingModule.connectionStream;
@@ -250,8 +278,9 @@ void main() {
       test('should wait for connection with timeout', () async {
         // Arrange
         final connectionController = StreamController<bool>();
-        when(() => mockRealtimeSyncService.connectionStream)
-            .thenAnswer((_) => connectionController.stream);
+        when(
+          () => mockRealtimeSyncService.connectionStream,
+        ).thenAnswer((_) => connectionController.stream);
         mockRealtimeSyncService.setConnectionState(false);
 
         // Act
@@ -274,8 +303,9 @@ void main() {
 
       test('should timeout when waiting for connection', () async {
         // Arrange
-        when(() => mockRealtimeSyncService.connectionStream)
-            .thenAnswer((_) => Stream.value(false));
+        when(
+          () => mockRealtimeSyncService.connectionStream,
+        ).thenAnswer((_) => Stream.value(false));
         mockRealtimeSyncService.setConnectionState(false);
 
         // Act
@@ -290,8 +320,9 @@ void main() {
       test('should monitor connection status with metadata', () async {
         // Arrange
         final connectionController = StreamController<bool>();
-        when(() => mockRealtimeSyncService.connectionStream)
-            .thenAnswer((_) => connectionController.stream);
+        when(
+          () => mockRealtimeSyncService.connectionStream,
+        ).thenAnswer((_) => connectionController.stream);
 
         // Act
         final stream = watchingModule.monitorConnectionStatus();
@@ -312,27 +343,28 @@ void main() {
     // error side-channel so callers (e.g. a global error banner) can listen
     // for sync failures without reaching through to the sync service.
     group('Error side-channel (BUT-1112)', () {
-      test('errorStream forwards SyncErrors from the injected sync service',
-          () async {
-        // Intent: a SyncError emitted by the underlying service must reach a
-        // subscriber of the module's errorStream. Fails if the getter stops
-        // forwarding or returns a different (empty/own) stream.
-        final errorFuture = watchingModule.errorStream.first;
-
-        final syncError = rt.SyncError(
-          type: rt.SyncErrorType.firestoreError,
-          message: 'boom',
-          resourceId: 'recipe_1',
-        );
-        mockRealtimeSyncService.setError(syncError);
-
-        final received = await errorFuture;
-        expect(received.type, equals(rt.SyncErrorType.firestoreError));
-        expect(received.resourceId, equals('recipe_1'));
-      });
-
       test(
-          'errorStream is an inert empty stream in polling-fallback mode '
+        'errorStream forwards SyncErrors from the injected sync service',
+        () async {
+          // Intent: a SyncError emitted by the underlying service must reach a
+          // subscriber of the module's errorStream. Fails if the getter stops
+          // forwarding or returns a different (empty/own) stream.
+          final errorFuture = watchingModule.errorStream.first;
+
+          final syncError = rt.SyncError(
+            type: rt.SyncErrorType.firestoreError,
+            message: 'boom',
+            resourceId: 'recipe_1',
+          );
+          mockRealtimeSyncService.setError(syncError);
+
+          final received = await errorFuture;
+          expect(received.type, equals(rt.SyncErrorType.firestoreError));
+          expect(received.resourceId, equals('recipe_1'));
+        },
+      );
+
+      test('errorStream is an inert empty stream in polling-fallback mode '
           '(no sync service injected)', () async {
         // Intent: when constructed without a RealtimeSyncService the module
         // runs in polling mode where there is no sync error source. A
@@ -354,8 +386,10 @@ void main() {
     group('Watch Management', () {
       test('should start watching recipe with callback', () async {
         // Arrange
-        when(() => mockRealtimeSyncService.watchResource<RealtimeRecipe>(
-            'recipe_1')).thenAnswer((_) => Stream.value(testRealtimeRecipe));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_1'),
+        ).thenAnswer((_) => Stream.value(testRealtimeRecipe));
 
         Recipe? receivedRecipe;
 
@@ -377,9 +411,10 @@ void main() {
 
       test('should handle errors in watch callback', () async {
         // Arrange
-        when(() => mockRealtimeSyncService
-                .watchResource<RealtimeRecipe>('recipe_1'))
-            .thenAnswer((_) => Stream.error(Exception('Watch error')));
+        when(
+          () =>
+              mockRealtimeSyncService.watchResource<RealtimeRecipe>('recipe_1'),
+        ).thenAnswer((_) => Stream.error(Exception('Watch error')));
 
         dynamic capturedError;
 
@@ -433,10 +468,14 @@ void main() {
 
         // Assert
         expect(capabilities['hasRealtimeService'], isFalse);
-        expect(capabilities['canWatchSingle'],
-            isTrue); // Still available with polling
-        expect(capabilities['canWatchMultiple'],
-            isTrue); // Still available with polling
+        expect(
+          capabilities['canWatchSingle'],
+          isTrue,
+        ); // Still available with polling
+        expect(
+          capabilities['canWatchMultiple'],
+          isTrue,
+        ); // Still available with polling
       });
     });
   });

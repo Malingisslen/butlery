@@ -669,11 +669,11 @@ class WidgetMockFactory {
         description: 'En läcker svensk maträtt nummer ${index + 1}',
         ingredients: [
           'Ingrediens ${index * 2 + 1}',
-          'Ingrediens ${index * 2 + 2}'
+          'Ingrediens ${index * 2 + 2}',
         ],
         instructions: [
           'Steg 1 för recept ${index + 1}',
-          'Steg 2 för recept ${index + 1}'
+          'Steg 2 för recept ${index + 1}',
         ],
         mealType: index % 2 == 0 ? 'Lunch' : 'Middag',
         portions: 4 + index,
@@ -705,8 +705,8 @@ class WidgetMockFactory {
             category: itemIndex % 3 == 0
                 ? 'Mejeri'
                 : itemIndex % 3 == 1
-                    ? 'Frukt & Grönt'
-                    : 'Skafferi',
+                ? 'Frukt & Grönt'
+                : 'Skafferi',
           ),
         ),
         createdAt: DateTime.now().subtract(Duration(days: index)),
@@ -715,7 +715,7 @@ class WidgetMockFactory {
         memberPermissions: index == 1
             ? {
                 'user_2': SharedListPermission.edit,
-                'user_3': SharedListPermission.view
+                'user_3': SharedListPermission.view,
               }
             : {},
       ),

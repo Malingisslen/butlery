@@ -30,10 +30,12 @@ void main() {
 
       when(() => review.isAvailable()).thenAnswer((_) async => true);
       when(() => review.requestReview()).thenAnswer((_) async {});
-      when(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
     });
 
     tearDown(() {
@@ -179,51 +181,59 @@ void main() {
       );
     });
 
-    test('last_in_app_review_prompt_at NOT written when prompt fails',
-        () async {
-      // OS reports unavailable (e.g. simulator) — service should bail
-      // without recording the prompt timestamp.
-      when(() => review.isAvailable()).thenAnswer((_) async => false);
+    test(
+      'last_in_app_review_prompt_at NOT written when prompt fails',
+      () async {
+        // OS reports unavailable (e.g. simulator) — service should bail
+        // without recording the prompt timestamp.
+        when(() => review.isAvailable()).thenAnswer((_) async => false);
 
-      final now = DateTime(2026, 1, 30);
-      final svc = buildService(
-        now: now,
-        daysAgo: 30,
-        priorHappyCount: 10,
-      );
+        final now = DateTime(2026, 1, 30);
+        final svc = buildService(
+          now: now,
+          daysAgo: 30,
+          priorHappyCount: 10,
+        );
 
-      final fired = await svc.maybeRequest(rating: 5.0);
+        final fired = await svc.maybeRequest(rating: 5.0);
 
-      expect(fired, isFalse);
-      verifyNever(() => review.requestReview());
+        expect(fired, isFalse);
+        verifyNever(() => review.requestReview());
 
-      final prefs = await SharedPreferences.getInstance();
-      expect(
-        prefs.getInt('last_in_app_review_prompt_at'),
-        isNull,
-        reason: 'Failed prompt must not start the 90-day cooldown',
-      );
-    });
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getInt('last_in_app_review_prompt_at'),
+          isNull,
+          reason: 'Failed prompt must not start the 90-day cooldown',
+        );
+      },
+    );
 
-    test('logs in_app_review_requested + _dismissed analytics on success',
-        () async {
-      final now = DateTime(2026, 1, 30);
-      final svc = buildService(
-        now: now,
-        daysAgo: 30,
-        priorHappyCount: 10,
-      );
+    test(
+      'logs in_app_review_requested + _dismissed analytics on success',
+      () async {
+        final now = DateTime(2026, 1, 30);
+        final svc = buildService(
+          now: now,
+          daysAgo: 30,
+          priorHappyCount: 10,
+        );
 
-      await svc.maybeRequest(rating: 5.0);
+        await svc.maybeRequest(rating: 5.0);
 
-      verify(() => analytics.logEvent(
+        verify(
+          () => analytics.logEvent(
             name: 'in_app_review_requested',
             parameters: any(named: 'parameters'),
-          )).called(1);
-      verify(() => analytics.logEvent(
+          ),
+        ).called(1);
+        verify(
+          () => analytics.logEvent(
             name: 'in_app_review_dismissed',
             parameters: any(named: 'parameters'),
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
   });
 }

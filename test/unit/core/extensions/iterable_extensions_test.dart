@@ -14,10 +14,11 @@ void main() {
 
     test('input shorter than size yields a single chunk', () {
       expect(
-          [1, 2, 3].chunked(30),
-          equals([
-            [1, 2, 3]
-          ]));
+        [1, 2, 3].chunked(30),
+        equals([
+          [1, 2, 3],
+        ]),
+      );
     });
 
     test('input exactly at size boundary yields one full chunk', () {
@@ -50,12 +51,13 @@ void main() {
 
     test('size = 1 yields one chunk per element', () {
       expect(
-          [1, 2, 3].chunked(1),
-          equals([
-            [1],
-            [2],
-            [3]
-          ]));
+        [1, 2, 3].chunked(1),
+        equals([
+          [1],
+          [2],
+          [3],
+        ]),
+      );
     });
 
     test('size <= 0 throws ArgumentError', () {

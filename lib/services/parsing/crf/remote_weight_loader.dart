@@ -61,13 +61,15 @@ class RemoteWeightLoader extends RemoteModelLoader {
 
     startCheck();
     try {
-      final localParser =
-          await _tryLoadCachedWeights(bundledVersion: bundledVersion);
+      final localParser = await _tryLoadCachedWeights(
+        bundledVersion: bundledVersion,
+      );
       if (localParser != null) return localParser;
 
       if (!canCacheLocally) {
-        final result =
-            await _downloadRemoteWeights(bundledVersion: bundledVersion);
+        final result = await _downloadRemoteWeights(
+          bundledVersion: bundledVersion,
+        );
         if (result == null) return null;
         final (parser, _, version) = result;
         AppLogger.info(
@@ -94,15 +96,17 @@ class RemoteWeightLoader extends RemoteModelLoader {
       final dir = await getCacheDir();
 
       // Read version first — skip large weights file if version is stale
-      final versionStr =
-          await File('${dir.path}/$_versionFileName').readAsString();
+      final versionStr = await File(
+        '${dir.path}/$_versionFileName',
+      ).readAsString();
       final cachedVersion = int.tryParse(versionStr.trim());
       if (cachedVersion == null || cachedVersion <= bundledVersion) {
         return null;
       }
 
-      final jsonString =
-          await File('${dir.path}/$_localFileName').readAsString();
+      final jsonString = await File(
+        '${dir.path}/$_localFileName',
+      ).readAsString();
       final weights = CrfWeights.fromJson(jsonString);
       final decoder = CrfViterbiDecoder(weights: weights);
 
@@ -128,8 +132,9 @@ class RemoteWeightLoader extends RemoteModelLoader {
     final dir = await getCacheDir();
     await dir.create(recursive: true);
     await File('${dir.path}/$_localFileName').writeAsString(jsonString);
-    await File('${dir.path}/$_versionFileName')
-        .writeAsString(remoteVersion.toString());
+    await File(
+      '${dir.path}/$_versionFileName',
+    ).writeAsString(remoteVersion.toString());
 
     AppLogger.info(
       '$serviceName: Downloaded remote weights v$remoteVersion '
@@ -140,13 +145,14 @@ class RemoteWeightLoader extends RemoteModelLoader {
 
   /// Shared download logic: fetch metadata, check version, download, parse.
   Future<(CrfIngredientParser, String jsonString, int version)?>
-      _downloadRemoteWeights({required int bundledVersion}) async {
+  _downloadRemoteWeights({required int bundledVersion}) async {
     try {
       final ref = storage.ref(_storagePath);
       final metadata = await ref.getMetadata();
 
-      final remoteVersion =
-          int.tryParse((metadata.customMetadata?['version']).orEmpty());
+      final remoteVersion = int.tryParse(
+        (metadata.customMetadata?['version']).orEmpty(),
+      );
       if (remoteVersion == null || remoteVersion <= bundledVersion) {
         AppLogger.debug(
           '$serviceName: Remote weights not newer '

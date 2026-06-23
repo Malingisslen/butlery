@@ -42,10 +42,12 @@ void main() {
       type: RecipeType.personal,
       rating: 5.0,
       lastCookedAt: DateTime.now().subtract(const Duration(days: 5)),
-      createdAt:
-          DateTime.now().subtract(const Duration(days: 20)), // Older creation
-      updatedAt:
-          DateTime.now().subtract(const Duration(days: 10)), // Older update
+      createdAt: DateTime.now().subtract(
+        const Duration(days: 20),
+      ), // Older creation
+      updatedAt: DateTime.now().subtract(
+        const Duration(days: 10),
+      ), // Older update
       imageUrls: ['image1.jpg'],
     );
 
@@ -57,10 +59,12 @@ void main() {
       personalTagIds: ['Mexikansk', 'Familj'],
       type: RecipeType.collaborative,
       rating: 4.0,
-      createdAt:
-          DateTime.now().subtract(const Duration(days: 15)), // Older creation
-      updatedAt:
-          DateTime.now().subtract(const Duration(days: 8)), // Older update
+      createdAt: DateTime.now().subtract(
+        const Duration(days: 15),
+      ), // Older creation
+      updatedAt: DateTime.now().subtract(
+        const Duration(days: 8),
+      ), // Older update
       socialData: RecipeSocialData(
         ownerId: 'friend_123',
         ownerDisplayName: 'Friend User',
@@ -81,10 +85,12 @@ void main() {
       personalTagIds: ['Vegetarisk', 'Hälsosam', 'Snabb'],
       type: RecipeType.collaborative,
       rating: 3.5,
-      createdAt:
-          DateTime.now().subtract(const Duration(days: 10)), // Older creation
-      updatedAt:
-          DateTime.now().subtract(const Duration(days: 5)), // Older update
+      createdAt: DateTime.now().subtract(
+        const Duration(days: 10),
+      ), // Older creation
+      updatedAt: DateTime.now().subtract(
+        const Duration(days: 5),
+      ), // Older update
       socialData: RecipeSocialData(
         ownerId: 'test_user',
         ownerDisplayName: 'Test User',
@@ -131,8 +137,9 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Get the existing mock from the service locator
-      mockRecipeService = ServiceLocator.get<UnifiedRecipeService>()
-          as MockUnifiedRecipeService;
+      mockRecipeService =
+          ServiceLocator.get<UnifiedRecipeService>()
+              as MockUnifiedRecipeService;
 
       // Configure mock behavior
       mockRecipeService.setRecipeState(
@@ -211,9 +218,11 @@ void main() {
         final vegetarisk = viewModel.getRecipesByTag('Vegetarisk');
         expect(vegetarisk.length, equals(2));
         expect(
-            vegetarisk.every(
-                (r) => r.personalTagIds?.contains('Vegetarisk') ?? false),
-            isTrue);
+          vegetarisk.every(
+            (r) => r.personalTagIds?.contains('Vegetarisk') ?? false,
+          ),
+          isTrue,
+        );
       });
 
       test('should get recipes by type', () {
@@ -242,8 +251,9 @@ void main() {
           title: 'Test Recipe',
           ingredients: ['mjölk', 'ägg', 'mjöl'],
         );
-        mockRecipeService
-            .setRecipeState(recipes: [...allRecipes, recipeWithIngredients]);
+        mockRecipeService.setRecipeState(
+          recipes: [...allRecipes, recipeWithIngredients],
+        );
 
         final results = viewModel.searchRecipes('mjölk');
         expect(results.length, equals(1));
@@ -311,9 +321,11 @@ void main() {
         final filtered = viewModel.filteredRecipes;
         expect(filtered.length, equals(2));
         expect(
-            filtered.every(
-                (r) => r.personalTagIds?.contains('Vegetarisk') ?? false),
-            isTrue);
+          filtered.every(
+            (r) => r.personalTagIds?.contains('Vegetarisk') ?? false,
+          ),
+          isTrue,
+        );
       });
 
       test('should filter by type', () {
@@ -321,7 +333,9 @@ void main() {
         final filtered = viewModel.filteredRecipes;
         expect(filtered.length, equals(2));
         expect(
-            filtered.every((r) => r.type == RecipeType.collaborative), isTrue);
+          filtered.every((r) => r.type == RecipeType.collaborative),
+          isTrue,
+        );
       });
 
       test('should combine search and filters', () {
@@ -332,8 +346,10 @@ void main() {
           viewModel.setTagFilter('Vegetarisk');
 
           final filtered = viewModel.filteredRecipes;
-          expect(filtered.length,
-              equals(0)); // No vegetarian dinner recipes in search results
+          expect(
+            filtered.length,
+            equals(0),
+          ); // No vegetarian dinner recipes in search results
         });
       });
 
@@ -394,8 +410,10 @@ void main() {
 
       test('should get recently created recipes', () {
         final recent = viewModel.getRecentlyCreatedRecipes(daysBack: 7);
-        expect(recent.length,
-            equals(1)); // Only recentRecipe created within 7 days
+        expect(
+          recent.length,
+          equals(1),
+        ); // Only recentRecipe created within 7 days
       });
 
       test('should get recently edited recipes', () {
@@ -407,14 +425,18 @@ void main() {
         final favorites = viewModel.getFavoriteRecipes();
         expect(favorites.length, equals(3)); // Recipes with rating >= 4.5
         expect(
-            favorites.first.rating, equals(5.0)); // Should be sorted by rating
+          favorites.first.rating,
+          equals(5.0),
+        ); // Should be sorted by rating
       });
 
       test('should get high rated recipes', () {
         final highRated = viewModel.getHighRatedRecipes(minRating: 4.0);
         expect(highRated.length, equals(4));
-        expect(highRated.every((r) => r.rating != null && r.rating! >= 4.0),
-            isTrue);
+        expect(
+          highRated.every((r) => r.rating != null && r.rating! >= 4.0),
+          isTrue,
+        );
       });
 
       test('should get recipes with images', () {
@@ -446,8 +468,9 @@ void main() {
       });
 
       test('should get recipes with specific collaborator', () {
-        final withCollaborator =
-            viewModel.getRecipesWithCollaborator('friend_456');
+        final withCollaborator = viewModel.getRecipesWithCollaborator(
+          'friend_456',
+        );
         expect(withCollaborator.length, equals(1));
         expect(withCollaborator.first.title, equals('Sallad'));
       });
@@ -567,7 +590,9 @@ void main() {
         final frequency = viewModel.getCookingFrequencyByMealType();
 
         expect(
-            frequency['Middag'], equals(2)); // personalRecipe2 and recentRecipe
+          frequency['Middag'],
+          equals(2),
+        ); // personalRecipe2 and recentRecipe
         expect(frequency['Frukost'], equals(1)); // personalRecipe1
       });
 
@@ -648,7 +673,8 @@ void main() {
       test('should handle recipes without tags', () {
         final recipeNoTags = RecipeFactory.build(
           title: 'No Tags',
-          personalTagIds: [], // Use empty list instead of null to avoid default tags
+          personalTagIds:
+              [], // Use empty list instead of null to avoid default tags
         );
         mockRecipeService.setRecipeState(recipes: [recipeNoTags]);
 
@@ -699,10 +725,14 @@ void main() {
 
         // Operations that call notifyListeners should throw
         expect(
-            () => testViewModel.updateSearchQuery('test'), throwsFlutterError);
+          () => testViewModel.updateSearchQuery('test'),
+          throwsFlutterError,
+        );
         expect(() => testViewModel.clearSearch(), throwsFlutterError);
-        expect(() => testViewModel.setMealTypeFilter('Middag'),
-            throwsFlutterError);
+        expect(
+          () => testViewModel.setMealTypeFilter('Middag'),
+          throwsFlutterError,
+        );
 
         // Read-only operations should still work (they don't call notifyListeners)
         expect(() => testViewModel.allRecipes, returnsNormally);

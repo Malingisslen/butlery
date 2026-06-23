@@ -65,15 +65,18 @@ class PreferencesExportManager {
         'notifications': notifications,
         'note': 'Limited to last 500 notifications for export size',
         'summary': {
-          'unread_count':
-              notifications.where((n) => n['is_read'] == false).length,
+          'unread_count': notifications
+              .where((n) => n['is_read'] == false)
+              .length,
           'read_count': notifications.where((n) => n['is_read'] == true).length,
           'notification_types': _summarizeNotificationTypes(notifications),
         },
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export notifications', e);
+        '[$_logTag] Failed to export notifications',
+        e,
+      );
       return {
         'error': e.toString(),
         'note': 'Notifications may not be available',
@@ -83,7 +86,8 @@ class PreferencesExportManager {
 
   /// Summarize notification types
   Map<String, int> _summarizeNotificationTypes(
-      List<Map<String, dynamic>> notifications) {
+    List<Map<String, dynamic>> notifications,
+  ) {
     final typeCounts = <String, int>{};
     for (final notification in notifications) {
       final type = notification['type'] as String;
@@ -95,7 +99,8 @@ class PreferencesExportManager {
   /// Export notification preferences
   /// User's notification settings and preferences.
   Future<Map<String, dynamic>> exportNotificationPreferences(
-      String userId) async {
+    String userId,
+  ) async {
     try {
       final prefs = await _exports.exportNotificationPreferences(userId);
       final fcmData = await _exports.exportFcmTokensTopLevel(userId);
@@ -117,7 +122,9 @@ class PreferencesExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export notification preferences', e);
+        '[$_logTag] Failed to export notification preferences',
+        e,
+      );
       return {
         'error': e.toString(),
         'note': 'Notification preferences may not be available',
@@ -159,7 +166,9 @@ class PreferencesExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export category preferences', e);
+        '[$_logTag] Failed to export category preferences',
+        e,
+      );
       return {'error': e.toString()};
     }
   }

@@ -26,14 +26,16 @@ class UploadProgress {
 class ImagePickerDialogs {
   /// Show dialog for selecting image source (camera or gallery)
   static Future<ImageSource?> showImageSourceDialog(
-      BuildContext context) async {
+    BuildContext context,
+  ) async {
     AppLogger.info('🔍 Visar bildkälla-dialog');
 
     return showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppDimensions.borderRadiusM)),
+          top: Radius.circular(AppDimensions.borderRadiusM),
+        ),
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
@@ -46,19 +48,23 @@ class ImagePickerDialogs {
               margin: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius10),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius10,
+                ),
               ),
             ),
             Text(
               context.l10n.imageSelectSource,
-              style: AppTextStyles.displaySmall
-                  .copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.displaySmall.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             ListTile(
-              leading:
-                  const Icon(Icons.camera_alt, size: AppDimensions.iconSizeL),
+              leading: const Icon(
+                Icons.camera_alt,
+                size: AppDimensions.iconSizeL,
+              ),
               title: Text(context.l10n.commonTakePhoto),
               subtitle: Text(context.l10n.imageUseCameraForNewPhoto),
               onTap: () {
@@ -68,8 +74,10 @@ class ImagePickerDialogs {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.photo_library,
-                  size: AppDimensions.iconSizeL),
+              leading: const Icon(
+                Icons.photo_library,
+                size: AppDimensions.iconSizeL,
+              ),
               title: Text(context.l10n.commonSelectFromGallery),
               subtitle: Text(
                 context.l10n.imageSelectExistingFromGallery,
@@ -170,8 +178,9 @@ class ImagePickerDialogs {
                     value: progress.total > 0
                         ? progress.completed / progress.total
                         : null,
-                    backgroundColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       Theme.of(context).colorScheme.primary,
                     ),

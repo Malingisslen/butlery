@@ -33,8 +33,9 @@ class _HeirloomSectionState extends State<HeirloomSection> {
   @override
   void initState() {
     super.initState();
-    _writerCtrl =
-        TextEditingController(text: widget.viewModel.heirloomWriterName);
+    _writerCtrl = TextEditingController(
+      text: widget.viewModel.heirloomWriterName,
+    );
     _yearCtrl = TextEditingController(
       text: (widget.viewModel.heirloomYear?.toString()).orEmpty(),
     );
@@ -82,18 +83,22 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                 margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.warning
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: context.butleryColors.warning.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
                   border: Border.all(
-                    color: context.butleryColors.warning
-                        .withValues(alpha: AppDimensions.opacityMediumLight),
+                    color: context.butleryColors.warning.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.cloud_off,
-                        color: context.butleryColors.warning,
-                        size: AppDimensions.iconSizeM),
+                    Icon(
+                      Icons.cloud_off,
+                      color: context.butleryColors.warning,
+                      size: AppDimensions.iconSizeM,
+                    ),
                     const SizedBox(width: AppDimensions.spacingS),
                     Expanded(
                       child: Text(
@@ -129,8 +134,8 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                 final parsed = int.tryParse(v);
                 vm.heirloomYear =
                     (parsed == null || parsed < 1800 || parsed > currentYear)
-                        ? null
-                        : parsed;
+                    ? null
+                    : parsed;
               },
             ),
             const SizedBox(height: AppDimensions.spacingS),

@@ -138,44 +138,40 @@ class _NotificationPreferencesViewState
             child: _isLoading
                 ? StateWidget.loading()
                 : _hasError
-                    ? StateWidget.error(
-                        message: context.l10n
-                            .errorCouldNotLoad('aviseringsinställningar'),
-                        actionLabel: context.l10n.commonRetry,
-                        onAction: _loadPreferences,
-                      )
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 700),
-                          child: SingleChildScrollView(
-                            padding:
-                                const EdgeInsets.all(AppDimensions.paddingL),
-                            // BUT-701: scope keyboard tab-order to this
-                            // settings form so Tab walks the toggles and
-                            // pickers in visual order. No visual change.
-                            child: FocusTraversalGroup(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildMasterToggle(),
-                                  const SizedBox(
-                                      height: AppDimensions.spacingXl),
-                                  _buildCategorySection(),
-                                  const SizedBox(
-                                      height: AppDimensions.spacingXl),
-                                  _buildDigestFrequencySection(),
-                                  const SizedBox(
-                                      height: AppDimensions.spacingXl),
-                                  _buildQuietHoursSection(),
-                                  const SizedBox(
-                                      height: AppDimensions.spacingXl),
-                                  _buildSoundVibrationSection(),
-                                ],
-                              ),
-                            ),
+                ? StateWidget.error(
+                    message: context.l10n.errorCouldNotLoad(
+                      'aviseringsinställningar',
+                    ),
+                    actionLabel: context.l10n.commonRetry,
+                    onAction: _loadPreferences,
+                  )
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 700),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        // BUT-701: scope keyboard tab-order to this
+                        // settings form so Tab walks the toggles and
+                        // pickers in visual order. No visual change.
+                        child: FocusTraversalGroup(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildMasterToggle(),
+                              const SizedBox(height: AppDimensions.spacingXl),
+                              _buildCategorySection(),
+                              const SizedBox(height: AppDimensions.spacingXl),
+                              _buildDigestFrequencySection(),
+                              const SizedBox(height: AppDimensions.spacingXl),
+                              _buildQuietHoursSection(),
+                              const SizedBox(height: AppDimensions.spacingXl),
+                              _buildSoundVibrationSection(),
+                            ],
                           ),
                         ),
                       ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -213,11 +209,14 @@ class _NotificationPreferencesViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.l10n.notificationCategoriesTitle,
-            style: AppTextStyles.headlineSmall),
+        Text(
+          context.l10n.notificationCategoriesTitle,
+          style: AppTextStyles.headlineSmall,
+        ),
         const SizedBox(height: AppDimensions.spacingMd),
-        ...buildNotificationCategoryItems(context)
-            .map((item) => _buildCategoryTile(item)),
+        ...buildNotificationCategoryItems(
+          context,
+        ).map((item) => _buildCategoryTile(item)),
       ],
     );
   }
@@ -240,7 +239,8 @@ class _NotificationPreferencesViewState
         onChanged: _preferences.enabled
             ? (value) {
                 final updatedSettings = Map<NotificationCategory, bool>.from(
-                    _preferences.categorySettings);
+                  _preferences.categorySettings,
+                );
                 updatedSettings[item.category] = value;
                 _savePreferences(
                   _copyPreferences(categorySettings: updatedSettings),
@@ -251,8 +251,9 @@ class _NotificationPreferencesViewState
                 );
               }
             : null,
-        activeTrackColor:
-            cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+        activeTrackColor: cs.primary.withValues(
+          alpha: AppDimensions.opacityHalf,
+        ),
         thumbColor: _primaryThumbColor(cs),
         contentPadding: EdgeInsets.zero,
       ),
@@ -266,8 +267,10 @@ class _NotificationPreferencesViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.notificationDigestFrequencyTitle,
-            style: AppTextStyles.headlineSmall),
+        Text(
+          l10n.notificationDigestFrequencyTitle,
+          style: AppTextStyles.headlineSmall,
+        ),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           l10n.notificationDigestFrequencySubtitle,
@@ -276,8 +279,11 @@ class _NotificationPreferencesViewState
         const SizedBox(height: AppDimensions.spacingMd),
         InputDecorator(
           decoration: InputDecoration(
-            prefixIcon: Icon(Icons.summarize_outlined,
-                color: cs.primary, size: AppDimensions.iconSizeL),
+            prefixIcon: Icon(
+              Icons.summarize_outlined,
+              color: cs.primary,
+              size: AppDimensions.iconSizeL,
+            ),
             border: const OutlineInputBorder(),
             contentPadding: AppDimensions.paddingSymmetric16x12,
           ),
@@ -291,7 +297,8 @@ class _NotificationPreferencesViewState
                   ? (value) {
                       if (value != null) {
                         _savePreferences(
-                            _copyPreferences(digestFrequency: value));
+                          _copyPreferences(digestFrequency: value),
+                        );
                       }
                     }
                   : null,
@@ -305,25 +312,34 @@ class _NotificationPreferencesViewState
   List<DropdownMenuItem<String>> _digestFrequencyItems(AppLocalizations l10n) =>
       [
         DropdownMenuItem(
-            value: 'never',
-            child: Text(l10n.notificationDigestFrequencyNever,
-                style: AppTextStyles.titleMedium)),
+          value: 'never',
+          child: Text(
+            l10n.notificationDigestFrequencyNever,
+            style: AppTextStyles.titleMedium,
+          ),
+        ),
         DropdownMenuItem(
-            value: 'weekly',
-            child: Text(l10n.notificationDigestFrequencyWeekly,
-                style: AppTextStyles.titleMedium)),
+          value: 'weekly',
+          child: Text(
+            l10n.notificationDigestFrequencyWeekly,
+            style: AppTextStyles.titleMedium,
+          ),
+        ),
       ];
 
   Widget _buildQuietHoursSection() {
     final cs = Theme.of(context).colorScheme;
-    final hasQuietHours = _preferences.quietHoursStart != null &&
+    final hasQuietHours =
+        _preferences.quietHoursStart != null &&
         _preferences.quietHoursEnd != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.l10n.notificationQuietHoursTitle,
-            style: AppTextStyles.headlineSmall),
+        Text(
+          context.l10n.notificationQuietHoursTitle,
+          style: AppTextStyles.headlineSmall,
+        ),
         const SizedBox(height: AppDimensions.spacingMd),
         SwitchListTile(
           title: Text(
@@ -356,8 +372,9 @@ class _NotificationPreferencesViewState
               );
             }
           },
-          activeTrackColor:
-              cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+          activeTrackColor: cs.primary.withValues(
+            alpha: AppDimensions.opacityHalf,
+          ),
           thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),
@@ -385,10 +402,13 @@ class _NotificationPreferencesViewState
           ),
         ),
         Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
-          child: Icon(Icons.arrow_forward,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingSm,
+          ),
+          child: Icon(
+            Icons.arrow_forward,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         Expanded(
           child: _buildTimeTile(
@@ -422,8 +442,9 @@ class _NotificationPreferencesViewState
             children: [
               Text(
                 label,
-                style: AppTextStyles.bodySmall
-                    .copyWith(color: cs.onSurfaceVariant),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(
@@ -469,8 +490,10 @@ class _NotificationPreferencesViewState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SwitchListTile(
-          title: Text(context.l10n.notificationSound,
-              style: AppTextStyles.titleMedium),
+          title: Text(
+            context.l10n.notificationSound,
+            style: AppTextStyles.titleMedium,
+          ),
           secondary: Icon(
             _preferences.soundEnabled
                 ? Icons.volume_up_outlined
@@ -482,15 +505,18 @@ class _NotificationPreferencesViewState
           onChanged: (value) => _savePreferences(
             _copyPreferences(soundEnabled: value),
           ),
-          activeTrackColor:
-              cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+          activeTrackColor: cs.primary.withValues(
+            alpha: AppDimensions.opacityHalf,
+          ),
           thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),
         const Divider(),
         SwitchListTile(
-          title: Text(context.l10n.notificationVibration,
-              style: AppTextStyles.titleMedium),
+          title: Text(
+            context.l10n.notificationVibration,
+            style: AppTextStyles.titleMedium,
+          ),
           secondary: Icon(
             Icons.vibration_outlined,
             color: cs.primary,
@@ -500,8 +526,9 @@ class _NotificationPreferencesViewState
           onChanged: (value) => _savePreferences(
             _copyPreferences(vibrationEnabled: value),
           ),
-          activeTrackColor:
-              cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+          activeTrackColor: cs.primary.withValues(
+            alpha: AppDimensions.opacityHalf,
+          ),
           thumbColor: _primaryThumbColor(cs),
           contentPadding: EdgeInsets.zero,
         ),

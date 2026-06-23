@@ -101,10 +101,12 @@ void main() {
       // local add → hasLikedComment returns false. Register a minimal
       // stub so the persistence path succeeds.
       final mockCommentsRepo = MockCommentsRepository();
-      when(() => mockCommentsRepo.hasUserLikedComment(any(), any()))
-          .thenAnswer((_) async => false);
-      when(() => mockCommentsRepo.toggleCommentLike(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockCommentsRepo.hasUserLikedComment(any(), any()),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockCommentsRepo.toggleCommentLike(any(), any()),
+      ).thenAnswer((_) async {});
       TestServiceLocator.registerMock<CommentsRepository>(mockCommentsRepo);
 
       // Configure friends via state setter (concrete override — no when())
@@ -136,7 +138,8 @@ void main() {
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedFriendsService>(
-          mockFriendsService);
+        mockFriendsService,
+      );
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<UserService>(mockUserService);
 
@@ -367,8 +370,10 @@ void main() {
     group('User Operations', () {
       test('should get friend display name', () async {
         await viewModel.initialize();
-        expect(viewModel.getAuthorDisplayName('friend_1'),
-            equals('Anna Andersson'));
+        expect(
+          viewModel.getAuthorDisplayName('friend_1'),
+          equals('Anna Andersson'),
+        );
       });
 
       test('should return ? for unknown user', () async {
@@ -388,8 +393,10 @@ void main() {
         );
         await viewModel.initialize();
 
-        expect(viewModel.getAuthorAvatarUrl('f_avatar'),
-            equals('https://example.com/avatar.jpg'));
+        expect(
+          viewModel.getAuthorAvatarUrl('f_avatar'),
+          equals('https://example.com/avatar.jpg'),
+        );
       });
 
       test('should return null avatar for unknown user', () async {
@@ -431,17 +438,19 @@ void main() {
     // -- Collaborative Recipe Operations -------------------------------------
 
     group('Collaborative Recipe Operations', () {
-      test('should create collaborative recipe (delegates to service)',
-          () async {
-        // createCollaborativeRecipe is concrete on MockUnifiedRecipeService,
-        // returns null by default (collaborativeShouldSucceed=false)
-        final result = await viewModel.createCollaborativeRecipe(
-          name: 'Collab',
-          memberIds: ['u1', 'u2'],
-          memberDisplayNames: {'u1': 'A', 'u2': 'B'},
-        );
-        expect(result, isFalse);
-      });
+      test(
+        'should create collaborative recipe (delegates to service)',
+        () async {
+          // createCollaborativeRecipe is concrete on MockUnifiedRecipeService,
+          // returns null by default (collaborativeShouldSucceed=false)
+          final result = await viewModel.createCollaborativeRecipe(
+            name: 'Collab',
+            memberIds: ['u1', 'u2'],
+            memberDisplayNames: {'u1': 'A', 'u2': 'B'},
+          );
+          expect(result, isFalse);
+        },
+      );
 
       test('should share recipe (delegates to social ops)', () async {
         // social.shareRecipe is concrete on FakeSocialRecipeOperations:
@@ -464,8 +473,9 @@ void main() {
 
     group('Member Management', () {
       test('should add member', () async {
-        when(() => mockRecipeService.addMemberToRecipe(any(), any(), any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRecipeService.addMemberToRecipe(any(), any(), any()),
+        ).thenAnswer((_) async => false);
         final result = await viewModel.addMemberToRecipe(
           'r',
           'u',
@@ -476,16 +486,17 @@ void main() {
       });
 
       test('should remove member', () async {
-        when(() => mockRecipeService.removeMemberFromRecipe(any(), any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRecipeService.removeMemberFromRecipe(any(), any()),
+        ).thenAnswer((_) async => false);
         final result = await viewModel.removeMemberFromRecipe('r', 'u');
         expect(result, isFalse);
       });
 
       test('should update member permission', () async {
-        when(() =>
-                mockRecipeService.updateMemberPermission(any(), any(), any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRecipeService.updateMemberPermission(any(), any(), any()),
+        ).thenAnswer((_) async => false);
         final result = await viewModel.updateMemberPermission(
           'r',
           'u',
@@ -602,8 +613,7 @@ class _NullAddCommentSocialOps extends FakeSocialRecipeOperations {
     String? parentCommentId,
     List<String>? mentions,
     List<String> imageUrls = const [],
-  }) async =>
-      null;
+  }) async => null;
 }
 
 /// Recipe service with injectable social ops (bypasses the concrete getter).

@@ -251,13 +251,13 @@ class TagOverrides {
 
   @override
   int get hashCode => Object.hash(
-        Object.hashAll(allergenOverrides.entries),
-        Object.hashAll(dietaryOverrides.entries),
-        Object.hashAll(addedTags),
-        Object.hashAll(removedTags),
-        lastEditedAt,
-        lastEditedBy,
-      );
+    Object.hashAll(allergenOverrides.entries),
+    Object.hashAll(dietaryOverrides.entries),
+    Object.hashAll(addedTags),
+    Object.hashAll(removedTags),
+    lastEditedAt,
+    lastEditedBy,
+  );
 
   static bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
     if (a.length != b.length) return false;

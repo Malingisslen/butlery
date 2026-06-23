@@ -15,7 +15,8 @@ class RatingStatistics {
 
   /// Calculate comprehensive rating statistics
   static Map<String, dynamic> calculateRatingStatistics(
-      List<Map<String, dynamic>> ratings) {
+    List<Map<String, dynamic>> ratings,
+  ) {
     if (ratings.isEmpty) {
       return {
         'count': 0,
@@ -28,7 +29,9 @@ class RatingStatistics {
       };
     }
     final totalRating = ratings.fold<double>(
-        0.0, (total, rating) => total + (rating['rating'] as double));
+      0.0,
+      (total, rating) => total + (rating['rating'] as double),
+    );
     final average = totalRating / ratings.length;
     final distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     for (final rating in ratings) {
@@ -36,9 +39,11 @@ class RatingStatistics {
       distribution[starRating] = (distribution[starRating] ?? 0) + 1;
     }
     final reviews = ratings
-        .where((rating) =>
-            rating['review'] != null &&
-            (rating['review'] as String).trim().isNotEmpty)
+        .where(
+          (rating) =>
+              rating['review'] != null &&
+              (rating['review'] as String).trim().isNotEmpty,
+        )
         .toList();
     reviews.sort((a, b) {
       final aTime = a['createdAt'] as Timestamp?;
@@ -74,7 +79,8 @@ class RatingStatistics {
       // **PHASE 1: Try denormalized fields first (O(1) - no extra query needed)**
       if (recipe.core.ratingCount != null && recipe.core.ratingCount! > 0) {
         AppLogger.info(
-            '📊 Using denormalized rating stats (instant O(1) access)');
+          '📊 Using denormalized rating stats (instant O(1) access)',
+        );
 
         final ratingStats = {
           'count': recipe.core.ratingCount,
@@ -104,13 +110,15 @@ class RatingStatistics {
         };
 
         AppLogger.debug(
-            '✅ Generated recipe statistics from denormalized fields');
+          '✅ Generated recipe statistics from denormalized fields',
+        );
         return result;
       }
 
       // **PHASE 2: Fallback to calculation with PAGINATION (for recipes without denormalized stats)**
       AppLogger.warning(
-          '⚠️ Denormalized stats not available, falling back to paginated query (slower)');
+        '⚠️ Denormalized stats not available, falling back to paginated query (slower)',
+      );
 
       // Use pagination to prevent timeouts (limit: 1000 max for statistics)
       final ratingsSnapshot = await firestore
@@ -172,8 +180,9 @@ class RatingStatistics {
       final recipeRef = firestore.collection('recipes').doc(recipeId);
 
       if (ratingsSnapshot.docs.isEmpty) {
-        batch
-            .delete(firestore.collection(_socialStatsCollection).doc(recipeId));
+        batch.delete(
+          firestore.collection(_socialStatsCollection).doc(recipeId),
+        );
         batch.update(recipeRef, {
           'ratingCount': 0,
           'averageRating': null,
@@ -252,7 +261,8 @@ class RatingStatistics {
   }) async {
     try {
       AppLogger.info(
-          'Getting top-rated recipes (${accessibleRecipes.length} candidates)');
+        'Getting top-rated recipes (${accessibleRecipes.length} candidates)',
+      );
 
       final recipeStats = <Map<String, dynamic>>[];
 
@@ -293,8 +303,9 @@ class RatingStatistics {
       }
 
       recipeStats.sort((a, b) {
-        final ratingComparison = (b['averageRating'] as double)
-            .compareTo(a['averageRating'] as double);
+        final ratingComparison = (b['averageRating'] as double).compareTo(
+          a['averageRating'] as double,
+        );
 
         if (ratingComparison != 0) return ratingComparison;
 
@@ -340,8 +351,11 @@ class RatingStatistics {
         }
       }
 
-      filteredRecipes.sort((a, b) => (b['averageRating'] as double)
-          .compareTo(a['averageRating'] as double));
+      filteredRecipes.sort(
+        (a, b) => (b['averageRating'] as double).compareTo(
+          a['averageRating'] as double,
+        ),
+      );
 
       return filteredRecipes;
     } catch (e) {
@@ -354,9 +368,12 @@ class RatingStatistics {
 
   /// Analyze rating distribution patterns
   static Map<String, dynamic> analyzeRatingDistribution(
-      Map<int, int> distribution) {
-    final totalRatings = distribution.values
-        .fold<int>(0, (total, itemCount) => total + itemCount);
+    Map<int, int> distribution,
+  ) {
+    final totalRatings = distribution.values.fold<int>(
+      0,
+      (total, itemCount) => total + itemCount,
+    );
 
     if (totalRatings == 0) {
       return {
@@ -372,8 +389,9 @@ class RatingStatistics {
       percentages[entry.key] = (entry.value / totalRatings) * 100;
     }
 
-    final dominantEntry =
-        distribution.entries.reduce((a, b) => a.value > b.value ? a : b);
+    final dominantEntry = distribution.entries.reduce(
+      (a, b) => a.value > b.value ? a : b,
+    );
     final dominantRating = dominantEntry.key;
     final dominantPercentage = percentages[dominantRating]!;
 
@@ -422,7 +440,8 @@ class RatingStatistics {
 
   /// Get rating trends over time
   static Map<String, dynamic> calculateRatingTrends(
-      List<Map<String, dynamic>> ratings) {
+    List<Map<String, dynamic>> ratings,
+  ) {
     if (ratings.length < 2) {
       return {
         'trend': 'insufficient_data',
@@ -447,14 +466,18 @@ class RatingStatistics {
     final olderAverage = olderRatings.isEmpty
         ? 0.0
         : olderRatings.fold<double>(
-                0.0, (total, r) => total + (r['rating'] as double)) /
-            olderRatings.length;
+                0.0,
+                (total, r) => total + (r['rating'] as double),
+              ) /
+              olderRatings.length;
 
     final recentAverage = recentRatings.isEmpty
         ? 0.0
         : recentRatings.fold<double>(
-                0.0, (total, r) => total + (r['rating'] as double)) /
-            recentRatings.length;
+                0.0,
+                (total, r) => total + (r['rating'] as double),
+              ) /
+              recentRatings.length;
 
     String direction;
     String trend;
@@ -486,7 +509,7 @@ class RatingStatistics {
 
   /// Batch get cached rating aggregates (reduces N+1 queries)
   static Future<Map<String, Map<String, dynamic>>>
-      _batchGetCachedRatingAggregates({
+  _batchGetCachedRatingAggregates({
     required FirebaseFirestore firestore,
     required List<String> recipeIds,
   }) async {
@@ -531,10 +554,12 @@ class RatingStatistics {
     try {
       AppLogger.info('Updating ${recipeIds.length} rating aggregates');
 
-      final futures = recipeIds.map((recipeId) => updateRecipeRatingAggregate(
-            firestore: firestore,
-            recipeId: recipeId,
-          ));
+      final futures = recipeIds.map(
+        (recipeId) => updateRecipeRatingAggregate(
+          firestore: firestore,
+          recipeId: recipeId,
+        ),
+      );
 
       await Future.wait(futures);
       AppLogger.success('Updated ${recipeIds.length} rating aggregates');

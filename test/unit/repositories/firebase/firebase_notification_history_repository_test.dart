@@ -99,9 +99,11 @@ Future<void> _seed(
     'type': type,
     'data': data ?? const {'title': 't', 'body': 'b'},
     'sentAt': Timestamp.fromDate(sentAt ?? DateTime.utc(2026, 1, 1)),
-    'expireAt': Timestamp.fromDate((sentAt ?? DateTime.utc(2026, 1, 1)).add(
-      const Duration(days: 90),
-    )),
+    'expireAt': Timestamp.fromDate(
+      (sentAt ?? DateTime.utc(2026, 1, 1)).add(
+        const Duration(days: 90),
+      ),
+    ),
     'delivered': delivered,
     'opened': opened,
   });
@@ -124,8 +126,11 @@ void main() {
 
       final stored = await _doc(firestore, 'n1');
       expect(stored, isNotNull);
-      expect(stored!['userId'], _alice,
-          reason: 'userId must come from authed user, not payload');
+      expect(
+        stored!['userId'],
+        _alice,
+        reason: 'userId must come from authed user, not payload',
+      );
       expect(stored['notificationId'], 'n1');
       expect(stored['category'], 'friends');
       expect(stored['type'], 'immediate');
@@ -153,8 +158,11 @@ void main() {
       );
 
       final stored = await _doc(firestore, 'n-forge');
-      expect(stored!['userId'], _alice,
-          reason: 'top-level userId must be the authed uid, not payload');
+      expect(
+        stored!['userId'],
+        _alice,
+        reason: 'top-level userId must be the authed uid, not payload',
+      );
       // The data map is preserved verbatim (separate field), which is
       // fine — the security boundary is the top-level userId column.
       expect(stored['data'], const {'userId': _bob, 'spoofed': true});
@@ -164,29 +172,34 @@ void main() {
     /// rather than appending a second doc. FCM duplicate-delivery is
     /// common; if this regressed to `add()`, the inbox would fill with
     /// dupes and the dedup check (`wasNotificationSent`) would be racey.
-    test('is idempotent — same notificationId never creates a second doc',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _alice);
+    test(
+      'is idempotent — same notificationId never creates a second doc',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      await repo.recordNotification(
-        notificationId: 'n-dup',
-        category: NotificationCategory.friends,
-        type: NotificationType.immediate,
-        data: const {'v': 1},
-      );
-      await repo.recordNotification(
-        notificationId: 'n-dup',
-        category: NotificationCategory.friends,
-        type: NotificationType.immediate,
-        data: const {'v': 2},
-      );
+        await repo.recordNotification(
+          notificationId: 'n-dup',
+          category: NotificationCategory.friends,
+          type: NotificationType.immediate,
+          data: const {'v': 1},
+        );
+        await repo.recordNotification(
+          notificationId: 'n-dup',
+          category: NotificationCategory.friends,
+          type: NotificationType.immediate,
+          data: const {'v': 2},
+        );
 
-      final all = await firestore.collection('notification_history').get();
-      expect(all.docs, hasLength(1));
-      expect(all.docs.first.data()['data'], const {'v': 2},
-          reason: 'second write overwrites — that is the dedup contract');
-    });
+        final all = await firestore.collection('notification_history').get();
+        expect(all.docs, hasLength(1));
+        expect(
+          all.docs.first.data()['data'],
+          const {'v': 2},
+          reason: 'second write overwrites — that is the dedup contract',
+        );
+      },
+    );
 
     /// Proves the no-auth boundary is clean: an unauthenticated record
     /// must NOT silently succeed (which would persist `userId: ''`),
@@ -210,8 +223,11 @@ void main() {
       );
 
       final all = await firestore.collection('notification_history').get();
-      expect(all.docs, isEmpty,
-          reason: 'unauthenticated write must not persist anything');
+      expect(
+        all.docs,
+        isEmpty,
+        reason: 'unauthenticated write must not persist anything',
+      );
     });
   });
 
@@ -233,62 +249,72 @@ void main() {
     });
   });
 
-  group('markNotificationDelivered / markNotificationOpened — flag updates',
-      () {
-    /// Proves delivered-update writes `delivered: true` + `deliveredAt`
-    /// and leaves every other field (userId, opened, data) intact. A
-    /// bug where update overwrites the doc with `.set` instead of
-    /// `.update` would wipe userId — every "delivered" notification
-    /// becomes invisible to the inbox.
-    test('markDelivered flips the flag and preserves every other field',
+  group(
+    'markNotificationDelivered / markNotificationOpened — flag updates',
+    () {
+      /// Proves delivered-update writes `delivered: true` + `deliveredAt`
+      /// and leaves every other field (userId, opened, data) intact. A
+      /// bug where update overwrites the doc with `.set` instead of
+      /// `.update` would wipe userId — every "delivered" notification
+      /// becomes invisible to the inbox.
+      test(
+        'markDelivered flips the flag and preserves every other field',
         () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seed(firestore, id: 'n-d', userId: _alice);
-      final repo = _repo(firestore, authedUserId: _alice);
+          final firestore = FakeFirebaseFirestore();
+          await _seed(firestore, id: 'n-d', userId: _alice);
+          final repo = _repo(firestore, authedUserId: _alice);
 
-      await repo.markNotificationDelivered('n-d');
+          await repo.markNotificationDelivered('n-d');
 
-      final stored = await _doc(firestore, 'n-d');
-      expect(stored!['delivered'], isTrue);
-      expect(stored['deliveredAt'], isA<Timestamp>());
-      // Field-preservation invariant:
-      expect(stored['userId'], _alice);
-      expect(stored['opened'], isFalse);
-      expect(stored['notificationId'], 'n-d');
-      expect(stored['data'], isA<Map>());
-    });
+          final stored = await _doc(firestore, 'n-d');
+          expect(stored!['delivered'], isTrue);
+          expect(stored['deliveredAt'], isA<Timestamp>());
+          // Field-preservation invariant:
+          expect(stored['userId'], _alice);
+          expect(stored['opened'], isFalse);
+          expect(stored['notificationId'], 'n-d');
+          expect(stored['data'], isA<Map>());
+        },
+      );
 
-    /// Same as above but for opened — caught the same class of bug
-    /// where `.set` replaces vs `.update` merges.
-    test('markOpened flips the flag and preserves every other field', () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seed(firestore, id: 'n-o', userId: _alice, delivered: true);
-      final repo = _repo(firestore, authedUserId: _alice);
+      /// Same as above but for opened — caught the same class of bug
+      /// where `.set` replaces vs `.update` merges.
+      test(
+        'markOpened flips the flag and preserves every other field',
+        () async {
+          final firestore = FakeFirebaseFirestore();
+          await _seed(firestore, id: 'n-o', userId: _alice, delivered: true);
+          final repo = _repo(firestore, authedUserId: _alice);
 
-      await repo.markNotificationOpened('n-o');
+          await repo.markNotificationOpened('n-o');
 
-      final stored = await _doc(firestore, 'n-o');
-      expect(stored!['opened'], isTrue);
-      expect(stored['openedAt'], isA<Timestamp>());
-      expect(stored['delivered'], isTrue,
-          reason: 'must NOT clobber the delivered flag');
-      expect(stored['userId'], _alice);
-    });
+          final stored = await _doc(firestore, 'n-o');
+          expect(stored!['opened'], isTrue);
+          expect(stored['openedAt'], isA<Timestamp>());
+          expect(
+            stored['delivered'],
+            isTrue,
+            reason: 'must NOT clobber the delivered flag',
+          );
+          expect(stored['userId'], _alice);
+        },
+      );
 
-    /// Proves graceful handling of a missing doc — production catches
-    /// the FirebaseException and only logs. If this regressed to
-    /// rethrow, FCM background isolates would crash on the first
-    /// stale notificationId, taking down delivery for the device.
-    test('mark on missing doc does not throw upward', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _alice);
+      /// Proves graceful handling of a missing doc — production catches
+      /// the FirebaseException and only logs. If this regressed to
+      /// rethrow, FCM background isolates would crash on the first
+      /// stale notificationId, taking down delivery for the device.
+      test('mark on missing doc does not throw upward', () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      // No await expectLater + throwsA — explicit "does not throw":
-      await repo.markNotificationDelivered('does-not-exist');
-      await repo.markNotificationOpened('does-not-exist');
-      // If we got here, the contract held.
-    });
-  });
+        // No await expectLater + throwsA — explicit "does not throw":
+        await repo.markNotificationDelivered('does-not-exist');
+        await repo.markNotificationOpened('does-not-exist');
+        // If we got here, the contract held.
+      });
+    },
+  );
 
   group('getHistory — per-user filtering & pagination', () {
     /// THE privacy-critical test. Proves Alice's getHistory cannot
@@ -296,30 +322,57 @@ void main() {
     /// isEqualTo: ...)` — leaks every user's inbox to every other user.
     test('returns only docs owned by the queried userId', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seed(firestore,
-          id: 'a1', userId: _alice, sentAt: DateTime.utc(2026, 2, 1));
-      await _seed(firestore,
-          id: 'a2', userId: _alice, sentAt: DateTime.utc(2026, 2, 2));
-      await _seed(firestore,
-          id: 'b1', userId: _bob, sentAt: DateTime.utc(2026, 2, 3));
+      await _seed(
+        firestore,
+        id: 'a1',
+        userId: _alice,
+        sentAt: DateTime.utc(2026, 2, 1),
+      );
+      await _seed(
+        firestore,
+        id: 'a2',
+        userId: _alice,
+        sentAt: DateTime.utc(2026, 2, 2),
+      );
+      await _seed(
+        firestore,
+        id: 'b1',
+        userId: _bob,
+        sentAt: DateTime.utc(2026, 2, 3),
+      );
       final repo = _repo(firestore, authedUserId: _alice);
 
       final history = await repo.getHistory(_alice);
 
-      expect(history.map((e) => e.id), unorderedEquals(['a1', 'a2']),
-          reason: 'must not include Bob-owned docs');
+      expect(
+        history.map((e) => e.id),
+        unorderedEquals(['a1', 'a2']),
+        reason: 'must not include Bob-owned docs',
+      );
     });
 
     /// Proves desc ordering by sentAt — inbox shows newest first.
     /// Off-by-one bug would surface as oldest-first or random order.
     test('orders by sentAt descending (newest first)', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seed(firestore,
-          id: 'old', userId: _alice, sentAt: DateTime.utc(2026, 1, 1));
-      await _seed(firestore,
-          id: 'mid', userId: _alice, sentAt: DateTime.utc(2026, 6, 1));
-      await _seed(firestore,
-          id: 'new', userId: _alice, sentAt: DateTime.utc(2026, 12, 1));
+      await _seed(
+        firestore,
+        id: 'old',
+        userId: _alice,
+        sentAt: DateTime.utc(2026, 1, 1),
+      );
+      await _seed(
+        firestore,
+        id: 'mid',
+        userId: _alice,
+        sentAt: DateTime.utc(2026, 6, 1),
+      );
+      await _seed(
+        firestore,
+        id: 'new',
+        userId: _alice,
+        sentAt: DateTime.utc(2026, 12, 1),
+      );
       final repo = _repo(firestore, authedUserId: _alice);
 
       final history = await repo.getHistory(_alice);
@@ -332,10 +385,12 @@ void main() {
     test('respects the limit parameter', () async {
       final firestore = FakeFirebaseFirestore();
       for (var i = 0; i < 10; i++) {
-        await _seed(firestore,
-            id: 'n$i',
-            userId: _alice,
-            sentAt: DateTime.utc(2026, 1, 1).add(Duration(days: i)));
+        await _seed(
+          firestore,
+          id: 'n$i',
+          userId: _alice,
+          sentAt: DateTime.utc(2026, 1, 1).add(Duration(days: i)),
+        );
       }
       final repo = _repo(firestore, authedUserId: _alice);
 
@@ -359,9 +414,13 @@ void main() {
 
       // before = t2 must NOT include n2 itself (strict <).
       final page = await repo.getHistory(_alice, before: t2);
-      expect(page.map((e) => e.id), ['n1'],
-          reason: 'strict less-than: n2 (== cursor) excluded, n1 (< cursor) '
-              'included, n3 (> cursor) excluded');
+      expect(
+        page.map((e) => e.id),
+        ['n1'],
+        reason:
+            'strict less-than: n2 (== cursor) excluded, n1 (< cursor) '
+            'included, n3 (> cursor) excluded',
+      );
     });
 
     /// Proves errors are absorbed into an empty list — production
@@ -398,50 +457,60 @@ void main() {
 
       // And critically, Bob's doc was NOT mutated by the failed call.
       final stored = await _doc(firestore, 'b1');
-      expect(stored!['opened'], isFalse,
-          reason: 'failed permission check must not partially mutate');
+      expect(
+        stored!['opened'],
+        isFalse,
+        reason: 'failed permission check must not partially mutate',
+      );
     });
 
     /// Proves the filter is `opened == false` — already-opened docs
     /// are not re-stamped. If the filter were missing, every call
     /// would update `openedAt` to "now," corrupting the user-facing
     /// "opened 3 days ago" timestamp.
-    test('only touches unread docs; leaves already-opened openedAt intact',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final originalOpenedAt = Timestamp.fromDate(DateTime.utc(2025, 12, 1));
-      // One already-opened (must not be re-stamped).
-      await firestore.collection('notification_history').doc('a-already').set({
-        'userId': _alice,
-        'notificationId': 'a-already',
-        'category': 'friends',
-        'type': 'immediate',
-        'data': const {},
-        'sentAt': Timestamp.fromDate(DateTime.utc(2025, 11, 1)),
-        'expireAt': Timestamp.fromDate(DateTime.utc(2026, 3, 1)),
-        'delivered': true,
-        'opened': true,
-        'openedAt': originalOpenedAt,
-      });
-      // Two unread (must be flipped).
-      await _seed(firestore, id: 'a-u1', userId: _alice);
-      await _seed(firestore, id: 'a-u2', userId: _alice);
-      final repo = _repo(firestore, authedUserId: _alice);
+    test(
+      'only touches unread docs; leaves already-opened openedAt intact',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final originalOpenedAt = Timestamp.fromDate(DateTime.utc(2025, 12, 1));
+        // One already-opened (must not be re-stamped).
+        await firestore.collection('notification_history').doc('a-already').set(
+          {
+            'userId': _alice,
+            'notificationId': 'a-already',
+            'category': 'friends',
+            'type': 'immediate',
+            'data': const {},
+            'sentAt': Timestamp.fromDate(DateTime.utc(2025, 11, 1)),
+            'expireAt': Timestamp.fromDate(DateTime.utc(2026, 3, 1)),
+            'delivered': true,
+            'opened': true,
+            'openedAt': originalOpenedAt,
+          },
+        );
+        // Two unread (must be flipped).
+        await _seed(firestore, id: 'a-u1', userId: _alice);
+        await _seed(firestore, id: 'a-u2', userId: _alice);
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      final count = await repo.markAllAsOpenedForUser(_alice);
+        final count = await repo.markAllAsOpenedForUser(_alice);
 
-      expect(count, 2, reason: 'returns exact count of docs mutated');
+        expect(count, 2, reason: 'returns exact count of docs mutated');
 
-      final preserved = await _doc(firestore, 'a-already');
-      expect(preserved!['openedAt'], originalOpenedAt,
-          reason: 'already-opened doc must NOT be re-stamped');
+        final preserved = await _doc(firestore, 'a-already');
+        expect(
+          preserved!['openedAt'],
+          originalOpenedAt,
+          reason: 'already-opened doc must NOT be re-stamped',
+        );
 
-      final u1 = await _doc(firestore, 'a-u1');
-      final u2 = await _doc(firestore, 'a-u2');
-      expect(u1!['opened'], isTrue);
-      expect(u2!['opened'], isTrue);
-      expect(u1['openedAt'], isA<Timestamp>());
-    });
+        final u1 = await _doc(firestore, 'a-u1');
+        final u2 = await _doc(firestore, 'a-u2');
+        expect(u1!['opened'], isTrue);
+        expect(u2!['opened'], isTrue);
+        expect(u1['openedAt'], isA<Timestamp>());
+      },
+    );
 
     /// Proves scope is locked to caller's docs — Bob's notifications
     /// must remain untouched even when Alice self-marks. A regression
@@ -457,8 +526,11 @@ void main() {
       expect(count, 1);
 
       final bobDoc = await _doc(firestore, 'b-1');
-      expect(bobDoc!['opened'], isFalse,
-          reason: 'Bob\'s doc must be untouched by Alice\'s self-mark');
+      expect(
+        bobDoc!['opened'],
+        isFalse,
+        reason: 'Bob\'s doc must be untouched by Alice\'s self-mark',
+      );
     });
 
     /// Proves the empty-set early return — returns 0 cleanly when
@@ -489,8 +561,11 @@ void main() {
 
       // Bob's doc still there.
       final stored = await _doc(firestore, 'b1');
-      expect(stored, isNotNull,
-          reason: 'failed ownership check must not delete anything');
+      expect(
+        stored,
+        isNotNull,
+        reason: 'failed ownership check must not delete anything',
+      );
     });
 
     /// THE GDPR invariant. Proves every owned doc is removed and
@@ -515,8 +590,11 @@ void main() {
           .collection('notification_history')
           .get()
           .then((s) => s.docs.map((d) => d.id).toSet());
-      expect(remaining, {'b-1', 'b-2'},
-          reason: 'only Bob\'s docs remain — Alice\'s 3 wiped, none orphaned');
+      expect(
+        remaining,
+        {'b-1', 'b-2'},
+        reason: 'only Bob\'s docs remain — Alice\'s 3 wiped, none orphaned',
+      );
     });
 
     /// Proves the empty-set fast path — returns 0 cleanly rather
@@ -539,21 +617,40 @@ void main() {
     /// right-to-erasure.
     test('cascade removes opened, unread, and delivered docs alike', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seed(firestore,
-          id: 'a-unread', userId: _alice, opened: false, delivered: false);
-      await _seed(firestore,
-          id: 'a-delivered', userId: _alice, opened: false, delivered: true);
-      await _seed(firestore,
-          id: 'a-opened', userId: _alice, opened: true, delivered: true);
+      await _seed(
+        firestore,
+        id: 'a-unread',
+        userId: _alice,
+        opened: false,
+        delivered: false,
+      );
+      await _seed(
+        firestore,
+        id: 'a-delivered',
+        userId: _alice,
+        opened: false,
+        delivered: true,
+      );
+      await _seed(
+        firestore,
+        id: 'a-opened',
+        userId: _alice,
+        opened: true,
+        delivered: true,
+      );
       final repo = _repo(firestore, authedUserId: _alice);
 
       final count = await repo.deleteAllByUser(_alice);
       expect(count, 3);
 
-      final remaining =
-          await firestore.collection('notification_history').get();
-      expect(remaining.docs, isEmpty,
-          reason: 'GDPR cascade must remove all states');
+      final remaining = await firestore
+          .collection('notification_history')
+          .get();
+      expect(
+        remaining.docs,
+        isEmpty,
+        reason: 'GDPR cascade must remove all states',
+      );
     });
   });
 
@@ -633,22 +730,27 @@ void main() {
   });
 
   group('deleteByIds — BUT-1080 bulk dismiss (ownership-scoped)', () {
-    test('deletes only the requested ids, leaving the user other docs',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seed(firestore, id: 'a1', userId: _alice);
-      await _seed(firestore, id: 'a2', userId: _alice);
-      await _seed(firestore, id: 'a3', userId: _alice);
-      final repo = _repo(firestore, authedUserId: _alice);
+    test(
+      'deletes only the requested ids, leaving the user other docs',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await _seed(firestore, id: 'a1', userId: _alice);
+        await _seed(firestore, id: 'a2', userId: _alice);
+        await _seed(firestore, id: 'a3', userId: _alice);
+        final repo = _repo(firestore, authedUserId: _alice);
 
-      final removed = await repo.deleteByIds(['a1', 'a3'], _alice);
+        final removed = await repo.deleteByIds(['a1', 'a3'], _alice);
 
-      expect(removed, 2);
-      expect(await _doc(firestore, 'a1'), isNull);
-      expect(await _doc(firestore, 'a3'), isNull);
-      expect(await _doc(firestore, 'a2'), isNotNull,
-          reason: 'unselected doc must survive');
-    });
+        expect(removed, 2);
+        expect(await _doc(firestore, 'a1'), isNull);
+        expect(await _doc(firestore, 'a3'), isNull);
+        expect(
+          await _doc(firestore, 'a2'),
+          isNotNull,
+          reason: 'unselected doc must survive',
+        );
+      },
+    );
 
     test('refuses cross-user calls (privacy)', () async {
       final firestore = FakeFirebaseFirestore();
@@ -659,8 +761,11 @@ void main() {
         repo.deleteByIds(['b1'], _bob),
         throwsA(isA<PermissionDeniedException>()),
       );
-      expect(await _doc(firestore, 'b1'), isNotNull,
-          reason: 'Alice must not delete Bob notifications');
+      expect(
+        await _doc(firestore, 'b1'),
+        isNotNull,
+        reason: 'Alice must not delete Bob notifications',
+      );
     });
 
     test('ignores ids the caller does not own (defence in depth)', () async {
@@ -674,8 +779,11 @@ void main() {
 
       expect(removed, 1);
       expect(await _doc(firestore, 'a1'), isNull);
-      expect(await _doc(firestore, 'b1'), isNotNull,
-          reason: 'foreign id must never be deleted through this path');
+      expect(
+        await _doc(firestore, 'b1'),
+        isNotNull,
+        reason: 'foreign id must never be deleted through this path',
+      );
     });
 
     test('returns 0 (no throw) for an empty id list', () async {

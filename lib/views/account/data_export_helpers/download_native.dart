@@ -22,19 +22,25 @@ Future<String?> downloadCsvFile(String content, String fileName) async {
 }
 
 /// Shares a JSON file via the native share sheet, cleans up temp file after.
-Future<void> shareJsonFile(String content, String fileName,
-    {String? subject, String? text}) async {
+Future<void> shareJsonFile(
+  String content,
+  String fileName, {
+  String? subject,
+  String? text,
+}) async {
   final directory = await getTemporaryDirectory();
   final filePath = '${directory.path}/$fileName';
   final file = File(filePath);
   await file.writeAsString(content);
 
   try {
-    await SharePlus.instance.share(ShareParams(
-      files: [XFile(filePath)],
-      subject: subject,
-      text: text,
-    ));
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(filePath)],
+        subject: subject,
+        text: text,
+      ),
+    );
   } finally {
     if (await file.exists()) await file.delete();
   }

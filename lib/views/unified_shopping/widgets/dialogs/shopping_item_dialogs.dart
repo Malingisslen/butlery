@@ -45,9 +45,11 @@ class ShoppingItemDialogs {
         }
       } catch (e) {
         if (context.mounted) {
-          onError(context.l10n.shoppingErrorAdding(
-            SnackBarUtils.userFriendlyMessage(context, e),
-          ));
+          onError(
+            context.l10n.shoppingErrorAdding(
+              SnackBarUtils.userFriendlyMessage(context, e),
+            ),
+          );
         }
       }
     }
@@ -87,9 +89,11 @@ class ShoppingItemDialogs {
         }
       } catch (e) {
         if (context.mounted) {
-          onError(context.l10n.shoppingErrorUpdating(
-            SnackBarUtils.userFriendlyMessage(context, e),
-          ));
+          onError(
+            context.l10n.shoppingErrorUpdating(
+              SnackBarUtils.userFriendlyMessage(context, e),
+            ),
+          );
         }
       }
     }
@@ -235,22 +239,24 @@ class _AddItemDialogState extends State<_AddItemDialog> {
       // basic() omits note/price, so layer them on with copyWith — otherwise
       // the price and note the user typed are silently dropped on add (the
       // edit dialog already preserves both).
-      final item = UnifiedShoppingItem.basic(
-        name: _nameController.text.trim(),
-        amount:
-            double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 1.0,
-        unit: _unitController.text.trim(),
-        category: _categoryController.text.trim().isEmpty
-            ? ShoppingCategory.other
-            : _categoryController.text.trim(),
-      ).copyWith(
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
-        estimatedPrice: _priceController.text.trim().isEmpty
-            ? null
-            : double.tryParse(_priceController.text.replaceAll(',', '.')),
-      );
+      final item =
+          UnifiedShoppingItem.basic(
+            name: _nameController.text.trim(),
+            amount:
+                double.tryParse(_amountController.text.replaceAll(',', '.')) ??
+                1.0,
+            unit: _unitController.text.trim(),
+            category: _categoryController.text.trim().isEmpty
+                ? ShoppingCategory.other
+                : _categoryController.text.trim(),
+          ).copyWith(
+            note: _noteController.text.trim().isEmpty
+                ? null
+                : _noteController.text.trim(),
+            estimatedPrice: _priceController.text.trim().isEmpty
+                ? null
+                : double.tryParse(_priceController.text.replaceAll(',', '.')),
+          );
 
       Navigator.pop(context, item);
     }
@@ -280,13 +286,15 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
-    _amountController =
-        TextEditingController(text: widget.item.amount.toString());
+    _amountController = TextEditingController(
+      text: widget.item.amount.toString(),
+    );
     _unitController = TextEditingController(text: widget.item.unit);
     _categoryController = TextEditingController(text: widget.item.category);
     _noteController = TextEditingController(text: widget.item.note.orEmpty());
     _priceController = TextEditingController(
-        text: (widget.item.estimatedPrice?.toString()).orEmpty());
+      text: (widget.item.estimatedPrice?.toString()).orEmpty(),
+    );
   }
 
   @override
@@ -373,7 +381,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
     if (_formKey.currentState!.validate()) {
       final item = widget.item.copyWith(
         name: _nameController.text.trim(),
-        amount: double.tryParse(_amountController.text.replaceAll(',', '.')) ??
+        amount:
+            double.tryParse(_amountController.text.replaceAll(',', '.')) ??
             widget.item.amount,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty

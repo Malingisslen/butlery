@@ -72,15 +72,18 @@ class _StubFlagService implements FeatureFlagService {
 
 void main() {
   group('BUT-670: MaintenanceModeGate', () {
-    testWidgets('passes child through when maintenance mode is OFF',
-        (tester) async {
+    testWidgets('passes child through when maintenance mode is OFF', (
+      tester,
+    ) async {
       final flags = _StubFlagService();
-      await tester.pumpWidget(MaterialApp(
-        home: MaintenanceModeGate(
-          featureFlagServiceOverride: flags,
-          child: const Text('home content'),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MaintenanceModeGate(
+            featureFlagServiceOverride: flags,
+            child: const Text('home content'),
+          ),
         ),
-      ));
+      );
 
       expect(find.text('home content'), findsOneWidget);
       expect(find.byType(MaintenanceModeBlocker), findsNothing);
@@ -90,12 +93,14 @@ void main() {
       final flags = _StubFlagService()
         ..maintenanceMode = true
         ..message = 'Stör inte. Vi jobbar.';
-      await tester.pumpWidget(MaterialApp(
-        home: MaintenanceModeGate(
-          featureFlagServiceOverride: flags,
-          child: const Text('home content'),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MaintenanceModeGate(
+            featureFlagServiceOverride: flags,
+            child: const Text('home content'),
+          ),
         ),
-      ));
+      );
 
       expect(find.text('home content'), findsNothing);
       expect(find.byType(MaintenanceModeBlocker), findsOneWidget);
@@ -104,31 +109,38 @@ void main() {
       expect(find.text('Försök igen'), findsOneWidget);
     });
 
-    testWidgets('falls back to default Swedish message when override is empty',
-        (tester) async {
-      final flags = _StubFlagService()..maintenanceMode = true;
-      await tester.pumpWidget(MaterialApp(
-        home: MaintenanceModeGate(
-          featureFlagServiceOverride: flags,
-          child: const Text('home'),
-        ),
-      ));
+    testWidgets(
+      'falls back to default Swedish message when override is empty',
+      (tester) async {
+        final flags = _StubFlagService()..maintenanceMode = true;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MaintenanceModeGate(
+              featureFlagServiceOverride: flags,
+              child: const Text('home'),
+            ),
+          ),
+        );
 
-      expect(
-        find.text('Vi gör en kort uppdatering. Försök igen om en stund.'),
-        findsOneWidget,
+        expect(
+          find.text('Vi gör en kort uppdatering. Försök igen om en stund.'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('retry button refreshes flags and re-evaluates the gate', (
+      tester,
+    ) async {
+      final flags = _StubFlagService()..maintenanceMode = true;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MaintenanceModeGate(
+            featureFlagServiceOverride: flags,
+            child: const Text('home content'),
+          ),
+        ),
       );
-    });
-
-    testWidgets('retry button refreshes flags and re-evaluates the gate',
-        (tester) async {
-      final flags = _StubFlagService()..maintenanceMode = true;
-      await tester.pumpWidget(MaterialApp(
-        home: MaintenanceModeGate(
-          featureFlagServiceOverride: flags,
-          child: const Text('home content'),
-        ),
-      ));
       expect(find.byType(MaintenanceModeBlocker), findsOneWidget);
 
       // Simulate ops flipping the flag back off, then the user taps retry.
@@ -141,15 +153,18 @@ void main() {
       expect(find.text('home content'), findsOneWidget);
     });
 
-    testWidgets('reacts to live config updates (mid-session flip)',
-        (tester) async {
+    testWidgets('reacts to live config updates (mid-session flip)', (
+      tester,
+    ) async {
       final flags = _StubFlagService();
-      await tester.pumpWidget(MaterialApp(
-        home: MaintenanceModeGate(
-          featureFlagServiceOverride: flags,
-          child: const Text('home content'),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MaintenanceModeGate(
+            featureFlagServiceOverride: flags,
+            child: const Text('home content'),
+          ),
         ),
-      ));
+      );
       expect(find.byType(MaintenanceModeBlocker), findsNothing);
 
       // Ops flips maintenance mode on; Remote Config update fires.

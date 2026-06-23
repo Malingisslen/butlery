@@ -49,8 +49,9 @@ SocialRequest _friendReq({
     toUserId: to,
     status: status,
     sentAt: sentAt ?? DateTime.utc(2026, 1, 1),
-    expiresAt:
-        (sentAt ?? DateTime.utc(2026, 1, 1)).add(const Duration(days: 14)),
+    expiresAt: (sentAt ?? DateTime.utc(2026, 1, 1)).add(
+      const Duration(days: 14),
+    ),
   );
 }
 
@@ -73,8 +74,9 @@ SocialRequest _groupInv({
     fromUserName: from,
     status: status,
     sentAt: sentAt ?? DateTime.utc(2026, 1, 1),
-    expiresAt:
-        (sentAt ?? DateTime.utc(2026, 1, 1)).add(const Duration(days: 14)),
+    expiresAt: (sentAt ?? DateTime.utc(2026, 1, 1)).add(
+      const Duration(days: 14),
+    ),
   );
 }
 
@@ -96,8 +98,10 @@ void main() {
 
       await repo.createRequest(_friendReq());
 
-      final reqDoc =
-          await firestore.collection('social_requests').doc('req-1').get();
+      final reqDoc = await firestore
+          .collection('social_requests')
+          .doc('req-1')
+          .get();
       expect(reqDoc.exists, isTrue);
       expect(reqDoc.data()?['type'], 'friend');
       expect(reqDoc.data()?['status'], 'pending');
@@ -116,8 +120,9 @@ void main() {
       final repo = _repo(FakeFirebaseFirestore());
 
       expect(
-        () => repo
-            .createRequest(_friendReq(status: SocialRequestStatus.accepted)),
+        () => repo.createRequest(
+          _friendReq(status: SocialRequestStatus.accepted),
+        ),
         throwsA(isA<SecurityViolationException>()),
       );
     });
@@ -156,11 +161,14 @@ void main() {
       final repo = _repo(firestore);
       await _seed(firestore, _friendReq());
 
-      await repo.updateRequestStatus(
-          'req-1', {'status': SocialRequestStatus.cancelled.name});
+      await repo.updateRequestStatus('req-1', {
+        'status': SocialRequestStatus.cancelled.name,
+      });
 
-      final doc =
-          await firestore.collection('social_requests').doc('req-1').get();
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('req-1')
+          .get();
       expect(doc.data()?['status'], 'cancelled');
     });
 
@@ -170,8 +178,9 @@ void main() {
       await _seed(firestore, _friendReq());
 
       expect(
-        () => repo.updateRequestStatus(
-            'req-1', {'status': SocialRequestStatus.cancelled.name}),
+        () => repo.updateRequestStatus('req-1', {
+          'status': SocialRequestStatus.cancelled.name,
+        }),
         throwsA(isA<PermissionDeniedException>()),
       );
     });
@@ -181,11 +190,14 @@ void main() {
       final repo = _repo(firestore, authedUserId: _bob);
       await _seed(firestore, _friendReq());
 
-      await repo.updateRequestStatus(
-          'req-1', {'status': SocialRequestStatus.accepted.name});
+      await repo.updateRequestStatus('req-1', {
+        'status': SocialRequestStatus.accepted.name,
+      });
 
-      final doc =
-          await firestore.collection('social_requests').doc('req-1').get();
+      final doc = await firestore
+          .collection('social_requests')
+          .doc('req-1')
+          .get();
       expect(doc.data()?['status'], 'accepted');
     });
 
@@ -195,8 +207,9 @@ void main() {
       await _seed(firestore, _friendReq());
 
       expect(
-        () => repo.updateRequestStatus(
-            'req-1', {'status': SocialRequestStatus.accepted.name}),
+        () => repo.updateRequestStatus('req-1', {
+          'status': SocialRequestStatus.accepted.name,
+        }),
         throwsA(isA<PermissionDeniedException>()),
       );
     });
@@ -205,8 +218,9 @@ void main() {
       final repo = _repo(FakeFirebaseFirestore());
 
       expect(
-        () => repo.updateRequestStatus(
-            'ghost', {'status': SocialRequestStatus.accepted.name}),
+        () => repo.updateRequestStatus('ghost', {
+          'status': SocialRequestStatus.accepted.name,
+        }),
         throwsA(isA<ResourceNotFoundException>()),
       );
     });
@@ -221,9 +235,10 @@ void main() {
       await repo.deleteRequest('req-1');
 
       expect(
-          (await firestore.collection('social_requests').doc('req-1').get())
-              .exists,
-          isFalse);
+        (await firestore.collection('social_requests').doc('req-1').get())
+            .exists,
+        isFalse,
+      );
     });
 
     test('recipient can delete', () async {
@@ -234,9 +249,10 @@ void main() {
       await repo.deleteRequest('req-1');
 
       expect(
-          (await firestore.collection('social_requests').doc('req-1').get())
-              .exists,
-          isFalse);
+        (await firestore.collection('social_requests').doc('req-1').get())
+            .exists,
+        isFalse,
+      );
     });
 
     test('third party cannot delete', () async {
@@ -259,38 +275,48 @@ void main() {
   });
 
   group('friend request queries', () {
-    test('getIncomingFriendRequests returns only pending requests to me',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-      await _seed(firestore, _friendReq(id: 'r1', from: _alice, to: _bob));
-      await _seed(
-          firestore, _friendReq(id: 'r2', from: _carol, to: _bob)); // pending
-      await _seed(
+    test(
+      'getIncomingFriendRequests returns only pending requests to me',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _bob);
+        await _seed(firestore, _friendReq(id: 'r1', from: _alice, to: _bob));
+        await _seed(
+          firestore,
+          _friendReq(id: 'r2', from: _carol, to: _bob),
+        ); // pending
+        await _seed(
           firestore,
           _friendReq(
-              id: 'r3',
-              from: _alice,
-              to: _bob,
-              status: SocialRequestStatus.accepted)); // not pending
-      await _seed(
-          firestore, _groupInv(id: 'g1', from: _alice, to: _bob)); // wrong type
+            id: 'r3',
+            from: _alice,
+            to: _bob,
+            status: SocialRequestStatus.accepted,
+          ),
+        ); // not pending
+        await _seed(
+          firestore,
+          _groupInv(id: 'g1', from: _alice, to: _bob),
+        ); // wrong type
 
-      final results = await repo.getIncomingFriendRequests();
+        final results = await repo.getIncomingFriendRequests();
 
-      expect(results.map((r) => r.id).toSet(), {'r1', 'r2'});
-    });
+        expect(results.map((r) => r.id).toSet(), {'r1', 'r2'});
+      },
+    );
 
-    test('getSentFriendRequests returns only pending requests from me',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seed(firestore, _friendReq(id: 'r1', from: _alice, to: _bob));
-      await _seed(firestore, _friendReq(id: 'r2', from: _bob, to: _alice));
+    test(
+      'getSentFriendRequests returns only pending requests from me',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seed(firestore, _friendReq(id: 'r1', from: _alice, to: _bob));
+        await _seed(firestore, _friendReq(id: 'r2', from: _bob, to: _alice));
 
-      final results = await repo.getSentFriendRequests();
-      expect(results.map((r) => r.id), ['r1']);
-    });
+        final results = await repo.getSentFriendRequests();
+        expect(results.map((r) => r.id), ['r1']);
+      },
+    );
 
     test('friendRequestExists true when pending pair found', () async {
       final firestore = FakeFirebaseFirestore();
@@ -325,28 +351,35 @@ void main() {
   });
 
   group('group invitation queries', () {
-    test('getReceivedInvitations returns invitations sent to current user',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-      await _seed(firestore, _groupInv(id: 'g1', to: _bob));
-      await _seed(firestore, _groupInv(id: 'g2', to: _carol));
-      await _seed(firestore, _friendReq(id: 'f1', to: _bob)); // not a group inv
+    test(
+      'getReceivedInvitations returns invitations sent to current user',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: _bob);
+        await _seed(firestore, _groupInv(id: 'g1', to: _bob));
+        await _seed(firestore, _groupInv(id: 'g2', to: _carol));
+        await _seed(
+          firestore,
+          _friendReq(id: 'f1', to: _bob),
+        ); // not a group inv
 
-      final results = await repo.getReceivedInvitations();
-      expect(results.map((g) => g.id), ['g1']);
-    });
+        final results = await repo.getReceivedInvitations();
+        expect(results.map((g) => g.id), ['g1']);
+      },
+    );
 
-    test('getSentInvitations returns invitations sent by current user',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seed(firestore, _groupInv(id: 'g1', from: _alice, to: _bob));
-      await _seed(firestore, _groupInv(id: 'g2', from: _carol, to: _bob));
+    test(
+      'getSentInvitations returns invitations sent by current user',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seed(firestore, _groupInv(id: 'g1', from: _alice, to: _bob));
+        await _seed(firestore, _groupInv(id: 'g2', from: _carol, to: _bob));
 
-      final results = await repo.getSentInvitations();
-      expect(results.map((g) => g.id), ['g1']);
-    });
+        final results = await repo.getSentInvitations();
+        expect(results.map((g) => g.id), ['g1']);
+      },
+    );
 
     test('hasPendingInvitation distinguishes group + recipient pair', () async {
       final firestore = FakeFirebaseFirestore();
@@ -360,16 +393,18 @@ void main() {
   });
 
   group('group invitation streams', () {
-    test('receivedInvitationsStream emits pending invitations for user',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seed(firestore, _groupInv(id: 'g1', to: _bob));
+    test(
+      'receivedInvitationsStream emits pending invitations for user',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seed(firestore, _groupInv(id: 'g1', to: _bob));
 
-      final first = await repo.receivedInvitationsStream(_bob).first;
-      expect(first.length, 1);
-      expect(first[0].id, 'g1');
-    });
+        final first = await repo.receivedInvitationsStream(_bob).first;
+        expect(first.length, 1);
+        expect(first[0].id, 'g1');
+      },
+    );
 
     test('sentInvitationsStream emits invitations from user', () async {
       final firestore = FakeFirebaseFirestore();
@@ -383,33 +418,36 @@ void main() {
   });
 
   group('cleanup operations', () {
-    test('expiredRequests returns refs for pending requests past expiry',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Past expiry (sentAt was 2026-01-01, expiry = +14 days → 2026-01-15)
-      await _seed(firestore, _friendReq(id: 'r1'));
-      // Not expired by virtue of "as of" check
-      await _seed(
+    test(
+      'expiredRequests returns refs for pending requests past expiry',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        // Past expiry (sentAt was 2026-01-01, expiry = +14 days → 2026-01-15)
+        await _seed(firestore, _friendReq(id: 'r1'));
+        // Not expired by virtue of "as of" check
+        await _seed(
           firestore,
-          _friendReq(
-              id: 'r2',
-              sentAt: DateTime.utc(2026, 5, 1))); // expires 2026-05-15
-      await _seed(
+          _friendReq(id: 'r2', sentAt: DateTime.utc(2026, 5, 1)),
+        ); // expires 2026-05-15
+        await _seed(
           firestore,
-          _friendReq(
-              id: 'r3', status: SocialRequestStatus.accepted)); // not pending
+          _friendReq(id: 'r3', status: SocialRequestStatus.accepted),
+        ); // not pending
 
-      final refs = await repo.expiredRequests(DateTime.utc(2026, 2, 1));
-      expect(refs.map((r) => r.id), ['r1']);
-    });
+        final refs = await repo.expiredRequests(DateTime.utc(2026, 2, 1));
+        expect(refs.map((r) => r.id), ['r1']);
+      },
+    );
 
     test('oldRequests returns requests with sentAt < cutoff', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
       await _seed(firestore, _friendReq(id: 'r1', to: _bob));
-      await _seed(firestore,
-          _friendReq(id: 'r2', to: _bob, sentAt: DateTime.utc(2026, 6, 1)));
+      await _seed(
+        firestore,
+        _friendReq(id: 'r2', to: _bob, sentAt: DateTime.utc(2026, 6, 1)),
+      );
 
       final docs = await repo.oldRequests(_bob, DateTime.utc(2026, 3, 1));
       expect(docs.map((d) => d.id), ['r1']);
@@ -421,8 +459,7 @@ void main() {
       await _seed(firestore, _friendReq(id: 'r1'));
       await _seed(firestore, _friendReq(id: 'r2', to: _carol));
 
-      final refs = (await firestore.collection('social_requests').get())
-          .docs
+      final refs = (await firestore.collection('social_requests').get()).docs
           .map((d) => d.reference)
           .toList();
 
@@ -446,8 +483,7 @@ void main() {
       await _seed(firestore, _friendReq(id: 'r1'));
       await _seed(firestore, _friendReq(id: 'r2', to: _carol));
 
-      final refs = (await firestore.collection('social_requests').get())
-          .docs
+      final refs = (await firestore.collection('social_requests').get()).docs
           .map((d) => d.reference)
           .toList();
 
@@ -480,9 +516,9 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
       await _seed(
-          firestore,
-          _friendReq(
-              id: 'r1', sentAt: DateTime.utc(2030, 1, 1))); // future expiry
+        firestore,
+        _friendReq(id: 'r1', sentAt: DateTime.utc(2030, 1, 1)),
+      ); // future expiry
 
       expect(await repo.cleanupExpired(), 0);
     });
@@ -517,14 +553,21 @@ void main() {
   });
 
   group('permission validators', () {
-    test('validateCreatePermission only true when current user is sender',
-        () async {
-      final repo = _repo(FakeFirebaseFirestore());
+    test(
+      'validateCreatePermission only true when current user is sender',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
 
-      expect(await repo.validateCreatePermission(_alice, _friendReq()), isTrue);
-      expect(
-          await repo.validateCreatePermission(_carol, _friendReq()), isFalse);
-    });
+        expect(
+          await repo.validateCreatePermission(_alice, _friendReq()),
+          isTrue,
+        );
+        expect(
+          await repo.validateCreatePermission(_carol, _friendReq()),
+          isFalse,
+        );
+      },
+    );
 
     test('validateReadPermission true for sender or recipient', () async {
       final repo = _repo(FakeFirebaseFirestore());

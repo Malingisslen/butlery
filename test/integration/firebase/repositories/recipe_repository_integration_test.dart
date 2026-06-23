@@ -43,8 +43,10 @@ void main() {
         email: testUserEmail,
         displayName: testUserDisplayName,
       );
-      mockAuth =
-          auth_mocks.MockFirebaseAuth(mockUser: mockUser, signedIn: true);
+      mockAuth = auth_mocks.MockFirebaseAuth(
+        mockUser: mockUser,
+        signedIn: true,
+      );
 
       // Setup auth repository
       authRepository = FirebaseAuthRepository(firebaseAuth: mockAuth);
@@ -62,96 +64,102 @@ void main() {
       await TestDataIsolator.cleanupTest('recipe_repository_integration_test');
     });
 
-    group('Recipes with FieldValue operations',
-        skip: 'FakeFirebaseFirestore '
-            'serverTimestamp() limitations — tests read createdAt before '
-            'timestamp round-trip completes. Emulator coverage in BUT-387 '
-            'Phase 7.', () {
-      test('should create recipe with server timestamps', () async {
-        // Arrange
-        final recipe = RecipeBuilder()
-            .withId('recipe-1')
-            .withTitle('Test Recipe')
-            .withCreatedBy(testUserId)
-            .build();
+    group(
+      'Recipes with FieldValue operations',
+      skip:
+          'FakeFirebaseFirestore '
+          'serverTimestamp() limitations — tests read createdAt before '
+          'timestamp round-trip completes. Emulator coverage in BUT-387 '
+          'Phase 7.',
+      () {
+        test('should create recipe with server timestamps', () async {
+          // Arrange
+          final recipe = RecipeBuilder()
+              .withId('recipe-1')
+              .withTitle('Test Recipe')
+              .withCreatedBy(testUserId)
+              .build();
 
-        // Act
-        final created = await repository.create(recipe);
+          // Act
+          final created = await repository.create(recipe);
 
-        // Assert
-        expect(created.id, equals('recipe-1'));
+          // Assert
+          expect(created.id, equals('recipe-1'));
 
-        // Verify in Firestore
-        final doc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc('recipe-1')
-            .get();
+          // Verify in Firestore
+          final doc = await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('recipe-1')
+              .get();
 
-        expect(doc.exists, isTrue);
+          expect(doc.exists, isTrue);
 
-        // Check timestamps
-        final timestamps = doc.data()?['timestamps'];
-        expect(timestamps?['created'], isA<Timestamp>());
-        expect(timestamps?['lastModified'], isA<Timestamp>());
+          // Check timestamps
+          final timestamps = doc.data()?['timestamps'];
+          expect(timestamps?['created'], isA<Timestamp>());
+          expect(timestamps?['lastModified'], isA<Timestamp>());
 
-        // Verify timestamps are recent
-        final createdAt = (timestamps?['created'] as Timestamp).toDate();
-        expect(
-          createdAt.difference(DateTime.now()).inMinutes.abs(),
-          lessThan(1),
-        );
-      });
+          // Verify timestamps are recent
+          final createdAt = (timestamps?['created'] as Timestamp).toDate();
+          expect(
+            createdAt.difference(DateTime.now()).inMinutes.abs(),
+            lessThan(1),
+          );
+        });
 
-      test('should update recipe with modified timestamp', () async {
-        // Arrange
-        final recipe = RecipeBuilder()
-            .withId('recipe-1')
-            .withTitle('Original Title')
-            .withCreatedBy(testUserId)
-            .build();
+        test('should update recipe with modified timestamp', () async {
+          // Arrange
+          final recipe = RecipeBuilder()
+              .withId('recipe-1')
+              .withTitle('Original Title')
+              .withCreatedBy(testUserId)
+              .build();
 
-        // Create recipe
-        await repository.create(recipe);
+          // Create recipe
+          await repository.create(recipe);
 
-        // Get original timestamps
-        final originalDoc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc('recipe-1')
-            .get();
-        final originalCreated =
-            originalDoc.data()?['timestamps']?['created'] as Timestamp;
+          // Get original timestamps
+          final originalDoc = await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('recipe-1')
+              .get();
+          final originalCreated =
+              originalDoc.data()?['timestamps']?['created'] as Timestamp;
 
-        // Wait a bit to ensure different timestamp
-        await Future.delayed(const Duration(milliseconds: 100));
+          // Wait a bit to ensure different timestamp
+          await Future.delayed(const Duration(milliseconds: 100));
 
-        // Act - Update recipe
-        final updated = recipe.copyWith(title: 'Updated Title');
-        await repository.update(updated);
+          // Act - Update recipe
+          final updated = recipe.copyWith(title: 'Updated Title');
+          await repository.update(updated);
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .doc('recipe-1')
-            .get();
+          // Assert
+          final doc = await fakeFirestore
+              .collection('users')
+              .doc(testUserId)
+              .collection('recipes')
+              .doc('recipe-1')
+              .get();
 
-        expect(doc.data()?['core']?['title'], equals('Updated Title'));
+          expect(doc.data()?['core']?['title'], equals('Updated Title'));
 
-        final timestamps = doc.data()?['timestamps'];
-        expect(timestamps?['created'],
-            equals(originalCreated)); // Created unchanged
-        expect(timestamps?['lastModified'], isA<Timestamp>());
+          final timestamps = doc.data()?['timestamps'];
+          expect(
+            timestamps?['created'],
+            equals(originalCreated),
+          ); // Created unchanged
+          expect(timestamps?['lastModified'], isA<Timestamp>());
 
-        // Verify modified is after created
-        final modified = (timestamps?['lastModified'] as Timestamp).toDate();
-        expect(modified.isAfter(originalCreated.toDate()), isTrue);
-      });
-    });
+          // Verify modified is after created
+          final modified = (timestamps?['lastModified'] as Timestamp).toDate();
+          expect(modified.isAfter(originalCreated.toDate()), isTrue);
+        });
+      },
+    );
 
     group('Real-time Streaming', () {
       test('should stream recipe changes in real-time', () async {
@@ -159,8 +167,9 @@ void main() {
         final updates = <List<Recipe>>[];
 
         // Setup stream listener
-        final subscription =
-            repository.watchRecipes(testUserId).listen((recipes) {
+        final subscription = repository.watchRecipes(testUserId).listen((
+          recipes,
+        ) {
           updates.add(recipes);
         });
 
@@ -229,12 +238,13 @@ void main() {
       test('should add multiple recipes in batch', () async {
         // Arrange
         final recipes = List.generate(
-            10,
-            (i) => RecipeBuilder()
-                .withId('batch-recipe-$i')
-                .withTitle('Batch Recipe $i')
-                .withCreatedBy(testUserId)
-                .build());
+          10,
+          (i) => RecipeBuilder()
+              .withId('batch-recipe-$i')
+              .withTitle('Batch Recipe $i')
+              .withCreatedBy(testUserId)
+              .build(),
+        );
 
         // Act
         await repository.addRecipes(recipes);
@@ -288,142 +298,152 @@ void main() {
       });
     });
 
-    group('Search with Complex Queries',
-        skip: 'Seed data structure does not '
-            'match the nested visibility/metadata paths the repo queries on '
-            'now — BUT-369 continuation will rewrite.', () {
-      test('should search recipes with text matching', () async {
-        // Arrange - Create searchable recipes
-        final recipes = [
-          RecipeBuilder()
-              .withId('pasta-1')
-              .withTitle('Pasta Carbonara')
-              .withDescription('Classic Italian pasta dish')
-              .withCreatedBy(testUserId)
-              .build(),
-          RecipeBuilder()
-              .withId('pasta-2')
-              .withTitle('Pasta Bolognese')
-              .withDescription('Traditional meat sauce pasta')
-              .withCreatedBy(testUserId)
-              .build(),
-          RecipeBuilder()
-              .withId('chicken-1')
-              .withTitle('Grilled Chicken')
-              .withDescription('Healthy grilled chicken breast')
-              .withCreatedBy(testUserId)
-              .build(),
-        ];
+    group(
+      'Search with Complex Queries',
+      skip:
+          'Seed data structure does not '
+          'match the nested visibility/metadata paths the repo queries on '
+          'now — BUT-369 continuation will rewrite.',
+      () {
+        test('should search recipes with text matching', () async {
+          // Arrange - Create searchable recipes
+          final recipes = [
+            RecipeBuilder()
+                .withId('pasta-1')
+                .withTitle('Pasta Carbonara')
+                .withDescription('Classic Italian pasta dish')
+                .withCreatedBy(testUserId)
+                .build(),
+            RecipeBuilder()
+                .withId('pasta-2')
+                .withTitle('Pasta Bolognese')
+                .withDescription('Traditional meat sauce pasta')
+                .withCreatedBy(testUserId)
+                .build(),
+            RecipeBuilder()
+                .withId('chicken-1')
+                .withTitle('Grilled Chicken')
+                .withDescription('Healthy grilled chicken breast')
+                .withCreatedBy(testUserId)
+                .build(),
+          ];
 
-        for (final recipe in recipes) {
-          await repository.create(recipe);
-        }
+          for (final recipe in recipes) {
+            await repository.create(recipe);
+          }
 
-        // Act - Search for pasta
-        final results = await repository.searchRecipes('pasta');
+          // Act - Search for pasta
+          final results = await repository.searchRecipes('pasta');
 
-        // Assert
-        expect(results.length, greaterThanOrEqualTo(2));
-        expect(results.every((r) => r.title.toLowerCase().contains('pasta')),
-            isTrue);
-      });
+          // Assert
+          expect(results.length, greaterThanOrEqualTo(2));
+          expect(
+            results.every((r) => r.title.toLowerCase().contains('pasta')),
+            isTrue,
+          );
+        });
 
-      test('should handle complex compound queries', () async {
-        // Arrange - Create recipes with various attributes
-        for (int i = 0; i < 10; i++) {
-          final recipe = RecipeBuilder()
-              .withId('complex-$i')
-              .withTitle('Recipe $i')
-              .withCreatedBy(testUserId)
-              .build();
+        test('should handle complex compound queries', () async {
+          // Arrange - Create recipes with various attributes
+          for (int i = 0; i < 10; i++) {
+            final recipe = RecipeBuilder()
+                .withId('complex-$i')
+                .withTitle('Recipe $i')
+                .withCreatedBy(testUserId)
+                .build();
 
-          // Store with proper structure and additional test fields
-          final recipeData = recipe.toFirestore();
-          recipeData['isFavorite'] = i % 3 == 0;
-          recipeData['difficulty'] = i < 3
-              ? 'Easy'
-              : i < 7
-                  ? 'Medium'
-                  : 'Hard';
+            // Store with proper structure and additional test fields
+            final recipeData = recipe.toFirestore();
+            recipeData['isFavorite'] = i % 3 == 0;
+            recipeData['difficulty'] = i < 3
+                ? 'Easy'
+                : i < 7
+                ? 'Medium'
+                : 'Hard';
 
-          await fakeFirestore
+            await fakeFirestore
+                .collection('users')
+                .doc(testUserId)
+                .collection('recipes')
+                .doc(recipe.id)
+                .set(recipeData);
+          }
+
+          // Act - Query public and favorite recipes
+          final query = await fakeFirestore
               .collection('users')
               .doc(testUserId)
               .collection('recipes')
-              .doc(recipe.id)
-              .set(recipeData);
-        }
+              .where('visibility.isPublic', isEqualTo: true)
+              .where('metadata.isFavorite', isEqualTo: true)
+              .get();
 
-        // Act - Query public and favorite recipes
-        final query = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('recipes')
-            .where('visibility.isPublic', isEqualTo: true)
-            .where('metadata.isFavorite', isEqualTo: true)
-            .get();
+          // Assert
+          expect(query.docs.length, greaterThan(0));
+          for (final doc in query.docs) {
+            expect(doc.data()['visibility']?['isPublic'], isTrue);
+            expect(doc.data()['metadata']?['isFavorite'], isTrue);
+          }
+        });
+      },
+    );
 
-        // Assert
-        expect(query.docs.length, greaterThan(0));
-        for (final doc in query.docs) {
-          expect(doc.data()['visibility']?['isPublic'], isTrue);
-          expect(doc.data()['metadata']?['isFavorite'], isTrue);
-        }
-      });
-    });
+    group(
+      'Archive Operations',
+      skip:
+          'Archive schema/layout drifted from '
+          'test seed data; covered separately in BUT-369 continuation.',
+      () {
+        test('should fetch archive recipes from global collection', () async {
+          // Arrange - Create archive recipes in global collection
+          for (int i = 0; i < 5; i++) {
+            await fakeFirestore
+                .collection('archive_recipes')
+                .doc('archive-$i')
+                .set({
+                  'core': {
+                    'id': 'archive-$i',
+                    'title': 'Classic Recipe $i',
+                    'createdBy': 'archive_system',
+                  },
+                  'timestamps': {
+                    'created': TestFieldValues.serverTimestamp(),
+                  },
+                });
+          }
 
-    group('Archive Operations',
-        skip: 'Archive schema/layout drifted from '
-            'test seed data; covered separately in BUT-369 continuation.', () {
-      test('should fetch archive recipes from global collection', () async {
-        // Arrange - Create archive recipes in global collection
-        for (int i = 0; i < 5; i++) {
-          await fakeFirestore
-              .collection('archive_recipes')
-              .doc('archive-$i')
-              .set({
+          // Act
+          final archives = await repository.fetchArchiveRecipes();
+
+          // Assert
+          expect(archives.length, greaterThanOrEqualTo(5));
+          expect(archives.every((r) => r.id.startsWith('archive-')), isTrue);
+        });
+
+        test('should fetch specific archive recipe', () async {
+          // Arrange
+          const archiveId = 'swedish-meatballs';
+          await fakeFirestore.collection('archive_recipes').doc(archiveId).set({
             'core': {
-              'id': 'archive-$i',
-              'title': 'Classic Recipe $i',
+              'id': archiveId,
+              'title': 'Swedish Meatballs',
+              'description': 'Traditional Swedish meatballs with cream sauce',
               'createdBy': 'archive_system',
             },
             'timestamps': {
               'created': TestFieldValues.serverTimestamp(),
             },
           });
-        }
 
-        // Act
-        final archives = await repository.fetchArchiveRecipes();
+          // Act
+          final recipe = await repository.fetchArchiveRecipe(archiveId);
 
-        // Assert
-        expect(archives.length, greaterThanOrEqualTo(5));
-        expect(archives.every((r) => r.id.startsWith('archive-')), isTrue);
-      });
-
-      test('should fetch specific archive recipe', () async {
-        // Arrange
-        const archiveId = 'swedish-meatballs';
-        await fakeFirestore.collection('archive_recipes').doc(archiveId).set({
-          'core': {
-            'id': archiveId,
-            'title': 'Swedish Meatballs',
-            'description': 'Traditional Swedish meatballs with cream sauce',
-            'createdBy': 'archive_system',
-          },
-          'timestamps': {
-            'created': TestFieldValues.serverTimestamp(),
-          },
+          // Assert
+          expect(recipe.id, equals(archiveId));
+          expect(recipe.title, equals('Swedish Meatballs'));
         });
-
-        // Act
-        final recipe = await repository.fetchArchiveRecipe(archiveId);
-
-        // Assert
-        expect(recipe.id, equals(archiveId));
-        expect(recipe.title, equals('Swedish Meatballs'));
-      });
-    });
+      },
+    );
 
     group('User Recipe Operations', () {
       test('should fetch all recipes for a specific user', () async {
@@ -463,8 +483,10 @@ void main() {
 
         // Assert - All recipes created
         final recipes = await repository.fetchUserRecipes(testUserId);
-        expect(recipes.where((r) => r.id.startsWith('concurrent-')).length,
-            equals(5));
+        expect(
+          recipes.where((r) => r.id.startsWith('concurrent-')).length,
+          equals(5),
+        );
       });
     });
 
@@ -521,18 +543,20 @@ void main() {
             .collection('recipes')
             .doc('other-user-recipe')
             .set({
-          'core': {
-            'id': 'other-user-recipe',
-            'title': 'Other User Recipe',
-            'createdBy': 'other-user-123',
-          },
-        });
+              'core': {
+                'id': 'other-user-recipe',
+                'title': 'Other User Recipe',
+                'createdBy': 'other-user-123',
+              },
+            });
 
         // Attempt to read other user's recipe should return null (collection scoping)
         final otherUserRecipe = await repository.read('other-user-recipe');
-        expect(otherUserRecipe, isNull,
-            reason:
-                'Collection scoping prevents access to other users recipes');
+        expect(
+          otherUserRecipe,
+          isNull,
+          reason: 'Collection scoping prevents access to other users recipes',
+        );
       });
     });
   });

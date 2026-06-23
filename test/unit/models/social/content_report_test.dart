@@ -40,7 +40,9 @@ void main() {
         guidelineVersion: '2026-02-28',
       );
 
-      final docRef = await firestore.collection('reports').add(
+      final docRef = await firestore
+          .collection('reports')
+          .add(
             report.toFirestore(),
           );
       final snap = await docRef.get();
@@ -55,28 +57,33 @@ void main() {
       expect(parsed.createdAt.toUtc(), equals(now));
     });
 
-    test('omitting guidelineVersion serializes as absent (null on read)',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final report = ContentReport(
-        id: '',
-        reporterId: 'reporter1',
-        contentType: ContentType.recipe,
-        contentId: 'recipe1',
-        reason: 'inappropriate',
-        createdAt: DateTime.utc(2026, 5, 4),
-      );
+    test(
+      'omitting guidelineVersion serializes as absent (null on read)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final report = ContentReport(
+          id: '',
+          reporterId: 'reporter1',
+          contentType: ContentType.recipe,
+          contentId: 'recipe1',
+          reason: 'inappropriate',
+          createdAt: DateTime.utc(2026, 5, 4),
+        );
 
-      final map = report.toFirestore();
-      expect(map.containsKey('guidelineVersion'), isFalse,
+        final map = report.toFirestore();
+        expect(
+          map.containsKey('guidelineVersion'),
+          isFalse,
           reason:
               'Null guidelineVersion should be omitted from the wire map to '
-              'avoid forcing legacy docs to carry an explicit null.');
+              'avoid forcing legacy docs to carry an explicit null.',
+        );
 
-      final docRef = await firestore.collection('reports').add(map);
-      final parsed = ContentReport.fromFirestore(await docRef.get());
-      expect(parsed!.guidelineVersion, isNull);
-    });
+        final docRef = await firestore.collection('reports').add(map);
+        final parsed = ContentReport.fromFirestore(await docRef.get());
+        expect(parsed!.guidelineVersion, isNull);
+      },
+    );
 
     test('legacy doc without guidelineVersion still parses', () async {
       final firestore = FakeFirebaseFirestore();
@@ -110,10 +117,13 @@ void main() {
       final actioned = reviewed.copyWith(status: ReportStatus.actioned);
 
       expect(reviewed.guidelineVersion, equals('2026-02-28'));
-      expect(actioned.guidelineVersion, equals('2026-02-28'),
-          reason:
-              'Guideline version is the contract at submission time and must '
-              'survive moderation lifecycle transitions.');
+      expect(
+        actioned.guidelineVersion,
+        equals('2026-02-28'),
+        reason:
+            'Guideline version is the contract at submission time and must '
+            'survive moderation lifecycle transitions.',
+      );
     });
   });
 }

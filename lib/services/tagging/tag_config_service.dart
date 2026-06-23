@@ -68,8 +68,8 @@ class TagConfigService extends BaseService {
     required FirebaseFirestore firestore,
     @visibleForTesting
     Duration initialRetryDelay = const Duration(milliseconds: 500),
-  })  : _firestore = firestore,
-        _initialRetryDelay = initialRetryDelay;
+  }) : _firestore = firestore,
+       _initialRetryDelay = initialRetryDelay;
 
   @override
   String get serviceName => 'TagConfigService';

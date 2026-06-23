@@ -58,8 +58,9 @@ void main() {
     });
 
     group('Basic Widget Tests', () {
-      testWidgets('should create ShoppingListSelector without crashing',
-          (WidgetTester tester) async {
+      testWidgets('should create ShoppingListSelector without crashing', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingListSelector(),
@@ -69,8 +70,9 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle optional callback parameter',
-          (WidgetTester tester) async {
+      testWidgets('should handle optional callback parameter', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingListSelector(
@@ -82,8 +84,9 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle optional menu parameter',
-          (WidgetTester tester) async {
+      testWidgets('should handle optional menu parameter', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingListSelector(
@@ -95,8 +98,9 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle null menu gracefully',
-          (WidgetTester tester) async {
+      testWidgets('should handle null menu gracefully', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: ShoppingListSelector(
@@ -108,8 +112,9 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle all parameters together',
-          (WidgetTester tester) async {
+      testWidgets('should handle all parameters together', (
+        WidgetTester tester,
+      ) async {
         bool callbackCalled = false;
 
         await tester.pumpWidget(

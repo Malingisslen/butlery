@@ -33,12 +33,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Widget app() => MaterialApp(
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('sv'),
-        home: const SmartImportView(),
-      );
+    theme: AppTheme.lightTheme,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('sv'),
+    home: const SmartImportView(),
+  );
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -48,11 +48,11 @@ void main() {
     // is shown — keeps the smoke test to a clean mount.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      if (call.method == 'Clipboard.getData') {
-        return <String, dynamic>{'text': ''};
-      }
-      return null;
-    });
+          if (call.method == 'Clipboard.getData') {
+            return <String, dynamic>{'text': ''};
+          }
+          return null;
+        });
 
     // ImportManager bridge: TestServiceLocator registers into the shared GetIt;
     // the prod DIContainer wraps that same GetIt, so the view's
@@ -69,8 +69,9 @@ void main() {
     prod_locator.ServiceLocator.reset();
   });
 
-  testWidgets('mounts and settles via the ImportManager DI bridge',
-      (tester) async {
+  testWidgets('mounts and settles via the ImportManager DI bridge', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 

@@ -19,9 +19,9 @@ class PantryService extends BaseService {
     required PantryRepository pantryRepository,
     required IngredientRepository ingredientRepository,
     required IngredientMatchService matchService,
-  })  : _pantryRepository = pantryRepository,
-        _ingredientRepository = ingredientRepository,
-        _matchService = matchService;
+  }) : _pantryRepository = pantryRepository,
+       _ingredientRepository = ingredientRepository,
+       _matchService = matchService;
 
   @override
   String get serviceName => 'PantryService';
@@ -196,24 +196,32 @@ class PantryService extends BaseService {
     List<Recipe> recipes, {
     List<PantryItem>? pantryItems,
   }) async {
-    final result = await executeServiceOperation<
-        List<({Recipe recipe, double matchPercent})>>(() async {
-      final items = pantryItems ?? await _pantryRepository.getAll(userId);
-      if (items.isEmpty) return const [];
+    final result =
+        await executeServiceOperation<
+          List<({Recipe recipe, double matchPercent})>
+        >(
+          () async {
+            final items = pantryItems ?? await _pantryRepository.getAll(userId);
+            if (items.isEmpty) return const [];
 
-      final pantryIngredientIds =
-          items.map((item) => item.ingredientId).whereType<String>().toSet();
-      if (pantryIngredientIds.isEmpty) return const [];
+            final pantryIngredientIds = items
+                .map((item) => item.ingredientId)
+                .whereType<String>()
+                .toSet();
+            if (pantryIngredientIds.isEmpty) return const [];
 
-      final matchResults = await _matchService.matchRecipes(
-        selectedIngredientIds: pantryIngredientIds,
-        recipes: recipes,
-      );
+            final matchResults = await _matchService.matchRecipes(
+              selectedIngredientIds: pantryIngredientIds,
+              recipes: recipes,
+            );
 
-      return matchResults
-          .map((r) => (recipe: r.recipe, matchPercent: r.matchPercent))
-          .toList();
-    }, operationName: 'getMatchingRecipes', defaultValue: const []);
+            return matchResults
+                .map((r) => (recipe: r.recipe, matchPercent: r.matchPercent))
+                .toList();
+          },
+          operationName: 'getMatchingRecipes',
+          defaultValue: const [],
+        );
     return result ?? const [];
   }
 

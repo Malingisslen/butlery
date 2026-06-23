@@ -12,7 +12,9 @@ import '../../infrastructure/mocks/production_mocks.dart';
 /// Test helper that replicates the routing logic of the deprecated
 /// DeepLinkService.handleDeepLink using the non-deprecated static methods.
 Future<void> processTestDeepLink(
-    String url, Function(String) navigateToRoute) async {
+  String url,
+  Function(String) navigateToRoute,
+) async {
   try {
     final deepLinkData = DeepLinkService.parseDeepLink(url);
     if (deepLinkData == null) return;
@@ -172,7 +174,9 @@ void main() {
 
         // Assert
         expect(
-            link, contains('message=Try%2520this%2520amazing%2520recipe%21'));
+          link,
+          contains('message=Try%2520this%2520amazing%2520recipe%21'),
+        );
       });
     });
 
@@ -221,30 +225,32 @@ void main() {
         expect(link, contains('timestamp='));
       });
 
-      test('should generate different timestamps for sequential calls',
-          () async {
-        // Act
-        final link1 = DeepLinkService.generateShoppingListShareLink(
-          listId: 'list1',
-          fromUserId: 'user456',
-        );
+      test(
+        'should generate different timestamps for sequential calls',
+        () async {
+          // Act
+          final link1 = DeepLinkService.generateShoppingListShareLink(
+            listId: 'list1',
+            fromUserId: 'user456',
+          );
 
-        await Future.delayed(Duration(milliseconds: 10));
+          await Future.delayed(Duration(milliseconds: 10));
 
-        final link2 = DeepLinkService.generateShoppingListShareLink(
-          listId: 'list2',
-          fromUserId: 'user456',
-        );
+          final link2 = DeepLinkService.generateShoppingListShareLink(
+            listId: 'list2',
+            fromUserId: 'user456',
+          );
 
-        // Assert
-        final uri1 = Uri.parse(link1);
-        final uri2 = Uri.parse(link2);
+          // Assert
+          final uri1 = Uri.parse(link1);
+          final uri2 = Uri.parse(link2);
 
-        final timestamp1 = int.parse(uri1.queryParameters['timestamp']!);
-        final timestamp2 = int.parse(uri2.queryParameters['timestamp']!);
+          final timestamp1 = int.parse(uri1.queryParameters['timestamp']!);
+          final timestamp2 = int.parse(uri2.queryParameters['timestamp']!);
 
-        expect(timestamp2, greaterThan(timestamp1));
-      });
+          expect(timestamp2, greaterThan(timestamp1));
+        },
+      );
     });
 
     group('Deep Link Parsing', () {
@@ -407,8 +413,9 @@ void main() {
         final linkData = DeepLinkData(
           type: DeepLinkType.friendInvitation,
           id: 'inv123',
-          timestamp:
-              DateTime.now().subtract(Duration(days: 8)).millisecondsSinceEpoch,
+          timestamp: DateTime.now()
+              .subtract(Duration(days: 8))
+              .millisecondsSinceEpoch,
         );
 
         // Act
@@ -446,8 +453,10 @@ void main() {
         );
 
         // Act
-        final isValid =
-            DeepLinkService.isLinkValid(linkData, maxAge: Duration(hours: 1));
+        final isValid = DeepLinkService.isLinkValid(
+          linkData,
+          maxAge: Duration(hours: 1),
+        );
 
         // Assert
         expect(isValid, isFalse);
@@ -475,8 +484,9 @@ void main() {
         final linkData = DeepLinkData(
           type: DeepLinkType.recipeShare,
           id: 'recipe123',
-          timestamp:
-              DateTime.now().subtract(Duration(days: 8)).millisecondsSinceEpoch,
+          timestamp: DateTime.now()
+              .subtract(Duration(days: 8))
+              .millisecondsSinceEpoch,
         );
 
         // Act
@@ -491,8 +501,9 @@ void main() {
         final linkData = DeepLinkData(
           type: DeepLinkType.recipeShare,
           id: 'recipe123',
-          timestamp:
-              DateTime.now().subtract(Duration(days: 5)).millisecondsSinceEpoch,
+          timestamp: DateTime.now()
+              .subtract(Duration(days: 5))
+              .millisecondsSinceEpoch,
         );
 
         // Act
@@ -522,15 +533,17 @@ void main() {
       test('should generate internal short URL when authenticated', () async {
         // Arrange
         // Note: isAuthenticated is properly configured via setPermissionState above
-        when(() => mockRepository.createShortUrl(any(), any()))
-            .thenAnswer((_) async => 'abc123');
+        when(
+          () => mockRepository.createShortUrl(any(), any()),
+        ).thenAnswer((_) async => 'abc123');
 
         // Act
         // The actual implementation returns a short URL path with the code
         // Since the internal method requires authentication and service registration,
         // it will return the original URL as fallback
         final shortUrl = await DeepLinkService.generateShortUrl(
-            'https://butlery.app/recipe?id=123');
+          'https://butlery.app/recipe?id=123',
+        );
 
         // Assert
         // Static methods can't use our mock properly, so it will return original URL
@@ -558,8 +571,9 @@ void main() {
       test('should handle repository errors gracefully', () async {
         // Arrange
         // Note: isAuthenticated is properly configured via setPermissionState above
-        when(() => mockRepository.createShortUrl(any(), any()))
-            .thenAnswer((_) async => throw Exception('Database error'));
+        when(
+          () => mockRepository.createShortUrl(any(), any()),
+        ).thenAnswer((_) async => throw Exception('Database error'));
         final originalUrl = 'https://butlery.app/recipe?id=123';
 
         // Act
@@ -573,8 +587,9 @@ void main() {
         // Arrange
         // Note: isAuthenticated is properly configured via setPermissionState above
 
-        when(() => mockRepository.createShortUrl(any(), any()))
-            .thenAnswer((invocation) async {
+        when(() => mockRepository.createShortUrl(any(), any())).thenAnswer((
+          invocation,
+        ) async {
           // Would capture metadata here: invocation.positionalArguments[1]
           // But static method doesn't properly use DI
           return 'abc123';
@@ -592,10 +607,12 @@ void main() {
     group('Short URL Resolution', () {
       test('should resolve short URL to long URL', () async {
         // Arrange
-        when(() => mockRepository.getLongUrl('abc123'))
-            .thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
-        when(() => mockRepository.trackUrlClick('abc123'))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.getLongUrl('abc123'),
+        ).thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
+        when(
+          () => mockRepository.trackUrlClick('abc123'),
+        ).thenAnswer((_) async {});
 
         // Act
         // Since resolveShortUrl is static and uses ServiceLocator internally,
@@ -610,8 +627,9 @@ void main() {
 
       test('should return null for non-existent short URL', () async {
         // Arrange
-        when(() => mockRepository.getLongUrl('invalid'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockRepository.getLongUrl('invalid'),
+        ).thenAnswer((_) async => null);
 
         // Act
         final longUrl = await DeepLinkService.resolveShortUrl('invalid');
@@ -623,8 +641,9 @@ void main() {
 
       test('should handle resolution errors gracefully', () async {
         // Arrange
-        when(() => mockRepository.getLongUrl('abc123'))
-            .thenAnswer((_) async => throw Exception('Database error'));
+        when(
+          () => mockRepository.getLongUrl('abc123'),
+        ).thenAnswer((_) async => throw Exception('Database error'));
 
         // Act
         final longUrl = await DeepLinkService.resolveShortUrl('abc123');
@@ -749,10 +768,12 @@ void main() {
           'lastAccessed': '2024-01-20',
         };
 
-        when(() => mockRepository.getDeepLinkMetadata('abc123'))
-            .thenAnswer((_) async => metadata);
-        when(() => mockRepository.getLongUrl('abc123'))
-            .thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
+        when(
+          () => mockRepository.getDeepLinkMetadata('abc123'),
+        ).thenAnswer((_) async => metadata);
+        when(
+          () => mockRepository.getLongUrl('abc123'),
+        ).thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
 
         // Act
         final analytics = await DeepLinkService.getShortUrlAnalytics('abc123');
@@ -765,8 +786,9 @@ void main() {
 
       test('should return error for non-existent short URL', () async {
         // Arrange
-        when(() => mockRepository.getDeepLinkMetadata('invalid'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockRepository.getDeepLinkMetadata('invalid'),
+        ).thenAnswer((_) async => null);
 
         // Act
         final analytics = await DeepLinkService.getShortUrlAnalytics('invalid');
@@ -778,8 +800,9 @@ void main() {
 
       test('should handle analytics errors gracefully', () async {
         // Arrange
-        when(() => mockRepository.getDeepLinkMetadata('abc123'))
-            .thenAnswer((_) async => throw Exception('Database error'));
+        when(
+          () => mockRepository.getDeepLinkMetadata('abc123'),
+        ).thenAnswer((_) async => throw Exception('Database error'));
 
         // Act
         final analytics = await DeepLinkService.getShortUrlAnalytics('abc123');
@@ -908,12 +931,18 @@ void main() {
             if (link.contains('butlery.app')) {
               // May parse if domain matches
               // ignore: unnecessary_null_comparison
-              expect(data == null || data.type != null, isTrue,
-                  reason: 'Should handle scheme gracefully in: $link');
+              expect(
+                data == null || data.type != null,
+                isTrue,
+                reason: 'Should handle scheme gracefully in: $link',
+              );
             } else {
               // Custom schemes without proper domain should be rejected
-              expect(data, isNull,
-                  reason: 'Should reject custom scheme: $link');
+              expect(
+                data,
+                isNull,
+                reason: 'Should reject custom scheme: $link',
+              );
             }
           }
         });
@@ -934,8 +963,11 @@ void main() {
             if (data != null) {
               // If parsed, should have valid structure
               // ignore: unnecessary_null_comparison
-              expect(data.id != null || data.type != null, isTrue,
-                  reason: 'Should handle empty path gracefully in: $link');
+              expect(
+                data.id != null || data.type != null,
+                isTrue,
+                reason: 'Should handle empty path gracefully in: $link',
+              );
             }
           }
         });
@@ -956,10 +988,11 @@ void main() {
               // If parsing succeeds, the invalid encoding should be preserved or decoded
               // The implementation may keep the original string or return null
               expect(
-                  data.id == null ||
-                      data.id!.contains('%') ||
-                      data.id!.isNotEmpty,
-                  isTrue);
+                data.id == null ||
+                    data.id!.contains('%') ||
+                    data.id!.isNotEmpty,
+                isTrue,
+              );
             }
           }
         });
@@ -968,8 +1001,9 @@ void main() {
       group('Resource Resolution Errors', () {
         test('should handle recipe ID not found', () async {
           // Arrange
-          when(() => mockRepository.getLongUrl(any()))
-              .thenAnswer((_) async => throw Exception('Recipe not found'));
+          when(
+            () => mockRepository.getLongUrl(any()),
+          ).thenAnswer((_) async => throw Exception('Recipe not found'));
 
           // Act
           String? navigatedRoute;
@@ -1000,8 +1034,9 @@ void main() {
 
         test('should handle menu ID not found', () async {
           // Arrange
-          when(() => mockRepository.getLongUrl(any()))
-              .thenAnswer((_) async => throw Exception('Menu not found'));
+          when(
+            () => mockRepository.getLongUrl(any()),
+          ).thenAnswer((_) async => throw Exception('Menu not found'));
 
           // Act
           String? navigatedRoute;
@@ -1046,12 +1081,14 @@ void main() {
               hang.complete('');
             }
           });
-          when(() => mockRepository.getLongUrl(any()))
-              .thenAnswer((_) => hang.future);
+          when(
+            () => mockRepository.getLongUrl(any()),
+          ).thenAnswer((_) => hang.future);
 
           // Act
-          final longUrl = await DeepLinkService.resolveShortUrl('abc123')
-              .timeout(const Duration(seconds: 1), onTimeout: () => null);
+          final longUrl = await DeepLinkService.resolveShortUrl(
+            'abc123',
+          ).timeout(const Duration(seconds: 1), onTimeout: () => null);
 
           // Assert
           expect(longUrl, isNull);
@@ -1159,57 +1196,61 @@ void main() {
           expect(lastRoute, equals('/recipe/123?shared=true'));
         });
 
-        test('should prevent stack overflow from recursive navigation',
-            () async {
-          // Arrange
-          int navigationCount = 0;
-          const maxNavigations = 10;
+        test(
+          'should prevent stack overflow from recursive navigation',
+          () async {
+            // Arrange
+            int navigationCount = 0;
+            const maxNavigations = 10;
 
-          // Act
-          for (int i = 0; i < 20; i++) {
-            await processTestDeepLink(
-              'https://butlery.app/recipe?id=$i&type=recipe',
-              (route) {
-                if (navigationCount >= maxNavigations) {
-                  return; // Prevent stack overflow
-                }
-                navigationCount++;
-              },
-            );
-          }
+            // Act
+            for (int i = 0; i < 20; i++) {
+              await processTestDeepLink(
+                'https://butlery.app/recipe?id=$i&type=recipe',
+                (route) {
+                  if (navigationCount >= maxNavigations) {
+                    return; // Prevent stack overflow
+                  }
+                  navigationCount++;
+                },
+              );
+            }
 
-          // Assert
-          expect(navigationCount, equals(maxNavigations));
-        });
+            // Assert
+            expect(navigationCount, equals(maxNavigations));
+          },
+        );
       });
 
       group('Permission Errors', () {
-        test('should handle access to private recipe without permission',
-            () async {
-          // Arrange
-          mockPermissionService.setPermissionState(
-            defaultHasPermission: false,
-          );
+        test(
+          'should handle access to private recipe without permission',
+          () async {
+            // Arrange
+            mockPermissionService.setPermissionState(
+              defaultHasPermission: false,
+            );
 
-          // Act
-          String? navigatedRoute;
-          await processTestDeepLink(
-            'https://butlery.app/recipe?id=private123&type=recipe',
-            (route) async {
-              // Check permissions before navigation
-              final hasPermission = mockPermissionService.hasPermission(
-                'private123',
-                ResourcePermission.read,
-              );
-              if (hasPermission) {
-                navigatedRoute = route;
-              }
-            },
-          );
+            // Act
+            String? navigatedRoute;
+            await processTestDeepLink(
+              'https://butlery.app/recipe?id=private123&type=recipe',
+              (route) async {
+                // Check permissions before navigation
+                final hasPermission = mockPermissionService.hasPermission(
+                  'private123',
+                  ResourcePermission.read,
+                );
+                if (hasPermission) {
+                  navigatedRoute = route;
+                }
+              },
+            );
 
-          // Assert
-          expect(navigatedRoute, isNull);
-        });
+            // Assert
+            expect(navigatedRoute, isNull);
+          },
+        );
 
         test('should handle view blocked user profile', () async {
           // Arrange
@@ -1244,12 +1285,14 @@ void main() {
 
         test('should handle access to deleted content', () async {
           // Arrange
-          when(() => mockRepository.getLongUrl('deleted_content'))
-              .thenAnswer((_) async => null);
+          when(
+            () => mockRepository.getLongUrl('deleted_content'),
+          ).thenAnswer((_) async => null);
 
           // Act
-          final longUrl =
-              await DeepLinkService.resolveShortUrl('deleted_content');
+          final longUrl = await DeepLinkService.resolveShortUrl(
+            'deleted_content',
+          );
 
           // Assert
           expect(longUrl, isNull);
@@ -1288,8 +1331,9 @@ void main() {
         test('should handle Firebase Dynamic Links failure', () async {
           // Arrange
           when(() => mockRepository.createShortUrl(any(), any())).thenAnswer(
-              (_) async => throw Exception(
-                  'Firebase Dynamic Links service unavailable'));
+            (_) async =>
+                throw Exception('Firebase Dynamic Links service unavailable'),
+          );
 
           // Act
           final shortUrl = await DeepLinkService.generateShortUrl(
@@ -1297,14 +1341,17 @@ void main() {
           );
 
           // Assert
-          expect(shortUrl,
-              equals('https://butlery.app/recipe?id=123')); // Fallback
+          expect(
+            shortUrl,
+            equals('https://butlery.app/recipe?id=123'),
+          ); // Fallback
         });
 
         test('should handle short link generation failure', () async {
           // Arrange
           when(() => mockRepository.createShortUrl(any(), any())).thenAnswer(
-              (_) async => throw Exception('Failed to generate short link'));
+            (_) async => throw Exception('Failed to generate short link'),
+          );
 
           // Act
           final shortUrl = await DeepLinkService.generateShortUrl(
@@ -1313,15 +1360,19 @@ void main() {
 
           // Assert
           expect(
-              shortUrl, equals('https://butlery.app/menu?id=456')); // Fallback
+            shortUrl,
+            equals('https://butlery.app/menu?id=456'),
+          ); // Fallback
         });
 
         test('should handle link analytics tracking error', () async {
           // Arrange
-          when(() => mockRepository.trackUrlClick(any())).thenAnswer(
-              (_) async => throw Exception('Analytics service error'));
-          when(() => mockRepository.getLongUrl('abc123'))
-              .thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
+          when(
+            () => mockRepository.trackUrlClick(any()),
+          ).thenAnswer((_) async => throw Exception('Analytics service error'));
+          when(
+            () => mockRepository.getLongUrl('abc123'),
+          ).thenAnswer((_) async => 'https://butlery.app/recipe?id=123');
 
           // Act
           final longUrl = await DeepLinkService.resolveShortUrl('abc123');
@@ -1329,14 +1380,17 @@ void main() {
           // Assert
           // Should still resolve URL even if analytics fails
           expect(
-              longUrl, isNull); // Due to ServiceLocator issue in static method
+            longUrl,
+            isNull,
+          ); // Due to ServiceLocator issue in static method
         });
 
         test('should handle rate limit on link generation', () async {
           // Arrange
           int callCount = 0;
-          when(() => mockRepository.createShortUrl(any(), any()))
-              .thenAnswer((_) async {
+          when(() => mockRepository.createShortUrl(any(), any())).thenAnswer((
+            _,
+          ) async {
             callCount++;
             if (callCount > 5) {
               throw Exception('Rate limit exceeded');
@@ -1356,10 +1410,11 @@ void main() {
           // Assert
           // After rate limit, should return original URLs
           expect(
-              results
-                  .where((url) => url.startsWith('https://butlery.app'))
-                  .length,
-              greaterThan(0));
+            results
+                .where((url) => url.startsWith('https://butlery.app'))
+                .length,
+            greaterThan(0),
+          );
         });
       });
 
@@ -1494,8 +1549,11 @@ void main() {
           // Act & Assert
           for (final link in webLinks) {
             final data = DeepLinkService.parseDeepLink(link);
-            expect(data, isNull,
-                reason: 'Should not parse web-specific routing: $link');
+            expect(
+              data,
+              isNull,
+              reason: 'Should not parse web-specific routing: $link',
+            );
           }
         });
 
@@ -1549,8 +1607,9 @@ void main() {
           int retryCount = 0;
           const maxRetries = 3;
 
-          when(() => mockRepository.getLongUrl('retry_test'))
-              .thenAnswer((_) async {
+          when(() => mockRepository.getLongUrl('retry_test')).thenAnswer((
+            _,
+          ) async {
             retryCount++;
             if (retryCount <= maxRetries) {
               throw Exception('Temporary failure');

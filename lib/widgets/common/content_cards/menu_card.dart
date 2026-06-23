@@ -20,7 +20,7 @@ import 'package:butlery/models/recipe_unified.dart';
 /// ❌ DOES NOT CONTAIN: Recipe cards, friend cards, shopping list cards, generic content logic
 class MenuCard extends StatelessWidget {
   final dynamic
-      menu; // Can be SharedMenu, RealtimeMenu, or Map<String, List<Recipe>>
+  menu; // Can be SharedMenu, RealtimeMenu, or Map<String, List<Recipe>>
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final bool showPreview;
@@ -49,8 +49,10 @@ class MenuCard extends StatelessWidget {
     final restDecoration = BoxDecoration(
       color: cs.surface,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      border:
-          Border.all(color: cs.outline, width: AppDimensions.borderWidthThin),
+      border: Border.all(
+        color: cs.outline,
+        width: AppDimensions.borderWidthThin,
+      ),
     );
     return RepaintBoundary(
       child: HoverableCard(
@@ -233,30 +235,32 @@ class MenuCard extends StatelessWidget {
           style: AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        ...recipesToShow.map((recipe) => Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-              child: Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      shape: BoxShape.circle,
-                    ),
+        ...recipesToShow.map(
+          (recipe) => Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
-                    child: Text(
-                      _getRecipeTitle(recipe),
-                      style: AppTextStyles.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Text(
+                    _getRecipeTitle(recipe),
+                    style: AppTextStyles.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-            )),
+                ),
+              ],
+            ),
+          ),
+        ),
         if (allRecipes.length > 3)
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
@@ -354,8 +358,10 @@ class MenuCard extends StatelessWidget {
       return sharedMenu.totalRecipeCount;
     } else if (menu is RealtimeMenu) {
       final realtimeMenu = menu as RealtimeMenu;
-      return realtimeMenu.menuSnapshot.values
-          .fold(0, (total, recipes) => total + recipes.length);
+      return realtimeMenu.menuSnapshot.values.fold(
+        0,
+        (total, recipes) => total + recipes.length,
+      );
     } else if (menu is Map<String, List<Recipe>>) {
       final menuMap = menu as Map<String, List<Recipe>>;
       return menuMap.values.fold(0, (total, recipes) => total + recipes.length);

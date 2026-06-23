@@ -52,8 +52,10 @@ class FriendCard extends StatelessWidget {
     final restDecoration = BoxDecoration(
       color: cs.surface,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      border:
-          Border.all(color: cs.outline, width: AppDimensions.borderWidthThin),
+      border: Border.all(
+        color: cs.outline,
+        width: AppDimensions.borderWidthThin,
+      ),
     );
     return RepaintBoundary(
       child: HoverableCard(
@@ -271,11 +273,13 @@ class FriendRequestCard extends StatelessWidget {
               padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
                 border: Border.all(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: AppDimensions.borderWidthThin),
+                  color: Theme.of(context).colorScheme.outline,
+                  width: AppDimensions.borderWidthThin,
+                ),
               ),
               child: _buildContent(context),
             ),
@@ -346,7 +350,8 @@ class FriendRequestCard extends StatelessWidget {
               onPressed: onDecline,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               child: Text(
                 context.l10n.friendDecline,

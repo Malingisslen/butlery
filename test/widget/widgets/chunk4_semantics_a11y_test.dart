@@ -47,197 +47,207 @@ void main() {
 
   group('BUT-697 chunk-4 widget Semantics labels', () {
     testWidgets(
-        'pantry_item_card — tappable row exposes edit-pantry-item label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      final mockVm = _MockPantryViewModel();
-      final item = PantryItem(
-        id: 'p_1',
-        ingredientName: 'Mjölk',
-        quantity: 1,
-        unit: 'l',
-        location: PantryLocation.fridge,
-        addedAt: DateTime(2026, 1, 1),
-      );
+      'pantry_item_card — tappable row exposes edit-pantry-item label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        final mockVm = _MockPantryViewModel();
+        final item = PantryItem(
+          id: 'p_1',
+          ingredientName: 'Mjölk',
+          quantity: 1,
+          unit: 'l',
+          location: PantryLocation.fridge,
+          addedAt: DateTime(2026, 1, 1),
+        );
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: MultiProvider(
-            providers: [
-              ChangeNotifierProvider<PantryViewModel>.value(value: mockVm),
-              ChangeNotifierProvider<PantrySelectionManager>.value(
-                  value: PantrySelectionManager()),
-            ],
-            child: PantryItemCard(item: item),
-          ),
-        ),
-      );
-
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Mjölk, tryck för att redigera')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
-
-    testWidgets(
-        'add_pantry_item_sheet — expiry date tile exposes pick-expiry label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      final mockVm = _MockPantryViewModel();
-      when(() => mockVm.searchResults).thenReturn(const []);
-
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: ChangeNotifierProvider<PantryViewModel>.value(
-            value: mockVm,
-            child: const Material(child: AddPantryItemSheet()),
-          ),
-        ),
-      );
-
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Välj utgångsdatum')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
-
-    testWidgets(
-        'common/draft_recovery_dialog — draft tile exposes recover-tile label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      final draft = DraftMetadata(
-        draftId: 'd_1',
-        title: 'Bullar',
-        createdAt: DateTime(2026, 1, 1),
-        lastModifiedAt: DateTime(2026, 1, 1),
-        fieldCount: 3,
-      );
-
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: common_draft.DraftRecoveryDialog(
-            availableDrafts: [draft],
-          ),
-        ),
-      );
-
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Bullar, tryck för att återställa')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
-
-    testWidgets(
-        'recipe/draft_recovery_dialog — draft tile exposes recover-tile label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      final draft = DraftMetadata(
-        draftId: 'd_1',
-        title: 'Köttbullar',
-        createdAt: DateTime(2026, 1, 1),
-        lastModifiedAt: DateTime(2026, 1, 1),
-        fieldCount: 4,
-      );
-
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: recipe_draft.DraftRecoveryDialog(
-            drafts: [draft],
-            onRecover: (_) {},
-            onDiscardAll: () {},
-            onCancel: () {},
-          ),
-        ),
-      );
-
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Köttbullar, tryck för att återställa')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
-
-    testWidgets(
-        'share_mode_selection — static-copy + realtime options expose labels',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Builder(
-            builder: (ctx) => ShareModeSelection.build(
-              ctx,
-              ShareMode.staticCopy,
-              ShareContentType.recipe,
-              true,
-              (_) {},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: MultiProvider(
+              providers: [
+                ChangeNotifierProvider<PantryViewModel>.value(value: mockVm),
+                ChangeNotifierProvider<PantrySelectionManager>.value(
+                  value: PantrySelectionManager(),
+                ),
+              ],
+              child: PantryItemCard(item: item),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(
-        find.bySemanticsLabel(
-          RegExp(r'^Statisk kopia, tryck för att välja'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel(
-          RegExp(r'^Realtidsdelning, tryck för att välja'),
-        ),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Mjölk, tryck för att redigera')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'debounced_button — semanticLabel surfaces a button-role Semantics',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'add_pantry_item_sheet — expiry date tile exposes pick-expiry label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        final mockVm = _MockPantryViewModel();
+        when(() => mockVm.searchResults).thenReturn(const []);
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: DebouncedButton(
-            onPressed: () {},
-            semanticLabel: 'Spara recept',
-            child: const Text('Spara'),
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ChangeNotifierProvider<PantryViewModel>.value(
+              value: mockVm,
+              child: const Material(child: AddPantryItemSheet()),
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Spara recept')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Välj utgångsdatum')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'debounced_button — no semanticLabel means no extra Semantics wrapper',
-        (tester) async {
-      // Negative case: pre-existing callers that don't pass semanticLabel
-      // shouldn't get a duplicate "button" announcement. The label-less
-      // variant should produce zero matches for an arbitrary label probe.
-      final handle = tester.ensureSemantics();
+      'common/draft_recovery_dialog — draft tile exposes recover-tile label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        final draft = DraftMetadata(
+          draftId: 'd_1',
+          title: 'Bullar',
+          createdAt: DateTime(2026, 1, 1),
+          lastModifiedAt: DateTime(2026, 1, 1),
+          fieldCount: 3,
+        );
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: DebouncedButton(
-            onPressed: () {},
-            child: const Text('Spara'),
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: common_draft.DraftRecoveryDialog(
+              availableDrafts: [draft],
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Spara recept')),
-        findsNothing,
-      );
-      handle.dispose();
-    });
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Bullar, tryck för att återställa')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
+
+    testWidgets(
+      'recipe/draft_recovery_dialog — draft tile exposes recover-tile label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        final draft = DraftMetadata(
+          draftId: 'd_1',
+          title: 'Köttbullar',
+          createdAt: DateTime(2026, 1, 1),
+          lastModifiedAt: DateTime(2026, 1, 1),
+          fieldCount: 4,
+        );
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: recipe_draft.DraftRecoveryDialog(
+              drafts: [draft],
+              onRecover: (_) {},
+              onDiscardAll: () {},
+              onCancel: () {},
+            ),
+          ),
+        );
+
+        expect(
+          find.bySemanticsLabel(
+            RegExp(r'^Köttbullar, tryck för att återställa'),
+          ),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
+
+    testWidgets(
+      'share_mode_selection — static-copy + realtime options expose labels',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (ctx) => ShareModeSelection.build(
+                ctx,
+                ShareMode.staticCopy,
+                ShareContentType.recipe,
+                true,
+                (_) {},
+              ),
+            ),
+          ),
+        );
+
+        expect(
+          find.bySemanticsLabel(
+            RegExp(r'^Statisk kopia, tryck för att välja'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.bySemanticsLabel(
+            RegExp(r'^Realtidsdelning, tryck för att välja'),
+          ),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
+
+    testWidgets(
+      'debounced_button — semanticLabel surfaces a button-role Semantics',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: DebouncedButton(
+              onPressed: () {},
+              semanticLabel: 'Spara recept',
+              child: const Text('Spara'),
+            ),
+          ),
+        );
+
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Spara recept')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
+
+    testWidgets(
+      'debounced_button — no semanticLabel means no extra Semantics wrapper',
+      (tester) async {
+        // Negative case: pre-existing callers that don't pass semanticLabel
+        // shouldn't get a duplicate "button" announcement. The label-less
+        // variant should produce zero matches for an arbitrary label probe.
+        final handle = tester.ensureSemantics();
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: DebouncedButton(
+              onPressed: () {},
+              child: const Text('Spara'),
+            ),
+          ),
+        );
+
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Spara recept')),
+          findsNothing,
+        );
+        handle.dispose();
+      },
+    );
   });
 }

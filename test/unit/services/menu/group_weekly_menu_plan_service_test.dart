@@ -36,18 +36,19 @@ void main() {
       service = GroupWeeklyMenuPlanService(repository: repo);
     });
 
-    test(
-        'returns the existing plan when one is persisted for the ISO week, '
+    test('returns the existing plan when one is persisted for the ISO week, '
         'and does NOT issue a save() call', () async {
       final existing = GroupWeeklyMenuPlan.empty(
         groupId: groupId,
         creatorId: creatorId,
         date: date,
       );
-      when(() => repo.fetchForWeek(
-            groupId: any(named: 'groupId'),
-            weekStart: any(named: 'weekStart'),
-          )).thenAnswer((_) async => existing);
+      when(
+        () => repo.fetchForWeek(
+          groupId: any(named: 'groupId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenAnswer((_) async => existing);
 
       final result = await service.getOrBuildWeek(
         groupId: groupId,
@@ -59,13 +60,14 @@ void main() {
       verifyNever(() => repo.save(any(), userId: any(named: 'userId')));
     });
 
-    test(
-        'builds an in-memory plan (does NOT persist) when no plan exists for '
+    test('builds an in-memory plan (does NOT persist) when no plan exists for '
         'the week — callers own the single downstream save', () async {
-      when(() => repo.fetchForWeek(
-            groupId: any(named: 'groupId'),
-            weekStart: any(named: 'weekStart'),
-          )).thenAnswer((_) async => null);
+      when(
+        () => repo.fetchForWeek(
+          groupId: any(named: 'groupId'),
+          weekStart: any(named: 'weekStart'),
+        ),
+      ).thenAnswer((_) async => null);
 
       final result = await service.getOrBuildWeek(
         groupId: groupId,

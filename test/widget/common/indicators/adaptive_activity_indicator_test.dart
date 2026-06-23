@@ -24,18 +24,21 @@ bool get _hostIsIos => !kIsWeb && Platform.isIOS;
 
 void main() {
   group('AdaptiveActivityIndicator — default constructor', () {
-    testWidgets('non-iOS host → CircularProgressIndicator in a SizedBox',
-        (tester) async {
+    testWidgets('non-iOS host → CircularProgressIndicator in a SizedBox', (
+      tester,
+    ) async {
       if (_hostIsIos) return;
       await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator()));
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.byType(CupertinoActivityIndicator), findsNothing);
 
       // Default radius is 10 → SizedBox is 20x20.
-      final box = tester.widget<SizedBox>(find.descendant(
-        of: find.byType(AdaptiveActivityIndicator),
-        matching: find.byType(SizedBox),
-      ));
+      final box = tester.widget<SizedBox>(
+        find.descendant(
+          of: find.byType(AdaptiveActivityIndicator),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(box.width, 20);
       expect(box.height, 20);
     });
@@ -49,52 +52,65 @@ void main() {
       expect(progress.strokeWidth, 4.0);
     });
 
-    testWidgets('iOS host → CupertinoActivityIndicator with default radius=10',
-        (tester) async {
-      if (!_hostIsIos) return;
-      await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator()));
-      expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-      final cup = tester.widget<CupertinoActivityIndicator>(
-        find.byType(CupertinoActivityIndicator),
-      );
-      expect(cup.radius, 10.0);
-    });
+    testWidgets(
+      'iOS host → CupertinoActivityIndicator with default radius=10',
+      (tester) async {
+        if (!_hostIsIos) return;
+        await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator()));
+        expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        final cup = tester.widget<CupertinoActivityIndicator>(
+          find.byType(CupertinoActivityIndicator),
+        );
+        expect(cup.radius, 10.0);
+      },
+    );
   });
 
   group('AdaptiveActivityIndicator — explicit props (non-iOS)', () {
-    testWidgets('explicit radius sets SizedBox dimensions to radius*2',
-        (tester) async {
+    testWidgets('explicit radius sets SizedBox dimensions to radius*2', (
+      tester,
+    ) async {
       if (_hostIsIos) return;
-      await tester.pumpWidget(_wrap(
-        const AdaptiveActivityIndicator(radius: 25),
-      ));
-      final box = tester.widget<SizedBox>(find.descendant(
-        of: find.byType(AdaptiveActivityIndicator),
-        matching: find.byType(SizedBox),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const AdaptiveActivityIndicator(radius: 25),
+        ),
+      );
+      final box = tester.widget<SizedBox>(
+        find.descendant(
+          of: find.byType(AdaptiveActivityIndicator),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(box.width, 50);
       expect(box.height, 50);
     });
 
-    testWidgets('explicit strokeWidth forwards to CircularProgressIndicator',
-        (tester) async {
+    testWidgets('explicit strokeWidth forwards to CircularProgressIndicator', (
+      tester,
+    ) async {
       if (_hostIsIos) return;
-      await tester.pumpWidget(_wrap(
-        const AdaptiveActivityIndicator(strokeWidth: 7.5),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const AdaptiveActivityIndicator(strokeWidth: 7.5),
+        ),
+      );
       final progress = tester.widget<CircularProgressIndicator>(
         find.byType(CircularProgressIndicator),
       );
       expect(progress.strokeWidth, 7.5);
     });
 
-    testWidgets('explicit color forwards to CircularProgressIndicator',
-        (tester) async {
+    testWidgets('explicit color forwards to CircularProgressIndicator', (
+      tester,
+    ) async {
       if (_hostIsIos) return;
-      await tester.pumpWidget(_wrap(
-        const AdaptiveActivityIndicator(color: Colors.purple),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const AdaptiveActivityIndicator(color: Colors.purple),
+        ),
+      );
       final progress = tester.widget<CircularProgressIndicator>(
         find.byType(CircularProgressIndicator),
       );
@@ -106,10 +122,12 @@ void main() {
     testWidgets('.small → radius 8, strokeWidth 2 → 16x16 box', (tester) async {
       if (_hostIsIos) return;
       await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator.small()));
-      final box = tester.widget<SizedBox>(find.descendant(
-        of: find.byType(AdaptiveActivityIndicator),
-        matching: find.byType(SizedBox),
-      ));
+      final box = tester.widget<SizedBox>(
+        find.descendant(
+          of: find.byType(AdaptiveActivityIndicator),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(box.width, 16);
       expect(box.height, 16);
       final progress = tester.widget<CircularProgressIndicator>(
@@ -118,14 +136,17 @@ void main() {
       expect(progress.strokeWidth, 2.0);
     });
 
-    testWidgets('.medium → radius 12, strokeWidth 3 → 24x24 box',
-        (tester) async {
+    testWidgets('.medium → radius 12, strokeWidth 3 → 24x24 box', (
+      tester,
+    ) async {
       if (_hostIsIos) return;
       await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator.medium()));
-      final box = tester.widget<SizedBox>(find.descendant(
-        of: find.byType(AdaptiveActivityIndicator),
-        matching: find.byType(SizedBox),
-      ));
+      final box = tester.widget<SizedBox>(
+        find.descendant(
+          of: find.byType(AdaptiveActivityIndicator),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(box.width, 24);
       expect(box.height, 24);
       final progress = tester.widget<CircularProgressIndicator>(
@@ -134,14 +155,17 @@ void main() {
       expect(progress.strokeWidth, 3.0);
     });
 
-    testWidgets('.large → radius 16, strokeWidth 4 → 32x32 box',
-        (tester) async {
+    testWidgets('.large → radius 16, strokeWidth 4 → 32x32 box', (
+      tester,
+    ) async {
       if (_hostIsIos) return;
       await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator.large()));
-      final box = tester.widget<SizedBox>(find.descendant(
-        of: find.byType(AdaptiveActivityIndicator),
-        matching: find.byType(SizedBox),
-      ));
+      final box = tester.widget<SizedBox>(
+        find.descendant(
+          of: find.byType(AdaptiveActivityIndicator),
+          matching: find.byType(SizedBox),
+        ),
+      );
       expect(box.width, 32);
       expect(box.height, 32);
       final progress = tester.widget<CircularProgressIndicator>(
@@ -152,9 +176,11 @@ void main() {
 
     testWidgets('named constructors forward color', (tester) async {
       if (_hostIsIos) return;
-      await tester.pumpWidget(_wrap(
-        const AdaptiveActivityIndicator.small(color: Colors.red),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const AdaptiveActivityIndicator.small(color: Colors.red),
+        ),
+      );
       final progress = tester.widget<CircularProgressIndicator>(
         find.byType(CircularProgressIndicator),
       );
@@ -166,8 +192,9 @@ void main() {
     // These only run when CI happens to be on macOS+iOS sim; on Windows/Linux
     // they short-circuit. The non-iOS group above provides the primary
     // coverage.
-    testWidgets('.small on iOS → CupertinoActivityIndicator(radius=8)',
-        (tester) async {
+    testWidgets('.small on iOS → CupertinoActivityIndicator(radius=8)', (
+      tester,
+    ) async {
       if (!_hostIsIos) return;
       await tester.pumpWidget(_wrap(const AdaptiveActivityIndicator.small()));
       final cup = tester.widget<CupertinoActivityIndicator>(
@@ -178,9 +205,11 @@ void main() {
 
     testWidgets('color forwards on iOS', (tester) async {
       if (!_hostIsIos) return;
-      await tester.pumpWidget(_wrap(
-        const AdaptiveActivityIndicator(color: Colors.green),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const AdaptiveActivityIndicator(color: Colors.green),
+        ),
+      );
       final cup = tester.widget<CupertinoActivityIndicator>(
         find.byType(CupertinoActivityIndicator),
       );

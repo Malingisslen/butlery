@@ -28,13 +28,15 @@ class _MockPantryViewModel extends Mock implements PantryViewModel {}
 void main() {
   setUpAll(() async {
     await BaseWidgetTest.setupWidget();
-    registerFallbackValue(const IngredientData(
-      id: 'fallback',
-      swedish: 'fallback',
-      english: 'fallback',
-      group: 'test',
-      properties: {},
-    ));
+    registerFallbackValue(
+      const IngredientData(
+        id: 'fallback',
+        swedish: 'fallback',
+        english: 'fallback',
+        group: 'test',
+        properties: {},
+      ),
+    );
     registerFallbackValue(PantryLocation.pantry);
     registerFallbackValue(
       PantryItem(
@@ -57,22 +59,26 @@ void main() {
     when(() => vm.error).thenReturn(null);
     when(() => vm.hasError).thenReturn(false);
     when(() => vm.searchIngredient(any())).thenReturn(null);
-    when(() => vm.addItemFromIngredient(
-          any(),
-          quantity: any(named: 'quantity'),
-          unit: any(named: 'unit'),
-          location: any(named: 'location'),
-          expiryDate: any(named: 'expiryDate'),
-          note: any(named: 'note'),
-        )).thenAnswer((_) async {});
-    when(() => vm.addItemFromText(
-          any(),
-          quantity: any(named: 'quantity'),
-          unit: any(named: 'unit'),
-          location: any(named: 'location'),
-          expiryDate: any(named: 'expiryDate'),
-          note: any(named: 'note'),
-        )).thenAnswer((_) async {});
+    when(
+      () => vm.addItemFromIngredient(
+        any(),
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => vm.addItemFromText(
+        any(),
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).thenAnswer((_) async {});
     when(() => vm.updateItem(any())).thenAnswer((_) async {});
   });
 
@@ -99,45 +105,51 @@ void main() {
   // Won't break from: padding changes, unit-dropdown reorder, label copy edits.
   // ────────────────────────────────────────────────────────────────────────────
   testWidgets(
-      'selecting an autocomplete suggestion calls addItemFromIngredient on submit',
-      (tester) async {
-    const lax = IngredientData(
-      id: 'salmon',
-      swedish: 'Lax',
-      english: 'Salmon',
-      group: 'protein/fish',
-      properties: {'fish'},
-    );
+    'selecting an autocomplete suggestion calls addItemFromIngredient on submit',
+    (tester) async {
+      const lax = IngredientData(
+        id: 'salmon',
+        swedish: 'Lax',
+        english: 'Salmon',
+        group: 'protein/fish',
+        properties: {'fish'},
+      );
 
-    // After the user types, the VM will have results; simulate via stub.
-    when(() => vm.searchResults).thenReturn([lax]);
+      // After the user types, the VM will have results; simulate via stub.
+      when(() => vm.searchResults).thenReturn([lax]);
 
-    await tester.pumpWidget(buildSheet());
+      await tester.pumpWidget(buildSheet());
 
-    // Type in the ingredient field — triggers _onSearchChanged which
-    // sets _showSuggestions=true if results are non-empty.
-    await tester.enterText(find.widgetWithText(TextField, 'Ingrediens'), 'lax');
-    await tester.pump();
+      // Type in the ingredient field — triggers _onSearchChanged which
+      // sets _showSuggestions=true if results are non-empty.
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Ingrediens'),
+        'lax',
+      );
+      await tester.pump();
 
-    // Tap the suggestion in IngredientSuggestionList — triggers _onSuggestionTap
-    // which sets _selectedIngredient = lax.
-    await tester.tap(find.text('Lax'));
-    await tester.pump();
+      // Tap the suggestion in IngredientSuggestionList — triggers _onSuggestionTap
+      // which sets _selectedIngredient = lax.
+      await tester.tap(find.text('Lax'));
+      await tester.pump();
 
-    // Submit the form (the primary button text is "LÄGG TILL" in add mode).
-    await tester.tap(find.text('LÄGG TILL'));
-    await tester.pump();
+      // Submit the form (the primary button text is "LÄGG TILL" in add mode).
+      await tester.tap(find.text('LÄGG TILL'));
+      await tester.pump();
 
-    verify(() => vm.addItemFromIngredient(
+      verify(
+        () => vm.addItemFromIngredient(
           lax,
           quantity: any(named: 'quantity'),
           unit: any(named: 'unit'),
           location: any(named: 'location'),
           expiryDate: any(named: 'expiryDate'),
           note: any(named: 'note'),
-        )).called(1);
-    verifyNever(() => vm.addItemFromText(any()));
-  });
+        ),
+      ).called(1);
+      verifyNever(() => vm.addItemFromText(any()));
+    },
+  );
 
   // ────────────────────────────────────────────────────────────────────────────
   // Test 2: raw text (no suggestion picked) → addItemFromText
@@ -149,27 +161,32 @@ void main() {
   //   _selectedIngredient were never cleared on text-only input.
   // ────────────────────────────────────────────────────────────────────────────
   testWidgets(
-      'typing raw text without picking a suggestion calls addItemFromText',
-      (tester) async {
-    await tester.pumpWidget(buildSheet());
+    'typing raw text without picking a suggestion calls addItemFromText',
+    (tester) async {
+      await tester.pumpWidget(buildSheet());
 
-    await tester.enterText(
-        find.widgetWithText(TextField, 'Ingrediens'), 'Hemlagad buljong');
-    await tester.pump();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Ingrediens'),
+        'Hemlagad buljong',
+      );
+      await tester.pump();
 
-    await tester.tap(find.text('LÄGG TILL'));
-    await tester.pump();
+      await tester.tap(find.text('LÄGG TILL'));
+      await tester.pump();
 
-    verify(() => vm.addItemFromText(
+      verify(
+        () => vm.addItemFromText(
           'Hemlagad buljong',
           quantity: any(named: 'quantity'),
           unit: any(named: 'unit'),
           location: any(named: 'location'),
           expiryDate: any(named: 'expiryDate'),
           note: any(named: 'note'),
-        )).called(1);
-    verifyNever(() => vm.addItemFromIngredient(any()));
-  });
+        ),
+      ).called(1);
+      verifyNever(() => vm.addItemFromIngredient(any()));
+    },
+  );
 
   // ────────────────────────────────────────────────────────────────────────────
   // Test 3: edit mode — form is pre-populated and submit calls updateItem
@@ -182,8 +199,9 @@ void main() {
   //   _submit() routed to addItemFromText instead of updateItem when _isEditing.
   // Won't break from: new fields added to PantryItem (they have defaults).
   // ────────────────────────────────────────────────────────────────────────────
-  testWidgets('edit mode pre-fills name and calls updateItem on submit',
-      (tester) async {
+  testWidgets('edit mode pre-fills name and calls updateItem on submit', (
+    tester,
+  ) async {
     final existing = PantryItem(
       id: 'p_42',
       ingredientName: 'Smör',
@@ -199,9 +217,12 @@ void main() {
     final nameField = tester.widget<TextField>(
       find.widgetWithText(TextField, 'Smör'),
     );
-    expect(nameField.controller?.text, 'Smör',
-        reason:
-            'edit mode must populate the ingredient name from the existing item');
+    expect(
+      nameField.controller?.text,
+      'Smör',
+      reason:
+          'edit mode must populate the ingredient name from the existing item',
+    );
 
     // The primary button in edit mode shows "Spara", not "LÄGG TILL".
     expect(find.text('Spara'), findsOneWidget);
@@ -209,12 +230,16 @@ void main() {
     await tester.tap(find.text('Spara'));
     await tester.pump();
 
-    verify(() => vm.updateItem(any(
+    verify(
+      () => vm.updateItem(
+        any(
           that: predicate<PantryItem>(
             (item) => item.id == 'p_42' && item.ingredientName == 'Smör',
             'updated item must preserve id and name',
           ),
-        ))).called(1);
+        ),
+      ),
+    ).called(1);
     verifyNever(() => vm.addItemFromIngredient(any()));
     verifyNever(() => vm.addItemFromText(any()));
   });

@@ -32,7 +32,7 @@ class FirebaseAuditRepository {
 
   /// Create audit repository with optional Firestore instance (for testing)
   FirebaseAuditRepository([FirebaseFirestore? firestore])
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Reference to the audit_logs collection
   CollectionReference<Map<String, dynamic>> get _collection =>
@@ -191,8 +191,9 @@ class FirebaseAuditRepository {
 
       final snapshot = await query.get();
 
-      final logs =
-          snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
+      final logs = snapshot.docs
+          .map((doc) => AuditLog.fromFirestore(doc))
+          .toList();
 
       AppLogger.info(
         '📊 Retrieved ${logs.length} audit logs for user ${userId.maskedUserId}',
@@ -201,7 +202,8 @@ class FirebaseAuditRepository {
       return logs;
     } catch (e) {
       AppLogger.error(
-          'Failed to retrieve audit logs for user ${userId.maskedUserId}: $e');
+        'Failed to retrieve audit logs for user ${userId.maskedUserId}: $e',
+      );
       rethrow; // This is an admin operation, so throwing is appropriate
     }
   }
@@ -234,8 +236,9 @@ class FirebaseAuditRepository {
 
       final snapshot = await query.get();
 
-      final logs =
-          snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
+      final logs = snapshot.docs
+          .map((doc) => AuditLog.fromFirestore(doc))
+          .toList();
 
       AppLogger.info(
         '📊 Retrieved ${logs.length} audit logs for $resourceType${resourceId != null ? "/$resourceId" : ""}',
@@ -271,14 +274,17 @@ class FirebaseAuditRepository {
           .limit(limit);
 
       if (since != null) {
-        query =
-            query.where('timestamp', isGreaterThan: Timestamp.fromDate(since));
+        query = query.where(
+          'timestamp',
+          isGreaterThan: Timestamp.fromDate(since),
+        );
       }
 
       final snapshot = await query.get();
 
-      final logs =
-          snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
+      final logs = snapshot.docs
+          .map((doc) => AuditLog.fromFirestore(doc))
+          .toList();
 
       AppLogger.info(
         '🚨 Retrieved ${logs.length} denied access attempts${since != null ? " since $since" : ""}',
@@ -311,7 +317,8 @@ class FirebaseAuditRepository {
         'reads': logs.where((log) => log.operation == 'read').length,
         'writes': logs
             .where(
-                (log) => log.operation == 'write' || log.operation == 'update')
+              (log) => log.operation == 'write' || log.operation == 'update',
+            )
             .length,
         'deletes': logs.where((log) => log.operation == 'delete').length,
         'creates': logs.where((log) => log.operation == 'create').length,
@@ -320,7 +327,8 @@ class FirebaseAuditRepository {
       return stats;
     } catch (e) {
       AppLogger.error(
-          'Failed to get audit stats for user ${userId.maskedUserId}: $e');
+        'Failed to get audit stats for user ${userId.maskedUserId}: $e',
+      );
       rethrow;
     }
   }

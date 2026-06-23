@@ -39,14 +39,16 @@ void main() {
       await BaseUnitTest.setupUnit();
 
       // Register fallback values for mocktail
-      registerFallbackValue(ConsentPurposes(
-        essentialServices: true,
-        dataProcessing: true,
-        analytics: false,
-        marketing: false,
-        socialFeatures: false,
-        pushNotifications: false,
-      ));
+      registerFallbackValue(
+        ConsentPurposes(
+          essentialServices: true,
+          dataProcessing: true,
+          analytics: false,
+          marketing: false,
+          socialFeatures: false,
+          pushNotifications: false,
+        ),
+      );
     });
 
     setUp(() async {
@@ -83,29 +85,53 @@ void main() {
     group('Initialization and Default State', () {
       test('should initialize with correct default state', () {
         // Assert - All default values
-        expect(viewModel.isSaving, false,
-            reason: 'Should not be saving initially');
+        expect(
+          viewModel.isSaving,
+          false,
+          reason: 'Should not be saving initially',
+        );
         expect(viewModel.currentConsent, null, reason: 'No consent loaded yet');
         expect(viewModel.errorMessage, null, reason: 'No error initially');
-        expect(viewModel.needsRenewal, false,
-            reason: 'No renewal needed initially');
+        expect(
+          viewModel.needsRenewal,
+          false,
+          reason: 'No renewal needed initially',
+        );
         expect(viewModel.hasConsent, false, reason: 'No consent loaded yet');
 
         // Required consents always true
-        expect(viewModel.essentialServices, true,
-            reason: 'Essential services always required');
-        expect(viewModel.dataProcessing, true,
-            reason: 'Data processing always required');
+        expect(
+          viewModel.essentialServices,
+          true,
+          reason: 'Essential services always required',
+        );
+        expect(
+          viewModel.dataProcessing,
+          true,
+          reason: 'Data processing always required',
+        );
 
         // Optional consents default to false
-        expect(viewModel.analytics, false,
-            reason: 'Analytics consent defaults to false');
-        expect(viewModel.marketing, false,
-            reason: 'Marketing consent defaults to false');
-        expect(viewModel.socialFeatures, false,
-            reason: 'Social features consent defaults to false');
-        expect(viewModel.pushNotifications, false,
-            reason: 'Push notifications consent defaults to false');
+        expect(
+          viewModel.analytics,
+          false,
+          reason: 'Analytics consent defaults to false',
+        );
+        expect(
+          viewModel.marketing,
+          false,
+          reason: 'Marketing consent defaults to false',
+        );
+        expect(
+          viewModel.socialFeatures,
+          false,
+          reason: 'Social features consent defaults to false',
+        );
+        expect(
+          viewModel.pushNotifications,
+          false,
+          reason: 'Push notifications consent defaults to false',
+        );
       });
 
       test('should have required consent purposes that cannot be disabled', () {
@@ -117,10 +143,16 @@ void main() {
         viewModel.setAnalytics(false);
         viewModel.setMarketing(false);
 
-        expect(viewModel.essentialServices, true,
-            reason: 'Essential services cannot be disabled');
-        expect(viewModel.dataProcessing, true,
-            reason: 'Data processing cannot be disabled');
+        expect(
+          viewModel.essentialServices,
+          true,
+          reason: 'Essential services cannot be disabled',
+        );
+        expect(
+          viewModel.dataProcessing,
+          true,
+          reason: 'Data processing cannot be disabled',
+        );
       });
     });
 
@@ -129,31 +161,51 @@ void main() {
     group('Load Consent', () {
       test('should load existing consent successfully', () async {
         // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         // Act
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.currentConsent, testUserConsent,
-            reason: 'Consent should be loaded');
+        expect(
+          viewModel.currentConsent,
+          testUserConsent,
+          reason: 'Consent should be loaded',
+        );
         expect(viewModel.hasConsent, true, reason: 'Should have consent');
-        expect(viewModel.needsRenewal, false,
-            reason: 'Should not need renewal');
+        expect(
+          viewModel.needsRenewal,
+          false,
+          reason: 'Should not need renewal',
+        );
         expect(viewModel.errorMessage, null, reason: 'No error should occur');
 
         // Check consent values are loaded correctly
-        expect(viewModel.analytics, true,
-            reason: 'Analytics consent from loaded data');
-        expect(viewModel.marketing, false,
-            reason: 'Marketing consent from loaded data');
-        expect(viewModel.socialFeatures, true,
-            reason: 'Social features consent from loaded data');
-        expect(viewModel.pushNotifications, false,
-            reason: 'Push notifications consent from loaded data');
+        expect(
+          viewModel.analytics,
+          true,
+          reason: 'Analytics consent from loaded data',
+        );
+        expect(
+          viewModel.marketing,
+          false,
+          reason: 'Marketing consent from loaded data',
+        );
+        expect(
+          viewModel.socialFeatures,
+          true,
+          reason: 'Social features consent from loaded data',
+        );
+        expect(
+          viewModel.pushNotifications,
+          false,
+          reason: 'Push notifications consent from loaded data',
+        );
 
         verify(() => mockConsentService.getUserConsent()).called(1);
         verify(() => mockConsentService.needsConsentRenewal()).called(1);
@@ -161,10 +213,12 @@ void main() {
 
       test('should handle no existing consent (first time user)', () async {
         // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => null);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => true);
 
         // Act
         await viewModel.loadConsent();
@@ -172,8 +226,11 @@ void main() {
         // Assert
         expect(viewModel.currentConsent, null, reason: 'No consent exists');
         expect(viewModel.hasConsent, false, reason: 'Should not have consent');
-        expect(viewModel.needsRenewal, true,
-            reason: 'Should need renewal (first time)');
+        expect(
+          viewModel.needsRenewal,
+          true,
+          reason: 'Should need renewal (first time)',
+        );
 
         // All optional consents should default to false
         expect(viewModel.analytics, false);
@@ -186,17 +243,22 @@ void main() {
 
       test('should detect when consent renewal is needed', () async {
         // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => true);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => true);
 
         // Act
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.needsRenewal, true,
-            reason: 'Should need renewal (outdated consent)');
+        expect(
+          viewModel.needsRenewal,
+          true,
+          reason: 'Should need renewal (outdated consent)',
+        );
         expect(viewModel.hasConsent, true, reason: 'Should still have consent');
 
         verify(() => mockConsentService.needsConsentRenewal()).called(1);
@@ -204,48 +266,68 @@ void main() {
 
       test('should handle errors during load', () async {
         // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenThrow(Exception('Network error'));
 
         // Act
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.errorMessage, isNotNull,
-            reason: 'Error message should be set');
-        expect(viewModel.errorMessage, contains('Ett fel uppstod'),
-            reason: 'User-friendly Swedish error');
-        expect(viewModel.currentConsent, null,
-            reason: 'Consent should not be loaded');
+        expect(
+          viewModel.errorMessage,
+          isNotNull,
+          reason: 'Error message should be set',
+        );
+        expect(
+          viewModel.errorMessage,
+          contains('Ett fel uppstod'),
+          reason: 'User-friendly Swedish error',
+        );
+        expect(
+          viewModel.currentConsent,
+          null,
+          reason: 'Consent should not be loaded',
+        );
 
         verify(() => mockConsentService.getUserConsent()).called(1);
       });
 
-      test('should handle authentication errors with specific message',
-          () async {
-        // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenThrow(Exception('No authenticated user'));
+      test(
+        'should handle authentication errors with specific message',
+        () async {
+          // Arrange
+          when(
+            () => mockConsentService.getUserConsent(),
+          ).thenThrow(Exception('No authenticated user'));
 
-        // Act
-        await viewModel.loadConsent();
+          // Act
+          await viewModel.loadConsent();
 
-        // Assert
-        expect(viewModel.errorMessage, contains('måste vara inloggad'),
-            reason: 'Auth error should have specific message');
-      });
+          // Assert
+          expect(
+            viewModel.errorMessage,
+            contains('måste vara inloggad'),
+            reason: 'Auth error should have specific message',
+          );
+        },
+      );
 
       test('should handle network errors with specific message', () async {
         // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenThrow(Exception('network connection failed'));
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenThrow(Exception('network connection failed'));
 
         // Act
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.errorMessage, contains('internetanslutning'),
-            reason: 'Network error should have specific message');
+        expect(
+          viewModel.errorMessage,
+          contains('internetanslutning'),
+          reason: 'Network error should have specific message',
+        );
       });
     });
 
@@ -254,12 +336,15 @@ void main() {
     group('Save Consent', () {
       test('should save consent successfully with current state', () async {
         // Arrange
-        when(() => mockConsentService.saveConsent(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.saveConsent(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         // Set some consent values
         viewModel.setAnalytics(true);
@@ -275,8 +360,9 @@ void main() {
         expect(viewModel.errorMessage, null, reason: 'No error should occur');
 
         // Verify saved purposes match ViewModel state
-        final captured =
-            verify(() => mockConsentService.saveConsent(captureAny())).captured;
+        final captured = verify(
+          () => mockConsentService.saveConsent(captureAny()),
+        ).captured;
         expect(captured.length, 1);
 
         final savedPurposes = captured[0] as ConsentPurposes;
@@ -284,8 +370,11 @@ void main() {
         expect(savedPurposes.marketing, false);
         expect(savedPurposes.socialFeatures, true);
         expect(savedPurposes.pushNotifications, false);
-        expect(savedPurposes.essentialServices, true,
-            reason: 'Always required');
+        expect(
+          savedPurposes.essentialServices,
+          true,
+          reason: 'Always required',
+        );
         expect(savedPurposes.dataProcessing, true, reason: 'Always required');
 
         // Should reload after save
@@ -294,8 +383,9 @@ void main() {
 
       test('should handle save failure', () async {
         // Arrange
-        when(() => mockConsentService.saveConsent(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.saveConsent(any()),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await viewModel.saveConsent();
@@ -312,47 +402,63 @@ void main() {
 
       test('should handle save exception', () async {
         // Arrange
-        when(() => mockConsentService.saveConsent(any()))
-            .thenThrow(Exception('Permission denied'));
+        when(
+          () => mockConsentService.saveConsent(any()),
+        ).thenThrow(Exception('Permission denied'));
 
         // Act
         final result = await viewModel.saveConsent();
 
         // Assert
         expect(result, false, reason: 'Save should fail on exception');
-        expect(viewModel.errorMessage, isNotNull,
-            reason: 'Error message should be set');
-        expect(viewModel.errorMessage, contains('Ett fel uppstod'),
-            reason: 'User-friendly error message');
+        expect(
+          viewModel.errorMessage,
+          isNotNull,
+          reason: 'Error message should be set',
+        );
+        expect(
+          viewModel.errorMessage,
+          contains('Ett fel uppstod'),
+          reason: 'User-friendly error message',
+        );
       });
 
-      test('should prevent duplicate concurrent saves (AsyncOperationMixin)',
-          () async {
-        // Arrange
-        var saveCallCount = 0;
-        when(() => mockConsentService.saveConsent(any())).thenAnswer((_) async {
-          saveCallCount++;
-          await Future.delayed(const Duration(milliseconds: 100));
-          return true;
-        });
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+      test(
+        'should prevent duplicate concurrent saves (AsyncOperationMixin)',
+        () async {
+          // Arrange
+          var saveCallCount = 0;
+          when(() => mockConsentService.saveConsent(any())).thenAnswer((
+            _,
+          ) async {
+            saveCallCount++;
+            await Future.delayed(const Duration(milliseconds: 100));
+            return true;
+          });
+          when(
+            () => mockConsentService.getUserConsent(),
+          ).thenAnswer((_) async => testUserConsent);
+          when(
+            () => mockConsentService.needsConsentRenewal(),
+          ).thenAnswer((_) async => false);
 
-        // Act - Try to save twice concurrently
-        final future1 = viewModel.saveConsent();
-        await Future.delayed(const Duration(milliseconds: 10)); // Small delay
-        final future2 = viewModel.saveConsent();
+          // Act - Try to save twice concurrently
+          final future1 = viewModel.saveConsent();
+          await Future.delayed(const Duration(milliseconds: 10)); // Small delay
+          final future2 = viewModel.saveConsent();
 
-        final results = await Future.wait([future1, future2]);
+          final results = await Future.wait([future1, future2]);
 
-        // Assert - AsyncOperationMixin should prevent duplicate 'save' operations
-        // First operation should succeed, second should return previous result or fail
-        expect(saveCallCount, lessThanOrEqualTo(1),
-            reason: 'Named operation should prevent duplicates');
-        expect(results.first, true, reason: 'First save should succeed');
-      });
+          // Assert - AsyncOperationMixin should prevent duplicate 'save' operations
+          // First operation should succeed, second should return previous result or fail
+          expect(
+            saveCallCount,
+            lessThanOrEqualTo(1),
+            reason: 'Named operation should prevent duplicates',
+          );
+          expect(results.first, true, reason: 'First save should succeed');
+        },
+      );
     });
 
     // ===== CONSENT PURPOSE TOGGLES =====
@@ -446,14 +552,26 @@ void main() {
         viewModel.acceptAll();
 
         // Assert - All optional consents should be true
-        expect(viewModel.analytics, true,
-            reason: 'Analytics should be accepted');
-        expect(viewModel.marketing, true,
-            reason: 'Marketing should be accepted');
-        expect(viewModel.socialFeatures, true,
-            reason: 'Social features should be accepted');
-        expect(viewModel.pushNotifications, true,
-            reason: 'Push notifications should be accepted');
+        expect(
+          viewModel.analytics,
+          true,
+          reason: 'Analytics should be accepted',
+        );
+        expect(
+          viewModel.marketing,
+          true,
+          reason: 'Marketing should be accepted',
+        );
+        expect(
+          viewModel.socialFeatures,
+          true,
+          reason: 'Social features should be accepted',
+        );
+        expect(
+          viewModel.pushNotifications,
+          true,
+          reason: 'Push notifications should be accepted',
+        );
 
         // Required consents remain true
         expect(viewModel.essentialServices, true);
@@ -472,14 +590,26 @@ void main() {
         viewModel.rejectAll();
 
         // Assert - All optional consents should be false
-        expect(viewModel.analytics, false,
-            reason: 'Analytics should be rejected');
-        expect(viewModel.marketing, false,
-            reason: 'Marketing should be rejected');
-        expect(viewModel.socialFeatures, false,
-            reason: 'Social features should be rejected');
-        expect(viewModel.pushNotifications, false,
-            reason: 'Push notifications should be rejected');
+        expect(
+          viewModel.analytics,
+          false,
+          reason: 'Analytics should be rejected',
+        );
+        expect(
+          viewModel.marketing,
+          false,
+          reason: 'Marketing should be rejected',
+        );
+        expect(
+          viewModel.socialFeatures,
+          false,
+          reason: 'Social features should be rejected',
+        );
+        expect(
+          viewModel.pushNotifications,
+          false,
+          reason: 'Push notifications should be rejected',
+        );
 
         // Required consents remain true
         expect(viewModel.essentialServices, true);
@@ -490,12 +620,15 @@ void main() {
 
       test('should handle accept all followed by save', () async {
         // Arrange
-        when(() => mockConsentService.saveConsent(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.saveConsent(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         // Act
         viewModel.acceptAll();
@@ -504,8 +637,9 @@ void main() {
         // Assert
         expect(result, true);
 
-        final captured =
-            verify(() => mockConsentService.saveConsent(captureAny())).captured;
+        final captured = verify(
+          () => mockConsentService.saveConsent(captureAny()),
+        ).captured;
         final savedPurposes = captured[0] as ConsentPurposes;
 
         expect(savedPurposes.analytics, true);
@@ -520,26 +654,32 @@ void main() {
     group('Revoke All Optional Consents', () {
       test('should revoke all optional consents successfully', () async {
         // Arrange
-        when(() => mockConsentService.revokeOptionalConsents())
-            .thenAnswer((_) async => true);
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent.copyWith(
-                  purposes: ConsentPurposes(
-                    essentialServices: true,
-                    dataProcessing: true,
-                    analytics: false,
-                    marketing: false,
-                    socialFeatures: false,
-                    pushNotifications: false,
-                  ),
-                ));
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.revokeOptionalConsents(),
+        ).thenAnswer((_) async => true);
+        when(() => mockConsentService.getUserConsent()).thenAnswer(
+          (_) async => testUserConsent.copyWith(
+            purposes: ConsentPurposes(
+              essentialServices: true,
+              dataProcessing: true,
+              analytics: false,
+              marketing: false,
+              socialFeatures: false,
+              pushNotifications: false,
+            ),
+          ),
+        );
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         // Set some consents first
         viewModel.acceptAll();
-        expect(viewModel.analytics, true,
-            reason: 'Analytics should be accepted initially');
+        expect(
+          viewModel.analytics,
+          true,
+          reason: 'Analytics should be accepted initially',
+        );
 
         // Act
         final result = await viewModel.revokeAllOptional();
@@ -547,14 +687,26 @@ void main() {
         // Assert
         expect(result, isNotNull, reason: 'Result should not be null');
         expect(result, isTrue, reason: 'Revoke should succeed');
-        expect(viewModel.analytics, false,
-            reason: 'Analytics should be revoked');
-        expect(viewModel.marketing, false,
-            reason: 'Marketing should be revoked');
-        expect(viewModel.socialFeatures, false,
-            reason: 'Social features should be revoked');
-        expect(viewModel.pushNotifications, false,
-            reason: 'Push notifications should be revoked');
+        expect(
+          viewModel.analytics,
+          false,
+          reason: 'Analytics should be revoked',
+        );
+        expect(
+          viewModel.marketing,
+          false,
+          reason: 'Marketing should be revoked',
+        );
+        expect(
+          viewModel.socialFeatures,
+          false,
+          reason: 'Social features should be revoked',
+        );
+        expect(
+          viewModel.pushNotifications,
+          false,
+          reason: 'Push notifications should be revoked',
+        );
 
         verify(() => mockConsentService.revokeOptionalConsents()).called(1);
         verify(() => mockConsentService.getUserConsent()).called(1);
@@ -562,8 +714,9 @@ void main() {
 
       test('should handle revoke failure', () async {
         // Arrange
-        when(() => mockConsentService.revokeOptionalConsents())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.revokeOptionalConsents(),
+        ).thenAnswer((_) async => false);
 
         // Act
         final result = await viewModel.revokeAllOptional();
@@ -582,24 +735,30 @@ void main() {
     group('Has Consent For Specific Purpose', () {
       test('should check if user has consent for specific purpose', () async {
         // Arrange
-        when(() => mockConsentService.hasConsent(ConsentPurpose.analytics))
-            .thenAnswer((_) async => true);
-        when(() => mockConsentService.hasConsent(ConsentPurpose.marketing))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.hasConsent(ConsentPurpose.analytics),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockConsentService.hasConsent(ConsentPurpose.marketing),
+        ).thenAnswer((_) async => false);
 
         // Act & Assert
-        final hasAnalytics =
-            await viewModel.hasConsentFor(ConsentPurpose.analytics);
-        final hasMarketing =
-            await viewModel.hasConsentFor(ConsentPurpose.marketing);
+        final hasAnalytics = await viewModel.hasConsentFor(
+          ConsentPurpose.analytics,
+        );
+        final hasMarketing = await viewModel.hasConsentFor(
+          ConsentPurpose.marketing,
+        );
 
         expect(hasAnalytics, true);
         expect(hasMarketing, false);
 
-        verify(() => mockConsentService.hasConsent(ConsentPurpose.analytics))
-            .called(1);
-        verify(() => mockConsentService.hasConsent(ConsentPurpose.marketing))
-            .called(1);
+        verify(
+          () => mockConsentService.hasConsent(ConsentPurpose.analytics),
+        ).called(1);
+        verify(
+          () => mockConsentService.hasConsent(ConsentPurpose.marketing),
+        ).called(1);
       });
     });
 
@@ -613,8 +772,9 @@ void main() {
           updatedAt: DateTime(2025, 1, 15),
         );
 
-        when(() => mockConsentService.getConsentHistory())
-            .thenAnswer((_) async => [historyConsent1, historyConsent2]);
+        when(
+          () => mockConsentService.getConsentHistory(),
+        ).thenAnswer((_) async => [historyConsent1, historyConsent2]);
 
         // Act
         final history = await viewModel.getConsentHistory();
@@ -629,8 +789,9 @@ void main() {
 
       test('should handle empty consent history', () async {
         // Arrange
-        when(() => mockConsentService.getConsentHistory())
-            .thenAnswer((_) async => []);
+        when(
+          () => mockConsentService.getConsentHistory(),
+        ).thenAnswer((_) async => []);
 
         // Act
         final history = await viewModel.getConsentHistory();
@@ -641,8 +802,9 @@ void main() {
 
       test('should handle consent history error', () async {
         // Arrange
-        when(() => mockConsentService.getConsentHistory())
-            .thenThrow(Exception('Database error'));
+        when(
+          () => mockConsentService.getConsentHistory(),
+        ).thenThrow(Exception('Database error'));
 
         // Act
         final history = await viewModel.getConsentHistory();
@@ -665,26 +827,30 @@ void main() {
         expect(text, 'Inget samtycke');
       });
 
-      test('should format timestamp as "just nu" for very recent consent',
-          () async {
-        // Arrange
-        final recentConsent = testUserConsent.copyWith(
-          grantedAt: DateTime.now().subtract(const Duration(seconds: 30)),
-        );
+      test(
+        'should format timestamp as "just nu" for very recent consent',
+        () async {
+          // Arrange
+          final recentConsent = testUserConsent.copyWith(
+            grantedAt: DateTime.now().subtract(const Duration(seconds: 30)),
+          );
 
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => recentConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+          when(
+            () => mockConsentService.getUserConsent(),
+          ).thenAnswer((_) async => recentConsent);
+          when(
+            () => mockConsentService.needsConsentRenewal(),
+          ).thenAnswer((_) async => false);
 
-        await viewModel.loadConsent();
+          await viewModel.loadConsent();
 
-        // Act
-        final text = viewModel.getConsentTimestampText();
+          // Act
+          final text = viewModel.getConsentTimestampText();
 
-        // Assert
-        expect(text, 'just nu');
-      });
+          // Assert
+          expect(text, 'just nu');
+        },
+      );
 
       test('should format timestamp in minutes for recent consent', () async {
         // Arrange
@@ -692,10 +858,12 @@ void main() {
           grantedAt: DateTime.now().subtract(const Duration(minutes: 15)),
         );
 
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => recentConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => recentConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         await viewModel.loadConsent();
 
@@ -712,10 +880,12 @@ void main() {
           grantedAt: DateTime.now().subtract(const Duration(hours: 5)),
         );
 
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => olderConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => olderConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         await viewModel.loadConsent();
 
@@ -732,10 +902,12 @@ void main() {
           grantedAt: DateTime.now().subtract(const Duration(days: 10)),
         );
 
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => oldConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => oldConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         await viewModel.loadConsent();
 
@@ -752,10 +924,12 @@ void main() {
           grantedAt: DateTime.now().subtract(const Duration(days: 90)),
         );
 
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => veryOldConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => veryOldConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         await viewModel.loadConsent();
 
@@ -773,10 +947,12 @@ void main() {
           updatedAt: DateTime.now().subtract(const Duration(minutes: 5)),
         );
 
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => updatedConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => updatedConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         await viewModel.loadConsent();
 
@@ -803,30 +979,41 @@ void main() {
           await Future.delayed(const Duration(milliseconds: 50));
           return testUserConsent;
         });
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         // Act
         final loadFuture = viewModel.loadConsent();
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Should be loading at this point
-        expect(viewModel.isLoading, true,
-            reason: 'Should be loading during operation');
+        expect(
+          viewModel.isLoading,
+          true,
+          reason: 'Should be loading during operation',
+        );
 
         await loadFuture;
 
         // Assert
-        expect(viewModel.isLoading, false,
-            reason: 'Should not be loading after completion');
-        expect(loadingStateChanges, contains(true),
-            reason: 'Loading state should have been true');
+        expect(
+          viewModel.isLoading,
+          false,
+          reason: 'Should not be loading after completion',
+        );
+        expect(
+          loadingStateChanges,
+          contains(true),
+          reason: 'Loading state should have been true',
+        );
       });
 
       test('should set error state on operation failure', () async {
         // Arrange
-        when(() => mockConsentService.getUserConsent())
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenThrow(Exception('Network error'));
 
         // Act
         await viewModel.loadConsent();
@@ -838,23 +1025,29 @@ void main() {
 
       test('should clear error state before new operation', () async {
         // Arrange - First operation fails
-        when(() => mockConsentService.getUserConsent())
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenThrow(Exception('Network error'));
         await viewModel.loadConsent();
         expect(viewModel.hasError, true);
 
         // Arrange - Second operation succeeds
-        when(() => mockConsentService.getUserConsent())
-            .thenAnswer((_) async => testUserConsent);
-        when(() => mockConsentService.needsConsentRenewal())
-            .thenAnswer((_) async => false);
+        when(
+          () => mockConsentService.getUserConsent(),
+        ).thenAnswer((_) async => testUserConsent);
+        when(
+          () => mockConsentService.needsConsentRenewal(),
+        ).thenAnswer((_) async => false);
 
         // Act
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.hasError, false,
-            reason: 'Error should be cleared on success');
+        expect(
+          viewModel.hasError,
+          false,
+          reason: 'Error should be cleared on success',
+        );
         expect(viewModel.error, null);
       });
     });

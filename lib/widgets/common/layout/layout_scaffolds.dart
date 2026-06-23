@@ -125,8 +125,9 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
                 decoration: BoxDecoration(
-                  color: cs.onSurfaceVariant
-                      .withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: cs.onSurfaceVariant.withValues(
+                    alpha: AppDimensions.opacityMediumLight,
+                  ),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -145,7 +146,10 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
   }
 
   Widget _buildModalGrid(
-      BuildContext rootContext, BuildContext modalContext, ColorScheme cs) {
+    BuildContext rootContext,
+    BuildContext modalContext,
+    ColorScheme cs,
+  ) {
     const spacing = AppDimensions.spacingMd;
 
     void navigate(String route) {
@@ -156,8 +160,10 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
     // Responsive sizing — mirrors LaggTillReceptView pattern
     return LayoutBuilder(
       builder: (context, constraints) {
-        final buttonSize =
-            ((constraints.maxWidth - spacing) / 2).clamp(120.0, 160.0);
+        final buttonSize = ((constraints.maxWidth - spacing) / 2).clamp(
+          120.0,
+          160.0,
+        );
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -165,38 +171,46 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _modalButton(cs,
-                    label: rootContext.l10n.recipeImportLink,
-                    icon: Icons.link,
-                    color: cs.secondary,
-                    size: buttonSize,
-                    onTap: () => navigate(Routes.smartImport)),
+                _modalButton(
+                  cs,
+                  label: rootContext.l10n.recipeImportLink,
+                  icon: Icons.link,
+                  color: cs.secondary,
+                  size: buttonSize,
+                  onTap: () => navigate(Routes.smartImport),
+                ),
                 const SizedBox(width: spacing),
-                _modalButton(cs,
-                    label: rootContext.l10n.recipeWriteManually,
-                    icon: Icons.edit,
-                    color: cs.primary,
-                    size: buttonSize,
-                    onTap: () => navigate(Routes.manualEntry)),
+                _modalButton(
+                  cs,
+                  label: rootContext.l10n.recipeWriteManually,
+                  icon: Icons.edit,
+                  color: cs.primary,
+                  size: buttonSize,
+                  onTap: () => navigate(Routes.manualEntry),
+                ),
               ],
             ),
             const SizedBox(height: spacing),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _modalButton(cs,
-                    label: rootContext.l10n.recipeFromImage,
-                    icon: Icons.image,
-                    color: cs.primary,
-                    size: buttonSize,
-                    onTap: () => navigate(Routes.photoImport)),
+                _modalButton(
+                  cs,
+                  label: rootContext.l10n.recipeFromImage,
+                  icon: Icons.image,
+                  color: cs.primary,
+                  size: buttonSize,
+                  onTap: () => navigate(Routes.photoImport),
+                ),
                 const SizedBox(width: spacing),
-                _modalButton(cs,
-                    label: rootContext.l10n.recipeFromArchive,
-                    icon: Icons.archive,
-                    color: cs.secondary,
-                    size: buttonSize,
-                    onTap: () => navigate(Routes.importFromArchive)),
+                _modalButton(
+                  cs,
+                  label: rootContext.l10n.recipeFromArchive,
+                  icon: Icons.archive,
+                  color: cs.secondary,
+                  size: buttonSize,
+                  onTap: () => navigate(Routes.importFromArchive),
+                ),
               ],
             ),
           ],
@@ -230,8 +244,11 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon,
-                      size: AppDimensions.iconSizeXl, color: cs.onPrimary),
+                  Icon(
+                    icon,
+                    size: AppDimensions.iconSizeXl,
+                    color: cs.onPrimary,
+                  ),
                   const SizedBox(height: AppDimensions.spacingSm),
                   Text(
                     label,
@@ -321,7 +338,8 @@ class _SimpleLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar ??
+      appBar:
+          appBar ??
           (title != null
               ? ButleryHeader(
                   title: title!,
@@ -339,15 +357,17 @@ class _SimpleLayout extends StatelessWidget {
           ? ButleryBottomNavigation(
               currentIndex: bottomNavIndex,
               items: ButleryAdaptiveNavigation.getNavigationItems(context),
-              backgroundColor:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest,
               selectedItemColor: Theme.of(context).colorScheme.primaryContainer,
-              unselectedItemColor:
-                  Theme.of(context).colorScheme.onSurfaceVariant,
+              unselectedItemColor: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant,
               onTap: (index) {
-                final route =
-                    ButleryAdaptiveNavigation.getNavigationItems(context)[index]
-                        .route;
+                final route = ButleryAdaptiveNavigation.getNavigationItems(
+                  context,
+                )[index].route;
                 Navigator.pushNamed(context, route);
               },
             )

@@ -27,25 +27,25 @@ class FakeSocialRecipeOperations extends Mock
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 IngredientData _ingredient(String id, String swedish) => IngredientData(
-      id: id,
-      swedish: swedish,
-      english: swedish,
-      group: 'other',
-      properties: const {},
-    );
+  id: id,
+  swedish: swedish,
+  english: swedish,
+  group: 'other',
+  properties: const {},
+);
 
 Recipe _recipe(String id, String title) => Recipe(
-      core: RecipeCore(
-        id: id,
-        title: title,
-        description: '',
-        ingredients: const ['test'],
-        instructions: const ['step'],
-        mealType: 'Middag',
-        ingredientsNormalized: ['ingredient-$id'],
-      ),
-      type: RecipeType.personal,
-    );
+  core: RecipeCore(
+    id: id,
+    title: title,
+    description: '',
+    ingredients: const ['test'],
+    instructions: const ['step'],
+    mealType: 'Middag',
+    ingredientsNormalized: ['ingredient-$id'],
+  ),
+  type: RecipeType.personal,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -72,12 +72,14 @@ void main() {
     when(() => mockAuthRepo.currentUserId).thenReturn('test-user');
     when(() => mockRecipeService.recipes).thenReturn([_recipe('r1', 'Test')]);
     when(() => mockRecipeService.social).thenReturn(mockSocial);
-    when(() => mockSocial.getCollaborativeRecipes(
-          limit: any(named: 'limit'),
-          startAfter: any(named: 'startAfter'),
-          categoryFilter: any(named: 'categoryFilter'),
-          searchQuery: any(named: 'searchQuery'),
-        )).thenAnswer((_) async => []);
+    when(
+      () => mockSocial.getCollaborativeRecipes(
+        limit: any(named: 'limit'),
+        startAfter: any(named: 'startAfter'),
+        categoryFilter: any(named: 'categoryFilter'),
+        searchQuery: any(named: 'searchQuery'),
+      ),
+    ).thenAnswer((_) async => []);
 
     vm = IngredientSearchViewModel(
       matchService: mockMatchService,
@@ -121,20 +123,25 @@ void main() {
     test('clearIngredients resets all state', () async {
       vm.addIngredient(_ingredient('chicken', 'kyckling'));
 
-      when(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: any(named: 'selectedIngredientIds'),
-            recipes: any(named: 'recipes'),
-          )).thenAnswer((_) async => [
-            IngredientMatchResult(
-              recipe: _recipe('r1', 'Test'),
-              matchPercent: 1.0,
-              matchedCount: 1,
-              totalCount: 1,
-              missingIngredientIds: const [],
-            ),
-          ]);
-      when(() => mockMatchService.resolveIngredientNames(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          IngredientMatchResult(
+            recipe: _recipe('r1', 'Test'),
+            matchPercent: 1.0,
+            matchedCount: 1,
+            totalCount: 1,
+            missingIngredientIds: const [],
+          ),
+        ],
+      );
+      when(
+        () => mockMatchService.resolveIngredientNames(any()),
+      ).thenAnswer((_) async => {});
 
       await vm.performSearch();
       vm.clearIngredients();
@@ -148,8 +155,9 @@ void main() {
   group('autocomplete', () {
     test('debounced search fires after 300ms', () {
       fakeAsync((async) {
-        when(() => mockIngredientRepo.searchIngredients('kyck', limit: 10))
-            .thenAnswer((_) async => [_ingredient('chicken', 'kyckling')]);
+        when(
+          () => mockIngredientRepo.searchIngredients('kyck', limit: 10),
+        ).thenAnswer((_) async => [_ingredient('chicken', 'kyckling')]);
 
         vm.searchIngredient('kyck');
         expect(vm.autocompleteResults, isEmpty);
@@ -165,11 +173,14 @@ void main() {
       fakeAsync((async) {
         vm.addIngredient(_ingredient('chicken', 'kyckling'));
 
-        when(() => mockIngredientRepo.searchIngredients('k', limit: 10))
-            .thenAnswer((_) async => [
-                  _ingredient('chicken', 'kyckling'),
-                  _ingredient('cinnamon', 'kanel'),
-                ]);
+        when(
+          () => mockIngredientRepo.searchIngredients('k', limit: 10),
+        ).thenAnswer(
+          (_) async => [
+            _ingredient('chicken', 'kyckling'),
+            _ingredient('cinnamon', 'kanel'),
+          ],
+        );
 
         vm.searchIngredient('k');
         async.elapse(const Duration(milliseconds: 300));
@@ -181,8 +192,9 @@ void main() {
 
     test('empty query clears autocomplete results immediately', () {
       fakeAsync((async) {
-        when(() => mockIngredientRepo.searchIngredients('k', limit: 10))
-            .thenAnswer((_) async => [_ingredient('cinnamon', 'kanel')]);
+        when(
+          () => mockIngredientRepo.searchIngredients('k', limit: 10),
+        ).thenAnswer((_) async => [_ingredient('cinnamon', 'kanel')]);
 
         vm.searchIngredient('k');
         async.elapse(const Duration(milliseconds: 300));
@@ -200,29 +212,36 @@ void main() {
       vm.addIngredient(_ingredient('chicken', 'kyckling'));
       vm.addIngredient(_ingredient('rice', 'ris'));
 
-      when(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: {'chicken', 'rice'},
-            recipes: any(named: 'recipes'),
-          )).thenAnswer((_) async => []);
-      when(() => mockMatchService.resolveIngredientNames(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: {'chicken', 'rice'},
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenAnswer((_) async => []);
+      when(
+        () => mockMatchService.resolveIngredientNames(any()),
+      ).thenAnswer((_) async => {});
 
       await vm.performSearch();
 
-      verify(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: {'chicken', 'rice'},
-            recipes: any(named: 'recipes'),
-          )).called(1);
+      verify(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: {'chicken', 'rice'},
+          recipes: any(named: 'recipes'),
+        ),
+      ).called(1);
       expect(vm.hasSearched, true);
     });
 
     test('does nothing when no ingredients selected', () async {
       await vm.performSearch();
 
-      verifyNever(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: any(named: 'selectedIngredientIds'),
-            recipes: any(named: 'recipes'),
-          ));
+      verifyNever(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      );
       expect(vm.hasSearched, false);
     });
 
@@ -239,12 +258,15 @@ void main() {
         ),
       ];
 
-      when(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: any(named: 'selectedIngredientIds'),
-            recipes: any(named: 'recipes'),
-          )).thenAnswer((_) async => expectedResults);
-      when(() => mockMatchService.resolveIngredientNames(['pepper']))
-          .thenAnswer((_) async => {'pepper': 'peppar'});
+      when(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenAnswer((_) async => expectedResults);
+      when(
+        () => mockMatchService.resolveIngredientNames(['pepper']),
+      ).thenAnswer((_) async => {'pepper': 'peppar'});
 
       await vm.performSearch();
 
@@ -269,91 +291,112 @@ void main() {
         type: RecipeType.collaborative,
       );
 
-      when(() => mockSocial.getCollaborativeRecipes(
-            limit: any(named: 'limit'),
-            startAfter: any(named: 'startAfter'),
-            categoryFilter: any(named: 'categoryFilter'),
-            searchQuery: any(named: 'searchQuery'),
-          )).thenAnswer((_) async => [collabRecipe]);
+      when(
+        () => mockSocial.getCollaborativeRecipes(
+          limit: any(named: 'limit'),
+          startAfter: any(named: 'startAfter'),
+          categoryFilter: any(named: 'categoryFilter'),
+          searchQuery: any(named: 'searchQuery'),
+        ),
+      ).thenAnswer((_) async => [collabRecipe]);
 
       vm.addIngredient(_ingredient('pasta', 'pasta'));
 
-      when(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: any(named: 'selectedIngredientIds'),
-            recipes: any(named: 'recipes'),
-          )).thenAnswer((invocation) async {
+      when(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenAnswer((invocation) async {
         final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
         // Verify both personal + collaborative recipes are passed
         expect(recipes.length, greaterThan(1));
         return [];
       });
-      when(() => mockMatchService.resolveIngredientNames(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockMatchService.resolveIngredientNames(any()),
+      ).thenAnswer((_) async => {});
 
       await vm.performSearch();
 
-      verify(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: any(named: 'selectedIngredientIds'),
-            recipes: any(named: 'recipes'),
-          )).called(1);
+      verify(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).called(1);
     });
 
-    test('deduplicates recipes present in both personal and collaborative',
-        () async {
-      // r1 is already in mockRecipeService.recipes (personal)
-      final duplicateRecipe = _recipe('r1', 'Test');
+    test(
+      'deduplicates recipes present in both personal and collaborative',
+      () async {
+        // r1 is already in mockRecipeService.recipes (personal)
+        final duplicateRecipe = _recipe('r1', 'Test');
 
-      when(() => mockSocial.getCollaborativeRecipes(
+        when(
+          () => mockSocial.getCollaborativeRecipes(
             limit: any(named: 'limit'),
             startAfter: any(named: 'startAfter'),
             categoryFilter: any(named: 'categoryFilter'),
             searchQuery: any(named: 'searchQuery'),
-          )).thenAnswer((_) async => [duplicateRecipe]);
+          ),
+        ).thenAnswer((_) async => [duplicateRecipe]);
 
-      vm.addIngredient(_ingredient('chicken', 'kyckling'));
+        vm.addIngredient(_ingredient('chicken', 'kyckling'));
 
-      when(() => mockMatchService.matchRecipesWithNormalization(
+        when(
+          () => mockMatchService.matchRecipesWithNormalization(
             selectedIngredientIds: any(named: 'selectedIngredientIds'),
             recipes: any(named: 'recipes'),
-          )).thenAnswer((invocation) async {
-        final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
-        // Should NOT have duplicates — only 1 recipe (r1)
-        expect(recipes.length, 1);
-        return [];
-      });
-      when(() => mockMatchService.resolveIngredientNames(any()))
-          .thenAnswer((_) async => {});
+          ),
+        ).thenAnswer((invocation) async {
+          final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
+          // Should NOT have duplicates — only 1 recipe (r1)
+          expect(recipes.length, 1);
+          return [];
+        });
+        when(
+          () => mockMatchService.resolveIngredientNames(any()),
+        ).thenAnswer((_) async => {});
 
-      await vm.performSearch();
-    });
+        await vm.performSearch();
+      },
+    );
 
     test('caches collaborative recipes across searches', () async {
-      when(() => mockSocial.getCollaborativeRecipes(
-            limit: any(named: 'limit'),
-            startAfter: any(named: 'startAfter'),
-            categoryFilter: any(named: 'categoryFilter'),
-            searchQuery: any(named: 'searchQuery'),
-          )).thenAnswer((_) async => []);
+      when(
+        () => mockSocial.getCollaborativeRecipes(
+          limit: any(named: 'limit'),
+          startAfter: any(named: 'startAfter'),
+          categoryFilter: any(named: 'categoryFilter'),
+          searchQuery: any(named: 'searchQuery'),
+        ),
+      ).thenAnswer((_) async => []);
 
       vm.addIngredient(_ingredient('chicken', 'kyckling'));
 
-      when(() => mockMatchService.matchRecipesWithNormalization(
-            selectedIngredientIds: any(named: 'selectedIngredientIds'),
-            recipes: any(named: 'recipes'),
-          )).thenAnswer((_) async => []);
-      when(() => mockMatchService.resolveIngredientNames(any()))
-          .thenAnswer((_) async => {});
+      when(
+        () => mockMatchService.matchRecipesWithNormalization(
+          selectedIngredientIds: any(named: 'selectedIngredientIds'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenAnswer((_) async => []);
+      when(
+        () => mockMatchService.resolveIngredientNames(any()),
+      ).thenAnswer((_) async => {});
 
       await vm.performSearch();
       await vm.performSearch();
 
       // getCollaborativeRecipes called only once (cached)
-      verify(() => mockSocial.getCollaborativeRecipes(
-            limit: any(named: 'limit'),
-            startAfter: any(named: 'startAfter'),
-            categoryFilter: any(named: 'categoryFilter'),
-            searchQuery: any(named: 'searchQuery'),
-          )).called(1);
+      verify(
+        () => mockSocial.getCollaborativeRecipes(
+          limit: any(named: 'limit'),
+          startAfter: any(named: 'startAfter'),
+          categoryFilter: any(named: 'categoryFilter'),
+          searchQuery: any(named: 'searchQuery'),
+        ),
+      ).called(1);
     });
   });
 }

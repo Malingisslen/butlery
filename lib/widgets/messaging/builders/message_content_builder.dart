@@ -35,7 +35,10 @@ class MessageContentBuilder {
         return _buildMenuShareContent(context, message, isFromCurrentUser);
       case MessageType.shoppingListShare:
         return _buildShoppingListShareContent(
-            context, message, isFromCurrentUser);
+          context,
+          message,
+          isFromCurrentUser,
+        );
       case MessageType.image:
         return _buildImageContent(context, message, isFromCurrentUser);
       case MessageType.voice:
@@ -100,7 +103,8 @@ class MessageContentBuilder {
       icon: Icons.restaurant_menu,
       label: context.l10n.messagingRecipeShared,
       title: recipeTitle,
-      subtitle: message.content.isNotEmpty &&
+      subtitle:
+          message.content.isNotEmpty &&
               message.content != 'Delade ett recept: $recipeTitle'
           ? message.content
           : null,
@@ -128,7 +132,8 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final listTitle = message.metadata?['listTitle'] ??
+    final listTitle =
+        message.metadata?['listTitle'] ??
         context.l10n.messagingUnknownShoppingList;
     return _buildShareCard(
       context: context,
@@ -161,8 +166,9 @@ class MessageContentBuilder {
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingS),
             decoration: BoxDecoration(
-              color: cs.inversePrimary
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              color: cs.inversePrimary.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Icon(
@@ -193,8 +199,9 @@ class MessageContentBuilder {
                     subtitle,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? cs.onPrimary
-                              .withValues(alpha: AppDimensions.opacityVeryDark)
+                          ? cs.onPrimary.withValues(
+                              alpha: AppDimensions.opacityVeryDark,
+                            )
                           : cs.onSurfaceVariant,
                     ),
                   ),
@@ -239,16 +246,18 @@ class MessageContentBuilder {
                   MaterialPageRoute(
                     builder: (context) => FullscreenImageViewer(
                       imageUrl: imageUrl,
-                      caption:
-                          message.content.isNotEmpty ? message.content : null,
+                      caption: message.content.isNotEmpty
+                          ? message.content
+                          : null,
                     ),
                     fullscreenDialog: true,
                   ),
                 );
               },
               child: ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
@@ -306,8 +315,9 @@ class MessageContentBuilder {
                     Icons.broken_image,
                     size: 48,
                     color: isFromCurrentUser
-                        ? cs.onPrimary
-                            .withValues(alpha: AppDimensions.opacityDark)
+                        ? cs.onPrimary.withValues(
+                            alpha: AppDimensions.opacityDark,
+                          )
                         : cs.onSurfaceVariant,
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
@@ -315,8 +325,9 @@ class MessageContentBuilder {
                     context.l10n.messagingImageLoadError,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? cs.onPrimary
-                              .withValues(alpha: AppDimensions.opacityDark)
+                          ? cs.onPrimary.withValues(
+                              alpha: AppDimensions.opacityDark,
+                            )
                           : cs.onSurfaceVariant,
                     ),
                   ),

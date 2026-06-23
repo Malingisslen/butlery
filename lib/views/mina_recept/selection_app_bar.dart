@@ -273,18 +273,22 @@ Future<void> _openBulkExport(
   final choice = await showModalBottomSheet<_ExportChoice>(
     context: context,
     builder: (sheetContext) => SafeArea(
-      child: Wrap(children: [
-        ListTile(
-          leading: const Icon(Icons.copy),
-          title: Text(sheetContext.l10n.bulkExportCopyClipboard),
-          onTap: () => Navigator.of(sheetContext).pop(_ExportChoice.clipboard),
-        ),
-        ListTile(
-          leading: const Icon(Icons.ios_share),
-          title: Text(sheetContext.l10n.bulkExportShareFile),
-          onTap: () => Navigator.of(sheetContext).pop(_ExportChoice.shareFile),
-        ),
-      ]),
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.copy),
+            title: Text(sheetContext.l10n.bulkExportCopyClipboard),
+            onTap: () =>
+                Navigator.of(sheetContext).pop(_ExportChoice.clipboard),
+          ),
+          ListTile(
+            leading: const Icon(Icons.ios_share),
+            title: Text(sheetContext.l10n.bulkExportShareFile),
+            onTap: () =>
+                Navigator.of(sheetContext).pop(_ExportChoice.shareFile),
+          ),
+        ],
+      ),
     ),
   );
   if (choice == null || !context.mounted) return;
@@ -465,8 +469,9 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: cs.onSurfaceVariant,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadius2),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadius2,
+                  ),
                 ),
               ),
               Padding(
@@ -531,10 +536,12 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
           spacing: AppDimensions.spacingSm,
           runSpacing: AppDimensions.spacingSm,
           children: tags
-              .map((tag) => ActionChip(
-                    label: Text(tag.name),
-                    onPressed: () => _selectTag(tag),
-                  ))
+              .map(
+                (tag) => ActionChip(
+                  label: Text(tag.name),
+                  onPressed: () => _selectTag(tag),
+                ),
+              )
               .toList(),
         ),
         const SizedBox(height: AppDimensions.spacingXl),

@@ -66,7 +66,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       _newPasswordController.clear();
       _confirmPasswordController.clear();
       SnackBarUtils.showSuccess(
-          context, context.l10n.accountSecurityPasswordChanged);
+        context,
+        context.l10n.accountSecurityPasswordChanged,
+      );
     } else if (_viewModel.error != null) {
       SnackBarUtils.showError(context, _viewModel.error!);
     }
@@ -84,7 +86,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
       _emailPasswordController.clear();
       _newEmailController.clear();
       SnackBarUtils.showSuccess(
-          context, context.l10n.accountSecurityEmailVerificationSent);
+        context,
+        context.l10n.accountSecurityEmailVerificationSent,
+      );
     } else if (_viewModel.error != null) {
       SnackBarUtils.showError(context, _viewModel.error!);
     }
@@ -161,14 +165,17 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(_obscureCurrentPassword
-                  ? Icons.visibility_off
-                  : Icons.visibility),
+              icon: Icon(
+                _obscureCurrentPassword
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
               tooltip: _obscureCurrentPassword
                   ? context.l10n.tooltipShowPassword
                   : context.l10n.tooltipHidePassword,
               onPressed: () => setState(
-                  () => _obscureCurrentPassword = !_obscureCurrentPassword),
+                () => _obscureCurrentPassword = !_obscureCurrentPassword,
+              ),
             ),
           ),
         ),
@@ -183,9 +190,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityNewPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(_obscureNewPassword
-                  ? Icons.visibility_off
-                  : Icons.visibility),
+              icon: Icon(
+                _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+              ),
               tooltip: _obscureNewPassword
                   ? context.l10n.tooltipShowPassword
                   : context.l10n.tooltipHidePassword,
@@ -205,14 +212,17 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityConfirmPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(_obscureConfirmPassword
-                  ? Icons.visibility_off
-                  : Icons.visibility),
+              icon: Icon(
+                _obscureConfirmPassword
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
               tooltip: _obscureConfirmPassword
                   ? context.l10n.tooltipShowPassword
                   : context.l10n.tooltipHidePassword,
               onPressed: () => setState(
-                  () => _obscureConfirmPassword = !_obscureConfirmPassword),
+                () => _obscureConfirmPassword = !_obscureConfirmPassword,
+              ),
             ),
           ),
         ),
@@ -267,14 +277,15 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: Icon(_obscureEmailPassword
-                  ? Icons.visibility_off
-                  : Icons.visibility),
+              icon: Icon(
+                _obscureEmailPassword ? Icons.visibility_off : Icons.visibility,
+              ),
               tooltip: _obscureEmailPassword
                   ? context.l10n.tooltipShowPassword
                   : context.l10n.tooltipHidePassword,
               onPressed: () => setState(
-                  () => _obscureEmailPassword = !_obscureEmailPassword),
+                () => _obscureEmailPassword = !_obscureEmailPassword,
+              ),
             ),
           ),
         ),

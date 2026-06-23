@@ -43,8 +43,8 @@ class InvitationTargetStates {
           Text(
             message ?? context.l10n.invitationCouldNotLoadTargets,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
           if (onRetry != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -78,8 +78,8 @@ class InvitationTargetStates {
           Text(
             message ?? context.l10n.invitationNoTargetsAvailable,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           if (onAction != null && actionLabel != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -114,8 +114,8 @@ class InvitationTargetStates {
                 ? context.l10n.invitationNoResultsFor(searchQuery)
                 : context.l10n.invitationNoSearchResults,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           if (onClearSearch != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -148,8 +148,8 @@ class InvitationTargetStates {
           Text(
             context.l10n.invitationTargetsSelectedCount(count),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: context.butleryColors.success,
-                ),
+              color: context.butleryColors.success,
+            ),
           ),
           if (onContinue != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -176,8 +176,9 @@ class InvitationTargetStates {
               height: 40,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius20),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius20,
+                ),
               ),
             ),
             title: Container(
@@ -185,8 +186,9 @@ class InvitationTargetStates {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius8),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius8,
+                ),
               ),
             ),
             subtitle: Container(
@@ -194,8 +196,9 @@ class InvitationTargetStates {
               width: 100,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius7),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius7,
+                ),
               ),
             ),
           ),
@@ -224,8 +227,8 @@ class InvitationTargetStates {
           Text(
             message ?? context.l10n.invitationNoSelectionsMade,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           if (onAction != null && actionLabel != null) ...[
             const SizedBox(height: AppDimensions.spacingL),

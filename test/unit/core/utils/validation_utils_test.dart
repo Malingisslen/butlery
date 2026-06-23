@@ -75,26 +75,31 @@ void main() {
 
   group('validateLength', () {
     test('returns null when value is null', () {
-      expect(ValidationUtils.validateLength(null, minLength: 5, maxLength: 10),
-          isNull);
+      expect(
+        ValidationUtils.validateLength(null, minLength: 5, maxLength: 10),
+        isNull,
+      );
     });
 
     test('errors when shorter than minLength', () {
-      expect(ValidationUtils.validateLength('ab', minLength: 5, fieldName: 'X'),
-          isNotNull);
+      expect(
+        ValidationUtils.validateLength('ab', minLength: 5, fieldName: 'X'),
+        isNotNull,
+      );
     });
 
     test('errors when longer than maxLength', () {
       expect(
-          ValidationUtils.validateLength('a' * 20,
-              maxLength: 5, fieldName: 'X'),
-          isNotNull);
+        ValidationUtils.validateLength('a' * 20, maxLength: 5, fieldName: 'X'),
+        isNotNull,
+      );
     });
 
     test('returns null within range', () {
       expect(
-          ValidationUtils.validateLength('hello', minLength: 2, maxLength: 10),
-          isNull);
+        ValidationUtils.validateLength('hello', minLength: 2, maxLength: 10),
+        isNull,
+      );
     });
   });
 
@@ -119,13 +124,15 @@ void main() {
   });
 
   group('domain-specific validators', () {
-    test('validateRecipeName: empty errors, too short errors, valid passes',
-        () {
-      expect(ValidationUtils.validateRecipeName(''), isNotNull);
-      expect(ValidationUtils.validateRecipeName('a'), isNotNull);
-      expect(ValidationUtils.validateRecipeName('a' * 101), isNotNull);
-      expect(ValidationUtils.validateRecipeName('Pasta'), isNull);
-    });
+    test(
+      'validateRecipeName: empty errors, too short errors, valid passes',
+      () {
+        expect(ValidationUtils.validateRecipeName(''), isNotNull);
+        expect(ValidationUtils.validateRecipeName('a'), isNotNull);
+        expect(ValidationUtils.validateRecipeName('a' * 101), isNotNull);
+        expect(ValidationUtils.validateRecipeName('Pasta'), isNull);
+      },
+    );
 
     test('validateGroupName: 2-50 char range', () {
       expect(ValidationUtils.validateGroupName(''), isNotNull);

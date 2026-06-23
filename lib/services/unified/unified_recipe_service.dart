@@ -143,8 +143,9 @@ class UnifiedRecipeService
   List<Recipe>? _cachedPersonal;
   List<Recipe>? _cachedCollaborative;
 
-  final _stateSubject =
-      BehaviorSubject<RecipeServiceState>.seeded(const RecipeStateLoading());
+  final _stateSubject = BehaviorSubject<RecipeServiceState>.seeded(
+    const RecipeStateLoading(),
+  );
 
   Stream<RecipeServiceState> get stateStream => _stateSubject.stream;
   RecipeServiceState get currentState => _stateSubject.value;
@@ -191,10 +192,12 @@ class UnifiedRecipeService
       _stateSubject.add(RecipeStateError(message: _error!));
       return;
     }
-    _stateSubject.add(RecipeStateData(
-      recipes: _recipes,
-      error: _error,
-    ));
+    _stateSubject.add(
+      RecipeStateData(
+        recipes: _recipes,
+        error: _error,
+      ),
+    );
   }
 
   // Auth state subscription (stored to prevent garbage collection)
@@ -215,16 +218,16 @@ class UnifiedRecipeService
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
-  })  : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-        _firestore =
-            (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
-                .firestore,
-        _authRepository = authRepository ?? FirebaseAuthRepository(),
-        _recipeRepository = recipeRepository,
-        _commentsRepository = commentsRepository,
-        _ratingsRepository = ratingsRepository,
-        _notificationsRepository = notificationsRepository {
+  }) : _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+       _firestore =
+           (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
+               .firestore,
+       _authRepository = authRepository ?? FirebaseAuthRepository(),
+       _recipeRepository = recipeRepository,
+       _commentsRepository = commentsRepository,
+       _ratingsRepository = ratingsRepository,
+       _notificationsRepository = notificationsRepository {
     // Initialize legacy interfaces immediately for backward compatibility
     _initializeLegacyInterfaces();
 
@@ -287,7 +290,8 @@ class UnifiedRecipeService
           _commentsRepository ?? ServiceLocator.tryGet<CommentsRepository>(),
       ratingsRepository:
           _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>(),
-      notificationsRepository: _notificationsRepository ??
+      notificationsRepository:
+          _notificationsRepository ??
           ServiceLocator.tryGet<NotificationsRepository>(),
       storageService: ServiceLocator.tryGet<StorageService>(),
     );
@@ -400,16 +404,16 @@ class UnifiedRecipeService
   List<Recipe> _recipesGetter() => recipes;
 
   SocialOpsContext get _socialContext => SocialOpsContext(
-        getCurrentUserId: _userIdGetter,
-        getCurrentUserDisplayName: _displayNameGetter,
-        getRecipes: _recipesGetter,
-        updateRecipe: updateRecipe,
-        createCollaborativeRecipe: createCollaborativeRecipe,
-        createPersonalRecipe: createPersonalRecipe,
-        // BUT-1056: surface share-cap rejection from the RecipeSharingManager
-        // path through the same error sink the UI already observes.
-        onShareError: _setError,
-      );
+    getCurrentUserId: _userIdGetter,
+    getCurrentUserDisplayName: _displayNameGetter,
+    getRecipes: _recipesGetter,
+    updateRecipe: updateRecipe,
+    createCollaborativeRecipe: createCollaborativeRecipe,
+    createPersonalRecipe: createPersonalRecipe,
+    // BUT-1056: surface share-cap rejection from the RecipeSharingManager
+    // path through the same error sink the UI already observes.
+    onShareError: _setError,
+  );
 
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
@@ -715,20 +719,19 @@ class UnifiedRecipeService
     double? rating,
     List<String>? personalTagIds,
     String? sourceUrl,
-  }) async =>
-      _personalCrud.createPersonalRecipe(
-        title: title,
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        imageUrls: imageUrls,
-        mealType: mealType,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        personalTagIds: personalTagIds,
-        sourceUrl: sourceUrl,
-      );
+  }) async => _personalCrud.createPersonalRecipe(
+    title: title,
+    description: description,
+    ingredients: ingredients,
+    instructions: instructions,
+    imageUrls: imageUrls,
+    mealType: mealType,
+    portions: portions,
+    timeMinutes: timeMinutes,
+    rating: rating,
+    personalTagIds: personalTagIds,
+    sourceUrl: sourceUrl,
+  );
 
   @override
   Future<void> saveRecipeRaw(Recipe recipe) async =>
@@ -847,24 +850,23 @@ class UnifiedRecipeService
     double? rating,
     List<String>? personalTagIds,
     String? sourceUrl,
-  }) async =>
-      _utilityOps.updateRecipeContent(
-        recipeId: recipeId,
-        currentUserId: currentUserId,
-        currentUserDisplayName: currentUserDisplayName,
-        updateRecipe: updateRecipe,
-        title: title,
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        imageUrls: imageUrls,
-        mealType: mealType,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        personalTagIds: personalTagIds,
-        sourceUrl: sourceUrl,
-      );
+  }) async => _utilityOps.updateRecipeContent(
+    recipeId: recipeId,
+    currentUserId: currentUserId,
+    currentUserDisplayName: currentUserDisplayName,
+    updateRecipe: updateRecipe,
+    title: title,
+    description: description,
+    ingredients: ingredients,
+    instructions: instructions,
+    imageUrls: imageUrls,
+    mealType: mealType,
+    portions: portions,
+    timeMinutes: timeMinutes,
+    rating: rating,
+    personalTagIds: personalTagIds,
+    sourceUrl: sourceUrl,
+  );
 
   // Ingredient operations (delegated to content helper)
   @override
@@ -876,8 +878,7 @@ class UnifiedRecipeService
     String recipeId,
     int index,
     String newIngredient,
-  ) async =>
-      _contentOps.updateIngredient(recipeId, index, newIngredient);
+  ) async => _contentOps.updateIngredient(recipeId, index, newIngredient);
 
   @override
   Future<bool> removeIngredient(String recipeId, int index) async =>
@@ -893,8 +894,7 @@ class UnifiedRecipeService
     String recipeId,
     int index,
     String newInstruction,
-  ) async =>
-      _contentOps.updateInstruction(recipeId, index, newInstruction);
+  ) async => _contentOps.updateInstruction(recipeId, index, newInstruction);
 
   @override
   Future<bool> removeInstruction(String recipeId, int index) async =>

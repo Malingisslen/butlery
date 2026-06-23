@@ -138,7 +138,8 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
     } catch (e) {
       _rethrowSecurityExceptions(e);
       AppLogger.error(
-          'Failed to get user consent for ${userId.maskedUserId}: $e');
+        'Failed to get user consent for ${userId.maskedUserId}: $e',
+      );
       return null;
     }
   }
@@ -221,7 +222,8 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
     } catch (e) {
       _rethrowSecurityExceptions(e);
       AppLogger.error(
-          'Failed to delete consent for ${userId.maskedUserId}: $e');
+        'Failed to delete consent for ${userId.maskedUserId}: $e',
+      );
       return false;
     }
   }
@@ -245,8 +247,9 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
           .limit(limit)
           .get();
 
-      final history =
-          snapshot.docs.map((doc) => UserConsent.fromFirestore(doc)).toList();
+      final history = snapshot.docs
+          .map((doc) => UserConsent.fromFirestore(doc))
+          .toList();
 
       AppLogger.info(
         'Retrieved ${history.length} consent history entries for user ${userId.maskedUserId}',
@@ -255,7 +258,8 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
     } catch (e) {
       _rethrowSecurityExceptions(e);
       AppLogger.error(
-          'Failed to get consent history for ${userId.maskedUserId}: $e');
+        'Failed to get consent history for ${userId.maskedUserId}: $e',
+      );
       return [];
     }
   }

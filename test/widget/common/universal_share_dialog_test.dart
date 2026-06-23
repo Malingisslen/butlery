@@ -43,7 +43,7 @@ void main() {
         instructions: [
           'Blanda ingredienserna',
           'Forma kottbullar',
-          'Stek i pannan'
+          'Stek i pannan',
         ],
         personalTagIds: ['svenska', 'klassiker'],
       );
@@ -75,28 +75,34 @@ void main() {
 
       // Mock ViewModel behavior
       when(() => mockViewModel.isSharing).thenReturn(false);
-      when(() => mockViewModel.shareRecipe(
-            recipe: any(named: 'recipe'),
-            friendUserIds: any(named: 'friendUserIds'),
-            groupIds: any(named: 'groupIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.shareRecipe(
+          recipe: any(named: 'recipe'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockViewModel.shareMenu(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            groupIds: any(named: 'groupIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.shareMenu(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockViewModel.shareShoppingList(
-            shoppingList: any(named: 'shoppingList'),
-            friendUserIds: any(named: 'friendUserIds'),
-            groupIds: any(named: 'groupIds'),
-            message: any(named: 'message'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.shareShoppingList(
+          shoppingList: any(named: 'shoppingList'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+        ),
+      ).thenAnswer((_) async => true);
     });
 
     test('recipe factory constructor creates correct widget configuration', () {
@@ -131,38 +137,41 @@ void main() {
     });
 
     test(
-        'shopping list factory constructor creates correct widget configuration',
-        () {
-      final dialog = UniversalShareDialog.shoppingList(
-        shoppingList: testShoppingList,
-        viewModel: mockViewModel,
-        initialMessage: 'Dela inkopslistan',
-      );
+      'shopping list factory constructor creates correct widget configuration',
+      () {
+        final dialog = UniversalShareDialog.shoppingList(
+          shoppingList: testShoppingList,
+          viewModel: mockViewModel,
+          initialMessage: 'Dela inkopslistan',
+        );
 
-      expect(dialog.content, equals(testShoppingList));
-      expect(dialog.contentType, equals(ShareContentType.shoppingList));
-      expect(dialog.viewModel, equals(mockViewModel));
-      expect(dialog.initialMessage, equals('Dela inkopslistan'));
-      expect(dialog.isBulkSharing, isFalse);
-    });
+        expect(dialog.content, equals(testShoppingList));
+        expect(dialog.contentType, equals(ShareContentType.shoppingList));
+        expect(dialog.viewModel, equals(mockViewModel));
+        expect(dialog.initialMessage, equals('Dela inkopslistan'));
+        expect(dialog.isBulkSharing, isFalse);
+      },
+    );
 
-    test('bulk share factory constructor creates correct widget configuration',
-        () {
-      final bulkContent = [testRecipe, testRecipe];
+    test(
+      'bulk share factory constructor creates correct widget configuration',
+      () {
+        final bulkContent = [testRecipe, testRecipe];
 
-      final dialog = UniversalShareDialog.bulkShare(
-        contentItems: bulkContent,
-        primaryContentType: ShareContentType.recipe,
-        viewModel: mockViewModel,
-        availableFriends: testFriends,
-      );
+        final dialog = UniversalShareDialog.bulkShare(
+          contentItems: bulkContent,
+          primaryContentType: ShareContentType.recipe,
+          viewModel: mockViewModel,
+          availableFriends: testFriends,
+        );
 
-      expect(dialog.content, equals(bulkContent));
-      expect(dialog.contentType, equals(ShareContentType.recipe));
-      expect(dialog.viewModel, equals(mockViewModel));
-      expect(dialog.availableFriends, equals(testFriends));
-      expect(dialog.isBulkSharing, isTrue);
-    });
+        expect(dialog.content, equals(bulkContent));
+        expect(dialog.contentType, equals(ShareContentType.recipe));
+        expect(dialog.viewModel, equals(mockViewModel));
+        expect(dialog.availableFriends, equals(testFriends));
+        expect(dialog.isBulkSharing, isTrue);
+      },
+    );
 
     test('factory constructors handle null optional parameters correctly', () {
       final minimalDialog = UniversalShareDialog.recipe(
@@ -217,7 +226,7 @@ void main() {
         instructions: [
           'Blanda ingredienserna',
           'Forma kottbullar',
-          'Stek i pannan'
+          'Stek i pannan',
         ],
         personalTagIds: ['svenska', 'klassiker'],
       );
@@ -249,28 +258,34 @@ void main() {
 
       // Mock ViewModel behavior - successful sharing
       when(() => mockViewModel.isSharing).thenReturn(false);
-      when(() => mockViewModel.shareRecipe(
-            recipe: any(named: 'recipe'),
-            friendUserIds: any(named: 'friendUserIds'),
-            groupIds: any(named: 'groupIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.shareRecipe(
+          recipe: any(named: 'recipe'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockViewModel.shareMenu(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-            groupIds: any(named: 'groupIds'),
-            message: any(named: 'message'),
-            allowCollaboration: any(named: 'allowCollaboration'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.shareMenu(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          allowCollaboration: any(named: 'allowCollaboration'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockViewModel.shareShoppingList(
-            shoppingList: any(named: 'shoppingList'),
-            friendUserIds: any(named: 'friendUserIds'),
-            groupIds: any(named: 'groupIds'),
-            message: any(named: 'message'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.shareShoppingList(
+          shoppingList: any(named: 'shoppingList'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+        ),
+      ).thenAnswer((_) async => true);
     });
 
     group('Essential Structure Tests - Gold Standard', () {
@@ -290,8 +305,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle different content types correctly',
-          (tester) async {
+      testWidgets('should handle different content types correctly', (
+        tester,
+      ) async {
         final dialogs = [
           UniversalShareDialog.recipe(
             recipe: testRecipe,
@@ -320,8 +336,9 @@ void main() {
         }
       });
 
-      testWidgets('should handle empty friends list gracefully',
-          (tester) async {
+      testWidgets('should handle empty friends list gracefully', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UniversalShareDialog.recipe(
@@ -338,8 +355,9 @@ void main() {
     });
 
     group('Share Actions and Features - Gold Standard', () {
-      testWidgets('should support platform selection for recipes',
-          (tester) async {
+      testWidgets('should support platform selection for recipes', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UniversalShareDialog.recipe(
@@ -354,8 +372,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should exclude platform selection for shopping lists',
-          (tester) async {
+      testWidgets('should exclude platform selection for shopping lists', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: UniversalShareDialog.shoppingList(

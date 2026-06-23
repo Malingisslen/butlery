@@ -64,7 +64,7 @@ enum RecipeChangeType {
   modified,
 
   /// Recipe deletion with state preservation for audit
-  removed
+  removed,
 }
 
 /// Comprehensive recipe change tracking model with audit trail and collaboration support.

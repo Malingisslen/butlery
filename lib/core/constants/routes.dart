@@ -326,7 +326,7 @@ class Routes {
       importFromArchive,
       recipeDetail,
       editRecipe,
-      receiveShare
+      receiveShare,
     ]) {
       buffer.writeln('  $route');
     }
@@ -345,7 +345,7 @@ class Routes {
       menuPreview,
       createSharedShopping,
       friendProfile,
-      sharedShoppingLists
+      sharedShoppingLists,
     ]) {
       buffer.writeln('  $route');
     }

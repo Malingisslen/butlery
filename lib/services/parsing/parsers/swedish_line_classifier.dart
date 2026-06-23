@@ -192,8 +192,12 @@ class SwedishLineClassifier {
 
     // Calculate scores for ingredient vs instruction
     final ingredientScore = _scoreAsIngredient(trimmed, lower, words, wordSet);
-    final instructionScore =
-        _scoreAsInstruction(trimmed, lower, words, wordSet);
+    final instructionScore = _scoreAsInstruction(
+      trimmed,
+      lower,
+      words,
+      wordSet,
+    );
 
     // Determine classification
     if (ingredientScore > 0.6 && ingredientScore > instructionScore) {
@@ -536,12 +540,12 @@ class ParsedRecipeStructure {
   /// Encode to a [Map] of primitives that can cross an isolate [SendPort].
   /// [totalTime] is stored as integer minutes (null → absent key).
   Map<String, dynamic> toIsolateMap() => {
-        'title': title,
-        'ingredients': List<String>.from(ingredients),
-        'instructions': List<String>.from(instructions),
-        'portions': portions,
-        if (totalTime != null) 'totalTimeMinutes': totalTime!.inMinutes,
-      };
+    'title': title,
+    'ingredients': List<String>.from(ingredients),
+    'instructions': List<String>.from(instructions),
+    'portions': portions,
+    if (totalTime != null) 'totalTimeMinutes': totalTime!.inMinutes,
+  };
 
   /// Reconstruct from the map returned by [toIsolateMap].
   factory ParsedRecipeStructure.fromIsolateMap(Map<String, dynamic> map) {
@@ -570,7 +574,8 @@ class ParsedRecipeStructure {
   bool get isValid => ingredients.isNotEmpty && instructions.isNotEmpty;
 
   @override
-  String toString() => 'ParsedRecipeStructure(title: $title, '
+  String toString() =>
+      'ParsedRecipeStructure(title: $title, '
       '${ingredients.length} ingredients, '
       '${instructions.length} instructions, '
       'portions: $portions, time: $totalTime)';

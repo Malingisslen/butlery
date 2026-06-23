@@ -38,7 +38,7 @@ class Lexicon {
   final Map<LexiconCategory, Map<String, String>> _entries;
 
   const Lexicon(Map<LexiconCategory, Map<String, String>> entries)
-      : _entries = entries;
+    : _entries = entries;
 
   /// Empty lexicon — useful for tests that want to verify graceful failure.
   const Lexicon.empty() : _entries = const {};

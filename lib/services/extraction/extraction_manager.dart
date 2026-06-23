@@ -50,8 +50,8 @@ class ExtractionManager extends BaseService {
   ExtractionManager({
     PlatformDetector? platformDetector,
     WebScraper? webScraper,
-  })  : _platformDetector = platformDetector ?? PlatformDetector(),
-        _webScraper = webScraper ?? WebScraper();
+  }) : _platformDetector = platformDetector ?? PlatformDetector(),
+       _webScraper = webScraper ?? WebScraper();
 
   @override
   String get serviceName => 'ExtractionManager';

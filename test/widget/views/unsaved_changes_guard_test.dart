@@ -34,7 +34,8 @@ class _GuardedSharedListShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CreateSharedListViewModel>(
       builder: (context, viewModel, _) {
-        final isDirty = !viewModel.isCreating &&
+        final isDirty =
+            !viewModel.isCreating &&
             (viewModel.title.trim().isNotEmpty ||
                 viewModel.description.trim().isNotEmpty ||
                 viewModel.hasFriendsSelected);
@@ -93,8 +94,11 @@ void main() {
       await tester.pumpWidget(_wrap(vm));
       await tester.pump();
 
-      expect(_findPopScope(tester).canPop, isTrue,
-          reason: 'Empty form must allow back to pop without prompt');
+      expect(
+        _findPopScope(tester).canPop,
+        isTrue,
+        reason: 'Empty form must allow back to pop without prompt',
+      );
     });
 
     testWidgets('canPop becomes false when title has content', (tester) async {
@@ -103,12 +107,16 @@ void main() {
       vm.updateTitle('Min lista');
       await tester.pump();
 
-      expect(_findPopScope(tester).canPop, isFalse,
-          reason: 'Typed title must trigger the unsaved-changes guard');
+      expect(
+        _findPopScope(tester).canPop,
+        isFalse,
+        reason: 'Typed title must trigger the unsaved-changes guard',
+      );
     });
 
-    testWidgets('canPop becomes false when description has content',
-        (tester) async {
+    testWidgets('canPop becomes false when description has content', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(vm));
 
       vm.updateDescription('Anteckningar');
@@ -117,8 +125,9 @@ void main() {
       expect(_findPopScope(tester).canPop, isFalse);
     });
 
-    testWidgets('canPop returns to true after clearing the form',
-        (tester) async {
+    testWidgets('canPop returns to true after clearing the form', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(vm));
 
       vm.updateTitle('Foo');
@@ -127,8 +136,11 @@ void main() {
 
       vm.updateTitle('');
       await tester.pump();
-      expect(_findPopScope(tester).canPop, isTrue,
-          reason: 'Clearing all fields must re-enable free pop');
+      expect(
+        _findPopScope(tester).canPop,
+        isTrue,
+        reason: 'Clearing all fields must re-enable free pop',
+      );
     });
   });
 }

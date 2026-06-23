@@ -69,8 +69,7 @@ class _FakeSocialRequestRepository extends Fake
     String fromUserId,
     String toUserId,
     String recipeId,
-  ) async =>
-      existingPending;
+  ) async => existingPending;
 
   @override
   Future<void> createRequest(SocialRequest request) async {
@@ -79,7 +78,9 @@ class _FakeSocialRequestRepository extends Fake
 
   @override
   Future<void> updateRequestStatus(
-      String requestId, Map<String, dynamic> data) async {
+    String requestId,
+    Map<String, dynamic> data,
+  ) async {
     statusUpdates.add((requestId, data));
   }
 }
@@ -154,8 +155,9 @@ void main() {
     notifier = _SpyNotificationService();
 
     // Default: the in-place share succeeds. Individual tests override.
-    when(() => coordinator.shareRecipeWithUsers(any(), any(), any()))
-        .thenAnswer((_) async => true);
+    when(
+      () => coordinator.shareRecipeWithUsers(any(), any(), any()),
+    ).thenAnswer((_) async => true);
 
     if (GetIt.instance.isRegistered<NotificationService>()) {
       GetIt.instance.unregister<NotificationService>();
@@ -233,89 +235,103 @@ void main() {
     });
 
     test(
-        'idempotent: second identical call while pending → no 2nd write, no 2nd notification',
-        () async {
-      // First call lands.
-      final first = await module.requestRecipeShare(
-        ownerId: 'owner-uid',
-        recipeId: 'recipe-1',
-        recipeTitle: 'Pannkakor',
-      );
-      expect(first, isTrue);
-      expect(requestRepo.created, hasLength(1));
-      expect(notifier.sendCount, 1);
+      'idempotent: second identical call while pending → no 2nd write, no 2nd notification',
+      () async {
+        // First call lands.
+        final first = await module.requestRecipeShare(
+          ownerId: 'owner-uid',
+          recipeId: 'recipe-1',
+          recipeTitle: 'Pannkakor',
+        );
+        expect(first, isTrue);
+        expect(requestRepo.created, hasLength(1));
+        expect(notifier.sendCount, 1);
 
-      // Simulate the now-pending request being visible to the dedup query.
-      requestRepo.existingPending = true;
+        // Simulate the now-pending request being visible to the dedup query.
+        requestRepo.existingPending = true;
 
-      final second = await module.requestRecipeShare(
-        ownerId: 'owner-uid',
-        recipeId: 'recipe-1',
-        recipeTitle: 'Pannkakor',
-      );
+        final second = await module.requestRecipeShare(
+          ownerId: 'owner-uid',
+          recipeId: 'recipe-1',
+          recipeTitle: 'Pannkakor',
+        );
 
-      // Still "succeeds" (returns true — the request exists), but is a no-op.
-      expect(second, isTrue);
-      expect(requestRepo.created, hasLength(1),
-          reason: 'no duplicate request doc');
-      expect(notifier.sendCount, 1, reason: 'no duplicate notification');
-    });
+        // Still "succeeds" (returns true — the request exists), but is a no-op.
+        expect(second, isTrue);
+        expect(
+          requestRepo.created,
+          hasLength(1),
+          reason: 'no duplicate request doc',
+        );
+        expect(notifier.sendCount, 1, reason: 'no duplicate notification');
+      },
+    );
 
     test(
-        'notification failure is non-fatal: returns true and request is persisted',
-        () async {
-      // Replace the spy with one that throws on send.
-      GetIt.instance.unregister<NotificationService>();
-      GetIt.instance.registerSingleton<NotificationService>(
-        _ThrowingNotificationService(),
-      );
+      'notification failure is non-fatal: returns true and request is persisted',
+      () async {
+        // Replace the spy with one that throws on send.
+        GetIt.instance.unregister<NotificationService>();
+        GetIt.instance.registerSingleton<NotificationService>(
+          _ThrowingNotificationService(),
+        );
 
-      final ok = await module.requestRecipeShare(
-        ownerId: 'owner-uid',
-        recipeId: 'recipe-1',
-        recipeTitle: 'Pannkakor',
-      );
+        final ok = await module.requestRecipeShare(
+          ownerId: 'owner-uid',
+          recipeId: 'recipe-1',
+          recipeTitle: 'Pannkakor',
+        );
 
-      // The request doc is written even though the notification threw.
-      expect(ok, isTrue,
-          reason: 'notification failure must not flip the result');
-      expect(requestRepo.created, hasLength(1),
-          reason: 'request persisted before the notification attempt');
-    });
+        // The request doc is written even though the notification threw.
+        expect(
+          ok,
+          isTrue,
+          reason: 'notification failure must not flip the result',
+        );
+        expect(
+          requestRepo.created,
+          hasLength(1),
+          reason: 'request persisted before the notification attempt',
+        );
+      },
+    );
   });
 
   group('acceptRecipeShareRequest', () {
     SocialRequest makeRequest() => SocialRequest.recipeShareRequest(
-          fromUserId: 'requester-uid',
-          toUserId: 'me-uid',
-          recipeId: 'recipe-1',
-          recipeTitle: 'Pannkakor',
-          fromUserName: 'Alex',
-        );
+      fromUserId: 'requester-uid',
+      toUserId: 'me-uid',
+      recipeId: 'recipe-1',
+      recipeTitle: 'Pannkakor',
+      fromUserName: 'Alex',
+    );
 
     test(
-        'adds requester to the ORIGINAL recipe in place and flips status to accepted',
-        () async {
-      final req = makeRequest();
+      'adds requester to the ORIGINAL recipe in place and flips status to accepted',
+      () async {
+        final req = makeRequest();
 
-      final ok = await module.acceptRecipeShareRequest(req);
+        final ok = await module.acceptRecipeShareRequest(req);
 
-      expect(ok, isTrue);
+        expect(ok, isTrue);
 
-      // In-place share: requester added to the ORIGINAL recipe id as viewer.
-      // This is what makes the recipe readable to the requester.
-      verify(() => coordinator.shareRecipeWithUsers(
+        // In-place share: requester added to the ORIGINAL recipe id as viewer.
+        // This is what makes the recipe readable to the requester.
+        verify(
+          () => coordinator.shareRecipeWithUsers(
             'recipe-1',
             ['requester-uid'],
             ResourcePermission.viewer,
-          )).called(1);
+          ),
+        ).called(1);
 
-      // Status flipped to accepted for this request id.
-      expect(requestRepo.statusUpdates, hasLength(1));
-      final update = requestRepo.statusUpdates.single;
-      expect(update.$1, req.id);
-      expect(update.$2['status'], SocialRequestStatus.accepted.name);
-    });
+        // Status flipped to accepted for this request id.
+        expect(requestRepo.statusUpdates, hasLength(1));
+        final update = requestRepo.statusUpdates.single;
+        expect(update.$1, req.id);
+        expect(update.$2['status'], SocialRequestStatus.accepted.name);
+      },
+    );
 
     test('null recipeId → false, no share, no status update', () async {
       final req = SocialRequest(
@@ -334,15 +350,19 @@ void main() {
     });
 
     test('share fails (returns false) → false, status NOT flipped', () async {
-      when(() => coordinator.shareRecipeWithUsers(any(), any(), any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => coordinator.shareRecipeWithUsers(any(), any(), any()),
+      ).thenAnswer((_) async => false);
       final req = makeRequest();
 
       final ok = await module.acceptRecipeShareRequest(req);
 
       expect(ok, isFalse);
-      expect(requestRepo.statusUpdates, isEmpty,
-          reason: 'must not mark accepted when the share itself failed');
+      expect(
+        requestRepo.statusUpdates,
+        isEmpty,
+        reason: 'must not mark accepted when the share itself failed',
+      );
     });
 
     test('owner guard: non-owner currentUserId → false, no share', () async {
@@ -352,11 +372,17 @@ void main() {
 
       final ok = await module.acceptRecipeShareRequest(req);
 
-      expect(ok, isFalse,
-          reason: 'only the recipe owner (toUserId) may accept');
+      expect(
+        ok,
+        isFalse,
+        reason: 'only the recipe owner (toUserId) may accept',
+      );
       verifyNever(() => coordinator.shareRecipeWithUsers(any(), any(), any()));
-      expect(requestRepo.statusUpdates, isEmpty,
-          reason: 'status must not be flipped for a non-owner');
+      expect(
+        requestRepo.statusUpdates,
+        isEmpty,
+        reason: 'status must not be flipped for a non-owner',
+      );
     });
   });
 }

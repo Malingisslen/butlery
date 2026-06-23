@@ -30,8 +30,8 @@ class AppMonitoringService {
   AppMonitoringService({
     FirebaseCrashlytics? crashlytics,
     FirebasePerformance? performance,
-  })  : _crashlytics = crashlytics ?? FirebaseCrashlytics.instance,
-        _performance = performance ?? FirebasePerformance.instance;
+  }) : _crashlytics = crashlytics ?? FirebaseCrashlytics.instance,
+       _performance = performance ?? FirebasePerformance.instance;
 
   /// Record a business metric for monitoring dashboards.
   ///
@@ -45,7 +45,8 @@ class AppMonitoringService {
       _crashlytics.setCustomKey('metric_$name', _metricCounters[name]!);
 
       AppLogger.debug(
-          'Recorded metric: $name = $value (total: ${_metricCounters[name]})');
+        'Recorded metric: $name = $value (total: ${_metricCounters[name]})',
+      );
     } catch (e) {
       AppLogger.warning('Failed to record metric $name: $e');
     }
@@ -227,9 +228,9 @@ class HealthStatus {
   });
 
   Map<String, dynamic> toJson() => {
-        'healthy': isHealthy,
-        'error_count': errorCount,
-        'metrics': metrics,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'healthy': isHealthy,
+    'error_count': errorCount,
+    'metrics': metrics,
+    'timestamp': timestamp.toIso8601String(),
+  };
 }

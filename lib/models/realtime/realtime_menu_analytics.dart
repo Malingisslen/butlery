@@ -37,10 +37,12 @@ class RealtimeMenuAnalytics {
     return recipe.core.title.toLowerCase().contains(lowerQuery) ||
         recipe.core.description.toLowerCase().contains(lowerQuery) ||
         recipe.core.ingredients.any(
-            (ingredient) => ingredient.toLowerCase().contains(lowerQuery)) ||
+          (ingredient) => ingredient.toLowerCase().contains(lowerQuery),
+        ) ||
         recipe.core.mealType.toLowerCase().contains(lowerQuery) ||
-        (recipe.core.personalTags
-                ?.any((pt) => pt.name.toLowerCase().contains(lowerQuery)) ??
+        (recipe.core.personalTags?.any(
+              (pt) => pt.name.toLowerCase().contains(lowerQuery),
+            ) ??
             false);
   }
 
@@ -65,8 +67,10 @@ class RealtimeMenuAnalytics {
     // Apply meal type filter
     if (mealType != null) {
       results = results
-          .where((recipe) =>
-              recipe.core.mealType.toLowerCase() == mealType.toLowerCase())
+          .where(
+            (recipe) =>
+                recipe.core.mealType.toLowerCase() == mealType.toLowerCase(),
+          )
           .toList();
     }
 
@@ -109,13 +113,17 @@ class RealtimeMenuAnalytics {
 
   /// Filter menu by specific meal type
   static Map<String, List<Recipe>> filterByMealType(
-      RealtimeMenuData data, String mealType) {
+    RealtimeMenuData data,
+    String mealType,
+  ) {
     final filtered = <String, List<Recipe>>{};
 
     for (final entry in data.menuSnapshot.entries) {
       final matchingRecipes = entry.value
-          .where((recipe) =>
-              recipe.core.mealType.toLowerCase() == mealType.toLowerCase())
+          .where(
+            (recipe) =>
+                recipe.core.mealType.toLowerCase() == mealType.toLowerCase(),
+          )
           .toList();
       if (matchingRecipes.isNotEmpty) {
         filtered[entry.key] = matchingRecipes;
@@ -127,7 +135,9 @@ class RealtimeMenuAnalytics {
 
   /// Filter menu by max cooking time
   static Map<String, List<Recipe>> filterByMaxTime(
-      RealtimeMenuData data, int maxMinutes) {
+    RealtimeMenuData data,
+    int maxMinutes,
+  ) {
     final filtered = <String, List<Recipe>>{};
 
     for (final entry in data.menuSnapshot.entries) {
@@ -144,7 +154,9 @@ class RealtimeMenuAnalytics {
 
   /// Filter menu by minimum rating
   static Map<String, List<Recipe>> filterByMinRating(
-      RealtimeMenuData data, double minRating) {
+    RealtimeMenuData data,
+    double minRating,
+  ) {
     final filtered = <String, List<Recipe>>{};
 
     for (final entry in data.menuSnapshot.entries) {
@@ -161,7 +173,9 @@ class RealtimeMenuAnalytics {
 
   /// Filter menu by tags
   static Map<String, List<Recipe>> filterByTags(
-      RealtimeMenuData data, List<String> requiredTags) {
+    RealtimeMenuData data,
+    List<String> requiredTags,
+  ) {
     final filtered = <String, List<Recipe>>{};
 
     for (final entry in data.menuSnapshot.entries) {
@@ -273,8 +287,10 @@ class RealtimeMenuAnalytics {
   }
 
   /// Get most popular tags
-  static List<String> getMostPopularTags(RealtimeMenuData data,
-      {int limit = 10}) {
+  static List<String> getMostPopularTags(
+    RealtimeMenuData data, {
+    int limit = 10,
+  }) {
     final frequency = getTagFrequency(data);
     final sorted = frequency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));

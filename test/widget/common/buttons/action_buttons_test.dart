@@ -33,8 +33,9 @@ void main() {
         expect(find.text('Test Button'), findsOneWidget);
       });
 
-      testWidgets('should render secondary button when specified',
-          (tester) async {
+      testWidgets('should render secondary button when specified', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -53,8 +54,9 @@ void main() {
         expect(find.text('Secondary'), findsOneWidget);
       });
 
-      testWidgets('should render outlined button when specified',
-          (tester) async {
+      testWidgets('should render outlined button when specified', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -72,8 +74,9 @@ void main() {
         expect(find.text('Outlined'), findsOneWidget);
       });
 
-      testWidgets('should show loading indicator when isLoading is true',
-          (tester) async {
+      testWidgets('should show loading indicator when isLoading is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -90,8 +93,9 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should show custom loading text when provided',
-          (tester) async {
+      testWidgets('should show custom loading text when provided', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -141,13 +145,15 @@ void main() {
           ),
         );
 
-        final button =
-            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final button = tester.widget<ElevatedButton>(
+          find.byType(ElevatedButton),
+        );
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('should expand to full width when isExpanded is true',
-          (tester) async {
+      testWidgets('should expand to full width when isExpanded is true', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -247,8 +253,9 @@ void main() {
         );
 
         expect(find.byType(AspectRatio), findsOneWidget);
-        final aspectRatio =
-            tester.widget<AspectRatio>(find.byType(AspectRatio));
+        final aspectRatio = tester.widget<AspectRatio>(
+          find.byType(AspectRatio),
+        );
         expect(aspectRatio.aspectRatio, equals(1.0));
       });
 
@@ -299,14 +306,17 @@ void main() {
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.text('Laddar upp...'), findsOneWidget);
-        expect(find.byIcon(Icons.upload),
-            findsNothing); // Icon hidden when loading
+        expect(
+          find.byIcon(Icons.upload),
+          findsNothing,
+        ); // Icon hidden when loading
       });
     });
 
     group('largeButton', () {
-      testWidgets('should render large button with increased height',
-          (tester) async {
+      testWidgets('should render large button with increased height', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: Builder(
@@ -373,8 +383,9 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('should render message FAB with default styling',
-          (tester) async {
+      testWidgets('should render message FAB with default styling', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const FloatingActionButtonWidget.message(
@@ -465,13 +476,15 @@ void main() {
           ),
         );
 
-        final button =
-            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final button = tester.widget<ElevatedButton>(
+          find.byType(ElevatedButton),
+        );
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('should handle very long labels with ellipsis',
-          (tester) async {
+      testWidgets('should handle very long labels with ellipsis', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: SizedBox(
@@ -490,7 +503,8 @@ void main() {
 
         final text = tester.widget<Text>(
           find.text(
-              'This is a very long button label that should be truncated'),
+            'This is a very long button label that should be truncated',
+          ),
         );
         expect(text.overflow, equals(TextOverflow.ellipsis));
         expect(text.maxLines, equals(1));

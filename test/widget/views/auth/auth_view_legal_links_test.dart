@@ -36,19 +36,19 @@ class _LegalRouteMarker extends StatelessWidget {
 }
 
 Widget _appUnderTest() => createLocalizedTestApp(
-      child: const AuthView(),
-      wrapInScaffold: false,
-      onGenerateRoute: (settings) {
-        if (settings.name == Routes.privacyPolicy ||
-            settings.name == Routes.termsOfService) {
-          return MaterialPageRoute(
-            settings: settings,
-            builder: (_) => _LegalRouteMarker(settings.name!),
-          );
-        }
-        return null;
-      },
-    );
+  child: const AuthView(),
+  wrapInScaffold: false,
+  onGenerateRoute: (settings) {
+    if (settings.name == Routes.privacyPolicy ||
+        settings.name == Routes.termsOfService) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => _LegalRouteMarker(settings.name!),
+      );
+    }
+    return null;
+  },
+);
 
 /// Tap a TextSpan whose text contains [substring]. Hit-testing a Finder for an
 /// inline TextSpan maps the gesture to the whole RichText, so we trigger the

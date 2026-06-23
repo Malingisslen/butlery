@@ -153,17 +153,21 @@ void main() {
       test('should maintain queue size limit', () {
         // Act - Record more than max metrics (1000)
         for (int i = 0; i < 1100; i++) {
-          service.recordMetric(PerformanceMetric(
-            type: MetricType.custom,
-            name: 'metric_$i',
-            value: i.toDouble(),
-          ));
+          service.recordMetric(
+            PerformanceMetric(
+              type: MetricType.custom,
+              name: 'metric_$i',
+              value: i.toDouble(),
+            ),
+          );
         }
 
         // Assert
         final report = service.generateReport();
         expect(
-            report.metrics[MetricType.custom]!.length, lessThanOrEqualTo(1000));
+          report.metrics[MetricType.custom]!.length,
+          lessThanOrEqualTo(1000),
+        );
       });
     });
 
@@ -182,10 +186,14 @@ void main() {
           orElse: () => throw Exception('Timer metric not found'),
         );
 
-        expect(timerMetric.value,
-            greaterThanOrEqualTo(45.0)); // Allow some variance
         expect(
-            timerMetric.value, lessThan(200.0)); // Allow more variance for CI
+          timerMetric.value,
+          greaterThanOrEqualTo(45.0),
+        ); // Allow some variance
+        expect(
+          timerMetric.value,
+          lessThan(200.0),
+        ); // Allow more variance for CI
       });
 
       test('should handle stopping non-existent timer', () {
@@ -242,8 +250,10 @@ void main() {
         final report = service.generateReport();
         expect(report.warnings, isNotEmpty);
         // Check that slow network warning exists in the warnings list
-        expect(report.warnings.any((w) => w.contains('Slow network request')),
-            isTrue);
+        expect(
+          report.warnings.any((w) => w.contains('Slow network request')),
+          isTrue,
+        );
       });
     });
 
@@ -296,8 +306,10 @@ void main() {
         // Assert
         final report = service.generateReport();
         expect(report.warnings, isNotEmpty);
-        expect(report.warnings.any((w) => w.contains('High memory usage')),
-            isTrue);
+        expect(
+          report.warnings.any((w) => w.contains('High memory usage')),
+          isTrue,
+        );
       });
     });
 
@@ -328,8 +340,9 @@ void main() {
         final report = service.generateReport();
         expect(report.warnings, isNotEmpty);
         expect(
-            report.warnings.any((w) => w.contains('Slow interaction response')),
-            isTrue);
+          report.warnings.any((w) => w.contains('Slow interaction response')),
+          isTrue,
+        );
       });
     });
 
@@ -337,7 +350,9 @@ void main() {
       test('should generate comprehensive report', () {
         // Arrange
         service.recordNetworkRequest(
-            'api/test', const Duration(milliseconds: 100));
+          'api/test',
+          const Duration(milliseconds: 100),
+        );
         service.recordCacheAccess(true);
         service.recordCacheAccess(false);
         service.recordMemoryUsage(100, 200);
@@ -358,7 +373,9 @@ void main() {
       test('should serialize report to JSON', () {
         // Arrange
         service.recordNetworkRequest(
-            'api/test', const Duration(milliseconds: 100));
+          'api/test',
+          const Duration(milliseconds: 100),
+        );
 
         // Act
         final report = service.generateReport();
@@ -443,7 +460,9 @@ void main() {
       test('should provide current performance summary', () {
         // Arrange
         service.recordNetworkRequest(
-            'api/test', const Duration(milliseconds: 100));
+          'api/test',
+          const Duration(milliseconds: 100),
+        );
         service.recordCacheAccess(true);
         service.recordCacheAccess(true);
         service.recordCacheAccess(false);
@@ -462,7 +481,9 @@ void main() {
       test('should clear all metrics', () {
         // Arrange
         service.recordNetworkRequest(
-            'api/test', const Duration(milliseconds: 100));
+          'api/test',
+          const Duration(milliseconds: 100),
+        );
         service.recordCacheAccess(true);
         service.recordMemoryUsage(100, 200);
 

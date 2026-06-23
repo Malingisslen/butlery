@@ -374,8 +374,10 @@ void main() {
         // Should not convert
         expect(SmartUnitConverter.shouldConvert(500.0, 'g'), isFalse);
         expect(SmartUnitConverter.shouldConvert(5.0, 'dl'), isFalse);
-        expect(SmartUnitConverter.shouldConvert(50.0, 'ml'),
-            isTrue); // 50 ml -> 5 cl
+        expect(
+          SmartUnitConverter.shouldConvert(50.0, 'ml'),
+          isTrue,
+        ); // 50 ml -> 5 cl
         expect(SmartUnitConverter.shouldConvert(2.0, 'krm'), isFalse);
         expect(SmartUnitConverter.shouldConvert(2.0, 'msk'), isFalse);
       });
@@ -461,8 +463,7 @@ void main() {
         expect(measurement.unit, equals('dl'));
       });
 
-      test(
-          'BUT-899: negative volume quantities convert symmetrically '
+      test('BUT-899: negative volume quantities convert symmetrically '
           'to mass', () {
         // The gram branch always normalised with .abs() so -500g → -0.5kg
         // (sign preserved, threshold crossed). The volume branches did
@@ -522,8 +523,10 @@ void main() {
         expect(measurement.toString(), contains('dl'));
 
         measurement = ConvertedMeasurement(1.5, 'l');
-        expect(measurement.toString(),
-            contains('1 ½')); // Space between integer and fraction
+        expect(
+          measurement.toString(),
+          contains('1 ½'),
+        ); // Space between integer and fraction
         expect(measurement.toString(), contains('l'));
 
         measurement = ConvertedMeasurement(2.0, 'kg');
@@ -547,8 +550,11 @@ void main() {
           final c = SmartUnitConverter.toCanonicalBase(q, unit);
           expect(c, isNotNull, reason: '$unit must be a recognized volume');
           expect(c!.baseUnit, 'ml');
-          expect(c.quantity, closeTo(ml, 1e-9),
-              reason: '$q $unit should be $ml ml');
+          expect(
+            c.quantity,
+            closeTo(ml, 1e-9),
+            reason: '$q $unit should be $ml ml',
+          );
         }
 
         expectMl(1, 'l', 1000);
@@ -565,8 +571,11 @@ void main() {
           final c = SmartUnitConverter.toCanonicalBase(q, unit);
           expect(c, isNotNull, reason: '$unit must be a recognized weight');
           expect(c!.baseUnit, 'g');
-          expect(c.quantity, closeTo(g, 1e-9),
-              reason: '$q $unit should be $g g');
+          expect(
+            c.quantity,
+            closeTo(g, 1e-9),
+            reason: '$q $unit should be $g g',
+          );
         }
 
         expectG(1, 'kg', 1000);
@@ -583,9 +592,14 @@ void main() {
         expect(SmartUnitConverter.toCanonicalBase(1, 'tesked')!.quantity, 5);
         expect(SmartUnitConverter.toCanonicalBase(1, 'kilo')!.quantity, 1000);
         expect(
-            SmartUnitConverter.toCanonicalBase(1, 'deciliter')!.quantity, 100);
-        expect(SmartUnitConverter.toCanonicalBase(1, ' DL ')!.quantity, 100,
-            reason: 'unit string is lowercased + trimmed before lookup');
+          SmartUnitConverter.toCanonicalBase(1, 'deciliter')!.quantity,
+          100,
+        );
+        expect(
+          SmartUnitConverter.toCanonicalBase(1, ' DL ')!.quantity,
+          100,
+          reason: 'unit string is lowercased + trimmed before lookup',
+        );
       });
 
       test('returns null for unit-less counts and unknown text', () {
@@ -593,21 +607,29 @@ void main() {
         // vitlök" from being cross-merged with anything — null means
         // "only sum on an exact unit-string match", never via a family.
         for (final unit in ['st', 'klyfta', 'förp', 'paket', '', 'gurkor']) {
-          expect(SmartUnitConverter.toCanonicalBase(2, unit), isNull,
-              reason: '"$unit" has no measurement family');
+          expect(
+            SmartUnitConverter.toCanonicalBase(2, unit),
+            isNull,
+            reason: '"$unit" has no measurement family',
+          );
         }
       });
 
-      test('volume and weight reduce to DIFFERENT bases (never cross-merge)',
-          () {
-        // Intent: pins the load-bearing invariant behind "200 g + 1 dl stays
-        // two honest lines" — a regression that mapped g→ml (or shared a
-        // base) would silently sum mass and volume into one wrong number.
-        final vol = SmartUnitConverter.toCanonicalBase(1, 'dl')!;
-        final weight = SmartUnitConverter.toCanonicalBase(100, 'g')!;
-        expect(vol.baseUnit, isNot(weight.baseUnit),
-            reason: 'volume(ml) and weight(g) must never share a base unit');
-      });
+      test(
+        'volume and weight reduce to DIFFERENT bases (never cross-merge)',
+        () {
+          // Intent: pins the load-bearing invariant behind "200 g + 1 dl stays
+          // two honest lines" — a regression that mapped g→ml (or shared a
+          // base) would silently sum mass and volume into one wrong number.
+          final vol = SmartUnitConverter.toCanonicalBase(1, 'dl')!;
+          final weight = SmartUnitConverter.toCanonicalBase(100, 'g')!;
+          expect(
+            vol.baseUnit,
+            isNot(weight.baseUnit),
+            reason: 'volume(ml) and weight(g) must never share a base unit',
+          );
+        },
+      );
 
       test('preserves sign so a stray negative is not silently zeroed', () {
         // Intent: the reducer is a multiply, not a threshold — it must carry

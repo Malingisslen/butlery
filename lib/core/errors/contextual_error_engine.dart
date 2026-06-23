@@ -41,7 +41,8 @@ enum UserActionContext {
   appStartup,
   dataSync,
   backgroundUpload,
-  offline;
+  offline
+  ;
 
   /// Localized description of the action
   String get localizedDescription {
@@ -106,7 +107,8 @@ enum ErrorSeverity {
   minimal('minimal'), // Just show icon/indicator
   standard('standard'), // Show standard message
   detailed('detailed'), // Show detailed message with context
-  diagnostic('diagnostic'); // Show full diagnostic information
+  diagnostic('diagnostic')
+  ; // Show full diagnostic information
 
   const ErrorSeverity(this.level);
   final String level;
@@ -165,7 +167,8 @@ class ContextualErrorEngine {
   static String generateMessage(ErrorContext context) {
     try {
       AppLogger.debug(
-          '🚨 ERROR_ENGINE: Generating contextual message for ${context.actionContext.name} - ${context.errorType.name}');
+        '🚨 ERROR_ENGINE: Generating contextual message for ${context.actionContext.name} - ${context.errorType.name}',
+      );
 
       final baseMessage = _generateBaseMessage(context);
       final recoveryGuidance = _generateRecoveryGuidance(context);
@@ -174,11 +177,13 @@ class ContextualErrorEngine {
           : baseMessage;
 
       AppLogger.info(
-          '🚨 ERROR_ENGINE: Generated message: ${fullMessage.length > 100 ? '${fullMessage.substring(0, 100)}...' : fullMessage}');
+        '🚨 ERROR_ENGINE: Generated message: ${fullMessage.length > 100 ? '${fullMessage.substring(0, 100)}...' : fullMessage}',
+      );
       return fullMessage;
     } catch (e) {
       AppLogger.error(
-          '🚨 ERROR_ENGINE: Failed to generate contextual message: $e');
+        '🚨 ERROR_ENGINE: Failed to generate contextual message: $e',
+      );
       return _getFallbackMessage(context.actionContext);
     }
   }
@@ -210,7 +215,9 @@ class ContextualErrorEngine {
 
   /// Generate network-aware error messages
   static String _getNetworkErrorMessage(
-      String action, ConnectivityResult connectivity) {
+    String action,
+    ConnectivityResult connectivity,
+  ) {
     final l = AppLocale.current;
     switch (connectivity) {
       case ConnectivityResult.none:
@@ -228,7 +235,9 @@ class ContextualErrorEngine {
 
   /// Generate authentication error messages with context
   static String _getAuthenticationErrorMessage(
-      String action, ErrorContext context) {
+    String action,
+    ErrorContext context,
+  ) {
     final l = AppLocale.current;
     final baseMessage = l.errorAuthNoPermissionFor(action);
 
@@ -290,7 +299,9 @@ class ContextualErrorEngine {
 
   /// Generate service unavailable error messages
   static String _getServiceUnavailableMessage(
-      String action, ErrorContext context) {
+    String action,
+    ErrorContext context,
+  ) {
     final l = AppLocale.current;
     final isMaintenanceTime = _isMaintenanceTime();
 
@@ -407,8 +418,9 @@ class ContextualErrorEngine {
 
   /// Get fallback message when error generation fails
   static String _getFallbackMessage(UserActionContext context) {
-    return AppLocale.current
-        .errorFallbackWhileAction(context.localizedDescription);
+    return AppLocale.current.errorFallbackWhileAction(
+      context.localizedDescription,
+    );
   }
 
   /// Check if current time is during maintenance window (simple heuristic)

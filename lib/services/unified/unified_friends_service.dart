@@ -100,8 +100,9 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   late final FriendsInvitationsOperations _invitationsOps;
 
   // Stream-based state (Phase 2)
-  final _stateSubject =
-      BehaviorSubject<FriendsServiceState>.seeded(const FriendsStateLoading());
+  final _stateSubject = BehaviorSubject<FriendsServiceState>.seeded(
+    const FriendsStateLoading(),
+  );
 
   Stream<FriendsServiceState> get stateStream => _stateSubject.stream;
   FriendsServiceState get currentState => _stateSubject.value;
@@ -110,8 +111,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   UnifiedFriendsService({
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
-  })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository {
+  }) : _firestoreRepository = firestoreRepository,
+       _authRepository = authRepository {
     // Forward the firestore instance from the injected repo into the
     // sub-repos so tests can wire a FakeFirebaseFirestore end-to-end
     // without each sub-repo falling through to FirebaseFirestore.instance
@@ -143,7 +144,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     _initializeFeatureInterfaces();
 
     AppLogger.info(
-        '✅ UnifiedFriendsService facade initialized with modular architecture');
+      '✅ UnifiedFriendsService facade initialized with modular architecture',
+    );
   }
   void notifyListeners() {
     _emitState();
@@ -166,18 +168,21 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     }
     if (_stateManager.hasError && _stateManager.friends.isEmpty) {
       _stateSubject.add(
-          FriendsStateError(message: _stateManager.error ?? 'Unknown error'));
+        FriendsStateError(message: _stateManager.error ?? 'Unknown error'),
+      );
       return;
     }
-    _stateSubject.add(FriendsStateData(
-      friends: _stateManager.friends,
-      incomingRequests: _stateManager.incomingRequests,
-      outgoingRequests: _stateManager.outgoingRequests,
-      categories: _stateManager.categories,
-      receivedInvitations: _stateManager.receivedInvitations,
-      blockedUsers: _stateManager.blockedUsers,
-      error: _stateManager.error,
-    ));
+    _stateSubject.add(
+      FriendsStateData(
+        friends: _stateManager.friends,
+        incomingRequests: _stateManager.incomingRequests,
+        outgoingRequests: _stateManager.outgoingRequests,
+        categories: _stateManager.categories,
+        receivedInvitations: _stateManager.receivedInvitations,
+        blockedUsers: _stateManager.blockedUsers,
+        error: _stateManager.error,
+      ),
+    );
   }
 
   List<UserProfile> get friends => _stateManager.friends;
@@ -220,7 +225,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
         if (user != null) {
           // User logged in - reload friends data
           AppLogger.info(
-              '🔄 User logged in - reloading friends data for: ${user.uid}');
+            '🔄 User logged in - reloading friends data for: ${user.uid}',
+          );
           await _stateManager.initialize();
 
           // Run migration to ensure owners are members of their groups
@@ -258,7 +264,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     }
 
     AppLogger.success(
-        '✅ UnifiedFriendsService facade initialized with auth state handling');
+      '✅ UnifiedFriendsService facade initialized with auth state handling',
+    );
   }
 
   void _initializeModules() {
@@ -301,7 +308,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     _stateManager.addListener(_emitStateOnStateManagerChange);
 
     AppLogger.debug(
-        'Focused modules initialized with Firebase repository and category repository');
+      'Focused modules initialized with Firebase repository and category repository',
+    );
   }
 
   void _initializeFeatureInterfaces() {
@@ -433,21 +441,27 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
 
   /// Internal method to update sent invitation (for operations classes)
   void updateSentInvitationInternal(
-          String invitationId, GroupInvitation invitation) =>
-      _internalOps.updateSentInvitationInternal(invitationId, invitation);
+    String invitationId,
+    GroupInvitation invitation,
+  ) => _internalOps.updateSentInvitationInternal(invitationId, invitation);
 
   /// Internal method to send email invitation (for operations classes)
-  Future<bool> sendEmailInvitationInternal(
-          {required String email, required GroupInvitation invitation}) async =>
-      await _internalOps.sendEmailInvitationInternal(
-          email: email, invitation: invitation);
+  Future<bool> sendEmailInvitationInternal({
+    required String email,
+    required GroupInvitation invitation,
+  }) async => await _internalOps.sendEmailInvitationInternal(
+    email: email,
+    invitation: invitation,
+  );
 
   /// Internal method to send SMS invitation (for operations classes)
-  Future<bool> sendSMSInvitationInternal(
-          {required String phoneNumber,
-          required GroupInvitation invitation}) async =>
-      await _internalOps.sendSMSInvitationInternal(
-          phoneNumber: phoneNumber, invitation: invitation);
+  Future<bool> sendSMSInvitationInternal({
+    required String phoneNumber,
+    required GroupInvitation invitation,
+  }) async => await _internalOps.sendSMSInvitationInternal(
+    phoneNumber: phoneNumber,
+    invitation: invitation,
+  );
 
   /// Internal method to create invitation link (for operations classes)
   Future<String> createInvitationLinkInternal(String invitationId) =>
@@ -455,7 +469,9 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
 
   /// Internal method to update invitation status (for operations classes)
   Future<void> updateInvitationStatusInternal(
-          String invitationId, GroupInvitationStatus status) async =>
+    String invitationId,
+    GroupInvitationStatus status,
+  ) async =>
       await _internalOps.updateInvitationStatusInternal(invitationId, status);
 
   /// Internal method to get received group invitations (for operations classes)
@@ -480,7 +496,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   void addOutgoingRequestInternal(FriendRequest request) {
     _stateManager.addOutgoingRequest(request);
     AppLogger.debug(
-        '✅ Added outgoing request to ${request.toUserId} via state manager');
+      '✅ Added outgoing request to ${request.toUserId} via state manager',
+    );
   }
 
   /// Internal method to remove outgoing friend request
@@ -493,7 +510,8 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   void addIncomingRequestInternal(FriendRequest request) {
     _stateManager.addIncomingRequest(request);
     AppLogger.debug(
-        '✅ Added incoming request from ${request.fromUserId} via state manager');
+      '✅ Added incoming request from ${request.fromUserId} via state manager',
+    );
   }
 
   /// Internal method to remove incoming friend request
@@ -506,14 +524,16 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   void addFriendInternal(UserProfile friend) {
     _stateManager.addFriend(friend);
     AppLogger.debug(
-        '✅ Added friend ${friend.displayName.maskedName} via state manager');
+      '✅ Added friend ${friend.displayName.maskedName} via state manager',
+    );
   }
 
   /// Internal method to remove friend
   void removeFriendInternal(String friendId) {
     _stateManager.removeFriend(friendId);
     AppLogger.debug(
-        '✅ Removed friend ${friendId.maskedUserId} via state manager');
+      '✅ Removed friend ${friendId.maskedUserId} via state manager',
+    );
   }
 
   /// Internal method to seed the blocked-users state — used by tests and

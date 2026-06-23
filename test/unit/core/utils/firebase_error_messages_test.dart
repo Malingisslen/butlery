@@ -20,18 +20,24 @@ void main() {
 
   group('permission-class codes → errorPermissionDenied', () {
     test('permission-denied', () {
-      expect(mapFirebaseErrorMessage(_fe('permission-denied')),
-          l.errorPermissionDenied);
+      expect(
+        mapFirebaseErrorMessage(_fe('permission-denied')),
+        l.errorPermissionDenied,
+      );
     });
 
     test('unauthorized', () {
-      expect(mapFirebaseErrorMessage(_fe('unauthorized')),
-          l.errorPermissionDenied);
+      expect(
+        mapFirebaseErrorMessage(_fe('unauthorized')),
+        l.errorPermissionDenied,
+      );
     });
 
     test('unauthenticated', () {
-      expect(mapFirebaseErrorMessage(_fe('unauthenticated')),
-          l.errorPermissionDenied);
+      expect(
+        mapFirebaseErrorMessage(_fe('unauthenticated')),
+        l.errorPermissionDenied,
+      );
     });
   });
 
@@ -45,16 +51,20 @@ void main() {
     });
 
     test('network-request-failed', () {
-      expect(mapFirebaseErrorMessage(_fe('network-request-failed')),
-          l.errorNetwork);
+      expect(
+        mapFirebaseErrorMessage(_fe('network-request-failed')),
+        l.errorNetwork,
+      );
     });
   });
 
   group('fallback chain', () {
     test('unknown FirebaseException code → operation fallback when given', () {
       expect(
-        mapFirebaseErrorMessage(_fe('weird-new-code'),
-            fallback: 'Kunde inte spara receptet.'),
+        mapFirebaseErrorMessage(
+          _fe('weird-new-code'),
+          fallback: 'Kunde inte spara receptet.',
+        ),
         'Kunde inte spara receptet.',
       );
     });
@@ -68,8 +78,10 @@ void main() {
 
     test('non-Firebase exception → fallback when given', () {
       expect(
-        mapFirebaseErrorMessage(StateError('boom'),
-            fallback: 'Kunde inte ladda.'),
+        mapFirebaseErrorMessage(
+          StateError('boom'),
+          fallback: 'Kunde inte ladda.',
+        ),
         'Kunde inte ladda.',
       );
     });

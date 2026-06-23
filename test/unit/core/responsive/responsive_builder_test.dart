@@ -170,8 +170,9 @@ void main() {
     });
 
     /// Desktop width with neither desktop nor tablet falls back to mobile.
-    testWidgets('desktop width, no desktop+tablet → uses mobile',
-        (tester) async {
+    testWidgets('desktop width, no desktop+tablet → uses mobile', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         1400,
@@ -231,8 +232,9 @@ void main() {
 
     /// 1100 → tabletLarge; if tabletLarge missing, cascades through
     /// tablet → mobileLarge → mobile.
-    testWidgets('tabletLarge cascades to next available smaller builder',
-        (tester) async {
+    testWidgets('tabletLarge cascades to next available smaller builder', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         1100,
@@ -247,15 +249,17 @@ void main() {
 
     /// 2200 → desktopLarge; with only mobile defined, cascades all the way
     /// down to mobile.
-    testWidgets('desktopLarge cascades all the way to mobile when nothing else',
-        (tester) async {
-      await _pumpAt(
-        tester,
-        2200,
-        ResponsiveBuilderFull(mobile: (_) => const Text('m')),
-      );
-      expect(find.text('m'), findsOneWidget);
-    });
+    testWidgets(
+      'desktopLarge cascades all the way to mobile when nothing else',
+      (tester) async {
+        await _pumpAt(
+          tester,
+          2200,
+          ResponsiveBuilderFull(mobile: (_) => const Text('m')),
+        );
+        expect(find.text('m'), findsOneWidget);
+      },
+    );
 
     /// 1500 → desktop band picks desktop builder if defined.
     testWidgets('desktop band picks desktop builder', (tester) async {
@@ -301,8 +305,9 @@ void main() {
     });
 
     /// Landscape with no mobileLandscape falls back to mobilePortrait.
-    testWidgets('mobile landscape, no landscape → mobilePortrait',
-        (tester) async {
+    testWidgets('mobile landscape, no landscape → mobilePortrait', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         400,
@@ -315,8 +320,9 @@ void main() {
     });
 
     /// Tablet portrait without tabletPortrait → mobilePortrait fallback.
-    testWidgets('tablet portrait, no tablet variants → mobilePortrait',
-        (tester) async {
+    testWidgets('tablet portrait, no tablet variants → mobilePortrait', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         800,
@@ -402,8 +408,9 @@ void main() {
 
     /// `visible: false` with no replacement renders SizedBox.shrink (so
     /// neither the child nor any text appears).
-    testWidgets('visible=false no replacement → SizedBox.shrink',
-        (tester) async {
+    testWidgets('visible=false no replacement → SizedBox.shrink', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         400,
@@ -432,8 +439,9 @@ void main() {
     });
 
     /// `visibleWhen` matches → child rendered.
-    testWidgets('visibleWhen contains current category → child shown',
-        (tester) async {
+    testWidgets('visibleWhen contains current category → child shown', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         800, // tablet
@@ -446,8 +454,9 @@ void main() {
     });
 
     /// `visibleWhen` does NOT match → replacement (or shrink) rendered.
-    testWidgets('visibleWhen excludes current category → hidden',
-        (tester) async {
+    testWidgets('visibleWhen excludes current category → hidden', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         400, // mobile
@@ -474,8 +483,9 @@ void main() {
 
   group('ResponsiveConstrainedBox', () {
     /// Explicit maxWidth overrides the breakpoint calculation.
-    testWidgets('explicit maxWidth wins over breakpoint default',
-        (tester) async {
+    testWidgets('explicit maxWidth wins over breakpoint default', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         1400, // desktop default would be 1200
@@ -566,8 +576,9 @@ void main() {
     /// Tablet width but no tablet param → falls back to mobile (not null!).
     /// Regression guard: if Breakpoints.valueFor stops cascading nulls,
     /// this would explode with a null cast at Padding.padding.
-    testWidgets('tablet width, no tablet param → falls back to mobile',
-        (tester) async {
+    testWidgets('tablet width, no tablet param → falls back to mobile', (
+      tester,
+    ) async {
       await _pumpAt(
         tester,
         800,
@@ -588,11 +599,15 @@ void main() {
       await _pumpAt(
         tester,
         400,
-        Builder(builder: (context) {
-          spacing = const ResponsiveSpacing(mobile: 10, child: SizedBox())
-              .getSpacing(context);
-          return const SizedBox();
-        }),
+        Builder(
+          builder: (context) {
+            spacing = const ResponsiveSpacing(
+              mobile: 10,
+              child: SizedBox(),
+            ).getSpacing(context);
+            return const SizedBox();
+          },
+        ),
       );
       expect(spacing, 10.0);
     });
@@ -603,11 +618,15 @@ void main() {
       await _pumpAt(
         tester,
         800,
-        Builder(builder: (context) {
-          spacing = const ResponsiveSpacing(mobile: 10, child: SizedBox())
-              .getSpacing(context);
-          return const SizedBox();
-        }),
+        Builder(
+          builder: (context) {
+            spacing = const ResponsiveSpacing(
+              mobile: 10,
+              child: SizedBox(),
+            ).getSpacing(context);
+            return const SizedBox();
+          },
+        ),
       );
       expect(spacing, 12.5);
     });
@@ -619,11 +638,15 @@ void main() {
       await _pumpAt(
         tester,
         1400,
-        Builder(builder: (context) {
-          spacing = const ResponsiveSpacing(mobile: 10, child: SizedBox())
-              .getSpacing(context);
-          return const SizedBox();
-        }),
+        Builder(
+          builder: (context) {
+            spacing = const ResponsiveSpacing(
+              mobile: 10,
+              child: SizedBox(),
+            ).getSpacing(context);
+            return const SizedBox();
+          },
+        ),
       );
       expect(spacing, 15.0);
     });
@@ -643,16 +666,21 @@ void main() {
   });
 
   group('ResponsiveUtils — multipliers per breakpoint', () {
-    Future<T> at<T>(WidgetTester tester, double width,
-        T Function(BuildContext) read) async {
+    Future<T> at<T>(
+      WidgetTester tester,
+      double width,
+      T Function(BuildContext) read,
+    ) async {
       late T value;
       await _pumpAt(
         tester,
         width,
-        Builder(builder: (context) {
-          value = read(context);
-          return const SizedBox();
-        }),
+        Builder(
+          builder: (context) {
+            value = read(context);
+            return const SizedBox();
+          },
+        ),
       );
       return value;
     }
@@ -661,7 +689,9 @@ void main() {
       expect(await at(tester, 400, ResponsiveUtils.getFontSizeMultiplier), 1.0);
       expect(await at(tester, 800, ResponsiveUtils.getFontSizeMultiplier), 1.1);
       expect(
-          await at(tester, 1400, ResponsiveUtils.getFontSizeMultiplier), 1.15);
+        await at(tester, 1400, ResponsiveUtils.getFontSizeMultiplier),
+        1.15,
+      );
     });
 
     testWidgets('getSpacingMultiplier: 1.0 / 1.25 / 1.5', (tester) async {
@@ -673,9 +703,13 @@ void main() {
     testWidgets('getIconSizeMultiplier: 1.0 / 1.15 / 1.25', (tester) async {
       expect(await at(tester, 400, ResponsiveUtils.getIconSizeMultiplier), 1.0);
       expect(
-          await at(tester, 800, ResponsiveUtils.getIconSizeMultiplier), 1.15);
+        await at(tester, 800, ResponsiveUtils.getIconSizeMultiplier),
+        1.15,
+      );
       expect(
-          await at(tester, 1400, ResponsiveUtils.getIconSizeMultiplier), 1.25);
+        await at(tester, 1400, ResponsiveUtils.getIconSizeMultiplier),
+        1.25,
+      );
     });
 
     testWidgets('responsive() applies multiplier to base', (tester) async {
@@ -707,8 +741,9 @@ void main() {
       expect(await at(tester, 1400, ResponsiveUtils.getSidebarWidth), 256.0);
     });
 
-    testWidgets('useMasterDetail: false on mobile, true on tablet+desktop',
-        (tester) async {
+    testWidgets('useMasterDetail: false on mobile, true on tablet+desktop', (
+      tester,
+    ) async {
       expect(await at(tester, 400, ResponsiveUtils.useMasterDetail), isFalse);
       expect(await at(tester, 800, ResponsiveUtils.useMasterDetail), isTrue);
       expect(await at(tester, 1400, ResponsiveUtils.useMasterDetail), isTrue);
@@ -731,29 +766,36 @@ void main() {
 
     /// Dialog constraints: maxWidth from breakpoint, maxHeight = 90% of
     /// MediaQuery height. At width 800 (tablet) maxWidth = 500.
-    testWidgets('getDialogConstraints: width per breakpoint, height = 0.9 * H',
-        (tester) async {
-      final box = await at(
-        tester,
-        800,
-        ResponsiveUtils.getDialogConstraints,
-      );
-      expect(box.maxWidth, 500);
-      expect(box.maxHeight, closeTo(800 * 0.9, 0.001));
-    });
+    testWidgets(
+      'getDialogConstraints: width per breakpoint, height = 0.9 * H',
+      (tester) async {
+        final box = await at(
+          tester,
+          800,
+          ResponsiveUtils.getDialogConstraints,
+        );
+        expect(box.maxWidth, 500);
+        expect(box.maxHeight, closeTo(800 * 0.9, 0.001));
+      },
+    );
 
     /// Form constraints: tablet+ caps at 600; mobile is infinity.
-    testWidgets('getFormConstraints: 600 cap on tablet/desktop, inf on mobile',
-        (tester) async {
-      expect(
+    testWidgets(
+      'getFormConstraints: 600 cap on tablet/desktop, inf on mobile',
+      (tester) async {
+        expect(
           (await at(tester, 400, ResponsiveUtils.getFormConstraints)).maxWidth,
-          double.infinity);
-      expect(
+          double.infinity,
+        );
+        expect(
           (await at(tester, 800, ResponsiveUtils.getFormConstraints)).maxWidth,
-          600);
-      expect(
+          600,
+        );
+        expect(
           (await at(tester, 1400, ResponsiveUtils.getFormConstraints)).maxWidth,
-          600);
-    });
+          600,
+        );
+      },
+    );
   });
 }

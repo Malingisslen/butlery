@@ -29,10 +29,10 @@ class CookSnapViewModel extends BaseViewModel {
     required String recipeId,
     required String recipeAuthorId,
     required String recipeName,
-  })  : _service = service,
-        _recipeId = recipeId,
-        _recipeAuthorId = recipeAuthorId,
-        _recipeName = recipeName {
+  }) : _service = service,
+       _recipeId = recipeId,
+       _recipeAuthorId = recipeAuthorId,
+       _recipeName = recipeName {
     _startWatching();
   }
 
@@ -43,16 +43,18 @@ class CookSnapViewModel extends BaseViewModel {
 
   void _startWatching() {
     setLoading(true);
-    _subscription = _service.watchCookSnaps(_recipeId).listen(
-      (snapList) {
-        _snaps = snapList;
-        setLoading(false);
-      },
-      onError: (e) {
-        AppLogger.error('CookSnap stream error: $e');
-        setError(AppLocale.current.cookSnapErrorLoad);
-      },
-    );
+    _subscription = _service
+        .watchCookSnaps(_recipeId)
+        .listen(
+          (snapList) {
+            _snaps = snapList;
+            setLoading(false);
+          },
+          onError: (e) {
+            AppLogger.error('CookSnap stream error: $e');
+            setError(AppLocale.current.cookSnapErrorLoad);
+          },
+        );
   }
 
   Future<bool> addSnap({

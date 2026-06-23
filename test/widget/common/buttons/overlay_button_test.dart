@@ -16,8 +16,9 @@ void main() {
 
   group('OverlayButton Tests', () {
     group('Default Constructor', () {
-      testWidgets('renders with custom child widget',
-          (WidgetTester tester) async {
+      testWidgets('renders with custom child widget', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -34,8 +35,9 @@ void main() {
         expect(find.byType(DecoratedBox), findsOneWidget);
       });
 
-      testWidgets('renders with custom background color',
-          (WidgetTester tester) async {
+      testWidgets('renders with custom background color', (
+        WidgetTester tester,
+      ) async {
         const customColor = Colors.blue;
 
         await tester.pumpWidget(
@@ -50,40 +52,46 @@ void main() {
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox = tester.widget<DecoratedBox>(
+          find.byType(DecoratedBox),
+        );
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color, equals(customColor));
       });
 
-      testWidgets('uses default background color when not specified',
-          (WidgetTester tester) async {
+      testWidgets('uses default background color when not specified', (
+        WidgetTester tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return OverlayButton(
-                  child: const Icon(Icons.edit),
-                  onPressed: () {},
-                );
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return OverlayButton(
+                    child: const Icon(Icons.edit),
+                    onPressed: () {},
+                  );
+                },
+              ),
             ),
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox = tester.widget<DecoratedBox>(
+          find.byType(DecoratedBox),
+        );
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(
-            decoration.color,
-            equals(
-                cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)));
+          decoration.color,
+          equals(cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)),
+        );
       });
 
-      testWidgets('handles null onPressed callback',
-          (WidgetTester tester) async {
+      testWidgets('handles null onPressed callback', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -99,8 +107,9 @@ void main() {
         expect(iconButton.onPressed, isNull);
       });
 
-      testWidgets('executes onPressed callback when tapped',
-          (WidgetTester tester) async {
+      testWidgets('executes onPressed callback when tapped', (
+        WidgetTester tester,
+      ) async {
         bool wasPressed = false;
 
         await tester.pumpWidget(
@@ -120,8 +129,9 @@ void main() {
         expect(wasPressed, isTrue);
       });
 
-      testWidgets('displays tooltip when provided',
-          (WidgetTester tester) async {
+      testWidgets('displays tooltip when provided', (
+        WidgetTester tester,
+      ) async {
         const tooltipText = 'Edit item';
 
         await tester.pumpWidget(
@@ -140,8 +150,9 @@ void main() {
         expect(iconButton.tooltip, equals(tooltipText));
       });
 
-      testWidgets('does not display tooltip when not provided',
-          (WidgetTester tester) async {
+      testWidgets('does not display tooltip when not provided', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -169,11 +180,14 @@ void main() {
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox = tester.widget<DecoratedBox>(
+          find.byType(DecoratedBox),
+        );
         final decoration = decoratedBox.decoration as BoxDecoration;
-        expect(decoration.borderRadius,
-            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(
+          decoration.borderRadius,
+          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+        );
       });
 
       testWidgets('accepts any widget as child', (WidgetTester tester) async {
@@ -227,16 +241,19 @@ void main() {
         expect(find.byIcon(Icons.clear), findsOneWidget);
       });
 
-      testWidgets('uses correct icon color for remove variant',
-          (WidgetTester tester) async {
+      testWidgets('uses correct icon color for remove variant', (
+        WidgetTester tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return OverlayButton.remove(onPressed: () {});
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return OverlayButton.remove(onPressed: () {});
+                },
+              ),
             ),
           ),
         );
@@ -248,32 +265,37 @@ void main() {
         expect(iconTheme.color, equals(cs.surfaceContainerHighest));
       });
 
-      testWidgets('uses default background color for remove variant',
-          (WidgetTester tester) async {
+      testWidgets('uses default background color for remove variant', (
+        WidgetTester tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return OverlayButton.remove(onPressed: () {});
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return OverlayButton.remove(onPressed: () {});
+                },
+              ),
             ),
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox = tester.widget<DecoratedBox>(
+          find.byType(DecoratedBox),
+        );
         final decoration = decoratedBox.decoration as BoxDecoration;
         // Remove variant sets backgroundColor to null → default theme surface.
         expect(
-            decoration.color,
-            equals(
-                cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)));
+          decoration.color,
+          equals(cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)),
+        );
       });
 
-      testWidgets('executes onPressed callback when remove button tapped',
-          (WidgetTester tester) async {
+      testWidgets('executes onPressed callback when remove button tapped', (
+        WidgetTester tester,
+      ) async {
         bool wasRemoved = false;
 
         await tester.pumpWidget(
@@ -292,8 +314,9 @@ void main() {
         expect(wasRemoved, isTrue);
       });
 
-      testWidgets('displays tooltip for remove button when provided',
-          (WidgetTester tester) async {
+      testWidgets('displays tooltip for remove button when provided', (
+        WidgetTester tester,
+      ) async {
         const tooltipText = 'Ta bort'; // Swedish for "Remove"
 
         await tester.pumpWidget(
@@ -313,8 +336,9 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('maintains consistent size with IconButton',
-          (WidgetTester tester) async {
+      testWidgets('maintains consistent size with IconButton', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -332,8 +356,9 @@ void main() {
         expect(iconButtonSize.height, greaterThan(0));
       });
 
-      testWidgets('renders correctly in different parent layouts',
-          (WidgetTester tester) async {
+      testWidgets('renders correctly in different parent layouts', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -357,8 +382,9 @@ void main() {
         expect(find.byIcon(Icons.clear), findsOneWidget);
       });
 
-      testWidgets('renders correctly in Stack layout',
-          (WidgetTester tester) async {
+      testWidgets('renders correctly in Stack layout', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -386,38 +412,43 @@ void main() {
         expect(find.byIcon(Icons.clear), findsOneWidget);
       });
 
-      testWidgets('uses theme surface color when no background specified',
-          (WidgetTester tester) async {
+      testWidgets('uses theme surface color when no background specified', (
+        WidgetTester tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(primarySwatch: Colors.green),
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return OverlayButton(
-                  child: const Icon(Icons.edit),
-                  onPressed: () {},
-                );
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return OverlayButton(
+                    child: const Icon(Icons.edit),
+                    onPressed: () {},
+                  );
+                },
+              ),
             ),
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox = tester.widget<DecoratedBox>(
+          find.byType(DecoratedBox),
+        );
         final decoration = decoratedBox.decoration as BoxDecoration;
         // The button resolves its background from the ambient theme.
         expect(
-            decoration.color,
-            equals(
-                cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)));
+          decoration.color,
+          equals(cs.surface.withValues(alpha: AppDimensions.opacityVeryDark)),
+        );
       });
     });
 
     group('Accessibility', () {
-      testWidgets('supports semantic labels through child widget',
-          (WidgetTester tester) async {
+      testWidgets('supports semantic labels through child widget', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -435,8 +466,9 @@ void main() {
         expect(find.bySemanticsLabel('Redigera'), findsOneWidget);
       });
 
-      testWidgets('tooltip provides accessibility hint',
-          (WidgetTester tester) async {
+      testWidgets('tooltip provides accessibility hint', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

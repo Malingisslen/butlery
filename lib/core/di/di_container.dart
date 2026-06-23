@@ -213,7 +213,8 @@ class DIContainer {
 
     if (kDebugMode) {
       AppLogger.info(
-          '🚀 Initializing DIContainer with ${_modules.length} modules...');
+        '🚀 Initializing DIContainer with ${_modules.length} modules...',
+      );
     }
 
     try {
@@ -222,7 +223,8 @@ class DIContainer {
 
       if (kDebugMode) {
         AppLogger.debug(
-            '📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}');
+          '📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}',
+        );
       }
 
       // Step 2: Configure all modules sequentially (registration order matters)
@@ -240,7 +242,8 @@ class DIContainer {
       // directly, keeping with the convention that only PermissionService
       // reads auth state. Defensive `isRegistered` guard handles minimal
       // test setups that omit ContentModule (where PermissionService lives).
-      final hasPersistedUser = _container.isRegistered<PermissionService>() &&
+      final hasPersistedUser =
+          _container.isRegistered<PermissionService>() &&
           _container<PermissionService>().currentUserId != null;
       if (hasPersistedUser) {
         await pushUserScope();
@@ -296,7 +299,8 @@ class DIContainer {
         } catch (e) {
           if (kDebugMode) {
             AppLogger.warning(
-                '⚠️ Could not get service $serviceType from module ${module.name}: $e');
+              '⚠️ Could not get service $serviceType from module ${module.name}: $e',
+            );
           }
         }
       }
@@ -369,7 +373,8 @@ class DIContainer {
           const Duration(seconds: 5),
           onTimeout: () {
             AppLogger.warning(
-                '⏱️ ${module.name} init timed out (5s) — skipping');
+              '⏱️ ${module.name} init timed out (5s) — skipping',
+            );
           },
         );
       } catch (e) {
@@ -389,7 +394,8 @@ class DIContainer {
       } catch (e) {
         if (kDebugMode) {
           AppLogger.warning(
-              '⚠️ Post-login init warning for ${module.name}: $e');
+            '⚠️ Post-login init warning for ${module.name}: $e',
+          );
         }
       }
     }
@@ -427,7 +433,8 @@ class DIContainer {
 
       if (kDebugMode) {
         AppLogger.success(
-            '✅ Module configured: ${module.name} (provides ${module.provides.length} services)');
+          '✅ Module configured: ${module.name} (provides ${module.provides.length} services)',
+        );
       }
     } catch (e) {
       throw DIModuleException(
@@ -550,8 +557,9 @@ class DIContainer {
       for (final module in sortedModules) {
         if (assigned.contains(module.runtimeType)) continue;
 
-        final allDepsAssigned =
-            module.dependencies.every((dep) => assigned.contains(dep));
+        final allDepsAssigned = module.dependencies.every(
+          (dep) => assigned.contains(dep),
+        );
         if (allDepsAssigned) {
           tier.add(module);
         }

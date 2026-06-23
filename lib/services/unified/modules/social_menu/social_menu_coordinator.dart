@@ -95,13 +95,14 @@ class SocialMenuCoordinator
     required Future<String?> Function(Map<String, List<Recipe>>) saveMenu,
     BaseSharedContentRepository<SharedMenu>? sharedMenuRepository,
     JsonCacheHelper? cacheHelper,
-  })  : _getMenu = getMenu,
-        _saveMenu = saveMenu {
+  }) : _getMenu = getMenu,
+       _saveMenu = saveMenu {
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
 
     AppLogger.info(
-        '✅ SocialMenuCoordinator initialized for menu sharing and collaboration');
+      '✅ SocialMenuCoordinator initialized for menu sharing and collaboration',
+    );
   }
   @override
   String get contentTypeName => 'menu';
@@ -110,17 +111,23 @@ class SocialMenuCoordinator
   String getContentTitle(Map<String, List<Recipe>> content) {
     // Generate descriptive title from menu content
     final categories = content.keys.toList();
-    final totalRecipes =
-        content.values.fold(0, (sum, recipes) => sum + recipes.length);
+    final totalRecipes = content.values.fold(
+      0,
+      (sum, recipes) => sum + recipes.length,
+    );
 
     if (categories.isEmpty) return AppLocale.current.menuTitleEmpty;
     if (categories.length == 1) {
-      return AppLocale.current
-          .menuTitleSingleCategory(categories.first, totalRecipes);
+      return AppLocale.current.menuTitleSingleCategory(
+        categories.first,
+        totalRecipes,
+      );
     }
 
-    return AppLocale.current
-        .menuTitleMultiCategory(categories.join(', '), totalRecipes);
+    return AppLocale.current.menuTitleMultiCategory(
+      categories.join(', '),
+      totalRecipes,
+    );
   }
 
   @override
@@ -164,8 +171,9 @@ class SocialMenuCoordinator
     String? newTitle,
   }) {
     // For menus, we copy the entire menu structure with attribution
-    final importedMenu =
-        Map<String, List<Recipe>>.from(sharedContent.menuSnapshot);
+    final importedMenu = Map<String, List<Recipe>>.from(
+      sharedContent.menuSnapshot,
+    );
 
     // Add attribution information to each recipe
     final attributedMenu = <String, List<Recipe>>{};
@@ -182,7 +190,8 @@ class SocialMenuCoordinator
     });
 
     AppLogger.info(
-        '📋 Created imported menu with ${_getTotalRecipeCount(attributedMenu)} recipes and attribution');
+      '📋 Created imported menu with ${_getTotalRecipeCount(attributedMenu)} recipes and attribution',
+    );
     return attributedMenu;
   }
 
@@ -248,7 +257,8 @@ class SocialMenuCoordinator
       // Check if this is a collaborative menu with a realtime session
       if (sharedMenu.realtimeMenuId != null) {
         AppLogger.info(
-            '📡 Joining collaborative menu session: ${sharedMenu.realtimeMenuId}');
+          '📡 Joining collaborative menu session: ${sharedMenu.realtimeMenuId}',
+        );
 
         // Add user as participant to the realtime menu (Bug fix: without this, the menu doesn't appear in saved menus)
         try {
@@ -267,9 +277,12 @@ class SocialMenuCoordinator
 
         // Mark as joined in the shared menu
         await _sharedMenuRepository.markAsImportedOrJoined(
-            sharedMenuId, currentUserId!);
+          sharedMenuId,
+          currentUserId!,
+        );
         AppLogger.success(
-            '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}');
+          '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}',
+        );
         return MenuJoinResult(
           menuId: sharedMenu.realtimeMenuId!,
           isCollaborative: true,
@@ -325,7 +338,8 @@ class SocialMenuCoordinator
     String? newTitle,
   }) async {
     AppLogger.warning(
-        '⚠️ Using legacy import mode - consider using joinSharedMenu for true copy-on-write');
+      '⚠️ Using legacy import mode - consider using joinSharedMenu for true copy-on-write',
+    );
 
     try {
       AppLogger.info('📥 Importing shared menu $sharedMenuId (legacy mode)');
@@ -338,8 +352,9 @@ class SocialMenuCoordinator
       }
 
       // Create imported menu with attribution (GitHub fork style)
-      final importedMenu =
-          sharedMenu.createImportMenu(newOwnerId: currentUserId!);
+      final importedMenu = sharedMenu.createImportMenu(
+        newOwnerId: currentUserId!,
+      );
 
       // Save imported menu
       final menuId = await _saveMenu(importedMenu);
@@ -350,10 +365,13 @@ class SocialMenuCoordinator
 
       // Mark as imported in SharedMenu
       await _sharedMenuRepository.markAsImportedOrJoined(
-          sharedMenuId, currentUserId!);
+        sharedMenuId,
+        currentUserId!,
+      );
 
       AppLogger.success(
-          '✅ Menu imported successfully with attribution (legacy mode)');
+        '✅ Menu imported successfully with attribution (legacy mode)',
+      );
       return menuId;
     } catch (e) {
       // BUT-1124: surface failures through the shared error banner. Mirrors
@@ -381,7 +399,9 @@ class SocialMenuCoordinator
     } catch (e) {
       // BUT-1094: surface inbox-load failures via the shared error banner.
       AppLogger.error(
-          'Failed to load shared menus for user ${userId.maskedUserId}', e);
+        'Failed to load shared menus for user ${userId.maskedUserId}',
+        e,
+      );
       setError(sanitizeErrorForUser(e));
       return [];
     }
@@ -435,7 +455,9 @@ class SocialMenuCoordinator
   /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
   /// Loads status for multiple menus to populate cache efficiently.
   Future<void> loadStatusForAllMenus(
-      List<SharedMenu> menus, String userId) async {
+    List<SharedMenu> menus,
+    String userId,
+  ) async {
     const batchSize = 5;
     for (var i = 0; i < menus.length; i += batchSize) {
       final end = (i + batchSize < menus.length) ? i + batchSize : menus.length;
@@ -538,13 +560,16 @@ class SocialMenuCoordinator
 
   @override
   Map<String, List<Recipe>> getOriginalContentFromShared(
-      SharedMenu sharedContent) {
+    SharedMenu sharedContent,
+  ) {
     return sharedContent.menuSnapshot;
   }
 
   @override
   Future<String?> createStaticCopyForOwner(
-      dynamic originalContent, String ownerId) async {
+    dynamic originalContent,
+    String ownerId,
+  ) async {
     final menu = originalContent as Map<String, List<Recipe>>;
 
     // Add "(Min kopia)" suffix to indicate owner's static copy
@@ -585,13 +610,17 @@ class SocialMenuCoordinator
 
   /// Send menu invitation notifications
   Future<void> sendMenuInvitationNotifications(
-      String menuId, List<String> inviteeUserIds) async {
+    String menuId,
+    List<String> inviteeUserIds,
+  ) async {
     await sendInvitationNotifications(menuId, inviteeUserIds);
   }
 
   /// Send menu sharing notifications
   Future<void> sendMenuSharingNotifications(
-      String menuId, List<String> sharedWithUserIds) async {
+    String menuId,
+    List<String> sharedWithUserIds,
+  ) async {
     await sendSharingNotifications(menuId, sharedWithUserIds);
   }
 }

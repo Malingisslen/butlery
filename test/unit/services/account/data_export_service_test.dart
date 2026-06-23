@@ -58,12 +58,14 @@ class _EmptyHttpsCallable extends Fake implements HttpsCallable {
     // fails with an opaque `_TypeError`. The assert keeps the failure mode
     // loud + located.
     assert(
-        T == Map<dynamic, dynamic>,
-        '_EmptyHttpsCallable: production call site must use '
-        'call<Map<dynamic, dynamic>>(); got T=$T. Update this fake when the '
-        'production generic changes.');
+      T == Map<dynamic, dynamic>,
+      '_EmptyHttpsCallable: production call site must use '
+      'call<Map<dynamic, dynamic>>(); got T=$T. Update this fake when the '
+      'production generic changes.',
+    );
     return _EmptyHttpsCallableResult<T>(
-        <String, dynamic>{'rows': const [], 'nextCursor': null} as T);
+      <String, dynamic>{'rows': const [], 'nextCursor': null} as T,
+    );
   }
 }
 
@@ -72,8 +74,7 @@ class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) =>
-      _EmptyHttpsCallable();
+  }) => _EmptyHttpsCallable();
 }
 
 /// BUT-864: HttpsCallable stub that simulates a transient backend failure on
@@ -97,8 +98,7 @@ class _TransientFirebaseFunctions extends Fake implements FirebaseFunctions {
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) =>
-      _TransientHttpsCallable();
+  }) => _TransientHttpsCallable();
 }
 
 /// BUT-865: HttpsCallable that succeeds on call #1 (returns one row + a
@@ -114,19 +114,22 @@ class _SuccessThenTransientHttpsCallable extends Fake implements HttpsCallable {
   ]) async {
     _callCount++;
     if (_callCount == 1) {
-      return _EmptyHttpsCallableResult<T>(<String, dynamic>{
-        'rows': [
-          <String, dynamic>{
-            'id': 'log-page1',
-            'operation': 'read',
-            'resourceType': 'recipes',
-            'resourceId': 'r1',
-            'timestamp': '2026-05-19T00:00:00Z',
-            'granted': true,
-          },
-        ],
-        'nextCursor': 'cursor-after-page-1',
-      } as T);
+      return _EmptyHttpsCallableResult<T>(
+        <String, dynamic>{
+              'rows': [
+                <String, dynamic>{
+                  'id': 'log-page1',
+                  'operation': 'read',
+                  'resourceType': 'recipes',
+                  'resourceId': 'r1',
+                  'timestamp': '2026-05-19T00:00:00Z',
+                  'granted': true,
+                },
+              ],
+              'nextCursor': 'cursor-after-page-1',
+            }
+            as T,
+      );
     }
     throw FirebaseFunctionsException(
       code: 'unavailable',
@@ -143,8 +146,7 @@ class _SuccessThenTransientFirebaseFunctions extends Fake
   HttpsCallable httpsCallable(
     String name, {
     HttpsCallableOptions? options,
-  }) =>
-      _callable;
+  }) => _callable;
 }
 
 void main() {
@@ -266,7 +268,10 @@ void main() {
     group('Authentication', () {
       test('should throw when user not authenticated', () async {
         mockAuthRepository.setAuthState(
-            user: null, userId: null, isAuthenticated: false);
+          user: null,
+          userId: null,
+          isAuthenticated: false,
+        );
         expect(() => service.exportUserData(), throwsA(isA<Exception>()));
       });
     });
@@ -386,8 +391,7 @@ void main() {
         expect(data['comments_and_ratings'], isNotNull);
       });
 
-      test(
-          'BUT-501: export-via-repo paths return real data (not error '
+      test('BUT-501: export-via-repo paths return real data (not error '
           'payload) for cook_snaps, activity_events, weekly_menu_plans, '
           'and pantry', () async {
         // Seed a row in each migrated collection so the repo-backed
@@ -399,10 +403,10 @@ void main() {
           'recipeId': 'r1',
           'createdAt': DateTime.now(),
         });
-        await fakeFirestore
-            .collection('activity_events')
-            .doc('evt-1')
-            .set({'actorId': testUserId, 'kind': 'cook'});
+        await fakeFirestore.collection('activity_events').doc('evt-1').set({
+          'actorId': testUserId,
+          'kind': 'cook',
+        });
         await fakeFirestore
             .collection('weekly_menu_plans')
             .doc('${testUserId}_2026-W17')
@@ -426,8 +430,7 @@ void main() {
         expect(data['pantry_items']['total_count'], equals(1));
       });
 
-      test(
-          'BUT-1235: export bundle includes recipe_cook_events with the '
+      test('BUT-1235: export bundle includes recipe_cook_events with the '
           'user\'s cook events as {event_id, data}', () async {
         // Seed directly (logCookEvent uses FieldValue.increment, which is
         // MethodChannel-backed after BaseUnitTest.setupUnit — see the cook
@@ -438,24 +441,31 @@ void main() {
             .collection('events')
             .doc('evt-1')
             .set({
-          'recipeId': 'r1',
-          'cookedAt': DateTime(2026, 6, 1, 18, 30),
-        });
+              'recipeId': 'r1',
+              'cookedAt': DateTime(2026, 6, 1, 18, 30),
+            });
 
         final jsonString = await service.exportUserData();
         final data = json.decode(jsonString) as Map<String, dynamic>;
 
         final section = data['recipe_cook_events'] as Map<String, dynamic>;
-        expect(section.containsKey('error'), isFalse,
-            reason: 'a repo-path or ownership-guard regression turns the '
-                'section into an {error: ...} payload');
+        expect(
+          section.containsKey('error'),
+          isFalse,
+          reason:
+              'a repo-path or ownership-guard regression turns the '
+              'section into an {error: ...} payload',
+        );
         expect(section['total_count'], equals(1));
         final events = section['recipe_cook_events'] as List<dynamic>;
         final event = events.single as Map<String, dynamic>;
         expect(event['event_id'], 'evt-1');
         expect(event['data']['recipeId'], 'r1');
-        expect(event['data']['cookedAt'], isA<String>(),
-            reason: 'timestamps must be sanitized to ISO strings for JSON');
+        expect(
+          event['data']['cookedAt'],
+          isA<String>(),
+          reason: 'timestamps must be sanitized to ISO strings for JSON',
+        );
       });
     });
 
@@ -500,70 +510,77 @@ void main() {
       });
     });
 
-    group('BUT-864: transient per-section errors surface as top-level warnings',
-        () {
-      test(
-          'audit-log unavailable produces export_metadata.warnings entry with '
-          'error_code', () async {
-        // Replace the default service with one whose audit-log call throws a
-        // transient FirebaseFunctionsException. ComplianceExportManager will
-        // catch + return the BUT-842 envelope; DataExportService should then
-        // aggregate it into a top-level `warnings` array on export_metadata.
-        final transientService = DataExportService(
-          authRepository: mockAuthRepository,
-          firestoreRepository: mockFirestoreRepository,
-          complianceExportManager: ComplianceExportManager(
-            functions: _TransientFirebaseFunctions(),
+    group(
+      'BUT-864: transient per-section errors surface as top-level warnings',
+      () {
+        test('audit-log unavailable produces export_metadata.warnings entry with '
+            'error_code', () async {
+          // Replace the default service with one whose audit-log call throws a
+          // transient FirebaseFunctionsException. ComplianceExportManager will
+          // catch + return the BUT-842 envelope; DataExportService should then
+          // aggregate it into a top-level `warnings` array on export_metadata.
+          final transientService = DataExportService(
+            authRepository: mockAuthRepository,
+            firestoreRepository: mockFirestoreRepository,
+            complianceExportManager: ComplianceExportManager(
+              functions: _TransientFirebaseFunctions(),
+              dataExportRepository: FirebaseDataExportRepository(
+                firestore: fakeFirestore,
+                authRepository: mockAuthRepository,
+              ),
+            ),
             dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
               authRepository: mockAuthRepository,
             ),
-          ),
-          dataExportRepository: FirebaseDataExportRepository(
-            firestore: fakeFirestore,
-            authRepository: mockAuthRepository,
-          ),
-        );
+          );
 
-        final jsonString = await transientService.exportUserData();
-        final data = json.decode(jsonString) as Map<String, dynamic>;
+          final jsonString = await transientService.exportUserData();
+          final data = json.decode(jsonString) as Map<String, dynamic>;
 
-        // The audit_logs section itself still carries the transient envelope.
-        expect(data['audit_logs']['error_code'], 'unavailable');
+          // The audit_logs section itself still carries the transient envelope.
+          expect(data['audit_logs']['error_code'], 'unavailable');
 
-        // The aggregated top-level warnings array is the new contract.
-        final warnings = data['export_metadata']['warnings'] as List<dynamic>?;
-        expect(warnings, isNotNull,
-            reason: 'A transient section error must surface as a top-level '
+          // The aggregated top-level warnings array is the new contract.
+          final warnings =
+              data['export_metadata']['warnings'] as List<dynamic>?;
+          expect(
+            warnings,
+            isNotNull,
+            reason:
+                'A transient section error must surface as a top-level '
                 'warning entry so the consuming UI can flag the partial '
-                'bundle without scanning every section.');
-        expect(warnings, hasLength(1));
-        final entry = warnings!.single as Map<String, dynamic>;
-        expect(entry['section'], 'audit_logs');
-        expect(entry['error_code'], 'unavailable');
-        expect(entry['message'], isNotEmpty);
-      });
+                'bundle without scanning every section.',
+          );
+          expect(warnings, hasLength(1));
+          final entry = warnings!.single as Map<String, dynamic>;
+          expect(entry['section'], 'audit_logs');
+          expect(entry['error_code'], 'unavailable');
+          expect(entry['message'], isNotEmpty);
+        });
 
-      test(
-          'no transient errors → no warnings array (avoids polluting '
-          'happy-path bundles)', () async {
-        // The default `service` (built in setUp) uses _FakeFirebaseFunctions
-        // which returns empty audit-log pages — no error_code anywhere.
-        final jsonString = await service.exportUserData();
-        final data = json.decode(jsonString) as Map<String, dynamic>;
+        test('no transient errors → no warnings array (avoids polluting '
+            'happy-path bundles)', () async {
+          // The default `service` (built in setUp) uses _FakeFirebaseFunctions
+          // which returns empty audit-log pages — no error_code anywhere.
+          final jsonString = await service.exportUserData();
+          final data = json.decode(jsonString) as Map<String, dynamic>;
 
-        expect(data['export_metadata'].containsKey('warnings'), isFalse,
-            reason: 'warnings key is only set when at least one section '
+          expect(
+            data['export_metadata'].containsKey('warnings'),
+            isFalse,
+            reason:
+                'warnings key is only set when at least one section '
                 'reports an error_code; happy-path bundles must not carry '
-                'an empty array.');
-      });
-    });
+                'an empty array.',
+          );
+        });
+      },
+    );
 
-    group(
-        'BUT-865: partial-recovery contract (page #1 success + page #2 '
+    group('BUT-865: partial-recovery contract (page #1 success + page #2 '
         'transient throw)', () {
-      test(
-          'partial rows from page #1 are discarded when page #2 throws — '
+      test('partial rows from page #1 are discarded when page #2 throws — '
           'try/catch wraps the whole pagination loop', () async {
         final partialService = DataExportService(
           authRepository: mockAuthRepository,
@@ -589,13 +606,20 @@ void main() {
         // compliance_export_manager.dart:92-178 wraps the entire pagination
         // loop, so any throw inside it discards `auditLogs` and returns the
         // bare {error, error_code, note} envelope.
-        expect(data['audit_logs']['error_code'], 'unavailable',
-            reason: 'Section reports the transient backend code.');
-        expect(data['audit_logs'].containsKey('audit_logs'), isFalse,
-            reason: 'Current contract: partial rows from page #1 are '
-                'discarded on mid-loop throw. If this fails because partial '
-                'recovery has been implemented, update the assertion to '
-                'verify the new shape (rows preserved + partial:true flag).');
+        expect(
+          data['audit_logs']['error_code'],
+          'unavailable',
+          reason: 'Section reports the transient backend code.',
+        );
+        expect(
+          data['audit_logs'].containsKey('audit_logs'),
+          isFalse,
+          reason:
+              'Current contract: partial rows from page #1 are '
+              'discarded on mid-loop throw. If this fails because partial '
+              'recovery has been implemented, update the assertion to '
+              'verify the new shape (rows preserved + partial:true flag).',
+        );
 
         // Top-level warnings still surface the section error so consumers
         // see the partial-bundle signal without scanning every section.
@@ -609,35 +633,40 @@ void main() {
     });
 
     group('FirebaseDataExportRepository — direct queries (BUT-748)', () {
-      test('exportIncomingBlocks queries canonical `blockedId` field',
-          () async {
-        // BUT-748: prior code queried `blockedUserId`, returning zero rows
-        // because FirebaseBlockRepository writes `blockedId`. This test
-        // would have failed under the old field name.
-        final repo = FirebaseDataExportRepository(
-          firestore: fakeFirestore,
-          authRepository: mockAuthRepository,
-        );
+      test(
+        'exportIncomingBlocks queries canonical `blockedId` field',
+        () async {
+          // BUT-748: prior code queried `blockedUserId`, returning zero rows
+          // because FirebaseBlockRepository writes `blockedId`. This test
+          // would have failed under the old field name.
+          final repo = FirebaseDataExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          );
 
-        await fakeFirestore.collection('blocks').doc('in1').set({
-          'blockerId': 'other-user',
-          'blockedId': testUserId,
-        });
-        await fakeFirestore.collection('blocks').doc('in2').set({
-          'blockerId': 'another-user',
-          'blockedId': testUserId,
-        });
-        // Outgoing — must NOT appear in incoming results.
-        await fakeFirestore.collection('blocks').doc('out1').set({
-          'blockerId': testUserId,
-          'blockedId': 'someone-else',
-        });
+          await fakeFirestore.collection('blocks').doc('in1').set({
+            'blockerId': 'other-user',
+            'blockedId': testUserId,
+          });
+          await fakeFirestore.collection('blocks').doc('in2').set({
+            'blockerId': 'another-user',
+            'blockedId': testUserId,
+          });
+          // Outgoing — must NOT appear in incoming results.
+          await fakeFirestore.collection('blocks').doc('out1').set({
+            'blockerId': testUserId,
+            'blockedId': 'someone-else',
+          });
 
-        final incoming = await repo.exportIncomingBlocks(testUserId);
+          final incoming = await repo.exportIncomingBlocks(testUserId);
 
-        expect(incoming, hasLength(2),
-            reason: 'incoming blocks where blockedId == userId');
-      });
+          expect(
+            incoming,
+            hasLength(2),
+            reason: 'incoming blocks where blockedId == userId',
+          );
+        },
+      );
     });
   });
 }

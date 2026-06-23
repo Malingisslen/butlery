@@ -54,8 +54,9 @@ class _ShoppingListSelectionDialogState
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(context.l10n.chatSelectShoppingList),
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      contentPadding: const EdgeInsets.symmetric(
+        vertical: AppDimensions.spacingS,
+      ),
       content: SizedBox(
         width: double.maxFinite,
         child: _buildContent(context),
@@ -102,13 +103,15 @@ class _ShoppingListSelectionDialogState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: _lists
-            .map((list) => RadioListTile<UnifiedShoppingList>(
-                  value: list,
-                  title: Text(list.name),
-                  subtitle: Text(
-                    context.l10n.shoppingItemCount(list.itemCount),
-                  ),
-                ))
+            .map(
+              (list) => RadioListTile<UnifiedShoppingList>(
+                value: list,
+                title: Text(list.name),
+                subtitle: Text(
+                  context.l10n.shoppingItemCount(list.itemCount),
+                ),
+              ),
+            )
             .toList(),
       ),
     );

@@ -55,11 +55,11 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
 
   /// `recipe_cook_events/{userId}/events` for an explicit user.
   CollectionReference<Map<String, dynamic>> eventsCollectionForUser(
-          String userId) =>
-      firestore
-          .collection(FirestoreCollections.recipeCookEvents)
-          .doc(userId)
-          .collection(FirestoreCollections.recipeCookEventEntries);
+    String userId,
+  ) => firestore
+      .collection(FirestoreCollections.recipeCookEvents)
+      .doc(userId)
+      .collection(FirestoreCollections.recipeCookEventEntries);
 
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() =>
@@ -82,7 +82,10 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, CookEvent? entity) async {
+    String userId,
+    String resourceId,
+    CookEvent? entity,
+  ) async {
     // Collection routing already scopes reads to the caller's own events;
     // the entity check defends against a doc fetched via a foreign ref.
     return entity == null || entity.userId == userId;
@@ -90,14 +93,19 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, CookEvent entity) async {
+    String userId,
+    String resourceId,
+    CookEvent entity,
+  ) async {
     // Append-only log — events are immutable (rules also deny update).
     return false;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Owner-only: routing scopes deletes to the caller's own subcollection.
     return currentUserId == userId;
   }
@@ -136,7 +144,11 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
       final batch = firestore.batch();
       batch.set(eventRef, toFirestore(event));
       _recipeRepository.addIncrementCookCountToBatch(
-          batch, userId, recipeId, cookedAt);
+        batch,
+        userId,
+        recipeId,
+        cookedAt,
+      );
       await batch.commit();
 
       AppLogger.info('Cook event logged: $recipeId at $cookedAt');
@@ -194,8 +206,9 @@ class FirebaseCookEventRepository extends BaseFirebaseRepository<CookEvent>
 
     // Newest-first so a truncated export keeps the most recent events
     // (deterministic; rides the automatic single-field index).
-    Query<Map<String, dynamic>> query =
-        eventsCollectionForUser(userId).orderBy('cookedAt', descending: true);
+    Query<Map<String, dynamic>> query = eventsCollectionForUser(
+      userId,
+    ).orderBy('cookedAt', descending: true);
     if (limit != null) query = query.limit(limit);
     final snapshot = await query.get();
 

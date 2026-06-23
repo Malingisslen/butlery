@@ -118,13 +118,15 @@ class _EditableMenuItemsPreviewDialogState
                 _editableItems.clear();
               });
             },
-            icon: Icon(Icons.clear_all,
-                color: Theme.of(context).colorScheme.error),
+            icon: Icon(
+              Icons.clear_all,
+              color: Theme.of(context).colorScheme.error,
+            ),
             label: Text(
               context.l10n.shoppingRemoveAll,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
         TextButton(
@@ -139,10 +141,14 @@ class _EditableMenuItemsPreviewDialogState
             'items': _editableItems,
             'addToList': _editableItems.isNotEmpty,
           }),
-          child: Text(_editableItems.isEmpty
-              ? context.l10n.commonClose
-              : context.l10n.shoppingToListWithCount(
-                  widget.selectedListName, _editableItems.length)),
+          child: Text(
+            _editableItems.isEmpty
+                ? context.l10n.commonClose
+                : context.l10n.shoppingToListWithCount(
+                    widget.selectedListName,
+                    _editableItems.length,
+                  ),
+          ),
         ),
       ],
     );

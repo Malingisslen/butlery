@@ -57,8 +57,10 @@ class PwaInstallService extends BaseService {
   void dismissInstall() {
     _gate.markDismissed();
     try {
-      ServiceLocator.get<PersistenceService>()
-          .setBool(_installDismissedKey, true);
+      ServiceLocator.get<PersistenceService>().setBool(
+        _installDismissedKey,
+        true,
+      );
     } catch (_) {}
   }
 }

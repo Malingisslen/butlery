@@ -24,8 +24,9 @@ class LogSanitizer {
 
     // Show TLD only (e.g., ".com")
     final lastDot = domainPart.lastIndexOf('.');
-    final maskedDomain =
-        lastDot > 0 ? '***${domainPart.substring(lastDot)}' : '***';
+    final maskedDomain = lastDot > 0
+        ? '***${domainPart.substring(lastDot)}'
+        : '***';
 
     return '$visibleLocal@$maskedDomain';
   }

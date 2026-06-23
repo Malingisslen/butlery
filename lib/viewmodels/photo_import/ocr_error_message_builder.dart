@@ -30,14 +30,15 @@ class OcrErrorMessageBuilder {
 
   static OcrErrorMessageResult build(OCRResult result) {
     final qualityScore = result.metadata['quality_assessment'] as double?;
-    final recommendations =
-        (result.metadata['recommendations'] as List?)?.cast<String>();
+    final recommendations = (result.metadata['recommendations'] as List?)
+        ?.cast<String>();
     final confidence = result.confidence;
 
     // Extract circuit breaker states
     final circuitBreakers =
         result.metadata['circuit_breakers'] as Map<String, dynamic>?;
-    final allProvidersDown = circuitBreakers != null &&
+    final allProvidersDown =
+        circuitBreakers != null &&
         circuitBreakers['ocr_space_state'] == 'open' &&
         circuitBreakers['google_vision_state'] == 'open' &&
         circuitBreakers['tesseract_state'] == 'open';

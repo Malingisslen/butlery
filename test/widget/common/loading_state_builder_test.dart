@@ -14,11 +14,11 @@ import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 void main() {
   // ---------------------------------------------------------------------------
@@ -26,70 +26,82 @@ void main() {
   // ---------------------------------------------------------------------------
   group('error state', () {
     testWidgets(
-        'error wins over loading + data → renders StateWidget with error type',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: true, // even when loading
-          error: 'Något gick fel',
-          data: const ['hej'], // and data present
-          builder: (_, __) => const Text('should-not-render'),
-          onErrorRetry: () {}, // wire onAction so retry button renders
-        ),
-      ));
-      // CircularProgressIndicator never settles → use pump.
-      await tester.pump();
+      'error wins over loading + data → renders StateWidget with error type',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            LoadingStateBuilder<List<String>>(
+              isLoading: true, // even when loading
+              error: 'Något gick fel',
+              data: const ['hej'], // and data present
+              builder: (_, __) => const Text('should-not-render'),
+              onErrorRetry: () {}, // wire onAction so retry button renders
+            ),
+          ),
+        );
+        // CircularProgressIndicator never settles → use pump.
+        await tester.pump();
 
-      expect(find.text('Något gick fel'), findsOneWidget);
-      expect(find.byType(StateWidget), findsOneWidget);
-      expect(find.text('should-not-render'), findsNothing);
-      // Default Swedish retry label from l10n (commonRetry = "Försök igen")
-      expect(find.text('Försök igen'), findsOneWidget);
-    });
+        expect(find.text('Något gick fel'), findsOneWidget);
+        expect(find.byType(StateWidget), findsOneWidget);
+        expect(find.text('should-not-render'), findsNothing);
+        // Default Swedish retry label from l10n (commonRetry = "Försök igen")
+        expect(find.text('Försök igen'), findsOneWidget);
+      },
+    );
 
-    testWidgets('custom errorActionLabel overrides default retry label',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<String>(
-          isLoading: false,
-          error: 'boom',
-          builder: (_, __) => const SizedBox.shrink(),
-          errorActionLabel: 'Försök en gång till',
-          onErrorRetry: () {}, // wire onAction so retry button renders
+    testWidgets('custom errorActionLabel overrides default retry label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<String>(
+            isLoading: false,
+            error: 'boom',
+            builder: (_, __) => const SizedBox.shrink(),
+            errorActionLabel: 'Försök en gång till',
+            onErrorRetry: () {}, // wire onAction so retry button renders
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('Försök en gång till'), findsOneWidget);
       expect(find.text('Försök igen'), findsNothing);
     });
 
-    testWidgets('onErrorRetry callback fires when action tapped',
-        (tester) async {
+    testWidgets('onErrorRetry callback fires when action tapped', (
+      tester,
+    ) async {
       int taps = 0;
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<String>(
-          isLoading: false,
-          error: 'boom',
-          builder: (_, __) => const SizedBox.shrink(),
-          onErrorRetry: () => taps++,
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<String>(
+            isLoading: false,
+            error: 'boom',
+            builder: (_, __) => const SizedBox.shrink(),
+            onErrorRetry: () => taps++,
+          ),
         ),
-      ));
+      );
       await tester.pump();
       await tester.tap(find.text('Försök igen'));
       await tester.pump();
       expect(taps, 1);
     });
 
-    testWidgets('custom errorBuilder fully replaces default StateWidget',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<String>(
-          isLoading: false,
-          error: 'X',
-          builder: (_, __) => const SizedBox.shrink(),
-          errorBuilder: (ctx, e) => Text('custom-error:$e'),
+    testWidgets('custom errorBuilder fully replaces default StateWidget', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<String>(
+            isLoading: false,
+            error: 'X',
+            builder: (_, __) => const SizedBox.shrink(),
+            errorBuilder: (ctx, e) => Text('custom-error:$e'),
+          ),
         ),
-      ));
+      );
       expect(find.text('custom-error:X'), findsOneWidget);
       expect(find.byType(StateWidget), findsNothing);
     });
@@ -99,58 +111,69 @@ void main() {
   // LOADING STATE
   // ---------------------------------------------------------------------------
   group('loading state', () {
-    testWidgets('isLoading=true with no error → renders default loading widget',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: true,
-          builder: (_, __) => const Text('data-view'),
-        ),
-      ));
-      // Pea animation/spinner — don't pumpAndSettle.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+    testWidgets(
+      'isLoading=true with no error → renders default loading widget',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            LoadingStateBuilder<List<String>>(
+              isLoading: true,
+              builder: (_, __) => const Text('data-view'),
+            ),
+          ),
+        );
+        // Pea animation/spinner — don't pumpAndSettle.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.byType(StateWidget), findsOneWidget);
-      expect(find.text('data-view'), findsNothing);
-    });
+        expect(find.byType(StateWidget), findsOneWidget);
+        expect(find.text('data-view'), findsNothing);
+      },
+    );
 
     testWidgets('loadingMessage renders inside StateWidget', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<String>(
-          isLoading: true,
-          loadingMessage: 'Genererar meny...',
-          loadingVariant: LoadingVariant.spinner,
-          builder: (_, __) => const SizedBox.shrink(),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<String>(
+            isLoading: true,
+            loadingMessage: 'Genererar meny...',
+            loadingVariant: LoadingVariant.spinner,
+            builder: (_, __) => const SizedBox.shrink(),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('Genererar meny...'), findsOneWidget);
     });
 
-    testWidgets('skeletonRecipeList variant uses ListView skeleton',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: true,
-          loadingVariant: LoadingVariant.skeletonRecipeList,
-          skeletonItemCount: 3,
-          builder: (_, __) => const SizedBox.shrink(),
+    testWidgets('skeletonRecipeList variant uses ListView skeleton', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: true,
+            loadingVariant: LoadingVariant.skeletonRecipeList,
+            skeletonItemCount: 3,
+            builder: (_, __) => const SizedBox.shrink(),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       // Skeleton list builds N Card placeholders.
       expect(find.byType(Card), findsNWidgets(3));
     });
 
     testWidgets('custom loadingBuilder fully replaces default', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<String>(
-          isLoading: true,
-          builder: (_, __) => const SizedBox.shrink(),
-          loadingBuilder: (_) => const Text('custom-loader'),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<String>(
+            isLoading: true,
+            builder: (_, __) => const SizedBox.shrink(),
+            loadingBuilder: (_) => const Text('custom-loader'),
+          ),
         ),
-      ));
+      );
       expect(find.text('custom-loader'), findsOneWidget);
       expect(find.byType(StateWidget), findsNothing);
     });
@@ -160,15 +183,18 @@ void main() {
   // EMPTY STATE
   // ---------------------------------------------------------------------------
   group('empty state — generic fallback', () {
-    testWidgets('null data → generic empty state with default title',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: null,
-          builder: (_, __) => const Text('builder-should-not-render'),
+    testWidgets('null data → generic empty state with default title', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: null,
+            builder: (_, __) => const Text('builder-should-not-render'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       // Default Swedish title = loadingNoContent = "Inget innehåll"
       expect(find.text('Inget innehåll'), findsOneWidget);
@@ -176,57 +202,66 @@ void main() {
     });
 
     testWidgets('empty List → generic empty state', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const <String>[],
-          builder: (_, __) => const Text('hidden'),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: const <String>[],
+            builder: (_, __) => const Text('hidden'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('Inget innehåll'), findsOneWidget);
       expect(find.text('hidden'), findsNothing);
     });
 
     testWidgets('empty Map → generic empty state', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<Map<String, int>>(
-          isLoading: false,
-          data: const <String, int>{},
-          builder: (_, __) => const Text('hidden'),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<Map<String, int>>(
+            isLoading: false,
+            data: const <String, int>{},
+            builder: (_, __) => const Text('hidden'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('Inget innehåll'), findsOneWidget);
     });
 
     testWidgets('empty String → generic empty state', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<String>(
-          isLoading: false,
-          data: '',
-          builder: (_, __) => const Text('hidden'),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<String>(
+            isLoading: false,
+            data: '',
+            builder: (_, __) => const Text('hidden'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('Inget innehåll'), findsOneWidget);
     });
 
-    testWidgets('custom emptyTitle/Subtitle/Icon/ActionLabel render',
-        (tester) async {
+    testWidgets('custom emptyTitle/Subtitle/Icon/ActionLabel render', (
+      tester,
+    ) async {
       int taps = 0;
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const [],
-          builder: (_, __) => const SizedBox.shrink(),
-          emptyTitle: 'Tomt här',
-          emptySubtitle: 'Lägg till något',
-          emptyIcon: Icons.search_off,
-          emptyActionLabel: 'Lägg till',
-          onEmptyAction: () => taps++,
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: const [],
+            builder: (_, __) => const SizedBox.shrink(),
+            emptyTitle: 'Tomt här',
+            emptySubtitle: 'Lägg till något',
+            emptyIcon: Icons.search_off,
+            emptyActionLabel: 'Lägg till',
+            onEmptyAction: () => taps++,
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Tomt här'), findsOneWidget);
@@ -239,31 +274,34 @@ void main() {
     });
 
     testWidgets('custom emptyBuilder fully replaces default', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const [],
-          builder: (_, __) => const SizedBox.shrink(),
-          emptyBuilder: (_) => const Text('custom-empty'),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: const [],
+            builder: (_, __) => const SizedBox.shrink(),
+            emptyBuilder: (_) => const Text('custom-empty'),
+          ),
         ),
-      ));
+      );
       expect(find.text('custom-empty'), findsOneWidget);
     });
 
-    testWidgets(
-        'showEmptyWhenNull=false + null data → falls through to '
+    testWidgets('showEmptyWhenNull=false + null data → falls through to '
         'fallback empty (data branch never reached)', (tester) async {
       // When data is null and showEmptyWhenNull is false, the build path
       // skips the empty branch, then `data != null` is false → falls through
       // to the bottom fallback (which is also an empty state).
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: null,
-          showEmptyWhenNull: false,
-          builder: (_, __) => const Text('hidden'),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: null,
+            showEmptyWhenNull: false,
+            builder: (_, __) => const Text('hidden'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('hidden'), findsNothing);
       // Fallback also defaults to "Inget innehåll"
@@ -271,44 +309,54 @@ void main() {
     });
 
     testWidgets(
-        'showEmptyWhenNull=false + non-null empty list → renders builder '
-        '(empty check skipped)', (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const <String>[],
-          showEmptyWhenNull: false,
-          builder: (_, list) => Text('rendered ${list.length}'),
-        ),
-      ));
-      await tester.pump();
-      expect(find.text('rendered 0'), findsOneWidget);
-    });
+      'showEmptyWhenNull=false + non-null empty list → renders builder '
+      '(empty check skipped)',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            LoadingStateBuilder<List<String>>(
+              isLoading: false,
+              data: const <String>[],
+              showEmptyWhenNull: false,
+              builder: (_, list) => Text('rendered ${list.length}'),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(find.text('rendered 0'), findsOneWidget);
+      },
+    );
 
-    testWidgets('custom isDataEmpty predicate forces empty branch',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<int>(
-          isLoading: false,
-          data: 0, // not null, not a List/Map/String — would normally render
-          isDataEmpty: (v) => v == 0,
-          builder: (_, v) => Text('value:$v'),
+    testWidgets('custom isDataEmpty predicate forces empty branch', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<int>(
+            isLoading: false,
+            data: 0, // not null, not a List/Map/String — would normally render
+            isDataEmpty: (v) => v == 0,
+            builder: (_, v) => Text('value:$v'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('value:0'), findsNothing);
       expect(find.text('Inget innehåll'), findsOneWidget);
     });
 
-    testWidgets('non-empty data renders builder (success path)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const ['a', 'b'],
-          builder: (_, list) => Text('items:${list.length}'),
+    testWidgets('non-empty data renders builder (success path)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: const ['a', 'b'],
+            builder: (_, list) => Text('items:${list.length}'),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.text('items:2'), findsOneWidget);
     });
@@ -322,14 +370,16 @@ void main() {
       WidgetTester tester,
       EmptyStateVariant variant,
     ) async {
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const [],
-          emptyState: variant,
-          builder: (_, __) => const SizedBox.shrink(),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: const [],
+            emptyState: variant,
+            builder: (_, __) => const SizedBox.shrink(),
+          ),
         ),
-      ));
+      );
       await tester.pump();
     }
 
@@ -343,8 +393,9 @@ void main() {
       expect(find.byType(StateWidget), findsOneWidget);
     });
 
-    testWidgets('noFriendsSearchResults → StateWidget rendered',
-        (tester) async {
+    testWidgets('noFriendsSearchResults → StateWidget rendered', (
+      tester,
+    ) async {
       await pumpWithVariant(tester, EmptyStateVariant.noFriendsSearchResults);
       expect(find.byType(StateWidget), findsOneWidget);
     });
@@ -370,43 +421,50 @@ void main() {
     });
 
     testWidgets(
-        'every EmptyStateVariant renders a StateWidget without crashing',
-        (tester) async {
-      // Several of these variants (noGroups, noConversations, noNotifications,
-      // noComments) gained branded titles via BUT-979/BUT-986 and no longer
-      // fall through to the generic title. We assert structural presence —
-      // each variant must produce a StateWidget — not title text, which is
-      // brittle to l10n / branding changes.
-      for (final v in [
-        EmptyStateVariant.noCategories,
-        EmptyStateVariant.noImages,
-        EmptyStateVariant.noTargets,
-        EmptyStateVariant.noSavedMenus,
-        EmptyStateVariant.noSharedShoppingLists,
-        EmptyStateVariant.noTags,
-        EmptyStateVariant.noGroups,
-        EmptyStateVariant.noConversations,
-        EmptyStateVariant.generic,
-      ]) {
-        await pumpWithVariant(tester, v);
-        expect(find.byType(StateWidget), findsOneWidget,
-            reason: 'variant=$v should produce one StateWidget');
-      }
-    });
+      'every EmptyStateVariant renders a StateWidget without crashing',
+      (tester) async {
+        // Several of these variants (noGroups, noConversations, noNotifications,
+        // noComments) gained branded titles via BUT-979/BUT-986 and no longer
+        // fall through to the generic title. We assert structural presence —
+        // each variant must produce a StateWidget — not title text, which is
+        // brittle to l10n / branding changes.
+        for (final v in [
+          EmptyStateVariant.noCategories,
+          EmptyStateVariant.noImages,
+          EmptyStateVariant.noTargets,
+          EmptyStateVariant.noSavedMenus,
+          EmptyStateVariant.noSharedShoppingLists,
+          EmptyStateVariant.noTags,
+          EmptyStateVariant.noGroups,
+          EmptyStateVariant.noConversations,
+          EmptyStateVariant.generic,
+        ]) {
+          await pumpWithVariant(tester, v);
+          expect(
+            find.byType(StateWidget),
+            findsOneWidget,
+            reason: 'variant=$v should produce one StateWidget',
+          );
+        }
+      },
+    );
 
-    testWidgets('predefined variant + emptyActionLabel/onAction wires button',
-        (tester) async {
+    testWidgets('predefined variant + emptyActionLabel/onAction wires button', (
+      tester,
+    ) async {
       int taps = 0;
-      await tester.pumpWidget(_wrap(
-        LoadingStateBuilder<List<String>>(
-          isLoading: false,
-          data: const [],
-          emptyState: EmptyStateVariant.noRecipes,
-          emptyActionLabel: 'Lägg till recept',
-          onEmptyAction: () => taps++,
-          builder: (_, __) => const SizedBox.shrink(),
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            isLoading: false,
+            data: const [],
+            emptyState: EmptyStateVariant.noRecipes,
+            emptyActionLabel: 'Lägg till recept',
+            onEmptyAction: () => taps++,
+            builder: (_, __) => const SizedBox.shrink(),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       await tester.tap(find.text('Lägg till recept'));
       await tester.pump();
@@ -428,8 +486,9 @@ void main() {
       expect(find.text('extension-content'), findsOneWidget);
     });
 
-    testWidgets('routes through to error state when error supplied',
-        (tester) async {
+    testWidgets('routes through to error state when error supplied', (
+      tester,
+    ) async {
       final wrapped = const Text('extension-content').withLoadingState<String>(
         isLoading: false,
         error: 'oops',
@@ -457,8 +516,9 @@ void main() {
       expect(find.text('count:1'), findsOneWidget);
     });
 
-    testWidgets('renders generic empty when items empty + no variant',
-        (tester) async {
+    testWidgets('renders generic empty when items empty + no variant', (
+      tester,
+    ) async {
       final b = LoadingStateBuilderUtils.forList<String>(
         isLoading: false,
         items: const [],
@@ -471,8 +531,9 @@ void main() {
   });
 
   group('LoadingStateBuilderUtils.forRecipeList', () {
-    testWidgets('wires EmptyStateVariant.noRecipes when items empty',
-        (tester) async {
+    testWidgets('wires EmptyStateVariant.noRecipes when items empty', (
+      tester,
+    ) async {
       final b = LoadingStateBuilderUtils.forRecipeList<String>(
         isLoading: false,
         recipes: const [],
@@ -510,8 +571,9 @@ void main() {
   });
 
   group('LoadingStateBuilderUtils.forMenu', () {
-    testWidgets('wires EmptyStateVariant.noMenu and renders builder',
-        (tester) async {
+    testWidgets('wires EmptyStateVariant.noMenu and renders builder', (
+      tester,
+    ) async {
       final b = LoadingStateBuilderUtils.forMenu<String>(
         isLoading: false,
         menuData: 'data',

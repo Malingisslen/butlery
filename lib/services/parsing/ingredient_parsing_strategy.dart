@@ -58,9 +58,9 @@ class IngredientParsingStrategy {
     CrfIngredientParser? crfParser,
     RemoteWeightLoader? remoteLoader,
     NeuralIngredientParser? neuralParser,
-  })  : _injectedParser = crfParser,
-        _remoteLoader = remoteLoader,
-        _neuralParser = neuralParser;
+  }) : _injectedParser = crfParser,
+       _remoteLoader = remoteLoader,
+       _neuralParser = neuralParser;
 
   /// Whether CRF parsing is available.
   bool get hasCrf => _injectedParser != null || _crfParser != null;
@@ -93,14 +93,18 @@ class IngredientParsingStrategy {
       _crfParser = CrfIngredientParser(decoder);
       _initialized = true;
       _lastInitFailure = null;
-      AppLogger.info('$_serviceName: CRF weights loaded'
-          '${enriched != null ? ' (${enriched.length} enriched ingredients)' : ''}');
+      AppLogger.info(
+        '$_serviceName: CRF weights loaded'
+        '${enriched != null ? ' (${enriched.length} enriched ingredients)' : ''}',
+      );
 
       _tryLoadRemoteWeightsInBackground();
       _tryInitNerInBackground();
     } catch (e) {
-      AppLogger.warning('$_serviceName: CRF weights unavailable, '
-          'using regex fallback: $e');
+      AppLogger.warning(
+        '$_serviceName: CRF weights unavailable, '
+        'using regex fallback: $e',
+      );
       _lastInitFailure = clock.now();
     }
   }
@@ -199,8 +203,9 @@ class IngredientParsingStrategy {
     // Use per-ingredient confidence when CRF is active (more accurate
     // than just checking isStructured, since CRF sets confidence based
     // on label coverage). Fall back to isStructured ratio for regex.
-    final confidenceScore =
-        parser != null ? _crfConfidenceScore(parsed) : _structuredRatio(parsed);
+    final confidenceScore = parser != null
+        ? _crfConfidenceScore(parsed)
+        : _structuredRatio(parsed);
 
     return FieldResult.fromConfidenceScore(parsed, confidenceScore, source);
   }

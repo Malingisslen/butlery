@@ -65,28 +65,30 @@ void main() {
   group('calculateQueueSummary — empty input', () {
     /// Empty queue must be treated as "nothing to do, you're done" so the
     /// UI doesn't render a spinner or 0% bar when there's no work.
-    test('returns total=0, progress=1.0, percentage=100, hasActivity=false',
-        () {
-      final summary = UploadQueueSummaryCalculator.calculateQueueSummary({});
+    test(
+      'returns total=0, progress=1.0, percentage=100, hasActivity=false',
+      () {
+        final summary = UploadQueueSummaryCalculator.calculateQueueSummary({});
 
-      expect(summary['total'], 0);
-      expect(summary['pending'], 0);
-      expect(summary['uploading'], 0);
-      expect(summary['retrying'], 0);
-      expect(summary['completed'], 0);
-      expect(summary['failed'], 0);
-      expect(summary['cancelled'], 0);
-      expect(summary['active'], 0);
-      expect(summary['hasActivity'], isFalse);
-      expect(summary['overallProgress'], 1.0);
-      expect(summary['progressPercentage'], 100);
-      expect(summary['totalBytes'], 0);
-      expect(summary['totalBytesTransferred'], 0);
-      expect(summary['averageSpeedBytesPerSecond'], 0.0);
-      expect(summary['totalElapsedTime'], isNull);
-      expect(summary['estimatedTimeRemaining'], isNull);
-      expect(summary['statusText'], '');
-    });
+        expect(summary['total'], 0);
+        expect(summary['pending'], 0);
+        expect(summary['uploading'], 0);
+        expect(summary['retrying'], 0);
+        expect(summary['completed'], 0);
+        expect(summary['failed'], 0);
+        expect(summary['cancelled'], 0);
+        expect(summary['active'], 0);
+        expect(summary['hasActivity'], isFalse);
+        expect(summary['overallProgress'], 1.0);
+        expect(summary['progressPercentage'], 100);
+        expect(summary['totalBytes'], 0);
+        expect(summary['totalBytesTransferred'], 0);
+        expect(summary['averageSpeedBytesPerSecond'], 0.0);
+        expect(summary['totalElapsedTime'], isNull);
+        expect(summary['estimatedTimeRemaining'], isNull);
+        expect(summary['statusText'], '');
+      },
+    );
   });
 
   group('calculateQueueSummary — state bucket counts', () {
@@ -104,8 +106,9 @@ void main() {
         'g': _status(state: ImageUploadState.cancelled),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       expect(summary['total'], 7);
       expect(summary['pending'], 2);
@@ -116,7 +119,8 @@ void main() {
       expect(summary['cancelled'], 1);
       expect(summary['active'], 2); // uploading + retrying
       // Buckets must sum to total — no item double-counted or dropped.
-      final bucketSum = (summary['pending'] as int) +
+      final bucketSum =
+          (summary['pending'] as int) +
           (summary['uploading'] as int) +
           (summary['retrying'] as int) +
           (summary['completed'] as int) +
@@ -136,8 +140,9 @@ void main() {
         'c': _status(state: ImageUploadState.cancelled),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       expect(summary['hasActivity'], isFalse);
       expect(summary['active'], 0);
@@ -147,8 +152,7 @@ void main() {
   group('calculateQueueSummary — overall progress arithmetic', () {
     /// Completed = 1.0, in-flight contributes `.progress`, everything
     /// else 0. This is the contract that drives the progress bar.
-    test(
-        'completed contributes 1.0, uploading/retrying contribute progress, '
+    test('completed contributes 1.0, uploading/retrying contribute progress, '
         'failed/cancelled/pending contribute 0', () {
       final states = {
         'pending': _status(state: ImageUploadState.pending),
@@ -159,12 +163,15 @@ void main() {
         'cancelled': _status(state: ImageUploadState.cancelled, progress: 0.99),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       // 0 + 0.40 + 0.20 + 1.0 + 0 + 0 = 1.6 / 6 items = 0.2666…
       expect(
-          summary['overallProgress'], closeTo((0.40 + 0.20 + 1.0) / 6, 1e-9));
+        summary['overallProgress'],
+        closeTo((0.40 + 0.20 + 1.0) / 6, 1e-9),
+      );
       expect(summary['progressPercentage'], 27); // round(26.66…)
     });
 
@@ -231,8 +238,9 @@ void main() {
         ),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       // (2000 + 4000) / 2 = 3000
       expect(summary['averageSpeedBytesPerSecond'], 3000.0);
@@ -267,8 +275,9 @@ void main() {
         ),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       expect(summary['totalBytes'], 1000);
       expect(summary['totalBytesTransferred'], 500);
@@ -289,8 +298,9 @@ void main() {
         ),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       expect(summary['estimatedTimeRemaining'], const Duration(seconds: 5));
     });
@@ -307,8 +317,9 @@ void main() {
         ),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       expect(summary['estimatedTimeRemaining'], isNull);
     });
@@ -323,8 +334,9 @@ void main() {
         ),
       };
 
-      final summary =
-          UploadQueueSummaryCalculator.calculateQueueSummary(states);
+      final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+        states,
+      );
 
       expect(summary['averageSpeedBytesPerSecond'], 0.0);
       expect(summary['estimatedTimeRemaining'], isNull);
@@ -353,8 +365,9 @@ void main() {
           ),
         };
 
-        final summary =
-            UploadQueueSummaryCalculator.calculateQueueSummary(states);
+        final summary = UploadQueueSummaryCalculator.calculateQueueSummary(
+          states,
+        );
 
         expect(summary['totalElapsedTime'], const Duration(seconds: 30));
       });
@@ -376,7 +389,13 @@ void main() {
     test('total == 0 returns empty string', () {
       expect(
         UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-            0, 0, 0, 0, 0, 0.0),
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.0,
+        ),
         '',
       );
     });
@@ -384,12 +403,13 @@ void main() {
     /// Active + pending → "uploading N (P% complete, K waiting)".
     test('active with pending uses the with-pending template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          /*pending*/ 3,
-          /*active*/ 2,
-          /*completed*/ 0,
-          /*failed*/ 0,
-          /*total*/ 5,
-          /*progress*/ 0.4);
+        /*pending*/ 3,
+        /*active*/ 2,
+        /*completed*/ 0,
+        /*failed*/ 0,
+        /*total*/ 5,
+        /*progress*/ 0.4,
+      );
       // SV template: "Laddar upp 2 bilder (40% klart, 3 väntar)"
       expect(text, contains('2'));
       expect(text, contains('40'));
@@ -400,7 +420,13 @@ void main() {
     /// templates have different argument arity so a swap would NPE.
     test('active with no pending uses the no-pending template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 2, 0, 0, 2, 0.5);
+        0,
+        2,
+        0,
+        0,
+        2,
+        0.5,
+      );
       expect(text, contains('2'));
       expect(text, contains('50'));
       expect(text, isNot(contains('väntar')));
@@ -409,7 +435,13 @@ void main() {
     /// Pending-only (nothing actively uploading yet).
     test('pending-only routes to the waiting template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          5, 0, 0, 0, 5, 0.0);
+        5,
+        0,
+        0,
+        0,
+        5,
+        0.0,
+      );
       expect(text, contains('5'));
       expect(text.toLowerCase(), contains('väntar'));
     });
@@ -417,7 +449,13 @@ void main() {
     /// Partial failure — some completed, some failed.
     test('mixed completed + failed routes to partial-failure template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 0, /*completed*/ 2, /*failed*/ 1, /*total*/ 3, 2 / 3);
+        0,
+        0,
+        /*completed*/ 2,
+        /*failed*/ 1,
+        /*total*/ 3,
+        2 / 3,
+      );
       expect(text, contains('2'));
       expect(text, contains('3'));
       expect(text, contains('1'));
@@ -426,7 +464,13 @@ void main() {
     /// All failed — no completed.
     test('all-failed (no completed) routes to all-failed template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 0, 0, /*failed*/ 3, /*total*/ 3, 0.0);
+        0,
+        0,
+        0,
+        /*failed*/ 3,
+        /*total*/ 3,
+        0.0,
+      );
       expect(text, contains('3'));
       expect(text.toLowerCase(), contains('misslyckades'));
     });
@@ -437,19 +481,37 @@ void main() {
     /// so they don't belong in the "tried" count.
     test('BUT-1103: all-failed denominator excludes cancellations', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 0, 0, /*failed*/ 3, /*total*/ 5, 0.0,
-          cancelled: 2);
-      expect(text, contains('3 av 3'),
-          reason:
-              'denominator must drop cancellations so the user sees "3 av 3", not "3 av 5"');
-      expect(text, isNot(contains('av 5')),
-          reason: 'cancelled items must not inflate the denominator');
+        0,
+        0,
+        0,
+        /*failed*/ 3,
+        /*total*/ 5,
+        0.0,
+        cancelled: 2,
+      );
+      expect(
+        text,
+        contains('3 av 3'),
+        reason:
+            'denominator must drop cancellations so the user sees "3 av 3", not "3 av 5"',
+      );
+      expect(
+        text,
+        isNot(contains('av 5')),
+        reason: 'cancelled items must not inflate the denominator',
+      );
     });
 
     /// All success.
     test('completed == total routes to all-success template', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 0, /*completed*/ 4, 0, /*total*/ 4, 1.0);
+        0,
+        0,
+        /*completed*/ 4,
+        0,
+        /*total*/ 4,
+        1.0,
+      );
       expect(text, contains('4'));
       expect(text.toLowerCase(), contains('framgångsrikt'));
     });
@@ -459,12 +521,24 @@ void main() {
     /// the function signature as a named param.
     test('BUT-1102: all-cancelled queue surfaces a dedicated status text', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 0, 0, 0, /*total*/ 2, 0.0,
-          cancelled: 2);
-      expect(text, isNotEmpty,
-          reason: 'must surface a status string, not render blank UI');
-      expect(text, contains('2'),
-          reason: 'count of cancelled items belongs in the message');
+        0,
+        0,
+        0,
+        0,
+        /*total*/ 2,
+        0.0,
+        cancelled: 2,
+      );
+      expect(
+        text,
+        isNotEmpty,
+        reason: 'must surface a status string, not render blank UI',
+      );
+      expect(
+        text,
+        contains('2'),
+        reason: 'count of cancelled items belongs in the message',
+      );
     });
 
     /// Defensive: without `cancelled` (default 0), behaviour matches the
@@ -472,7 +546,13 @@ void main() {
     /// that hasn't been updated to pass the new param.
     test('all-zero counters with no cancelled still returns empty', () {
       final text = UploadQueueSummaryCalculator.getEnhancedQueueStatusText(
-          0, 0, 0, 0, /*total*/ 2, 0.0);
+        0,
+        0,
+        0,
+        0,
+        /*total*/ 2,
+        0.0,
+      );
       expect(text, '');
     });
   });
@@ -482,7 +562,9 @@ void main() {
     /// percentage and the formatted time — UI relies on both being there.
     test('with timeRemaining uses progress-with-time template', () {
       final text = UploadQueueSummaryCalculator.getProgressDisplayText(
-          0.45, const Duration(seconds: 90));
+        0.45,
+        const Duration(seconds: 90),
+      );
       expect(text, contains('45'));
       expect(text, contains('1m 30s'));
     });
@@ -490,16 +572,20 @@ void main() {
     /// Progress < 1.0 and no time-remaining → simple percent template
     /// (must NOT say "complete").
     test('progress < 1.0 with no time uses percent template', () {
-      final text =
-          UploadQueueSummaryCalculator.getProgressDisplayText(0.5, null);
+      final text = UploadQueueSummaryCalculator.getProgressDisplayText(
+        0.5,
+        null,
+      );
       expect(text, contains('50'));
       expect(text.toLowerCase(), isNot(contains('slutförd')));
     });
 
     /// Progress == 1.0 → "complete" label, regardless of percent.
     test('progress == 1.0 returns the complete label', () {
-      final text =
-          UploadQueueSummaryCalculator.getProgressDisplayText(1.0, null);
+      final text = UploadQueueSummaryCalculator.getProgressDisplayText(
+        1.0,
+        null,
+      );
       expect(text.toLowerCase(), contains('slutförd'));
     });
   });
@@ -515,16 +601,18 @@ void main() {
     /// Just above 1 MB/s must render as MB/s with one decimal.
     test('>= 1 MB/s renders MB/s with one decimal', () {
       // 1.5 MB/s
-      final text =
-          UploadQueueSummaryCalculator.getSpeedDisplayText(1.5 * 1024 * 1024);
+      final text = UploadQueueSummaryCalculator.getSpeedDisplayText(
+        1.5 * 1024 * 1024,
+      );
       expect(text, '1.5 MB/s');
     });
 
     /// Exactly 1.0 MB/s sits on the boundary — must take the MB branch,
     /// not fall back to KB.
     test('exactly 1.0 MB/s takes the MB branch (boundary)', () {
-      final text =
-          UploadQueueSummaryCalculator.getSpeedDisplayText(1024.0 * 1024.0);
+      final text = UploadQueueSummaryCalculator.getSpeedDisplayText(
+        1024.0 * 1024.0,
+      );
       expect(text, '1.0 MB/s');
     });
 
@@ -581,44 +669,64 @@ void main() {
 
     /// All complete + no failures + elapsed time → "all uploaded in X
     /// (100% success)". Must include the formatted time.
-    test('completed==total, failed==0, with elapsed → all-success-with-time',
-        () {
-      final text = UploadQueueSummaryCalculator.getQueueSummaryText(
-          3, 0, 3, const Duration(seconds: 75));
-      // expect formatted "1m 15s" in there
-      expect(text, contains('1m 15s'));
-      expect(text, contains('100'));
-    });
+    test(
+      'completed==total, failed==0, with elapsed → all-success-with-time',
+      () {
+        final text = UploadQueueSummaryCalculator.getQueueSummaryText(
+          3,
+          0,
+          3,
+          const Duration(seconds: 75),
+        );
+        // expect formatted "1m 15s" in there
+        expect(text, contains('1m 15s'));
+        expect(text, contains('100'));
+      },
+    );
 
     /// All complete + no failures + null elapsed → "all uploaded (100%
     /// success)" with no time string.
     test('completed==total with null elapsed omits the time text', () {
-      final text =
-          UploadQueueSummaryCalculator.getQueueSummaryText(2, 0, 2, null);
+      final text = UploadQueueSummaryCalculator.getQueueSummaryText(
+        2,
+        0,
+        2,
+        null,
+      );
       expect(text, contains('100'));
       expect(text, isNot(contains('på ')));
     });
 
     /// Partial-progress (some completed OR some failed) builds the
     /// composite "X of Y completed, F failed (R% success)" string.
-    test('partial progress concatenates completion + failure + success rate',
-        () {
-      final text =
-          UploadQueueSummaryCalculator.getQueueSummaryText(2, 1, 4, null);
-      // 2 of 4 completed
-      expect(text, contains('2'));
-      expect(text, contains('4'));
-      // 1 failed
-      expect(text, contains('1'));
-      // 50% success
-      expect(text, contains('50'));
-    });
+    test(
+      'partial progress concatenates completion + failure + success rate',
+      () {
+        final text = UploadQueueSummaryCalculator.getQueueSummaryText(
+          2,
+          1,
+          4,
+          null,
+        );
+        // 2 of 4 completed
+        expect(text, contains('2'));
+        expect(text, contains('4'));
+        // 1 failed
+        expect(text, contains('1'));
+        // 50% success
+        expect(text, contains('50'));
+      },
+    );
 
     /// Partial with no failures still mentions completion + rate but
     /// must NOT include the failure clause.
     test('partial completed with zero failures omits failure clause', () {
-      final text =
-          UploadQueueSummaryCalculator.getQueueSummaryText(1, 0, 4, null);
+      final text = UploadQueueSummaryCalculator.getQueueSummaryText(
+        1,
+        0,
+        4,
+        null,
+      );
       expect(text, contains('1'));
       expect(text, contains('4'));
       // 25% success
@@ -630,8 +738,12 @@ void main() {
     /// Nothing done yet (no completed, no failed, but total > 0) → the
     /// preparing template. This is the catch-all final-else branch.
     test('zero completed and zero failed with total > 0 returns preparing', () {
-      final text =
-          UploadQueueSummaryCalculator.getQueueSummaryText(0, 0, 5, null);
+      final text = UploadQueueSummaryCalculator.getQueueSummaryText(
+        0,
+        0,
+        5,
+        null,
+      );
       expect(text.toLowerCase(), contains('förbereder'));
     });
   });
@@ -646,7 +758,8 @@ void main() {
     test('sub-minute renders as seconds only', () {
       expect(
         UploadQueueSummaryCalculator.formatDuration(
-            const Duration(seconds: 45)),
+          const Duration(seconds: 45),
+        ),
         '45s',
       );
     });
@@ -655,7 +768,8 @@ void main() {
     test('exactly 60s renders as 1m (no trailing 0s)', () {
       expect(
         UploadQueueSummaryCalculator.formatDuration(
-            const Duration(seconds: 60)),
+          const Duration(seconds: 60),
+        ),
         '1m',
       );
     });
@@ -664,7 +778,8 @@ void main() {
     test('150s renders as 2m 30s', () {
       expect(
         UploadQueueSummaryCalculator.formatDuration(
-            const Duration(seconds: 150)),
+          const Duration(seconds: 150),
+        ),
         '2m 30s',
       );
     });
@@ -674,7 +789,8 @@ void main() {
     test('exactly 3600s renders as 1h (no trailing 0m)', () {
       expect(
         UploadQueueSummaryCalculator.formatDuration(
-            const Duration(seconds: 3600)),
+          const Duration(seconds: 3600),
+        ),
         '1h',
       );
     });
@@ -683,7 +799,8 @@ void main() {
     test('1h 15m 45s renders as 1h 15m (seconds dropped in hours range)', () {
       expect(
         UploadQueueSummaryCalculator.formatDuration(
-            const Duration(hours: 1, minutes: 15, seconds: 45)),
+          const Duration(hours: 1, minutes: 15, seconds: 45),
+        ),
         '1h 15m',
       );
     });

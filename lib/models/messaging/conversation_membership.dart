@@ -91,10 +91,13 @@ class ConversationMembership {
     final data = doc.data()!;
     return ConversationMembership(
       conversationId: doc.id,
-      conversationTitle:
-          SerializationUtils.safeString(data, 'conversationTitle'),
+      conversationTitle: SerializationUtils.safeString(
+        data,
+        'conversationTitle',
+      ),
       isGroup: SerializationUtils.safeBool(data, 'isGroup'),
-      lastActivityAt: SerializationUtils.safeDateTime(data, 'lastActivityAt') ??
+      lastActivityAt:
+          SerializationUtils.safeDateTime(data, 'lastActivityAt') ??
           clock.now(),
       joinedAt:
           SerializationUtils.safeDateTime(data, 'joinedAt') ?? clock.now(),

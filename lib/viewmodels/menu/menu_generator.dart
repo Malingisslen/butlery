@@ -69,10 +69,10 @@ class MenuGenerator {
     this.filterByAllergens = false,
     this.filterByDietary = false,
     this.useSmartSwap = true,
-  })  : _menuService = menuService,
-        _recipeService = recipeService,
-        _userService = userService,
-        _weeklyMenuPlanService = weeklyMenuPlanService;
+  }) : _menuService = menuService,
+       _recipeService = recipeService,
+       _userService = userService,
+       _weeklyMenuPlanService = weeklyMenuPlanService;
 
   List<Recipe> get availableRecipes {
     if (!_recipeService.isInitialized) {
@@ -224,7 +224,8 @@ class MenuGenerator {
   /// - "senaste" / "recent" -> prefer recently cooked (last 30 days)
   /// Falls back to full pool with boost if filtered pool is too small.
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
-      String prompt) async {
+    String prompt,
+  ) async {
     await ensureRecipeServiceInitialized();
 
     await Future.delayed(const Duration(milliseconds: 300));
@@ -306,8 +307,11 @@ class MenuGenerator {
       filtered = recipes.where((r) => r.isFavorite).toList();
     } else {
       filtered = recipes
-          .where((r) =>
-              r.lastCookedAt != null && r.lastCookedAt!.isAfter(thirtyDaysAgo))
+          .where(
+            (r) =>
+                r.lastCookedAt != null &&
+                r.lastCookedAt!.isAfter(thirtyDaysAgo),
+          )
           .toList();
     }
 
@@ -315,7 +319,8 @@ class MenuGenerator {
 
     // Pool too small — fall back to full pool
     AppLogger.info(
-        'Filtered pool too small (${filtered.length}), using full pool');
+      'Filtered pool too small (${filtered.length}), using full pool',
+    );
     return recipes;
   }
 
@@ -376,7 +381,8 @@ class MenuGenerator {
 
     if (eligibleRecipes.isEmpty) {
       AppLogger.warning(
-          'No eligible recipes found for swap in category: $category');
+        'No eligible recipes found for swap in category: $category',
+      );
       return SwapResult(
         recipe: null,
         alternativesRemaining: 0,

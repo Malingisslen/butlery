@@ -97,9 +97,9 @@ class TagResult {
     this.errorReason,
     this.hasDraftIngredients = false,
     bool? hasCoverageAnomaly,
-  })  : coverage = _validateAndClampCoverage(coverage),
-        hasCoverageAnomaly =
-            hasCoverageAnomaly ?? _checkCoverageAnomaly(coverage);
+  }) : coverage = _validateAndClampCoverage(coverage),
+       hasCoverageAnomaly =
+           hasCoverageAnomaly ?? _checkCoverageAnomaly(coverage);
 
   /// CRIT-2: Checks if coverage value is out of range (used to set hasCoverageAnomaly).
   static bool _checkCoverageAnomaly(double value) {
@@ -188,8 +188,8 @@ class TagResult {
         : 'All ${unknownIngredients.length} ingredients are unknown';
     final truncatedError =
         errorMsg != null && errorMsg.length > kMaxErrorReasonLength
-            ? '${errorMsg.substring(0, kMaxErrorReasonLength - 3)}...'
-            : errorMsg;
+        ? '${errorMsg.substring(0, kMaxErrorReasonLength - 3)}...'
+        : errorMsg;
     return TagResult(
       tags: {},
       allergenStatus: {},
@@ -230,15 +230,16 @@ class TagResult {
     // MED-2: Truncate reason to prevent Firestore write failures
     final truncatedReason =
         reason != null && reason.length > kMaxErrorReasonLength
-            ? '${reason.substring(0, kMaxErrorReasonLength - 3)}...'
-            : reason;
+        ? '${reason.substring(0, kMaxErrorReasonLength - 3)}...'
+        : reason;
     return TagResult(
       tags: {},
       allergenStatus: {},
       dietaryStatus: {},
       coverage: 0.0,
-      unknownIngredients:
-          truncatedReason != null ? [truncatedReason] : [], // Backward compat
+      unknownIngredients: truncatedReason != null
+          ? [truncatedReason]
+          : [], // Backward compat
       generatedAt: clock.now(),
       generatorVersion: 'failed', // Mark as failed tagging
       errorReason: truncatedReason, // V2: Proper error field (truncated)
@@ -254,13 +255,19 @@ class TagResult {
     if (data == null) return TagResult.empty();
 
     // L12: Check schema version and migrate if needed
-    final schemaVersion =
-        SerializationUtils.safeInt(data, 'schemaVersion', defaultValue: 0);
+    final schemaVersion = SerializationUtils.safeInt(
+      data,
+      'schemaVersion',
+      defaultValue: 0,
+    );
     final migratedData = _migrateSchema(data, schemaVersion);
 
     // H7/CRIT-2: Clamp coverage to valid [0.0, 1.0] range and track anomaly
-    final rawCoverage = SerializationUtils.safeDouble(migratedData, 'coverage',
-        defaultValue: 0.0);
+    final rawCoverage = SerializationUtils.safeDouble(
+      migratedData,
+      'coverage',
+      defaultValue: 0.0,
+    );
     final hasCoverageAnomaly = rawCoverage < 0.0 || rawCoverage > 1.0;
     final coverage = rawCoverage.clamp(0.0, 1.0);
     if (hasCoverageAnomaly) {
@@ -297,16 +304,25 @@ class TagResult {
       unknownIngredients: _parseStringList(migratedData['unknownIngredients']),
       generatedAt: generatedAt,
       generatorVersion: SerializationUtils.safeNullableString(
-          migratedData, 'generatorVersion'),
-      isPartial: SerializationUtils.safeBool(migratedData, 'isPartial',
-          defaultValue: false),
+        migratedData,
+        'generatorVersion',
+      ),
+      isPartial: SerializationUtils.safeBool(
+        migratedData,
+        'isPartial',
+        defaultValue: false,
+      ),
       // V2: Read errorReason field
-      errorReason:
-          SerializationUtils.safeNullableString(migratedData, 'errorReason'),
+      errorReason: SerializationUtils.safeNullableString(
+        migratedData,
+        'errorReason',
+      ),
       // Persist draft ingredient warning across reloads
       hasDraftIngredients: SerializationUtils.safeBool(
-          migratedData, 'hasDraftIngredients',
-          defaultValue: false),
+        migratedData,
+        'hasDraftIngredients',
+        defaultValue: false,
+      ),
       // CRIT-2: Track coverage anomaly from stored data
       hasCoverageAnomaly: hasCoverageAnomaly,
     );
@@ -322,10 +338,12 @@ class TagResult {
     final sortedTags = tags.toList()..sort();
     final result = <String, dynamic>{
       'tags': sortedTags,
-      'allergenStatus':
-          allergenStatus.map((k, v) => MapEntry(k, v.toFirestore())),
-      'dietaryStatus':
-          dietaryStatus.map((k, v) => MapEntry(k, v.toFirestore())),
+      'allergenStatus': allergenStatus.map(
+        (k, v) => MapEntry(k, v.toFirestore()),
+      ),
+      'dietaryStatus': dietaryStatus.map(
+        (k, v) => MapEntry(k, v.toFirestore()),
+      ),
       'coverage': coverage,
       'unknownIngredients': unknownIngredients,
       'generatedAt': Timestamp.fromDate(generatedAt),
@@ -360,10 +378,12 @@ class TagResult {
     final sortedTags = tags.toList()..sort();
     return {
       'tags': sortedTags,
-      'allergenStatus':
-          allergenStatus.map((k, v) => MapEntry(k, v.toFirestore())),
-      'dietaryStatus':
-          dietaryStatus.map((k, v) => MapEntry(k, v.toFirestore())),
+      'allergenStatus': allergenStatus.map(
+        (k, v) => MapEntry(k, v.toFirestore()),
+      ),
+      'dietaryStatus': dietaryStatus.map(
+        (k, v) => MapEntry(k, v.toFirestore()),
+      ),
       'coverage': coverage,
       'unknownIngredients': unknownIngredients,
       'generatedAt': generatedAt.toIso8601String(),
@@ -389,8 +409,11 @@ class TagResult {
     if (data == null) return TagResult.empty();
 
     // L12: Check schema version and migrate if needed
-    final schemaVersion =
-        SerializationUtils.safeInt(data, 'schemaVersion', defaultValue: 0);
+    final schemaVersion = SerializationUtils.safeInt(
+      data,
+      'schemaVersion',
+      defaultValue: 0,
+    );
     final migratedData = _migrateSchema(data, schemaVersion);
 
     // H11: Log warning when DateTime is missing (could indicate data corruption)
@@ -403,8 +426,11 @@ class TagResult {
     }
 
     // H7/CRIT-2: Clamp coverage to valid [0.0, 1.0] range and track anomaly
-    final rawCoverage = SerializationUtils.safeDouble(migratedData, 'coverage',
-        defaultValue: 0.0);
+    final rawCoverage = SerializationUtils.safeDouble(
+      migratedData,
+      'coverage',
+      defaultValue: 0.0,
+    );
     final hasCoverageAnomaly = rawCoverage < 0.0 || rawCoverage > 1.0;
     final coverage = rawCoverage.clamp(0.0, 1.0);
     if (hasCoverageAnomaly) {
@@ -422,20 +448,30 @@ class TagResult {
       coverage: coverage,
       unknownIngredients: _parseStringList(migratedData['unknownIngredients']),
       generatedAt: SerializationUtils.parseRequiredDateTimeValue(
-          migratedData['generatedAt']),
+        migratedData['generatedAt'],
+      ),
       generatorVersion: SerializationUtils.safeNullableString(
-          migratedData, 'generatorVersion'),
-      isPartial: SerializationUtils.safeBool(migratedData, 'isPartial',
-          defaultValue: false),
+        migratedData,
+        'generatorVersion',
+      ),
+      isPartial: SerializationUtils.safeBool(
+        migratedData,
+        'isPartial',
+        defaultValue: false,
+      ),
       // H3: Parse decisions if present
       decisions: _parseDecisions(migratedData['decisions']),
       // V2: Read errorReason field
-      errorReason:
-          SerializationUtils.safeNullableString(migratedData, 'errorReason'),
+      errorReason: SerializationUtils.safeNullableString(
+        migratedData,
+        'errorReason',
+      ),
       // Persist draft ingredient warning across reloads
       hasDraftIngredients: SerializationUtils.safeBool(
-          migratedData, 'hasDraftIngredients',
-          defaultValue: false),
+        migratedData,
+        'hasDraftIngredients',
+        defaultValue: false,
+      ),
       // CRIT-2: Track coverage anomaly from stored data
       hasCoverageAnomaly: hasCoverageAnomaly,
     );
@@ -777,18 +813,18 @@ class TagResult {
   /// HIGH-6: hashCode includes decisions, errorReason, and hasCoverageAnomaly (consistent with equality).
   @override
   int get hashCode => Object.hash(
-        tags,
-        allergenStatus,
-        dietaryStatus,
-        coverage,
-        Object.hashAll(unknownIngredients),
-        generatorVersion,
-        isPartial,
-        hasCoverageAnomaly, // CRIT-2
-        hasDraftIngredients,
-        decisions != null ? Object.hashAll(decisions!) : null,
-        errorReason,
-      );
+    tags,
+    allergenStatus,
+    dietaryStatus,
+    coverage,
+    Object.hashAll(unknownIngredients),
+    generatorVersion,
+    isPartial,
+    hasCoverageAnomaly, // CRIT-2
+    hasDraftIngredients,
+    decisions != null ? Object.hashAll(decisions!) : null,
+    errorReason,
+  );
 
   /// LOW-3: Uses coveragePercent for consistent rounding across the codebase.
   @override

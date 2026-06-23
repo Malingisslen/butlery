@@ -31,14 +31,18 @@ void main() {
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
       repo = _MockAnalyticsRepo();
-      when(() => repo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
-      when(() => repo.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => repo.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
 
       consent = _MockConsentService();
       // Default to consent granted; individual tests can override.
@@ -64,10 +68,14 @@ void main() {
           recipientCount: 1,
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'recipe_shared',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['method'], 'friend');
         expect(captured['recipient_count_bucket'], '1');
@@ -76,40 +84,52 @@ void main() {
         expect(captured['timestamp'], isA<String>());
       });
 
-      test('emits recipe_shared with group method + multi-recipient bucket',
-          () async {
-        await tracker.logRecipeShared(
-          method: 'group',
-          recipeId: 'recipe-xyz',
-          recipientCount: 4,
-        );
+      test(
+        'emits recipe_shared with group method + multi-recipient bucket',
+        () async {
+          await tracker.logRecipeShared(
+            method: 'group',
+            recipeId: 'recipe-xyz',
+            recipientCount: 4,
+          );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          final captured =
+              verify(
+                    () => repo.logEvent(
+                      name: 'recipe_shared',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['method'], 'group');
-        expect(captured['recipient_count_bucket'], '2-5');
-        expect(captured['recipe_id'], 'recipe-xyz');
-      });
+          expect(captured['method'], 'group');
+          expect(captured['recipient_count_bucket'], '2-5');
+          expect(captured['recipe_id'], 'recipe-xyz');
+        },
+      );
 
-      test('emits recipe_shared with system_share_sheet method + 0 bucket',
-          () async {
-        await tracker.logRecipeShared(
-          method: 'system_share_sheet',
-          recipeId: 'recipe-sys',
-          recipientCount: 0,
-        );
+      test(
+        'emits recipe_shared with system_share_sheet method + 0 bucket',
+        () async {
+          await tracker.logRecipeShared(
+            method: 'system_share_sheet',
+            recipeId: 'recipe-sys',
+            recipientCount: 0,
+          );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          final captured =
+              verify(
+                    () => repo.logEvent(
+                      name: 'recipe_shared',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['method'], 'system_share_sheet');
-        expect(captured['recipient_count_bucket'], '0');
-      });
+          expect(captured['method'], 'system_share_sheet');
+          expect(captured['recipient_count_bucket'], '0');
+        },
+      );
 
       test('emits recipe_shared with link_copy method', () async {
         await tracker.logRecipeShared(
@@ -117,10 +137,14 @@ void main() {
           recipeId: 'recipe-copy',
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'recipe_shared',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured['method'], 'link_copy');
         expect(captured['recipient_count_bucket'], '0');
@@ -128,10 +152,14 @@ void main() {
 
       test('omits recipe_id when not provided', () async {
         await tracker.logRecipeShared(method: 'friend', recipientCount: 1);
-        final captured = verify(() => repo.logEvent(
-              name: 'recipe_shared',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'recipe_shared',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured.containsKey('recipe_id'), isFalse);
       });
@@ -145,10 +173,12 @@ void main() {
           recipientCount: 1,
         );
 
-        verifyNever(() => repo.logEvent(
-              name: any(named: 'name'),
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: any(named: 'name'),
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
 
       test('buckets recipient counts correctly across all bands', () async {
@@ -159,10 +189,14 @@ void main() {
             recipeId: 'r$count',
             recipientCount: count,
           );
-          final params = verify(() => repo.logEvent(
-                name: 'recipe_shared',
-                parameters: captureAny(named: 'parameters'),
-              )).captured.single as Map<String, Object>;
+          final params =
+              verify(
+                    () => repo.logEvent(
+                      name: 'recipe_shared',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
           return params['recipient_count_bucket'] as String;
         }
 
@@ -180,32 +214,40 @@ void main() {
     });
 
     group('logFirstShareIfMilestone', () {
-      test('fires first_share + sets sharing_activated user prop on first call',
-          () async {
-        final joinedAt = DateTime.now().subtract(const Duration(minutes: 90));
+      test(
+        'fires first_share + sets sharing_activated user prop on first call',
+        () async {
+          final joinedAt = DateTime.now().subtract(const Duration(minutes: 90));
 
-        final fired = await tracker.logFirstShareIfMilestone(
-          userId: 'user-1',
-          shareMethod: 'friend',
-          joinedAt: joinedAt,
-        );
+          final fired = await tracker.logFirstShareIfMilestone(
+            userId: 'user-1',
+            shareMethod: 'friend',
+            joinedAt: joinedAt,
+          );
 
-        expect(fired, isTrue);
+          expect(fired, isTrue);
 
-        final captured = verify(() => repo.logEvent(
-              name: 'first_share',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+          final captured =
+              verify(
+                    () => repo.logEvent(
+                      name: 'first_share',
+                      parameters: captureAny(named: 'parameters'),
+                    ),
+                  ).captured.single
+                  as Map<String, Object>;
 
-        expect(captured['share_method'], 'friend');
-        // Allow 1-min slack for clock drift between setUp and the call.
-        expect(captured['minutes_since_signup'], inInclusiveRange(89, 91));
+          expect(captured['share_method'], 'friend');
+          // Allow 1-min slack for clock drift between setUp and the call.
+          expect(captured['minutes_since_signup'], inInclusiveRange(89, 91));
 
-        verify(() => repo.setUserProperty(
+          verify(
+            () => repo.setUserProperty(
               name: 'sharing_activated',
               value: 'true',
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('omits minutes_since_signup when joinedAt is null', () async {
         await tracker.logFirstShareIfMilestone(
@@ -214,10 +256,14 @@ void main() {
           joinedAt: null,
         );
 
-        final captured = verify(() => repo.logEvent(
-              name: 'first_share',
-              parameters: captureAny(named: 'parameters'),
-            )).captured.single as Map<String, Object>;
+        final captured =
+            verify(
+                  () => repo.logEvent(
+                    name: 'first_share',
+                    parameters: captureAny(named: 'parameters'),
+                  ),
+                ).captured.single
+                as Map<String, Object>;
 
         expect(captured.containsKey('minutes_since_signup'), isFalse);
         expect(captured['share_method'], 'group');
@@ -241,14 +287,18 @@ void main() {
         );
         expect(secondFired, isFalse);
 
-        verifyNever(() => repo.logEvent(
-              name: 'first_share',
-              parameters: any(named: 'parameters'),
-            ));
-        verifyNever(() => repo.setUserProperty(
-              name: 'sharing_activated',
-              value: any(named: 'value'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'first_share',
+            parameters: any(named: 'parameters'),
+          ),
+        );
+        verifyNever(
+          () => repo.setUserProperty(
+            name: 'sharing_activated',
+            value: any(named: 'value'),
+          ),
+        );
       });
 
       test('dedupe is per-user — different uid still fires', () async {
@@ -266,10 +316,12 @@ void main() {
         );
 
         expect(fired, isTrue);
-        verify(() => repo.logEvent(
-              name: 'first_share',
-              parameters: any(named: 'parameters'),
-            )).called(1);
+        verify(
+          () => repo.logEvent(
+            name: 'first_share',
+            parameters: any(named: 'parameters'),
+          ),
+        ).called(1);
       });
 
       test('skips when userId is null/empty', () async {
@@ -284,10 +336,12 @@ void main() {
 
         expect(firedNull, isFalse);
         expect(firedEmpty, isFalse);
-        verifyNever(() => repo.logEvent(
-              name: 'first_share',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'first_share',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
 
       test('skips when consent not granted', () async {
@@ -299,10 +353,12 @@ void main() {
         );
 
         expect(fired, isFalse);
-        verifyNever(() => repo.logEvent(
-              name: 'first_share',
-              parameters: any(named: 'parameters'),
-            ));
+        verifyNever(
+          () => repo.logEvent(
+            name: 'first_share',
+            parameters: any(named: 'parameters'),
+          ),
+        );
       });
     });
   });

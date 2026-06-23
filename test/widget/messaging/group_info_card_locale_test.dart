@@ -21,16 +21,19 @@ void main() {
     // sv -> "mars", en -> "Mar". January/May would collide on "jan"/"maj".
     final createdAt = DateTime(2026, 3, 15, 14, 30);
 
-    testWidgets('renders Swedish month abbreviation under sv locale',
-        (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        locale: const Locale('sv'),
-        child: GroupInfoCard(
-          groupTitle: 'Testgrupp',
-          memberCount: 3,
-          createdAt: createdAt,
+    testWidgets('renders Swedish month abbreviation under sv locale', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          locale: const Locale('sv'),
+          child: GroupInfoCard(
+            groupTitle: 'Testgrupp',
+            memberCount: 3,
+            createdAt: createdAt,
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       // Swedish DateFormat.yMMMd renders March as "mars" (lowercase, full word
@@ -39,16 +42,19 @@ void main() {
       expect(find.textContaining('mars'), findsOneWidget);
     });
 
-    testWidgets('renders English month abbreviation under en locale',
-        (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        locale: const Locale('en'),
-        child: GroupInfoCard(
-          groupTitle: 'Test group',
-          memberCount: 3,
-          createdAt: createdAt,
+    testWidgets('renders English month abbreviation under en locale', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          locale: const Locale('en'),
+          child: GroupInfoCard(
+            groupTitle: 'Test group',
+            memberCount: 3,
+            createdAt: createdAt,
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       // English yMMMd renders March 15, 2026 as "Mar 15, 2026".

@@ -41,8 +41,9 @@ class RecipeDaoStub {
   Future<List<OfflineRecipeEntry>> getAllRecipesForUser(String userId) async =>
       [];
   Future<OfflineRecipeEntry?> getRecipeForUser(
-          String recipeId, String userId) async =>
-      null;
+    String recipeId,
+    String userId,
+  ) async => null;
   Future<int> getRecipeCountForUser(String userId) async => 0;
   Future<void> upsertRecipe(OfflineRecipeEntry entry) async {}
   Future<void> deleteRecipe(String recipeId, String userId) async {}

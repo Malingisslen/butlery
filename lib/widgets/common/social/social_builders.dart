@@ -27,7 +27,9 @@ class SocialBuilders {
               width: AppDimensions.iconSizeS,
               height: AppDimensions.iconSizeS,
               child: LoadingIndicator(
-                  size: AppDimensions.iconSizeS, strokeWidth: 2),
+                size: AppDimensions.iconSizeS,
+                strokeWidth: 2,
+              ),
             )
           : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
       label: Text(label),
@@ -56,7 +58,8 @@ class SocialBuilders {
         children: [
           Text(
             entry.value.toString(),
-            style: valueStyle ??
+            style:
+                valueStyle ??
                 AppTextStyles.bodyLargeBold.copyWith(
                   color: textColor ?? Theme.of(context).colorScheme.primary,
                 ),
@@ -65,11 +68,13 @@ class SocialBuilders {
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               entry.key,
-              style: labelStyle ??
+              style:
+                  labelStyle ??
                   Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: textColor ??
-                            Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color:
+                        textColor ??
+                        Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
         ],

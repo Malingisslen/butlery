@@ -99,12 +99,12 @@ class _OnDisposeSpyPresenceService extends PresenceService {
 /// Locally-mocked FirebaseOptions because `FirebaseOptions` is sealed in
 /// firebase_core but has a public const constructor we can use directly.
 FirebaseOptions _options({String? databaseURL}) => FirebaseOptions(
-      apiKey: 'k',
-      appId: '1:0:web:0',
-      messagingSenderId: '0',
-      projectId: 'p',
-      databaseURL: databaseURL,
-    );
+  apiKey: 'k',
+  appId: '1:0:web:0',
+  messagingSenderId: '0',
+  projectId: 'p',
+  databaseURL: databaseURL,
+);
 
 /// Helper — wire a per-path mocked DatabaseReference into the database mock.
 class _DbHarness {
@@ -112,7 +112,7 @@ class _DbHarness {
   final Map<String, _MockDatabaseReference> refs = {};
   final Map<_MockDatabaseReference, _MockOnDisconnect> disconnects = {};
   final Map<_MockDatabaseReference, StreamController<DatabaseEvent>>
-      onValueControllers = {};
+  onValueControllers = {};
 
   _DbHarness({String? databaseURL = 'https://x.firebaseio.com'}) {
     final app = _MockFirebaseApp();
@@ -193,31 +193,39 @@ void main() {
     /// status string → PresenceStatus enum; unknown / null → offline.
     test('parses all known statuses and falls back to offline', () {
       expect(
-        UserPresence.fromRtdb({'status': 'online', 'lastSeen': 1000}, 'u1')
-            .status,
+        UserPresence.fromRtdb({
+          'status': 'online',
+          'lastSeen': 1000,
+        }, 'u1').status,
         PresenceStatus.online,
       );
       expect(
-        UserPresence.fromRtdb({'status': 'away', 'lastSeen': 1000}, 'u1')
-            .status,
+        UserPresence.fromRtdb({
+          'status': 'away',
+          'lastSeen': 1000,
+        }, 'u1').status,
         PresenceStatus.away,
       );
       expect(
-        UserPresence.fromRtdb({'status': 'offline', 'lastSeen': 1000}, 'u1')
-            .status,
+        UserPresence.fromRtdb({
+          'status': 'offline',
+          'lastSeen': 1000,
+        }, 'u1').status,
         PresenceStatus.offline,
       );
       // Unknown status string — must not throw, must be offline.
       expect(
-        UserPresence.fromRtdb(
-                {'status': 'doing-laundry', 'lastSeen': 1000}, 'u1')
-            .status,
+        UserPresence.fromRtdb({
+          'status': 'doing-laundry',
+          'lastSeen': 1000,
+        }, 'u1').status,
         PresenceStatus.offline,
       );
       // Missing status entirely → offline (defensive).
       expect(
-        UserPresence.fromRtdb(<dynamic, dynamic>{'lastSeen': 1000}, 'u1')
-            .status,
+        UserPresence.fromRtdb(<dynamic, dynamic>{
+          'lastSeen': 1000,
+        }, 'u1').status,
         PresenceStatus.offline,
       );
     });
@@ -227,15 +235,19 @@ void main() {
     test('lastSeen falls back to clock.now() when missing or wrong type', () {
       final fixed = DateTime.utc(2026, 1, 1, 12);
       withClock(Clock.fixed(fixed), () {
-        final fromInt = UserPresence.fromRtdb(
-            {'status': 'online', 'lastSeen': 1700000000000}, 'u1');
+        final fromInt = UserPresence.fromRtdb({
+          'status': 'online',
+          'lastSeen': 1700000000000,
+        }, 'u1');
         expect(fromInt.lastSeen.millisecondsSinceEpoch, 1700000000000);
 
         final fromMissing = UserPresence.fromRtdb({'status': 'online'}, 'u1');
         expect(fromMissing.lastSeen, fixed);
 
-        final fromGarbage = UserPresence.fromRtdb(
-            {'status': 'online', 'lastSeen': 'not-an-int'}, 'u1');
+        final fromGarbage = UserPresence.fromRtdb({
+          'status': 'online',
+          'lastSeen': 'not-an-int',
+        }, 'u1');
         expect(fromGarbage.lastSeen, fixed);
       });
     });
@@ -364,16 +376,17 @@ void main() {
       // crash-safe so the server cleans up if the process dies between the
       // two writes. Capturing the payload verifies the call AND the args
       // in one shot.
-      final disconnectPayload = verify(() => disconnect.set(captureAny()))
-          .captured
-          .single as Map<String, dynamic>;
+      final disconnectPayload =
+          verify(() => disconnect.set(captureAny())).captured.single
+              as Map<String, dynamic>;
       expect(disconnectPayload['status'], 'offline');
       expect(disconnectPayload['lastSeen'], isNotNull);
 
       // (2) The live ref write carries the online payload — NOT offline
       // (regression guard against accidentally swapping the maps).
-      final livePayload = verify(() => ref.set(captureAny())).captured.single
-          as Map<String, dynamic>;
+      final livePayload =
+          verify(() => ref.set(captureAny())).captured.single
+              as Map<String, dynamic>;
       expect(livePayload['status'], 'online');
       expect(livePayload['lastSeen'], isNotNull);
 
@@ -437,8 +450,9 @@ void main() {
 
       await service.dispose();
 
-      final captured = verify(() => ref.set(captureAny())).captured.single
-          as Map<String, dynamic>;
+      final captured =
+          verify(() => ref.set(captureAny())).captured.single
+              as Map<String, dynamic>;
       expect(captured['status'], 'offline');
       verify(() => disconnect.cancel()).called(1);
     });
@@ -447,22 +461,30 @@ void main() {
     /// onDispose() lifecycle hook actually runs. A subclass override of
     /// dispose() that forgets the super-call silently strands every base
     /// cleanup path. We prove the chain by spying onDispose().
-    test('BUT-1099 dispose chains super.dispose() so onDispose() fires',
-        () async {
-      final spy = _OnDisposeSpyPresenceService(
-        firestoreRepository: FirestoreRepository(firestore: firestore),
-        authRepository: authRepo,
-        database: harness.db,
-      );
-      await spy.initialize();
-      expect(spy.onDisposeCalled, isFalse,
-          reason: 'onDispose must not fire before dispose()');
+    test(
+      'BUT-1099 dispose chains super.dispose() so onDispose() fires',
+      () async {
+        final spy = _OnDisposeSpyPresenceService(
+          firestoreRepository: FirestoreRepository(firestore: firestore),
+          authRepository: authRepo,
+          database: harness.db,
+        );
+        await spy.initialize();
+        expect(
+          spy.onDisposeCalled,
+          isFalse,
+          reason: 'onDispose must not fire before dispose()',
+        );
 
-      await spy.dispose();
+        await spy.dispose();
 
-      expect(spy.onDisposeCalled, isTrue,
-          reason: 'super.dispose() must invoke the onDispose() hook');
-    });
+        expect(
+          spy.onDisposeCalled,
+          isTrue,
+          reason: 'super.dispose() must invoke the onDispose() hook',
+        );
+      },
+    );
 
     /// dispose() must swallow RTDB errors — a network blip on shutdown
     /// must not crash the app or leave the BaseService in an undisposed
@@ -478,34 +500,38 @@ void main() {
     /// `onDisconnect.cancel()` from running. Otherwise the previous
     /// session's onDisconnect handler stays armed and the next reconnect
     /// fires bogus offline status while the user is online elsewhere.
-    test('BUT-1098 dispose: cancel still runs even when set() throws',
-        () async {
-      final ref = harness.refs['presence/u1']!;
-      final disconnect = harness.disconnects[ref]!;
-      clearInteractions(ref);
-      clearInteractions(disconnect);
-      when(() => ref.set(any())).thenThrow(StateError('offline'));
+    test(
+      'BUT-1098 dispose: cancel still runs even when set() throws',
+      () async {
+        final ref = harness.refs['presence/u1']!;
+        final disconnect = harness.disconnects[ref]!;
+        clearInteractions(ref);
+        clearInteractions(disconnect);
+        when(() => ref.set(any())).thenThrow(StateError('offline'));
 
-      await service.dispose();
+        await service.dispose();
 
-      verify(() => disconnect.cancel()).called(1);
-    });
+        verify(() => disconnect.cancel()).called(1);
+      },
+    );
 
     /// BUT-1098 sibling: same independence guarantee on the
     /// resetForLogout path. Set failure does not strand the onDisconnect
     /// handler.
-    test('BUT-1098 resetForLogout: cancel still runs even when set() throws',
-        () async {
-      final ref = harness.refs['presence/u1']!;
-      final disconnect = harness.disconnects[ref]!;
-      clearInteractions(ref);
-      clearInteractions(disconnect);
-      when(() => ref.set(any())).thenThrow(StateError('offline'));
+    test(
+      'BUT-1098 resetForLogout: cancel still runs even when set() throws',
+      () async {
+        final ref = harness.refs['presence/u1']!;
+        final disconnect = harness.disconnects[ref]!;
+        clearInteractions(ref);
+        clearInteractions(disconnect);
+        when(() => ref.set(any())).thenThrow(StateError('offline'));
 
-      await service.resetForLogout();
+        await service.resetForLogout();
 
-      verify(() => disconnect.cancel()).called(1);
-    });
+        verify(() => disconnect.cancel()).called(1);
+      },
+    );
 
     /// resetForLogout: same offline write, same cancel, then must NULL
     /// the internal _presenceRef. A re-login should re-resolve the path
@@ -539,8 +565,7 @@ void main() {
     /// controlled), seed an existing presence doc with NO typingIn field,
     /// elapse one cleanup interval, and assert the cleanup ran without
     /// throwing and left the doc untouched (no spurious field deletions).
-    test(
-        'BUT-1101 periodic cleanup over a doc with no typingIn does not '
+    test('BUT-1101 periodic cleanup over a doc with no typingIn does not '
         'throw and touches nothing', () {
       fakeAsync((async) {
         final h = _DbHarness();
@@ -569,8 +594,11 @@ void main() {
 
         expect(doc, isNotNull);
         expect(doc!.exists, isTrue);
-        expect(doc!.data(), {'status': 'online'},
-            reason: 'cleanup must not mutate a doc that has no typingIn');
+        expect(
+          doc!.data(),
+          {'status': 'online'},
+          reason: 'cleanup must not mutate a doc that has no typingIn',
+        );
 
         s.dispose();
         async.flushMicrotasks();
@@ -584,8 +612,7 @@ void main() {
     /// `ref.set` to throw, drives the lifecycle callback, and asserts
     /// that pending microtasks complete without surfacing the error to
     /// the surrounding zone.
-    test(
-        'BUT-1100 paused lifecycle: set() throw is swallowed '
+    test('BUT-1100 paused lifecycle: set() throw is swallowed '
         '(no unhandled async exception)', () async {
       final ref = harness.refs['presence/u1']!;
       // initialize() ran in setUp() and already called ref.set(online).
@@ -667,29 +694,37 @@ void main() {
 
       final doc = await firestore.collection('presence').doc('u1').get();
       final typingIn = doc.data()!['typingIn'] as Map;
-      expect(typingIn.containsKey('conv_a'), isFalse,
-          reason: 'conv_a typing must be removed');
-      expect(typingIn.containsKey('conv_b'), isTrue,
-          reason: 'conv_b typing must survive');
+      expect(
+        typingIn.containsKey('conv_a'),
+        isFalse,
+        reason: 'conv_a typing must be removed',
+      );
+      expect(
+        typingIn.containsKey('conv_b'),
+        isTrue,
+        reason: 'conv_b typing must survive',
+      );
     });
 
     /// Debounce contract: repeated startTyping for the same conversation
     /// should only schedule one stop, not pile up timers (timer leak →
     /// memory leak + repeated Firestore writes after the user stops).
-    test('repeated startTyping for same conversation does not stack timers',
-        () async {
-      // We can't easily assert internal timer state, but we can assert
-      // that startTyping always writes ONE doc set (no timer-batched
-      // duplicate writes from previous calls).
-      await service.startTyping('conv_a');
-      await service.startTyping('conv_a');
-      await service.startTyping('conv_a');
+    test(
+      'repeated startTyping for same conversation does not stack timers',
+      () async {
+        // We can't easily assert internal timer state, but we can assert
+        // that startTyping always writes ONE doc set (no timer-batched
+        // duplicate writes from previous calls).
+        await service.startTyping('conv_a');
+        await service.startTyping('conv_a');
+        await service.startTyping('conv_a');
 
-      final doc = await firestore.collection('presence').doc('u1').get();
-      // The doc exists with conv_a typing — proves the writes succeeded
-      // and the debounce-stop hasn't fired prematurely.
-      expect((doc.data()!['typingIn'] as Map).containsKey('conv_a'), isTrue);
-    });
+        final doc = await firestore.collection('presence').doc('u1').get();
+        // The doc exists with conv_a typing — proves the writes succeeded
+        // and the debounce-stop hasn't fired prematurely.
+        expect((doc.data()!['typingIn'] as Map).containsKey('conv_a'), isTrue);
+      },
+    );
 
     /// Debounce timer fires after 500ms and clears typing automatically.
     test('debounce timer fires after 500ms and clears typing', () {
@@ -716,8 +751,11 @@ void main() {
         expect(doc, isNotNull);
         final typingIn =
             (doc!.data()?['typingIn'] as Map?) ?? const <String, Object?>{};
-        expect(typingIn.containsKey('conv_x'), isFalse,
-            reason: 'after 500ms debounce, conv_x typing must be cleared');
+        expect(
+          typingIn.containsKey('conv_x'),
+          isFalse,
+          reason: 'after 500ms debounce, conv_x typing must be cleared',
+        );
 
         s.dispose();
       });
@@ -764,27 +802,33 @@ void main() {
         // Fresh typer.
         await firestore.collection('presence').doc('userA').set({
           'typingIn': {
-            'conv1':
-                Timestamp.fromDate(now.subtract(const Duration(seconds: 2))),
+            'conv1': Timestamp.fromDate(
+              now.subtract(const Duration(seconds: 2)),
+            ),
           },
         });
         // Stale typer (6s old — outside window).
         await firestore.collection('presence').doc('userB').set({
           'typingIn': {
-            'conv1':
-                Timestamp.fromDate(now.subtract(const Duration(seconds: 6))),
+            'conv1': Timestamp.fromDate(
+              now.subtract(const Duration(seconds: 6)),
+            ),
           },
         });
         // Typing in a different conversation.
         await firestore.collection('presence').doc('userC').set({
           'typingIn': {
-            'other':
-                Timestamp.fromDate(now.subtract(const Duration(seconds: 2))),
+            'other': Timestamp.fromDate(
+              now.subtract(const Duration(seconds: 2)),
+            ),
           },
         });
 
-        final list = await service
-            .getTypingUsersStream('conv1', ['userA', 'userB', 'userC']).first;
+        final list = await service.getTypingUsersStream('conv1', [
+          'userA',
+          'userB',
+          'userC',
+        ]).first;
         expect(list, contains('userA'));
         expect(list, isNot(contains('userB')));
         expect(list, isNot(contains('userC')));
@@ -880,22 +924,26 @@ void main() {
       await controller.close();
     });
 
-    test('non-null snapshot is parsed into a UserPresence carrying userId',
-        () async {
-      final controller = harness.attachOnValue('presence/u1');
-      final futureFirst = service.getPresenceStream('u1').first;
+    test(
+      'non-null snapshot is parsed into a UserPresence carrying userId',
+      () async {
+        final controller = harness.attachOnValue('presence/u1');
+        final futureFirst = service.getPresenceStream('u1').first;
 
-      controller.add(harness.eventOf(<Object?, Object?>{
-        'status': 'online',
-        'lastSeen': 1700000000000,
-      }));
+        controller.add(
+          harness.eventOf(<Object?, Object?>{
+            'status': 'online',
+            'lastSeen': 1700000000000,
+          }),
+        );
 
-      final presence = await futureFirst;
-      expect(presence, isNotNull);
-      expect(presence!.userId, 'u1');
-      expect(presence.status, PresenceStatus.online);
-      await controller.close();
-    });
+        final presence = await futureFirst;
+        expect(presence, isNotNull);
+        expect(presence!.userId, 'u1');
+        expect(presence.status, PresenceStatus.online);
+        await controller.close();
+      },
+    );
   });
 
   group('getMultiplePresenceStream', () {
@@ -921,48 +969,57 @@ void main() {
 
     /// Empty input must short-circuit — must not subscribe to any RTDB
     /// path, must not leak a controller.
-    test('empty userIds returns Stream.value({}) without subscribing',
-        () async {
-      final map = await service.getMultiplePresenceStream([]).first;
-      expect(map, isEmpty);
-      verifyNever(() => harness.db.ref(any()));
-    });
+    test(
+      'empty userIds returns Stream.value({}) without subscribing',
+      () async {
+        final map = await service.getMultiplePresenceStream([]).first;
+        expect(map, isEmpty);
+        verifyNever(() => harness.db.ref(any()));
+      },
+    );
 
     /// Merge semantics: a user going from online → null (signed out) must
     /// be REMOVED from the merged map, not left stuck as "last known".
-    test('merges multiple users and removes one whose snapshot goes null',
-        () async {
-      final cA = harness.attachOnValue('presence/uA');
-      final cB = harness.attachOnValue('presence/uB');
+    test(
+      'merges multiple users and removes one whose snapshot goes null',
+      () async {
+        final cA = harness.attachOnValue('presence/uA');
+        final cB = harness.attachOnValue('presence/uB');
 
-      final emissions = <Map<String, UserPresence>>[];
-      final sub =
-          service.getMultiplePresenceStream(['uA', 'uB']).listen(emissions.add);
+        final emissions = <Map<String, UserPresence>>[];
+        final sub = service
+            .getMultiplePresenceStream(['uA', 'uB'])
+            .listen(emissions.add);
 
-      cA.add(harness.eventOf(<Object?, Object?>{
-        'status': 'online',
-        'lastSeen': 1700000000000,
-      }));
-      await Future<void>.delayed(Duration.zero);
+        cA.add(
+          harness.eventOf(<Object?, Object?>{
+            'status': 'online',
+            'lastSeen': 1700000000000,
+          }),
+        );
+        await Future<void>.delayed(Duration.zero);
 
-      cB.add(harness.eventOf(<Object?, Object?>{
-        'status': 'away',
-        'lastSeen': 1700000000000,
-      }));
-      await Future<void>.delayed(Duration.zero);
+        cB.add(
+          harness.eventOf(<Object?, Object?>{
+            'status': 'away',
+            'lastSeen': 1700000000000,
+          }),
+        );
+        await Future<void>.delayed(Duration.zero);
 
-      // uB logs out — node goes null.
-      cB.add(harness.eventOf(null));
-      await Future<void>.delayed(Duration.zero);
+        // uB logs out — node goes null.
+        cB.add(harness.eventOf(null));
+        await Future<void>.delayed(Duration.zero);
 
-      // The last emission must contain uA only.
-      expect(emissions.last.keys, ['uA']);
-      expect(emissions.last['uA']!.status, PresenceStatus.online);
+        // The last emission must contain uA only.
+        expect(emissions.last.keys, ['uA']);
+        expect(emissions.last['uA']!.status, PresenceStatus.online);
 
-      await sub.cancel();
-      await cA.close();
-      await cB.close();
-    });
+        await sub.cancel();
+        await cA.close();
+        await cB.close();
+      },
+    );
   });
 
   // ==================================================================
@@ -990,10 +1047,9 @@ void main() {
     });
 
     test('returns true and deletes the presence doc on success', () async {
-      await firestore
-          .collection('presence')
-          .doc('victim')
-          .set({'status': 'online'});
+      await firestore.collection('presence').doc('victim').set({
+        'status': 'online',
+      });
 
       final ok = await service.deleteUserPresence('victim');
 

@@ -60,8 +60,9 @@ class ShoppingListCard extends StatelessWidget {
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
         restDecoration: restDecoration,
-        hoverDecoration:
-            restDecoration.copyWith(boxShadow: AppShadows.floating),
+        hoverDecoration: restDecoration.copyWith(
+          boxShadow: AppShadows.floating,
+        ),
         child: Material(
           type: MaterialType.transparency,
           child: Semantics(
@@ -245,38 +246,42 @@ class ShoppingListCard extends StatelessWidget {
           style: AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
-        ...items.take(4).map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-              child: Row(
-                children: [
-                  Icon(
-                    _isItemCompleted(item)
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    size: AppDimensions.iconSizeS,
-                    color: _isItemCompleted(item)
-                        ? context.butleryColors.success
-                        : cs.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
-                    child: Text(
-                      _getItemTitle(item),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        decoration: _isItemCompleted(item)
-                            ? TextDecoration.lineThrough
-                            : null,
-                        color: _isItemCompleted(item)
-                            ? cs.onSurfaceVariant
-                            : cs.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+        ...items
+            .take(4)
+            .map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isItemCompleted(item)
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      size: AppDimensions.iconSizeS,
+                      color: _isItemCompleted(item)
+                          ? context.butleryColors.success
+                          : cs.onSurfaceVariant,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Expanded(
+                      child: Text(
+                        _getItemTitle(item),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          decoration: _isItemCompleted(item)
+                              ? TextDecoration.lineThrough
+                              : null,
+                          color: _isItemCompleted(item)
+                              ? cs.onSurfaceVariant
+                              : cs.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
         if (items.length > 4)
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),

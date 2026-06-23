@@ -22,23 +22,36 @@ void main() {
 
     group('genitive-s compounds', () {
       test('nötköttsgryta splits at genitive-s', () {
-        final result =
-            CompoundSplitter.extractBase('nötköttsgryta', firestoreKnown);
-        expect(result, 'nötkött',
-            reason: 'nötkött + s + gryta — genitive-s linking');
+        final result = CompoundSplitter.extractBase(
+          'nötköttsgryta',
+          firestoreKnown,
+        );
+        expect(
+          result,
+          'nötkött',
+          reason: 'nötkött + s + gryta — genitive-s linking',
+        );
       });
 
       test('fläskfärssås splits at genitive-s', () {
-        final result =
-            CompoundSplitter.extractBase('fläskfärssås', firestoreKnown);
-        expect(result, 'fläskfärs',
-            reason: 'fläskfärs + s + sås — genitive-s linking');
+        final result = CompoundSplitter.extractBase(
+          'fläskfärssås',
+          firestoreKnown,
+        );
+        expect(
+          result,
+          'fläskfärs',
+          reason: 'fläskfärs + s + sås — genitive-s linking',
+        );
       });
 
       test('laxsås splits directly (no genitive-s needed)', () {
         final result = CompoundSplitter.extractBase('laxsås', firestoreKnown);
-        expect(result, 'lax',
-            reason: 'lax + sås — direct compound, no genitive');
+        expect(
+          result,
+          'lax',
+          reason: 'lax + sås — direct compound, no genitive',
+        );
       });
     });
 
@@ -46,8 +59,11 @@ void main() {
       test('tomatsås is known ingredient — returned as-is', () {
         // tomatsås is in KnownIngredients.condiments, so no split
         final result = CompoundSplitter.extractBase('tomatsås', null);
-        expect(result, 'tomatsås',
-            reason: 'Known ingredient, guard short-circuits');
+        expect(
+          result,
+          'tomatsås',
+          reason: 'Known ingredient, guard short-circuits',
+        );
       });
 
       test('fläskstek extracts fläsk', () {
@@ -70,25 +86,39 @@ void main() {
 
     group('novel suffixes not in static list', () {
       test('hallonmarmelad extracts hallon', () {
-        final result =
-            CompoundSplitter.extractBase('hallonmarmelad', firestoreKnown);
-        expect(result, 'hallon',
-            reason:
-                '"marmelad" is not in static suffix list but hallon is known');
+        final result = CompoundSplitter.extractBase(
+          'hallonmarmelad',
+          firestoreKnown,
+        );
+        expect(
+          result,
+          'hallon',
+          reason: '"marmelad" is not in static suffix list but hallon is known',
+        );
       });
 
       test('laxpudding extracts lax', () {
-        final result =
-            CompoundSplitter.extractBase('laxpudding', firestoreKnown);
-        expect(result, 'lax',
-            reason: '"pudding" is not in static suffix list but lax is known');
+        final result = CompoundSplitter.extractBase(
+          'laxpudding',
+          firestoreKnown,
+        );
+        expect(
+          result,
+          'lax',
+          reason: '"pudding" is not in static suffix list but lax is known',
+        );
       });
 
       test('morotskaka extracts morot via genitive-s', () {
-        final result =
-            CompoundSplitter.extractBase('morotskaka', firestoreKnown);
-        expect(result, 'morot',
-            reason: 'morot + s + kaka — genitive-s with novel suffix');
+        final result = CompoundSplitter.extractBase(
+          'morotskaka',
+          firestoreKnown,
+        );
+        expect(
+          result,
+          'morot',
+          reason: 'morot + s + kaka — genitive-s with novel suffix',
+        );
       });
 
       test('äppelpaj does not split — äppel is not äpple', () {
@@ -96,16 +126,22 @@ void main() {
         // (vowel reduction), so "äppel" won't match "äpple" in the vocabulary.
         // This is a known limitation — vowel-reduced forms need dictionary support.
         final result = CompoundSplitter.extractBase('äppelpaj', firestoreKnown);
-        expect(result, 'äppelpaj',
-            reason: 'äppel != äpple, no known base found');
+        expect(
+          result,
+          'äppelpaj',
+          reason: 'äppel != äpple, no known base found',
+        );
       });
     });
 
     group('protected compound names', () {
       test('vitpeppar is not split', () {
         final result = CompoundSplitter.extractBase('vitpeppar', null);
-        expect(result, 'vitpeppar',
-            reason: 'In KnownIngredients.compoundNames — must not split');
+        expect(
+          result,
+          'vitpeppar',
+          reason: 'In KnownIngredients.compoundNames — must not split',
+        );
       });
 
       test('svartpeppar is not split', () {
@@ -138,8 +174,11 @@ void main() {
 
       test('kyckling is known — no split attempted', () {
         final result = CompoundSplitter.extractBase('kyckling', null);
-        expect(result, 'kyckling',
-            reason: 'Already a known ingredient, skip splitting');
+        expect(
+          result,
+          'kyckling',
+          reason: 'Already a known ingredient, skip splitting',
+        );
       });
 
       test('köttfärs is known — no split attempted', () {
@@ -201,8 +240,11 @@ void main() {
         // The splitter should prefer the longest known base.
         final known = <String>{'lax', 'potatis'};
         final result = CompoundSplitter.extractBase('potatissallad', known);
-        expect(result, 'potatis',
-            reason: 'potatis (7 chars) preferred over any shorter match');
+        expect(
+          result,
+          'potatis',
+          reason: 'potatis (7 chars) preferred over any shorter match',
+        );
       });
     });
   });

@@ -130,8 +130,9 @@ void main() {
       });
 
       test('should parse packaging units', () {
-        var result =
-            IngredientParser.parseIngredient('1 burk krossade tomater');
+        var result = IngredientParser.parseIngredient(
+          '1 burk krossade tomater',
+        );
         expect(result.quantity, equals(1.0));
         expect(result.unit, equals('burk'));
         expect(result.name, equals('krossade tomater'));
@@ -165,8 +166,9 @@ void main() {
       });
 
       test('should parse ingredients with compound names', () {
-        var result =
-            IngredientParser.parseIngredient('400 g finhackad gul lök');
+        var result = IngredientParser.parseIngredient(
+          '400 g finhackad gul lök',
+        );
         expect(result.quantity, equals(400.0));
         expect(result.unit, equals('g'));
         expect(result.name, equals('finhackad gul lök'));
@@ -301,14 +303,18 @@ void main() {
         var result = IngredientParser.parseIngredient('2 dl mjölk från Skåne');
         expect(result.quantity, equals(2.0));
         expect(result.unit, equals('dl'));
-        expect(result.name,
-            equals('mjölk från skåne')); // Parser lowercases the input
+        expect(
+          result.name,
+          equals('mjölk från skåne'),
+        ); // Parser lowercases the input
 
         result = IngredientParser.parseIngredient('100 g räkor från Smögen');
         expect(result.quantity, equals(100.0));
         expect(result.unit, equals('g'));
-        expect(result.name,
-            equals('räkor från smögen')); // Parser lowercases the input
+        expect(
+          result.name,
+          equals('räkor från smögen'),
+        ); // Parser lowercases the input
 
         result = IngredientParser.parseIngredient('3 st ägg från höns');
         expect(result.quantity, equals(3.0));
@@ -319,8 +325,10 @@ void main() {
 
     group('Ingredient Scaling and Formatting', () {
       test('should scale simple ingredients', () {
-        var result =
-            IngredientParser.scaleAndFormatIngredient('2 dl mjölk', 2.0);
+        var result = IngredientParser.scaleAndFormatIngredient(
+          '2 dl mjölk',
+          2.0,
+        );
         expect(result, contains('4'));
         expect(result, contains('dl'));
         expect(result, contains('mjölk'));
@@ -332,14 +340,18 @@ void main() {
       });
 
       test('should scale with fraction formatting', () {
-        var result =
-            IngredientParser.scaleAndFormatIngredient('1 dl mjölk', 0.5);
+        var result = IngredientParser.scaleAndFormatIngredient(
+          '1 dl mjölk',
+          0.5,
+        );
         expect(result, contains('½'));
         expect(result, contains('dl'));
         expect(result, contains('mjölk'));
 
-        result =
-            IngredientParser.scaleAndFormatIngredient('1 msk socker', 0.25);
+        result = IngredientParser.scaleAndFormatIngredient(
+          '1 msk socker',
+          0.25,
+        );
         expect(result, contains('¼'));
         expect(result, contains('msk'));
         expect(result, contains('socker'));
@@ -366,8 +378,10 @@ void main() {
         var result = IngredientParser.scaleAndFormatIngredient('salt', 2.0);
         expect(result, equals('salt'));
 
-        result =
-            IngredientParser.scaleAndFormatIngredient('peppar efter smak', 0.5);
+        result = IngredientParser.scaleAndFormatIngredient(
+          'peppar efter smak',
+          0.5,
+        );
         expect(result, equals('peppar efter smak'));
       });
     });
@@ -375,8 +389,9 @@ void main() {
     group('BUG-10: compound och with explicit quantity', () {
       test('should keep explicit quantity for second part after och', () {
         // "2 ägg och 1 smör" - second part has explicit "1"
-        final results =
-            IngredientParser.parseCompoundIngredient('2 ägg och 1 smör');
+        final results = IngredientParser.parseCompoundIngredient(
+          '2 ägg och 1 smör',
+        );
 
         expect(results, hasLength(2));
         expect(results[0].quantity, equals(2.0));
@@ -387,8 +402,9 @@ void main() {
 
       test('should inherit quantity when second part has no explicit qty', () {
         // "2 dl mjölk och grädde" - second part has no number
-        final results =
-            IngredientParser.parseCompoundIngredient('2 dl mjölk och grädde');
+        final results = IngredientParser.parseCompoundIngredient(
+          '2 dl mjölk och grädde',
+        );
 
         expect(results, hasLength(2));
         expect(results[0].quantity, equals(2.0));
@@ -401,8 +417,9 @@ void main() {
 
       test('should inherit unit but keep explicit quantity', () {
         // "2 dl mjölk och 3 grädde" - second part has explicit number
-        final results =
-            IngredientParser.parseCompoundIngredient('2 dl mjölk och 3 grädde');
+        final results = IngredientParser.parseCompoundIngredient(
+          '2 dl mjölk och 3 grädde',
+        );
 
         expect(results, hasLength(2));
         expect(results[0].quantity, equals(2.0));

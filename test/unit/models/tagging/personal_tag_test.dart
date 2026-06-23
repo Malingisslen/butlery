@@ -100,14 +100,16 @@ void main() {
             .withName('Fish Rule')
             .withPropertyCondition('seafood')
             .build();
-        final rule2 =
-            PersonalTagRuleBuilder().withName('Quick Rule').withConditions([
-          const RuleCondition(
-            type: ConditionType.time,
-            operator: ConditionOperator.lessThan,
-            value: 30,
-          ),
-        ]).build();
+        final rule2 = PersonalTagRuleBuilder()
+            .withName('Quick Rule')
+            .withConditions([
+              const RuleCondition(
+                type: ConditionType.time,
+                operator: ConditionOperator.lessThan,
+                value: 30,
+              ),
+            ])
+            .build();
 
         final tag = PersonalTagBuilder().withRules([rule1, rule2]).build();
 
@@ -185,13 +187,13 @@ void main() {
                   'type': 'ingredient',
                   'operator': 'contains',
                   'value': 'kyckling',
-                }
+                },
               ],
               'matchMode': 'ALL',
               'isEnabled': true,
               'createdAt': now,
               'updatedAt': now,
-            }
+            },
           ],
         });
 
@@ -237,13 +239,13 @@ void main() {
                   'type': 'keyword',
                   'operator': 'contains',
                   'value': 'pasta',
-                }
+                },
               ],
               'matchMode': 'ANY',
               'isEnabled': true,
               'createdAt': DateTime.now().toIso8601String(),
               'updatedAt': DateTime.now().toIso8601String(),
-            }
+            },
           ],
         });
 
@@ -261,7 +263,8 @@ void main() {
             .withId('tag-1')
             .withName('Test Tag')
             .withGroupId('group-1')
-            .withRules([rule]).build();
+            .withRules([rule])
+            .build();
 
         final json = original.toJson();
         final restored = PersonalTag.fromJson(json);
@@ -311,9 +314,10 @@ void main() {
         final updated = original.copyWith(name: 'Updated');
 
         expect(
-            updated.updatedAt.isAfter(beforeUpdate) ||
-                updated.updatedAt.isAtSameMomentAs(beforeUpdate),
-            isTrue);
+          updated.updatedAt.isAfter(beforeUpdate) ||
+              updated.updatedAt.isAtSameMomentAs(beforeUpdate),
+          isTrue,
+        );
       });
     });
 
@@ -389,11 +393,13 @@ void main() {
           expect(PersonalTag.validateName('sommar'), isNotNull);
         });
 
-        test('should fail when name is reserved season tag case-insensitive',
-            () {
-          expect(PersonalTag.validateName('Sommar'), isNotNull);
-          expect(PersonalTag.validateName('SOMMAR'), isNotNull);
-        });
+        test(
+          'should fail when name is reserved season tag case-insensitive',
+          () {
+            expect(PersonalTag.validateName('Sommar'), isNotNull);
+            expect(PersonalTag.validateName('SOMMAR'), isNotNull);
+          },
+        );
 
         test('should fail when name is reserved dietary tag "vegetarisk"', () {
           expect(PersonalTag.validateName('vegetarisk'), isNotNull);
@@ -420,11 +426,12 @@ void main() {
         });
 
         test(
-            'should pass when name has leading/trailing whitespace that trims valid',
-            () {
-          // Whitespace is trimmed before length check, so padded 50-char name passes
-          expect(PersonalTag.validateName('  Valid Tag  '), isNull);
-        });
+          'should pass when name has leading/trailing whitespace that trims valid',
+          () {
+            // Whitespace is trimmed before length check, so padded 50-char name passes
+            expect(PersonalTag.validateName('  Valid Tag  '), isNull);
+          },
+        );
 
         test('should evaluate length after trimming', () {
           // 49 chars + surrounding spaces = still valid after trim
@@ -441,10 +448,14 @@ void main() {
 
     group('equality', () {
       test('tags with same ID are equal', () {
-        final tag1 =
-            PersonalTagBuilder().withId('same-id').withName('Name 1').build();
-        final tag2 =
-            PersonalTagBuilder().withId('same-id').withName('Name 2').build();
+        final tag1 = PersonalTagBuilder()
+            .withId('same-id')
+            .withName('Name 1')
+            .build();
+        final tag2 = PersonalTagBuilder()
+            .withId('same-id')
+            .withName('Name 2')
+            .build();
 
         expect(tag1, equals(tag2));
         expect(tag1.hashCode, equals(tag2.hashCode));

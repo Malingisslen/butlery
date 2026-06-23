@@ -34,7 +34,9 @@ class RealtimeStatusWidget extends StatelessWidget {
           children: [
             AnimatedSwitcher(
               duration: AnimationUtils.getDuration(
-                  context, AppDimensions.animationDurationCommon),
+                context,
+                AppDimensions.animationDurationCommon,
+              ),
               child: Text(
                 statusEmoji,
                 key: ValueKey(statusEmoji),
@@ -45,7 +47,9 @@ class RealtimeStatusWidget extends StatelessWidget {
               const SizedBox(width: AppDimensions.spacingXs),
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
-                    context, AppDimensions.animationDurationCommon),
+                  context,
+                  AppDimensions.animationDurationCommon,
+                ),
                 child: Text(
                   statusDescription,
                   key: ValueKey(statusDescription),
@@ -88,21 +92,22 @@ class RealtimeStatusBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
-      color: Theme.of(context)
-          .colorScheme
-          .error
-          .withValues(alpha: AppDimensions.opacityVeryLight),
+        (AppDimensions.spacingSm + AppDimensions.spacingXs),
+      ),
+      color: Theme.of(
+        context,
+      ).colorScheme.error.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Row(
         children: [
           Text(
             statusEmoji,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontSize: AppDimensions.iconSizeM.toDouble(),
-                ),
+              fontSize: AppDimensions.iconSizeM.toDouble(),
+            ),
           ),
           const SizedBox(
-              width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

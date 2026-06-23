@@ -28,13 +28,13 @@ import '../../../infrastructure/helpers/widget_test_app.dart';
 class _MockUserService extends Mock implements UserService {}
 
 UserProfile _profile({required bool autoAdd}) => UserProfile(
-      uid: 'u1',
-      displayName: 'Test',
-      email: 't@example.com',
-      joinedAt: DateTime(2024, 1, 1),
-      lastActiveAt: DateTime(2024, 1, 1),
-      autoAddBoughtToPantry: autoAdd,
-    );
+  uid: 'u1',
+  displayName: 'Test',
+  email: 't@example.com',
+  joinedAt: DateTime(2024, 1, 1),
+  lastActiveAt: DateTime(2024, 1, 1),
+  autoAddBoughtToPantry: autoAdd,
+);
 
 void main() {
   group('AutoAddPantryTile (BUT-1306)', () {
@@ -45,8 +45,9 @@ void main() {
       ServiceLocator.reset();
 
       userService = _MockUserService();
-      when(() => userService.setAutoAddToPantry(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => userService.setAutoAddToPantry(any()),
+      ).thenAnswer((_) async {});
 
       final container = DIContainer();
       container.container.registerSingleton<UserService>(userService);
@@ -59,34 +60,41 @@ void main() {
     });
 
     testWidgets('reflects the stored opt-in value (off)', (tester) async {
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(autoAdd: false));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(autoAdd: false));
 
       await tester.pumpWidget(
         createLocalizedTestApp(child: const AutoAddPantryTile()),
       );
       await tester.pump();
 
-      expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-          isFalse);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isFalse,
+      );
     });
 
     testWidgets('reflects the stored opt-in value (on)', (tester) async {
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(autoAdd: true));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(autoAdd: true));
 
       await tester.pumpWidget(
         createLocalizedTestApp(child: const AutoAddPantryTile()),
       );
       await tester.pump();
 
-      expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-          isTrue);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+      );
     });
 
     testWidgets('toggling the switch persists via UserService', (tester) async {
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(autoAdd: false));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(autoAdd: false));
 
       await tester.pumpWidget(
         createLocalizedTestApp(child: const AutoAddPantryTile()),
@@ -99,13 +107,15 @@ void main() {
       verify(() => userService.setAutoAddToPantry(true)).called(1);
     });
 
-    testWidgets('rebuilds when UserService notifies (mirrors external enable)',
-        (tester) async {
+    testWidgets('rebuilds when UserService notifies (mirrors external enable)', (
+      tester,
+    ) async {
       // Starts off; a real listener registration must drive a rebuild when the
       // profile flips elsewhere (e.g. the first-checkoff prompt enables it).
       var enabled = false;
-      when(() => userService.currentUserProfile)
-          .thenAnswer((_) => _profile(autoAdd: enabled));
+      when(
+        () => userService.currentUserProfile,
+      ).thenAnswer((_) => _profile(autoAdd: enabled));
 
       // The tile registers a real addListener in initState; emit by calling
       // the registered listeners through notifyListeners on the mock.
@@ -116,26 +126,32 @@ void main() {
         createLocalizedTestApp(child: const AutoAddPantryTile()),
       );
       await tester.pump();
-      expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-          isFalse);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isFalse,
+      );
 
       // Capture the listener the tile registered, flip the profile, fire it.
-      final captured =
-          verify(() => userService.addListener(captureAny())).captured;
+      final captured = verify(
+        () => userService.addListener(captureAny()),
+      ).captured;
       enabled = true;
       for (final l in captured) {
         (l as VoidCallback)();
       }
       await tester.pump();
 
-      expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-          isTrue,
-          reason: 'The tile must rebuild from a UserService notification.');
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+        reason: 'The tile must rebuild from a UserService notification.',
+      );
     });
 
     testWidgets('localises the title (sv + en)', (tester) async {
-      when(() => userService.currentUserProfile)
-          .thenReturn(_profile(autoAdd: false));
+      when(
+        () => userService.currentUserProfile,
+      ).thenReturn(_profile(autoAdd: false));
       final sv = AppLocalizationsSv();
       final en = AppLocalizationsEn();
 
@@ -152,9 +168,13 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text(en.settingsAutoAddPantryTitle), findsOneWidget,
-          reason: 'English table must carry the new key — guards against a key '
-              'added to one locale table but not the other.');
+      expect(
+        find.text(en.settingsAutoAddPantryTitle),
+        findsOneWidget,
+        reason:
+            'English table must carry the new key — guards against a key '
+            'added to one locale table but not the other.',
+      );
     });
   });
 }

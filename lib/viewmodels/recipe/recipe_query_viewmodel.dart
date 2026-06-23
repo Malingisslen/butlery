@@ -37,8 +37,8 @@ class RecipeQueryViewModel extends ChangeNotifier
   /// [recipeService] to drive `recipeInsights` / `getMostUsed*` projections
   /// without standing up the full DI graph.
   RecipeQueryViewModel({@visibleForTesting UnifiedRecipeService? recipeService})
-      : _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+    : _recipeService =
+          recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
 
   final UnifiedRecipeService _recipeService;
   late final AnalyticsService? _analyticsService =
@@ -112,13 +112,15 @@ class RecipeQueryViewModel extends ChangeNotifier
     return allRecipes.where((recipe) {
       return recipe.title.toLowerCase().contains(lowercaseQuery) ||
           recipe.description.toLowerCase().contains(lowercaseQuery) ||
-          recipe.ingredients.any((ingredient) =>
-              ingredient.toLowerCase().contains(lowercaseQuery)) ||
-          recipe.instructions.any((instruction) =>
-              instruction.toLowerCase().contains(lowercaseQuery)) ||
-          (recipe.core.personalTags
-                  ?.any((t) => t.name.toLowerCase().contains(lowercaseQuery)))
-              .orFalse();
+          recipe.ingredients.any(
+            (ingredient) => ingredient.toLowerCase().contains(lowercaseQuery),
+          ) ||
+          recipe.instructions.any(
+            (instruction) => instruction.toLowerCase().contains(lowercaseQuery),
+          ) ||
+          (recipe.core.personalTags?.any(
+            (t) => t.name.toLowerCase().contains(lowercaseQuery),
+          )).orFalse();
     }).toList();
   }
 
@@ -269,8 +271,9 @@ class RecipeQueryViewModel extends ChangeNotifier
   /// any of [ingredients] (substring, case-insensitive). No-op when the
   /// same filter is already active, so double-taps don't spam listeners.
   void applySeasonalFilter({required List<String> ingredients}) {
-    final normalized =
-        ingredients.map((e) => e.toLowerCase()).toList(growable: false);
+    final normalized = ingredients
+        .map((e) => e.toLowerCase())
+        .toList(growable: false);
     if (listEquals(_seasonalIngredientFilter, normalized)) return;
     _seasonalIngredientFilter = normalized;
     _invalidateCache();
@@ -312,9 +315,11 @@ class RecipeQueryViewModel extends ChangeNotifier
   List<Recipe> getRecentlyCookedRecipes({int daysBack = 7}) {
     final cutoffDate = clock.now().subtract(Duration(days: daysBack));
     return allRecipes
-        .where((recipe) =>
-            recipe.lastCookedAt != null &&
-            recipe.lastCookedAt!.isAfter(cutoffDate))
+        .where(
+          (recipe) =>
+              recipe.lastCookedAt != null &&
+              recipe.lastCookedAt!.isAfter(cutoffDate),
+        )
         .toList();
   }
 
@@ -359,8 +364,10 @@ class RecipeQueryViewModel extends ChangeNotifier
     if (currentUserId == null) return [];
 
     return collaborativeRecipes
-        .where((recipe) =>
-            recipe.isShared && recipe.socialData?.ownerId != currentUserId)
+        .where(
+          (recipe) =>
+              recipe.isShared && recipe.socialData?.ownerId != currentUserId,
+        )
         .toList();
   }
 
@@ -368,8 +375,10 @@ class RecipeQueryViewModel extends ChangeNotifier
     if (currentUserId == null) return [];
 
     return collaborativeRecipes
-        .where((recipe) =>
-            recipe.isShared && recipe.socialData?.ownerId == currentUserId)
+        .where(
+          (recipe) =>
+              recipe.isShared && recipe.socialData?.ownerId == currentUserId,
+        )
         .toList();
   }
 
@@ -377,9 +386,11 @@ class RecipeQueryViewModel extends ChangeNotifier
     if (ValidationUtils.isNullOrEmpty(userId)) return [];
 
     return collaborativeRecipes
-        .where((recipe) =>
-            (recipe.socialData?.memberPermissions?.containsKey(userId))
-                .orFalse())
+        .where(
+          (recipe) => (recipe.socialData?.memberPermissions?.containsKey(
+            userId,
+          )).orFalse(),
+        )
         .toList();
   }
 
@@ -438,8 +449,10 @@ class RecipeQueryViewModel extends ChangeNotifier
   }
 
   List<String> get usedMealTypes {
-    final mealTypes =
-        allRecipes.map<String>((recipe) => recipe.mealType).toSet().toList();
+    final mealTypes = allRecipes
+        .map<String>((recipe) => recipe.mealType)
+        .toSet()
+        .toList();
     mealTypes.sort();
     return mealTypes;
   }
@@ -560,10 +573,12 @@ class RecipeQueryViewModel extends ChangeNotifier
   List<Recipe> getForgottenFavorites({int daysNotCooked = 90, int limit = 10}) {
     final cutoff = clock.now().subtract(Duration(days: daysNotCooked));
     return allRecipes
-        .where((r) =>
-            r.isFavorite &&
-            r.lastCookedAt != null &&
-            r.lastCookedAt!.isBefore(cutoff))
+        .where(
+          (r) =>
+              r.isFavorite &&
+              r.lastCookedAt != null &&
+              r.lastCookedAt!.isBefore(cutoff),
+        )
         .toList()
       ..sort((a, b) => a.lastCookedAt!.compareTo(b.lastCookedAt!));
   }
@@ -571,10 +586,13 @@ class RecipeQueryViewModel extends ChangeNotifier
   /// Recipes never cooked and older than [minDays] days, scored by age.
   List<Recipe> getDormantRecipes({int minDays = 60, int limit = 5}) {
     final cutoff = clock.now().subtract(Duration(days: minDays));
-    final dormant = allRecipes
-        .where((r) => r.lastCookedAt == null && r.createdAt.isBefore(cutoff))
-        .toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final dormant =
+        allRecipes
+            .where(
+              (r) => r.lastCookedAt == null && r.createdAt.isBefore(cutoff),
+            )
+            .toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return dormant.take(limit).toList();
   }
 
@@ -601,10 +619,11 @@ class RecipeQueryViewModel extends ChangeNotifier
   }
 
   List<Recipe> getIncompleteRecipes({int limit = 10}) {
-    final incomplete = allRecipes
-        .where((r) => r.completenessScore < incompleteThreshold)
-        .toList()
-      ..sort((a, b) => a.completenessScore.compareTo(b.completenessScore));
+    final incomplete =
+        allRecipes
+            .where((r) => r.completenessScore < incompleteThreshold)
+            .toList()
+          ..sort((a, b) => a.completenessScore.compareTo(b.completenessScore));
     return incomplete.take(limit).toList();
   }
 

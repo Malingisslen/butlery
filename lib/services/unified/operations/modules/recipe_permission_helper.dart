@@ -13,8 +13,8 @@ class RecipePermissionHelper {
 
   RecipePermissionHelper({
     required String? Function() getCurrentUserId,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _legacyResolver = LegacyRecipeOwnershipResolver();
+  }) : _getCurrentUserId = getCurrentUserId,
+       _legacyResolver = LegacyRecipeOwnershipResolver();
 
   bool canViewRecipe(Recipe recipe) {
     try {
@@ -37,8 +37,9 @@ class RecipePermissionHelper {
 
       // Collaborative recipes: members and owner can view
       if (recipe.isCollaborative) {
-        return recipe.socialData?.memberPermissions
-                ?.containsKey(currentUserId) ??
+        return recipe.socialData?.memberPermissions?.containsKey(
+              currentUserId,
+            ) ??
             false;
       }
 
@@ -88,7 +89,8 @@ class RecipePermissionHelper {
 
       if (ownerId == null) {
         AppLogger.warning(
-            '⚠️ Could not determine recipe ownership for deletion: ${recipe.id}');
+          '⚠️ Could not determine recipe ownership for deletion: ${recipe.id}',
+        );
         return false;
       }
 
@@ -96,7 +98,8 @@ class RecipePermissionHelper {
 
       if (!canDelete) {
         AppLogger.debug(
-            '🔍 Delete permission denied - Owner: $ownerId, Current: $currentUserId');
+          '🔍 Delete permission denied - Owner: $ownerId, Current: $currentUserId',
+        );
       }
 
       return canDelete;
@@ -172,8 +175,9 @@ class RecipePermissionHelper {
       if (recipe.isCollaborative) {
         final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
         if (ownerId == currentUserId) return true;
-        return recipe.socialData?.memberPermissions
-                ?.containsKey(currentUserId) ??
+        return recipe.socialData?.memberPermissions?.containsKey(
+              currentUserId,
+            ) ??
             false;
       }
 
@@ -198,8 +202,9 @@ class RecipePermissionHelper {
 
       // Collaborative recipes: members can rate
       if (recipe.isCollaborative) {
-        return recipe.socialData?.memberPermissions
-                ?.containsKey(currentUserId) ??
+        return recipe.socialData?.memberPermissions?.containsKey(
+              currentUserId,
+            ) ??
             false;
       }
 
@@ -238,7 +243,10 @@ class RecipePermissionHelper {
   }
 
   bool hasMinimumPermission(
-      Recipe recipe, String userId, ResourcePermission minimumLevel) {
+    Recipe recipe,
+    String userId,
+    ResourcePermission minimumLevel,
+  ) {
     try {
       final userPermission = getUserPermission(recipe, userId);
       return _getPermissionRank(userPermission) >=

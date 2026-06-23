@@ -14,7 +14,8 @@ enum FeedbackCategory { bug, featureRequest, general }
 enum FeedbackStatus {
   newReport('new'),
   triaged('triaged'),
-  resolved('resolved');
+  resolved('resolved')
+  ;
 
   const FeedbackStatus(this.wireName);
 
@@ -55,17 +56,17 @@ class FeedbackEntry {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'userId': userId,
-        'category': category.name,
-        'description': description,
-        'email': email,
-        'screenshotUrl': screenshotUrl,
-        'recentInteractions': recentInteractions,
-        'createdAt': createdAt.toIso8601String(),
-        'deviceInfo': deviceInfo,
-        'status': status.wireName,
-      };
+    'id': id,
+    'userId': userId,
+    'category': category.name,
+    'description': description,
+    'email': email,
+    'screenshotUrl': screenshotUrl,
+    'recentInteractions': recentInteractions,
+    'createdAt': createdAt.toIso8601String(),
+    'deviceInfo': deviceInfo,
+    'status': status.wireName,
+  };
 
   factory FeedbackEntry.fromMap(Map<String, dynamic> map) {
     return FeedbackEntry(
@@ -76,8 +77,10 @@ class FeedbackEntry {
       ),
       description: SerializationUtils.safeString(map, 'description'),
       email: SerializationUtils.safeNullableString(map, 'email'),
-      screenshotUrl:
-          SerializationUtils.safeNullableString(map, 'screenshotUrl'),
+      screenshotUrl: SerializationUtils.safeNullableString(
+        map,
+        'screenshotUrl',
+      ),
       recentInteractions: SerializationUtils.safeList<Map<String, dynamic>>(
         map,
         'recentInteractions',

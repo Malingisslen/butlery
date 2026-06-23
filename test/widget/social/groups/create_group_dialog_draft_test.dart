@@ -46,12 +46,12 @@ UserProfile _profile(String uid, String displayName) {
 }
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 void main() {
   late _MockFriendsService mockFriends;
@@ -70,8 +70,9 @@ void main() {
     when(() => mockFriends.friendsList).thenReturn(const <UserProfile>[]);
     // The dialog's member-selector is a StreamBuilder over stateStream; it only
     // reads friendsList in its builder, so an empty stream is enough to render.
-    when(() => mockFriends.stateStream)
-        .thenAnswer((_) => Stream<FriendsServiceState>.empty());
+    when(
+      () => mockFriends.stateStream,
+    ).thenAnswer((_) => Stream<FriendsServiceState>.empty());
     TestServiceLocator.registerMock<UnifiedFriendsService>(mockFriends);
   });
 
@@ -83,8 +84,9 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  testWidgets('restores name + description from a persisted draft on open',
-      (tester) async {
+  testWidgets('restores name + description from a persisted draft on open', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       _kDraftKey: jsonEncode({
         'name': 'Middagsklubben',
@@ -98,17 +100,25 @@ void main() {
     // _loadDraft is a post-frame async callback (SharedPreferences + setState).
     await tester.pumpAndSettle();
 
-    expect(find.text('Middagsklubben'), findsOneWidget,
-        reason: 'saved name must repopulate the name field on open');
-    expect(find.text('Tacos varje fredag'), findsOneWidget,
-        reason: 'saved description must repopulate the description field');
+    expect(
+      find.text('Middagsklubben'),
+      findsOneWidget,
+      reason: 'saved name must repopulate the name field on open',
+    );
+    expect(
+      find.text('Tacos varje fredag'),
+      findsOneWidget,
+      reason: 'saved description must repopulate the description field',
+    );
   });
 
-  testWidgets('resolves saved friend ids to profiles, dropping unresolved ones',
-      (tester) async {
+  testWidgets('resolves saved friend ids to profiles, dropping unresolved ones', (
+    tester,
+  ) async {
     // Draft references two friends; only u1 is still in the friends list.
-    when(() => mockFriends.friendsList)
-        .thenReturn([_profile('u1', 'Anna Andersson')]);
+    when(
+      () => mockFriends.friendsList,
+    ).thenReturn([_profile('u1', 'Anna Andersson')]);
     SharedPreferences.setMockInitialValues({
       _kDraftKey: jsonEncode({
         'name': 'Bokklubben',
@@ -122,8 +132,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // The still-resolvable friend renders.
-    expect(find.text('Anna Andersson'), findsWidgets,
-        reason: 'a saved friend id that still resolves must be restored');
+    expect(
+      find.text('Anna Andersson'),
+      findsWidgets,
+      reason: 'a saved friend id that still resolves must be restored',
+    );
 
     // Prove the DROP, not just the resolve: trigger a re-save (type a name) and
     // assert the persisted selection no longer carries the unresolved id. This
@@ -135,13 +148,18 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final friendIds =
         (jsonDecode(prefs.getString(_kDraftKey)!) as Map)['friendIds'] as List;
-    expect(friendIds, ['u1'],
-        reason: 'the unresolved id must be dropped from the selection, '
-            'not silently retained');
+    expect(
+      friendIds,
+      ['u1'],
+      reason:
+          'the unresolved id must be dropped from the selection, '
+          'not silently retained',
+    );
   });
 
-  testWidgets('persists a draft to the byte-identical key on name keystroke',
-      (tester) async {
+  testWidgets('persists a draft to the byte-identical key on name keystroke', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
 
     await tester.pumpWidget(_wrap(const CreateGroupDialog()));
@@ -153,8 +171,11 @@ void main() {
 
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_kDraftKey);
-    expect(raw, isNotNull,
-        reason: 'typing a name must persist the draft under the v1 key');
+    expect(
+      raw,
+      isNotNull,
+      reason: 'typing a name must persist the draft under the v1 key',
+    );
     expect(jsonDecode(raw!)['name'], 'Löparklubben');
   });
 }

@@ -36,27 +36,29 @@ import '../../infrastructure/factories/recipe_factory.dart';
 /// interface members are unused by the VM.
 class _ScriptedStrategy implements ImportStrategy {
   _ScriptedStrategy.success(Recipe recipe)
-      : _result = ImportResult.success(recipe),
-        _throws = false;
+    : _result = ImportResult.success(recipe),
+      _throws = false;
   _ScriptedStrategy.failure()
-      : _result = ImportResult.failure('nope'),
-        _throws = false;
+    : _result = ImportResult.failure('nope'),
+      _throws = false;
   _ScriptedStrategy.nullRecipe()
-      // A "success" flag with a null recipe — the second failure branch the
-      // method guards (`!result.isSuccess || extracted == null`).
-      : _result = ImportResult.success(null),
-        _throws = false;
+    // A "success" flag with a null recipe — the second failure branch the
+    // method guards (`!result.isSuccess || extracted == null`).
+    : _result = ImportResult.success(null),
+      _throws = false;
   _ScriptedStrategy.throwing()
-      : _result = ImportResult.failure('unused'),
-        _throws = true;
+    : _result = ImportResult.failure('unused'),
+      _throws = true;
 
   final ImportResult _result;
   final bool _throws;
   String? capturedInput;
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     capturedInput = input;
     if (_throws) throw Exception('import blew up');
     return _result;
@@ -116,8 +118,9 @@ void main() {
 
       // The VM constructor subscribes to stateStream and (on update) calls
       // getRecipeById — keep both inert so only reextract behaviour is tested.
-      when(() => recipeService.stateStream)
-          .thenAnswer((_) => const Stream.empty());
+      when(
+        () => recipeService.stateStream,
+      ).thenAnswer((_) => const Stream.empty());
       when(() => recipeService.getRecipeById(any())).thenReturn(null);
 
       original = RecipeBuilder()
@@ -190,8 +193,9 @@ void main() {
       });
 
       test('every non-url artefact type routes to TextImportStrategy', () {
-        for (final type in SourceArtefactType.values
-            .where((t) => t != SourceArtefactType.url)) {
+        for (final type in SourceArtefactType.values.where(
+          (t) => t != SourceArtefactType.url,
+        )) {
           expect(
             defaultReextractStrategyForTest(type),
             isA<TextImportStrategy>(),
@@ -202,46 +206,50 @@ void main() {
     });
 
     group('strategy selection', () {
-      test('url artefact selects the url strategy and feeds it the payload',
-          () async {
-        when(() => recipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
-
-        SourceArtefactType? selectedType;
-        late _ScriptedStrategy strategy;
-        final vm = buildViewModel((type) {
-          selectedType = type;
-          strategy = _ScriptedStrategy.success(extracted);
-          return strategy;
-        });
-        addTearDown(vm.dispose);
-
-        final artefact = SourceArtefact(
-          type: SourceArtefactType.url,
-          payload: 'https://example.com/re',
-          fetchedAt: DateTime(2024, 6, 1),
-        );
-
-        final outcome = await vm.reextractFromSource(artefact);
-
-        expect(outcome, ReextractOutcome.success);
-        expect(selectedType, SourceArtefactType.url);
-        // The artefact payload IS the extraction input — the URL here.
-        expect(strategy.capturedInput, 'https://example.com/re');
-      });
-
       test(
-          'every non-url artefact type routes through the text strategy '
+        'url artefact selects the url strategy and feeds it the payload',
+        () async {
+          when(
+            () => recipeService.updateRecipe(any()),
+          ).thenAnswer((_) async => true);
+
+          SourceArtefactType? selectedType;
+          late _ScriptedStrategy strategy;
+          final vm = buildViewModel((type) {
+            selectedType = type;
+            strategy = _ScriptedStrategy.success(extracted);
+            return strategy;
+          });
+          addTearDown(vm.dispose);
+
+          final artefact = SourceArtefact(
+            type: SourceArtefactType.url,
+            payload: 'https://example.com/re',
+            fetchedAt: DateTime(2024, 6, 1),
+          );
+
+          final outcome = await vm.reextractFromSource(artefact);
+
+          expect(outcome, ReextractOutcome.success);
+          expect(selectedType, SourceArtefactType.url);
+          // The artefact payload IS the extraction input — the URL here.
+          expect(strategy.capturedInput, 'https://example.com/re');
+        },
+      );
+
+      test('every non-url artefact type routes through the text strategy '
           'with the raw payload', () async {
         // The default factory sends url→UrlImportStrategy and EVERYTHING else
         // →TextImportStrategy; this asserts the seam preserves that mapping for
         // each non-url type by checking the type the VM hands the factory and
         // that the raw payload (not a URL) is what gets imported.
-        when(() => recipeService.updateRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => recipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
 
-        for (final type in SourceArtefactType.values
-            .where((t) => t != SourceArtefactType.url)) {
+        for (final type in SourceArtefactType.values.where(
+          (t) => t != SourceArtefactType.url,
+        )) {
           SourceArtefactType? selectedType;
           late _ScriptedStrategy strategy;
           final vm = buildViewModel((t) {
@@ -260,42 +268,46 @@ void main() {
 
           expect(outcome, ReextractOutcome.success, reason: 'type=$type');
           expect(selectedType, type, reason: 'type=$type');
-          expect(strategy.capturedInput,
-              'raw transcript/caption/OCR text for $type',
-              reason: 'type=$type');
+          expect(
+            strategy.capturedInput,
+            'raw transcript/caption/OCR text for $type',
+            reason: 'type=$type',
+          );
           vm.dispose();
         }
       });
     });
 
     group('success path', () {
-      test('preserves id + createdAt and re-attaches the ORIGINAL artefact',
-          () async {
-        Recipe? persisted;
-        when(() => recipeService.updateRecipe(any())).thenAnswer((inv) async {
-          persisted = inv.positionalArguments.first as Recipe;
-          return true;
-        });
+      test(
+        'preserves id + createdAt and re-attaches the ORIGINAL artefact',
+        () async {
+          Recipe? persisted;
+          when(() => recipeService.updateRecipe(any())).thenAnswer((inv) async {
+            persisted = inv.positionalArguments.first as Recipe;
+            return true;
+          });
 
-        final vm = buildViewModel(
-          (_) => _ScriptedStrategy.success(extracted),
-        );
-        addTearDown(vm.dispose);
+          final vm = buildViewModel(
+            (_) => _ScriptedStrategy.success(extracted),
+          );
+          addTearDown(vm.dispose);
 
-        final outcome = await vm.reextractFromSource(originalArtefact);
+          final outcome = await vm.reextractFromSource(originalArtefact);
 
-        expect(outcome, ReextractOutcome.success);
-        // copyWith never overwrites id/createdAt — identity survives a re-extract.
-        expect(persisted, isNotNull);
-        expect(persisted!.id, originalId);
-        expect(persisted!.createdAt, originalCreatedAt);
-        // The ORIGINAL artefact is re-passed (not the extraction's artefact),
-        // so capture metadata / comments / history stay attached.
-        expect(persisted!.core.sourceArtefact, originalArtefact);
-        // The VM's in-memory recipe is updated to the persisted version.
-        expect(vm.recipe.id, originalId);
-        expect(vm.recipe.title, 'Re-extracted Title');
-      });
+          expect(outcome, ReextractOutcome.success);
+          // copyWith never overwrites id/createdAt — identity survives a re-extract.
+          expect(persisted, isNotNull);
+          expect(persisted!.id, originalId);
+          expect(persisted!.createdAt, originalCreatedAt);
+          // The ORIGINAL artefact is re-passed (not the extraction's artefact),
+          // so capture metadata / comments / history stay attached.
+          expect(persisted!.core.sourceArtefact, originalArtefact);
+          // The VM's in-memory recipe is updated to the persisted version.
+          expect(vm.recipe.id, originalId);
+          expect(vm.recipe.title, 'Re-extracted Title');
+        },
+      );
 
       test('overwrites all parsed fields from the re-extraction', () async {
         Recipe? persisted;
@@ -316,8 +328,10 @@ void main() {
         expect(persisted!.description, 'Re-extracted description');
         expect(persisted!.ingredients, ['500 g extracted']);
         expect(persisted!.core.structuredIngredients, isNotNull);
-        expect(persisted!.core.structuredIngredients!.single.raw,
-            '500 g extracted');
+        expect(
+          persisted!.core.structuredIngredients!.single.raw,
+          '500 g extracted',
+        );
         expect(persisted!.instructions, ['Do the re-extracted thing']);
         expect(persisted!.portions, 6);
         expect(persisted!.timeMinutes, 99);
@@ -338,27 +352,29 @@ void main() {
         verifyNever(() => recipeService.updateRecipe(any()));
       });
 
-      test('import returning failure/null recipe → failure, recipe unchanged',
-          () async {
-        for (final strategy in [
-          _ScriptedStrategy.failure(),
-          _ScriptedStrategy.nullRecipe(),
-        ]) {
-          final vm = buildViewModel((_) => strategy);
+      test(
+        'import returning failure/null recipe → failure, recipe unchanged',
+        () async {
+          for (final strategy in [
+            _ScriptedStrategy.failure(),
+            _ScriptedStrategy.nullRecipe(),
+          ]) {
+            final vm = buildViewModel((_) => strategy);
 
-          final outcome = await vm.reextractFromSource(originalArtefact);
+            final outcome = await vm.reextractFromSource(originalArtefact);
 
-          expect(outcome, ReextractOutcome.failure);
-          expect(vm.recipe, original);
-          vm.dispose();
-        }
-        verifyNever(() => recipeService.updateRecipe(any()));
-      });
+            expect(outcome, ReextractOutcome.failure);
+            expect(vm.recipe, original);
+            vm.dispose();
+          }
+          verifyNever(() => recipeService.updateRecipe(any()));
+        },
+      );
 
-      test('updateRecipe returning false → failure, recipe unchanged',
-          () async {
-        when(() => recipeService.updateRecipe(any()))
-            .thenAnswer((_) async => false);
+      test('updateRecipe returning false → failure, recipe unchanged', () async {
+        when(
+          () => recipeService.updateRecipe(any()),
+        ).thenAnswer((_) async => false);
 
         final vm = buildViewModel(
           (_) => _ScriptedStrategy.success(extracted),
@@ -373,8 +389,9 @@ void main() {
       });
 
       test('updateRecipe throwing → failure, recipe unchanged', () async {
-        when(() => recipeService.updateRecipe(any()))
-            .thenThrow(Exception('write rejected'));
+        when(
+          () => recipeService.updateRecipe(any()),
+        ).thenThrow(Exception('write rejected'));
 
         final vm = buildViewModel(
           (_) => _ScriptedStrategy.success(extracted),

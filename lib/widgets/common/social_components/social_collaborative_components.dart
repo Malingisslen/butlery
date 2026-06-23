@@ -21,7 +21,8 @@ class SocialCollaborativeComponents {
     EdgeInsets? padding,
   }) {
     return SocialFacade.collaborativeStatusBadge(
-      text: text ??
+      text:
+          text ??
           context?.l10n.socialShared ??
           AppLocale.current.sharedFallback,
       icon: icon,
@@ -115,27 +116,31 @@ class SocialCollaborativeComponents {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs),
+        horizontal: AppDimensions.spacingSm,
+        vertical: AppDimensions.spacingXs,
+      ),
       decoration: BoxDecoration(
-        color: (activeColor ?? context.butleryColors.success)
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: (activeColor ?? context.butleryColors.success).withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: activeColor ?? context.butleryColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.sync,
-              size: AppDimensions.iconSizeXs,
-              color: activeColor ?? context.butleryColors.success),
+          Icon(
+            Icons.sync,
+            size: AppDimensions.iconSizeXs,
+            color: activeColor ?? context.butleryColors.success,
+          ),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               context.l10n.socialActive,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: activeColor ?? context.butleryColors.success,
-                  ),
+                color: activeColor ?? context.butleryColors.success,
+              ),
             ),
           ],
         ],
@@ -185,9 +190,11 @@ class SocialCollaborativeComponents {
       title: recipe.title,
       subtitle: context != null
           ? context.l10n.socialSharedRecipeMembers(
-              recipe.socialData?.memberPermissions?.length ?? 0)
+              recipe.socialData?.memberPermissions?.length ?? 0,
+            )
           : AppLocale.current.sharedRecipeFallback(
-              recipe.socialData?.memberPermissions?.length ?? 0),
+              recipe.socialData?.memberPermissions?.length ?? 0,
+            ),
       contentId: recipe.id,
       contentType: 'recipe',
       onTap: onTap,
@@ -229,21 +236,26 @@ class SocialCollaborativeComponents {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs),
+        horizontal: AppDimensions.spacingSm,
+        vertical: AppDimensions.spacingXs,
+      ),
       decoration: BoxDecoration(
-        color: color ??
-            context.butleryColors.success
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            color ??
+            context.butleryColors.success.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? context.butleryColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXs,
-              color: color ?? context.butleryColors.success),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXs,
+            color: color ?? context.butleryColors.success,
+          ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text ?? context.l10n.socialActiveCollaboration,
@@ -268,21 +280,26 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs),
+        horizontal: AppDimensions.spacingSm,
+        vertical: AppDimensions.spacingXs,
+      ),
       decoration: BoxDecoration(
-        color: color?.withValues(alpha: AppDimensions.opacityVeryLight) ??
-            cs.onSurfaceVariant
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            color?.withValues(alpha: AppDimensions.opacityVeryLight) ??
+            cs.onSurfaceVariant.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? cs.onSurfaceVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXs,
-              color: color ?? cs.onSurfaceVariant),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXs,
+            color: color ?? cs.onSurfaceVariant,
+          ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text ?? context.l10n.socialInactive,
@@ -309,11 +326,14 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.all(
-          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+        (AppDimensions.spacingSm + AppDimensions.spacingXs),
+      ),
       decoration: BoxDecoration(
         border: Border.all(
-            color: cs.onSurfaceVariant
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: cs.onSurfaceVariant.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       child: Column(
@@ -354,8 +374,9 @@ class SocialCollaborativeComponents {
           if (lastActivity != null) ...[
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              context.l10n
-                  .socialLastActive(_formatRelativeTime(context, lastActivity)),
+              context.l10n.socialLastActive(
+                _formatRelativeTime(context, lastActivity),
+              ),
               style: AppTextStyles.metadataEmphasized,
             ),
           ],
@@ -378,8 +399,11 @@ class SocialCollaborativeComponents {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+            Icon(
+              icon,
+              size: AppDimensions.iconSizeS,
+              color: cs.onSurfaceVariant,
+            ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               value,
@@ -424,19 +448,24 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingTight,
-          vertical: AppDimensions.spacingXxs),
+        horizontal: AppDimensions.spacingTight,
+        vertical: AppDimensions.spacingXxs,
+      ),
       decoration: BoxDecoration(
-        color: (color ?? config.color)
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: (color ?? config.color).withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: color ?? config.color),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon,
-              size: AppDimensions.iconSizeXs, color: color ?? config.color),
+          Icon(
+            config.icon,
+            size: AppDimensions.iconSizeXs,
+            color: color ?? config.color,
+          ),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
@@ -452,8 +481,10 @@ class SocialCollaborativeComponents {
   }
 
   /// Get permission configuration
-  static _PermissionConfig _getPermissionConfig(String permissionLevel,
-      {BuildContext? context}) {
+  static _PermissionConfig _getPermissionConfig(
+    String permissionLevel, {
+    BuildContext? context,
+  }) {
     final cs = context != null ? Theme.of(context).colorScheme : null;
 
     switch (permissionLevel.toLowerCase()) {

@@ -24,8 +24,9 @@ class FirstRecipeSourceMilestone {
     if (analytics == null) return false;
     if (userId == null || userId.isEmpty) return false;
 
-    final prefs =
-        await tryGetSharedPreferences(logTag: 'FirstRecipeSourceMilestone');
+    final prefs = await tryGetSharedPreferences(
+      logTag: 'FirstRecipeSourceMilestone',
+    );
     if (prefs == null) return false;
 
     final key = '$_prefsPrefix$userId';

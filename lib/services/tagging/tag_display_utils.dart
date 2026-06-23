@@ -232,8 +232,9 @@ class TagDisplayUtils {
   /// stores all of `under-15/30/45/60-min` for filter matching, but for
   /// display we only want to show "Under 15 min".
   static Set<String> _collapseTimeBuckets(Set<String> tags) {
-    final present =
-        _timeBucketsTightestFirst.where(tags.contains).toList(growable: false);
+    final present = _timeBucketsTightestFirst
+        .where(tags.contains)
+        .toList(growable: false);
     if (present.length <= 1) return tags;
     final collapsed = Set<String>.from(tags);
     for (var i = 1; i < present.length; i++) {

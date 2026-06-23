@@ -24,8 +24,10 @@ class OfflineSyncManager {
   Future<bool> get hasQueuedChanges async => false;
   Future<int> get queuedChangesCount async => 0;
 
-  Future<void> queueTagging(
-      {required String userId, required String recipeId}) async {}
+  Future<void> queueTagging({
+    required String userId,
+    required String recipeId,
+  }) async {}
 
   Future<void> syncPendingChanges({required bool isOnline}) async {}
 

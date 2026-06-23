@@ -60,8 +60,10 @@ class EditableListBuilder extends StatelessWidget {
                         vertical: AppDimensions.paddingMs,
                       ),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.close,
-                            size: AppDimensions.iconSize18),
+                        icon: const Icon(
+                          Icons.close,
+                          size: AppDimensions.iconSize18,
+                        ),
                         onPressed: () => onRemove(index),
                         tooltip: context.l10n.commonDelete,
                       ),
@@ -115,8 +117,11 @@ class EditableListHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon,
-            size: AppDimensions.iconSizeM, color: theme.colorScheme.primary),
+        Icon(
+          icon,
+          size: AppDimensions.iconSizeM,
+          color: theme.colorScheme.primary,
+        ),
         const SizedBox(width: AppDimensions.spacingSm),
         Text(
           title,

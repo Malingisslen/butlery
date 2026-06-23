@@ -93,10 +93,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
             child: Text(
               context.l10n.imageSelectedCount(
-                  widget.selectedImages.length, widget.config.maxImages),
+                widget.selectedImages.length,
+                widget.config.maxImages,
+              ),
               style: AppTextStyles.bodySmall.copyWith(
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityDark,
+                ),
               ),
             ),
           ),
@@ -115,8 +118,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outlineVariant.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -141,13 +145,15 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       color: cs.primary,
                     ),
                     const SizedBox(
-                        height: (AppDimensions.spacingSm +
-                            AppDimensions.spacingXs)),
+                      height:
+                          (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                    ),
                     Text(
                       context.l10n.imageSelectingImages,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface
-                            .withValues(alpha: AppDimensions.opacityDark),
+                        color: cs.onSurface.withValues(
+                          alpha: AppDimensions.opacityDark,
+                        ),
                       ),
                     ),
                   ] else ...[
@@ -155,8 +161,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: cs.primary
-                            .withValues(alpha: AppDimensions.opacityVeryLight),
+                        color: cs.primary.withValues(
+                          alpha: AppDimensions.opacityVeryLight,
+                        ),
                       ),
                       child: Icon(
                         Icons.add_photo_alternate_outlined,
@@ -165,8 +172,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                     const SizedBox(
-                        height: (AppDimensions.spacingSm +
-                            AppDimensions.spacingXs)),
+                      height:
+                          (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                    ),
                     Text(
                       widget.allowMultiple
                           ? context.l10n.imageSelectImages
@@ -176,12 +184,14 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       widget.allowMultiple
-                          ? context.l10n
-                              .imageTapToSelectUpTo(widget.config.maxImages)
+                          ? context.l10n.imageTapToSelectUpTo(
+                              widget.config.maxImages,
+                            )
                           : context.l10n.imageTapToSelectOne,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: cs.onSurface
-                            .withValues(alpha: AppDimensions.opacityDark),
+                        color: cs.onSurface.withValues(
+                          alpha: AppDimensions.opacityDark,
+                        ),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -236,8 +246,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             border: Border.all(
-              color: cs.outlineVariant
-                  .withValues(alpha: AppDimensions.opacityLight),
+              color: cs.outlineVariant.withValues(
+                alpha: AppDimensions.opacityLight,
+              ),
             ),
           ),
           child: ClipRRect(
@@ -313,11 +324,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           left: AppDimensions.spacingXs,
           child: Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingTight,
-                vertical: AppDimensions.spacingXxs),
+              horizontal: AppDimensions.spacingTight,
+              vertical: AppDimensions.spacingXxs,
+            ),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest
-                  .withValues(alpha: AppDimensions.opacityExtraDark),
+              color: cs.surfaceContainerHighest.withValues(
+                alpha: AppDimensions.opacityExtraDark,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
             ),
             child: Text(
@@ -359,8 +372,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       if (results.isNotEmpty) {
         final newImages = List<String>.from(widget.selectedImages);
         final availableSlots = widget.config.maxImages - newImages.length;
-        final imagesToAdd =
-            results.take(availableSlots).map((e) => e.path).toList();
+        final imagesToAdd = results
+            .take(availableSlots)
+            .map((e) => e.path)
+            .toList();
 
         newImages.addAll(imagesToAdd);
         widget.onImagesSelected?.call(newImages);

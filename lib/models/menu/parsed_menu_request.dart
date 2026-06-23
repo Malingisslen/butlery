@@ -23,13 +23,13 @@ class ParsedMenuRequest {
   });
 
   factory ParsedMenuRequest.empty(String rawPrompt) => ParsedMenuRequest(
-        slotRequests: const [],
-        globalAllergenAvoid: const {},
-        globalDietaryRequire: const {},
-        dayPins: const [],
-        trace: const ExtractionTrace(),
-        rawPrompt: rawPrompt,
-      );
+    slotRequests: const [],
+    globalAllergenAvoid: const {},
+    globalDietaryRequire: const {},
+    dayPins: const [],
+    trace: const ExtractionTrace(),
+    rawPrompt: rawPrompt,
+  );
 
   bool get isEmpty => slotRequests.isEmpty && dayPins.isEmpty;
 }

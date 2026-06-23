@@ -34,7 +34,7 @@ class AnalyticsService extends BaseService {
   late final SystemEventsTracker _systemTracker;
 
   AnalyticsService({required AnalyticsRepository repository})
-      : _repository = repository {
+    : _repository = repository {
     _recipeTracker = RecipeEventsTracker(repository: _repository);
     _menuTracker = MenuEventsTracker(repository: _repository);
     _shoppingTracker = ShoppingEventsTracker(repository: _repository);
@@ -106,8 +106,11 @@ class AnalyticsService extends BaseService {
   }
 
   Future<bool> _hasAnalyticsConsent() async {
-    return ConsentService.checkSafely(_consentService, ConsentPurpose.analytics,
-        logTag: 'AnalyticsService');
+    return ConsentService.checkSafely(
+      _consentService,
+      ConsentPurpose.analytics,
+      logTag: 'AnalyticsService',
+    );
   }
 
   @override
@@ -278,13 +281,12 @@ class AnalyticsService extends BaseService {
     String? platform,
     String? sessionId,
     String imageFormat = 'unknown',
-  }) =>
-      _importTracker.logImportStarted(
-        source: source,
-        platform: platform,
-        sessionId: sessionId,
-        imageFormat: imageFormat,
-      );
+  }) => _importTracker.logImportStarted(
+    source: source,
+    platform: platform,
+    sessionId: sessionId,
+    imageFormat: imageFormat,
+  );
 
   Future<void> logImportSuccess({
     required String source,
@@ -309,8 +311,7 @@ class AnalyticsService extends BaseService {
   Future<void> logImportCancelled({
     required String source,
     String? sessionId,
-  }) =>
-      _importTracker.logImportCancelled(source: source, sessionId: sessionId);
+  }) => _importTracker.logImportCancelled(source: source, sessionId: sessionId);
 
   Future<void> logExtractionError({
     required String url,
@@ -318,14 +319,13 @@ class AnalyticsService extends BaseService {
     required String error,
     String? errorType,
     String imageFormat = 'unknown',
-  }) =>
-      _importTracker.logExtractionError(
-        url: url,
-        platform: platform,
-        error: error,
-        errorType: errorType,
-        imageFormat: imageFormat,
-      );
+  }) => _importTracker.logExtractionError(
+    url: url,
+    platform: platform,
+    error: error,
+    errorType: errorType,
+    imageFormat: imageFormat,
+  );
 
   Future<void> logManualCopyFallback({
     required SourcePlatform platform,
@@ -333,20 +333,20 @@ class AnalyticsService extends BaseService {
   }) =>
       _importTracker.logManualCopyFallback(platform: platform, reason: reason);
 
-  Future<void> logRecipeCreated(
-          {required String source, bool hasImage = false}) =>
-      _recipeTracker.logRecipeCreated(source: source, hasImage: hasImage);
+  Future<void> logRecipeCreated({
+    required String source,
+    bool hasImage = false,
+  }) => _recipeTracker.logRecipeCreated(source: source, hasImage: hasImage);
 
   Future<void> logRecipeShared({
     required String method,
     String? recipeId,
     int recipientCount = 0,
-  }) =>
-      _recipeTracker.logRecipeShared(
-        method: method,
-        recipeId: recipeId,
-        recipientCount: recipientCount,
-      );
+  }) => _recipeTracker.logRecipeShared(
+    method: method,
+    recipeId: recipeId,
+    recipientCount: recipientCount,
+  );
 
   Future<void> logRecipeCooked({
     required String recipeId,
@@ -370,34 +370,31 @@ class AnalyticsService extends BaseService {
     required bool isPersonal,
     required DateTime createdAt,
     int? daysSinceCreated,
-  }) =>
-      _recipeTracker.logRecipeDeleted(
-        recipeId: recipeId,
-        mealType: mealType,
-        isPersonal: isPersonal,
-        createdAt: createdAt,
-        daysSinceCreated: daysSinceCreated,
-      );
+  }) => _recipeTracker.logRecipeDeleted(
+    recipeId: recipeId,
+    mealType: mealType,
+    isPersonal: isPersonal,
+    createdAt: createdAt,
+    daysSinceCreated: daysSinceCreated,
+  );
 
   Future<void> logRecipeViewed({
     required String recipeId,
     required String recipeType,
     String? source,
-  }) =>
-      _recipeTracker.logRecipeViewed(
-        recipeId: recipeId,
-        recipeType: recipeType,
-        source: source,
-      );
+  }) => _recipeTracker.logRecipeViewed(
+    recipeId: recipeId,
+    recipeType: recipeType,
+    source: source,
+  );
 
   Future<void> logRecipeEdited({
     required String recipeId,
     List<String>? fieldsChanged,
-  }) =>
-      _recipeTracker.logRecipeEdited(
-        recipeId: recipeId,
-        fieldsChanged: fieldsChanged,
-      );
+  }) => _recipeTracker.logRecipeEdited(
+    recipeId: recipeId,
+    fieldsChanged: fieldsChanged,
+  );
 
   Future<void> logRecipeCopied({required String recipeId}) =>
       _recipeTracker.logRecipeCopied(recipeId: recipeId);
@@ -406,28 +403,30 @@ class AnalyticsService extends BaseService {
     required String recipeId,
     required int imageCount,
     String? uploadSource,
-  }) =>
-      _recipeTracker.logRecipeImageUploaded(
-        recipeId: recipeId,
-        imageCount: imageCount,
-        uploadSource: uploadSource,
-      );
+  }) => _recipeTracker.logRecipeImageUploaded(
+    recipeId: recipeId,
+    imageCount: imageCount,
+    uploadSource: uploadSource,
+  );
 
   Future<void> logRecipeSearchPerformed({
     required String searchQuery,
     required int resultsCount,
     List<String>? filtersApplied,
-  }) =>
-      _recipeTracker.logRecipeSearchPerformed(
-        searchQuery: searchQuery,
-        resultsCount: resultsCount,
-        filtersApplied: filtersApplied,
-      );
+  }) => _recipeTracker.logRecipeSearchPerformed(
+    searchQuery: searchQuery,
+    resultsCount: resultsCount,
+    filtersApplied: filtersApplied,
+  );
 
-  Future<void> logMenuGenerated(
-      {required int recipeCount, required String method}) async {
+  Future<void> logMenuGenerated({
+    required int recipeCount,
+    required String method,
+  }) async {
     await _menuTracker.logMenuGenerated(
-        recipeCount: recipeCount, method: method);
+      recipeCount: recipeCount,
+      method: method,
+    );
     // BUT-691: typed path bypasses `logEvent`, so probe directly here.
     _probeWinbackAttribution(AnalyticsEvents.menuGenerated);
   }
@@ -438,22 +437,20 @@ class AnalyticsService extends BaseService {
   Future<void> logMenuGenerationFailed({
     required String errorCode,
     String? errorMessage,
-  }) =>
-      _menuTracker.logMenuGenerationFailed(
-        errorCode: errorCode,
-        errorMessage: errorMessage,
-      );
+  }) => _menuTracker.logMenuGenerationFailed(
+    errorCode: errorCode,
+    errorMessage: errorMessage,
+  );
 
   Future<void> logMenuSaved({
     required String menuId,
     required int recipeCount,
     bool isShared = false,
-  }) =>
-      _menuTracker.logMenuSaved(
-        menuId: menuId,
-        recipeCount: recipeCount,
-        isShared: isShared,
-      );
+  }) => _menuTracker.logMenuSaved(
+    menuId: menuId,
+    recipeCount: recipeCount,
+    isShared: isShared,
+  );
 
   Future<void> logMenuLoaded({required String menuId, bool isOwned = true}) =>
       _menuTracker.logMenuLoaded(menuId: menuId, isOwned: isOwned);
@@ -462,12 +459,11 @@ class AnalyticsService extends BaseService {
     required String menuId,
     required int recipientCount,
     String? shareMethod,
-  }) =>
-      _menuTracker.logMenuShared(
-        menuId: menuId,
-        recipientCount: recipientCount,
-        shareMethod: shareMethod,
-      );
+  }) => _menuTracker.logMenuShared(
+    menuId: menuId,
+    recipientCount: recipientCount,
+    shareMethod: shareMethod,
+  );
 
   Future<void> logMenuDeleted({required String menuId, String? reason}) =>
       _menuTracker.logMenuDeleted(menuId: menuId, reason: reason);
@@ -476,52 +472,53 @@ class AnalyticsService extends BaseService {
     required String listId,
     required String listType,
     int? initialItemCount,
-  }) =>
-      _shoppingTracker.logShoppingListCreated(
-        listId: listId,
-        listType: listType,
-        initialItemCount: initialItemCount,
-      );
+  }) => _shoppingTracker.logShoppingListCreated(
+    listId: listId,
+    listType: listType,
+    initialItemCount: initialItemCount,
+  );
 
-  Future<void> logShoppingListItemAdded(
-          {required String listId, String? source}) =>
+  Future<void> logShoppingListItemAdded({
+    required String listId,
+    String? source,
+  }) =>
       _shoppingTracker.logShoppingListItemAdded(listId: listId, source: source);
 
   Future<void> logShoppingListItemChecked({
     required String listId,
     required int itemCount,
-  }) =>
-      _shoppingTracker.logShoppingListItemChecked(
-        listId: listId,
-        itemCount: itemCount,
-      );
+  }) => _shoppingTracker.logShoppingListItemChecked(
+    listId: listId,
+    itemCount: itemCount,
+  );
 
   Future<void> logShoppingListShared({
     required String listId,
     required int recipientCount,
     String? shareMethod,
-  }) =>
-      _shoppingTracker.logShoppingListShared(
-        listId: listId,
-        recipientCount: recipientCount,
-        shareMethod: shareMethod,
-      );
+  }) => _shoppingTracker.logShoppingListShared(
+    listId: listId,
+    recipientCount: recipientCount,
+    shareMethod: shareMethod,
+  );
 
   Future<void> logShoppingListCompleted({
     required String listId,
     required int itemCount,
     int? timeToCompleteMinutes,
-  }) =>
-      _shoppingTracker.logShoppingListCompleted(
-        listId: listId,
-        itemCount: itemCount,
-        timeToCompleteMinutes: timeToCompleteMinutes,
-      );
+  }) => _shoppingTracker.logShoppingListCompleted(
+    listId: listId,
+    itemCount: itemCount,
+    timeToCompleteMinutes: timeToCompleteMinutes,
+  );
 
-  Future<void> logFriendRequestSent(
-          {required String recipientId, String? source}) =>
-      _socialTracker.logFriendRequestSent(
-          recipientId: recipientId, source: source);
+  Future<void> logFriendRequestSent({
+    required String recipientId,
+    String? source,
+  }) => _socialTracker.logFriendRequestSent(
+    recipientId: recipientId,
+    source: source,
+  );
 
   Future<void> logFriendRequestAccepted({required String senderId}) =>
       _socialTracker.logFriendRequestAccepted(senderId: senderId);
@@ -529,55 +526,50 @@ class AnalyticsService extends BaseService {
   Future<void> logCommentCreated({
     required String recipeId,
     required int commentLength,
-  }) =>
-      _socialTracker.logCommentCreated(
-        recipeId: recipeId,
-        commentLength: commentLength,
-      );
+  }) => _socialTracker.logCommentCreated(
+    recipeId: recipeId,
+    commentLength: commentLength,
+  );
 
   Future<void> logRecipeRated({
     required String recipeId,
     required int rating,
     int? previousRating,
-  }) =>
-      _socialTracker.logRecipeRated(
-        recipeId: recipeId,
-        rating: rating,
-        previousRating: previousRating,
-      );
+  }) => _socialTracker.logRecipeRated(
+    recipeId: recipeId,
+    rating: rating,
+    previousRating: previousRating,
+  );
 
   Future<void> logErrorOccurred({
     required String errorCode,
     required String errorType,
     String? userAction,
     String? stackTrace,
-  }) =>
-      _systemTracker.logErrorOccurred(
-        errorCode: errorCode,
-        errorType: errorType,
-        userAction: userAction,
-        stackTrace: stackTrace,
-      );
+  }) => _systemTracker.logErrorOccurred(
+    errorCode: errorCode,
+    errorType: errorType,
+    userAction: userAction,
+    stackTrace: stackTrace,
+  );
 
   Future<void> logNetworkError({
     required String endpoint,
     required int statusCode,
     String? errorMessage,
-  }) =>
-      _systemTracker.logNetworkError(
-        endpoint: endpoint,
-        statusCode: statusCode,
-        errorMessage: errorMessage,
-      );
+  }) => _systemTracker.logNetworkError(
+    endpoint: endpoint,
+    statusCode: statusCode,
+    errorMessage: errorMessage,
+  );
 
   Future<void> logSlowOperation({
     required String operationName,
     required int durationMs,
     int? thresholdMs,
-  }) =>
-      _systemTracker.logSlowOperation(
-        operationName: operationName,
-        durationMs: durationMs,
-        thresholdMs: thresholdMs,
-      );
+  }) => _systemTracker.logSlowOperation(
+    operationName: operationName,
+    durationMs: durationMs,
+    thresholdMs: thresholdMs,
+  );
 }

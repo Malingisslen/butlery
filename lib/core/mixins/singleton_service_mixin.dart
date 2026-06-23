@@ -226,8 +226,9 @@ mixin SingletonServiceMixin<T> {
           .where((e) => e.value)
           .map((e) => e.key.toString())
           .toList(),
-      'dependencyTracking':
-          _dependencyHashes.keys.map((t) => t.toString()).toList(),
+      'dependencyTracking': _dependencyHashes.keys
+          .map((t) => t.toString())
+          .toList(),
     };
   }
 

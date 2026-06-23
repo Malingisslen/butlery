@@ -69,8 +69,9 @@ void main() {
 
     group('med [flavor] pattern preservation', () {
       test('preserves mayo med lime', () {
-        final result =
-            IngredientNormalizer.normalize('mayo med lime och jalapeño');
+        final result = IngredientNormalizer.normalize(
+          'mayo med lime och jalapeño',
+        );
         expect(result.normalized, 'mayo med lime och jalapeño');
       });
 

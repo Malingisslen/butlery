@@ -63,7 +63,7 @@ import 'app_localizations_sv.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('sv')
+    Locale('sv'),
   ];
 
   /// No description provided for @commonSave.
@@ -3115,7 +3115,11 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{name}, {count} recept, {enabled} av {total} regler aktiva'**
   String personalTagTileSemantics(
-      String name, int count, int enabled, int total);
+    String name,
+    int count,
+    int enabled,
+    int total,
+  );
 
   /// No description provided for @tagDetailDefaultTitle.
   ///
@@ -21068,14 +21072,21 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{sender} bjöd in dig till gruppen {emoji} {group}: \"{message}\"'**
   String groupInvitationNotificationWithMessage(
-      String sender, String emoji, String group, String message);
+    String sender,
+    String emoji,
+    String group,
+    String message,
+  );
 
   /// No description provided for @groupInvitationNotificationSimple.
   ///
   /// In sv, this message translates to:
   /// **'{sender} bjöd in dig till gruppen {emoji} {group}'**
   String groupInvitationNotificationSimple(
-      String sender, String emoji, String group);
+    String sender,
+    String emoji,
+    String group,
+  );
 
   /// No description provided for @invitationStatusPending.
   ///
@@ -21556,14 +21567,20 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{author} skrev {count} kommentarer på \"{recipe}\"'**
   String notificationCommentMultipleSameAuthor(
-      String author, int count, String recipe);
+    String author,
+    int count,
+    String recipe,
+  );
 
   /// No description provided for @notificationCommentMultipleAuthors.
   ///
   /// In sv, this message translates to:
   /// **'{authorCount} personer skrev {commentCount} kommentarer på \"{recipe}\"'**
   String notificationCommentMultipleAuthors(
-      int authorCount, int commentCount, String recipe);
+    int authorCount,
+    int commentCount,
+    String recipe,
+  );
 
   /// No description provided for @notificationRatingSingle.
   ///
@@ -21576,7 +21593,10 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Dina recept fick totalt {totalRatings} nya betyg på {recipeCount} recept denna {period}!'**
   String notificationRatingMultiple(
-      int totalRatings, int recipeCount, String period);
+    int totalRatings,
+    int recipeCount,
+    String period,
+  );
 
   /// No description provided for @timeCompactMonths.
   ///
@@ -22057,7 +22077,10 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Problem medan {action}: {issue}\n\nFörslag: {recovery}'**
   String errorDuringActionRecovery(
-      String action, String issue, String recovery);
+    String action,
+    String issue,
+    String recovery,
+  );
 
   /// No description provided for @formatPortionSingle.
   ///
@@ -22106,7 +22129,9 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ogiltiga kategorinamn: {fromCategory} -> {toCategory}'**
   String errorInvalidCategoryNamesFromTo(
-      String fromCategory, String toCategory);
+    String fromCategory,
+    String toCategory,
+  );
 
   /// No description provided for @validationTitleMissing.
   ///
@@ -25802,8 +25827,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

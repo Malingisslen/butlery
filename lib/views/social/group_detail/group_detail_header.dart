@@ -49,7 +49,7 @@ class GroupDetailHeader {
                       group.emoji != null && group.emoji!.isNotEmpty
                           ? '${group.emoji} ${group.description ?? context.l10n.groupNoDescription}'
                           : group.description ??
-                              context.l10n.groupNoDescription,
+                                context.l10n.groupNoDescription,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

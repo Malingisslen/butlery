@@ -49,8 +49,9 @@ class PhotoPageStrip extends StatelessWidget {
             footer: viewModel.canAddPage
                 ? Padding(
                     key: const ValueKey('photo-page-add'),
-                    padding:
-                        const EdgeInsets.only(left: AppDimensions.spacingS),
+                    padding: const EdgeInsets.only(
+                      left: AppDimensions.spacingS,
+                    ),
                     child: _AddPageTile(
                       size: _thumbSize,
                       onPressed: viewModel.isProcessing

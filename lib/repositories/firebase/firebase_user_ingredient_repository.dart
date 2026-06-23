@@ -30,14 +30,15 @@ class FirebaseUserIngredientRepository
   late final LruMap<String, Map<String, IngredientData>> _userCache = LruMap(
     maxSize: _userCacheMaxSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=FirebaseUserIngredientRepository key=$key bound=$_userCacheMaxSize'),
+      'cache_eviction service=FirebaseUserIngredientRepository key=$key bound=$_userCacheMaxSize',
+    ),
   );
 
   FirebaseUserIngredientRepository({
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _authRepository = authRepository;
 
   /// Gets the user's ingredient collection.
   CollectionReference<Map<String, dynamic>> _getUserCollection(String userId) {
@@ -97,9 +98,9 @@ class FirebaseUserIngredientRepository
       const batchSize = 500;
 
       while (true) {
-        var query = _getUserCollection(userId)
-            .orderBy(FieldPath.documentId)
-            .limit(batchSize);
+        var query = _getUserCollection(
+          userId,
+        ).orderBy(FieldPath.documentId).limit(batchSize);
 
         if (lastDoc != null) {
           query = query.startAfterDocument(lastDoc);
@@ -130,7 +131,9 @@ class FirebaseUserIngredientRepository
 
   @override
   Future<IngredientData> create(
-      String userId, IngredientData ingredient) async {
+    String userId,
+    IngredientData ingredient,
+  ) async {
     try {
       final doc = _getUserCollection(userId).doc(ingredient.id);
 

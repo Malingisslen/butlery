@@ -18,13 +18,14 @@ class ShoppingTemplateOperationsModule {
   final String Function() requireCurrentUserId;
   final Future<UnifiedShoppingList?> Function(String id) readList;
   final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity)
-      createList;
+  createList;
   final Future<void> Function({
     required String currentUserId,
     required String resourceOwnerId,
     required String resourceType,
     required String resourceId,
-  }) validateOwnership;
+  })
+  validateOwnership;
   final TimestampProvider timestampProvider;
 
   ShoppingTemplateOperationsModule({
@@ -166,10 +167,12 @@ class ShoppingTemplateOperationsModule {
         .get();
 
     return snapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              ...doc.data(),
-            })
+        .map(
+          (doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          },
+        )
         .toList();
   }
 
@@ -181,8 +184,10 @@ class ShoppingTemplateOperationsModule {
   }) async {
     // Increase query limit to account for filtering, but cap at reasonable maximum
     final queryLimit = searchQuery != null || (tags != null && tags.isNotEmpty)
-        ? (limit * 3)
-            .clamp(20, 100) // Get more docs to filter from, but cap at 100
+        ? (limit * 3).clamp(
+            20,
+            100,
+          ) // Get more docs to filter from, but cap at 100
         : limit;
 
     final query = templatesRef
@@ -194,10 +199,12 @@ class ShoppingTemplateOperationsModule {
     final snapshot = await query.get();
 
     var templates = snapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              ...doc.data(),
-            })
+        .map(
+          (doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          },
+        )
         .toList();
 
     // Client-side filtering for search query
@@ -205,8 +212,9 @@ class ShoppingTemplateOperationsModule {
       final lowerQuery = searchQuery.toLowerCase();
       templates = templates.where((template) {
         final name = (template['name'] as String?).orEmpty().toLowerCase();
-        final description =
-            (template['description'] as String?).orEmpty().toLowerCase();
+        final description = (template['description'] as String?)
+            .orEmpty()
+            .toLowerCase();
         return name.contains(lowerQuery) || description.contains(lowerQuery);
       }).toList();
     }
@@ -256,8 +264,9 @@ class ShoppingTemplateOperationsModule {
     }
 
     // Create shopping list from template
-    final templateItems =
-        List<Map<String, dynamic>>.from(templateData['items'] ?? []);
+    final templateItems = List<Map<String, dynamic>>.from(
+      templateData['items'] ?? [],
+    );
     final items = templateItems
         .map((itemData) => UnifiedShoppingItem.fromFirestore(itemData))
         .toList();
@@ -266,7 +275,8 @@ class ShoppingTemplateOperationsModule {
       name: listName.trim(),
       description: description?.trim(),
       ownerId: uid,
-      ownerDisplayName: authRepository.currentUser?.displayName ??
+      ownerDisplayName:
+          authRepository.currentUser?.displayName ??
           AppLocale.current.displayUnknownUser,
       items: items,
     );

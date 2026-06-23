@@ -50,13 +50,15 @@ void main() {
         final data = {'senderId': 'john_123'};
 
         // Stub the repository method
-        when(() => mockRepository.sendNotification(
-              userId: userId,
-              type: type,
-              title: title,
-              body: body,
-              data: data,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.sendNotification(
+            userId: userId,
+            type: type,
+            title: title,
+            body: body,
+            data: data,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.sendNotification(
@@ -68,13 +70,15 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.sendNotification(
-              userId: userId,
-              type: type,
-              title: title,
-              body: body,
-              data: data,
-            )).called(1);
+        verify(
+          () => mockRepository.sendNotification(
+            userId: userId,
+            type: type,
+            title: title,
+            body: body,
+            data: data,
+          ),
+        ).called(1);
       });
 
       test('should send bulk notifications to multiple users', () async {
@@ -86,13 +90,15 @@ void main() {
         final data = {'recipeId': 'recipe_456'};
 
         // Stub the repository method
-        when(() => mockRepository.sendBulkNotifications(
-              userIds: userIds,
-              type: type,
-              title: title,
-              body: body,
-              data: data,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.sendBulkNotifications(
+            userIds: userIds,
+            type: type,
+            title: title,
+            body: body,
+            data: data,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.sendBulkNotifications(
@@ -104,13 +110,15 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.sendBulkNotifications(
-              userIds: userIds,
-              type: type,
-              title: title,
-              body: body,
-              data: data,
-            )).called(1);
+        verify(
+          () => mockRepository.sendBulkNotifications(
+            userIds: userIds,
+            type: type,
+            title: title,
+            body: body,
+            data: data,
+          ),
+        ).called(1);
       });
     });
 
@@ -140,8 +148,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getUserNotifications(userId))
-            .thenAnswer((_) async => notifications);
+        when(
+          () => mockRepository.getUserNotifications(userId),
+        ).thenAnswer((_) async => notifications);
 
         // Act
         final result = await mockRepository.getUserNotifications(userId);
@@ -173,9 +182,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() =>
-                mockRepository.getUserNotifications(userId, since: cutoffDate))
-            .thenAnswer((_) async => recentNotifications);
+        when(
+          () => mockRepository.getUserNotifications(userId, since: cutoffDate),
+        ).thenAnswer((_) async => recentNotifications);
 
         // Act
         final result = await mockRepository.getUserNotifications(
@@ -189,9 +198,9 @@ void main() {
         expect(result.first.createdAt.isAfter(cutoffDate), isTrue);
 
         // Verify the method was called with correct parameters
-        verify(() =>
-                mockRepository.getUserNotifications(userId, since: cutoffDate))
-            .called(1);
+        verify(
+          () => mockRepository.getUserNotifications(userId, since: cutoffDate),
+        ).called(1);
       });
 
       test('should stream user notifications', () async {
@@ -210,8 +219,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getNotificationsStream(userId))
-            .thenAnswer((_) => Stream.value(notifications));
+        when(
+          () => mockRepository.getNotificationsStream(userId),
+        ).thenAnswer((_) => Stream.value(notifications));
 
         // Act
         final stream = mockRepository.getNotificationsStream(userId);
@@ -232,8 +242,9 @@ void main() {
         const notificationId = 'notif_123';
 
         // Stub the repository method
-        when(() => mockRepository.markAsRead(notificationId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.markAsRead(notificationId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.markAsRead(notificationId);
@@ -247,15 +258,17 @@ void main() {
         final notificationIds = ['notif_1', 'notif_2', 'notif_3'];
 
         // Stub the repository method
-        when(() => mockRepository.markMultipleAsRead(notificationIds))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.markMultipleAsRead(notificationIds),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.markMultipleAsRead(notificationIds);
 
         // Assert
-        verify(() => mockRepository.markMultipleAsRead(notificationIds))
-            .called(1);
+        verify(
+          () => mockRepository.markMultipleAsRead(notificationIds),
+        ).called(1);
       });
 
       test('should mark all user notifications as read', () async {
@@ -263,8 +276,9 @@ void main() {
         const userId = 'test_user_123';
 
         // Stub the repository method
-        when(() => mockRepository.markAllAsRead(userId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.markAllAsRead(userId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.markAllAsRead(userId);
@@ -280,15 +294,17 @@ void main() {
         const notificationId = 'notif_to_delete';
 
         // Stub the repository method
-        when(() => mockRepository.deleteNotification(notificationId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteNotification(notificationId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteNotification(notificationId);
 
         // Assert
-        verify(() => mockRepository.deleteNotification(notificationId))
-            .called(1);
+        verify(
+          () => mockRepository.deleteNotification(notificationId),
+        ).called(1);
       });
 
       test('should get unread notification count', () async {
@@ -297,8 +313,9 @@ void main() {
         const unreadCount = 5;
 
         // Stub the repository method
-        when(() => mockRepository.getUnreadCount(userId))
-            .thenAnswer((_) async => unreadCount);
+        when(
+          () => mockRepository.getUnreadCount(userId),
+        ).thenAnswer((_) async => unreadCount);
 
         // Act
         final count = await mockRepository.getUnreadCount(userId);
@@ -316,15 +333,19 @@ void main() {
         final preferences = NotificationPreferences.defaults();
 
         // Stub the repository method
-        when(() => mockRepository.updateNotificationPreferences(
-            userId, preferences)).thenAnswer((_) async {});
+        when(
+          () =>
+              mockRepository.updateNotificationPreferences(userId, preferences),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateNotificationPreferences(userId, preferences);
 
         // Assert
-        verify(() => mockRepository.updateNotificationPreferences(
-            userId, preferences)).called(1);
+        verify(
+          () =>
+              mockRepository.updateNotificationPreferences(userId, preferences),
+        ).called(1);
       });
 
       test('should get notification preferences', () async {
@@ -333,8 +354,9 @@ void main() {
         final preferences = NotificationPreferences.defaults();
 
         // Stub the repository method
-        when(() => mockRepository.getNotificationPreferences(userId))
-            .thenAnswer((_) async => preferences);
+        when(
+          () => mockRepository.getNotificationPreferences(userId),
+        ).thenAnswer((_) async => preferences);
 
         // Act
         final result = await mockRepository.getNotificationPreferences(userId);
@@ -342,8 +364,9 @@ void main() {
         // Assert - verify model uses categorySettings map
         expect(result.categorySettings[NotificationCategory.recipes], isTrue);
         expect(result.categorySettings[NotificationCategory.friends], isTrue);
-        verify(() => mockRepository.getNotificationPreferences(userId))
-            .called(1);
+        verify(
+          () => mockRepository.getNotificationPreferences(userId),
+        ).called(1);
       });
     });
   });

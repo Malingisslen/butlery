@@ -20,31 +20,33 @@ import 'package:butlery/widgets/common/hoverable_card.dart';
 import 'package:butlery/widgets/messaging/message_bubble.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.lightTheme,
-      home: Scaffold(body: child),
-    );
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
 
 Message _message() => Message.text(
-      conversationId: 'c1',
-      senderId: 'other',
-      senderDisplayName: 'Anna',
-      content: 'Hej!',
-    );
+  conversationId: 'c1',
+  senderId: 'other',
+  senderDisplayName: 'Anna',
+  content: 'Hej!',
+);
 
 void main() {
   group('MessageBubble mounts HoverableCard (BUT-1358)', () {
     testWidgets('renders a HoverableCard ancestor', (tester) async {
-      await tester.pumpWidget(_wrap(
-        MessageBubble(message: _message(), currentUserId: 'me'),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          MessageBubble(message: _message(), currentUserId: 'me'),
+        ),
+      );
 
       expect(
         find.descendant(
@@ -55,11 +57,14 @@ void main() {
       );
     });
 
-    testWidgets('rest decoration is a flat filled square with no shadow',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        MessageBubble(message: _message(), currentUserId: 'me'),
-      ));
+    testWidgets('rest decoration is a flat filled square with no shadow', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          MessageBubble(message: _message(), currentUserId: 'me'),
+        ),
+      );
 
       final hoverable = tester.widget<HoverableCard>(
         find.descendant(
@@ -69,21 +74,30 @@ void main() {
       );
 
       final rest = hoverable.restDecoration as BoxDecoration;
-      expect(rest.color, isNotNull,
-          reason: 'Bubble keeps its solid fill at rest.');
+      expect(
+        rest.color,
+        isNotNull,
+        reason: 'Bubble keeps its solid fill at rest.',
+      );
       expect(
         rest.borderRadius,
         BorderRadius.circular(AppDimensions.borderRadiusM),
       );
-      expect(rest.boxShadow, isNull,
-          reason: 'Rest stays flat — identical to the old StyledCard.');
+      expect(
+        rest.boxShadow,
+        isNull,
+        reason: 'Rest stays flat — identical to the old StyledCard.',
+      );
     });
 
-    testWidgets('hover variant keeps fill + corners, only adds a shadow',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        MessageBubble(message: _message(), currentUserId: 'me'),
-      ));
+    testWidgets('hover variant keeps fill + corners, only adds a shadow', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          MessageBubble(message: _message(), currentUserId: 'me'),
+        ),
+      );
 
       final hoverable = tester.widget<HoverableCard>(
         find.descendant(
@@ -97,15 +111,21 @@ void main() {
 
       expect(hover.color, equals(rest.color));
       expect(hover.borderRadius, equals(rest.borderRadius));
-      expect(hover.boxShadow, isNotNull,
-          reason: 'Hover adds the reserved subtle elevation shadow.');
+      expect(
+        hover.boxShadow,
+        isNotNull,
+        reason: 'Hover adds the reserved subtle elevation shadow.',
+      );
     });
 
-    testWidgets('display-only bubble (no handlers) defers the cursor',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        MessageBubble(message: _message(), currentUserId: 'me'),
-      ));
+    testWidgets('display-only bubble (no handlers) defers the cursor', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          MessageBubble(message: _message(), currentUserId: 'me'),
+        ),
+      );
 
       final mouseRegion = tester.widget<MouseRegion>(
         find
@@ -115,20 +135,27 @@ void main() {
             )
             .first,
       );
-      expect(mouseRegion.cursor, MouseCursor.defer,
-          reason: 'A bubble with no tap/long-press/reaction handler is not '
-              'interactive, so it must not imply clickability.');
+      expect(
+        mouseRegion.cursor,
+        MouseCursor.defer,
+        reason:
+            'A bubble with no tap/long-press/reaction handler is not '
+            'interactive, so it must not imply clickability.',
+      );
     });
 
-    testWidgets('interactive bubble (with onTap) shows the click cursor',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        MessageBubble(
-          message: _message(),
-          currentUserId: 'me',
-          onTap: () {},
+    testWidgets('interactive bubble (with onTap) shows the click cursor', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          MessageBubble(
+            message: _message(),
+            currentUserId: 'me',
+            onTap: () {},
+          ),
         ),
-      ));
+      );
 
       final mouseRegion = tester.widget<MouseRegion>(
         find

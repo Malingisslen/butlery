@@ -41,8 +41,9 @@ void main() {
     late _MockReportService reportService;
 
     Future<void> pumpHub(WidgetTester tester, {required bool isAdmin}) async {
-      when(() => reportService.watchIsAdmin())
-          .thenAnswer((_) => Stream<bool>.value(isAdmin));
+      when(
+        () => reportService.watchIsAdmin(),
+      ).thenAnswer((_) => Stream<bool>.value(isAdmin));
 
       // Tall surface so the whole settings ListView lays out without the
       // off-screen culling that would hide the bottom (terms/moderator) tiles.
@@ -51,10 +52,12 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false, // SettingsHubView supplies its own Scaffold.
-        child: const SettingsHubView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false, // SettingsHubView supplies its own Scaffold.
+          child: const SettingsHubView(),
+        ),
+      );
       // Let the watchIsAdmin StreamBuilder resolve its first event.
       await tester.pump();
     }
@@ -81,69 +84,101 @@ void main() {
       await GetIt.instance.reset();
     });
 
-    testWidgets('account, notification, logout, delete and terms tiles render',
-        (tester) async {
+    testWidgets(
+      'account, notification, logout, delete and terms tiles render',
+      (tester) async {
+        final sv = AppLocalizationsSv();
+        await pumpHub(tester, isAdmin: false);
+
+        expect(
+          find.text(sv.accountSecurityTitle),
+          findsOneWidget,
+          reason: 'Account-security entry must be present in /settings.',
+        );
+        // "Aviseringar" appears both as the section header AND the tile title
+        // (settingsSectionNotifications == notificationTitle), so the tile is
+        // asserted via its ListTile ancestor to prove it's a tappable entry.
+        final notificationTile = find.ancestor(
+          of: find.text(sv.notificationTitle),
+          matching: find.byType(ListTile),
+        );
+        expect(
+          notificationTile,
+          findsOneWidget,
+          reason: 'Notification settings entry must be a tappable tile.',
+        );
+        expect(
+          find.text(sv.profileLogout),
+          findsOneWidget,
+          reason: 'GDPR sign-out surface must be discoverable from /settings.',
+        );
+        expect(
+          find.text(sv.profileDeleteAccount),
+          findsOneWidget,
+          reason: 'GDPR delete-account surface must be discoverable.',
+        );
+        expect(
+          find.text(sv.legalTermsOfService),
+          findsOneWidget,
+          reason: 'Terms-of-service entry must be present in the About group.',
+        );
+      },
+    );
+
+    testWidgets('moderator tile is hidden for a non-admin user', (
+      tester,
+    ) async {
       final sv = AppLocalizationsSv();
       await pumpHub(tester, isAdmin: false);
 
-      expect(find.text(sv.accountSecurityTitle), findsOneWidget,
-          reason: 'Account-security entry must be present in /settings.');
-      // "Aviseringar" appears both as the section header AND the tile title
-      // (settingsSectionNotifications == notificationTitle), so the tile is
-      // asserted via its ListTile ancestor to prove it's a tappable entry.
-      final notificationTile = find.ancestor(
-        of: find.text(sv.notificationTitle),
-        matching: find.byType(ListTile),
+      expect(
+        find.text(sv.moderatorReviewTitle),
+        findsNothing,
+        reason:
+            'The admin-only moderator entry must NOT leak to ordinary '
+            'users — the watchIsAdmin StreamBuilder must collapse it.',
       );
-      expect(notificationTile, findsOneWidget,
-          reason: 'Notification settings entry must be a tappable tile.');
-      expect(find.text(sv.profileLogout), findsOneWidget,
-          reason: 'GDPR sign-out surface must be discoverable from /settings.');
-      expect(find.text(sv.profileDeleteAccount), findsOneWidget,
-          reason: 'GDPR delete-account surface must be discoverable.');
-      expect(find.text(sv.legalTermsOfService), findsOneWidget,
-          reason: 'Terms-of-service entry must be present in the About group.');
-    });
-
-    testWidgets('moderator tile is hidden for a non-admin user',
-        (tester) async {
-      final sv = AppLocalizationsSv();
-      await pumpHub(tester, isAdmin: false);
-
-      expect(find.text(sv.moderatorReviewTitle), findsNothing,
-          reason: 'The admin-only moderator entry must NOT leak to ordinary '
-              'users — the watchIsAdmin StreamBuilder must collapse it.');
     });
 
     testWidgets('moderator tile appears for an admin user', (tester) async {
       final sv = AppLocalizationsSv();
       await pumpHub(tester, isAdmin: true);
 
-      expect(find.text(sv.moderatorReviewTitle), findsOneWidget,
-          reason: 'An admin user must see the moderator-review entry once '
-              'watchIsAdmin emits true.');
+      expect(
+        find.text(sv.moderatorReviewTitle),
+        findsOneWidget,
+        reason:
+            'An admin user must see the moderator-review entry once '
+            'watchIsAdmin emits true.',
+      );
     });
 
-    testWidgets('delete-account tile is flagged in the live error colour',
-        (tester) async {
+    testWidgets('delete-account tile is flagged in the live error colour', (
+      tester,
+    ) async {
       final sv = AppLocalizationsSv();
       late ColorScheme cs;
 
-      when(() => reportService.watchIsAdmin())
-          .thenAnswer((_) => Stream<bool>.value(false));
+      when(
+        () => reportService.watchIsAdmin(),
+      ).thenAnswer((_) => Stream<bool>.value(false));
 
       tester.view.physicalSize = const Size(800, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: Builder(builder: (context) {
-          cs = Theme.of(context).colorScheme;
-          return const SettingsHubView();
-        }),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return const SettingsHubView();
+            },
+          ),
+        ),
+      );
       await tester.pump();
 
       // The destructive variant renders its title text in cs.error — assert
@@ -152,9 +187,13 @@ void main() {
       final titleText = tester.widget<Text>(
         find.text(sv.profileDeleteAccount),
       );
-      expect(titleText.style?.color, cs.error,
-          reason: 'Delete-account must use the theme error colour to flag '
-              'irreversibility before the confirm dialog opens.');
+      expect(
+        titleText.style?.color,
+        cs.error,
+        reason:
+            'Delete-account must use the theme error colour to flag '
+            'irreversibility before the confirm dialog opens.',
+      );
     });
   });
 }

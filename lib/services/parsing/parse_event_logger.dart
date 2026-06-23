@@ -59,9 +59,9 @@ class ParseEventLogger {
             .call<Map<String, dynamic>>(payload)
             .then((_) {})
             .catchError((Object e) {
-          AppLogger.debug('ParseEventLogger: logging failed: $e');
-          _emitFailureMetric(e);
-        }),
+              AppLogger.debug('ParseEventLogger: logging failed: $e');
+              _emitFailureMetric(e);
+            }),
       );
     } catch (e) {
       AppLogger.debug('ParseEventLogger: payload error: $e');

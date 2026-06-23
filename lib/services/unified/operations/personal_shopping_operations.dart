@@ -12,8 +12,11 @@ class PersonalShoppingOperations {
   final List<UnifiedShoppingList> Function() _getPersonalLists;
   final UnifiedShoppingList? Function() _getActiveList;
   final String? Function() _getActiveListId;
-  final Future<String?> Function(String name,
-      {List<UnifiedShoppingItem>? items}) _createPersonalList;
+  final Future<String?> Function(
+    String name, {
+    List<UnifiedShoppingItem>? items,
+  })
+  _createPersonalList;
   final Future<bool> Function(String listId, String newName) _renameList;
   final Future<bool> Function(String listId) _deleteList;
   final Future<bool> Function(String listId) _setActiveList;
@@ -27,7 +30,8 @@ class PersonalShoppingOperations {
     int? priority,
     String? recipeId,
     String? recipeName,
-  }) _addItemToActiveList;
+  })
+  _addItemToActiveList;
   final Future<bool> Function(UnifiedShoppingList list) _updateList;
   final Future<bool> Function(String itemId) _toggleItemBought;
   final Future<bool> Function(String itemId) _removeItemFromActiveList;
@@ -38,9 +42,11 @@ class PersonalShoppingOperations {
     required List<UnifiedShoppingList> Function() getPersonalLists,
     required UnifiedShoppingList? Function() getActiveList,
     required String? Function() getActiveListId,
-    required Future<String?> Function(String name,
-            {List<UnifiedShoppingItem>? items})
-        createPersonalList,
+    required Future<String?> Function(
+      String name, {
+      List<UnifiedShoppingItem>? items,
+    })
+    createPersonalList,
     required Future<bool> Function(String listId, String newName) renameList,
     required Future<bool> Function(String listId) deleteList,
     required Future<bool> Function(String listId) setActiveList,
@@ -54,25 +60,26 @@ class PersonalShoppingOperations {
       int? priority,
       String? recipeId,
       String? recipeName,
-    }) addItemToActiveList,
+    })
+    addItemToActiveList,
     required Future<bool> Function(UnifiedShoppingList list) updateList,
     required Future<bool> Function(String itemId) toggleItemBought,
     required Future<bool> Function(String itemId) removeItemFromActiveList,
     required Future<bool> Function() clearBoughtItems,
     required Future<bool> Function() uncheckAllItems,
-  })  : _getPersonalLists = getPersonalLists,
-        _getActiveList = getActiveList,
-        _getActiveListId = getActiveListId,
-        _createPersonalList = createPersonalList,
-        _renameList = renameList,
-        _deleteList = deleteList,
-        _setActiveList = setActiveList,
-        _addItemToActiveList = addItemToActiveList,
-        _updateList = updateList,
-        _toggleItemBought = toggleItemBought,
-        _removeItemFromActiveList = removeItemFromActiveList,
-        _clearBoughtItems = clearBoughtItems,
-        _uncheckAllItems = uncheckAllItems;
+  }) : _getPersonalLists = getPersonalLists,
+       _getActiveList = getActiveList,
+       _getActiveListId = getActiveListId,
+       _createPersonalList = createPersonalList,
+       _renameList = renameList,
+       _deleteList = deleteList,
+       _setActiveList = setActiveList,
+       _addItemToActiveList = addItemToActiveList,
+       _updateList = updateList,
+       _toggleItemBought = toggleItemBought,
+       _removeItemFromActiveList = removeItemFromActiveList,
+       _clearBoughtItems = clearBoughtItems,
+       _uncheckAllItems = uncheckAllItems;
 
   Future<String?> createList(
     String name, {
@@ -112,7 +119,8 @@ class PersonalShoppingOperations {
 
     if (list.isCollaborative) {
       AppLogger.error(
-          'Cannot delete collaborative list through personal operations');
+        'Cannot delete collaborative list through personal operations',
+      );
       return false;
     }
 
@@ -234,8 +242,9 @@ class PersonalShoppingOperations {
     );
 
     // Update the list
-    final newItems =
-        list.items.map((i) => i.id == itemId ? updatedItem : i).toList();
+    final newItems = list.items
+        .map((i) => i.id == itemId ? updatedItem : i)
+        .toList();
     final updatedList = list.copyWith(items: newItems);
 
     return await _updateList(updatedList);
@@ -335,8 +344,9 @@ class PersonalShoppingOperations {
       'totalItems': totalItems,
       'boughtItems': boughtItems,
       'remainingItems': remainingItems,
-      'completionPercentage':
-          totalItems > 0 ? (boughtItems / totalItems * 100).round() : 0,
+      'completionPercentage': totalItems > 0
+          ? (boughtItems / totalItems * 100).round()
+          : 0,
       'estimatedTotal': estimatedTotal,
       'categoryBreakdown': categoryBreakdown,
       'lastUpdated': list.updatedAt,
@@ -350,8 +360,9 @@ class PersonalShoppingOperations {
     final categoryMap = <String, List<UnifiedShoppingItem>>{};
 
     for (final item in list.items) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      final category = item.category.isEmpty
+          ? ShoppingCategory.other
+          : item.category;
       if (!categoryMap.containsKey(category)) {
         categoryMap[category] = [];
       }
@@ -400,9 +411,11 @@ class PersonalShoppingOperations {
 
     buffer.writeln();
     buffer.writeln(
-        '${AppLocale.current.shoppingCreatedLabel} ${list.createdAt.toString().split(' ')[0]}');
+      '${AppLocale.current.shoppingCreatedLabel} ${list.createdAt.toString().split(' ')[0]}',
+    );
     buffer.writeln(
-        '${AppLocale.current.shoppingUpdatedLabel} ${list.updatedAt.toString().split(' ')[0]}');
+      '${AppLocale.current.shoppingUpdatedLabel} ${list.updatedAt.toString().split(' ')[0]}',
+    );
 
     return buffer.toString();
   }
@@ -421,18 +434,20 @@ class PersonalShoppingOperations {
         'createdAt': list.createdAt.toIso8601String(),
         'updatedAt': list.updatedAt.toIso8601String(),
         'items': list.items
-            .map((item) => {
-                  'id': item.id,
-                  'name': item.name,
-                  'amount': item.amount,
-                  'unit': item.unit,
-                  'category': item.category,
-                  'note': item.note,
-                  'estimatedPrice': item.estimatedPrice,
-                  'priority': item.priority,
-                  'bought': item.bought,
-                  'purchasedAt': item.purchasedAt?.toIso8601String(),
-                })
+            .map(
+              (item) => {
+                'id': item.id,
+                'name': item.name,
+                'amount': item.amount,
+                'unit': item.unit,
+                'category': item.category,
+                'note': item.note,
+                'estimatedPrice': item.estimatedPrice,
+                'priority': item.priority,
+                'bought': item.bought,
+                'purchasedAt': item.purchasedAt?.toIso8601String(),
+              },
+            )
             .toList(),
       },
       'statistics': getListStats(listId),
@@ -476,8 +491,9 @@ class PersonalShoppingOperations {
         double amount = 1.0;
         String unit = '';
 
-        final amountMatch =
-            RegExp(r'(\d+(?:\.\d+)?)\s*(\w+)?\s*(.+)').firstMatch(itemName);
+        final amountMatch = RegExp(
+          r'(\d+(?:\.\d+)?)\s*(\w+)?\s*(.+)',
+        ).firstMatch(itemName);
         if (amountMatch != null) {
           amount = double.tryParse(amountMatch.group(1) ?? '1.0') ?? 1.0;
           unit = amountMatch.group(2).orEmpty();

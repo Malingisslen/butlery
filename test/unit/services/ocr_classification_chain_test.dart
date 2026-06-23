@@ -148,17 +148,19 @@ void main() {
       );
     });
 
-    test('rate_limit wins over timeout when both present (priority guarantee)',
-        () {
-      // Reason: user-facing remedy differs (wait-then-retry vs check-connection).
-      expect(
-        OCRExtractionService.classifyProviderErrorsForTesting({
-          'ocr_space': 'Exception: rate limit hit',
-          'google_vision': 'TimeoutException after 30s',
-        }),
-        equals('rate_limit'),
-      );
-    });
+    test(
+      'rate_limit wins over timeout when both present (priority guarantee)',
+      () {
+        // Reason: user-facing remedy differs (wait-then-retry vs check-connection).
+        expect(
+          OCRExtractionService.classifyProviderErrorsForTesting({
+            'ocr_space': 'Exception: rate limit hit',
+            'google_vision': 'TimeoutException after 30s',
+          }),
+          equals('rate_limit'),
+        );
+      },
+    );
 
     test('timeout wins over network when both present', () {
       expect(
@@ -207,16 +209,18 @@ void main() {
       expect(message, contains(AppLocale.current.errorOcrTimeout));
     });
 
-    test('network classification → errorOcrTimeout copy (intentionally shared)',
-        () {
-      // Reason: per current mapping, network failures use the same Swedish
-      // "tjänsten tog för lång tid" copy as timeouts. This test pins that
-      // explicit choice so a future split would surface here.
-      final result = _failureWithClassification('network');
-      final message = vm.buildEnhancedErrorMessageForTesting(result);
+    test(
+      'network classification → errorOcrTimeout copy (intentionally shared)',
+      () {
+        // Reason: per current mapping, network failures use the same Swedish
+        // "tjänsten tog för lång tid" copy as timeouts. This test pins that
+        // explicit choice so a future split would surface here.
+        final result = _failureWithClassification('network');
+        final message = vm.buildEnhancedErrorMessageForTesting(result);
 
-      expect(message, contains(AppLocale.current.errorOcrTimeout));
-    });
+        expect(message, contains(AppLocale.current.errorOcrTimeout));
+      },
+    );
 
     test('generic classification → errorNoTextExtracted fallback', () {
       final result = _failureWithClassification('generic');
@@ -235,40 +239,58 @@ void main() {
       expect(message, contains(AppLocale.current.errorNoTextExtracted));
     });
 
-    test('all providers down (circuit-open) → errorOcrServicesUnavailable copy',
-        () {
-      // No classification — service-down state wins via circuit-breaker check.
-      final result = _failureWithClassification(null, extra: {
-        'circuit_breakers': {
-          'ocr_space_state': 'open',
-          'google_vision_state': 'open',
-          'tesseract_state': 'open',
-        },
-      });
-      final message = vm.buildEnhancedErrorMessageForTesting(result);
+    test(
+      'all providers down (circuit-open) → errorOcrServicesUnavailable copy',
+      () {
+        // No classification — service-down state wins via circuit-breaker check.
+        final result = _failureWithClassification(
+          null,
+          extra: {
+            'circuit_breakers': {
+              'ocr_space_state': 'open',
+              'google_vision_state': 'open',
+              'tesseract_state': 'open',
+            },
+          },
+        );
+        final message = vm.buildEnhancedErrorMessageForTesting(result);
 
-      expect(message, contains(AppLocale.current.errorOcrServicesUnavailable));
-    });
+        expect(
+          message,
+          contains(AppLocale.current.errorOcrServicesUnavailable),
+        );
+      },
+    );
 
     test(
-        'low quality score wins over classification (image-fix > retry-blindly)',
-        () {
-      // Reason: when the image itself is unreadable, the user should fix
-      // the image, not blindly retry against a transient rate-limit.
-      final result = _failureWithClassification('rate_limit', extra: {
-        'quality_assessment': 0.3, // < 0.6 threshold
-      });
-      final message = vm.buildEnhancedErrorMessageForTesting(result);
+      'low quality score wins over classification (image-fix > retry-blindly)',
+      () {
+        // Reason: when the image itself is unreadable, the user should fix
+        // the image, not blindly retry against a transient rate-limit.
+        final result = _failureWithClassification(
+          'rate_limit',
+          extra: {
+            'quality_assessment': 0.3, // < 0.6 threshold
+          },
+        );
+        final message = vm.buildEnhancedErrorMessageForTesting(result);
 
-      // Quality-low branch produces errorImageQualityTooLow(percent), so the
-      // rate_limit copy must NOT appear.
-      expect(message, isNot(contains(AppLocale.current.errorOcrRateLimit)));
-    });
+        // Quality-low branch produces errorImageQualityTooLow(percent), so the
+        // rate_limit copy must NOT appear.
+        expect(message, isNot(contains(AppLocale.current.errorOcrRateLimit)));
+      },
+    );
 
     test('recommendations from metadata are appended', () {
-      final result = _failureWithClassification('rate_limit', extra: {
-        'recommendations': ['Använd JPEG eller PNG', 'Använd högre upplösning'],
-      });
+      final result = _failureWithClassification(
+        'rate_limit',
+        extra: {
+          'recommendations': [
+            'Använd JPEG eller PNG',
+            'Använd högre upplösning',
+          ],
+        },
+      );
       final message = vm.buildEnhancedErrorMessageForTesting(result);
 
       expect(message, contains('Använd JPEG eller PNG'));

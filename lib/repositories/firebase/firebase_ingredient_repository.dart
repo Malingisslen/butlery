@@ -45,9 +45,9 @@ class FirebaseIngredientRepository
     FirebaseFirestore? firestore,
     Duration? cacheTtl,
     DateTime Function()? now,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        cacheTtl = cacheTtl ?? const Duration(hours: 1),
-        _now = now ?? DateTime.now;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       cacheTtl = cacheTtl ?? const Duration(hours: 1),
+       _now = now ?? DateTime.now;
 
   /// Adds a listener to be notified when the ingredient cache is invalidated.
   ///
@@ -261,8 +261,10 @@ class FirebaseIngredientRepository
   }
 
   @override
-  Future<IngredientData?> findByName(String name,
-      {String language = 'sv'}) async {
+  Future<IngredientData?> findByName(
+    String name, {
+    String language = 'sv',
+  }) async {
     await _ensureCacheLoaded();
 
     final normalized = _normalize(name);
@@ -314,7 +316,8 @@ class FirebaseIngredientRepository
     final variations = _generateVariations(normalized);
 
     for (final variation in variations) {
-      final id = _swedishNameIndex[variation] ??
+      final id =
+          _swedishNameIndex[variation] ??
           _englishNameIndex[variation] ??
           _aliasIndex[variation];
       if (id != null) {

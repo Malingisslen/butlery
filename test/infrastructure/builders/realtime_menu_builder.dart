@@ -121,7 +121,9 @@ class RealtimeMenuBuilder {
 
   /// Add a participant with specific permission
   RealtimeMenuBuilder withParticipant(
-      String userId, ResourcePermission permission) {
+    String userId,
+    ResourcePermission permission,
+  ) {
     participants[userId] = permission;
     return this;
   }

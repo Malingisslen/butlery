@@ -61,7 +61,8 @@ void main() {
         getIt.unregister<FirebaseSharedRecipeRepository>();
       }
       getIt.registerSingleton<FirebaseSharedRecipeRepository>(
-          mockSharedRecipeRepo);
+        mockSharedRecipeRepo,
+      );
 
       // Build test recipes
       final recipe1 = Recipe(
@@ -200,14 +201,15 @@ void main() {
 
     group('Dismiss Shared Recipe', () {
       test('should dismiss shared recipe', () async {
-        when(() => mockSharedRecipeRepo.markAsDismissed(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSharedRecipeRepo.markAsDismissed(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await coordinator.dismissSharedRecipe('shared-1');
         expect(result, isTrue);
-        verify(() =>
-                mockSharedRecipeRepo.markAsDismissed('shared-1', currentUserId))
-            .called(1);
+        verify(
+          () => mockSharedRecipeRepo.markAsDismissed('shared-1', currentUserId),
+        ).called(1);
       });
 
       test('should fail dismiss when not authenticated', () async {
@@ -230,8 +232,9 @@ void main() {
 
     group('Mark As Viewed', () {
       test('should mark recipe as viewed', () async {
-        when(() => mockSharedRecipeRepo.markAsViewed(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockSharedRecipeRepo.markAsViewed(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await coordinator.markRecipeAsViewed('shared-1');
         expect(result, isTrue);
@@ -256,16 +259,18 @@ void main() {
 
     group('Get Shared Recipes', () {
       test('should get shared recipes for user', () async {
-        when(() => mockSharedRecipeRepo.getSharedRecipesForUser(any()))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockSharedRecipeRepo.getSharedRecipesForUser(any()),
+        ).thenAnswer((_) async => []);
 
         final recipes = await coordinator.getSharedRecipesForUser('user-1');
         expect(recipes, isEmpty);
       });
 
       test('should handle repository error gracefully', () async {
-        when(() => mockSharedRecipeRepo.getSharedRecipesForUser(any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockSharedRecipeRepo.getSharedRecipesForUser(any()),
+        ).thenThrow(Exception('Network error'));
 
         final recipes = await coordinator.getSharedRecipesForUser('user-1');
         expect(recipes, isEmpty);
@@ -274,8 +279,9 @@ void main() {
 
     group('Get Shared Recipe By ID', () {
       test('should return null for non-existent shared recipe', () async {
-        when(() => mockSharedRecipeRepo.getSharedRecipe(any()))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockSharedRecipeRepo.getSharedRecipe(any()),
+        ).thenAnswer((_) async => null);
 
         final recipe = await coordinator.getSharedRecipeById('nonexistent');
         expect(recipe, isNull);
@@ -293,8 +299,10 @@ void main() {
       });
 
       test('should send sharing notifications without error', () async {
-        await coordinator
-            .sendRecipeSharingNotifications('recipe-1', ['user-2', 'user-3']);
+        await coordinator.sendRecipeSharingNotifications('recipe-1', [
+          'user-2',
+          'user-3',
+        ]);
       });
     });
   });

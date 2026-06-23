@@ -100,17 +100,21 @@ void main() {
     });
 
     test('targets each type alias', () {
-      expect(_counters().incrementCounter('shared_recipes').unreadSharedRecipes,
-          1);
+      expect(
+        _counters().incrementCounter('shared_recipes').unreadSharedRecipes,
+        1,
+      );
       expect(_counters().incrementCounter('shared_menus').unreadSharedMenus, 1);
       expect(
-          _counters()
-              .incrementCounter('shared_shopping_lists')
-              .unreadSharedShoppingLists,
-          1);
+        _counters()
+            .incrementCounter('shared_shopping_lists')
+            .unreadSharedShoppingLists,
+        1,
+      );
       expect(
-          _counters().incrementCounter('friend_requests').pendingFriendRequests,
-          1);
+        _counters().incrementCounter('friend_requests').pendingFriendRequests,
+        1,
+      );
     });
 
     test('unknown type returns self unchanged', () {
@@ -139,14 +143,16 @@ void main() {
     test('clamps menus/shoppingLists/messages/friend_requests at 0', () {
       expect(_counters().decrementCounter('shared_menus').unreadSharedMenus, 0);
       expect(
-          _counters()
-              .decrementCounter('shared_shopping_lists')
-              .unreadSharedShoppingLists,
-          0);
+        _counters()
+            .decrementCounter('shared_shopping_lists')
+            .unreadSharedShoppingLists,
+        0,
+      );
       expect(_counters().decrementCounter('messages').unreadMessages, 0);
       expect(
-          _counters().decrementCounter('friend_requests').pendingFriendRequests,
-          0);
+        _counters().decrementCounter('friend_requests').pendingFriendRequests,
+        0,
+      );
     });
 
     test('unknown type returns self unchanged', () {
@@ -187,27 +193,45 @@ void main() {
 
   group('UserCounterIncrements.fieldForType', () {
     test('maps each known type to its field name', () {
-      expect(UserCounterIncrements.fieldForType('recipes'),
-          UserCounterIncrements.unreadSharedRecipes);
-      expect(UserCounterIncrements.fieldForType('shared_recipes'),
-          UserCounterIncrements.unreadSharedRecipes);
-      expect(UserCounterIncrements.fieldForType('menus'),
-          UserCounterIncrements.unreadSharedMenus);
-      expect(UserCounterIncrements.fieldForType('shared_menus'),
-          UserCounterIncrements.unreadSharedMenus);
-      expect(UserCounterIncrements.fieldForType('shopping_lists'),
-          UserCounterIncrements.unreadSharedShoppingLists);
-      expect(UserCounterIncrements.fieldForType('shared_shopping_lists'),
-          UserCounterIncrements.unreadSharedShoppingLists);
-      expect(UserCounterIncrements.fieldForType('messages'),
-          UserCounterIncrements.unreadMessages);
-      expect(UserCounterIncrements.fieldForType('friend_requests'),
-          UserCounterIncrements.pendingFriendRequests);
+      expect(
+        UserCounterIncrements.fieldForType('recipes'),
+        UserCounterIncrements.unreadSharedRecipes,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('shared_recipes'),
+        UserCounterIncrements.unreadSharedRecipes,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('menus'),
+        UserCounterIncrements.unreadSharedMenus,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('shared_menus'),
+        UserCounterIncrements.unreadSharedMenus,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('shopping_lists'),
+        UserCounterIncrements.unreadSharedShoppingLists,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('shared_shopping_lists'),
+        UserCounterIncrements.unreadSharedShoppingLists,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('messages'),
+        UserCounterIncrements.unreadMessages,
+      );
+      expect(
+        UserCounterIncrements.fieldForType('friend_requests'),
+        UserCounterIncrements.pendingFriendRequests,
+      );
     });
 
     test('throws ArgumentError on unknown type', () {
-      expect(() => UserCounterIncrements.fieldForType('unknown'),
-          throwsA(isA<ArgumentError>()));
+      expect(
+        () => UserCounterIncrements.fieldForType('unknown'),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 }

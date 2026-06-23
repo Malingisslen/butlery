@@ -41,7 +41,7 @@ class ParsingCorrectionRepository {
   final FirebaseFirestore _firestore;
 
   ParsingCorrectionRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection(FirestoreCollections.parsingCorrections);
@@ -119,8 +119,9 @@ class ParsingCorrectionRepository {
       const batchSize = 500;
 
       while (true) {
-        Query<Map<String, dynamic>> query =
-            _collection.orderBy(FieldPath.documentId).limit(batchSize);
+        Query<Map<String, dynamic>> query = _collection
+            .orderBy(FieldPath.documentId)
+            .limit(batchSize);
 
         if (lastDoc != null) {
           query = query.startAfterDocument(lastDoc);
@@ -150,12 +151,14 @@ class ParsingCorrectionRepository {
   /// Must be called when user requests data deletion.
   Future<void> deleteUserCorrections(String userId) async {
     try {
-      final snapshot =
-          await _collection.where('userId', isEqualTo: userId).get();
+      final snapshot = await _collection
+          .where('userId', isEqualTo: userId)
+          .get();
 
       if (snapshot.docs.isEmpty) {
         AppLogger.info(
-            'No parsing corrections to delete for user: ${userId.maskedUserId}');
+          'No parsing corrections to delete for user: ${userId.maskedUserId}',
+        );
         return;
       }
 

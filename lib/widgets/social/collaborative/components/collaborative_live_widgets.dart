@@ -18,46 +18,50 @@ class CollaborativeLiveWidgets {
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
-    return Builder(builder: (context) {
-      return TweenAnimationBuilder<double>(
-        duration: AnimationUtils.getDuration(context, animationDuration),
-        tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
-        builder: (context, opacity, child) {
-          final indicatorColor = color ?? context.butleryColors.warning;
-          return Opacity(
-            opacity: opacity,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingS,
-                vertical: AppDimensions.spacingXs,
-              ),
-              decoration: BoxDecoration(
-                color: indicatorColor.withValues(
-                    alpha: AppDimensions.opacityVeryLight),
-                borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
-                border: Border.all(
-                  color: indicatorColor.withValues(
-                      alpha: AppDimensions.opacityMediumLight),
+    return Builder(
+      builder: (context) {
+        return TweenAnimationBuilder<double>(
+          duration: AnimationUtils.getDuration(context, animationDuration),
+          tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
+          builder: (context, opacity, child) {
+            final indicatorColor = color ?? context.butleryColors.warning;
+            return Opacity(
+              opacity: opacity,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXs,
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  pulsingDot(indicatorColor),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Text(
-                    '$editorName redigerar $editingWhat',
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: indicatorColor,
+                decoration: BoxDecoration(
+                  color: indicatorColor.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
+                  borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+                  border: Border.all(
+                    color: indicatorColor.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
                     ),
                   ),
-                ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    pulsingDot(indicatorColor),
+                    const SizedBox(width: AppDimensions.spacingXs),
+                    Text(
+                      '$editorName redigerar $editingWhat',
+                      style: AppTextStyles.metadataEmphasized.copyWith(
+                        color: indicatorColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    });
+            );
+          },
+        );
+      },
+    );
   }
 
   /// Build a pulsing dot animation

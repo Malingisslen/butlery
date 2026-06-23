@@ -183,8 +183,10 @@ class IngredientProcessor {
   }) {
     final preprocessed = IngredientPreprocessor.preprocess(rawText);
     final parsed = IngredientParser.parseIngredient(preprocessed.cleaned);
-    final normalized = IngredientNormalizer.normalize(parsed.name,
-        additionalKnown: additionalKnown);
+    final normalized = IngredientNormalizer.normalize(
+      parsed.name,
+      additionalKnown: additionalKnown,
+    );
 
     return ProcessedIngredient(
       quantity: parsed.quantity,
@@ -221,8 +223,10 @@ class IngredientProcessor {
     Set<String>? additionalKnown,
   }) {
     final parsed = IngredientParser.parseIngredient(cleanText);
-    final normalized = IngredientNormalizer.normalize(parsed.name,
-        additionalKnown: additionalKnown);
+    final normalized = IngredientNormalizer.normalize(
+      parsed.name,
+      additionalKnown: additionalKnown,
+    );
 
     return ProcessedIngredient(
       quantity: parsed.quantity,
@@ -253,8 +257,10 @@ class IngredientProcessor {
     String parsedName, {
     Set<String>? additionalKnown,
   }) {
-    return IngredientNormalizer.normalize(parsedName,
-        additionalKnown: additionalKnown);
+    return IngredientNormalizer.normalize(
+      parsedName,
+      additionalKnown: additionalKnown,
+    );
   }
 
   /// Batch process multiple raw ingredients (Pattern A)
@@ -273,8 +279,9 @@ class IngredientProcessor {
     Set<String>? additionalKnown,
   }) {
     return rawIngredients
-        .map((raw) =>
-            processRawIngredient(raw, additionalKnown: additionalKnown))
+        .map(
+          (raw) => processRawIngredient(raw, additionalKnown: additionalKnown),
+        )
         .toList();
   }
 
@@ -285,8 +292,9 @@ class IngredientProcessor {
     Set<String>? additionalKnown,
   }) {
     return cleanIngredients
-        .map((clean) =>
-            parseAndNormalize(clean, additionalKnown: additionalKnown))
+        .map(
+          (clean) => parseAndNormalize(clean, additionalKnown: additionalKnown),
+        )
         .toList();
   }
 
@@ -297,8 +305,10 @@ class IngredientProcessor {
     Set<String>? additionalKnown,
   }) {
     return parsedNames
-        .map((name) =>
-            normalizeIngredientName(name, additionalKnown: additionalKnown))
+        .map(
+          (name) =>
+              normalizeIngredientName(name, additionalKnown: additionalKnown),
+        )
         .toList();
   }
 
@@ -372,7 +382,8 @@ class IngredientProcessor {
   /// // - "glutenfri" preserved (diet descriptor)
   /// ```
   static List<String>? normalizeIngredientsForRecipe(
-      List<String>? ingredients) {
+    List<String>? ingredients,
+  ) {
     if (ingredients == null) return null;
     if (ingredients.isEmpty) return [];
 

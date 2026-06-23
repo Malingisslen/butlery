@@ -74,24 +74,32 @@ void main() {
   });
 
   group('deleteMultipleImages', () {
-    test('iterates without throwing even when individual deletes fail',
-        () async {
-      final repo = _repo(MockFirebaseStorage(), authedUserId: 'alice');
-      // All URLs are for other users → all fail → method swallows.
-      await repo.deleteMultipleImages([
-        'users/bob/a.jpg',
-        'users/carol/b.jpg',
-      ]);
-    });
+    test(
+      'iterates without throwing even when individual deletes fail',
+      () async {
+        final repo = _repo(MockFirebaseStorage(), authedUserId: 'alice');
+        // All URLs are for other users → all fail → method swallows.
+        await repo.deleteMultipleImages([
+          'users/bob/a.jpg',
+          'users/carol/b.jpg',
+        ]);
+      },
+    );
   });
 
   group('getUserStorageInfo', () {
     test('returns StorageInfo with file count and size', () async {
       final storage = MockFirebaseStorage();
       await _seedFile(
-          storage, 'users/alice/recipes/a.jpg', List.filled(100, 0));
+        storage,
+        'users/alice/recipes/a.jpg',
+        List.filled(100, 0),
+      );
       await _seedFile(
-          storage, 'users/alice/recipes/b.jpg', List.filled(200, 0));
+        storage,
+        'users/alice/recipes/b.jpg',
+        List.filled(200, 0),
+      );
       final repo = _repo(storage, authedUserId: 'alice');
 
       final info = await repo.getUserStorageInfo('alice');
@@ -109,16 +117,18 @@ void main() {
   });
 
   group('compressImageBytes — small image short-circuits', () {
-    test('returns bytes unchanged when below skipCompressionThreshold',
-        () async {
-      final repo = _repo(MockFirebaseStorage());
-      // Use very small bytes — below threshold → returns unchanged without
-      // touching FlutterImageCompress.
-      final tiny = Uint8List.fromList(List.filled(100, 42));
-      final result = await repo.compressImageBytes(tiny);
-      expect(result.length, tiny.length);
-      expect(result, tiny);
-    });
+    test(
+      'returns bytes unchanged when below skipCompressionThreshold',
+      () async {
+        final repo = _repo(MockFirebaseStorage());
+        // Use very small bytes — below threshold → returns unchanged without
+        // touching FlutterImageCompress.
+        final tiny = Uint8List.fromList(List.filled(100, 42));
+        final result = await repo.compressImageBytes(tiny);
+        expect(result.length, tiny.length);
+        expect(result, tiny);
+      },
+    );
   });
 
   // BUT-1027 (acceptance #1 of BUT-1023): the inline catch block in
@@ -127,111 +137,114 @@ void main() {
   // copy. The transform was extracted to `mapFirebaseStorageException` so
   // it's testable without SDK-mock injection of UploadTask failures.
   group(
-      'mapFirebaseStorageException — FirebaseException→StorageUploadException',
-      () {
-    test('quota-exceeded → StorageUploadException(quota-exceeded)', () {
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'quota-exceeded',
-          message: 'quota full',
-        ),
-      );
-      expect(mapped, isNotNull);
-      expect(mapped!.code, equals('quota-exceeded'));
-      expect(mapped.message, equals('quota full'));
-      // Helper-getter contract from StorageUploadException — pins the
-      // routing path the classifier depends on.
-      expect(mapped.isQuotaExceeded, isTrue);
-    });
+    'mapFirebaseStorageException — FirebaseException→StorageUploadException',
+    () {
+      test('quota-exceeded → StorageUploadException(quota-exceeded)', () {
+        final mapped = mapFirebaseStorageException(
+          FirebaseException(
+            plugin: 'firebase_storage',
+            code: 'quota-exceeded',
+            message: 'quota full',
+          ),
+        );
+        expect(mapped, isNotNull);
+        expect(mapped!.code, equals('quota-exceeded'));
+        expect(mapped.message, equals('quota full'));
+        // Helper-getter contract from StorageUploadException — pins the
+        // routing path the classifier depends on.
+        expect(mapped.isQuotaExceeded, isTrue);
+      });
 
-    test('unauthorized → StorageUploadException(unauthorized)', () {
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'unauthorized',
-          message: 'permission denied',
-        ),
-      );
-      expect(mapped, isNotNull);
-      expect(mapped!.code, equals('unauthorized'));
-      expect(mapped.isUnauthorized, isTrue);
-    });
+      test('unauthorized → StorageUploadException(unauthorized)', () {
+        final mapped = mapFirebaseStorageException(
+          FirebaseException(
+            plugin: 'firebase_storage',
+            code: 'unauthorized',
+            message: 'permission denied',
+          ),
+        );
+        expect(mapped, isNotNull);
+        expect(mapped!.code, equals('unauthorized'));
+        expect(mapped.isUnauthorized, isTrue);
+      });
 
-    test('canceled → StorageUploadException(canceled)', () {
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'canceled',
-          message: 'user cancelled',
-        ),
-      );
-      expect(mapped, isNotNull);
-      expect(mapped!.code, equals('canceled'));
-      expect(mapped.isCanceled, isTrue);
-    });
+      test('canceled → StorageUploadException(canceled)', () {
+        final mapped = mapFirebaseStorageException(
+          FirebaseException(
+            plugin: 'firebase_storage',
+            code: 'canceled',
+            message: 'user cancelled',
+          ),
+        );
+        expect(mapped, isNotNull);
+        expect(mapped!.code, equals('canceled'));
+        expect(mapped.isCanceled, isTrue);
+      });
 
-    test(
+      test(
         'network-request-failed → StorageUploadException(network-request-failed)',
         () {
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'network-request-failed',
-          message: 'offline',
-        ),
+          final mapped = mapFirebaseStorageException(
+            FirebaseException(
+              plugin: 'firebase_storage',
+              code: 'network-request-failed',
+              message: 'offline',
+            ),
+          );
+          expect(mapped, isNotNull);
+          expect(mapped!.code, equals('network-request-failed'));
+          expect(mapped.isNetworkError, isTrue);
+        },
       );
-      expect(mapped, isNotNull);
-      expect(mapped!.code, equals('network-request-failed'));
-      expect(mapped.isNetworkError, isTrue);
-    });
 
-    test('retry-limit-exceeded → StorageUploadException isNetworkError', () {
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'retry-limit-exceeded',
-          message: 'retry budget gone',
-        ),
-      );
-      expect(mapped, isNotNull);
-      expect(mapped!.isNetworkError, isTrue);
-    });
+      test('retry-limit-exceeded → StorageUploadException isNetworkError', () {
+        final mapped = mapFirebaseStorageException(
+          FirebaseException(
+            plugin: 'firebase_storage',
+            code: 'retry-limit-exceeded',
+            message: 'retry budget gone',
+          ),
+        );
+        expect(mapped, isNotNull);
+        expect(mapped!.isNetworkError, isTrue);
+      });
 
-    test('null message falls back to FirebaseException.toString()', () {
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'object-not-found',
-          // message intentionally omitted
-        ),
-      );
-      expect(mapped, isNotNull);
-      expect(mapped!.code, equals('object-not-found'));
-      // toString() output isn't asserted verbatim — only that it's non-empty
-      // so we don't surface `null` to the user.
-      expect(mapped.message, isNotEmpty);
-    });
+      test('null message falls back to FirebaseException.toString()', () {
+        final mapped = mapFirebaseStorageException(
+          FirebaseException(
+            plugin: 'firebase_storage',
+            code: 'object-not-found',
+            // message intentionally omitted
+          ),
+        );
+        expect(mapped, isNotNull);
+        expect(mapped!.code, equals('object-not-found'));
+        // toString() output isn't asserted verbatim — only that it's non-empty
+        // so we don't surface `null` to the user.
+        expect(mapped.message, isNotEmpty);
+      });
 
-    test(
+      test(
         'FirebaseException with different plugin → returns null (pass-through)',
         () {
-      // E.g. `cloud_firestore`-domain errors must NOT be mapped to
-      // StorageUploadException — they propagate via the firestore path.
-      final mapped = mapFirebaseStorageException(
-        FirebaseException(
-          plugin: 'cloud_firestore',
-          code: 'permission-denied',
-          message: 'denied',
-        ),
+          // E.g. `cloud_firestore`-domain errors must NOT be mapped to
+          // StorageUploadException — they propagate via the firestore path.
+          final mapped = mapFirebaseStorageException(
+            FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'permission-denied',
+              message: 'denied',
+            ),
+          );
+          expect(mapped, isNull);
+        },
       );
-      expect(mapped, isNull);
-    });
 
-    test('non-FirebaseException → returns null', () {
-      expect(mapFirebaseStorageException(Exception('boom')), isNull);
-      expect(mapFirebaseStorageException(StateError('bad state')), isNull);
-      expect(mapFirebaseStorageException('a string'), isNull);
-    });
-  });
+      test('non-FirebaseException → returns null', () {
+        expect(mapFirebaseStorageException(Exception('boom')), isNull);
+        expect(mapFirebaseStorageException(StateError('bad state')), isNull);
+        expect(mapFirebaseStorageException('a string'), isNull);
+      });
+    },
+  );
 }

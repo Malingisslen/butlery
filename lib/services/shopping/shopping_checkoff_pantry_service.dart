@@ -22,8 +22,8 @@ class ShoppingCheckoffPantryService {
   ShoppingCheckoffPantryService({
     required PantryService pantryService,
     required UserService userService,
-  })  : _pantryService = pantryService,
-        _userService = userService;
+  }) : _pantryService = pantryService,
+       _userService = userService;
 
   final PantryService _pantryService;
   final UserService _userService;

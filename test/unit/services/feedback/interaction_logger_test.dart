@@ -63,20 +63,22 @@ void main() {
       expect(list.last.screenName, 's19');
     });
 
-    test('after overflow (21 entries): drops oldest, keeps last 20 in order',
-        () {
-      final logger = InteractionLogger();
-      for (var i = 0; i < 21; i++) {
-        withClock(Clock.fixed(DateTime.utc(2026, 1, 1, 0, i)), () {
-          logger.logInteraction('s$i', 'a');
-        });
-      }
-      final list = logger.getRecentInteractions();
-      expect(list, hasLength(20));
-      // s0 was overwritten; oldest remaining is s1
-      expect(list.first.screenName, 's1');
-      expect(list.last.screenName, 's20');
-    });
+    test(
+      'after overflow (21 entries): drops oldest, keeps last 20 in order',
+      () {
+        final logger = InteractionLogger();
+        for (var i = 0; i < 21; i++) {
+          withClock(Clock.fixed(DateTime.utc(2026, 1, 1, 0, i)), () {
+            logger.logInteraction('s$i', 'a');
+          });
+        }
+        final list = logger.getRecentInteractions();
+        expect(list, hasLength(20));
+        // s0 was overwritten; oldest remaining is s1
+        expect(list.first.screenName, 's1');
+        expect(list.last.screenName, 's20');
+      },
+    );
 
     test('after wrapping multiple times the order is still right', () {
       final logger = InteractionLogger();

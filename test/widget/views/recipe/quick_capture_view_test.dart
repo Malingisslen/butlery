@@ -102,11 +102,14 @@ void main() {
 
     expect(find.text(sv.quickCaptureTitle), findsOneWidget);
     expect(
-        find.byKey(const ValueKey('test-quick-capture-save')), findsOneWidget);
+      find.byKey(const ValueKey('test-quick-capture-save')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('empty title fails validation and does not call the service',
-      (tester) async {
+  testWidgets('empty title fails validation and does not call the service', (
+    tester,
+  ) async {
     // Proves: the form guard blocks a blank title — the service is never asked
     // to persist an untitled recipe, and the validation message surfaces.
     final observer = _PopObserver();
@@ -122,8 +125,9 @@ void main() {
     expect(observer.popCount, popsBefore);
   });
 
-  testWidgets('successful save persists the recipe and pops the screen',
-      (tester) async {
+  testWidgets('successful save persists the recipe and pops the screen', (
+    tester,
+  ) async {
     // Proves: a valid title routes through the personal module and, on success,
     // returns the user to the previous screen (Navigator.pop).
     when(() => personalOps.addUnifiedRecipe(any())).thenAnswer(
@@ -135,20 +139,26 @@ void main() {
     final popsBefore = observer.popCount;
 
     await tester.enterText(
-        find.byType(TextFormField), 'Köttbullar med potatismos');
+      find.byType(TextFormField),
+      'Köttbullar med potatismos',
+    );
     await tester.tap(find.byKey(const ValueKey('test-quick-capture-save')));
     await tester.pumpAndSettle();
 
-    final captured = verify(() => personalOps.addUnifiedRecipe(captureAny()))
-        .captured
-        .single as Recipe;
+    final captured =
+        verify(() => personalOps.addUnifiedRecipe(captureAny())).captured.single
+            as Recipe;
     expect(captured.title, 'Köttbullar med potatismos');
-    expect(observer.popCount, greaterThan(popsBefore),
-        reason: 'A successful quick-save must return to the previous screen.');
+    expect(
+      observer.popCount,
+      greaterThan(popsBefore),
+      reason: 'A successful quick-save must return to the previous screen.',
+    );
   });
 
-  testWidgets('failed save keeps the user on the capture screen',
-      (tester) async {
+  testWidgets('failed save keeps the user on the capture screen', (
+    tester,
+  ) async {
     // Proves: when persistence fails the user is NOT navigated away — they keep
     // their typed title and can retry, rather than silently losing the screen.
     when(() => personalOps.addUnifiedRecipe(any())).thenAnswer(
@@ -163,8 +173,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('test-quick-capture-save')));
     await tester.pumpAndSettle();
 
-    expect(observer.popCount, popsBefore,
-        reason: 'A failed save must keep the user on the capture screen.');
+    expect(
+      observer.popCount,
+      popsBefore,
+      reason: 'A failed save must keep the user on the capture screen.',
+    );
     // The title field still shows what the user typed (still on the screen).
     expect(find.text('Pannkakor'), findsOneWidget);
   });

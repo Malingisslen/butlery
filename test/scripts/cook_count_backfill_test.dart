@@ -66,7 +66,9 @@ Future<void> _seed(FakeFirebaseFirestore firestore) async {
 }
 
 Future<int?> _readCookCount(
-    FakeFirebaseFirestore firestore, String docId) async {
+  FakeFirebaseFirestore firestore,
+  String docId,
+) async {
   final doc = await firestore
       .collection('users')
       .doc(_userId)
@@ -103,21 +105,26 @@ void main() {
       expect(await _readCookCount(firestore, 'never-cooked'), isNull);
     });
 
-    test('live run sets cookCount=1 on exactly the legacy-cooked recipes',
-        () async {
-      final result = await runCookCountBackfill(firestore: firestore);
+    test(
+      'live run sets cookCount=1 on exactly the legacy-cooked recipes',
+      () async {
+        final result = await runCookCountBackfill(firestore: firestore);
 
-      expect(result.candidateCount, equals(2));
-      expect(result.writtenCount, equals(2));
-      expect(result.batchCount, equals(1),
-          reason: '2 writes should fit in a single batch');
+        expect(result.candidateCount, equals(2));
+        expect(result.writtenCount, equals(2));
+        expect(
+          result.batchCount,
+          equals(1),
+          reason: '2 writes should fit in a single batch',
+        );
 
-      expect(await _readCookCount(firestore, 'legacy-cooked'), equals(1));
-      expect(await _readCookCount(firestore, 'legacy-cooked-2'), equals(1));
-      // Untouched records stay untouched.
-      expect(await _readCookCount(firestore, 'already-counted'), equals(4));
-      expect(await _readCookCount(firestore, 'never-cooked'), isNull);
-    });
+        expect(await _readCookCount(firestore, 'legacy-cooked'), equals(1));
+        expect(await _readCookCount(firestore, 'legacy-cooked-2'), equals(1));
+        // Untouched records stay untouched.
+        expect(await _readCookCount(firestore, 'already-counted'), equals(4));
+        expect(await _readCookCount(firestore, 'never-cooked'), isNull);
+      },
+    );
 
     test('--user scopes scan to a single user subcollection', () async {
       // Add a second user with a legacy-cooked recipe — must NOT be touched
@@ -128,13 +135,13 @@ void main() {
           .collection('recipes')
           .doc('u2-legacy')
           .set({
-        'core': {
-          'id': 'u2-legacy',
-          'title': 'Other user legacy',
-          'lastCookedAt': Timestamp.fromDate(DateTime(2026, 2, 20)),
-        },
-        'type': 0,
-      });
+            'core': {
+              'id': 'u2-legacy',
+              'title': 'Other user legacy',
+              'lastCookedAt': Timestamp.fromDate(DateTime(2026, 2, 20)),
+            },
+            'type': 0,
+          });
 
       final result = await runCookCountBackfill(
         firestore: firestore,

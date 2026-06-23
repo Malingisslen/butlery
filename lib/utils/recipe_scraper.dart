@@ -78,7 +78,9 @@ RecipeExtractionResult extractRecipeFromHtmlDetailed(String html) {
   final jsonLdResult = _extractJsonLd(html);
   if (jsonLdResult.data != null) {
     return RecipeExtractionResult(
-        data: jsonLdResult.data, hadStructuredData: true);
+      data: jsonLdResult.data,
+      hadStructuredData: true,
+    );
   }
 
   // Fallback extraction: Parse Microdata format for broader compatibility
@@ -90,12 +92,15 @@ RecipeExtractionResult extractRecipeFromHtmlDetailed(String html) {
   if (recipeElements.isNotEmpty) {
     final recipeElem = recipeElements.first;
     return RecipeExtractionResult(
-        data: _parseRecipeMicrodata(recipeElem), hadStructuredData: true);
+      data: _parseRecipeMicrodata(recipeElem),
+      hadStructuredData: true,
+    );
   }
 
   // No recipe data found — report whether any JSON-LD existed at all
   return RecipeExtractionResult(
-      hadStructuredData: jsonLdResult.hadJsonLdBlocks);
+    hadStructuredData: jsonLdResult.hadJsonLdBlocks,
+  );
 }
 
 /// Internal result from JSON-LD extraction.
@@ -138,7 +143,9 @@ _JsonLdResult _extractJsonLd(String html) {
         for (final item in decoded) {
           if (item is Map<String, dynamic> && _isRecipeType(item['@type'])) {
             return _JsonLdResult(
-                data: Map<String, dynamic>.from(item), hadJsonLdBlocks: true);
+              data: Map<String, dynamic>.from(item),
+              hadJsonLdBlocks: true,
+            );
           }
         }
       }
@@ -146,14 +153,18 @@ _JsonLdResult _extractJsonLd(String html) {
       else if (decoded is Map<String, dynamic> &&
           _isRecipeType(decoded['@type'])) {
         return _JsonLdResult(
-            data: Map<String, dynamic>.from(decoded), hadJsonLdBlocks: true);
+          data: Map<String, dynamic>.from(decoded),
+          hadJsonLdBlocks: true,
+        );
       }
       // Handle @graph pattern (common in WordPress/Yoast SEO)
       else if (decoded is Map<String, dynamic> && decoded['@graph'] is List) {
         for (final item in (decoded['@graph'] as List)) {
           if (item is Map<String, dynamic> && _isRecipeType(item['@type'])) {
             return _JsonLdResult(
-                data: Map<String, dynamic>.from(item), hadJsonLdBlocks: true);
+              data: Map<String, dynamic>.from(item),
+              hadJsonLdBlocks: true,
+            );
           }
         }
       }

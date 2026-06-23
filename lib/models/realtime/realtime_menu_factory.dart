@@ -77,7 +77,9 @@ class RealtimeMenuFactory {
   /// @deprecated Use parseJsonData instead. This method will be removed when repositories are updated.
   /// Repositories should provide clean DateTime objects and Map data.
   static Map<String, dynamic> parseRepositoryData(
-      String id, Map<String, dynamic> data) {
+    String id,
+    Map<String, dynamic> data,
+  ) {
     // Parse participants
     final participantsData =
         data['participants'] as Map<String, dynamic>? ?? {};
@@ -101,17 +103,24 @@ class RealtimeMenuFactory {
     return {
       'id': id,
       'ownerId': SerializationUtils.requiredString(data, 'ownerId'),
-      'ownerDisplayName':
-          SerializationUtils.safeString(data, 'ownerDisplayName'),
+      'ownerDisplayName': SerializationUtils.safeString(
+        data,
+        'ownerDisplayName',
+      ),
       'participants': participants,
       'createdAt': SerializationUtils.requiredDateTime(data, 'createdAt'),
       'lastEditedAt': SerializationUtils.requiredDateTime(data, 'lastEditedAt'),
       'lastEditedBy': SerializationUtils.requiredString(data, 'lastEditedBy'),
-      'lastEditedByDisplayName':
-          SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      'lastEditedByDisplayName': SerializationUtils.safeString(
+        data,
+        'lastEditedByDisplayName',
+      ),
       'editCount': SerializationUtils.safeInt(data, 'editCount'),
-      'isActive':
-          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      'isActive': SerializationUtils.safeBool(
+        data,
+        'isActive',
+        defaultValue: true,
+      ),
       'metadata': SerializationUtils.safeMap(data, 'metadata'),
       'data': menuData,
     };
@@ -141,17 +150,24 @@ class RealtimeMenuFactory {
     return {
       'id': SerializationUtils.safeString(json, 'id'),
       'ownerId': SerializationUtils.requiredString(json, 'ownerId'),
-      'ownerDisplayName':
-          SerializationUtils.safeString(json, 'ownerDisplayName'),
+      'ownerDisplayName': SerializationUtils.safeString(
+        json,
+        'ownerDisplayName',
+      ),
       'participants': participants,
       'createdAt': SerializationUtils.requiredDateTime(json, 'createdAt'),
       'lastEditedAt': SerializationUtils.requiredDateTime(json, 'lastEditedAt'),
       'lastEditedBy': SerializationUtils.requiredString(json, 'lastEditedBy'),
-      'lastEditedByDisplayName':
-          SerializationUtils.safeString(json, 'lastEditedByDisplayName'),
+      'lastEditedByDisplayName': SerializationUtils.safeString(
+        json,
+        'lastEditedByDisplayName',
+      ),
       'editCount': SerializationUtils.safeInt(json, 'editCount'),
-      'isActive':
-          SerializationUtils.safeBool(json, 'isActive', defaultValue: true),
+      'isActive': SerializationUtils.safeBool(
+        json,
+        'isActive',
+        defaultValue: true,
+      ),
       'metadata': SerializationUtils.safeMap(json, 'metadata'),
       'data': menuData,
     };

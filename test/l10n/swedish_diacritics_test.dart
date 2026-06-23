@@ -53,8 +53,10 @@ void main() {
       final lower = value.toLowerCase();
       for (final frag in strippedFragments) {
         // Word-boundary-ish match: fragment preceded by start/non-letter.
-        final pattern =
-            RegExp('(^|[^a-zåäö])${RegExp.escape(frag)}', caseSensitive: false);
+        final pattern = RegExp(
+          '(^|[^a-zåäö])${RegExp.escape(frag)}',
+          caseSensitive: false,
+        );
         if (pattern.hasMatch(lower)) {
           offenders.add('$key: "$value"  (contains "$frag")');
           break;
@@ -65,7 +67,8 @@ void main() {
     expect(
       offenders,
       isEmpty,
-      reason: 'Diacritic-stripped Swedish found in app_sv.arb — restore '
+      reason:
+          'Diacritic-stripped Swedish found in app_sv.arb — restore '
           'å/ä/ö:\n${offenders.join('\n')}',
     );
   });

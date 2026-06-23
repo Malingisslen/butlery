@@ -44,12 +44,12 @@ class PerformanceMetric {
   }) : timestamp = timestamp ?? clock.now();
 
   Map<String, dynamic> toJson() => {
-        'type': type.name,
-        'name': name,
-        'value': value,
-        'timestamp': timestamp.toIso8601String(),
-        'metadata': metadata,
-      };
+    'type': type.name,
+    'name': name,
+    'value': value,
+    'timestamp': timestamp.toIso8601String(),
+    'metadata': metadata,
+  };
 }
 
 /// Performance threshold configuration
@@ -88,14 +88,15 @@ class PerformanceReport {
   Duration get duration => endTime.difference(startTime);
 
   Map<String, dynamic> toJson() => {
-        'startTime': startTime.toIso8601String(),
-        'endTime': endTime.toIso8601String(),
-        'duration': duration.inSeconds,
-        'metrics': metrics
-            .map((k, v) => MapEntry(k.name, v.map((m) => m.toJson()).toList())),
-        'summary': summary,
-        'warnings': warnings,
-      };
+    'startTime': startTime.toIso8601String(),
+    'endTime': endTime.toIso8601String(),
+    'duration': duration.inSeconds,
+    'metrics': metrics.map(
+      (k, v) => MapEntry(k.name, v.map((m) => m.toJson()).toList()),
+    ),
+    'summary': summary,
+    'warnings': warnings,
+  };
 }
 
 /// Performance monitoring service
@@ -175,15 +176,17 @@ class PerformanceMonitoringService extends BaseService {
       if (totalDuration > _thresholds.maxFrameTime) {
         _droppedFrames++;
 
-        recordMetric(PerformanceMetric(
-          type: MetricType.frameTime,
-          name: 'dropped_frame',
-          value: totalDuration.inMicroseconds / 1000.0, // Convert to ms
-          metadata: {
-            'buildTime': buildDuration.inMicroseconds / 1000.0,
-            'rasterTime': rasterDuration.inMicroseconds / 1000.0,
-          },
-        ));
+        recordMetric(
+          PerformanceMetric(
+            type: MetricType.frameTime,
+            name: 'dropped_frame',
+            value: totalDuration.inMicroseconds / 1000.0, // Convert to ms
+            metadata: {
+              'buildTime': buildDuration.inMicroseconds / 1000.0,
+              'rasterTime': rasterDuration.inMicroseconds / 1000.0,
+            },
+          ),
+        );
 
         if (totalDuration.inMilliseconds > 50) {
           _addWarning('Severe frame drop: ${totalDuration.inMilliseconds}ms');
@@ -213,8 +216,11 @@ class PerformanceMonitoringService extends BaseService {
   }
 
   /// Stop a timer and record the duration
-  void stopTimer(String name,
-      {MetricType type = MetricType.custom, Map<String, dynamic>? metadata}) {
+  void stopTimer(
+    String name, {
+    MetricType type = MetricType.custom,
+    Map<String, dynamic>? metadata,
+  }) {
     final stopwatch = _activeTimers.remove(name);
 
     if (stopwatch == null) {
@@ -224,30 +230,38 @@ class PerformanceMonitoringService extends BaseService {
 
     stopwatch.stop();
 
-    recordMetric(PerformanceMetric(
-      type: type,
-      name: name,
-      value: stopwatch.elapsedMilliseconds.toDouble(),
-      metadata: metadata,
-    ));
+    recordMetric(
+      PerformanceMetric(
+        type: type,
+        name: name,
+        value: stopwatch.elapsedMilliseconds.toDouble(),
+        metadata: metadata,
+      ),
+    );
   }
 
   /// Record a network request
-  void recordNetworkRequest(String url, Duration duration,
-      {int? statusCode, int? byteSize}) {
+  void recordNetworkRequest(
+    String url,
+    Duration duration, {
+    int? statusCode,
+    int? byteSize,
+  }) {
     _networkRequestCount++;
     _totalNetworkTime += duration;
 
-    recordMetric(PerformanceMetric(
-      type: MetricType.networkRequest,
-      name: 'network_request',
-      value: duration.inMilliseconds.toDouble(),
-      metadata: {
-        'url': url,
-        'statusCode': statusCode,
-        'byteSize': byteSize,
-      },
-    ));
+    recordMetric(
+      PerformanceMetric(
+        type: MetricType.networkRequest,
+        name: 'network_request',
+        value: duration.inMilliseconds.toDouble(),
+        metadata: {
+          'url': url,
+          'statusCode': statusCode,
+          'byteSize': byteSize,
+        },
+      ),
+    );
 
     if (duration > _thresholds.maxNetworkTime) {
       _addWarning('Slow network request: $url (${duration.inSeconds}s)');
@@ -262,28 +276,32 @@ class PerformanceMonitoringService extends BaseService {
       _cacheMisses++;
     }
 
-    recordMetric(PerformanceMetric(
-      type: MetricType.cacheHit,
-      name: hit ? 'cache_hit' : 'cache_miss',
-      value: hit ? 1.0 : 0.0,
-      metadata: {
-        'key': key,
-        'size': size,
-      },
-    ));
+    recordMetric(
+      PerformanceMetric(
+        type: MetricType.cacheHit,
+        name: hit ? 'cache_hit' : 'cache_miss',
+        value: hit ? 1.0 : 0.0,
+        metadata: {
+          'key': key,
+          'size': size,
+        },
+      ),
+    );
   }
 
   /// Record memory usage
   void recordMemoryUsage(int usedMB, int totalMB) {
-    recordMetric(PerformanceMetric(
-      type: MetricType.memoryUsage,
-      name: 'memory_usage',
-      value: usedMB.toDouble(),
-      metadata: {
-        'totalMB': totalMB,
-        'percentUsed': (usedMB / totalMB * 100).toStringAsFixed(1),
-      },
-    ));
+    recordMetric(
+      PerformanceMetric(
+        type: MetricType.memoryUsage,
+        name: 'memory_usage',
+        value: usedMB.toDouble(),
+        metadata: {
+          'totalMB': totalMB,
+          'percentUsed': (usedMB / totalMB * 100).toStringAsFixed(1),
+        },
+      ),
+    );
 
     if (usedMB > _thresholds.maxMemoryMB) {
       _addWarning('High memory usage: ${usedMB}MB');
@@ -292,15 +310,18 @@ class PerformanceMonitoringService extends BaseService {
 
   /// Record user interaction timing
   void recordUserInteraction(String interaction, Duration responseTime) {
-    recordMetric(PerformanceMetric(
-      type: MetricType.userInteraction,
-      name: interaction,
-      value: responseTime.inMilliseconds.toDouble(),
-    ));
+    recordMetric(
+      PerformanceMetric(
+        type: MetricType.userInteraction,
+        name: interaction,
+        value: responseTime.inMilliseconds.toDouble(),
+      ),
+    );
 
     if (responseTime > _thresholds.maxInteractionTime) {
       _addWarning(
-          'Slow interaction response: $interaction (${responseTime.inMilliseconds}ms)');
+        'Slow interaction response: $interaction (${responseTime.inMilliseconds}ms)',
+      );
     }
   }
 
@@ -333,11 +354,14 @@ class PerformanceMonitoringService extends BaseService {
   PerformanceReport generateReport() {
     final now = clock.now();
     final avgFrameTime = _frameCount > 0
-        ? _totalFrameTime.inMicroseconds / _frameCount / 1000.0 // ms
+        ? _totalFrameTime.inMicroseconds /
+              _frameCount /
+              1000.0 // ms
         : 0.0;
 
-    final frameRate =
-        _frameCount > 0 ? (1000.0 / avgFrameTime).toStringAsFixed(1) : '0.0';
+    final frameRate = _frameCount > 0
+        ? (1000.0 / avgFrameTime).toStringAsFixed(1)
+        : '0.0';
 
     final cacheHitRate = (_cacheHits + _cacheMisses) > 0
         ? _cacheHits / (_cacheHits + _cacheMisses)
@@ -363,7 +387,8 @@ class PerformanceMonitoringService extends BaseService {
     // Check performance health
     if (cacheHitRate < _thresholds.minCacheHitRate) {
       _addWarning(
-          'Low cache hit rate: ${(cacheHitRate * 100).toStringAsFixed(1)}%');
+        'Low cache hit rate: ${(cacheHitRate * 100).toStringAsFixed(1)}%',
+      );
     }
 
     return PerformanceReport(

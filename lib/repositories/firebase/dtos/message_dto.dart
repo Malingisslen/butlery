@@ -121,8 +121,9 @@ class MessageDto {
       'deliveredAt': message.deliveredAt != null
           ? Timestamp.fromDate(message.deliveredAt!)
           : null,
-      'readAt':
-          message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
+      'readAt': message.readAt != null
+          ? Timestamp.fromDate(message.readAt!)
+          : null,
       'metadata': message.metadata,
       'replyToMessageId': message.replyToMessageId,
       'isEdited': message.isEdited,
@@ -150,8 +151,9 @@ class MessageDto {
       'deliveredAt': message.deliveredAt != null
           ? Timestamp.fromDate(message.deliveredAt!)
           : null,
-      'readAt':
-          message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
+      'readAt': message.readAt != null
+          ? Timestamp.fromDate(message.readAt!)
+          : null,
       'metadata': message.metadata,
       'replyToMessageId': message.replyToMessageId,
       'isEdited': message.isEdited,

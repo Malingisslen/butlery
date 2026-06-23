@@ -61,31 +61,40 @@ void main() {
       // Stub the CollaborativeRecipeRepository that RealtimeEditorTracker
       // resolves via GetIt.instance — it was registered by TestServiceLocator
       // but never stubbed, causing MissingStubError on session start.
-      mockCollabRepo = TestServiceLocator.get<CollaborativeRecipeRepository>()
-          as MockCollaborativeRecipeRepository;
+      mockCollabRepo =
+          TestServiceLocator.get<CollaborativeRecipeRepository>()
+              as MockCollaborativeRecipeRepository;
 
-      when(() => mockCollabRepo.setPresence(
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockCollabRepo.setPresence(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockCollabRepo.removePresence(
-            any(),
-            any(),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockCollabRepo.removePresence(
+          any(),
+          any(),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockCollabRepo.getActiveEditors(any()))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockCollabRepo.getActiveEditors(any()),
+      ).thenAnswer((_) async => []);
 
-      when(() => mockCollabRepo.updatePresenceHeartbeat(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockCollabRepo.updatePresenceHeartbeat(any(), any()),
+      ).thenAnswer((_) async {});
 
-      when(() => mockCollabRepo.cleanupInactiveEditors(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockCollabRepo.cleanupInactiveEditors(any()),
+      ).thenAnswer((_) async {});
 
-      when(() => mockCollabRepo.isUserActivelyEditing(any(), any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockCollabRepo.isUserActivelyEditing(any(), any()),
+      ).thenAnswer((_) async => false);
 
       realtimeModule = RealtimeRecipeModule(
         firestore: fakeFirestore,
@@ -146,15 +155,19 @@ void main() {
 
       test('should handle multiple editing sessions', () async {
         await seedRealtimeDoc('recipe_1');
-        await seedRealtimeDoc(
-            'recipe_2', {'title': 'Recipe 2', 'description': 'Desc 2'});
+        await seedRealtimeDoc('recipe_2', {
+          'title': 'Recipe 2',
+          'description': 'Desc 2',
+        });
 
         await realtimeModule.startRealtimeEditing('recipe_1');
         await realtimeModule.startRealtimeEditing('recipe_2');
 
         expect(realtimeModule.activeEditingSessions.length, equals(2));
-        expect(realtimeModule.activeEditingSessions,
-            containsAll(['recipe_1', 'recipe_2']));
+        expect(
+          realtimeModule.activeEditingSessions,
+          containsAll(['recipe_1', 'recipe_2']),
+        );
       });
 
       test('should not start duplicate sessions', () async {
@@ -179,8 +192,10 @@ void main() {
         await seedRealtimeDoc('recipe_1');
         // Do NOT start a session
 
-        final result =
-            await realtimeModule.updateTitleRealtime('recipe_1', 'Nope');
+        final result = await realtimeModule.updateTitleRealtime(
+          'recipe_1',
+          'Nope',
+        );
 
         expect(result, isFalse);
         expect(lastError, isNotNull);
@@ -211,13 +226,16 @@ void main() {
 
     group('Cache Management', () {
       test('should load cached recipe from cache helper', () async {
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         final cachedData = await mockCacheHelper.loadJson('recipe_1');
-        final cachedRecipe =
-            cachedData != null ? Recipe.fromJson(cachedData) : null;
+        final cachedRecipe = cachedData != null
+            ? Recipe.fromJson(cachedData)
+            : null;
 
         expect(cachedRecipe, isNotNull);
         expect(cachedRecipe?.id, equals('recipe_1'));
@@ -295,8 +313,10 @@ void main() {
     group('Disposal', () {
       test('should dispose all resources', () async {
         await seedRealtimeDoc('recipe_1');
-        await seedRealtimeDoc(
-            'recipe_2', {'title': 'Recipe 2', 'description': 'Desc 2'});
+        await seedRealtimeDoc('recipe_2', {
+          'title': 'Recipe 2',
+          'description': 'Desc 2',
+        });
         await realtimeModule.startRealtimeEditing('recipe_1');
         await realtimeModule.startRealtimeEditing('recipe_2');
 
@@ -313,15 +333,20 @@ void main() {
       // map fails here instead of leaking for the whole session.
       test('dispose leaves zero outstanding handles across all maps', () async {
         await seedRealtimeDoc('recipe_1');
-        await seedRealtimeDoc(
-            'recipe_2', {'title': 'Recipe 2', 'description': 'Desc 2'});
+        await seedRealtimeDoc('recipe_2', {
+          'title': 'Recipe 2',
+          'description': 'Desc 2',
+        });
         await realtimeModule.startRealtimeEditing('recipe_1');
         await realtimeModule.startRealtimeEditing('recipe_2');
         // Enqueue a pending edit so the pending-edits map is non-empty,
         // making the post-dispose zero assertion meaningful.
         await realtimeModule.updateTitleRealtime('recipe_1', 'Edited');
-        expect(realtimeModule.hasPendingEdits('recipe_1'), isTrue,
-            reason: 'precondition: a pending edit exists before dispose');
+        expect(
+          realtimeModule.hasPendingEdits('recipe_1'),
+          isTrue,
+          reason: 'precondition: a pending edit exists before dispose',
+        );
 
         await realtimeModule.dispose();
 

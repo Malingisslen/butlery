@@ -47,11 +47,13 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     super.permissionService,
     super.friendsService,
   }) {
-    _socialRecipeCoordinator = socialRecipeCoordinator ??
+    _socialRecipeCoordinator =
+        socialRecipeCoordinator ??
         ServiceLocator.get<SocialRecipeCoordinator>();
 
     AppLogger.info(
-        'SharedRecipeViewModel initialized with copy-on-write support');
+      'SharedRecipeViewModel initialized with copy-on-write support',
+    );
   }
   @override
   String get contentTypeName => 'recipe';
@@ -64,9 +66,11 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     }
 
     AppLogger.info(
-        '🔄 Loading shared recipes from coordinator for user: ${userId.maskedUserId}');
-    final recipes =
-        await _socialRecipeCoordinator.getSharedRecipesForUser(userId);
+      '🔄 Loading shared recipes from coordinator for user: ${userId.maskedUserId}',
+    );
+    final recipes = await _socialRecipeCoordinator.getSharedRecipesForUser(
+      userId,
+    );
 
     // Load status for all recipes to populate cache (Issue #014)
     await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
@@ -74,15 +78,18 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     // Filter out dismissed recipes, imported recipes, and content from blocked users
     final blocked = blockedUsers;
     final visibleRecipes = recipes
-        .where((recipe) =>
-            !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
-            !blocked.contains(recipe.sharedByUserId) &&
-            (showImported ||
-                !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
+        .where(
+          (recipe) =>
+              !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
+              !blocked.contains(recipe.sharedByUserId) &&
+              (showImported ||
+                  !_socialRecipeCoordinator.isRecipeImported(recipe.id)),
+        )
         .toList();
 
     AppLogger.info(
-        '✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible)');
+      '✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible)',
+    );
     return visibleRecipes;
   }
 
@@ -99,13 +106,16 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final titleMatch = content.recipeTitle.toLowerCase().contains(query);
     final descriptionMatch =
         content.recipeDescription?.toLowerCase().contains(query) ?? false;
-    final sharedByMatch =
-        content.sharedByDisplayName.toLowerCase().contains(query);
+    final sharedByMatch = content.sharedByDisplayName.toLowerCase().contains(
+      query,
+    );
 
     // If full snapshot is available, also search ingredients
-    final ingredientMatch = content.hasFullSnapshot &&
-        content.recipeSnapshot!.ingredients
-            .any((ingredient) => ingredient.toLowerCase().contains(query));
+    final ingredientMatch =
+        content.hasFullSnapshot &&
+        content.recipeSnapshot!.ingredients.any(
+          (ingredient) => ingredient.toLowerCase().contains(query),
+        );
 
     return titleMatch || descriptionMatch || ingredientMatch || sharedByMatch;
   }
@@ -134,10 +144,12 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     if (userId == null) return 0;
 
     return content
-        .where((recipe) =>
-            !_socialRecipeCoordinator.isRecipeViewed(recipe.id) &&
-            (showImported ||
-                !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
+        .where(
+          (recipe) =>
+              !_socialRecipeCoordinator.isRecipeViewed(recipe.id) &&
+              (showImported ||
+                  !_socialRecipeCoordinator.isRecipeImported(recipe.id)),
+        )
         .length;
   }
 
@@ -166,9 +178,11 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     if (userId == null) return [];
 
     return content
-        .where((recipe) =>
-            !_socialRecipeCoordinator.isRecipeImported(recipe.id) &&
-            recipe.sharedByUserId != userId)
+        .where(
+          (recipe) =>
+              !_socialRecipeCoordinator.isRecipeImported(recipe.id) &&
+              recipe.sharedByUserId != userId,
+        )
         .toList();
   }
 
@@ -186,8 +200,10 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   /// Import shared recipe using copy-on-write pattern: joins as viewer
   /// until the first edit, at which point the coordinator creates the
   /// owning copy.
-  Future<String?> importSharedRecipe(SharedRecipe sharedRecipe,
-      {String? newTitle}) async {
+  Future<String?> importSharedRecipe(
+    SharedRecipe sharedRecipe, {
+    String? newTitle,
+  }) async {
     return await executeOperation(
       'Import recipe "${getContentTitle(sharedRecipe)}"',
       () async {
@@ -218,8 +234,9 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final result = await executeOperation(
       'Dismiss recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        return await _socialRecipeCoordinator
-            .dismissSharedRecipe(sharedRecipe.id);
+        return await _socialRecipeCoordinator.dismissSharedRecipe(
+          sharedRecipe.id,
+        );
       },
     );
 
@@ -236,8 +253,9 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final result = await executeOperation(
       'Restore recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        return await _socialRecipeCoordinator
-            .undismissSharedRecipe(sharedRecipe.id);
+        return await _socialRecipeCoordinator.undismissSharedRecipe(
+          sharedRecipe.id,
+        );
       },
     );
 
@@ -271,7 +289,9 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 
         // Reload status to update coordinator's cache (Issue #014)
         await _socialRecipeCoordinator.loadStatusForRecipe(
-            sharedRecipe.id, userId);
+          sharedRecipe.id,
+          userId,
+        );
         notifyListeners(); // Notify UI to refresh
 
         return true;
@@ -332,13 +352,15 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
       () async {
         final unviewedRecipes = content
             .where(
-                (recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id))
+              (recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id),
+            )
             .toList();
 
         await Future.wait(
           unviewedRecipes.map((recipe) async {
-            final success =
-                await _socialRecipeCoordinator.markRecipeAsViewed(recipe.id);
+            final success = await _socialRecipeCoordinator.markRecipeAsViewed(
+              recipe.id,
+            );
             if (success) {
               _socialRecipeCoordinator.setViewedStatus(recipe.id, true);
             }

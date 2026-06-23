@@ -28,8 +28,8 @@ class NeuralIngredientParser {
   NeuralIngredientParser({
     required OnnxNerService nerService,
     required NerModelManager modelManager,
-  })  : _nerService = nerService,
-        _modelManager = modelManager;
+  }) : _nerService = nerService,
+       _modelManager = modelManager;
 
   /// Whether the BERT NER model is available for inference.
   bool get isAvailable => _nerService.isAvailable;
@@ -97,7 +97,10 @@ class NeuralIngredientParser {
     }
 
     return CrfIngredientParser.assembleFromLabels(
-        tokens, prediction.labels, line);
+      tokens,
+      prediction.labels,
+      line,
+    );
   }
 
   /// Parse multiple ingredient lines in a single batch inference call.
@@ -109,8 +112,9 @@ class NeuralIngredientParser {
   ) async {
     if (!_nerService.isAvailable) return {};
 
-    final allTokens =
-        lines.map((l) => CrfIngredientParser.tokenize(l.trim())).toList();
+    final allTokens = lines
+        .map((l) => CrfIngredientParser.tokenize(l.trim()))
+        .toList();
 
     final predictions = await _nerService.predictBatch(allTokens);
 

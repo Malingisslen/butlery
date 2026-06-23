@@ -63,7 +63,9 @@ class NotificationContentManager {
   /// Creates unique identifiers using strategy category, user ID, timestamp, and random number
   /// to ensure no duplicate notifications and enable proper deduplication
   String generateNotificationId(
-      String targetUserId, NotificationStrategy strategy) {
+    String targetUserId,
+    NotificationStrategy strategy,
+  ) {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       // Wider random domain so two calls in the same millisecond don't
@@ -111,7 +113,8 @@ class NotificationContentManager {
   }) {
     try {
       AppLogger.debug(
-          '🔔 Creating notification template for strategy: ${strategy.category.name}');
+        '🔔 Creating notification template for strategy: ${strategy.category.name}',
+      );
 
       // Use Swedish by default (app is primarily Swedish)
       final l = AppLocale.current;
@@ -162,7 +165,8 @@ class NotificationContentManager {
     try {
       // Use English templates
       final titleTemplate = strategy.localization['title_en'] ?? 'New activity';
-      final bodyTemplate = strategy.localization['body_en'] ??
+      final bodyTemplate =
+          strategy.localization['body_en'] ??
           'You have new activity in Butlery';
 
       final title = _substituteVariables(titleTemplate, variables);
@@ -195,7 +199,8 @@ class NotificationContentManager {
   /// Combines multiple notifications into a single summary notification
   /// to prevent notification spam while preserving important information
   NotificationTemplate buildBatchedNotification(
-      List<NotificationTemplate> notifications) {
+    List<NotificationTemplate> notifications,
+  ) {
     if (notifications.isEmpty) {
       throw ArgumentError('Cannot batch empty notification list');
     }
@@ -207,13 +212,16 @@ class NotificationContentManager {
 
     try {
       AppLogger.info(
-          '🔔 Building batched notification from ${notifications.length} templates');
+        '🔔 Building batched notification from ${notifications.length} templates',
+      );
 
       final firstNotification = notifications.first;
       final category = firstNotification.data['category'] as String;
 
-      final batchContent =
-          _generateBatchContent(category, notifications.length);
+      final batchContent = _generateBatchContent(
+        category,
+        notifications.length,
+      );
 
       final batchedTemplate = NotificationTemplate(
         title: batchContent['title']!,
@@ -229,7 +237,8 @@ class NotificationContentManager {
       );
 
       AppLogger.success(
-          '✅ Created batched notification: "${batchContent['title']}"');
+        '✅ Created batched notification: "${batchContent['title']}"',
+      );
       return batchedTemplate;
     } catch (e) {
       AppLogger.error('❌ Failed to build batched notification', e);
@@ -247,7 +256,8 @@ class NotificationContentManager {
   ) {
     try {
       AppLogger.info(
-          '🔔 Building digest content for ${activityList.length} activities');
+        '🔔 Building digest content for ${activityList.length} activities',
+      );
 
       final l = AppLocale.current;
       if (activityList.isEmpty) {
@@ -265,11 +275,14 @@ class NotificationContentManager {
         categoryCount[category] = (categoryCount[category] ?? 0) + 1;
       }
 
-      final digestContent =
-          _generateDigestSummary(categoryCount, activityList.length);
+      final digestContent = _generateDigestSummary(
+        categoryCount,
+        activityList.length,
+      );
 
       AppLogger.success(
-          '✅ Created digest content with ${activityList.length} activities');
+        '✅ Created digest content with ${activityList.length} activities',
+      );
       return digestContent;
     } catch (e) {
       AppLogger.error('❌ Failed to build digest content', e);
@@ -348,30 +361,35 @@ class NotificationContentManager {
       case 'recipes':
         return [
           NotificationAction(
-              id: 'view_recipes',
-              title: l.notificationActionViewRecipes,
-              data: const {'action': 'navigate', 'destination': '/recipes'}),
+            id: 'view_recipes',
+            title: l.notificationActionViewRecipes,
+            data: const {'action': 'navigate', 'destination': '/recipes'},
+          ),
         ];
       case 'friends':
         return [
           NotificationAction(
-              id: 'view_friends',
-              title: l.notificationActionViewFriends,
-              data: const {'action': 'navigate', 'destination': '/friends'}),
+            id: 'view_friends',
+            title: l.notificationActionViewFriends,
+            data: const {'action': 'navigate', 'destination': '/friends'},
+          ),
         ];
       default:
         return [
           NotificationAction(
-              id: 'open_app',
-              title: l.notificationActionOpenApp,
-              data: const {'action': 'navigate', 'destination': '/home'}),
+            id: 'open_app',
+            title: l.notificationActionOpenApp,
+            data: const {'action': 'navigate', 'destination': '/home'},
+          ),
         ];
     }
   }
 
   /// Generate digest summary from category counts
   Map<String, String> _generateDigestSummary(
-      Map<String, int> categoryCount, int totalCount) {
+    Map<String, int> categoryCount,
+    int totalCount,
+  ) {
     final l = AppLocale.current;
     final summaryParts = <String>[];
 

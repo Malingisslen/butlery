@@ -64,7 +64,9 @@ void main() {
   group('permission', () {
     test('"permission" → errorPermissionDenied', () {
       expect(
-          sanitizeErrorForUser('permission denied'), l.errorPermissionDenied);
+        sanitizeErrorForUser('permission denied'),
+        l.errorPermissionDenied,
+      );
     });
 
     test('"unauthorized" → errorPermissionDenied', () {

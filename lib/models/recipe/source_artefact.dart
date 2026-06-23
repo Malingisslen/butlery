@@ -58,17 +58,20 @@ class SourceArtefact {
   });
 
   Map<String, dynamic> toJson() => {
-        'type': type.name,
-        'payload': payload,
-        'fetchedAt': fetchedAt.toIso8601String(),
-      };
+    'type': type.name,
+    'payload': payload,
+    'fetchedAt': fetchedAt.toIso8601String(),
+  };
 
   /// Parses from JSON. Unknown [type] strings fall back to
   /// [SourceArtefactType.url] (safest default — re-extract via URL
   /// retains some value even if the type label was corrupted).
   factory SourceArtefact.fromJson(Map<String, dynamic> json) {
-    final typeStr = utils.SerializationUtils.safeString(json, 'type',
-        defaultValue: SourceArtefactType.url.name);
+    final typeStr = utils.SerializationUtils.safeString(
+      json,
+      'type',
+      defaultValue: SourceArtefactType.url.name,
+    );
     final type = SourceArtefactType.values.firstWhere(
       (t) => t.name == typeStr,
       orElse: () => SourceArtefactType.url,
@@ -76,8 +79,10 @@ class SourceArtefact {
     return SourceArtefact(
       type: type,
       payload: utils.SerializationUtils.safeString(json, 'payload'),
-      fetchedAt:
-          utils.SerializationUtils.safeRequiredDateTime(json, 'fetchedAt'),
+      fetchedAt: utils.SerializationUtils.safeRequiredDateTime(
+        json,
+        'fetchedAt',
+      ),
     );
   }
 
@@ -85,12 +90,11 @@ class SourceArtefact {
     SourceArtefactType? type,
     String? payload,
     DateTime? fetchedAt,
-  }) =>
-      SourceArtefact(
-        type: type ?? this.type,
-        payload: payload ?? this.payload,
-        fetchedAt: fetchedAt ?? this.fetchedAt,
-      );
+  }) => SourceArtefact(
+    type: type ?? this.type,
+    payload: payload ?? this.payload,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+  );
 
   @override
   bool operator ==(Object other) =>

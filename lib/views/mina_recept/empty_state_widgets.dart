@@ -37,7 +37,8 @@ class MinaReceptEmptyState extends StatelessWidget {
     }
 
     final cs = Theme.of(context).colorScheme;
-    final hasPrefs = profile.allergenPreferences != null &&
+    final hasPrefs =
+        profile.allergenPreferences != null &&
         (profile.allergenPreferences!.trackedAllergens.isNotEmpty ||
             profile.allergenPreferences!.trackedDietary.isNotEmpty);
 

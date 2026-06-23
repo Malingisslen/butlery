@@ -24,10 +24,10 @@ Future<void> _seedRaw(
   String id,
   Map<String, dynamic> data,
 ) async {
-  await firestore
-      .collection(FirestoreCollections.ingredients)
-      .doc(id)
-      .set({'id': id, ...data});
+  await firestore.collection(FirestoreCollections.ingredients).doc(id).set({
+    'id': id,
+    ...data,
+  });
 }
 
 Future<void> _seedBasic(
@@ -66,10 +66,12 @@ void main() {
 
     test('finds via alias index (sv)', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'chicken',
-          swedish: 'kyckling',
-          aliasesSv: const ['kycklingfile']);
+      await _seedBasic(
+        firestore,
+        id: 'chicken',
+        swedish: 'kyckling',
+        aliasesSv: const ['kycklingfile'],
+      );
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       final got = await repo.findByName('kycklingfile');
@@ -78,8 +80,12 @@ void main() {
 
     test('finds via search term index', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'tomato', swedish: 'tomat', searchTerms: const ['röd frukt']);
+      await _seedBasic(
+        firestore,
+        id: 'tomato',
+        swedish: 'tomat',
+        searchTerms: const ['röd frukt'],
+      );
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       // 'röd frukt' → normalize → 'rod frukt'. Search by the normalized term.
@@ -87,28 +93,36 @@ void main() {
       expect(got?.id, 'tomato');
     });
 
-    test('cross-language lookup: english query finds swedish-named entry',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'cinnamon', swedish: 'kanel', english: 'cinnamon');
-      final repo = FirebaseIngredientRepository(firestore: firestore);
+    test(
+      'cross-language lookup: english query finds swedish-named entry',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await _seedBasic(
+          firestore,
+          id: 'cinnamon',
+          swedish: 'kanel',
+          english: 'cinnamon',
+        );
+        final repo = FirebaseIngredientRepository(firestore: firestore);
 
-      // Default language='sv' tries swedish then english.
-      final got = await repo.findByName('cinnamon');
-      expect(got?.id, 'cinnamon');
-    });
+        // Default language='sv' tries swedish then english.
+        final got = await repo.findByName('cinnamon');
+        expect(got?.id, 'cinnamon');
+      },
+    );
 
-    test('fuzzy prefix match: short query matches longer index entry',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore, id: 'chicken', swedish: 'kycklingbrost');
-      final repo = FirebaseIngredientRepository(firestore: firestore);
+    test(
+      'fuzzy prefix match: short query matches longer index entry',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await _seedBasic(firestore, id: 'chicken', swedish: 'kycklingbrost');
+        final repo = FirebaseIngredientRepository(firestore: firestore);
 
-      // 'kyckling' is a prefix of 'kycklingbrost'.
-      final got = await repo.findByName('kyckling');
-      expect(got?.id, 'chicken');
-    });
+        // 'kyckling' is a prefix of 'kycklingbrost'.
+        final got = await repo.findByName('kyckling');
+        expect(got?.id, 'chicken');
+      },
+    );
 
     test('fuzzy substring requires min 3 chars (H1 guard)', () async {
       final firestore = FakeFirebaseFirestore();
@@ -130,8 +144,12 @@ void main() {
 
     test('language=en routes to english index first', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'cinnamon', swedish: 'kanel', english: 'cinnamon');
+      await _seedBasic(
+        firestore,
+        id: 'cinnamon',
+        swedish: 'kanel',
+        english: 'cinnamon',
+      );
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       final got = await repo.findByName('cinnamon', language: 'en');
@@ -142,10 +160,12 @@ void main() {
   group('findByAlias', () {
     test('returns single matching ingredient when alias exists', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'chicken',
-          swedish: 'kyckling',
-          aliasesSv: const ['kycklingfile']);
+      await _seedBasic(
+        firestore,
+        id: 'chicken',
+        swedish: 'kyckling',
+        aliasesSv: const ['kycklingfile'],
+      );
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       final got = await repo.findByAlias('kycklingfile');
@@ -172,12 +192,24 @@ void main() {
   group('getByGroup / getByProperty', () {
     test('getByGroup filters by group path', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'chicken', swedish: 'kyckling', group: 'meat/poultry');
-      await _seedBasic(firestore,
-          id: 'beef', swedish: 'nötkött', group: 'meat/beef');
-      await _seedBasic(firestore,
-          id: 'kanel', swedish: 'kanel', group: 'spice');
+      await _seedBasic(
+        firestore,
+        id: 'chicken',
+        swedish: 'kyckling',
+        group: 'meat/poultry',
+      );
+      await _seedBasic(
+        firestore,
+        id: 'beef',
+        swedish: 'nötkött',
+        group: 'meat/beef',
+      );
+      await _seedBasic(
+        firestore,
+        id: 'kanel',
+        swedish: 'kanel',
+        group: 'spice',
+      );
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       // group hierarchy: 'meat' should match both meat/poultry and meat/beef.
@@ -187,10 +219,18 @@ void main() {
 
     test('getByProperty filters by property tag', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'cinnamon', swedish: 'kanel', properties: const ['warm_spice']);
-      await _seedBasic(firestore,
-          id: 'salt', swedish: 'salt', properties: const ['savory']);
+      await _seedBasic(
+        firestore,
+        id: 'cinnamon',
+        swedish: 'kanel',
+        properties: const ['warm_spice'],
+      );
+      await _seedBasic(
+        firestore,
+        id: 'salt',
+        swedish: 'salt',
+        properties: const ['savory'],
+      );
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
       final warmSpices = await repo.getByProperty('warm_spice');
@@ -201,12 +241,17 @@ void main() {
   group('searchIngredients', () {
     test('exact match scores highest, ordered by score descending', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedBasic(firestore,
-          id: 'kyckling',
-          swedish: 'kyckling',
-          aliasesSv: const ['kycklingfile']);
-      await _seedBasic(firestore,
-          id: 'kycklingbrost', swedish: 'kycklingbrost');
+      await _seedBasic(
+        firestore,
+        id: 'kyckling',
+        swedish: 'kyckling',
+        aliasesSv: const ['kycklingfile'],
+      );
+      await _seedBasic(
+        firestore,
+        id: 'kycklingbrost',
+        swedish: 'kycklingbrost',
+      );
       await _seedBasic(firestore, id: 'andkyckling', swedish: 'andkyckling');
       final repo = FirebaseIngredientRepository(firestore: firestore);
 
@@ -218,8 +263,12 @@ void main() {
     test('honours limit', () async {
       final firestore = FakeFirebaseFirestore();
       for (final s in ['a', 'b', 'c', 'd', 'e']) {
-        await _seedBasic(firestore,
-            id: 'i$s', swedish: 'kanel$s', english: 'cinnamon$s');
+        await _seedBasic(
+          firestore,
+          id: 'i$s',
+          swedish: 'kanel$s',
+          english: 'cinnamon$s',
+        );
       }
       final repo = FirebaseIngredientRepository(firestore: firestore);
 

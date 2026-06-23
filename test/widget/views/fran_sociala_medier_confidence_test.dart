@@ -25,12 +25,12 @@ import '../../test_support/base_unit_test.dart';
 class _MockTextImportViewModel extends Mock implements TextImportViewModel {}
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: child,
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: child,
+);
 
 void main() {
   setUpAll(() async {
@@ -65,28 +65,45 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  testWidgets('shows the OCR confidence badge when handed off from photo OCR',
-      (tester) async {
-    await tester.pumpWidget(_wrap(const FranSocialaMedierView(
-      initialText: '2 dl mjölk\n1 msk smör',
-      ocrConfidence: 0.85,
-    )));
+  testWidgets('shows the OCR confidence badge when handed off from photo OCR', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const FranSocialaMedierView(
+          initialText: '2 dl mjölk\n1 msk smör',
+          ocrConfidence: 0.85,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.byType(ConfidenceIndicator), findsOneWidget,
-        reason: 'The badge the user saw on the OCR preview step must '
-            're-surface here — losing it was the BUT-928 finding.');
-    expect(find.text('85%'), findsOneWidget,
-        reason: 'Same overall confidence value as the preview step.');
+    expect(
+      find.byType(ConfidenceIndicator),
+      findsOneWidget,
+      reason:
+          'The badge the user saw on the OCR preview step must '
+          're-surface here — losing it was the BUT-928 finding.',
+    );
+    expect(
+      find.text('85%'),
+      findsOneWidget,
+      reason: 'Same overall confidence value as the preview step.',
+    );
   });
 
-  testWidgets('shows no badge for plain text entry (no OCR source)',
-      (tester) async {
+  testWidgets('shows no badge for plain text entry (no OCR source)', (
+    tester,
+  ) async {
     await tester.pumpWidget(_wrap(const FranSocialaMedierView()));
     await tester.pumpAndSettle();
 
-    expect(find.byType(ConfidenceIndicator), findsNothing,
-        reason: 'Confidence describes an OCR pass — pasted text has none, '
-            'so showing a badge would be fabricated signal.');
+    expect(
+      find.byType(ConfidenceIndicator),
+      findsNothing,
+      reason:
+          'Confidence describes an OCR pass — pasted text has none, '
+          'so showing a badge would be fabricated signal.',
+    );
   });
 }

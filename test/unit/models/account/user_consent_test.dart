@@ -13,14 +13,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/account/user_consent.dart';
 
 ConsentPurposes _all(bool value) => ConsentPurposes(
-      essentialServices: value,
-      dataProcessing: value,
-      analytics: value,
-      marketing: value,
-      socialFeatures: value,
-      pushNotifications: value,
-      aiProcessing: value,
-    );
+  essentialServices: value,
+  dataProcessing: value,
+  analytics: value,
+  marketing: value,
+  socialFeatures: value,
+  pushNotifications: value,
+  aiProcessing: value,
+);
 
 void main() {
   group('ConsentPurposes.defaults', () {
@@ -108,10 +108,14 @@ void main() {
 
   group('UserConsent', () {
     test('hasRequiredConsents requires both essential AND dataProcessing', () {
-      final purposesYes =
-          ConsentPurposes(essentialServices: true, dataProcessing: true);
-      final purposesNoDp =
-          ConsentPurposes(essentialServices: true, dataProcessing: false);
+      final purposesYes = ConsentPurposes(
+        essentialServices: true,
+        dataProcessing: true,
+      );
+      final purposesNoDp = ConsentPurposes(
+        essentialServices: true,
+        dataProcessing: false,
+      );
 
       final consent = UserConsent(
         userId: 'u',
@@ -169,7 +173,10 @@ void main() {
         ipAddress: '127.0.0.1',
         deviceInfo: 'iPhone 15',
       );
-      await firestore.collection('consents').doc('alice').set(
+      await firestore
+          .collection('consents')
+          .doc('alice')
+          .set(
             original.toFirestore(),
           );
       final doc = await firestore.collection('consents').doc('alice').get();

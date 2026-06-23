@@ -133,10 +133,12 @@ void main() {
     when(() => coordinator.isShoppingListDismissed(any())).thenReturn(false);
     when(() => coordinator.isShoppingListViewed(any())).thenReturn(false);
     when(() => coordinator.isShoppingListImported(any())).thenReturn(false);
-    when(() => coordinator.loadStatusForAllShoppingLists(any(), any()))
-        .thenAnswer((_) async {});
-    when(() => coordinator.loadStatusForShoppingList(any(), any()))
-        .thenAnswer((_) async {});
+    when(
+      () => coordinator.loadStatusForAllShoppingLists(any(), any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => coordinator.loadStatusForShoppingList(any(), any()),
+    ).thenAnswer((_) async {});
   });
 
   tearDown(() async {
@@ -145,9 +147,9 @@ void main() {
   });
 
   SharedShoppingViewModel makeVm() => SharedShoppingViewModel(
-        socialShoppingCoordinator: coordinator,
-        shoppingService: shoppingService,
-      );
+    socialShoppingCoordinator: coordinator,
+    shoppingService: shoppingService,
+  );
 
   group('loadContentFromRepository', () {
     /// Auth gate: no current user → must throw via loadContentFromRepository,
@@ -175,62 +177,67 @@ void main() {
     /// `loadContentFromRepository`, mirroring the sibling
     /// `SharedRecipeViewModel:110-117`. If a future refactor reintroduces the
     /// custom override, this test fails with `['v','d']`.
-    test('dismissed lists ARE filtered out (BUT-1085 / BUT-1069 regression)',
-        () async {
-      final visible = _list(id: 'v');
-      final dismissed = _list(id: 'd');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [visible, dismissed]);
-      when(() => coordinator.isShoppingListDismissed('d')).thenReturn(true);
+    test(
+      'dismissed lists ARE filtered out (BUT-1085 / BUT-1069 regression)',
+      () async {
+        final visible = _list(id: 'v');
+        final dismissed = _list(id: 'd');
+        when(
+          () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [visible, dismissed]);
+        when(() => coordinator.isShoppingListDismissed('d')).thenReturn(true);
 
-      final vm = makeVm();
-      await vm.loadContent();
+        final vm = makeVm();
+        await vm.loadContent();
 
-      // Post-fix: dismissed filter runs through the filtered repository path.
-      expect(vm.content.map((l) => l.id), ['v']);
-      vm.dispose();
-    });
+        // Post-fix: dismissed filter runs through the filtered repository path.
+        expect(vm.content.map((l) => l.id), ['v']);
+        vm.dispose();
+      },
+    );
 
     /// REGRESSION GUARD — see above (BUT-1085 / BUT-1069). Same root cause:
     /// the blocked-user filter is in `loadContentFromRepository`. Now that
     /// the base goes through `loadContentWithPagination` which delegates to
     /// `loadContentFromRepository`, the filter applies.
     test(
-        'blocked-user content IS filtered out (BUT-1085 / BUT-1069 regression)',
-        () async {
-      final fromBlocked = _list(id: 'b', sharedBy: 'uid-blocked');
-      final fromFriend = _list(id: 'f', sharedBy: 'uid-friend');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [fromBlocked, fromFriend]);
+      'blocked-user content IS filtered out (BUT-1085 / BUT-1069 regression)',
+      () async {
+        final fromBlocked = _list(id: 'b', sharedBy: 'uid-blocked');
+        final fromFriend = _list(id: 'f', sharedBy: 'uid-friend');
+        when(
+          () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [fromBlocked, fromFriend]);
 
-      final vm = makeVm();
-      friendsService.setFriendsState(blockedUsers: {'uid-blocked'});
+        final vm = makeVm();
+        friendsService.setFriendsState(blockedUsers: {'uid-blocked'});
 
-      await vm.loadContent();
+        await vm.loadContent();
 
-      // Post-fix: blocked sender's list is filtered.
-      expect(vm.content.map((l) => l.id), ['f']);
-      vm.dispose();
-    });
+        // Post-fix: blocked sender's list is filtered.
+        expect(vm.content.map((l) => l.id), ['f']);
+        vm.dispose();
+      },
+    );
 
     /// REGRESSION GUARD — see above (BUT-1085 / BUT-1069).
     /// `loadStatusForAllShoppingLists` is called inside
     /// `loadContentFromRepository`; previously bypassed because the base went
     /// through the custom pagination override. Now warmed on every load.
-    test(
-        'status cache IS pre-loaded on load '
+    test('status cache IS pre-loaded on load '
         '(BUT-1085 / BUT-1069 regression)', () async {
       final l1 = _list(id: 'l1');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [l1]);
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [l1]);
 
       final vm = makeVm();
       await vm.loadContent();
 
       // Post-fix: called once with the loaded lists and the current uid.
-      verify(() =>
-              coordinator.loadStatusForAllShoppingLists([l1], _kCurrentUid))
-          .called(1);
+      verify(
+        () => coordinator.loadStatusForAllShoppingLists([l1], _kCurrentUid),
+      ).called(1);
       vm.dispose();
     });
   });
@@ -241,25 +248,29 @@ void main() {
     /// (a) the BUT-1068 always-true bug (caller would still see true but
     /// removal would happen only by coincidence), and
     /// (b) the optimistic-UI variant where removal happens regardless.
-    test('returns true and removes locally when coordinator succeeds',
-        () async {
-      final l = _list(id: 'd1');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [l]);
-      when(() => coordinator.dismissSharedShoppingList('d1'))
-          .thenAnswer((_) async => true);
+    test(
+      'returns true and removes locally when coordinator succeeds',
+      () async {
+        final l = _list(id: 'd1');
+        when(
+          () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [l]);
+        when(
+          () => coordinator.dismissSharedShoppingList('d1'),
+        ).thenAnswer((_) async => true);
 
-      final vm = makeVm();
-      await vm.loadContent();
-      expect(vm.content, hasLength(1));
+        final vm = makeVm();
+        await vm.loadContent();
+        expect(vm.content, hasLength(1));
 
-      final ok = await vm.dismissSharedShoppingList(l);
+        final ok = await vm.dismissSharedShoppingList(l);
 
-      expect(ok, isTrue);
-      expect(vm.content, isEmpty);
-      verify(() => coordinator.dismissSharedShoppingList('d1')).called(1);
-      vm.dispose();
-    });
+        expect(ok, isTrue);
+        expect(vm.content, isEmpty);
+        verify(() => coordinator.dismissSharedShoppingList('d1')).called(1);
+        vm.dispose();
+      },
+    );
 
     /// Bool-faithful propagation: coordinator says false → caller sees false
     /// AND the item is NOT removed locally. The sibling recipe VM was fixed
@@ -267,14 +278,15 @@ void main() {
     /// returned true). This pins the correct shopping behaviour. If the
     /// closure ever regresses to `await coordinator.dismiss(...); return true;`
     /// this assertion fails and the bug is caught.
-    test(
-        'returns false and preserves item when coordinator returns false '
+    test('returns false and preserves item when coordinator returns false '
         '(pins BUT-1068 fix for shopping)', () async {
       final l = _list(id: 'd2');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [l]);
-      when(() => coordinator.dismissSharedShoppingList('d2'))
-          .thenAnswer((_) async => false);
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [l]);
+      when(
+        () => coordinator.dismissSharedShoppingList('d2'),
+      ).thenAnswer((_) async => false);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -291,10 +303,12 @@ void main() {
     /// the UI show a generic error toast without orphaning data.
     test('returns false and preserves item when coordinator throws', () async {
       final l = _list(id: 'd3');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [l]);
-      when(() => coordinator.dismissSharedShoppingList('d3'))
-          .thenThrow(Exception('network'));
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [l]);
+      when(
+        () => coordinator.dismissSharedShoppingList('d3'),
+      ).thenThrow(Exception('network'));
 
       final vm = makeVm();
       await vm.loadContent();
@@ -311,8 +325,9 @@ void main() {
   group('undismissSharedShoppingList', () {
     test('adds back to local list on coordinator success', () async {
       final l = _list(id: 'u1');
-      when(() => coordinator.restoreSharedShoppingList('u1'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.restoreSharedShoppingList('u1'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       final ok = await vm.undismissSharedShoppingList(l);
@@ -326,10 +341,12 @@ void main() {
     /// item. We must NOT duplicate it.
     test('does not duplicate when item already present', () async {
       final l = _list(id: 'u2');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [l]);
-      when(() => coordinator.restoreSharedShoppingList('u2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [l]);
+      when(
+        () => coordinator.restoreSharedShoppingList('u2'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -341,46 +358,52 @@ void main() {
       vm.dispose();
     });
 
-    test('returns false and does not add when coordinator returns false',
-        () async {
-      final l = _list(id: 'u3');
-      when(() => coordinator.restoreSharedShoppingList('u3'))
-          .thenAnswer((_) async => false);
+    test(
+      'returns false and does not add when coordinator returns false',
+      () async {
+        final l = _list(id: 'u3');
+        when(
+          () => coordinator.restoreSharedShoppingList('u3'),
+        ).thenAnswer((_) async => false);
 
-      final vm = makeVm();
-      final ok = await vm.undismissSharedShoppingList(l);
+        final vm = makeVm();
+        final ok = await vm.undismissSharedShoppingList(l);
 
-      expect(ok, isFalse);
-      expect(vm.content, isEmpty);
-      vm.dispose();
-    });
+        expect(ok, isFalse);
+        expect(vm.content, isEmpty);
+        vm.dispose();
+      },
+    );
   });
 
   group('markAsViewed', () {
     /// Already-viewed short-circuit. Skipping it would cost a write per
     /// scroll-into-view event. Must NOT call markShoppingListAsViewed OR
     /// loadStatusForShoppingList.
-    test('short-circuits when list is already viewed (no repo writes)',
-        () async {
-      final l = _list(id: 'v1');
-      when(() => coordinator.isShoppingListViewed('v1')).thenReturn(true);
+    test(
+      'short-circuits when list is already viewed (no repo writes)',
+      () async {
+        final l = _list(id: 'v1');
+        when(() => coordinator.isShoppingListViewed('v1')).thenReturn(true);
 
-      final vm = makeVm();
-      final ok = await vm.markAsViewed(l);
+        final vm = makeVm();
+        final ok = await vm.markAsViewed(l);
 
-      expect(ok, isTrue);
-      verifyNever(() => coordinator.markShoppingListAsViewed(any()));
-      verifyNever(() => coordinator.loadStatusForShoppingList(any(), any()));
-      vm.dispose();
-    });
+        expect(ok, isTrue);
+        verifyNever(() => coordinator.markShoppingListAsViewed(any()));
+        verifyNever(() => coordinator.loadStatusForShoppingList(any(), any()));
+        vm.dispose();
+      },
+    );
 
     /// Happy path: not yet viewed → write + cache reload + listener
     /// notification (so the unread badge re-renders).
     test('writes, reloads cache, and notifies when not yet viewed', () async {
       final l = _list(id: 'v2');
       when(() => coordinator.isShoppingListViewed('v2')).thenReturn(false);
-      when(() => coordinator.markShoppingListAsViewed('v2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.markShoppingListAsViewed('v2'),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       var notifications = 0;
@@ -390,10 +413,14 @@ void main() {
 
       expect(ok, isTrue);
       verify(() => coordinator.markShoppingListAsViewed('v2')).called(1);
-      verify(() => coordinator.loadStatusForShoppingList('v2', _kCurrentUid))
-          .called(1);
-      expect(notifications, greaterThanOrEqualTo(1),
-          reason: 'UI must be told to refresh the read badge');
+      verify(
+        () => coordinator.loadStatusForShoppingList('v2', _kCurrentUid),
+      ).called(1);
+      expect(
+        notifications,
+        greaterThanOrEqualTo(1),
+        reason: 'UI must be told to refresh the read badge',
+      );
       vm.dispose();
     });
 
@@ -405,8 +432,9 @@ void main() {
       permissionService.setPermissionState(currentUserId: null);
       // Already-viewed is false so we go past the short-circuit.
       when(() => coordinator.isShoppingListViewed(any())).thenReturn(false);
-      when(() => coordinator.markShoppingListAsViewed(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.markShoppingListAsViewed(any()),
+      ).thenAnswer((_) async => true);
       final l = _list(id: 'v3');
 
       final vm = makeVm();
@@ -415,9 +443,13 @@ void main() {
       // Production goes through the write path (no auth gate up front), so
       // markShoppingListAsViewed runs, but loadStatusForShoppingList must
       // be skipped (userId == null guard).
-      expect(ok, isTrue,
-          reason: 'inner closure returns true unconditionally; '
-              'the unauth case still completes cleanly');
+      expect(
+        ok,
+        isTrue,
+        reason:
+            'inner closure returns true unconditionally; '
+            'the unauth case still completes cleanly',
+      );
       verifyNever(() => coordinator.loadStatusForShoppingList(any(), any()));
       vm.dispose();
     });
@@ -429,16 +461,19 @@ void main() {
     /// becomes "imported" without a separate refresh.
     test('returns collaborative id and reloads status on success', () async {
       final l = _list(id: 'j1');
-      when(() => coordinator.joinSharedShoppingList(
-              sharedShoppingListId: any(named: 'sharedShoppingListId')))
-          .thenAnswer((_) async => 'collab-list-7');
+      when(
+        () => coordinator.joinSharedShoppingList(
+          sharedShoppingListId: any(named: 'sharedShoppingListId'),
+        ),
+      ).thenAnswer((_) async => 'collab-list-7');
 
       final vm = makeVm();
       final result = await vm.joinSharedShoppingList(l);
 
       expect(result, 'collab-list-7');
-      verify(() => coordinator.loadStatusForShoppingList('j1', _kCurrentUid))
-          .called(1);
+      verify(
+        () => coordinator.loadStatusForShoppingList('j1', _kCurrentUid),
+      ).called(1);
       vm.dispose();
     });
 
@@ -447,9 +482,11 @@ void main() {
     /// status — a wasted Firestore round-trip on a no-op.
     test('skips cache reload when coordinator returns null', () async {
       final l = _list(id: 'j2');
-      when(() => coordinator.joinSharedShoppingList(
-              sharedShoppingListId: any(named: 'sharedShoppingListId')))
-          .thenAnswer((_) async => null);
+      when(
+        () => coordinator.joinSharedShoppingList(
+          sharedShoppingListId: any(named: 'sharedShoppingListId'),
+        ),
+      ).thenAnswer((_) async => null);
 
       final vm = makeVm();
       final result = await vm.joinSharedShoppingList(l);
@@ -461,9 +498,11 @@ void main() {
 
     test('returns null and sets hasError when coordinator throws', () async {
       final l = _list(id: 'j3');
-      when(() => coordinator.joinSharedShoppingList(
-              sharedShoppingListId: any(named: 'sharedShoppingListId')))
-          .thenThrow(Exception('boom'));
+      when(
+        () => coordinator.joinSharedShoppingList(
+          sharedShoppingListId: any(named: 'sharedShoppingListId'),
+        ),
+      ).thenThrow(Exception('boom'));
 
       final vm = makeVm();
       final result = await vm.joinSharedShoppingList(l);
@@ -481,11 +520,13 @@ void main() {
       final viewed = _list(id: 'a');
       final unviewed1 = _list(id: 'b');
       final unviewed2 = _list(id: 'c');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [viewed, unviewed1, unviewed2]);
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [viewed, unviewed1, unviewed2]);
       when(() => coordinator.isShoppingListViewed('a')).thenReturn(true);
-      when(() => coordinator.markShoppingListAsViewed(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => coordinator.markShoppingListAsViewed(any()),
+      ).thenAnswer((_) async => true);
 
       final vm = makeVm();
       await vm.loadContent();
@@ -560,28 +601,32 @@ void main() {
     /// list name (substring, not equality). Pin both halves: a personal list
     /// with a matching name must NOT match; a collaborative list with an
     /// unrelated name must NOT match.
-    test('finds collaborative list whose name contains the shared list name',
-        () {
-      final candidate = _collabList('Veckohandling — Anna & Erik');
-      final wrongType = _personalList('Veckohandling');
-      final wrongName = _collabList('Helgmiddag');
-      shoppingService
-          .setShoppingState(lists: [wrongType, candidate, wrongName]);
+    test(
+      'finds collaborative list whose name contains the shared list name',
+      () {
+        final candidate = _collabList('Veckohandling — Anna & Erik');
+        final wrongType = _personalList('Veckohandling');
+        final wrongName = _collabList('Helgmiddag');
+        shoppingService.setShoppingState(
+          lists: [wrongType, candidate, wrongName],
+        );
 
-      final shared = _list(id: 's', listName: 'Veckohandling');
-      final vm = makeVm();
+        final shared = _list(id: 's', listName: 'Veckohandling');
+        final vm = makeVm();
 
-      final result = vm.getCollaborativeList(shared);
-      expect(result, candidate);
-      vm.dispose();
-    });
+        final result = vm.getCollaborativeList(shared);
+        expect(result, candidate);
+        vm.dispose();
+      },
+    );
 
     test('returns null when no collaborative list matches', () {
       shoppingService.setShoppingState(lists: [_personalList('Veckohandling')]);
 
       final vm = makeVm();
-      final result =
-          vm.getCollaborativeList(_list(id: 's', listName: 'Veckohandling'));
+      final result = vm.getCollaborativeList(
+        _list(id: 's', listName: 'Veckohandling'),
+      );
       expect(result, isNull);
       vm.dispose();
     });
@@ -594,8 +639,9 @@ void main() {
       final a = _list(id: 'a'); // viewed=t, imported=t
       final b = _list(id: 'b'); // viewed=t, imported=f
       final c = _list(id: 'c'); // viewed=f, imported=t
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [a, b, c]);
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [a, b, c]);
       when(() => coordinator.isShoppingListViewed('a')).thenReturn(true);
       when(() => coordinator.isShoppingListViewed('b')).thenReturn(true);
       when(() => coordinator.isShoppingListImported('a')).thenReturn(true);
@@ -604,12 +650,16 @@ void main() {
       final vm = makeVm();
       await vm.loadContent();
 
-      final viewedAndJoined =
-          vm.getShoppingListsByStatus(isViewed: true, isJoined: true);
+      final viewedAndJoined = vm.getShoppingListsByStatus(
+        isViewed: true,
+        isJoined: true,
+      );
       expect(viewedAndJoined.map((l) => l.id), ['a']);
 
-      final viewedNotJoined =
-          vm.getShoppingListsByStatus(isViewed: true, isJoined: false);
+      final viewedNotJoined = vm.getShoppingListsByStatus(
+        isViewed: true,
+        isJoined: false,
+      );
       expect(viewedNotJoined.map((l) => l.id), ['b']);
       vm.dispose();
     });
@@ -623,30 +673,33 @@ void main() {
   });
 
   group('getEngagementStats', () {
-    test('reflects cached statuses, sharedByMe, and itemCount totals',
-        () async {
-      final mine = _list(id: 'm', sharedBy: _kCurrentUid, itemCount: 3);
-      final viewed = _list(id: 'v', sharedBy: 'uid-other', itemCount: 5);
-      final joined = _list(id: 'j', sharedBy: 'uid-other', itemCount: 0);
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [mine, viewed, joined]);
-      when(() => coordinator.isShoppingListViewed('v')).thenReturn(true);
-      when(() => coordinator.isShoppingListImported('j')).thenReturn(true);
+    test(
+      'reflects cached statuses, sharedByMe, and itemCount totals',
+      () async {
+        final mine = _list(id: 'm', sharedBy: _kCurrentUid, itemCount: 3);
+        final viewed = _list(id: 'v', sharedBy: 'uid-other', itemCount: 5);
+        final joined = _list(id: 'j', sharedBy: 'uid-other', itemCount: 0);
+        when(
+          () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+        ).thenAnswer((_) async => [mine, viewed, joined]);
+        when(() => coordinator.isShoppingListViewed('v')).thenReturn(true);
+        when(() => coordinator.isShoppingListImported('j')).thenReturn(true);
 
-      final vm = makeVm();
-      await vm.loadContent();
+        final vm = makeVm();
+        await vm.loadContent();
 
-      final stats = vm.getEngagementStats();
-      expect(stats['total'], 3);
-      // Unread = total - viewed → 2 (mine, joined both unviewed in cache).
-      expect(stats['unread'], 2);
-      expect(stats['joined'], 1);
-      expect(stats['sharedByMe'], 1);
-      expect(stats['totalItems'], 8);
-      // withItems counts mine(3) + viewed(5); joined has 0 items.
-      expect(stats['withItems'], 2);
-      vm.dispose();
-    });
+        final stats = vm.getEngagementStats();
+        expect(stats['total'], 3);
+        // Unread = total - viewed → 2 (mine, joined both unviewed in cache).
+        expect(stats['unread'], 2);
+        expect(stats['joined'], 1);
+        expect(stats['sharedByMe'], 1);
+        expect(stats['totalItems'], 8);
+        // withItems counts mine(3) + viewed(5); joined has 0 items.
+        expect(stats['withItems'], 2);
+        vm.dispose();
+      },
+    );
 
     test('returns empty map when unauthenticated', () {
       permissionService.setPermissionState(currentUserId: null);
@@ -660,17 +713,19 @@ void main() {
     /// One omnibus test for the four-getter family that share the same
     /// `userId == null → return safe default` guard. Each catches the same
     /// bug-shape (missing null guard would NPE on currentUserId.equals).
-    test('unreadCount/sharedByCurrentUser/joinable/joined all safe-default',
-        () {
-      permissionService.setPermissionState(currentUserId: null);
-      final vm = makeVm();
+    test(
+      'unreadCount/sharedByCurrentUser/joinable/joined all safe-default',
+      () {
+        permissionService.setPermissionState(currentUserId: null);
+        final vm = makeVm();
 
-      expect(vm.unreadCount, 0);
-      expect(vm.sharedByCurrentUser, isEmpty);
-      expect(vm.joinableShoppingLists, isEmpty);
-      expect(vm.joinedShoppingLists, isEmpty);
-      vm.dispose();
-    });
+        expect(vm.unreadCount, 0);
+        expect(vm.sharedByCurrentUser, isEmpty);
+        expect(vm.joinableShoppingLists, isEmpty);
+        expect(vm.joinedShoppingLists, isEmpty);
+        vm.dispose();
+      },
+    );
   });
 
   group('joinableShoppingLists', () {
@@ -680,8 +735,9 @@ void main() {
       final mine = _list(id: 'mine', sharedBy: _kCurrentUid);
       final imported = _list(id: 'imp', sharedBy: 'uid-other');
       final joinable = _list(id: 'jn', sharedBy: 'uid-other');
-      when(() => coordinator.getSharedShoppingListsForUser(_kCurrentUid))
-          .thenAnswer((_) async => [mine, imported, joinable]);
+      when(
+        () => coordinator.getSharedShoppingListsForUser(_kCurrentUid),
+      ).thenAnswer((_) async => [mine, imported, joinable]);
       when(() => coordinator.isShoppingListImported('imp')).thenReturn(true);
 
       final vm = makeVm();
@@ -748,14 +804,15 @@ void main() {
     });
 
     test(
-        'loadMoreContent throws UnsupportedError when supportsPagination=false',
-        () {
-      final vm = makeVm();
-      expect(
-        () => vm.loadMoreContent(),
-        throwsA(isA<UnsupportedError>()),
-      );
-      vm.dispose();
-    });
+      'loadMoreContent throws UnsupportedError when supportsPagination=false',
+      () {
+        final vm = makeVm();
+        expect(
+          () => vm.loadMoreContent(),
+          throwsA(isA<UnsupportedError>()),
+        );
+        vm.dispose();
+      },
+    );
   });
 }

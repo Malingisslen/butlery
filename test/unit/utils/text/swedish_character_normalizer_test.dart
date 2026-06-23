@@ -42,11 +42,17 @@ void main() {
 
       test('preserves non-Swedish characters', () {
         expect(
-            SwedishCharacterNormalizer.normalize('abc123'), equals('abc123'));
-        expect(SwedishCharacterNormalizer.normalize('hello world'),
-            equals('hello world'));
-        expect(SwedishCharacterNormalizer.normalize('test-string'),
-            equals('test-string'));
+          SwedishCharacterNormalizer.normalize('abc123'),
+          equals('abc123'),
+        );
+        expect(
+          SwedishCharacterNormalizer.normalize('hello world'),
+          equals('hello world'),
+        );
+        expect(
+          SwedishCharacterNormalizer.normalize('test-string'),
+          equals('test-string'),
+        );
       });
     });
 
@@ -71,8 +77,10 @@ void main() {
 
       // Individual test cases for documentation
       test('Köttfärs → kottfars', () {
-        expect(SwedishCharacterNormalizer.normalize('Köttfärs'),
-            equals('kottfars'));
+        expect(
+          SwedishCharacterNormalizer.normalize('Köttfärs'),
+          equals('kottfars'),
+        );
       });
 
       test('Räkor → rakor', () {
@@ -84,13 +92,17 @@ void main() {
       });
 
       test('Löksoppa → loksoppa', () {
-        expect(SwedishCharacterNormalizer.normalize('Löksoppa'),
-            equals('loksoppa'));
+        expect(
+          SwedishCharacterNormalizer.normalize('Löksoppa'),
+          equals('loksoppa'),
+        );
       });
 
       test('Grädde → gradde', () {
         expect(
-            SwedishCharacterNormalizer.normalize('Grädde'), equals('gradde'));
+          SwedishCharacterNormalizer.normalize('Grädde'),
+          equals('gradde'),
+        );
       });
 
       test('Smör → smor', () {
@@ -107,7 +119,9 @@ void main() {
 
       test('vitlök → vitlok', () {
         expect(
-            SwedishCharacterNormalizer.normalize('vitlök'), equals('vitlok'));
+          SwedishCharacterNormalizer.normalize('vitlök'),
+          equals('vitlok'),
+        );
       });
 
       test('åäö → aao (all three Swedish chars)', () {
@@ -121,7 +135,9 @@ void main() {
         final expected = ['kottfars', 'rakor', 'agg'];
 
         expect(
-            SwedishCharacterNormalizer.normalizeAll(inputs), equals(expected));
+          SwedishCharacterNormalizer.normalizeAll(inputs),
+          equals(expected),
+        );
       });
 
       test('handles empty list', () {
@@ -136,8 +152,10 @@ void main() {
       });
 
       test('handles strings with repeated Swedish characters', () {
-        expect(SwedishCharacterNormalizer.normalize('ååååäääöö'),
-            equals('aaaaaaaoo'));
+        expect(
+          SwedishCharacterNormalizer.normalize('ååååäääöö'),
+          equals('aaaaaaaoo'),
+        );
       });
 
       test('handles mixed Swedish and regular characters', () {

@@ -142,8 +142,9 @@ class StreamTestManager {
   /// Clean up all tracked streams
   static Future<void> cleanupAll() async {
     // Cancel all subscriptions
-    final subscriptionsCopy =
-        List<StreamSubscription>.from(_activeSubscriptions);
+    final subscriptionsCopy = List<StreamSubscription>.from(
+      _activeSubscriptions,
+    );
     for (final subscription in subscriptionsCopy) {
       try {
         await subscription.cancel();
@@ -171,12 +172,12 @@ class StreamTestManager {
 
   /// Get statistics about tracked streams
   static StreamStats get stats => StreamStats(
-        activeSubscriptions: _activeSubscriptions.length,
-        activeControllers: _activeControllers.length,
-        testSubscriptions: _testSubscriptions.length,
-        testControllers: _testControllers.length,
-        openControllers: _activeControllers.where((c) => !c.isClosed).length,
-      );
+    activeSubscriptions: _activeSubscriptions.length,
+    activeControllers: _activeControllers.length,
+    testSubscriptions: _testSubscriptions.length,
+    testControllers: _testControllers.length,
+    openControllers: _activeControllers.where((c) => !c.isClosed).length,
+  );
 
   /// Verify all streams are cleaned up
   static void verifyCleanup() {

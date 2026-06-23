@@ -44,14 +44,14 @@ class TestModel {
   }) : createdAt = createdAt ?? DateTime.now();
 
   Map<String, dynamic> toFirestore() => {
-        'id': id,
-        'title': title,
-        'ownerId': ownerId,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt ?? DateTime.now(),
-        'metadata': metadata,
-        'version': version,
-      };
+    'id': id,
+    'title': title,
+    'ownerId': ownerId,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt ?? DateTime.now(),
+    'metadata': metadata,
+    'version': version,
+  };
 
   factory TestModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
@@ -107,21 +107,29 @@ class TestFirebaseRepository extends BaseFirebaseRepository<TestModel> {
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, TestModel? entity) async {
+    String userId,
+    String resourceId,
+    TestModel? entity,
+  ) async {
     // For tests: allow all reads
     return true;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, TestModel entity) async {
+    String userId,
+    String resourceId,
+    TestModel entity,
+  ) async {
     // For tests: allow update if ownerId matches
     return entity.ownerId == null || entity.ownerId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // For tests: allow all deletes
     return true;
   }
@@ -230,15 +238,14 @@ void main() {
 
       test('should handle array operations', () async {
         // Arrange - Create document with array field
-        await fakeFirestore
-            .collection('test_collection')
-            .doc('array_test')
-            .set({
-          'id': 'array_test',
-          'title': 'Array Test',
-          'tags': ['tag1', 'tag2'],
-          'createdAt': DateTime.now(),
-        });
+        await fakeFirestore.collection('test_collection').doc('array_test').set(
+          {
+            'id': 'array_test',
+            'title': 'Array Test',
+            'tags': ['tag1', 'tag2'],
+            'createdAt': DateTime.now(),
+          },
+        );
 
         // Act - Update array manually to avoid FieldValue issues
         final doc = await fakeFirestore
@@ -253,8 +260,8 @@ void main() {
             .collection('test_collection')
             .doc('array_test')
             .update({
-          'tags': currentTags,
-        });
+              'tags': currentTags,
+            });
 
         // Assert
         final updatedDoc = await fakeFirestore
@@ -272,12 +279,13 @@ void main() {
       test('should handle batch writes', () async {
         // Arrange
         final models = List.generate(
-            10,
-            (i) => TestModel(
-                  id: 'batch_$i',
-                  title: 'Batch Item $i',
-                  ownerId: testUserId,
-                ));
+          10,
+          (i) => TestModel(
+            id: 'batch_$i',
+            title: 'Batch Item $i',
+            ownerId: testUserId,
+          ),
+        );
 
         // Act - Use batch directly to avoid FieldValue issues
         final batch = fakeFirestore.batch();
@@ -303,15 +311,14 @@ void main() {
       test('should handle transactional updates', () async {
         // Arrange - Create initial documents with DateTime instead of Timestamp
         for (int i = 0; i < 5; i++) {
-          await fakeFirestore
-              .collection('test_collection')
-              .doc('trans_$i')
-              .set({
-            'id': 'trans_$i',
-            'title': 'Item $i',
-            'counter': 0,
-            'createdAt': DateTime.now(),
-          });
+          await fakeFirestore.collection('test_collection').doc('trans_$i').set(
+            {
+              'id': 'trans_$i',
+              'title': 'Item $i',
+              'counter': 0,
+              'createdAt': DateTime.now(),
+            },
+          );
         }
 
         // Act - Update all counters in transaction
@@ -322,8 +329,9 @@ void main() {
             final updates = <DocumentReference, Map<String, dynamic>>{};
 
             for (int i = 0; i < 5; i++) {
-              final docRef =
-                  fakeFirestore.collection('test_collection').doc('trans_$i');
+              final docRef = fakeFirestore
+                  .collection('test_collection')
+                  .doc('trans_$i');
 
               // Just update without reading to avoid transaction issues
               updates[docRef] = {'counter': 1, 'title': 'Updated Item $i'};
@@ -363,8 +371,8 @@ void main() {
 
         // Create a stabilized stream to avoid initial emissions
         final stabilizedStream = repository.watchAll().debounced(
-              delay: const Duration(milliseconds: 50),
-            );
+          delay: const Duration(milliseconds: 50),
+        );
 
         // Start listening to stream
         final subscription = stabilizedStream.listen((models) {
@@ -378,22 +386,26 @@ void main() {
         await fakeFirestore
             .collection('test_collection')
             .doc('stream_1')
-            .set(TestModel(
-              id: 'stream_1',
-              title: 'First Stream Item',
-              ownerId: testUserId,
-            ).toFirestore());
+            .set(
+              TestModel(
+                id: 'stream_1',
+                title: 'First Stream Item',
+                ownerId: testUserId,
+              ).toFirestore(),
+            );
 
         await StreamStabilizer.waitForAsync();
 
         await fakeFirestore
             .collection('test_collection')
             .doc('stream_2')
-            .set(TestModel(
-              id: 'stream_2',
-              title: 'Second Stream Item',
-              ownerId: testUserId,
-            ).toFirestore());
+            .set(
+              TestModel(
+                id: 'stream_2',
+                title: 'Second Stream Item',
+                ownerId: testUserId,
+              ).toFirestore(),
+            );
 
         await StreamStabilizer.waitForAsync();
 
@@ -402,15 +414,16 @@ void main() {
             .collection('test_collection')
             .doc('stream_1')
             .update({
-          'title': 'Updated First Item',
-        });
+              'title': 'Updated First Item',
+            });
 
         // Wait for final emission
         await StreamStabilizer.waitForAsync(iterations: 2);
 
         // Assert - Filter out empty emissions
-        final nonEmptyUpdates =
-            receivedUpdates.where((list) => list.isNotEmpty).toList();
+        final nonEmptyUpdates = receivedUpdates
+            .where((list) => list.isNotEmpty)
+            .toList();
         expect(nonEmptyUpdates.length, greaterThanOrEqualTo(2));
 
         // Check final state
@@ -431,12 +444,14 @@ void main() {
           await fakeFirestore
               .collection('test_collection')
               .doc('filter_$i')
-              .set(TestModel(
-                id: 'filter_$i',
-                title: 'Item $i',
-                ownerId: i.isEven ? testUserId : 'other_user',
-                metadata: {'priority': i.isEven ? 'high' : 'low'},
-              ).toFirestore());
+              .set(
+                TestModel(
+                  id: 'filter_$i',
+                  title: 'Item $i',
+                  ownerId: i.isEven ? testUserId : 'other_user',
+                  metadata: {'priority': i.isEven ? 'high' : 'low'},
+                ).toFirestore(),
+              );
         }
 
         // Wait for data to be available
@@ -447,8 +462,9 @@ void main() {
         final stableItems = await stream.stabilized();
 
         // Assert
-        final filteredItems =
-            stableItems.where((m) => m.ownerId == testUserId).toList();
+        final filteredItems = stableItems
+            .where((m) => m.ownerId == testUserId)
+            .toList();
         expect(filteredItems.every((m) => m.ownerId == testUserId), isTrue);
         expect(filteredItems.length, equals(5)); // Only even numbered items
       });
@@ -558,11 +574,11 @@ void main() {
                 .collection('test_collection')
                 .doc('${userId}_item_$i')
                 .set({
-              'id': '${userId}_item_$i',
-              'title': 'Item $i for $userId',
-              'ownerId': userId,
-              'createdAt': Timestamp.now(),
-            });
+                  'id': '${userId}_item_$i',
+                  'title': 'Item $i for $userId',
+                  'ownerId': userId,
+                  'createdAt': Timestamp.now(),
+                });
           }
         }
 

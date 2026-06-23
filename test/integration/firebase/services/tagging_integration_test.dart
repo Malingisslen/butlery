@@ -48,8 +48,10 @@ void main() {
         email: testUserEmail,
         displayName: 'Test User',
       );
-      mockAuth =
-          auth_mocks.MockFirebaseAuth(mockUser: mockUser, signedIn: true);
+      mockAuth = auth_mocks.MockFirebaseAuth(
+        mockUser: mockUser,
+        signedIn: true,
+      );
     });
 
     tearDown(() async {

@@ -76,9 +76,9 @@ class GroupDetailViewModel extends ChangeNotifier
     required String conversationId,
     required MessagingService messagingService,
     required UnifiedFriendsService friendsService,
-  })  : _conversationId = conversationId,
-        _messagingService = messagingService,
-        _friendsService = friendsService {
+  }) : _conversationId = conversationId,
+       _messagingService = messagingService,
+       _friendsService = friendsService {
     // Start in loading state until conversation data arrives
     setLoading(true);
     _initializeConversationStream();
@@ -136,8 +136,9 @@ class GroupDetailViewModel extends ChangeNotifier
           // Find the conversation by ID, or use the cached one as fallback
           Conversation? conversation;
           try {
-            conversation =
-                conversations.firstWhere((c) => c.id == _conversationId);
+            conversation = conversations.firstWhere(
+              (c) => c.id == _conversationId,
+            );
           } catch (_) {
             // Conversation not in list, keep using cached version
             conversation = _conversation;
@@ -164,8 +165,9 @@ class GroupDetailViewModel extends ChangeNotifier
   /// Load conversation data initially
   Future<void> _loadConversation() async {
     try {
-      final conversation =
-          await _messagingService.getConversation(_conversationId);
+      final conversation = await _messagingService.getConversation(
+        _conversationId,
+      );
       if (!_isDisposed && conversation != null) {
         _conversation = conversation;
         setSuccess();
@@ -314,9 +316,9 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      await ServiceLocator.tryGet<AnalyticsService>()
-          ?.social
-          .logGroupLeft(groupId: _conversationId);
+      await ServiceLocator.tryGet<AnalyticsService>()?.social.logGroupLeft(
+        groupId: _conversationId,
+      );
 
       AppLogger.success('Successfully left group');
 

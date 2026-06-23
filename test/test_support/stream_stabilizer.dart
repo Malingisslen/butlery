@@ -97,7 +97,8 @@ class StreamStabilizer {
         } else {
           completer.completeError(
             TimeoutException(
-                'Stream did not emit $expectedCount items within $timeout'),
+              'Stream did not emit $expectedCount items within $timeout',
+            ),
           );
         }
       }
@@ -346,12 +347,14 @@ class StreamEmissionMatcher<T> extends Matcher {
         skipInitial: skipInitial,
       );
 
-      emissions.then((list) {
-        matchState['emissions'] = list;
-        matchState['count'] = list.length;
-      }).catchError((error) {
-        matchState['error'] = error;
-      });
+      emissions
+          .then((list) {
+            matchState['emissions'] = list;
+            matchState['count'] = list.length;
+          })
+          .catchError((error) {
+            matchState['error'] = error;
+          });
 
       return true;
     } catch (e) {
@@ -373,8 +376,9 @@ class StreamEmissionMatcher<T> extends Matcher {
     bool verbose,
   ) {
     if (matchState.containsKey('error')) {
-      return mismatchDescription
-          .add('failed with error: ${matchState['error']}');
+      return mismatchDescription.add(
+        'failed with error: ${matchState['error']}',
+      );
     }
     if (matchState.containsKey('count')) {
       return mismatchDescription.add(

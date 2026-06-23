@@ -252,7 +252,8 @@ abstract class BaseActionHandler {
   bool validateContext(BuildContext context, [String? operation]) {
     if (!context.mounted) {
       AppLogger.warning(
-          '⚠️ Context not mounted for $serviceName${operation != null ? ' $operation' : ''}');
+        '⚠️ Context not mounted for $serviceName${operation != null ? ' $operation' : ''}',
+      );
       return false;
     }
     return true;
@@ -262,7 +263,8 @@ abstract class BaseActionHandler {
     for (final param in parameters) {
       if (param == null || (param is String && param.trim().isEmpty)) {
         AppLogger.error(
-            '❌ $serviceName: Required parameter missing${operation != null ? ' for $operation' : ''}');
+          '❌ $serviceName: Required parameter missing${operation != null ? ' for $operation' : ''}',
+        );
         return false;
       }
     }
@@ -325,7 +327,8 @@ abstract class BaseActionHandler {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
             const SizedBox(
-                width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            ),
             Text(message),
           ],
         ),

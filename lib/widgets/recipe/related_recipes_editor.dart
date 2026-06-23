@@ -156,8 +156,9 @@ class _RelatedChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
           border: Border.all(
-            color:
-                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: cs.primary.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
         ),
         child: Row(

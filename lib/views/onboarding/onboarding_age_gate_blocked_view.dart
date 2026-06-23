@@ -58,7 +58,8 @@ class _OnboardingAgeGateBlockedViewState
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
         AppLogger.info(
-            'Underage auth delete needs reauth; signing out instead');
+          'Underage auth delete needs reauth; signing out instead',
+        );
       } else {
         AppLogger.warning('Underage auth delete failed: ${e.code}');
       }
@@ -100,8 +101,9 @@ class _OnboardingAgeGateBlockedViewState
                     const SizedBox(height: AppDimensions.spacingMd),
                     Text(
                       context.l10n.onboardingAgeGateTooYoungBody,
-                      style: AppTextStyles.bodyLarge
-                          .copyWith(color: cs.onSurfaceVariant),
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppDimensions.spacingXxl),

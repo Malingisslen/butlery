@@ -132,8 +132,10 @@ void main() {
         'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
         'scheduledFor': Timestamp.fromDate(DateTime.utc(2026, 1, 1, 1)),
       });
-      final doc =
-          await firestore.collection('notification_batches').doc('b1').get();
+      final doc = await firestore
+          .collection('notification_batches')
+          .doc('b1')
+          .get();
 
       final batch = NotificationBatch.fromFirestore(doc);
       expect(batch.batchKey, 'k1');

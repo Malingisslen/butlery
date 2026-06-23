@@ -12,11 +12,14 @@ import 'package:butlery/views/admin/widgets/admin_metric_info_button.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
-  testWidgets('tapping the info button opens what/how/why, then closes',
-      (tester) async {
-    await tester.pumpWidget(createLocalizedTestApp(
-      child: const AdminMetricInfoButton(metricKey: MetricKey.recipeTotal),
-    ));
+  testWidgets('tapping the info button opens what/how/why, then closes', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const AdminMetricInfoButton(metricKey: MetricKey.recipeTotal),
+      ),
+    );
 
     await tester.tap(find.byIcon(Icons.info_outline));
     await tester.pumpAndSettle();

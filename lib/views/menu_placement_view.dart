@@ -111,14 +111,17 @@ class _MenuPlacementViewContent extends StatelessWidget {
           Center(
             child: Container(
               margin: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingMd),
+                end: AppDimensions.spacingMd,
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
                 border: Border.all(color: cs.onPrimary.withValues(alpha: 0.4)),
               ),
               child: Text(
-                context.l10n
-                    .menuPlacementProgress(vm.placedCount, vm.totalCount),
+                context.l10n.menuPlacementProgress(
+                  vm.placedCount,
+                  vm.totalCount,
+                ),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: cs.onPrimary,
                   fontWeight: FontWeight.w600,
@@ -129,11 +132,11 @@ class _MenuPlacementViewContent extends StatelessWidget {
         ],
         body: vm.plan == null
             ? (vm.hasError
-                ? StateWidget.error(
-                    message: vm.error ?? context.l10n.errorUnexpected,
-                    onAction: vm.init,
-                  )
-                : StateWidget.loading())
+                  ? StateWidget.error(
+                      message: vm.error ?? context.l10n.errorUnexpected,
+                      onAction: vm.init,
+                    )
+                  : StateWidget.loading())
             : _buildBody(context, vm),
       ),
     );
@@ -266,8 +269,9 @@ class _WeekNavRow extends StatelessWidget {
   }
 
   String _formatWeekLabel(BuildContext context, DateTime weekStart) {
-    return context.l10n
-        .slotPickerWeekLabel(IsoWeekUtils.isoWeekNumber(weekStart));
+    return context.l10n.slotPickerWeekLabel(
+      IsoWeekUtils.isoWeekNumber(weekStart),
+    );
   }
 }
 
@@ -374,8 +378,9 @@ class PlacementTray extends StatelessWidget {
                   child: ActionButtons.primaryButton(
                     context,
                     label: context.l10n.commonDone,
-                    onPressed:
-                        !vm.hasPlacements || vm.isLoading ? null : onConfirm,
+                    onPressed: !vm.hasPlacements || vm.isLoading
+                        ? null
+                        : onConfirm,
                     isLoading: vm.isLoading,
                   ),
                 ),

@@ -64,16 +64,16 @@ class _FakeUser extends Fake implements User {
 }
 
 Recipe _recipe(String id, String title) => Recipe(
-      core: RecipeCore(
-        id: id,
-        title: title,
-        description: '',
-        ingredients: const ['x'],
-        instructions: const ['y'],
-        mealType: 'Middag',
-      ),
-      type: RecipeType.personal,
-    );
+  core: RecipeCore(
+    id: id,
+    title: title,
+    description: '',
+    ingredients: const ['x'],
+    instructions: const ['y'],
+    mealType: 'Middag',
+  ),
+  type: RecipeType.personal,
+);
 
 Message _pollMessage({
   required String messageId,
@@ -141,15 +141,19 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(_recipe('fallback', 'fallback'));
-    registerFallbackValue(WeeklyMenuPlan.empty(
-      userId: creatorId,
-      date: DateTime.now(),
-    ));
-    registerFallbackValue(GroupWeeklyMenuPlan.empty(
-      groupId: conversationId,
-      creatorId: creatorId,
-      date: DateTime.now(),
-    ));
+    registerFallbackValue(
+      WeeklyMenuPlan.empty(
+        userId: creatorId,
+        date: DateTime.now(),
+      ),
+    );
+    registerFallbackValue(
+      GroupWeeklyMenuPlan.empty(
+        groupId: conversationId,
+        creatorId: creatorId,
+        date: DateTime.now(),
+      ),
+    );
     registerFallbackValue(DayOfWeek.mon);
     registerFallbackValue(MealSlot.middag);
   });
@@ -172,59 +176,75 @@ void main() {
     getIt.registerSingleton<UnifiedRecipeService>(recipeService);
 
     when(() => authRepo.currentUserId).thenReturn(creatorId);
-    when(() => authRepo.currentUser)
-        .thenReturn(_FakeUser(creatorId, displayName: 'Creator'));
+    when(
+      () => authRepo.currentUser,
+    ).thenReturn(_FakeUser(creatorId, displayName: 'Creator'));
 
-    when(() => messagingRepo.closePoll(
-          messageId: any(named: 'messageId'),
-          closerId: any(named: 'closerId'),
-        )).thenAnswer((_) async {});
+    when(
+      () => messagingRepo.closePoll(
+        messageId: any(named: 'messageId'),
+        closerId: any(named: 'closerId'),
+      ),
+    ).thenAnswer((_) async {});
 
     // Default — group conversation. Overridden per-test for 1:1 cases.
-    when(() => messagingRepo.getConversation(conversationId))
-        .thenAnswer((_) async => _groupConversation(
-              conversationId,
-              [creatorId, 'user-2', 'user-3'],
-            ));
+    when(() => messagingRepo.getConversation(conversationId)).thenAnswer(
+      (_) async => _groupConversation(
+        conversationId,
+        [creatorId, 'user-2', 'user-3'],
+      ),
+    );
 
     // Personal plan service stubs (1:1 path).
-    when(() => planService.addEntry(
-          plan: any(named: 'plan'),
-          day: any(named: 'day'),
-          slot: any(named: 'slot'),
-          recipe: any(named: 'recipe'),
-        )).thenAnswer((inv) => inv.namedArguments[#plan] as WeeklyMenuPlan);
+    when(
+      () => planService.addEntry(
+        plan: any(named: 'plan'),
+        day: any(named: 'day'),
+        slot: any(named: 'slot'),
+        recipe: any(named: 'recipe'),
+      ),
+    ).thenAnswer((inv) => inv.namedArguments[#plan] as WeeklyMenuPlan);
     when(() => planService.save(any())).thenAnswer((_) async {});
 
     // Group plan service stubs (group path).
-    when(() => groupPlanService.getOrBuildWeek(
-          groupId: any(named: 'groupId'),
-          creatorId: any(named: 'creatorId'),
-          date: any(named: 'date'),
-          initialParticipants: any(named: 'initialParticipants'),
-        )).thenAnswer((inv) async => GroupWeeklyMenuPlan.empty(
-          groupId: inv.namedArguments[#groupId] as String,
-          creatorId: inv.namedArguments[#creatorId] as String,
-          date: inv.namedArguments[#date] as DateTime,
-        ));
-    when(() => groupPlanService.addEntry(
-          plan: any(named: 'plan'),
-          actorId: any(named: 'actorId'),
-          day: any(named: 'day'),
-          slot: any(named: 'slot'),
-          recipe: any(named: 'recipe'),
-        )).thenAnswer(
+    when(
+      () => groupPlanService.getOrBuildWeek(
+        groupId: any(named: 'groupId'),
+        creatorId: any(named: 'creatorId'),
+        date: any(named: 'date'),
+        initialParticipants: any(named: 'initialParticipants'),
+      ),
+    ).thenAnswer(
+      (inv) async => GroupWeeklyMenuPlan.empty(
+        groupId: inv.namedArguments[#groupId] as String,
+        creatorId: inv.namedArguments[#creatorId] as String,
+        date: inv.namedArguments[#date] as DateTime,
+      ),
+    );
+    when(
+      () => groupPlanService.addEntry(
+        plan: any(named: 'plan'),
+        actorId: any(named: 'actorId'),
+        day: any(named: 'day'),
+        slot: any(named: 'slot'),
+        recipe: any(named: 'recipe'),
+      ),
+    ).thenAnswer(
       (inv) => inv.namedArguments[#plan] as GroupWeeklyMenuPlan,
     );
-    when(() => groupPlanService.save(
-          plan: any(named: 'plan'),
-          actorId: any(named: 'actorId'),
-        )).thenAnswer((_) async {});
+    when(
+      () => groupPlanService.save(
+        plan: any(named: 'plan'),
+        actorId: any(named: 'actorId'),
+      ),
+    ).thenAnswer((_) async {});
 
-    when(() => socialMenuOps.shareMenuWithFriends(
-          menu: any(named: 'menu'),
-          friendUserIds: any(named: 'friendUserIds'),
-        )).thenAnswer((_) async => true);
+    when(
+      () => socialMenuOps.shareMenuWithFriends(
+        menu: any(named: 'menu'),
+        friendUserIds: any(named: 'friendUserIds'),
+      ),
+    ).thenAnswer((_) async => true);
 
     service = MessagingService(
       messagingRepository: messagingRepo,
@@ -239,8 +259,7 @@ void main() {
   });
 
   group('closePoll routing by conversation type (BUT-405)', () {
-    test(
-        'group conversation → writes to GroupWeeklyMenuPlan, personal plan '
+    test('group conversation → writes to GroupWeeklyMenuPlan, personal plan '
         'service is never touched', () async {
       final now = DateTime.now();
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
@@ -270,43 +289,55 @@ void main() {
       );
       when(() => messagingRepo.getMessage(messageId)).thenAnswer(
         (_) async => _pollMessage(
-            messageId: messageId, conversationId: conversationId, poll: poll),
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: poll,
+        ),
       );
 
       await service.closePoll(messageId: messageId);
 
-      verify(() => messagingRepo.closePoll(
-            messageId: messageId,
-            closerId: creatorId,
-          )).called(1);
-      verify(() => groupPlanService.getOrBuildWeek(
-            groupId: conversationId,
-            creatorId: creatorId,
-            date: any(named: 'date'),
-            initialParticipants: any(named: 'initialParticipants'),
-          )).called(1);
-      verify(() => groupPlanService.addEntry(
-            plan: any(named: 'plan'),
-            actorId: creatorId,
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
-          )).called(1);
-      verify(() => groupPlanService.save(
-            plan: any(named: 'plan'),
-            actorId: creatorId,
-          )).called(1);
+      verify(
+        () => messagingRepo.closePoll(
+          messageId: messageId,
+          closerId: creatorId,
+        ),
+      ).called(1);
+      verify(
+        () => groupPlanService.getOrBuildWeek(
+          groupId: conversationId,
+          creatorId: creatorId,
+          date: any(named: 'date'),
+          initialParticipants: any(named: 'initialParticipants'),
+        ),
+      ).called(1);
+      verify(
+        () => groupPlanService.addEntry(
+          plan: any(named: 'plan'),
+          actorId: creatorId,
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
+        ),
+      ).called(1);
+      verify(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: creatorId,
+        ),
+      ).called(1);
 
       // Personal plan path MUST NOT fire for group conversations.
       verifyNever(() => planService.save(any()));
-      verifyNever(() => socialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-          ));
+      verifyNever(
+        () => socialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+        ),
+      );
     });
 
-    test(
-        '1:1 direct conversation → writes to the creator\'s personal plan + '
+    test('1:1 direct conversation → writes to the creator\'s personal plan + '
         'shares with the other participant, group service untouched', () async {
       final now = DateTime.now();
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
@@ -315,8 +346,9 @@ void main() {
         (_) async => WeeklyMenuPlan.empty(userId: creatorId, date: now),
       );
       // Override default mock: return a direct (1:1) conversation.
-      when(() => messagingRepo.getConversation(directConversationId))
-          .thenAnswer(
+      when(
+        () => messagingRepo.getConversation(directConversationId),
+      ).thenAnswer(
         (_) async =>
             _directConversation(directConversationId, [creatorId, 'user-2']),
       );
@@ -337,33 +369,40 @@ void main() {
       );
       when(() => messagingRepo.getMessage(messageId)).thenAnswer(
         (_) async => _pollMessage(
-            messageId: messageId,
-            conversationId: directConversationId,
-            poll: poll),
+          messageId: messageId,
+          conversationId: directConversationId,
+          poll: poll,
+        ),
       );
 
       await service.closePoll(messageId: messageId);
 
       // Personal plan path fires.
-      verify(() => planService.addEntry(
-            plan: any(named: 'plan'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
-          )).called(1);
+      verify(
+        () => planService.addEntry(
+          plan: any(named: 'plan'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: any<Recipe>(named: 'recipe', that: isA<Recipe>()),
+        ),
+      ).called(1);
       verify(() => planService.save(any())).called(1);
 
       // Group path MUST NOT fire on 1:1.
-      verifyNever(() => groupPlanService.getOrBuildWeek(
-            groupId: any(named: 'groupId'),
-            creatorId: any(named: 'creatorId'),
-            date: any(named: 'date'),
-            initialParticipants: any(named: 'initialParticipants'),
-          ));
-      verifyNever(() => groupPlanService.save(
-            plan: any(named: 'plan'),
-            actorId: any(named: 'actorId'),
-          ));
+      verifyNever(
+        () => groupPlanService.getOrBuildWeek(
+          groupId: any(named: 'groupId'),
+          creatorId: any(named: 'creatorId'),
+          date: any(named: 'date'),
+          initialParticipants: any(named: 'initialParticipants'),
+        ),
+      );
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
     });
   });
 
@@ -383,24 +422,33 @@ void main() {
       );
       when(() => messagingRepo.getMessage(messageId)).thenAnswer(
         (_) async => _pollMessage(
-            messageId: messageId, conversationId: conversationId, poll: poll),
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: poll,
+        ),
       );
 
       await service.closePoll(messageId: messageId);
 
-      verify(() => messagingRepo.closePoll(
-            messageId: messageId,
-            closerId: creatorId,
-          )).called(1);
+      verify(
+        () => messagingRepo.closePoll(
+          messageId: messageId,
+          closerId: creatorId,
+        ),
+      ).called(1);
       verifyNever(() => planService.save(any()));
-      verifyNever(() => groupPlanService.save(
-            plan: any(named: 'plan'),
-            actorId: any(named: 'actorId'),
-          ));
-      verifyNever(() => socialMenuOps.shareMenuWithFriends(
-            menu: any(named: 'menu'),
-            friendUserIds: any(named: 'friendUserIds'),
-          ));
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
+      verifyNever(
+        () => socialMenuOps.shareMenuWithFriends(
+          menu: any(named: 'menu'),
+          friendUserIds: any(named: 'friendUserIds'),
+        ),
+      );
     });
 
     test('tie on votes → first option (chronological order) wins', () async {
@@ -430,26 +478,30 @@ void main() {
       );
       when(() => messagingRepo.getMessage(messageId)).thenAnswer(
         (_) async => _pollMessage(
-            messageId: messageId, conversationId: conversationId, poll: poll),
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: poll,
+        ),
       );
 
       await service.closePoll(messageId: messageId);
 
       // This is a group conversation by default → group path fires.
-      final captured = verify(() => groupPlanService.addEntry(
-            plan: any(named: 'plan'),
-            actorId: any(named: 'actorId'),
-            day: any(named: 'day'),
-            slot: any(named: 'slot'),
-            recipe: captureAny(named: 'recipe'),
-          )).captured;
+      final captured = verify(
+        () => groupPlanService.addEntry(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+          day: any(named: 'day'),
+          slot: any(named: 'slot'),
+          recipe: captureAny(named: 'recipe'),
+        ),
+      ).captured;
       expect(captured, hasLength(1));
       final recipe = captured.single as Recipe;
       expect(recipe.id, equals('recipe-first'));
     });
 
-    test(
-        'plan append must happen BEFORE the poll is closed — if the plan '
+    test('plan append must happen BEFORE the poll is closed — if the plan '
         'save fails, the poll stays open so the user can retry', () async {
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       when(() => recipeService.recipes).thenReturn([winnerRecipe]);
@@ -457,10 +509,12 @@ void main() {
       // Make the group-plan save blow up. The repo close must NOT have
       // been called — otherwise the poll would be closed with no plan
       // entry and the idempotency guard would block retry.
-      when(() => groupPlanService.save(
-            plan: any(named: 'plan'),
-            actorId: any(named: 'actorId'),
-          )).thenThrow(Exception('simulated firestore failure'));
+      when(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).thenThrow(Exception('simulated firestore failure'));
 
       final poll = Poll(
         id: 'poll-fail',
@@ -478,7 +532,10 @@ void main() {
       );
       when(() => messagingRepo.getMessage(messageId)).thenAnswer(
         (_) async => _pollMessage(
-            messageId: messageId, conversationId: conversationId, poll: poll),
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: poll,
+        ),
       );
 
       // Expect the error to propagate.
@@ -488,10 +545,12 @@ void main() {
       );
 
       // Poll close must NOT have fired — plan write is the first side-effect.
-      verifyNever(() => messagingRepo.closePoll(
-            messageId: any(named: 'messageId'),
-            closerId: any(named: 'closerId'),
-          ));
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
     });
 
     test('already-closed poll → no plan write (double-fire guard)', () async {
@@ -515,22 +574,27 @@ void main() {
       );
       when(() => messagingRepo.getMessage(messageId)).thenAnswer(
         (_) async => _pollMessage(
-            messageId: messageId,
-            conversationId: conversationId,
-            poll: closedPoll),
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: closedPoll,
+        ),
       );
 
       await service.closePoll(messageId: messageId);
 
-      verifyNever(() => messagingRepo.closePoll(
-            messageId: any(named: 'messageId'),
-            closerId: any(named: 'closerId'),
-          ));
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
       verifyNever(() => planService.save(any()));
-      verifyNever(() => groupPlanService.save(
-            plan: any(named: 'plan'),
-            actorId: any(named: 'actorId'),
-          ));
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
     });
   });
 }

@@ -23,7 +23,8 @@ class SocialPlatformContentExtractor {
       if (isDisposed()) break;
 
       final result = await controller.evaluateJavascript(
-        source: '''
+        source:
+            '''
         (function() {
           const element = document.querySelector('$selector');
           if (element) {
@@ -52,7 +53,8 @@ class SocialPlatformContentExtractor {
       if (isDisposed()) break;
 
       final result = await controller.evaluateJavascript(
-        source: '''
+        source:
+            '''
         (function() {
           const element = document.querySelector('$selector');
           if (element) {

@@ -86,14 +86,17 @@ class ImageComponents {
             file,
             semanticLabel: context.l10n.tooltipSelectedImage,
             fit: fit,
-            width:
-                dimensions.width == double.infinity ? null : dimensions.width,
+            width: dimensions.width == double.infinity
+                ? null
+                : dimensions.width,
             height: dimensions.height,
             // Add memory cache for performance
-            cacheWidth:
-                dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
-            cacheHeight:
-                dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
+            cacheWidth: dimensions.width.isInfinite
+                ? 800
+                : dimensions.width.toInt(),
+            cacheHeight: dimensions.height.isInfinite
+                ? 600
+                : dimensions.height.toInt(),
             errorBuilder: (context, error, stackTrace) {
               AppLogger.error('File image load error: $error');
               return errorWidget ?? buildErrorPlaceholder(config: config);
@@ -101,17 +104,19 @@ class ImageComponents {
           );
         } else {
           AppLogger.info(
-              'File no longer exists, showing placeholder: $filePath');
+            'File no longer exists, showing placeholder: $filePath',
+          );
           // Show placeholder instead of error for missing files (graceful degradation)
           return placeholder ??
               buildPlaceholder(
                 config: config,
                 child: Builder(
-                    builder: (ctx) => Icon(
-                          Icons.image_outlined,
-                          size: AppDimensions.iconSizeXl,
-                          color: Theme.of(ctx).colorScheme.outline,
-                        )),
+                  builder: (ctx) => Icon(
+                    Icons.image_outlined,
+                    size: AppDimensions.iconSizeXl,
+                    color: Theme.of(ctx).colorScheme.outline,
+                  ),
+                ),
               );
         }
       },
@@ -149,10 +154,12 @@ class ImageComponents {
       fit: fit,
       width: dimensions.width == double.infinity ? null : dimensions.width,
       height: dimensions.height,
-      memCacheWidth:
-          dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
-      memCacheHeight:
-          dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
+      memCacheWidth: dimensions.width.isInfinite
+          ? 800
+          : dimensions.width.toInt(),
+      memCacheHeight: dimensions.height.isInfinite
+          ? 600
+          : dimensions.height.toInt(),
       placeholder: placeholder != null ? (_, __) => placeholder : null,
       errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : null,
     );
@@ -179,29 +186,34 @@ class ImageComponents {
   }) {
     final dimensions = config.getDimensions();
 
-    return Builder(builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      return Container(
-        width: dimensions.width == double.infinity ? null : dimensions.width,
-        height: dimensions.height == double.infinity ? null : dimensions.height,
-        decoration: BoxDecoration(
-          color: backgroundColor ?? cs.surface,
-          borderRadius: config.effectiveBorderRadius,
-          border: config.borderColor != null
-              ? Border.all(
-                  color: config.borderColor!,
-                  width: config.borderWidth ?? 1.0,
-                )
-              : null,
-        ),
-        child: child ??
-            Icon(
-              Icons.restaurant_menu,
-              size: AppDimensions.iconSizeM,
-              color: cs.outline,
-            ),
-      );
-    });
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Container(
+          width: dimensions.width == double.infinity ? null : dimensions.width,
+          height: dimensions.height == double.infinity
+              ? null
+              : dimensions.height,
+          decoration: BoxDecoration(
+            color: backgroundColor ?? cs.surface,
+            borderRadius: config.effectiveBorderRadius,
+            border: config.borderColor != null
+                ? Border.all(
+                    color: config.borderColor!,
+                    width: config.borderWidth ?? 1.0,
+                  )
+                : null,
+          ),
+          child:
+              child ??
+              Icon(
+                Icons.restaurant_menu,
+                size: AppDimensions.iconSizeM,
+                color: cs.outline,
+              ),
+        );
+      },
+    );
   }
 
   /// Build loading placeholder with spinner
@@ -212,16 +224,18 @@ class ImageComponents {
     return buildPlaceholder(
       config: config,
       backgroundColor: backgroundColor,
-      child: Builder(builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return Center(
-          child: LoadingIndicator(
-            size: AppDimensions.iconSizeM,
-            strokeWidth: AppDimensions.strokeWidth2,
-            color: cs.primary,
-          ),
-        );
-      }),
+      child: Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Center(
+            child: LoadingIndicator(
+              size: AppDimensions.iconSizeM,
+              strokeWidth: AppDimensions.strokeWidth2,
+              color: cs.primary,
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -236,11 +250,12 @@ class ImageComponents {
       config: config,
       backgroundColor: backgroundColor,
       child: Builder(
-          builder: (context) => Icon(
-                Icons.image_outlined,
-                size: AppDimensions.iconSizeL,
-                color: Theme.of(context).colorScheme.outline,
-              )),
+        builder: (context) => Icon(
+          Icons.image_outlined,
+          size: AppDimensions.iconSizeL,
+          color: Theme.of(context).colorScheme.outline,
+        ),
+      ),
     );
   }
 
@@ -251,43 +266,47 @@ class ImageComponents {
   }) {
     if (imageCount <= 1) return const SizedBox.shrink();
 
-    return Builder(builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      return Positioned(
-        top: AppDimensions.spacingSm,
-        right: AppDimensions.spacingSm,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Positioned(
+          top: AppDimensions.spacingSm,
+          right: AppDimensions.spacingSm,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingTight,
-              vertical: AppDimensions.spacingXxs),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest
-                .withValues(alpha: AppDimensions.opacityExtraDark),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
-            border: Border.all(
-              color: cs.outlineVariant,
+              vertical: AppDimensions.spacingXxs,
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.collections_outlined,
-                size: AppDimensions.iconSizeXs,
-                color: cs.onSurface,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest.withValues(
+                alpha: AppDimensions.opacityExtraDark,
               ),
-              const SizedBox(width: AppDimensions.spacingXxs),
-              Text(
-                '$imageCount',
-                style: AppTextStyles.textXsBold.copyWith(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+              border: Border.all(
+                color: cs.outlineVariant,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.collections_outlined,
+                  size: AppDimensions.iconSizeXs,
                   color: cs.onSurface,
                 ),
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingXxs),
+                Text(
+                  '$imageCount',
+                  style: AppTextStyles.textXsBold.copyWith(
+                    color: cs.onSurface,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   /// Build image counter for carousels
@@ -298,32 +317,36 @@ class ImageComponents {
   }) {
     if (totalImages <= 1) return const SizedBox.shrink();
 
-    return Builder(builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      return Positioned(
-        top: AppDimensions.spacingMd,
-        right: AppDimensions.spacingMd,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Positioned(
+          top: AppDimensions.spacingMd,
+          right: AppDimensions.spacingMd,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXs),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest
-                .withValues(alpha: AppDimensions.opacityExtraDark),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-            border: Border.all(
-              color: cs.outlineVariant,
+              vertical: AppDimensions.spacingXs,
+            ),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest.withValues(
+                alpha: AppDimensions.opacityExtraDark,
+              ),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              border: Border.all(
+                color: cs.outlineVariant,
+              ),
+            ),
+            child: Text(
+              '${currentIndex + 1}/$totalImages',
+              style: AppTextStyles.metadataEmphasized.copyWith(
+                color: cs.onSurface,
+              ),
             ),
           ),
-          child: Text(
-            '${currentIndex + 1}/$totalImages',
-            style: AppTextStyles.metadataEmphasized.copyWith(
-              color: cs.onSurface,
-            ),
-          ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   /// Build navigation dots for carousels
@@ -335,44 +358,48 @@ class ImageComponents {
   }) {
     if (totalImages <= 1) return const SizedBox.shrink();
 
-    return Builder(builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      return Positioned(
-        bottom: AppDimensions.spacingMd,
-        left: 0,
-        right: 0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            totalImages,
-            (index) => Semantics(
-              label: 'Bild ${index + 1}',
-              button: onDotTap != null,
-              child: GestureDetector(
-                onTap: onDotTap != null ? () => onDotTap(index) : null,
-                child: Container(
-                  width: AppDimensions.dotSize,
-                  height: AppDimensions.dotSize,
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: index == currentIndex
-                        ? cs.primary
-                        : cs.surfaceContainerHighest
-                            .withValues(alpha: AppDimensions.opacityMediumDark),
-                    border: Border.all(
-                      color: cs.outlineVariant,
-                      width: AppDimensions.strokeWidth05,
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Positioned(
+          bottom: AppDimensions.spacingMd,
+          left: 0,
+          right: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              totalImages,
+              (index) => Semantics(
+                label: 'Bild ${index + 1}',
+                button: onDotTap != null,
+                child: GestureDetector(
+                  onTap: onDotTap != null ? () => onDotTap(index) : null,
+                  child: Container(
+                    width: AppDimensions.dotSize,
+                    height: AppDimensions.dotSize,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingXs,
+                    ),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: index == currentIndex
+                          ? cs.primary
+                          : cs.surfaceContainerHighest.withValues(
+                              alpha: AppDimensions.opacityMediumDark,
+                            ),
+                      border: Border.all(
+                        color: cs.outlineVariant,
+                        width: AppDimensions.strokeWidth05,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   /// Build status indicator for avatars
@@ -388,26 +415,29 @@ class ImageComponents {
         ? AppDimensions.spacingMd + AppDimensions.spacingXs
         : dimensions.width * 0.25;
 
-    return Builder(builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      return Positioned(
-        bottom: 0,
-        right: 0,
-        child: Container(
-          width: indicatorSize,
-          height: indicatorSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color:
-                isOnline ? context.butleryColors.success : cs.onSurfaceVariant,
-            border: Border.all(
-              color: cs.surfaceContainerHighest,
-              width: AppDimensions.strokeWidth2,
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            width: indicatorSize,
+            height: indicatorSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isOnline
+                  ? context.butleryColors.success
+                  : cs.onSurfaceVariant,
+              border: Border.all(
+                color: cs.surfaceContainerHighest,
+                width: AppDimensions.strokeWidth2,
+              ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   /// Wrap widget with tap handler

@@ -92,8 +92,9 @@ void main() {
     await tester.pump(); // settle the post-frame loadRuleEffectiveness callback
   }
 
-  testWidgets('loaded tag shows its name in the app bar and the recipe count',
-      (tester) async {
+  testWidgets('loaded tag shows its name in the app bar and the recipe count', (
+    tester,
+  ) async {
     // Proves: the happy path — the resolved tag's name titles the screen and
     // its usage count is rendered via TagDetailHeader.
     final tag = PersonalTag.create(name: 'Vardagsmat');
@@ -118,8 +119,9 @@ void main() {
     expect(find.text('Tagg'), findsOneWidget); // tagDetailDefaultTitle
   });
 
-  testWidgets('loading while tag not yet present shows the loading title',
-      (tester) async {
+  testWidgets('loading while tag not yet present shows the loading title', (
+    tester,
+  ) async {
     // Proves: the isLoading && tag==null branch shows the "Laddar..." app bar
     // rather than prematurely flashing the not-found error.
     fakeVm.setState(tags: const [], isLoading: true);
@@ -129,8 +131,9 @@ void main() {
     expect(find.text('Taggen kunde inte hittas'), findsNothing);
   });
 
-  testWidgets('tapping edit enters edit mode with a Save action and name field',
-      (tester) async {
+  testWidgets('tapping edit enters edit mode with a Save action and name field', (
+    tester,
+  ) async {
     // Proves: the edit IconButton flips the local edit mode — the app bar shows
     // the edit title + a Save action and the body exposes the name text field
     // seeded with the current tag name.
@@ -155,8 +158,9 @@ void main() {
     );
   });
 
-  testWidgets('closing edit mode returns to the detail app bar',
-      (tester) async {
+  testWidgets('closing edit mode returns to the detail app bar', (
+    tester,
+  ) async {
     // Proves: the edit-mode close (X) restores the read view — the Save action
     // disappears and the tag name titles the screen again.
     final tag = PersonalTag.create(name: 'Helg');

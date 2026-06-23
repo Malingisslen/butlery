@@ -42,12 +42,12 @@ class OfflineSyncManager {
     required AuthRepository authRepository,
     VoidCallback? onSyncStateChanged,
     Future<void> Function(String recipeId)? onTagRecipe,
-  })  : _recipeDao = database.recipeDao,
-        _syncQueueDao = database.syncQueueDao,
-        _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository,
-        _onSyncStateChanged = onSyncStateChanged,
-        _onTagRecipe = onTagRecipe;
+  }) : _recipeDao = database.recipeDao,
+       _syncQueueDao = database.syncQueueDao,
+       _firestoreRepository = firestoreRepository,
+       _authRepository = authRepository,
+       _onSyncStateChanged = onSyncStateChanged,
+       _onTagRecipe = onTagRecipe;
 
   // Getters
   bool get isSyncing => _isSyncing;
@@ -113,22 +113,26 @@ class OfflineSyncManager {
           if (item.operation == SyncOperation.tag.name) {
             if (_onTagRecipe != null) {
               AppLogger.info(
-                  '🏷️ Processing pending tagging for: ${item.recipeId}');
+                '🏷️ Processing pending tagging for: ${item.recipeId}',
+              );
               await _onTagRecipe(item.recipeId);
               await _syncQueueDao.dequeue(item.id);
               successCount++;
               AppLogger.success('✅ Tagging completed for: ${item.recipeId}');
             } else {
               AppLogger.warning(
-                  '⚠️ Tag callback not configured, skipping: ${item.recipeId}');
+                '⚠️ Tag callback not configured, skipping: ${item.recipeId}',
+              );
               await _syncQueueDao.dequeue(item.id);
             }
             continue;
           }
 
           // Get recipe from Drift
-          final offlineRecipe =
-              await _recipeDao.getRecipe(item.recipeId, userId);
+          final offlineRecipe = await _recipeDao.getRecipe(
+            item.recipeId,
+            userId,
+          );
 
           if (offlineRecipe != null) {
             final json =
@@ -157,7 +161,8 @@ class OfflineSyncManager {
               // Recipe no longer needs sync - remove from queue
               await _syncQueueDao.dequeue(item.id);
               AppLogger.info(
-                  '✅ Recept ${item.recipeId} behöver inte synkas längre');
+                '✅ Recept ${item.recipeId} behöver inte synkas längre',
+              );
             }
           } else {
             // Recipe doesn't exist - remove from queue
@@ -196,29 +201,32 @@ class OfflineSyncManager {
       // Smart retry: If all failed, use exponential backoff
       if (successCount == 0 && failureCount > 0) {
         AppLogger.info(
-            '⏰ Alla sync-försök misslyckades, använder exponential backoff...');
+          '⏰ Alla sync-försök misslyckades, använder exponential backoff...',
+        );
 
         // Use exponential backoff for retry attempts
         RetryHelper.retryWithBackoff(
-            () async {
-              final stillHasPending = await _syncQueueDao.hasPending(userId);
-              if (isOnline && stillHasPending) {
-                AppLogger.info('🔄 Retry-försök startar...');
-                await syncPendingChanges(isOnline: isOnline);
-              }
-            },
-            maxRetries: 3,
-            shouldRetry: (error) {
-              // Retry on any error - sync state will be checked inside the operation
-              return true;
-            });
+          () async {
+            final stillHasPending = await _syncQueueDao.hasPending(userId);
+            if (isOnline && stillHasPending) {
+              AppLogger.info('🔄 Retry-försök startar...');
+              await syncPendingChanges(isOnline: isOnline);
+            }
+          },
+          maxRetries: 3,
+          shouldRetry: (error) {
+            // Retry on any error - sync state will be checked inside the operation
+            return true;
+          },
+        );
       }
     } catch (e) {
       AppLogger.error('❌ Kritiskt fel vid synkronisering: $e');
 
       // Graceful degradation: Log error but don't crash app
       AppLogger.info(
-          '🛡️ Synkronisering hoppar över denna omgång, försöker igen senare');
+        '🛡️ Synkronisering hoppar över denna omgång, försöker igen senare',
+      );
     } finally {
       _isSyncing = false;
       // Release the lock so waiting operations can proceed

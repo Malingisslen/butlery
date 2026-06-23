@@ -25,29 +25,28 @@ class MockIngredientMatchService extends Mock
 
 // Minimal PantryItem fallback for mocktail argument matchers.
 PantryItem _fallbackPantryItem() => PantryItem(
-      id: 'fallback',
-      ingredientName: 'fallback',
-      quantity: 1,
-      unit: 'st',
-      location: PantryLocation.pantry,
-      addedAt: DateTime.utc(2026, 1, 1),
-    );
+  id: 'fallback',
+  ingredientName: 'fallback',
+  quantity: 1,
+  unit: 'st',
+  location: PantryLocation.pantry,
+  addedAt: DateTime.utc(2026, 1, 1),
+);
 
 IngredientData _ingredient({
   required String id,
   required String swedish,
   String? typicalUnit,
   String? typicalStorage,
-}) =>
-    IngredientData(
-      id: id,
-      swedish: swedish,
-      english: swedish,
-      group: 'other',
-      properties: const {},
-      typicalUnit: typicalUnit,
-      typicalStorage: typicalStorage,
-    );
+}) => IngredientData(
+  id: id,
+  swedish: swedish,
+  english: swedish,
+  group: 'other',
+  properties: const {},
+  typicalUnit: typicalUnit,
+  typicalStorage: typicalStorage,
+);
 
 Recipe _recipeWithNormalizedIngredients({
   required String id,
@@ -73,17 +72,16 @@ PantryItem _pantryItem({
   String? ingredientId,
   String ingredientName = 'Test',
   DateTime? expiryDate,
-}) =>
-    PantryItem(
-      id: id,
-      ingredientId: ingredientId,
-      ingredientName: ingredientName,
-      quantity: 1,
-      unit: 'st',
-      location: PantryLocation.pantry,
-      addedAt: DateTime.utc(2026, 1, 1),
-      expiryDate: expiryDate,
-    );
+}) => PantryItem(
+  id: id,
+  ingredientId: ingredientId,
+  ingredientName: ingredientName,
+  quantity: 1,
+  unit: 'st',
+  location: PantryLocation.pantry,
+  addedAt: DateTime.utc(2026, 1, 1),
+  expiryDate: expiryDate,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -119,10 +117,12 @@ void main() {
     // Stub matchRecipes to delegate correctly — by default return
     // results computed from the actual set intersection so existing
     // tests keep verifying PantryService end-to-end behavior.
-    when(() => mockMatchService.matchRecipes(
-          selectedIngredientIds: any(named: 'selectedIngredientIds'),
-          recipes: any(named: 'recipes'),
-        )).thenAnswer((invocation) async {
+    when(
+      () => mockMatchService.matchRecipes(
+        selectedIngredientIds: any(named: 'selectedIngredientIds'),
+        recipes: any(named: 'recipes'),
+      ),
+    ).thenAnswer((invocation) async {
       final selectedIds =
           invocation.namedArguments[#selectedIngredientIds] as Set<String>;
       final recipes = invocation.namedArguments[#recipes] as List<Recipe>;
@@ -133,13 +133,17 @@ void main() {
         final normalizedSet = normalized.toSet();
         final overlap = normalizedSet.intersection(selectedIds).length;
         if (overlap == 0) continue;
-        matches.add(IngredientMatchResult(
-          recipe: recipe,
-          matchPercent: overlap / normalizedSet.length,
-          matchedCount: overlap,
-          totalCount: normalizedSet.length,
-          missingIngredientIds: normalizedSet.difference(selectedIds).toList(),
-        ));
+        matches.add(
+          IngredientMatchResult(
+            recipe: recipe,
+            matchPercent: overlap / normalizedSet.length,
+            matchedCount: overlap,
+            totalCount: normalizedSet.length,
+            missingIngredientIds: normalizedSet
+                .difference(selectedIds)
+                .toList(),
+          ),
+        );
       }
       matches.sort((a, b) => b.matchPercent.compareTo(a.matchPercent));
       return matches;
@@ -159,171 +163,195 @@ void main() {
 
   group('PantryService.getMatchingRecipes', () {
     test(
-        'should return recipe with 75% match when pantry covers 3 of 4 ingredients',
-        () async {
-      // Arrange: pantry has 3 taxonomy-linked items, recipe needs 4.
-      final pantryItems = [
-        _pantryItem(id: 'p1', ingredientId: 'chicken-breast'),
-        _pantryItem(id: 'p2', ingredientId: 'rice'),
-        _pantryItem(id: 'p3', ingredientId: 'onion'),
-      ];
-      when(() => mockPantryRepository.getAll(userId))
-          .thenAnswer((_) async => pantryItems);
+      'should return recipe with 75% match when pantry covers 3 of 4 ingredients',
+      () async {
+        // Arrange: pantry has 3 taxonomy-linked items, recipe needs 4.
+        final pantryItems = [
+          _pantryItem(id: 'p1', ingredientId: 'chicken-breast'),
+          _pantryItem(id: 'p2', ingredientId: 'rice'),
+          _pantryItem(id: 'p3', ingredientId: 'onion'),
+        ];
+        when(
+          () => mockPantryRepository.getAll(userId),
+        ).thenAnswer((_) async => pantryItems);
 
-      final recipe = _recipeWithNormalizedIngredients(
-        id: 'r1',
-        title: 'Chicken Rice Bowl',
-        normalized: const ['chicken-breast', 'rice', 'onion', 'bell-pepper'],
-      );
+        final recipe = _recipeWithNormalizedIngredients(
+          id: 'r1',
+          title: 'Chicken Rice Bowl',
+          normalized: const ['chicken-breast', 'rice', 'onion', 'bell-pepper'],
+        );
 
-      // Act
-      final result = await service.getMatchingRecipes(userId, [recipe]);
+        // Act
+        final result = await service.getMatchingRecipes(userId, [recipe]);
 
-      // Assert
-      expect(result, hasLength(1));
-      expect(result.first.recipe.core.id, 'r1');
-      expect(result.first.matchPercent, closeTo(0.75, 1e-9));
-    });
+        // Assert
+        expect(result, hasLength(1));
+        expect(result.first.recipe.core.id, 'r1');
+        expect(result.first.matchPercent, closeTo(0.75, 1e-9));
+      },
+    );
 
-    test('should exclude recipes with zero ingredient overlap from the result',
-        () async {
-      // Arrange: pantry has chicken, recipe is a tofu dish — no overlap.
-      final pantryItems = [
-        _pantryItem(id: 'p1', ingredientId: 'chicken-breast'),
-      ];
-      when(() => mockPantryRepository.getAll(userId))
-          .thenAnswer((_) async => pantryItems);
+    test(
+      'should exclude recipes with zero ingredient overlap from the result',
+      () async {
+        // Arrange: pantry has chicken, recipe is a tofu dish — no overlap.
+        final pantryItems = [
+          _pantryItem(id: 'p1', ingredientId: 'chicken-breast'),
+        ];
+        when(
+          () => mockPantryRepository.getAll(userId),
+        ).thenAnswer((_) async => pantryItems);
 
-      final recipe = _recipeWithNormalizedIngredients(
-        id: 'r-tofu',
-        title: 'Tofu Stir Fry',
-        normalized: const ['tofu', 'soy-sauce', 'ginger'],
-      );
+        final recipe = _recipeWithNormalizedIngredients(
+          id: 'r-tofu',
+          title: 'Tofu Stir Fry',
+          normalized: const ['tofu', 'soy-sauce', 'ginger'],
+        );
 
-      // Act
-      final result = await service.getMatchingRecipes(userId, [recipe]);
+        // Act
+        final result = await service.getMatchingRecipes(userId, [recipe]);
 
-      // Assert: recipe dropped entirely, not returned with 0% match.
-      expect(result, isEmpty);
-    });
+        // Assert: recipe dropped entirely, not returned with 0% match.
+        expect(result, isEmpty);
+      },
+    );
   });
 
   group('PantryService.addFromText', () {
-    test('should link to taxonomy ingredient when fuzzy search finds a match',
-        () async {
-      // Arrange: ingredient lookup returns a canonical match.
-      final match = _ingredient(
-        id: 'chicken-breast',
-        swedish: 'Kycklingfilé',
-        typicalUnit: 'g',
-        typicalStorage: 'refrigerated',
-      );
-      when(() => mockIngredientRepository.searchIngredients(
+    test(
+      'should link to taxonomy ingredient when fuzzy search finds a match',
+      () async {
+        // Arrange: ingredient lookup returns a canonical match.
+        final match = _ingredient(
+          id: 'chicken-breast',
+          swedish: 'Kycklingfilé',
+          typicalUnit: 'g',
+          typicalStorage: 'refrigerated',
+        );
+        when(
+          () => mockIngredientRepository.searchIngredients(
             'kycklingfilé',
             limit: 1,
-          )).thenAnswer((_) async => [match]);
-      when(() => mockPantryRepository.add(userId, any()))
-          .thenAnswer((_) async => 'new-item-id');
+          ),
+        ).thenAnswer((_) async => [match]);
+        when(
+          () => mockPantryRepository.add(userId, any()),
+        ).thenAnswer((_) async => 'new-item-id');
 
-      // Act
-      await service.addFromText(
-        userId,
-        'kycklingfilé',
-        quantity: 500,
-        unit: 'g',
-      );
+        // Act
+        await service.addFromText(
+          userId,
+          'kycklingfilé',
+          quantity: 500,
+          unit: 'g',
+        );
 
-      // Assert: repository received an item linked to the taxonomy match.
-      final captured =
-          verify(() => mockPantryRepository.add(userId, captureAny()))
-              .captured
-              .single as PantryItem;
-      expect(captured.ingredientId, 'chicken-breast');
-      expect(captured.ingredientName, 'Kycklingfilé');
-      expect(captured.quantity, 500);
-      expect(captured.unit, 'g');
-    });
+        // Assert: repository received an item linked to the taxonomy match.
+        final captured =
+            verify(
+                  () => mockPantryRepository.add(userId, captureAny()),
+                ).captured.single
+                as PantryItem;
+        expect(captured.ingredientId, 'chicken-breast');
+        expect(captured.ingredientName, 'Kycklingfilé');
+        expect(captured.quantity, 500);
+        expect(captured.unit, 'g');
+      },
+    );
 
     test(
-        'should create an orphan item with null ingredientId when no taxonomy match is found',
-        () async {
-      // Arrange: search returns nothing.
-      when(() => mockIngredientRepository.searchIngredients(
+      'should create an orphan item with null ingredientId when no taxonomy match is found',
+      () async {
+        // Arrange: search returns nothing.
+        when(
+          () => mockIngredientRepository.searchIngredients(
             'XYZABC123',
             limit: 1,
-          )).thenAnswer((_) async => const []);
-      when(() => mockPantryRepository.add(userId, any()))
-          .thenAnswer((_) async => 'new-item-id');
+          ),
+        ).thenAnswer((_) async => const []);
+        when(
+          () => mockPantryRepository.add(userId, any()),
+        ).thenAnswer((_) async => 'new-item-id');
 
-      // Act
-      await service.addFromText(userId, 'XYZABC123');
+        // Act
+        await service.addFromText(userId, 'XYZABC123');
 
-      // Assert: item was stored with the raw text, no taxonomy link.
-      final captured =
-          verify(() => mockPantryRepository.add(userId, captureAny()))
-              .captured
-              .single as PantryItem;
-      expect(captured.ingredientId, isNull);
-      expect(captured.ingredientName, 'XYZABC123');
-    });
+        // Assert: item was stored with the raw text, no taxonomy link.
+        final captured =
+            verify(
+                  () => mockPantryRepository.add(userId, captureAny()),
+                ).captured.single
+                as PantryItem;
+        expect(captured.ingredientId, isNull);
+        expect(captured.ingredientName, 'XYZABC123');
+      },
+    );
   });
 
   group('PantryService.getExpiringSoon', () {
-    test('should return only items expiring within the window, ordered by date',
-        () async {
-      // Arrange: the repository filters by expiry cutoff, so we stub it
-      // to return the items that would survive the query — day+1 and day+2
-      // sorted ascending. day+5 and undated items never reach the service.
-      final today = DateTime.now();
-      DateTime day(int offset) => today.add(Duration(days: offset));
+    test(
+      'should return only items expiring within the window, ordered by date',
+      () async {
+        // Arrange: the repository filters by expiry cutoff, so we stub it
+        // to return the items that would survive the query — day+1 and day+2
+        // sorted ascending. day+5 and undated items never reach the service.
+        final today = DateTime.now();
+        DateTime day(int offset) => today.add(Duration(days: offset));
 
-      final day1 = _pantryItem(
-        id: 'd1',
-        ingredientName: 'Milk',
-        expiryDate: day(1),
-      );
-      final day2 = _pantryItem(
-        id: 'd2',
-        ingredientName: 'Yogurt',
-        expiryDate: day(2),
-      );
+        final day1 = _pantryItem(
+          id: 'd1',
+          ingredientName: 'Milk',
+          expiryDate: day(1),
+        );
+        final day2 = _pantryItem(
+          id: 'd2',
+          ingredientName: 'Yogurt',
+          expiryDate: day(2),
+        );
 
-      when(() => mockPantryRepository.getExpiringSoon(userId, 3))
-          .thenAnswer((_) async => [day1, day2]);
+        when(
+          () => mockPantryRepository.getExpiringSoon(userId, 3),
+        ).thenAnswer((_) async => [day1, day2]);
 
-      // Act
-      final result = await service.getExpiringSoon(userId, days: 3);
+        // Act
+        final result = await service.getExpiringSoon(userId, days: 3);
 
-      // Assert: only the in-window items, in ascending expiry order.
-      expect(result.map((i) => i.id).toList(), ['d1', 'd2']);
-      verify(() => mockPantryRepository.getExpiringSoon(userId, 3)).called(1);
-    });
+        // Assert: only the in-window items, in ascending expiry order.
+        expect(result.map((i) => i.id).toList(), ['d1', 'd2']);
+        verify(() => mockPantryRepository.getExpiringSoon(userId, 3)).called(1);
+      },
+    );
   });
 
   group('PantryService.restoreItem (BUT-954)', () {
-    test('re-adds the removed item and returns it with the fresh document id',
-        () async {
-      // Intent: the snackbar-undo flow must round-trip — the restored item
-      // is byte-identical to the removed one except for the new id the
-      // repository generates.
-      final removed = _pantryItem(id: 'old-id', ingredientName: 'Mjölk');
-      when(() => mockPantryRepository.add(userId, removed))
-          .thenAnswer((_) async => 'new-id');
+    test(
+      're-adds the removed item and returns it with the fresh document id',
+      () async {
+        // Intent: the snackbar-undo flow must round-trip — the restored item
+        // is byte-identical to the removed one except for the new id the
+        // repository generates.
+        final removed = _pantryItem(id: 'old-id', ingredientName: 'Mjölk');
+        when(
+          () => mockPantryRepository.add(userId, removed),
+        ).thenAnswer((_) async => 'new-id');
 
-      final restored = await service.restoreItem(userId, removed);
+        final restored = await service.restoreItem(userId, removed);
 
-      expect(restored.id, 'new-id');
-      expect(restored.ingredientName, 'Mjölk');
-      verify(() => mockPantryRepository.add(userId, removed)).called(1);
-    });
+        expect(restored.id, 'new-id');
+        expect(restored.ingredientName, 'Mjölk');
+        verify(() => mockPantryRepository.add(userId, removed)).called(1);
+      },
+    );
 
     test('rejects invalid payloads via the shared input validation', () async {
       // A blank-name item must never reach the repository — same contract
       // as addFromIngredient/addFromText.
       final junk = _pantryItem(id: 'x', ingredientName: '   ');
 
-      await expectLater(service.restoreItem(userId, junk),
-          throwsA(isA<ValidationException>()));
+      await expectLater(
+        service.restoreItem(userId, junk),
+        throwsA(isA<ValidationException>()),
+      );
       verifyNever(() => mockPantryRepository.add(any(), any()));
     });
   });

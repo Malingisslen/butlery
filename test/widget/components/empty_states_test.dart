@@ -141,8 +141,10 @@ void main() {
       );
 
       final padding = tester.widget<Padding>(find.byType(Padding).first);
-      expect(padding.padding,
-          equals(const EdgeInsets.all(AppDimensions.spacingXl)));
+      expect(
+        padding.padding,
+        equals(const EdgeInsets.all(AppDimensions.spacingXl)),
+      );
     });
 
     testWidgets('wraps content in SingleChildScrollView', (tester) async {
@@ -241,8 +243,9 @@ void main() {
 
     // ───── Variant: noRecipes ─────
 
-    testWidgets('noRecipes uses VegetableIllustration (broccoli)',
-        (tester) async {
+    testWidgets('noRecipes uses VegetableIllustration (broccoli)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(
@@ -262,8 +265,9 @@ void main() {
 
     // ───── Variant: noSearchResults ─────
 
-    testWidgets('noSearchResults uses VegetableIllustration (mushroom)',
-        (tester) async {
+    testWidgets('noSearchResults uses VegetableIllustration (mushroom)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(
@@ -281,8 +285,9 @@ void main() {
 
     // ───── Variant: noRecipes with useIllustration=false ─────
 
-    testWidgets('noRecipes falls back to icon when useIllustration=false',
-        (tester) async {
+    testWidgets('noRecipes falls back to icon when useIllustration=false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(

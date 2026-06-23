@@ -113,7 +113,8 @@ class MessageManagementOperations {
       );
 
       AppLogger.info(
-          '🧹 Deleting ${messages.length} messages from conversation $conversationId');
+        '🧹 Deleting ${messages.length} messages from conversation $conversationId',
+      );
 
       // Delete messages in batches to avoid overwhelming the system
       const batchSize = 50;
@@ -141,10 +142,13 @@ class MessageManagementOperations {
       }
 
       AppLogger.success(
-          '✅ Successfully cleared conversation messages for user $currentUserId');
+        '✅ Successfully cleared conversation messages for user $currentUserId',
+      );
     } catch (e) {
       AppLogger.error(
-          '❌ Failed to delete all messages in conversation $conversationId', e);
+        '❌ Failed to delete all messages in conversation $conversationId',
+        e,
+      );
       rethrow;
     }
   }
@@ -184,7 +188,8 @@ class MessageManagementOperations {
       }
 
       AppLogger.info(
-          '🗑️ Deleting conversation $conversationId for user $currentUserId');
+        '🗑️ Deleting conversation $conversationId for user $currentUserId',
+      );
 
       // First delete all messages in the conversation
       await deleteAllMessages(conversationId);
@@ -215,7 +220,8 @@ class MessageManagementOperations {
       );
 
       AppLogger.success(
-          '✅ Added participants to group conversation: $conversationId');
+        '✅ Added participants to group conversation: $conversationId',
+      );
     } catch (e) {
       AppLogger.error('Failed to add participants to group', e);
       rethrow;
@@ -234,7 +240,8 @@ class MessageManagementOperations {
       );
 
       AppLogger.success(
-          '✅ Removed participant from group conversation: $conversationId');
+        '✅ Removed participant from group conversation: $conversationId',
+      );
     } catch (e) {
       AppLogger.error('Failed to remove participant from group', e);
       rethrow;

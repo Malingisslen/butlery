@@ -53,8 +53,9 @@ void main() {
     expect(currentDecoration(tester), restDeco);
   });
 
-  testWidgets('swaps to hoverDecoration on pointer enter and reverts on exit',
-      (tester) async {
+  testWidgets('swaps to hoverDecoration on pointer enter and reverts on exit', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       createLocalizedTestApp(
         child: const HoverableCard(
@@ -66,13 +67,19 @@ void main() {
     );
 
     final gesture = await hoverOver(tester, find.byType(HoverableCard));
-    expect(currentDecoration(tester), hoverDeco,
-        reason: 'hovering an enabled card must show the hover decoration');
+    expect(
+      currentDecoration(tester),
+      hoverDeco,
+      reason: 'hovering an enabled card must show the hover decoration',
+    );
 
     await gesture.moveTo(const Offset(-500, -500));
     await tester.pumpAndSettle();
-    expect(currentDecoration(tester), restDeco,
-        reason: 'leaving the card must revert to the rest decoration');
+    expect(
+      currentDecoration(tester),
+      restDeco,
+      reason: 'leaving the card must revert to the rest decoration',
+    );
   });
 
   testWidgets('disabled card never swaps decoration on hover', (tester) async {
@@ -88,8 +95,11 @@ void main() {
     );
 
     await hoverOver(tester, find.byType(HoverableCard));
-    expect(currentDecoration(tester), restDeco,
-        reason: 'a non-interactive card must not lift under the cursor');
+    expect(
+      currentDecoration(tester),
+      restDeco,
+      reason: 'a non-interactive card must not lift under the cursor',
+    );
   });
 
   testWidgets('disabled card uses non-clickable cursor', (tester) async {
@@ -112,8 +122,11 @@ void main() {
           )
           .first,
     );
-    expect(region.cursor, isNot(SystemMouseCursors.click),
-        reason: 'disabled card must not present a click cursor');
+    expect(
+      region.cursor,
+      isNot(SystemMouseCursors.click),
+      reason: 'disabled card must not present a click cursor',
+    );
   });
 
   testWidgets('enabled card uses click cursor', (tester) async {
@@ -142,35 +155,42 @@ void main() {
   // animation. The decoration still changes; the AnimatedContainer's duration
   // collapses to zero so the change is instant.
   testWidgets(
-      'reduced motion collapses animation duration but keeps the decoration swap',
-      (tester) async {
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: MediaQuery(
-          data: const MediaQueryData(disableAnimations: true),
-          child: const HoverableCard(
-            duration: Duration(milliseconds: 200),
-            restDecoration: restDeco,
-            hoverDecoration: hoverDeco,
-            child: SizedBox(width: 100, height: 100),
+    'reduced motion collapses animation duration but keeps the decoration swap',
+    (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: const HoverableCard(
+              duration: Duration(milliseconds: 200),
+              restDecoration: restDeco,
+              hoverDecoration: hoverDeco,
+              child: SizedBox(width: 100, height: 100),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(
-      tester.widget<AnimatedContainer>(find.byType(AnimatedContainer)).duration,
-      Duration.zero,
-      reason: 'reduce-motion must collapse the cross-fade to instant',
-    );
+      expect(
+        tester
+            .widget<AnimatedContainer>(find.byType(AnimatedContainer))
+            .duration,
+        Duration.zero,
+        reason: 'reduce-motion must collapse the cross-fade to instant',
+      );
 
-    await hoverOver(tester, find.byType(HoverableCard));
-    expect(currentDecoration(tester), hoverDeco,
-        reason: 'reduce-motion still changes the decoration, just instantly');
-  });
+      await hoverOver(tester, find.byType(HoverableCard));
+      expect(
+        currentDecoration(tester),
+        hoverDeco,
+        reason: 'reduce-motion still changes the decoration, just instantly',
+      );
+    },
+  );
 
-  testWidgets('honours the configured animation duration when motion is on',
-      (tester) async {
+  testWidgets('honours the configured animation duration when motion is on', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       createLocalizedTestApp(
         child: const HoverableCard(

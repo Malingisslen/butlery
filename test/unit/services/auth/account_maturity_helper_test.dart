@@ -14,14 +14,13 @@ class _MockUser extends Mock implements User {}
 
 UserProfile _profile({
   required DateTime joinedAt,
-}) =>
-    UserProfile(
-      uid: 'user1',
-      displayName: 'Anna',
-      email: 'anna@example.com',
-      joinedAt: joinedAt,
-      lastActiveAt: joinedAt,
-    );
+}) => UserProfile(
+  uid: 'user1',
+  displayName: 'Anna',
+  email: 'anna@example.com',
+  joinedAt: joinedAt,
+  lastActiveAt: joinedAt,
+);
 
 void main() {
   late _MockUser user;

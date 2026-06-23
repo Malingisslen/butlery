@@ -8,8 +8,8 @@ import 'package:butlery/models/parsing/site_config.dart';
 /// HOW each metric is computed: a pure function from the fetched [InsightsData]
 /// (plus localized labels for categorical rows) to a [MetricValue]. No side
 /// effects, no fetching — trivially unit-testable with a fixture InsightsData.
-typedef Resolver = MetricValue Function(
-    InsightsData data, AppLocalizations l10n);
+typedef Resolver =
+    MetricValue Function(InsightsData data, AppLocalizations l10n);
 
 /// Localized label for a recipe import method (reuses the existing tab keys).
 String _recipeMethodLabel(AppLocalizations l10n, RecipeImportMethod m) =>
@@ -62,9 +62,9 @@ num? _snapshotRate(Map<String, dynamic>? snapshot) {
 
 final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
   MetricKey.recipeTotal: (data, l10n) => ScalarMetric(
-        data.recipes!.total,
-        previous: (data.recipeSnapshot?['total'] as num?),
-      ),
+    data.recipes!.total,
+    previous: (data.recipeSnapshot?['total'] as num?),
+  ),
   MetricKey.recipeByMethod: (data, l10n) {
     final stats = data.recipes!;
     return BreakdownMetric([
@@ -73,17 +73,17 @@ final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
     ]);
   },
   MetricKey.importDomains: (data, l10n) => ScalarMetric(
-        _activeImportConfigs(data).length,
-        previous: (data.importSnapshot?['byDomain'] as Map?)?.length,
-      ),
+    _activeImportConfigs(data).length,
+    previous: (data.importSnapshot?['byDomain'] as Map?)?.length,
+  ),
   MetricKey.importSuccess: (data, l10n) => ScalarMetric(
-        _activeImportConfigs(data).fold(0, (s, c) => s + c.successCount),
-        previous: data.importSnapshot?['totalSuccess'] as num?,
-      ),
+    _activeImportConfigs(data).fold(0, (s, c) => s + c.successCount),
+    previous: data.importSnapshot?['totalSuccess'] as num?,
+  ),
   MetricKey.importFailure: (data, l10n) => ScalarMetric(
-        _activeImportConfigs(data).fold(0, (s, c) => s + c.failureCount),
-        previous: data.importSnapshot?['totalFailure'] as num?,
-      ),
+    _activeImportConfigs(data).fold(0, (s, c) => s + c.failureCount),
+    previous: data.importSnapshot?['totalFailure'] as num?,
+  ),
   MetricKey.importSuccessRate: (data, l10n) {
     final active = _activeImportConfigs(data);
     final success = active.fold(0, (s, c) => s + c.successCount);
@@ -115,20 +115,26 @@ final Map<MetricKey, Resolver> resolvers = Map.unmodifiable({
     final days = data.engagement!.days;
     if (days.isEmpty) return const ScalarMetric(0);
     // days are newest-first; offset 1 = yesterday.
-    return ScalarMetric(days.first.dau.max,
-        previous: days.length > 1 ? days[1].dau.max : null);
+    return ScalarMetric(
+      days.first.dau.max,
+      previous: days.length > 1 ? days[1].dau.max : null,
+    );
   },
   MetricKey.engagementActive7d: (data, l10n) {
     final days = data.engagement!.days;
     if (days.isEmpty) return const ScalarMetric(0);
-    return ScalarMetric(days.first.wau7d.max,
-        previous: days.length > 7 ? days[7].wau7d.max : null);
+    return ScalarMetric(
+      days.first.wau7d.max,
+      previous: days.length > 7 ? days[7].wau7d.max : null,
+    );
   },
   MetricKey.engagementActive28d: (data, l10n) {
     final days = data.engagement!.days;
     if (days.isEmpty) return const ScalarMetric(0);
-    return ScalarMetric(days.first.wau28d.max,
-        previous: days.length > 28 ? days[28].wau28d.max : null);
+    return ScalarMetric(
+      days.first.wau28d.max,
+      previous: days.length > 28 ? days[28].wau28d.max : null,
+    );
   },
   MetricKey.engagementDailyTable: (data, l10n) {
     final days = data.engagement!.days;

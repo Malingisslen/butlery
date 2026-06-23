@@ -22,8 +22,11 @@ abstract class BaseTracker {
   /// Check if user has granted analytics consent
   /// Returns false if consent not yet configured (privacy-by-default, GDPR Art.25)
   Future<bool> hasAnalyticsConsent() async {
-    return ConsentService.checkSafely(_consentService, ConsentPurpose.analytics,
-        logTag: 'BaseTracker');
+    return ConsentService.checkSafely(
+      _consentService,
+      ConsentPurpose.analytics,
+      logTag: 'BaseTracker',
+    );
   }
 
   /// Log generic event through repository
@@ -122,8 +125,10 @@ abstract class BaseTracker {
       onFire: () async {
         final params = <String, Object>{...extraParams};
         if (joinedAt != null) {
-          params['minutes_since_signup'] =
-              clock.now().difference(joinedAt).inMinutes;
+          params['minutes_since_signup'] = clock
+              .now()
+              .difference(joinedAt)
+              .inMinutes;
         }
         await repository.logEvent(name: eventName, parameters: params);
       },

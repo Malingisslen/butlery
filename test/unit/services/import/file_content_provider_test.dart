@@ -158,8 +158,11 @@ void main() {
         const extension = 'json';
 
         // Act
-        final result =
-            await provider.provideContent(content, fileName, extension);
+        final result = await provider.provideContent(
+          content,
+          fileName,
+          extension,
+        );
 
         // Assert
         expect(result, isNotNull);
@@ -197,14 +200,17 @@ void main() {
           115,
           116,
           34,
-          125
+          125,
         ]); // {"name":"Test"} in bytes
         const fileName = 'recipe.json';
         const extension = 'json';
 
         // Act
-        final result =
-            await provider.provideContent(content, fileName, extension);
+        final result = await provider.provideContent(
+          content,
+          fileName,
+          extension,
+        );
 
         // Assert
         expect(result, isNotNull);
@@ -291,14 +297,19 @@ void main() {
         final content = Uint8List.fromList(jsonString.codeUnits);
 
         // Act
-        final result =
-            await provider.provideContent(content, 'recipe.json', 'json');
+        final result = await provider.provideContent(
+          content,
+          'recipe.json',
+          'json',
+        );
 
         // Assert
         expect(result, isNotNull);
         expect(result!.files.first.extension, equals('json'));
-        expect(String.fromCharCodes(result.files.first.bytes!),
-            equals(jsonString));
+        expect(
+          String.fromCharCodes(result.files.first.bytes!),
+          equals(jsonString),
+        );
       });
 
       test('should support text file content', () async {
@@ -317,14 +328,19 @@ Instructions:
         final content = Uint8List.fromList(textContent.codeUnits);
 
         // Act
-        final result =
-            await provider.provideContent(content, 'recipe.txt', 'txt');
+        final result = await provider.provideContent(
+          content,
+          'recipe.txt',
+          'txt',
+        );
 
         // Assert
         expect(result, isNotNull);
         expect(result!.files.first.extension, equals('txt'));
-        expect(String.fromCharCodes(result.files.first.bytes!),
-            equals(textContent));
+        expect(
+          String.fromCharCodes(result.files.first.bytes!),
+          equals(textContent),
+        );
       });
 
       test('should support HTML file content', () async {
@@ -333,14 +349,19 @@ Instructions:
         final content = Uint8List.fromList(htmlContent.codeUnits);
 
         // Act
-        final result =
-            await provider.provideContent(content, 'recipe.html', 'html');
+        final result = await provider.provideContent(
+          content,
+          'recipe.html',
+          'html',
+        );
 
         // Assert
         expect(result, isNotNull);
         expect(result!.files.first.extension, equals('html'));
-        expect(String.fromCharCodes(result.files.first.bytes!),
-            equals(htmlContent));
+        expect(
+          String.fromCharCodes(result.files.first.bytes!),
+          equals(htmlContent),
+        );
       });
 
       test('should support binary file content', () async {
@@ -352,8 +373,11 @@ Instructions:
         ]);
 
         // Act
-        final result =
-            await provider.provideContent(content, 'recipe.jpg', 'jpg');
+        final result = await provider.provideContent(
+          content,
+          'recipe.jpg',
+          'jpg',
+        );
 
         // Assert
         expect(result, isNotNull);
@@ -404,8 +428,9 @@ Instructions:
         when(() => mockFile3.size).thenReturn(150);
 
         final mockResult = MockFilePickerResult();
-        when(() => mockResult.files)
-            .thenReturn([mockFile1, mockFile2, mockFile3]);
+        when(
+          () => mockResult.files,
+        ).thenReturn([mockFile1, mockFile2, mockFile3]);
         when(() => mockResult.count).thenReturn(3);
         when(() => mockResult.isSinglePick).thenReturn(false);
 
@@ -461,12 +486,22 @@ Instructions:
 
       test('should handle content with UTF-8 BOM', () async {
         // Arrange - UTF-8 BOM followed by "Test"
-        final content =
-            Uint8List.fromList([0xEF, 0xBB, 0xBF, 84, 101, 115, 116]);
+        final content = Uint8List.fromList([
+          0xEF,
+          0xBB,
+          0xBF,
+          84,
+          101,
+          115,
+          116,
+        ]);
 
         // Act
-        final result =
-            await provider.provideContent(content, 'utf8.txt', 'txt');
+        final result = await provider.provideContent(
+          content,
+          'utf8.txt',
+          'txt',
+        );
 
         // Assert
         expect(result, isNotNull);
@@ -481,8 +516,11 @@ Instructions:
             'a' * 255 + '.txt'; // Max filename in most filesystems
 
         // Act
-        final result =
-            await provider.provideContent(content, longFileName, 'txt');
+        final result = await provider.provideContent(
+          content,
+          longFileName,
+          'txt',
+        );
 
         // Assert
         expect(result, isNotNull);

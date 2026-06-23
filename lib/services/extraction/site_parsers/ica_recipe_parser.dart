@@ -140,8 +140,10 @@ class IcaRecipeParser extends RecipeSiteParser {
 
     // Look for "Tips:" sections in text
     final bodyText = (doc.body?.text).orEmpty();
-    final tipMatch = RegExp(r'Tips?:\s*(.+?)(?:\n|$)', caseSensitive: false)
-        .firstMatch(bodyText);
+    final tipMatch = RegExp(
+      r'Tips?:\s*(.+?)(?:\n|$)',
+      caseSensitive: false,
+    ).firstMatch(bodyText);
     if (tipMatch != null) {
       final tip = tipMatch.group(1)?.trim();
       if (tip != null && tip.isNotEmpty) {
@@ -180,8 +182,10 @@ class IcaRecipeParser extends RecipeSiteParser {
     // ICA sometimes includes "ca" (cirka/approximately) in portions
     final yield_ = recipe['recipeYield'];
     if (yield_ is String) {
-      recipe['recipeYield'] =
-          yield_.replaceAll('ca ', '').replaceAll('cirka ', '').trim();
+      recipe['recipeYield'] = yield_
+          .replaceAll('ca ', '')
+          .replaceAll('cirka ', '')
+          .trim();
     }
 
     // Clean ingredient formatting
@@ -208,9 +212,11 @@ class IcaRecipeParser extends RecipeSiteParser {
             }
             return inst;
           })
-          .where((inst) => inst is String
-              ? inst.isNotEmpty
-              : inst is Map && inst['text'] != null)
+          .where(
+            (inst) => inst is String
+                ? inst.isNotEmpty
+                : inst is Map && inst['text'] != null,
+          )
           .toList();
     }
 
@@ -343,8 +349,10 @@ class IcaRecipeParser extends RecipeSiteParser {
 
     // Try finding "Portioner: X" in text
     final bodyText = (doc.body?.text).orEmpty();
-    final portionMatch = RegExp(r'Portioner?:\s*(\d+)', caseSensitive: false)
-        .firstMatch(bodyText);
+    final portionMatch = RegExp(
+      r'Portioner?:\s*(\d+)',
+      caseSensitive: false,
+    ).firstMatch(bodyText);
     if (portionMatch != null) {
       return portionMatch.group(1);
     }
@@ -411,13 +419,15 @@ class IcaRecipeParser extends RecipeSiteParser {
 
     // Extract hours
     final hoursMatch = RegExp(r'(\d+)\s*timm').firstMatch(lowerText);
-    final hours =
-        hoursMatch != null ? int.tryParse(hoursMatch.group(1)!) : null;
+    final hours = hoursMatch != null
+        ? int.tryParse(hoursMatch.group(1)!)
+        : null;
 
     // Extract minutes
     final minutesMatch = RegExp(r'(\d+)\s*min').firstMatch(lowerText);
-    final minutes =
-        minutesMatch != null ? int.tryParse(minutesMatch.group(1)!) : null;
+    final minutes = minutesMatch != null
+        ? int.tryParse(minutesMatch.group(1)!)
+        : null;
 
     if (hours == null && minutes == null) {
       return null;

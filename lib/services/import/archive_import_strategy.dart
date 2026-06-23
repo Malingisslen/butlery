@@ -59,8 +59,10 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     try {
       final trimmed = input.trim();
       Recipe? sourceRecipe;
@@ -212,7 +214,8 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           .firstOrNull;
     } catch (e) {
       AppLogger.warning(
-          'ArchiveImportStrategy: Failed to find recipe by ID "$id": $e');
+        'ArchiveImportStrategy: Failed to find recipe by ID "$id": $e',
+      );
       return null;
     }
   }
@@ -225,7 +228,8 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           .firstOrNull;
     } catch (e) {
       AppLogger.warning(
-          'ArchiveImportStrategy: Failed to find recipe by name "$name": $e');
+        'ArchiveImportStrategy: Failed to find recipe by name "$name": $e',
+      );
       return null;
     }
   }
@@ -244,10 +248,12 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       results = results.where((recipe) {
         return recipe.title.toLowerCase().contains(lowerQuery) ||
             recipe.description.toLowerCase().contains(lowerQuery) ||
-            recipe.ingredients.any((ingredient) =>
-                ingredient.toLowerCase().contains(lowerQuery)) ||
-            (recipe.personalTagIds
-                    ?.any((tag) => tag.toLowerCase().contains(lowerQuery)) ??
+            recipe.ingredients.any(
+              (ingredient) => ingredient.toLowerCase().contains(lowerQuery),
+            ) ||
+            (recipe.personalTagIds?.any(
+                  (tag) => tag.toLowerCase().contains(lowerQuery),
+                ) ??
                 false);
       }).toList();
     }
@@ -263,17 +269,20 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
     // Filter by meal type
     if (mealType != null && mealType.trim().isNotEmpty) {
       results = results
-          .where((recipe) =>
-              recipe.mealType.toLowerCase() == mealType.toLowerCase())
+          .where(
+            (recipe) => recipe.mealType.toLowerCase() == mealType.toLowerCase(),
+          )
           .toList();
     }
 
     // Filter by max time
     if (maxTimeMinutes != null) {
       results = results
-          .where((recipe) =>
-              recipe.timeMinutes != null &&
-              recipe.timeMinutes! <= maxTimeMinutes)
+          .where(
+            (recipe) =>
+                recipe.timeMinutes != null &&
+                recipe.timeMinutes! <= maxTimeMinutes,
+          )
           .toList();
     }
 

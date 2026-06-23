@@ -33,8 +33,8 @@ class LlmEnhancementService extends BaseService {
   LlmEnhancementService({
     required LlmService llmService,
     required ImportRateLimiter rateLimiter,
-  })  : _llmService = llmService,
-        _rateLimiter = rateLimiter;
+  }) : _llmService = llmService,
+       _rateLimiter = rateLimiter;
 
   /// Enhance a partial extraction result with LLM.
   ///
@@ -58,8 +58,10 @@ class LlmEnhancementService extends BaseService {
     }
 
     // Check rate limit first
-    final operation =
-        ImportOperation.withLlm('enhance', LlmOperationType.enhancement);
+    final operation = ImportOperation.withLlm(
+      'enhance',
+      LlmOperationType.enhancement,
+    );
     final limitCheck = await _rateLimiter.checkLimit(operation);
 
     if (limitCheck.isDenied) {
@@ -231,8 +233,10 @@ class LlmEnhancementService extends BaseService {
     );
 
     // Check rate limit
-    final operation =
-        ImportOperation.withLlm('website', LlmOperationType.fullExtraction);
+    final operation = ImportOperation.withLlm(
+      'website',
+      LlmOperationType.fullExtraction,
+    );
     final limitCheck = await _rateLimiter.checkLimit(operation);
 
     if (limitCheck.isDenied) {
@@ -297,8 +301,10 @@ class LlmEnhancementService extends BaseService {
     );
 
     // Check rate limit
-    final operation =
-        ImportOperation.withLlm('video', LlmOperationType.fullExtraction);
+    final operation = ImportOperation.withLlm(
+      'video',
+      LlmOperationType.fullExtraction,
+    );
     final limitCheck = await _rateLimiter.checkLimit(operation);
 
     if (limitCheck.isDenied) {
@@ -369,8 +375,9 @@ class LlmEnhancementService extends BaseService {
     // invariant that Recipe.structuredIngredients validates. This seam covers
     // every LLM-built recipe: TikTok/Instagram captions, photo vision
     // fallback, URL Tier-6 fallback, and enhance mode.
-    final parsedIngredients =
-        extracted.ingredients.map(parsedIngredientFromExtracted).toList();
+    final parsedIngredients = extracted.ingredients
+        .map(parsedIngredientFromExtracted)
+        .toList();
 
     return Recipe.personal(
       title: extracted.title,
@@ -379,8 +386,9 @@ class LlmEnhancementService extends BaseService {
       portions: extracted.portions ?? ParsingTier.kDefaultPortions,
       timeMinutes: extracted.totalTimeMinutes ?? 0,
       ingredients: parsedIngredients.map((i) => i.originalLine).toList(),
-      structuredIngredients:
-          parsedIngredients.map(RecipeIngredient.fromParsed).toList(),
+      structuredIngredients: parsedIngredients
+          .map(RecipeIngredient.fromParsed)
+          .toList(),
       instructions: extracted.instructions,
       personalTagIds: extracted.tags,
       sourceUrl: extracted.source,
@@ -391,23 +399,27 @@ class LlmEnhancementService extends BaseService {
   String _inferMealType(List<String> tags) {
     final lowercaseTags = tags.map((t) => t.toLowerCase()).toList();
 
-    if (lowercaseTags
-        .any((t) => t.contains('frukost') || t.contains('breakfast'))) {
+    if (lowercaseTags.any(
+      (t) => t.contains('frukost') || t.contains('breakfast'),
+    )) {
       return 'breakfast';
     }
     if (lowercaseTags.any((t) => t.contains('lunch'))) {
       return 'lunch';
     }
-    if (lowercaseTags
-        .any((t) => t.contains('middag') || t.contains('dinner'))) {
+    if (lowercaseTags.any(
+      (t) => t.contains('middag') || t.contains('dinner'),
+    )) {
       return 'dinner';
     }
-    if (lowercaseTags
-        .any((t) => t.contains('dessert') || t.contains('efterrätt'))) {
+    if (lowercaseTags.any(
+      (t) => t.contains('dessert') || t.contains('efterrätt'),
+    )) {
       return 'dessert';
     }
-    if (lowercaseTags
-        .any((t) => t.contains('snacks') || t.contains('mellanmål'))) {
+    if (lowercaseTags.any(
+      (t) => t.contains('snacks') || t.contains('mellanmål'),
+    )) {
       return 'snack';
     }
 

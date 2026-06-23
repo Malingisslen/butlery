@@ -79,8 +79,10 @@ class SocialFactory {
       fromUserId: fromUserId ?? 'from_user_test',
       toUserId: toUserId ?? 'to_user_test',
       status: status != null
-          ? FriendRequestStatus.values.firstWhere((s) => s.name == status,
-              orElse: () => FriendRequestStatus.pending)
+          ? FriendRequestStatus.values.firstWhere(
+              (s) => s.name == status,
+              orElse: () => FriendRequestStatus.pending,
+            )
           : FriendRequestStatus.pending,
       sentAt: sentAt ?? DateTime.now(),
       respondedAt: respondedAt,
@@ -218,12 +220,13 @@ class SocialFactory {
   }) {
     if (!includeVariety) {
       return List.generate(
-          count,
-          (index) => createGroupActivityData(
-                title: 'Activity ${index + 1}',
-                ownerName: 'User ${index + 1}',
-                sharedAt: DateTime.now().subtract(Duration(hours: index)),
-              ));
+        count,
+        (index) => createGroupActivityData(
+          title: 'Activity ${index + 1}',
+          ownerName: 'User ${index + 1}',
+          sharedAt: DateTime.now().subtract(Duration(hours: index)),
+        ),
+      );
     }
 
     final activities = <Map<String, dynamic>>[];
@@ -232,7 +235,7 @@ class SocialFactory {
     final swedishTitles = [
       'Köttbullar med gräddsås',
       'Veckans meny',
-      'Inköpslista för helgen'
+      'Inköpslista för helgen',
     ];
 
     for (int i = 0; i < count; i++) {

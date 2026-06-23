@@ -156,8 +156,11 @@ class ImportManager {
     try {
       // Try preferred strategy first if provided
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
-        final result =
-            await _parseWithStrategy(preferredStrategy, input, options);
+        final result = await _parseWithStrategy(
+          preferredStrategy,
+          input,
+          options,
+        );
         if (result.isSuccess) {
           return result;
         }
@@ -220,8 +223,11 @@ class ImportManager {
       if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
         // Phase: analyzing — about to parse via YouTube strategy
         onProgress?.call('analyzing');
-        final result =
-            await _parseWithStrategy(youtubeStrategy, input, options);
+        final result = await _parseWithStrategy(
+          youtubeStrategy,
+          input,
+          options,
+        );
 
         // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
         if (result.isSuccess || result.needsAssistance) {
@@ -262,8 +268,11 @@ class ImportManager {
       final instagramPipeline = _instagramPipeline;
       if (instagramPipeline != null && instagramPipeline.canHandle(input)) {
         onProgress?.call('analyzing');
-        final result =
-            await _parseWithStrategy(instagramPipeline, input, options);
+        final result = await _parseWithStrategy(
+          instagramPipeline,
+          input,
+          options,
+        );
         if (result.isSuccess || result.needsAssistance) {
           onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
@@ -273,8 +282,11 @@ class ImportManager {
 
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
         onProgress?.call('analyzing');
-        final result =
-            await _parseWithStrategy(preferredStrategy, input, options);
+        final result = await _parseWithStrategy(
+          preferredStrategy,
+          input,
+          options,
+        );
         if (result.isSuccess) {
           onProgress?.call('creating');
           await _saveToCacheIfUrl(input, result);
@@ -330,8 +342,9 @@ class ImportManager {
     String input, {
     Map<String, dynamic>? options,
   }) async {
-    final strategy =
-        _strategies.where((s) => s.strategyName == strategyName).firstOrNull;
+    final strategy = _strategies
+        .where((s) => s.strategyName == strategyName)
+        .firstOrNull;
 
     if (strategy == null) {
       return ImportManagerResult.failure(
@@ -411,11 +424,13 @@ class ImportManager {
 
       // Process this batch in parallel
       final batchResults = await Future.wait(
-        batch.map((input) => autoImport(
-              input,
-              preferredStrategy: preferredStrategy,
-              options: options,
-            )),
+        batch.map(
+          (input) => autoImport(
+            input,
+            preferredStrategy: preferredStrategy,
+            options: options,
+          ),
+        ),
       );
 
       for (final result in batchResults) {
@@ -527,11 +542,13 @@ class ImportManager {
 
     for (final strategy in _strategies) {
       if (strategy.canHandle(input)) {
-        suggestions.add(ImportSuggestion(
-          strategy: strategy,
-          confidence: _calculateConfidence(strategy, input),
-          description: strategy.description,
-        ));
+        suggestions.add(
+          ImportSuggestion(
+            strategy: strategy,
+            confidence: _calculateConfidence(strategy, input),
+            description: strategy.description,
+          ),
+        );
       }
     }
 
@@ -543,8 +560,9 @@ class ImportManager {
 
   /// Get text import strategy for direct usage
   TextImportStrategy getTextImportStrategy() {
-    final textStrategy =
-        _strategies.whereType<TextImportStrategy>().firstOrNull;
+    final textStrategy = _strategies
+        .whereType<TextImportStrategy>()
+        .firstOrNull;
 
     if (textStrategy == null) {
       throw StateError('TextImportStrategy not found in available strategies');
@@ -623,8 +641,9 @@ class ImportManager {
       // HIGH-1: Generate preview tags for immediate allergen/dietary display
       var recipeWithPreview = importResult.recipe!;
       if (_taggingService != null && recipeWithPreview.tagResult == null) {
-        final previewTags =
-            await _taggingService!.generatePhase1Preview(recipeWithPreview);
+        final previewTags = await _taggingService!.generatePhase1Preview(
+          recipeWithPreview,
+        );
         if (previewTags != null) {
           recipeWithPreview = Recipe(
             core: recipeWithPreview.core.copyWith(tagResult: previewTags),

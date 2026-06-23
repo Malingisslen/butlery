@@ -147,7 +147,9 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   }
 
   Widget _buildBottomSection(
-      BuildContext context, OnboardingViewModel viewModel) {
+    BuildContext context,
+    OnboardingViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
@@ -166,14 +168,17 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                 ),
                 child: AnimatedContainer(
                   duration: AnimationUtils.getDuration(
-                      context, const Duration(milliseconds: 200)),
+                    context,
+                    const Duration(milliseconds: 200),
+                  ),
                   width: isActive ? 24 : 8,
                   height: 8,
                   decoration: BoxDecoration(
                     color: isActive
                         ? cs.primary
-                        : cs.primary
-                            .withValues(alpha: AppDimensions.opacityLight),
+                        : cs.primary.withValues(
+                            alpha: AppDimensions.opacityLight,
+                          ),
                   ),
                 ),
               );
@@ -193,7 +198,9 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                         viewModel.previousPage();
                         _pageController.previousPage(
                           duration: AnimationUtils.getDuration(
-                              context, const Duration(milliseconds: 300)),
+                            context,
+                            const Duration(milliseconds: 300),
+                          ),
                           curve: Curves.easeInOut,
                         );
                       },
@@ -217,7 +224,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                 child: SizedBox(
                   height: AppDimensions.buttonHeight,
                   child: ElevatedButton(
-                    onPressed: viewModel.isCompleting ||
+                    onPressed:
+                        viewModel.isCompleting ||
                             (viewModel.isAgeGatePage &&
                                 viewModel.selectedBirthYear == null)
                         ? null
@@ -226,8 +234,9 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                       backgroundColor: cs.primary,
                       foregroundColor: cs.surfaceContainerHighest,
                       shape: const RoundedRectangleBorder(),
-                      disabledBackgroundColor: cs.primary
-                          .withValues(alpha: AppDimensions.opacityHalf),
+                      disabledBackgroundColor: cs.primary.withValues(
+                        alpha: AppDimensions.opacityHalf,
+                      ),
                     ),
                     child: viewModel.isCompleting
                         ? LoadingIndicator(
@@ -254,21 +263,27 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   }
 
   Future<void> _handleNext(
-      BuildContext context, OnboardingViewModel viewModel) async {
+    BuildContext context,
+    OnboardingViewModel viewModel,
+  ) async {
     if (viewModel.isLastPage) {
       await _completeOnboarding(context, viewModel);
     } else {
       viewModel.nextPage();
       _pageController.nextPage(
         duration: AnimationUtils.getDuration(
-            context, const Duration(milliseconds: 300)),
+          context,
+          const Duration(milliseconds: 300),
+        ),
         curve: Curves.easeInOut,
       );
     }
   }
 
   Future<void> _skipOnboarding(
-      BuildContext context, OnboardingViewModel viewModel) async {
+    BuildContext context,
+    OnboardingViewModel viewModel,
+  ) async {
     // Confirm first — skipping means no allergen/dietary setup, which has a
     // safety implication, so make the choice deliberate.
     final confirmed = await showDialog<bool>(
@@ -293,7 +308,9 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   }
 
   Future<void> _completeOnboarding(
-      BuildContext context, OnboardingViewModel viewModel) async {
+    BuildContext context,
+    OnboardingViewModel viewModel,
+  ) async {
     final success = await viewModel.completeOnboarding();
     if (!context.mounted) return;
     if (success) {

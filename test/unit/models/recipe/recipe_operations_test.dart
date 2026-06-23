@@ -83,7 +83,9 @@ void main() {
 
         expect(updated.core.ingredients.length, equals(2));
         expect(
-            updated.core.ingredients, equals(['Ingredient 1', 'Ingredient 3']));
+          updated.core.ingredients,
+          equals(['Ingredient 1', 'Ingredient 3']),
+        );
       });
 
       test('should not remove with invalid index', () {
@@ -113,8 +115,10 @@ void main() {
           userId: 'user_123',
         );
 
-        expect(updated.core.ingredients,
-            equals(['Ingredient 2', 'Ingredient 3', 'Ingredient 1']));
+        expect(
+          updated.core.ingredients,
+          equals(['Ingredient 2', 'Ingredient 3', 'Ingredient 1']),
+        );
       });
 
       test('should not reorder with invalid indices', () {
@@ -134,17 +138,21 @@ void main() {
       // index-aligned (raw == ingredients[i]) instead of leaving stale
       // entries in Firestore that the facade getter silently discards.
       const flour = RecipeIngredient(
-          amount: 3, unit: 'dl', name: 'vetemjöl', raw: '3 dl vetemjöl');
+        amount: 3,
+        unit: 'dl',
+        name: 'vetemjöl',
+        raw: '3 dl vetemjöl',
+      );
       const eggs = RecipeIngredient(amount: 2, name: 'ägg', raw: '2 ägg');
 
       Recipe buildStructuredRecipe() => RecipeFactory.createPersonal(
-            title: 'Strukturerat recept',
-            description: 'Med strukturerade ingredienser',
-            ingredients: ['3 dl vetemjöl', '2 ägg'],
-            structuredIngredients: [flour, eggs],
-            instructions: ['Blanda allt'],
-            mealType: 'Middag',
-          );
+        title: 'Strukturerat recept',
+        description: 'Med strukturerade ingredienser',
+        ingredients: ['3 dl vetemjöl', '2 ägg'],
+        structuredIngredients: [flour, eggs],
+        instructions: ['Blanda allt'],
+        mealType: 'Middag',
+      );
 
       void expectAligned(Recipe recipe) {
         final stored = recipe.core.structuredIngredients!;
@@ -157,9 +165,13 @@ void main() {
       test('legacy recipe (no structured data) stays legacy after edits', () {
         final updated = RecipeOperations.addIngredient(testRecipe, '1 dl olja');
 
-        expect(updated.core.structuredIngredients, isNull,
-            reason: 'derivation for legacy recipes happens at import/save, '
-                'not in model-level edits');
+        expect(
+          updated.core.structuredIngredients,
+          isNull,
+          reason:
+              'derivation for legacy recipes happens at import/save, '
+              'not in model-level edits',
+        );
       });
 
       test('addIngredient appends a derived entry in lockstep', () {
@@ -185,47 +197,65 @@ void main() {
         expectAligned(updated);
         expect(updated.core.structuredIngredients![0].amount, 4);
         expect(updated.core.structuredIngredients![0].name, 'rågmjöl');
-        expect(updated.core.structuredIngredients![1], equals(eggs),
-            reason: 'untouched entries are preserved');
+        expect(
+          updated.core.structuredIngredients![1],
+          equals(eggs),
+          reason: 'untouched entries are preserved',
+        );
       });
 
       test('removeIngredient removes the entry at the same index', () {
-        final updated =
-            RecipeOperations.removeIngredient(buildStructuredRecipe(), 0);
+        final updated = RecipeOperations.removeIngredient(
+          buildStructuredRecipe(),
+          0,
+        );
 
         expectAligned(updated);
         expect(updated.core.structuredIngredients, equals([eggs]));
       });
 
       test('reorderIngredients moves the entry with its line', () {
-        final updated =
-            RecipeOperations.reorderIngredients(buildStructuredRecipe(), 0, 1);
+        final updated = RecipeOperations.reorderIngredients(
+          buildStructuredRecipe(),
+          0,
+          1,
+        );
 
         expectAligned(updated);
         expect(updated.core.structuredIngredients, equals([eggs, flour]));
       });
 
-      test('updateAllIngredients reuses matching entries and derives new ones',
-          () {
-        final updated = RecipeOperations.updateAllIngredients(
-          buildStructuredRecipe(),
-          ['2 ägg', '1 dl socker'],
-        );
+      test(
+        'updateAllIngredients reuses matching entries and derives new ones',
+        () {
+          final updated = RecipeOperations.updateAllIngredients(
+            buildStructuredRecipe(),
+            ['2 ägg', '1 dl socker'],
+          );
 
-        expectAligned(updated);
-        expect(updated.core.structuredIngredients![0], equals(eggs),
-            reason: 'kept line keeps its entry across reorder/removal');
-        expect(updated.core.structuredIngredients![1].amount, 1);
-        expect(updated.core.structuredIngredients![1].unit, 'dl');
-      });
+          expectAligned(updated);
+          expect(
+            updated.core.structuredIngredients![0],
+            equals(eggs),
+            reason: 'kept line keeps its entry across reorder/removal',
+          );
+          expect(updated.core.structuredIngredients![1].amount, 1);
+          expect(updated.core.structuredIngredients![1].unit, 'dl');
+        },
+      );
 
       test('stale persisted data is replaced with aligned entries on edit', () {
         // Simulates pre-BUT-1232 garbage: structured list no longer matches
         // the strings (the getter ignores it, but it sits in Firestore).
         const stale = RecipeIngredient(
-            amount: 9, unit: 'kg', name: 'fel', raw: 'gammal rad');
-        final recipe = buildStructuredRecipe()
-            .copyWith(structuredIngredients: const [stale]);
+          amount: 9,
+          unit: 'kg',
+          name: 'fel',
+          raw: 'gammal rad',
+        );
+        final recipe = buildStructuredRecipe().copyWith(
+          structuredIngredients: const [stale],
+        );
 
         final updated = RecipeOperations.removeIngredient(recipe, 0);
 
@@ -292,7 +322,9 @@ void main() {
         );
 
         expect(
-            updated.core.instructions, equals(['Step 3', 'Step 1', 'Step 2']));
+          updated.core.instructions,
+          equals(['Step 3', 'Step 1', 'Step 2']),
+        );
       });
     });
 
@@ -305,8 +337,10 @@ void main() {
         );
 
         expect(updated.core.imageUrls.length, equals(1));
-        expect(updated.core.imageUrls.first,
-            equals('https://example.com/image.jpg'));
+        expect(
+          updated.core.imageUrls.first,
+          equals('https://example.com/image.jpg'),
+        );
       });
 
       test('should not add empty image URL', () {
@@ -345,13 +379,15 @@ void main() {
 
         expect(updated.core.lastCookedAt, isNotNull);
         expect(
-            updated.core.lastCookedAt!.isAfter(before) ||
-                updated.core.lastCookedAt!.isAtSameMomentAs(before),
-            isTrue);
+          updated.core.lastCookedAt!.isAfter(before) ||
+              updated.core.lastCookedAt!.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            updated.core.lastCookedAt!.isBefore(after) ||
-                updated.core.lastCookedAt!.isAtSameMomentAs(after),
-            isTrue);
+          updated.core.lastCookedAt!.isBefore(after) ||
+              updated.core.lastCookedAt!.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
 
       test('should update basic recipe information', () {
@@ -593,8 +629,10 @@ void main() {
         );
 
         expect(RecipeOperations.isValidRecipe(longRecipe), isTrue);
-        expect(RecipeOperations.getComplexityScore(longRecipe),
-            equals(5)); // Max complexity
+        expect(
+          RecipeOperations.getComplexityScore(longRecipe),
+          equals(5),
+        ); // Max complexity
 
         final stats = RecipeOperations.getRecipeStats(longRecipe);
         expect(stats['ingredientCount'], equals(100));

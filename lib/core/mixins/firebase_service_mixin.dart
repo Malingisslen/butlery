@@ -255,13 +255,15 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     // If operation failed and DNS failover is enabled, attempt DNS resilience strategies
     if (enableDNSFailover) {
       AppLogger.warning(
-          'Firebase operation failed, attempting DNS resilience for: $opName');
+        'Firebase operation failed, attempting DNS resilience for: $opName',
+      );
 
       // Check if DNS failover might help
       final hasEnhancedDNS = await _checkEnhancedDNSConnectivity();
       if (hasEnhancedDNS) {
         AppLogger.info(
-            'Enhanced DNS connectivity available, retrying operation: $opName');
+          'Enhanced DNS connectivity available, retrying operation: $opName',
+        );
 
         // Retry the operation with enhanced DNS awareness
         return await executeFirebaseOperationWithRetry(
@@ -448,9 +450,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         .doc(path)
         .snapshots(includeMetadataChanges: includeMetadataChanges)
         .handleError((error) {
-      AppLogger.error('❌ Document stream error for $path: $error');
-      handleCategorizedError(error, 'Watch document: $path');
-    });
+          AppLogger.error('❌ Document stream error for $path: $error');
+          handleCategorizedError(error, 'Watch document: $path');
+        });
   }
 
   /// Create collection stream with proper error handling
@@ -483,9 +485,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     return query
         .snapshots(includeMetadataChanges: includeMetadataChanges)
         .handleError((error) {
-      AppLogger.error('❌ Collection stream error for $path: $error');
-      handleCategorizedError(error, 'Watch collection: $path');
-    });
+          AppLogger.error('❌ Collection stream error for $path: $error');
+          handleCategorizedError(error, 'Watch collection: $path');
+        });
   }
 
   /// Check if error is retryable with DNS-aware error classification.
@@ -598,10 +600,12 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       // Firebase-specific errors might indicate DNS or service issues
       if (e.code == 'unavailable' || e.message?.contains('resolve') == true) {
         AppLogger.warning(
-            '🔥 Firebase connectivity failed (possible DNS issue): ${e.message}');
+          '🔥 Firebase connectivity failed (possible DNS issue): ${e.message}',
+        );
       } else {
         AppLogger.warning(
-            '🔥 Firebase connectivity failed (service issue): ${e.code} - ${e.message}');
+          '🔥 Firebase connectivity failed (service issue): ${e.code} - ${e.message}',
+        );
       }
       return false;
     } catch (e) {
@@ -612,7 +616,8 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
           errorMessage.contains('host') ||
           errorMessage.contains('address associated with hostname')) {
         AppLogger.warning(
-            '🔥 Firebase connectivity failed (DNS resolution issue): $e');
+          '🔥 Firebase connectivity failed (DNS resolution issue): $e',
+        );
       } else {
         AppLogger.warning('🔥 Firebase connectivity check failed: $e');
       }
@@ -653,8 +658,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
 
     for (final server in enhancedDnsServers) {
       try {
-        final result = await InternetAddress.lookup(server)
-            .timeout(const Duration(seconds: 3));
+        final result = await InternetAddress.lookup(
+          server,
+        ).timeout(const Duration(seconds: 3));
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           return true;
         }
@@ -751,13 +757,12 @@ class BatchOperation {
     String path,
     Map<String, dynamic> data, {
     SetOptions? options,
-  }) =>
-      BatchOperation(
-        type: BatchOperationType.set,
-        path: path,
-        data: data,
-        setOptions: options,
-      );
+  }) => BatchOperation(
+    type: BatchOperationType.set,
+    path: path,
+    data: data,
+    setOptions: options,
+  );
 
   factory BatchOperation.update(String path, Map<String, dynamic> data) =>
       BatchOperation(
@@ -767,9 +772,9 @@ class BatchOperation {
       );
 
   factory BatchOperation.delete(String path) => BatchOperation(
-        type: BatchOperationType.delete,
-        path: path,
-      );
+    type: BatchOperationType.delete,
+    path: path,
+  );
 }
 
 /// Batch operation types

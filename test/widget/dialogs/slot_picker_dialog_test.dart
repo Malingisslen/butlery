@@ -37,7 +37,8 @@ void main() {
       (invocation) async => WeeklyMenuPlan.empty(
         userId: 'u',
         date: IsoWeekUtils.weekStartOf(
-            invocation.positionalArguments.single as DateTime),
+          invocation.positionalArguments.single as DateTime,
+        ),
       ),
     );
     TestServiceLocator.registerMock<WeeklyMenuPlanService>(planService);
@@ -82,43 +83,47 @@ void main() {
 
   group('multi-select mode (BUT-999)', () {
     testWidgets(
-        '3 cell taps → confirm shows count and pops all 3 targets for the week',
-        (tester) async {
-      MultiSlotSelection? result;
-      await pumpHost(
-        tester,
-        open: (context) => showMultiSlotPickerDialog(context),
-        onResult: (r) => result = r as MultiSlotSelection?,
-      );
+      '3 cell taps → confirm shows count and pops all 3 targets for the week',
+      (tester) async {
+        MultiSlotSelection? result;
+        await pumpHost(
+          tester,
+          open: (context) => showMultiSlotPickerDialog(context),
+          onResult: (r) => result = r as MultiSlotSelection?,
+        );
 
-      // Rows render in MealSlot.values order (lunch, middag, övrigt), so
-      // the Nth occurrence of a day label addresses a specific slot row.
-      await tester.tap(find.text('mån').at(0)); // (mon, lunch)
-      await tester.pump();
-      await tester.tap(find.text('tis').at(1)); // (tue, middag)
-      await tester.pump();
-      await tester.tap(find.text('ons').at(2)); // (wed, övrigt)
-      await tester.pump();
+        // Rows render in MealSlot.values order (lunch, middag, övrigt), so
+        // the Nth occurrence of a day label addresses a specific slot row.
+        await tester.tap(find.text('mån').at(0)); // (mon, lunch)
+        await tester.pump();
+        await tester.tap(find.text('tis').at(1)); // (tue, middag)
+        await tester.pump();
+        await tester.tap(find.text('ons').at(2)); // (wed, övrigt)
+        await tester.pump();
 
-      expect(find.textContaining('(3)'), findsOneWidget,
-          reason: 'Confirm button must disclose the selection count');
+        expect(
+          find.textContaining('(3)'),
+          findsOneWidget,
+          reason: 'Confirm button must disclose the selection count',
+        );
 
-      await tester.tap(find.textContaining('(3)'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('(3)'));
+        await tester.pumpAndSettle();
 
-      expect(result, isNotNull);
-      expect(result!.targets, hasLength(3));
-      expect(
-        result!.targets,
-        containsAll(const <SlotTarget>[
-          (day: DayOfWeek.mon, slot: MealSlot.lunch),
-          (day: DayOfWeek.tue, slot: MealSlot.middag),
-          (day: DayOfWeek.wed, slot: MealSlot.ovrigt),
-        ]),
-      );
-      // One save per confirm requires one week per selection.
-      expect(result!.weekStart.weekday, DateTime.monday);
-    });
+        expect(result, isNotNull);
+        expect(result!.targets, hasLength(3));
+        expect(
+          result!.targets,
+          containsAll(const <SlotTarget>[
+            (day: DayOfWeek.mon, slot: MealSlot.lunch),
+            (day: DayOfWeek.tue, slot: MealSlot.middag),
+            (day: DayOfWeek.wed, slot: MealSlot.ovrigt),
+          ]),
+        );
+        // One save per confirm requires one week per selection.
+        expect(result!.weekStart.weekday, DateTime.monday);
+      },
+    );
 
     testWidgets('re-tapping a selected cell deselects it', (tester) async {
       MultiSlotSelection? result;
@@ -140,8 +145,9 @@ void main() {
       await tester.tap(find.textContaining('(1)'));
       await tester.pumpAndSettle();
 
-      expect(result!.targets,
-          const <SlotTarget>[(day: DayOfWeek.tue, slot: MealSlot.lunch)]);
+      expect(result!.targets, const <SlotTarget>[
+        (day: DayOfWeek.tue, slot: MealSlot.lunch),
+      ]);
     });
 
     testWidgets('confirm is disabled at zero selections', (tester) async {
@@ -158,8 +164,9 @@ void main() {
   });
 
   group('single-select mode (BUT-1029 regression)', () {
-    testWidgets('one tap pops immediately with the (day, slot) triple',
-        (tester) async {
+    testWidgets('one tap pops immediately with the (day, slot) triple', (
+      tester,
+    ) async {
       SlotSelection? result;
       await pumpHost(
         tester,
@@ -176,8 +183,11 @@ void main() {
       expect(result, isNotNull);
       expect(result!.day, DayOfWeek.fri);
       expect(result!.slot, MealSlot.middag);
-      expect(find.byType(SlotPickerDialog), findsNothing,
-          reason: 'Single-select must pop on first tap, exactly as before');
+      expect(
+        find.byType(SlotPickerDialog),
+        findsNothing,
+        reason: 'Single-select must pop on first tap, exactly as before',
+      );
     });
   });
 }

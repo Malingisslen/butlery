@@ -70,9 +70,11 @@ void main() {
       });
 
       test('writes to /users/{uid}/category_preferences/shopping', () async {
-        await repository.savePreferences(CategoryPreferences(
-          itemCategoryOverrides: const {'a': 'b'},
-        ));
+        await repository.savePreferences(
+          CategoryPreferences(
+            itemCategoryOverrides: const {'a': 'b'},
+          ),
+        );
 
         final doc = await firestore
             .collection(FirestoreCollections.users)
@@ -91,26 +93,30 @@ void main() {
         expect(order, isNull);
       });
 
-      test('saveListCategoryOrder then getListCategoryOrder round-trips',
-          () async {
-        final order = ListCategoryOrder(
-          listId: 'list-1',
-          categoryOrder: const ['produce', 'dairy'],
-        );
+      test(
+        'saveListCategoryOrder then getListCategoryOrder round-trips',
+        () async {
+          final order = ListCategoryOrder(
+            listId: 'list-1',
+            categoryOrder: const ['produce', 'dairy'],
+          );
 
-        await repository.saveListCategoryOrder(order);
-        final loaded = await repository.getListCategoryOrder('list-1');
+          await repository.saveListCategoryOrder(order);
+          final loaded = await repository.getListCategoryOrder('list-1');
 
-        expect(loaded, isNotNull);
-        expect(loaded!.categoryOrder, ['produce', 'dairy']);
-        expect(loaded.listId, 'list-1');
-      });
+          expect(loaded, isNotNull);
+          expect(loaded!.categoryOrder, ['produce', 'dairy']);
+          expect(loaded.listId, 'list-1');
+        },
+      );
 
       test('deleteListCategoryOrder removes the doc', () async {
-        await repository.saveListCategoryOrder(ListCategoryOrder(
-          listId: 'list-x',
-          categoryOrder: const ['a'],
-        ));
+        await repository.saveListCategoryOrder(
+          ListCategoryOrder(
+            listId: 'list-x',
+            categoryOrder: const ['a'],
+          ),
+        );
         expect(await repository.getListCategoryOrder('list-x'), isNotNull);
 
         await repository.deleteListCategoryOrder('list-x');
@@ -118,10 +124,12 @@ void main() {
       });
 
       test('writes to /users/{uid}/list_category_orders/{listId}', () async {
-        await repository.saveListCategoryOrder(ListCategoryOrder(
-          listId: 'list-7',
-          categoryOrder: const ['x'],
-        ));
+        await repository.saveListCategoryOrder(
+          ListCategoryOrder(
+            listId: 'list-7',
+            categoryOrder: const ['x'],
+          ),
+        );
 
         final doc = await firestore
             .collection(FirestoreCollections.users)
@@ -144,41 +152,46 @@ void main() {
       // the contract — "never throws, regardless of success/failure" — and
       // leave the increment-shape assertion to the live Firestore rules
       // tests (firestore-rules-tester owns that surface).
-      test('normalizeItemName collapses casing/whitespace identically',
-          () async {
-        // Pure model assertion (doesn't depend on fake_cloud_firestore
-        // FieldValue semantics): the repo's doc-id resolution must be
-        // deterministic across casing/spacing variants.
-        expect(CategoryPreferences.normalizeItemName('  Salt  '), 'salt');
-        expect(CategoryPreferences.normalizeItemName('SALT'), 'salt');
-        expect(CategoryPreferences.normalizeItemName('salt'), 'salt');
-        expect(CategoryPreferences.normalizeItemName('Mjölk'), 'mjölk');
-      });
+      test(
+        'normalizeItemName collapses casing/whitespace identically',
+        () async {
+          // Pure model assertion (doesn't depend on fake_cloud_firestore
+          // FieldValue semantics): the repo's doc-id resolution must be
+          // deterministic across casing/spacing variants.
+          expect(CategoryPreferences.normalizeItemName('  Salt  '), 'salt');
+          expect(CategoryPreferences.normalizeItemName('SALT'), 'salt');
+          expect(CategoryPreferences.normalizeItemName('salt'), 'salt');
+          expect(CategoryPreferences.normalizeItemName('Mjölk'), 'mjölk');
+        },
+      );
 
-      test('recordGlobalOverride is best-effort — never throws on failure',
-          () async {
-        // Even if writes fail (e.g. rules denial), the call must complete.
-        // FakeFirebaseFirestore doesn't enforce rules, but the contract is
-        // that this method swallows errors. Verify by using an empty name
-        // (which normalizes to '' — a valid doc ID may still succeed; the
-        // important assertion is "no throw").
-        await expectLater(
-          repository.recordGlobalOverride('item', 'cat'),
-          completes,
-        );
-      });
+      test(
+        'recordGlobalOverride is best-effort — never throws on failure',
+        () async {
+          // Even if writes fail (e.g. rules denial), the call must complete.
+          // FakeFirebaseFirestore doesn't enforce rules, but the contract is
+          // that this method swallows errors. Verify by using an empty name
+          // (which normalizes to '' — a valid doc ID may still succeed; the
+          // important assertion is "no throw").
+          await expectLater(
+            repository.recordGlobalOverride('item', 'cat'),
+            completes,
+          );
+        },
+      );
     });
 
     group('auth required', () {
       test(
-          'getPreferences returns null when unauthenticated (caught and logged)',
-          () async {
-        auth.setAuthState(user: null, userId: null, isAuthenticated: false);
+        'getPreferences returns null when unauthenticated (caught and logged)',
+        () async {
+          auth.setAuthState(user: null, userId: null, isAuthenticated: false);
 
-        // Methods catch the AuthenticationException internally and log.
-        // getPreferences explicitly returns null on any failure.
-        expect(await repository.getPreferences(), isNull);
-      });
+          // Methods catch the AuthenticationException internally and log.
+          // getPreferences explicitly returns null on any failure.
+          expect(await repository.getPreferences(), isNull);
+        },
+      );
 
       test('savePreferences rethrows when unauthenticated', () async {
         auth.setAuthState(user: null, userId: null, isAuthenticated: false);
@@ -210,25 +223,27 @@ void main() {
         );
       });
 
-      test('permission hooks are not supported (typed methods own auth)',
-          () async {
-        await expectLater(
-          repository.validateCreatePermission('u', Object()),
-          throwsA(isA<UnsupportedError>()),
-        );
-        await expectLater(
-          repository.validateReadPermission('u', 'r', null),
-          throwsA(isA<UnsupportedError>()),
-        );
-        await expectLater(
-          repository.validateUpdatePermission('u', 'r', Object()),
-          throwsA(isA<UnsupportedError>()),
-        );
-        await expectLater(
-          repository.validateDeletePermission('u', 'r'),
-          throwsA(isA<UnsupportedError>()),
-        );
-      });
+      test(
+        'permission hooks are not supported (typed methods own auth)',
+        () async {
+          await expectLater(
+            repository.validateCreatePermission('u', Object()),
+            throwsA(isA<UnsupportedError>()),
+          );
+          await expectLater(
+            repository.validateReadPermission('u', 'r', null),
+            throwsA(isA<UnsupportedError>()),
+          );
+          await expectLater(
+            repository.validateUpdatePermission('u', 'r', Object()),
+            throwsA(isA<UnsupportedError>()),
+          );
+          await expectLater(
+            repository.validateDeletePermission('u', 'r'),
+            throwsA(isA<UnsupportedError>()),
+          );
+        },
+      );
     });
   });
 }

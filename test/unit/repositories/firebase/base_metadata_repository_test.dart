@@ -69,10 +69,9 @@ Future<void> _seedParent(
 }) async {
   // The validateMetadataAccess override in SharedShoppingViewRepository
   // checks doc existence on shared_content/{id}.
-  await firestore
-      .collection('shared_content')
-      .doc(resourceId)
-      .set({'contentType': 'shopping_list'});
+  await firestore.collection('shared_content').doc(resourceId).set({
+    'contentType': 'shopping_list',
+  });
 }
 
 void main() {
@@ -89,24 +88,26 @@ void main() {
       expect(await repo.isDismissed(_resource), isFalse);
     });
 
-    test('removeMetadata throws PermissionDenied when parent missing',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _dismissRepo(firestore);
-      // Pre-seed a dismissal doc but NO parent shared_content doc; that
-      // makes validateMetadataAccess return false on the next remove call.
-      await firestore
-          .collection('shared_content')
-          .doc(_resource)
-          .collection('dismissals')
-          .doc(_alice)
-          .set({'userId': _alice});
+    test(
+      'removeMetadata throws PermissionDenied when parent missing',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _dismissRepo(firestore);
+        // Pre-seed a dismissal doc but NO parent shared_content doc; that
+        // makes validateMetadataAccess return false on the next remove call.
+        await firestore
+            .collection('shared_content')
+            .doc(_resource)
+            .collection('dismissals')
+            .doc(_alice)
+            .set({'userId': _alice});
 
-      await expectLater(
-        () => repo.undismiss(_resource),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
+        await expectLater(
+          () => repo.undismiss(_resource),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      },
+    );
   });
 
   group('getMetadata (single)', () {
@@ -215,20 +216,22 @@ void main() {
       expect(await repo.hasViewed('l3'), isTrue);
     });
 
-    test('markMultipleAsViewed propagates permission error from a member',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _viewRepo(firestore);
-      // Only seed two of the three parents.
-      await _seedParent(firestore, resourceId: 'l1');
-      await _seedParent(firestore, resourceId: 'l2');
+    test(
+      'markMultipleAsViewed propagates permission error from a member',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _viewRepo(firestore);
+        // Only seed two of the three parents.
+        await _seedParent(firestore, resourceId: 'l1');
+        await _seedParent(firestore, resourceId: 'l2');
 
-      // l3 parent missing → validateMetadataAccess fails → throws.
-      await expectLater(
-        () => repo.markMultipleAsViewed(['l1', 'l2', 'l3']),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
+        // l3 parent missing → validateMetadataAccess fails → throws.
+        await expectLater(
+          () => repo.markMultipleAsViewed(['l1', 'l2', 'l3']),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      },
+    );
   });
 
   group('engagement / dismissal getters delegate correctly', () {

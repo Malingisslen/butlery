@@ -29,9 +29,9 @@ class SocialRecipeViewModel extends ChangeNotifier {
     required UnifiedFriendsService friendsService,
     required UnifiedRecipeService recipeService,
     required UserService userService,
-  })  : _friendsService = friendsService,
-        _recipeService = recipeService,
-        _userService = userService {
+  }) : _friendsService = friendsService,
+       _recipeService = recipeService,
+       _userService = userService {
     _commentsManager = SocialCommentsManager(_recipeService);
     _engagementManager = SocialEngagementManager();
     _profileManager = SocialProfileManager(_friendsService, _userService);
@@ -103,7 +103,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
   }
 
   Future<void> editComment(
-      String recipeId, String commentId, String newContent) async {
+    String recipeId,
+    String commentId,
+    String newContent,
+  ) async {
     await _commentsManager.editComment(recipeId, commentId, newContent);
   }
 
@@ -202,8 +205,11 @@ class SocialRecipeViewModel extends ChangeNotifier {
 
   // Member management operations (delegated to service layer)
   Future<bool> addMemberToRecipe(
-      String recipeId, String userId, String userDisplayName,
-      {required ResourcePermission permission}) async {
+    String recipeId,
+    String userId,
+    String userDisplayName, {
+    required ResourcePermission permission,
+  }) async {
     return await _recipeService.addMemberToRecipe(
       recipeId,
       userId,
@@ -216,7 +222,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
   }
 
   Future<bool> updateMemberPermission(
-      String recipeId, String userId, ResourcePermission permission) async {
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async {
     return await _recipeService.updateMemberPermission(
       recipeId,
       userId,
@@ -239,7 +248,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
   /// The underlying service method is async; use the service directly for full results.
   List<Recipe> getSharedWithMe() {
     AppLogger.warning(
-        'Not yet implemented: getSharedWithMe (sync accessor — use service.social.getSharedWithMe())');
+      'Not yet implemented: getSharedWithMe (sync accessor — use service.social.getSharedWithMe())',
+    );
     return [];
   }
 
@@ -247,7 +257,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
   /// The underlying service method is async; use the service directly for full results.
   List<Recipe> getSharedByMe() {
     AppLogger.warning(
-        'Not yet implemented: getSharedByMe (sync accessor — use service.social.getSharedByMe())');
+      'Not yet implemented: getSharedByMe (sync accessor — use service.social.getSharedByMe())',
+    );
     return [];
   }
 

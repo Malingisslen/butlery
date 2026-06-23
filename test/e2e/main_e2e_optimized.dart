@@ -167,7 +167,8 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
       final mockSharedContentCoordinator =
           _E2EStubFactory.createSharedContentCoordinator();
       getIt.registerSingleton<SharedContentCoordinatorViewModel>(
-          mockSharedContentCoordinator);
+        mockSharedContentCoordinator,
+      );
     } catch (e) {
       // Failed to register SharedContentCoordinatorViewModel
     }
@@ -175,7 +176,8 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     try {
       final mockOfflineService = _E2EStubFactory.createOfflineService();
       getIt.registerSingleton<offline_service.OfflineService>(
-          mockOfflineService);
+        mockOfflineService,
+      );
     } catch (e) {
       // Failed to register OfflineService
     }
@@ -202,28 +204,30 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
       return MaterialApp(
         title: 'Butlery E2E Initializing',
         theme: AppTheme.lightTheme,
-        home: Builder(builder: (context) {
-          final cs = Theme.of(context).colorScheme;
-          return Scaffold(
-            backgroundColor: cs.surface,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: cs.primary),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  Text(
-                    'Initializing E2E Environment...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: cs.onSurfaceVariant,
+        home: Builder(
+          builder: (context) {
+            final cs = Theme.of(context).colorScheme;
+            return Scaffold(
+              backgroundColor: cs.surface,
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: cs.primary),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    Text(
+                      'Initializing E2E Environment...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
       );
     }
 
@@ -346,12 +350,12 @@ class _MockAnalyticsRepository implements AnalyticsRepository {
 /// Provides minimal mock implementation that AuthViewModel depends on
 class _MockAuthService extends AuthService {
   _MockAuthService()
-      : super(
-          authRepository: _MockAuthRepository(),
-          analyticsService: AnalyticsService(
-            repository: _MockAnalyticsRepository(),
-          ),
-        );
+    : super(
+        authRepository: _MockAuthRepository(),
+        analyticsService: AnalyticsService(
+          repository: _MockAnalyticsRepository(),
+        ),
+      );
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -363,8 +367,10 @@ class _MockAuthService extends AuthService {
   String? get errorMessage => _errorMessage;
 
   @override
-  Future<bool> signInWithEmail(
-      {required String email, required String password}) async {
+  Future<bool> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
 
@@ -383,10 +389,11 @@ class _MockAuthService extends AuthService {
   }
 
   @override
-  Future<bool> registerWithEmail(
-      {required String email,
-      required String password,
-      required String displayName}) async {
+  Future<bool> registerWithEmail({
+    required String email,
+    required String password,
+    required String displayName,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
 
@@ -473,10 +480,11 @@ class _MockAuthViewModel extends AuthViewModel {
   }
 
   @override
-  Future<bool> register(
-      {required String email,
-      required String password,
-      required String displayName}) async {
+  Future<bool> register({
+    required String email,
+    required String password,
+    required String displayName,
+  }) async {
     _validationError = null;
     notifyListeners();
 
@@ -571,15 +579,17 @@ class _E2EUserServiceMock extends ChangeNotifier {
   Future<List<UserProfile>> getUserProfiles(List<String> userIds) async {
     final now = DateTime.now();
     return userIds
-        .map((id) => UserProfile(
-              uid: id,
-              displayName: 'E2E User $id',
-              email: 'user$id@butlery.se',
-              isSearchable: true,
-              allowEmailSearch: false,
-              joinedAt: now,
-              lastActiveAt: now,
-            ))
+        .map(
+          (id) => UserProfile(
+            uid: id,
+            displayName: 'E2E User $id',
+            email: 'user$id@butlery.se',
+            isSearchable: true,
+            allowEmailSearch: false,
+            joinedAt: now,
+            lastActiveAt: now,
+          ),
+        )
         .toList();
   }
 

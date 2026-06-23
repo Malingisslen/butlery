@@ -14,8 +14,9 @@ void main() {
     });
 
     group('Spinner Loading', () {
-      testWidgets('should render spinner with no message',
-          (WidgetTester tester) async {
+      testWidgets('should render spinner with no message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -33,8 +34,9 @@ void main() {
         expect(find.byType(Center), findsOneWidget);
       });
 
-      testWidgets('should render spinner with message',
-          (WidgetTester tester) async {
+      testWidgets('should render spinner with message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -53,8 +55,9 @@ void main() {
         expect(find.text('Laddar...'), findsOneWidget);
       });
 
-      testWidgets('should render default spinner when variant is null',
-          (WidgetTester tester) async {
+      testWidgets('should render default spinner when variant is null', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -71,8 +74,9 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should have correct spacing with message',
-          (WidgetTester tester) async {
+      testWidgets('should have correct spacing with message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -127,8 +131,9 @@ void main() {
     });
 
     group('Skeleton Recipe List', () {
-      testWidgets('should render skeleton recipe list with default count',
-          (WidgetTester tester) async {
+      testWidgets('should render skeleton recipe list with default count', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -147,8 +152,9 @@ void main() {
         expect(find.byType(Card), findsNWidgets(5));
       });
 
-      testWidgets('should render skeleton recipe list with custom count',
-          (WidgetTester tester) async {
+      testWidgets('should render skeleton recipe list with custom count', (
+        WidgetTester tester,
+      ) async {
         const customCount = 3;
 
         await tester.pumpWidget(
@@ -168,8 +174,9 @@ void main() {
         expect(find.byType(Card), findsNWidgets(customCount));
       });
 
-      testWidgets('should have correct ListView properties',
-          (WidgetTester tester) async {
+      testWidgets('should have correct ListView properties', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -188,8 +195,9 @@ void main() {
         expect(listView.physics, isA<NeverScrollableScrollPhysics>());
       });
 
-      testWidgets('should have correct padding on ListView',
-          (WidgetTester tester) async {
+      testWidgets('should have correct padding on ListView', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -212,8 +220,9 @@ void main() {
     });
 
     group('Skeleton Recipe Card', () {
-      testWidgets('should render single skeleton recipe card',
-          (WidgetTester tester) async {
+      testWidgets('should render single skeleton recipe card', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -230,8 +239,9 @@ void main() {
         expect(find.byType(Card), findsOneWidget);
       });
 
-      testWidgets('should have correct card properties',
-          (WidgetTester tester) async {
+      testWidgets('should have correct card properties', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -249,12 +259,15 @@ void main() {
         expect(card.elevation, equals(2));
 
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.borderRadius,
-            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(
+          shape.borderRadius,
+          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
+        );
       });
 
-      testWidgets('should have padding inside card',
-          (WidgetTester tester) async {
+      testWidgets('should have padding inside card', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -292,8 +305,9 @@ void main() {
     });
 
     group('Skeleton Generic', () {
-      testWidgets('should render generic skeleton',
-          (WidgetTester tester) async {
+      testWidgets('should render generic skeleton', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -333,8 +347,9 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish loading message',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish loading message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -352,8 +367,9 @@ void main() {
         expect(find.text('Laddar recept...'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish processing message',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish processing message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -371,8 +387,9 @@ void main() {
         expect(find.text('Bearbetar data...'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish fetching message',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish fetching message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -392,8 +409,9 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle zero skeleton items',
-          (WidgetTester tester) async {
+      testWidgets('should handle zero skeleton items', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -412,8 +430,9 @@ void main() {
         expect(find.byType(Card), findsNothing);
       });
 
-      testWidgets('should handle very large skeleton count',
-          (WidgetTester tester) async {
+      testWidgets('should handle very large skeleton count', (
+        WidgetTester tester,
+      ) async {
         const largeCount = 20;
 
         await tester.pumpWidget(
@@ -454,8 +473,9 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should handle very long message',
-          (WidgetTester tester) async {
+      testWidgets('should handle very long message', (
+        WidgetTester tester,
+      ) async {
         final longMessage = 'A' * 200;
 
         await tester.pumpWidget(

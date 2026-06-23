@@ -21,10 +21,12 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
-      registerFallbackValue(RecipeChange(
-        type: RecipeChangeType.added,
-        recipe: RecipeFactory.build(),
-      ));
+      registerFallbackValue(
+        RecipeChange(
+          type: RecipeChangeType.added,
+          recipe: RecipeFactory.build(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -58,8 +60,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.create(recipe))
-            .thenAnswer((_) async => recipe);
+        when(
+          () => mockRepository.create(recipe),
+        ).thenAnswer((_) async => recipe);
 
         // Act
         final created = await mockRepository.create(recipe);
@@ -82,8 +85,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.read(recipeId))
-            .thenAnswer((_) async => expectedRecipe);
+        when(
+          () => mockRepository.read(recipeId),
+        ).thenAnswer((_) async => expectedRecipe);
 
         // Act
         final recipe = await mockRepository.read(recipeId);
@@ -154,8 +158,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.watchRecipes(userId))
-            .thenAnswer((_) => Stream.value(recipes));
+        when(
+          () => mockRepository.watchRecipes(userId),
+        ).thenAnswer((_) => Stream.value(recipes));
 
         // Act
         final stream = mockRepository.watchRecipes(userId);
@@ -186,11 +191,13 @@ void main() {
         final controller = StreamController<List<RecipeChange>>();
 
         // Stub the repository method
-        when(() => mockRepository.subscribeToUserRecipes(
-              userId,
-              any(),
-              onError: any(named: 'onError'),
-            )).thenAnswer((invocation) {
+        when(
+          () => mockRepository.subscribeToUserRecipes(
+            userId,
+            any(),
+            onError: any(named: 'onError'),
+          ),
+        ).thenAnswer((invocation) {
           final callback =
               invocation.positionalArguments[1] as Function(List<RecipeChange>);
           return controller.stream.listen(callback);
@@ -215,11 +222,13 @@ void main() {
         await subscription.cancel();
         await controller.close();
 
-        verify(() => mockRepository.subscribeToUserRecipes(
-              userId,
-              any(),
-              onError: any(named: 'onError'),
-            )).called(1);
+        verify(
+          () => mockRepository.subscribeToUserRecipes(
+            userId,
+            any(),
+            onError: any(named: 'onError'),
+          ),
+        ).called(1);
       });
     });
 
@@ -233,16 +242,19 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.searchRecipes(query))
-            .thenAnswer((_) async => searchResults);
+        when(
+          () => mockRepository.searchRecipes(query),
+        ).thenAnswer((_) async => searchResults);
 
         // Act
         final results = await mockRepository.searchRecipes(query);
 
         // Assert
         expect(results, hasLength(2));
-        expect(results.every((r) => r.title.toLowerCase().contains('pasta')),
-            isTrue);
+        expect(
+          results.every((r) => r.title.toLowerCase().contains('pasta')),
+          isTrue,
+        );
 
         verify(() => mockRepository.searchRecipes(query)).called(1);
       });
@@ -252,8 +264,9 @@ void main() {
         const query = 'xyz123';
 
         // Stub the repository method
-        when(() => mockRepository.searchRecipes(query))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRepository.searchRecipes(query),
+        ).thenAnswer((_) async => []);
 
         // Act
         final results = await mockRepository.searchRecipes(query);
@@ -293,8 +306,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.fetchArchiveRecipes())
-            .thenAnswer((_) async => archiveRecipes);
+        when(
+          () => mockRepository.fetchArchiveRecipes(),
+        ).thenAnswer((_) async => archiveRecipes);
 
         // Act
         final recipes = await mockRepository.fetchArchiveRecipes();
@@ -315,8 +329,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.fetchArchiveRecipe(archiveId))
-            .thenAnswer((_) async => archiveRecipe);
+        when(
+          () => mockRepository.fetchArchiveRecipe(archiveId),
+        ).thenAnswer((_) async => archiveRecipe);
 
         // Act
         final recipe = await mockRepository.fetchArchiveRecipe(archiveId);
@@ -340,8 +355,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.fetchUserRecipes(userId))
-            .thenAnswer((_) async => userRecipes);
+        when(
+          () => mockRepository.fetchUserRecipes(userId),
+        ).thenAnswer((_) async => userRecipes);
 
         // Act
         final recipes = await mockRepository.fetchUserRecipes(userId);
@@ -358,8 +374,9 @@ void main() {
         const userId = 'user-with-no-recipes';
 
         // Stub the repository method
-        when(() => mockRepository.fetchUserRecipes(userId))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRepository.fetchUserRecipes(userId),
+        ).thenAnswer((_) async => []);
 
         // Act
         final recipes = await mockRepository.fetchUserRecipes(userId);

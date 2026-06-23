@@ -93,8 +93,9 @@ class AssistedImportViewModel extends BaseViewModel {
     if (preDetectedIngredientLines != null) {
       likelyIngredientIndices = preDetectedIngredientLines.toSet();
     } else {
-      likelyIngredientIndices =
-          IngredientLineDetector.detectFromLines(lines).toSet();
+      likelyIngredientIndices = IngredientLineDetector.detectFromLines(
+        lines,
+      ).toSet();
     }
 
     likelyInstructionIndices = _detectLikelyInstructions();
@@ -282,7 +283,9 @@ class AssistedImportViewModel extends BaseViewModel {
   String _cleanInstructionLine(String line) {
     return line
         .replaceFirst(
-            RegExp(r'^(steg|step)?\s*\d+[\.\):\s]+', caseSensitive: false), '')
+          RegExp(r'^(steg|step)?\s*\d+[\.\):\s]+', caseSensitive: false),
+          '',
+        )
         .trim();
   }
 

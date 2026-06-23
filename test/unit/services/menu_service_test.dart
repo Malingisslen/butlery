@@ -31,32 +31,53 @@ void main() {
       testRecipes = [
         // Breakfasts (5) — lexicon canonical: 'frukost'
         RecipeFactory.build(
-            id: 'b1', title: 'Havregrynsgrot', mealType: 'frukost'),
+          id: 'b1',
+          title: 'Havregrynsgrot',
+          mealType: 'frukost',
+        ),
         RecipeFactory.build(id: 'b2', title: 'Aggmacka', mealType: 'frukost'),
         RecipeFactory.build(
-            id: 'b3', title: 'Smoothie bowl', mealType: 'frukost'),
+          id: 'b3',
+          title: 'Smoothie bowl',
+          mealType: 'frukost',
+        ),
         RecipeFactory.build(id: 'b4', title: 'Yoghurt', mealType: 'frukost'),
         RecipeFactory.build(id: 'b5', title: 'Pannkakor', mealType: 'frukost'),
         // Lunches (4) — lexicon canonical: 'lunch'
         RecipeFactory.build(id: 'l1', title: 'Caesarsallad', mealType: 'lunch'),
         RecipeFactory.build(
-            id: 'l2', title: 'Pasta Carbonara', mealType: 'lunch'),
+          id: 'l2',
+          title: 'Pasta Carbonara',
+          mealType: 'lunch',
+        ),
         RecipeFactory.build(id: 'l3', title: 'Soppor', mealType: 'lunch'),
         RecipeFactory.build(id: 'l4', title: 'Wraps', mealType: 'lunch'),
         // Dinners (6) — lexicon canonical: 'middag'
         RecipeFactory.build(id: 'd1', title: 'Kottbullar', mealType: 'middag'),
         RecipeFactory.build(
-            id: 'd2', title: 'Lax med potatis', mealType: 'middag'),
+          id: 'd2',
+          title: 'Lax med potatis',
+          mealType: 'middag',
+        ),
         RecipeFactory.build(id: 'd3', title: 'Tacos', mealType: 'middag'),
         RecipeFactory.build(id: 'd4', title: 'Pizza', mealType: 'middag'),
         RecipeFactory.build(id: 'd5', title: 'Lasagne', mealType: 'middag'),
         RecipeFactory.build(
-            id: 'd6', title: 'Kyckling curry', mealType: 'middag'),
+          id: 'd6',
+          title: 'Kyckling curry',
+          mealType: 'middag',
+        ),
         // Snacks (2) — lexicon canonical: 'mellanm\u00e5l'
         RecipeFactory.build(
-            id: 's1', title: 'Fruktsallad', mealType: 'mellanm\u00e5l'),
+          id: 's1',
+          title: 'Fruktsallad',
+          mealType: 'mellanm\u00e5l',
+        ),
         RecipeFactory.build(
-            id: 's2', title: 'Notter', mealType: 'mellanm\u00e5l'),
+          id: 's2',
+          title: 'Notter',
+          mealType: 'mellanm\u00e5l',
+        ),
         // Desserts (2) — lexicon canonical: 'dessert'
         RecipeFactory.build(id: 'e1', title: 'Kladdkaka', mealType: 'dessert'),
         RecipeFactory.build(id: 'e2', title: 'Glass', mealType: 'dessert'),
@@ -120,8 +141,11 @@ void main() {
             '2 $word',
             testRecipes,
           );
-          expect(menu.containsKey('frukost'), isTrue,
-              reason: 'Failed for: $word');
+          expect(
+            menu.containsKey('frukost'),
+            isTrue,
+            reason: 'Failed for: $word',
+          );
         }
       });
 
@@ -196,8 +220,10 @@ void main() {
       });
 
       test('should return empty map for whitespace input', () async {
-        final menu =
-            await menuService.generateMenuFromPrompt('   \n\t  ', testRecipes);
+        final menu = await menuService.generateMenuFromPrompt(
+          '   \n\t  ',
+          testRecipes,
+        );
         expect(menu, isEmpty);
       });
 
@@ -219,8 +245,10 @@ void main() {
       });
 
       test('should handle empty recipe list', () async {
-        final menu =
-            await menuService.generateMenuFromPrompt('tre frukoster', []);
+        final menu = await menuService.generateMenuFromPrompt(
+          'tre frukoster',
+          [],
+        );
         // Parser produces slots but no matching recipes, so result is empty
         final breakfasts = menu['frukost'] ?? [];
         expect(breakfasts, isEmpty);
@@ -288,14 +316,18 @@ void main() {
         );
 
         final menu = await menuService.generateMenuFromParsedRequest(
-            parsed, testRecipes);
+          parsed,
+          testRecipes,
+        );
         expect(menu['middag']?.length, equals(3));
       });
 
       test('should return empty map for empty parsed request', () async {
         final parsed = ParsedMenuRequest.empty('nothing');
         final menu = await menuService.generateMenuFromParsedRequest(
-            parsed, testRecipes);
+          parsed,
+          testRecipes,
+        );
         expect(menu, isEmpty);
       });
     });
@@ -339,7 +371,9 @@ void main() {
         final parsed = ParsedMenuRequest(
           slotRequests: [
             SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 1)]),
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 1)],
+            ),
           ],
           globalAllergenAvoid: const {},
           globalDietaryRequire: const {},
@@ -350,12 +384,17 @@ void main() {
 
         var neverCount = 0;
         for (var i = 0; i < 50; i++) {
-          final menu =
-              await menuService.generateMenuFromParsedRequest(parsed, pool);
+          final menu = await menuService.generateMenuFromParsedRequest(
+            parsed,
+            pool,
+          );
           if (menu['middag']?.first.id == 'never') neverCount++;
         }
-        expect(neverCount, greaterThan(35),
-            reason: 'Never-cooked (weight 90) should be heavily preferred');
+        expect(
+          neverCount,
+          greaterThan(35),
+          reason: 'Never-cooked (weight 90) should be heavily preferred',
+        );
       });
 
       test('should give season boost to seasonal recipes', () async {
@@ -371,16 +410,24 @@ void main() {
           seasonTag = 'vinter';
         }
 
-        final seasonal =
-            recipeWithCookedAt('seasonal', null, tags: {seasonTag});
-        final nonSeasonal =
-            recipeWithCookedAt('non_seasonal', null, tags: {'not_a_season'});
+        final seasonal = recipeWithCookedAt(
+          'seasonal',
+          null,
+          tags: {seasonTag},
+        );
+        final nonSeasonal = recipeWithCookedAt(
+          'non_seasonal',
+          null,
+          tags: {'not_a_season'},
+        );
 
         final pool = [seasonal, nonSeasonal];
         final parsed = ParsedMenuRequest(
           slotRequests: [
             SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 1)]),
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 1)],
+            ),
           ],
           globalAllergenAvoid: const {},
           globalDietaryRequire: const {},
@@ -400,21 +447,28 @@ void main() {
         );
         var seasonalCount = 0;
         for (var i = 0; i < 1000; i++) {
-          final menu =
-              await seededService.generateMenuFromParsedRequest(parsed, pool);
+          final menu = await seededService.generateMenuFromParsedRequest(
+            parsed,
+            pool,
+          );
           if (menu['middag']?.first.id == 'seasonal') seasonalCount++;
         }
         // With the fixed seed this is exact; >540 proves the boost (clearly above
         // the no-boost ~500 expectation) and never flakes since it's deterministic.
-        expect(seasonalCount, greaterThan(540),
-            reason: 'Seasonal recipes should be preferred (1.5x weight)');
+        expect(
+          seasonalCount,
+          greaterThan(540),
+          reason: 'Seasonal recipes should be preferred (1.5x weight)',
+        );
       });
 
       test('should enforce cuisine diversity (max 2 per cuisine)', () async {
-        final italienskTag =
-            CuisineConfig.cuisines.firstWhere((c) => c.key == 'italiensk').tag;
-        final svenskTag =
-            CuisineConfig.cuisines.firstWhere((c) => c.key == 'svensk').tag;
+        final italienskTag = CuisineConfig.cuisines
+            .firstWhere((c) => c.key == 'italiensk')
+            .tag;
+        final svenskTag = CuisineConfig.cuisines
+            .firstWhere((c) => c.key == 'svensk')
+            .tag;
 
         // Need at least 3 distinct cuisine groups so diversity kicks in.
         // Use null-cuisine recipes as a third group.
@@ -437,7 +491,9 @@ void main() {
         final parsed = ParsedMenuRequest(
           slotRequests: [
             SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 5)]),
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 5)],
+            ),
           ],
           globalAllergenAvoid: const {},
           globalDietaryRequire: const {},
@@ -446,8 +502,10 @@ void main() {
           rawPrompt: 'fem middagar',
         );
 
-        final menu =
-            await menuService.generateMenuFromParsedRequest(parsed, pool);
+        final menu = await menuService.generateMenuFromParsedRequest(
+          parsed,
+          pool,
+        );
         final dinners = menu['middag'] ?? [];
         expect(dinners.length, equals(5));
 
@@ -460,8 +518,11 @@ void main() {
         }
 
         for (final entry in cuisineCounts.entries) {
-          expect(entry.value, lessThanOrEqualTo(2),
-              reason: '${entry.key} should have max 2, got ${entry.value}');
+          expect(
+            entry.value,
+            lessThanOrEqualTo(2),
+            reason: '${entry.key} should have max 2, got ${entry.value}',
+          );
         }
       });
 
@@ -473,7 +534,9 @@ void main() {
         final parsed = ParsedMenuRequest(
           slotRequests: [
             SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 3)]),
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 3)],
+            ),
           ],
           globalAllergenAvoid: const {},
           globalDietaryRequire: const {},
@@ -482,8 +545,10 @@ void main() {
           rawPrompt: 'tre middagar',
         );
 
-        final menu =
-            await menuService.generateMenuFromParsedRequest(parsed, pool);
+        final menu = await menuService.generateMenuFromParsedRequest(
+          parsed,
+          pool,
+        );
         expect(menu['middag']?.length, equals(3));
       });
     });
@@ -508,30 +573,47 @@ void main() {
         final high = rated(id: 'high', rating: 5.0, ratingCount: 40);
         final low = rated(id: 'low', rating: 2.0, ratingCount: 40);
 
-        final highWeight =
-            MenuService.debugRecipeWeight(high, seasonTag: 'no_season');
-        final lowWeight =
-            MenuService.debugRecipeWeight(low, seasonTag: 'no_season');
+        final highWeight = MenuService.debugRecipeWeight(
+          high,
+          seasonTag: 'no_season',
+        );
+        final lowWeight = MenuService.debugRecipeWeight(
+          low,
+          seasonTag: 'no_season',
+        );
 
-        expect(highWeight, greaterThan(lowWeight),
-            reason: '5-star should outweigh 2-star (same recency, no season)');
+        expect(
+          highWeight,
+          greaterThan(lowWeight),
+          reason: '5-star should outweigh 2-star (same recency, no season)',
+        );
       });
 
       test('unrated recipe keeps a non-zero, un-penalized weight', () {
         final unrated = rated(id: 'unrated', rating: null, ratingCount: 0);
         final oneStar = rated(id: 'one_star', rating: 1.0, ratingCount: 10);
 
-        final unratedWeight =
-            MenuService.debugRecipeWeight(unrated, seasonTag: 'no_season');
-        final oneStarWeight =
-            MenuService.debugRecipeWeight(oneStar, seasonTag: 'no_season');
+        final unratedWeight = MenuService.debugRecipeWeight(
+          unrated,
+          seasonTag: 'no_season',
+        );
+        final oneStarWeight = MenuService.debugRecipeWeight(
+          oneStar,
+          seasonTag: 'no_season',
+        );
 
-        expect(unratedWeight, greaterThan(0),
-            reason: 'Unrated recipes must still be selectable');
+        expect(
+          unratedWeight,
+          greaterThan(0),
+          reason: 'Unrated recipes must still be selectable',
+        );
         // Unrated == multiplier 1.0; a 1-star recipe also maps to 1.0, so the
         // unrated recipe is never penalized relative to the lowest rating.
-        expect(unratedWeight, equals(oneStarWeight),
-            reason: 'Unrated must not be worse than a 1-star recipe');
+        expect(
+          unratedWeight,
+          equals(oneStarWeight),
+          reason: 'Unrated must not be worse than a 1-star recipe',
+        );
       });
 
       test('rating boost is gentle (never dominates recency)', () {
@@ -540,13 +622,20 @@ void main() {
         final fiveStar = rated(id: '5', rating: 5.0, ratingCount: 50);
         final unrated = rated(id: 'u', rating: null, ratingCount: 0);
 
-        final fiveWeight =
-            MenuService.debugRecipeWeight(fiveStar, seasonTag: 'no_season');
-        final unratedWeight =
-            MenuService.debugRecipeWeight(unrated, seasonTag: 'no_season');
+        final fiveWeight = MenuService.debugRecipeWeight(
+          fiveStar,
+          seasonTag: 'no_season',
+        );
+        final unratedWeight = MenuService.debugRecipeWeight(
+          unrated,
+          seasonTag: 'no_season',
+        );
 
-        expect(fiveWeight / unratedWeight, lessThanOrEqualTo(1.4 + 1e-9),
-            reason: 'Max rating boost capped at 1.4x');
+        expect(
+          fiveWeight / unratedWeight,
+          lessThanOrEqualTo(1.4 + 1e-9),
+          reason: 'Max rating boost capped at 1.4x',
+        );
       });
     });
 
@@ -569,11 +658,17 @@ void main() {
           recentlyUsedIds: {'used'},
         );
 
-        expect(usedWeight, lessThan(unusedWeight),
-            reason: 'Recently-used recipe must rotate out');
+        expect(
+          usedWeight,
+          lessThan(unusedWeight),
+          reason: 'Recently-used recipe must rotate out',
+        );
         // Decayed, not zeroed — still has a chance if the pool is thin.
-        expect(usedWeight, greaterThan(0),
-            reason: 'Down-weight is a decay, not an exclusion');
+        expect(
+          usedWeight,
+          greaterThan(0),
+          reason: 'Down-weight is a decay, not an exclusion',
+        );
       });
 
       test('no-history path leaves weights unchanged (full pool)', () {
@@ -584,34 +679,48 @@ void main() {
           seasonTag: 'no_season',
           recentlyUsedIds: const {},
         );
-        final withoutArg =
-            MenuService.debugRecipeWeight(r, seasonTag: 'no_season');
-
-        expect(withEmptyHistory, equals(withoutArg),
-            reason: 'Empty recent-use set must not change any weight');
-      });
-
-      test('generation with no history returns the full requested count',
-          () async {
-        final pool = List.generate(5, (i) => simple('r_$i'));
-        final parsed = ParsedMenuRequest(
-          slotRequests: [
-            SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 4)]),
-          ],
-          globalAllergenAvoid: const {},
-          globalDietaryRequire: const {},
-          dayPins: const [],
-          trace: const ExtractionTrace(),
-          rawPrompt: 'fyra middagar',
+        final withoutArg = MenuService.debugRecipeWeight(
+          r,
+          seasonTag: 'no_season',
         );
 
-        // No recentlyUsedRecipeIds passed → first-ever-menu path.
-        final menu =
-            await menuService.generateMenuFromParsedRequest(parsed, pool);
-        expect(menu['middag']?.length, equals(4),
-            reason: 'No history must not shrink the pool');
+        expect(
+          withEmptyHistory,
+          equals(withoutArg),
+          reason: 'Empty recent-use set must not change any weight',
+        );
       });
+
+      test(
+        'generation with no history returns the full requested count',
+        () async {
+          final pool = List.generate(5, (i) => simple('r_$i'));
+          final parsed = ParsedMenuRequest(
+            slotRequests: [
+              SlotRequest(
+                mealType: 'middag',
+                subRequests: [RecipeConstraint(count: 4)],
+              ),
+            ],
+            globalAllergenAvoid: const {},
+            globalDietaryRequire: const {},
+            dayPins: const [],
+            trace: const ExtractionTrace(),
+            rawPrompt: 'fyra middagar',
+          );
+
+          // No recentlyUsedRecipeIds passed → first-ever-menu path.
+          final menu = await menuService.generateMenuFromParsedRequest(
+            parsed,
+            pool,
+          );
+          expect(
+            menu['middag']?.length,
+            equals(4),
+            reason: 'No history must not shrink the pool',
+          );
+        },
+      );
 
       test('decay does not starve a thin pool (graceful fallback)', () async {
         // Every recipe in the pool was used recently. Because decay keeps a
@@ -620,7 +729,9 @@ void main() {
         final parsed = ParsedMenuRequest(
           slotRequests: [
             SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 4)]),
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 4)],
+            ),
           ],
           globalAllergenAvoid: const {},
           globalDietaryRequire: const {},
@@ -634,8 +745,11 @@ void main() {
           pool,
           recentlyUsedRecipeIds: {'r_0', 'r_1', 'r_2', 'r_3'},
         );
-        expect(menu['middag']?.length, equals(4),
-            reason: 'All-recent pool must still fill via decay, not exclude');
+        expect(
+          menu['middag']?.length,
+          equals(4),
+          reason: 'All-recent pool must still fill via decay, not exclude',
+        );
       });
     });
 
@@ -649,19 +763,25 @@ void main() {
             mealType: i % 3 == 0
                 ? 'frukost'
                 : i % 3 == 1
-                    ? 'lunch'
-                    : 'middag',
+                ? 'lunch'
+                : 'middag',
           ),
         );
 
         final parsed = ParsedMenuRequest(
           slotRequests: [
             SlotRequest(
-                mealType: 'frukost', subRequests: [RecipeConstraint(count: 5)]),
+              mealType: 'frukost',
+              subRequests: [RecipeConstraint(count: 5)],
+            ),
             SlotRequest(
-                mealType: 'lunch', subRequests: [RecipeConstraint(count: 3)]),
+              mealType: 'lunch',
+              subRequests: [RecipeConstraint(count: 3)],
+            ),
             SlotRequest(
-                mealType: 'middag', subRequests: [RecipeConstraint(count: 4)]),
+              mealType: 'middag',
+              subRequests: [RecipeConstraint(count: 4)],
+            ),
           ],
           globalAllergenAvoid: const {},
           globalDietaryRequire: const {},
@@ -671,8 +791,10 @@ void main() {
         );
 
         final sw = Stopwatch()..start();
-        final menu =
-            await menuService.generateMenuFromParsedRequest(parsed, largeList);
+        final menu = await menuService.generateMenuFromParsedRequest(
+          parsed,
+          largeList,
+        );
         sw.stop();
 
         expect(menu['frukost']?.length, equals(5));

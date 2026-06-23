@@ -64,7 +64,9 @@ void main() {
         expect(invitation.sentAt, equals(sentAt));
         expect(invitation.respondedAt, equals(respondedAt));
         expect(
-            invitation.personalMessage, equals('Vill du vara med och baka?'));
+          invitation.personalMessage,
+          equals('Vill du vara med och baka?'),
+        );
         expect(invitation.expiresAt, equals(expiresAt));
       });
 
@@ -99,13 +101,15 @@ void main() {
         final after = DateTime.now();
 
         expect(
-            invitation.sentAt.isAfter(before) ||
-                invitation.sentAt.isAtSameMomentAs(before),
-            isTrue);
+          invitation.sentAt.isAfter(before) ||
+              invitation.sentAt.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            invitation.sentAt.isBefore(after) ||
-                invitation.sentAt.isAtSameMomentAs(after),
-            isTrue);
+          invitation.sentAt.isBefore(after) ||
+              invitation.sentAt.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
     });
 
@@ -136,8 +140,10 @@ void main() {
           personalMessage: 'Hej! Vill du vara med i vår bakningsgrupp?',
         );
 
-        expect(invitation.personalMessage,
-            equals('Hej! Vill du vara med i vår bakningsgrupp?'));
+        expect(
+          invitation.personalMessage,
+          equals('Hej! Vill du vara med i vår bakningsgrupp?'),
+        );
       });
     });
 
@@ -163,13 +169,15 @@ void main() {
         expect(accepted.status, equals(GroupInvitationStatus.accepted));
         expect(accepted.respondedAt, isNotNull);
         expect(
-            accepted.respondedAt!.isAfter(before) ||
-                accepted.respondedAt!.isAtSameMomentAs(before),
-            isTrue);
+          accepted.respondedAt!.isAfter(before) ||
+              accepted.respondedAt!.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            accepted.respondedAt!.isBefore(after) ||
-                accepted.respondedAt!.isAtSameMomentAs(after),
-            isTrue);
+          accepted.respondedAt!.isBefore(after) ||
+              accepted.respondedAt!.isAtSameMomentAs(after),
+          isTrue,
+        );
         expect(accepted.id, equals(baseInvitation.id)); // Immutability check
       });
 
@@ -478,9 +486,11 @@ void main() {
         );
 
         expect(
-            invitation.notificationText,
-            equals(
-                'Anna Andersson bjöd in dig till gruppen 👨‍🍳 Matlagningsgruppen'));
+          invitation.notificationText,
+          equals(
+            'Anna Andersson bjöd in dig till gruppen 👨‍🍳 Matlagningsgruppen',
+          ),
+        );
       });
 
       test('should generate notification with personal message', () {
@@ -496,9 +506,11 @@ void main() {
         );
 
         expect(
-            invitation.notificationText,
-            equals(
-                'Anna Andersson bjöd in dig till gruppen 👨‍🍳 Matlagningsgruppen: "Vill du laga mat tillsammans?"'));
+          invitation.notificationText,
+          equals(
+            'Anna Andersson bjöd in dig till gruppen 👨‍🍳 Matlagningsgruppen: "Vill du laga mat tillsammans?"',
+          ),
+        );
       });
 
       test('should generate short notification text', () {
@@ -512,8 +524,10 @@ void main() {
           toUserId: 'user_abc',
         );
 
-        expect(invitation.shortNotificationText,
-            equals('Anna Andersson → 👨‍🍳 Matlagningsgruppen'));
+        expect(
+          invitation.shortNotificationText,
+          equals('Anna Andersson → 👨‍🍳 Matlagningsgruppen'),
+        );
       });
     });
 
@@ -700,8 +714,10 @@ void main() {
         final invitation = GroupInvitation.fromMap('inv_123', data);
 
         expect(invitation.groupEmoji, equals('👥')); // Default emoji
-        expect(invitation.status,
-            equals(GroupInvitationStatus.pending)); // Default status
+        expect(
+          invitation.status,
+          equals(GroupInvitationStatus.pending),
+        ); // Default status
         expect(invitation.personalMessage, isNull);
         expect(invitation.respondedAt, isNull);
       });
@@ -788,8 +804,9 @@ void main() {
           toUserId: 'user_abc',
         );
 
-        final copied =
-            original.copyWith(status: GroupInvitationStatus.accepted);
+        final copied = original.copyWith(
+          status: GroupInvitationStatus.accepted,
+        );
 
         expect(copied.status, equals(GroupInvitationStatus.accepted));
         expect(copied.id, equals(original.id));
@@ -927,8 +944,10 @@ void main() {
         );
 
         // Empty message should not be included in notification
-        expect(invitation.notificationText,
-            equals('Test User bjöd in dig till gruppen 👥 Test Group'));
+        expect(
+          invitation.notificationText,
+          equals('Test User bjöd in dig till gruppen 👥 Test Group'),
+        );
       });
 
       test('should handle very long group names', () {
@@ -1036,8 +1055,10 @@ void main() {
         };
 
         final invitation2 = GroupInvitation.fromMap('inv_123', data2);
-        expect(invitation2.sentAt.millisecondsSinceEpoch ~/ 1000,
-            equals(now.millisecondsSinceEpoch ~/ 1000));
+        expect(
+          invitation2.sentAt.millisecondsSinceEpoch ~/ 1000,
+          equals(now.millisecondsSinceEpoch ~/ 1000),
+        );
       });
     });
   });

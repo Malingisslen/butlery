@@ -39,13 +39,15 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
-      registerFallbackValue(SharedMenu.create(
-        sharedByUserId: 'test',
-        sharedByDisplayName: 'Test',
-        sharedToUserIds: [],
-        menuTitle: 'Test',
-        menuSnapshot: {},
-      ));
+      registerFallbackValue(
+        SharedMenu.create(
+          sharedByUserId: 'test',
+          sharedByDisplayName: 'Test',
+          sharedToUserIds: [],
+          menuTitle: 'Test',
+          menuSnapshot: {},
+        ),
+      );
       registerFallbackValue(DateTime.now());
       registerFallbackValue(<String, dynamic>{});
     });
@@ -146,13 +148,13 @@ void main() {
         });
 
         test('should remove recipe from collaborative menu', () async {
-          final success =
-              await collaborativeOps.removeRecipeFromCollaborativeMenu(
-            menuId: 'menu-1',
-            category: 'Huvudrätt',
-            recipeId: 'test-recipe-1',
-            reason: 'Changed plans',
-          );
+          final success = await collaborativeOps
+              .removeRecipeFromCollaborativeMenu(
+                menuId: 'menu-1',
+                category: 'Huvudrätt',
+                recipeId: 'test-recipe-1',
+                reason: 'Changed plans',
+              );
 
           expect(success, isTrue);
         });
@@ -176,8 +178,9 @@ void main() {
           expect(success, isFalse);
 
           // No shared_content docs should have been written.
-          final sharedDocs =
-              await fakeFirestore.collection('shared_content').get();
+          final sharedDocs = await fakeFirestore
+              .collection('shared_content')
+              .get();
           expect(sharedDocs.docs, isEmpty);
         });
 
@@ -197,8 +200,9 @@ void main() {
           );
 
           expect(success, isFalse);
-          final sharedDocs =
-              await fakeFirestore.collection('shared_content').get();
+          final sharedDocs = await fakeFirestore
+              .collection('shared_content')
+              .get();
           expect(sharedDocs.docs, isEmpty);
         });
 

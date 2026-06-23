@@ -47,8 +47,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     try {
       final normalized = normalizeText(input);
       final preprocessed = TextImportNormalizer.preprocessText(normalized);
@@ -292,8 +294,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   Recipe? _parseTextToRecipe(String text) {
-    final lines =
-        text.split('\n').where((line) => line.trim().isNotEmpty).toList();
+    final lines = text
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
 
     if (lines.isEmpty) return null;
 
@@ -543,8 +547,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   String? _parseIngredientLine(String line) {
-    String cleaned =
-        line.replaceAll(RegExp(r'^[•\-\*]+\s*|^\d+\.\s*'), '').trim();
+    String cleaned = line
+        .replaceAll(RegExp(r'^[•\-\*]+\s*|^\d+\.\s*'), '')
+        .trim();
 
     if (cleaned.isEmpty) return null;
 
@@ -633,12 +638,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final lowerText = text.toLowerCase();
 
     // Check label format first
-    if (RegExp(r'typ\s*:\s*frukost', caseSensitive: false)
-        .hasMatch(lowerText)) {
+    if (RegExp(
+      r'typ\s*:\s*frukost',
+      caseSensitive: false,
+    ).hasMatch(lowerText)) {
       return 'Frukost';
     }
-    if (RegExp(r'typ\s*:\s*huvudrätt', caseSensitive: false)
-        .hasMatch(lowerText)) {
+    if (RegExp(
+      r'typ\s*:\s*huvudrätt',
+      caseSensitive: false,
+    ).hasMatch(lowerText)) {
       return 'Huvudrätt';
     }
     if (RegExp(r'typ\s*:\s*lunch', caseSensitive: false).hasMatch(lowerText)) {
@@ -647,8 +656,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (RegExp(r'typ\s*:\s*middag', caseSensitive: false).hasMatch(lowerText)) {
       return 'Middag';
     }
-    if (RegExp(r'typ\s*:\s*(dessert|efterrätt)', caseSensitive: false)
-        .hasMatch(lowerText)) {
+    if (RegExp(
+      r'typ\s*:\s*(dessert|efterrätt)',
+      caseSensitive: false,
+    ).hasMatch(lowerText)) {
       return 'Dessert';
     }
     if (RegExp(r'typ\s*:\s*fika', caseSensitive: false).hasMatch(lowerText)) {

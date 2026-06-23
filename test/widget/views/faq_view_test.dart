@@ -14,14 +14,17 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('FaqView (BUT-1338)', () {
-    testWidgets('renders all 5 FAQ questions from Swedish l10n',
-        (tester) async {
+    testWidgets('renders all 5 FAQ questions from Swedish l10n', (
+      tester,
+    ) async {
       final sv = AppLocalizationsSv();
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const FaqView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const FaqView(),
+        ),
+      );
       await tester.pumpAndSettle();
 
       for (final question in [
@@ -31,9 +34,11 @@ void main() {
         sv.faqQ4,
         sv.faqQ5,
       ]) {
-        expect(find.text(question), findsOneWidget,
-            reason:
-                'Each FAQ question tile must render its Swedish l10n text.');
+        expect(
+          find.text(question),
+          findsOneWidget,
+          reason: 'Each FAQ question tile must render its Swedish l10n text.',
+        );
       }
     });
   });

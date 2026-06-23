@@ -30,10 +30,10 @@ class PwaInstallGate {
 
   /// Whether the install prompt may be shown given the current state.
   bool canPrompt({required bool hasDeferredPrompt}) => shouldPrompt(
-        hasDeferredPrompt: hasDeferredPrompt,
-        sessionCount: _sessionCount,
-        dismissed: _dismissed,
-      );
+    hasDeferredPrompt: hasDeferredPrompt,
+    sessionCount: _sessionCount,
+    dismissed: _dismissed,
+  );
 
   /// Pure decision: prompt only on/after [minSessions], never once dismissed,
   /// and only when a deferred browser prompt is actually available.

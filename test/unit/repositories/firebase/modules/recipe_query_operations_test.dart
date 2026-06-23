@@ -18,8 +18,9 @@ import 'package:butlery/repositories/firebase/modules/recipe_query_operations.da
 const _userId = 'alice';
 
 CollectionReference<Map<String, dynamic>> _userRecipes(
-        FakeFirebaseFirestore firestore, String uid) =>
-    firestore.collection('users').doc(uid).collection('recipes');
+  FakeFirebaseFirestore firestore,
+  String uid,
+) => firestore.collection('users').doc(uid).collection('recipes');
 
 Recipe _fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
   final core = (doc.data()?['core'] as Map?) ?? const {};
@@ -74,30 +75,44 @@ void main() {
 
     test('returns recipes carrying the tag, newest-first', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seed(firestore,
-          id: 'r1', tagIds: ['tag-a'], updatedAt: DateTime.utc(2026, 1, 1));
-      await _seed(firestore,
-          id: 'r2',
-          tagIds: ['tag-a', 'tag-b'],
-          updatedAt: DateTime.utc(2026, 1, 3));
-      await _seed(firestore,
-          id: 'r3', tagIds: ['tag-b'], updatedAt: DateTime.utc(2026, 1, 2));
+      await _seed(
+        firestore,
+        id: 'r1',
+        tagIds: ['tag-a'],
+        updatedAt: DateTime.utc(2026, 1, 1),
+      );
+      await _seed(
+        firestore,
+        id: 'r2',
+        tagIds: ['tag-a', 'tag-b'],
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
+      await _seed(
+        firestore,
+        id: 'r3',
+        tagIds: ['tag-b'],
+        updatedAt: DateTime.utc(2026, 1, 2),
+      );
 
-      final result =
-          await _ops(firestore).fetchRecipesByTagId(_userId, 'tag-a');
+      final result = await _ops(
+        firestore,
+      ).fetchRecipesByTagId(_userId, 'tag-a');
       expect(result.map((r) => r.id), ['r2', 'r1']);
     });
 
     test('honours the limit cap', () async {
       final firestore = FakeFirebaseFirestore();
       for (var i = 0; i < 5; i++) {
-        await _seed(firestore,
-            id: 'r$i',
-            tagIds: ['tag-a'],
-            updatedAt: DateTime.utc(2026, 1, 1 + i));
+        await _seed(
+          firestore,
+          id: 'r$i',
+          tagIds: ['tag-a'],
+          updatedAt: DateTime.utc(2026, 1, 1 + i),
+        );
       }
-      final result =
-          await _ops(firestore).fetchRecipesByTagId(_userId, 'tag-a', limit: 2);
+      final result = await _ops(
+        firestore,
+      ).fetchRecipesByTagId(_userId, 'tag-a', limit: 2);
       expect(result, hasLength(2));
     });
 
@@ -119,8 +134,10 @@ void main() {
 
     test('returns empty list when userId is null', () async {
       final firestore = FakeFirebaseFirestore();
-      expect(await _ops(firestore).findBySourceUrl(null, 'https://x.example'),
-          isEmpty);
+      expect(
+        await _ops(firestore).findBySourceUrl(null, 'https://x.example'),
+        isEmpty,
+      );
     });
 
     test('returns only exact-url matches', () async {
@@ -129,8 +146,9 @@ void main() {
       await _seed(firestore, id: 'r2', sourceUrl: 'https://x.example/a');
       await _seed(firestore, id: 'r3', sourceUrl: 'https://other.example');
 
-      final result =
-          await _ops(firestore).findBySourceUrl(_userId, 'https://x.example/a');
+      final result = await _ops(
+        firestore,
+      ).findBySourceUrl(_userId, 'https://x.example/a');
       expect(result.map((r) => r.id).toSet(), {'r1', 'r2'});
     });
 
@@ -139,8 +157,9 @@ void main() {
       for (var i = 0; i < 7; i++) {
         await _seed(firestore, id: 'r$i', sourceUrl: 'https://same.example');
       }
-      final result = await _ops(firestore)
-          .findBySourceUrl(_userId, 'https://same.example');
+      final result = await _ops(
+        firestore,
+      ).findBySourceUrl(_userId, 'https://same.example');
       expect(result, hasLength(5));
     });
   });

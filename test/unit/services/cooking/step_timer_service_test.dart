@@ -38,41 +38,47 @@ void main() {
   void withFakeTime(void Function(FakeAsync async) body) {
     fakeAsync((async) {
       withClock(
-          Clock(() => DateTime.fromMillisecondsSinceEpoch(
-                DateTime(2026, 1, 1).millisecondsSinceEpoch +
-                    async.elapsed.inMilliseconds,
-              )), () {
-        body(async);
-      });
+        Clock(
+          () => DateTime.fromMillisecondsSinceEpoch(
+            DateTime(2026, 1, 1).millisecondsSinceEpoch +
+                async.elapsed.inMilliseconds,
+          ),
+        ),
+        () {
+          body(async);
+        },
+      );
     });
   }
 
   group('StepTimerService', () {
-    test('start(Duration) emits initial duration and ticks down each second',
-        () {
-      withFakeTime((async) {
-        final service = StepTimerService();
-        final emissions = <Duration>[];
-        final sub = service.remaining.listen(emissions.add);
+    test(
+      'start(Duration) emits initial duration and ticks down each second',
+      () {
+        withFakeTime((async) {
+          final service = StepTimerService();
+          final emissions = <Duration>[];
+          final sub = service.remaining.listen(emissions.add);
 
-        service.start(const Duration(seconds: 3));
-        async.elapse(const Duration(seconds: 1));
-        async.elapse(const Duration(seconds: 1));
-        async.elapse(const Duration(seconds: 1));
+          service.start(const Duration(seconds: 3));
+          async.elapse(const Duration(seconds: 1));
+          async.elapse(const Duration(seconds: 1));
+          async.elapse(const Duration(seconds: 1));
 
-        // Initial 3s + three ticks (2s, 1s, 0s).
-        expect(emissions, [
-          const Duration(seconds: 3),
-          const Duration(seconds: 2),
-          const Duration(seconds: 1),
-          Duration.zero,
-        ]);
-        expect(service.isRunning, isFalse);
+          // Initial 3s + three ticks (2s, 1s, 0s).
+          expect(emissions, [
+            const Duration(seconds: 3),
+            const Duration(seconds: 2),
+            const Duration(seconds: 1),
+            Duration.zero,
+          ]);
+          expect(service.isRunning, isFalse);
 
-        sub.cancel();
-        service.dispose();
-      });
-    });
+          sub.cancel();
+          service.dispose();
+        });
+      },
+    );
 
     test('pause() freezes remaining and stops ticking', () {
       withFakeTime((async) {
@@ -133,27 +139,28 @@ void main() {
       });
     });
 
-    test('elapsed past duration → auto-transitions to expired (emits zero)',
-        () {
-      withFakeTime((async) {
-        final service = StepTimerService();
-        final emissions = <Duration>[];
-        final sub = service.remaining.listen(emissions.add);
+    test(
+      'elapsed past duration → auto-transitions to expired (emits zero)',
+      () {
+        withFakeTime((async) {
+          final service = StepTimerService();
+          final emissions = <Duration>[];
+          final sub = service.remaining.listen(emissions.add);
 
-        service.start(const Duration(seconds: 2));
-        async.elapse(const Duration(seconds: 5));
+          service.start(const Duration(seconds: 2));
+          async.elapse(const Duration(seconds: 5));
 
-        expect(emissions.last, Duration.zero);
-        expect(service.isRunning, isFalse);
-        expect(service.isPaused, isFalse);
+          expect(emissions.last, Duration.zero);
+          expect(service.isRunning, isFalse);
+          expect(service.isPaused, isFalse);
 
-        sub.cancel();
-        service.dispose();
-      });
-    });
+          sub.cancel();
+          service.dispose();
+        });
+      },
+    );
 
-    test('background-restore: resuming after long gap reconciles remaining',
-        () {
+    test('background-restore: resuming after long gap reconciles remaining', () {
       // Simulates: start 10s timer, app backgrounds (Timer.periodic pauses),
       // foreground 30s later. Because we use absolute endtime via clock.now(),
       // the next tick correctly shows expired.
@@ -207,25 +214,35 @@ void main() {
       withFakeTime((async) {
         final service = StepTimerService();
         service.startTimer(
-            id: 'step-0',
-            duration: const Duration(seconds: 30),
-            label: 'pasta');
+          id: 'step-0',
+          duration: const Duration(seconds: 30),
+          label: 'pasta',
+        );
         service.startTimer(
-            id: 'step-1', duration: const Duration(seconds: 10), label: 'lök');
+          id: 'step-1',
+          duration: const Duration(seconds: 10),
+          label: 'lök',
+        );
 
         async.elapse(const Duration(seconds: 4));
 
         expect(
-            service.currentRemainingFor('step-0'), const Duration(seconds: 26));
+          service.currentRemainingFor('step-0'),
+          const Duration(seconds: 26),
+        );
         expect(
-            service.currentRemainingFor('step-1'), const Duration(seconds: 6));
+          service.currentRemainingFor('step-1'),
+          const Duration(seconds: 6),
+        );
 
         // The shorter timer expires first without disturbing the other.
         async.elapse(const Duration(seconds: 6));
         expect(service.isRunningFor('step-1'), isFalse);
         expect(service.isRunningFor('step-0'), isTrue);
         expect(
-            service.currentRemainingFor('step-0'), const Duration(seconds: 20));
+          service.currentRemainingFor('step-0'),
+          const Duration(seconds: 20),
+        );
 
         service.dispose();
       });
@@ -243,8 +260,10 @@ void main() {
 
         final latest = snapshots.last;
         expect(latest.map((e) => e.id).toList(), ['step-1', 'step-0']);
-        expect(latest.first.remaining.inSeconds,
-            lessThan(latest.last.remaining.inSeconds));
+        expect(
+          latest.first.remaining.inSeconds,
+          lessThan(latest.last.remaining.inSeconds),
+        );
 
         sub.cancel();
         service.dispose();
@@ -274,9 +293,10 @@ void main() {
         final service = StepTimerService(notifications: notes);
 
         service.startTimer(
-            id: 'step-0',
-            duration: const Duration(minutes: 10),
-            label: 'koka pasta');
+          id: 'step-0',
+          duration: const Duration(minutes: 10),
+          label: 'koka pasta',
+        );
 
         expect(notes.scheduled, hasLength(1));
         expect(notes.scheduled.single.id, 'step-0');

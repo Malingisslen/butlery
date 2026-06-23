@@ -33,8 +33,9 @@ class ShoppingCategoryPreferencesModule {
   /// Set item→category override for the user and record globally
   Future<void> setItemCategory(String itemName, String category) async {
     final normalized = CategoryPreferences.normalizeItemName(itemName);
-    final updatedOverrides =
-        Map<String, String>.from(_preferences?.itemCategoryOverrides ?? {});
+    final updatedOverrides = Map<String, String>.from(
+      _preferences?.itemCategoryOverrides ?? {},
+    );
     updatedOverrides[normalized] = category;
 
     _preferences = (_preferences ?? CategoryPreferences()).copyWith(

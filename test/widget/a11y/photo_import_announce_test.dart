@@ -127,33 +127,39 @@ void main() {
 
   Future<AppLocalizations> pumpView(WidgetTester tester) async {
     late AppLocalizations l10n;
-    await tester.pumpWidget(createLocalizedTestApp(
-      wrapInScaffold: false,
-      child: Builder(builder: (context) {
-        l10n = context.l10n;
-        return const PhotoImportView();
-      }),
-    ));
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Builder(
+          builder: (context) {
+            l10n = context.l10n;
+            return const PhotoImportView();
+          },
+        ),
+      ),
+    );
     await tester.pump();
     return l10n;
   }
 
   testWidgets(
-      'announces a11yOcrComplete exactly once when OCR completes (extract → review)',
-      (tester) async {
-    // Proves: the extract→review transition announces the OCR-complete message
-    // to screen readers — the one assertion the ticket flags as highest value.
-    final announces = AnnounceChannel.arm(tester);
-    final l10n = await pumpView(tester);
+    'announces a11yOcrComplete exactly once when OCR completes (extract → review)',
+    (tester) async {
+      // Proves: the extract→review transition announces the OCR-complete message
+      // to screen readers — the one assertion the ticket flags as highest value.
+      final announces = AnnounceChannel.arm(tester);
+      final l10n = await pumpView(tester);
 
-    fakeVm.emit(hasOcrResult: true, isProcessing: false);
-    await tester.pump();
+      fakeVm.emit(hasOcrResult: true, isProcessing: false);
+      await tester.pump();
 
-    expect(announces.messages, [l10n.a11yOcrComplete]);
-  });
+      expect(announces.messages, [l10n.a11yOcrComplete]);
+    },
+  );
 
-  testWidgets('does NOT re-announce on a second notification with same state',
-      (tester) async {
+  testWidgets('does NOT re-announce on a second notification with same state', (
+    tester,
+  ) async {
     // Proves: the `_announcedOcr` guard holds — a screen reader is not spammed
     // every time the VM notifies while the result stays on screen.
     final announces = AnnounceChannel.arm(tester);
@@ -167,12 +173,14 @@ void main() {
     fakeVm.emit(hasOcrResult: true, isProcessing: false);
     await tester.pump();
 
-    expect(announces.messages, [l10n.a11yOcrComplete],
-        reason: 'guard must suppress the duplicate announce');
+    expect(announces.messages, [
+      l10n.a11yOcrComplete,
+    ], reason: 'guard must suppress the duplicate announce');
   });
 
-  testWidgets('re-announces after a new extraction (guard re-arms)',
-      (tester) async {
+  testWidgets('re-announces after a new extraction (guard re-arms)', (
+    tester,
+  ) async {
     // Proves: the guard re-arms when processing restarts — a retry / new photo
     // announces again, so the announce-once is per-extraction, not per-lifetime.
     final announces = AnnounceChannel.arm(tester);
@@ -190,8 +198,11 @@ void main() {
     fakeVm.emit(hasOcrResult: true, isProcessing: false);
     await tester.pump();
 
-    expect(announces.messages, [l10n.a11yOcrComplete, l10n.a11yOcrComplete],
-        reason: 're-arm must allow a fresh announce for the new extraction');
+    expect(
+      announces.messages,
+      [l10n.a11yOcrComplete, l10n.a11yOcrComplete],
+      reason: 're-arm must allow a fresh announce for the new extraction',
+    );
   });
 
   testWidgets('does not announce while still processing', (tester) async {

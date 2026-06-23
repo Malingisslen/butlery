@@ -53,8 +53,9 @@ void main() {
       mockOptimistic = _MockOptimisticManager();
 
       // Default stubs
-      when(() => mockOptimistic.applyChange(any(), any(), any()))
-          .thenReturn(null);
+      when(
+        () => mockOptimistic.applyChange(any(), any(), any()),
+      ).thenReturn(null);
       when(() => mockOptimistic.applyChange(any(), any())).thenReturn(null);
       when(() => mockOptimistic.rollback()).thenReturn(null);
       when(() => mockOptimistic.clear()).thenReturn(null);
@@ -62,36 +63,46 @@ void main() {
       when(() => mockOptimistic.allChanges).thenReturn({});
       when(() => mockOptimistic.applyToMenu(any())).thenReturn({});
 
-      when(() => mockMenuService.addRecipeToCategory(
-            resourceId: any(named: 'resourceId'),
-            categoryName: any(named: 'categoryName'),
-            recipe: any(named: 'recipe'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.addRecipeToCategory(
+          resourceId: any(named: 'resourceId'),
+          categoryName: any(named: 'categoryName'),
+          recipe: any(named: 'recipe'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMenuService.removeRecipeFromCategory(
-            resourceId: any(named: 'resourceId'),
-            categoryName: any(named: 'categoryName'),
-            recipeIndex: any(named: 'recipeIndex'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.removeRecipeFromCategory(
+          resourceId: any(named: 'resourceId'),
+          categoryName: any(named: 'categoryName'),
+          recipeIndex: any(named: 'recipeIndex'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMenuService.moveRecipeBetweenCategories(
-            resourceId: any(named: 'resourceId'),
-            fromCategory: any(named: 'fromCategory'),
-            fromIndex: any(named: 'fromIndex'),
-            toCategory: any(named: 'toCategory'),
-            toIndex: any(named: 'toIndex'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.moveRecipeBetweenCategories(
+          resourceId: any(named: 'resourceId'),
+          fromCategory: any(named: 'fromCategory'),
+          fromIndex: any(named: 'fromIndex'),
+          toCategory: any(named: 'toCategory'),
+          toIndex: any(named: 'toIndex'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMenuService.clearCategory(
-            resourceId: any(named: 'resourceId'),
-            categoryName: any(named: 'categoryName'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.clearCategory(
+          resourceId: any(named: 'resourceId'),
+          categoryName: any(named: 'categoryName'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMenuService.updateWholeCategory(
-            resourceId: any(named: 'resourceId'),
-            categoryName: any(named: 'categoryName'),
-            recipes: any(named: 'recipes'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.updateWholeCategory(
+          resourceId: any(named: 'resourceId'),
+          categoryName: any(named: 'categoryName'),
+          recipes: any(named: 'recipes'),
+        ),
+      ).thenAnswer((_) async {});
 
       operations = RealtimeMenuOperations(
         menuService: mockMenuService,
@@ -108,13 +119,16 @@ void main() {
     group('Add Recipe', () {
       test('should call optimistic update then service', () async {
         final order = <String>[];
-        when(() => mockOptimistic.applyChange(any(), any()))
-            .thenAnswer((_) => order.add('optimistic'));
-        when(() => mockMenuService.addRecipeToCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipe: any(named: 'recipe'),
-            )).thenAnswer((_) async => order.add('service'));
+        when(
+          () => mockOptimistic.applyChange(any(), any()),
+        ).thenAnswer((_) => order.add('optimistic'));
+        when(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenAnswer((_) async => order.add('service'));
 
         await operations.addRecipeToCategory(
           menuId: testMenuId,
@@ -127,11 +141,13 @@ void main() {
       });
 
       test('should rollback and rethrow on service error', () async {
-        when(() => mockMenuService.addRecipeToCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipe: any(named: 'recipe'),
-            )).thenThrow(Exception('fail'));
+        when(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenThrow(Exception('fail'));
 
         expect(
           () => operations.addRecipeToCategory(
@@ -152,11 +168,13 @@ void main() {
           recipe: testRecipe,
         );
 
-        verify(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: '',
-              recipe: testRecipe,
-            )).called(1);
+        verify(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: testMenuId,
+            categoryName: '',
+            recipe: testRecipe,
+          ),
+        ).called(1);
       });
     });
 
@@ -171,17 +189,21 @@ void main() {
           currentRecipes: [testRecipe, testRecipe2],
         );
 
-        verify(() => mockOptimistic.applyChange(
-              testCategory,
-              any(),
-              [testRecipe, testRecipe2],
-            )).called(1);
+        verify(
+          () => mockOptimistic.applyChange(
+            testCategory,
+            any(),
+            [testRecipe, testRecipe2],
+          ),
+        ).called(1);
 
-        verify(() => mockMenuService.removeRecipeFromCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-              recipeIndex: 0,
-            )).called(1);
+        verify(
+          () => mockMenuService.removeRecipeFromCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+            recipeIndex: 0,
+          ),
+        ).called(1);
       });
 
       test('should throw ArgumentError on negative index', () {
@@ -221,11 +243,13 @@ void main() {
       });
 
       test('should rollback on service error', () {
-        when(() => mockMenuService.removeRecipeFromCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipeIndex: any(named: 'recipeIndex'),
-            )).thenThrow(Exception('fail'));
+        when(
+          () => mockMenuService.removeRecipeFromCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+            recipeIndex: any(named: 'recipeIndex'),
+          ),
+        ).thenThrow(Exception('fail'));
 
         expect(
           () => operations.removeRecipeFromCategory(
@@ -244,31 +268,38 @@ void main() {
     // -- Move Between Categories --------------------------------------------
 
     group('Move Between Categories', () {
-      test('should move recipe applying optimistic updates to both categories',
-          () async {
-        final from = [testRecipe];
-        final to = [testRecipe2];
+      test(
+        'should move recipe applying optimistic updates to both categories',
+        () async {
+          final from = [testRecipe];
+          final to = [testRecipe2];
 
-        await operations.moveRecipeBetweenCategories(
-          menuId: testMenuId,
-          fromCategory: 'Frukost',
-          fromIndex: 0,
-          toCategory: 'Middag',
-          fromRecipes: from,
-          toRecipes: to,
-        );
+          await operations.moveRecipeBetweenCategories(
+            menuId: testMenuId,
+            fromCategory: 'Frukost',
+            fromIndex: 0,
+            toCategory: 'Middag',
+            fromRecipes: from,
+            toRecipes: to,
+          );
 
-        verify(() => mockOptimistic.applyChange('Frukost', any(), from))
-            .called(1);
-        verify(() => mockOptimistic.applyChange('Middag', any(), to)).called(1);
-        verify(() => mockMenuService.moveRecipeBetweenCategories(
+          verify(
+            () => mockOptimistic.applyChange('Frukost', any(), from),
+          ).called(1);
+          verify(
+            () => mockOptimistic.applyChange('Middag', any(), to),
+          ).called(1);
+          verify(
+            () => mockMenuService.moveRecipeBetweenCategories(
               resourceId: testMenuId,
               fromCategory: 'Frukost',
               fromIndex: 0,
               toCategory: 'Middag',
               toIndex: null,
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('should pass toIndex when specified', () async {
         await operations.moveRecipeBetweenCategories(
@@ -281,13 +312,15 @@ void main() {
           toIndex: 1,
         );
 
-        verify(() => mockMenuService.moveRecipeBetweenCategories(
-              resourceId: testMenuId,
-              fromCategory: 'Frukost',
-              fromIndex: 0,
-              toCategory: 'Middag',
-              toIndex: 1,
-            )).called(1);
+        verify(
+          () => mockMenuService.moveRecipeBetweenCategories(
+            resourceId: testMenuId,
+            fromCategory: 'Frukost',
+            fromIndex: 0,
+            toCategory: 'Middag',
+            toIndex: 1,
+          ),
+        ).called(1);
       });
 
       test('should throw on invalid fromIndex', () {
@@ -305,13 +338,15 @@ void main() {
       });
 
       test('should rollback on service error', () {
-        when(() => mockMenuService.moveRecipeBetweenCategories(
-              resourceId: any(named: 'resourceId'),
-              fromCategory: any(named: 'fromCategory'),
-              fromIndex: any(named: 'fromIndex'),
-              toCategory: any(named: 'toCategory'),
-              toIndex: any(named: 'toIndex'),
-            )).thenThrow(Exception('fail'));
+        when(
+          () => mockMenuService.moveRecipeBetweenCategories(
+            resourceId: any(named: 'resourceId'),
+            fromCategory: any(named: 'fromCategory'),
+            fromIndex: any(named: 'fromIndex'),
+            toCategory: any(named: 'toCategory'),
+            toIndex: any(named: 'toIndex'),
+          ),
+        ).thenThrow(Exception('fail'));
 
         expect(
           () => operations.moveRecipeBetweenCategories(
@@ -332,24 +367,28 @@ void main() {
     // -- Reorder Within Category --------------------------------------------
 
     group('Reorder Within Category', () {
-      test('should reorder via moveRecipeBetweenCategories (same category)',
-          () async {
-        await operations.reorderRecipesInCategory(
-          menuId: testMenuId,
-          categoryName: testCategory,
-          fromIndex: 0,
-          toIndex: 1,
-          currentRecipes: [testRecipe, testRecipe2],
-        );
+      test(
+        'should reorder via moveRecipeBetweenCategories (same category)',
+        () async {
+          await operations.reorderRecipesInCategory(
+            menuId: testMenuId,
+            categoryName: testCategory,
+            fromIndex: 0,
+            toIndex: 1,
+            currentRecipes: [testRecipe, testRecipe2],
+          );
 
-        verify(() => mockMenuService.moveRecipeBetweenCategories(
+          verify(
+            () => mockMenuService.moveRecipeBetweenCategories(
               resourceId: testMenuId,
               fromCategory: testCategory,
               fromIndex: 0,
               toCategory: testCategory,
               toIndex: 1,
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test('should skip when fromIndex equals toIndex', () async {
         await operations.reorderRecipesInCategory(
@@ -361,13 +400,15 @@ void main() {
         );
 
         verifyNever(() => mockOptimistic.applyChange(any(), any(), any()));
-        verifyNever(() => mockMenuService.moveRecipeBetweenCategories(
-              resourceId: any(named: 'resourceId'),
-              fromCategory: any(named: 'fromCategory'),
-              fromIndex: any(named: 'fromIndex'),
-              toCategory: any(named: 'toCategory'),
-              toIndex: any(named: 'toIndex'),
-            ));
+        verifyNever(
+          () => mockMenuService.moveRecipeBetweenCategories(
+            resourceId: any(named: 'resourceId'),
+            fromCategory: any(named: 'fromCategory'),
+            fromIndex: any(named: 'fromIndex'),
+            toCategory: any(named: 'toCategory'),
+            toIndex: any(named: 'toIndex'),
+          ),
+        );
       });
 
       test('should throw on invalid fromIndex', () {
@@ -407,22 +448,28 @@ void main() {
           currentRecipes: [testRecipe],
         );
 
-        verify(() => mockOptimistic.applyChange(
-              testCategory,
-              any(),
-              [testRecipe],
-            )).called(1);
-        verify(() => mockMenuService.clearCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-            )).called(1);
+        verify(
+          () => mockOptimistic.applyChange(
+            testCategory,
+            any(),
+            [testRecipe],
+          ),
+        ).called(1);
+        verify(
+          () => mockMenuService.clearCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+          ),
+        ).called(1);
       });
 
       test('should rollback on error', () {
-        when(() => mockMenuService.clearCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-            )).thenThrow(Exception('fail'));
+        when(
+          () => mockMenuService.clearCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+          ),
+        ).thenThrow(Exception('fail'));
 
         expect(
           () => operations.clearCategory(
@@ -459,16 +506,20 @@ void main() {
           recipes: [testRecipe, testRecipe2],
         );
 
-        verify(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-              recipe: testRecipe,
-            )).called(1);
-        verify(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-              recipe: testRecipe2,
-            )).called(1);
+        verify(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+            recipe: testRecipe,
+          ),
+        ).called(1);
+        verify(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+            recipe: testRecipe2,
+          ),
+        ).called(1);
       });
 
       test('should skip when recipes list is empty', () async {
@@ -479,19 +530,23 @@ void main() {
         );
 
         verifyNever(() => mockOptimistic.applyChange(any(), any()));
-        verifyNever(() => mockMenuService.addRecipeToCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipe: any(named: 'recipe'),
-            ));
+        verifyNever(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+            recipe: any(named: 'recipe'),
+          ),
+        );
       });
 
       test('should rollback on partial failure in batch add', () async {
-        when(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-              recipe: testRecipe2,
-            )).thenThrow(Exception('second failed'));
+        when(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+            recipe: testRecipe2,
+          ),
+        ).thenThrow(Exception('second failed'));
 
         // expect(() => future, throwsA) doesn't await; verify() then runs
         // before the catch-block fires. expectLater awaits the future so
@@ -515,11 +570,13 @@ void main() {
           currentRecipes: [testRecipe, testRecipe2],
         );
 
-        verify(() => mockMenuService.updateWholeCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-              recipes: any(named: 'recipes'),
-            )).called(1);
+        verify(
+          () => mockMenuService.updateWholeCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+            recipes: any(named: 'recipes'),
+          ),
+        ).called(1);
       });
 
       test('should skip when indices list is empty', () async {
@@ -551,10 +608,10 @@ void main() {
     group('Optimistic Update Management', () {
       test('should delegate applyOptimisticChanges to manager', () {
         final base = {
-          'Middag': [testRecipe]
+          'Middag': [testRecipe],
         };
         final result = {
-          'Middag': [testRecipe, testRecipe2]
+          'Middag': [testRecipe, testRecipe2],
         };
         when(() => mockOptimistic.applyToMenu(base)).thenReturn(result);
 
@@ -569,7 +626,7 @@ void main() {
 
       test('should delegate optimisticChanges', () {
         final changes = {
-          'A': [testRecipe]
+          'A': [testRecipe],
         };
         when(() => mockOptimistic.allChanges).thenReturn(changes);
         expect(operations.optimisticChanges, equals(changes));
@@ -617,7 +674,7 @@ void main() {
       test('getRecipeCountForCategory with optimistic changes', () {
         when(() => mockOptimistic.hasChanges).thenReturn(true);
         when(() => mockOptimistic.allChanges).thenReturn({
-          testCategory: [testRecipe, testRecipe2]
+          testCategory: [testRecipe, testRecipe2],
         });
 
         expect(
@@ -638,8 +695,9 @@ void main() {
       test('getRecipesForCategory with optimistic changes', () {
         final optimistic = [testRecipe, testRecipe2];
         when(() => mockOptimistic.hasChanges).thenReturn(true);
-        when(() => mockOptimistic.allChanges)
-            .thenReturn({testCategory: optimistic});
+        when(
+          () => mockOptimistic.allChanges,
+        ).thenReturn({testCategory: optimistic});
 
         expect(
           operations.getRecipesForCategory(testCategory, [testRecipe]),
@@ -664,27 +722,33 @@ void main() {
       test('concurrent add operations all complete', () async {
         final futures = <Future>[];
         for (int i = 0; i < 3; i++) {
-          futures.add(operations.addRecipeToCategory(
-            menuId: testMenuId,
-            categoryName: testCategory,
-            recipe: RecipeFactory.build(id: 'r_$i'),
-          ));
+          futures.add(
+            operations.addRecipeToCategory(
+              menuId: testMenuId,
+              categoryName: testCategory,
+              recipe: RecipeFactory.build(id: 'r_$i'),
+            ),
+          );
         }
         await Future.wait(futures);
 
-        verify(() => mockMenuService.addRecipeToCategory(
-              resourceId: testMenuId,
-              categoryName: testCategory,
-              recipe: any(named: 'recipe'),
-            )).called(3);
+        verify(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: testMenuId,
+            categoryName: testCategory,
+            recipe: any(named: 'recipe'),
+          ),
+        ).called(3);
       });
 
       test('timeout exception triggers rollback', () {
-        when(() => mockMenuService.addRecipeToCategory(
-              resourceId: any(named: 'resourceId'),
-              categoryName: any(named: 'categoryName'),
-              recipe: any(named: 'recipe'),
-            )).thenThrow(
+        when(
+          () => mockMenuService.addRecipeToCategory(
+            resourceId: any(named: 'resourceId'),
+            categoryName: any(named: 'categoryName'),
+            recipe: any(named: 'recipe'),
+          ),
+        ).thenThrow(
           TimeoutException('timed out', const Duration(seconds: 30)),
         );
 

@@ -52,7 +52,8 @@ class _MaintenanceModeGateState extends State<MaintenanceModeGate> {
   @override
   void initState() {
     super.initState();
-    _flags = widget.featureFlagServiceOverride ??
+    _flags =
+        widget.featureFlagServiceOverride ??
         ServiceLocator.tryGet<FeatureFlagService>();
     _evaluateFlag();
     _flags?.addOnConfigUpdatedListener(_onConfigUpdated);

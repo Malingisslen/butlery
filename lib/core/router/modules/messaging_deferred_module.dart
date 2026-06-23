@@ -23,9 +23,9 @@ class MessagingDeferredModule implements DeferredModule {
 
   @override
   Set<String> get handledRoutes => {
-        Routes.messages,
-        Routes.chat,
-      };
+    Routes.messages,
+    Routes.chat,
+  };
 
   @override
   Future<void> load() async {
@@ -46,7 +46,8 @@ class MessagingDeferredModule implements DeferredModule {
       ]);
     } on Exception catch (e) {
       throw StateError(
-          'MessagingDeferredModule: deferred library load failed: $e');
+        'MessagingDeferredModule: deferred library load failed: $e',
+      );
     }
 
     _isLoaded = true;

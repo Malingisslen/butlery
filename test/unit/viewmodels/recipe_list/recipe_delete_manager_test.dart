@@ -43,12 +43,15 @@ void main() {
 
     // Stub methods left to mocktail on MockUnifiedRecipeService.
     // getRecipeById has a concrete implementation, so no stub needed.
-    when(() => mockRecipeService.optimisticRemoveWithIndex(any()))
-        .thenReturn(0);
-    when(() => mockRecipeService.optimisticRestoreAt(any(), any()))
-        .thenReturn(null);
-    when(() => mockRecipeService.deleteRecipe(any()))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockRecipeService.optimisticRemoveWithIndex(any()),
+    ).thenReturn(0);
+    when(
+      () => mockRecipeService.optimisticRestoreAt(any(), any()),
+    ).thenReturn(null);
+    when(
+      () => mockRecipeService.deleteRecipe(any()),
+    ).thenAnswer((_) async => true);
 
     manager = RecipeDeleteManager(
       recipeService: mockRecipeService,
@@ -71,8 +74,9 @@ void main() {
   group('RecipeDeleteManager - Single Delete', () {
     test('should optimistically remove recipe and notify callbacks', () {
       // Behavior: Delete instantly removes the recipe from the UI
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -80,17 +84,20 @@ void main() {
         expect(manager.hasPendingDeletes, true);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
-        verify(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-            .called(1);
+        verify(
+          () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+        ).called(1);
       });
     });
 
     test('should commit deletion to backend after 5-second timer', () {
       // Behavior: After 5s undo window, the delete is persisted to Firestore
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.deleteRecipe('r1'))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.deleteRecipe('r1'),
+      ).thenAnswer((_) async => true);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -106,15 +113,17 @@ void main() {
     });
 
     test('should ignore duplicate delete for same recipe', () {
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
         manager.deleteRecipe('r1'); // duplicate — should be ignored
 
-        verify(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-            .called(1);
+        verify(
+          () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+        ).called(1);
         expect(invalidateCacheCalls.length, 1);
       });
     });
@@ -138,8 +147,9 @@ void main() {
   group('RecipeDeleteManager - Undo Single Delete', () {
     test('should restore recipe at original index when undone', () {
       // Behavior: "Undo" puts the recipe back exactly where it was
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(2);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(2);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -149,10 +159,12 @@ void main() {
         manager.undoDeleteById('r1');
 
         expect(manager.hasPendingDeletes, false);
-        verify(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              2,
-            )).called(1);
+        verify(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            2,
+          ),
+        ).called(1);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
 
@@ -167,10 +179,12 @@ void main() {
         manager.undoDeleteById('nonexistent');
 
         expect(invalidateCacheCalls, isEmpty);
-        verifyNever(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              any(),
-            ));
+        verifyNever(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            any(),
+          ),
+        );
       });
     });
   });
@@ -178,10 +192,12 @@ void main() {
   group('RecipeDeleteManager - Undo Last Delete', () {
     test('should undo the most recently deleted recipe', () {
       // Behavior: Snackbar "Undo" restores the last deleted recipe
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-          .thenReturn(1);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+      ).thenReturn(1);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -194,10 +210,12 @@ void main() {
         manager.undoLastDelete();
 
         // r2 was deleted last, so it should be restored at index 1
-        verify(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              1,
-            )).called(1);
+        verify(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            1,
+          ),
+        ).called(1);
 
         // r1 should still be pending
         expect(manager.hasPendingDeletes, true);
@@ -216,19 +234,23 @@ void main() {
   group('RecipeDeleteManager - Bulk Delete', () {
     test('should optimistically remove all selected recipes', () {
       // Behavior: Bulk delete removes multiple recipes at once
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-          .thenReturn(1);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+      ).thenReturn(1);
 
       fakeAsync((async) {
         manager.deleteSelected({'r1', 'r2'});
 
         expect(manager.hasPendingDeletes, true);
-        verify(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-            .called(1);
-        verify(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-            .called(1);
+        verify(
+          () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+        ).called(1);
+        verify(
+          () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+        ).called(1);
         // One batch call to invalidateCache and notifyParent
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
@@ -236,14 +258,18 @@ void main() {
     });
 
     test('should commit bulk deletes after 7-second timer', () {
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-          .thenReturn(1);
-      when(() => mockRecipeService.deleteRecipe('r1'))
-          .thenAnswer((_) async => true);
-      when(() => mockRecipeService.deleteRecipe('r2'))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+      ).thenReturn(1);
+      when(
+        () => mockRecipeService.deleteRecipe('r1'),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockRecipeService.deleteRecipe('r2'),
+      ).thenAnswer((_) async => true);
 
       fakeAsync((async) {
         manager.deleteSelected({'r1', 'r2'});
@@ -260,20 +286,24 @@ void main() {
     });
 
     test('should skip already-pending recipes in bulk delete', () {
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-          .thenReturn(1);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+      ).thenReturn(1);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1'); // already pending
         manager.deleteSelected({'r1', 'r2'});
 
         // r1 was optimistically removed once (single), not again in bulk
-        verify(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-            .called(1);
-        verify(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-            .called(1);
+        verify(
+          () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+        ).called(1);
+        verify(
+          () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+        ).called(1);
       });
     });
   });
@@ -281,10 +311,12 @@ void main() {
   group('RecipeDeleteManager - Undo Bulk Delete', () {
     test('should restore all bulk-deleted recipes', () {
       // Behavior: Undo bulk restores recipes back to their original positions
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-          .thenReturn(1);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+      ).thenReturn(1);
 
       fakeAsync((async) {
         manager.deleteSelected({'r1', 'r2'});
@@ -294,10 +326,12 @@ void main() {
         manager.undoBulkDelete();
 
         expect(manager.hasPendingDeletes, false);
-        verify(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              any(),
-            )).called(2);
+        verify(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            any(),
+          ),
+        ).called(2);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);
 
@@ -319,10 +353,12 @@ void main() {
   group('RecipeDeleteManager - Cancel All', () {
     test('should cancel all pending timers and restore all recipes', () {
       // Behavior: Navigating away cancels all pending deletions
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r2'))
-          .thenReturn(1);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r2'),
+      ).thenReturn(1);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -331,10 +367,12 @@ void main() {
         manager.cancelAll();
 
         expect(manager.hasPendingDeletes, false);
-        verify(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              any(),
-            )).called(2);
+        verify(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            any(),
+          ),
+        ).called(2);
 
         // No commits after cancel
         async.elapse(const Duration(seconds: 10));
@@ -345,8 +383,9 @@ void main() {
 
   group('RecipeDeleteManager - Dispose', () {
     test('should cancel all pending deletes on dispose', () {
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -354,10 +393,12 @@ void main() {
         manager.dispose();
 
         expect(manager.hasPendingDeletes, false);
-        verify(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              any(),
-            )).called(1);
+        verify(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            any(),
+          ),
+        ).called(1);
 
         // Timer was cancelled — no commit
         async.elapse(const Duration(seconds: 10));
@@ -367,13 +408,14 @@ void main() {
   });
 
   group('RecipeDeleteManager - Error Handling', () {
-    test('should restore recipe and call onError when backend delete fails',
-        () {
+    test('should restore recipe and call onError when backend delete fails', () {
       // Behavior: If Firestore delete fails, the recipe reappears and user sees error
-      when(() => mockRecipeService.optimisticRemoveWithIndex('r1'))
-          .thenReturn(0);
-      when(() => mockRecipeService.deleteRecipe('r1'))
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockRecipeService.optimisticRemoveWithIndex('r1'),
+      ).thenReturn(0);
+      when(
+        () => mockRecipeService.deleteRecipe('r1'),
+      ).thenThrow(Exception('Network error'));
 
       fakeAsync((async) {
         manager.deleteRecipe('r1');
@@ -385,10 +427,12 @@ void main() {
         // Allow the future to complete
         async.flushMicrotasks();
 
-        verify(() => mockRecipeService.optimisticRestoreAt(
-              any(that: isA<Recipe>()),
-              0,
-            )).called(1);
+        verify(
+          () => mockRecipeService.optimisticRestoreAt(
+            any(that: isA<Recipe>()),
+            0,
+          ),
+        ).called(1);
         expect(errorCalls, ['r1']);
         expect(invalidateCacheCalls.length, 1);
         expect(notifyParentCalls.length, 1);

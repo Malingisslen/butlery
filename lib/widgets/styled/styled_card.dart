@@ -42,11 +42,11 @@ class StyledCard extends StatelessWidget {
     this.borderColor,
     this.semanticLabel,
   }) : assert(
-          borderRadius == null || borderRadius == 0,
-          'StyledCard is square by design — pass null or 0 (all '
-          'AppDimensions.borderRadius* constants are 0.0). A non-zero radius '
-          'would reintroduce rounded corners the design system forbids.',
-        );
+         borderRadius == null || borderRadius == 0,
+         'StyledCard is square by design — pass null or 0 (all '
+         'AppDimensions.borderRadius* constants are 0.0). A non-zero radius '
+         'would reintroduce rounded corners the design system forbids.',
+       );
 
   /// Standard card with default Material Design styling
   const StyledCard.standard({
@@ -57,10 +57,10 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     this.semanticLabel,
-  })  : elevation = AppDimensions.elevationLow,
-        borderRadius = AppDimensions.borderRadius8,
-        showBorder = false,
-        borderColor = null;
+  }) : elevation = AppDimensions.elevationLow,
+       borderRadius = AppDimensions.borderRadius8,
+       showBorder = false,
+       borderColor = null;
 
   /// Elevated card with higher shadow
   const StyledCard.elevated({
@@ -71,10 +71,10 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     this.semanticLabel,
-  })  : elevation = AppDimensions.elevationMedium,
-        borderRadius = AppDimensions.borderRadius12,
-        showBorder = false,
-        borderColor = null;
+  }) : elevation = AppDimensions.elevationMedium,
+       borderRadius = AppDimensions.borderRadius12,
+       showBorder = false,
+       borderColor = null;
 
   /// Outlined card with border instead of shadow
   const StyledCard.outlined({
@@ -86,9 +86,9 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
     this.borderColor,
     this.semanticLabel,
-  })  : elevation = 0,
-        borderRadius = AppDimensions.borderRadius8,
-        showBorder = true;
+  }) : elevation = 0,
+       borderRadius = AppDimensions.borderRadius8,
+       showBorder = true;
 
   /// Recipe card styling
   const StyledCard.recipe({
@@ -97,12 +97,12 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     this.semanticLabel,
-  })  : padding = null,
-        margin = null,
-        elevation = AppDimensions.elevationLow,
-        borderRadius = AppDimensions.borderRadius12,
-        showBorder = false,
-        borderColor = null;
+  }) : padding = null,
+       margin = null,
+       elevation = AppDimensions.elevationLow,
+       borderRadius = AppDimensions.borderRadius12,
+       showBorder = false,
+       borderColor = null;
 
   /// List item card (lower elevation)
   const StyledCard.listItem({
@@ -111,26 +111,26 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     this.semanticLabel,
-  })  : padding = null,
-        margin = null,
-        elevation = AppDimensions.elevationLow,
-        borderRadius = AppDimensions.borderRadius8,
-        showBorder = false,
-        borderColor = null;
+  }) : padding = null,
+       margin = null,
+       elevation = AppDimensions.elevationLow,
+       borderRadius = AppDimensions.borderRadius8,
+       showBorder = false,
+       borderColor = null;
 
   /// Dialog card (high elevation)
   const StyledCard.dialog({
     super.key,
     required this.child,
-  })  : padding = null,
-        margin = null,
-        onTap = null,
-        backgroundColor = null,
-        elevation = AppDimensions.elevationHigh,
-        borderRadius = AppDimensions.borderRadius16,
-        showBorder = false,
-        borderColor = null,
-        semanticLabel = null;
+  }) : padding = null,
+       margin = null,
+       onTap = null,
+       backgroundColor = null,
+       elevation = AppDimensions.elevationHigh,
+       borderRadius = AppDimensions.borderRadius16,
+       showBorder = false,
+       borderColor = null,
+       semanticLabel = null;
 
   /// Selection card (for pickers, selectors)
   /// Note: borderColor resolved to theme primary in build() when showBorder is true
@@ -141,14 +141,14 @@ class StyledCard extends StatelessWidget {
     this.backgroundColor,
     this.semanticLabel,
     required bool isSelected,
-  })  : padding = null,
-        margin = null,
-        elevation = isSelected
-            ? AppDimensions.elevationMedium
-            : AppDimensions.elevationLow,
-        borderRadius = AppDimensions.borderRadius8,
-        showBorder = isSelected,
-        borderColor = null;
+  }) : padding = null,
+       margin = null,
+       elevation = isSelected
+           ? AppDimensions.elevationMedium
+           : AppDimensions.elevationLow,
+       borderRadius = AppDimensions.borderRadius8,
+       showBorder = isSelected,
+       borderColor = null;
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +162,8 @@ class StyledCard extends StatelessWidget {
     if (padding == null) {
       if (runtimeType.toString().contains('recipe')) {
         effectivePadding = const EdgeInsets.all(
-            (AppDimensions.spacingSm + AppDimensions.spacingXs));
+          (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        );
         effectiveMargin = const EdgeInsets.all(AppDimensions.spacingSm);
       } else if (runtimeType.toString().contains('listItem')) {
         effectivePadding = AppDimensions.listItemPadding;
@@ -174,7 +175,8 @@ class StyledCard extends StatelessWidget {
         effectivePadding = const EdgeInsets.all(AppDimensions.spacingLg);
       } else if (runtimeType.toString().contains('selection')) {
         effectivePadding = const EdgeInsets.all(
-            (AppDimensions.spacingSm + AppDimensions.spacingXs));
+          (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        );
         effectiveMargin = const EdgeInsets.all(AppDimensions.spacingXs);
       }
     }

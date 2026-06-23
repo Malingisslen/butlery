@@ -27,11 +27,11 @@ abstract class BaseFirebaseRepository<T>
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
     TimestampProvider? timestampProvider,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository,
-        _auditRepository = auditRepository,
-        _timestampProvider =
-            timestampProvider ?? const ServerTimestampProvider();
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _authRepository = authRepository,
+       _auditRepository = auditRepository,
+       _timestampProvider =
+           timestampProvider ?? const ServerTimestampProvider();
 
   @protected
   FirebaseFirestore get firestore => _firestore;
@@ -55,9 +55,15 @@ abstract class BaseFirebaseRepository<T>
 
   Future<bool> validateCreatePermission(String userId, T entity);
   Future<bool> validateReadPermission(
-      String userId, String resourceId, T? entity);
+    String userId,
+    String resourceId,
+    T? entity,
+  );
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, T entity);
+    String userId,
+    String resourceId,
+    T entity,
+  );
   Future<bool> validateDeletePermission(String userId, String resourceId);
 
   String requireCurrentUserId() {
@@ -165,7 +171,8 @@ abstract class BaseFirebaseRepository<T>
       final snapshot = await ref.limit(baseReadAllLimit).get();
       if (snapshot.docs.length == baseReadAllLimit) {
         AppLogger.warning(
-            'readAll() hit $baseReadAllLimit doc limit for $collectionName — results truncated');
+          'readAll() hit $baseReadAllLimit doc limit for $collectionName — results truncated',
+        );
       }
 
       final allowedEntities = <T>[];
@@ -316,7 +323,9 @@ abstract class BaseFirebaseRepository<T>
       return doc.exists;
     } catch (e, stackTrace) {
       AppLogger.error(
-          'Failed to check ${T.toString()} existence $id: $e', stackTrace);
+        'Failed to check ${T.toString()} existence $id: $e',
+        stackTrace,
+      );
       return false;
     }
   }
@@ -423,7 +432,8 @@ mixin UserScopedFirebaseRepository<T> on BaseFirebaseRepository<T> {
   }
 
   CollectionReference<Map<String, dynamic>> getCollectionForUser(
-      String userId) {
+    String userId,
+  ) {
     return getUserCollection(userId);
   }
 }

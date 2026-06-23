@@ -32,7 +32,7 @@ class LruMap<K, V> {
   final LinkedHashMap<K, V> _entries = LinkedHashMap<K, V>();
 
   LruMap({required this.maxSize, this.onEvict})
-      : assert(maxSize > 0, 'maxSize must be positive');
+    : assert(maxSize > 0, 'maxSize must be positive');
 
   /// Number of entries currently held.
   int get length => _entries.length;

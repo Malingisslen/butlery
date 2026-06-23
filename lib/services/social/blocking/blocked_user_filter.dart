@@ -17,7 +17,7 @@ import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 /// happens, but the blocked author's content never reaches the UI.
 class BlockedUserFilter {
   BlockedUserFilter({FirebaseBlockRepository? blockRepository})
-      : _blockRepository = blockRepository;
+    : _blockRepository = blockRepository;
 
   final FirebaseBlockRepository? _blockRepository;
 
@@ -41,11 +41,14 @@ class BlockedUserFilter {
       try {
         _cached = await _repo.getBlockedUserIds();
         // Keep cache fresh — block adds/removes propagate without restart.
-        _subscription = _repo.watchBlockedUserIds().listen((ids) {
-          _cached = ids;
-        }, onError: (Object e) {
-          AppLogger.warning('[BlockedUserFilter] watch failed: $e');
-        });
+        _subscription = _repo.watchBlockedUserIds().listen(
+          (ids) {
+            _cached = ids;
+          },
+          onError: (Object e) {
+            AppLogger.warning('[BlockedUserFilter] watch failed: $e');
+          },
+        );
       } catch (e) {
         AppLogger.warning('[BlockedUserFilter] initial fetch failed: $e');
         _cached = const <String>{};

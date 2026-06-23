@@ -66,7 +66,8 @@ class CacheEntry {
         defaultValue: 'unknown',
       ),
       recipe: SerializationUtils.safeMap(data, 'recipe'),
-      extractionMeta: SerializationUtils.safeNestedObject(
+      extractionMeta:
+          SerializationUtils.safeNestedObject(
             data,
             'extractionMeta',
             ExtractionMeta.fromMap,

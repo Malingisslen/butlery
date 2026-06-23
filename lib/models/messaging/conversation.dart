@@ -374,10 +374,11 @@ class Conversation {
     if (lastReadTime == null) return recentMessages.length;
 
     return recentMessages
-        .where((message) =>
-                message.sentAt.isAfter(lastReadTime) &&
-                message.senderId != userId // Don't count own messages
-            )
+        .where(
+          (message) =>
+              message.sentAt.isAfter(lastReadTime) &&
+              message.senderId != userId, // Don't count own messages
+        )
         .length;
   }
 

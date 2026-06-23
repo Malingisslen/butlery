@@ -310,21 +310,21 @@ class ImportCSVFixtures {
 class ImportImageFixtures {
   /// Valid PNG image (minimal header + data for recipe photo)
   static Uint8List get validRecipeImagePNG => Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-        ...List.generate(500 * 1024, (i) => i % 256), // 500KB simulated image
-      ]);
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+    ...List.generate(500 * 1024, (i) => i % 256), // 500KB simulated image
+  ]);
 
   /// Valid JPEG image
   static Uint8List get validRecipeImageJPEG => Uint8List.fromList([
-        0xFF, 0xD8, 0xFF, 0xE0, // JPEG signature
-        ...List.generate(300 * 1024, (i) => i % 256), // 300KB simulated image
-      ]);
+    0xFF, 0xD8, 0xFF, 0xE0, // JPEG signature
+    ...List.generate(300 * 1024, (i) => i % 256), // 300KB simulated image
+  ]);
 
   /// Poor quality image (too small)
   static Uint8List get poorQualityImage => Uint8List.fromList([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        ...List.generate(20 * 1024, (i) => i % 256), // 20KB (poor quality)
-      ]);
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    ...List.generate(20 * 1024, (i) => i % 256), // 20KB (poor quality)
+  ]);
 }
 
 /// Expected OCR text extraction results
@@ -419,17 +419,23 @@ class ImportTestHelpers {
 
   /// Parse CSV content for testing
   static List<Map<String, String>> parseCSV(String csvContent) {
-    final lines =
-        csvContent.split('\n').where((line) => line.trim().isNotEmpty).toList();
+    final lines = csvContent
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
     if (lines.isEmpty) return [];
 
-    final headers =
-        lines[0].split(',').map((h) => h.trim().replaceAll('"', '')).toList();
+    final headers = lines[0]
+        .split(',')
+        .map((h) => h.trim().replaceAll('"', ''))
+        .toList();
     final rows = <Map<String, String>>[];
 
     for (var i = 1; i < lines.length; i++) {
-      final values =
-          lines[i].split(',').map((v) => v.trim().replaceAll('"', '')).toList();
+      final values = lines[i]
+          .split(',')
+          .map((v) => v.trim().replaceAll('"', ''))
+          .toList();
       if (values.length == headers.length) {
         final row = <String, String>{};
         for (var j = 0; j < headers.length; j++) {

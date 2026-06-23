@@ -17,10 +17,10 @@ class ListItemOperations {
     required String? Function() getCurrentUserDisplayName,
     required Future<bool> Function(UnifiedShoppingList list) updateList,
     required ListLifecycleOperations lifecycleOps,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _updateList = updateList,
-        _lifecycleOps = lifecycleOps;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _updateList = updateList,
+       _lifecycleOps = lifecycleOps;
 
   Future<bool> addItem({
     required String listId,

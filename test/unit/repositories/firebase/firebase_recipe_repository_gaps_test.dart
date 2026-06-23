@@ -97,7 +97,10 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
       await _seedUserRecipe(
-          firestore, _alice, _personalRecipe(personalTagIds: const ['veg']));
+        firestore,
+        _alice,
+        _personalRecipe(personalTagIds: const ['veg']),
+      );
 
       expect(await repo.countRecipesByTagId('keto'), 0);
     });
@@ -106,11 +109,20 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
       await _seedUserRecipe(
-          firestore, _alice, _personalRecipe(personalTagIds: const ['veg']));
-      await _seedUserRecipe(firestore, _alice,
-          _personalRecipe(title: 'Soppa', personalTagIds: const ['veg']));
-      await _seedUserRecipe(firestore, _alice,
-          _personalRecipe(title: 'Kött', personalTagIds: const ['meat']));
+        firestore,
+        _alice,
+        _personalRecipe(personalTagIds: const ['veg']),
+      );
+      await _seedUserRecipe(
+        firestore,
+        _alice,
+        _personalRecipe(title: 'Soppa', personalTagIds: const ['veg']),
+      );
+      await _seedUserRecipe(
+        firestore,
+        _alice,
+        _personalRecipe(title: 'Kött', personalTagIds: const ['meat']),
+      );
 
       expect(await repo.countRecipesByTagId('veg'), 2);
       expect(await repo.countRecipesByTagId('meat'), 1);
@@ -141,19 +153,21 @@ void main() {
       expect(await repo.canDelete(recipe.id, _alice), isTrue);
     });
 
-    test('non-owner with editor permission can read + write but not delete',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      final recipe = _collabRecipe(
-        memberPermissions: {_bob: ResourcePermission.editor},
-      );
-      await _seedUserRecipe(firestore, _alice, recipe);
+    test(
+      'non-owner with editor permission can read + write but not delete',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        final recipe = _collabRecipe(
+          memberPermissions: {_bob: ResourcePermission.editor},
+        );
+        await _seedUserRecipe(firestore, _alice, recipe);
 
-      expect(await repo.canRead(recipe.id, _bob), isTrue);
-      expect(await repo.canWrite(recipe.id, _bob), isTrue);
-      expect(await repo.canDelete(recipe.id, _bob), isFalse);
-    });
+        expect(await repo.canRead(recipe.id, _bob), isTrue);
+        expect(await repo.canWrite(recipe.id, _bob), isTrue);
+        expect(await repo.canDelete(recipe.id, _bob), isFalse);
+      },
+    );
 
     test('non-owner with admin permission can read + write', () async {
       final firestore = FakeFirebaseFirestore();
@@ -167,19 +181,21 @@ void main() {
       expect(await repo.canWrite(recipe.id, _bob), isTrue);
     });
 
-    test('non-member cannot read/write/delete a collaborative recipe',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      final recipe = _collabRecipe(
-        memberPermissions: {_bob: ResourcePermission.editor},
-      );
-      await _seedUserRecipe(firestore, _alice, recipe);
+    test(
+      'non-member cannot read/write/delete a collaborative recipe',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        final recipe = _collabRecipe(
+          memberPermissions: {_bob: ResourcePermission.editor},
+        );
+        await _seedUserRecipe(firestore, _alice, recipe);
 
-      expect(await repo.canRead(recipe.id, _carol), isFalse);
-      expect(await repo.canWrite(recipe.id, _carol), isFalse);
-      expect(await repo.canDelete(recipe.id, _carol), isFalse);
-    });
+        expect(await repo.canRead(recipe.id, _carol), isFalse);
+        expect(await repo.canWrite(recipe.id, _carol), isFalse);
+        expect(await repo.canDelete(recipe.id, _carol), isFalse);
+      },
+    );
 
     test('missing recipe returns false for all three', () async {
       final firestore = FakeFirebaseFirestore();
@@ -199,28 +215,38 @@ void main() {
       );
 
       expect(
-          await repo.validateReadPermission(_bob, recipe.id, recipe), isTrue);
-    });
-
-    test('validateReadPermission true for guest when allowGuestViewing',
-        () async {
-      final repo = _repo(FakeFirebaseFirestore());
-      final recipe = _collabRecipe(allowGuestViewing: true);
-
-      expect(
-          await repo.validateReadPermission(_carol, recipe.id, recipe), isTrue);
-    });
-
-    test('validateReadPermission false for outsider on closed collab recipe',
-        () async {
-      final repo = _repo(FakeFirebaseFirestore());
-      final recipe = _collabRecipe(
-        memberPermissions: {_bob: ResourcePermission.editor},
+        await repo.validateReadPermission(_bob, recipe.id, recipe),
+        isTrue,
       );
-
-      expect(await repo.validateReadPermission(_carol, recipe.id, recipe),
-          isFalse);
     });
+
+    test(
+      'validateReadPermission true for guest when allowGuestViewing',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
+        final recipe = _collabRecipe(allowGuestViewing: true);
+
+        expect(
+          await repo.validateReadPermission(_carol, recipe.id, recipe),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'validateReadPermission false for outsider on closed collab recipe',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
+        final recipe = _collabRecipe(
+          memberPermissions: {_bob: ResourcePermission.editor},
+        );
+
+        expect(
+          await repo.validateReadPermission(_carol, recipe.id, recipe),
+          isFalse,
+        );
+      },
+    );
 
     test('validateUpdatePermission true for collaborative member', () async {
       final repo = _repo(FakeFirebaseFirestore());
@@ -229,15 +255,19 @@ void main() {
       );
 
       expect(
-          await repo.validateUpdatePermission(_bob, recipe.id, recipe), isTrue);
+        await repo.validateUpdatePermission(_bob, recipe.id, recipe),
+        isTrue,
+      );
     });
 
     test('validateUpdatePermission false for non-owner non-member', () async {
       final repo = _repo(FakeFirebaseFirestore());
       final recipe = _collabRecipe();
 
-      expect(await repo.validateUpdatePermission(_carol, recipe.id, recipe),
-          isFalse);
+      expect(
+        await repo.validateUpdatePermission(_carol, recipe.id, recipe),
+        isFalse,
+      );
     });
 
     test('validateDeletePermission true when caller is owner', () async {

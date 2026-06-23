@@ -48,8 +48,8 @@ class LocalRecipeCache {
     required CacheDao cacheDao,
     this.maxAgeDays = 30,
     this.maxEntries = 100,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _cacheDao = cacheDao;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _cacheDao = cacheDao;
 
   /// Initialize the cache.
   Future<void> init() async {
@@ -184,12 +184,14 @@ class LocalRecipeCache {
   Future<void> _cleanupOldEntries() async {
     try {
       // Clean up entries older than maxAgeDays
-      final deletedByAge =
-          await _cacheDao.cleanupParseCacheOlderThan(maxAgeDays);
+      final deletedByAge = await _cacheDao.cleanupParseCacheOlderThan(
+        maxAgeDays,
+      );
 
       // Clean up entries with wrong parser version
-      final deletedByVersion =
-          await _cacheDao.cleanupParseCacheWrongVersion(parserVersion);
+      final deletedByVersion = await _cacheDao.cleanupParseCacheWrongVersion(
+        parserVersion,
+      );
 
       final total = deletedByAge + deletedByVersion;
       if (total > 0) {

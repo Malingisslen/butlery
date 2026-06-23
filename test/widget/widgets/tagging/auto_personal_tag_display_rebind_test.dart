@@ -39,11 +39,11 @@ class _FakePersonalTagService extends PersonalTagService {
     required FirebasePersonalTagRepository tagRepo,
     required FirebasePersonalTagGroupRepository groupRepo,
   }) : super(
-          crudService: crud,
-          ruleEvaluator: evaluator,
-          tagRepository: tagRepo,
-          groupRepository: groupRepo,
-        );
+         crudService: crud,
+         ruleEvaluator: evaluator,
+         tagRepository: tagRepo,
+         groupRepository: groupRepo,
+       );
 
   final StreamController<void> mutationController;
   List<PersonalTag> tags;
@@ -75,12 +75,12 @@ _FakePersonalTagService _makeService({
 }
 
 Widget _host(List<String> tagIds) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: AutoPersonalTagDisplay(tagIds: tagIds),
-      ),
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(
+    body: AutoPersonalTagDisplay(tagIds: tagIds),
+  ),
+);
 
 void main() {
   setUp(() {

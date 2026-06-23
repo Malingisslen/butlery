@@ -23,73 +23,80 @@ void main() {
   });
 
   testWidgets(
-      'menu_content_widgets — section header regenerate button exposes label',
-      (tester) async {
-    final handle = tester.ensureSemantics();
-    final vm = _FakeMenuViewModel();
-    when(() => vm.isGenerating).thenReturn(false);
+    'menu_content_widgets — section header regenerate button exposes label',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      final vm = _FakeMenuViewModel();
+      when(() => vm.isGenerating).thenReturn(false);
 
-    final recipe = RecipeFactory.build(
-      id: 'r1',
-      title: 'Köttbullar',
-      timeMinutes: 30,
-      portions: 4,
-    );
+      final recipe = RecipeFactory.build(
+        id: 'r1',
+        title: 'Köttbullar',
+        timeMinutes: 30,
+        portions: 4,
+      );
 
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (context) => MenuContentWidgets.buildMenuSection(
-            context,
-            viewModel: vm,
-            category: 'middag',
-            recipes: [recipe],
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => MenuContentWidgets.buildMenuSection(
+              context,
+              viewModel: vm,
+              category: 'middag',
+              recipes: [recipe],
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.bySemanticsLabel(RegExp(r'Skapa nytt förslag för Middag')),
-        findsOneWidget);
-    handle.dispose();
-  });
+      expect(
+        find.bySemanticsLabel(RegExp(r'Skapa nytt förslag för Middag')),
+        findsOneWidget,
+      );
+      handle.dispose();
+    },
+  );
 
   testWidgets(
-      'menu_content_widgets — recipe row tap target announces title and open hint',
-      (tester) async {
-    final handle = tester.ensureSemantics();
-    final vm = _FakeMenuViewModel();
-    when(() => vm.isGenerating).thenReturn(false);
+    'menu_content_widgets — recipe row tap target announces title and open hint',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      final vm = _FakeMenuViewModel();
+      when(() => vm.isGenerating).thenReturn(false);
 
-    final recipe = RecipeFactory.build(
-      id: 'r1',
-      title: 'Köttbullar',
-      timeMinutes: 30,
-      portions: 4,
-    );
+      final recipe = RecipeFactory.build(
+        id: 'r1',
+        title: 'Köttbullar',
+        timeMinutes: 30,
+        portions: 4,
+      );
 
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (context) => MenuContentWidgets.buildMenuSection(
-            context,
-            viewModel: vm,
-            category: 'middag',
-            recipes: [recipe],
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => MenuContentWidgets.buildMenuSection(
+              context,
+              viewModel: vm,
+              category: 'middag',
+              recipes: [recipe],
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(
+      expect(
         find.bySemanticsLabel(
-            RegExp(r'^Köttbullar, tryck för att öppna receptet')),
-        findsWidgets);
-    handle.dispose();
-  });
+          RegExp(r'^Köttbullar, tryck för att öppna receptet'),
+        ),
+        findsWidgets,
+      );
+      handle.dispose();
+    },
+  );
 
-  testWidgets('menu_content_widgets — swap icon exposes per-recipe label',
-      (tester) async {
+  testWidgets('menu_content_widgets — swap icon exposes per-recipe label', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
     final vm = _FakeMenuViewModel();
     when(() => vm.isGenerating).thenReturn(false);
@@ -114,8 +121,10 @@ void main() {
       ),
     );
 
-    expect(find.bySemanticsLabel(RegExp(r'^Byt ut Pasta carbonara')),
-        findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp(r'^Byt ut Pasta carbonara')),
+      findsOneWidget,
+    );
     handle.dispose();
   });
 }

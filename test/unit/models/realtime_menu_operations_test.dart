@@ -47,11 +47,15 @@ void main() {
         );
 
         expect(updated.getRecipesForCategory('Efterrätt').length, equals(1));
-        expect(updated.getRecipesForCategory('Efterrätt').first.id,
-            equals('recipe_4'));
+        expect(
+          updated.getRecipesForCategory('Efterrätt').first.id,
+          equals('recipe_4'),
+        );
         // Original data should remain unchanged
         expect(
-            testMenuData.getRecipesForCategory('Efterrätt').length, equals(0));
+          testMenuData.getRecipesForCategory('Efterrätt').length,
+          equals(0),
+        );
       });
 
       test('should add recipe to new category', () {
@@ -64,8 +68,10 @@ void main() {
 
         expect(updated.categories, contains('Mellanmål'));
         expect(updated.getRecipesForCategory('Mellanmål').length, equals(1));
-        expect(updated.getRecipesForCategory('Mellanmål').first.id,
-            equals('snack_1'));
+        expect(
+          updated.getRecipesForCategory('Mellanmål').first.id,
+          equals('snack_1'),
+        );
       });
 
       test('should remove recipe from category', () {
@@ -112,8 +118,10 @@ void main() {
 
         expect(updated.getRecipesForCategory('Frukost').length, equals(0));
         expect(updated.getRecipesForCategory('Efterrätt').length, equals(1));
-        expect(updated.getRecipesForCategory('Efterrätt').first.id,
-            equals('recipe_1'));
+        expect(
+          updated.getRecipesForCategory('Efterrätt').first.id,
+          equals('recipe_1'),
+        );
       });
 
       test('should move recipe to specific index', () {
@@ -155,13 +163,17 @@ void main() {
 
         expect(updated.categories, contains('Brunch'));
         expect(updated.getRecipesForCategory('Brunch').length, equals(1));
-        expect(updated.getRecipesForCategory('Brunch').first.id,
-            equals('recipe_1'));
+        expect(
+          updated.getRecipesForCategory('Brunch').first.id,
+          equals('recipe_1'),
+        );
       });
 
       test('should replace recipe in category', () {
-        final newRecipe =
-            RecipeFactory.build(id: 'new_breakfast', title: 'Yoghurt');
+        final newRecipe = RecipeFactory.build(
+          id: 'new_breakfast',
+          title: 'Yoghurt',
+        );
         final updated = RealtimeMenuOperations.replaceRecipeInCategory(
           testMenuData,
           categoryName: 'Frukost',
@@ -170,8 +182,10 @@ void main() {
         );
 
         expect(updated.getRecipesForCategory('Frukost').length, equals(1));
-        expect(updated.getRecipesForCategory('Frukost').first.id,
-            equals('new_breakfast'));
+        expect(
+          updated.getRecipesForCategory('Frukost').first.id,
+          equals('new_breakfast'),
+        );
       });
 
       test('should clear category', () {
@@ -214,7 +228,9 @@ void main() {
 
         expect(updated.getRecipesForCategory('Lunch').length, equals(1));
         expect(
-            updated.getRecipesForCategory('Lunch').first.id, equals('regen_1'));
+          updated.getRecipesForCategory('Lunch').first.id,
+          equals('regen_1'),
+        );
       });
 
       test('should create new category when updating', () {
@@ -267,8 +283,10 @@ void main() {
         expect(sorted[2], equals('Middag'));
         expect(sorted[3], equals('Efterrätter'));
         // Custom categories should come after
-        expect(sorted.sublist(4),
-            containsAll(['CustomCategory', 'AnotherCustom']));
+        expect(
+          sorted.sublist(4),
+          containsAll(['CustomCategory', 'AnotherCustom']),
+        );
       });
     });
 
@@ -279,14 +297,16 @@ void main() {
       });
 
       test('should get categories with recipes', () {
-        final count =
-            RealtimeMenuOperations.getCategoriesWithRecipes(testMenuData);
+        final count = RealtimeMenuOperations.getCategoriesWithRecipes(
+          testMenuData,
+        );
         expect(count, equals(3)); // Frukost, Lunch, Middag have recipes
       });
 
       test('should get empty categories count', () {
-        final count =
-            RealtimeMenuOperations.getEmptyCategoriesCount(testMenuData);
+        final count = RealtimeMenuOperations.getEmptyCategoriesCount(
+          testMenuData,
+        );
         expect(count, equals(1)); // Efterrätt is empty
       });
 
@@ -299,7 +319,7 @@ void main() {
           createdForDate: DateTime.now(),
           menuSnapshot: {
             'Lunch': [recipe1],
-            'Middag': []
+            'Middag': [],
           },
         );
         expect(RealtimeMenuOperations.isComplete(sparseMenu), isFalse);
@@ -322,8 +342,9 @@ void main() {
       });
 
       test('should calculate average recipes per category', () {
-        final average =
-            RealtimeMenuOperations.getAverageRecipesPerCategory(testMenuData);
+        final average = RealtimeMenuOperations.getAverageRecipesPerCategory(
+          testMenuData,
+        );
         expect(average, equals(0.75)); // 3 recipes / 4 categories
       });
 
@@ -336,11 +357,15 @@ void main() {
 
       test('should get favorites count', () {
         expect(
-            RealtimeMenuOperations.getFavoritesCount(testMenuData), equals(2));
+          RealtimeMenuOperations.getFavoritesCount(testMenuData),
+          equals(2),
+        );
 
         final noFavoritesMenu = testMenuData.copyWith(favoriteRecipeIds: null);
-        expect(RealtimeMenuOperations.getFavoritesCount(noFavoritesMenu),
-            equals(0));
+        expect(
+          RealtimeMenuOperations.getFavoritesCount(noFavoritesMenu),
+          equals(0),
+        );
       });
 
       test('should check if menu has notes', () {
@@ -366,8 +391,9 @@ void main() {
       });
 
       test('should get completion percentage', () {
-        final percentage =
-            RealtimeMenuOperations.getCompletionPercentage(testMenuData);
+        final percentage = RealtimeMenuOperations.getCompletionPercentage(
+          testMenuData,
+        );
         expect(percentage, equals(0.75)); // 3 out of 4 categories have recipes
       });
 
@@ -377,8 +403,10 @@ void main() {
       });
 
       test('should get progress color name', () {
-        expect(RealtimeMenuOperations.getProgressColorName(testMenuData),
-            equals('green'));
+        expect(
+          RealtimeMenuOperations.getProgressColorName(testMenuData),
+          equals('green'),
+        );
 
         // Test yellow range
         final yellowMenu = RealtimeMenuData(
@@ -390,8 +418,10 @@ void main() {
             'Cat3': [],
           },
         );
-        expect(RealtimeMenuOperations.getProgressColorName(yellowMenu),
-            equals('yellow'));
+        expect(
+          RealtimeMenuOperations.getProgressColorName(yellowMenu),
+          equals('yellow'),
+        );
 
         // Test red range
         final redMenu = RealtimeMenuData(
@@ -405,13 +435,16 @@ void main() {
             'Cat5': [],
           },
         );
-        expect(RealtimeMenuOperations.getProgressColorName(redMenu),
-            equals('red'));
+        expect(
+          RealtimeMenuOperations.getProgressColorName(redMenu),
+          equals('red'),
+        );
       });
 
       test('should get recipes needing attention', () {
-        final recipes =
-            RealtimeMenuOperations.getRecipesNeedingAttention(testMenuData);
+        final recipes = RealtimeMenuOperations.getRecipesNeedingAttention(
+          testMenuData,
+        );
         expect(recipes, isEmpty); // Placeholder implementation returns empty
       });
 
@@ -436,13 +469,21 @@ void main() {
         );
 
         expect(
-            RealtimeMenuOperations.getTotalRecipeCount(emptyMenu), equals(0));
-        expect(RealtimeMenuOperations.getCategoriesWithRecipes(emptyMenu),
-            equals(0));
-        expect(RealtimeMenuOperations.getAverageRecipesPerCategory(emptyMenu),
-            equals(0.0));
-        expect(RealtimeMenuOperations.getCompletionPercentage(emptyMenu),
-            equals(0.0));
+          RealtimeMenuOperations.getTotalRecipeCount(emptyMenu),
+          equals(0),
+        );
+        expect(
+          RealtimeMenuOperations.getCategoriesWithRecipes(emptyMenu),
+          equals(0),
+        );
+        expect(
+          RealtimeMenuOperations.getAverageRecipesPerCategory(emptyMenu),
+          equals(0.0),
+        );
+        expect(
+          RealtimeMenuOperations.getCompletionPercentage(emptyMenu),
+          equals(0.0),
+        );
       });
 
       test('should handle deep copy properly (no mutation)', () {
@@ -470,14 +511,18 @@ void main() {
 
         // Original should remain unchanged
         expect(original.getRecipesForCategory('Category').length, equals(2));
-        expect(original.getRecipesForCategory('Category')[0].id,
-            equals('recipe_1'));
+        expect(
+          original.getRecipesForCategory('Category')[0].id,
+          equals('recipe_1'),
+        );
 
         // Updates should be independent
         expect(updated1.getRecipesForCategory('Category').length, equals(3));
         expect(updated2.getRecipesForCategory('Category').length, equals(1));
-        expect(updated2.getRecipesForCategory('Category')[0].id,
-            equals('recipe_2'));
+        expect(
+          updated2.getRecipesForCategory('Category')[0].id,
+          equals('recipe_2'),
+        );
       });
 
       test('should handle Swedish characters in categories', () {

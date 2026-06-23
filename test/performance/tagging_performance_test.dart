@@ -254,7 +254,8 @@ void main() {
       test('empty recipe tags quickly', () async {
         final recipe = RecipeBuilder()
             .withTitle('Empty Recipe')
-            .withIngredients([]).build();
+            .withIngredients([])
+            .build();
 
         final lookup = TaggingTestHelper.createLookupWithCoverage(
           matchedCount: 0,
@@ -273,8 +274,13 @@ void main() {
       test('recipe with all unknown ingredients tags quickly', () async {
         final recipe = RecipeBuilder()
             .withTitle('Unknown Ingredients')
-            .withIngredients(
-                ['mystery1', 'mystery2', 'mystery3', 'mystery4', 'mystery5'])
+            .withIngredients([
+              'mystery1',
+              'mystery2',
+              'mystery3',
+              'mystery4',
+              'mystery5',
+            ])
             .withTimeMinutes(30)
             .build();
 

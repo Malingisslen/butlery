@@ -31,8 +31,10 @@ abstract class IngredientRepository {
   /// Search ingredients by query text.
   ///
   /// Searches names, aliases, and search terms.
-  Future<List<IngredientData>> searchIngredients(String query,
-      {int limit = 20});
+  Future<List<IngredientData>> searchIngredients(
+    String query, {
+    int limit = 20,
+  });
 
   /// Watch all ingredients (for cache updates).
   Stream<List<IngredientData>> watchAll();

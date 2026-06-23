@@ -44,13 +44,18 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
   // Feedback is owned by the submitting user
   @override
   Future<bool> validateCreatePermission(
-      String userId, FeedbackEntry entity) async {
+    String userId,
+    FeedbackEntry entity,
+  ) async {
     return entity.userId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, FeedbackEntry? entity) async {
+    String userId,
+    String resourceId,
+    FeedbackEntry? entity,
+  ) async {
     // Users can only read their own feedback
     if (entity == null) return false;
     return entity.userId == userId;
@@ -58,13 +63,18 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, FeedbackEntry entity) async {
+    String userId,
+    String resourceId,
+    FeedbackEntry entity,
+  ) async {
     return entity.userId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     return false; // Feedback cannot be deleted by users
   }
 
@@ -103,14 +113,15 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
     FeedbackStatus? status,
     int limit = 50,
   }) {
-    Query<Map<String, dynamic>> query =
-        collection.orderBy('createdAt', descending: true).limit(limit);
+    Query<Map<String, dynamic>> query = collection
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
     if (status != null) {
       query = query.where('status', isEqualTo: status.wireName);
     }
     return query.snapshots().map(
-          (snapshot) => snapshot.docs.map(fromFirestore).toList(),
-        );
+      (snapshot) => snapshot.docs.map(fromFirestore).toList(),
+    );
   }
 
   @override
@@ -164,7 +175,8 @@ class FirebaseFeedbackRepository extends BaseFirebaseRepository<FeedbackEntry>
 
       final url = await uploadTask.ref.getDownloadURL();
       AppLogger.info(
-          'Feedback screenshot uploaded for user ${userId.maskedUserId}');
+        'Feedback screenshot uploaded for user ${userId.maskedUserId}',
+      );
       return url;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to upload feedback screenshot: $e', stackTrace);

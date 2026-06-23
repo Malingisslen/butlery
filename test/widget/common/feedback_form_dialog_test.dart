@@ -26,25 +26,25 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/feedback_form_dialog.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: Scaffold(body: child),
+);
 
 /// 1x1 transparent PNG — smallest valid byte payload Image.memory accepts.
 Uint8List _tinyPng() => Uint8List.fromList(const [
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, //
-      0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, //
-      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, //
-      0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, //
-      0x89, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x44, 0x41, //
-      0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, //
-      0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, //
-      0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, //
-      0x42, 0x60, 0x82,
-    ]);
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, //
+  0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, //
+  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, //
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, //
+  0x89, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x44, 0x41, //
+  0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, //
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, //
+  0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, //
+  0x42, 0x60, 0x82,
+]);
 
 /// Pumps the dialog directly inside a Scaffold so the layout pass doesn't
 /// have to mediate a route transition.
@@ -53,8 +53,9 @@ Widget _hostDialog({Uint8List? screenshot}) =>
 
 void main() {
   group('FeedbackFormDialog rendering', () {
-    testWidgets('renders the localized AppBar title "Skicka feedback"',
-        (tester) async {
+    testWidgets('renders the localized AppBar title "Skicka feedback"', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -63,33 +64,36 @@ void main() {
     });
 
     testWidgets(
-        'renders all three section labels (category, description, email)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_hostDialog()));
-      await tester.pumpAndSettle();
+      'renders all three section labels (category, description, email)',
+      (tester) async {
+        await tester.pumpWidget(_wrap(_hostDialog()));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Kategori'), findsOneWidget);
-      expect(find.text('Beskrivning'), findsOneWidget);
-      expect(find.text('E-post (valfritt)'), findsOneWidget);
-    });
+        expect(find.text('Kategori'), findsOneWidget);
+        expect(find.text('Beskrivning'), findsOneWidget);
+        expect(find.text('E-post (valfritt)'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'description field renders with localized hint and 2000 maxLength',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_hostDialog()));
-      await tester.pumpAndSettle();
+      'description field renders with localized hint and 2000 maxLength',
+      (tester) async {
+        await tester.pumpWidget(_wrap(_hostDialog()));
+        await tester.pumpAndSettle();
 
-      // The hint text is rendered as a Text widget inside the field decoration.
-      expect(find.text('Beskriv vad du upplevde...'), findsOneWidget);
+        // The hint text is rendered as a Text widget inside the field decoration.
+        expect(find.text('Beskriv vad du upplevde...'), findsOneWidget);
 
-      // Two TextFields (description + email). Pick the multiline one via
-      // maxLength to verify the cap is wired correctly.
-      final fields = tester.widgetList<TextField>(find.byType(TextField));
-      expect(fields.any((f) => f.maxLength == 2000), isTrue);
-    });
+        // Two TextFields (description + email). Pick the multiline one via
+        // maxLength to verify the cap is wired correctly.
+        final fields = tester.widgetList<TextField>(find.byType(TextField));
+        expect(fields.any((f) => f.maxLength == 2000), isTrue);
+      },
+    );
 
-    testWidgets('email field renders with localized hint and 100 maxLength',
-        (tester) async {
+    testWidgets('email field renders with localized hint and 100 maxLength', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -112,8 +116,9 @@ void main() {
       );
     });
 
-    testWidgets('submit button renders the localized "Skicka" label',
-        (tester) async {
+    testWidgets('submit button renders the localized "Skicka" label', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -127,8 +132,9 @@ void main() {
       );
     });
 
-    testWidgets('close (X) icon button is visible in the AppBar',
-        (tester) async {
+    testWidgets('close (X) icon button is visible in the AppBar', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -153,8 +159,9 @@ void main() {
       expect(find.text('Bugg'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('opening dropdown reveals all three category options',
-        (tester) async {
+    testWidgets('opening dropdown reveals all three category options', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -167,8 +174,9 @@ void main() {
       expect(find.text('Övrigt'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('selecting "Önskemål" updates the dropdown display',
-        (tester) async {
+    testWidgets('selecting "Önskemål" updates the dropdown display', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -183,8 +191,9 @@ void main() {
   });
 
   group('FeedbackFormDialog screenshot handling', () {
-    testWidgets('no screenshot label/preview when widget.screenshot is null',
-        (tester) async {
+    testWidgets('no screenshot label/preview when widget.screenshot is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -192,24 +201,27 @@ void main() {
       expect(find.byType(Image), findsNothing);
     });
 
-    testWidgets('screenshot section renders when widget.screenshot is provided',
-        (tester) async {
-      await tester.pumpWidget(_wrap(_hostDialog(screenshot: _tinyPng())));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'screenshot section renders when widget.screenshot is provided',
+      (tester) async {
+        await tester.pumpWidget(_wrap(_hostDialog(screenshot: _tinyPng())));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Skarmavbild'), findsOneWidget);
-      expect(find.byType(Image), findsOneWidget);
+        expect(find.text('Skarmavbild'), findsOneWidget);
+        expect(find.byType(Image), findsOneWidget);
 
-      // Remove screenshot IconButton with tooltip — two Icons.close exist
-      // (AppBar leading + screenshot remove) so we scope by tooltip.
-      expect(
-        find.byTooltip('Ta bort skarmavbild'),
-        findsOneWidget,
-      );
-    });
+        // Remove screenshot IconButton with tooltip — two Icons.close exist
+        // (AppBar leading + screenshot remove) so we scope by tooltip.
+        expect(
+          find.byTooltip('Ta bort skarmavbild'),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('tapping remove icon clears the screenshot preview',
-        (tester) async {
+    testWidgets('tapping remove icon clears the screenshot preview', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog(screenshot: _tinyPng())));
       await tester.pumpAndSettle();
 
@@ -226,28 +238,33 @@ void main() {
 
   group('FeedbackFormDialog empty-description guard', () {
     testWidgets(
-        'tapping Skicka with empty description shows the required SnackBar '
-        'and does not call the service', (tester) async {
-      // ServiceLocator is not initialized; if _submit got past the
-      // description check it would throw — so this also implicitly verifies
-      // the guard short-circuits before service access.
-      await tester.pumpWidget(_wrap(_hostDialog()));
-      await tester.pumpAndSettle();
+      'tapping Skicka with empty description shows the required SnackBar '
+      'and does not call the service',
+      (tester) async {
+        // ServiceLocator is not initialized; if _submit got past the
+        // description check it would throw — so this also implicitly verifies
+        // the guard short-circuits before service access.
+        await tester.pumpWidget(_wrap(_hostDialog()));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.descendant(
-        of: find.byType(FilledButton),
-        matching: find.text('Skicka'),
-      ));
-      await tester.pump(); // run the synchronous part of _submit
+        await tester.tap(
+          find.descendant(
+            of: find.byType(FilledButton),
+            matching: find.text('Skicka'),
+          ),
+        );
+        await tester.pump(); // run the synchronous part of _submit
 
-      // SnackBar with the localized required-message appears.
-      expect(find.text('Ange en beskrivning'), findsOneWidget);
-      // No exception bubbled up — service path was never entered.
-      expect(tester.takeException(), isNull);
-    });
+        // SnackBar with the localized required-message appears.
+        expect(find.text('Ange en beskrivning'), findsOneWidget);
+        // No exception bubbled up — service path was never entered.
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-    testWidgets('whitespace-only description is treated as empty',
-        (tester) async {
+    testWidgets('whitespace-only description is treated as empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(_hostDialog()));
       await tester.pumpAndSettle();
 
@@ -256,10 +273,12 @@ void main() {
         (w) => w is TextField && w.maxLength == 2000,
       );
       await tester.enterText(descField, '   \t  ');
-      await tester.tap(find.descendant(
-        of: find.byType(FilledButton),
-        matching: find.text('Skicka'),
-      ));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.text('Skicka'),
+        ),
+      );
       await tester.pump();
 
       expect(find.text('Ange en beskrivning'), findsOneWidget);

@@ -65,7 +65,9 @@ void main() {
         final participants =
             result['participants'] as Map<String, ResourcePermission>;
         expect(
-            participants.length, equals(6)); // 1 owner + 2 editors + 3 viewers
+          participants.length,
+          equals(6),
+        ); // 1 owner + 2 editors + 3 viewers
         expect(participants['owner_123'], equals(ResourcePermission.owner));
         expect(participants['editor_1'], equals(ResourcePermission.editor));
         expect(participants['editor_2'], equals(ResourcePermission.editor));
@@ -111,13 +113,15 @@ void main() {
 
         final data = result['data'] as RealtimeMenuData;
         expect(
-            data.createdForDate.isAfter(before) ||
-                data.createdForDate.isAtSameMomentAs(before),
-            isTrue);
+          data.createdForDate.isAfter(before) ||
+              data.createdForDate.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            data.createdForDate.isBefore(after) ||
-                data.createdForDate.isAtSameMomentAs(after),
-            isTrue);
+          data.createdForDate.isBefore(after) ||
+              data.createdForDate.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
 
       test('should generate unique IDs', () {
@@ -165,8 +169,10 @@ void main() {
       });
 
       test('should parse repository data correctly', () {
-        final result =
-            RealtimeMenuFactory.parseRepositoryData('menu_123', repositoryData);
+        final result = RealtimeMenuFactory.parseRepositoryData(
+          'menu_123',
+          repositoryData,
+        );
 
         expect(result['id'], equals('menu_123'));
         expect(result['ownerId'], equals('user_456'));
@@ -200,8 +206,10 @@ void main() {
           'createdForDate': Timestamp(1736899200, 0),
         };
 
-        final result =
-            RealtimeMenuFactory.parseRepositoryData('menu_456', minimalData);
+        final result = RealtimeMenuFactory.parseRepositoryData(
+          'menu_456',
+          minimalData,
+        );
 
         expect(result['editCount'], equals(0)); // Default value
         expect(result['isActive'], isTrue); // Default value
@@ -229,13 +237,17 @@ void main() {
         };
 
         final result = RealtimeMenuFactory.parseRepositoryData(
-            'test_id', dataWithInvalidPermission);
+          'test_id',
+          dataWithInvalidPermission,
+        );
 
         final participants =
             result['participants'] as Map<String, ResourcePermission>;
         expect(participants['user_123'], equals(ResourcePermission.owner));
-        expect(participants['user_456'],
-            equals(ResourcePermission.viewer)); // Defaults to viewer
+        expect(
+          participants['user_456'],
+          equals(ResourcePermission.viewer),
+        ); // Defaults to viewer
         expect(participants['user_789'], equals(ResourcePermission.admin));
       });
     });
@@ -319,32 +331,38 @@ void main() {
       // corrupted cache entry should NOT re-materialize as a "freshly
       // edited" menu.
       Map<String, dynamic> validJsonData() => {
-            'ownerId': 'u_1',
-            'ownerDisplayName': 'Anna',
-            'createdAt': '2026-01-01T00:00:00.000',
-            'lastEditedAt': '2026-01-02T00:00:00.000',
-            'lastEditedBy': 'u_1',
-            'lastEditedByDisplayName': 'Anna',
-            'createdForDate': '2026-01-03T00:00:00.000',
-            'menuTitle': 'Test',
-          };
+        'ownerId': 'u_1',
+        'ownerDisplayName': 'Anna',
+        'createdAt': '2026-01-01T00:00:00.000',
+        'lastEditedAt': '2026-01-02T00:00:00.000',
+        'lastEditedBy': 'u_1',
+        'lastEditedByDisplayName': 'Anna',
+        'createdForDate': '2026-01-03T00:00:00.000',
+        'menuTitle': 'Test',
+      };
 
       test('parseJsonData throws on missing ownerId (BUT-1089)', () {
         final data = validJsonData()..remove('ownerId');
-        expect(() => RealtimeMenuFactory.parseJsonData(data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseJsonData(data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('parseJsonData throws on missing createdAt (BUT-1089)', () {
         final data = validJsonData()..remove('createdAt');
-        expect(() => RealtimeMenuFactory.parseJsonData(data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseJsonData(data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('parseJsonData throws on missing lastEditedBy (BUT-1089)', () {
         final data = validJsonData()..remove('lastEditedBy');
-        expect(() => RealtimeMenuFactory.parseJsonData(data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseJsonData(data),
+          throwsA(isA<FormatException>()),
+        );
       });
     });
 
@@ -353,52 +371,64 @@ void main() {
       // Firestore-payload variant. Mirrors RealtimeRecipe.fromMap fix
       // (BUT-1071) so corrupted docs can't silently parse.
       Map<String, dynamic> validRepoData() => {
-            'ownerId': 'u_1',
-            'ownerDisplayName': 'Anna',
-            'createdAt': DateTime(2026, 1, 1),
-            'lastEditedAt': DateTime(2026, 1, 2),
-            'lastEditedBy': 'u_1',
-            'lastEditedByDisplayName': 'Anna',
-            'createdForDate': Timestamp.fromDate(DateTime(2026, 1, 3)),
-            'menuTitle': 'Test',
-          };
+        'ownerId': 'u_1',
+        'ownerDisplayName': 'Anna',
+        'createdAt': DateTime(2026, 1, 1),
+        'lastEditedAt': DateTime(2026, 1, 2),
+        'lastEditedBy': 'u_1',
+        'lastEditedByDisplayName': 'Anna',
+        'createdForDate': Timestamp.fromDate(DateTime(2026, 1, 3)),
+        'menuTitle': 'Test',
+      };
 
       test('throws on missing ownerId', () {
         final data = validRepoData()..remove('ownerId');
-        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('throws on empty ownerId', () {
         final data = validRepoData()..['ownerId'] = '';
-        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('throws on missing createdAt', () {
         final data = validRepoData()..remove('createdAt');
-        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('throws on missing lastEditedAt', () {
         final data = validRepoData()..remove('lastEditedAt');
-        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('throws on missing lastEditedBy', () {
         final data = validRepoData()..remove('lastEditedBy');
-        expect(() => RealtimeMenuFactory.parseRepositoryData('m_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeMenuFactory.parseRepositoryData('m_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
-      test('soft-defaults ownerDisplayName (BUT-1089: display-name stays soft)',
-          () {
-        final data = validRepoData()..remove('ownerDisplayName');
-        final result = RealtimeMenuFactory.parseRepositoryData('m_x', data);
-        expect(result['ownerDisplayName'], isEmpty);
-      });
+      test(
+        'soft-defaults ownerDisplayName (BUT-1089: display-name stays soft)',
+        () {
+          final data = validRepoData()..remove('ownerDisplayName');
+          final result = RealtimeMenuFactory.parseRepositoryData('m_x', data);
+          expect(result['ownerDisplayName'], isEmpty);
+        },
+      );
     });
 
     group('createCopyParameters', () {
@@ -452,13 +482,13 @@ void main() {
         final lastEditedAt = result['lastEditedAt'] as DateTime;
         expect(lastEditedAt.isAfter(originalLastEditedAt), isTrue);
         expect(
-            lastEditedAt.isAfter(before) ||
-                lastEditedAt.isAtSameMomentAs(before),
-            isTrue);
+          lastEditedAt.isAfter(before) || lastEditedAt.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            lastEditedAt.isBefore(after) ||
-                lastEditedAt.isAtSameMomentAs(after),
-            isTrue);
+          lastEditedAt.isBefore(after) || lastEditedAt.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
 
       test('should preserve original data while updating edit metadata', () {
@@ -548,32 +578,36 @@ void main() {
 
         final participants =
             result['participants'] as Map<String, ResourcePermission>;
-        expect(participants.length,
-            equals(301)); // 1 owner + 100 editors + 200 viewers
+        expect(
+          participants.length,
+          equals(301),
+        ); // 1 owner + 100 editors + 200 viewers
 
         // Check some random participants
         expect(participants['editor_50'], equals(ResourcePermission.editor));
         expect(participants['viewer_150'], equals(ResourcePermission.viewer));
       });
 
-      test('should handle duplicate user IDs in different permission lists',
-          () {
-        final result = RealtimeMenuFactory.createFromMenuCategories(
-          menuTitle: 'Test',
-          menuSnapshot: testMenuSnapshot,
-          ownerId: 'owner',
-          ownerDisplayName: 'Owner',
-          editorUserIds: ['user_1', 'user_2'],
-          viewerUserIds: ['user_2', 'user_3'], // user_2 appears in both
-        );
+      test(
+        'should handle duplicate user IDs in different permission lists',
+        () {
+          final result = RealtimeMenuFactory.createFromMenuCategories(
+            menuTitle: 'Test',
+            menuSnapshot: testMenuSnapshot,
+            ownerId: 'owner',
+            ownerDisplayName: 'Owner',
+            editorUserIds: ['user_1', 'user_2'],
+            viewerUserIds: ['user_2', 'user_3'], // user_2 appears in both
+          );
 
-        final participants =
-            result['participants'] as Map<String, ResourcePermission>;
-        // user_2 should have viewer permission (last one wins)
-        expect(participants['user_2'], equals(ResourcePermission.viewer));
-        expect(participants['user_1'], equals(ResourcePermission.editor));
-        expect(participants['user_3'], equals(ResourcePermission.viewer));
-      });
+          final participants =
+              result['participants'] as Map<String, ResourcePermission>;
+          // user_2 should have viewer permission (last one wins)
+          expect(participants['user_2'], equals(ResourcePermission.viewer));
+          expect(participants['user_1'], equals(ResourcePermission.editor));
+          expect(participants['user_3'], equals(ResourcePermission.viewer));
+        },
+      );
     });
   });
 }

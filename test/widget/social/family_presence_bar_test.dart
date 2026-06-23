@@ -20,13 +20,13 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
 UserProfile profile(String uid, {String? avatarUrl}) => UserProfile(
-      uid: uid,
-      displayName: uid.toUpperCase(),
-      email: '$uid@butlery.test',
-      avatarUrl: avatarUrl,
-      joinedAt: DateTime(2026, 1, 1),
-      lastActiveAt: DateTime(2026, 4, 20),
-    );
+  uid: uid,
+  displayName: uid.toUpperCase(),
+  email: '$uid@butlery.test',
+  avatarUrl: avatarUrl,
+  joinedAt: DateTime(2026, 1, 1),
+  lastActiveAt: DateTime(2026, 4, 20),
+);
 
 Widget wrap(Widget child, {bool disableAnimations = false}) {
   // Pin AppTheme.lightTheme so `colorScheme.primary` resolves to the same
@@ -54,14 +54,17 @@ Widget wrap(Widget child, {bool disableAnimations = false}) {
 /// background), so the previous BoxDecoration-by-colour heuristic no longer
 /// matches. We find by the Icon directly.
 Finder findOnlineDot() {
-  return find.byWidgetPredicate((w) =>
-      w is Icon && w.icon == Icons.circle && w.color == AppColors.forestGreen);
+  return find.byWidgetPredicate(
+    (w) =>
+        w is Icon && w.icon == Icons.circle && w.color == AppColors.forestGreen,
+  );
 }
 
 void main() {
   group('FamilyPresenceBar', () {
-    testWidgets('no online members → renders SizedBox.shrink (hidden)',
-        (tester) async {
+    testWidgets('no online members → renders SizedBox.shrink (hidden)', (
+      tester,
+    ) async {
       final members = [profile('u1'), profile('u2')];
       await tester.pumpWidget(
         wrap(
@@ -80,8 +83,9 @@ void main() {
       expect(find.bySemanticsLabel('Online just nu'), findsNothing);
     });
 
-    testWidgets('one online member → avatar renders with green online dot',
-        (tester) async {
+    testWidgets('one online member → avatar renders with green online dot', (
+      tester,
+    ) async {
       final members = [profile('erik'), profile('sara')];
       await tester.pumpWidget(
         wrap(
@@ -104,8 +108,9 @@ void main() {
       expect(findOnlineDot(), findsWidgets);
     });
 
-    testWidgets('7 online members → 5 avatars + "+2" overflow chip',
-        (tester) async {
+    testWidgets('7 online members → 5 avatars + "+2" overflow chip', (
+      tester,
+    ) async {
       final members = List<UserProfile>.generate(
         7,
         (i) => profile('u$i'),
@@ -130,123 +135,133 @@ void main() {
       expect(find.text('+2'), findsOneWidget);
     });
 
-    testWidgets('reduce-motion: no animated widgets run / no pumpAndSettle lag',
-        (tester) async {
-      final members = [profile('erik')];
-      await tester.pumpWidget(
-        wrap(
-          FamilyPresenceBar(
-            memberProfiles: members,
-            onlineUserIdsStream: Stream.value({'erik'}),
+    testWidgets(
+      'reduce-motion: no animated widgets run / no pumpAndSettle lag',
+      (tester) async {
+        final members = [profile('erik')];
+        await tester.pumpWidget(
+          wrap(
+            FamilyPresenceBar(
+              memberProfiles: members,
+              onlineUserIdsStream: Stream.value({'erik'}),
+            ),
+            disableAnimations: true,
           ),
-          disableAnimations: true,
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      // The bar renders, the initials are on screen …
-      expect(find.text('ER'), findsOneWidget);
+        // The bar renders, the initials are on screen …
+        expect(find.text('ER'), findsOneWidget);
 
-      // … and pump-and-settle finishes immediately — i.e. there are no
-      // repeating animation tickers driven by the widget. If the widget
-      // ever introduces a pulse it must gate on disableAnimations.
-      await tester.pumpAndSettle(const Duration(milliseconds: 100));
-      expect(find.text('ER'), findsOneWidget);
-    });
+        // … and pump-and-settle finishes immediately — i.e. there are no
+        // repeating animation tickers driven by the widget. If the widget
+        // ever introduces a pulse it must gate on disableAnimations.
+        await tester.pumpAndSettle(const Duration(milliseconds: 100));
+        expect(find.text('ER'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'stream-driven: offline → online flip materializes an avatar live',
-        (tester) async {
-      final members = [profile('erik'), profile('sara')];
-      final controller = StreamController<Set<String>>.broadcast();
+      'stream-driven: offline → online flip materializes an avatar live',
+      (tester) async {
+        final members = [profile('erik'), profile('sara')];
+        final controller = StreamController<Set<String>>.broadcast();
 
-      await tester.pumpWidget(
-        wrap(
-          FamilyPresenceBar(
-            memberProfiles: members,
-            onlineUserIdsStream: controller.stream,
+        await tester.pumpWidget(
+          wrap(
+            FamilyPresenceBar(
+              memberProfiles: members,
+              onlineUserIdsStream: controller.stream,
+            ),
           ),
-        ),
-      );
-      // Flush the initialData frame.
-      await tester.pump();
+        );
+        // Flush the initialData frame.
+        await tester.pump();
 
-      // Initial: nobody online — bar is hidden.
-      controller.add(const <String>{});
-      await tester.pump();
-      expect(find.text('ER'), findsNothing);
-      expect(find.text('SA'), findsNothing);
+        // Initial: nobody online — bar is hidden.
+        controller.add(const <String>{});
+        await tester.pump();
+        expect(find.text('ER'), findsNothing);
+        expect(find.text('SA'), findsNothing);
 
-      // Erik comes online — his avatar appears without any rebuild from the
-      // parent; this is the live-stream contract the presence bar must honor.
-      controller.add({'erik'});
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('ER'), findsOneWidget);
-      expect(find.text('SA'), findsNothing);
+        // Erik comes online — his avatar appears without any rebuild from the
+        // parent; this is the live-stream contract the presence bar must honor.
+        controller.add({'erik'});
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('ER'), findsOneWidget);
+        expect(find.text('SA'), findsNothing);
 
-      // Sara also comes online — both render.
-      controller.add({'erik', 'sara'});
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('ER'), findsOneWidget);
-      expect(find.text('SA'), findsOneWidget);
+        // Sara also comes online — both render.
+        controller.add({'erik', 'sara'});
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('ER'), findsOneWidget);
+        expect(find.text('SA'), findsOneWidget);
 
-      // Erik goes offline — only Sara remains.
-      controller.add({'sara'});
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('ER'), findsNothing);
-      expect(find.text('SA'), findsOneWidget);
+        // Erik goes offline — only Sara remains.
+        controller.add({'sara'});
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('ER'), findsNothing);
+        expect(find.text('SA'), findsOneWidget);
 
-      await controller.close();
-    });
+        await controller.close();
+      },
+    );
 
     testWidgets(
-        'offline: empty RTDB emission retains the last-known online avatars',
-        (tester) async {
-      // BUT-1360: RTDB has no read cache, so dropping offline emits an empty
-      // set and the bar would vanish. While offline we keep the last-known
-      // presence; once back online an empty is trusted again.
-      final members = [profile('erik'), profile('sara')];
-      final controller = StreamController<Set<String>>.broadcast();
-      var offline = false;
+      'offline: empty RTDB emission retains the last-known online avatars',
+      (tester) async {
+        // BUT-1360: RTDB has no read cache, so dropping offline emits an empty
+        // set and the bar would vanish. While offline we keep the last-known
+        // presence; once back online an empty is trusted again.
+        final members = [profile('erik'), profile('sara')];
+        final controller = StreamController<Set<String>>.broadcast();
+        var offline = false;
 
-      await tester.pumpWidget(
-        wrap(
-          FamilyPresenceBar(
-            memberProfiles: members,
-            onlineUserIdsStream: controller.stream,
-            isOffline: () => offline,
+        await tester.pumpWidget(
+          wrap(
+            FamilyPresenceBar(
+              memberProfiles: members,
+              onlineUserIdsStream: controller.stream,
+              isOffline: () => offline,
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      // Erik is online — his avatar renders.
-      controller.add({'erik'});
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('ER'), findsOneWidget);
+        // Erik is online — his avatar renders.
+        controller.add({'erik'});
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('ER'), findsOneWidget);
 
-      // Device drops offline; RTDB pushes an empty set.
-      offline = true;
-      controller.add(const <String>{});
-      await tester.pump();
-      await tester.pump();
-      // Bar must NOT vanish — Erik's avatar is retained.
-      expect(find.text('ER'), findsOneWidget,
-          reason: 'offline empty must not blank the presence bar');
+        // Device drops offline; RTDB pushes an empty set.
+        offline = true;
+        controller.add(const <String>{});
+        await tester.pump();
+        await tester.pump();
+        // Bar must NOT vanish — Erik's avatar is retained.
+        expect(
+          find.text('ER'),
+          findsOneWidget,
+          reason: 'offline empty must not blank the presence bar',
+        );
 
-      // Reconnect: an empty set is now authoritative → the bar hides.
-      offline = false;
-      controller.add(const <String>{});
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('ER'), findsNothing,
-          reason: 'online empty is trusted — bar collapses');
+        // Reconnect: an empty set is now authoritative → the bar hides.
+        offline = false;
+        controller.add(const <String>{});
+        await tester.pump();
+        await tester.pump();
+        expect(
+          find.text('ER'),
+          findsNothing,
+          reason: 'online empty is trusted — bar collapses',
+        );
 
-      await controller.close();
-    });
+        await controller.close();
+      },
+    );
   });
 }

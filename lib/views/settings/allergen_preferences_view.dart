@@ -73,7 +73,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
                       const SizedBox(height: AppDimensions.spacingL),
                       const Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingS),
+                          horizontal: AppDimensions.paddingS,
+                        ),
                         child: AllergenDisclaimer(),
                       ),
                       if (viewModel.hasError) ...[
@@ -89,7 +90,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Widget _buildAllergenSection(
-      BuildContext context, AllergenPreferencesViewModel viewModel) {
+    BuildContext context,
+    AllergenPreferencesViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return StyledCard(
@@ -129,8 +132,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleAllergen(e.key),
-                  selectedColor: context.butleryColors.success
-                      .withValues(alpha: AppDimensions.opacityLight),
+                  selectedColor: context.butleryColors.success.withValues(
+                    alpha: AppDimensions.opacityLight,
+                  ),
                   checkmarkColor: context.butleryColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
                     color: isSelected
@@ -147,7 +151,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Widget _buildDietarySection(
-      BuildContext context, AllergenPreferencesViewModel viewModel) {
+    BuildContext context,
+    AllergenPreferencesViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return StyledCard(
@@ -187,8 +193,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleDietary(e.key),
-                  selectedColor: context.butleryColors.success
-                      .withValues(alpha: AppDimensions.opacityLight),
+                  selectedColor: context.butleryColors.success.withValues(
+                    alpha: AppDimensions.opacityLight,
+                  ),
                   checkmarkColor: context.butleryColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
                     color: isSelected
@@ -205,7 +212,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Widget _buildDisplaySection(
-      BuildContext context, AllergenPreferencesViewModel viewModel) {
+    BuildContext context,
+    AllergenPreferencesViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return StyledCard(
@@ -288,7 +297,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Widget _buildActionsSection(
-      BuildContext context, AllergenPreferencesViewModel viewModel) {
+    BuildContext context,
+    AllergenPreferencesViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -323,8 +334,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color:
-                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
+        ),
       ),
       child: Row(
         children: [
@@ -397,8 +408,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
 
           return await taggingService.retagUserRecipes(
             userId: authService.currentUser!.uid,
-            getRecipes: () => recipeService.personal
-                .fetchAllUserRecipes(authService.currentUser!.uid),
+            getRecipes: () => recipeService.personal.fetchAllUserRecipes(
+              authService.currentUser!.uid,
+            ),
             // Use raw save to avoid double-tagging via updatePersonalRecipe
             saveRecipe: (recipe) =>
                 recipeService.personal.saveRecipeRaw(recipe),
@@ -425,7 +437,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Future<void> _confirmReset(
-      BuildContext context, AllergenPreferencesViewModel viewModel) async {
+    BuildContext context,
+    AllergenPreferencesViewModel viewModel,
+  ) async {
     final cs = Theme.of(context).colorScheme;
 
     final confirm = await showDialog<bool>(

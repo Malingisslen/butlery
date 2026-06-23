@@ -68,8 +68,8 @@ class ShoppingShareViewModel extends ChangeNotifier
   ShoppingShareViewModel({
     required UnifiedShoppingService shoppingService,
     required UnifiedFriendsService friendsService,
-  })  : _shoppingService = shoppingService,
-        _friendsService = friendsService;
+  }) : _shoppingService = shoppingService,
+       _friendsService = friendsService;
 
   /// Share operation state for UI progress indication and interaction control.
   /// Indicates whether sharing operation is in progress for loading indicators
@@ -132,7 +132,8 @@ class ShoppingShareViewModel extends ChangeNotifier
       _initialized = true;
     } catch (e) {
       _setError(
-          AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriends));
+        AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriends),
+      );
     } finally {
       _setLoading(false);
     }
@@ -172,7 +173,8 @@ class ShoppingShareViewModel extends ChangeNotifier
 
   /// Command: Share shopping list with selected friends - FIXAD VERSION
   Future<bool> shareShoppingListCommand(
-      UnifiedShoppingList shoppingList) async {
+    UnifiedShoppingList shoppingList,
+  ) async {
     if (!canShare) {
       _setError(AppLocale.current.errorSelectAtLeastOneFriend);
       return false;
@@ -226,8 +228,9 @@ class ShoppingShareViewModel extends ChangeNotifier
     try {
       await _loadFriends();
     } catch (e) {
-      _setError(AppLocale.current
-          .errorCouldNotLoad(AppLocale.current.nounFriendList));
+      _setError(
+        AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriendList),
+      );
     } finally {
       _setLoading(false);
     }
@@ -243,7 +246,8 @@ class ShoppingShareViewModel extends ChangeNotifier
       _friends = _friendsService.management.getAllFriends();
     } catch (e) {
       throw Exception(
-          AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriends));
+        AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriends),
+      );
     }
   }
 

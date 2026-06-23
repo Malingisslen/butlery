@@ -9,8 +9,13 @@ const double _chartHeight = 180;
 
 /// Distinct line/series colours pulled from the theme (no hardcoded hex). The
 /// legend disambiguates, so near-hues are acceptable for an internal tool.
-List<Color> _palette(ColorScheme cs) =>
-    [cs.primary, cs.tertiary, cs.error, cs.secondary, cs.outline];
+List<Color> _palette(ColorScheme cs) => [
+  cs.primary,
+  cs.tertiary,
+  cs.error,
+  cs.secondary,
+  cs.outline,
+];
 
 String _shortLabel(String label) =>
     label.length <= 8 ? label : '${label.substring(0, 7)}…';
@@ -70,8 +75,10 @@ class MetricBarChart extends StatelessWidget {
                     }
                     return Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text(_shortLabel(rows[i].label),
-                          style: AppTextStyles.bodySmall),
+                      child: Text(
+                        _shortLabel(rows[i].label),
+                        style: AppTextStyles.bodySmall,
+                      ),
                     );
                   },
                 ),
@@ -107,13 +114,15 @@ class MetricLineChart extends StatelessWidget {
           // rows arrive newest-first; reverse so the newest day is rightmost
           FlSpot((rowCount - 1 - r).toDouble(), value.cells[r][c].toDouble()),
       ];
-      lines.add(LineChartBarData(
-        spots: spots,
-        color: palette[c % palette.length],
-        isCurved: false,
-        barWidth: 2,
-        dotData: const FlDotData(show: false),
-      ));
+      lines.add(
+        LineChartBarData(
+          spots: spots,
+          color: palette[c % palette.length],
+          isCurved: false,
+          barWidth: 2,
+          dotData: const FlDotData(show: false),
+        ),
+      );
     }
 
     return Column(
@@ -129,13 +138,16 @@ class MetricLineChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(showTitles: true, reservedSize: 32),
                   ),
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   // Dates are listed in the table below — keep the axis clean.
-                  bottomTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 gridData: const FlGridData(show: false),
                 borderData: FlBorderData(show: false),
@@ -145,8 +157,9 @@ class MetricLineChart extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingM,
-              vertical: AppDimensions.spacingXs),
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.spacingXs,
+          ),
           child: Wrap(
             spacing: AppDimensions.spacingMd,
             runSpacing: AppDimensions.spacingXs,
@@ -156,9 +169,10 @@ class MetricLineChart extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                        width: 10,
-                        height: 10,
-                        color: palette[c % palette.length]),
+                      width: 10,
+                      height: 10,
+                      color: palette[c % palette.length],
+                    ),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(value.colLabels[c], style: AppTextStyles.bodySmall),
                   ],

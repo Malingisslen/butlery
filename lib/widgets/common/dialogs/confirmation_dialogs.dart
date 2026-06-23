@@ -91,13 +91,17 @@ class ConfirmationDialogs {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(cancelText ?? context.l10n.commonCancel,
-                    style: AppTextStyles.labelLarge),
+                child: Text(
+                  cancelText ?? context.l10n.commonCancel,
+                  style: AppTextStyles.labelLarge,
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text(confirmText ?? context.l10n.commonContinue,
-                    style: AppTextStyles.labelLarge),
+                child: Text(
+                  confirmText ?? context.l10n.commonContinue,
+                  style: AppTextStyles.labelLarge,
+                ),
               ),
             ],
           ),
@@ -151,8 +155,10 @@ class ConfirmationDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: Text(cancelText ?? context.l10n.commonCancel,
-                style: AppTextStyles.labelLarge),
+            child: Text(
+              cancelText ?? context.l10n.commonCancel,
+              style: AppTextStyles.labelLarge,
+            ),
           ),
         ],
       ),
@@ -198,8 +204,10 @@ class ConfirmationDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: Text(cancelText ?? context.l10n.commonCancel,
-                style: AppTextStyles.labelLarge),
+            child: Text(
+              cancelText ?? context.l10n.commonCancel,
+              style: AppTextStyles.labelLarge,
+            ),
           ),
           TextButton(
             onPressed: () {

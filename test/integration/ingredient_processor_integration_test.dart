@@ -27,8 +27,11 @@ void main() {
 
         expect(result.quantity, 2.0);
         expect(result.unit, 'dl');
-        expect(result.normalizedName, 'glutenfri mjölk',
-            reason: 'Diet descriptors must be preserved');
+        expect(
+          result.normalizedName,
+          'glutenfri mjölk',
+          reason: 'Diet descriptors must be preserved',
+        );
         expect(result.preprocessingFlags?.hadApproximation, true);
       });
 
@@ -49,10 +52,16 @@ void main() {
 
         expect(result.quantity, 1.0);
         expect(result.unit, 'krm');
-        expect(result.normalizedName, 'vitpeppar',
-            reason: 'Compound names should not be split to "peppar"');
-        expect(result.isKnown, true,
-            reason: 'vitpeppar should be in known ingredients');
+        expect(
+          result.normalizedName,
+          'vitpeppar',
+          reason: 'Compound names should not be split to "peppar"',
+        );
+        expect(
+          result.isKnown,
+          true,
+          reason: 'vitpeppar should be in known ingredients',
+        );
       });
 
       test('preserves "med [flavor]" products', () {
@@ -61,8 +70,11 @@ void main() {
 
         expect(result.quantity, 1.0);
         expect(result.unit, 'burk');
-        expect(result.normalizedName, contains('med'),
-            reason: 'Product flavor descriptions should be preserved');
+        expect(
+          result.normalizedName,
+          contains('med'),
+          reason: 'Product flavor descriptions should be preserved',
+        );
       });
 
       test('removes preparation words', () {
@@ -71,10 +83,16 @@ void main() {
 
         expect(result.quantity, 2.0);
         expect(result.unit, 'dl');
-        expect(result.originalName, 'hackad lök',
-            reason: 'Original should keep preparation word for display');
-        expect(result.normalizedName, 'lök',
-            reason: 'Normalized should remove preparation word for grouping');
+        expect(
+          result.originalName,
+          'hackad lök',
+          reason: 'Original should keep preparation word for display',
+        );
+        expect(
+          result.normalizedName,
+          'lök',
+          reason: 'Normalized should remove preparation word for grouping',
+        );
       });
 
       test('handles complex real-world example', () {
@@ -83,9 +101,11 @@ void main() {
 
         expect(result.quantity, 3.0, reason: 'Max from range');
         expect(result.unit, 'dl');
-        expect(result.normalizedName, 'glutenfri mjölk',
-            reason:
-                'Diet descriptor preserved, parentheses/instruction removed');
+        expect(
+          result.normalizedName,
+          'glutenfri mjölk',
+          reason: 'Diet descriptor preserved, parentheses/instruction removed',
+        );
         expect(result.preprocessingFlags?.hadApproximation, true);
         expect(result.preprocessingFlags?.hadRange, true);
         expect(result.preprocessingFlags?.hadParentheses, true);
@@ -122,8 +142,11 @@ void main() {
         expect(result.unit, 'dl');
         expect(result.originalName, 'hackad lök');
         expect(result.normalizedName, 'lök');
-        expect(result.preprocessingFlags, null,
-            reason: 'Pattern B skips preprocessing');
+        expect(
+          result.preprocessingFlags,
+          null,
+          reason: 'Pattern B skips preprocessing',
+        );
       });
 
       test('handles clean ingredient strings', () {
@@ -219,15 +242,17 @@ void main() {
 
     group('Display and Normalized Strings', () {
       test('toDisplayString uses original name', () {
-        final result =
-            IngredientProcessor.processRawIngredient('2 dl hackad lök');
+        final result = IngredientProcessor.processRawIngredient(
+          '2 dl hackad lök',
+        );
 
         expect(result.toDisplayString(), '2.0 dl hackad lök');
       });
 
       test('toNormalizedString uses normalized name', () {
-        final result =
-            IngredientProcessor.processRawIngredient('2 dl hackad lök');
+        final result = IngredientProcessor.processRawIngredient(
+          '2 dl hackad lök',
+        );
 
         expect(result.toNormalizedString(), 'dl lök');
       });

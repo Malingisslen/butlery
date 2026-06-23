@@ -87,7 +87,9 @@ abstract class UserRepository extends Repository<UserProfile> {
 
   /// Update allergen preferences for a user
   Future<void> updateAllergenPreferences(
-      String userId, UserAllergenPreferences preferences);
+    String userId,
+    UserAllergenPreferences preferences,
+  );
 
   /// BUT-1220: persist the one-time activity-feed hint flag with a targeted
   /// single-field `update()` — never a full-document set. A background/automatic

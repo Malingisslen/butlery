@@ -57,8 +57,9 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
     } else if (activeCollaboratorCount == 1) {
       return AppLocale.current.collaborationOneActive;
     } else {
-      return AppLocale.current
-          .collaborationMultipleActive(activeCollaboratorCount);
+      return AppLocale.current.collaborationMultipleActive(
+        activeCollaboratorCount,
+      );
     }
   }
 
@@ -83,32 +84,50 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
   }
 
   static Map<String, dynamic> parseCopyOnWriteFieldsFromFirestore(
-      Map<String, dynamic> data) {
+    Map<String, dynamic> data,
+  ) {
     return {
       'isOriginalReference': SerializationUtils.safeBool(
-          data, 'isOriginalReference',
-          defaultValue: true),
-      'copyOnWriteTriggered':
-          SerializationUtils.safeBool(data, 'copyOnWriteTriggered'),
+        data,
+        'isOriginalReference',
+        defaultValue: true,
+      ),
+      'copyOnWriteTriggered': SerializationUtils.safeBool(
+        data,
+        'copyOnWriteTriggered',
+      ),
       'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(
-          data, 'originalOwnerStaticCopyId'),
-      'activeCollaboratorCount':
-          SerializationUtils.safeInt(data, 'activeCollaboratorCount'),
+        data,
+        'originalOwnerStaticCopyId',
+      ),
+      'activeCollaboratorCount': SerializationUtils.safeInt(
+        data,
+        'activeCollaboratorCount',
+      ),
     };
   }
 
   static Map<String, dynamic> parseCopyOnWriteFieldsFromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     return {
       'isOriginalReference': SerializationUtils.safeBool(
-          json, 'isOriginalReference',
-          defaultValue: true),
-      'copyOnWriteTriggered':
-          SerializationUtils.safeBool(json, 'copyOnWriteTriggered'),
+        json,
+        'isOriginalReference',
+        defaultValue: true,
+      ),
+      'copyOnWriteTriggered': SerializationUtils.safeBool(
+        json,
+        'copyOnWriteTriggered',
+      ),
       'originalOwnerStaticCopyId': SerializationUtils.safeNullableString(
-          json, 'originalOwnerStaticCopyId'),
-      'activeCollaboratorCount':
-          SerializationUtils.safeInt(json, 'activeCollaboratorCount'),
+        json,
+        'originalOwnerStaticCopyId',
+      ),
+      'activeCollaboratorCount': SerializationUtils.safeInt(
+        json,
+        'activeCollaboratorCount',
+      ),
     };
   }
 

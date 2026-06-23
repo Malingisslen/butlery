@@ -259,8 +259,9 @@ void main() {
 
     group('Repository Operations', () {
       test('should get personal recipes stream', () {
-        when(() => mockRepository.watchRecipes(any()))
-            .thenAnswer((_) => Stream.value([]));
+        when(
+          () => mockRepository.watchRecipes(any()),
+        ).thenAnswer((_) => Stream.value([]));
 
         final stream = module.getPersonalRecipesStream();
         expect(stream, isNotNull);
@@ -274,8 +275,9 @@ void main() {
       });
 
       test('should get personal recipes list', () async {
-        when(() => mockRepository.fetchUserRecipes(any()))
-            .thenAnswer((_) async => [testRecipe]);
+        when(
+          () => mockRepository.fetchUserRecipes(any()),
+        ).thenAnswer((_) async => [testRecipe]);
 
         final recipes = await module.getPersonalRecipesList();
         expect(recipes, isNotNull);
@@ -289,8 +291,9 @@ void main() {
       });
 
       test('should handle repository fetch errors', () async {
-        when(() => mockRepository.fetchUserRecipes(any()))
-            .thenThrow(Exception('Fetch error'));
+        when(
+          () => mockRepository.fetchUserRecipes(any()),
+        ).thenThrow(Exception('Fetch error'));
 
         final recipes = await module.getPersonalRecipesList();
         expect(recipes, isNull);

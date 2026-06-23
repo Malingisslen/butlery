@@ -154,8 +154,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+          ),
           child: Semantics(
             header: true,
             child: Text(
@@ -177,8 +178,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
       children: [
         Divider(color: cs.surfaceContainerHigh),
         Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+          ),
           child: Semantics(
             header: true,
             child: Text(
@@ -256,7 +258,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             onTap: () => _showSubstitutionSheet(context, parsed.name),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingModerate),
+                vertical: AppDimensions.spacingModerate,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -266,8 +269,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                       parsed.unit.isNotEmpty
                           ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
                           : parsed.quantity > 0
-                              ? _formatQuantity(parsed.quantity)
-                              : '',
+                          ? _formatQuantity(parsed.quantity)
+                          : '',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: cs.primary,
                         fontWeight: FontWeight.w600,
@@ -304,8 +307,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   Icon(
                     Icons.swap_horiz,
                     size: AppDimensions.iconSizeS,
-                    color: cs.onSurfaceVariant
-                        .withValues(alpha: AppDimensions.opacityMediumLight),
+                    color: cs.onSurfaceVariant.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
                   ),
                 ],
               ),
@@ -347,7 +351,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   }
 
   Widget _buildInstructionRow(
-      BuildContext context, int index, List<String> instructions) {
+    BuildContext context,
+    int index,
+    List<String> instructions,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final instruction = instructions[index];
     final isCompleted = _completedSteps.contains(index);
@@ -402,7 +409,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   /// DI-registered [StepTimerService] is reused so a running timer survives
   /// sheet re-opens and view switches.
   void _openStepTimer(
-      BuildContext context, String instruction, DurationMatch match) {
+    BuildContext context,
+    String instruction,
+    DurationMatch match,
+  ) {
     final service = ServiceLocator.get<StepTimerService>();
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -432,7 +442,10 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
   }
 
   Widget _buildStepCheckbox(
-      BuildContext context, int stepNumber, bool isCompleted) {
+    BuildContext context,
+    int stepNumber,
+    bool isCompleted,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return AnimatedContainer(
@@ -583,16 +596,20 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                 ),
                 decoration: BoxDecoration(
                   color: isUserAdded
-                      ? cs.primary
-                          .withValues(alpha: AppDimensions.opacityLightSubtle)
-                      : cs.primary
-                          .withValues(alpha: AppDimensions.opacityVeryLight),
+                      ? cs.primary.withValues(
+                          alpha: AppDimensions.opacityLightSubtle,
+                        )
+                      : cs.primary.withValues(
+                          alpha: AppDimensions.opacityVeryLight,
+                        ),
                   border: Border.all(
                     color: isUserAdded
-                        ? cs.primary
-                            .withValues(alpha: AppDimensions.opacityHalf)
+                        ? cs.primary.withValues(
+                            alpha: AppDimensions.opacityHalf,
+                          )
                         : cs.primary.withValues(
-                            alpha: AppDimensions.opacityMediumLight),
+                            alpha: AppDimensions.opacityMediumLight,
+                          ),
                   ),
                 ),
                 child: Text(
@@ -639,8 +656,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                 ),
                 const Spacer(),
                 Text(
-                  context.l10n
-                      .recipeImageCount(viewModel.recipe.imageUrls.length),
+                  context.l10n.recipeImageCount(
+                    viewModel.recipe.imageUrls.length,
+                  ),
                   style: AppTextStyles.bodySmall,
                 ),
               ],
@@ -718,8 +736,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
     if (names.isEmpty) return const SizedBox.shrink();
 
     final hasOverflow = names.length > _collapsedLimit;
-    final displayNames =
-        _isExpanded ? names : names.take(_collapsedLimit).toList();
+    final displayNames = _isExpanded
+        ? names
+        : names.take(_collapsedLimit).toList();
 
     return Container(
       width: double.infinity,
@@ -753,9 +772,11 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                     _isExpanded ? Icons.expand_less : Icons.expand_more,
                     size: AppDimensions.iconSizeM,
                   ),
-                  label: Text(_isExpanded
-                      ? context.l10n.commonHide
-                      : context.l10n.commonShowAllCount(names.length)),
+                  label: Text(
+                    _isExpanded
+                        ? context.l10n.commonHide
+                        : context.l10n.commonShowAllCount(names.length),
+                  ),
                   style: TextButton.styleFrom(
                     padding: AppDimensions.paddingHorizontal8,
                     minimumSize: Size.zero,
@@ -773,7 +794,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               ...displayNames.map((name) => _buildPersonalTag(context, name)),
               if (!_isExpanded && hasOverflow)
                 _buildOverflowIndicator(
-                    context, names.length - _collapsedLimit),
+                  context,
+                  names.length - _collapsedLimit,
+                ),
             ],
           ),
         ],

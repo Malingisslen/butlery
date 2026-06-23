@@ -17,15 +17,18 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 class _MockFeatureFlags extends Mock implements FeatureFlagService {}
 
 void _enableFlag(_MockFeatureFlags flags, {int maxInline = 50}) {
-  when(() => flags.isEnabled(FeatureFlags.enableSubcollectionParticipants))
-      .thenReturn(true);
-  when(() => flags.getInt(FeatureFlags.maxInlineParticipants))
-      .thenReturn(maxInline);
+  when(
+    () => flags.isEnabled(FeatureFlags.enableSubcollectionParticipants),
+  ).thenReturn(true);
+  when(
+    () => flags.getInt(FeatureFlags.maxInlineParticipants),
+  ).thenReturn(maxInline);
 }
 
 void _disableFlag(_MockFeatureFlags flags) {
-  when(() => flags.isEnabled(FeatureFlags.enableSubcollectionParticipants))
-      .thenReturn(false);
+  when(
+    () => flags.isEnabled(FeatureFlags.enableSubcollectionParticipants),
+  ).thenReturn(false);
   when(() => flags.getInt(FeatureFlags.maxInlineParticipants)).thenReturn(50);
 }
 
@@ -46,36 +49,38 @@ void main() {
     });
 
     group('addParticipant', () {
-      test('writes to both conversation/participants and user/memberships',
-          () async {
-        await module.addParticipant(
-          conversationId: 'conv-1',
-          conversationTitle: 'Test Convo',
-          isGroup: true,
-          participantId: 'user-a',
-          displayName: 'User A',
-          avatarUrl: 'https://x/a.png',
-        );
+      test(
+        'writes to both conversation/participants and user/memberships',
+        () async {
+          await module.addParticipant(
+            conversationId: 'conv-1',
+            conversationTitle: 'Test Convo',
+            isGroup: true,
+            participantId: 'user-a',
+            displayName: 'User A',
+            avatarUrl: 'https://x/a.png',
+          );
 
-        final pDoc = await firestore
-            .collection('conversations')
-            .doc('conv-1')
-            .collection('participants')
-            .doc('user-a')
-            .get();
-        expect(pDoc.exists, isTrue);
-        expect(pDoc.data()?['displayName'], equals('User A'));
+          final pDoc = await firestore
+              .collection('conversations')
+              .doc('conv-1')
+              .collection('participants')
+              .doc('user-a')
+              .get();
+          expect(pDoc.exists, isTrue);
+          expect(pDoc.data()?['displayName'], equals('User A'));
 
-        final mDoc = await firestore
-            .collection('users')
-            .doc('user-a')
-            .collection('conversation_memberships')
-            .doc('conv-1')
-            .get();
-        expect(mDoc.exists, isTrue);
-        expect(mDoc.data()?['conversationTitle'], equals('Test Convo'));
-        expect(mDoc.data()?['isGroup'], isTrue);
-      });
+          final mDoc = await firestore
+              .collection('users')
+              .doc('user-a')
+              .collection('conversation_memberships')
+              .doc('conv-1')
+              .get();
+          expect(mDoc.exists, isTrue);
+          expect(mDoc.data()?['conversationTitle'], equals('Test Convo'));
+          expect(mDoc.data()?['isGroup'], isTrue);
+        },
+      );
 
       test('is a no-op when flag is disabled', () async {
         _disableFlag(flags);
@@ -197,97 +202,105 @@ void main() {
 
     group('updateLastRead', () {
       test(
-          'updates lastReadAt on participant and hasUnread=false on membership',
-          () async {
-        await module.addParticipant(
-          conversationId: 'conv-1',
-          conversationTitle: 'T',
-          isGroup: false,
-          participantId: 'user-a',
-          displayName: 'A',
-        );
+        'updates lastReadAt on participant and hasUnread=false on membership',
+        () async {
+          await module.addParticipant(
+            conversationId: 'conv-1',
+            conversationTitle: 'T',
+            isGroup: false,
+            participantId: 'user-a',
+            displayName: 'A',
+          );
 
-        await module.updateLastRead(
-          conversationId: 'conv-1',
-          participantId: 'user-a',
-        );
+          await module.updateLastRead(
+            conversationId: 'conv-1',
+            participantId: 'user-a',
+          );
 
-        final pDoc = await firestore
-            .collection('conversations')
-            .doc('conv-1')
-            .collection('participants')
-            .doc('user-a')
-            .get();
-        expect(pDoc.data()?['lastReadAt'], isNotNull);
+          final pDoc = await firestore
+              .collection('conversations')
+              .doc('conv-1')
+              .collection('participants')
+              .doc('user-a')
+              .get();
+          expect(pDoc.data()?['lastReadAt'], isNotNull);
 
-        final mDoc = await firestore
-            .collection('users')
-            .doc('user-a')
-            .collection('conversation_memberships')
-            .doc('conv-1')
-            .get();
-        expect(mDoc.data()?['hasUnread'], isFalse);
-      });
+          final mDoc = await firestore
+              .collection('users')
+              .doc('user-a')
+              .collection('conversation_memberships')
+              .doc('conv-1')
+              .get();
+          expect(mDoc.data()?['hasUnread'], isFalse);
+        },
+      );
 
       test('is a no-op when flag is disabled', () async {
         _disableFlag(flags);
         await expectLater(
           module.updateLastRead(
-              conversationId: 'conv-1', participantId: 'user-a'),
+            conversationId: 'conv-1',
+            participantId: 'user-a',
+          ),
           completes,
         );
       });
     });
 
     group('updateConversationActivity', () {
-      test('updates lastActivityAt for all + hasUnread for non-senders',
-          () async {
-        // Seed three participants.
-        await module.addParticipants(
-          conversationId: 'conv-1',
-          conversationTitle: 'G',
-          isGroup: true,
-          participantDisplayNames: const {
-            'u-1': 'One',
-            'u-2': 'Two',
-            'u-3': 'Three',
-          },
-          participantAvatarUrls: const {
-            'u-1': null,
-            'u-2': null,
-            'u-3': null,
-          },
-        );
+      test(
+        'updates lastActivityAt for all + hasUnread for non-senders',
+        () async {
+          // Seed three participants.
+          await module.addParticipants(
+            conversationId: 'conv-1',
+            conversationTitle: 'G',
+            isGroup: true,
+            participantDisplayNames: const {
+              'u-1': 'One',
+              'u-2': 'Two',
+              'u-3': 'Three',
+            },
+            participantAvatarUrls: const {
+              'u-1': null,
+              'u-2': null,
+              'u-3': null,
+            },
+          );
 
-        await module.updateConversationActivity(
-          conversationId: 'conv-1',
-          senderId: 'u-1',
-          participantIds: ['u-1', 'u-2', 'u-3'],
-        );
+          await module.updateConversationActivity(
+            conversationId: 'conv-1',
+            senderId: 'u-1',
+            participantIds: ['u-1', 'u-2', 'u-3'],
+          );
 
-        final senderM = await firestore
-            .collection('users')
-            .doc('u-1')
-            .collection('conversation_memberships')
-            .doc('conv-1')
-            .get();
-        // Sender should NOT have hasUnread flipped to true.
-        expect(senderM.data()?['hasUnread'], isFalse);
+          final senderM = await firestore
+              .collection('users')
+              .doc('u-1')
+              .collection('conversation_memberships')
+              .doc('conv-1')
+              .get();
+          // Sender should NOT have hasUnread flipped to true.
+          expect(senderM.data()?['hasUnread'], isFalse);
 
-        final otherM = await firestore
-            .collection('users')
-            .doc('u-2')
-            .collection('conversation_memberships')
-            .doc('conv-1')
-            .get();
-        expect(otherM.data()?['hasUnread'], isTrue);
-      });
+          final otherM = await firestore
+              .collection('users')
+              .doc('u-2')
+              .collection('conversation_memberships')
+              .doc('conv-1')
+              .get();
+          expect(otherM.data()?['hasUnread'], isTrue);
+        },
+      );
 
       test('is a no-op when flag is disabled', () async {
         _disableFlag(flags);
         await expectLater(
           module.updateConversationActivity(
-              conversationId: 'conv-1', senderId: 'x', participantIds: ['x']),
+            conversationId: 'conv-1',
+            senderId: 'x',
+            participantIds: ['x'],
+          ),
           completes,
         );
       });
@@ -360,7 +373,9 @@ void main() {
 
         expect(ms, hasLength(2));
         expect(
-            ms.map((m) => m.conversationId), containsAll(['conv-1', 'conv-2']));
+          ms.map((m) => m.conversationId),
+          containsAll(['conv-1', 'conv-2']),
+        );
       });
 
       test('returns [] when flag disabled', () async {
@@ -430,14 +445,12 @@ void main() {
     });
 
     group('migrateToSubcollection', () {
-      test(
-          'creates participant + membership entries for each user and flips '
+      test('creates participant + membership entries for each user and flips '
           'usesSubcollectionParticipants flag', () async {
         // Seed the conversation doc so the .update inside migrate succeeds.
-        await firestore
-            .collection('conversations')
-            .doc('conv-1')
-            .set({'usesSubcollectionParticipants': false});
+        await firestore.collection('conversations').doc('conv-1').set({
+          'usesSubcollectionParticipants': false,
+        });
 
         final now = DateTime.utc(2026, 1, 1);
         await module.migrateToSubcollection(
@@ -460,8 +473,10 @@ void main() {
         final owner = ps.docs.firstWhere((d) => d.id == 'u-1');
         expect(owner.data()['role'], equals(ParticipantRole.owner.name));
 
-        final convDoc =
-            await firestore.collection('conversations').doc('conv-1').get();
+        final convDoc = await firestore
+            .collection('conversations')
+            .doc('conv-1')
+            .get();
         expect(convDoc.data()?['usesSubcollectionParticipants'], isTrue);
       });
 

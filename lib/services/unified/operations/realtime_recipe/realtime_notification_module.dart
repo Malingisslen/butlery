@@ -28,12 +28,13 @@ class RealtimeNotificationModule {
   final NotificationService? _notificationService;
 
   RealtimeNotificationModule(this._parent)
-      : _notificationService = ServiceLocator.tryGet<NotificationService>();
+    : _notificationService = ServiceLocator.tryGet<NotificationService>();
 
   Future<void> sendCollaborationJoinedNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {
       AppLogger.debug(
-          'Notification service not available or recipe not collaborative - skipping collaboration joined notification');
+        'Notification service not available or recipe not collaborative - skipping collaboration joined notification',
+      );
       return;
     }
 
@@ -67,17 +68,20 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Collaboration joined notifications sent for recipe: ${recipe.title}');
+        'Collaboration joined notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning(
-          'Failed to send collaboration joined notifications: $e');
+        'Failed to send collaboration joined notifications: $e',
+      );
     }
   }
 
   Future<void> sendCollaborationLeftNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {
       AppLogger.debug(
-          'Notification service not available or recipe not collaborative - skipping collaboration left notification');
+        'Notification service not available or recipe not collaborative - skipping collaboration left notification',
+      );
       return;
     }
 
@@ -111,7 +115,8 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Collaboration left notifications sent for recipe: ${recipe.title}');
+        'Collaboration left notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send collaboration left notifications: $e');
     }
@@ -124,7 +129,8 @@ class RealtimeNotificationModule {
   ) async {
     if (_notificationService == null || !recipe.isCollaborative) {
       AppLogger.debug(
-          'Notification service not available or recipe not collaborative - skipping realtime edit notification');
+        'Notification service not available or recipe not collaborative - skipping realtime edit notification',
+      );
       return;
     }
 
@@ -138,8 +144,9 @@ class RealtimeNotificationModule {
 
     try {
       // Determine what was changed for the notification
-      final changeDescription =
-          RealtimeRecipeUtils.getChangeDescription(changes);
+      final changeDescription = RealtimeRecipeUtils.getChangeDescription(
+        changes,
+      );
 
       // Notify all other members about the real-time edit
       for (final memberId
@@ -163,7 +170,8 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Realtime edit notifications sent for recipe: ${recipe.title}');
+        'Realtime edit notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send realtime edit notifications: $e');
     }
@@ -191,8 +199,9 @@ class RealtimeNotificationModule {
         allChanges.addAll(changes);
       }
 
-      final changeDescription =
-          RealtimeRecipeUtils.getChangeDescription(allChanges);
+      final changeDescription = RealtimeRecipeUtils.getChangeDescription(
+        allChanges,
+      );
 
       // Notify all other members about the batch edit
       for (final memberId
@@ -217,17 +226,21 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Batch edit notifications sent for recipe: ${recipe.title}');
+        'Batch edit notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send batch edit notifications: $e');
     }
   }
 
   Future<void> sendCollaborationEnabledNotification(
-      Recipe recipe, List<String> memberIds) async {
+    Recipe recipe,
+    List<String> memberIds,
+  ) async {
     if (_notificationService == null) {
       AppLogger.debug(
-          'Notification service not available - skipping collaboration enabled notification');
+        'Notification service not available - skipping collaboration enabled notification',
+      );
       return;
     }
 
@@ -258,10 +271,12 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Collaboration enabled notifications sent to ${memberIds.length} members');
+        'Collaboration enabled notifications sent to ${memberIds.length} members',
+      );
     } catch (e) {
       AppLogger.warning(
-          'Failed to send collaboration enabled notifications: $e');
+        'Failed to send collaboration enabled notifications: $e',
+      );
     }
   }
 
@@ -298,10 +313,12 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Collaboration disabled notifications sent for recipe: ${recipe.title}');
+        'Collaboration disabled notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning(
-          'Failed to send collaboration disabled notifications: $e');
+        'Failed to send collaboration disabled notifications: $e',
+      );
     }
   }
 
@@ -336,7 +353,8 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Conflict notifications sent to ${affectedUserIds.length} users');
+        'Conflict notifications sent to ${affectedUserIds.length} users',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send conflict notifications: $e');
     }
@@ -373,7 +391,8 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Conflict resolved notifications sent to ${affectedUserIds.length} users');
+        'Conflict resolved notifications sent to ${affectedUserIds.length} users',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send conflict resolved notifications: $e');
     }
@@ -432,7 +451,8 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Members added notifications sent for recipe: ${recipe.title}');
+        'Members added notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send members added notifications: $e');
     }
@@ -452,7 +472,8 @@ class RealtimeNotificationModule {
 
     try {
       // Notify remaining members about removals
-      final remainingMembers = recipe.socialData?.memberPermissions?.keys
+      final remainingMembers =
+          recipe.socialData?.memberPermissions?.keys
               .where((id) => !removedMemberIds.contains(id))
               .toList() ??
           [];
@@ -492,7 +513,8 @@ class RealtimeNotificationModule {
       }
 
       AppLogger.success(
-          'Members removed notifications sent for recipe: ${recipe.title}');
+        'Members removed notifications sent for recipe: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send members removed notifications: $e');
     }
@@ -510,7 +532,8 @@ class RealtimeNotificationModule {
     if (currentUserId == null) return;
 
     try {
-      final members = targetMemberIds ??
+      final members =
+          targetMemberIds ??
           recipe.socialData?.memberPermissions?.keys.toList() ??
           [];
 
@@ -563,11 +586,13 @@ class RealtimeNotificationModule {
   }
 
   Future<bool> updateNotificationPreferences(
-      Map<String, bool> preferences) async {
+    Map<String, bool> preferences,
+  ) async {
     try {
       // This would update user notification preferences in Firebase
       AppLogger.info(
-          'Updated notification preferences: ${preferences.length} settings');
+        'Updated notification preferences: ${preferences.length} settings',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to update notification preferences', e);

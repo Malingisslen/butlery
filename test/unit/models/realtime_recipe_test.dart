@@ -24,7 +24,8 @@ Recipe _createTestRecipe({
       title: title ?? 'Köttbullar',
       description: description ?? 'Klassiska svenska köttbullar',
       ingredients: ingredients ?? ['500g köttfärs', '1 ägg', '1 dl ströbröd'],
-      instructions: instructions ??
+      instructions:
+          instructions ??
           ['Blanda ingredienser', 'Forma bollar', 'Stek i panna'],
       mealType: 'middag',
       portions: 4,
@@ -68,7 +69,9 @@ void main() {
         expect(realtimeRecipe.participants, equals(participants));
         expect(realtimeRecipe.lastEditedBy, equals('user_123'));
         expect(
-            realtimeRecipe.lastEditedByDisplayName, equals('Anna Andersson'));
+          realtimeRecipe.lastEditedByDisplayName,
+          equals('Anna Andersson'),
+        );
         expect(realtimeRecipe.recipe, equals(recipe));
         expect(realtimeRecipe.type, equals(RealtimeResourceType.recipe));
         expect(realtimeRecipe.editCount, equals(0));
@@ -125,12 +128,18 @@ void main() {
         expect(realtimeRecipe.ownerDisplayName, equals('Anna Andersson'));
         // Owner is tracked via ownerId field, not in participants map
         expect(realtimeRecipe.participants.containsKey('user_123'), isFalse);
-        expect(realtimeRecipe.participants['user_456'],
-            equals(ResourcePermission.editor));
-        expect(realtimeRecipe.participants['user_789'],
-            equals(ResourcePermission.editor));
-        expect(realtimeRecipe.participants['user_abc'],
-            equals(ResourcePermission.viewer));
+        expect(
+          realtimeRecipe.participants['user_456'],
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          realtimeRecipe.participants['user_789'],
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          realtimeRecipe.participants['user_abc'],
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should use recipe ID if available', () {
@@ -238,10 +247,14 @@ void main() {
         expect(realtimeRecipe.id, equals('rt_recipe_123'));
         expect(realtimeRecipe.ownerId, equals('user_123'));
         expect(realtimeRecipe.ownerDisplayName, equals('Anna Andersson'));
-        expect(realtimeRecipe.participants['user_123'],
-            equals(ResourcePermission.owner));
-        expect(realtimeRecipe.participants['user_456'],
-            equals(ResourcePermission.editor));
+        expect(
+          realtimeRecipe.participants['user_123'],
+          equals(ResourcePermission.owner),
+        );
+        expect(
+          realtimeRecipe.participants['user_456'],
+          equals(ResourcePermission.editor),
+        );
         expect(realtimeRecipe.editCount, equals(3));
         expect(realtimeRecipe.recipe.title, equals('Köttbullar'));
       });
@@ -271,47 +284,55 @@ void main() {
       // instead of defaulting to clock.now() / empty string. A corrupted
       // doc should NOT silently parse as a freshly-edited recipe.
       Map<String, dynamic> validData() => {
-            'ownerId': 'user_123',
-            'ownerDisplayName': 'Anna',
-            'createdAt': DateTime(2026, 1, 1),
-            'lastEditedAt': DateTime(2026, 1, 2),
-            'lastEditedBy': 'user_123',
-            'lastEditedByDisplayName': 'Anna',
-            'recipe': {
-              'title': 'Köttbullar',
-              'description': '',
-              'ingredients': <String>[],
-              'instructions': <String>[],
-              'mealType': 'middag',
-            },
-          };
+        'ownerId': 'user_123',
+        'ownerDisplayName': 'Anna',
+        'createdAt': DateTime(2026, 1, 1),
+        'lastEditedAt': DateTime(2026, 1, 2),
+        'lastEditedBy': 'user_123',
+        'lastEditedByDisplayName': 'Anna',
+        'recipe': {
+          'title': 'Köttbullar',
+          'description': '',
+          'ingredients': <String>[],
+          'instructions': <String>[],
+          'mealType': 'middag',
+        },
+      };
 
       test('fromMap throws on missing ownerId (BUT-1071)', () {
         final data = validData()..remove('ownerId');
 
-        expect(() => RealtimeRecipe.fromMap('rt_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeRecipe.fromMap('rt_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('fromMap throws on missing createdAt (BUT-1071)', () {
         final data = validData()..remove('createdAt');
 
-        expect(() => RealtimeRecipe.fromMap('rt_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeRecipe.fromMap('rt_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('fromMap throws on missing lastEditedAt (BUT-1071)', () {
         final data = validData()..remove('lastEditedAt');
 
-        expect(() => RealtimeRecipe.fromMap('rt_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeRecipe.fromMap('rt_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('fromMap throws on missing lastEditedBy (BUT-1071)', () {
         final data = validData()..remove('lastEditedBy');
 
-        expect(() => RealtimeRecipe.fromMap('rt_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeRecipe.fromMap('rt_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('fromMap throws on empty-string ownerId (BUT-1071)', () {
@@ -319,8 +340,10 @@ void main() {
         // be defaulted by safeString and indistinguishable from real data.
         final data = validData()..['ownerId'] = '';
 
-        expect(() => RealtimeRecipe.fromMap('rt_x', data),
-            throwsA(isA<FormatException>()));
+        expect(
+          () => RealtimeRecipe.fromMap('rt_x', data),
+          throwsA(isA<FormatException>()),
+        );
       });
 
       test('fromMap accepts soft-default for ownerDisplayName (BUT-1071)', () {
@@ -416,7 +439,9 @@ void main() {
 
         expect(updated.recipe.instructions.length, equals(4));
         expect(
-            updated.recipe.instructions.last, equals('Servera med lingonsylt'));
+          updated.recipe.instructions.last,
+          equals('Servera med lingonsylt'),
+        );
       });
 
       test('should remove instruction', () {
@@ -427,8 +452,10 @@ void main() {
         );
 
         expect(updated.recipe.instructions.length, equals(2));
-        expect(updated.recipe.instructions,
-            isNot(contains('Blanda ingredienser')));
+        expect(
+          updated.recipe.instructions,
+          isNot(contains('Blanda ingredienser')),
+        );
       });
 
       test('should update image URLs', () {
@@ -485,7 +512,9 @@ void main() {
       test('should return recipe properties', () {
         expect(realtimeRecipe.title, equals('Köttbullar'));
         expect(
-            realtimeRecipe.description, equals('Klassiska svenska köttbullar'));
+          realtimeRecipe.description,
+          equals('Klassiska svenska köttbullar'),
+        );
         expect(realtimeRecipe.portions, equals(4));
         expect(realtimeRecipe.timeMinutes, equals(30));
         expect(realtimeRecipe.rating, equals(4.5));
@@ -541,8 +570,10 @@ void main() {
           ResourcePermission.editor,
         );
 
-        expect(updated.participants['user_456'],
-            equals(ResourcePermission.editor));
+        expect(
+          updated.participants['user_456'],
+          equals(ResourcePermission.editor),
+        );
       });
 
       test('should remove participant', () {
@@ -569,8 +600,10 @@ void main() {
           ResourcePermission.viewer,
         );
 
-        expect(updated.participants['user_456'],
-            equals(ResourcePermission.viewer));
+        expect(
+          updated.participants['user_456'],
+          equals(ResourcePermission.viewer),
+        );
       });
 
       test('should check edit permission', () {
@@ -647,13 +680,15 @@ void main() {
         final after = DateTime.now();
 
         expect(
-            copied.lastEditedAt.isAfter(before) ||
-                copied.lastEditedAt.isAtSameMomentAs(before),
-            isTrue);
+          copied.lastEditedAt.isAfter(before) ||
+              copied.lastEditedAt.isAtSameMomentAs(before),
+          isTrue,
+        );
         expect(
-            copied.lastEditedAt.isBefore(after) ||
-                copied.lastEditedAt.isAtSameMomentAs(after),
-            isTrue);
+          copied.lastEditedAt.isBefore(after) ||
+              copied.lastEditedAt.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
     });
 
@@ -676,11 +711,17 @@ void main() {
 
         expect(personalCopy.title, equals('Kopia av Köttbullar'));
         expect(
-            personalCopy.description, equals('Klassiska svenska köttbullar'));
-        expect(personalCopy.ingredients,
-            equals(realtimeRecipe.recipe.ingredients));
-        expect(personalCopy.instructions,
-            equals(realtimeRecipe.recipe.instructions));
+          personalCopy.description,
+          equals('Klassiska svenska köttbullar'),
+        );
+        expect(
+          personalCopy.ingredients,
+          equals(realtimeRecipe.recipe.ingredients),
+        );
+        expect(
+          personalCopy.instructions,
+          equals(realtimeRecipe.recipe.instructions),
+        );
         expect(personalCopy.createdBy, equals('user_456'));
         expect(personalCopy.isPublic, isFalse);
         expect(personalCopy.sourceUrl, equals('Delat från Anna Andersson'));
@@ -816,13 +857,18 @@ void main() {
         );
 
         // Assert
-        expect(personalCopy.core.tagResult, isNotNull,
-            reason: 'tagResult should be preserved in personal copy');
+        expect(
+          personalCopy.core.tagResult,
+          isNotNull,
+          reason: 'tagResult should be preserved in personal copy',
+        );
         expect(personalCopy.core.tagResult!.tags, contains('vegetarisk'));
         expect(personalCopy.core.tagResult!.tags, contains('pasta-dish'));
         expect(personalCopy.core.tagResult!.coverage, 0.9);
-        expect(personalCopy.core.tagResult!.allergenStatus['gluten'],
-            TriState.contains);
+        expect(
+          personalCopy.core.tagResult!.allergenStatus['gluten'],
+          TriState.contains,
+        );
       });
 
       test('should preserve tagOverrides when creating personal copy', () {
@@ -864,52 +910,62 @@ void main() {
         );
 
         // Assert
-        expect(personalCopy.core.tagOverrides, isNotNull,
-            reason: 'tagOverrides should be preserved in personal copy');
-        expect(personalCopy.core.tagOverrides!.allergenOverrides['gluten'],
-            TriState.free);
+        expect(
+          personalCopy.core.tagOverrides,
+          isNotNull,
+          reason: 'tagOverrides should be preserved in personal copy',
+        );
+        expect(
+          personalCopy.core.tagOverrides!.allergenOverrides['gluten'],
+          TriState.free,
+        );
         expect(personalCopy.core.tagOverrides!.addedTags, contains('favorit'));
       });
 
-      test('should preserve ingredientsNormalized when creating personal copy',
-          () {
-        // Arrange
-        final normalized = ['pasta', 'tomat', 'lok'];
+      test(
+        'should preserve ingredientsNormalized when creating personal copy',
+        () {
+          // Arrange
+          final normalized = ['pasta', 'tomat', 'lok'];
 
-        final recipe = Recipe(
-          core: RecipeCore(
-            id: 'recipe_normalized',
-            title: 'Pasta med lok',
-            description: 'Test',
-            ingredients: ['400g Pasta', '2 Tomater', '1 Lok'],
-            instructions: ['Koka'],
-            mealType: 'Middag',
-            ingredientsNormalized: normalized,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            createdBy: 'user_123',
-            isPublic: false,
-          ),
-          type: RecipeType.personal,
-        );
+          final recipe = Recipe(
+            core: RecipeCore(
+              id: 'recipe_normalized',
+              title: 'Pasta med lok',
+              description: 'Test',
+              ingredients: ['400g Pasta', '2 Tomater', '1 Lok'],
+              instructions: ['Koka'],
+              mealType: 'Middag',
+              ingredientsNormalized: normalized,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              createdBy: 'user_123',
+              isPublic: false,
+            ),
+            type: RecipeType.personal,
+          );
 
-        final realtimeRecipe = RealtimeRecipe.fromRecipe(
-          recipe: recipe,
-          ownerId: 'user_123',
-          ownerDisplayName: 'Anna',
-        );
+          final realtimeRecipe = RealtimeRecipe.fromRecipe(
+            recipe: recipe,
+            ownerId: 'user_123',
+            ownerDisplayName: 'Anna',
+          );
 
-        // Act
-        final personalCopy = realtimeRecipe.createPersonalCopy(
-          newOwnerId: 'user_456',
-        );
+          // Act
+          final personalCopy = realtimeRecipe.createPersonalCopy(
+            newOwnerId: 'user_456',
+          );
 
-        // Assert
-        expect(personalCopy.core.ingredientsNormalized, isNotNull,
+          // Assert
+          expect(
+            personalCopy.core.ingredientsNormalized,
+            isNotNull,
             reason:
-                'ingredientsNormalized should be preserved in personal copy');
-        expect(personalCopy.core.ingredientsNormalized, equals(normalized));
-      });
+                'ingredientsNormalized should be preserved in personal copy',
+          );
+          expect(personalCopy.core.ingredientsNormalized, equals(normalized));
+        },
+      );
 
       test('should handle null tagging fields gracefully', () {
         // Arrange: recipe without any tagging data

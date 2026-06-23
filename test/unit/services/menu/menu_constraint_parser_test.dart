@@ -27,11 +27,16 @@ void main() {
     expect(result.isEmpty, isFalse, reason: 'expected non-empty for "$prompt"');
     final slot = result.slotRequests.firstWhere(
       (s) => s.mealType == mealType,
-      orElse: () => throw TestFailure('No slot for "$mealType" in "$prompt". '
-          'Got: ${result.slotRequests.map((s) => s.mealType).toList()}'),
+      orElse: () => throw TestFailure(
+        'No slot for "$mealType" in "$prompt". '
+        'Got: ${result.slotRequests.map((s) => s.mealType).toList()}',
+      ),
     );
-    expect(slot.totalCount, count,
-        reason: 'count mismatch for "$mealType" in "$prompt"');
+    expect(
+      slot.totalCount,
+      count,
+      reason: 'count mismatch for "$mealType" in "$prompt"',
+    );
   }
 
   // -------------------------------------------------------------------
@@ -42,8 +47,10 @@ void main() {
     test('digit count', () => expectSlot('3 middagar', 'middag', count: 3));
     test('word count', () => expectSlot('tre middagar', 'middag', count: 3));
 
-    test('high word: tolv',
-        () => expectSlot('tolv luncher', 'lunch', count: 12));
+    test(
+      'high word: tolv',
+      () => expectSlot('tolv luncher', 'lunch', count: 12),
+    );
 
     test('vague: ett par', () {
       expectSlot('ett par middagar', 'middag', count: 2);
@@ -132,23 +139,26 @@ void main() {
       final slot = result.slotRequests.first;
       expect(slot.mealType, 'middag');
       expect(slot.totalCount, 3);
-      final vegSub =
-          slot.subRequests.where((s) => s.dietaryFree.contains('vegansk'));
+      final vegSub = slot.subRequests.where(
+        (s) => s.dietaryFree.contains('vegansk'),
+      );
       expect(vegSub, isNotEmpty);
       expect(vegSub.first.count, 1);
     });
 
     test('vego alias → vegetarisk', () {
       final result = p('2 middagar varav en vego');
-      final sub = result.slotRequests.first.subRequests
-          .firstWhere((s) => s.dietaryFree.isNotEmpty);
+      final sub = result.slotRequests.first.subRequests.firstWhere(
+        (s) => s.dietaryFree.isNotEmpty,
+      );
       expect(sub.dietaryFree, contains('vegetarisk'));
     });
 
     test('växtbaserat → vegansk', () {
       final result = p('3 luncher varav en växtbaserad');
-      final sub = result.slotRequests.first.subRequests
-          .firstWhere((s) => s.dietaryFree.isNotEmpty);
+      final sub = result.slotRequests.first.subRequests.firstWhere(
+        (s) => s.dietaryFree.isNotEmpty,
+      );
       expect(sub.dietaryFree, contains('vegansk'));
     });
   });
@@ -160,8 +170,9 @@ void main() {
   group('allergens', () {
     test('glutenfri suffix', () {
       final result = p('3 middagar varav en glutenfri');
-      final sub = result.slotRequests.first.subRequests
-          .firstWhere((s) => s.allergenFree.isNotEmpty);
+      final sub = result.slotRequests.first.subRequests.firstWhere(
+        (s) => s.allergenFree.isNotEmpty,
+      );
       expect(sub.allergenFree, contains('gluten'));
       expect(sub.count, 1);
     });
@@ -242,8 +253,9 @@ void main() {
     ]) {
       test('cuisine ${pair.$1}', () {
         final result = p('3 middagar varav en ${pair.$1}');
-        final sub = result.slotRequests.first.subRequests
-            .firstWhere((s) => s.requiredCuisines.isNotEmpty);
+        final sub = result.slotRequests.first.subRequests.firstWhere(
+          (s) => s.requiredCuisines.isNotEmpty,
+        );
         expect(sub.requiredCuisines, contains(pair.$2));
       });
     }
@@ -256,25 +268,29 @@ void main() {
   group('formats and verbs', () {
     test('soppa', () {
       final result = p('3 middagar varav en soppa');
-      final sub = result.slotRequests.first.subRequests
-          .firstWhere((s) => s.requiredTags.isNotEmpty);
+      final sub = result.slotRequests.first.subRequests.firstWhere(
+        (s) => s.requiredTags.isNotEmpty,
+      );
       expect(sub.requiredTags, contains('soppa'));
     });
 
     test('gryta', () {
       final result = p('2 middagar varav en gryta');
-      final sub = result.slotRequests.first.subRequests
-          .firstWhere((s) => s.requiredTags.isNotEmpty);
+      final sub = result.slotRequests.first.subRequests.firstWhere(
+        (s) => s.requiredTags.isNotEmpty,
+      );
       expect(sub.requiredTags, contains('gryta'));
     });
 
     test('baka bröd → ovrigt with bröd tag', () {
       final result = p('baka bröd två dagar');
-      final ovrigt =
-          result.slotRequests.where((s) => s.mealType == 'ovrigt').toList();
+      final ovrigt = result.slotRequests
+          .where((s) => s.mealType == 'ovrigt')
+          .toList();
       expect(ovrigt, isNotEmpty, reason: 'expected ovrigt slot');
-      final tags =
-          ovrigt.first.subRequests.expand((s) => s.requiredTags).toSet();
+      final tags = ovrigt.first.subRequests
+          .expand((s) => s.requiredTags)
+          .toSet();
       expect(tags, contains('bröd'));
     });
   });
@@ -355,8 +371,9 @@ void main() {
 
     test('matlåda', () {
       final result = p('2 middagar varav två matlådor');
-      final sub = result.slotRequests.first.subRequests
-          .firstWhere((s) => s.requiredTags.isNotEmpty);
+      final sub = result.slotRequests.first.subRequests.firstWhere(
+        (s) => s.requiredTags.isNotEmpty,
+      );
       expect(sub.requiredTags, contains('meal-prep'));
     });
   });
@@ -370,8 +387,9 @@ void main() {
       final result = p('3 middagar varav en vegansk');
       final slot = result.slotRequests.first;
       expect(slot.totalCount, 3);
-      final vegSub =
-          slot.subRequests.firstWhere((s) => s.dietaryFree.contains('vegansk'));
+      final vegSub = slot.subRequests.firstWhere(
+        (s) => s.dietaryFree.contains('vegansk'),
+      );
       expect(vegSub.count, 1);
     });
 
@@ -379,8 +397,9 @@ void main() {
       final result = p('4 luncher där en ska vara italiensk');
       final slot = result.slotRequests.first;
       expect(slot.totalCount, 4);
-      final itSub = slot.subRequests
-          .firstWhere((s) => s.requiredCuisines.contains('italiensk'));
+      final itSub = slot.subRequests.firstWhere(
+        (s) => s.requiredCuisines.contains('italiensk'),
+      );
       expect(itSub.count, 1);
     });
 
@@ -388,8 +407,9 @@ void main() {
       final result = p('5 middagar varav 2 vegetariska');
       final slot = result.slotRequests.first;
       expect(slot.totalCount, 5);
-      final unconstrained =
-          slot.subRequests.where((s) => s.isUnconstrained).toList();
+      final unconstrained = slot.subRequests
+          .where((s) => s.isUnconstrained)
+          .toList();
       expect(unconstrained, isNotEmpty);
       expect(unconstrained.first.count, 3);
     });
@@ -409,16 +429,18 @@ void main() {
   group('skip frukost', () {
     test('ingen frukost', () {
       final result = p('ingen frukost, 3 middagar');
-      final fruSlots =
-          result.slotRequests.where((s) => s.mealType == 'frukost');
+      final fruSlots = result.slotRequests.where(
+        (s) => s.mealType == 'frukost',
+      );
       expect(fruSlots, isEmpty);
       expect(result.slotRequests.first.mealType, 'middag');
     });
 
     test('16:8', () {
       final result = p('16:8, 3 middagar, 2 luncher');
-      final fruSlots =
-          result.slotRequests.where((s) => s.mealType == 'frukost');
+      final fruSlots = result.slotRequests.where(
+        (s) => s.mealType == 'frukost',
+      );
       expect(fruSlots, isEmpty);
     });
   });
@@ -499,22 +521,27 @@ void main() {
       expect(result.globalAllergenAvoid, contains('jordnötter'));
 
       // Middag slot
-      final middag =
-          result.slotRequests.firstWhere((s) => s.mealType == 'middag');
+      final middag = result.slotRequests.firstWhere(
+        (s) => s.mealType == 'middag',
+      );
       expect(middag.totalCount, 3);
 
       // Lunch slot
-      final lunch =
-          result.slotRequests.firstWhere((s) => s.mealType == 'lunch');
+      final lunch = result.slotRequests.firstWhere(
+        (s) => s.mealType == 'lunch',
+      );
       expect(lunch.totalCount, 4);
 
       // Bröd in ovrigt or as day-format
-      final hasBrod = result.slotRequests
+      final hasBrod =
+          result.slotRequests
               .expand((s) => s.subRequests)
               .any((c) => c.requiredTags.contains('bröd')) ||
-          result.slotRequests.any((s) =>
-              s.mealType == 'ovrigt' &&
-              s.subRequests.any((c) => c.requiredTags.contains('bröd')));
+          result.slotRequests.any(
+            (s) =>
+                s.mealType == 'ovrigt' &&
+                s.subRequests.any((c) => c.requiredTags.contains('bröd')),
+          );
       expect(hasBrod, isTrue, reason: 'expected bröd tag somewhere');
 
       // Trace should have many understood entries and no (or few) not-understood
@@ -592,8 +619,9 @@ void main() {
   group('gap 7: kcal not consumed as count', () {
     test('500 kcal does not produce count 500', () {
       final result = p('500 kcal middagar');
-      final middagSlots =
-          result.slotRequests.where((s) => s.mealType == 'middag');
+      final middagSlots = result.slotRequests.where(
+        (s) => s.mealType == 'middag',
+      );
       if (middagSlots.isNotEmpty) {
         expect(middagSlots.first.totalCount, lessThan(10));
       }
@@ -601,8 +629,9 @@ void main() {
 
     test('under 1800 kalorier does not produce count 1800', () {
       final result = p('3 middagar under 1800 kalorier');
-      final middag =
-          result.slotRequests.firstWhere((s) => s.mealType == 'middag');
+      final middag = result.slotRequests.firstWhere(
+        (s) => s.mealType == 'middag',
+      );
       expect(middag.totalCount, 3);
     });
   });

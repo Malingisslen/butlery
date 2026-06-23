@@ -90,7 +90,9 @@ class DIModuleException implements Exception {
 mixin DIModuleHelpers {
   /// Validate that all required services are registered.
   Future<bool> validateServices(
-      GetIt container, List<Type> serviceTypes) async {
+    GetIt container,
+    List<Type> serviceTypes,
+  ) async {
     try {
       for (final serviceType in serviceTypes) {
         // Basic check that service type exists (simplified for now)

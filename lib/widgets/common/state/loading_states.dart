@@ -117,7 +117,8 @@ class LoadingStates {
       child: Card(
         elevation: AppDimensions.elevationLow,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingS),
           child: Row(
@@ -126,8 +127,9 @@ class LoadingStates {
               SkeletonComponents.skeletonBox(
                 width: 80,
                 height: 80,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
               ),
               const SizedBox(width: AppDimensions.spacingS),
               // Text content skeleton
@@ -140,21 +142,24 @@ class LoadingStates {
                       height: 20,
                       width: double.infinity,
                       margin: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingXs),
+                        bottom: AppDimensions.spacingXs,
+                      ),
                     ),
                     // Beskrivning rad 1
                     SkeletonComponents.skeletonBox(
                       height: 14,
                       width: double.infinity,
                       margin: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingXs),
+                        bottom: AppDimensions.spacingXs,
+                      ),
                     ),
                     // Beskrivning rad 2
                     SkeletonComponents.skeletonBox(
                       height: 14,
                       width: 150,
                       margin: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingXs),
+                        bottom: AppDimensions.spacingXs,
+                      ),
                     ),
                     // Taggar
                     Row(
@@ -164,7 +169,8 @@ class LoadingStates {
                           width: 60,
                           borderRadius: BorderRadius.zero,
                           margin: const EdgeInsetsDirectional.only(
-                              end: AppDimensions.spacingXs),
+                            end: AppDimensions.spacingXs,
+                          ),
                         ),
                         SkeletonComponents.skeletonBox(
                           height: 24,

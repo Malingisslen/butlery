@@ -67,8 +67,9 @@ void main() {
     });
 
     test('UTC component getters use utcDateTime', () {
-      final ts =
-          AppTimestamp.fromDateTime(DateTime.utc(2026, 5, 23, 14, 30, 45));
+      final ts = AppTimestamp.fromDateTime(
+        DateTime.utc(2026, 5, 23, 14, 30, 45),
+      );
       expect(ts.utcYear, 2026);
       expect(ts.utcMonth, 5);
       expect(ts.utcDay, 23);
@@ -90,7 +91,9 @@ void main() {
       final original = AppTimestamp.fromDateTime(DateTime.utc(2026, 2, 14, 10));
       final ms = original.toMilliseconds();
       expect(
-          AppTimestamp.fromMilliseconds(ms).utcDateTime, original.utcDateTime);
+        AppTimestamp.fromMilliseconds(ms).utcDateTime,
+        original.utcDateTime,
+      );
     });
 
     test('toIsoString always emits UTC ISO 8601', () {

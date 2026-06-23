@@ -17,10 +17,14 @@ class ListLifecycleOperations {
     List<String>? categoryIds,
     bool allowGuestEditing,
     bool autoRemoveCompleted,
-  }) _createCollaborativeList;
+  })
+  _createCollaborativeList;
   final Future<bool> Function(String listId) _deleteList;
-  final Future<String?> Function(String name,
-      {List<UnifiedShoppingItem>? items}) _createPersonalList;
+  final Future<String?> Function(
+    String name, {
+    List<UnifiedShoppingItem>? items,
+  })
+  _createPersonalList;
 
   ListLifecycleOperations({
     required List<UnifiedShoppingList> Function() getCollaborativeLists,
@@ -34,16 +38,19 @@ class ListLifecycleOperations {
       List<String>? categoryIds,
       bool allowGuestEditing,
       bool autoRemoveCompleted,
-    }) createCollaborativeList,
+    })
+    createCollaborativeList,
     required Future<bool> Function(String listId) deleteList,
-    required Future<String?> Function(String name,
-            {List<UnifiedShoppingItem>? items})
-        createPersonalList,
-  })  : _getCollaborativeLists = getCollaborativeLists,
-        _getPersonalLists = getPersonalLists,
-        _createCollaborativeList = createCollaborativeList,
-        _deleteList = deleteList,
-        _createPersonalList = createPersonalList;
+    required Future<String?> Function(
+      String name, {
+      List<UnifiedShoppingItem>? items,
+    })
+    createPersonalList,
+  }) : _getCollaborativeLists = getCollaborativeLists,
+       _getPersonalLists = getPersonalLists,
+       _createCollaborativeList = createCollaborativeList,
+       _deleteList = deleteList,
+       _createPersonalList = createPersonalList;
 
   Future<String?> createList({
     required String name,
@@ -93,9 +100,11 @@ class ListLifecycleOperations {
     if (!permissionService.isAuthenticated) return [];
 
     return _getCollaborativeLists()
-        .where((list) =>
-            !permissionService.isShoppingListOwner(list.id) &&
-            permissionService.canViewShoppingList(list.id))
+        .where(
+          (list) =>
+              !permissionService.isShoppingListOwner(list.id) &&
+              permissionService.canViewShoppingList(list.id),
+        )
         .toList();
   }
 
@@ -107,8 +116,9 @@ class ListLifecycleOperations {
   }) async {
     UnifiedShoppingList? personalList;
     try {
-      personalList =
-          _getPersonalLists().firstWhere((list) => list.id == personalListId);
+      personalList = _getPersonalLists().firstWhere(
+        (list) => list.id == personalListId,
+      );
     } catch (e) {
       AppLogger.error('Cannot convert: Personal list not found');
       return null;
@@ -130,15 +140,17 @@ class ListLifecycleOperations {
   }
 
   Future<String?> convertCollaborativeToPersonal(
-      String collaborativeListId) async {
+    String collaborativeListId,
+  ) async {
     final collaborativeList = getListById(collaborativeListId);
     if (collaborativeList == null) {
       AppLogger.error('Cannot convert: Collaborative list not found');
       return null;
     }
 
-    if (!ServiceLocator.get<PermissionService>()
-        .isShoppingListOwner(collaborativeList.id)) {
+    if (!ServiceLocator.get<PermissionService>().isShoppingListOwner(
+      collaborativeList.id,
+    )) {
       AppLogger.error('Cannot convert: Only owner can convert to personal');
       return null;
     }

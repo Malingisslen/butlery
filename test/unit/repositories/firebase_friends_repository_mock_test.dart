@@ -29,8 +29,10 @@ void main() {
       await TestServiceLocator.initialize();
 
       // Create test users
-      testUser =
-          UserBuilder().withId('test_user_123').withName('Test User').build();
+      testUser = UserBuilder()
+          .withId('test_user_123')
+          .withName('Test User')
+          .build();
 
       // Create mock repository with configuration
       mockRepository = MockFactory.createFriendsRepository(
@@ -55,8 +57,9 @@ void main() {
         const message = 'Let\'s be friends!';
 
         // Stub the repository method
-        when(() => mockRepository.sendFriendRequest(toUserId, message: message))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.sendFriendRequest(toUserId, message: message),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.sendFriendRequest(
@@ -68,9 +71,9 @@ void main() {
         expect(success, isTrue);
 
         // Verify the method was called with correct parameters
-        verify(() =>
-                mockRepository.sendFriendRequest(toUserId, message: message))
-            .called(1);
+        verify(
+          () => mockRepository.sendFriendRequest(toUserId, message: message),
+        ).called(1);
       });
 
       test('should not send duplicate friend request', () async {
@@ -78,16 +81,20 @@ void main() {
         const toUserId = 'target_user_456';
 
         // Stub to check if request exists
-        when(() => mockRepository.requestExists(testUser.uid, toUserId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.requestExists(testUser.uid, toUserId),
+        ).thenAnswer((_) async => true);
 
         // Stub send request to return false for duplicate
-        when(() => mockRepository.sendFriendRequest(toUserId))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockRepository.sendFriendRequest(toUserId),
+        ).thenAnswer((_) async => false);
 
         // Act
-        final exists =
-            await mockRepository.requestExists(testUser.uid, toUserId);
+        final exists = await mockRepository.requestExists(
+          testUser.uid,
+          toUserId,
+        );
         final success = await mockRepository.sendFriendRequest(toUserId);
 
         // Assert
@@ -106,23 +113,29 @@ void main() {
         );
 
         // Stub the repository methods
-        when(() => mockRepository.acceptFriendRequest(friendRequest.id))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.acceptFriendRequest(friendRequest.id),
+        ).thenAnswer((_) async => true);
 
-        when(() => mockRepository.addMutualFriends(
-                friendRequest.fromUserId, friendRequest.toUserId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.addMutualFriends(
+            friendRequest.fromUserId,
+            friendRequest.toUserId,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
-        final success =
-            await mockRepository.acceptFriendRequest(friendRequest.id);
+        final success = await mockRepository.acceptFriendRequest(
+          friendRequest.id,
+        );
 
         // Assert
         expect(success, isTrue);
 
         // Verify the method was called
-        verify(() => mockRepository.acceptFriendRequest(friendRequest.id))
-            .called(1);
+        verify(
+          () => mockRepository.acceptFriendRequest(friendRequest.id),
+        ).called(1);
       });
 
       test('should reject friend request', () async {
@@ -130,8 +143,9 @@ void main() {
         const requestId = 'request_123';
 
         // Stub the repository method
-        when(() => mockRepository.rejectFriendRequest(requestId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.rejectFriendRequest(requestId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.rejectFriendRequest(requestId);
@@ -146,8 +160,9 @@ void main() {
         const requestId = 'request_123';
 
         // Stub the repository method
-        when(() => mockRepository.cancelFriendRequest(requestId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.cancelFriendRequest(requestId),
+        ).thenAnswer((_) async => true);
 
         // Act
         final success = await mockRepository.cancelFriendRequest(requestId);
@@ -178,8 +193,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getIncomingRequests())
-            .thenAnswer((_) async => incomingRequests);
+        when(
+          () => mockRepository.getIncomingRequests(),
+        ).thenAnswer((_) async => incomingRequests);
 
         // Act
         final requests = await mockRepository.getIncomingRequests();
@@ -207,8 +223,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getSentRequests())
-            .thenAnswer((_) async => sentRequests);
+        when(
+          () => mockRepository.getSentRequests(),
+        ).thenAnswer((_) async => sentRequests);
 
         // Act
         final requests = await mockRepository.getSentRequests();
@@ -227,8 +244,9 @@ void main() {
         const userId2 = 'user_2';
 
         // Stub the repository method
-        when(() => mockRepository.areFriends(userId1, userId2))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.areFriends(userId1, userId2),
+        ).thenAnswer((_) async => true);
 
         // Act
         final areFriends = await mockRepository.areFriends(userId1, userId2);
@@ -244,15 +262,17 @@ void main() {
         const userId2 = 'user_2';
 
         // Stub the repository method
-        when(() => mockRepository.addMutualFriends(userId1, userId2))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.addMutualFriends(userId1, userId2),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.addMutualFriends(userId1, userId2);
 
         // Assert
-        verify(() => mockRepository.addMutualFriends(userId1, userId2))
-            .called(1);
+        verify(
+          () => mockRepository.addMutualFriends(userId1, userId2),
+        ).called(1);
       });
 
       test('should remove friend', () async {
@@ -260,12 +280,13 @@ void main() {
         const friendUserId = 'friend_456';
 
         // Stub the repository methods
-        when(() => mockRepository.removeFriend(friendUserId))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.removeFriend(friendUserId),
+        ).thenAnswer((_) async => true);
 
-        when(() =>
-                mockRepository.removeMutualFriends(testUser.uid, friendUserId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.removeMutualFriends(testUser.uid, friendUserId),
+        ).thenAnswer((_) async {});
 
         // Act
         final success = await mockRepository.removeFriend(friendUserId);
@@ -280,8 +301,9 @@ void main() {
         final friendIds = ['friend_1', 'friend_2', 'friend_3'];
 
         // Stub the repository method
-        when(() => mockRepository.fetchFriendIds(testUser.uid))
-            .thenAnswer((_) async => friendIds);
+        when(
+          () => mockRepository.fetchFriendIds(testUser.uid),
+        ).thenAnswer((_) async => friendIds);
 
         // Act
         final ids = await mockRepository.fetchFriendIds(testUser.uid);
@@ -298,12 +320,14 @@ void main() {
           UserBuilder().withId('friend_1').withName('Friend One').build(),
           UserBuilder().withId('friend_2').withName('Friend Two').build(),
         ];
-        final List<String> friendIds =
-            friendProfiles.map((p) => p.uid).toList();
+        final List<String> friendIds = friendProfiles
+            .map((p) => p.uid)
+            .toList();
 
         // Stub the repository method
-        when(() => mockRepository.fetchFriendProfiles(friendIds))
-            .thenAnswer((_) async => friendProfiles);
+        when(
+          () => mockRepository.fetchFriendProfiles(friendIds),
+        ).thenAnswer((_) async => friendProfiles);
 
         // Act
         final profiles = await mockRepository.fetchFriendProfiles(friendIds);
@@ -327,15 +351,17 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.saveCategory(testUser.uid, category))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.saveCategory(testUser.uid, category),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.saveCategory(testUser.uid, category);
 
         // Assert - verify the method was called with correct parameters
-        verify(() => mockRepository.saveCategory(testUser.uid, category))
-            .called(1);
+        verify(
+          () => mockRepository.saveCategory(testUser.uid, category),
+        ).called(1);
       });
 
       test('should get user categories', () async {
@@ -358,12 +384,14 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.fetchCategories(testUser.uid))
-            .thenAnswer((_) async => categories);
+        when(
+          () => mockRepository.fetchCategories(testUser.uid),
+        ).thenAnswer((_) async => categories);
 
         // Act
-        final userCategories =
-            await mockRepository.fetchCategories(testUser.uid);
+        final userCategories = await mockRepository.fetchCategories(
+          testUser.uid,
+        );
 
         // Assert
         expect(userCategories.length, equals(2));
@@ -376,15 +404,17 @@ void main() {
         const categoryId = 'cat_1';
 
         // Stub the repository method
-        when(() => mockRepository.deleteCategory(testUser.uid, categoryId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteCategory(testUser.uid, categoryId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteCategory(testUser.uid, categoryId);
 
         // Assert
-        verify(() => mockRepository.deleteCategory(testUser.uid, categoryId))
-            .called(1);
+        verify(
+          () => mockRepository.deleteCategory(testUser.uid, categoryId),
+        ).called(1);
       });
     });
 
@@ -404,8 +434,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.saveInvitation(invitation))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.saveInvitation(invitation),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.saveInvitation(invitation);
@@ -430,8 +461,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.getInvitation(invitationId))
-            .thenAnswer((_) async => invitation);
+        when(
+          () => mockRepository.getInvitation(invitationId),
+        ).thenAnswer((_) async => invitation);
 
         // Act
         final result = await mockRepository.getInvitation(invitationId);
@@ -459,8 +491,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.receivedInvitationsStream(testUser.uid))
-            .thenAnswer((_) => Stream.value(invitations));
+        when(
+          () => mockRepository.receivedInvitationsStream(testUser.uid),
+        ).thenAnswer((_) => Stream.value(invitations));
 
         // Act
         final stream = mockRepository.receivedInvitationsStream(testUser.uid);
@@ -469,8 +502,9 @@ void main() {
         // Assert
         expect(result.length, equals(1));
         expect(result.first.groupName, equals('Cooking Club'));
-        verify(() => mockRepository.receivedInvitationsStream(testUser.uid))
-            .called(1);
+        verify(
+          () => mockRepository.receivedInvitationsStream(testUser.uid),
+        ).called(1);
       });
 
       test('should update invitation', () async {
@@ -479,15 +513,17 @@ void main() {
         final updateData = {'status': 'accepted'};
 
         // Stub the repository method
-        when(() => mockRepository.updateInvitation(invitationId, updateData))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateInvitation(invitationId, updateData),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateInvitation(invitationId, updateData);
 
         // Assert
-        verify(() => mockRepository.updateInvitation(invitationId, updateData))
-            .called(1);
+        verify(
+          () => mockRepository.updateInvitation(invitationId, updateData),
+        ).called(1);
       });
     });
   });

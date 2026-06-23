@@ -72,12 +72,12 @@ class RecipeComment {
     this.recipeOwnerId,
     this.sharedWithUserIds = const [],
     this.imageUrls = const [],
-  })  : createdAt = createdAt ?? clock.now(),
-        assert(
-          imageUrls.length <= maxImageUrls,
-          'RecipeComment.imageUrls cap exceeded: ${imageUrls.length} > $maxImageUrls. '
-          'Composer UI must enforce the limit before reaching the model.',
-        );
+  }) : createdAt = createdAt ?? clock.now(),
+       assert(
+         imageUrls.length <= maxImageUrls,
+         'RecipeComment.imageUrls cap exceeded: ${imageUrls.length} > $maxImageUrls. '
+         'Composer UI must enforce the limit before reaching the model.',
+       );
 
   factory RecipeComment.create({
     required String recipeId,
@@ -228,25 +228,35 @@ class RecipeComment {
       recipeId: SerializationUtils.safeString(data, 'recipeId'),
       authorId: SerializationUtils.safeString(data, 'authorId'),
       authorDisplayName: SerializationUtils.safeString(
-          data, 'authorDisplayName',
-          defaultValue: '?'),
-      authorAvatarUrl:
-          SerializationUtils.safeNullableString(data, 'authorAvatarUrl'),
+        data,
+        'authorDisplayName',
+        defaultValue: '?',
+      ),
+      authorAvatarUrl: SerializationUtils.safeNullableString(
+        data,
+        'authorAvatarUrl',
+      ),
       text: SerializationUtils.safeString(data, 'text'),
       createdAt:
           SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
       editedAt: SerializationUtils.safeDateTime(data, 'editedAt'),
       likesCount: SerializationUtils.safeInt(data, 'likesCount'),
-      parentCommentId:
-          SerializationUtils.safeNullableString(data, 'parentCommentId'),
+      parentCommentId: SerializationUtils.safeNullableString(
+        data,
+        'parentCommentId',
+      ),
       replyCount: SerializationUtils.safeInt(data, 'replyCount'),
       isDeleted: SerializationUtils.safeBool(data, 'isDeleted'),
       reactions:
           SerializationUtils.safeStringListMap(data, 'reactions') ?? const {},
-      recipeOwnerId:
-          SerializationUtils.safeNullableString(data, 'recipeOwnerId'),
-      sharedWithUserIds:
-          SerializationUtils.safeStringList(data, 'sharedWithUserIds'),
+      recipeOwnerId: SerializationUtils.safeNullableString(
+        data,
+        'recipeOwnerId',
+      ),
+      sharedWithUserIds: SerializationUtils.safeStringList(
+        data,
+        'sharedWithUserIds',
+      ),
       imageUrls: SerializationUtils.safeStringList(data, 'imageUrls'),
     );
   }
@@ -278,16 +288,22 @@ class RecipeComment {
       recipeId: SerializationUtils.safeString(json, 'recipeId'),
       authorId: SerializationUtils.safeString(json, 'authorId'),
       authorDisplayName: SerializationUtils.safeString(
-          json, 'authorDisplayName',
-          defaultValue: '?'),
-      authorAvatarUrl:
-          SerializationUtils.safeNullableString(json, 'authorAvatarUrl'),
+        json,
+        'authorDisplayName',
+        defaultValue: '?',
+      ),
+      authorAvatarUrl: SerializationUtils.safeNullableString(
+        json,
+        'authorAvatarUrl',
+      ),
       text: SerializationUtils.safeString(json, 'text'),
       createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       editedAt: SerializationUtils.safeDateTime(json, 'editedAt'),
       likesCount: SerializationUtils.safeInt(json, 'likesCount'),
-      parentCommentId:
-          SerializationUtils.safeNullableString(json, 'parentCommentId'),
+      parentCommentId: SerializationUtils.safeNullableString(
+        json,
+        'parentCommentId',
+      ),
       replyCount: SerializationUtils.safeInt(json, 'replyCount'),
       isDeleted: SerializationUtils.safeBool(json, 'isDeleted'),
       reactions:

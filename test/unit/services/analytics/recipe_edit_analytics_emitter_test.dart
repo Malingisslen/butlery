@@ -34,8 +34,12 @@ void main() {
 
     test('emits recipe_edited with fields_changed when diff is non-empty', () {
       withClock(Clock.fixed(fixedNow), () {
-        final original =
-            _recipe(id: 'r1', title: 'Pasta', sourceUrl: null, daysAgo: 60);
+        final original = _recipe(
+          id: 'r1',
+          title: 'Pasta',
+          sourceUrl: null,
+          daysAgo: 60,
+        );
         final saved = original.copyWith(title: 'Pasta Carbonara');
 
         emitter.emit(
@@ -50,12 +54,15 @@ void main() {
       expect(analytics.recipeEdits.single.fieldsChanged, contains('title'));
     });
 
-    test(
-        'does NOT emit post_import_edit when recipe has no sourceUrl '
+    test('does NOT emit post_import_edit when recipe has no sourceUrl '
         '(non-imported)', () {
       withClock(Clock.fixed(fixedNow), () {
-        final original =
-            _recipe(id: 'r1', title: 'Pasta', sourceUrl: null, daysAgo: 1);
+        final original = _recipe(
+          id: 'r1',
+          title: 'Pasta',
+          sourceUrl: null,
+          daysAgo: 1,
+        );
         final saved = original.copyWith(title: 'Pasta Carbonara');
 
         emitter.emit(
@@ -137,7 +144,9 @@ void main() {
 
       expect(analytics.events, hasLength(1));
       expect(
-          analytics.events.single.parameters.containsKey('tier_used'), isFalse);
+        analytics.events.single.parameters.containsKey('tier_used'),
+        isFalse,
+      );
     });
   });
 }
@@ -164,8 +173,9 @@ class _CapturingAnalyticsService implements AnalyticsService {
   final List<({String recipeId, List<String>? fieldsChanged})> recipeEdits = [];
   final List<({String name, Map<String, Object> parameters})> events = [];
 
-  late final _CapturingRecipeTracker _recipeTracker =
-      _CapturingRecipeTracker(this);
+  late final _CapturingRecipeTracker _recipeTracker = _CapturingRecipeTracker(
+    this,
+  );
 
   @override
   RecipeEventsTracker get recipe => _recipeTracker;

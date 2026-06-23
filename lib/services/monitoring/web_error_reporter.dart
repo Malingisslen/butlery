@@ -48,9 +48,9 @@ class WebErrorReporter {
   WebErrorReporter({
     required ConsentService consentService,
     FirebaseFunctions? functions,
-  })  : _consentService = consentService,
-        _functions =
-            functions ?? FirebaseFunctions.instanceFor(region: _kRegion);
+  }) : _consentService = consentService,
+       _functions =
+           functions ?? FirebaseFunctions.instanceFor(region: _kRegion);
 
   final ConsentService _consentService;
   final FirebaseFunctions _functions;
@@ -168,8 +168,9 @@ class WebErrorReporter {
     String? context,
   }) {
     final rawMessage = _truncate(error.toString(), _kMaxMessageChars);
-    final rawStack =
-        stack == null ? null : _truncate(stack.toString(), _kMaxStackChars);
+    final rawStack = stack == null
+        ? null
+        : _truncate(stack.toString(), _kMaxStackChars);
 
     return {
       'message': scrubPii(rawMessage),

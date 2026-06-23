@@ -68,7 +68,9 @@ void main() {
       expect(result.editCount, 5, reason: 'local should win on editCount');
       expect(emitted, hasLength(1));
       expect(
-          emitted.single.chosenStrategy, ConflictResolutionStrategy.localWon);
+        emitted.single.chosenStrategy,
+        ConflictResolutionStrategy.localWon,
+      );
       expect(emitted.single.collectionPath, 'recipes');
       expect(emitted.single.docId, 'rt-a');
     });
@@ -83,7 +85,9 @@ void main() {
       expect(result.editCount, 7, reason: 'remote should win on editCount');
       expect(emitted, hasLength(1));
       expect(
-          emitted.single.chosenStrategy, ConflictResolutionStrategy.remoteWon);
+        emitted.single.chosenStrategy,
+        ConflictResolutionStrategy.remoteWon,
+      );
     });
 
     test('localWon on tied editCount + newer local timestamp', () async {
@@ -97,7 +101,9 @@ void main() {
       expect(result.lastEditedAt, newer);
       expect(emitted, hasLength(1));
       expect(
-          emitted.single.chosenStrategy, ConflictResolutionStrategy.localWon);
+        emitted.single.chosenStrategy,
+        ConflictResolutionStrategy.localWon,
+      );
     });
 
     test('remoteWon on tied editCount + newer remote timestamp', () async {
@@ -111,7 +117,9 @@ void main() {
       expect(result.lastEditedAt, newer);
       expect(emitted, hasLength(1));
       expect(
-          emitted.single.chosenStrategy, ConflictResolutionStrategy.remoteWon);
+        emitted.single.chosenStrategy,
+        ConflictResolutionStrategy.remoteWon,
+      );
     });
   });
 
@@ -130,16 +138,17 @@ void main() {
     late DateTime remoteLastEditedAt;
 
     ConflictResolutionModule buildModule() => ConflictResolutionModule(
-          firestoreRepository: repo,
-          getLatestResource: <T extends RealtimeResource>(id) async {
-            remoteFetched = true;
-            return _makeRecipe(
+      firestoreRepository: repo,
+      getLatestResource: <T extends RealtimeResource>(id) async {
+        remoteFetched = true;
+        return _makeRecipe(
               id: 'remote',
               editCount: 1,
               lastEditedAt: remoteLastEditedAt,
-            ) as T;
-          },
-        );
+            )
+            as T;
+      },
+    );
 
     setUp(() {
       remoteFetched = false;
@@ -157,88 +166,122 @@ void main() {
       // No recordLocalUpdate(resource.id) was called → lastUpdate is null.
       final result = await m.shouldResolveConflict(resource);
 
-      expect(result, isFalse,
-          reason: 'an untracked resource has no local edit to conflict with');
-      expect(remoteFetched, isFalse,
-          reason: 'the null-lastUpdate branch must short-circuit before any '
-              'Firestore read');
+      expect(
+        result,
+        isFalse,
+        reason: 'an untracked resource has no local edit to conflict with',
+      );
+      expect(
+        remoteFetched,
+        isFalse,
+        reason:
+            'the null-lastUpdate branch must short-circuit before any '
+            'Firestore read',
+      );
     });
 
-    test('returns false at exactly the 5000ms window boundary (window elapsed)',
-        () async {
-      final m = buildModule();
-      final start = DateTime(2026, 1, 1, 12);
-      final resource = _makeRecipe(
-        id: 'elapsed',
-        editCount: 1,
-        lastEditedAt: start,
-      );
+    test(
+      'returns false at exactly the 5000ms window boundary (window elapsed)',
+      () async {
+        final m = buildModule();
+        final start = DateTime(2026, 1, 1, 12);
+        final resource = _makeRecipe(
+          id: 'elapsed',
+          editCount: 1,
+          lastEditedAt: start,
+        );
 
-      // Record the local update at `start`, then evaluate the guard exactly
-      // ConflictResolutionModule.conflictResolutionWindowMs (5000ms) later.
-      // The guard is `timeSinceUpdate < 5000`, so 5000ms is OUTSIDE the window.
-      await withClock(Clock.fixed(start), () async {
-        m.recordLocalUpdate(resource.id);
-      });
+        // Record the local update at `start`, then evaluate the guard exactly
+        // ConflictResolutionModule.conflictResolutionWindowMs (5000ms) later.
+        // The guard is `timeSinceUpdate < 5000`, so 5000ms is OUTSIDE the window.
+        await withClock(Clock.fixed(start), () async {
+          m.recordLocalUpdate(resource.id);
+        });
 
-      final atBoundary = start.add(const Duration(
-          milliseconds: ConflictResolutionModule.conflictResolutionWindowMs));
+        final atBoundary = start.add(
+          const Duration(
+            milliseconds: ConflictResolutionModule.conflictResolutionWindowMs,
+          ),
+        );
 
-      final result = await withClock(
-        Clock.fixed(atBoundary),
-        () => m.shouldResolveConflict(resource),
-      );
+        final result = await withClock(
+          Clock.fixed(atBoundary),
+          () => m.shouldResolveConflict(resource),
+        );
 
-      expect(result, isFalse,
-          reason: 'at exactly 5000ms the window has elapsed (strict `<`), so '
-              'no conflict check runs');
-      expect(remoteFetched, isFalse,
-          reason: 'an elapsed window must short-circuit before the remote '
-              'fetch — the edit is too old to be concurrent');
+        expect(
+          result,
+          isFalse,
+          reason:
+              'at exactly 5000ms the window has elapsed (strict `<`), so '
+              'no conflict check runs',
+        );
+        expect(
+          remoteFetched,
+          isFalse,
+          reason:
+              'an elapsed window must short-circuit before the remote '
+              'fetch — the edit is too old to be concurrent',
+        );
 
-      // Boundary proof: 1ms BEFORE the boundary is still INSIDE the window, so
-      // the same setup DOES reach the remote fetch — pinning the `<` direction.
-      remoteFetched = false;
-      final justInside = atBoundary.subtract(const Duration(milliseconds: 1));
-      await withClock(
-        Clock.fixed(justInside),
-        () => m.shouldResolveConflict(resource),
-      );
-      expect(remoteFetched, isTrue,
-          reason: '4999ms is inside the window → the remote IS fetched, '
-              'confirming the boundary is exclusive at 5000ms');
-    });
+        // Boundary proof: 1ms BEFORE the boundary is still INSIDE the window, so
+        // the same setup DOES reach the remote fetch — pinning the `<` direction.
+        remoteFetched = false;
+        final justInside = atBoundary.subtract(const Duration(milliseconds: 1));
+        await withClock(
+          Clock.fixed(justInside),
+          () => m.shouldResolveConflict(resource),
+        );
+        expect(
+          remoteFetched,
+          isTrue,
+          reason:
+              '4999ms is inside the window → the remote IS fetched, '
+              'confirming the boundary is exclusive at 5000ms',
+        );
+      },
+    );
 
-    test('returns false when remote.lastEditedAt is not after lastUpdate',
-        () async {
-      final m = buildModule();
-      final start = DateTime(2026, 1, 1, 12);
-      final resource = _makeRecipe(
-        id: 'stale-remote',
-        editCount: 1,
-        lastEditedAt: start,
-      );
+    test(
+      'returns false when remote.lastEditedAt is not after lastUpdate',
+      () async {
+        final m = buildModule();
+        final start = DateTime(2026, 1, 1, 12);
+        final resource = _makeRecipe(
+          id: 'stale-remote',
+          editCount: 1,
+          lastEditedAt: start,
+        );
 
-      // Inside the window, but the remote's last edit is at-or-before our
-      // recorded local update → no concurrent remote change → no conflict.
-      remoteLastEditedAt = start;
+        // Inside the window, but the remote's last edit is at-or-before our
+        // recorded local update → no concurrent remote change → no conflict.
+        remoteLastEditedAt = start;
 
-      await withClock(Clock.fixed(start), () async {
-        m.recordLocalUpdate(resource.id);
-      });
+        await withClock(Clock.fixed(start), () async {
+          m.recordLocalUpdate(resource.id);
+        });
 
-      final result = await withClock(
-        Clock.fixed(start.add(const Duration(seconds: 1))),
-        () => m.shouldResolveConflict(resource),
-      );
+        final result = await withClock(
+          Clock.fixed(start.add(const Duration(seconds: 1))),
+          () => m.shouldResolveConflict(resource),
+        );
 
-      expect(remoteFetched, isTrue,
-          reason: 'inside the window the remote MUST be read to compare '
-              'timestamps');
-      expect(result, isFalse,
-          reason: 'remote.lastEditedAt == lastUpdate is not strictly after, '
-              'so there is no newer remote edit to conflict with');
-    });
+        expect(
+          remoteFetched,
+          isTrue,
+          reason:
+              'inside the window the remote MUST be read to compare '
+              'timestamps',
+        );
+        expect(
+          result,
+          isFalse,
+          reason:
+              'remote.lastEditedAt == lastUpdate is not strictly after, '
+              'so there is no newer remote edit to conflict with',
+        );
+      },
+    );
   });
 
   test('onConflict callback is optional — no throw when null', () async {

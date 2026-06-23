@@ -78,8 +78,9 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
                     TextButton(
                       onPressed: () {
                         setState(() {
-                          _order =
-                              List.from(ShoppingCategory.defaultStoreOrder);
+                          _order = List.from(
+                            ShoppingCategory.defaultStoreOrder,
+                          );
                         });
                       },
                       child: Text(context.l10n.shoppingResetOrder),
@@ -101,7 +102,9 @@ class _CategoryOrderSheetState extends State<CategoryOrderSheet> {
                 itemBuilder: (context, index) {
                   final category = _order[index];
                   final color = ShoppingListContentWidget.getCategoryColor(
-                      context, category);
+                    context,
+                    category,
+                  );
                   return _buildCategoryTile(
                     context,
                     cs,

@@ -71,9 +71,9 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     OCRExtractionService? ocrService,
     TextImportStrategy? textStrategy,
     HeicConverter? heicConverter,
-  })  : _ocrService = ocrService ?? OCRExtractionService.instance,
-        _textStrategy = textStrategy ?? TextImportStrategy(),
-        _heicConverter = heicConverter ?? HeicConverter();
+  }) : _ocrService = ocrService ?? OCRExtractionService.instance,
+       _textStrategy = textStrategy ?? TextImportStrategy(),
+       _heicConverter = heicConverter ?? HeicConverter();
 
   /// Get the LLM enhancement service (lazy initialization with graceful fallback)
   LlmEnhancementService? get _llmService {
@@ -107,8 +107,10 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     // NOTE (BUT-903 cleanup): multi-page combine lives entirely in
     // PhotoImportViewModel, which OCRs each page itself and feeds the combined
     // text to ImportManager.autoParseMulti. The strategy only ever sees a
@@ -396,8 +398,9 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (ocrResult.isSuccessful) {
       metadata['ocr_method'] = ocrResult.processingMethod;
       metadata['ocr_confidence'] = ocrResult.confidence;
-      metadata['ocr_confidence_level'] =
-          _getConfidenceLevel(ocrResult.confidence);
+      metadata['ocr_confidence_level'] = _getConfidenceLevel(
+        ocrResult.confidence,
+      );
       metadata['swedish_optimized'] = true;
 
       // Add extracted text length

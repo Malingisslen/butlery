@@ -8,11 +8,11 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/scaffolds/tabbed_scaffold.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: child,
-    );
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: child,
+);
 
 class _TestApp extends StatefulWidget {
   const _TestApp({required this.tabs, required this.tabViews, this.title});
@@ -51,38 +51,53 @@ class _TestAppState extends State<_TestApp>
 
 void main() {
   testWidgets('renders TabBar with the supplied tabs', (tester) async {
-    await tester.pumpWidget(_wrap(
-      _TestApp(
-        title: 'Test',
-        tabs: const [Tab(text: 'A'), Tab(text: 'B')],
-        tabViews: const [Text('view A'), Text('view B')],
+    await tester.pumpWidget(
+      _wrap(
+        _TestApp(
+          title: 'Test',
+          tabs: const [
+            Tab(text: 'A'),
+            Tab(text: 'B'),
+          ],
+          tabViews: const [Text('view A'), Text('view B')],
+        ),
       ),
-    ));
+    );
     expect(find.text('A'), findsOneWidget);
     expect(find.text('B'), findsOneWidget);
     expect(find.byType(TabBar), findsOneWidget);
   });
 
   testWidgets('renders TabBarView with the supplied tabViews', (tester) async {
-    await tester.pumpWidget(_wrap(
-      _TestApp(
-        title: 'Test',
-        tabs: const [Tab(text: 'A'), Tab(text: 'B')],
-        tabViews: const [Text('view A'), Text('view B')],
+    await tester.pumpWidget(
+      _wrap(
+        _TestApp(
+          title: 'Test',
+          tabs: const [
+            Tab(text: 'A'),
+            Tab(text: 'B'),
+          ],
+          tabViews: const [Text('view A'), Text('view B')],
+        ),
       ),
-    ));
+    );
     expect(find.byType(TabBarView), findsOneWidget);
     expect(find.text('view A'), findsOneWidget);
   });
 
   testWidgets('switching tabs shows the matching view', (tester) async {
-    await tester.pumpWidget(_wrap(
-      _TestApp(
-        title: 'Test',
-        tabs: const [Tab(text: 'A'), Tab(text: 'B')],
-        tabViews: const [Text('view A'), Text('view B')],
+    await tester.pumpWidget(
+      _wrap(
+        _TestApp(
+          title: 'Test',
+          tabs: const [
+            Tab(text: 'A'),
+            Tab(text: 'B'),
+          ],
+          tabViews: const [Text('view A'), Text('view B')],
+        ),
       ),
-    ));
+    );
     expect(find.text('view A'), findsOneWidget);
     await tester.tap(find.text('B'));
     await tester.pumpAndSettle();
@@ -101,13 +116,15 @@ void main() {
   });
 
   testWidgets('title is rendered in the AppBar when provided', (tester) async {
-    await tester.pumpWidget(_wrap(
-      _TestApp(
-        title: 'Recipes',
-        tabs: const [Tab(text: 'A')],
-        tabViews: const [Text('view A')],
+    await tester.pumpWidget(
+      _wrap(
+        _TestApp(
+          title: 'Recipes',
+          tabs: const [Tab(text: 'A')],
+          tabViews: const [Text('view A')],
+        ),
       ),
-    ));
+    );
     expect(find.text('Recipes'), findsOneWidget);
   });
 
@@ -116,35 +133,39 @@ void main() {
       onPressed: () {},
       child: const Icon(Icons.add),
     );
-    await tester.pumpWidget(_wrap(
-      DefaultTabController(
-        length: 1,
-        child: TabbedScaffold(
-          title: 'X',
-          tabs: const [Tab(text: 'A')],
-          tabViews: const [Text('view A')],
-          floatingActionButton: fab,
+    await tester.pumpWidget(
+      _wrap(
+        DefaultTabController(
+          length: 1,
+          child: TabbedScaffold(
+            title: 'X',
+            tabs: const [Tab(text: 'A')],
+            tabViews: const [Text('view A')],
+            floatingActionButton: fab,
+          ),
         ),
       ),
-    ));
+    );
     expect(find.byType(FloatingActionButton), findsOneWidget);
     expect(find.byIcon(Icons.add), findsOneWidget);
   });
 
   testWidgets('actions list forwards to BaseScaffold AppBar', (tester) async {
-    await tester.pumpWidget(_wrap(
-      DefaultTabController(
-        length: 1,
-        child: TabbedScaffold(
-          title: 'X',
-          tabs: const [Tab(text: 'A')],
-          tabViews: const [Text('view A')],
-          actions: [
-            IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-          ],
+    await tester.pumpWidget(
+      _wrap(
+        DefaultTabController(
+          length: 1,
+          child: TabbedScaffold(
+            title: 'X',
+            tabs: const [Tab(text: 'A')],
+            tabViews: const [Text('view A')],
+            actions: [
+              IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+            ],
+          ),
         ),
       ),
-    ));
+    );
     expect(find.byIcon(Icons.search), findsOneWidget);
   });
 }

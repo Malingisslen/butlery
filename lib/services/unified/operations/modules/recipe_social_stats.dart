@@ -37,11 +37,11 @@ class RecipeSocialStats {
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
     required NotificationService? notificationService,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _getRecipes = getRecipes,
-        _firestoreRepository = firestoreRepository,
-        _notificationService = notificationService {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _getRecipes = getRecipes,
+       _firestoreRepository = firestoreRepository,
+       _notificationService = notificationService {
     _ratingSystem = RecipeRatingSystem();
   }
   String? get currentUserId => _getCurrentUserId();
@@ -171,8 +171,9 @@ class RecipeSocialStats {
       );
 
       // Add social engagement metrics using SocialEngagementMetrics
-      final socialMetrics =
-          SocialEngagementMetrics.calculateRecipeEngagement(recipe);
+      final socialMetrics = SocialEngagementMetrics.calculateRecipeEngagement(
+        recipe,
+      );
 
       // Combine statistics with social metrics
       final result = {
@@ -296,7 +297,8 @@ class RecipeSocialStats {
 
   /// Analyze rating distribution for recipe
   Future<Map<String, dynamic>> analyzeRatingDistribution(
-      String recipeId) async {
+    String recipeId,
+  ) async {
     try {
       final ratings = await _ratingSystem.getRecipeRatings(
         recipeId: recipeId,
@@ -304,12 +306,14 @@ class RecipeSocialStats {
 
       // Convert RecipeRating objects to Map format
       final ratingsData = ratings
-          .map((rating) => {
-                'rating': rating.rating,
-                'review': rating.review,
-                'createdAt': rating.createdAt,
-                'userId': rating.userId,
-              })
+          .map(
+            (rating) => {
+              'rating': rating.rating,
+              'review': rating.review,
+              'createdAt': rating.createdAt,
+              'userId': rating.userId,
+            },
+          )
           .toList();
 
       final stats = RatingStatistics.calculateRatingStatistics(ratingsData);
@@ -331,12 +335,14 @@ class RecipeSocialStats {
 
       // Convert RecipeRating objects to Map format
       final ratingsData = ratings
-          .map((rating) => {
-                'rating': rating.rating,
-                'review': rating.review,
-                'createdAt': rating.createdAt,
-                'userId': rating.userId,
-              })
+          .map(
+            (rating) => {
+              'rating': rating.rating,
+              'review': rating.review,
+              'createdAt': rating.createdAt,
+              'userId': rating.userId,
+            },
+          )
           .toList();
 
       return RatingStatistics.calculateRatingTrends(ratingsData);
@@ -420,7 +426,9 @@ class RecipeSocialStats {
 
   /// Compare recipe engagement
   Map<String, dynamic> compareRecipeEngagement(
-      String recipeId1, String recipeId2) {
+    String recipeId1,
+    String recipeId2,
+  ) {
     final recipe1 = _getRecipe(recipeId1);
     final recipe2 = _getRecipe(recipeId2);
 

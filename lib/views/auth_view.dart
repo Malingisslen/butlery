@@ -178,7 +178,8 @@ class _AuthViewState extends State<AuthView> {
                 ),
               ),
               const SizedBox(
-                  height: AppDimensions.spacingLg + AppDimensions.spacingXs),
+                height: AppDimensions.spacingLg + AppDimensions.spacingXs,
+              ),
 
               // Name field (registration only)
               if (!viewModel.isLoginMode) ...[
@@ -302,8 +303,9 @@ class _AuthViewState extends State<AuthView> {
                         value: _ageConfirmed,
                         onChanged: viewModel.isLoading
                             ? null
-                            : (value) =>
-                                setState(() => _ageConfirmed = value ?? false),
+                            : (value) => setState(
+                                () => _ageConfirmed = value ?? false,
+                              ),
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -315,11 +317,13 @@ class _AuthViewState extends State<AuthView> {
                           onTap: viewModel.isLoading
                               ? null
                               : () => setState(
-                                  () => _ageConfirmed = !_ageConfirmed),
+                                  () => _ageConfirmed = !_ageConfirmed,
+                                ),
                           child: Text(
                             context.l10n.authAgeConfirmation,
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: cs.onSurface),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: cs.onSurface,
+                            ),
                           ),
                         ),
                       ),
@@ -338,16 +342,18 @@ class _AuthViewState extends State<AuthView> {
                         value: _termsAccepted,
                         onChanged: viewModel.isLoading
                             ? null
-                            : (value) =>
-                                setState(() => _termsAccepted = value ?? false),
+                            : (value) => setState(
+                                () => _termsAccepted = value ?? false,
+                              ),
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text.rich(
                         TextSpan(
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: cs.onSurface),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.onSurface,
+                          ),
                           children: [
                             TextSpan(text: context.l10n.authTermsAcceptPrefix),
                             TextSpan(
@@ -391,8 +397,9 @@ class _AuthViewState extends State<AuthView> {
                 label: viewModel.isLoginMode
                     ? context.l10n.authLogin
                     : context.l10n.authCreateAccount,
-                onPressed:
-                    viewModel.isLoading ? null : () => _handleSubmit(viewModel),
+                onPressed: viewModel.isLoading
+                    ? null
+                    : () => _handleSubmit(viewModel),
                 isLoading: viewModel.isLoading,
                 isExpanded: true,
               ),
@@ -405,11 +412,13 @@ class _AuthViewState extends State<AuthView> {
                   Expanded(child: Divider(color: cs.outlineVariant)),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingMd),
+                      horizontal: AppDimensions.spacingMd,
+                    ),
                     child: Text(
                       context.l10n.commonOr,
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: cs.onSurfaceVariant),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   Expanded(child: Divider(color: cs.outlineVariant)),
@@ -463,8 +472,9 @@ class _AuthViewState extends State<AuthView> {
       children: [
         Text(
           label,
-          style: AppTextStyles.bodySmall
-              .copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: AppTextStyles.bodySmall.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         child,
@@ -543,8 +553,9 @@ class _AuthViewState extends State<AuthView> {
             ),
             Text(
               ' \u00B7 ',
-              style: AppTextStyles.labelMedium
-                  .copyWith(color: cs.onSurfaceVariant),
+              style: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
             Semantics(
               link: true,
@@ -576,7 +587,9 @@ class _AuthViewState extends State<AuthView> {
     // Age confirmation required for registration
     if (!viewModel.isLoginMode && !_ageConfirmed) {
       SnackBarUtils.showWarning(
-          context, context.l10n.authAgeConfirmationRequired);
+        context,
+        context.l10n.authAgeConfirmationRequired,
+      );
       return;
     }
 
@@ -615,7 +628,8 @@ class _AuthViewState extends State<AuthView> {
     // drive AuthWrapper routes the new user through verification -> onboarding.
     if (success && wasLoginMode && mounted) {
       AppLogger.debug(
-          'AuthView: LOGIN SUCCESS - Direct navigation to main app');
+        'AuthView: LOGIN SUCCESS - Direct navigation to main app',
+      );
 
       // Route into the main nav shell (LayoutScaffolds.mainMenu), not the bare
       // MinaReceptView — the bare view has no bottom navigation bar, so logging
@@ -698,8 +712,9 @@ class _AuthViewState extends State<AuthView> {
 
     if (email == null || !mounted) return;
 
-    final primaryColor = theme.colorScheme.primary
-        .withValues(alpha: AppDimensions.opacityVeryDark);
+    final primaryColor = theme.colorScheme.primary.withValues(
+      alpha: AppDimensions.opacityVeryDark,
+    );
     final errorColor = theme.colorScheme.error;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {

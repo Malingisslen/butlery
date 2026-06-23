@@ -88,15 +88,15 @@ class AlgoliaSearchRepository implements SearchRepository {
     String recipesIndex = 'recipes',
     String usersIndex = 'users',
     bool assertEuCluster = true,
-  })  : _searchClient = _DefaultAlgoliaClient(
-          _buildClient(
-            appId: appId,
-            apiKey: apiKey,
-            assertEuCluster: assertEuCluster,
-          ),
-        ),
-        _recipesIndex = recipesIndex,
-        _usersIndex = usersIndex;
+  }) : _searchClient = _DefaultAlgoliaClient(
+         _buildClient(
+           appId: appId,
+           apiKey: apiKey,
+           assertEuCluster: assertEuCluster,
+         ),
+       ),
+       _recipesIndex = recipesIndex,
+       _usersIndex = usersIndex;
 
   /// Test seam (BUT-1130). Injects a fake [AlgoliaClient] so the privacy
   /// invariants — `ownerId` scoping, personal-recipe `deleteObject`
@@ -110,9 +110,9 @@ class AlgoliaSearchRepository implements SearchRepository {
     required AlgoliaClient client,
     String recipesIndex = 'recipes',
     String usersIndex = 'users',
-  })  : _searchClient = client,
-        _recipesIndex = recipesIndex,
-        _usersIndex = usersIndex;
+  }) : _searchClient = client,
+       _recipesIndex = recipesIndex,
+       _usersIndex = usersIndex;
 
   /// Build the underlying SearchClient, enforcing the EU-cluster invariant.
   ///
@@ -193,8 +193,10 @@ class AlgoliaSearchRepository implements SearchRepository {
           ownerDisplayName: (data['ownerDisplayName'] as String?).orEmpty(),
           ownerId: (data['ownerId'] as String?).orEmpty(),
           highlightedTitle: _extractHighlightValue(highlight, 'title'),
-          highlightedDescription:
-              _extractHighlightValue(highlight, 'description'),
+          highlightedDescription: _extractHighlightValue(
+            highlight,
+            'description',
+          ),
         );
       }).toList();
 
@@ -347,18 +349,22 @@ class AlgoliaSearchRepository implements SearchRepository {
     // dropped here rather than leaked into global discovery.
     final requests = recipes
         .where((recipe) => recipe.isPublic)
-        .map((recipe) => BatchRequest(
-              action: Action.addObject,
-              body: _recipeToSearchDocument(recipe, ownerId),
-            ))
+        .map(
+          (recipe) => BatchRequest(
+            action: Action.addObject,
+            body: _recipeToSearchDocument(recipe, ownerId),
+          ),
+        )
         .toList();
 
     if (requests.isEmpty) return;
 
     try {
-      for (var start = 0;
-          start < requests.length;
-          start += _algoliaBatchLimit) {
+      for (
+        var start = 0;
+        start < requests.length;
+        start += _algoliaBatchLimit
+      ) {
         final chunk = requests.sublist(
           start,
           (start + _algoliaBatchLimit).clamp(0, requests.length),
@@ -500,20 +506,17 @@ class _DefaultAlgoliaClient implements AlgoliaClient {
   Future<SaveObjectResponse> saveObject({
     required String indexName,
     required Object body,
-  }) =>
-      _client.saveObject(indexName: indexName, body: body);
+  }) => _client.saveObject(indexName: indexName, body: body);
 
   @override
   Future<DeletedAtResponse> deleteObject({
     required String indexName,
     required String objectID,
-  }) =>
-      _client.deleteObject(indexName: indexName, objectID: objectID);
+  }) => _client.deleteObject(indexName: indexName, objectID: objectID);
 
   @override
   Future<BatchResponse> batch({
     required String indexName,
     required BatchWriteParams batchWriteParams,
-  }) =>
-      _client.batch(indexName: indexName, batchWriteParams: batchWriteParams);
+  }) => _client.batch(indexName: indexName, batchWriteParams: batchWriteParams);
 }

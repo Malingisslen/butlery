@@ -146,7 +146,9 @@ void main() {
 
         expect(loadedRecipes.length, equals(3));
         expect(
-            loadedRecipes.first.core.id, equals(originalRecipes.first.core.id));
+          loadedRecipes.first.core.id,
+          equals(originalRecipes.first.core.id),
+        );
       });
 
       test('should handle corrupt recipe data gracefully', () async {
@@ -207,28 +209,33 @@ void main() {
         expect(loadedRecipes.length, equals(1));
         expect(loadedRecipes.first.core.title, equals('Test Recipe'));
         expect(
-            loadedRecipes.first.core.description, equals('Test Description'));
+          loadedRecipes.first.core.description,
+          equals('Test Description'),
+        );
         expect(loadedRecipes.first.core.portions, equals(4));
         expect(loadedRecipes.first.core.timeMinutes, equals(30));
       });
 
-      test('should update last updated timestamp when saving recipes',
-          () async {
-        SharedPreferences.setMockInitialValues({});
-        final recipes = RecipeFactory.buildList(count: 2);
+      test(
+        'should update last updated timestamp when saving recipes',
+        () async {
+          SharedPreferences.setMockInitialValues({});
+          final recipes = RecipeFactory.buildList(count: 2);
 
-        final beforeSave = DateTime.now();
-        await service.saveRecipes(recipes);
+          final beforeSave = DateTime.now();
+          await service.saveRecipes(recipes);
 
-        // Verify the last updated timestamp was saved
-        final prefs = await SharedPreferences.getInstance();
-        final lastUpdated = prefs.getString('butlery_last_updated');
-        expect(lastUpdated, isNotNull);
-        final parsedTime = DateTime.parse(lastUpdated!);
-        expect(
+          // Verify the last updated timestamp was saved
+          final prefs = await SharedPreferences.getInstance();
+          final lastUpdated = prefs.getString('butlery_last_updated');
+          expect(lastUpdated, isNotNull);
+          final parsedTime = DateTime.parse(lastUpdated!);
+          expect(
             parsedTime.isAfter(beforeSave.subtract(const Duration(seconds: 1))),
-            isTrue);
-      });
+            isTrue,
+          );
+        },
+      );
     });
 
     group('Menu Persistence', () {
@@ -304,14 +311,16 @@ void main() {
     });
 
     group('Metadata Operations', () {
-      test('should return null when no last updated timestamp exists',
-          () async {
-        SharedPreferences.setMockInitialValues({});
+      test(
+        'should return null when no last updated timestamp exists',
+        () async {
+          SharedPreferences.setMockInitialValues({});
 
-        final lastUpdated = await service.getLastUpdated();
+          final lastUpdated = await service.getLastUpdated();
 
-        expect(lastUpdated, isNull);
-      });
+          expect(lastUpdated, isNull);
+        },
+      );
 
       test('should return last updated timestamp', () async {
         final timestamp = DateTime.now();
@@ -322,8 +331,10 @@ void main() {
         final lastUpdated = await service.getLastUpdated();
 
         expect(lastUpdated, isNotNull);
-        expect(lastUpdated!.toIso8601String(),
-            equals(timestamp.toIso8601String()));
+        expect(
+          lastUpdated!.toIso8601String(),
+          equals(timestamp.toIso8601String()),
+        );
       });
 
       test('should handle invalid timestamp gracefully', () async {
@@ -439,7 +450,9 @@ void main() {
         final loadedRecipes = await service.loadRecipes();
 
         expect(
-            loadedRecipes.first.core.title, equals('Räksmörgås & Köttbullar'));
+          loadedRecipes.first.core.title,
+          equals('Räksmörgås & Köttbullar'),
+        );
         expect(loadedRecipes.first.core.description, contains('åäö ÅÄÖ'));
       });
 
@@ -472,8 +485,10 @@ void main() {
       test('should handle concurrent menu operations', () async {
         SharedPreferences.setMockInitialValues({});
 
-        final saveResult =
-            await service.saveCurrentMenu(['recipe1', 'recipe2']);
+        final saveResult = await service.saveCurrentMenu([
+          'recipe1',
+          'recipe2',
+        ]);
         final loadResult = await service.loadCurrentMenu();
         final clearResult = await service.clearCurrentMenu();
 
@@ -497,8 +512,10 @@ void main() {
       });
 
       test('should preserve recipe order during save/load cycle', () async {
-        final recipes =
-            List.generate(5, (i) => RecipeFactory.build(title: 'Recipe $i'));
+        final recipes = List.generate(
+          5,
+          (i) => RecipeFactory.build(title: 'Recipe $i'),
+        );
 
         // Create JSON and save
         final recipesJson = recipes.map((r) => r.toJson()).toList();
@@ -523,7 +540,7 @@ void main() {
           'recipe2',
           'recipe1',
           'recipe3',
-          'recipe2'
+          'recipe2',
         ];
 
         final result = await service.saveCurrentMenu(duplicateMenu);

@@ -37,8 +37,10 @@ class SocialEngagementMetrics {
       }
 
       // Recent activity contributes to engagement
-      final daysSinceLastEdit =
-          clock.now().difference(recipe.core.updatedAt).inDays;
+      final daysSinceLastEdit = clock
+          .now()
+          .difference(recipe.core.updatedAt)
+          .inDays;
       if (daysSinceLastEdit <= 7) {
         engagementScore += (7.0 - daysSinceLastEdit.toDouble()) * 5.0;
       }
@@ -61,9 +63,11 @@ class SocialEngagementMetrics {
         'member_contribution': recipe.isCollaborative
             ? (recipe.socialData?.memberPermissions?.length ?? 0) * 10
             : 0,
-        'recency_contribution':
-            daysSinceLastEdit <= 7 ? (7 - daysSinceLastEdit) * 5 : 0,
-        'content_contribution': (recipe.core.ingredients.length * 2) +
+        'recency_contribution': daysSinceLastEdit <= 7
+            ? (7 - daysSinceLastEdit) * 5
+            : 0,
+        'content_contribution':
+            (recipe.core.ingredients.length * 2) +
             (recipe.core.instructions.length * 3),
         'completeness_contribution': completenessScore * 5,
       };
@@ -130,10 +134,12 @@ class SocialEngagementMetrics {
   }) async {
     try {
       AppLogger.debug(
-          '📊 Calculating social stats for user ${userId.maskedUserId}');
+        '📊 Calculating social stats for user ${userId.maskedUserId}',
+      );
 
-      final collaborativeRecipes =
-          userRecipes.where((r) => r.isCollaborative).toList();
+      final collaborativeRecipes = userRecipes
+          .where((r) => r.isCollaborative)
+          .toList();
 
       // Calculate basic metrics
       var totalSocialReach = 0;
@@ -157,8 +163,11 @@ class SocialEngagementMetrics {
       }
 
       // Calculate ratings received and given
-      final ratingsData =
-          await _calculateUserRatingStats(firestore, userId, userRecipes);
+      final ratingsData = await _calculateUserRatingStats(
+        firestore,
+        userId,
+        userRecipes,
+      );
 
       // Calculate social engagement trends
       final engagementTrends = _calculateEngagementTrends(userRecipes);
@@ -297,7 +306,10 @@ class SocialEngagementMetrics {
 
   /// Get user's social activity level
   static String _getUserSocialActivityLevel(
-      int socialReach, int collaborativeRecipes, int ratingsGiven) {
+    int socialReach,
+    int collaborativeRecipes,
+    int ratingsGiven,
+  ) {
     final activityScore =
         (socialReach * 2) + (collaborativeRecipes * 5) + ratingsGiven;
 
@@ -314,7 +326,8 @@ class SocialEngagementMetrics {
   }) {
     try {
       AppLogger.debug(
-          '🏆 Finding top engaging recipes from ${recipes.length} recipes');
+        '🏆 Finding top engaging recipes from ${recipes.length} recipes',
+      );
 
       final recipeEngagements = <Map<String, dynamic>>[];
 
@@ -336,8 +349,11 @@ class SocialEngagementMetrics {
       }
 
       // Sort by engagement score (descending)
-      recipeEngagements.sort((a, b) => (b['engagement_score'] as int)
-          .compareTo(a['engagement_score'] as int));
+      recipeEngagements.sort(
+        (a, b) => (b['engagement_score'] as int).compareTo(
+          a['engagement_score'] as int,
+        ),
+      );
 
       final result = recipeEngagements.take(limit).toList();
       AppLogger.debug('✅ Found ${result.length} top engaging recipes');
@@ -402,8 +418,9 @@ class SocialEngagementMetrics {
         'trend': trend,
         'current_score': currentScore,
         'previous_score': previousScore,
-        'change_percentage':
-            previousScore > 0 ? ((velocity / previousScore) * 100).round() : 0,
+        'change_percentage': previousScore > 0
+            ? ((velocity / previousScore) * 100).round()
+            : 0,
       };
     } catch (e) {
       AppLogger.error('❌ Failed to calculate engagement velocity', e);
@@ -442,7 +459,8 @@ class SocialEngagementMetrics {
     // Generate recommendations
     if (!isCollaborative) {
       recommendations.add(
-          'Consider making this recipe collaborative to increase engagement');
+        'Consider making this recipe collaborative to increase engagement',
+      );
     }
 
     if (recipe.core.imageUrls.isEmpty) {
@@ -450,8 +468,9 @@ class SocialEngagementMetrics {
     }
 
     if (recipe.core.instructions.length < 3) {
-      recommendations
-          .add('Add more detailed instructions to improve completeness');
+      recommendations.add(
+        'Add more detailed instructions to improve completeness',
+      );
     }
 
     return {
@@ -464,7 +483,9 @@ class SocialEngagementMetrics {
 
   /// Compare engagement between recipes
   static Map<String, dynamic> compareRecipeEngagement(
-      Recipe recipe1, Recipe recipe2) {
+    Recipe recipe1,
+    Recipe recipe2,
+  ) {
     final engagement1 = calculateRecipeEngagement(recipe1);
     final engagement2 = calculateRecipeEngagement(recipe2);
 
@@ -475,10 +496,12 @@ class SocialEngagementMetrics {
       'recipe1_score': score1,
       'recipe2_score': score2,
       'difference': score1 - score2,
-      'winner':
-          score1 > score2 ? 'recipe1' : (score2 > score1 ? 'recipe2' : 'tie'),
-      'percentage_difference':
-          score2 > 0 ? (((score1 - score2) / score2) * 100).round() : 0,
+      'winner': score1 > score2
+          ? 'recipe1'
+          : (score2 > score1 ? 'recipe2' : 'tie'),
+      'percentage_difference': score2 > 0
+          ? (((score1 - score2) / score2) * 100).round()
+          : 0,
       'engagement_gap': (score1 - score2).abs(),
     };
   }

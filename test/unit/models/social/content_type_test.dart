@@ -43,8 +43,11 @@ void main() {
       expect(ContentType.fromWire(null), isNull);
       expect(ContentType.fromWire(''), isNull);
       expect(ContentType.fromWire('unknown_future_type'), isNull);
-      expect(ContentType.fromWire('PROFILE'), isNull,
-          reason: 'wireNames are case-sensitive');
+      expect(
+        ContentType.fromWire('PROFILE'),
+        isNull,
+        reason: 'wireNames are case-sensitive',
+      );
     });
   });
 }

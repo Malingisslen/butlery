@@ -85,8 +85,9 @@ class ParticipantListWidget extends StatelessWidget {
         color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(
-          color:
-              successColor.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: successColor.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ),
       child: Row(
@@ -111,7 +112,9 @@ class ParticipantListWidget extends StatelessWidget {
   }
 
   Widget _buildParticipantChip(
-      BuildContext context, ParticipantActivity activity) {
+    BuildContext context,
+    ParticipantActivity activity,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final isCurrentUser = activity.userId == currentUserId;
     return Container(
@@ -146,8 +149,9 @@ class ParticipantListWidget extends StatelessWidget {
                     color: activity.isOnline
                         ? context.butleryColors.success
                         : cs.outline,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.spacingXs),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.spacingXs,
+                    ),
                     border: Border.all(
                       color: cs.surface,
                       width: 1,
@@ -184,7 +188,10 @@ class ParticipantListWidget extends StatelessWidget {
   }
 
   Widget _buildSimpleAvatar(
-      BuildContext context, String displayName, double size) {
+    BuildContext context,
+    String displayName,
+    double size,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final initials = UserAvatarWidgets.getInitials(displayName);
     return Container(

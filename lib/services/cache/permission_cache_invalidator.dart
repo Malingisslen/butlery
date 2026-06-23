@@ -47,8 +47,8 @@ class PermissionCacheInvalidator {
   PermissionCacheInvalidator({
     required FirebaseFirestore firestore,
     required PermissionCacheService permissionCache,
-  })  : _firestore = firestore,
-        _permissionCache = permissionCache;
+  }) : _firestore = firestore,
+       _permissionCache = permissionCache;
 
   /// Start listening for permission changes for a user.
   ///
@@ -64,7 +64,8 @@ class PermissionCacheInvalidator {
 
     if (!_permissionCache.isEnabled) {
       AppLogger.debug(
-          'Permission cache invalidator: caching disabled, not starting listeners');
+        'Permission cache invalidator: caching disabled, not starting listeners',
+      );
       return;
     }
 
@@ -78,12 +79,14 @@ class PermissionCacheInvalidator {
           .listen(
             (snapshot) => _handleDocumentChanges(snapshot, 'shared_content'),
             onError: (e) => AppLogger.warning(
-                'Permission invalidator error (sharedContent): $e'),
+              'Permission invalidator error (sharedContent): $e',
+            ),
           ),
     );
 
     AppLogger.debug(
-        'Permission cache invalidator: started listening for user ${userId.maskedUserId}');
+      'Permission cache invalidator: started listening for user ${userId.maskedUserId}',
+    );
   }
 
   /// Stop all listeners.
@@ -110,8 +113,9 @@ class PermissionCacheInvalidator {
         );
 
         AppLogger.debug(
-            'Permission cache: invalidated $resourceType:${change.doc.id} '
-            'due to ${change.type.name}');
+          'Permission cache: invalidated $resourceType:${change.doc.id} '
+          'due to ${change.type.name}',
+        );
       }
     }
   }

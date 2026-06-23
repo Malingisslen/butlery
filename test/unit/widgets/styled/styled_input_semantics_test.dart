@@ -18,34 +18,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      home: Scaffold(
-        body: SizedBox(width: 320, child: child),
-      ),
-    );
+  home: Scaffold(
+    body: SizedBox(width: 320, child: child),
+  ),
+);
 
 void main() {
   group('StyledInput Semantics (BUT-539)', () {
     testWidgets('labelText surfaces as screen-reader label', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const StyledInput(
-          label: 'Receptnamn',
-          hint: 'T.ex. köttbullar',
+      await tester.pumpWidget(
+        _wrap(
+          const StyledInput(
+            label: 'Receptnamn',
+            hint: 'T.ex. köttbullar',
+          ),
         ),
-      ));
+      );
 
       // Material TextField publishes labelText via its built-in Semantics
       // wrapper — the label must resolve verbatim for TalkBack/VoiceOver.
       expect(find.bySemanticsLabel('Receptnamn'), findsOneWidget);
     });
 
-    testWidgets(
-        'search variant (no visible label) wraps with explicit '
+    testWidgets('search variant (no visible label) wraps with explicit '
         'Semantics carrying the hint', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const StyledInput.search(
-          hint: 'Sök recept',
+      await tester.pumpWidget(
+        _wrap(
+          const StyledInput.search(
+            hint: 'Sök recept',
+          ),
         ),
-      ));
+      );
 
       // No visible label, so the build() path must add the Semantics wrapper
       // that exposes hint as label — otherwise screen readers announce the
@@ -55,23 +58,29 @@ void main() {
       expect(find.bySemanticsLabel('Sök recept'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('explicit semanticLabel overrides hint fallback',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        const StyledInput(
-          hint: 'Sök',
-          semanticLabel: 'Sök bland recept',
+    testWidgets('explicit semanticLabel overrides hint fallback', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const StyledInput(
+            hint: 'Sök',
+            semanticLabel: 'Sök bland recept',
+          ),
         ),
-      ));
+      );
 
       expect(find.bySemanticsLabel('Sök bland recept'), findsOneWidget);
     });
 
-    testWidgets('exposes textField semantics on the wrapper Semantics widget',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        const StyledInput.search(hint: 'Sök'),
-      ));
+    testWidgets('exposes textField semantics on the wrapper Semantics widget', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const StyledInput.search(hint: 'Sök'),
+        ),
+      );
 
       // Locate the Semantics widget added by StyledInput.build() (the one
       // whose properties.textField == true) — proves the wrapper passes

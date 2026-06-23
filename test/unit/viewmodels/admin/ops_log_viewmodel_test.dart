@@ -16,7 +16,7 @@ import '../../../test_support/base_unit_test.dart';
 
 class _FakeOpsLogRepository extends OpsLogRepository {
   _FakeOpsLogRepository(this._events)
-      : super(firestore: FakeFirebaseFirestore());
+    : super(firestore: FakeFirebaseFirestore());
 
   final List<OpsEvent> _events;
   bool throwOnLoad = false;
@@ -45,7 +45,9 @@ void main() {
       expect(a.deletedCount, 12);
       // Timestamp.toDate() yields local time — compare the instant, not the zone.
       expect(
-          a.executedAt!.isAtSameMomentAs(DateTime.utc(2026, 6, 15, 4)), isTrue);
+        a.executedAt!.isAtSameMomentAs(DateTime.utc(2026, 6, 15, 4)),
+        isTrue,
+      );
 
       final b = OpsEvent.fromFirestore({
         'type': 'audit_cleanup',
@@ -77,19 +79,21 @@ void main() {
     OpsEvent ev(String type, DateTime when) =>
         OpsEvent(type: type, executedAt: when, deletedCount: 1);
 
-    test('surfaces events and derives last run from the first (newest)',
-        () async {
-      final vm = OpsLogViewModel(
-        repository: _FakeOpsLogRepository([
-          ev('notification_cleanup', DateTime.utc(2026, 6, 15, 4)),
-          ev('audit_cleanup', DateTime.utc(2026, 6, 8, 3)),
-        ]),
-      );
-      await vm.load();
-      expect(vm.eventCount, 2);
-      expect(vm.lastRun, DateTime.utc(2026, 6, 15, 4));
-      vm.dispose();
-    });
+    test(
+      'surfaces events and derives last run from the first (newest)',
+      () async {
+        final vm = OpsLogViewModel(
+          repository: _FakeOpsLogRepository([
+            ev('notification_cleanup', DateTime.utc(2026, 6, 15, 4)),
+            ev('audit_cleanup', DateTime.utc(2026, 6, 8, 3)),
+          ]),
+        );
+        await vm.load();
+        expect(vm.eventCount, 2);
+        expect(vm.lastRun, DateTime.utc(2026, 6, 15, 4));
+        vm.dispose();
+      },
+    );
 
     test('no events is a clean empty state, not a crash', () async {
       final vm = OpsLogViewModel(repository: _FakeOpsLogRepository(const []));

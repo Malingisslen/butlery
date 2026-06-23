@@ -25,8 +25,9 @@ class EmojiReactionDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     // Only show emojis that have at least one reaction
-    final activeReactions =
-        reactions.entries.where((e) => e.value.isNotEmpty).toList();
+    final activeReactions = reactions.entries
+        .where((e) => e.value.isNotEmpty)
+        .toList();
 
     if (activeReactions.isEmpty) return const SizedBox.shrink();
 
@@ -48,15 +49,18 @@ class EmojiReactionDisplay extends StatelessWidget {
               padding: AppDimensions.paddingSymmetric6x2,
               decoration: BoxDecoration(
                 color: hasReacted
-                    ? cs.primary
-                        .withValues(alpha: AppDimensions.opacityVeryLight)
+                    ? cs.primary.withValues(
+                        alpha: AppDimensions.opacityVeryLight,
+                      )
                     : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
                 border: Border.all(
                   color: hasReacted
-                      ? cs.primary
-                          .withValues(alpha: AppDimensions.opacityMediumLight)
+                      ? cs.primary.withValues(
+                          alpha: AppDimensions.opacityMediumLight,
+                        )
                       : cs.outlineVariant,
                 ),
               ),
@@ -69,8 +73,9 @@ class EmojiReactionDisplay extends StatelessWidget {
                     '${userIds.length}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: hasReacted ? cs.primary : cs.onSurfaceVariant,
-                      fontWeight:
-                          hasReacted ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: hasReacted
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                 ],

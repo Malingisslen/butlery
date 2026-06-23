@@ -42,23 +42,27 @@ String extractDayFormatPins(
       }
 
       final weekday = int.tryParse(dayEntry.value) ?? 1;
-      dayPins.add(DayPin(
-        weekdayIndex: weekday,
-        mealType: 'middag',
-        constraint: RecipeConstraint(
-          count: 1,
-          requiredTags: {
-            if (formatTag != null) formatTag,
-            if (themeTag != null) themeTag,
-          },
-          dietaryFree: {if (dietaryTag != null) dietaryTag},
-          requiredCuisines: {if (cuisineTag != null) cuisineTag},
+      dayPins.add(
+        DayPin(
+          weekdayIndex: weekday,
+          mealType: 'middag',
+          constraint: RecipeConstraint(
+            count: 1,
+            requiredTags: {
+              if (formatTag != null) formatTag,
+              if (themeTag != null) themeTag,
+            },
+            dietaryFree: {if (dietaryTag != null) dietaryTag},
+            requiredCuisines: {if (cuisineTag != null) cuisineTag},
+          ),
         ),
-      ));
-      understood.add(TraceEntry(
-        label: '$dayWord $next',
-        category: TraceCategory.day,
-      ));
+      );
+      understood.add(
+        TraceEntry(
+          label: '$dayWord $next',
+          category: TraceCategory.day,
+        ),
+      );
       final span = match.group(0)!;
       result = result.replaceFirst(span, ' ' * span.length);
     }
@@ -102,12 +106,15 @@ String extractGlobalDietary(
         continue;
       }
       require.add(key);
-      understood.add(TraceEntry(
-        label: '$prefix$tok'.trim(),
-        category: TraceCategory.dietary,
-      ));
+      understood.add(
+        TraceEntry(
+          label: '$prefix$tok'.trim(),
+          category: TraceCategory.dietary,
+        ),
+      );
       final spanEnd = cursor + tok.length;
-      result = result.substring(0, idx) +
+      result =
+          result.substring(0, idx) +
           ' ' * (spanEnd - idx) +
           result.substring(spanEnd);
       searchFrom = spanEnd;
@@ -156,10 +163,12 @@ String extractAllergenNegations(
           const minIngredientWordLength = 3;
           if (tok.length >= minIngredientWordLength) {
             excludeTags.add(tok);
-            understood.add(TraceEntry(
-              label: 'inget $tok',
-              category: TraceCategory.format,
-            ));
+            understood.add(
+              TraceEntry(
+                label: 'inget $tok',
+                category: TraceCategory.format,
+              ),
+            );
             found = true;
             cursor += tok.length;
             spanEnd = cursor;
@@ -168,17 +177,21 @@ String extractAllergenNegations(
         }
         if (allergenKey != null) {
           avoid.add(allergenKey);
-          understood.add(TraceEntry(
-            label: 'inget $tok',
-            category: TraceCategory.allergen,
-          ));
+          understood.add(
+            TraceEntry(
+              label: 'inget $tok',
+              category: TraceCategory.allergen,
+            ),
+          );
         } else {
           final tag = formatKey ?? themeKey!;
           excludeTags.add(tag);
-          understood.add(TraceEntry(
-            label: 'inget $tok',
-            category: TraceCategory.format,
-          ));
+          understood.add(
+            TraceEntry(
+              label: 'inget $tok',
+              category: TraceCategory.format,
+            ),
+          );
         }
         found = true;
         cursor += tok.length;
@@ -197,7 +210,8 @@ String extractAllergenNegations(
         cursor = skipSpaces(result, cursor);
       }
       if (found) {
-        result = result.substring(0, idx) +
+        result =
+            result.substring(0, idx) +
             ' ' * (spanEnd - idx) +
             result.substring(spanEnd);
         searchFrom = spanEnd;
@@ -229,25 +243,32 @@ void sweepVerbObjects(
       final qtyToken = match.group(2);
       int count = 1;
       if (qtyToken != null) {
-        count = int.tryParse(qtyToken) ??
+        count =
+            int.tryParse(qtyToken) ??
             int.tryParse(
-                lexicon.of(LexiconCategory.numbers)[qtyToken].orEmpty()) ??
+              lexicon.of(LexiconCategory.numbers)[qtyToken].orEmpty(),
+            ) ??
             1;
       }
-      final already = slots.any((slot) =>
-          slot.subRequests.any((sub) => sub.requiredTags.contains(tag)));
+      final already = slots.any(
+        (slot) => slot.subRequests.any((sub) => sub.requiredTags.contains(tag)),
+      );
       if (already) continue;
 
-      slots.add(SlotRequest(
-        mealType: 'ovrigt',
-        subRequests: [
-          RecipeConstraint(count: count, requiredTags: {tag})
-        ],
-      ));
-      understood.add(TraceEntry(
-        label: '$tag × $count',
-        category: TraceCategory.format,
-      ));
+      slots.add(
+        SlotRequest(
+          mealType: 'ovrigt',
+          subRequests: [
+            RecipeConstraint(count: count, requiredTags: {tag}),
+          ],
+        ),
+      );
+      understood.add(
+        TraceEntry(
+          label: '$tag × $count',
+          category: TraceCategory.format,
+        ),
+      );
     }
   }
 }

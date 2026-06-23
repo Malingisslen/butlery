@@ -96,9 +96,11 @@ class RecipeFormViewModel extends ChangeNotifier
     Recipe? initialRecipe,
     bool isTemplate = false,
   }) : _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>() {
-    _state =
-        RecipeFormState(initialRecipe: initialRecipe, isTemplate: isTemplate);
+           recipeService ?? ServiceLocator.get<UnifiedRecipeService>() {
+    _state = RecipeFormState(
+      initialRecipe: initialRecipe,
+      isTemplate: isTemplate,
+    );
     _collaborativeManager = RecipeCollaborativeManager();
     _imageManager = RecipeImageManager();
     _permissionManager = RecipePermissionManager();
@@ -488,14 +490,16 @@ class RecipeFormViewModel extends ChangeNotifier
   @override
   Future<void> showImagePickerDialog(BuildContext context) async {
     AppLogger.info('VIEWMODEL: showImagePickerDialog called');
-    final recipeId = _state.originalRecipe?.id ??
+    final recipeId =
+        _state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
     AppLogger.info('VIEWMODEL: Using recipeId for image upload: $recipeId');
     await _imageManager.showImagePickerDialog(context, recipeId: recipeId);
     AppLogger.info('VIEWMODEL: _imageManager.showImagePickerDialog completed');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppLogger.info(
-          'VIEWMODEL: Running _syncImageUrls in post-frame callback');
+        'VIEWMODEL: Running _syncImageUrls in post-frame callback',
+      );
       _coordinator.syncImageUrls(isCollaborative: isCollaborative);
     });
   }
@@ -507,7 +511,8 @@ class RecipeFormViewModel extends ChangeNotifier
   }
 
   Future<void> uploadImageFromFile(XFile imageFile) async {
-    final recipeId = _state.originalRecipe?.id ??
+    final recipeId =
+        _state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
     await _imageManager.uploadImageFromFile(imageFile, recipeId);
     _coordinator.syncImageUrls(isCollaborative: isCollaborative);
@@ -535,10 +540,16 @@ class RecipeFormViewModel extends ChangeNotifier
     await _collaborativeManager.enableCollaborativeMode(_state.originalRecipe!);
   }
 
-  Future<void> inviteUserToCollaboration(String userId, String userDisplayName,
-      ResourcePermission permission) async {
+  Future<void> inviteUserToCollaboration(
+    String userId,
+    String userDisplayName,
+    ResourcePermission permission,
+  ) async {
     await _collaborativeManager.inviteUserToCollaboration(
-        userId, userDisplayName, permission);
+      userId,
+      userDisplayName,
+      permission,
+    );
   }
 
   Future<void> removeUserFromCollaboration(String userId) async {
@@ -550,17 +561,27 @@ class RecipeFormViewModel extends ChangeNotifier
   }
 
   Future<void> updateUserPermission(
-      String userId, ResourcePermission permission) async {
+    String userId,
+    ResourcePermission permission,
+  ) async {
     if (_state.originalRecipe == null) return;
     _permissionManager.updateUserPermission(
-        _state.originalRecipe!.id, userId, permission);
+      _state.originalRecipe!.id,
+      userId,
+      permission,
+    );
   }
 
   Future<void> shareRecipeWithUser(
-      String userId, ResourcePermission permission) async {
+    String userId,
+    ResourcePermission permission,
+  ) async {
     if (_state.originalRecipe == null) return;
     _permissionManager.shareRecipeWithUser(
-        _state.originalRecipe!.id, userId, permission);
+      _state.originalRecipe!.id,
+      userId,
+      permission,
+    );
   }
 
   bool canPerformAction(String action) {
@@ -585,8 +606,9 @@ class RecipeFormViewModel extends ChangeNotifier
 
     try {
       final lookupService = ServiceLocator.get<IngredientLookupService>();
-      final ingredientList =
-          _state.ingredients.where((i) => i.trim().isNotEmpty).toList();
+      final ingredientList = _state.ingredients
+          .where((i) => i.trim().isNotEmpty)
+          .toList();
 
       if (ingredientList.isEmpty) {
         _unknownIngredients = [];
@@ -700,7 +722,8 @@ class RecipeFormViewModel extends ChangeNotifier
     _errorCoordinator.dispose();
 
     AppLogger.info(
-        'RecipeFormViewModel with unified error coordination disposed');
+      'RecipeFormViewModel with unified error coordination disposed',
+    );
     super.dispose();
   }
 }

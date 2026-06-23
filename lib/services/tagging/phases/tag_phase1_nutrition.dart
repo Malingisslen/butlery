@@ -110,23 +110,31 @@ class Phase1NutritionCalculator {
 
   /// Calculates carb/base tags.
   static Set<String> calculateCarbTags(
-      IngredientLookupResult lookup, Recipe recipe) {
+    IngredientLookupResult lookup,
+    Recipe recipe,
+  ) {
     final tags = <String>{};
 
-    final hasPasta = lookup.matched.any((i) =>
-        i.group.contains('pasta-bread') &&
-        _pastaKeywords.any((k) => i.swedish.toLowerCase().contains(k)));
+    final hasPasta = lookup.matched.any(
+      (i) =>
+          i.group.contains('pasta-bread') &&
+          _pastaKeywords.any((k) => i.swedish.toLowerCase().contains(k)),
+    );
     if (hasPasta) tags.add('pastabaserad');
 
     // Use word boundary to avoid false positives (e.g., "korianderfrisk" → "ris")
-    final hasRice = lookup.matched.any((i) =>
-        TagPhase1Base.containsSwedishWord(i.swedish.toLowerCase(), 'ris') &&
-        i.group.contains('grain'));
+    final hasRice = lookup.matched.any(
+      (i) =>
+          TagPhase1Base.containsSwedishWord(i.swedish.toLowerCase(), 'ris') &&
+          i.group.contains('grain'),
+    );
     if (hasRice) tags.add('risbaserad');
 
-    final hasPotato = lookup.matched.any((i) =>
-        i.swedish.toLowerCase().contains('potatis') &&
-        i.group.contains('vegetable/root'));
+    final hasPotato = lookup.matched.any(
+      (i) =>
+          i.swedish.toLowerCase().contains('potatis') &&
+          i.group.contains('vegetable/root'),
+    );
     if (hasPotato) tags.add('potatisbaserad');
 
     final hasNoodles = lookup.matched.any((i) {
@@ -138,9 +146,11 @@ class Phase1NutritionCalculator {
     });
     if (hasNoodles) tags.add('nudelbaserad');
 
-    final hasBread = lookup.matched.any((i) =>
-        i.group.contains('grain/bread') ||
-        i.swedish.toLowerCase().contains('bröd'));
+    final hasBread = lookup.matched.any(
+      (i) =>
+          i.group.contains('grain/bread') ||
+          i.swedish.toLowerCase().contains('bröd'),
+    );
     if (hasBread) tags.add('brödbaserad');
 
     if (lookup.hasGroup('grain/whole')) tags.add('fullkorn');

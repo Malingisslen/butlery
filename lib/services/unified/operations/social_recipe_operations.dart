@@ -45,10 +45,10 @@ class SocialRecipeOperations {
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
     void Function(String)? onShareError,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getRecipes = getRecipes,
-        _ratingsRepository = ratingsRepository,
-        _firestoreRepository = firestoreRepository {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getRecipes = getRecipes,
+       _ratingsRepository = ratingsRepository,
+       _firestoreRepository = firestoreRepository {
     _notificationService = ServiceLocator.tryGet<NotificationService>();
     _sharingManager = RecipeSharingManager(
       getCurrentUserId: getCurrentUserId,
@@ -476,10 +476,12 @@ class SocialRecipeOperations {
     return _discoveryService.getDiscoveryStatistics();
   }
 
-  Future<Map<String, int>> getPopularCollaborativeCategories(
-      {int limit = 10}) async {
+  Future<Map<String, int>> getPopularCollaborativeCategories({
+    int limit = 10,
+  }) async {
     return await _discoveryService.getPopularCollaborativeCategories(
-        limit: limit);
+      limit: limit,
+    );
   }
 
   Map<String, dynamic> getSharingStats() {

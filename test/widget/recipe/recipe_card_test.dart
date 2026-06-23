@@ -83,8 +83,9 @@ void main() {
         expect(find.text('\u2605 4.5'), findsOneWidget);
       });
 
-      testWidgets('should render recipe without image correctly',
-          (tester) async {
+      testWidgets('should render recipe without image correctly', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -102,8 +103,9 @@ void main() {
         expect(find.byType(VegetableIllustration), findsOneWidget);
       });
 
-      testWidgets('should hide elements based on display options',
-          (tester) async {
+      testWidgets('should hide elements based on display options', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -214,8 +216,9 @@ void main() {
         expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
       });
 
-      testWidgets('should position favorite button as overlay in grid mode',
-          (tester) async {
+      testWidgets('should position favorite button as overlay in grid mode', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -295,8 +298,9 @@ void main() {
         expect(find.byIcon(Icons.favorite), findsNothing);
       });
 
-      testWidgets('should not respond to tap when callback is null',
-          (tester) async {
+      testWidgets('should not respond to tap when callback is null', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -408,8 +412,9 @@ void main() {
         expect(container.padding, equals(customPadding));
       });
 
-      testWidgets('should apply default styling when not specified',
-          (tester) async {
+      testWidgets('should apply default styling when not specified', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -433,8 +438,9 @@ void main() {
     });
 
     group('Context Menu', () {
-      testWidgets('should show context menu button when enabled',
-          (tester) async {
+      testWidgets('should show context menu button when enabled', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -450,8 +456,9 @@ void main() {
         expect(find.byIcon(Icons.more_vert), findsOneWidget);
       });
 
-      testWidgets('should hide context menu button when disabled',
-          (tester) async {
+      testWidgets('should hide context menu button when disabled', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
@@ -499,27 +506,32 @@ void main() {
 
       // BUT-697: Recipe card tap target announces as a button via Semantics.
       testWidgets(
-          'exposes localized button-role label via find.bySemanticsLabel',
-          (tester) async {
-        final handle = tester.ensureSemantics();
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(
-                recipe: testRecipe,
-                onTap: (_) {},
+        'exposes localized button-role label via find.bySemanticsLabel',
+        (tester) async {
+          final handle = tester.ensureSemantics();
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScaffold: false,
+              child: Scaffold(
+                body: RecipeCard(
+                  recipe: testRecipe,
+                  onTap: (_) {},
+                ),
               ),
             ),
-          ),
-        );
+          );
 
-        expect(
-            find.bySemanticsLabel(RegExp(
-                r'^Recept: Köttbullar med potatismos, tryck för att öppna')),
-            findsWidgets);
-        handle.dispose();
-      });
+          expect(
+            find.bySemanticsLabel(
+              RegExp(
+                r'^Recept: Köttbullar med potatismos, tryck för att öppna',
+              ),
+            ),
+            findsWidgets,
+          );
+          handle.dispose();
+        },
+      );
 
       testWidgets('should have proper contrast for text', (tester) async {
         await tester.pumpWidget(
@@ -681,51 +693,56 @@ void main() {
     // likes. This test would fail if the colour token regressed.
     group('Favourite heart colour (BUT-1213)', () {
       testWidgets(
-          'active favourite heart icon uses cs.primary (green), not cs.error',
-          (tester) async {
-        late ColorScheme cs;
-        final favoriteRecipe = RecipeFactory.build(
-          id: 'fav_recipe',
-          title: 'Favorit rätt',
-        ).copyWith(isFavorite: true);
+        'active favourite heart icon uses cs.primary (green), not cs.error',
+        (tester) async {
+          late ColorScheme cs;
+          final favoriteRecipe = RecipeFactory.build(
+            id: 'fav_recipe',
+            title: 'Favorit rätt',
+          ).copyWith(isFavorite: true);
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Builder(builder: (context) {
-              cs = Theme.of(context).colorScheme;
-              return Scaffold(
-                body: RecipeCard(
-                  recipe: favoriteRecipe,
-                  onFavoriteToggle: (_) {},
-                ),
-              );
-            }),
-          ),
-        );
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScaffold: false,
+              child: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return Scaffold(
+                    body: RecipeCard(
+                      recipe: favoriteRecipe,
+                      onFavoriteToggle: (_) {},
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
 
-        // The favourite button renders an Icon with the active colour.
-        // On web/Android the icon is Icons.favorite (heart_fill via AdaptiveIcons).
-        final activeIcon = tester.widget<Icon>(
-          find.byWidgetPredicate(
-            (w) => w is Icon && w.icon == AdaptiveIcons.favouriteFilled,
-          ),
-        );
-        expect(
-          activeIcon.color,
-          cs.primary,
-          reason: 'Active favourite must be green (cs.primary), '
-              'not red (cs.error) — BUT-1213 colour convention.',
-        );
-        expect(
-          activeIcon.color,
-          isNot(cs.error),
-          reason: 'cs.error (red) is reserved for social likes.',
-        );
-      });
+          // The favourite button renders an Icon with the active colour.
+          // On web/Android the icon is Icons.favorite (heart_fill via AdaptiveIcons).
+          final activeIcon = tester.widget<Icon>(
+            find.byWidgetPredicate(
+              (w) => w is Icon && w.icon == AdaptiveIcons.favouriteFilled,
+            ),
+          );
+          expect(
+            activeIcon.color,
+            cs.primary,
+            reason:
+                'Active favourite must be green (cs.primary), '
+                'not red (cs.error) — BUT-1213 colour convention.',
+          );
+          expect(
+            activeIcon.color,
+            isNot(cs.error),
+            reason: 'cs.error (red) is reserved for social likes.',
+          );
+        },
+      );
 
-      testWidgets('inactive favourite heart icon uses cs.onSurfaceVariant',
-          (tester) async {
+      testWidgets('inactive favourite heart icon uses cs.onSurfaceVariant', (
+        tester,
+      ) async {
         late ColorScheme cs;
         final nonFavoriteRecipe = RecipeFactory.build(
           id: 'non_fav_recipe',
@@ -736,15 +753,17 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
-            child: Builder(builder: (context) {
-              cs = Theme.of(context).colorScheme;
-              return Scaffold(
-                body: RecipeCard(
-                  recipe: nonFavoriteRecipe,
-                  onFavoriteToggle: (_) {},
-                ),
-              );
-            }),
+            child: Builder(
+              builder: (context) {
+                cs = Theme.of(context).colorScheme;
+                return Scaffold(
+                  body: RecipeCard(
+                    recipe: nonFavoriteRecipe,
+                    onFavoriteToggle: (_) {},
+                  ),
+                );
+              },
+            ),
           ),
         );
 
@@ -756,7 +775,8 @@ void main() {
         expect(
           inactiveIcon.color,
           cs.onSurfaceVariant,
-          reason: 'Inactive favourite must be onSurfaceVariant (muted), '
+          reason:
+              'Inactive favourite must be onSurfaceVariant (muted), '
               'not cs.primary or cs.error.',
         );
       });
@@ -770,30 +790,33 @@ void main() {
     // comment must be caught here.
     group('Visibility icon (BUT-909 / BUT-1036)', () {
       testWidgets(
-          'collaborative recipe with isPublic=true also → people_outline only '
-          '(collab precedence wins)', (tester) async {
-        final collabAndPublic = RecipeFactory.build(
-          id: 'collab_public',
-          type: RecipeType.collaborative,
-          isPublic: true,
-        );
+        'collaborative recipe with isPublic=true also → people_outline only '
+        '(collab precedence wins)',
+        (tester) async {
+          final collabAndPublic = RecipeFactory.build(
+            id: 'collab_public',
+            type: RecipeType.collaborative,
+            isPublic: true,
+          );
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScaffold: false,
-            child: Scaffold(
-              body: RecipeCard(recipe: collabAndPublic),
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScaffold: false,
+              child: Scaffold(
+                body: RecipeCard(recipe: collabAndPublic),
+              ),
             ),
-          ),
-        );
+          );
 
-        expect(find.byIcon(Icons.people_outline), findsOneWidget);
-        expect(find.byIcon(Icons.public), findsNothing);
-        expect(find.byIcon(Icons.lock_outline), findsNothing);
-      });
+          expect(find.byIcon(Icons.people_outline), findsOneWidget);
+          expect(find.byIcon(Icons.public), findsNothing);
+          expect(find.byIcon(Icons.lock_outline), findsNothing);
+        },
+      );
 
-      testWidgets('public-only personal recipe → public icon only',
-          (tester) async {
+      testWidgets('public-only personal recipe → public icon only', (
+        tester,
+      ) async {
         final publicOnly = RecipeFactory.build(
           id: 'public_only',
           isPublic: true,
@@ -813,8 +836,9 @@ void main() {
         expect(find.byIcon(Icons.lock_outline), findsNothing);
       });
 
-      testWidgets('private personal recipe → lock_outline (default arm)',
-          (tester) async {
+      testWidgets('private personal recipe → lock_outline (default arm)', (
+        tester,
+      ) async {
         final private = RecipeFactory.build(
           id: 'private',
           isPublic: false,

@@ -70,10 +70,11 @@ void main() {
       return NotificationTemplate(
         title: title ?? 'Test Notification',
         body: body ?? 'Test notification body',
-        data: data ??
+        data:
+            data ??
             {
               'category': 'NotificationCategory.social',
-              'timestamp': DateTime.now().toIso8601String()
+              'timestamp': DateTime.now().toIso8601String(),
             },
         imageUrl: imageUrl,
         actions: null,
@@ -110,19 +111,23 @@ void main() {
       sentBatches = [];
 
       // Configure mock repository behavior
-      when(() => mockRepository.addToBatch(
-            batchKey: any(named: 'batchKey'),
-            notification: any(named: 'notification'),
-            batchWindow: any(named: 'batchWindow'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockRepository.addToBatch(
+          batchKey: any(named: 'batchKey'),
+          notification: any(named: 'notification'),
+          batchWindow: any(named: 'batchWindow'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockRepository.getPendingBatches())
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRepository.getPendingBatches(),
+      ).thenAnswer((_) async => []);
 
       when(() => mockRepository.removeBatch(any())).thenAnswer((_) async {});
 
-      when(() => mockRepository.getBatchByKey(any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockRepository.getBatchByKey(any()),
+      ).thenAnswer((_) async => null);
 
       // Create the REAL NotificationBatchManager with mocked dependencies
       batchManager = NotificationBatchManager(
@@ -155,11 +160,13 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            )).called(2); // Called for each user
+        verify(
+          () => mockRepository.addToBatch(
+            batchKey: any(named: 'batchKey'),
+            notification: any(named: 'notification'),
+            batchWindow: any(named: 'batchWindow'),
+          ),
+        ).called(2); // Called for each user
       });
 
       test('should reject non-batchable notifications', () async {
@@ -175,71 +182,79 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            ));
+        verifyNever(
+          () => mockRepository.addToBatch(
+            batchKey: any(named: 'batchKey'),
+            notification: any(named: 'notification'),
+            batchWindow: any(named: 'batchWindow'),
+          ),
+        );
       });
 
-      test('should generate unique batch keys for different strategies',
-          () async {
-        // Arrange
-        final fixedTime = DateTime(2024, 1, 1, 12, 0);
-        final clock = Clock.fixed(fixedTime);
+      test(
+        'should generate unique batch keys for different strategies',
+        () async {
+          // Arrange
+          final fixedTime = DateTime(2024, 1, 1, 12, 0);
+          final clock = Clock.fixed(fixedTime);
 
-        batchManager = NotificationBatchManager(
-          userId: 'test_user',
-          repository: mockRepository,
-          clock: clock,
-        );
+          batchManager = NotificationBatchManager(
+            userId: 'test_user',
+            repository: mockRepository,
+            clock: clock,
+          );
 
-        // Use different categories to ensure unique keys (both must be batchable)
-        final strategy1 = createTestStrategy(
-          category: NotificationCategory.social,
-          type: NotificationType.batchable,
-          batchWindow: const Duration(minutes: 5),
-        );
-        final strategy2 = createTestStrategy(
-          category: NotificationCategory.friends,
-          type: NotificationType.batchable,
-          batchWindow: const Duration(minutes: 5),
-        );
+          // Use different categories to ensure unique keys (both must be batchable)
+          final strategy1 = createTestStrategy(
+            category: NotificationCategory.social,
+            type: NotificationType.batchable,
+            batchWindow: const Duration(minutes: 5),
+          );
+          final strategy2 = createTestStrategy(
+            category: NotificationCategory.friends,
+            type: NotificationType.batchable,
+            batchWindow: const Duration(minutes: 5),
+          );
 
-        final capturedBatchKeys = <String>[];
-        when(() => mockRepository.addToBatch(
+          final capturedBatchKeys = <String>[];
+          when(
+            () => mockRepository.addToBatch(
               batchKey: captureAny(named: 'batchKey'),
               notification: any(named: 'notification'),
               batchWindow: any(named: 'batchWindow'),
-            )).thenAnswer((invocation) async {
-          capturedBatchKeys.add(
-              invocation.namedArguments[const Symbol('batchKey')] as String);
-        });
+            ),
+          ).thenAnswer((invocation) async {
+            capturedBatchKeys.add(
+              invocation.namedArguments[const Symbol('batchKey')] as String,
+            );
+          });
 
-        // Act
-        await batchManager.addToBatch(
-          targetUserIds: ['user1'],
-          strategy: strategy1,
-          variables: {'title': 'Test1'},
-        );
+          // Act
+          await batchManager.addToBatch(
+            targetUserIds: ['user1'],
+            strategy: strategy1,
+            variables: {'title': 'Test1'},
+          );
 
-        await batchManager.addToBatch(
-          targetUserIds: ['user1'],
-          strategy: strategy2,
-          variables: {'title': 'Test2'},
-        );
+          await batchManager.addToBatch(
+            targetUserIds: ['user1'],
+            strategy: strategy2,
+            variables: {'title': 'Test2'},
+          );
 
-        // Assert - keys should be different due to different strategy types
-        expect(capturedBatchKeys.length, equals(2));
-        expect(capturedBatchKeys[0], isNot(equals(capturedBatchKeys[1])));
-      });
+          // Assert - keys should be different due to different strategy types
+          expect(capturedBatchKeys.length, equals(2));
+          expect(capturedBatchKeys[0], isNot(equals(capturedBatchKeys[1])));
+        },
+      );
     });
 
     group('Rate Limiting', () {
       test('should enforce rate limits for different categories', () async {
         // Arrange
-        final systemStrategy =
-            createTestStrategy(category: NotificationCategory.system);
+        final systemStrategy = createTestStrategy(
+          category: NotificationCategory.system,
+        );
 
         // Act - Send 4 system notifications (limit is 3 in 15 minutes)
         for (int i = 0; i < 4; i++) {
@@ -251,19 +266,23 @@ void main() {
         }
 
         // Assert - Only 3 should be added (4th exceeds rate limit)
-        verify(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            )).called(3);
+        verify(
+          () => mockRepository.addToBatch(
+            batchKey: any(named: 'batchKey'),
+            notification: any(named: 'notification'),
+            batchWindow: any(named: 'batchWindow'),
+          ),
+        ).called(3);
       });
 
       test('should have different limits for each category', () async {
         // Arrange
-        final friendsStrategy =
-            createTestStrategy(category: NotificationCategory.friends);
-        final messagingStrategy =
-            createTestStrategy(category: NotificationCategory.messaging);
+        final friendsStrategy = createTestStrategy(
+          category: NotificationCategory.friends,
+        );
+        final messagingStrategy = createTestStrategy(
+          category: NotificationCategory.messaging,
+        );
 
         // Act - Friends limit is 10, Messaging limit is 20
         for (int i = 0; i < 12; i++) {
@@ -283,11 +302,13 @@ void main() {
         }
 
         // Assert
-        verify(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            )).called(30); // 10 friends + 20 messaging
+        verify(
+          () => mockRepository.addToBatch(
+            batchKey: any(named: 'batchKey'),
+            notification: any(named: 'notification'),
+            batchWindow: any(named: 'batchWindow'),
+          ),
+        ).called(30); // 10 friends + 20 messaging
       });
 
       test('should cleanup old rate limit entries', () async {
@@ -304,8 +325,9 @@ void main() {
           clock: testClock,
         );
 
-        final strategy =
-            createTestStrategy(category: NotificationCategory.friends);
+        final strategy = createTestStrategy(
+          category: NotificationCategory.friends,
+        );
 
         // Add some old notifications (20 minutes ago)
         for (int i = 0; i < 5; i++) {
@@ -367,8 +389,9 @@ void main() {
 
       test('should track rate limits per user independently', () async {
         // Arrange
-        final strategy =
-            createTestStrategy(category: NotificationCategory.system);
+        final strategy = createTestStrategy(
+          category: NotificationCategory.system,
+        );
 
         // Act - Send 3 notifications to each user (system limit is 3)
         for (int i = 0; i < 3; i++) {
@@ -386,11 +409,13 @@ void main() {
         }
 
         // Assert - All 6 should be added (3 per user)
-        verify(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            )).called(6);
+        verify(
+          () => mockRepository.addToBatch(
+            batchKey: any(named: 'batchKey'),
+            notification: any(named: 'notification'),
+            batchWindow: any(named: 'batchWindow'),
+          ),
+        ).called(6);
       });
     });
 
@@ -404,7 +429,7 @@ void main() {
             body: 'Body $i',
             data: {
               'category': 'NotificationCategory.social',
-              'timestamp': DateTime.now().toIso8601String()
+              'timestamp': DateTime.now().toIso8601String(),
             },
           ),
         );
@@ -414,10 +439,12 @@ void main() {
           notifications: notifications,
         );
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => [batch]);
-        when(() => mockRepository.getBatchByKey('spam-test'))
-            .thenAnswer((_) async => batch);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('spam-test'),
+        ).thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('spam-test');
@@ -447,10 +474,12 @@ void main() {
           notifications: notifications,
         );
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => [batch]);
-        when(() => mockRepository.getBatchByKey('rapid-test'))
-            .thenAnswer((_) async => batch);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('rapid-test'),
+        ).thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('rapid-test');
@@ -481,10 +510,12 @@ void main() {
           notifications: notifications,
         );
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => [batch]);
-        when(() => mockRepository.getBatchByKey('legitimate-test'))
-            .thenAnswer((_) async => batch);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('legitimate-test'),
+        ).thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('legitimate-test');
@@ -504,11 +535,13 @@ void main() {
           createTestBatch(batchKey: 'batch3'),
         ];
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => batches);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => batches);
         for (final b in batches) {
-          when(() => mockRepository.getBatchByKey(b.batchKey))
-              .thenAnswer((_) async => b);
+          when(
+            () => mockRepository.getBatchByKey(b.batchKey),
+          ).thenAnswer((_) async => b);
         }
 
         // Act
@@ -532,10 +565,12 @@ void main() {
           notifications: notifications,
         );
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => [batch]);
-        when(() => mockRepository.getBatchByKey('combine-test'))
-            .thenAnswer((_) async => batch);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('combine-test'),
+        ).thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('combine-test');
@@ -569,7 +604,7 @@ void main() {
             (i) => createTestTemplate(
               data: {
                 'category': 'NotificationCategory.${category.name}',
-                'timestamp': DateTime.now().toIso8601String()
+                'timestamp': DateTime.now().toIso8601String(),
               },
             ),
           );
@@ -579,10 +614,12 @@ void main() {
             notifications: notifications,
           );
 
-          when(() => mockRepository.getPendingBatches())
-              .thenAnswer((_) async => [batch]);
-          when(() => mockRepository.getBatchByKey('category-${category.name}'))
-              .thenAnswer((_) async => batch);
+          when(
+            () => mockRepository.getPendingBatches(),
+          ).thenAnswer((_) async => [batch]);
+          when(
+            () => mockRepository.getBatchByKey('category-${category.name}'),
+          ).thenAnswer((_) async => batch);
 
           // Act
           sentBatches.clear();
@@ -598,8 +635,9 @@ void main() {
 
       test('should handle batch not found gracefully', () async {
         // Arrange
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => []);
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -618,10 +656,12 @@ void main() {
           notifications: [createTestTemplate(title: 'Single')],
         );
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => [batch]);
-        when(() => mockRepository.getBatchByKey('single-test'))
-            .thenAnswer((_) async => batch);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('single-test'),
+        ).thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('single-test');
@@ -658,11 +698,13 @@ void main() {
     group('Error Handling', () {
       test('should handle repository failures gracefully', () async {
         // Arrange
-        when(() => mockRepository.addToBatch(
-              batchKey: any(named: 'batchKey'),
-              notification: any(named: 'notification'),
-              batchWindow: any(named: 'batchWindow'),
-            )).thenAnswer((_) async => throw Exception('Repository error'));
+        when(
+          () => mockRepository.addToBatch(
+            batchKey: any(named: 'batchKey'),
+            notification: any(named: 'notification'),
+            batchWindow: any(named: 'batchWindow'),
+          ),
+        ).thenAnswer((_) async => throw Exception('Repository error'));
 
         final strategy = createTestStrategy();
 
@@ -685,17 +727,20 @@ void main() {
           createTestBatch(batchKey: 'batch3'),
         ];
 
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => batches);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => batches);
         for (final b in batches) {
-          when(() => mockRepository.getBatchByKey(b.batchKey))
-              .thenAnswer((_) async => b);
+          when(
+            () => mockRepository.getBatchByKey(b.batchKey),
+          ).thenAnswer((_) async => b);
         }
 
         // Make second batch fail
         int callCount = 0;
-        when(() => mockRepository.removeBatch(any()))
-            .thenAnswer((invocation) async {
+        when(() => mockRepository.removeBatch(any())).thenAnswer((
+          invocation,
+        ) async {
           callCount++;
           if (callCount == 2) {
             throw Exception('Remove failed');
@@ -737,10 +782,12 @@ void main() {
         });
 
         final batch = createTestBatch(batchKey: 'callback-test');
-        when(() => mockRepository.getPendingBatches())
-            .thenAnswer((_) async => [batch]);
-        when(() => mockRepository.getBatchByKey('callback-test'))
-            .thenAnswer((_) async => batch);
+        when(
+          () => mockRepository.getPendingBatches(),
+        ).thenAnswer((_) async => [batch]);
+        when(
+          () => mockRepository.getBatchByKey('callback-test'),
+        ).thenAnswer((_) async => batch);
 
         // Act
         await batchManager.forceBatchProcessing('callback-test');

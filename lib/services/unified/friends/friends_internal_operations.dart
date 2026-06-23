@@ -24,8 +24,8 @@ class FriendsInternalOperations {
   FriendsInternalOperations({
     required FriendCategoryRepository categoryRepository,
     required AuthRepository authRepository,
-  })  : _categoryRepository = categoryRepository,
-        _authRepository = authRepository;
+  }) : _categoryRepository = categoryRepository,
+       _authRepository = authRepository;
 
   /// Set state manager reference after initialization
   void setStateManager(FriendsStateManager stateManager) {
@@ -75,13 +75,16 @@ class FriendsInternalOperations {
 
         // Route to correct method based on ownership to prevent privilege escalation
         AppLogger.debug(
-            'Syncing category ${category.id} to owner ${category.ownerId} (current user: $currentUserId)');
+          'Syncing category ${category.id} to owner ${category.ownerId} (current user: $currentUserId)',
+        );
         if (currentUserId == category.ownerId) {
           await _categoryRepository.saveCategory(category.ownerId, category);
         } else {
           // Non-owner: only add self as member (no full doc overwrite)
           await _categoryRepository.addSelfToCategory(
-              category.ownerId, category.id);
+            category.ownerId,
+            category.id,
+          );
         }
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
@@ -92,33 +95,43 @@ class FriendsInternalOperations {
         if (errorString.contains('INTERNAL ASSERTION') ||
             errorString.contains('Unexpected state')) {
           AppLogger.warning(
-              '⚠️ Firestore assertion error during sync, verifying write succeeded...');
+            '⚠️ Firestore assertion error during sync, verifying write succeeded...',
+          );
           try {
             // Verify the category was actually saved by re-fetching
             final savedCategory = await _categoryRepository.getCategory(
-                category.ownerId, category.id);
+              category.ownerId,
+              category.id,
+            );
             if (savedCategory != null && savedCategory.name == category.name) {
               // Also verify member count matches for member add/remove operations
               final savedMemberCount = savedCategory.friendUserIds.length;
               final expectedMemberCount = category.friendUserIds.length;
               if (savedMemberCount == expectedMemberCount) {
                 AppLogger.success(
-                    '✅ Verified category was saved despite assertion error: ${category.name} ($savedMemberCount members)');
+                  '✅ Verified category was saved despite assertion error: ${category.name} ($savedMemberCount members)',
+                );
                 return; // Success - don't rethrow
               } else {
                 AppLogger.warning(
-                    '⚠️ Member count mismatch after save: expected $expectedMemberCount, got $savedMemberCount - retrying save');
+                  '⚠️ Member count mismatch after save: expected $expectedMemberCount, got $savedMemberCount - retrying save',
+                );
                 // Retry the save operation (only owner can do full save)
                 final retryUserId = _authRepository.currentUser?.uid;
                 if (retryUserId == category.ownerId) {
                   await _categoryRepository.saveCategory(
-                      category.ownerId, category);
+                    category.ownerId,
+                    category,
+                  );
                 } else {
                   await _categoryRepository.addSelfToCategory(
-                      category.ownerId, category.id);
+                    category.ownerId,
+                    category.id,
+                  );
                 }
                 AppLogger.success(
-                    '✅ Retry succeeded: ${category.name} ($expectedMemberCount members)');
+                  '✅ Retry succeeded: ${category.name} ($expectedMemberCount members)',
+                );
                 return;
               }
             }
@@ -129,9 +142,12 @@ class FriendsInternalOperations {
 
         final currentUser = _authRepository.currentUser?.uid;
         AppLogger.error(
-            '❌ Failed to sync category to Firebase: ${category.name}', e);
+          '❌ Failed to sync category to Firebase: ${category.name}',
+          e,
+        );
         AppLogger.error(
-            '   Category owner: ${category.ownerId}, Current user: $currentUser');
+          '   Category owner: ${category.ownerId}, Current user: $currentUser',
+        );
         rethrow;
       }
     } else {
@@ -151,7 +167,9 @@ class FriendsInternalOperations {
       AppLogger.success('✅ Category deleted from Firebase: $categoryId');
     } catch (e) {
       AppLogger.error(
-          '❌ Failed to delete category from Firebase: $categoryId', e);
+        '❌ Failed to delete category from Firebase: $categoryId',
+        e,
+      );
       rethrow;
     }
   }
@@ -160,14 +178,16 @@ class FriendsInternalOperations {
     final category = _stateManager.getCategoryById(categoryId);
     if (category == null) {
       AppLogger.warning(
-          'Cannot add friend to category: Category not found: $categoryId');
+        'Cannot add friend to category: Category not found: $categoryId',
+      );
       return;
     }
 
     // Check if friend is already in category
     if (category.friendUserIds.contains(friendId)) {
       AppLogger.debug(
-          'Friend already in category: $friendId -> ${category.name}');
+        'Friend already in category: $friendId -> ${category.name}',
+      );
       return;
     }
 
@@ -175,14 +195,15 @@ class FriendsInternalOperations {
     final updatedCategory = category.copyWith(
       friendUserIds: <String>[
         ...category.friendUserIds.cast<String>(),
-        friendId
+        friendId,
       ],
       updatedAt: clock.now(),
     );
 
     _stateManager.updateCategory(categoryId, updatedCategory);
     AppLogger.success(
-        '✅ Added friend $friendId to category ${category.name} (local state)');
+      '✅ Added friend $friendId to category ${category.name} (local state)',
+    );
   }
 
   void removeFriendFromCategoryInternal(String friendId, String categoryId) {}
@@ -218,8 +239,9 @@ class FriendsInternalOperations {
       // Use the state manager's cached received invitations if available
       // In the future, this would actively query the repository
       return _stateManager.receivedInvitations
-          .where((invitation) =>
-              invitation.status == GroupInvitationStatus.pending)
+          .where(
+            (invitation) => invitation.status == GroupInvitationStatus.pending,
+          )
           .toList();
     } catch (e) {
       AppLogger.error('Error getting received group invitations', e);
@@ -229,15 +251,17 @@ class FriendsInternalOperations {
 
   // Email/SMS invitations not yet implemented — returns false so callers show
   // "not available yet" instead of pretending the invitation was sent.
-  Future<bool> sendEmailInvitationInternal(
-          {required String email, required dynamic invitation}) async =>
-      false;
-  Future<bool> sendSMSInvitationInternal(
-          {required String phoneNumber, required dynamic invitation}) async =>
-      false;
+  Future<bool> sendEmailInvitationInternal({
+    required String email,
+    required dynamic invitation,
+  }) async => false;
+  Future<bool> sendSMSInvitationInternal({
+    required String phoneNumber,
+    required dynamic invitation,
+  }) async => false;
   Future<String> createInvitationLinkInternal(String invitationId) async {
-    final userId =
-        ServiceLocator.get<PermissionService>().currentUserId.orEmpty();
+    final userId = ServiceLocator.get<PermissionService>().currentUserId
+        .orEmpty();
     final longUrl = DeepLinkService.generateFriendInvitationLink(
       invitationId: invitationId,
       fromUserId: userId,
@@ -246,10 +270,13 @@ class FriendsInternalOperations {
   }
 
   Future<void> updateInvitationStatusInternal(
-      String invitationId, dynamic status) async {
+    String invitationId,
+    dynamic status,
+  ) async {
     if (status is! GroupInvitationStatus) {
       AppLogger.warning(
-          'Invalid status type for updateInvitationStatusInternal');
+        'Invalid status type for updateInvitationStatusInternal',
+      );
       return;
     }
 
@@ -260,7 +287,8 @@ class FriendsInternalOperations {
         // Sender cancellation: delete the doc (Firestore rules block sender updates)
         await repo.deleteInvitation(invitationId);
         AppLogger.success(
-            '✅ Deleted cancelled invitation $invitationId from Firebase');
+          '✅ Deleted cancelled invitation $invitationId from Firebase',
+        );
       } else {
         // Recipient accept/reject: update normally
         await repo.updateInvitation(invitationId, {
@@ -268,7 +296,8 @@ class FriendsInternalOperations {
           'respondedAt': clock.now(),
         });
         AppLogger.success(
-            '✅ Updated invitation $invitationId status to $status in Firebase');
+          '✅ Updated invitation $invitationId status to $status in Firebase',
+        );
       }
     } catch (e) {
       AppLogger.error('Failed to update invitation status in Firebase', e);

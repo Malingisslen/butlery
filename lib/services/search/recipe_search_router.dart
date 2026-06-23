@@ -40,10 +40,10 @@ class RecipeSearchRouter {
     required SearchRepository searchRepository,
     AnalyticsService? analytics,
     FeatureFlagService? featureFlags,
-  })  : _recipeRepository = recipeRepository,
-        _searchRepository = searchRepository,
-        _analytics = analytics,
-        _featureFlags = featureFlags;
+  }) : _recipeRepository = recipeRepository,
+       _searchRepository = searchRepository,
+       _analytics = analytics,
+       _featureFlags = featureFlags;
 
   /// Search recipes by title. Returns up to 200 hits (the search interface
   /// page size) when routing to Algolia, or up to 200 from Firestore in

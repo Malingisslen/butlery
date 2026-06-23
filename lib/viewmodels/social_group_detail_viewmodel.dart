@@ -86,9 +86,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     required UnifiedFriendsService friendsService,
     required UserService userService,
     required PermissionService permissionService,
-  })  : _friendsService = friendsService,
-        _userService = userService,
-        _permissionService = permissionService {
+  }) : _friendsService = friendsService,
+       _userService = userService,
+       _permissionService = permissionService {
     _initialize();
   }
 
@@ -229,8 +229,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       if (_group != null) {
         // Get member profiles from UserService batch fetch
         // This ensures all group members are shown, even if not in friends list
-        final memberProfiles =
-            await _userService.getUserProfiles(_group!.friendUserIds);
+        final memberProfiles = await _userService.getUserProfiles(
+          _group!.friendUserIds,
+        );
         _members = memberProfiles;
 
         // Get pending invitations for this group from sent invitations
@@ -274,8 +275,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
 
     // Owner leaving - check for other members
-    final otherMembers =
-        _members.where((member) => member.uid != currentUserId).toList();
+    final otherMembers = _members
+        .where((member) => member.uid != currentUserId)
+        .toList();
 
     if (otherMembers.isEmpty) {
       // Empty group - owner can delete it
@@ -314,9 +316,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       );
 
       if (success) {
-        await ServiceLocator.tryGet<AnalyticsService>()
-            ?.social
-            .logGroupLeft(groupId: groupId);
+        await ServiceLocator.tryGet<AnalyticsService>()?.social.logGroupLeft(
+          groupId: groupId,
+        );
         _group = null;
         notifyListeners();
       }
@@ -338,7 +340,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     try {
       await executeAsync(() async {
         AppLogger.info(
-            'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid}');
+          'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid}',
+        );
 
         // Use transactional transfer to prevent TOCTOU race conditions
         await _friendsService.friendsCategoryRepositoryInternal
@@ -348,7 +351,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         await loadGroupData();
 
         AppLogger.success(
-            'Successfully transferred ownership of "${_group!.name}" to ${newOwner.displayName}');
+          'Successfully transferred ownership of "${_group!.name}" to ${newOwner.displayName}',
+        );
       });
 
       return true;
@@ -415,8 +419,9 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
 
     final picked = <Recipe>[];
-    final bucketIterators =
-        buckets.values.map((b) => b.iterator).toList(growable: false);
+    final bucketIterators = buckets.values
+        .map((b) => b.iterator)
+        .toList(growable: false);
     while (picked.length < maxCount) {
       var anyAdded = false;
       for (final it in bucketIterators) {
@@ -473,12 +478,14 @@ class SocialGroupDetailViewModel extends ChangeNotifier
       );
 
       final options = recipes
-          .map((r) => PollOption.create(
-                text: r.title,
-                recipeId: r.id,
-                recipeImageUrl: r.primaryImageUrl,
-                recipePortions: r.portions,
-              ))
+          .map(
+            (r) => PollOption.create(
+              text: r.title,
+              recipeId: r.id,
+              recipeImageUrl: r.primaryImageUrl,
+              recipePortions: r.portions,
+            ),
+          )
           .toList();
 
       final poll = Poll.fromOptions(

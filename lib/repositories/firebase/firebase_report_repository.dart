@@ -33,23 +33,29 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
 
   @override
   Future<bool> validateCreatePermission(
-          String userId, ContentReport entity) async =>
-      userId == entity.reporterId;
+    String userId,
+    ContentReport entity,
+  ) async => userId == entity.reporterId;
 
   @override
   Future<bool> validateReadPermission(
-          String userId, String resourceId, ContentReport? entity) async =>
-      entity == null || userId == entity.reporterId;
+    String userId,
+    String resourceId,
+    ContentReport? entity,
+  ) async => entity == null || userId == entity.reporterId;
 
   @override
   Future<bool> validateUpdatePermission(
-          String userId, String resourceId, ContentReport entity) async =>
-      false; // Reports cannot be updated
+    String userId,
+    String resourceId,
+    ContentReport entity,
+  ) async => false; // Reports cannot be updated
 
   @override
   Future<bool> validateDeletePermission(
-          String userId, String resourceId) async =>
-      true; // Own reports can be deleted via account deletion
+    String userId,
+    String resourceId,
+  ) async => true; // Own reports can be deleted via account deletion
 
   /// Submit a new report. Returns the document ID.
   ///
@@ -63,12 +69,14 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
   Future<String?> submitReport(ContentReport report) async {
     if (report.contentOwnerId == null || report.contentOwnerId!.isEmpty) {
       AppLogger.error(
-          '[ReportRepository] contentOwnerId is required; rejecting submitReport');
+        '[ReportRepository] contentOwnerId is required; rejecting submitReport',
+      );
       return null;
     }
     if (report.contentOwnerId == report.reporterId) {
       AppLogger.error(
-          '[ReportRepository] self-reports blocked at rules layer; rejecting client-side');
+        '[ReportRepository] self-reports blocked at rules layer; rejecting client-side',
+      );
       return null;
     }
 
@@ -82,12 +90,14 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
 
       final batch = firestore.batch();
       batch.set(reportRef, report.toFirestore());
-      batch.set(
-          throttleRef, {'lastReportAt': timestampProvider.serverTimestamp()});
+      batch.set(throttleRef, {
+        'lastReportAt': timestampProvider.serverTimestamp(),
+      });
       await batch.commit();
 
       AppLogger.info(
-          '[ReportRepository] Report submitted: ${reportRef.id} for ${report.contentType}');
+        '[ReportRepository] Report submitted: ${reportRef.id} for ${report.contentType}',
+      );
       return reportRef.id;
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to submit report', e);
@@ -131,7 +141,8 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
       await batch.commit();
 
       AppLogger.info(
-          '[ReportRepository] Deleted ${snapshot.docs.length} reports for user ${userId.maskedUserId}');
+        '[ReportRepository] Deleted ${snapshot.docs.length} reports for user ${userId.maskedUserId}',
+      );
       return snapshot.docs.length;
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to delete user reports', e);

@@ -131,8 +131,12 @@ void main() {
 
   // amount:0 → UnifiedShoppingItem.displayText == name, so we can assert on the
   // plain Swedish grocery name without an amount/unit prefix.
-  UnifiedShoppingItem item(String name,
-      {String? id, bool bought = false, String category = 'Mejeri'}) {
+  UnifiedShoppingItem item(
+    String name, {
+    String? id,
+    bool bought = false,
+    String category = 'Mejeri',
+  }) {
     return ShoppingListFactory.buildItem(
       id: id ?? 'item-$name',
       name: name,
@@ -146,7 +150,8 @@ void main() {
   // Build the REAL production VM against the seeded mock service, run its async
   // _loadList to completion, then return it ready to drive a sub-widget.
   Future<CollaborativeShoppingViewModel> loadedViewModel(
-      WidgetTester tester) async {
+    WidgetTester tester,
+  ) async {
     final vm = CollaborativeShoppingViewModel(
       listId: _testListId,
       shoppingService: shoppingService,
@@ -190,8 +195,7 @@ void main() {
   }
 
   group('CollaborativeShoppingView — absent list', () {
-    test(
-        'a missing target list drives the VM into its error state with a '
+    test('a missing target list drives the VM into its error state with a '
         'Swedish error message', () async {
       // Construct with the list PRESENT so the ctor's fire-and-forget
       // _initialize() succeeds (no uncaught rejection). Then remove the list
@@ -210,8 +214,11 @@ void main() {
       );
       addTearDown(vm.dispose);
       await Future<void>.delayed(Duration.zero); // drain ctor _initialize()
-      expect(vm.currentList, isNotNull,
-          reason: 'sanity: initial load found it');
+      expect(
+        vm.currentList,
+        isNotNull,
+        reason: 'sanity: initial load found it',
+      );
 
       // The list is now gone.
       shoppingService.setShoppingState(lists: const [], isInitialized: true);
@@ -230,8 +237,9 @@ void main() {
   });
 
   group('CollaborativeShoppingItems — loaded body (real VM)', () {
-    testWidgets('renders each seeded list item by its Swedish name',
-        (tester) async {
+    testWidgets('renders each seeded list item by its Swedish name', (
+      tester,
+    ) async {
       shoppingService.setShoppingState(
         lists: [
           listWith([item('Mjölk'), item('Bröd'), item('Ägg')]),
@@ -240,8 +248,11 @@ void main() {
       );
 
       final vm = await loadedViewModel(tester);
-      expect(vm.currentList, isNotNull,
-          reason: 'VM should have resolved the seeded list');
+      expect(
+        vm.currentList,
+        isNotNull,
+        reason: 'VM should have resolved the seeded list',
+      );
       expect(vm.totalItems, 3);
 
       await pumpItems(tester, vm, (_) {});
@@ -255,52 +266,58 @@ void main() {
     });
 
     testWidgets(
-        'shows the Swedish empty-items state when the list has no items',
-        (tester) async {
-      shoppingService.setShoppingState(
-        lists: [listWith(const [])],
-        isInitialized: true,
-      );
+      'shows the Swedish empty-items state when the list has no items',
+      (tester) async {
+        shoppingService.setShoppingState(
+          lists: [listWith(const [])],
+          isInitialized: true,
+        );
 
-      final vm = await loadedViewModel(tester);
-      expect(vm.currentList, isNotNull);
-      expect(vm.totalItems, 0);
+        final vm = await loadedViewModel(tester);
+        expect(vm.currentList, isNotNull);
+        expect(vm.totalItems, 0);
 
-      await pumpItems(tester, vm, (_) {});
+        await pumpItems(tester, vm, (_) {});
 
-      expect(find.text(_noItemsTitle), findsOneWidget);
-    });
+        expect(find.text(_noItemsTitle), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'tapping an item checkbox dispatches the toggle for that item id',
-        (tester) async {
-      shoppingService.setShoppingState(
-        lists: [
-          listWith([item('Mjölk', id: 'item-milk')]),
-        ],
-        isInitialized: true,
-      );
+      'tapping an item checkbox dispatches the toggle for that item id',
+      (tester) async {
+        shoppingService.setShoppingState(
+          lists: [
+            listWith([item('Mjölk', id: 'item-milk')]),
+          ],
+          isInitialized: true,
+        );
 
-      final vm = await loadedViewModel(tester);
+        final vm = await loadedViewModel(tester);
 
-      String? toggledId;
-      await pumpItems(tester, vm, (id) => toggledId = id);
+        String? toggledId;
+        await pumpItems(tester, vm, (id) => toggledId = id);
 
-      final checkbox = find.descendant(
-        of: find.byKey(const ValueKey('collab-item-item-milk')),
-        matching: find.byType(Checkbox),
-      );
-      expect(checkbox, findsOneWidget);
+        final checkbox = find.descendant(
+          of: find.byKey(const ValueKey('collab-item-item-milk')),
+          matching: find.byType(Checkbox),
+        );
+        expect(checkbox, findsOneWidget);
 
-      await tester.tap(checkbox);
-      await tester.pump();
+        await tester.tap(checkbox);
+        await tester.pump();
 
-      expect(toggledId, 'item-milk',
-          reason: 'Checking an item must dispatch onToggleItem with its id');
-    });
+        expect(
+          toggledId,
+          'item-milk',
+          reason: 'Checking an item must dispatch onToggleItem with its id',
+        );
+      },
+    );
 
-    testWidgets('a bought item renders its name with a strikethrough title',
-        (tester) async {
+    testWidgets('a bought item renders its name with a strikethrough title', (
+      tester,
+    ) async {
       shoppingService.setShoppingState(
         lists: [
           listWith([item('Smör', id: 'item-butter', bought: true)]),
@@ -337,9 +354,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    testWidgets(
-        'the full shell renders its loaded body without a layout exception',
-        (tester) async {
+    testWidgets('the full shell renders its loaded body without a layout exception', (
+      tester,
+    ) async {
       // Before BUT-1184 the full view could NOT be pumped at all: the add-item
       // Row's bare non-flex FilledButton.icon was measured by RenderFlex at an
       // UNBOUNDED main-axis width (Flex._constraintsForNonFlexChild leaves the
@@ -389,8 +406,7 @@ void main() {
       expect(find.text('Bröd'), findsOneWidget);
     });
 
-    testWidgets(
-        'typing a name and tapping Lägg till adds the item through the '
+    testWidgets('typing a name and tapping Lägg till adds the item through the '
         'service (BUT-1212 regression)', (tester) async {
       // Drives the FULL shell add path: enterText → tap → State handler →
       // real VM.addItem → mock service.addItemToActiveList. The handler reads
@@ -410,12 +426,14 @@ void main() {
         lists: [listWith(const [])],
         isInitialized: true,
       );
-      when(() => shoppingService.addItemToActiveList(
-            name: any(named: 'name'),
-            amount: any(named: 'amount'),
-            unit: any(named: 'unit'),
-            category: any(named: 'category'),
-          )).thenAnswer((_) async {
+      when(
+        () => shoppingService.addItemToActiveList(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      ).thenAnswer((_) async {
         // The post-add refresh re-reads the list — show the added item.
         shoppingService.setShoppingState(
           lists: [
@@ -434,15 +452,21 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
-      expect(tester.takeException(), isNull,
-          reason: 'add must not throw (e.g. ProviderNotFoundException from a '
-              'context.read against the above-provider State context)');
-      verify(() => shoppingService.addItemToActiveList(
-            name: 'Havregryn',
-            amount: any(named: 'amount'),
-            unit: any(named: 'unit'),
-            category: any(named: 'category'),
-          )).called(1);
+      expect(
+        tester.takeException(),
+        isNull,
+        reason:
+            'add must not throw (e.g. ProviderNotFoundException from a '
+            'context.read against the above-provider State context)',
+      );
+      verify(
+        () => shoppingService.addItemToActiveList(
+          name: 'Havregryn',
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      ).called(1);
       // Success path clears the input — the draft text is gone.
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller?.text,
@@ -484,7 +508,8 @@ void main() {
     }
 
     AppLocalizations l10nOf(WidgetTester tester) => AppLocalizations.of(
-        tester.element(find.byType(CollaborativeShoppingView)));
+      tester.element(find.byType(CollaborativeShoppingView)),
+    );
 
     testWidgets('checking an item announces the bought state', (tester) async {
       shoppingService.setShoppingState(
@@ -495,8 +520,9 @@ void main() {
       );
       // After the service-side toggle succeeds, the refreshed list shows the
       // item bought — what the view's nowBought re-read observes.
-      when(() => shoppingService.toggleItemBought('item-milk'))
-          .thenAnswer((_) async {
+      when(() => shoppingService.toggleItemBought('item-milk')).thenAnswer((
+        _,
+      ) async {
         shoppingService.setShoppingState(
           lists: [
             listWith([item('Mjölk', id: 'item-milk', bought: true)]),
@@ -515,16 +541,18 @@ void main() {
       expect(announces.messages, isNot(contains(l10n.a11yItemUnbought)));
     });
 
-    testWidgets('un-checking a bought item announces the un-bought state',
-        (tester) async {
+    testWidgets('un-checking a bought item announces the un-bought state', (
+      tester,
+    ) async {
       shoppingService.setShoppingState(
         lists: [
           listWith([item('Smör', id: 'item-butter', bought: true)]),
         ],
         isInitialized: true,
       );
-      when(() => shoppingService.toggleItemBought('item-butter'))
-          .thenAnswer((_) async {
+      when(() => shoppingService.toggleItemBought('item-butter')).thenAnswer((
+        _,
+      ) async {
         shoppingService.setShoppingState(
           lists: [
             listWith([item('Smör', id: 'item-butter', bought: false)]),
@@ -550,15 +578,19 @@ void main() {
         ],
         isInitialized: true,
       );
-      when(() => shoppingService.toggleItemBought('item-eggs'))
-          .thenAnswer((_) async => false);
+      when(
+        () => shoppingService.toggleItemBought('item-eggs'),
+      ).thenAnswer((_) async => false);
 
       final announces = AnnounceChannel.arm(tester);
       await pumpFullView(tester);
       await tapItemCheckbox(tester, 'item-eggs');
 
-      expect(announces.count, 0,
-          reason: 'a failed toggle must not announce a state change');
+      expect(
+        announces.count,
+        0,
+        reason: 'a failed toggle must not announce a state change',
+      );
     });
   });
 }

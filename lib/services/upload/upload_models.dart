@@ -19,7 +19,7 @@ enum ImageUploadState {
   completed,
   failed,
   cancelled,
-  retrying
+  retrying,
 }
 
 /// Error classification for targeted handling and recovery
@@ -29,7 +29,7 @@ enum ImageUploadErrorType {
   server, // Firebase/storage server errors
   cancelled, // User cancelled upload
   quotaExceeded, // BUT-971: Firebase Storage quota reached
-  unknown // Unclassified errors
+  unknown, // Unclassified errors
 }
 
 /// User choice for handling pending uploads during save

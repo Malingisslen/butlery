@@ -17,8 +17,8 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
   PantryViewModel({
     required PantryService pantryService,
     required IngredientRepository ingredientRepository,
-  })  : _pantryService = pantryService,
-        _ingredientRepository = ingredientRepository;
+  }) : _pantryService = pantryService,
+       _ingredientRepository = ingredientRepository;
 
   List<PantryItem> _items = [];
   List<PantryItem> get items => _items;
@@ -30,12 +30,17 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
   /// Items without an expiry date are always fresh, so excluded.
   List<PantryItem> get expiringItems {
     final filtered = _items
-        .where((i) =>
-            i.expiryStatus == PantryExpiryStatus.expiringSoon ||
-            i.expiryStatus == PantryExpiryStatus.expired)
+        .where(
+          (i) =>
+              i.expiryStatus == PantryExpiryStatus.expiringSoon ||
+              i.expiryStatus == PantryExpiryStatus.expired,
+        )
         .toList();
-    filtered.sort((a, b) => (a.expiryDate ?? DateTime(9999))
-        .compareTo(b.expiryDate ?? DateTime(9999)));
+    filtered.sort(
+      (a, b) => (a.expiryDate ?? DateTime(9999)).compareTo(
+        b.expiryDate ?? DateTime(9999),
+      ),
+    );
     return filtered;
   }
 
@@ -218,8 +223,10 @@ class PantryViewModel extends BaseViewModel with DebounceMixin {
       return;
     }
     debounce('search', const Duration(milliseconds: 300), () async {
-      final results =
-          await _ingredientRepository.searchIngredients(trimmed, limit: 10);
+      final results = await _ingredientRepository.searchIngredients(
+        trimmed,
+        limit: 10,
+      );
       if (isDisposed) return;
       _searchResults = results;
       notifyListeners();

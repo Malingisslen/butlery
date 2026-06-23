@@ -37,55 +37,47 @@ class _AddUnifiedShoppingItemDialogState
 
   // Units: value is stored in Firestore, dropdown is displayed to user
   List<Map<String, String>> _getUnits(BuildContext context) => [
-        {'value': 'st', 'display': 'st', 'dropdown': context.l10n.unitPieces},
-        {'value': 'liter', 'display': 'l', 'dropdown': context.l10n.unitLiter},
-        {'value': 'dl', 'display': 'dl', 'dropdown': 'dl'},
-        {
-          'value': 'msk',
-          'display': 'msk',
-          'dropdown': context.l10n.unitTablespoon
-        },
-        {'value': 'krm', 'display': 'krm', 'dropdown': context.l10n.unitPinch},
-        {'value': 'ml', 'display': 'ml', 'dropdown': 'ml'},
-        {'value': 'cl', 'display': 'cl', 'dropdown': 'cl'},
-        {'value': 'g', 'display': 'g', 'dropdown': 'g'},
-        {'value': 'kg', 'display': 'kg', 'dropdown': 'kg'},
-        {
-          'value': 'förpackning',
-          'display': context.l10n.unitPackageShort,
-          'dropdown': context.l10n.unitPackage
-        },
-        {
-          'value': 'tsk',
-          'display': 'tsk',
-          'dropdown': context.l10n.unitTeaspoon
-        },
-        {
-          'value': 'påse',
-          'display': context.l10n.unitBag,
-          'dropdown': context.l10n.unitBag
-        },
-        {
-          'value': 'burk',
-          'display': context.l10n.unitCan,
-          'dropdown': context.l10n.unitCan
-        },
-        {
-          'value': 'flaska',
-          'display': context.l10n.unitBottle,
-          'dropdown': context.l10n.unitBottle
-        },
-        {
-          'value': 'bit',
-          'display': context.l10n.unitPiece,
-          'dropdown': context.l10n.unitPiece
-        },
-        {
-          'value': 'klyfta',
-          'display': context.l10n.unitClove,
-          'dropdown': context.l10n.unitClove
-        },
-      ];
+    {'value': 'st', 'display': 'st', 'dropdown': context.l10n.unitPieces},
+    {'value': 'liter', 'display': 'l', 'dropdown': context.l10n.unitLiter},
+    {'value': 'dl', 'display': 'dl', 'dropdown': 'dl'},
+    {'value': 'msk', 'display': 'msk', 'dropdown': context.l10n.unitTablespoon},
+    {'value': 'krm', 'display': 'krm', 'dropdown': context.l10n.unitPinch},
+    {'value': 'ml', 'display': 'ml', 'dropdown': 'ml'},
+    {'value': 'cl', 'display': 'cl', 'dropdown': 'cl'},
+    {'value': 'g', 'display': 'g', 'dropdown': 'g'},
+    {'value': 'kg', 'display': 'kg', 'dropdown': 'kg'},
+    {
+      'value': 'förpackning',
+      'display': context.l10n.unitPackageShort,
+      'dropdown': context.l10n.unitPackage,
+    },
+    {'value': 'tsk', 'display': 'tsk', 'dropdown': context.l10n.unitTeaspoon},
+    {
+      'value': 'påse',
+      'display': context.l10n.unitBag,
+      'dropdown': context.l10n.unitBag,
+    },
+    {
+      'value': 'burk',
+      'display': context.l10n.unitCan,
+      'dropdown': context.l10n.unitCan,
+    },
+    {
+      'value': 'flaska',
+      'display': context.l10n.unitBottle,
+      'dropdown': context.l10n.unitBottle,
+    },
+    {
+      'value': 'bit',
+      'display': context.l10n.unitPiece,
+      'dropdown': context.l10n.unitPiece,
+    },
+    {
+      'value': 'klyfta',
+      'display': context.l10n.unitClove,
+      'dropdown': context.l10n.unitClove,
+    },
+  ];
 
   // Category values stored in Firestore (language-neutral constants) → localized display labels
   static const List<String> _categoryValues = [
@@ -140,8 +132,9 @@ class _AddUnifiedShoppingItemDialogState
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: (widget.initialItem?.name).orEmpty());
+    _nameController = TextEditingController(
+      text: (widget.initialItem?.name).orEmpty(),
+    );
     _amountController = TextEditingController(
       text: widget.initialItem?.formattedAmount ?? '1',
     );
@@ -182,141 +175,147 @@ class _AddUnifiedShoppingItemDialogState
         child: Form(
           key: _formKey,
           child: FocusTraversalGroup(
-              policy: OrderedTraversalPolicy(),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Article name - focus first
-                  FocusTraversalOrder(
-                      order: const NumericFocusOrder(1),
-                      child: StyledInput(
-                        controller: _nameController,
-                        autofocus: true,
-                        label: context.l10n.shoppingItemName,
-                        hint: context.l10n.shoppingItemHint,
-                        prefixIcon: Icon(
-                          Icons.shopping_basket,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: AppDimensions.iconSizeAction,
-                        ),
-                        validator: FormValidators.shoppingItemName(),
-                      )),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Amount and unit on same row - adjusted flex values
-                  Row(
-                    children: [
-                      // Amount (less space - flex: 1)
-                      Expanded(
-                        flex: 1,
-                        child: FocusTraversalOrder(
-                            order: const NumericFocusOrder(2),
-                            child: StyledInput(
-                              controller: _amountController,
-                              label: context.l10n.shoppingAmount,
-                              hint: '1',
-                              prefixIcon: Icon(
-                                Icons.numbers,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: AppDimensions.iconSizeAction,
-                              ),
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              validator: FormValidators.shoppingItemAmount(),
-                            )),
-                      ),
-                      const SizedBox(width: AppDimensions.spacingM),
-
-                      // Unit - more space for dropdown (flex: 2)
-                      Expanded(
-                        flex: 2,
-                        child: FocusTraversalOrder(
-                            order: const NumericFocusOrder(3),
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedUnit,
-                              style: AppTextStyles.bodyLarge,
-                              decoration: InputDecoration(
-                                labelText: context.l10n.shoppingUnit,
-                                labelStyle: AppTextStyles.labelLarge,
-                                prefixIcon: Icon(
-                                  Icons.straighten,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: AppDimensions.iconSizeAction,
-                                ),
-                                border: const OutlineInputBorder(),
-                                contentPadding: const EdgeInsets.all(
-                                    AppDimensions.paddingM),
-                              ),
-                              isDense: true,
-                              isExpanded: true,
-                              items: _getUnits(context).map((unit) {
-                                return DropdownMenuItem<String>(
-                                  value: unit['value'],
-                                  child: Text(
-                                    unit['dropdown']!,
-                                    style: AppTextStyles.bodyLarge,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  if (mounted) {
-                                    setState(() {
-                                      _selectedUnit = value;
-                                    });
-                                  }
-                                }
-                              },
-                            )),
-                      ),
-                    ],
+            policy: OrderedTraversalPolicy(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Article name - focus first
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(1),
+                  child: StyledInput(
+                    controller: _nameController,
+                    autofocus: true,
+                    label: context.l10n.shoppingItemName,
+                    hint: context.l10n.shoppingItemHint,
+                    prefixIcon: Icon(
+                      Icons.shopping_basket,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: AppDimensions.iconSizeAction,
+                    ),
+                    validator: FormValidators.shoppingItemName(),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXl),
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
 
-                  // Category dropdown
-                  FocusTraversalOrder(
-                      order: const NumericFocusOrder(4),
-                      child: DropdownButtonFormField<String>(
-                        initialValue: _selectedCategory,
-                        style: AppTextStyles.bodyLarge,
-                        decoration: InputDecoration(
-                          labelText: context.l10n.shoppingCategory,
-                          labelStyle: AppTextStyles.labelLarge,
+                // Amount and unit on same row - adjusted flex values
+                Row(
+                  children: [
+                    // Amount (less space - flex: 1)
+                    Expanded(
+                      flex: 1,
+                      child: FocusTraversalOrder(
+                        order: const NumericFocusOrder(2),
+                        child: StyledInput(
+                          controller: _amountController,
+                          label: context.l10n.shoppingAmount,
+                          hint: '1',
                           prefixIcon: Icon(
-                            Icons.category,
+                            Icons.numbers,
                             color: Theme.of(context).colorScheme.primary,
                             size: AppDimensions.iconSizeAction,
                           ),
-                          border: const OutlineInputBorder(),
-                          contentPadding:
-                              const EdgeInsets.all(AppDimensions.paddingM),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          validator: FormValidators.shoppingItemAmount(),
                         ),
-                        isExpanded: true,
-                        items: _categoryValues.map((category) {
-                          return DropdownMenuItem<String>(
-                            value: category,
-                            child: Text(
-                              _categoryLabel(context, category),
-                              style: AppTextStyles.bodyLarge,
-                              overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+
+                    // Unit - more space for dropdown (flex: 2)
+                    Expanded(
+                      flex: 2,
+                      child: FocusTraversalOrder(
+                        order: const NumericFocusOrder(3),
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _selectedUnit,
+                          style: AppTextStyles.bodyLarge,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.shoppingUnit,
+                            labelStyle: AppTextStyles.labelLarge,
+                            prefixIcon: Icon(
+                              Icons.straighten,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: AppDimensions.iconSizeAction,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            if (mounted) {
-                              setState(() {
-                                _selectedCategory = value;
-                              });
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.all(
+                              AppDimensions.paddingM,
+                            ),
+                          ),
+                          isDense: true,
+                          isExpanded: true,
+                          items: _getUnits(context).map((unit) {
+                            return DropdownMenuItem<String>(
+                              value: unit['value'],
+                              child: Text(
+                                unit['dropdown']!,
+                                style: AppTextStyles.bodyLarge,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              if (mounted) {
+                                setState(() {
+                                  _selectedUnit = value;
+                                });
+                              }
                             }
-                          }
-                        },
-                      )),
-                ],
-              )),
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
+
+                // Category dropdown
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(4),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedCategory,
+                    style: AppTextStyles.bodyLarge,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.shoppingCategory,
+                      labelStyle: AppTextStyles.labelLarge,
+                      prefixIcon: Icon(
+                        Icons.category,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: AppDimensions.iconSizeAction,
+                      ),
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.all(
+                        AppDimensions.paddingM,
+                      ),
+                    ),
+                    isExpanded: true,
+                    items: _categoryValues.map((category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(
+                          _categoryLabel(context, category),
+                          style: AppTextStyles.bodyLarge,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedCategory = value;
+                          });
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       actions: [
@@ -337,7 +336,8 @@ class _AddUnifiedShoppingItemDialogState
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final amount = double.tryParse(
+      final amount =
+          double.tryParse(
             _amountController.text.replaceAll(',', '.'),
           ) ??
           1.0;

@@ -7,15 +7,15 @@ import 'package:butlery/models/recipe/recipe_serialization.dart';
 /// crash recipe loading; now it clamps to a safe default.
 void main() {
   Recipe buildRecipe(RecipeType type) => Recipe(
-        core: RecipeCore(
-          title: 'Köttbullar',
-          description: 'Klassiska',
-          ingredients: const ['köttfärs'],
-          instructions: const ['Stek'],
-          mealType: 'Middag',
-        ),
-        type: type,
-      );
+    core: RecipeCore(
+      title: 'Köttbullar',
+      description: 'Klassiska',
+      ingredients: const ['köttfärs'],
+      instructions: const ['Stek'],
+      mealType: 'Middag',
+    ),
+    type: type,
+  );
 
   group('RecipeSerialization type-index safety', () {
     test('round-trips a valid type unchanged', () {
@@ -23,12 +23,14 @@ void main() {
       expect(RecipeSerialization.fromJson(json).type, RecipeType.shared);
     });
 
-    test('fromJson clamps an out-of-range type index to personal (no throw)',
-        () {
-      final json = RecipeSerialization.toJson(buildRecipe(RecipeType.shared));
-      json['type'] = 99; // e.g. a value written by a newer client
-      expect(RecipeSerialization.fromJson(json).type, RecipeType.personal);
-    });
+    test(
+      'fromJson clamps an out-of-range type index to personal (no throw)',
+      () {
+        final json = RecipeSerialization.toJson(buildRecipe(RecipeType.shared));
+        json['type'] = 99; // e.g. a value written by a newer client
+        expect(RecipeSerialization.fromJson(json).type, RecipeType.personal);
+      },
+    );
 
     test('fromMap clamps a non-int type to personal (no throw)', () {
       final json = RecipeSerialization.toJson(buildRecipe(RecipeType.shared));

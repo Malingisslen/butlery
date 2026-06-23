@@ -41,26 +41,36 @@ class FirebaseWeeklyMenuPlanRepository
 
   @override
   Future<bool> validateCreatePermission(
-      String userId, WeeklyMenuPlan entity) async {
+    String userId,
+    WeeklyMenuPlan entity,
+  ) async {
     return entity.userId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, WeeklyMenuPlan? entity) async {
+    String userId,
+    String resourceId,
+    WeeklyMenuPlan? entity,
+  ) async {
     // Doc ID prefix is the owning userId — match it.
     return resourceId.startsWith('${userId}_');
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, WeeklyMenuPlan entity) async {
+    String userId,
+    String resourceId,
+    WeeklyMenuPlan entity,
+  ) async {
     return entity.userId == userId && resourceId.startsWith('${userId}_');
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     return resourceId.startsWith('${userId}_');
   }
 
@@ -156,8 +166,9 @@ class FirebaseWeeklyMenuPlanRepository
 
     for (final doc in snapshot.docs) {
       final plan = fromFirestore(doc);
-      final filteredEntries =
-          plan.entries.where((e) => e.recipeId != recipeId).toList();
+      final filteredEntries = plan.entries
+          .where((e) => e.recipeId != recipeId)
+          .toList();
       if (filteredEntries.length == plan.entries.length) continue;
       affected.add(doc);
       // Run through toFirestore so the entries match the on-disk shape

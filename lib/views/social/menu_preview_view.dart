@@ -106,8 +106,9 @@ class MenuPreviewView extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border:
-                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,20 +126,21 @@ class MenuPreviewView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          context.l10n
-                              .sharedByUser(sharedMenu.sharedByDisplayName),
+                          context.l10n.sharedByUser(
+                            sharedMenu.sharedByDisplayName,
+                          ),
                           style: AppTextStyles.titleMedium.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
                           ),
                         ),
                         Text(
                           timeago.format(sharedMenu.sharedAt, locale: 'sv'),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ],
@@ -183,8 +185,9 @@ class MenuPreviewView extends StatelessWidget {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    context.l10n
-                        .menuCategoryCount(sharedMenu.categories.length),
+                    context.l10n.menuCategoryCount(
+                      sharedMenu.categories.length,
+                    ),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -200,10 +203,12 @@ class MenuPreviewView extends StatelessWidget {
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
                     border: Border.all(
-                        color: Theme.of(context).colorScheme.outlineVariant),
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,15 +278,17 @@ class MenuPreviewView extends StatelessWidget {
                 const SizedBox(height: AppDimensions.spacingS),
 
                 // Recept i kategorin
-                ...recipes.map((recipe) => Column(
-                      children: [
-                        ContentCard.compactRecipe(
-                          recipe: recipe,
-                          onTap: () => _navigateToRecipeDetail(context, recipe),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                      ],
-                    )),
+                ...recipes.map(
+                  (recipe) => Column(
+                    children: [
+                      ContentCard.compactRecipe(
+                        recipe: recipe,
+                        onTap: () => _navigateToRecipeDetail(context, recipe),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                    ],
+                  ),
+                ),
               ],
             ),
           );
@@ -297,12 +304,14 @@ class MenuPreviewView extends StatelessWidget {
         padding: AppDimensions.screenPadding,
         child: Consumer<SharedContentCoordinatorViewModel>(
           builder: (context, viewModel, _) {
-            final isImported =
-                viewModel.menuViewModel.isMenuImported(sharedMenu);
+            final isImported = viewModel.menuViewModel.isMenuImported(
+              sharedMenu,
+            );
 
             // Use per-item loading state to avoid spinner on all items
-            final isThisMenuOperating =
-                viewModel.menuViewModel.isItemOperating(sharedMenu.id);
+            final isThisMenuOperating = viewModel.menuViewModel.isItemOperating(
+              sharedMenu.id,
+            );
 
             return Column(
               children: [
@@ -336,8 +345,9 @@ class MenuPreviewView extends StatelessWidget {
 
                 // Info text
                 Text(
-                  context.l10n
-                      .menuImportDescription(sharedMenu.totalRecipeCount),
+                  context.l10n.menuImportDescription(
+                    sharedMenu.totalRecipeCount,
+                  ),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -397,7 +407,8 @@ class MenuPreviewView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                context.l10n.menuConnectingCollaborative(sharedMenu.menuTitle)),
+              context.l10n.menuConnectingCollaborative(sharedMenu.menuTitle),
+            ),
             backgroundColor: Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 2),
           ),
@@ -412,8 +423,9 @@ class MenuPreviewView extends StatelessWidget {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.menuImportedSuccess(sharedMenu.menuTitle)),
+            content: Text(
+              context.l10n.menuImportedSuccess(sharedMenu.menuTitle),
+            ),
             backgroundColor: context.butleryColors.success,
             duration: const Duration(seconds: 3),
           ),
@@ -425,7 +437,8 @@ class MenuPreviewView extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              viewModel.menuViewModel.error ?? context.l10n.menuImportFailed),
+            viewModel.menuViewModel.error ?? context.l10n.menuImportFailed,
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -443,7 +456,9 @@ class MenuPreviewView extends StatelessWidget {
         title: Text(context.l10n.menuHideMenu),
         content: Text(
           context.l10n.menuHideConfirm(
-              sharedMenu.menuTitle, sharedMenu.sharedByDisplayName),
+            sharedMenu.menuTitle,
+            sharedMenu.sharedByDisplayName,
+          ),
         ),
         actions: [
           ActionButtons.secondaryButton(
@@ -461,14 +476,16 @@ class MenuPreviewView extends StatelessWidget {
     );
 
     if (shouldDismiss == true) {
-      final success =
-          await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
+      final success = await viewModel.menuViewModel.dismissSharedMenu(
+        sharedMenu,
+      );
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.menuHiddenFromList(sharedMenu.menuTitle)),
+            content: Text(
+              context.l10n.menuHiddenFromList(sharedMenu.menuTitle),
+            ),
             backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
@@ -484,7 +501,8 @@ class MenuPreviewView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide),
+              viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide,
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

@@ -29,8 +29,11 @@ void main() {
       );
 
       final map = before.toMap();
-      expect(map.containsKey('context'), isFalse,
-          reason: 'context should be omitted when null (safe-map)');
+      expect(
+        map.containsKey('context'),
+        isFalse,
+        reason: 'context should be omitted when null (safe-map)',
+      );
 
       final after = IngredientSubstitution.fromMap(map);
       expect(after.context, isNull);
@@ -77,9 +80,11 @@ void main() {
       };
 
       final list = (doc['substitutes']! as List)
-          .map((e) => IngredientSubstitution.fromMap(
-                Map<String, dynamic>.from(e as Map),
-              ))
+          .map(
+            (e) => IngredientSubstitution.fromMap(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
           .toList();
 
       expect(list, hasLength(2));

@@ -28,8 +28,10 @@ class ShoppingListManagementModule {
     required this.saveActiveListId,
   });
 
-  Future<String?> createPersonalList(String name,
-      {List<dynamic>? items}) async {
+  Future<String?> createPersonalList(
+    String name, {
+    List<dynamic>? items,
+  }) async {
     try {
       // Create UnifiedShoppingList object
       final newList = UnifiedShoppingList(
@@ -37,12 +39,14 @@ class ShoppingListManagementModule {
         ownerId: getCurrentUserId().orEmpty(),
         ownerDisplayName: getCurrentUserDisplayName() ?? 'Du',
         items: (items ?? [])
-            .map((item) => item is UnifiedShoppingItem
-                ? item
-                : UnifiedShoppingItem(
-                    name: item.toString(),
-                    amount: 1,
-                  ))
+            .map(
+              (item) => item is UnifiedShoppingItem
+                  ? item
+                  : UnifiedShoppingItem(
+                      name: item.toString(),
+                      amount: 1,
+                    ),
+            )
             .toList(),
         type: ListType.personal,
       );
@@ -76,7 +80,8 @@ class ShoppingListManagementModule {
 
       if (currentUserId == null || currentUserDisplayName == null) {
         AppLogger.error(
-            'Cannot create collaborative list: User not authenticated');
+          'Cannot create collaborative list: User not authenticated',
+        );
         return null;
       }
 
@@ -119,7 +124,8 @@ class ShoppingListManagementModule {
       notifyListeners();
 
       AppLogger.success(
-          'Created collaborative list: ${savedList.name} with ${memberIds.length} members');
+        'Created collaborative list: ${savedList.name} with ${memberIds.length} members',
+      );
       return savedList.id;
     } catch (e) {
       AppLogger.error('Failed to create collaborative list: $e');
@@ -182,11 +188,13 @@ class ShoppingListManagementModule {
       notifyListeners();
 
       AppLogger.success(
-          'Created collaborative list from invitation: ${savedList.name} with owner: $ownerDisplayName');
+        'Created collaborative list from invitation: ${savedList.name} with owner: $ownerDisplayName',
+      );
       return savedList.id;
     } catch (e) {
       AppLogger.error(
-          'Failed to create collaborative list from invitation: $e');
+        'Failed to create collaborative list from invitation: $e',
+      );
       return null;
     }
   }
@@ -294,8 +302,9 @@ class ShoppingListManagementModule {
     // Group items by category
     final categorized = <String, List<UnifiedShoppingItem>>{};
     for (final item in list.items) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      final category = item.category.isEmpty
+          ? ShoppingCategory.other
+          : item.category;
       categorized.putIfAbsent(category, () => []).add(item);
     }
 

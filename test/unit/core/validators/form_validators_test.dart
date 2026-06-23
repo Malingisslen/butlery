@@ -230,15 +230,17 @@ void main() {
       expect(v('Anna'), isNull);
     });
 
-    test('authEmail: empty + missing @ or . return error, valid returns null',
-        () {
-      final v = FormValidators.authEmail();
-      expect(v(null), isNotNull);
-      expect(v(''), isNotNull);
-      expect(v('no-at-sign.com'), isNotNull);
-      expect(v('no-dot@com'), isNotNull);
-      expect(v('a@b.c'), isNull);
-    });
+    test(
+      'authEmail: empty + missing @ or . return error, valid returns null',
+      () {
+        final v = FormValidators.authEmail();
+        expect(v(null), isNotNull);
+        expect(v(''), isNotNull);
+        expect(v('no-at-sign.com'), isNotNull);
+        expect(v('no-dot@com'), isNotNull);
+        expect(v('a@b.c'), isNull);
+      },
+    );
 
     test('authPassword: required + min-length only when isSignUp', () {
       expect(FormValidators.authPassword()(null), isNotNull);
@@ -331,13 +333,13 @@ void main() {
     test('runs validator only when condition is true', () {
       final required = FormValidators.required('X');
       expect(
-          FormValidators.conditional(condition: false, validator: required)(
-              null),
-          isNull);
+        FormValidators.conditional(condition: false, validator: required)(null),
+        isNull,
+      );
       expect(
-          FormValidators.conditional(condition: true, validator: required)(
-              null),
-          isNotNull);
+        FormValidators.conditional(condition: true, validator: required)(null),
+        isNotNull,
+      );
     });
   });
 

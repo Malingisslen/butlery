@@ -215,8 +215,10 @@ class FirebaseAllergenEntry {
   factory FirebaseAllergenEntry.fromMap(Map<String, dynamic> data) {
     return FirebaseAllergenEntry(
       key: SerializationUtils.safeString(data, 'key'),
-      triggerProperties:
-          SerializationUtils.safeStringList(data, 'triggerProperties'),
+      triggerProperties: SerializationUtils.safeStringList(
+        data,
+        'triggerProperties',
+      ),
       tags: _parseTags(data['tags']),
       isEuAllergen: SerializationUtils.safeBool(data, 'isEuAllergen'),
       uiGroup: SerializationUtils.safeNullableString(data, 'uiGroup'),
@@ -352,10 +354,14 @@ class FirebaseDietaryEntry {
     return FirebaseDietaryEntry(
       key: SerializationUtils.safeString(data, 'key'),
       tags: _parseStringMap(data['tags']),
-      excludedProperties:
-          SerializationUtils.safeStringList(data, 'excludedProperties'),
-      requiredProperties:
-          SerializationUtils.safeStringList(data, 'requiredProperties'),
+      excludedProperties: SerializationUtils.safeStringList(
+        data,
+        'excludedProperties',
+      ),
+      requiredProperties: SerializationUtils.safeStringList(
+        data,
+        'requiredProperties',
+      ),
       requiresFullCoverage: SerializationUtils.safeBool(
         data,
         'requiresFullCoverage',
@@ -437,7 +443,8 @@ enum CuisineMatchMode {
   titleOrIngredients,
   titleAndIngredients,
   titleOnly,
-  ingredientsOnly;
+  ingredientsOnly
+  ;
 
   static CuisineMatchMode fromString(String value) {
     return switch (value) {
@@ -479,10 +486,14 @@ class CuisineEntry {
       key: SerializationUtils.safeString(data, 'key'),
       tags: _parseStringMap(data['tags']),
       titleKeywords: SerializationUtils.safeStringList(data, 'titleKeywords'),
-      ingredientKeywords:
-          SerializationUtils.safeStringList(data, 'ingredientKeywords'),
-      ingredientGroups:
-          SerializationUtils.safeStringList(data, 'ingredientGroups'),
+      ingredientKeywords: SerializationUtils.safeStringList(
+        data,
+        'ingredientKeywords',
+      ),
+      ingredientGroups: SerializationUtils.safeStringList(
+        data,
+        'ingredientGroups',
+      ),
       minIngredientMatches: SerializationUtils.safeInt(
         data,
         'minIngredientMatches',
@@ -533,8 +544,10 @@ class PropertiesConfigDocument extends BaseConfigDocument {
         defaultValue: clock.now(),
       ),
       updatedBy: SerializationUtils.safeString(data, 'updatedBy'),
-      validProperties:
-          SerializationUtils.safeStringList(data, 'validProperties').toSet(),
+      validProperties: SerializationUtils.safeStringList(
+        data,
+        'validProperties',
+      ).toSet(),
     );
   }
 

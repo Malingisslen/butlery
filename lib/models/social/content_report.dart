@@ -12,7 +12,8 @@ enum ReportStatus {
   newReport('new'),
   inReview('in_review'),
   actioned('actioned'),
-  closed('closed');
+  closed('closed')
+  ;
 
   final String wireName;
   const ReportStatus(this.wireName);
@@ -34,11 +35,11 @@ enum ReportStatus {
   /// Ordered rank for forward-only state machine checks on the client. The
   /// rules layer enforces the same order authoritatively.
   int get rank => switch (this) {
-        ReportStatus.newReport => 0,
-        ReportStatus.inReview => 1,
-        ReportStatus.actioned => 2,
-        ReportStatus.closed => 3,
-      };
+    ReportStatus.newReport => 0,
+    ReportStatus.inReview => 1,
+    ReportStatus.actioned => 2,
+    ReportStatus.closed => 3,
+  };
 }
 
 /// Version stamp matching `assets/legal/community_guidelines_{sv,en}.md`.
@@ -84,7 +85,8 @@ class ContentReport {
     final type = ContentType.fromWire(wire);
     if (type == null) {
       AppLogger.warning(
-          '[ContentReport] Skipping report ${doc.id} with unknown contentType: $wire');
+        '[ContentReport] Skipping report ${doc.id} with unknown contentType: $wire',
+      );
       return null;
     }
     return ContentReport(
@@ -92,8 +94,10 @@ class ContentReport {
       reporterId: SerializationUtils.safeString(data, 'reporterId'),
       contentType: type,
       contentId: SerializationUtils.safeString(data, 'contentId'),
-      contentOwnerId:
-          SerializationUtils.safeNullableString(data, 'contentOwnerId'),
+      contentOwnerId: SerializationUtils.safeNullableString(
+        data,
+        'contentOwnerId',
+      ),
       reason: SerializationUtils.safeString(data, 'reason'),
       description: SerializationUtils.safeNullableString(data, 'description'),
       status: ReportStatus.fromWire(
@@ -101,8 +105,10 @@ class ContentReport {
       ),
       createdAt:
           SerializationUtils.safeDateTime(data, 'createdAt') ?? clock.now(),
-      guidelineVersion:
-          SerializationUtils.safeNullableString(data, 'guidelineVersion'),
+      guidelineVersion: SerializationUtils.safeNullableString(
+        data,
+        'guidelineVersion',
+      ),
     );
   }
 
@@ -112,7 +118,8 @@ class ContentReport {
     final report = fromFirestore(doc);
     if (report == null) {
       throw FormatException(
-          'ContentReport ${doc.id} has unknown or missing contentType');
+        'ContentReport ${doc.id} has unknown or missing contentType',
+      );
     }
     return report;
   }

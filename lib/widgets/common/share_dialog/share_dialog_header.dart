@@ -15,8 +15,11 @@ class ShareDialogHeader {
     ShareContentType contentType,
     dynamic content,
   ) {
-    final (title, subtitle, icon) =
-        _getHeaderInfo(context, contentType, content);
+    final (title, subtitle, icon) = _getHeaderInfo(
+      context,
+      contentType,
+      content,
+    );
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -48,9 +51,7 @@ class ShareDialogHeader {
                 Text(
                   subtitle,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onPrimaryContainer
+                    color: Theme.of(context).colorScheme.onPrimaryContainer
                         .withValues(alpha: AppDimensions.opacityVeryDark),
                   ),
                   maxLines: 1,
@@ -86,8 +87,10 @@ class ShareDialogHeader {
         );
       case ShareContentType.menu:
         final menu = content as Map<String, List<Recipe>>;
-        final totalRecipes =
-            menu.values.fold(0, (sum, recipes) => sum + recipes.length);
+        final totalRecipes = menu.values.fold(
+          0,
+          (sum, recipes) => sum + recipes.length,
+        );
         return (
           context.l10n.shareMenuWithFriends,
           context.l10n.shareRecipesInCategories(totalRecipes, menu.length),

@@ -170,11 +170,13 @@ class IngredientNormalizer {
     // For multi-word: skip if any word is a removable prep word
     //   e.g., "torkad timjan" should NOT short-circuit — "torkad" is prep
     final isSingleWord = !cleaned.contains(' ');
-    final isKnownExact = KnownIngredients.isKnown(cleaned) ||
+    final isKnownExact =
+        KnownIngredients.isKnown(cleaned) ||
         KnownIngredients.isCompoundName(cleaned);
 
     if (isKnownExact) {
-      final hasRemovableWord = !isSingleWord &&
+      final hasRemovableWord =
+          !isSingleWord &&
           cleaned
               .split(RegExp(r'\s+'))
               .any((w) => PreparationWords.shouldRemove(w));
@@ -224,8 +226,9 @@ class IngredientNormalizer {
     // Step 3: Check for diet descriptor ANYWHERE in name (preserve it!)
     // M1 fix: Support both "glutenfri pasta" and "pasta glutenfri"
     final words = cleaned.split(RegExp(r'\s+'));
-    final dietDescriptorIndex =
-        words.indexWhere((w) => _dietDescriptors.contains(w));
+    final dietDescriptorIndex = words.indexWhere(
+      (w) => _dietDescriptors.contains(w),
+    );
     if (dietDescriptorIndex >= 0) {
       // Found diet descriptor - preserve it and process rest
       final dietDescriptor = words[dietDescriptorIndex];
@@ -233,8 +236,11 @@ class IngredientNormalizer {
       final restOfName = otherWords.join(' ');
 
       if (restOfName.isNotEmpty) {
-        final processedRest =
-            _processName(restOfName, removedWords, additionalKnown);
+        final processedRest = _processName(
+          restOfName,
+          removedWords,
+          additionalKnown,
+        );
         final result = '$dietDescriptor $processedRest';
 
         return NormalizationResult(
@@ -352,7 +358,10 @@ class IngredientNormalizer {
 
   /// Process name through all normalization steps
   static String _processName(
-      String name, List<String> removedWords, Set<String>? additionalKnown) {
+    String name,
+    List<String> removedWords,
+    Set<String>? additionalKnown,
+  ) {
     var result = name;
 
     // Handle "eller" alternatives
@@ -367,8 +376,9 @@ class IngredientNormalizer {
     // as alternatives (e.g., "gul eller röd lök") shouldn't form compounds.
     final hadAlternatives = removedWords.contains('eller');
     if (!hadAlternatives) {
-      final removedColors =
-          removedWords.where((w) => _colorDescriptors.contains(w)).toList();
+      final removedColors = removedWords
+          .where((w) => _colorDescriptors.contains(w))
+          .toList();
       if (removedColors.isNotEmpty && result.isNotEmpty) {
         for (final color in removedColors) {
           // Try color + result as compound (e.g., "röd" + "lök" = "rödlök")
@@ -468,7 +478,9 @@ class IngredientNormalizer {
   /// Uses [CompoundSplitter] for vocabulary-based splitting with genitive-s
   /// handling, falling back to static suffix stripping for coverage.
   static String _extractBaseIngredient(
-      String name, Set<String>? additionalKnown) {
+    String name,
+    Set<String>? additionalKnown,
+  ) {
     // Short-circuit: if the full compound word is already known, keep it
     if (_isKnown(name, additionalKnown)) return name;
 

@@ -39,15 +39,13 @@ abstract final class PersonalTagDialogs {
   static Future<void> showMergeDialog(
     BuildContext context,
     List<PersonalTag> selectedTags,
-  ) =>
-      PersonalTagBulkDialogs.showMergeDialog(context, selectedTags);
+  ) => PersonalTagBulkDialogs.showMergeDialog(context, selectedTags);
 
   /// BUT-1185: bulk-delete confirmation for the multi-select flow.
   static Future<void> showBulkDeleteDialog(
     BuildContext context,
     List<PersonalTag> selectedTags,
-  ) =>
-      PersonalTagBulkDialogs.showBulkDeleteDialog(context, selectedTags);
+  ) => PersonalTagBulkDialogs.showBulkDeleteDialog(context, selectedTags);
 
   /// Shows the retag-all-recipes progress dialog.
   static void showRetagDialog(BuildContext context) {
@@ -62,8 +60,9 @@ abstract final class PersonalTagDialogs {
 
           return await taggingService.retagUserRecipes(
             userId: authService.currentUser!.uid,
-            getRecipes: () => recipeService.personal
-                .fetchAllUserRecipes(authService.currentUser!.uid),
+            getRecipes: () => recipeService.personal.fetchAllUserRecipes(
+              authService.currentUser!.uid,
+            ),
             saveRecipe: (recipe) => recipeService.personal.updateRecipe(recipe),
             onProgress: onProgress,
           );
@@ -122,11 +121,16 @@ abstract final class PersonalTagDialogs {
             ),
             if (hasRules && !allRulesEnabled)
               ListTile(
-                leading: Icon(Icons.play_arrow,
-                    color: context.butleryColors.success),
+                leading: Icon(
+                  Icons.play_arrow,
+                  color: context.butleryColors.success,
+                ),
                 title: Text(context.l10n.personalTagEnableAllRules),
-                subtitle: Text(context.l10n.personalTagRulesDisabled(
-                    tag.rules.length - enabledRuleCount)),
+                subtitle: Text(
+                  context.l10n.personalTagRulesDisabled(
+                    tag.rules.length - enabledRuleCount,
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   showToggleAllRulesDialog(context, tag, enable: true);
@@ -134,11 +138,14 @@ abstract final class PersonalTagDialogs {
               ),
             if (hasRules && !allRulesDisabled)
               ListTile(
-                leading:
-                    Icon(Icons.pause, color: context.butleryColors.warning),
+                leading: Icon(
+                  Icons.pause,
+                  color: context.butleryColors.warning,
+                ),
                 title: Text(context.l10n.personalTagDisableAllRules),
-                subtitle:
-                    Text(context.l10n.personalTagRulesActive(enabledRuleCount)),
+                subtitle: Text(
+                  context.l10n.personalTagRulesActive(enabledRuleCount),
+                ),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   showToggleAllRulesDialog(context, tag, enable: false);
@@ -162,10 +169,14 @@ abstract final class PersonalTagDialogs {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: Icon(Icons.delete,
-                  color: Theme.of(context).colorScheme.error),
-              title: Text(context.l10n.personalTagDeleteTag,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              leading: Icon(
+                Icons.delete,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                context.l10n.personalTagDeleteTag,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
               onTap: () {
                 Navigator.pop(sheetContext);
                 showDeleteTagDialog(context, tag);
@@ -223,15 +234,21 @@ abstract final class PersonalTagDialogs {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(enable
-            ? context.l10n.personalTagEnableAllRulesConfirm
-            : context.l10n.personalTagDisableAllRulesConfirm),
+        title: Text(
+          enable
+              ? context.l10n.personalTagEnableAllRulesConfirm
+              : context.l10n.personalTagDisableAllRulesConfirm,
+        ),
         content: Text(
           enable
-              ? context.l10n
-                  .personalTagEnableAllRulesMessage(tag.rules.length, tag.name)
+              ? context.l10n.personalTagEnableAllRulesMessage(
+                  tag.rules.length,
+                  tag.name,
+                )
               : context.l10n.personalTagDisableAllRulesMessage(
-                  tag.rules.length, tag.name),
+                  tag.rules.length,
+                  tag.name,
+                ),
         ),
         actions: [
           TextButton(
@@ -240,9 +257,9 @@ abstract final class PersonalTagDialogs {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(enable
-                ? context.l10n.commonEnable
-                : context.l10n.commonDisable),
+            child: Text(
+              enable ? context.l10n.commonEnable : context.l10n.commonDisable,
+            ),
           ),
         ],
       ),
@@ -266,7 +283,9 @@ abstract final class PersonalTagDialogs {
       } catch (e) {
         if (context.mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.personalTagCouldNotChangeRules);
+            context,
+            context.l10n.personalTagCouldNotChangeRules,
+          );
         }
       }
     }
@@ -296,8 +315,9 @@ abstract final class PersonalTagDialogs {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
@@ -322,7 +342,9 @@ abstract final class PersonalTagDialogs {
                           setState(() => isLoading = false);
                           if (context.mounted) {
                             SnackBarUtils.showError(
-                                context, context.l10n.tagAlreadyExists);
+                              context,
+                              context.l10n.tagAlreadyExists,
+                            );
                           }
                           return;
                         }
@@ -335,7 +357,9 @@ abstract final class PersonalTagDialogs {
                         if (!context.mounted) return;
                         if (success) {
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.personalTagCreated);
+                            context,
+                            context.l10n.personalTagCreated,
+                          );
                         } else {
                           SnackBarUtils.showError(
                             context,
@@ -379,8 +403,9 @@ abstract final class PersonalTagDialogs {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
@@ -399,7 +424,9 @@ abstract final class PersonalTagDialogs {
                         if (!context.mounted) return;
                         if (success) {
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.personalTagGroupCreated);
+                            context,
+                            context.l10n.personalTagGroupCreated,
+                          );
                         } else {
                           SnackBarUtils.showError(
                             context,
@@ -456,8 +483,9 @@ abstract final class PersonalTagDialogs {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
@@ -479,7 +507,9 @@ abstract final class PersonalTagDialogs {
 
                           if (!context.mounted) return;
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.personalTagUpdated);
+                            context,
+                            context.l10n.personalTagUpdated,
+                          );
                         } catch (e) {
                           if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);
@@ -525,8 +555,9 @@ abstract final class PersonalTagDialogs {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
@@ -545,7 +576,9 @@ abstract final class PersonalTagDialogs {
 
                           if (!context.mounted) return;
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.personalTagDeleted);
+                            context,
+                            context.l10n.personalTagDeleted,
+                          );
                         } catch (e) {
                           if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);
@@ -670,8 +703,9 @@ abstract final class PersonalTagDialogs {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
@@ -683,13 +717,16 @@ abstract final class PersonalTagDialogs {
 
                         setState(() => isLoading = true);
                         try {
-                          final success =
-                              await viewModel.createGroup(name: name);
+                          final success = await viewModel.createGroup(
+                            name: name,
+                          );
                           if (success) {
                             final newGroup = viewModel.groups.lastOrNull;
                             if (newGroup != null) {
                               await viewModel.moveTagToGroup(
-                                  tag.id, newGroup.id);
+                                tag.id,
+                                newGroup.id,
+                              );
                             }
                           }
 
@@ -741,13 +778,15 @@ abstract final class PersonalTagDialogs {
               onChanged: (v) => groupName = v,
               enabled: !isLoading,
               decoration: InputDecoration(
-                  labelText: context.l10n.personalTagGroupNameLabel),
+                labelText: context.l10n.personalTagGroupNameLabel,
+              ),
               autofocus: true,
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
@@ -767,7 +806,9 @@ abstract final class PersonalTagDialogs {
 
                           if (!context.mounted) return;
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.personalTagGroupUpdated);
+                            context,
+                            context.l10n.personalTagGroupUpdated,
+                          );
                         } catch (e) {
                           if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);
@@ -800,17 +841,20 @@ abstract final class PersonalTagDialogs {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagDeleteGroupConfirm),
-            content:
-                Text(context.l10n.personalTagDeleteGroupMessage(group.name)),
+            content: Text(
+              context.l10n.personalTagDeleteGroupMessage(group.name),
+            ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.error),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
                 onPressed: isLoading
                     ? null
                     : () async {
@@ -823,7 +867,9 @@ abstract final class PersonalTagDialogs {
 
                           if (!context.mounted) return;
                           SnackBarUtils.showSuccess(
-                              context, context.l10n.personalTagGroupDeleted);
+                            context,
+                            context.l10n.personalTagGroupDeleted,
+                          );
                         } catch (e) {
                           if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);

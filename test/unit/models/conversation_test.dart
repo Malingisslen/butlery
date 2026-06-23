@@ -41,12 +41,18 @@ void main() {
 
         expect(conversation.id, equals('conv_123'));
         expect(conversation.participantIds, equals(['user_1', 'user_2']));
-        expect(conversation.participantDisplayNames['user_1'],
-            equals('Anna Andersson'));
-        expect(conversation.participantDisplayNames['user_2'],
-            equals('Erik Svensson'));
-        expect(conversation.participantAvatarUrls['user_1'],
-            equals('https://example.com/anna.jpg'));
+        expect(
+          conversation.participantDisplayNames['user_1'],
+          equals('Anna Andersson'),
+        );
+        expect(
+          conversation.participantDisplayNames['user_2'],
+          equals('Erik Svensson'),
+        );
+        expect(
+          conversation.participantAvatarUrls['user_1'],
+          equals('https://example.com/anna.jpg'),
+        );
         expect(conversation.participantAvatarUrls['user_2'], isNull);
         expect(conversation.lastMessage, isNull);
         expect(conversation.lastReadTimestamps['user_1'], equals(now));
@@ -135,12 +141,12 @@ void main() {
           participantDisplayNames: {
             'user_1': 'A',
             'user_2': 'B',
-            'user_3': 'C'
+            'user_3': 'C',
           },
           participantAvatarUrls: {
             'user_1': null,
             'user_2': null,
-            'user_3': null
+            'user_3': null,
           },
           lastReadTimestamps: {'user_1': now, 'user_2': now, 'user_3': now},
           createdAt: now,
@@ -167,14 +173,22 @@ void main() {
         expect(conversation.id, isNotEmpty);
         expect(conversation.id.length, equals(36)); // UUID v4 length
         expect(conversation.participantIds, equals(['user_1', 'user_2']));
-        expect(conversation.participantDisplayNames['user_1'],
-            equals('Anna Andersson'));
-        expect(conversation.participantDisplayNames['user_2'],
-            equals('Erik Svensson'));
-        expect(conversation.participantAvatarUrls['user_1'],
-            equals('https://example.com/anna.jpg'));
-        expect(conversation.participantAvatarUrls['user_2'],
-            equals('https://example.com/erik.jpg'));
+        expect(
+          conversation.participantDisplayNames['user_1'],
+          equals('Anna Andersson'),
+        );
+        expect(
+          conversation.participantDisplayNames['user_2'],
+          equals('Erik Svensson'),
+        );
+        expect(
+          conversation.participantAvatarUrls['user_1'],
+          equals('https://example.com/anna.jpg'),
+        );
+        expect(
+          conversation.participantAvatarUrls['user_2'],
+          equals('https://example.com/erik.jpg'),
+        );
         expect(conversation.isGroup, isFalse);
         expect(conversation.lastReadTimestamps['user_1'], isNotNull);
         expect(conversation.lastReadTimestamps['user_2'], isNotNull);
@@ -277,17 +291,25 @@ void main() {
       });
 
       test('should get display title for direct conversation', () {
-        expect(directConversation.getDisplayTitle('user_1'),
-            equals('Erik Svensson'));
-        expect(directConversation.getDisplayTitle('user_2'),
-            equals('Anna Andersson'));
+        expect(
+          directConversation.getDisplayTitle('user_1'),
+          equals('Erik Svensson'),
+        );
+        expect(
+          directConversation.getDisplayTitle('user_2'),
+          equals('Anna Andersson'),
+        );
       });
 
       test('should get display title for group conversation', () {
-        expect(groupConversation.getDisplayTitle('user_1'),
-            equals('Veckans middagar'));
-        expect(groupConversation.getDisplayTitle('user_2'),
-            equals('Veckans middagar'));
+        expect(
+          groupConversation.getDisplayTitle('user_1'),
+          equals('Veckans middagar'),
+        );
+        expect(
+          groupConversation.getDisplayTitle('user_2'),
+          equals('Veckans middagar'),
+        );
 
         // Test group without custom title
         final groupNoTitle = Conversation(
@@ -297,7 +319,7 @@ void main() {
           participantAvatarUrls: {'user_1': null, 'user_2': null},
           lastReadTimestamps: {
             'user_1': DateTime.now(),
-            'user_2': DateTime.now()
+            'user_2': DateTime.now(),
           },
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
@@ -308,10 +330,14 @@ void main() {
       });
 
       test('should get display avatar for direct conversation', () {
-        expect(directConversation.getDisplayAvatarUrl('user_1'),
-            equals('https://example.com/erik.jpg'));
-        expect(directConversation.getDisplayAvatarUrl('user_2'),
-            equals('https://example.com/anna.jpg'));
+        expect(
+          directConversation.getDisplayAvatarUrl('user_1'),
+          equals('https://example.com/erik.jpg'),
+        );
+        expect(
+          directConversation.getDisplayAvatarUrl('user_2'),
+          equals('https://example.com/anna.jpg'),
+        );
       });
 
       test('should get display avatar for group conversation (null)', () {
@@ -320,10 +346,14 @@ void main() {
       });
 
       test('should get other participant ID for direct conversation', () {
-        expect(directConversation.getOtherParticipantId('user_1'),
-            equals('user_2'));
-        expect(directConversation.getOtherParticipantId('user_2'),
-            equals('user_1'));
+        expect(
+          directConversation.getOtherParticipantId('user_1'),
+          equals('user_2'),
+        );
+        expect(
+          directConversation.getOtherParticipantId('user_2'),
+          equals('user_1'),
+        );
       });
 
       test('should get other participant ID for group (returns null)', () {
@@ -403,8 +433,10 @@ void main() {
           ),
         ];
 
-        expect(conversation.getUnreadCount('user_1', messages),
-            equals(2)); // Excludes own message
+        expect(
+          conversation.getUnreadCount('user_1', messages),
+          equals(2),
+        ); // Excludes own message
       });
 
       test('should handle no messages', () {
@@ -427,8 +459,10 @@ void main() {
         final withOwnMessage = conversation.copyWith(lastMessage: ownMessage);
 
         // User should not have unread for their own message
-        expect(withOwnMessage.hasUnreadMessages('user_1'),
-            isTrue); // Message sent after last read
+        expect(
+          withOwnMessage.hasUnreadMessages('user_1'),
+          isTrue,
+        ); // Message sent after last read
         expect(conversation.getUnreadCount('user_1', [ownMessage]), equals(0));
       });
 
@@ -442,8 +476,10 @@ void main() {
         );
 
         expect(updated.lastReadTimestamps['user_1'], equals(newReadTime));
-        expect(updated.lastReadTimestamps['user_2'],
-            equals(conversation.lastReadTimestamps['user_2']));
+        expect(
+          updated.lastReadTimestamps['user_2'],
+          equals(conversation.lastReadTimestamps['user_2']),
+        );
       });
     });
 
@@ -494,14 +530,20 @@ void main() {
         );
 
         expect(
-            updated.participantDisplayNames['user_1'], equals('Anna Updated'));
+          updated.participantDisplayNames['user_1'],
+          equals('Anna Updated'),
+        );
       });
 
       test('should validate participant lists', () {
-        expect(conversation.participantIds.length,
-            equals(conversation.participantDisplayNames.length));
-        expect(conversation.participantIds.length,
-            equals(conversation.participantAvatarUrls.length));
+        expect(
+          conversation.participantIds.length,
+          equals(conversation.participantDisplayNames.length),
+        );
+        expect(
+          conversation.participantIds.length,
+          equals(conversation.participantAvatarUrls.length),
+        );
       });
     });
 
@@ -646,7 +688,7 @@ void main() {
           participantAvatarUrls: {'user_1': null, 'user_2': null},
           lastReadTimestamps: {
             'user_1': DateTime.now(),
-            'user_2': DateTime.now()
+            'user_2': DateTime.now(),
           },
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
@@ -660,7 +702,7 @@ void main() {
           participantAvatarUrls: {'user_3': null, 'user_4': null},
           lastReadTimestamps: {
             'user_3': DateTime.now(),
-            'user_4': DateTime.now()
+            'user_4': DateTime.now(),
           },
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
@@ -793,7 +835,7 @@ void main() {
           participantAvatarUrls: {'user_1': null, 'user_2': null},
           lastReadTimestamps: {
             'user_1': DateTime.now(),
-            'user_2': DateTime.now()
+            'user_2': DateTime.now(),
           },
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
@@ -826,10 +868,14 @@ void main() {
           user2DisplayName: 'Björn Ärlig',
         );
 
-        expect(conversation.participantDisplayNames['user_1'],
-            equals('Åsa Öström'));
-        expect(conversation.participantDisplayNames['user_2'],
-            equals('Björn Ärlig'));
+        expect(
+          conversation.participantDisplayNames['user_1'],
+          equals('Åsa Öström'),
+        );
+        expect(
+          conversation.participantDisplayNames['user_2'],
+          equals('Björn Ärlig'),
+        );
         expect(conversation.getDisplayTitle('user_1'), equals('Björn Ärlig'));
       });
 
@@ -890,10 +936,14 @@ void main() {
           );
         }
 
-        expect(conversation.lastReadTimestamps['user_1'],
-            equals(now.add(Duration(seconds: 9))));
-        expect(conversation.lastReadTimestamps['user_2'],
-            equals(now.add(Duration(seconds: 18))));
+        expect(
+          conversation.lastReadTimestamps['user_1'],
+          equals(now.add(Duration(seconds: 9))),
+        );
+        expect(
+          conversation.lastReadTimestamps['user_2'],
+          equals(now.add(Duration(seconds: 18))),
+        );
       });
 
       test('should handle self-conversation', () {

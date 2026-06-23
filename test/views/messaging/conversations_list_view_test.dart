@@ -123,8 +123,9 @@ void main() {
     // emit nothing by default (the initial loading state).
     conversationsController = StreamController<List<Conversation>>.broadcast();
     messagingService = MockMessagingService();
-    when(() => messagingService.getMyConversations())
-        .thenAnswer((_) => conversationsController.stream);
+    when(
+      () => messagingService.getMyConversations(),
+    ).thenAnswer((_) => conversationsController.stream);
 
     // LayoutComponents.offlineIndicator() resolves OfflineService and reads
     // isOnline in initState. Register an online mock so it builds collapsed.
@@ -191,166 +192,177 @@ void main() {
 
   group('ConversationsListView — inbox states', () {
     testWidgets(
-        'before the stream emits, shows the Swedish loading copy and the title',
-        (tester) async {
-      await pumpView(tester);
-      // Two discrete pumps (not pumpAndSettle): the loading overlay animates
-      // perpetually, so pumpAndSettle would hang.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      'before the stream emits, shows the Swedish loading copy and the title',
+      (tester) async {
+        await pumpView(tester);
+        // Two discrete pumps (not pumpAndSettle): the loading overlay animates
+        // perpetually, so pumpAndSettle would hang.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text(_appBarTitle), findsOneWidget);
-      expect(find.text(_loadingCopy), findsOneWidget);
-    });
-
-    testWidgets(
-        'an empty conversations emission renders the branded empty state, not a list',
-        (tester) async {
-      await pumpView(tester);
-      await tester.pump();
-
-      conversationsController.add(const []);
-      await tester.pumpAndSettle();
-
-      expect(find.text(_emptyTitle), findsOneWidget);
-      expect(find.text(_emptySubtitle), findsOneWidget);
-      // No conversation rows are rendered in the empty state.
-      expect(find.byType(ConversationListItem), findsNothing);
-      // The empty state's primary CTA reuses the "new conversation" label.
-      expect(find.text(_newConversation), findsWidgets);
-    });
+        expect(find.text(_appBarTitle), findsOneWidget);
+        expect(find.text(_loadingCopy), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'a populated emission renders one row per conversation with its partner title',
-        (tester) async {
-      await pumpView(tester);
-      await tester.pump();
+      'an empty conversations emission renders the branded empty state, not a list',
+      (tester) async {
+        await pumpView(tester);
+        await tester.pump();
 
-      conversationsController.add([
-        _directConversation(
-          id: 'c1',
-          otherUserId: 'u-anna',
-          otherDisplayName: 'Anna Andersson',
-          lastMessageContent: 'Vi ses imorgon!',
-        ),
-        _directConversation(
-          id: 'c2',
-          otherUserId: 'u-erik',
-          otherDisplayName: 'Erik Svensson',
-          lastMessageContent: 'Tack för recepten',
-        ),
-      ]);
-      await tester.pumpAndSettle();
+        conversationsController.add(const []);
+        await tester.pumpAndSettle();
 
-      // One row per conversation, each titled by the OTHER participant's name
-      // (getDisplayTitle resolves against the current user).
-      expect(find.byType(ConversationListItem), findsNWidgets(2));
-      expect(find.text('Anna Andersson'), findsOneWidget);
-      expect(find.text('Erik Svensson'), findsOneWidget);
-      // The empty state is gone.
-      expect(find.text(_emptyTitle), findsNothing);
-      // The last-message preview is shown for direct conversations.
-      expect(find.text('Vi ses imorgon!'), findsOneWidget);
-    });
+        expect(find.text(_emptyTitle), findsOneWidget);
+        expect(find.text(_emptySubtitle), findsOneWidget);
+        // No conversation rows are rendered in the empty state.
+        expect(find.byType(ConversationListItem), findsNothing);
+        // The empty state's primary CTA reuses the "new conversation" label.
+        expect(find.text(_newConversation), findsWidgets);
+      },
+    );
 
     testWidgets(
-        'an unread conversation shows the unread indicator dot; a read one does not',
-        (tester) async {
-      await pumpView(tester);
-      await tester.pump();
+      'a populated emission renders one row per conversation with its partner title',
+      (tester) async {
+        await pumpView(tester);
+        await tester.pump();
 
-      final unread = _directConversation(
-        id: 'c-unread',
-        otherUserId: 'u-unread',
-        otherDisplayName: 'Olästa Meddelanden',
-        lastMessageContent: 'Du har ett nytt meddelande',
-        withUnreadMessage: true,
-      );
-      final read = _directConversation(
-        id: 'c-read',
-        otherUserId: 'u-read',
-        otherDisplayName: 'Lästa Meddelanden',
-        lastMessageContent: 'Redan läst',
-      );
-      conversationsController.add([unread, read]);
-      await tester.pumpAndSettle();
+        conversationsController.add([
+          _directConversation(
+            id: 'c1',
+            otherUserId: 'u-anna',
+            otherDisplayName: 'Anna Andersson',
+            lastMessageContent: 'Vi ses imorgon!',
+          ),
+          _directConversation(
+            id: 'c2',
+            otherUserId: 'u-erik',
+            otherDisplayName: 'Erik Svensson',
+            lastMessageContent: 'Tack för recepten',
+          ),
+        ]);
+        await tester.pumpAndSettle();
 
-      // Both rows render.
-      expect(find.byType(ConversationListItem), findsNWidgets(2));
-
-      // The unread row styles its title heavier (bodyBold) than the read row
-      // (bodyMedium) — the user-visible "this conversation is unread" cue.
-      // Assert the unread weight is strictly heavier than the read weight
-      // rather than a hardcoded value, so a typography token tweak that keeps
-      // the contrast doesn't break the test.
-      Finder titleText(String name) => find.descendant(
-            of: find.byType(ConversationListItem),
-            matching: find.text(name),
-          );
-      final unreadTitle = tester.widget<Text>(titleText('Olästa Meddelanden'));
-      final readTitle = tester.widget<Text>(titleText('Lästa Meddelanden'));
-      final unreadWeight = unreadTitle.style?.fontWeight ?? FontWeight.normal;
-      final readWeight = readTitle.style?.fontWeight ?? FontWeight.normal;
-      expect(unreadWeight.index, greaterThan(readWeight.index),
-          reason: 'unread title should be visually heavier than read title');
-
-      // And the model invariant driving that cue holds for each.
-      expect(unread.hasUnreadMessages(_currentUserId), isTrue);
-      expect(read.hasUnreadMessages(_currentUserId), isFalse);
-    });
+        // One row per conversation, each titled by the OTHER participant's name
+        // (getDisplayTitle resolves against the current user).
+        expect(find.byType(ConversationListItem), findsNWidgets(2));
+        expect(find.text('Anna Andersson'), findsOneWidget);
+        expect(find.text('Erik Svensson'), findsOneWidget);
+        // The empty state is gone.
+        expect(find.text(_emptyTitle), findsNothing);
+        // The last-message preview is shown for direct conversations.
+        expect(find.text('Vi ses imorgon!'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'typing a search query filters the visible rows to the matching partner',
-        (tester) async {
-      await pumpView(tester);
-      await tester.pump();
+      'an unread conversation shows the unread indicator dot; a read one does not',
+      (tester) async {
+        await pumpView(tester);
+        await tester.pump();
 
-      conversationsController.add([
-        _directConversation(
-          id: 'c1',
-          otherUserId: 'u-anna',
-          otherDisplayName: 'Anna Andersson',
-          lastMessageContent: 'Hej',
-        ),
-        _directConversation(
-          id: 'c2',
-          otherUserId: 'u-erik',
-          otherDisplayName: 'Erik Svensson',
-          lastMessageContent: 'Hej',
-        ),
-      ]);
-      await tester.pumpAndSettle();
-      expect(find.byType(ConversationListItem), findsNWidgets(2));
+        final unread = _directConversation(
+          id: 'c-unread',
+          otherUserId: 'u-unread',
+          otherDisplayName: 'Olästa Meddelanden',
+          lastMessageContent: 'Du har ett nytt meddelande',
+          withUnreadMessage: true,
+        );
+        final read = _directConversation(
+          id: 'c-read',
+          otherUserId: 'u-read',
+          otherDisplayName: 'Lästa Meddelanden',
+          lastMessageContent: 'Redan läst',
+        );
+        conversationsController.add([unread, read]);
+        await tester.pumpAndSettle();
 
-      // The search field is the only TextField in the view. Type a query that
-      // matches only Anna's title; the search listener pushes it into the VM,
-      // which re-filters _filteredConversations.
-      await tester.enterText(find.byType(TextField), 'anna');
-      await tester.pumpAndSettle();
+        // Both rows render.
+        expect(find.byType(ConversationListItem), findsNWidgets(2));
 
-      expect(find.byType(ConversationListItem), findsOneWidget);
-      expect(find.text('Anna Andersson'), findsOneWidget);
-      expect(find.text('Erik Svensson'), findsNothing);
-    });
+        // The unread row styles its title heavier (bodyBold) than the read row
+        // (bodyMedium) — the user-visible "this conversation is unread" cue.
+        // Assert the unread weight is strictly heavier than the read weight
+        // rather than a hardcoded value, so a typography token tweak that keeps
+        // the contrast doesn't break the test.
+        Finder titleText(String name) => find.descendant(
+          of: find.byType(ConversationListItem),
+          matching: find.text(name),
+        );
+        final unreadTitle = tester.widget<Text>(
+          titleText('Olästa Meddelanden'),
+        );
+        final readTitle = tester.widget<Text>(titleText('Lästa Meddelanden'));
+        final unreadWeight = unreadTitle.style?.fontWeight ?? FontWeight.normal;
+        final readWeight = readTitle.style?.fontWeight ?? FontWeight.normal;
+        expect(
+          unreadWeight.index,
+          greaterThan(readWeight.index),
+          reason: 'unread title should be visually heavier than read title',
+        );
+
+        // And the model invariant driving that cue holds for each.
+        expect(unread.hasUnreadMessages(_currentUserId), isTrue);
+        expect(read.hasUnreadMessages(_currentUserId), isFalse);
+      },
+    );
 
     testWidgets(
-        'a stream error surfaces the Swedish error empty state with a retry action',
-        (tester) async {
-      await pumpView(tester);
-      await tester.pump();
+      'typing a search query filters the visible rows to the matching partner',
+      (tester) async {
+        await pumpView(tester);
+        await tester.pump();
 
-      conversationsController.addError(Exception('stream blew up'));
-      await tester.pumpAndSettle();
+        conversationsController.add([
+          _directConversation(
+            id: 'c1',
+            otherUserId: 'u-anna',
+            otherDisplayName: 'Anna Andersson',
+            lastMessageContent: 'Hej',
+          ),
+          _directConversation(
+            id: 'c2',
+            otherUserId: 'u-erik',
+            otherDisplayName: 'Erik Svensson',
+            lastMessageContent: 'Hej',
+          ),
+        ]);
+        await tester.pumpAndSettle();
+        expect(find.byType(ConversationListItem), findsNWidgets(2));
 
-      // The VM maps the stream error to errorCouldNotLoad('konversationer');
-      // the view renders the generic error empty state titled errorGeneric with
-      // that subtitle and a retry CTA. Assert the VM reached the error state and
-      // the error subtitle is visible.
-      expect(viewModel.conversationsError, isNotNull);
-      expect(find.text(viewModel.conversationsError!), findsOneWidget);
-      // No list and no loading copy once the error state is shown.
-      expect(find.byType(ConversationListItem), findsNothing);
-      expect(find.text(_loadingCopy), findsNothing);
-    });
+        // The search field is the only TextField in the view. Type a query that
+        // matches only Anna's title; the search listener pushes it into the VM,
+        // which re-filters _filteredConversations.
+        await tester.enterText(find.byType(TextField), 'anna');
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ConversationListItem), findsOneWidget);
+        expect(find.text('Anna Andersson'), findsOneWidget);
+        expect(find.text('Erik Svensson'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'a stream error surfaces the Swedish error empty state with a retry action',
+      (tester) async {
+        await pumpView(tester);
+        await tester.pump();
+
+        conversationsController.addError(Exception('stream blew up'));
+        await tester.pumpAndSettle();
+
+        // The VM maps the stream error to errorCouldNotLoad('konversationer');
+        // the view renders the generic error empty state titled errorGeneric with
+        // that subtitle and a retry CTA. Assert the VM reached the error state and
+        // the error subtitle is visible.
+        expect(viewModel.conversationsError, isNotNull);
+        expect(find.text(viewModel.conversationsError!), findsOneWidget);
+        // No list and no loading copy once the error state is shown.
+        expect(find.byType(ConversationListItem), findsNothing);
+        expect(find.text(_loadingCopy), findsNothing);
+      },
+    );
   });
 }

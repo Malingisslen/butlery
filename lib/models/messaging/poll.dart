@@ -46,10 +46,14 @@ class PollOption {
       text: SerializationUtils.safeString(data, 'text'),
       voterIds: SerializationUtils.safeStringList(data, 'voterIds'),
       recipeId: SerializationUtils.safeNullableString(data, 'recipeId'),
-      recipeImageUrl:
-          SerializationUtils.safeNullableString(data, 'recipeImageUrl'),
-      recipePortions:
-          SerializationUtils.safeNullableInt(data, 'recipePortions'),
+      recipeImageUrl: SerializationUtils.safeNullableString(
+        data,
+        'recipeImageUrl',
+      ),
+      recipePortions: SerializationUtils.safeNullableInt(
+        data,
+        'recipePortions',
+      ),
     );
   }
 
@@ -153,8 +157,10 @@ class Poll {
         'options',
         PollOption.fromMap,
       ),
-      allowMultipleChoices:
-          SerializationUtils.safeBool(data, 'allowMultipleChoices'),
+      allowMultipleChoices: SerializationUtils.safeBool(
+        data,
+        'allowMultipleChoices',
+      ),
       deadline: SerializationUtils.safeDateTime(data, 'deadline'),
       creatorId: SerializationUtils.safeString(data, 'creatorId'),
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),

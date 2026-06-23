@@ -30,23 +30,27 @@ void main() {
 
       final client = PinnedHttpClient(
         inner: inner,
-        pinCheck: ({
-          required String serverURL,
-          required Map<String, String> headerHttp,
-          required SHA sha,
-          required List<String> allowedSHAFingerprints,
-          required int timeout,
-        }) async {
-          checkInvoked = true;
-          return 'CONNECTION_SECURE';
-        },
+        pinCheck:
+            ({
+              required String serverURL,
+              required Map<String, String> headerHttp,
+              required SHA sha,
+              required List<String> allowedSHAFingerprints,
+              required int timeout,
+            }) async {
+              checkInvoked = true;
+              return 'CONNECTION_SECURE';
+            },
       );
 
       final response = await client.get(Uri.parse('https://example.com/path'));
 
       expect(response.statusCode, 200);
-      expect(checkInvoked, isFalse,
-          reason: 'pin check must not run for unpinned host');
+      expect(
+        checkInvoked,
+        isFalse,
+        reason: 'pin check must not run for unpinned host',
+      );
       expect(innerInvoked, isTrue);
     });
 
@@ -57,26 +61,30 @@ void main() {
       List<String>? checkedPins;
 
       final inner = MockClient((request) async {
-        return http.Response('{"hits":[]}', 200,
-            headers: {'content-type': 'application/json'});
+        return http.Response(
+          '{"hits":[]}',
+          200,
+          headers: {'content-type': 'application/json'},
+        );
       });
 
       final client = PinnedHttpClient(
         inner: inner,
         pinOverrides: const {
-          'api.example.test': ['AA:BB:CC', 'DD:EE:FF']
+          'api.example.test': ['AA:BB:CC', 'DD:EE:FF'],
         },
-        pinCheck: ({
-          required String serverURL,
-          required Map<String, String> headerHttp,
-          required SHA sha,
-          required List<String> allowedSHAFingerprints,
-          required int timeout,
-        }) async {
-          checkedUrl = serverURL;
-          checkedPins = allowedSHAFingerprints;
-          return 'CONNECTION_SECURE';
-        },
+        pinCheck:
+            ({
+              required String serverURL,
+              required Map<String, String> headerHttp,
+              required SHA sha,
+              required List<String> allowedSHAFingerprints,
+              required int timeout,
+            }) async {
+              checkedUrl = serverURL;
+              checkedPins = allowedSHAFingerprints;
+              return 'CONNECTION_SECURE';
+            },
       );
 
       final response = await client.get(
@@ -96,17 +104,18 @@ void main() {
       final client = PinnedHttpClient(
         inner: MockClient((_) async => http.Response('should not reach', 200)),
         pinOverrides: const {
-          'api.example.test': ['AA:BB:CC']
+          'api.example.test': ['AA:BB:CC'],
         },
-        pinCheck: ({
-          required String serverURL,
-          required Map<String, String> headerHttp,
-          required SHA sha,
-          required List<String> allowedSHAFingerprints,
-          required int timeout,
-        }) async {
-          return 'CONNECTION_NOT_SECURE';
-        },
+        pinCheck:
+            ({
+              required String serverURL,
+              required Map<String, String> headerHttp,
+              required SHA sha,
+              required List<String> allowedSHAFingerprints,
+              required int timeout,
+            }) async {
+              return 'CONNECTION_NOT_SECURE';
+            },
         onPinMismatch: (host, kind, error) =>
             telemetry.add(_TelemetryEvent(host, kind)),
       );
@@ -128,16 +137,16 @@ void main() {
       final client = PinnedHttpClient(
         inner: MockClient((_) async => http.Response('reach', 200)),
         pinOverrides: const {
-          'api.example.test': ['AA:BB:CC']
+          'api.example.test': ['AA:BB:CC'],
         },
-        pinCheck: ({
-          required String serverURL,
-          required Map<String, String> headerHttp,
-          required SHA sha,
-          required List<String> allowedSHAFingerprints,
-          required int timeout,
-        }) async =>
-            'CONNECTION_SECURE',
+        pinCheck:
+            ({
+              required String serverURL,
+              required Map<String, String> headerHttp,
+              required SHA sha,
+              required List<String> allowedSHAFingerprints,
+              required int timeout,
+            }) async => 'CONNECTION_SECURE',
         onPinMismatch: (host, kind, error) =>
             telemetry.add(_TelemetryEvent(host, kind)),
       );
@@ -157,16 +166,16 @@ void main() {
       final client = PinnedHttpClient(
         inner: MockClient((_) async => http.Response('reach', 200)),
         pinOverrides: const {
-          'api.example.test': ['AA:BB:CC']
+          'api.example.test': ['AA:BB:CC'],
         },
-        pinCheck: ({
-          required String serverURL,
-          required Map<String, String> headerHttp,
-          required SHA sha,
-          required List<String> allowedSHAFingerprints,
-          required int timeout,
-        }) async =>
-            throw StateError('plugin not available'),
+        pinCheck:
+            ({
+              required String serverURL,
+              required Map<String, String> headerHttp,
+              required SHA sha,
+              required List<String> allowedSHAFingerprints,
+              required int timeout,
+            }) async => throw StateError('plugin not available'),
         onPinMismatch: (host, kind, error) =>
             telemetry.add(_TelemetryEvent(host, kind)),
       );
@@ -187,18 +196,19 @@ void main() {
       final client = PinnedHttpClient(
         inner: MockClient((_) async => http.Response('ok', 200)),
         pinOverrides: const {
-          'unconfigured.example.test': ['ZZ:YY:XX']
+          'unconfigured.example.test': ['ZZ:YY:XX'],
         },
-        pinCheck: ({
-          required String serverURL,
-          required Map<String, String> headerHttp,
-          required SHA sha,
-          required List<String> allowedSHAFingerprints,
-          required int timeout,
-        }) async {
-          checkInvoked = true;
-          return 'CONNECTION_SECURE';
-        },
+        pinCheck:
+            ({
+              required String serverURL,
+              required Map<String, String> headerHttp,
+              required SHA sha,
+              required List<String> allowedSHAFingerprints,
+              required int timeout,
+            }) async {
+              checkInvoked = true;
+              return 'CONNECTION_SECURE';
+            },
       );
 
       await client.get(Uri.parse('https://unconfigured.example.test/path'));

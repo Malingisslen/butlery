@@ -105,31 +105,41 @@ void main() {
   /// Delegates the pure placement methods of the mocked service to a real
   /// instance so placement semantics stay genuine.
   void delegatePureMethods() {
-    when(() => service.addEntry(
-          plan: any(named: 'plan'),
-          day: any(named: 'day'),
-          slot: any(named: 'slot'),
-          recipe: any(named: 'recipe'),
-        )).thenAnswer((inv) => realService.addEntry(
-          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
-          day: inv.namedArguments[#day] as DayOfWeek,
-          slot: inv.namedArguments[#slot] as MealSlot,
-          recipe: inv.namedArguments[#recipe] as Recipe,
-        ));
-    when(() => service.removeEntry(
-          plan: any(named: 'plan'),
-          entryId: any(named: 'entryId'),
-        )).thenAnswer((inv) => realService.removeEntry(
-          plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
-          entryId: inv.namedArguments[#entryId] as String,
-        ));
-    when(() => service.distributeFromGeneratedMenu(
-          generated: any(named: 'generated'),
-          weekStart: any(named: 'weekStart'),
-          existing: any(named: 'existing'),
-          now: any(named: 'now'),
-          dayPins: any(named: 'dayPins'),
-        )).thenAnswer(
+    when(
+      () => service.addEntry(
+        plan: any(named: 'plan'),
+        day: any(named: 'day'),
+        slot: any(named: 'slot'),
+        recipe: any(named: 'recipe'),
+      ),
+    ).thenAnswer(
+      (inv) => realService.addEntry(
+        plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+        day: inv.namedArguments[#day] as DayOfWeek,
+        slot: inv.namedArguments[#slot] as MealSlot,
+        recipe: inv.namedArguments[#recipe] as Recipe,
+      ),
+    );
+    when(
+      () => service.removeEntry(
+        plan: any(named: 'plan'),
+        entryId: any(named: 'entryId'),
+      ),
+    ).thenAnswer(
+      (inv) => realService.removeEntry(
+        plan: inv.namedArguments[#plan] as WeeklyMenuPlan,
+        entryId: inv.namedArguments[#entryId] as String,
+      ),
+    );
+    when(
+      () => service.distributeFromGeneratedMenu(
+        generated: any(named: 'generated'),
+        weekStart: any(named: 'weekStart'),
+        existing: any(named: 'existing'),
+        now: any(named: 'now'),
+        dayPins: any(named: 'dayPins'),
+      ),
+    ).thenAnswer(
       (inv) => realService.distributeFromGeneratedMenu(
         generated: inv.namedArguments[#generated] as Map<String, List<Recipe>>,
         weekStart: inv.namedArguments[#weekStart] as DateTime,
@@ -163,7 +173,8 @@ void main() {
   }) {
     return MenuPlacementViewModel(
       service: service,
-      generated: generated ??
+      generated:
+          generated ??
           {
             'lunch': [_recipe('l1'), _recipe('l2')],
             'middag': [_recipe('m1', mealType: 'middag')],
@@ -185,37 +196,49 @@ void main() {
       expect(vm.selectedItem!.recipe.id, 'l1');
     });
 
-    test('startFromEmptyWeek hides the saved entries (ÄNDRA redo path)',
-        () async {
-      when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(entries: [
-          _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
-        ]),
-      );
-      final vm = buildVm(startFromEmptyWeek: true);
-      await vm.init();
+    test(
+      'startFromEmptyWeek hides the saved entries (ÄNDRA redo path)',
+      () async {
+        when(() => service.getWeek(any())).thenAnswer(
+          (_) async => _plan(
+            entries: [
+              _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
+            ],
+          ),
+        );
+        final vm = buildVm(startFromEmptyWeek: true);
+        await vm.init();
 
-      // The saved auto layout is hidden; the working week starts empty.
-      expect(vm.plan!.entries, isEmpty);
-    });
+        // The saved auto layout is hidden; the working week starts empty.
+        expect(vm.plan!.entries, isEmpty);
+      },
+    );
   });
 
   group('eligibility', () {
     test('only empty cells of the selected slot are eligible', () async {
       when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(entries: [
-          _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
-        ]),
+        (_) async => _plan(
+          entries: [
+            _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
+          ],
+        ),
       );
       final vm = buildVm();
       await vm.init();
 
       // Selected item is a lunch recipe.
-      expect(vm.isEligible(DayOfWeek.mon, MealSlot.lunch), isFalse,
-          reason: 'mon lunch is occupied');
+      expect(
+        vm.isEligible(DayOfWeek.mon, MealSlot.lunch),
+        isFalse,
+        reason: 'mon lunch is occupied',
+      );
       expect(vm.isEligible(DayOfWeek.tue, MealSlot.lunch), isTrue);
-      expect(vm.isEligible(DayOfWeek.tue, MealSlot.middag), isFalse,
-          reason: 'wrong slot for the selected item');
+      expect(
+        vm.isEligible(DayOfWeek.tue, MealSlot.middag),
+        isFalse,
+        reason: 'wrong slot for the selected item',
+      );
     });
 
     test('nothing is eligible without a selection', () async {
@@ -229,13 +252,17 @@ void main() {
 
     test('övrigt is eligible even when the day already has entries', () async {
       when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(entries: [
-          _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt),
-        ]),
+        (_) async => _plan(
+          entries: [
+            _entry(day: DayOfWeek.mon, slot: MealSlot.ovrigt),
+          ],
+        ),
       );
-      final vm = buildVm(generated: {
-        'dessert': [_recipe('d1', mealType: 'dessert')],
-      });
+      final vm = buildVm(
+        generated: {
+          'dessert': [_recipe('d1', mealType: 'dessert')],
+        },
+      );
       await vm.init();
 
       expect(vm.selectedItem!.slot, MealSlot.ovrigt);
@@ -259,9 +286,11 @@ void main() {
 
     test('ignores ineligible targets', () async {
       when(() => service.getWeek(any())).thenAnswer(
-        (_) async => _plan(entries: [
-          _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
-        ]),
+        (_) async => _plan(
+          entries: [
+            _entry(day: DayOfWeek.mon, slot: MealSlot.lunch),
+          ],
+        ),
       );
       final vm = buildVm();
       await vm.init();
@@ -274,18 +303,20 @@ void main() {
   });
 
   group('un-placing', () {
-    test('tapItem on a placed item removes its entry and re-selects it',
-        () async {
-      final vm = buildVm();
-      await vm.init();
-      vm.placeSelectedAt(DayOfWeek.wed);
+    test(
+      'tapItem on a placed item removes its entry and re-selects it',
+      () async {
+        final vm = buildVm();
+        await vm.init();
+        vm.placeSelectedAt(DayOfWeek.wed);
 
-      vm.tapItem(0);
+        vm.tapItem(0);
 
-      expect(vm.items[0].isPlaced, isFalse);
-      expect(vm.plan!.entryAt(DayOfWeek.wed, MealSlot.lunch), isNull);
-      expect(vm.selectedIndex, 0);
-    });
+        expect(vm.items[0].isPlaced, isFalse);
+        expect(vm.plan!.entryAt(DayOfWeek.wed, MealSlot.lunch), isNull);
+        expect(vm.selectedIndex, 0);
+      },
+    );
 
     test('unplaceEntry resolves the owning item from the grid side', () async {
       final vm = buildVm();
@@ -321,25 +352,28 @@ void main() {
       expect(savedPlans, isEmpty);
     });
 
-    test('returns the overflow count when the week cannot fit everything',
-        () async {
-      // 8 lunches into 7 days → 1 overflow.
-      final vm = buildVm(generated: {
-        'lunch': [for (var i = 0; i < 8; i++) _recipe('l$i')],
-      });
-      await vm.init();
+    test(
+      'returns the overflow count when the week cannot fit everything',
+      () async {
+        // 8 lunches into 7 days → 1 overflow.
+        final vm = buildVm(
+          generated: {
+            'lunch': [for (var i = 0; i < 8; i++) _recipe('l$i')],
+          },
+        );
+        await vm.init();
 
-      final overflow = vm.placeRemainingAutomatically();
+        final overflow = vm.placeRemainingAutomatically();
 
-      expect(overflow, 1);
-      expect(vm.placedCount, 7);
-      expect(vm.allPlaced, isFalse);
-    });
+        expect(overflow, 1);
+        expect(vm.placedCount, 7);
+        expect(vm.allPlaced, isFalse);
+      },
+    );
   });
 
   group('confirm', () {
-    test(
-        'persists exactly one save and returns the placed count, the saved '
+    test('persists exactly one save and returns the placed count, the saved '
         'plan, and the session entry ids', () async {
       final vm = buildVm();
       await vm.init();
@@ -351,8 +385,11 @@ void main() {
       expect(result?.placed, 3);
       expect(savedPlans, hasLength(1));
       expect(savedPlans.single.entries, hasLength(3));
-      expect(result?.plan, same(savedPlans.single),
-          reason: 'callers adopt the persisted plan without a re-read');
+      expect(
+        result?.plan,
+        same(savedPlans.single),
+        reason: 'callers adopt the persisted plan without a re-read',
+      );
       expect(
         result?.sessionEntryIds,
         savedPlans.single.entries.map((e) => e.id).toSet(),
@@ -398,20 +435,21 @@ void main() {
     });
 
     test(
-        'redo sessions (startFromEmptyWeek) cannot navigate weeks — redoing '
-        'this week\'s layout on another week would duplicate the menu',
-        () async {
-      final vm = buildVm(startFromEmptyWeek: true);
-      await vm.init();
-      expect(vm.canNavigateWeeks, isFalse);
-      vm.placeSelectedAt(DayOfWeek.wed);
+      'redo sessions (startFromEmptyWeek) cannot navigate weeks — redoing '
+      'this week\'s layout on another week would duplicate the menu',
+      () async {
+        final vm = buildVm(startFromEmptyWeek: true);
+        await vm.init();
+        expect(vm.canNavigateWeeks, isFalse);
+        vm.placeSelectedAt(DayOfWeek.wed);
 
-      await vm.nextWeek();
+        await vm.nextWeek();
 
-      // Still on the original week, placement intact, no extra fetch.
-      expect(vm.weekStart, _weekStart);
-      expect(vm.placedCount, 1);
-      verify(() => service.getWeek(any())).called(1);
-    });
+        // Still on the original week, placement intact, no extra fetch.
+        expect(vm.weekStart, _weekStart);
+        expect(vm.placedCount, 1);
+        verify(() => service.getWeek(any())).called(1);
+      },
+    );
   });
 }

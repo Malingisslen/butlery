@@ -72,8 +72,9 @@ void main() {
     expect(rows.last.label, l10n.adminRecipesMethodManual);
     expect(rows.last.value, 2);
     // a method with no recipes still shows a zero row
-    final social =
-        rows.firstWhere((r) => r.label == l10n.adminRecipesMethodSocial);
+    final social = rows.firstWhere(
+      (r) => r.label == l10n.adminRecipesMethodSocial,
+    );
     expect(social.value, 0);
   });
 }

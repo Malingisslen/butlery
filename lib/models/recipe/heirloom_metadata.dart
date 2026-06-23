@@ -81,33 +81,37 @@ class HeirloomMetadata {
 
   /// Serialize to JSON-compatible map (ISO8601 dates).
   Map<String, dynamic> toJson() => {
-        'sourceImageUrl': sourceImageUrl,
-        'writerName': writerName,
-        'year': year,
-        'note': note,
-        'addedAt': addedAt.toIso8601String(),
-        'addedByUserId': addedByUserId,
-      };
+    'sourceImageUrl': sourceImageUrl,
+    'writerName': writerName,
+    'year': year,
+    'note': note,
+    'addedAt': addedAt.toIso8601String(),
+    'addedByUserId': addedByUserId,
+  };
 
   /// Serialize to Firestore map (Timestamp for dates).
   Map<String, dynamic> toFirestore() => {
-        'sourceImageUrl': sourceImageUrl,
-        'writerName': writerName,
-        'year': year,
-        'note': note,
-        'addedAt': Timestamp.fromDate(addedAt),
-        'addedByUserId': addedByUserId,
-      };
+    'sourceImageUrl': sourceImageUrl,
+    'writerName': writerName,
+    'year': year,
+    'note': note,
+    'addedAt': Timestamp.fromDate(addedAt),
+    'addedByUserId': addedByUserId,
+  };
 
   /// Deserialize from a JSON or Firestore map. Handles both shapes since
   /// the only divergence (addedAt) is routed through [utils.SerializationUtils.parseRequiredDateTimeValue],
   /// which accepts ISO strings, Timestamps, ints, and seconds-map variants.
   factory HeirloomMetadata.fromMap(Map<String, dynamic> map) {
     return HeirloomMetadata(
-      sourceImageUrl:
-          utils.SerializationUtils.safeString(map, 'sourceImageUrl'),
-      writerName:
-          utils.SerializationUtils.safeNullableString(map, 'writerName'),
+      sourceImageUrl: utils.SerializationUtils.safeString(
+        map,
+        'sourceImageUrl',
+      ),
+      writerName: utils.SerializationUtils.safeNullableString(
+        map,
+        'writerName',
+      ),
       year: utils.SerializationUtils.safeNullableInt(map, 'year'),
       note: utils.SerializationUtils.safeNullableString(map, 'note'),
       addedAt: utils.SerializationUtils.safeRequiredDateTime(map, 'addedAt'),

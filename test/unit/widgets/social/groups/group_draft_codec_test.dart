@@ -41,12 +41,14 @@ void main() {
 
   group('encodeGroupDraft — any populated field persists', () {
     test('a name alone makes the draft worth keeping', () {
-      final encoded = encodeGroupDraft(buildGroupDraft(
-        name: 'Middagsklubben',
-        description: '',
-        emoji: kGroupDraftDefaultEmoji,
-        friendIds: const [],
-      ));
+      final encoded = encodeGroupDraft(
+        buildGroupDraft(
+          name: 'Middagsklubben',
+          description: '',
+          emoji: kGroupDraftDefaultEmoji,
+          friendIds: const [],
+        ),
+      );
       expect(encoded, isNotNull);
       expect(jsonDecode(encoded!), {
         'name': 'Middagsklubben',
@@ -58,26 +60,32 @@ void main() {
 
     test('a non-default emoji alone is enough to persist', () {
       expect(
-        encodeGroupDraft(buildGroupDraft(
-          name: '',
-          description: '',
-          emoji: '🍝',
-          friendIds: const [],
-        )),
+        encodeGroupDraft(
+          buildGroupDraft(
+            name: '',
+            description: '',
+            emoji: '🍝',
+            friendIds: const [],
+          ),
+        ),
         isNotNull,
       );
     });
 
     test('selected friends alone are enough to persist', () {
-      final encoded = encodeGroupDraft(buildGroupDraft(
-        name: '',
-        description: '',
-        emoji: kGroupDraftDefaultEmoji,
-        friendIds: const ['friend_a', 'friend_b'],
-      ));
+      final encoded = encodeGroupDraft(
+        buildGroupDraft(
+          name: '',
+          description: '',
+          emoji: kGroupDraftDefaultEmoji,
+          friendIds: const ['friend_a', 'friend_b'],
+        ),
+      );
       expect(encoded, isNotNull);
-      expect(
-          (jsonDecode(encoded!) as Map)['friendIds'], ['friend_a', 'friend_b']);
+      expect((jsonDecode(encoded!) as Map)['friendIds'], [
+        'friend_a',
+        'friend_b',
+      ]);
     });
   });
 

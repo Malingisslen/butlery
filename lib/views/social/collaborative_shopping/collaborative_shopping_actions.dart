@@ -127,10 +127,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(
+          alpha: AppDimensions.opacityHalf,
+        ),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,
@@ -166,7 +165,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
             ? const Padding(
                 padding: EdgeInsets.all(AppDimensions.spacingS),
                 child: LoadingIndicator(
-                    size: AppDimensions.iconSizeS, strokeWidth: 2),
+                  size: AppDimensions.iconSizeS,
+                  strokeWidth: 2,
+                ),
               )
             : null,
       ),
@@ -182,9 +183,11 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return FilledButton.icon(
       onPressed: viewModel.isAddingItem ? null : onAddItem,
       icon: Icon(viewModel.isAddingItem ? Icons.hourglass_empty : Icons.add),
-      label: Text(viewModel.isAddingItem
-          ? context.l10n.collaborativeAdding
-          : context.l10n.collaborativeAdd),
+      label: Text(
+        viewModel.isAddingItem
+            ? context.l10n.collaborativeAdding
+            : context.l10n.collaborativeAdd,
+      ),
     );
   }
 
@@ -217,13 +220,15 @@ class CollaborativeShoppingActions extends BaseActionHandler
         return await viewModel.clearCompletedItems();
       },
       confirmationTitle: context.l10n.collaborativeClearCompletedConfirm,
-      confirmationMessage: context.l10n
-          .collaborativeClearCompletedMessage(completedItems.length),
+      confirmationMessage: context.l10n.collaborativeClearCompletedMessage(
+        completedItems.length,
+      ),
       confirmActionText: context.l10n.collaborativeClearAll,
       confirmationIcon: Icons.clear_all,
       isDangerous: true,
-      successMessage: context.l10n
-          .collaborativeCompletedItemsCleared(completedItems.length),
+      successMessage: context.l10n.collaborativeCompletedItemsCleared(
+        completedItems.length,
+      ),
       errorMessage: context.l10n.collaborativeCouldNotClearCompleted,
       metadata: {
         'completed_count': completedItems.length,

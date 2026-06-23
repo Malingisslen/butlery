@@ -19,7 +19,7 @@ class CacheDao {
   Database? _db;
 
   CacheDao({DatabaseFactory? databaseFactory})
-      : _factory = databaseFactory ?? databaseFactoryWeb;
+    : _factory = databaseFactory ?? databaseFactoryWeb;
 
   Future<Database> get _database async {
     return _db ??= await _factory.openDatabase(_dbName);
@@ -107,8 +107,10 @@ class CacheDao {
   Future<void> clearJsonBox(String boxName, String userId) async {
     final db = await _database;
     final prefix = _jsonPrefix(boxName, userId);
-    await _jsonStore.delete(db,
-        finder: Finder(filter: _keyPrefixFilter(prefix)));
+    await _jsonStore.delete(
+      db,
+      finder: Finder(filter: _keyPrefixFilter(prefix)),
+    );
   }
 
   Future<int> countJsonEntries(String boxName, String userId) async {

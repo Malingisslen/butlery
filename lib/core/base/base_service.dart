@@ -143,7 +143,8 @@ abstract class BaseService with ErrorHandlingMixin {
     bool requiresNetwork = false,
   }) async {
     AppLogger.info(
-        '🔄 Starting batch operation: $operationName (${operations.length} items)');
+      '🔄 Starting batch operation: $operationName (${operations.length} items)',
+    );
 
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
@@ -211,7 +212,8 @@ abstract class BaseService with ErrorHandlingMixin {
       final value = inputs[field];
       if (value == null || (value is String && value.isEmpty)) {
         _handleUserError(
-            AppLocale.current.validationFieldRequired(field.capitalize()));
+          AppLocale.current.validationFieldRequired(field.capitalize()),
+        );
         return false;
       }
     }

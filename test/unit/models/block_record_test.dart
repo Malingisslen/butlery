@@ -13,8 +13,10 @@ void main() {
     });
 
     test('order matters — blocker first', () {
-      expect(BlockRecord.compositeId('a', 'b'),
-          isNot(BlockRecord.compositeId('b', 'a')));
+      expect(
+        BlockRecord.compositeId('a', 'b'),
+        isNot(BlockRecord.compositeId('b', 'a')),
+      );
     });
   });
 
@@ -47,7 +49,9 @@ void main() {
       expect(payload['blockerId'], 'alice');
       expect(payload['blockedId'], 'bob');
       expect(
-          payload['blockedAt'], DateTime.utc(2026, 1, 1, 10).toIso8601String());
+        payload['blockedAt'],
+        DateTime.utc(2026, 1, 1, 10).toIso8601String(),
+      );
       // toFirestore should NOT include id — the doc id IS the composite id
       expect(payload.containsKey('id'), isFalse);
 
@@ -59,14 +63,15 @@ void main() {
     });
 
     test(
-        'fromFirestore tolerates missing optional-shape fields via safe defaults',
-        () {
-      final restored = BlockRecord.fromFirestore({}, 'someid');
-      expect(restored.id, 'someid');
-      expect(restored.blockerId, '');
-      expect(restored.blockedId, '');
-      // blockedAt is safeRequiredDateTime — falls back to now/epoch
-      expect(restored.blockedAt, isA<DateTime>());
-    });
+      'fromFirestore tolerates missing optional-shape fields via safe defaults',
+      () {
+        final restored = BlockRecord.fromFirestore({}, 'someid');
+        expect(restored.id, 'someid');
+        expect(restored.blockerId, '');
+        expect(restored.blockedId, '');
+        // blockedAt is safeRequiredDateTime — falls back to now/epoch
+        expect(restored.blockedAt, isA<DateTime>());
+      },
+    );
   });
 }

@@ -79,8 +79,8 @@ class GroupSharedContentService extends BaseService {
   GroupSharedContentService({
     required GroupSharedContentRepository repository,
     required perm_service.PermissionService permissionService,
-  })  : _repository = repository,
-        _permissionService = permissionService;
+  }) : _repository = repository,
+       _permissionService = permissionService;
 
   // -- Public get methods --
 
@@ -146,7 +146,8 @@ class GroupSharedContentService extends BaseService {
       final allMemberIds = group.allMemberIds;
 
       AppLogger.debug(
-          '🔍 [${contentType.toUpperCase()}] Querying for group: ${group.name}');
+        '🔍 [${contentType.toUpperCase()}] Querying for group: ${group.name}',
+      );
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
       final docs = await _repository.getSharedContent(
@@ -184,9 +185,11 @@ class GroupSharedContentService extends BaseService {
             memberIds: group.allMemberIds,
             contentType: contentType,
           )
-          .map((docs) => docs
-              .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
-              .toList());
+          .map(
+            (docs) => docs
+                .map((doc) => SharedContentItem.fromFirestore(doc, contentType))
+                .toList(),
+          );
     } catch (e) {
       AppLogger.warning('Failed to stream shared $contentType: $e');
       return Stream.value([]);

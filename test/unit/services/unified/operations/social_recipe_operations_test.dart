@@ -36,13 +36,15 @@ Recipe _buildCollaborative({
 }) {
   return RecipeBuilder()
       .asCollaborative()
-      .withSocialData(RecipeSocialData(
-        ownerId: ownerId,
-        ownerDisplayName: 'Owner',
-        memberPermissions: memberPermissions ?? {},
-        allowMemberInvites: allowMemberInvites,
-        categoryIds: categoryIds,
-      ))
+      .withSocialData(
+        RecipeSocialData(
+          ownerId: ownerId,
+          ownerDisplayName: 'Owner',
+          memberPermissions: memberPermissions ?? {},
+          allowMemberInvites: allowMemberInvites,
+          categoryIds: categoryIds,
+        ),
+      )
       .build();
 }
 
@@ -223,8 +225,10 @@ void main() {
     group('getUserPermission', () {
       test('owner gets owner permission', () {
         final recipe = _buildCollaborative(ownerId: 'current-user');
-        expect(helper.getUserPermission(recipe, 'current-user'),
-            ResourcePermission.owner);
+        expect(
+          helper.getUserPermission(recipe, 'current-user'),
+          ResourcePermission.owner,
+        );
       });
 
       test('member gets their assigned permission', () {
@@ -234,34 +238,44 @@ void main() {
             'current-user': ResourcePermission.editor,
           },
         );
-        expect(helper.getUserPermission(recipe, 'current-user'),
-            ResourcePermission.editor);
+        expect(
+          helper.getUserPermission(recipe, 'current-user'),
+          ResourcePermission.editor,
+        );
       });
 
       test('non-member gets read permission', () {
         final recipe = _buildCollaborative(ownerId: 'other-owner');
-        expect(helper.getUserPermission(recipe, 'stranger'),
-            ResourcePermission.read);
+        expect(
+          helper.getUserPermission(recipe, 'stranger'),
+          ResourcePermission.read,
+        );
       });
     });
 
     group('checkLegacyPermission', () {
       test('maps view action to canViewRecipe', () {
         final recipe = RecipeBuilder().withCreatedBy('current-user').build();
-        expect(helper.checkLegacyPermission(recipe, 'current-user', 'view'),
-            isTrue);
+        expect(
+          helper.checkLegacyPermission(recipe, 'current-user', 'view'),
+          isTrue,
+        );
       });
 
       test('maps edit action to canEditRecipe', () {
         final recipe = RecipeBuilder().withCreatedBy('current-user').build();
-        expect(helper.checkLegacyPermission(recipe, 'current-user', 'edit'),
-            isTrue);
+        expect(
+          helper.checkLegacyPermission(recipe, 'current-user', 'edit'),
+          isTrue,
+        );
       });
 
       test('returns false for unknown action', () {
         final recipe = RecipeBuilder().withCreatedBy('current-user').build();
-        expect(helper.checkLegacyPermission(recipe, 'current-user', 'fly'),
-            isFalse);
+        expect(
+          helper.checkLegacyPermission(recipe, 'current-user', 'fly'),
+          isFalse,
+        );
       });
     });
 
@@ -316,12 +330,14 @@ void main() {
       });
 
       test('returns collaborative recipes where user is member', () async {
-        recipes.add(_buildCollaborative(
-          ownerId: 'other-owner',
-          memberPermissions: {
-            'current-user': ResourcePermission.viewer,
-          },
-        ));
+        recipes.add(
+          _buildCollaborative(
+            ownerId: 'other-owner',
+            memberPermissions: {
+              'current-user': ResourcePermission.viewer,
+            },
+          ),
+        );
 
         final result = await discovery.getCollaborativeRecipes();
         expect(result.length, 1);
@@ -349,10 +365,12 @@ void main() {
         final r = RecipeBuilder()
             .asCollaborative()
             .withTitle('Pannkakor')
-            .withSocialData(RecipeSocialData(
-              ownerId: 'current-user',
-              ownerDisplayName: 'Owner',
-            ))
+            .withSocialData(
+              RecipeSocialData(
+                ownerId: 'current-user',
+                ownerDisplayName: 'Owner',
+              ),
+            )
             .build();
         recipes.add(r);
 
@@ -375,22 +393,25 @@ void main() {
     });
 
     group('getSharedWithMe', () {
-      test('returns collaborative recipes where user is member but not owner',
-          () async {
-        recipes.addAll([
-          _buildCollaborative(
-            ownerId: 'other-owner',
-            memberPermissions: {
-              'current-user': ResourcePermission.viewer,
-            },
-          ),
-          _buildCollaborative(
-              ownerId: 'current-user'), // own, not "shared with me"
-        ]);
+      test(
+        'returns collaborative recipes where user is member but not owner',
+        () async {
+          recipes.addAll([
+            _buildCollaborative(
+              ownerId: 'other-owner',
+              memberPermissions: {
+                'current-user': ResourcePermission.viewer,
+              },
+            ),
+            _buildCollaborative(
+              ownerId: 'current-user',
+            ), // own, not "shared with me"
+          ]);
 
-        final result = await discovery.getSharedWithMe();
-        expect(result.length, 1);
-      });
+          final result = await discovery.getSharedWithMe();
+          expect(result.length, 1);
+        },
+      );
     });
 
     group('getSharedByMe', () {
@@ -408,9 +429,11 @@ void main() {
         final result = await discovery.getSharedByMe();
         // Should include ones user owns that are collaborative
         expect(
-            result.every((r) =>
-                (r.socialData?.ownerId ?? r.createdBy) == 'current-user'),
-            isTrue);
+          result.every(
+            (r) => (r.socialData?.ownerId ?? r.createdBy) == 'current-user',
+          ),
+          isTrue,
+        );
       });
     });
 
@@ -463,74 +486,80 @@ void main() {
     });
 
     test(
-        'cap-rejection surfaces errorShareCapReached through the DI chain to onShareError',
-        () async {
-      // 200 existing members + owner + the new member projects over the cap.
-      final atCapMembers = <String, ResourcePermission>{
-        for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
-      };
-      final atCapRecipe = Recipe(
-        core: RecipeCore(
-          id: 'collab_1',
-          title: 'Shared Team Recipe',
-          description: 'A collaborative recipe',
-          ingredients: ['x'],
-          instructions: ['y'],
-          mealType: 'Lunch',
-          createdBy: 'user_123',
-          // Fixed timestamps — this test asserts member-capacity logic, not
-          // recency; a wall-clock seed would trip the real-time regression
-          // guard (scripts/check_test_real_time.sh).
-          createdAt: DateTime(2025, 1, 1),
-          updatedAt: DateTime(2025, 1, 1),
-        ),
-        type: RecipeType.collaborative,
-        socialData: RecipeSocialData(
-          ownerId: 'user_123',
-          ownerDisplayName: 'Owner',
-          memberPermissions: atCapMembers,
-          allowGuestViewing: false,
-          allowMemberInvites: true,
-        ),
-      );
+      'cap-rejection surfaces errorShareCapReached through the DI chain to onShareError',
+      () async {
+        // 200 existing members + owner + the new member projects over the cap.
+        final atCapMembers = <String, ResourcePermission>{
+          for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
+        };
+        final atCapRecipe = Recipe(
+          core: RecipeCore(
+            id: 'collab_1',
+            title: 'Shared Team Recipe',
+            description: 'A collaborative recipe',
+            ingredients: ['x'],
+            instructions: ['y'],
+            mealType: 'Lunch',
+            createdBy: 'user_123',
+            // Fixed timestamps — this test asserts member-capacity logic, not
+            // recency; a wall-clock seed would trip the real-time regression
+            // guard (scripts/check_test_real_time.sh).
+            createdAt: DateTime(2025, 1, 1),
+            updatedAt: DateTime(2025, 1, 1),
+          ),
+          type: RecipeType.collaborative,
+          socialData: RecipeSocialData(
+            ownerId: 'user_123',
+            ownerDisplayName: 'Owner',
+            memberPermissions: atCapMembers,
+            allowGuestViewing: false,
+            allowMemberInvites: true,
+          ),
+        );
 
-      mockParent.setRecipeState(
-        currentUserId: 'user_123',
-        currentUserDisplayName: 'Current User',
-        recipes: [atCapRecipe],
-        isInitialized: true,
-      );
+        mockParent.setRecipeState(
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Current User',
+          recipes: [atCapRecipe],
+          isInitialized: true,
+        );
 
-      String? surfaced;
-      final ops = SocialRecipeOperations(
-        getCurrentUserId: () => mockParent.currentUserId,
-        getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
-        getRecipes: () => mockParent.recipes,
-        updateRecipe: (_) async => true,
-        createCollaborativeRecipe: mockParent.createCollaborativeRecipe,
-        createPersonalRecipe: mockParent.createPersonalRecipe,
-        ratingsRepository: MockRatingsRepository(),
-        firestoreRepository:
-            app_provider.ServiceLocator.get<FirestoreRepository>(),
-        onShareError: (m) => surfaced = m,
-      );
+        String? surfaced;
+        final ops = SocialRecipeOperations(
+          getCurrentUserId: () => mockParent.currentUserId,
+          getCurrentUserDisplayName: () => mockParent.currentUserDisplayName,
+          getRecipes: () => mockParent.recipes,
+          updateRecipe: (_) async => true,
+          createCollaborativeRecipe: mockParent.createCollaborativeRecipe,
+          createPersonalRecipe: mockParent.createPersonalRecipe,
+          ratingsRepository: MockRatingsRepository(),
+          firestoreRepository:
+              app_provider.ServiceLocator.get<FirestoreRepository>(),
+          onShareError: (m) => surfaced = m,
+        );
 
-      final id = await ops.shareRecipe(
-        recipeId: 'collab_1',
-        memberIds: ['new-member'],
-        memberDisplayNames: {'new-member': 'New'},
-      );
+        final id = await ops.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['new-member'],
+          memberDisplayNames: {'new-member': 'New'},
+        );
 
-      expect(id, isNull, reason: 'cap-guard rejects the share');
-      expect(mockParent.createCollaborativeRecipeCalls, isEmpty,
-          reason: 'short-circuits before creating the collaborative recipe');
-      expect(
-        surfaced,
-        equals(
-            AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe)),
-        reason: 'the localized cap message must survive the DI hop '
-            'SocialRecipeOperations → RecipeSharingManager → onShareError',
-      );
-    });
+        expect(id, isNull, reason: 'cap-guard rejects the share');
+        expect(
+          mockParent.createCollaborativeRecipeCalls,
+          isEmpty,
+          reason: 'short-circuits before creating the collaborative recipe',
+        );
+        expect(
+          surfaced,
+          equals(
+            AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe),
+          ),
+          reason:
+              'the localized cap message must survive the DI hop '
+              'SocialRecipeOperations → RecipeSharingManager → onShareError',
+        );
+      },
+    );
   });
 }

@@ -37,19 +37,21 @@ void main() {
   group('RecipePrintService stub (non-web, BUT-1347 ENG-26)', () {
     // Intent: proves printRecipeHtml() is a safe no-op on non-web so that
     // any UI code that calls it cross-platform never crashes on iOS/Android.
-    test('printRecipeHtml() completes without throwing for a standard recipe',
-        () async {
-      final recipe = RecipeFactory.build(
-        title: 'Köttbullar',
-        ingredients: ['500 g nötfärs', '1 lök', '1 ägg'],
-        instructions: ['Blanda färsen.', 'Forma bullar.', 'Stek i smör.'],
-        portions: 4,
-        timeMinutes: 30,
-        sourceUrl: 'https://example.com/kottbullar',
-      );
+    test(
+      'printRecipeHtml() completes without throwing for a standard recipe',
+      () async {
+        final recipe = RecipeFactory.build(
+          title: 'Köttbullar',
+          ingredients: ['500 g nötfärs', '1 lök', '1 ägg'],
+          instructions: ['Blanda färsen.', 'Forma bullar.', 'Stek i smör.'],
+          portions: 4,
+          timeMinutes: 30,
+          sourceUrl: 'https://example.com/kottbullar',
+        );
 
-      await expectLater(printRecipeHtml(recipe), completes);
-    });
+        await expectLater(printRecipeHtml(recipe), completes);
+      },
+    );
 
     // Intent: proves printRecipeHtml() handles a recipe with empty ingredient
     // and instruction lists without crashing — edge case that could panic in
@@ -67,27 +69,30 @@ void main() {
     // timeMinutes, sourceUrl) without crashing — the web builder conditionally
     // renders these; the stub must be equally forgiving.
     test(
-        'printRecipeHtml() completes for a recipe with all optional fields null',
-        () async {
-      final recipe = RecipeFactory.build(
-        portions: null,
-        timeMinutes: null,
-        sourceUrl: null,
-      );
+      'printRecipeHtml() completes for a recipe with all optional fields null',
+      () async {
+        final recipe = RecipeFactory.build(
+          portions: null,
+          timeMinutes: null,
+          sourceUrl: null,
+        );
 
-      await expectLater(printRecipeHtml(recipe), completes);
-    });
+        await expectLater(printRecipeHtml(recipe), completes);
+      },
+    );
 
     // Intent: proves printRecipeHtml() tolerates HTML-special characters in
     // the title — XSS-escaping in the web builder must not be the only thing
     // preventing a crash; the stub must not throw either.
-    test('printRecipeHtml() completes for a recipe with special chars in title',
-        () async {
-      final recipe = RecipeFactory.build(
-        title: 'Pasta & "Tomat" <Grädde>',
-      );
+    test(
+      'printRecipeHtml() completes for a recipe with special chars in title',
+      () async {
+        final recipe = RecipeFactory.build(
+          title: 'Pasta & "Tomat" <Grädde>',
+        );
 
-      await expectLater(printRecipeHtml(recipe), completes);
-    });
+        await expectLater(printRecipeHtml(recipe), completes);
+      },
+    );
   });
 }

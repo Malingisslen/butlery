@@ -160,8 +160,10 @@ void main() {
     /// host prefix in other patterns would silently fail to match.
     test('trims surrounding whitespace and newlines', () {
       expect(svc.extractVideoId('  https://youtu.be/$_vid  '), _vid);
-      expect(svc.extractVideoId('\n\thttps://www.youtube.com/watch?v=$_vid\n'),
-          _vid);
+      expect(
+        svc.extractVideoId('\n\thttps://www.youtube.com/watch?v=$_vid\n'),
+        _vid,
+      );
       expect(svc.extractVideoId('   $_vid   '), _vid);
     });
 
@@ -172,10 +174,14 @@ void main() {
       const dashId = 'abc-def_123'; // 11 chars, contains - and _
       expect(dashId.length, 11);
       expect(svc.extractVideoId('https://youtu.be/$dashId'), dashId);
-      expect(svc.extractVideoId('https://www.youtube.com/watch?v=$dashId'),
-          dashId);
       expect(
-          svc.extractVideoId('https://www.youtube.com/shorts/$dashId'), dashId);
+        svc.extractVideoId('https://www.youtube.com/watch?v=$dashId'),
+        dashId,
+      );
+      expect(
+        svc.extractVideoId('https://www.youtube.com/shorts/$dashId'),
+        dashId,
+      );
       expect(svc.extractVideoId(dashId), dashId);
     });
 
@@ -230,12 +236,18 @@ void main() {
       expect(svc.extractVideoId('iyoutube.com/watch?v=$_vid'), isNull);
       // Wrong host (only `youtube.com` or `youtu.be` allowed).
       expect(
-          svc.extractVideoId('https://evilyoutube.com/watch?v=$_vid'), isNull);
-      expect(svc.extractVideoId('https://anything-youtube.com/embed/$_vid'),
-          isNull);
+        svc.extractVideoId('https://evilyoutube.com/watch?v=$_vid'),
+        isNull,
+      );
+      expect(
+        svc.extractVideoId('https://anything-youtube.com/embed/$_vid'),
+        isNull,
+      );
       // Subdomain over-match: only `www.` or `m.` allowed before youtube.com.
-      expect(svc.extractVideoId('https://random.youtube.com/watch?v=$_vid'),
-          isNull);
+      expect(
+        svc.extractVideoId('https://random.youtube.com/watch?v=$_vid'),
+        isNull,
+      );
     });
 
     /// Length is strict at 11 for the bare-ID pattern. A 10-char or 12-char
@@ -258,15 +270,18 @@ void main() {
       late Uri seenUrl;
       final svc = _serviceWith((req) async {
         seenUrl = req.url;
-        return _ok(json.encode({
-          'title': 'Köttbullar med potatismos',
-          'thumbnail_url': 'https://img.youtube.com/vi/$_vid/hqdefault.jpg',
-          'author_name': 'Mamma Lagar Mat',
-        }));
+        return _ok(
+          json.encode({
+            'title': 'Köttbullar med potatismos',
+            'thumbnail_url': 'https://img.youtube.com/vi/$_vid/hqdefault.jpg',
+            'author_name': 'Mamma Lagar Mat',
+          }),
+        );
       });
 
-      final meta =
-          await svc.fetchVideoMetadata('https://www.youtube.com/watch?v=$_vid');
+      final meta = await svc.fetchVideoMetadata(
+        'https://www.youtube.com/watch?v=$_vid',
+      );
 
       expect(meta, isNotNull);
       expect(meta!.videoId, _vid);
@@ -289,8 +304,9 @@ void main() {
       });
 
       final fromShort = await svc.fetchVideoMetadata('https://youtu.be/$_vid');
-      final fromShorts =
-          await svc.fetchVideoMetadata('https://www.youtube.com/shorts/$_vid');
+      final fromShorts = await svc.fetchVideoMetadata(
+        'https://www.youtube.com/shorts/$_vid',
+      );
       final fromBare = await svc.fetchVideoMetadata(_vid);
 
       for (final m in [fromShort, fromShorts, fromBare]) {
@@ -307,8 +323,9 @@ void main() {
     test('returns null on non-200 status', () async {
       final svc = _serviceWith((req) async => _status(404, body: 'not found'));
 
-      final meta =
-          await svc.fetchVideoMetadata('https://www.youtube.com/watch?v=$_vid');
+      final meta = await svc.fetchVideoMetadata(
+        'https://www.youtube.com/watch?v=$_vid',
+      );
 
       expect(meta, isNull);
       svc.dispose();
@@ -319,9 +336,11 @@ void main() {
     /// defaulting to "Unknown" so the UI never has to null-check.
     test('defaults missing title to "Unknown"', () async {
       final svc = _serviceWith((req) async {
-        return _ok(json.encode({
-          'thumbnail_url': 'https://img.youtube.com/vi/$_vid/hqdefault.jpg',
-        }));
+        return _ok(
+          json.encode({
+            'thumbnail_url': 'https://img.youtube.com/vi/$_vid/hqdefault.jpg',
+          }),
+        );
       });
 
       final meta = await svc.fetchVideoMetadata(_vid);
@@ -356,8 +375,10 @@ void main() {
     /// throw, NOT return a half-populated success.
     test('returns "No captions available" when no tracks found', () async {
       final svc = _serviceWith((req) async {
-        return _ok('<html><body>no script here</body></html>',
-            contentType: 'text/html');
+        return _ok(
+          '<html><body>no script here</body></html>',
+          contentType: 'text/html',
+        );
       });
 
       final result = await svc.fetchTranscript(_vid);
@@ -371,167 +392,204 @@ void main() {
     /// playerResponse parses cleanly but has no `captions` key. The parsed
     /// branch returns [] and we still must surface the structured no-captions
     /// failure (not a generic crash, not a bare null).
-    test('returns no-captions failure when playerResponse lacks captions',
-        () async {
-      final svc = _serviceWith((req) async {
-        return _ok(_watchPageHtmlNoCaptions(), contentType: 'text/html');
-      });
+    test(
+      'returns no-captions failure when playerResponse lacks captions',
+      () async {
+        final svc = _serviceWith((req) async {
+          return _ok(_watchPageHtmlNoCaptions(), contentType: 'text/html');
+        });
 
-      final result = await svc.fetchTranscript(_vid);
+        final result = await svc.fetchTranscript(_vid);
 
-      expect(result.isSuccess, isFalse);
-      expect(result.error, 'No captions available for this video');
-      svc.dispose();
-    });
+        expect(result.isSuccess, isFalse);
+        expect(result.error, 'No captions available for this video');
+        svc.dispose();
+      },
+    );
 
     /// Happy path: a single Swedish track is selected, JSON3 timedtext is
     /// fetched, segments are joined into the transcript text, and the
     /// language is carried back to the caller.
-    test('returns success with joined transcript and language preserved',
-        () async {
-      const trackUrl = 'https://www.youtube.com/api/timedtext?lang=sv&v=$_vid';
-      final track = '''
+    test(
+      'returns success with joined transcript and language preserved',
+      () async {
+        const trackUrl =
+            'https://www.youtube.com/api/timedtext?lang=sv&v=$_vid';
+        final track =
+            '''
         {"baseUrl":"$trackUrl","languageCode":"sv",
          "name":{"simpleText":"Svenska"},"vssId":".sv"}
       ''';
 
-      final svc = _serviceWith((req) async {
-        if (req.url.host.contains('youtube.com') && req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks([track]),
-              contentType: 'text/html');
-        }
-        // timedtext fetch — JSON3 format
-        if (req.url.path.contains('/api/timedtext')) {
-          return _ok(_json3Body(['Hej och välkommen ', 'till matlagningen.']));
-        }
-        return _status(404);
-      });
+        final svc = _serviceWith((req) async {
+          if (req.url.host.contains('youtube.com') &&
+              req.url.path == '/watch') {
+            return _ok(
+              _watchPageHtmlWithTracks([track]),
+              contentType: 'text/html',
+            );
+          }
+          // timedtext fetch — JSON3 format
+          if (req.url.path.contains('/api/timedtext')) {
+            return _ok(
+              _json3Body(['Hej och välkommen ', 'till matlagningen.']),
+            );
+          }
+          return _status(404);
+        });
 
-      final result = await svc.fetchTranscript(_vid);
+        final result = await svc.fetchTranscript(_vid);
 
-      expect(result.isSuccess, isTrue, reason: 'error=${result.error}');
-      expect(result.language, 'sv');
-      expect(result.isAutoGenerated, isFalse);
-      expect(result.transcript, contains('Hej och välkommen'));
-      expect(result.transcript, contains('till matlagningen'));
-      svc.dispose();
-    });
+        expect(result.isSuccess, isTrue, reason: 'error=${result.error}');
+        expect(result.language, 'sv');
+        expect(result.isAutoGenerated, isFalse);
+        expect(result.transcript, contains('Hej och välkommen'));
+        expect(result.transcript, contains('till matlagningen'));
+        svc.dispose();
+      },
+    );
 
     /// Auto-generated detection (`vssId.startsWith("a.")`) and language
     /// preference: when both a manual and auto-generated Swedish track are
     /// present, the manual one wins. Bug class: a flipped `!isAutoGenerated`
     /// would silently prefer auto-generated captions, which are noticeably
     /// lower quality.
-    test('prefers manual Swedish track over auto-generated Swedish track',
-        () async {
-      const manualUrl = 'https://www.youtube.com/api/timedtext?type=manual';
-      const autoUrl = 'https://www.youtube.com/api/timedtext?type=auto';
-      final tracks = [
-        '''
+    test(
+      'prefers manual Swedish track over auto-generated Swedish track',
+      () async {
+        const manualUrl = 'https://www.youtube.com/api/timedtext?type=manual';
+        const autoUrl = 'https://www.youtube.com/api/timedtext?type=auto';
+        final tracks = [
+          '''
         {"baseUrl":"$autoUrl","languageCode":"sv",
          "name":{"simpleText":"Svenska (auto)"},"vssId":"a.sv"}
         ''',
-        '''
+          '''
         {"baseUrl":"$manualUrl","languageCode":"sv",
          "name":{"simpleText":"Svenska"},"vssId":".sv"}
         ''',
-      ];
-      String? fetchedTimedtextQuery;
-      final svc = _serviceWith((req) async {
-        if (req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks(tracks),
-              contentType: 'text/html');
-        }
-        if (req.url.path.contains('/api/timedtext')) {
-          fetchedTimedtextQuery = req.url.query;
-          return _ok(_json3Body(['manual transcript text']));
-        }
-        return _status(404);
-      });
+        ];
+        String? fetchedTimedtextQuery;
+        final svc = _serviceWith((req) async {
+          if (req.url.path == '/watch') {
+            return _ok(
+              _watchPageHtmlWithTracks(tracks),
+              contentType: 'text/html',
+            );
+          }
+          if (req.url.path.contains('/api/timedtext')) {
+            fetchedTimedtextQuery = req.url.query;
+            return _ok(_json3Body(['manual transcript text']));
+          }
+          return _status(404);
+        });
 
-      final result = await svc.fetchTranscript(_vid);
+        final result = await svc.fetchTranscript(_vid);
 
-      expect(result.isSuccess, isTrue);
-      expect(result.isAutoGenerated, isFalse,
-          reason: 'manual track must beat auto-generated track in same lang');
-      expect(fetchedTimedtextQuery, contains('type=manual'),
-          reason: 'must have fetched the manual track, not the auto one');
-      svc.dispose();
-    });
+        expect(result.isSuccess, isTrue);
+        expect(
+          result.isAutoGenerated,
+          isFalse,
+          reason: 'manual track must beat auto-generated track in same lang',
+        );
+        expect(
+          fetchedTimedtextQuery,
+          contains('type=manual'),
+          reason: 'must have fetched the manual track, not the auto one',
+        );
+        svc.dispose();
+      },
+    );
 
     /// Language preference order: Swedish must be picked over English when
     /// both are present as manual tracks. The `_preferredLanguages` list is
     /// `['sv', 'en', 'da', 'no', 'nb']` — sv wins.
-    test('prefers Swedish over English when both available as manual',
-        () async {
-      const svUrl = 'https://www.youtube.com/api/timedtext?which=sv';
-      const enUrl = 'https://www.youtube.com/api/timedtext?which=en';
-      final tracks = [
-        '''
+    test(
+      'prefers Swedish over English when both available as manual',
+      () async {
+        const svUrl = 'https://www.youtube.com/api/timedtext?which=sv';
+        const enUrl = 'https://www.youtube.com/api/timedtext?which=en';
+        final tracks = [
+          '''
         {"baseUrl":"$enUrl","languageCode":"en",
          "name":{"simpleText":"English"},"vssId":".en"}
         ''',
-        '''
+          '''
         {"baseUrl":"$svUrl","languageCode":"sv",
          "name":{"simpleText":"Svenska"},"vssId":".sv"}
         ''',
-      ];
-      String? fetchedQuery;
-      final svc = _serviceWith((req) async {
-        if (req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks(tracks),
-              contentType: 'text/html');
-        }
-        if (req.url.path.contains('/api/timedtext')) {
-          fetchedQuery = req.url.query;
-          return _ok(_json3Body(['x']));
-        }
-        return _status(404);
-      });
+        ];
+        String? fetchedQuery;
+        final svc = _serviceWith((req) async {
+          if (req.url.path == '/watch') {
+            return _ok(
+              _watchPageHtmlWithTracks(tracks),
+              contentType: 'text/html',
+            );
+          }
+          if (req.url.path.contains('/api/timedtext')) {
+            fetchedQuery = req.url.query;
+            return _ok(_json3Body(['x']));
+          }
+          return _status(404);
+        });
 
-      final result = await svc.fetchTranscript(_vid);
+        final result = await svc.fetchTranscript(_vid);
 
-      expect(result.isSuccess, isTrue);
-      expect(result.language, 'sv');
-      expect(fetchedQuery, contains('which=sv'));
-      svc.dispose();
-    });
+        expect(result.isSuccess, isTrue);
+        expect(result.language, 'sv');
+        expect(fetchedQuery, contains('which=sv'));
+        svc.dispose();
+      },
+    );
 
     /// JSON3 segments where `utf8` is null or whitespace must NOT be
     /// concatenated. Bug class: writing the string "null" to the buffer.
     /// Whitespace-only segments would also bloat the transcript with empty
     /// space — the production check `text.trim().isNotEmpty` is the
     /// intended filter and this test pins it.
-    test('filters out null/whitespace segments without concatenating null',
-        () async {
-      const trackUrl = 'https://www.youtube.com/api/timedtext?lang=en';
-      final track = '''
+    test(
+      'filters out null/whitespace segments without concatenating null',
+      () async {
+        const trackUrl = 'https://www.youtube.com/api/timedtext?lang=en';
+        final track =
+            '''
         {"baseUrl":"$trackUrl","languageCode":"en",
          "name":{"simpleText":"English"},"vssId":".en"}
       ''';
-      final svc = _serviceWith((req) async {
-        if (req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks([track]),
-              contentType: 'text/html');
-        }
-        if (req.url.path.contains('/api/timedtext')) {
-          // Mix of valid, null, whitespace and valid again.
-          return _ok(_json3Body(['hello ', null, '   ', 'world']));
-        }
-        return _status(404);
-      });
+        final svc = _serviceWith((req) async {
+          if (req.url.path == '/watch') {
+            return _ok(
+              _watchPageHtmlWithTracks([track]),
+              contentType: 'text/html',
+            );
+          }
+          if (req.url.path.contains('/api/timedtext')) {
+            // Mix of valid, null, whitespace and valid again.
+            return _ok(_json3Body(['hello ', null, '   ', 'world']));
+          }
+          return _status(404);
+        });
 
-      final result = await svc.fetchTranscript(_vid);
+        final result = await svc.fetchTranscript(_vid);
 
-      expect(result.isSuccess, isTrue, reason: 'error=${result.error}');
-      expect(result.transcript, isNotNull);
-      expect(result.transcript, isNot(contains('null')),
-          reason: 'must not write the literal "null" into the transcript');
-      expect(result.transcript, 'hello world',
-          reason: 'collapsed whitespace + filtered empty segments must produce '
-              'exactly "hello world"');
-      svc.dispose();
-    });
+        expect(result.isSuccess, isTrue, reason: 'error=${result.error}');
+        expect(result.transcript, isNotNull);
+        expect(
+          result.transcript,
+          isNot(contains('null')),
+          reason: 'must not write the literal "null" into the transcript',
+        );
+        expect(
+          result.transcript,
+          'hello world',
+          reason:
+              'collapsed whitespace + filtered empty segments must produce '
+              'exactly "hello world"',
+        );
+        svc.dispose();
+      },
+    );
 
     /// All-whitespace transcript: every segment is whitespace-only. The
     /// service must map this to a structured failure ("Failed to fetch
@@ -540,14 +598,17 @@ void main() {
     /// importer and the import pipeline tries to LLM-structure empty text.
     test('returns failure when every segment is whitespace-only', () async {
       const trackUrl = 'https://www.youtube.com/api/timedtext?lang=en';
-      final track = '''
+      final track =
+          '''
         {"baseUrl":"$trackUrl","languageCode":"en",
          "name":{"simpleText":"English"},"vssId":".en"}
       ''';
       final svc = _serviceWith((req) async {
         if (req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks([track]),
-              contentType: 'text/html');
+          return _ok(
+            _watchPageHtmlWithTracks([track]),
+            contentType: 'text/html',
+          );
         }
         if (req.url.path.contains('/api/timedtext')) {
           return _ok(_json3Body(['   ', '\n\t', '']));
@@ -569,7 +630,8 @@ void main() {
     /// the fallback branch AND the entity decoder.
     test('falls back to XML parsing and decodes HTML entities', () async {
       const trackUrl = 'https://www.youtube.com/api/timedtext?lang=en';
-      final track = '''
+      final track =
+          '''
         {"baseUrl":"$trackUrl","languageCode":"en",
          "name":{"simpleText":"English"},"vssId":".en"}
       ''';
@@ -583,8 +645,10 @@ void main() {
 ''';
       final svc = _serviceWith((req) async {
         if (req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks([track]),
-              contentType: 'text/html');
+          return _ok(
+            _watchPageHtmlWithTracks([track]),
+            contentType: 'text/html',
+          );
         }
         if (req.url.path.contains('/api/timedtext')) {
           return _ok(xmlBody, contentType: 'application/xml');
@@ -598,8 +662,11 @@ void main() {
       expect(result.transcript, contains('Salt & pepper'));
       expect(result.transcript, contains("it's ready"));
       expect(result.transcript, contains('say "done"'));
-      expect(result.transcript, isNot(contains('&amp;')),
-          reason: 'HTML entities must be decoded');
+      expect(
+        result.transcript,
+        isNot(contains('&amp;')),
+        reason: 'HTML entities must be decoded',
+      );
       expect(result.transcript, isNot(contains('&#39;')));
       svc.dispose();
     });
@@ -609,21 +676,26 @@ void main() {
     /// often pepper these in and they pollute the LLM input.
     test('strips music/applause markers from the cleaned transcript', () async {
       const trackUrl = 'https://www.youtube.com/api/timedtext?lang=sv';
-      final track = '''
+      final track =
+          '''
         {"baseUrl":"$trackUrl","languageCode":"sv",
          "name":{"simpleText":"Svenska"},"vssId":".sv"}
       ''';
       final svc = _serviceWith((req) async {
         if (req.url.path == '/watch') {
-          return _ok(_watchPageHtmlWithTracks([track]),
-              contentType: 'text/html');
+          return _ok(
+            _watchPageHtmlWithTracks([track]),
+            contentType: 'text/html',
+          );
         }
         if (req.url.path.contains('/api/timedtext')) {
-          return _ok(_json3Body([
-            '[MUSIK] hej ',
-            'och [applåder] välkomna ',
-            'till [Music] receptet'
-          ]));
+          return _ok(
+            _json3Body([
+              '[MUSIK] hej ',
+              'och [applåder] välkomna ',
+              'till [Music] receptet',
+            ]),
+          );
         }
         return _status(404);
       });
@@ -643,27 +715,33 @@ void main() {
       // markers BEFORE normalizing whitespace, so no double-spaces are left
       // where markers used to be. Tightened from `'   '` (3-space) to `'  '`
       // (2-space) — the previous looser assertion let the bug through.
-      expect(t, isNot(contains('  ')),
-          reason: 'BUT-1096: any two-or-more consecutive spaces indicate the '
-              'marker-strip-vs-whitespace-normalize order has regressed');
+      expect(
+        t,
+        isNot(contains('  ')),
+        reason:
+            'BUT-1096: any two-or-more consecutive spaces indicate the '
+            'marker-strip-vs-whitespace-normalize order has regressed',
+      );
       svc.dispose();
     });
 
     /// Watch-page fetch throws synchronously → `safeExecute` catches and
     /// returns the documented default ("Error fetching transcript"). The
     /// bug class is the throw escaping to the caller and crashing the UI.
-    test('swallows network exceptions and returns "Error fetching transcript"',
-        () async {
-      final svc = _serviceWith((req) async {
-        throw const _FakeHttpException('connection reset');
-      });
+    test(
+      'swallows network exceptions and returns "Error fetching transcript"',
+      () async {
+        final svc = _serviceWith((req) async {
+          throw const _FakeHttpException('connection reset');
+        });
 
-      final result = await svc.fetchTranscript(_vid);
+        final result = await svc.fetchTranscript(_vid);
 
-      expect(result.isSuccess, isFalse);
-      expect(result.error, 'Error fetching transcript');
-      svc.dispose();
-    });
+        expect(result.isSuccess, isFalse);
+        expect(result.error, 'Error fetching transcript');
+        svc.dispose();
+      },
+    );
 
     /// Watch page non-200 → `_fetchCaptionTracks` returns []. Service must
     /// surface the structured "no captions" failure, not let an empty list
@@ -696,8 +774,11 @@ void main() {
 
       svc.dispose();
 
-      expect(injected.closed, isFalse,
-          reason: 'injected client lifecycle belongs to the caller');
+      expect(
+        injected.closed,
+        isFalse,
+        reason: 'injected client lifecycle belongs to the caller',
+      );
     });
 
     /// When the service constructs its own client (no injection), dispose

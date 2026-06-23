@@ -81,7 +81,8 @@ class PermissionCacheService {
   late final LruMap<PermissionCacheKey, CachedPermission> _cache = LruMap(
     maxSize: _maxSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=PermissionCacheService key=$key bound=$_maxSize'),
+      'cache_eviction service=PermissionCacheService key=$key bound=$_maxSize',
+    ),
   );
 
   /// Cleanup timer
@@ -103,8 +104,8 @@ class PermissionCacheService {
 
   /// Get TTL from feature flags (in seconds).
   Duration get _ttl => Duration(
-        seconds: _featureFlags.getInt(FeatureFlags.permissionCacheTtlSeconds),
-      );
+    seconds: _featureFlags.getInt(FeatureFlags.permissionCacheTtlSeconds),
+  );
 
   /// Get max cache size from feature flags.
   int get _maxSize => _featureFlags.getInt(FeatureFlags.permissionCacheMaxSize);
@@ -177,11 +178,13 @@ class PermissionCacheService {
     if (!isEnabled) return;
 
     final count = _cache.removeWhere(
-        (k, _) => k.resourceType == resourceType && k.resourceId == resourceId);
+      (k, _) => k.resourceType == resourceType && k.resourceId == resourceId,
+    );
 
     if (count > 0) {
       AppLogger.debug(
-          'Permission cache: invalidated $count entries for $resourceType:$resourceId');
+        'Permission cache: invalidated $count entries for $resourceType:$resourceId',
+      );
     }
   }
 
@@ -194,7 +197,8 @@ class PermissionCacheService {
 
     if (count > 0) {
       AppLogger.debug(
-          'Permission cache: invalidated $count entries for user ${userId.maskedUserId}');
+        'Permission cache: invalidated $count entries for user ${userId.maskedUserId}',
+      );
     }
   }
 

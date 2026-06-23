@@ -49,8 +49,8 @@ class AuthService extends ChangeNotifier
   AuthService({
     auth_repo.AuthRepository? authRepository,
     required AnalyticsService analyticsService,
-  })  : _authRepository = authRepository ?? FirebaseAuthRepository(),
-        _analyticsService = analyticsService {
+  }) : _authRepository = authRepository ?? FirebaseAuthRepository(),
+       _analyticsService = analyticsService {
     _authStateSubscription = _authRepository.authStateChanges().listen(
       (User? user) {
         _currentUser = user;
@@ -72,7 +72,8 @@ class AuthService extends ChangeNotifier
         // the stream recover instead of invalidating the session.
         if (!_isFatalAuthStreamError(code)) {
           AppLogger.warning(
-              'Auth stream error treated as transient — keeping session');
+            'Auth stream error treated as transient — keeping session',
+          );
           return;
         }
         // Invalidate session on a fatal auth stream error to prevent
@@ -155,11 +156,13 @@ class AuthService extends ChangeNotifier
       setLoading(true);
 
       AppLogger.debug(
-          'Attempting login for email: ${email.substring(0, 3)}...');
+        'Attempting login for email: ${email.substring(0, 3)}...',
+      );
       await _authRepository.signIn(email: email, password: password);
       _currentUser = _authRepository.currentUser;
       AppLogger.debug(
-          'Login result - User: ${_currentUser?.uid.maskedUserId ?? "null"}');
+        'Login result - User: ${_currentUser?.uid.maskedUserId ?? "null"}',
+      );
 
       setLoading(false);
 

@@ -157,13 +157,19 @@ class IngredientData {
       properties: _parseProperties(data['properties'] ?? data['props']),
       aliasesSv: _parseStringList(data['aliasesSv'] ?? data['aliases_sv']),
       aliasesEn: _parseStringList(data['aliasesEn'] ?? data['aliases_en']),
-      searchTerms:
-          _parseStringList(data['searchTerms'] ?? data['search_terms']),
-      status: SerializationUtils.safeString(data, 'status',
-          defaultValue: 'verified'),
-      createdAt: SerializationUtils.safeDateTime(data, 'createdAt') ??
+      searchTerms: _parseStringList(
+        data['searchTerms'] ?? data['search_terms'],
+      ),
+      status: SerializationUtils.safeString(
+        data,
+        'status',
+        defaultValue: 'verified',
+      ),
+      createdAt:
+          SerializationUtils.safeDateTime(data, 'createdAt') ??
           SerializationUtils.safeDateTime(data, 'created_at'),
-      updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt') ??
+      updatedAt:
+          SerializationUtils.safeDateTime(data, 'updatedAt') ??
           SerializationUtils.safeDateTime(data, 'updated_at'),
       // New sustainability and metadata fields
       seasonAvailability: SerializationUtils.safeStringList(
@@ -171,14 +177,20 @@ class IngredientData {
         'seasonAvailability',
         defaultValue: const [],
       ),
-      priceCategory:
-          SerializationUtils.safeNullableString(data, 'priceCategory'),
+      priceCategory: SerializationUtils.safeNullableString(
+        data,
+        'priceCategory',
+      ),
       carbonFootprintCategory: SerializationUtils.safeNullableString(
-          data, 'carbonFootprintCategory'),
+        data,
+        'carbonFootprintCategory',
+      ),
       notesSv: SerializationUtils.safeNullableString(data, 'notesSv'),
       notesEn: SerializationUtils.safeNullableString(data, 'notesEn'),
-      typicalStorage:
-          SerializationUtils.safeNullableString(data, 'typicalStorage'),
+      typicalStorage: SerializationUtils.safeNullableString(
+        data,
+        'typicalStorage',
+      ),
       typicalUnit: SerializationUtils.safeNullableString(data, 'typicalUnit'),
       avgPriceSek: SerializationUtils.safeNullableDouble(data, 'avgPriceSek'),
       isCompoundName: SerializationUtils.safeBool(data, 'isCompoundName'),
@@ -359,13 +371,13 @@ class IngredientData {
 
   /// Gets all names for matching (Swedish, English, all aliases).
   List<String> get allNames => [
-        swedish,
-        english,
-        ...aliasesSv,
-        ...aliasesEn,
-        ...learnedAliasesSv,
-        ...searchTerms,
-      ];
+    swedish,
+    english,
+    ...aliasesSv,
+    ...aliasesEn,
+    ...learnedAliasesSv,
+    ...searchTerms,
+  ];
 
   /// Gets all names normalized for matching (lowercase, trimmed).
   List<String> get allNamesNormalized =>

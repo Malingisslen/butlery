@@ -60,25 +60,31 @@ void main() {
         final profile = _createUserProfile('user-123');
 
         // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', profile);
+        final canCreate = await repository.validateCreatePermission(
+          'user-123',
+          profile,
+        );
 
         // Assert
         expect(canCreate, isTrue);
       });
 
-      test('should reject user from creating another user\'s profile',
-          () async {
-        // Arrange
-        final profile = _createUserProfile('other-user');
+      test(
+        'should reject user from creating another user\'s profile',
+        () async {
+          // Arrange
+          final profile = _createUserProfile('other-user');
 
-        // Act
-        final canCreate =
-            await repository.validateCreatePermission('user-123', profile);
+          // Act
+          final canCreate = await repository.validateCreatePermission(
+            'user-123',
+            profile,
+          );
 
-        // Assert
-        expect(canCreate, isFalse);
-      });
+          // Assert
+          expect(canCreate, isFalse);
+        },
+      );
 
       test('should allow anyone to read public profiles', () async {
         // Arrange
@@ -86,11 +92,16 @@ void main() {
 
         // Act
         final canRead = await repository.validateReadPermission(
-            'user-123', 'other-user', profile);
+          'user-123',
+          'other-user',
+          profile,
+        );
 
         // Assert
-        expect(canRead,
-            isTrue); // Public profiles are readable for social features
+        expect(
+          canRead,
+          isTrue,
+        ); // Public profiles are readable for social features
       });
 
       test('should allow user to update their own profile', () async {
@@ -99,43 +110,57 @@ void main() {
 
         // Act
         final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'user-123', profile);
+          'user-123',
+          'user-123',
+          profile,
+        );
 
         // Assert
         expect(canUpdate, isTrue);
       });
 
-      test('should reject user from updating another user\'s profile',
-          () async {
-        // Arrange
-        final profile = _createUserProfile('other-user');
+      test(
+        'should reject user from updating another user\'s profile',
+        () async {
+          // Arrange
+          final profile = _createUserProfile('other-user');
 
-        // Act
-        final canUpdate = await repository.validateUpdatePermission(
-            'user-123', 'other-user', profile);
+          // Act
+          final canUpdate = await repository.validateUpdatePermission(
+            'user-123',
+            'other-user',
+            profile,
+          );
 
-        // Assert
-        expect(canUpdate, isFalse);
-      });
+          // Assert
+          expect(canUpdate, isFalse);
+        },
+      );
 
       test('should allow user to delete their own profile', () async {
         // Act
-        final canDelete =
-            await repository.validateDeletePermission('user-123', 'user-123');
+        final canDelete = await repository.validateDeletePermission(
+          'user-123',
+          'user-123',
+        );
 
         // Assert
         expect(canDelete, isTrue);
       });
 
-      test('should reject user from deleting another user\'s profile',
-          () async {
-        // Act
-        final canDelete =
-            await repository.validateDeletePermission('user-123', 'other-user');
+      test(
+        'should reject user from deleting another user\'s profile',
+        () async {
+          // Act
+          final canDelete = await repository.validateDeletePermission(
+            'user-123',
+            'other-user',
+          );
 
-        // Assert
-        expect(canDelete, isFalse);
-      });
+          // Assert
+          expect(canDelete, isFalse);
+        },
+      );
     });
 
     group('Profile Operations', () {
@@ -156,13 +181,13 @@ void main() {
         expect(data['displayName'], equals('Test User'));
         expect(data['email'], equals('test@example.com'));
         expect(
-            data['displayNameLower'], equals('test user')); // Searchable index
+          data['displayNameLower'],
+          equals('test user'),
+        ); // Searchable index
       });
 
-      test(
-          'saveProfile preserves server-owned friendsCount/isHidden/hiddenAt '
-          'when the in-memory profile is stale (merge, not overwrite)',
-          () async {
+      test('saveProfile preserves server-owned friendsCount/isHidden/hiddenAt '
+          'when the in-memory profile is stale (merge, not overwrite)', () async {
         // Regression guard for the full-set() clobber: friendsCount is mutated
         // by OTHER users' friend-creation transactions, and isHidden/hiddenAt
         // are moderator-only. A profile edit built from a stale in-memory copy
@@ -185,30 +210,45 @@ void main() {
 
         // The client saves an edit (new display name) from a stale profile that
         // still thinks friendsCount == 0, isHidden == false, hiddenAt == null.
-        final staleEdit =
-            _createUserProfile(userId).copyWith(displayName: 'Renamed User');
+        final staleEdit = _createUserProfile(
+          userId,
+        ).copyWith(displayName: 'Renamed User');
         await repository.saveProfile(staleEdit);
 
-        final publicDoc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        final publicDoc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
         // The user-editable field landed...
         expect(publicDoc.data()!['displayName'], equals('Renamed User'));
         // ...but the server-owned fields were left untouched (no clobber).
-        expect(publicDoc.data()!['friendsCount'], equals(9),
-            reason: 'a stale save must not revert a concurrent friend count');
-        expect(publicDoc.data()!['isHidden'], equals(true),
-            reason: 'a stale save must not un-hide a moderation-hidden user');
+        expect(
+          publicDoc.data()!['friendsCount'],
+          equals(9),
+          reason: 'a stale save must not revert a concurrent friend count',
+        );
+        expect(
+          publicDoc.data()!['isHidden'],
+          equals(true),
+          reason: 'a stale save must not un-hide a moderation-hidden user',
+        );
         // hiddenAt has no model-independent guard — a dropped remove('hiddenAt')
         // would merge a stale null over the live moderation timestamp.
-        expect(publicDoc.data()!['hiddenAt'], equals(serverHiddenAt),
-            reason: 'a stale save must not clear the moderation timestamp');
+        expect(
+          publicDoc.data()!['hiddenAt'],
+          equals(serverHiddenAt),
+          reason: 'a stale save must not clear the moderation timestamp',
+        );
       });
 
       test('should fetch profile by id', () async {
         // Arrange
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         // Act
         final profile = await repository.fetchProfile(userId);
@@ -227,8 +267,7 @@ void main() {
         expect(profile, isNull);
       });
 
-      test(
-          'fetchProfile merges hasSeenActivityFeedHint from the private '
+      test('fetchProfile merges hasSeenActivityFeedHint from the private '
           'settings sub-doc (BUT-1220)', () async {
         // Regression guard: the durable once-only hint flag is written to
         // toPrivateSettings (users/{uid}/settings/preferences), NOT the public
@@ -238,7 +277,10 @@ void main() {
         // path the fake doesn't persist) and assert the merge reads it back.
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
         await fakeFirestore
             .collection('users')
             .doc(userId)
@@ -248,19 +290,25 @@ void main() {
 
         final profile = await repository.fetchProfile(userId);
 
-        expect(profile!.hasSeenActivityFeedHint, isTrue,
-            reason: 'the hint flag must survive a fetch via the settings '
-                'merge — otherwise the once-only nudge never sticks');
+        expect(
+          profile!.hasSeenActivityFeedHint,
+          isTrue,
+          reason:
+              'the hint flag must survive a fetch via the settings '
+              'merge — otherwise the once-only nudge never sticks',
+        );
       });
 
-      test(
-          'fetchProfile defaults hasSeenActivityFeedHint to false when the '
+      test('fetchProfile defaults hasSeenActivityFeedHint to false when the '
           'settings sub-doc is absent (BUT-1220)', () async {
         // Pre-field accounts / fresh users have no settings doc — the merge
         // must fall back to false (hint not yet shown) rather than throw.
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         final profile = await repository.fetchProfile(userId);
 
@@ -268,54 +316,64 @@ void main() {
       });
 
       test(
-          'markActivityFeedHintSeen writes only the flag to the settings '
-          'sub-doc and never touches the public profile doc (BUT-1220)',
-          () async {
-        // Regression guard against the full-document-set clobber: this
-        // automatic write must be a targeted single-field merge into the
-        // private settings sub-doc (where fetchProfile reads it back), leaving
-        // the public profile doc — and its friendsCount / isHidden, owned by
-        // other writers — completely untouched.
-        const userId = 'user-123';
-        await _seedUserProfile(
-          fakeFirestore,
-          userId,
-          _createUserProfile(userId).toFirestore()
-            ..['friendsCount'] = 7
-            ..['isHidden'] = false,
-        );
+        'markActivityFeedHintSeen writes only the flag to the settings '
+        'sub-doc and never touches the public profile doc (BUT-1220)',
+        () async {
+          // Regression guard against the full-document-set clobber: this
+          // automatic write must be a targeted single-field merge into the
+          // private settings sub-doc (where fetchProfile reads it back), leaving
+          // the public profile doc — and its friendsCount / isHidden, owned by
+          // other writers — completely untouched.
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore()
+              ..['friendsCount'] = 7
+              ..['isHidden'] = false,
+          );
 
-        await repository.markActivityFeedHintSeen(userId);
+          await repository.markActivityFeedHintSeen(userId);
 
-        // The flag landed in the settings sub-doc and round-trips on fetch.
-        final settings = await fakeFirestore
-            .collection('users')
-            .doc(userId)
-            .collection('settings')
-            .doc('preferences')
-            .get();
-        expect(settings.data()!['hasSeenActivityFeedHint'], isTrue);
-        expect((await repository.fetchProfile(userId))!.hasSeenActivityFeedHint,
-            isTrue);
+          // The flag landed in the settings sub-doc and round-trips on fetch.
+          final settings = await fakeFirestore
+              .collection('users')
+              .doc(userId)
+              .collection('settings')
+              .doc('preferences')
+              .get();
+          expect(settings.data()!['hasSeenActivityFeedHint'], isTrue);
+          expect(
+            (await repository.fetchProfile(userId))!.hasSeenActivityFeedHint,
+            isTrue,
+          );
 
-        // The public profile doc is byte-for-byte unchanged — no clobber of
-        // friendsCount (concurrent friend-creation transactions own it).
-        final publicDoc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
-        expect(publicDoc.data()!['friendsCount'], equals(7));
-        expect(
-            publicDoc.data()!.containsKey('hasSeenActivityFeedHint'), isFalse,
-            reason: 'the hint flag must never leak into the friend-readable '
-                'public doc');
-      });
+          // The public profile doc is byte-for-byte unchanged — no clobber of
+          // friendsCount (concurrent friend-creation transactions own it).
+          final publicDoc = await fakeFirestore
+              .collection('public_profiles')
+              .doc(userId)
+              .get();
+          expect(publicDoc.data()!['friendsCount'], equals(7));
+          expect(
+            publicDoc.data()!.containsKey('hasSeenActivityFeedHint'),
+            isFalse,
+            reason:
+                'the hint flag must never leak into the friend-readable '
+                'public doc',
+          );
+        },
+      );
 
-      test('markActivityFeedHintSeen rejects a non-owner caller (BUT-1220)',
-          () async {
-        await expectLater(
-          repository.markActivityFeedHintSeen('other-user'),
-          throwsA(isA<Exception>()),
-        );
-      });
+      test(
+        'markActivityFeedHintSeen rejects a non-owner caller (BUT-1220)',
+        () async {
+          await expectLater(
+            repository.markActivityFeedHintSeen('other-user'),
+            throwsA(isA<Exception>()),
+          );
+        },
+      );
 
       test('should fetch multiple profiles in batches', () async {
         // Arrange
@@ -324,8 +382,10 @@ void main() {
           await _seedUserProfile(
             fakeFirestore,
             userId,
-            _createUserProfile(userId, displayName: 'User $userId')
-                .toFirestore(),
+            _createUserProfile(
+              userId,
+              displayName: 'User $userId',
+            ).toFirestore(),
           );
         }
 
@@ -333,8 +393,10 @@ void main() {
         final profiles = await repository.fetchProfiles(userIds);
 
         // Assert
-        expect(profiles.length,
-            equals(15)); // Handles batching (Firestore limit 10)
+        expect(
+          profiles.length,
+          equals(15),
+        ); // Handles batching (Firestore limit 10)
         expect(profiles.map((p) => p.uid).toSet(), equals(userIds.toSet()));
       });
 
@@ -352,14 +414,19 @@ void main() {
         // Arrange
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         // Act
         await repository.updateProfileStats(userId, friendsCount: 10);
 
         // Assert
-        final doc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
         expect(doc.data()!['friendsCount'], equals(10));
       });
 
@@ -367,14 +434,19 @@ void main() {
         // Arrange
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         // Act
         await repository.updateProfileStats(userId, publicRecipeCount: 25);
 
         // Assert
-        final doc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
         expect(doc.data()!['publicRecipeCount'], equals(25));
       });
 
@@ -382,46 +454,66 @@ void main() {
         // Arrange
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         // Act
-        await repository.updateProfileStats(userId,
-            friendsCount: 15, publicRecipeCount: 30);
+        await repository.updateProfileStats(
+          userId,
+          friendsCount: 15,
+          publicRecipeCount: 30,
+        );
 
         // Assert
-        final doc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
         expect(doc.data()!['friendsCount'], equals(15));
         expect(doc.data()!['publicRecipeCount'], equals(30));
       });
 
-      test('should increment public recipe count', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+      test(
+        'should increment public recipe count',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
 
-        // Act
-        await repository.incrementPublicRecipeCount(userId);
+          // Act
+          await repository.incrementPublicRecipeCount(userId);
 
-        // Assert - FieldValue.increment conflicts with TestServiceLocator platform bindings
-      },
-          skip:
-              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          // Assert - FieldValue.increment conflicts with TestServiceLocator platform bindings
+        },
+        skip:
+            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('should decrement public recipe count', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+      test(
+        'should decrement public recipe count',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
 
-        // Act
-        await repository.decrementPublicRecipeCount(userId);
+          // Act
+          await repository.decrementPublicRecipeCount(userId);
 
-        // Assert - FieldValue.increment conflicts with TestServiceLocator platform bindings
-      },
-          skip:
-              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          // Assert - FieldValue.increment conflicts with TestServiceLocator platform bindings
+        },
+        skip:
+            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
     });
 
     group('Online Status', () {
@@ -429,14 +521,19 @@ void main() {
         // Arrange
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         // Act
         await repository.updateOnlineStatus(userId, true);
 
         // Assert
-        final doc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
         expect(doc.data()!['isOnline'], isTrue);
       });
 
@@ -444,14 +541,19 @@ void main() {
         // Arrange
         const userId = 'user-123';
         await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
 
         // Act
         await repository.updateOnlineStatus(userId, false);
 
         // Assert
-        final doc =
-            await fakeFirestore.collection('public_profiles').doc(userId).get();
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
         expect(doc.data()!['isOnline'], isFalse);
       });
     });
@@ -460,20 +562,20 @@ void main() {
       test('should search profiles by display name', () async {
         // Arrange
         await _seedUserProfile(
-            fakeFirestore,
-            'user-1',
-            _createUserProfile('user-1', displayName: 'John Doe')
-                .toFirestore());
+          fakeFirestore,
+          'user-1',
+          _createUserProfile('user-1', displayName: 'John Doe').toFirestore(),
+        );
         await _seedUserProfile(
-            fakeFirestore,
-            'user-2',
-            _createUserProfile('user-2', displayName: 'Jane Smith')
-                .toFirestore());
+          fakeFirestore,
+          'user-2',
+          _createUserProfile('user-2', displayName: 'Jane Smith').toFirestore(),
+        );
         await _seedUserProfile(
-            fakeFirestore,
-            'user-3',
-            _createUserProfile('user-3', displayName: 'John Smith')
-                .toFirestore());
+          fakeFirestore,
+          'user-3',
+          _createUserProfile('user-3', displayName: 'John Smith').toFirestore(),
+        );
 
         // Act
         final results = await repository.searchProfiles('john');
@@ -481,10 +583,13 @@ void main() {
         // Assert
         expect(results.length, equals(2)); // John Doe and John Smith
         expect(
-            results.every((p) => p.displayName.toLowerCase().contains('john')),
-            isTrue);
-        expect(results.any((p) => p.uid == 'user-123'),
-            isFalse); // Should exclude current user
+          results.every((p) => p.displayName.toLowerCase().contains('john')),
+          isTrue,
+        );
+        expect(
+          results.any((p) => p.uid == 'user-123'),
+          isFalse,
+        ); // Should exclude current user
       });
 
       test('should return empty list for empty query', () async {
@@ -495,41 +600,50 @@ void main() {
         expect(results, isEmpty);
       });
 
-      test('should respect isSearchable flag', () async {
-        // Arrange
-        await _seedUserProfile(
-          fakeFirestore,
-          'user-1',
-          _createUserProfile('user-1',
-                  displayName: 'Searchable User', isSearchable: true)
-              .toFirestore(),
-        );
-        await _seedUserProfile(
-          fakeFirestore,
-          'user-2',
-          _createUserProfile('user-2',
-                  displayName: 'Private User', isSearchable: false)
-              .toFirestore(),
-        );
+      test(
+        'should respect isSearchable flag',
+        () async {
+          // Arrange
+          await _seedUserProfile(
+            fakeFirestore,
+            'user-1',
+            _createUserProfile(
+              'user-1',
+              displayName: 'Searchable User',
+              isSearchable: true,
+            ).toFirestore(),
+          );
+          await _seedUserProfile(
+            fakeFirestore,
+            'user-2',
+            _createUserProfile(
+              'user-2',
+              displayName: 'Private User',
+              isSearchable: false,
+            ).toFirestore(),
+          );
 
-        // Act
-        final results = await repository.searchProfiles('user');
+          // Act
+          final results = await repository.searchProfiles('user');
 
-        // Assert
-        expect(results.length, equals(1));
-        expect(results.first.uid, equals('user-1')); // Only searchable user
-      },
-          skip:
-              'FakeFirebaseFirestore does not support composite index queries (isSearchable + displayNameLower range)');
+          // Assert
+          expect(results.length, equals(1));
+          expect(results.first.uid, equals('user-1')); // Only searchable user
+        },
+        skip:
+            'FakeFirebaseFirestore does not support composite index queries (isSearchable + displayNameLower range)',
+      );
 
       test('should search by email when email search is allowed', () async {
         // Arrange
         await _seedUserProfile(
           fakeFirestore,
           'user-1',
-          _createUserProfile('user-1',
-                  email: 'john@example.com', allowEmailSearch: true)
-              .toFirestore(),
+          _createUserProfile(
+            'user-1',
+            email: 'john@example.com',
+            allowEmailSearch: true,
+          ).toFirestore(),
         );
 
         // Act
@@ -541,18 +655,24 @@ void main() {
 
       test('should sort results with exact matches first', () async {
         // Arrange
-        await _seedUserProfile(fakeFirestore, 'user-1',
-            _createUserProfile('user-1', displayName: 'Test').toFirestore());
         await _seedUserProfile(
-            fakeFirestore,
-            'user-2',
-            _createUserProfile('user-2', displayName: 'Test User')
-                .toFirestore());
+          fakeFirestore,
+          'user-1',
+          _createUserProfile('user-1', displayName: 'Test').toFirestore(),
+        );
         await _seedUserProfile(
-            fakeFirestore,
+          fakeFirestore,
+          'user-2',
+          _createUserProfile('user-2', displayName: 'Test User').toFirestore(),
+        );
+        await _seedUserProfile(
+          fakeFirestore,
+          'user-3',
+          _createUserProfile(
             'user-3',
-            _createUserProfile('user-3', displayName: 'Another Test')
-                .toFirestore());
+            displayName: 'Another Test',
+          ).toFirestore(),
+        );
 
         // Act
         final results = await repository.searchProfiles('test');
@@ -568,130 +688,172 @@ void main() {
     group('Display Name Availability', () {
       test('should return true when display name is available', () async {
         // Act
-        final isAvailable =
-            await repository.isDisplayNameAvailable('Unique Name');
+        final isAvailable = await repository.isDisplayNameAvailable(
+          'Unique Name',
+        );
 
         // Assert
         expect(isAvailable, isTrue);
       });
 
-      test('should return false when display name is taken by another user',
-          () async {
-        // Arrange
-        await _seedUserProfile(
-          fakeFirestore,
-          'other-user',
-          _createUserProfile('other-user', displayName: 'Taken Name')
-              .toFirestore(),
-        );
+      test(
+        'should return false when display name is taken by another user',
+        () async {
+          // Arrange
+          await _seedUserProfile(
+            fakeFirestore,
+            'other-user',
+            _createUserProfile(
+              'other-user',
+              displayName: 'Taken Name',
+            ).toFirestore(),
+          );
 
-        // Act
-        final isAvailable =
-            await repository.isDisplayNameAvailable('Taken Name');
+          // Act
+          final isAvailable = await repository.isDisplayNameAvailable(
+            'Taken Name',
+          );
 
-        // Assert
-        expect(isAvailable, isFalse);
-      });
+          // Assert
+          expect(isAvailable, isFalse);
+        },
+      );
 
-      test('should return true when display name is taken by current user',
-          () async {
-        // Arrange
-        await _seedUserProfile(
-          fakeFirestore,
-          'user-123',
-          _createUserProfile('user-123', displayName: 'My Name').toFirestore(),
-        );
+      test(
+        'should return true when display name is taken by current user',
+        () async {
+          // Arrange
+          await _seedUserProfile(
+            fakeFirestore,
+            'user-123',
+            _createUserProfile(
+              'user-123',
+              displayName: 'My Name',
+            ).toFirestore(),
+          );
 
-        // Act
-        final isAvailable = await repository.isDisplayNameAvailable('My Name');
+          // Act
+          final isAvailable = await repository.isDisplayNameAvailable(
+            'My Name',
+          );
 
-        // Assert
-        expect(isAvailable, isTrue); // User can keep their own name
-      });
+          // Assert
+          expect(isAvailable, isTrue); // User can keep their own name
+        },
+      );
     });
 
     group('FCM Token Management', () {
-      test('should update FCM token', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+      test(
+        'should update FCM token',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
 
-        // Act
-        await repository.updateFCMToken(userId, 'new-fcm-token');
+          // Act
+          await repository.updateFCMToken(userId, 'new-fcm-token');
 
-        // Assert - FCM token is stored in users/{userId} settings doc
-        final doc = await fakeFirestore.collection('users').doc(userId).get();
-        expect(doc.data()!['fcmToken'], equals('new-fcm-token'));
-      },
-          skip:
-              'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator');
+          // Assert - FCM token is stored in users/{userId} settings doc
+          final doc = await fakeFirestore.collection('users').doc(userId).get();
+          expect(doc.data()!['fcmToken'], equals('new-fcm-token'));
+        },
+        skip:
+            'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator',
+      );
 
-      test('should clear FCM token', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+      test(
+        'should clear FCM token',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
 
-        // Act
-        await repository.clearFCMToken(userId);
+          // Act
+          await repository.clearFCMToken(userId);
 
-        // Assert - FCM token cleared in users/{userId} settings doc
-        final doc = await fakeFirestore.collection('users').doc(userId).get();
-        expect(doc.data()!['fcmToken'], isNull);
-        expect(doc.data()!['fcmTokenUpdatedAt'], isNull);
-      },
-          skip:
-              'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator');
+          // Assert - FCM token cleared in users/{userId} settings doc
+          final doc = await fakeFirestore.collection('users').doc(userId).get();
+          expect(doc.data()!['fcmToken'], isNull);
+          expect(doc.data()!['fcmTokenUpdatedAt'], isNull);
+        },
+        skip:
+            'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator',
+      );
     });
 
     group('Notification Settings', () {
-      test('should enable notifications', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+      test(
+        'should enable notifications',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
 
-        // Act
-        await repository.updateNotificationSettings(userId, true);
+          // Act
+          await repository.updateNotificationSettings(userId, true);
 
-        // Assert - notification settings stored in users/{userId} settings doc
-        final doc = await fakeFirestore.collection('users').doc(userId).get();
-        expect(doc.data()!['notificationsEnabled'], isTrue);
-      },
-          skip:
-              'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator');
+          // Assert - notification settings stored in users/{userId} settings doc
+          final doc = await fakeFirestore.collection('users').doc(userId).get();
+          expect(doc.data()!['notificationsEnabled'], isTrue);
+        },
+        skip:
+            'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator',
+      );
 
-      test('should disable notifications', () async {
-        // Arrange
-        const userId = 'user-123';
-        await _seedUserProfile(
-            fakeFirestore, userId, _createUserProfile(userId).toFirestore());
+      test(
+        'should disable notifications',
+        () async {
+          // Arrange
+          const userId = 'user-123';
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
 
-        // Act
-        await repository.updateNotificationSettings(userId, false);
+          // Act
+          await repository.updateNotificationSettings(userId, false);
 
-        // Assert - notification settings stored in users/{userId} settings doc
-        final doc = await fakeFirestore.collection('users').doc(userId).get();
-        expect(doc.data()!['notificationsEnabled'], isFalse);
-      },
-          skip:
-              'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator');
+          // Assert - notification settings stored in users/{userId} settings doc
+          final doc = await fakeFirestore.collection('users').doc(userId).get();
+          expect(doc.data()!['notificationsEnabled'], isFalse);
+        },
+        skip:
+            'SetOptions(merge: true) on users/{userId} settings doc does not persist through FakeFirebaseFirestore + TestServiceLocator',
+      );
     });
 
     group('Base User Document', () {
-      test('should ensure base user document exists', () async {
-        // Act
-        await repository.ensureBaseUserDocument('user-123');
+      test(
+        'should ensure base user document exists',
+        () async {
+          // Act
+          await repository.ensureBaseUserDocument('user-123');
 
-        // Assert - base document stored in users/{userId}
-        final doc =
-            await fakeFirestore.collection('users').doc('user-123').get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()!['initialized'], isTrue);
-      },
-          skip:
-              'SetOptions(merge: true) on users/{userId} doc does not persist through FakeFirebaseFirestore + TestServiceLocator');
+          // Assert - base document stored in users/{userId}
+          final doc = await fakeFirestore
+              .collection('users')
+              .doc('user-123')
+              .get();
+          expect(doc.exists, isTrue);
+          expect(doc.data()!['initialized'], isTrue);
+        },
+        skip:
+            'SetOptions(merge: true) on users/{userId} doc does not persist through FakeFirebaseFirestore + TestServiceLocator',
+      );
     });
 
     group('Model Integration', () {
@@ -701,7 +863,10 @@ void main() {
 
         // Act - Seed and fetch
         await _seedUserProfile(
-            fakeFirestore, profile.uid, profile.toFirestore());
+          fakeFirestore,
+          profile.uid,
+          profile.toFirestore(),
+        );
         final doc = await fakeFirestore
             .collection('public_profiles')
             .doc(profile.uid)
@@ -751,56 +916,66 @@ void main() {
     });
 
     group('GDPR cascade (BUT-498)', () {
-      test('deletePublicProfile removes the public_profiles/{uid} doc',
-          () async {
-        await _seedUserProfile(fakeFirestore, 'user-123', {
-          'displayName': 'Test',
-          'email': 'test@example.com',
-        });
-        // Sanity: doc exists.
-        final before = await fakeFirestore
-            .collection('public_profiles')
-            .doc('user-123')
-            .get();
-        expect(before.exists, isTrue);
+      test(
+        'deletePublicProfile removes the public_profiles/{uid} doc',
+        () async {
+          await _seedUserProfile(fakeFirestore, 'user-123', {
+            'displayName': 'Test',
+            'email': 'test@example.com',
+          });
+          // Sanity: doc exists.
+          final before = await fakeFirestore
+              .collection('public_profiles')
+              .doc('user-123')
+              .get();
+          expect(before.exists, isTrue);
 
-        final ok = await repository.deletePublicProfile('user-123');
+          final ok = await repository.deletePublicProfile('user-123');
 
-        expect(ok, isTrue);
-        final after = await fakeFirestore
-            .collection('public_profiles')
-            .doc('user-123')
-            .get();
-        expect(after.exists, isFalse);
-      });
+          expect(ok, isTrue);
+          final after = await fakeFirestore
+              .collection('public_profiles')
+              .doc('user-123')
+              .get();
+          expect(after.exists, isFalse);
+        },
+      );
 
       test(
-          'deleteUserRootDoc targets the users/ collection (not public_profiles)',
-          () async {
-        // Seed BOTH collections to prove the method picks the right one.
-        await fakeFirestore
-            .collection('users')
-            .doc('user-123')
-            .set({'baseDoc': true});
-        await _seedUserProfile(fakeFirestore, 'user-123', {
-          'displayName': 'Test',
-          'email': 'test@example.com',
-        });
+        'deleteUserRootDoc targets the users/ collection (not public_profiles)',
+        () async {
+          // Seed BOTH collections to prove the method picks the right one.
+          await fakeFirestore.collection('users').doc('user-123').set({
+            'baseDoc': true,
+          });
+          await _seedUserProfile(fakeFirestore, 'user-123', {
+            'displayName': 'Test',
+            'email': 'test@example.com',
+          });
 
-        final ok = await repository.deleteUserRootDoc('user-123');
+          final ok = await repository.deleteUserRootDoc('user-123');
 
-        expect(ok, isTrue);
-        final usersDoc =
-            await fakeFirestore.collection('users').doc('user-123').get();
-        expect(usersDoc.exists, isFalse,
-            reason: 'users/{uid} root doc should be gone');
-        final publicProfileDoc = await fakeFirestore
-            .collection('public_profiles')
-            .doc('user-123')
-            .get();
-        expect(publicProfileDoc.exists, isTrue,
-            reason: 'public_profiles must NOT be touched by deleteUserRootDoc');
-      });
+          expect(ok, isTrue);
+          final usersDoc = await fakeFirestore
+              .collection('users')
+              .doc('user-123')
+              .get();
+          expect(
+            usersDoc.exists,
+            isFalse,
+            reason: 'users/{uid} root doc should be gone',
+          );
+          final publicProfileDoc = await fakeFirestore
+              .collection('public_profiles')
+              .doc('user-123')
+              .get();
+          expect(
+            publicProfileDoc.exists,
+            isTrue,
+            reason: 'public_profiles must NOT be touched by deleteUserRootDoc',
+          );
+        },
+      );
 
       test('deletePublicProfile rejects non-owner caller', () async {
         await _seedUserProfile(fakeFirestore, 'stranger-uid', {
@@ -825,18 +1000,19 @@ void main() {
       });
 
       test('deleteUserRootDoc rejects non-owner caller', () async {
-        await fakeFirestore
-            .collection('users')
-            .doc('stranger-uid')
-            .set({'baseDoc': true});
+        await fakeFirestore.collection('users').doc('stranger-uid').set({
+          'baseDoc': true,
+        });
 
         await expectLater(
           repository.deleteUserRootDoc('stranger-uid'),
           throwsA(isA<Exception>()),
         );
 
-        final after =
-            await fakeFirestore.collection('users').doc('stranger-uid').get();
+        final after = await fakeFirestore
+            .collection('users')
+            .doc('stranger-uid')
+            .get();
         expect(after.exists, isTrue);
       });
     });
@@ -865,76 +1041,95 @@ void main() {
       });
 
       test(
-          'deletePublicProfile emits logPermissionCheck(granted:true) on success',
-          () async {
-        await _seedUserProfile(fakeFirestore, 'user-123', {
-          'displayName': 'Test',
-          'email': 'test@example.com',
-        });
+        'deletePublicProfile emits logPermissionCheck(granted:true) on success',
+        () async {
+          await _seedUserProfile(fakeFirestore, 'user-123', {
+            'displayName': 'Test',
+            'email': 'test@example.com',
+          });
 
-        final ok = await auditedRepository.deletePublicProfile('user-123');
-        expect(ok, isTrue);
+          final ok = await auditedRepository.deletePublicProfile('user-123');
+          expect(ok, isTrue);
 
-        final entry = spyAudit.calls.singleWhere(
-          (c) => c.operation == 'delete' && c.resourceType == 'public_profile',
-          orElse: () => throw TestFailure(
-              'no audit entry persisted for deletePublicProfile success path'),
-        );
-        expect(entry.granted, isTrue,
+          final entry = spyAudit.calls.singleWhere(
+            (c) =>
+                c.operation == 'delete' && c.resourceType == 'public_profile',
+            orElse: () => throw TestFailure(
+              'no audit entry persisted for deletePublicProfile success path',
+            ),
+          );
+          expect(
+            entry.granted,
+            isTrue,
             reason:
                 'a successful GDPR profile erasure must record granted:true '
-                'on the audit trail (Art.30)');
-        expect(entry.userId, equals('user-123'));
-        expect(entry.resourceId, equals('user-123'));
-      });
+                'on the audit trail (Art.30)',
+          );
+          expect(entry.userId, equals('user-123'));
+          expect(entry.resourceId, equals('user-123'));
+        },
+      );
 
       test(
-          'deleteUserRootDoc emits logPermissionCheck(granted:true) on success',
-          () async {
-        await fakeFirestore
-            .collection('users')
-            .doc('user-123')
-            .set({'baseDoc': true});
+        'deleteUserRootDoc emits logPermissionCheck(granted:true) on success',
+        () async {
+          await fakeFirestore.collection('users').doc('user-123').set({
+            'baseDoc': true,
+          });
 
-        final ok = await auditedRepository.deleteUserRootDoc('user-123');
-        expect(ok, isTrue);
+          final ok = await auditedRepository.deleteUserRootDoc('user-123');
+          expect(ok, isTrue);
 
-        final entry = spyAudit.calls.singleWhere(
-          (c) => c.operation == 'delete' && c.resourceType == 'user_root_doc',
-          orElse: () => throw TestFailure(
-              'no audit entry persisted for deleteUserRootDoc success path'),
-        );
-        expect(entry.granted, isTrue,
-            reason: 'a successful GDPR root-doc erasure must record '
-                'granted:true on the audit trail (Art.30)');
-        expect(entry.userId, equals('user-123'));
-        expect(entry.resourceId, equals('user-123'));
-      });
+          final entry = spyAudit.calls.singleWhere(
+            (c) => c.operation == 'delete' && c.resourceType == 'user_root_doc',
+            orElse: () => throw TestFailure(
+              'no audit entry persisted for deleteUserRootDoc success path',
+            ),
+          );
+          expect(
+            entry.granted,
+            isTrue,
+            reason:
+                'a successful GDPR root-doc erasure must record '
+                'granted:true on the audit trail (Art.30)',
+          );
+          expect(entry.userId, equals('user-123'));
+          expect(entry.resourceId, equals('user-123'));
+        },
+      );
 
-      test('a DENIED delete does not emit a granted:true success entry',
-          () async {
-        // Negative control: the audit trail must distinguish a successful
-        // erasure from a rejected one — a non-owner attempt must never produce
-        // a granted:true entry. (PermissionValidationMixin logs the denial via
-        // validateOwnership, which is a separate, denied entry.)
-        await _seedUserProfile(fakeFirestore, 'stranger-uid', {
-          'displayName': 'Stranger',
-          'email': 'stranger@example.com',
-        });
+      test(
+        'a DENIED delete does not emit a granted:true success entry',
+        () async {
+          // Negative control: the audit trail must distinguish a successful
+          // erasure from a rejected one — a non-owner attempt must never produce
+          // a granted:true entry. (PermissionValidationMixin logs the denial via
+          // validateOwnership, which is a separate, denied entry.)
+          await _seedUserProfile(fakeFirestore, 'stranger-uid', {
+            'displayName': 'Stranger',
+            'email': 'stranger@example.com',
+          });
 
-        await expectLater(
-          auditedRepository.deletePublicProfile('stranger-uid'),
-          throwsA(isA<Exception>()),
-        );
+          await expectLater(
+            auditedRepository.deletePublicProfile('stranger-uid'),
+            throwsA(isA<Exception>()),
+          );
 
-        final grantedSuccessEntries = spyAudit.calls.where((c) =>
-            c.operation == 'delete' &&
-            c.resourceType == 'public_profile' &&
-            c.granted);
-        expect(grantedSuccessEntries, isEmpty,
-            reason: 'a rejected erasure must never record a granted:true '
-                'success entry on the audit trail');
-      });
+          final grantedSuccessEntries = spyAudit.calls.where(
+            (c) =>
+                c.operation == 'delete' &&
+                c.resourceType == 'public_profile' &&
+                c.granted,
+          );
+          expect(
+            grantedSuccessEntries,
+            isEmpty,
+            reason:
+                'a rejected erasure must never record a granted:true '
+                'success entry on the audit trail',
+          );
+        },
+      );
     });
   });
 }
@@ -979,13 +1174,15 @@ class _SpyAuditRepository extends FirebaseAuditRepository {
     required bool granted,
     Map<String, dynamic>? metadata,
   }) async {
-    calls.add(_AuditCall(
-      userId: userId,
-      operation: operation,
-      resourceType: resourceType,
-      resourceId: resourceId,
-      granted: granted,
-    ));
+    calls.add(
+      _AuditCall(
+        userId: userId,
+        operation: operation,
+        resourceType: resourceType,
+        resourceId: resourceId,
+        granted: granted,
+      ),
+    );
   }
 }
 

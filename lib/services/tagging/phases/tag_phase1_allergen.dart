@@ -42,12 +42,14 @@ class Phase1AllergenCalculator {
           property: prop,
           result: result,
         );
-        decisions.add(TagDecision.allergen(
-          key: allergen.key,
-          result: result,
-          reason: reason,
-          triggeringIngredients: triggers,
-        ));
+        decisions.add(
+          TagDecision.allergen(
+            key: allergen.key,
+            result: result,
+            reason: reason,
+            triggeringIngredients: triggers,
+          ),
+        );
       }
     } else {
       AppLogger.warning(
@@ -64,12 +66,14 @@ class Phase1AllergenCalculator {
           property: allergen.triggerProperty,
           result: result,
         );
-        decisions.add(TagDecision.allergen(
-          key: allergen.key,
-          result: result,
-          reason: reason,
-          triggeringIngredients: triggers,
-        ));
+        decisions.add(
+          TagDecision.allergen(
+            key: allergen.key,
+            result: result,
+            reason: reason,
+            triggeringIngredients: triggers,
+          ),
+        );
       }
     }
 
@@ -94,12 +98,14 @@ class Phase1AllergenCalculator {
           result: result,
           allergenKey: allergen.key,
         );
-        decisions.add(TagDecision.allergen(
-          key: allergen.key,
-          result: result,
-          reason: reason,
-          triggeringIngredients: triggers,
-        ));
+        decisions.add(
+          TagDecision.allergen(
+            key: allergen.key,
+            result: result,
+            reason: reason,
+            triggeringIngredients: triggers,
+          ),
+        );
       }
     } else {
       for (final allergen in static_allergen.AllergenConfig.combinedAllergens) {
@@ -113,12 +119,14 @@ class Phase1AllergenCalculator {
           result: result,
           allergenKey: allergen.key,
         );
-        decisions.add(TagDecision.allergen(
-          key: allergen.key,
-          result: result,
-          reason: reason,
-          triggeringIngredients: triggers,
-        ));
+        decisions.add(
+          TagDecision.allergen(
+            key: allergen.key,
+            result: result,
+            reason: reason,
+            triggeringIngredients: triggers,
+          ),
+        );
       }
     }
 
@@ -157,7 +165,7 @@ class Phase1AllergenCalculator {
   }
 
   static (String reason, List<String>? triggers)
-      _explainCombinedAllergenDecision({
+  _explainCombinedAllergenDecision({
     required IngredientLookupResult lookup,
     required List<String> properties,
     required TriState result,

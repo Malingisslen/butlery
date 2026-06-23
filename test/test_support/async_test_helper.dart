@@ -185,7 +185,8 @@ class AsyncTestHelper {
       if (!completer.isCompleted) {
         completer.completeError(
           TimeoutException(
-              timeoutMessage ?? 'Operation timed out after $timeout'),
+            timeoutMessage ?? 'Operation timed out after $timeout',
+          ),
         );
       }
     });

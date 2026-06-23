@@ -88,8 +88,9 @@ void main() {
     expect(find.text('Från arkiv'), findsOneWidget); // recipeFromArchive
   });
 
-  testWidgets('quick-capture button pushes the quickCapture route',
-      (tester) async {
+  testWidgets('quick-capture button pushes the quickCapture route', (
+    tester,
+  ) async {
     // Proves: the top full-width entry point routes to quick capture, the
     // lightweight name+meal-type save path.
     await pumpView(tester);
@@ -100,8 +101,9 @@ void main() {
     expect(lastPushed(), Routes.quickCapture);
   });
 
-  testWidgets('import-link button pushes the smartImport route',
-      (tester) async {
+  testWidgets('import-link button pushes the smartImport route', (
+    tester,
+  ) async {
     // Proves: "Importera länk" routes to URL import.
     await pumpView(tester);
 
@@ -111,20 +113,23 @@ void main() {
     expect(lastPushed(), Routes.smartImport);
   });
 
-  testWidgets('write-manually button pushes the manualEntry route',
-      (tester) async {
+  testWidgets('write-manually button pushes the manualEntry route', (
+    tester,
+  ) async {
     // Proves: "Skriv manuellt" routes to the manual recipe editor.
     await pumpView(tester);
 
-    await tester
-        .tap(find.byKey(const ValueKey('test-lagg-till-write-manually')));
+    await tester.tap(
+      find.byKey(const ValueKey('test-lagg-till-write-manually')),
+    );
     await tester.pumpAndSettle();
 
     expect(lastPushed(), Routes.manualEntry);
   });
 
-  testWidgets('photo-import button pushes the photoImport route',
-      (tester) async {
+  testWidgets('photo-import button pushes the photoImport route', (
+    tester,
+  ) async {
     // Proves: "Från bild" routes to OCR photo import.
     await pumpView(tester);
 
@@ -134,13 +139,15 @@ void main() {
     expect(lastPushed(), Routes.photoImport);
   });
 
-  testWidgets('archive-import button pushes the importFromArchive route',
-      (tester) async {
+  testWidgets('archive-import button pushes the importFromArchive route', (
+    tester,
+  ) async {
     // Proves: "Från arkiv" routes to the archive import flow.
     await pumpView(tester);
 
-    await tester
-        .tap(find.byKey(const ValueKey('test-lagg-till-archive-import')));
+    await tester.tap(
+      find.byKey(const ValueKey('test-lagg-till-archive-import')),
+    );
     await tester.pumpAndSettle();
 
     expect(lastPushed(), Routes.importFromArchive);

@@ -48,7 +48,9 @@ void main() {
         );
 
         expect(
-            comment.authorAvatarUrl, equals('https://example.com/avatar.jpg'));
+          comment.authorAvatarUrl,
+          equals('https://example.com/avatar.jpg'),
+        );
         expect(comment.createdAt, equals(createdTime));
         expect(comment.editedAt, equals(editedTime));
         expect(comment.likesCount, equals(2));
@@ -71,13 +73,15 @@ void main() {
         final afterCreation = DateTime.now();
 
         expect(
-            comment.createdAt.isAfter(beforeCreation) ||
-                comment.createdAt.isAtSameMomentAs(beforeCreation),
-            isTrue);
+          comment.createdAt.isAfter(beforeCreation) ||
+              comment.createdAt.isAtSameMomentAs(beforeCreation),
+          isTrue,
+        );
         expect(
-            comment.createdAt.isBefore(afterCreation) ||
-                comment.createdAt.isAtSameMomentAs(afterCreation),
-            isTrue);
+          comment.createdAt.isBefore(afterCreation) ||
+              comment.createdAt.isAtSameMomentAs(afterCreation),
+          isTrue,
+        );
       });
 
       test('should handle Swedish default values', () {
@@ -146,7 +150,9 @@ void main() {
         expect(comment.parentCommentId, isNull);
         expect(comment.isTopLevel, isTrue);
         expect(
-            comment.authorAvatarUrl, equals('https://example.com/avatar.jpg'));
+          comment.authorAvatarUrl,
+          equals('https://example.com/avatar.jpg'),
+        );
       });
 
       test('should create reply comment', () {
@@ -228,13 +234,15 @@ void main() {
         expect(edited.text, equals('Updated text'));
         expect(edited.editedAt, isNotNull);
         expect(
-            edited.editedAt!.isAfter(beforeEdit) ||
-                edited.editedAt!.isAtSameMomentAs(beforeEdit),
-            isTrue);
+          edited.editedAt!.isAfter(beforeEdit) ||
+              edited.editedAt!.isAtSameMomentAs(beforeEdit),
+          isTrue,
+        );
         expect(
-            edited.editedAt!.isBefore(afterEdit) ||
-                edited.editedAt!.isAtSameMomentAs(afterEdit),
-            isTrue);
+          edited.editedAt!.isBefore(afterEdit) ||
+              edited.editedAt!.isAtSameMomentAs(afterEdit),
+          isTrue,
+        );
         expect(edited.isEdited, isTrue);
       });
 
@@ -251,7 +259,9 @@ void main() {
 
         final deleted = comment.delete();
         expect(
-            deleted.canBeEditedBy('user_789'), isFalse); // Cannot edit deleted
+          deleted.canBeEditedBy('user_789'),
+          isFalse,
+        ); // Cannot edit deleted
       });
 
       test('should validate edit status', () {
@@ -440,7 +450,9 @@ void main() {
         expect(json['authorId'], equals('user_789'));
         expect(json['authorDisplayName'], equals('Anna'));
         expect(
-            json['authorAvatarUrl'], equals('https://example.com/avatar.jpg'));
+          json['authorAvatarUrl'],
+          equals('https://example.com/avatar.jpg'),
+        );
         expect(json['text'], equals('Test comment'));
         expect(json['createdAt'], equals(createdTime.toIso8601String()));
         expect(json['editedAt'], equals(editedTime.toIso8601String()));
@@ -473,7 +485,9 @@ void main() {
         expect(comment.authorId, equals('user_789'));
         expect(comment.authorDisplayName, equals('Anna'));
         expect(
-            comment.authorAvatarUrl, equals('https://example.com/avatar.jpg'));
+          comment.authorAvatarUrl,
+          equals('https://example.com/avatar.jpg'),
+        );
         expect(comment.text, equals('Test comment'));
         expect(comment.createdAt, equals(DateTime(2024, 1, 15, 10, 30)));
         expect(comment.editedAt, equals(DateTime(2024, 1, 15, 12, 0)));
@@ -576,7 +590,7 @@ void main() {
           'authorId': 'u1',
           'authorDisplayName': 'A',
           'text': 'T',
-          'createdAt': DateTime(2024, 1, 15)
+          'createdAt': DateTime(2024, 1, 15),
         };
         var comment = RecipeComment.fromMap('c1', data);
         expect(comment.createdAt, equals(DateTime(2024, 1, 15)));
@@ -587,7 +601,7 @@ void main() {
           'authorId': 'u1',
           'authorDisplayName': 'A',
           'text': 'T',
-          'createdAt': 1705305600000
+          'createdAt': 1705305600000,
         }; // 2024-01-15 00:00:00 UTC
         comment = RecipeComment.fromMap('c1', data);
         expect(comment.createdAt.year, equals(2024));
@@ -597,19 +611,21 @@ void main() {
           'recipeId': 'r1',
           'authorId': 'u1',
           'authorDisplayName': 'A',
-          'text': 'T'
+          'text': 'T',
         };
         final beforeParse = DateTime.now();
         comment = RecipeComment.fromMap('c1', data);
         final afterParse = DateTime.now();
         expect(
-            comment.createdAt.isAfter(beforeParse) ||
-                comment.createdAt.isAtSameMomentAs(beforeParse),
-            isTrue);
+          comment.createdAt.isAfter(beforeParse) ||
+              comment.createdAt.isAtSameMomentAs(beforeParse),
+          isTrue,
+        );
         expect(
-            comment.createdAt.isBefore(afterParse) ||
-                comment.createdAt.isAtSameMomentAs(afterParse),
-            isTrue);
+          comment.createdAt.isBefore(afterParse) ||
+              comment.createdAt.isAtSameMomentAs(afterParse),
+          isTrue,
+        );
       });
 
       test('should provide defaults for missing fields', () {
@@ -622,7 +638,9 @@ void main() {
         final comment = RecipeComment.fromMap('comment_123', minimalData);
 
         expect(
-            comment.authorDisplayName, equals('?')); // Language-neutral default
+          comment.authorDisplayName,
+          equals('?'),
+        ); // Language-neutral default
         expect(comment.authorAvatarUrl, isNull);
         expect(comment.likesCount, equals(0));
         expect(comment.replyCount, equals(0));

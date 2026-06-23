@@ -85,11 +85,11 @@ class NotificationService extends BaseService {
     required NotificationHistoryRepository historyRepository,
     required NotificationBatchRepository batchRepository,
     required DeviceRepository deviceRepository,
-  })  : _notificationsRepository = notificationsRepository,
-        _authRepository = authRepository,
-        _historyRepository = historyRepository,
-        _batchRepository = batchRepository,
-        _deviceRepository = deviceRepository;
+  }) : _notificationsRepository = notificationsRepository,
+       _authRepository = authRepository,
+       _historyRepository = historyRepository,
+       _batchRepository = batchRepository,
+       _deviceRepository = deviceRepository;
 
   /// Initialize modules for the current authenticated user.
   /// Called on first [onInitialize] or after [resetForLogout].
@@ -162,7 +162,8 @@ class NotificationService extends BaseService {
         _initializeModules();
 
         AppLogger.info(
-            '🔔 Initializing NotificationService coordinator for user: $_userId');
+          '🔔 Initializing NotificationService coordinator for user: $_userId',
+        );
 
         // Initialize FCM service (consent-gated for permissions/token).
         // BUT-782: FCMService is now instance-based, resolved via DI.
@@ -210,7 +211,8 @@ class NotificationService extends BaseService {
 
         _isInitialized = true;
         AppLogger.success(
-            '✅ NotificationService coordinator initialized successfully');
+          '✅ NotificationService coordinator initialized successfully',
+        );
       },
       operationName: 'Initialize NotificationService',
       customErrorMessage:
@@ -232,33 +234,39 @@ class NotificationService extends BaseService {
       await safeExecute(
         () async {
           AppLogger.info(
-              '🔔 Coordinator: Sending immediate notification to ${targetUserIds.length} users');
+            '🔔 Coordinator: Sending immediate notification to ${targetUserIds.length} users',
+          );
 
           // Filter users based on preferences and quiet hours
-          final filteredUserIds =
-              await _preferenceManager.filterUsersForNotification(
-            targetUserIds,
-            strategy.category,
-            strategy.type,
-          );
+          final filteredUserIds = await _preferenceManager
+              .filterUsersForNotification(
+                targetUserIds,
+                strategy.category,
+                strategy.type,
+              );
 
           if (filteredUserIds.isEmpty) {
             AppLogger.info(
-                '📋 No users eligible for notification after preference filtering');
+              '📋 No users eligible for notification after preference filtering',
+            );
             return;
           }
 
           for (final targetUserId in filteredUserIds) {
             // Generate unique notification ID
-            final notificationId =
-                _contentManager.generateNotificationId(targetUserId, strategy);
+            final notificationId = _contentManager.generateNotificationId(
+              targetUserId,
+              strategy,
+            );
 
             // Check if already sent (prevent duplicates)
-            final alreadySent =
-                await _historyRepository.wasNotificationSent(notificationId);
+            final alreadySent = await _historyRepository.wasNotificationSent(
+              notificationId,
+            );
             if (alreadySent) {
               AppLogger.info(
-                  '📋 Notification $notificationId already sent, skipping');
+                '📋 Notification $notificationId already sent, skipping',
+              );
               continue;
             }
 
@@ -293,7 +301,8 @@ class NotificationService extends BaseService {
           }
 
           AppLogger.success(
-              '✅ Immediate notification sent to ${filteredUserIds.length} users');
+            '✅ Immediate notification sent to ${filteredUserIds.length} users',
+          );
         },
         operationName: 'Send Immediate Notification',
         customErrorMessage: 'Failed to send immediate notification',
@@ -327,7 +336,8 @@ class NotificationService extends BaseService {
     await safeExecute(
       () async {
         AppLogger.info(
-            '🔔 Coordinator: Processing batchable notification for ${targetUserIds.length} users');
+          '🔔 Coordinator: Processing batchable notification for ${targetUserIds.length} users',
+        );
 
         // Delegate to batch manager
         final batched = await _batchManager.addToBatch(
@@ -358,7 +368,8 @@ class NotificationService extends BaseService {
     await safeExecute(
       () async {
         AppLogger.info(
-            '🔔 Coordinator: Sending silent notification to ${targetUserIds.length} users');
+          '🔔 Coordinator: Sending silent notification to ${targetUserIds.length} users',
+        );
 
         for (final targetUserId in targetUserIds) {
           // Send data-only FCM message
@@ -385,19 +396,22 @@ class NotificationService extends BaseService {
     await safeExecute(
       () async {
         AppLogger.info(
-            '🔔 Coordinator: Sending digest notification to user: $targetUserId');
+          '🔔 Coordinator: Sending digest notification to user: $targetUserId',
+        );
 
         // Check if user wants digest notifications
-        final digestEnabled =
-            await _preferenceManager.areDigestNotificationsEnabled();
+        final digestEnabled = await _preferenceManager
+            .areDigestNotificationsEnabled();
         if (!digestEnabled) {
           AppLogger.info('📋 User has disabled digest notifications');
           return;
         }
 
         // Build digest content
-        final digestContent =
-            _contentManager.buildDigestContent(activityList, strategy);
+        final digestContent = _contentManager.buildDigestContent(
+          activityList,
+          strategy,
+        );
 
         // Create notification template
         final template = _contentManager.createNotificationContent(
@@ -407,8 +421,10 @@ class NotificationService extends BaseService {
         );
 
         // Generate notification ID
-        final notificationId =
-            _contentManager.generateNotificationId(targetUserId, strategy);
+        final notificationId = _contentManager.generateNotificationId(
+          targetUserId,
+          strategy,
+        );
 
         // Send via FCM
         await _sendFCMNotification(targetUserId, template, notificationId);
@@ -440,7 +456,8 @@ class NotificationService extends BaseService {
   void _handleForegroundMessage(RemoteMessage message) {
     try {
       AppLogger.info(
-          '🔔 Coordinator: Handling foreground message: ${message.notification?.title}');
+        '🔔 Coordinator: Handling foreground message: ${message.notification?.title}',
+      );
 
       // Show in-app notification or update UI.
       // BUT-782: FCMService is now instance-based, resolved via DI.
@@ -462,13 +479,14 @@ class NotificationService extends BaseService {
 
   /// Callback for notification tap routing. Set from main.dart to wire navigation.
   static void Function(String route, Map<String, String?> data)?
-      onNotificationTapped;
+  onNotificationTapped;
 
   /// Handle message opened app
   void _handleMessageOpened(RemoteMessage message) {
     try {
       AppLogger.info(
-          '🔔 Coordinator: Handling message opened app: ${message.notification?.title}');
+        '🔔 Coordinator: Handling message opened app: ${message.notification?.title}',
+      );
 
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
@@ -515,13 +533,17 @@ class NotificationService extends BaseService {
   }
 
   /// Send FCM notification via Cloud Function
-  Future<void> _sendFCMNotification(String targetUserId,
-      NotificationTemplate template, String notificationId) async {
+  Future<void> _sendFCMNotification(
+    String targetUserId,
+    NotificationTemplate template,
+    String notificationId,
+  ) async {
     try {
       AppLogger.info('🔔 Sending FCM notification to: $targetUserId');
 
-      final callable =
-          FirebaseFunctions.instance.httpsCallable('sendNotification');
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'sendNotification',
+      );
 
       final result = await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -544,7 +566,8 @@ class NotificationService extends BaseService {
       }
       if (failureCount > 0) {
         AppLogger.warning(
-            '⚠️ FCM notification failed for $failureCount device(s)');
+          '⚠️ FCM notification failed for $failureCount device(s)',
+        );
       }
       if (successCount == 0 && failureCount == 0) {
         AppLogger.info('ℹ️ No FCM tokens registered for user $targetUserId');
@@ -557,12 +580,15 @@ class NotificationService extends BaseService {
 
   /// Send silent FCM notification via Cloud Function (for background sync events)
   Future<void> _sendSilentFCMNotification(
-      String targetUserId, Map<String, dynamic> data) async {
+    String targetUserId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       AppLogger.info('🔔 Sending silent FCM notification to: $targetUserId');
 
-      final callable =
-          FirebaseFunctions.instance.httpsCallable('sendNotification');
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'sendNotification',
+      );
 
       await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -682,12 +708,15 @@ class NotificationService extends BaseService {
       );
       if (!hasConsent) {
         AppLogger.info(
-            '🔔 NotificationService: push consent revoked — clearing FCMTokenManager local token (BUT-754)');
+          '🔔 NotificationService: push consent revoked — clearing FCMTokenManager local token (BUT-754)',
+        );
         await _tokenManager?.clearLocalToken();
       }
     } catch (e) {
       AppLogger.error(
-          '❌ NotificationService: consent-change handler failed', e);
+        '❌ NotificationService: consent-change handler failed',
+        e,
+      );
     } finally {
       _consentHandlerInProgress = false;
     }

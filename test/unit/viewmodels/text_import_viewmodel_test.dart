@@ -23,13 +23,13 @@ import 'package:butlery/core/providers/application_provider.dart'
 /// existing single-recipe assertions stay valid after `parseText` was rewired
 /// from `autoImport` to `autoParseMulti`.
 BatchImportResult _singleResult(Recipe recipe) => BatchImportResult(
-      results: [ImportManagerResult.success(recipe, strategy: 'text')],
-      successfulRecipes: [recipe],
-      errors: const [],
-      totalProcessed: 1,
-      successCount: 1,
-      failureCount: 0,
-    );
+  results: [ImportManagerResult.success(recipe, strategy: 'text')],
+  successfulRecipes: [recipe],
+  errors: const [],
+  totalProcessed: 1,
+  successCount: 1,
+  failureCount: 0,
+);
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager with setImportManagerState() method
@@ -58,15 +58,18 @@ void main() {
       mockTextStrategy = MockTextImportStrategy();
 
       // Configure default mock result for text parsing using mocktail stubbing
-      when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
-          .thenAnswer((_) async => ImportResult.success(
-                RecipeFactory.build(
-                  title: 'Parsed Recipe',
-                  description: 'Recipe parsed from text',
-                  ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
-                  instructions: ['Vispa ihop', 'Stek i pannan'],
-                ),
-              ));
+      when(
+        () => mockTextStrategy.import(any(), options: any(named: 'options')),
+      ).thenAnswer(
+        (_) async => ImportResult.success(
+          RecipeFactory.build(
+            title: 'Parsed Recipe',
+            description: 'Recipe parsed from text',
+            ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
+            instructions: ['Vispa ihop', 'Stek i pannan'],
+          ),
+        ),
+      );
 
       // Configure ImportManager using centralized setImportManagerState()
       mockImportManager.setImportManagerState(
@@ -74,39 +77,50 @@ void main() {
       );
 
       // Configure autoImport for text strategy approach
-      when(() => mockImportManager.autoImport(any(),
-              preferredStrategy: any(named: 'preferredStrategy'),
-              options: any(named: 'options')))
-          .thenAnswer((_) async => ImportManagerResult.success(
-                RecipeFactory.build(
-                  title: 'Parsed Recipe',
-                  description: 'Recipe parsed from text',
-                  ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
-                  instructions: ['Vispa ihop', 'Stek i pannan'],
-                ),
-                strategy: 'text',
-              ));
+      when(
+        () => mockImportManager.autoImport(
+          any(),
+          preferredStrategy: any(named: 'preferredStrategy'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
+        (_) async => ImportManagerResult.success(
+          RecipeFactory.build(
+            title: 'Parsed Recipe',
+            description: 'Recipe parsed from text',
+            ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
+            instructions: ['Vispa ihop', 'Stek i pannan'],
+          ),
+          strategy: 'text',
+        ),
+      );
 
       // BUT-1040: parseText() now routes through autoParseMulti (not
       // autoImport). Default to a single-recipe batch so the single-recipe
       // path is behaviourally unchanged; multi-recipe tests override this.
-      when(() => mockImportManager.autoParseMulti(any(),
-              preferredStrategy: any(named: 'preferredStrategy'),
-              options: any(named: 'options')))
-          .thenAnswer((_) async => _singleResult(
-                RecipeFactory.build(
-                  title: 'Parsed Recipe',
-                  description: 'Recipe parsed from text',
-                  ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
-                  instructions: ['Vispa ihop', 'Stek i pannan'],
-                ),
-              ));
+      when(
+        () => mockImportManager.autoParseMulti(
+          any(),
+          preferredStrategy: any(named: 'preferredStrategy'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
+        (_) async => _singleResult(
+          RecipeFactory.build(
+            title: 'Parsed Recipe',
+            description: 'Recipe parsed from text',
+            ingredients: ['2 ägg', '3 dl mjölk', '2 dl vetemjöl'],
+            instructions: ['Vispa ihop', 'Stek i pannan'],
+          ),
+        ),
+      );
 
-      when(() => mockImportManager.saveImportedRecipe(any()))
-          .thenAnswer((_) async => ImportManagerResult.success(
-                RecipeFactory.build(),
-                strategy: 'text',
-              ));
+      when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
+        (_) async => ImportManagerResult.success(
+          RecipeFactory.build(),
+          strategy: 'text',
+        ),
+      );
 
       // Create viewModel
       viewModel = TextImportViewModel(
@@ -269,10 +283,13 @@ void main() {
       test('should handle parsing error', () async {
         // Arrange
         viewModel.updateInputText('Some text');
-        when(() => mockImportManager.autoParseMulti(any(),
-                preferredStrategy: any(named: 'preferredStrategy'),
-                options: any(named: 'options')))
-            .thenThrow(Exception('Parsing failed'));
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(Exception('Parsing failed'));
 
         // Act
         final result = await viewModel.parseText();
@@ -283,62 +300,76 @@ void main() {
         expect(viewModel.error, contains('Import misslyckades'));
       });
 
-      test('parseText drives isParsing during the parse (BUT-960 spinner)',
-          () async {
-        // Intent: the social-media view binds the parse button's spinner and
-        // its double-tap guard to `viewModel.isParsing` (fran_sociala_medier_
-        // view lines 335/338). parseText must flip isParsing (== isLoading)
-        // true for the whole Cloud Function round-trip so the "Tolkar..."
-        // spinner shows and a second tap is blocked mid-parse — then back to
-        // false on completion.
-        viewModel.updateInputText('Recipe text');
-        bool wasParsing = false;
+      test(
+        'parseText drives isParsing during the parse (BUT-960 spinner)',
+        () async {
+          // Intent: the social-media view binds the parse button's spinner and
+          // its double-tap guard to `viewModel.isParsing` (fran_sociala_medier_
+          // view lines 335/338). parseText must flip isParsing (== isLoading)
+          // true for the whole Cloud Function round-trip so the "Tolkar..."
+          // spinner shows and a second tap is blocked mid-parse — then back to
+          // false on completion.
+          viewModel.updateInputText('Recipe text');
+          bool wasParsing = false;
 
-        viewModel.addListener(() {
-          if (viewModel.isParsing) wasParsing = true;
-        });
+          viewModel.addListener(() {
+            if (viewModel.isParsing) wasParsing = true;
+          });
 
-        // Act
-        await viewModel.parseText();
+          // Act
+          await viewModel.parseText();
 
-        // Assert
-        expect(wasParsing, isTrue,
-            reason: 'parseText must flip isParsing true during the parse so '
-                'the spinner shows and double-submit is blocked.');
-        expect(viewModel.isParsing, isFalse, reason: 'idle after completion');
-      });
+          // Assert
+          expect(
+            wasParsing,
+            isTrue,
+            reason:
+                'parseText must flip isParsing true during the parse so '
+                'the spinner shows and double-submit is blocked.',
+          );
+          expect(viewModel.isParsing, isFalse, reason: 'idle after completion');
+        },
+      );
 
       test(
-          'parseText surfaces the timeout copy on a server-side hang (BUT-960)',
-          () {
-        // Intent: a parse that never returns must surface errorImportTimeout
-        // (not an endless spinner or the generic import-failed banner). We use
-        // fakeAsync so the real 60s client timeout fires in zero wall-clock:
-        // autoParseMulti hangs past the window, .timeout() throws the localized
-        // copy, and parseText maps it to errorImportTimeout (NOT errorImport-
-        // Failed) — proving the distinct-message branch the fix added.
-        fakeAsync((async) {
-          viewModel.updateInputText('Recipe text');
-          when(() =>
-                  mockImportManager.autoParseMulti(any(),
-                      preferredStrategy: any(named: 'preferredStrategy'),
-                      options: any(named: 'options')))
-              .thenAnswer((_) => Future.delayed(
-                    const Duration(seconds: 120),
-                    () => _singleResult(RecipeFactory.build()),
-                  ));
+        'parseText surfaces the timeout copy on a server-side hang (BUT-960)',
+        () {
+          // Intent: a parse that never returns must surface errorImportTimeout
+          // (not an endless spinner or the generic import-failed banner). We use
+          // fakeAsync so the real 60s client timeout fires in zero wall-clock:
+          // autoParseMulti hangs past the window, .timeout() throws the localized
+          // copy, and parseText maps it to errorImportTimeout (NOT errorImport-
+          // Failed) — proving the distinct-message branch the fix added.
+          fakeAsync((async) {
+            viewModel.updateInputText('Recipe text');
+            when(
+              () => mockImportManager.autoParseMulti(
+                any(),
+                preferredStrategy: any(named: 'preferredStrategy'),
+                options: any(named: 'options'),
+              ),
+            ).thenAnswer(
+              (_) => Future.delayed(
+                const Duration(seconds: 120),
+                () => _singleResult(RecipeFactory.build()),
+              ),
+            );
 
-          bool? result;
-          viewModel.parseText().then((r) => result = r);
+            bool? result;
+            viewModel.parseText().then((r) => result = r);
 
-          // Past the 60s timeout but before the 120s "server" reply.
-          async.elapse(const Duration(seconds: 61));
+            // Past the 60s timeout but before the 120s "server" reply.
+            async.elapse(const Duration(seconds: 61));
 
-          expect(result, isFalse);
-          expect(viewModel.error, equals(AppLocale.current.errorImportTimeout));
-          expect(viewModel.isParsing, isFalse);
-        });
-      });
+            expect(result, isFalse);
+            expect(
+              viewModel.error,
+              equals(AppLocale.current.errorImportTimeout),
+            );
+            expect(viewModel.isParsing, isFalse);
+          });
+        },
+      );
 
       test('should parse with source URL', () async {
         // Arrange
@@ -410,11 +441,12 @@ void main() {
       test('should handle save failure', () async {
         // Arrange
         viewModel.updateInputText('Recipe text');
-        when(() => mockImportManager.saveImportedRecipe(any()))
-            .thenAnswer((_) async => ImportManagerResult.failure(
-                  'Failed to save',
-                  strategy: 'text',
-                ));
+        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
+          (_) async => ImportManagerResult.failure(
+            'Failed to save',
+            strategy: 'text',
+          ),
+        );
 
         // Act
         final result = await viewModel.importAndSave();
@@ -441,9 +473,9 @@ void main() {
         // importAndSave() still routes through completeImport → performImport →
         // strategy.import (the single-recipe path), NOT autoParseMulti, so the
         // strategy is the seam to fault-inject here.
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenThrow(Exception('Import failed'));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenThrow(Exception('Import failed'));
 
         // Act — executeAsync rethrows after setting error
         try {
@@ -460,8 +492,7 @@ void main() {
     // recipes routed into the shared multi-recipe picker; a single-recipe
     // paste collapses to one and drives the existing single-recipe path.
     group('Multi-recipe parse (BUT-1040)', () {
-      test(
-          'single-recipe parse → hasMultipleParsedRecipes false, mirrors '
+      test('single-recipe parse → hasMultipleParsedRecipes false, mirrors '
           'parsedRecipe', () async {
         // Intent: a normal paste must NOT route to the picker, and the
         // single-recipe getter must stay populated so existing consumers work.
@@ -476,8 +507,7 @@ void main() {
         expect(viewModel.parsedRecipe, same(viewModel.parsedRecipes.first));
       });
 
-      test(
-          'multi-recipe parse → hasMultipleParsedRecipes true and picker list '
+      test('multi-recipe parse → hasMultipleParsedRecipes true and picker list '
           'holds every recipe', () async {
         // Intent: when the splitter yields >1 recipe the view must be able to
         // route to the picker (hasMultipleParsedRecipes) AND see all recipes.
@@ -493,71 +523,94 @@ void main() {
           successCount: 3,
           failureCount: 0,
         );
-        when(() => mockImportManager.autoParseMulti(any(),
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
             preferredStrategy: any(named: 'preferredStrategy'),
-            options: any(named: 'options'))).thenAnswer((_) async => batch);
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer((_) async => batch);
         viewModel.updateInputText('Pannkakor\n---\nVåfflor\n---\nPlättar');
 
         final ok = await viewModel.parseText();
 
         expect(ok, isTrue);
         expect(viewModel.hasMultipleParsedRecipes, isTrue);
-        expect(viewModel.parsedRecipes.map((r) => r.title),
-            ['Pannkakor', 'Våfflor', 'Plättar']);
+        expect(viewModel.parsedRecipes.map((r) => r.title), [
+          'Pannkakor',
+          'Våfflor',
+          'Plättar',
+        ]);
         // First seeds the single-recipe getter so non-null consumers survive.
         expect(viewModel.parsedRecipe!.title, 'Pannkakor');
       });
 
-      test('source URL is carried across EVERY recipe in a multi-recipe batch',
-          () async {
-        // Intent: the old single-recipe path stamped sourceUrl onto the parsed
-        // recipe; the batch path must stamp it onto all N, not just the first.
-        final batch = BatchImportResult(
-          results: const [],
-          successfulRecipes: [
-            RecipeFactory.build(id: 'r1', title: 'A'),
-            RecipeFactory.build(id: 'r2', title: 'B'),
-          ],
-          errors: const [],
-          totalProcessed: 2,
-          successCount: 2,
-          failureCount: 0,
-        );
-        when(() => mockImportManager.autoParseMulti(any(),
-            preferredStrategy: any(named: 'preferredStrategy'),
-            options: any(named: 'options'))).thenAnswer((_) async => batch);
-        viewModel.updateTextAndSource('A\n---\nB',
-            sourceUrl: 'https://insta.test/p');
+      test(
+        'source URL is carried across EVERY recipe in a multi-recipe batch',
+        () async {
+          // Intent: the old single-recipe path stamped sourceUrl onto the parsed
+          // recipe; the batch path must stamp it onto all N, not just the first.
+          final batch = BatchImportResult(
+            results: const [],
+            successfulRecipes: [
+              RecipeFactory.build(id: 'r1', title: 'A'),
+              RecipeFactory.build(id: 'r2', title: 'B'),
+            ],
+            errors: const [],
+            totalProcessed: 2,
+            successCount: 2,
+            failureCount: 0,
+          );
+          when(
+            () => mockImportManager.autoParseMulti(
+              any(),
+              preferredStrategy: any(named: 'preferredStrategy'),
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer((_) async => batch);
+          viewModel.updateTextAndSource(
+            'A\n---\nB',
+            sourceUrl: 'https://insta.test/p',
+          );
 
-        await viewModel.parseText();
+          await viewModel.parseText();
 
-        expect(viewModel.parsedRecipes.map((r) => r.sourceUrl),
-            everyElement('https://insta.test/p'));
-      });
+          expect(
+            viewModel.parsedRecipes.map((r) => r.sourceUrl),
+            everyElement('https://insta.test/p'),
+          );
+        },
+      );
 
-      test('parse that yields no recipes sets an error and returns false',
-          () async {
-        // Intent: an empty batch must surface the import-failed error, not
-        // silently report success with an empty picker list.
-        final empty = BatchImportResult(
-          results: const [],
-          successfulRecipes: const [],
-          errors: const ['no recipe'],
-          totalProcessed: 1,
-          successCount: 0,
-          failureCount: 1,
-        );
-        when(() => mockImportManager.autoParseMulti(any(),
-            preferredStrategy: any(named: 'preferredStrategy'),
-            options: any(named: 'options'))).thenAnswer((_) async => empty);
-        viewModel.updateInputText('not a recipe');
+      test(
+        'parse that yields no recipes sets an error and returns false',
+        () async {
+          // Intent: an empty batch must surface the import-failed error, not
+          // silently report success with an empty picker list.
+          final empty = BatchImportResult(
+            results: const [],
+            successfulRecipes: const [],
+            errors: const ['no recipe'],
+            totalProcessed: 1,
+            successCount: 0,
+            failureCount: 1,
+          );
+          when(
+            () => mockImportManager.autoParseMulti(
+              any(),
+              preferredStrategy: any(named: 'preferredStrategy'),
+              options: any(named: 'options'),
+            ),
+          ).thenAnswer((_) async => empty);
+          viewModel.updateInputText('not a recipe');
 
-        final ok = await viewModel.parseText();
+          final ok = await viewModel.parseText();
 
-        expect(ok, isFalse);
-        expect(viewModel.hasMultipleParsedRecipes, isFalse);
-        expect(viewModel.error, contains('Import misslyckades'));
-      });
+          expect(ok, isFalse);
+          expect(viewModel.hasMultipleParsedRecipes, isFalse);
+          expect(viewModel.error, contains('Import misslyckades'));
+        },
+      );
 
       test('parsedRecipes is reset between consecutive parses', () async {
         // Intent: a fresh paste must not leak the previous parse's picker list
@@ -573,19 +626,27 @@ void main() {
           successCount: 2,
           failureCount: 0,
         );
-        when(() => mockImportManager.autoParseMulti(any(),
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
             preferredStrategy: any(named: 'preferredStrategy'),
-            options: any(named: 'options'))).thenAnswer((_) async => two);
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer((_) async => two);
         viewModel.updateInputText('A\n---\nB');
         await viewModel.parseText();
         expect(viewModel.parsedRecipes, hasLength(2));
 
         // Second parse → back to a single recipe; list must shrink to 1.
-        when(() => mockImportManager.autoParseMulti(any(),
-                preferredStrategy: any(named: 'preferredStrategy'),
-                options: any(named: 'options')))
-            .thenAnswer((_) async =>
-                _singleResult(RecipeFactory.build(id: 'r3', title: 'C')));
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer(
+          (_) async => _singleResult(RecipeFactory.build(id: 'r3', title: 'C')),
+        );
         viewModel.updateInputText('C');
         await viewModel.parseText();
 
@@ -617,23 +678,26 @@ void main() {
         verifyNever(() => mockImportManager.saveImportedRecipe(any()));
       });
 
-      test('first failing save surfaces an error and stops the batch',
-          () async {
-        // Intent: if recipe 1 fails to save, the user must see an error — we
-        // must not silently report success for a partially-saved batch.
-        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
+      test(
+        'first failing save surfaces an error and stops the batch',
+        () async {
+          // Intent: if recipe 1 fails to save, the user must see an error — we
+          // must not silently report success for a partially-saved batch.
+          when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer(
             (_) async =>
-                ImportManagerResult.failure('disk full', strategy: 'text'));
-        final recipes = [
-          RecipeFactory.build(id: 'r1', title: 'A'),
-          RecipeFactory.build(id: 'r2', title: 'B'),
-        ];
+                ImportManagerResult.failure('disk full', strategy: 'text'),
+          );
+          final recipes = [
+            RecipeFactory.build(id: 'r1', title: 'A'),
+            RecipeFactory.build(id: 'r2', title: 'B'),
+          ];
 
-        final ok = await viewModel.saveSelectedRecipes(recipes);
+          final ok = await viewModel.saveSelectedRecipes(recipes);
 
-        expect(ok, isFalse);
-        expect(viewModel.hasError, isTrue);
-      });
+          expect(ok, isFalse);
+          expect(viewModel.hasError, isTrue);
+        },
+      );
     });
 
     // BUT-1040: end-to-end through the REAL ImportManager + splitter + parser,
@@ -644,11 +708,13 @@ void main() {
 
       setUp(() {
         mockOps = MockPersonalRecipeOperations();
-        when(() => mockOps.addUnifiedRecipe(any()))
-            .thenAnswer((_) async => RecipeOperationResult.success('Added'));
+        when(
+          () => mockOps.addUnifiedRecipe(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.success('Added'));
         realVm = TextImportViewModel(
-          importManager:
-              ImportManager.withStrategies(mockOps, [TextImportStrategy()]),
+          importManager: ImportManager.withStrategies(mockOps, [
+            TextImportStrategy(),
+          ]),
         );
       });
 
@@ -713,9 +779,13 @@ Grädda i våffeljärn tills gyllene.''';
         // Assert
         expect(viewModel.inputText, equals('Recipe content from social media'));
         expect(
-            viewModel.sourceUrl, equals('https://instagram.com/recipe-post'));
-        expect(notificationCount,
-            greaterThanOrEqualTo(2)); // One for text, one for URL
+          viewModel.sourceUrl,
+          equals('https://instagram.com/recipe-post'),
+        );
+        expect(
+          notificationCount,
+          greaterThanOrEqualTo(2),
+        ); // One for text, one for URL
       });
 
       test('should update source URL', () {
@@ -754,9 +824,11 @@ Grädda i våffeljärn tills gyllene.''';
         // Assert
         expect(suggestions, isNotEmpty);
         expect(
-            suggestions
-                .any((s) => s.contains('Klistra in') || s.contains('skriv')),
-            isTrue);
+          suggestions.any(
+            (s) => s.contains('Klistra in') || s.contains('skriv'),
+          ),
+          isTrue,
+        );
       });
 
       test('should provide suggestions for short text', () {
@@ -769,10 +841,13 @@ Grädda i våffeljärn tills gyllene.''';
         // Assert
         expect(suggestions, isNotEmpty);
         expect(
-            suggestions.any((s) =>
+          suggestions.any(
+            (s) =>
                 s.toLowerCase().contains('ingrediens') ||
-                s.toLowerCase().contains('instruktion')),
-            isTrue);
+                s.toLowerCase().contains('instruktion'),
+          ),
+          isTrue,
+        );
       });
 
       test('should provide suggestions for text without ingredients', () {
@@ -784,8 +859,10 @@ Grädda i våffeljärn tills gyllene.''';
 
         // Assert
         expect(suggestions, isNotEmpty);
-        expect(suggestions.any((s) => s.toLowerCase().contains('ingrediens')),
-            isTrue);
+        expect(
+          suggestions.any((s) => s.toLowerCase().contains('ingrediens')),
+          isTrue,
+        );
       });
 
       test('should provide suggestions for text without instructions', () {
@@ -797,8 +874,10 @@ Grädda i våffeljärn tills gyllene.''';
 
         // Assert
         expect(suggestions, isNotEmpty);
-        expect(suggestions.any((s) => s.toLowerCase().contains('instruktion')),
-            isTrue);
+        expect(
+          suggestions.any((s) => s.toLowerCase().contains('instruktion')),
+          isTrue,
+        );
       });
 
       test('should return empty suggestions for well-formed text', () {
@@ -825,11 +904,12 @@ Grädda i våffeljärn tills gyllene.''';
         // Assert - well-formed text might still have minor suggestions (e.g., portions)
         expect(suggestions.length, equals(1));
         expect(
-            suggestions[0],
-            anyOf(
-              contains('ser bra ut'),
-              contains('portion'),
-            ));
+          suggestions[0],
+          anyOf(
+            contains('ser bra ut'),
+            contains('portion'),
+          ),
+        );
       });
     });
 
@@ -883,9 +963,13 @@ Grädda i våffeljärn tills gyllene.''';
       test('should set and clear error', () async {
         // Arrange
         viewModel.updateInputText('Recipe text');
-        when(() => mockImportManager.autoParseMulti(any(),
+        when(
+          () => mockImportManager.autoParseMulti(
+            any(),
             preferredStrategy: any(named: 'preferredStrategy'),
-            options: any(named: 'options'))).thenThrow(Exception('Test error'));
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(Exception('Test error'));
 
         // Act - trigger error
         await viewModel.parseText();
@@ -903,13 +987,17 @@ Grädda i våffeljärn tills gyllene.''';
       test('should handle import manager not available', () async {
         // Arrange
         final separateMockManager = MockImportManager();
-        when(() => separateMockManager.autoParseMulti(any(),
-                preferredStrategy: any(named: 'preferredStrategy'),
-                options: any(named: 'options')))
-            .thenThrow(Exception('Import manager not available'));
+        when(
+          () => separateMockManager.autoParseMulti(
+            any(),
+            preferredStrategy: any(named: 'preferredStrategy'),
+            options: any(named: 'options'),
+          ),
+        ).thenThrow(Exception('Import manager not available'));
 
-        final testViewModel =
-            TextImportViewModel(importManager: separateMockManager);
+        final testViewModel = TextImportViewModel(
+          importManager: separateMockManager,
+        );
         testViewModel.updateInputText('Recipe text');
 
         // Act
@@ -927,8 +1015,9 @@ Grädda i våffeljärn tills gyllene.''';
     group('Lifecycle', () {
       test('should dispose without errors', () {
         // Arrange
-        final testViewModel =
-            TextImportViewModel(importManager: mockImportManager);
+        final testViewModel = TextImportViewModel(
+          importManager: mockImportManager,
+        );
 
         // Act & Assert
         expect(() => testViewModel.dispose(), returnsNormally);
@@ -936,8 +1025,9 @@ Grädda i våffeljärn tills gyllene.''';
 
       test('should not update after disposal', () {
         // Arrange
-        final testViewModel =
-            TextImportViewModel(importManager: mockImportManager);
+        final testViewModel = TextImportViewModel(
+          importManager: mockImportManager,
+        );
         testViewModel.dispose();
 
         // Act

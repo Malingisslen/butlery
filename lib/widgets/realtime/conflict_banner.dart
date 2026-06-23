@@ -112,16 +112,18 @@ class _ConflictBannerState extends State<ConflictBanner> {
           vertical: AppDimensions.paddingM,
         ),
         decoration: BoxDecoration(
-          color: context.butleryColors.warning
-              .withValues(alpha: AppDimensions.opacityVeryLight),
+          color: context.butleryColors.warning.withValues(
+            alpha: AppDimensions.opacityVeryLight,
+          ),
           border: Border(
             left: BorderSide(
               color: context.butleryColors.warning,
               width: AppDimensions.borderWidthThick,
             ),
             bottom: BorderSide(
-              color: context.butleryColors.warning
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              color: context.butleryColors.warning.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
             ),
           ),
         ),

@@ -55,7 +55,7 @@ class TagPhase1Base {
   final FirebaseTagConfig? _firebaseConfig;
 
   TagPhase1Base({FirebaseTagConfig? firebaseConfig})
-      : _firebaseConfig = firebaseConfig;
+    : _firebaseConfig = firebaseConfig;
 
   /// Calculates Phase 1 tags.
   Phase1Result calculate(IngredientLookupResult lookup, Recipe recipe) {
@@ -66,12 +66,16 @@ class TagPhase1Base {
     tags.addAll(_calculateTimeTags(recipe.core.timeMinutes));
 
     // Allergen status using tri-valued logic
-    final allergenResult =
-        Phase1AllergenCalculator.calculate(lookup, _firebaseConfig);
+    final allergenResult = Phase1AllergenCalculator.calculate(
+      lookup,
+      _firebaseConfig,
+    );
 
     // Dietary status
-    final dietaryResult =
-        Phase1DietaryCalculator.calculate(lookup, _firebaseConfig);
+    final dietaryResult = Phase1DietaryCalculator.calculate(
+      lookup,
+      _firebaseConfig,
+    );
 
     decisions.addAll(allergenResult.decisions);
     decisions.addAll(dietaryResult.decisions);
@@ -83,12 +87,16 @@ class TagPhase1Base {
     tags.addAll(Phase1NutritionCalculator.calculateCarbTags(lookup, recipe));
 
     // Cooking method tags from instructions
-    tags.addAll(Phase1MethodCalculator.calculateCookingMethodTags(
-        recipe.core.instructions));
+    tags.addAll(
+      Phase1MethodCalculator.calculateCookingMethodTags(
+        recipe.core.instructions,
+      ),
+    );
 
     // Dish type tags from title
     tags.addAll(
-        Phase1MethodCalculator.calculateDishTypeTags(recipe.core.title));
+      Phase1MethodCalculator.calculateDishTypeTags(recipe.core.title),
+    );
 
     return Phase1Result(
       tags: tags,

@@ -84,7 +84,9 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
     return AlertDialog(
       title: Text(
         context.l10n.dialogUnknownIngredientProgress(
-            _currentIndex + 1, _definitions.length),
+          _currentIndex + 1,
+          _definitions.length,
+        ),
         style: theme.textTheme.titleLarge,
       ),
       content: SizedBox(
@@ -133,7 +135,8 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
         TextButton(
           onPressed: _isSaving ? null : _skipCurrent,
           child: Text(
-              _isLast ? context.l10n.commonSkipAll : context.l10n.commonSkip),
+            _isLast ? context.l10n.commonSkipAll : context.l10n.commonSkip,
+          ),
         ),
         if (!_isFirst)
           TextButton(
@@ -144,9 +147,11 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
           onPressed: _isSaving ? null : _saveAndNext,
           child: _isSaving
               ? const LoadingIndicator(size: 16, strokeWidth: 2)
-              : Text(_isLast
-                  ? context.l10n.commonSaveAndClose
-                  : context.l10n.commonSaveAndNext),
+              : Text(
+                  _isLast
+                      ? context.l10n.commonSaveAndClose
+                      : context.l10n.commonSaveAndNext,
+                ),
         ),
       ],
     );
@@ -270,7 +275,8 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(context.l10n.dialogCouldNotSave(e.toString()))),
+            content: Text(context.l10n.dialogCouldNotSave(e.toString())),
+          ),
         );
       }
     }

@@ -22,8 +22,8 @@ class AuthMfaService extends ChangeNotifier
   AuthMfaService({
     required AnalyticsService analyticsService,
     required AuthRepository authRepository,
-  })  : _analyticsService = analyticsService,
-        _authRepository = authRepository;
+  }) : _analyticsService = analyticsService,
+       _authRepository = authRepository;
 
   Future<bool> hasMfaEnabled() async {
     final user = _authRepository.currentUser;
@@ -45,11 +45,13 @@ class AuthMfaService extends ChangeNotifier
     try {
       final factors = await user.multiFactor.getEnrolledFactors();
       return factors
-          .map((f) => MfaFactorInfo(
-                factor: f,
-                displayName: f.displayName,
-                enrollmentTimestamp: f.enrollmentTimestamp,
-              ))
+          .map(
+            (f) => MfaFactorInfo(
+              factor: f,
+              displayName: f.displayName,
+              enrollmentTimestamp: f.enrollmentTimestamp,
+            ),
+          )
           .toList();
     } catch (e) {
       AppLogger.warning('Failed to get MFA factors: $e');
@@ -66,7 +68,8 @@ class AuthMfaService extends ChangeNotifier
     final user = _authRepository.currentUser;
     if (user == null) {
       onError(
-          const MfaError(code: 'user-not-found', message: 'No user signed in'));
+        const MfaError(code: 'user-not-found', message: 'No user signed in'),
+      );
       return;
     }
 
@@ -155,7 +158,8 @@ class AuthMfaService extends ChangeNotifier
       final firebaseFactor = factor.unwrap<MultiFactorInfo>();
       await user.multiFactor.unenroll(multiFactorInfo: firebaseFactor);
       AppLogger.info(
-          'MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}');
+        'MFA factor unenrolled: ${firebaseFactor.uid.maskedUserId}',
+      );
       await _analyticsService.logEvent(name: AnalyticsEvents.mfaUnenrolled);
       return true;
     } on FirebaseAuthException catch (e) {
@@ -170,8 +174,9 @@ class AuthMfaService extends ChangeNotifier
   }
 
   MfaResolverInfo createMfaResolver(MultiFactorResolver resolver) {
-    final phoneHint =
-        resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
+    final phoneHint = resolver.hints
+        .whereType<PhoneMultiFactorInfo>()
+        .firstOrNull;
     return MfaResolverInfo(
       resolver: resolver,
       phoneHint: phoneHint?.phoneNumber,
@@ -184,12 +189,14 @@ class AuthMfaService extends ChangeNotifier
     required void Function(MfaError error) onError,
   }) async {
     final resolver = resolverInfo.unwrap<MultiFactorResolver>();
-    final phoneHint =
-        resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
+    final phoneHint = resolver.hints
+        .whereType<PhoneMultiFactorInfo>()
+        .firstOrNull;
 
     if (phoneHint == null) {
-      onError(const MfaError(
-          code: 'no-phone-factor', message: 'No phone MFA found'));
+      onError(
+        const MfaError(code: 'no-phone-factor', message: 'No phone MFA found'),
+      );
       return;
     }
 

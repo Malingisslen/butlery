@@ -51,7 +51,8 @@ class UploadQueueManager {
     );
 
     AppLogger.info(
-        '🗂️ QUEUE: Added upload for $filePath (queue size: ${_queue.length})');
+      '🗂️ QUEUE: Added upload for $filePath (queue size: ${_queue.length})',
+    );
   }
 
   /// Add completed upload (with URL) to queue.
@@ -66,7 +67,8 @@ class UploadQueueManager {
   }) {
     if (_queue.containsKey(filePath)) {
       AppLogger.warning(
-          '🗂️ QUEUE: addCompletedUpload: key already exists, skipping: $filePath');
+        '🗂️ QUEUE: addCompletedUpload: key already exists, skipping: $filePath',
+      );
       return;
     }
 
@@ -92,7 +94,8 @@ class UploadQueueManager {
   void updateStatus(String filePath, ImageUploadStatus newStatus) {
     if (!_queue.containsKey(filePath)) {
       AppLogger.warning(
-          '🗂️ QUEUE: Cannot update non-existent upload $filePath');
+        '🗂️ QUEUE: Cannot update non-existent upload $filePath',
+      );
       return;
     }
 
@@ -105,7 +108,8 @@ class UploadQueueManager {
 
     _queue[filePath] = newStatus;
     AppLogger.debug(
-        '🗂️ QUEUE: Updated status for $filePath to ${newStatus.state}');
+      '🗂️ QUEUE: Updated status for $filePath to ${newStatus.state}',
+    );
   }
 
   /// Update upload progress
@@ -134,7 +138,8 @@ class UploadQueueManager {
     final removed = _queue.remove(filePath);
     if (removed != null) {
       AppLogger.info(
-          '🗂️ QUEUE: Removed upload for $filePath (queue size: ${_queue.length})');
+        '🗂️ QUEUE: Removed upload for $filePath (queue size: ${_queue.length})',
+      );
     }
     return removed;
   }
@@ -158,7 +163,8 @@ class UploadQueueManager {
     }
 
     AppLogger.info(
-        '🗂️ QUEUE: Removed ${toRemove.length} uploads in state ${state.name}');
+      '🗂️ QUEUE: Removed ${toRemove.length} uploads in state ${state.name}',
+    );
   }
 
   /// Get upload status by file path
@@ -181,9 +187,11 @@ class UploadQueueManager {
   /// Get uploading (active) uploads
   Map<String, ImageUploadStatus> get activeUploads {
     return Map.fromEntries(
-      _queue.entries.where((entry) =>
-          entry.value.state == ImageUploadState.uploading ||
-          entry.value.state == ImageUploadState.retrying),
+      _queue.entries.where(
+        (entry) =>
+            entry.value.state == ImageUploadState.uploading ||
+            entry.value.state == ImageUploadState.retrying,
+      ),
     );
   }
 
@@ -194,8 +202,11 @@ class UploadQueueManager {
   /// Get failed uploads that can be retried
   Map<String, ImageUploadStatus> get retriableFailedUploads {
     return Map.fromEntries(
-      _queue.entries.where((entry) =>
-          entry.value.state == ImageUploadState.failed && entry.value.canRetry),
+      _queue.entries.where(
+        (entry) =>
+            entry.value.state == ImageUploadState.failed &&
+            entry.value.canRetry,
+      ),
     );
   }
 
@@ -257,8 +268,9 @@ class UploadQueueManager {
     for (final status in _queue.values) {
       totalProgress += status.progress;
     }
-    final overallProgress =
-        _queue.isNotEmpty ? totalProgress / _queue.length : 0.0;
+    final overallProgress = _queue.isNotEmpty
+        ? totalProgress / _queue.length
+        : 0.0;
 
     // Calculate average upload speed
     double totalSpeed = 0.0;

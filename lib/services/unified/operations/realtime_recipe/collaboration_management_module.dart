@@ -33,21 +33,24 @@ class CollaborationManagementModule {
     required CreatePersonalRecipeFn createPersonalRecipe,
     required Future<bool> Function(String) deleteRecipe,
     RealtimeSyncService? realtimeSyncService,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getRecipes = getRecipes,
-        _createCollaborativeRecipe = createCollaborativeRecipe,
-        _createPersonalRecipe = createPersonalRecipe,
-        _deleteRecipe = deleteRecipe,
-        _realtimeSyncService = realtimeSyncService;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getRecipes = getRecipes,
+       _createCollaborativeRecipe = createCollaborativeRecipe,
+       _createPersonalRecipe = createPersonalRecipe,
+       _deleteRecipe = deleteRecipe,
+       _realtimeSyncService = realtimeSyncService;
 
   /// Enable collaborative editing for a personal recipe
   Future<bool> enableCollaborativeEditing(
-      String recipeId, List<String> memberIds) async {
+    String recipeId,
+    List<String> memberIds,
+  ) async {
     try {
       final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) {
         AppLogger.error(
-            'Cannot enable collaborative editing: Recipe not found');
+          'Cannot enable collaborative editing: Recipe not found',
+        );
         return false;
       }
 
@@ -63,7 +66,8 @@ class CollaborationManagementModule {
 
       if (memberIds.isEmpty) {
         AppLogger.error(
-            'At least one member must be specified to enable collaboration');
+          'At least one member must be specified to enable collaboration',
+        );
         return false;
       }
 
@@ -88,7 +92,8 @@ class CollaborationManagementModule {
         await _deleteRecipe(recipeId);
 
         AppLogger.success(
-            'Enabled collaborative editing for recipe: ${recipe.title}');
+          'Enabled collaborative editing for recipe: ${recipe.title}',
+        );
         return true;
       }
 
@@ -105,7 +110,8 @@ class CollaborationManagementModule {
       final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) {
         AppLogger.error(
-            'Cannot disable collaborative editing: Recipe not found');
+          'Cannot disable collaborative editing: Recipe not found',
+        );
         return false;
       }
 
@@ -138,7 +144,8 @@ class CollaborationManagementModule {
         // Delete collaborative recipe
         await _deleteRecipe(recipeId);
         AppLogger.success(
-            'Disabled collaborative editing for recipe: ${recipe.title}');
+          'Disabled collaborative editing for recipe: ${recipe.title}',
+        );
         return true;
       }
 
@@ -178,7 +185,8 @@ class CollaborationManagementModule {
 
       if (!recipe.isCollaborative) {
         AppLogger.error(
-            'Cannot add collaborators: Recipe is not collaborative');
+          'Cannot add collaborators: Recipe is not collaborative',
+        );
         return false;
       }
 
@@ -195,8 +203,9 @@ class CollaborationManagementModule {
       // Filter out members who are already collaborators
       final currentMembers =
           recipe.socialData?.memberPermissions?.keys.toList() ?? [];
-      final newMembers =
-          memberIds.where((id) => !currentMembers.contains(id)).toList();
+      final newMembers = memberIds
+          .where((id) => !currentMembers.contains(id))
+          .toList();
 
       if (newMembers.isEmpty) {
         AppLogger.warning('All specified members are already collaborators');
@@ -208,13 +217,15 @@ class CollaborationManagementModule {
       if (freshRecipe == null) return false;
 
       final currentPerms = Map<String, ResourcePermission>.from(
-          freshRecipe.socialData?.memberPermissions ?? {});
+        freshRecipe.socialData?.memberPermissions ?? {},
+      );
       for (final memberId in newMembers) {
         currentPerms[memberId] = ResourcePermission.editor;
       }
 
       final updated = freshRecipe.copyWith(
-        socialData: freshRecipe.socialData?.copyWith(
+        socialData:
+            freshRecipe.socialData?.copyWith(
               memberPermissions: currentPerms,
             ) ??
             RecipeSocialData(memberPermissions: currentPerms),
@@ -231,7 +242,9 @@ class CollaborationManagementModule {
 
   /// Remove members from collaborative recipe
   Future<bool> removeCollaborators(
-      String recipeId, List<String> memberIds) async {
+    String recipeId,
+    List<String> memberIds,
+  ) async {
     try {
       final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) {
@@ -241,7 +254,8 @@ class CollaborationManagementModule {
 
       if (!recipe.isCollaborative) {
         AppLogger.error(
-            'Cannot remove collaborators: Recipe is not collaborative');
+          'Cannot remove collaborators: Recipe is not collaborative',
+        );
         return false;
       }
 
@@ -267,7 +281,8 @@ class CollaborationManagementModule {
       if (freshRecipe == null) return false;
 
       final currentPerms = Map<String, ResourcePermission>.from(
-          freshRecipe.socialData?.memberPermissions ?? {});
+        freshRecipe.socialData?.memberPermissions ?? {},
+      );
       for (final memberId in memberIds) {
         currentPerms.remove(memberId);
       }
@@ -280,7 +295,8 @@ class CollaborationManagementModule {
       await repo.update(updated);
 
       AppLogger.success(
-          'Removed ${memberIds.length} collaborator(s) from recipe');
+        'Removed ${memberIds.length} collaborator(s) from recipe',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to remove collaborators', e);
@@ -290,7 +306,9 @@ class CollaborationManagementModule {
 
   /// Update member permissions in collaborative recipe
   Future<bool> updateMemberPermissions(
-      String recipeId, Map<String, String> memberPermissions) async {
+    String recipeId,
+    Map<String, String> memberPermissions,
+  ) async {
     try {
       final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) {
@@ -300,7 +318,8 @@ class CollaborationManagementModule {
 
       if (!recipe.isCollaborative) {
         AppLogger.error(
-            'Cannot update permissions: Recipe is not collaborative');
+          'Cannot update permissions: Recipe is not collaborative',
+        );
         return false;
       }
 
@@ -319,7 +338,8 @@ class CollaborationManagementModule {
       for (final permission in memberPermissions.values) {
         if (!validPermissions.contains(permission)) {
           AppLogger.error(
-              'Invalid permission: $permission. Must be one of: ${validPermissions.join(', ')}');
+            'Invalid permission: $permission. Must be one of: ${validPermissions.join(', ')}',
+          );
           return false;
         }
       }
@@ -339,7 +359,8 @@ class CollaborationManagementModule {
       if (freshRecipe == null) return false;
 
       final currentPerms = Map<String, ResourcePermission>.from(
-          freshRecipe.socialData?.memberPermissions ?? {});
+        freshRecipe.socialData?.memberPermissions ?? {},
+      );
       currentPerms.addAll(permissionMap);
 
       final updated = freshRecipe.copyWith(
@@ -350,7 +371,8 @@ class CollaborationManagementModule {
       await repo.update(updated);
 
       AppLogger.success(
-          'Updated permissions for ${memberPermissions.length} member(s)');
+        'Updated permissions for ${memberPermissions.length} member(s)',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to update member permissions', e);
@@ -369,7 +391,8 @@ class CollaborationManagementModule {
 
       if (!recipe.isCollaborative) {
         AppLogger.error(
-            'Cannot transfer ownership: Recipe is not collaborative');
+          'Cannot transfer ownership: Recipe is not collaborative',
+        );
         return false;
       }
 
@@ -397,7 +420,8 @@ class CollaborationManagementModule {
 
       // Swap permissions: demote old owner to editor, elevate new owner
       final currentPerms = Map<String, ResourcePermission>.from(
-          freshRecipe.socialData?.memberPermissions ?? {});
+        freshRecipe.socialData?.memberPermissions ?? {},
+      );
       if (currentOwnerId != null) {
         currentPerms[currentOwnerId] = ResourcePermission.editor;
       }
@@ -431,7 +455,8 @@ class CollaborationManagementModule {
 
       if (!recipe.isCollaborative) {
         AppLogger.error(
-            'Cannot leave collaboration: Recipe is not collaborative');
+          'Cannot leave collaboration: Recipe is not collaborative',
+        );
         return false;
       }
 
@@ -444,7 +469,8 @@ class CollaborationManagementModule {
       // Prevent owner from leaving without transferring ownership
       if (recipe.socialData?.ownerId == currentUserId) {
         AppLogger.error(
-            'Recipe owner cannot leave collaboration. Transfer ownership first.');
+          'Recipe owner cannot leave collaboration. Transfer ownership first.',
+        );
         return false;
       }
 
@@ -469,8 +495,9 @@ class CollaborationManagementModule {
       if (socialData == null) return {};
 
       final memberCount = socialData.memberPermissions?.length ?? 0;
-      final activeEditors =
-          RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
+      final activeEditors = RealtimeRecipeUtils.getActiveEditorsFromRecipe(
+        recipe,
+      );
 
       return {
         'isCollaborative': true,
@@ -478,18 +505,23 @@ class CollaborationManagementModule {
         'ownerDisplayName': socialData.ownerDisplayName,
         'memberCount': memberCount,
         'activeEditorsCount': activeEditors.length,
-        'members': socialData.memberPermissions?.entries
-                .map((entry) => {
-                      'userId': entry.key,
-                      'permission': entry.value.toString().split('.').last,
-                      'isActive': activeEditors.contains(entry.key),
-                    })
+        'members':
+            socialData.memberPermissions?.entries
+                .map(
+                  (entry) => {
+                    'userId': entry.key,
+                    'permission': entry.value.toString().split('.').last,
+                    'isActive': activeEditors.contains(entry.key),
+                  },
+                )
                 .toList() ??
             [],
-        'canEdit':
-            ServiceLocator.get<PermissionService>().canEditRecipe(recipeId),
-        'canManage':
-            ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId),
+        'canEdit': ServiceLocator.get<PermissionService>().canEditRecipe(
+          recipeId,
+        ),
+        'canManage': ServiceLocator.get<PermissionService>().isRecipeOwner(
+          recipeId,
+        ),
       };
     } catch (e) {
       AppLogger.error('Failed to get collaboration details', e);
@@ -500,12 +532,14 @@ class CollaborationManagementModule {
   /// Get collaboration statistics
   Map<String, dynamic> getCollaborationStats(String recipeId) {
     return RealtimeRecipeUtils.getCollaborationStats(
-        _getRecipes().where((r) => r.id == recipeId).firstOrNull!);
+      _getRecipes().where((r) => r.id == recipeId).firstOrNull!,
+    );
   }
 
   /// Get collaboration history for recipe
   Future<List<Map<String, dynamic>>> getCollaborationHistory(
-      String recipeId) async {
+    String recipeId,
+  ) async {
     try {
       final recipe = _getRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null || !recipe.isCollaborative) return [];

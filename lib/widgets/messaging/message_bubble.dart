@@ -69,13 +69,16 @@ class _MessageBubbleState extends State<MessageBubble>
       vsync: this,
       duration: AppDimensions.animationDurationMedium,
     );
-    _swipeAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _swipeController,
-      curve: Curves.easeOut,
-    ));
+    _swipeAnimation =
+        Tween<Offset>(
+          begin: Offset.zero,
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _swipeController,
+            curve: Curves.easeOut,
+          ),
+        );
   }
 
   @override
@@ -110,8 +113,9 @@ class _MessageBubbleState extends State<MessageBubble>
         label: context.l10n.a11yMessageSwipeToReply,
         container: true,
         child: GestureDetector(
-          onHorizontalDragUpdate:
-              widget.onReply != null ? _handleDragUpdate : null,
+          onHorizontalDragUpdate: widget.onReply != null
+              ? _handleDragUpdate
+              : null,
           onHorizontalDragEnd: widget.onReply != null ? _handleDragEnd : null,
           child: AnimatedBuilder(
             animation: _swipeAnimation,
@@ -377,7 +381,8 @@ class _MessageBubbleState extends State<MessageBubble>
       // Only imply clickability when the bubble actually does something on tap
       // (own tap handler, long-press, or a reaction toggle). A display-only
       // bubble defers the cursor, matching FriendCard/ShoppingListCard.
-      enabled: widget.onTap != null ||
+      enabled:
+          widget.onTap != null ||
           widget.onLongPress != null ||
           widget.onReactionToggle != null,
       // Subtle shadow on hover (web/desktop) — fill + square corners unchanged.

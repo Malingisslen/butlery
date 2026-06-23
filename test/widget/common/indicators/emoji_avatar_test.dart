@@ -13,8 +13,9 @@ void main() {
     });
 
     group('Default Constructor', () {
-      testWidgets('should render with required emoji',
-          (WidgetTester tester) async {
+      testWidgets('should render with required emoji', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -43,8 +44,9 @@ void main() {
         expect(renderBox.size.height, equals(48));
       });
 
-      testWidgets('should use default fontSize of 24',
-          (WidgetTester tester) async {
+      testWidgets('should use default fontSize of 24', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -57,16 +59,19 @@ void main() {
         expect(text.style?.fontSize, equals(24));
       });
 
-      testWidgets('uses theme primary as tinted default background',
-          (WidgetTester tester) async {
+      testWidgets('uses theme primary as tinted default background', (
+        WidgetTester tester,
+      ) async {
         late ColorScheme cs;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (context) {
-                cs = Theme.of(context).colorScheme;
-                return const EmojiAvatar(emoji: '😀');
-              }),
+              body: Builder(
+                builder: (context) {
+                  cs = Theme.of(context).colorScheme;
+                  return const EmojiAvatar(emoji: '😀');
+                },
+              ),
             ),
           ),
         );
@@ -100,8 +105,9 @@ void main() {
         expect(renderBox.size.height, equals(customSize));
       });
 
-      testWidgets('should apply custom background color',
-          (WidgetTester tester) async {
+      testWidgets('should apply custom background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -155,8 +161,9 @@ void main() {
     });
 
     group('Group Constructor', () {
-      testWidgets('should render with group constructor',
-          (WidgetTester tester) async {
+      testWidgets('should render with group constructor', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -185,8 +192,9 @@ void main() {
         expect(renderBox.size.height, equals(48));
       });
 
-      testWidgets('should use fontSize 24 for group',
-          (WidgetTester tester) async {
+      testWidgets('should use fontSize 24 for group', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -249,8 +257,9 @@ void main() {
         }
       });
 
-      testWidgets('should display multi-character emojis',
-          (WidgetTester tester) async {
+      testWidgets('should display multi-character emojis', (
+        WidgetTester tester,
+      ) async {
         const emojis = ['👨‍👩‍👧‍👦', '🏳️‍🌈', '👨‍💻', '👩‍🔬'];
 
         for (final emoji in emojis) {
@@ -330,8 +339,9 @@ void main() {
     });
 
     group('Visual Consistency', () {
-      testWidgets('should center emoji in container',
-          (WidgetTester tester) async {
+      testWidgets('should center emoji in container', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -358,8 +368,9 @@ void main() {
         expect(renderBox.size.width, equals(renderBox.size.height));
       });
 
-      testWidgets('should scale font with avatar size',
-          (WidgetTester tester) async {
+      testWidgets('should scale font with avatar size', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -464,8 +475,9 @@ void main() {
         expect(renderBox.size.height, equals(200));
       });
 
-      testWidgets('should handle transparent background',
-          (WidgetTester tester) async {
+      testWidgets('should handle transparent background', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(

@@ -112,8 +112,9 @@ class SnackBarUtils {
     showError(
       context,
       context.l10n.snackbarNoInternet,
-      actionLabel:
-          onRetry != null ? context.l10n.commonRetry : context.l10n.commonOk,
+      actionLabel: onRetry != null
+          ? context.l10n.commonRetry
+          : context.l10n.commonOk,
       onAction: onRetry ?? (() => hide(context)),
       duration: duration,
     );
@@ -192,8 +193,9 @@ class SnackBarUtils {
                 height: AppDimensions.iconSizeS,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(cs.onInverseSurface),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    cs.onInverseSurface,
+                  ),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -201,8 +203,8 @@ class SnackBarUtils {
                 child: Text(
                   message,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onInverseSurface,
-                      ),
+                    color: cs.onInverseSurface,
+                  ),
                 ),
               ),
             ],
@@ -314,7 +316,8 @@ class SnackBarUtils {
         children: [
           Icon(icon, color: textColor, size: AppDimensions.iconSizeM),
           const SizedBox(
-              width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
           Expanded(child: content),
         ],
       );
@@ -371,7 +374,8 @@ class SnackBarConfig {
   static const Duration longDuration = Duration(seconds: 7);
   static const Duration persistentDuration = Duration(seconds: 10);
 
-  static const EdgeInsets defaultMargin =
-      EdgeInsets.all(AppDimensions.spacingMd);
+  static const EdgeInsets defaultMargin = EdgeInsets.all(
+    AppDimensions.spacingMd,
+  );
   static const double defaultBorderRadius = AppDimensions.borderRadius8;
 }

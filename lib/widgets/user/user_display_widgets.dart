@@ -23,19 +23,18 @@ class UserDisplayWidgets {
     Color? textColor,
     bool showStatus = false,
     bool isOnline = false,
-  }) =>
-      UserAvatarWidgets.avatar(
-        imageUrl: imageUrl,
-        displayName: displayName,
-        size: size,
-        onTap: onTap,
-        borderColor: borderColor,
-        borderWidth: borderWidth,
-        backgroundColor: backgroundColor,
-        textColor: textColor,
-        showStatus: showStatus,
-        isOnline: isOnline,
-      );
+  }) => UserAvatarWidgets.avatar(
+    imageUrl: imageUrl,
+    displayName: displayName,
+    size: size,
+    onTap: onTap,
+    borderColor: borderColor,
+    borderWidth: borderWidth,
+    backgroundColor: backgroundColor,
+    textColor: textColor,
+    showStatus: showStatus,
+    isOnline: isOnline,
+  );
 
   static Widget editableAvatar({
     String? imageUrl,
@@ -44,24 +43,22 @@ class UserDisplayWidgets {
     ImageSize size = ImageSize.extraLarge,
     Color? borderColor,
     double? borderWidth,
-  }) =>
-      UserAvatarWidgets.editableAvatar(
-        imageUrl: imageUrl,
-        displayName: displayName,
-        onEditTap: onEditTap,
-        size: size,
-        borderColor: borderColor,
-        borderWidth: borderWidth,
-      );
+  }) => UserAvatarWidgets.editableAvatar(
+    imageUrl: imageUrl,
+    displayName: displayName,
+    onEditTap: onEditTap,
+    size: size,
+    borderColor: borderColor,
+    borderWidth: borderWidth,
+  );
 
   static Widget statusIndicator({
     required bool isOnline,
     double? size,
-  }) =>
-      UserAvatarWidgets.statusIndicator(
-        isOnline: isOnline,
-        size: size,
-      );
+  }) => UserAvatarWidgets.statusIndicator(
+    isOnline: isOnline,
+    size: size,
+  );
 
   static String getInitials(String name) => UserAvatarWidgets.getInitials(name);
 
@@ -70,26 +67,24 @@ class UserDisplayWidgets {
     TextStyle? style,
     int? maxLines,
     TextOverflow? overflow,
-  }) =>
-      UserLayoutWidgets.userName(
-        displayName: displayName,
-        style: style,
-        maxLines: maxLines,
-        overflow: overflow,
-      );
+  }) => UserLayoutWidgets.userName(
+    displayName: displayName,
+    style: style,
+    maxLines: maxLines,
+    overflow: overflow,
+  );
 
   static Widget userEmail({
     required String email,
     TextStyle? style,
     int? maxLines,
     TextOverflow? overflow,
-  }) =>
-      UserLayoutWidgets.userEmail(
-        email: email,
-        style: style,
-        maxLines: maxLines,
-        overflow: overflow,
-      );
+  }) => UserLayoutWidgets.userEmail(
+    email: email,
+    style: style,
+    maxLines: maxLines,
+    overflow: overflow,
+  );
 
   static Widget userInfo({
     required String displayName,
@@ -97,14 +92,13 @@ class UserDisplayWidgets {
     CrossAxisAlignment alignment = CrossAxisAlignment.start,
     TextStyle? nameStyle,
     TextStyle? emailStyle,
-  }) =>
-      UserLayoutWidgets.userInfo(
-        displayName: displayName,
-        email: email,
-        alignment: alignment,
-        nameStyle: nameStyle,
-        emailStyle: emailStyle,
-      );
+  }) => UserLayoutWidgets.userInfo(
+    displayName: displayName,
+    email: email,
+    alignment: alignment,
+    nameStyle: nameStyle,
+    emailStyle: emailStyle,
+  );
 
   static Widget userRow({
     String? imageUrl,
@@ -117,19 +111,18 @@ class UserDisplayWidgets {
     bool showStatus = false,
     bool isOnline = false,
     EdgeInsets? padding,
-  }) =>
-      UserLayoutWidgets.userRow(
-        imageUrl: imageUrl,
-        displayName: displayName,
-        email: email,
-        subtitle: subtitle,
-        avatarSize: avatarSize,
-        onTap: onTap,
-        trailing: trailing,
-        showStatus: showStatus,
-        isOnline: isOnline,
-        padding: padding,
-      );
+  }) => UserLayoutWidgets.userRow(
+    imageUrl: imageUrl,
+    displayName: displayName,
+    email: email,
+    subtitle: subtitle,
+    avatarSize: avatarSize,
+    onTap: onTap,
+    trailing: trailing,
+    showStatus: showStatus,
+    isOnline: isOnline,
+    padding: padding,
+  );
 
   static Widget userCard({
     String? imageUrl,
@@ -144,21 +137,20 @@ class UserDisplayWidgets {
     bool isOnline = false,
     EdgeInsets? padding,
     EdgeInsets? margin,
-  }) =>
-      UserLayoutWidgets.userCard(
-        imageUrl: imageUrl,
-        displayName: displayName,
-        email: email,
-        subtitle: subtitle,
-        description: description,
-        avatarSize: avatarSize,
-        onTap: onTap,
-        actions: actions,
-        showStatus: showStatus,
-        isOnline: isOnline,
-        padding: padding,
-        margin: margin,
-      );
+  }) => UserLayoutWidgets.userCard(
+    imageUrl: imageUrl,
+    displayName: displayName,
+    email: email,
+    subtitle: subtitle,
+    description: description,
+    avatarSize: avatarSize,
+    onTap: onTap,
+    actions: actions,
+    showStatus: showStatus,
+    isOnline: isOnline,
+    padding: padding,
+    margin: margin,
+  );
 
   static Widget userList({
     required List<UserDisplayData> users,
@@ -169,17 +161,16 @@ class UserDisplayWidgets {
     EdgeInsets? padding,
     bool shrinkWrap = true,
     ScrollPhysics? physics,
-  }) =>
-      UserCollectionWidgets.userList(
-        users: users,
-        onUserTap: onUserTap,
-        trailingBuilder: trailingBuilder,
-        showStatus: showStatus,
-        avatarSize: avatarSize,
-        padding: padding,
-        shrinkWrap: shrinkWrap,
-        physics: physics,
-      );
+  }) => UserCollectionWidgets.userList(
+    users: users,
+    onUserTap: onUserTap,
+    trailingBuilder: trailingBuilder,
+    showStatus: showStatus,
+    avatarSize: avatarSize,
+    padding: padding,
+    shrinkWrap: shrinkWrap,
+    physics: physics,
+  );
 
   static Widget userGrid({
     required List<UserDisplayData> users,
@@ -190,17 +181,16 @@ class UserDisplayWidgets {
     EdgeInsets? padding,
     bool shrinkWrap = true,
     ScrollPhysics? physics,
-  }) =>
-      UserCollectionWidgets.userGrid(
-        users: users,
-        onUserTap: onUserTap,
-        crossAxisCount: crossAxisCount,
-        aspectRatio: aspectRatio,
-        avatarSize: avatarSize,
-        padding: padding,
-        shrinkWrap: shrinkWrap,
-        physics: physics,
-      );
+  }) => UserCollectionWidgets.userGrid(
+    users: users,
+    onUserTap: onUserTap,
+    crossAxisCount: crossAxisCount,
+    aspectRatio: aspectRatio,
+    avatarSize: avatarSize,
+    padding: padding,
+    shrinkWrap: shrinkWrap,
+    physics: physics,
+  );
 
   static Widget emptyUserState({
     String? title,
@@ -208,25 +198,23 @@ class UserDisplayWidgets {
     IconData icon = Icons.people_outline,
     VoidCallback? onAction,
     String? actionLabel,
-  }) =>
-      UserCollectionWidgets.emptyUserState(
-        title: title,
-        subtitle: subtitle,
-        icon: icon,
-        onAction: onAction,
-        actionLabel: actionLabel,
-      );
+  }) => UserCollectionWidgets.emptyUserState(
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    onAction: onAction,
+    actionLabel: actionLabel,
+  );
 
   static Widget userBadge({
     required String label,
     Color? backgroundColor,
     Color? textColor,
     EdgeInsets? padding,
-  }) =>
-      UserCollectionWidgets.userBadge(
-        label: label,
-        backgroundColor: backgroundColor,
-        textColor: textColor,
-        padding: padding,
-      );
+  }) => UserCollectionWidgets.userBadge(
+    label: label,
+    backgroundColor: backgroundColor,
+    textColor: textColor,
+    padding: padding,
+  );
 }

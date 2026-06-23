@@ -39,8 +39,10 @@ void main() {
 
     test('lastUpdated stamps via clock.now()', () {
       withClock(Clock.fixed(DateTime.utc(2026, 5, 23)), () {
-        expect(NotificationPreferences.defaults().lastUpdated,
-            DateTime.utc(2026, 5, 23));
+        expect(
+          NotificationPreferences.defaults().lastUpdated,
+          DateTime.utc(2026, 5, 23),
+        );
       });
     });
   });

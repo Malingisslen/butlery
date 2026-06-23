@@ -150,8 +150,9 @@ class TextLineSelector extends StatelessWidget {
             Icon(
               Icons.text_fields,
               size: 48,
-              color: theme.colorScheme.onSurfaceVariant
-                  .withValues(alpha: AppDimensions.opacityHalf),
+              color: theme.colorScheme.onSurfaceVariant.withValues(
+                alpha: AppDimensions.opacityHalf,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Builder(
@@ -182,7 +183,8 @@ class TextLineSelector extends StatelessWidget {
         },
         icon: const Icon(Icons.select_all),
         label: Text(
-            context.l10n.importSelectAllHighlighted(highlightedIndices.length)),
+          context.l10n.importSelectAllHighlighted(highlightedIndices.length),
+        ),
         style: OutlinedButton.styleFrom(
           foregroundColor: _getModeColor(context, colorScheme),
           side: BorderSide(color: _getModeColor(context, colorScheme)),
@@ -245,13 +247,15 @@ class _LineItem extends StatelessWidget {
     BorderStyle borderStyle;
 
     if (isSelected) {
-      backgroundColor =
-          modeColor.withValues(alpha: AppDimensions.opacityLightSubtle);
+      backgroundColor = modeColor.withValues(
+        alpha: AppDimensions.opacityLightSubtle,
+      );
       borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
-      backgroundColor =
-          modeColor.withValues(alpha: AppDimensions.opacityExtraVeryLight);
+      backgroundColor = modeColor.withValues(
+        alpha: AppDimensions.opacityExtraVeryLight,
+      );
       borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
       borderStyle = BorderStyle.solid;
     } else {
@@ -282,8 +286,9 @@ class _LineItem extends StatelessWidget {
                 vertical: AppDimensions.paddingMs,
               ),
               decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
                 border: Border.all(
                   color: borderColor,
                   width: isSelected ? 2 : 1,
@@ -302,8 +307,9 @@ class _LineItem extends StatelessWidget {
                       border: Border.all(
                         color: isSelected
                             ? modeColor
-                            : colorScheme.outline
-                                .withValues(alpha: AppDimensions.opacityHalf),
+                            : colorScheme.outline.withValues(
+                                alpha: AppDimensions.opacityHalf,
+                              ),
                         width: 2,
                       ),
                     ),
@@ -349,8 +355,9 @@ class _LineItem extends StatelessWidget {
                       padding: AppDimensions.paddingSymmetric6x2,
                       decoration: BoxDecoration(
                         color: colorScheme.secondaryContainer,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusS,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -378,9 +385,11 @@ class _LineItem extends StatelessWidget {
                       padding: AppDimensions.paddingSymmetric6x2,
                       decoration: BoxDecoration(
                         color: modeColor.withValues(
-                            alpha: AppDimensions.opacityVeryLight),
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                          alpha: AppDimensions.opacityVeryLight,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusS,
+                        ),
                       ),
                       child: Text(
                         mode == SelectionMode.ingredients

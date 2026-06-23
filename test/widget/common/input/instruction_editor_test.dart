@@ -10,8 +10,9 @@ import '../../../infrastructure/helpers/widget_test_app.dart';
 void main() {
   group('InstructionEditor Widget Tests', () {
     group('Basic Rendering', () {
-      testWidgets('renders single empty field when no initial instructions',
-          (WidgetTester tester) async {
+      testWidgets('renders single empty field when no initial instructions', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -22,13 +23,15 @@ void main() {
 
         expect(find.byType(TextFormField), findsOneWidget);
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.controller?.text, '');
       });
 
-      testWidgets('renders fields for initial instructions',
-          (WidgetTester tester) async {
+      testWidgets('renders fields for initial instructions', (
+        WidgetTester tester,
+      ) async {
         final instructions = [
           'Forvarm ugnen till 200C',
           'Blanda ingredienserna',
@@ -45,15 +48,17 @@ void main() {
 
         expect(find.byType(TextFormField), findsNWidgets(3));
 
-        final textFields =
-            tester.widgetList<TextFormField>(find.byType(TextFormField));
+        final textFields = tester.widgetList<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textFields.elementAt(0).controller?.text, instructions[0]);
         expect(textFields.elementAt(1).controller?.text, instructions[1]);
         expect(textFields.elementAt(2).controller?.text, instructions[2]);
       });
 
-      testWidgets('has correct padding between fields',
-          (WidgetTester tester) async {
+      testWidgets('has correct padding between fields', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -95,16 +100,20 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(
-            find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
+          find.byType(TextFormField),
+          'Line 1\nLine 2\nLine 3',
+        );
         await tester.pump();
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.controller?.text, 'Line 1\nLine 2\nLine 3');
       });
 
-      testWidgets('handles text input action newline',
-          (WidgetTester tester) async {
+      testWidgets('handles text input action newline', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -124,8 +133,9 @@ void main() {
     });
 
     group('Change Notifications', () {
-      testWidgets('calls onChanged when text is modified',
-          (WidgetTester tester) async {
+      testWidgets('calls onChanged when text is modified', (
+        WidgetTester tester,
+      ) async {
         List<String>? changedInstructions;
 
         await tester.pumpWidget(
@@ -147,8 +157,9 @@ void main() {
         expect(changedInstructions, ['Modified text']);
       });
 
-      testWidgets('filters out empty instructions in onChanged',
-          (WidgetTester tester) async {
+      testWidgets('filters out empty instructions in onChanged', (
+        WidgetTester tester,
+      ) async {
         List<String>? changedInstructions;
 
         await tester.pumpWidget(
@@ -171,8 +182,9 @@ void main() {
         expect(changedInstructions, ['First', 'Third']);
       });
 
-      testWidgets('trims whitespace from instructions',
-          (WidgetTester tester) async {
+      testWidgets('trims whitespace from instructions', (
+        WidgetTester tester,
+      ) async {
         List<String>? changedInstructions;
 
         await tester.pumpWidget(
@@ -194,8 +206,9 @@ void main() {
         expect(changedInstructions, ['Trimmed text']);
       });
 
-      testWidgets('calls onChanged on each text entry',
-          (WidgetTester tester) async {
+      testWidgets('calls onChanged on each text entry', (
+        WidgetTester tester,
+      ) async {
         final callbackInstructions = <List<String>>[];
 
         await tester.pumpWidget(
@@ -218,8 +231,9 @@ void main() {
         expect(callbackInstructions.last, ['Modified text']);
       });
 
-      testWidgets('handles null onChanged gracefully',
-          (WidgetTester tester) async {
+      testWidgets('handles null onChanged gracefully', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -240,8 +254,9 @@ void main() {
     });
 
     group('Field Management', () {
-      testWidgets('maintains separate controllers for each field',
-          (WidgetTester tester) async {
+      testWidgets('maintains separate controllers for each field', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -253,19 +268,25 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(
-            find.byType(TextFormField).at(0), 'Modified First');
+          find.byType(TextFormField).at(0),
+          'Modified First',
+        );
         await tester.enterText(
-            find.byType(TextFormField).at(1), 'Modified Second');
+          find.byType(TextFormField).at(1),
+          'Modified Second',
+        );
         await tester.pump();
 
-        final textFields =
-            tester.widgetList<TextFormField>(find.byType(TextFormField));
+        final textFields = tester.widgetList<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textFields.elementAt(0).controller?.text, 'Modified First');
         expect(textFields.elementAt(1).controller?.text, 'Modified Second');
       });
 
-      testWidgets('creates empty controller when no initial instructions',
-          (WidgetTester tester) async {
+      testWidgets('creates empty controller when no initial instructions', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -276,17 +297,21 @@ void main() {
 
         expect(find.byType(TextFormField), findsOneWidget);
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.controller?.text, '');
       });
     });
 
     group('Layout Integration', () {
-      testWidgets('works in SingleChildScrollView',
-          (WidgetTester tester) async {
-        final longInstructions =
-            List.generate(20, (i) => 'Instruction ${i + 1}');
+      testWidgets('works in SingleChildScrollView', (
+        WidgetTester tester,
+      ) async {
+        final longInstructions = List.generate(
+          20,
+          (i) => 'Instruction ${i + 1}',
+        );
 
         await tester.pumpWidget(
           createLocalizedTestApp(
@@ -303,8 +328,9 @@ void main() {
         expect(find.byType(TextFormField), findsNWidgets(20));
       });
 
-      testWidgets('works in Column with other widgets',
-          (WidgetTester tester) async {
+      testWidgets('works in Column with other widgets', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const Column(
@@ -347,8 +373,9 @@ void main() {
         expect(find.byType(TextFormField), findsNWidgets(2));
       });
 
-      testWidgets('handles Swedish text correctly',
-          (WidgetTester tester) async {
+      testWidgets('handles Swedish text correctly', (
+        WidgetTester tester,
+      ) async {
         const swedishText =
             'Forvarm ugnen till 200C och stall in pa over- och undervarm';
 
@@ -362,15 +389,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.controller?.text, swedishText);
       });
     });
 
     group('Edge Cases', () {
-      testWidgets('handles empty initial instructions list',
-          (WidgetTester tester) async {
+      testWidgets('handles empty initial instructions list', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -382,8 +411,9 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
       });
 
-      testWidgets('handles single empty string in initial instructions',
-          (WidgetTester tester) async {
+      testWidgets('handles single empty string in initial instructions', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -393,13 +423,15 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(TextFormField), findsOneWidget);
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.controller?.text, '');
       });
 
-      testWidgets('handles very long instruction text',
-          (WidgetTester tester) async {
+      testWidgets('handles very long instruction text', (
+        WidgetTester tester,
+      ) async {
         final longText = 'A' * 1000;
 
         await tester.pumpWidget(
@@ -410,13 +442,15 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.controller?.text, longText);
       });
 
-      testWidgets('handles normal operations gracefully',
-          (WidgetTester tester) async {
+      testWidgets('handles normal operations gracefully', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,
@@ -456,8 +490,9 @@ void main() {
         expect(find.byType(InstructionEditor), findsNothing);
       });
 
-      testWidgets('handles widget replacement with different key',
-          (WidgetTester tester) async {
+      testWidgets('handles widget replacement with different key', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScrollView: true,

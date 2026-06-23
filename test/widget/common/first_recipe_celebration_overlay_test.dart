@@ -19,59 +19,68 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: MediaQuery(
-        data: const MediaQueryData(disableAnimations: true),
-        child: Scaffold(body: child),
-      ),
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: MediaQuery(
+    data: const MediaQueryData(disableAnimations: true),
+    child: Scaffold(body: child),
+  ),
+);
 
 void main() {
   group('FirstRecipeCelebrationOverlay rendering', () {
-    testWidgets('renders the localized Swedish congratulatory title',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'Pannkakor',
-          onDismiss: () {},
-          autoDismissDuration: const Duration(hours: 1), // far in the future
+    testWidgets('renders the localized Swedish congratulatory title', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'Pannkakor',
+            onDismiss: () {},
+            autoDismissDuration: const Duration(hours: 1), // far in the future
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       expect(find.text('Grattis!'), findsOneWidget);
     });
 
-    testWidgets('renders the localized message with the recipe title injected',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'Köttbullar',
-          onDismiss: () {},
-          autoDismissDuration: const Duration(hours: 1),
+    testWidgets('renders the localized message with the recipe title injected', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'Köttbullar',
+            onDismiss: () {},
+            autoDismissDuration: const Duration(hours: 1),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // ARB: "Du har sparat ditt första recept: {recipeTitle}. Välkommen till Butlery!"
       expect(
         find.text(
-            'Du har sparat ditt första recept: Köttbullar. Välkommen till Butlery!'),
+          'Du har sparat ditt första recept: Köttbullar. Välkommen till Butlery!',
+        ),
         findsOneWidget,
       );
     });
 
     testWidgets('renders the localized continue button label', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'Pannkakor',
-          onDismiss: () {},
-          autoDismissDuration: const Duration(hours: 1),
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'Pannkakor',
+            onDismiss: () {},
+            autoDismissDuration: const Duration(hours: 1),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // Scoped to the subject to avoid matching any unrelated button label
@@ -85,15 +94,18 @@ void main() {
       );
     });
 
-    testWidgets('uses Material with theme primary color as background',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'r',
-          onDismiss: () {},
-          autoDismissDuration: const Duration(hours: 1),
+    testWidgets('uses Material with theme primary color as background', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'r',
+            onDismiss: () {},
+            autoDismissDuration: const Duration(hours: 1),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // The first Material inside the overlay carries the celebration bg color
@@ -111,16 +123,19 @@ void main() {
   });
 
   group('FirstRecipeCelebrationOverlay dismissal', () {
-    testWidgets('tapping the Continue button invokes onDismiss exactly once',
-        (tester) async {
+    testWidgets('tapping the Continue button invokes onDismiss exactly once', (
+      tester,
+    ) async {
       var calls = 0;
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'r',
-          onDismiss: () => calls++,
-          autoDismissDuration: const Duration(hours: 1),
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'r',
+            onDismiss: () => calls++,
+            autoDismissDuration: const Duration(hours: 1),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       await tester.tap(find.text('Fortsätt'));
@@ -129,16 +144,19 @@ void main() {
       expect(calls, 1);
     });
 
-    testWidgets('auto-dismiss timer fires onDismiss after the duration',
-        (tester) async {
+    testWidgets('auto-dismiss timer fires onDismiss after the duration', (
+      tester,
+    ) async {
       var calls = 0;
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'r',
-          onDismiss: () => calls++,
-          autoDismissDuration: const Duration(milliseconds: 200),
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'r',
+            onDismiss: () => calls++,
+            autoDismissDuration: const Duration(milliseconds: 200),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       expect(calls, 0, reason: 'timer should not fire before its duration');
 
@@ -146,16 +164,19 @@ void main() {
       expect(calls, 1, reason: 'timer should have fired exactly once');
     });
 
-    testWidgets('auto-dismiss timer does not fire before its duration',
-        (tester) async {
+    testWidgets('auto-dismiss timer does not fire before its duration', (
+      tester,
+    ) async {
       var calls = 0;
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'r',
-          onDismiss: () => calls++,
-          autoDismissDuration: const Duration(seconds: 5),
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'r',
+            onDismiss: () => calls++,
+            autoDismissDuration: const Duration(seconds: 5),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 4000));
 
@@ -166,16 +187,19 @@ void main() {
       await tester.pumpWidget(_wrap(const SizedBox.shrink()));
     });
 
-    testWidgets('disposing the widget cancels the pending auto-dismiss timer',
-        (tester) async {
+    testWidgets('disposing the widget cancels the pending auto-dismiss timer', (
+      tester,
+    ) async {
       var calls = 0;
-      await tester.pumpWidget(_wrap(
-        FirstRecipeCelebrationOverlay(
-          recipeTitle: 'r',
-          onDismiss: () => calls++,
-          autoDismissDuration: const Duration(milliseconds: 200),
+      await tester.pumpWidget(
+        _wrap(
+          FirstRecipeCelebrationOverlay(
+            recipeTitle: 'r',
+            onDismiss: () => calls++,
+            autoDismissDuration: const Duration(milliseconds: 200),
+          ),
         ),
-      ));
+      );
       await tester.pump();
 
       // Remove the overlay BEFORE the timer would fire.
@@ -191,44 +215,47 @@ void main() {
 
   group('FirstRecipeCelebrationOverlay.show', () {
     testWidgets(
-        'static show() pushes the overlay route and closes via Continue',
-        (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.lightTheme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('sv'),
-        home: MediaQuery(
-          data: const MediaQueryData(disableAnimations: true),
-          child: Builder(
-            builder: (ctx) => Scaffold(
-              body: ElevatedButton(
-                onPressed: () => FirstRecipeCelebrationOverlay.show(
-                  ctx,
-                  recipeTitle: 'Pannkakor',
+      'static show() pushes the overlay route and closes via Continue',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
+            home: MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: Builder(
+                builder: (ctx) => Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () => FirstRecipeCelebrationOverlay.show(
+                      ctx,
+                      recipeTitle: 'Pannkakor',
+                    ),
+                    child: const Text('Show'),
+                  ),
                 ),
-                child: const Text('Show'),
               ),
             ),
           ),
-        ),
-      ));
+        );
 
-      await tester.tap(find.text('Show'));
-      // disableAnimations collapses the fade transition to zero, but the
-      // showGeneralDialog route still needs one extra pump to commit.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+        await tester.tap(find.text('Show'));
+        // disableAnimations collapses the fade transition to zero, but the
+        // showGeneralDialog route still needs one extra pump to commit.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
 
-      expect(find.byType(FirstRecipeCelebrationOverlay), findsOneWidget);
-      expect(find.text('Grattis!'), findsOneWidget);
+        expect(find.byType(FirstRecipeCelebrationOverlay), findsOneWidget);
+        expect(find.text('Grattis!'), findsOneWidget);
 
-      // The internal onDismiss closure pops the route.
-      await tester.tap(find.text('Fortsätt'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+        // The internal onDismiss closure pops the route.
+        await tester.tap(find.text('Fortsätt'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
 
-      expect(find.byType(FirstRecipeCelebrationOverlay), findsNothing);
-    });
+        expect(find.byType(FirstRecipeCelebrationOverlay), findsNothing);
+      },
+    );
   });
 }

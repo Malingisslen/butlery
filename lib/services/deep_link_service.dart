@@ -72,7 +72,7 @@ class DeepLinkService extends BaseService {
   static const String _profilePath = '/profile';
 
   DeepLinkService({required DeepLinkRepository deepLinkRepository})
-      : _deepLinkRepository = deepLinkRepository;
+    : _deepLinkRepository = deepLinkRepository;
 
   /// Generates a secure deep link for friend invitation sharing with comprehensive metadata and tracking.
   /// This method creates a properly formatted invitation URL with secure parameter encoding and comprehensive
@@ -253,8 +253,10 @@ class DeepLinkService extends BaseService {
   }
 
   /// Validate if a deep link is still valid (not expired)
-  static bool isLinkValid(DeepLinkData linkData,
-      {Duration maxAge = const Duration(days: 7)}) {
+  static bool isLinkValid(
+    DeepLinkData linkData, {
+    Duration maxAge = const Duration(days: 7),
+  }) {
     if (linkData.timestamp == null) {
       return true; // No expiration if no timestamp
     }
@@ -316,8 +318,10 @@ class DeepLinkService extends BaseService {
       // Use the repository to create short URL
       final metadata = {
         'isActive': true,
-        'expiresAt':
-            clock.now().add(const Duration(days: 30)).toIso8601String(),
+        'expiresAt': clock
+            .now()
+            .add(const Duration(days: 30))
+            .toIso8601String(),
       };
 
       final shortCode = await ServiceLocator.get<DeepLinkService>()
@@ -405,7 +409,9 @@ class DeepLinkService extends BaseService {
   /// (in core/bootstrap/handlers). This method is never called at runtime.
   @Deprecated('Use DeepLinkHandler.processDeepLink instead')
   static Future<void> handleDeepLink(
-      String url, Function(String) navigateToRoute) async {
+    String url,
+    Function(String) navigateToRoute,
+  ) async {
     try {
       final deepLinkData = parseDeepLink(url);
       if (deepLinkData == null) {
@@ -456,8 +462,9 @@ class DeepLinkService extends BaseService {
   static bool isLinkExpired(DeepLinkData deepLinkData) {
     if (deepLinkData.timestamp == null) return false;
 
-    final linkTime =
-        DateTime.fromMillisecondsSinceEpoch(deepLinkData.timestamp!);
+    final linkTime = DateTime.fromMillisecondsSinceEpoch(
+      deepLinkData.timestamp!,
+    );
     final now = clock.now();
     final difference = now.difference(linkTime);
 
@@ -478,8 +485,7 @@ class DeepLinkService extends BaseService {
       }
 
       // Track the click
-      await ServiceLocator.get<DeepLinkService>()
-          ._deepLinkRepository
+      await ServiceLocator.get<DeepLinkService>()._deepLinkRepository
           .trackUrlClick(shortCode);
 
       AppLogger.debug('Resolved short URL $shortCode to $longUrl');
@@ -492,7 +498,8 @@ class DeepLinkService extends BaseService {
 
   /// Get analytics for short URLs
   static Future<Map<String, dynamic>> getShortUrlAnalytics(
-      String shortCode) async {
+    String shortCode,
+  ) async {
     try {
       // Get metadata from repository
       final metadata = await ServiceLocator.get<DeepLinkService>()

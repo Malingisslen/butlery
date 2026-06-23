@@ -107,8 +107,11 @@ class _CommentImageViewer extends StatelessWidget {
                       child: LoadingIndicator(size: 24, strokeWidth: 2),
                     ),
                     errorWidget: (_, __, ___) => const Center(
-                      child: Icon(Icons.broken_image,
-                          color: Colors.white, size: 48),
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.white,
+                        size: 48,
+                      ),
                     ),
                   ),
                 ),

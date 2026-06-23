@@ -117,7 +117,8 @@ class GroupActionButtons extends StatelessWidget {
             icon: const Icon(Icons.delete),
             label: Text(context.l10n.groupDeleteGroup),
             style: ComponentThemes.deleteButtonStyle(
-                Theme.of(context).colorScheme),
+              Theme.of(context).colorScheme,
+            ),
           ),
         ] else
           OutlinedButton.icon(
@@ -125,7 +126,8 @@ class GroupActionButtons extends StatelessWidget {
             icon: const Icon(Icons.exit_to_app),
             label: Text(context.l10n.groupLeaveGroup),
             style: ComponentThemes.outlinedButtonStyle(
-                Theme.of(context).colorScheme),
+              Theme.of(context).colorScheme,
+            ),
           ),
       ],
     );

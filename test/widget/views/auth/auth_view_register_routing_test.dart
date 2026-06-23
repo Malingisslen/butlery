@@ -79,110 +79,137 @@ void main() {
     });
 
     Widget appUnderTest() => MaterialApp(
-          locale: const Locale('sv'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: AppTheme.lightTheme,
-          navigatorObservers: [observer],
-          home: const AuthView(),
-        );
+      locale: const Locale('sv'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      theme: AppTheme.lightTheme,
+      navigatorObservers: [observer],
+      home: const AuthView(),
+    );
 
     Future<void> fillCredentials(WidgetTester tester) async {
       await tester.enterText(
-          find.byKey(const Key('email_field')), 'ny.anvandare@example.com');
+        find.byKey(const Key('email_field')),
+        'ny.anvandare@example.com',
+      );
       await tester.enterText(
-          find.byKey(const Key('password_field')), 'Str0ng!Pass1');
+        find.byKey(const Key('password_field')),
+        'Str0ng!Pass1',
+      );
     }
 
     testWidgets(
-        'successful LOGIN pushReplacement-es to MinaReceptView (returning user)',
-        (tester) async {
-      await tester.pumpWidget(appUnderTest());
-      await tester.pumpAndSettle(_kPumpCap);
+      'successful LOGIN pushReplacement-es to MinaReceptView (returning user)',
+      (tester) async {
+        await tester.pumpWidget(appUnderTest());
+        await tester.pumpAndSettle(_kPumpCap);
 
-      // Default mode is login.
-      expect(realViewModel.isLoginMode, isTrue);
-      await fillCredentials(tester);
-      await tester.pumpAndSettle(_kPumpCap);
+        // Default mode is login.
+        expect(realViewModel.isLoginMode, isTrue);
+        await fillCredentials(tester);
+        await tester.pumpAndSettle(_kPumpCap);
 
-      // Tap the submit button (login label). The card heading also reads
-      // "Logga in", so target the last match — the bottom submit button.
-      await tester.ensureVisible(find.text('Logga in').last);
-      await tester.pumpAndSettle(_kPumpCap);
-      await tester.tap(find.text('Logga in').last);
-      // _handleSubmit awaits signIn (async) then pushReplacement-es. Pump
-      // until the future resolves and the navigation lands.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
+        // Tap the submit button (login label). The card heading also reads
+        // "Logga in", so target the last match — the bottom submit button.
+        await tester.ensureVisible(find.text('Logga in').last);
+        await tester.pumpAndSettle(_kPumpCap);
+        await tester.tap(find.text('Logga in').last);
+        // _handleSubmit awaits signIn (async) then pushReplacement-es. Pump
+        // until the future resolves and the navigation lands.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 200));
 
-      // Building the real MinaReceptView may surface service-graph exceptions
-      // in the test harness — we only care that the replace happened.
-      tester.takeException();
+        // Building the real MinaReceptView may surface service-graph exceptions
+        // in the test harness — we only care that the replace happened.
+        tester.takeException();
 
-      expect(observer.replaceCount, 1,
-          reason: 'login must send the returning user straight to the list');
-      expect(observer.lastNewRoute, isNotNull);
-    });
+        expect(
+          observer.replaceCount,
+          1,
+          reason: 'login must send the returning user straight to the list',
+        );
+        expect(observer.lastNewRoute, isNotNull);
+      },
+    );
 
     testWidgets(
-        'successful REGISTER does NOT pushReplacement to MinaReceptView '
-        '(routes through the onboarding gate)', (tester) async {
-      await tester.pumpWidget(appUnderTest());
-      await tester.pumpAndSettle(_kPumpCap);
-
-      // Switch to register mode — reveals name field + age/terms checkboxes.
-      realViewModel.toggleAuthMode();
-      await tester.pumpAndSettle(_kPumpCap);
-      expect(realViewModel.isLoginMode, isFalse);
-
-      await tester.enterText(
-          find.byKey(const Key('name_field')), 'Ny Användare');
-      await fillCredentials(tester);
-      await tester.pumpAndSettle(_kPumpCap);
-
-      // Tick age-confirmation + terms (both required to submit). The two
-      // checkboxes sit inside 24x24 SizedBoxes near the bottom of the scroll
-      // view; ensureVisible + warnIfMissed:false keeps the tap robust against
-      // layout offsets in the headless test surface.
-      final checkboxes = find.byType(Checkbox);
-      expect(checkboxes, findsNWidgets(2));
-      for (var i = 0; i < 2; i++) {
-        await tester.ensureVisible(checkboxes.at(i));
+      'successful REGISTER does NOT pushReplacement to MinaReceptView '
+      '(routes through the onboarding gate)',
+      (tester) async {
+        await tester.pumpWidget(appUnderTest());
         await tester.pumpAndSettle(_kPumpCap);
-        await tester.tap(checkboxes.at(i), warnIfMissed: false);
+
+        // Switch to register mode — reveals name field + age/terms checkboxes.
+        realViewModel.toggleAuthMode();
         await tester.pumpAndSettle(_kPumpCap);
-      }
-      // Both boxes must be checked, else _handleSubmit bails before register.
-      final checkedValues =
-          tester.widgetList<Checkbox>(checkboxes).map((c) => c.value).toList();
-      expect(checkedValues, everyElement(isTrue),
-          reason: 'age + terms must be accepted to reach the register call');
+        expect(realViewModel.isLoginMode, isFalse);
 
-      // Submit (create-account label). The card heading also reads "Skapa
-      // konto", so target the last match — the bottom submit button.
-      await tester.ensureVisible(find.text('Skapa konto').last);
-      await tester.pumpAndSettle(_kPumpCap);
-      await tester.tap(find.text('Skapa konto').last);
-      await tester.pump();
-      await tester.pump();
-      tester.takeException();
+        await tester.enterText(
+          find.byKey(const Key('name_field')),
+          'Ny Användare',
+        );
+        await fillCredentials(tester);
+        await tester.pumpAndSettle(_kPumpCap);
 
-      // Guard against a vacuous pass: replaceCount would also be 0 if
-      // _handleSubmit bailed before register() (e.g. a silent validation
-      // error). A null error confirms register() was actually reached.
-      expect(realViewModel.error, isNull,
-          reason: 'register() must have been reached and returned success');
+        // Tick age-confirmation + terms (both required to submit). The two
+        // checkboxes sit inside 24x24 SizedBoxes near the bottom of the scroll
+        // view; ensureVisible + warnIfMissed:false keeps the tap robust against
+        // layout offsets in the headless test surface.
+        final checkboxes = find.byType(Checkbox);
+        expect(checkboxes, findsNWidgets(2));
+        for (var i = 0; i < 2; i++) {
+          await tester.ensureVisible(checkboxes.at(i));
+          await tester.pumpAndSettle(_kPumpCap);
+          await tester.tap(checkboxes.at(i), warnIfMissed: false);
+          await tester.pumpAndSettle(_kPumpCap);
+        }
+        // Both boxes must be checked, else _handleSubmit bails before register.
+        final checkedValues = tester
+            .widgetList<Checkbox>(checkboxes)
+            .map((c) => c.value)
+            .toList();
+        expect(
+          checkedValues,
+          everyElement(isTrue),
+          reason: 'age + terms must be accepted to reach the register call',
+        );
 
-      expect(observer.replaceCount, 0,
-          reason: 'register must NOT pushReplacement — that would tear out '
-              'AuthWrapper and skip verification/age-gate/onboarding/seeding');
-      expect(find.byType(MinaReceptView), findsNothing,
-          reason: 'a new user must never land on the recipe list directly');
-    });
+        // Submit (create-account label). The card heading also reads "Skapa
+        // konto", so target the last match — the bottom submit button.
+        await tester.ensureVisible(find.text('Skapa konto').last);
+        await tester.pumpAndSettle(_kPumpCap);
+        await tester.tap(find.text('Skapa konto').last);
+        await tester.pump();
+        await tester.pump();
+        tester.takeException();
+
+        // Guard against a vacuous pass: replaceCount would also be 0 if
+        // _handleSubmit bailed before register() (e.g. a silent validation
+        // error). A null error confirms register() was actually reached.
+        expect(
+          realViewModel.error,
+          isNull,
+          reason: 'register() must have been reached and returned success',
+        );
+
+        expect(
+          observer.replaceCount,
+          0,
+          reason:
+              'register must NOT pushReplacement — that would tear out '
+              'AuthWrapper and skip verification/age-gate/onboarding/seeding',
+        );
+        expect(
+          find.byType(MinaReceptView),
+          findsNothing,
+          reason: 'a new user must never land on the recipe list directly',
+        );
+      },
+    );
   });
 }

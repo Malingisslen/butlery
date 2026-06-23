@@ -72,8 +72,8 @@ class ParsingContext {
     required this.sanitizedContent,
     required this.contentHash,
     required this.sanitizationResult,
-  })  : startTime = clock.now(),
-        tierResults = [];
+  }) : startTime = clock.now(),
+       tierResults = [];
 
   /// Create context from URL input.
   factory ParsingContext.fromUrl({

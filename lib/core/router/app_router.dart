@@ -140,7 +140,10 @@ class AppRouter {
       if (Routes.requiresAuth(routeName)) {
         if (!_isUserAuthenticated()) {
           return _buildRoute(
-              const AuthView(), settings, RouteAnimationType.fade);
+            const AuthView(),
+            settings,
+            RouteAnimationType.fade,
+          );
         }
       }
 
@@ -158,24 +161,39 @@ class AppRouter {
       // Eager routes (core app functionality)
       switch (routeName) {
         case Routes.home:
-          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 0),
-              settings, Routes.getAnimationType(routeName));
+          return _buildRoute(
+            LayoutScaffolds.mainMenu(initialIndex: 0),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.auth:
           return _buildRoute(
-              const AuthView(), settings, Routes.getAnimationType(routeName));
+            const AuthView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.onboarding:
-          return _buildRoute(const OnboardingView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const OnboardingView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.addRecipe:
-          return _buildRoute(const LaggTillReceptView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const LaggTillReceptView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.quickCapture:
-          return _buildRoute(const QuickCaptureView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const QuickCaptureView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.manualEntry:
           // Handle arguments for template or initial recipe
@@ -184,15 +202,19 @@ class AppRouter {
             final initialRecipe = arguments['initialRecipe'];
             final isTemplate = arguments['isTemplate'] as bool? ?? false;
             return _buildRoute(
-                SkrivSjalvReceptView(
-                  initialRecipe: initialRecipe,
-                  isTemplate: isTemplate,
-                ),
-                settings,
-                Routes.getAnimationType(routeName));
+              SkrivSjalvReceptView(
+                initialRecipe: initialRecipe,
+                isTemplate: isTemplate,
+              ),
+              settings,
+              Routes.getAnimationType(routeName),
+            );
           }
-          return _buildRoute(const SkrivSjalvReceptView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const SkrivSjalvReceptView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.fromSocialMedia:
           // Handle different argument types
@@ -213,13 +235,14 @@ class AppRouter {
           }
 
           return _buildRoute(
-              FranSocialaMedierView(
-                initialText: initialText,
-                sourceUrl: sourceUrl,
-                ocrConfidence: ocrConfidence,
-              ),
-              settings,
-              Routes.getAnimationType(routeName));
+            FranSocialaMedierView(
+              initialText: initialText,
+              sourceUrl: sourceUrl,
+              ocrConfidence: ocrConfidence,
+            ),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.recipeDetail:
           final arguments = settings.arguments;
@@ -239,22 +262,26 @@ class AppRouter {
             return _errorRoute('Recipe argument missing for detail view');
           }
           return _buildRoute(
-              RecipeDetailView(
-                recipe: recipe,
-                scrollToComments: scrollToComments,
-                readOnly: readOnly,
-                shareRequest: shareRequest,
-              ),
-              settings,
-              Routes.getAnimationType(routeName));
+            RecipeDetailView(
+              recipe: recipe,
+              scrollToComments: scrollToComments,
+              readOnly: readOnly,
+              shareRequest: shareRequest,
+            ),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.editRecipe:
           final recipe = settings.arguments as Recipe?;
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for edit view');
           }
-          return _buildRoute(EditRecipeView(recipe: recipe), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            EditRecipeView(recipe: recipe),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.receiveShare:
           final shareData = settings.arguments as Map<String, dynamic>?;
@@ -262,97 +289,155 @@ class AppRouter {
             return _errorRoute('Share data missing');
           }
           return _buildRoute(
-              ReceiveShareView(
-                content: (shareData['content'] as String?).orEmpty(),
-                type: shareData['type'] as String? ?? 'text',
-              ),
-              settings,
-              Routes.getAnimationType(routeName));
+            ReceiveShareView(
+              content: (shareData['content'] as String?).orEmpty(),
+              type: shareData['type'] as String? ?? 'text',
+            ),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.weeklyMenu:
           final menu = settings.arguments as SharedMenu?;
           if (menu != null) {
-            return _buildRoute(vecko.VeckomenyView(sharedMenu: menu), settings,
-                Routes.getAnimationType(routeName));
+            return _buildRoute(
+              vecko.VeckomenyView(sharedMenu: menu),
+              settings,
+              Routes.getAnimationType(routeName),
+            );
           }
-          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 1),
-              settings, Routes.getAnimationType(routeName));
+          return _buildRoute(
+            LayoutScaffolds.mainMenu(initialIndex: 1),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.realtimeMenu:
           // Navigate to VeckomenyView for collaborative menu
           // The realtime menu ID is passed in arguments for future enhancement
           // Deferred: VeckomenyView does not yet sync with realtime menus.
           // Current implementation uses separate realtime menu views.
-          return _buildRoute(const vecko.VeckomenyView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const vecko.VeckomenyView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.shoppingList:
-          return _buildRoute(LayoutScaffolds.mainMenu(initialIndex: 2),
-              settings, Routes.getAnimationType(routeName));
+          return _buildRoute(
+            LayoutScaffolds.mainMenu(initialIndex: 2),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.cookingMode:
           final recipe = settings.arguments as Recipe?;
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for cooking mode');
           }
-          return _buildRoute(CookingModeView(recipe: recipe), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            CookingModeView(recipe: recipe),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.ingredientSearch:
-          return _buildRoute(const IngredientSearchView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const IngredientSearchView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.notifications:
-          return _buildRoute(const NotificationsView(), settings,
-              Routes.getAnimationType(routeName));
+          return _buildRoute(
+            const NotificationsView(),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
 
         case Routes.settings:
-          return _buildRoute(const SettingsHubView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const SettingsHubView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.settingsAllergens:
-          return _buildRoute(const AllergenPreferencesView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const AllergenPreferencesView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.settingsPersonalTags:
-          return _buildRoute(const PersonalTagsView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const PersonalTagsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.settingsNotifications:
-          return _buildRoute(const NotificationPreferencesView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const NotificationPreferencesView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.settingsAccountSecurity:
-          return _buildRoute(const AccountSecurityView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const AccountSecurityView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.collectionStats:
-          return _buildRoute(const CollectionStatsView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const CollectionStatsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.moderatorReview:
-          return _buildRoute(const ModeratorReviewView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const ModeratorReviewView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.termsOfService:
-          return _buildRoute(const TermsOfServiceView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const TermsOfServiceView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.privacyPolicy:
-          return _buildRoute(const PrivacyPolicyView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const PrivacyPolicyView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.communityGuidelines:
-          return _buildRoute(const CommunityGuidelinesView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const CommunityGuidelinesView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.myReports:
-          return _buildRoute(const MyReportsView(), settings,
-              RouteAnimationType.slideFromRight);
+          return _buildRoute(
+            const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         case Routes.faq:
           return _buildRoute(
-              const FaqView(), settings, RouteAnimationType.slideFromRight);
+            const FaqView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
 
         default:
           // Deep link paths are handled by DeepLinkHandler before router —
@@ -362,7 +447,7 @@ class AppRouter {
             '/invite',
             '/menu',
             '/shopping',
-            '/profile'
+            '/profile',
           ];
           if (deepLinkPaths.any((p) => routeName.startsWith(p))) {
             // Gate the fallback on auth: rendering the authenticated main menu
@@ -370,10 +455,16 @@ class AppRouter {
             // would leak the protected home shell. Route them to login instead.
             if (!_isUserAuthenticated()) {
               return _buildRoute(
-                  const AuthView(), settings, RouteAnimationType.fade);
+                const AuthView(),
+                settings,
+                RouteAnimationType.fade,
+              );
             }
             return _buildRoute(
-                LayoutScaffolds.mainMenu(), settings, RouteAnimationType.fade);
+              LayoutScaffolds.mainMenu(),
+              settings,
+              RouteAnimationType.fade,
+            );
           }
           return _errorRoute('Unknown route: ${settings.name}');
       }
@@ -389,7 +480,10 @@ class AppRouter {
 
   /// Build route with appropriate animation based on route type
   static Route<dynamic> _buildRoute(
-      Widget page, RouteSettings settings, RouteAnimationType animationType) {
+    Widget page,
+    RouteSettings settings,
+    RouteAnimationType animationType,
+  ) {
     switch (animationType) {
       case RouteAnimationType.fade:
         return PageRouteBuilder(
@@ -412,8 +506,10 @@ class AppRouter {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
             const curve = Curves.easeInOut;
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
@@ -429,8 +525,10 @@ class AppRouter {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
             const curve = Curves.easeInOut;
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
@@ -446,8 +544,10 @@ class AppRouter {
             const begin = 0.0;
             const end = 1.0;
             const curve = Curves.elasticOut;
-            final tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
             final scaleAnimation = animation.drive(tween);
             return ScaleTransition(scale: scaleAnimation, child: child);
           },
@@ -465,9 +565,11 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
-                  size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.error),
+              Icon(
+                Icons.error_outline,
+                size: AppDimensions.iconSizeXl,
+                color: Theme.of(context).colorScheme.error,
+              ),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 message ?? 'Sidan kunde inte hittas',
@@ -488,8 +590,10 @@ class AppRouter {
         const begin = 0.0;
         const end = 1.0;
         const curve = Curves.elasticOut;
-        final tween =
-            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
         final scaleAnimation = animation.drive(tween);
         return ScaleTransition(scale: scaleAnimation, child: child);
       },
@@ -503,26 +607,36 @@ class AppRouter {
   }
 
   /// Navigate to a route programmatically
-  static Future<dynamic> navigateTo(BuildContext context, String routeName,
-      {Object? arguments}) {
+  static Future<dynamic> navigateTo(
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
     return Navigator.of(context).pushNamed(routeName, arguments: arguments);
   }
 
   /// Navigate and replace current route
   static Future<dynamic> navigateAndReplace(
-      BuildContext context, String routeName,
-      {Object? arguments}) {
-    return Navigator.of(context)
-        .pushReplacementNamed(routeName, arguments: arguments);
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
+    return Navigator.of(
+      context,
+    ).pushReplacementNamed(routeName, arguments: arguments);
   }
 
   /// Navigate and clear stack
   static Future<dynamic> navigateAndClearStack(
-      BuildContext context, String routeName,
-      {Object? arguments}) {
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
     return Navigator.of(context).pushNamedAndRemoveUntil(
-        routeName, (route) => false,
-        arguments: arguments);
+      routeName,
+      (route) => false,
+      arguments: arguments,
+    );
   }
 
   /// Go back

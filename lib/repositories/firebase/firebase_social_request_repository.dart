@@ -20,8 +20,8 @@ class FirebaseSocialRequestRepository
     AuthRepository? authRepository,
     super.timestampProvider,
   }) : super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
 
   CollectionReference<Map<String, dynamic>> get _requestsRef =>
       firestore.collection(FirestoreCollections.socialRequests);
@@ -42,26 +42,36 @@ class FirebaseSocialRequestRepository
 
   @override
   Future<bool> validateCreatePermission(
-      String userId, SocialRequest entity) async {
+    String userId,
+    SocialRequest entity,
+  ) async {
     return userId == entity.fromUserId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, SocialRequest? entity) async {
+    String userId,
+    String resourceId,
+    SocialRequest? entity,
+  ) async {
     if (entity == null) return false;
     return userId == entity.fromUserId || userId == entity.toUserId;
   }
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, SocialRequest entity) async {
+    String userId,
+    String resourceId,
+    SocialRequest entity,
+  ) async {
     return userId == entity.fromUserId || userId == entity.toUserId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     try {
       final request = await getRequest(resourceId);
       if (request == null) return false;
@@ -99,8 +109,9 @@ class FirebaseSocialRequestRepository
           .doc('social_requests'),
       {
         'lastWrite': timestampProvider.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
       },
       SetOptions(merge: true),
     );
@@ -122,7 +133,9 @@ class FirebaseSocialRequestRepository
   }
 
   Future<void> updateRequestStatus(
-      String requestId, Map<String, dynamic> data) async {
+    String requestId,
+    Map<String, dynamic> data,
+  ) async {
     final currentUser = requireCurrentUserId();
 
     final request = await getRequest(requestId);
@@ -269,10 +282,12 @@ class FirebaseSocialRequestRepository
         .where('status', isEqualTo: SocialRequestStatus.pending.name)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
-            .map((sr) => sr.toFriendRequest())
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
+              .map((sr) => sr.toFriendRequest())
+              .toList(),
+        );
   }
 
   Stream<List<FriendRequest>> sentFriendRequestsStream(String userId) {
@@ -282,10 +297,12 @@ class FirebaseSocialRequestRepository
         .where('status', isEqualTo: SocialRequestStatus.pending.name)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
-            .map((sr) => sr.toFriendRequest())
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
+              .map((sr) => sr.toFriendRequest())
+              .toList(),
+        );
   }
 
   // ── Group invitation queries ──
@@ -347,10 +364,12 @@ class FirebaseSocialRequestRepository
         .orderBy('sentAt', descending: true)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
-            .map((sr) => sr.toGroupInvitation())
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
+              .map((sr) => sr.toGroupInvitation())
+              .toList(),
+        );
   }
 
   Stream<List<GroupInvitation>> sentInvitationsStream(String userId) {
@@ -360,17 +379,20 @@ class FirebaseSocialRequestRepository
         .orderBy('sentAt', descending: true)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
-            .map((sr) => sr.toGroupInvitation())
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SocialRequest.fromMap(doc.id, doc.data()))
+              .map((sr) => sr.toGroupInvitation())
+              .toList(),
+        );
   }
 
   // ── Cleanup ──
 
   /// Get expired pending requests for batch cleanup
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredRequests(
-      DateTime now) async {
+    DateTime now,
+  ) async {
     final query = await _requestsRef
         .where('status', isEqualTo: SocialRequestStatus.pending.name)
         .where('expiresAt', isLessThanOrEqualTo: Timestamp.fromDate(now))
@@ -380,7 +402,9 @@ class FirebaseSocialRequestRepository
 
   /// Get old requests for cleanup (by user and cutoff date)
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> oldRequests(
-      String userId, DateTime cutoffDate) async {
+    String userId,
+    DateTime cutoffDate,
+  ) async {
     final query = await _requestsRef
         .where('toUserId', isEqualTo: userId)
         .where('sentAt', isLessThan: Timestamp.fromDate(cutoffDate))
@@ -390,7 +414,8 @@ class FirebaseSocialRequestRepository
 
   /// Batch delete documents
   Future<void> deleteDocuments(
-      List<DocumentReference<Map<String, dynamic>>> refs) async {
+    List<DocumentReference<Map<String, dynamic>>> refs,
+  ) async {
     if (refs.isEmpty) return;
 
     final currentUser = requireCurrentUserId();
@@ -411,8 +436,9 @@ class FirebaseSocialRequestRepository
 
   /// Batch update documents
   Future<void> updateDocuments(
-      List<DocumentReference<Map<String, dynamic>>> refs,
-      Map<String, dynamic> data) async {
+    List<DocumentReference<Map<String, dynamic>>> refs,
+    Map<String, dynamic> data,
+  ) async {
     if (refs.isEmpty) return;
 
     final currentUser = requireCurrentUserId();

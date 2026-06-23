@@ -90,7 +90,9 @@ class MenuOperations {
       // Warn (but allow) past dates
       if (normalizedDate.isBefore(todayDateOnly)) {
         AppLogger.warning(
-            '⚠️ Menu date is in the past: $normalizedDate', 'MenuOperations');
+          '⚠️ Menu date is in the past: $normalizedDate',
+          'MenuOperations',
+        );
       }
     }
 
@@ -123,7 +125,8 @@ class MenuOperations {
     }
 
     AppLogger.info(
-        '➕ Adding recipe "${recipe.title}" to category: $categoryName');
+      '➕ Adding recipe "${recipe.title}" to category: $categoryName',
+    );
 
     return menu.addRecipeToCategory(
       categoryName: categoryName,
@@ -151,7 +154,8 @@ class MenuOperations {
     }
 
     AppLogger.info(
-        '➖ Removing recipe at index $recipeIndex from category: $categoryName');
+      '➖ Removing recipe at index $recipeIndex from category: $categoryName',
+    );
 
     return menu.removeRecipeFromCategory(
       categoryName: categoryName,
@@ -175,14 +179,17 @@ class MenuOperations {
         !isValidCategoryName(toCategory)) {
       throw MenuOperationError(
         operation: MenuOperationType.moveRecipeBetweenCategories,
-        message: AppLocale.current
-            .errorInvalidCategoryNamesFromTo(fromCategory, toCategory),
+        message: AppLocale.current.errorInvalidCategoryNamesFromTo(
+          fromCategory,
+          toCategory,
+        ),
         resourceId: menu.id,
       );
     }
 
     AppLogger.info(
-        '🔄 Moving recipe from $fromCategory[$fromIndex] to $toCategory${toIndex != null ? '[$toIndex]' : ''}');
+      '🔄 Moving recipe from $fromCategory[$fromIndex] to $toCategory${toIndex != null ? '[$toIndex]' : ''}',
+    );
 
     return menu.moveRecipeBetweenCategories(
       fromCategory: fromCategory,
@@ -213,7 +220,8 @@ class MenuOperations {
     }
 
     AppLogger.info(
-        '🔄 Replacing recipe at index $recipeIndex in category: $categoryName');
+      '🔄 Replacing recipe at index $recipeIndex in category: $categoryName',
+    );
 
     return menu.replaceRecipeInCategory(
       categoryName: categoryName,
@@ -267,7 +275,8 @@ class MenuOperations {
     }
 
     AppLogger.info(
-        '📋 Updating entire category $categoryName with ${recipes.length} recipes');
+      '📋 Updating entire category $categoryName with ${recipes.length} recipes',
+    );
 
     return menu.updateWholeCategory(
       categoryName: categoryName,
@@ -295,7 +304,8 @@ class MenuOperations {
     }
 
     AppLogger.info(
-        '🔄 Regenerating category $categoryName with ${newRecipes.length} new recipes');
+      '🔄 Regenerating category $categoryName with ${newRecipes.length} new recipes',
+    );
 
     return menu.regenerateCategory(
       categoryName: categoryName,

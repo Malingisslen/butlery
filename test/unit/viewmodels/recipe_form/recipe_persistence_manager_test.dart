@@ -81,11 +81,13 @@ void main() {
 
     // Create-new-recipe branch (isEditing = false → uuid-generated id).
     when(() => mockState.isEditing).thenReturn(false);
-    when(() => mockState.createRecipe(
-          recipeId: any(named: 'recipeId'),
-          imageUrls: any(named: 'imageUrls'),
-          thumbnailUrl: any(named: 'thumbnailUrl'),
-        )).thenAnswer((invocation) {
+    when(
+      () => mockState.createRecipe(
+        recipeId: any(named: 'recipeId'),
+        imageUrls: any(named: 'imageUrls'),
+        thumbnailUrl: any(named: 'thumbnailUrl'),
+      ),
+    ).thenAnswer((invocation) {
       final id = invocation.namedArguments[#recipeId] as String;
       return RecipeFactory.build(id: id, title: 'BUT-1033 fixture');
     });
@@ -97,8 +99,9 @@ void main() {
     when(() => mockImageManager.pendingImages).thenReturn(const []);
     when(() => mockImageManager.validImageUrls).thenReturn(const []);
     when(() => mockImageManager.firstThumbnailUrl).thenReturn(null);
-    when(() => mockImageManager.commitPendingStorageDeletes())
-        .thenAnswer((_) async {});
+    when(
+      () => mockImageManager.commitPendingStorageDeletes(),
+    ).thenAnswer((_) async {});
 
     manager = RecipePersistenceManager(
       recipeService: mockRecipeService,
@@ -110,20 +113,26 @@ void main() {
   });
 
   group('saveRecipe → commitPendingStorageDeletes (BUT-1033 / BUT-932)', () {
-    test('success: commits pending Storage deletes after recipe write',
-        () async {
-      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-          (_) async => RecipeOperationResult.success('Recipe saved'));
+    test(
+      'success: commits pending Storage deletes after recipe write',
+      () async {
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+          (_) async => RecipeOperationResult.success('Recipe saved'),
+        );
 
-      final result = await manager.saveRecipe(
-        isCollaborative: false,
-        onNotify: () {},
-      );
+        final result = await manager.saveRecipe(
+          isCollaborative: false,
+          onNotify: () {},
+        );
 
-      expect(result, isNotNull,
-          reason: 'happy-path save should return the saved recipe');
-      verify(() => mockImageManager.commitPendingStorageDeletes()).called(1);
-    });
+        expect(
+          result,
+          isNotNull,
+          reason: 'happy-path save should return the saved recipe',
+        );
+        verify(() => mockImageManager.commitPendingStorageDeletes()).called(1);
+      },
+    );
 
     test('failure: does NOT commit deletes when recipe write fails', () async {
       // addUnifiedRecipe returns failure → recipe_persistence_manager
@@ -131,8 +140,8 @@ void main() {
       // (commit) is *past* the throw site, so it must never run — otherwise
       // the user loses Storage bytes they didn't intend to delete.
       when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-          (_) async =>
-              RecipeOperationResult.failure('simulated firestore error'));
+        (_) async => RecipeOperationResult.failure('simulated firestore error'),
+      );
 
       final result = await manager.saveRecipe(
         isCollaborative: false,

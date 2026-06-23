@@ -324,14 +324,17 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     final webScraper = WebScraper();
 
     try {
-      final extractionResult =
-          await webScraper.performExtraction(webUrl, platform);
+      final extractionResult = await webScraper.performExtraction(
+        webUrl,
+        platform,
+      );
 
       if (extractionResult.success && extractionResult.extractedText != null) {
         return extractionResult.extractedText!;
       } else {
         throw Exception(
-            extractionResult.error ?? AppLocale.current.errorGeneric);
+          extractionResult.error ?? AppLocale.current.errorGeneric,
+        );
       }
     } finally {
       // Always dispose WebScraper to prevent memory leaks
@@ -457,13 +460,13 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
 
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'urlValidationErrors': getUrlValidationErrors(),
-        'isKnownRecipeSite': isKnownRecipeSite(),
-        'urlSuggestions': getUrlSuggestions(),
-        'contentAnalysis': analyzeExtractedContent(),
-        'urlLength': url.length,
-        'hasExtractedContent': hasExtractedText,
-        'extractedContentLength': hasExtractedText ? extractedText.length : 0,
-      };
+    ...super.debugState,
+    'urlValidationErrors': getUrlValidationErrors(),
+    'isKnownRecipeSite': isKnownRecipeSite(),
+    'urlSuggestions': getUrlSuggestions(),
+    'contentAnalysis': analyzeExtractedContent(),
+    'urlLength': url.length,
+    'hasExtractedContent': hasExtractedText,
+    'extractedContentLength': hasExtractedText ? extractedText.length : 0,
+  };
 }

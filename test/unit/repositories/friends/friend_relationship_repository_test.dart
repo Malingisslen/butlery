@@ -104,7 +104,10 @@ void main() {
 
         // Act
         final hasPermission = await repository.validateReadPermission(
-            testUserId, testFriendId, profile);
+          testUserId,
+          testFriendId,
+          profile,
+        );
 
         // Assert
         expect(hasPermission, isTrue);
@@ -122,7 +125,10 @@ void main() {
 
         // Act
         final hasPermission = await repository.validateUpdatePermission(
-            testUserId, testUserId, profile);
+          testUserId,
+          testUserId,
+          profile,
+        );
 
         // Assert
         expect(hasPermission, isTrue);
@@ -140,7 +146,10 @@ void main() {
 
         // Act
         final hasPermission = await repository.validateUpdatePermission(
-            testUserId, testFriendId, profile);
+          testUserId,
+          testFriendId,
+          profile,
+        );
 
         // Assert
         expect(hasPermission, isFalse);
@@ -155,8 +164,10 @@ void main() {
         await seedMutualFriendship(testUserId, testFriendId);
 
         // Act
-        final areFriends =
-            await repository.areFriends(testUserId, testFriendId);
+        final areFriends = await repository.areFriends(
+          testUserId,
+          testFriendId,
+        );
 
         // Assert
         expect(areFriends, isTrue);
@@ -164,55 +175,72 @@ void main() {
 
       test('should return false if users are not friends', () async {
         // Act
-        final areFriends =
-            await repository.areFriends(testUserId, testFriendId);
+        final areFriends = await repository.areFriends(
+          testUserId,
+          testFriendId,
+        );
 
         // Assert
         expect(areFriends, isFalse);
       });
 
-      test('should add mutual friends successfully', () async {
-        // Act
-        await repository.addMutualFriends(testUserId, testFriendId);
+      test(
+        'should add mutual friends successfully',
+        () async {
+          // Act
+          await repository.addMutualFriends(testUserId, testFriendId);
 
-        // Assert - Check both directions
-        final areFriends1 =
-            await repository.areFriends(testUserId, testFriendId);
-        final areFriends2 =
-            await repository.areFriends(testFriendId, testUserId);
-        expect(areFriends1, isTrue);
-        expect(areFriends2, isTrue);
-      },
-          skip:
-              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          // Assert - Check both directions
+          final areFriends1 = await repository.areFriends(
+            testUserId,
+            testFriendId,
+          );
+          final areFriends2 = await repository.areFriends(
+            testFriendId,
+            testUserId,
+          );
+          expect(areFriends1, isTrue);
+          expect(areFriends2, isTrue);
+        },
+        skip:
+            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('should remove mutual friends successfully', () async {
-        // Arrange
-        await seedMutualFriendship(testUserId, testFriendId);
+      test(
+        'should remove mutual friends successfully',
+        () async {
+          // Arrange
+          await seedMutualFriendship(testUserId, testFriendId);
 
-        // Act
-        await repository.removeMutualFriends(testUserId, testFriendId);
+          // Act
+          await repository.removeMutualFriends(testUserId, testFriendId);
 
-        // Assert
-        final areFriends =
-            await repository.areFriends(testUserId, testFriendId);
-        expect(areFriends, isFalse);
-      },
-          skip:
-              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          // Assert
+          final areFriends = await repository.areFriends(
+            testUserId,
+            testFriendId,
+          );
+          expect(areFriends, isFalse);
+        },
+        skip:
+            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
 
-      test('should remove friend as current user', () async {
-        // Arrange
-        await seedMutualFriendship(testUserId, testFriendId);
+      test(
+        'should remove friend as current user',
+        () async {
+          // Arrange
+          await seedMutualFriendship(testUserId, testFriendId);
 
-        // Act
-        final success = await repository.removeFriend(testFriendId);
+          // Act
+          final success = await repository.removeFriend(testFriendId);
 
-        // Assert
-        expect(success, isTrue);
-      },
-          skip:
-              'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)');
+          // Assert
+          expect(success, isTrue);
+        },
+        skip:
+            'FieldValue.increment conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
     });
 
     // ===== FRIEND QUERIES =====
@@ -245,8 +273,10 @@ void main() {
         await seedUserProfile(testOtherUserId, 'Friend Two');
 
         // Act
-        final profiles = await repository
-            .fetchFriendProfiles([testFriendId, testOtherUserId]);
+        final profiles = await repository.fetchFriendProfiles([
+          testFriendId,
+          testOtherUserId,
+        ]);
 
         // Assert
         expect(profiles.length, 2);
@@ -287,8 +317,10 @@ void main() {
         await seedFriendship(testFriendId, mutualFriendId);
 
         // Act
-        final mutualFriends =
-            await repository.getMutualFriends(testUserId, testFriendId);
+        final mutualFriends = await repository.getMutualFriends(
+          testUserId,
+          testFriendId,
+        );
 
         // Assert
         expect(mutualFriends, contains(mutualFriendId));
@@ -300,8 +332,10 @@ void main() {
         await seedFriendship(testFriendId, 'different-friend');
 
         // Act
-        final mutualFriends =
-            await repository.getMutualFriends(testUserId, testFriendId);
+        final mutualFriends = await repository.getMutualFriends(
+          testUserId,
+          testFriendId,
+        );
 
         // Assert
         expect(mutualFriends, isEmpty);
@@ -317,8 +351,10 @@ void main() {
         await seedFriendship(testFriendId, mutual2);
 
         // Act
-        final count =
-            await repository.getMutualFriendsCount(testUserId, testFriendId);
+        final count = await repository.getMutualFriendsCount(
+          testUserId,
+          testFriendId,
+        );
 
         // Assert
         expect(count, 2);
@@ -338,9 +374,11 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<String>>((ids) {
-            return ids.length == 1 && ids.contains(testFriendId);
-          })),
+          completion(
+            predicate<List<String>>((ids) {
+              return ids.length == 1 && ids.contains(testFriendId);
+            }),
+          ),
         );
       });
 
@@ -355,9 +393,11 @@ void main() {
         // Assert
         await expectLater(
           stream.first,
-          completion(predicate<List<UserProfile>>((profiles) {
-            return profiles.length == 1 && profiles.first.uid == testFriendId;
-          })),
+          completion(
+            predicate<List<UserProfile>>((profiles) {
+              return profiles.length == 1 && profiles.first.uid == testFriendId;
+            }),
+          ),
         );
       });
     });

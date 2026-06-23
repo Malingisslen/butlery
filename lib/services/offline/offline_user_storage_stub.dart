@@ -15,8 +15,11 @@ class OfflineUserStorage {
 
   Future<int> getRecipeCountForUser(String userId) async => 0;
 
-  Future<void> saveRecipeForUser(Recipe recipe, String userId,
-      {bool isOnline = true}) async {}
+  Future<void> saveRecipeForUser(
+    Recipe recipe,
+    String userId, {
+    bool isOnline = true,
+  }) async {}
 
   Future<void> deleteRecipeForUser(String recipeId, String userId) async {}
 

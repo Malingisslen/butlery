@@ -19,7 +19,9 @@ void main() {
 
     test('returns default when null', () {
       expect(
-          SerializationUtils.safeString({}, 'k', defaultValue: 'def'), 'def');
+        SerializationUtils.safeString({}, 'k', defaultValue: 'def'),
+        'def',
+      );
     });
 
     test('converts non-string via toString', () {
@@ -56,7 +58,9 @@ void main() {
 
     test('safeInt falls back to default for non-parseable', () {
       expect(
-          SerializationUtils.safeInt({'k': 'abc'}, 'k', defaultValue: 99), 99);
+        SerializationUtils.safeInt({'k': 'abc'}, 'k', defaultValue: 99),
+        99,
+      );
     });
 
     test('safeInt falls back to default for null', () {
@@ -87,8 +91,9 @@ void main() {
 
     test('safeDouble falls back to default for non-parseable', () {
       expect(
-          SerializationUtils.safeDouble({'k': 'abc'}, 'k', defaultValue: 9.9),
-          9.9);
+        SerializationUtils.safeDouble({'k': 'abc'}, 'k', defaultValue: 9.9),
+        9.9,
+      );
     });
 
     test('safeNullableDouble returns null for non-parseable', () {
@@ -133,7 +138,7 @@ void main() {
     test('safeList applies converter and skips bad items', () {
       final result = SerializationUtils.safeList<int>(
         {
-          'k': [1, 'bad', 3]
+          'k': [1, 'bad', 3],
         },
         'k',
         (raw) => raw as int, // throws on 'bad'
@@ -152,16 +157,19 @@ void main() {
     });
 
     test('safeList returns empty when missing without default', () {
-      expect(SerializationUtils.safeList<int>({}, 'k', (raw) => raw as int),
-          isEmpty);
+      expect(
+        SerializationUtils.safeList<int>({}, 'k', (raw) => raw as int),
+        isEmpty,
+      );
     });
 
     test('safeStringList converts each item via toString', () {
       expect(
-          SerializationUtils.safeStringList({
-            'k': ['a', 1, true]
-          }, 'k'),
-          ['a', '1', 'true']);
+        SerializationUtils.safeStringList({
+          'k': ['a', 1, true],
+        }, 'k'),
+        ['a', '1', 'true'],
+      );
     });
 
     test('safeStringListMap returns null when missing or wrong type', () {
@@ -174,7 +182,7 @@ void main() {
         'k': {
           'thumbs_up': ['u1', 'u2'],
           'heart': ['u3'],
-        }
+        },
       }, 'k');
       expect(result?['thumbs_up'], ['u1', 'u2']);
       expect(result?['heart'], ['u3']);
@@ -185,8 +193,8 @@ void main() {
         {
           'k': [
             {'name': 'a'},
-            {'name': 'b'}
-          ]
+            {'name': 'b'},
+          ],
         },
         'k',
         (m) => m['name'] as String,
@@ -198,14 +206,14 @@ void main() {
   group('map utilities', () {
     test('safeMap returns map verbatim when Map<String,dynamic>', () {
       final m = SerializationUtils.safeMap({
-        'k': <String, dynamic>{'a': 1}
+        'k': <String, dynamic>{'a': 1},
       }, 'k');
       expect(m['a'], 1);
     });
 
     test('safeMap converts generic Map', () {
       final m = SerializationUtils.safeMap({
-        'k': <dynamic, dynamic>{'a': 1}
+        'k': <dynamic, dynamic>{'a': 1},
       }, 'k');
       expect(m['a'], 1);
     });
@@ -220,10 +228,11 @@ void main() {
 
     test('safeNullableMap returns map when present', () {
       expect(
-          SerializationUtils.safeNullableMap({
-            'k': <String, dynamic>{'a': 1}
-          }, 'k'),
-          isNotNull);
+        SerializationUtils.safeNullableMap({
+          'k': <String, dynamic>{'a': 1},
+        }, 'k'),
+        isNotNull,
+      );
     });
   });
 
@@ -231,7 +240,7 @@ void main() {
     test('safeNestedObject returns parsed result', () {
       final result = SerializationUtils.safeNestedObject<String>(
         {
-          'k': {'name': 'a'}
+          'k': {'name': 'a'},
         },
         'k',
         (m) => m['name'] as String,
@@ -241,15 +250,19 @@ void main() {
 
     test('safeNestedObject returns null for missing', () {
       expect(
-          SerializationUtils.safeNestedObject<String>(
-              {}, 'k', (m) => m['name'] as String),
-          isNull);
+        SerializationUtils.safeNestedObject<String>(
+          {},
+          'k',
+          (m) => m['name'] as String,
+        ),
+        isNull,
+      );
     });
 
     test('safeNestedObject returns null when fromJson throws', () {
       final result = SerializationUtils.safeNestedObject<String>(
         {
-          'k': {'name': 123}
+          'k': {'name': 123},
         },
         'k',
         (m) => m['name'] as String, // throws on non-string
@@ -271,103 +284,152 @@ void main() {
   group('enum utilities', () {
     test('safeEnum matches by enum string', () {
       expect(
-          SerializationUtils.safeEnum(
-              {'k': 'green'}, 'k', _Color.values, _Color.red, (e) => e.name),
-          _Color.green);
+        SerializationUtils.safeEnum(
+          {'k': 'green'},
+          'k',
+          _Color.values,
+          _Color.red,
+          (e) => e.name,
+        ),
+        _Color.green,
+      );
     });
 
     test('safeEnum falls back to default for unknown value', () {
       expect(
-          SerializationUtils.safeEnum(
-              {'k': 'purple'}, 'k', _Color.values, _Color.red, (e) => e.name),
-          _Color.red);
+        SerializationUtils.safeEnum(
+          {'k': 'purple'},
+          'k',
+          _Color.values,
+          _Color.red,
+          (e) => e.name,
+        ),
+        _Color.red,
+      );
     });
 
     test('safeEnumByName uses Enum.byName', () {
       expect(
-          SerializationUtils.safeEnumByName(_Color.values, 'blue', _Color.red),
-          _Color.blue);
+        SerializationUtils.safeEnumByName(_Color.values, 'blue', _Color.red),
+        _Color.blue,
+      );
     });
 
     test('safeEnumByName falls back for missing name', () {
       expect(
-          SerializationUtils.safeEnumByName(
-              _Color.values, 'unknown', _Color.red),
-          _Color.red);
+        SerializationUtils.safeEnumByName(_Color.values, 'unknown', _Color.red),
+        _Color.red,
+      );
     });
 
     test('safeNullableEnum returns null for unknown', () {
       expect(
-          SerializationUtils.safeNullableEnum(
-              {'k': 'unknown'}, 'k', _Color.values, (e) => e.name),
-          isNull);
+        SerializationUtils.safeNullableEnum(
+          {'k': 'unknown'},
+          'k',
+          _Color.values,
+          (e) => e.name,
+        ),
+        isNull,
+      );
     });
 
     test('safeNullableEnum returns null for missing', () {
       expect(
-          SerializationUtils.safeNullableEnum<_Color>(
-              {}, 'k', _Color.values, (e) => e.name),
-          isNull);
+        SerializationUtils.safeNullableEnum<_Color>(
+          {},
+          'k',
+          _Color.values,
+          (e) => e.name,
+        ),
+        isNull,
+      );
     });
 
     test('serializeEnum maps non-null + null', () {
       expect(
-          SerializationUtils.serializeEnum(_Color.red, (e) => e.name), 'red');
-      expect(SerializationUtils.serializeEnum<_Color>(null, (e) => e.name),
-          isNull);
+        SerializationUtils.serializeEnum(_Color.red, (e) => e.name),
+        'red',
+      );
+      expect(
+        SerializationUtils.serializeEnum<_Color>(null, (e) => e.name),
+        isNull,
+      );
     });
   });
 
   group('cleanup / required fields', () {
     test('cleanMap removes null entries', () {
-      final cleaned =
-          SerializationUtils.cleanMap({'a': 1, 'b': null, 'c': 'x'});
+      final cleaned = SerializationUtils.cleanMap({
+        'a': 1,
+        'b': null,
+        'c': 'x',
+      });
       expect(cleaned.keys.toSet(), {'a', 'c'});
     });
 
     test('hasRequiredFields checks every field present and non-null', () {
-      expect(SerializationUtils.hasRequiredFields({'a': 1, 'b': 2}, ['a', 'b']),
-          isTrue);
       expect(
-          SerializationUtils.hasRequiredFields({'a': 1}, ['a', 'b']), isFalse);
+        SerializationUtils.hasRequiredFields({'a': 1, 'b': 2}, ['a', 'b']),
+        isTrue,
+      );
       expect(
-          SerializationUtils.hasRequiredFields({'a': 1, 'b': null}, ['a', 'b']),
-          isFalse);
+        SerializationUtils.hasRequiredFields({'a': 1}, ['a', 'b']),
+        isFalse,
+      );
+      expect(
+        SerializationUtils.hasRequiredFields({'a': 1, 'b': null}, ['a', 'b']),
+        isFalse,
+      );
     });
 
     test('getMissingFields returns absent + null keys', () {
       expect(
-          SerializationUtils.getMissingFields(
-              {'a': 1, 'b': null}, ['a', 'b', 'c']),
-          ['b', 'c']);
+        SerializationUtils.getMissingFields(
+          {'a': 1, 'b': null},
+          ['a', 'b', 'c'],
+        ),
+        ['b', 'c'],
+      );
     });
   });
 
   group('list-of-string serializer pass-through', () {
     test('serializeStringList returns input unchanged', () {
-      expect(
-          SerializationUtils.serializeStringList(const ['a', 'b']), ['a', 'b']);
+      expect(SerializationUtils.serializeStringList(const ['a', 'b']), [
+        'a',
+        'b',
+      ]);
       expect(SerializationUtils.serializeStringList(null), isNull);
     });
 
     test('serializeList maps each element + returns null for null input', () {
-      expect(SerializationUtils.serializeList<int>([1, 2, 3], (n) => 'v$n'),
-          ['v1', 'v2', 'v3']);
+      expect(SerializationUtils.serializeList<int>([1, 2, 3], (n) => 'v$n'), [
+        'v1',
+        'v2',
+        'v3',
+      ]);
       expect(SerializationUtils.serializeList<int>(null, (n) => '$n'), isNull);
     });
 
     test('serializeDateTime returns ISO + null for null', () {
       final dt = DateTime.utc(2026, 1, 15);
       expect(
-          SerializationUtils.serializeDateTime(dt), '2026-01-15T00:00:00.000Z');
+        SerializationUtils.serializeDateTime(dt),
+        '2026-01-15T00:00:00.000Z',
+      );
       expect(SerializationUtils.serializeDateTime(null), isNull);
     });
 
     test('serializeNestedObject delegates to toJson when non-null', () {
-      expect(SerializationUtils.serializeNestedObject<int>(5, (n) => {'v': n}),
-          {'v': 5});
-      expect(SerializationUtils.serializeNestedObject<int>(null, (n) => {}),
-          isNull);
+      expect(
+        SerializationUtils.serializeNestedObject<int>(5, (n) => {'v': n}),
+        {'v': 5},
+      );
+      expect(
+        SerializationUtils.serializeNestedObject<int>(null, (n) => {}),
+        isNull,
+      );
     });
   });
 }

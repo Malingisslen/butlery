@@ -73,7 +73,8 @@ enum ResourcePermission {
 
   /// Legacy administrative permission with highest privilege level for backward compatibility.
   /// Maintained for migration support from traditional administrative permission systems.
-  admin;
+  admin
+  ;
 
   /// Permission capability checking methods for access control validation.
 
@@ -98,13 +99,13 @@ enum ResourcePermission {
   /// permission selection interfaces with clear hierarchical understanding.
   /// Returns capitalized permission name suitable for user interface display.
   String get displayName => switch (this) {
-        ResourcePermission.viewer => 'Viewer',
-        ResourcePermission.editor => 'Editor',
-        ResourcePermission.owner => 'Owner',
-        ResourcePermission.read => 'Read',
-        ResourcePermission.write => 'Write',
-        ResourcePermission.admin => 'Admin',
-      };
+    ResourcePermission.viewer => 'Viewer',
+    ResourcePermission.editor => 'Editor',
+    ResourcePermission.owner => 'Owner',
+    ResourcePermission.read => 'Read',
+    ResourcePermission.write => 'Write',
+    ResourcePermission.admin => 'Admin',
+  };
 }
 
 /// Comprehensive helper class providing advanced operations for ResourcePermission management and validation.
@@ -218,8 +219,10 @@ class ResourcePermissionHelper {
   /// [userPermission] The permission level held by the user attempting the operation
   /// [requiredPermission] The minimum permission level required for the operation
   /// Returns true if the user permission meets or exceeds the required permission level.
-  static bool canEditContent(ResourcePermission userPermission,
-      ResourcePermission requiredPermission) {
+  static bool canEditContent(
+    ResourcePermission userPermission,
+    ResourcePermission requiredPermission,
+  ) {
     return isHigherThan(userPermission, requiredPermission) ||
         userPermission == requiredPermission;
   }

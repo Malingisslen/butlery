@@ -18,9 +18,9 @@ class RecipeQueryOperations {
   });
 
   final CollectionReference<Map<String, dynamic>> Function(String userId)
-      getCollectionForUser;
+  getCollectionForUser;
   final Recipe Function(DocumentSnapshot<Map<String, dynamic>> doc)
-      fromFirestore;
+  fromFirestore;
 
   /// Most-recent-first list of recipes carrying [tagId] in
   /// `core.personalTagIds`. Returns up to [limit] docs (default 100).
@@ -51,10 +51,9 @@ class RecipeQueryOperations {
     if (userId == null) return [];
 
     try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.sourceUrl', isEqualTo: url)
-          .limit(5)
-          .get();
+      final snap = await getCollectionForUser(
+        userId,
+      ).where('core.sourceUrl', isEqualTo: url).limit(5).get();
       return snap.docs.map(fromFirestore).toList();
     } catch (e) {
       AppLogger.warning('Failed to find recipes by source URL: $e');
@@ -71,10 +70,9 @@ class RecipeQueryOperations {
     if (userId == null) return [];
 
     try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.titleLower', isEqualTo: normalized)
-          .limit(5)
-          .get();
+      final snap = await getCollectionForUser(
+        userId,
+      ).where('core.titleLower', isEqualTo: normalized).limit(5).get();
       return snap.docs.map(fromFirestore).toList();
     } catch (e) {
       AppLogger.warning('Failed to find recipes by title: $e');

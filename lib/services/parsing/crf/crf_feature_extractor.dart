@@ -58,7 +58,7 @@ class CrfFeatureExtractor {
   final Set<String>? _enrichedIngredients;
 
   CrfFeatureExtractor({Set<String>? enrichedIngredients})
-      : _enrichedIngredients = enrichedIngredients;
+    : _enrichedIngredients = enrichedIngredients;
 
   /// Checks if a token is a known food ingredient.
   /// Uses enriched Firebase ingredients when available, falls back to static.
@@ -141,28 +141,35 @@ class CrfFeatureExtractor {
   ) {
     features['${prefix}word.lower=$lower'] = 1.0;
     features['${prefix}word.isDigit'] = _isDigit(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isFraction'] =
-        QuantityParser.isFraction(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isUnit'] =
-        UnitDefinitions.isKnownUnit(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isFraction'] = QuantityParser.isFraction(lower)
+        ? 1.0
+        : 0.0;
+    features['${prefix}word.isUnit'] = UnitDefinitions.isKnownUnit(lower)
+        ? 1.0
+        : 0.0;
     features['${prefix}word.isFood'] = _isFood(lower) ? 1.0 : 0.0;
     features['${prefix}word.isPrep'] =
         PreparationWords.isPreparationState(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isSize'] =
-        PreparationWords.isSizeDescriptor(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isSize'] = PreparationWords.isSizeDescriptor(lower)
+        ? 1.0
+        : 0.0;
     features['${prefix}word.hasComma'] = lower.contains(',') ? 1.0 : 0.0;
 
     // Edge case features
     features['${prefix}word.isRange'] = _isRange(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isConjunction'] =
-        _conjunctions.contains(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isOptional'] =
-        _optionalMarkers.contains(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isConjunction'] = _conjunctions.contains(lower)
+        ? 1.0
+        : 0.0;
+    features['${prefix}word.isOptional'] = _optionalMarkers.contains(lower)
+        ? 1.0
+        : 0.0;
     features['${prefix}word.isGroupHeader'] = _isGroupHeader(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isParen'] =
-        _parenPattern.hasMatch(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isTextQty'] =
-        _textQuantities.contains(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isParen'] = _parenPattern.hasMatch(lower)
+        ? 1.0
+        : 0.0;
+    features['${prefix}word.isTextQty'] = _textQuantities.contains(lower)
+        ? 1.0
+        : 0.0;
     features['${prefix}word.isPurpose'] = lower == _purposeMarker ? 1.0 : 0.0;
 
     // Compound word detection
@@ -205,8 +212,9 @@ class CrfFeatureExtractor {
     String prefix,
   ) {
     features['${prefix}word.isDigit'] = _isDigit(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isUnit'] =
-        UnitDefinitions.isKnownUnit(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isUnit'] = UnitDefinitions.isKnownUnit(lower)
+        ? 1.0
+        : 0.0;
     features['${prefix}word.isFood'] = _isFood(lower) ? 1.0 : 0.0;
     features['${prefix}word.isPrep'] =
         PreparationWords.isPreparationState(lower) ? 1.0 : 0.0;

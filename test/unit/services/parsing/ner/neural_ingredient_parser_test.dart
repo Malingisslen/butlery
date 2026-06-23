@@ -24,7 +24,8 @@ class MockOnnxNerService extends OnnxNerService {
 
   @override
   Future<List<NerPrediction?>> predictBatch(
-      List<List<String>> wordsList) async {
+    List<List<String>> wordsList,
+  ) async {
     return wordsList.map((words) {
       if (words.isEmpty) return null;
       return nextPrediction;
@@ -70,21 +71,23 @@ void main() {
   });
 
   group('parseLine', () {
-    test('should return parsed ingredient for high confidence prediction',
-        () async {
-      mockNerService.nextPrediction = NerPrediction(
-        labels: [BioLabel.bQty, BioLabel.bUnit, BioLabel.bName],
-        confidence: 0.95,
-      );
+    test(
+      'should return parsed ingredient for high confidence prediction',
+      () async {
+        mockNerService.nextPrediction = NerPrediction(
+          labels: [BioLabel.bQty, BioLabel.bUnit, BioLabel.bName],
+          confidence: 0.95,
+        );
 
-      final result = await parser.parseLine('2 dl mjölk');
+        final result = await parser.parseLine('2 dl mjölk');
 
-      expect(result, isNotNull);
-      expect(result!.name, 'mjölk');
-      expect(result.quantity, '2');
-      expect(result.unit, 'dl');
-      expect(result.confidence, ParseConfidence.high);
-    });
+        expect(result, isNotNull);
+        expect(result!.name, 'mjölk');
+        expect(result.quantity, '2');
+        expect(result.unit, 'dl');
+        expect(result.confidence, ParseConfidence.high);
+      },
+    );
 
     test('should return null for low confidence prediction', () async {
       mockNerService.nextPrediction = NerPrediction(

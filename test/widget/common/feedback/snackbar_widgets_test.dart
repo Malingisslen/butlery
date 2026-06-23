@@ -29,7 +29,9 @@ void main() {
                     children: [
                       ElevatedButton(
                         onPressed: () => SnackbarWidgets.showSuccessSnackbar(
-                            context, 'Success'),
+                          context,
+                          'Success',
+                        ),
                         child: const Text('Success'),
                       ),
                       ElevatedButton(
@@ -39,7 +41,9 @@ void main() {
                       ),
                       ElevatedButton(
                         onPressed: () => SnackbarWidgets.showWarningSnackbar(
-                            context, 'Warning'),
+                          context,
+                          'Warning',
+                        ),
                         child: const Text('Warning'),
                       ),
                     ],
@@ -51,8 +55,9 @@ void main() {
     }
 
     group('showSuccessSnackbar', () {
-      testWidgets('should display success message',
-          (WidgetTester tester) async {
+      testWidgets('should display success message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         // Tap button to show snackbar
@@ -64,8 +69,9 @@ void main() {
         expect(find.byType(SnackBar), findsOneWidget);
       });
 
-      testWidgets('should display check circle icon',
-          (WidgetTester tester) async {
+      testWidgets('should display check circle icon', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Success'));
@@ -74,8 +80,9 @@ void main() {
         expect(find.byIcon(Icons.check_circle), findsOneWidget);
       });
 
-      testWidgets('should use success background color',
-          (WidgetTester tester) async {
+      testWidgets('should use success background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Success'));
@@ -108,17 +115,21 @@ void main() {
       testWidgets('should display custom message', (WidgetTester tester) async {
         const customMessage = 'Operation completed successfully!';
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    SnackbarWidgets.showSuccessSnackbar(context, customMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => SnackbarWidgets.showSuccessSnackbar(
+                    context,
+                    customMessage,
+                  ),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -126,32 +137,38 @@ void main() {
         expect(find.text(customMessage), findsOneWidget);
       });
 
-      testWidgets('should handle long message with text wrapping',
-          (WidgetTester tester) async {
+      testWidgets('should handle long message with text wrapping', (
+        WidgetTester tester,
+      ) async {
         final longMessage = 'A' * 200;
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    SnackbarWidgets.showSuccessSnackbar(context, longMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () =>
+                      SnackbarWidgets.showSuccessSnackbar(context, longMessage),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
 
         expect(find.text(longMessage), findsOneWidget);
         expect(
-            find.byType(Expanded), findsWidgets); // Text is wrapped in Expanded
+          find.byType(Expanded),
+          findsWidgets,
+        ); // Text is wrapped in Expanded
       });
 
-      testWidgets('should have correct duration setting',
-          (WidgetTester tester) async {
+      testWidgets('should have correct duration setting', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Success'));
@@ -182,8 +199,9 @@ void main() {
         expect(find.byIcon(Icons.error), findsOneWidget);
       });
 
-      testWidgets('should use error background color',
-          (WidgetTester tester) async {
+      testWidgets('should use error background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Error'));
@@ -203,21 +221,24 @@ void main() {
         expect(snackBar.duration, equals(const Duration(seconds: 4)));
       });
 
-      testWidgets('should handle custom error message',
-          (WidgetTester tester) async {
+      testWidgets('should handle custom error message', (
+        WidgetTester tester,
+      ) async {
         const errorMessage = 'Failed to save data';
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    SnackbarWidgets.showErrorSnackbar(context, errorMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () =>
+                      SnackbarWidgets.showErrorSnackbar(context, errorMessage),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -227,8 +248,9 @@ void main() {
     });
 
     group('showWarningSnackbar', () {
-      testWidgets('should display warning message',
-          (WidgetTester tester) async {
+      testWidgets('should display warning message', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Warning'));
@@ -247,8 +269,9 @@ void main() {
         expect(find.byIcon(Icons.warning_outlined), findsOneWidget);
       });
 
-      testWidgets('should use warning background color',
-          (WidgetTester tester) async {
+      testWidgets('should use warning background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Warning'));
@@ -268,8 +291,9 @@ void main() {
         expect(snackBar.duration, equals(const Duration(seconds: 4)));
       });
 
-      testWidgets('should display warning icon with correct color',
-          (WidgetTester tester) async {
+      testWidgets('should display warning icon with correct color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Warning'));
@@ -283,8 +307,9 @@ void main() {
     });
 
     group('Icon Styling', () {
-      testWidgets('should show success icon with correct styling',
-          (WidgetTester tester) async {
+      testWidgets('should show success icon with correct styling', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Success'));
@@ -296,8 +321,9 @@ void main() {
         expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
       });
 
-      testWidgets('should show error icon with correct styling',
-          (WidgetTester tester) async {
+      testWidgets('should show error icon with correct styling', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Error'));
@@ -309,8 +335,9 @@ void main() {
         expect(icon.color, equals(capturedColorScheme.surfaceContainerHighest));
       });
 
-      testWidgets('should show warning icon with correct styling',
-          (WidgetTester tester) async {
+      testWidgets('should show warning icon with correct styling', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         await tester.tap(find.text('Warning'));
@@ -324,21 +351,26 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish success message',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish success message', (
+        WidgetTester tester,
+      ) async {
         const swedishMessage = 'Åtgärden lyckades!';
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => SnackbarWidgets.showSuccessSnackbar(
-                    context, swedishMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => SnackbarWidgets.showSuccessSnackbar(
+                    context,
+                    swedishMessage,
+                  ),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -346,21 +378,26 @@ void main() {
         expect(find.text(swedishMessage), findsOneWidget);
       });
 
-      testWidgets('should display Swedish error message',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish error message', (
+        WidgetTester tester,
+      ) async {
         const swedishMessage = 'Ett fel uppstod vid sparande';
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    SnackbarWidgets.showErrorSnackbar(context, swedishMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => SnackbarWidgets.showErrorSnackbar(
+                    context,
+                    swedishMessage,
+                  ),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -368,21 +405,26 @@ void main() {
         expect(find.text(swedishMessage), findsOneWidget);
       });
 
-      testWidgets('should display Swedish warning message',
-          (WidgetTester tester) async {
+      testWidgets('should display Swedish warning message', (
+        WidgetTester tester,
+      ) async {
         const swedishMessage = 'Varning: Ändringarna har inte sparats';
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => SnackbarWidgets.showWarningSnackbar(
-                    context, swedishMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => SnackbarWidgets.showWarningSnackbar(
+                    context,
+                    swedishMessage,
+                  ),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -392,8 +434,9 @@ void main() {
     });
 
     group('Multiple Snackbars', () {
-      testWidgets('should show only one snackbar at a time',
-          (WidgetTester tester) async {
+      testWidgets('should show only one snackbar at a time', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createTestApp());
 
         // Show first snackbar
@@ -408,17 +451,19 @@ void main() {
 
     group('Edge Cases', () {
       testWidgets('should handle empty message', (WidgetTester tester) async {
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    SnackbarWidgets.showSuccessSnackbar(context, ''),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () =>
+                      SnackbarWidgets.showSuccessSnackbar(context, ''),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -428,22 +473,27 @@ void main() {
         expect(find.text(''), findsOneWidget);
       });
 
-      testWidgets('should handle very long message',
-          (WidgetTester tester) async {
+      testWidgets('should handle very long message', (
+        WidgetTester tester,
+      ) async {
         final veryLongMessage =
             'This is a very long message that should wrap properly. ' * 10;
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    SnackbarWidgets.showErrorSnackbar(context, veryLongMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => SnackbarWidgets.showErrorSnackbar(
+                    context,
+                    veryLongMessage,
+                  ),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();
@@ -451,21 +501,26 @@ void main() {
         expect(find.text(veryLongMessage), findsOneWidget);
       });
 
-      testWidgets('should handle special characters in message',
-          (WidgetTester tester) async {
+      testWidgets('should handle special characters in message', (
+        WidgetTester tester,
+      ) async {
         const specialMessage = '!@#\$%^&*()_+{}:"<>?[]\\;\',./-=';
 
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => SnackbarWidgets.showWarningSnackbar(
-                    context, specialMessage),
-                child: const Text('Show'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => SnackbarWidgets.showWarningSnackbar(
+                    context,
+                    specialMessage,
+                  ),
+                  child: const Text('Show'),
+                ),
               ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Show'));
         await tester.pump();

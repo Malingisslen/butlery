@@ -21,13 +21,12 @@ void main() {
   UnifiedShoppingList makeList({
     String id = 'list_1',
     String name = 'Min Handlista',
-  }) =>
-      UnifiedShoppingList(
-        id: id,
-        ownerId: 'user_1',
-        ownerDisplayName: 'Test',
-        name: name,
-      );
+  }) => UnifiedShoppingList(
+    id: id,
+    ownerId: 'user_1',
+    ownerDisplayName: 'Test',
+    name: name,
+  );
 
   setUp(() {
     mockViewModel = MockUnifiedShoppingViewModel();
@@ -37,8 +36,9 @@ void main() {
   // ───── Build List Actions Button ─────
 
   group('buildListActionsButton', () {
-    testWidgets('renders PopupMenuButton with three menu items',
-        (tester) async {
+    testWidgets('renders PopupMenuButton with three menu items', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Builder(
@@ -119,8 +119,9 @@ void main() {
     });
 
     testWidgets('successful rename shows success snackbar', (tester) async {
-      when(() => mockViewModel.renameList(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.renameList(any(), any()),
+      ).thenAnswer((_) async => true);
 
       await tester.pumpWidget(renameTestApp(makeList(name: 'Old')));
       await tester.tap(find.text('Open'));
@@ -137,8 +138,9 @@ void main() {
     });
 
     testWidgets('failed rename shows error snackbar', (tester) async {
-      when(() => mockViewModel.renameList(any(), any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockViewModel.renameList(any(), any()),
+      ).thenAnswer((_) async => false);
       when(() => mockViewModel.error).thenReturn('Nätverksfel');
 
       await tester.pumpWidget(renameTestApp(makeList(name: 'Old')));
@@ -218,8 +220,9 @@ void main() {
     });
 
     testWidgets('exception shows error snackbar', (tester) async {
-      when(() => mockViewModel.exportList())
-          .thenThrow(Exception('Network error'));
+      when(
+        () => mockViewModel.exportList(),
+      ).thenThrow(Exception('Network error'));
 
       await tester.pumpWidget(exportTestApp(makeList(name: 'Crash')));
       await tester.tap(find.text('Export'));
@@ -271,8 +274,9 @@ void main() {
         child: Builder(
           builder: (ctx) => ElevatedButton(
             onPressed: () async {
-              final result =
-                  await ShoppingListActions.showCreateListDialog(ctx);
+              final result = await ShoppingListActions.showCreateListDialog(
+                ctx,
+              );
               onResult?.call(result);
             },
             child: const Text('Create'),
@@ -360,8 +364,9 @@ void main() {
 
   group('snackbar styling', () {
     testWidgets('success snackbar uses success color', (tester) async {
-      when(() => mockViewModel.renameList(any(), any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockViewModel.renameList(any(), any()),
+      ).thenAnswer((_) async => true);
 
       await tester.pumpWidget(
         createLocalizedTestApp(
@@ -391,8 +396,9 @@ void main() {
     });
 
     testWidgets('error snackbar uses error color', (tester) async {
-      when(() => mockViewModel.renameList(any(), any()))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockViewModel.renameList(any(), any()),
+      ).thenAnswer((_) async => false);
       when(() => mockViewModel.error).thenReturn('fail');
 
       await tester.pumpWidget(

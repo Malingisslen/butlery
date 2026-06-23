@@ -106,7 +106,9 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
 
   @override
   Future<void> addItemsBatch(
-      String listId, List<UnifiedShoppingItem> items) async {
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
     if (throwOnAddItemsBatch != null) throw throwOnAddItemsBatch!;
     batchedItems.add(items);
   }
@@ -355,15 +357,18 @@ void main() {
         ),
       );
 
-      final ok = await buildModule()
-          .addItemToActiveList(name: 'Mjölk'); // no category → auto
+      final ok = await buildModule().addItemToActiveList(
+        name: 'Mjölk',
+      ); // no category → auto
 
       expect(ok, isTrue);
       expect(fakeRepo.addedItems, hasLength(1));
       // The mapper maps 'protein/dairy' → dairy. We assert it isn't
       // ShoppingCategory.other to prove the lookup branch actually fired.
-      expect(fakeRepo.addedItems.single.category,
-          isNot(equals(ShoppingCategory.other)));
+      expect(
+        fakeRepo.addedItems.single.category,
+        isNot(equals(ShoppingCategory.other)),
+      );
     });
 
     /// Proves: user override beats lookup. Production checks prefs FIRST,
@@ -392,18 +397,20 @@ void main() {
     /// Proves: repo failure is caught (try/catch around the orchestration)
     /// and surfaces as false. The bug-shape: a regression dropping the
     /// catch would crash the UI from a flaky network call.
-    test('returns false on repo failure without mutating local state',
-        () async {
-      lists.add(_seedList(id: 'L'));
-      activeListId = 'L';
-      fakeRepo.throwOnAddItem = StateError('boom');
+    test(
+      'returns false on repo failure without mutating local state',
+      () async {
+        lists.add(_seedList(id: 'L'));
+        activeListId = 'L';
+        fakeRepo.throwOnAddItem = StateError('boom');
 
-      final ok = await buildModule().addItemToActiveList(name: 'Mjölk');
+        final ok = await buildModule().addItemToActiveList(name: 'Mjölk');
 
-      expect(ok, isFalse);
-      expect(lists.first.items, isEmpty);
-      expect(notifyCalls, 0);
-    });
+        expect(ok, isFalse);
+        expect(lists.first.items, isEmpty);
+        expect(notifyCalls, 0);
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -431,8 +438,11 @@ void main() {
     /// this pins the module surface so the contract can't drift between
     /// the two layers.
     test('merges duplicates by name+unit and sums amounts', () async {
-      final existing =
-          UnifiedShoppingItem(name: 'Mjölk', amount: 1, unit: 'dl');
+      final existing = UnifiedShoppingItem(
+        name: 'Mjölk',
+        amount: 1,
+        unit: 'dl',
+      );
       lists.add(_seedList(id: 'L', items: [existing]));
       activeListId = 'L';
 
@@ -464,8 +474,11 @@ void main() {
       // One existing item that will be merged (update), plus the incoming
       // batch also carries a brand-new item so addItemsBatch runs after the
       // update commits. addItemsBatch is armed to throw.
-      final existing =
-          UnifiedShoppingItem(name: 'Mjölk', amount: 1, unit: 'dl');
+      final existing = UnifiedShoppingItem(
+        name: 'Mjölk',
+        amount: 1,
+        unit: 'dl',
+      );
       lists.add(_seedList(id: 'L', items: [existing]));
       activeListId = 'L';
       fakeRepo.throwOnAddItemsBatch = StateError('boom');
@@ -491,8 +504,11 @@ void main() {
     /// dedup would silently collapse "1 dl mjölk" and "1 ml mjölk" into a
     /// single bogus row with garbage units.
     test('does not merge same-name items with different units', () async {
-      final existing =
-          UnifiedShoppingItem(name: 'Mjölk', amount: 1, unit: 'dl');
+      final existing = UnifiedShoppingItem(
+        name: 'Mjölk',
+        amount: 1,
+        unit: 'dl',
+      );
       lists.add(_seedList(id: 'L', items: [existing]));
       activeListId = 'L';
 
@@ -653,25 +669,29 @@ void main() {
     /// state. The bug-shape: a regression that only rolled back the
     /// `lists[listIndex]` reference without re-adding the bought items
     /// would silently drop them — the user's checked items vanish.
-    test('rolls back bought items into local state when batch delete throws',
-        () async {
-      final bought =
-          UnifiedShoppingItem(name: 'Bought', amount: 1).copyWith(bought: true);
-      final notBought = UnifiedShoppingItem(name: 'Keep', amount: 1);
-      lists.add(_seedList(id: 'L', items: [bought, notBought]));
-      activeListId = 'L';
-      fakeRepo.throwOnRemoveItemsBatch = StateError('boom');
+    test(
+      'rolls back bought items into local state when batch delete throws',
+      () async {
+        final bought = UnifiedShoppingItem(
+          name: 'Bought',
+          amount: 1,
+        ).copyWith(bought: true);
+        final notBought = UnifiedShoppingItem(name: 'Keep', amount: 1);
+        lists.add(_seedList(id: 'L', items: [bought, notBought]));
+        activeListId = 'L';
+        fakeRepo.throwOnRemoveItemsBatch = StateError('boom');
 
-      final ok = await buildModule().clearCompletedItems();
+        final ok = await buildModule().clearCompletedItems();
 
-      expect(ok, isFalse);
-      // Both items present again — order may differ (rollback appends
-      // bought items to the end), but the set must be intact.
-      final ids = lists.first.items.map((i) => i.id).toSet();
-      expect(ids, {bought.id, notBought.id});
-      // Two notifies: optimistic remove + rollback.
-      expect(notifyCalls, 2);
-    });
+        expect(ok, isFalse);
+        // Both items present again — order may differ (rollback appends
+        // bought items to the end), but the set must be intact.
+        final ids = lists.first.items.map((i) => i.id).toSet();
+        expect(ids, {bought.id, notBought.id});
+        // Two notifies: optimistic remove + rollback.
+        expect(notifyCalls, 2);
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -696,22 +716,26 @@ void main() {
     /// the exact instances (preserving `purchasedByUserId` etc).
     /// The bug-shape: a regression that rebuilt the snapshot from the
     /// mutated copies would lose collaborative metadata.
-    test('rolls back original items snapshot when update batch fails',
-        () async {
-      final checked =
-          UnifiedShoppingItem(name: 'A', amount: 1).copyWith(bought: true);
-      lists.add(_seedList(id: 'L', items: [checked]));
-      activeListId = 'L';
-      fakeRepo.throwOnUpdateItem = StateError('boom');
+    test(
+      'rolls back original items snapshot when update batch fails',
+      () async {
+        final checked = UnifiedShoppingItem(
+          name: 'A',
+          amount: 1,
+        ).copyWith(bought: true);
+        lists.add(_seedList(id: 'L', items: [checked]));
+        activeListId = 'L';
+        fakeRepo.throwOnUpdateItem = StateError('boom');
 
-      final ok = await buildModule().uncheckAllItems();
+        final ok = await buildModule().uncheckAllItems();
 
-      expect(ok, isFalse);
-      // Bought must be true again post-rollback.
-      expect(lists.first.items.single.bought, isTrue);
-      // Two notifies: optimistic uncheck + rollback.
-      expect(notifyCalls, 2);
-    });
+        expect(ok, isFalse);
+        // Bought must be true again post-rollback.
+        expect(lists.first.items.single.bought, isTrue);
+        // Two notifies: optimistic uncheck + rollback.
+        expect(notifyCalls, 2);
+      },
+    );
   });
 
   // -------------------------------------------------------------------------

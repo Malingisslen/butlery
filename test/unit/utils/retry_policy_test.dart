@@ -61,21 +61,23 @@ void main() {
       var calls = 0;
 
       Future<void> run() => withRetry<void>(
-            () async {
-              calls += 1;
-              throw SocketException('attempt $calls failed');
-            },
-            sleeper: (_) async {}, // Skip real waits
-            random: () => 0.5,
-          );
+        () async {
+          calls += 1;
+          throw SocketException('attempt $calls failed');
+        },
+        sleeper: (_) async {}, // Skip real waits
+        random: () => 0.5,
+      );
 
       await expectLater(
         run,
-        throwsA(isA<SocketException>().having(
-          (e) => e.message,
-          'message',
-          'attempt 3 failed',
-        )),
+        throwsA(
+          isA<SocketException>().having(
+            (e) => e.message,
+            'message',
+            'attempt 3 failed',
+          ),
+        ),
       );
       expect(calls, 3);
     });
@@ -85,12 +87,12 @@ void main() {
       final sleeps = <Duration>[];
 
       Future<void> run() => withRetry<void>(
-            () async {
-              calls += 1;
-              throw StateError('user bug — do not retry');
-            },
-            sleeper: (d) async => sleeps.add(d),
-          );
+        () async {
+          calls += 1;
+          throw StateError('user bug — do not retry');
+        },
+        sleeper: (d) async => sleeps.add(d),
+      );
 
       await expectLater(run, throwsStateError);
       expect(calls, 1);
@@ -101,16 +103,16 @@ void main() {
       var calls = 0;
 
       Future<void> run() => withRetry<void>(
-            () async {
-              calls += 1;
-              throw FirebaseException(
-                plugin: 'cloud_firestore',
-                code: 'permission-denied',
-                message: 'denied',
-              );
-            },
-            sleeper: (_) async {},
+        () async {
+          calls += 1;
+          throw FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+            message: 'denied',
           );
+        },
+        sleeper: (_) async {},
+      );
 
       await expectLater(run, throwsA(isA<FirebaseException>()));
       expect(calls, 1);
@@ -217,8 +219,13 @@ void main() {
         random: () => 0.5,
       );
 
-      expect(schedule.map((d) => d.inSeconds).toList(),
-          [10, 20, 30, 30, 30]); // 5 sleeps for 6 attempts
+      expect(schedule.map((d) => d.inSeconds).toList(), [
+        10,
+        20,
+        30,
+        30,
+        30,
+      ]); // 5 sleeps for 6 attempts
     });
 
     test('TimeoutException is retried', () async {
@@ -239,13 +246,13 @@ void main() {
     test('maxAttempts=1 means no retries', () async {
       var calls = 0;
       Future<void> run() => withRetry<void>(
-            () async {
-              calls += 1;
-              throw const SocketException('flaky');
-            },
-            maxAttempts: 1,
-            sleeper: (_) async {},
-          );
+        () async {
+          calls += 1;
+          throw const SocketException('flaky');
+        },
+        maxAttempts: 1,
+        sleeper: (_) async {},
+      );
       await expectLater(run, throwsA(isA<SocketException>()));
       expect(calls, 1);
     });

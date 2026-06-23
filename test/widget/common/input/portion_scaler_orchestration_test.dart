@@ -43,9 +43,11 @@ void main() {
     testWidgets('creates widget successfully', (tester) async {
       bool called = false;
 
-      await tester.pumpWidget(buildScaler(
-        onPortionChanged: (_, __) => called = true,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          onPortionChanged: (_, __) => called = true,
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(PortionScaler), findsOneWidget);
@@ -53,29 +55,35 @@ void main() {
     });
 
     testWidgets('accepts custom min and max portions', (tester) async {
-      await tester.pumpWidget(buildScaler(
-        originalPortions: 6,
-        minPortions: 2,
-        maxPortions: 12,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          originalPortions: 6,
+          minPortions: 2,
+          maxPortions: 12,
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(PortionScaler), findsOneWidget);
     });
 
-    testWidgets('shows conversion toggle for American ingredients',
-        (tester) async {
-      await tester.pumpWidget(buildScaler(
-        ingredients: americanIngredients,
-      ));
+    testWidgets('shows conversion toggle for American ingredients', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildScaler(
+          ingredients: americanIngredients,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // l10n sv: 'Konvertera amerikanska enheter'
       expect(find.text('Konvertera amerikanska enheter'), findsOneWidget);
     });
 
-    testWidgets('hides conversion toggle for Swedish ingredients',
-        (tester) async {
+    testWidgets('hides conversion toggle for Swedish ingredients', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildScaler());
       await tester.pumpAndSettle();
 
@@ -84,17 +92,20 @@ void main() {
   });
 
   group('State Management', () {
-    testWidgets('increase button triggers callback with portions+1',
-        (tester) async {
+    testWidgets('increase button triggers callback with portions+1', (
+      tester,
+    ) async {
       int finalPortions = 0;
       List<String> finalIngredients = [];
 
-      await tester.pumpWidget(buildScaler(
-        onPortionChanged: (p, i) {
-          finalPortions = p;
-          finalIngredients = i;
-        },
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          onPortionChanged: (p, i) {
+            finalPortions = p;
+            finalIngredients = i;
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(findControlIcon(Icons.add));
@@ -107,11 +118,13 @@ void main() {
     testWidgets('does not go below minPortions', (tester) async {
       int callbackCount = 0;
 
-      await tester.pumpWidget(buildScaler(
-        originalPortions: 1,
-        minPortions: 1,
-        onPortionChanged: (_, __) => callbackCount++,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          originalPortions: 1,
+          minPortions: 1,
+          onPortionChanged: (_, __) => callbackCount++,
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(findControlIcon(Icons.remove));
@@ -123,11 +136,13 @@ void main() {
     testWidgets('does not go above maxPortions', (tester) async {
       int callbackCount = 0;
 
-      await tester.pumpWidget(buildScaler(
-        originalPortions: 5,
-        maxPortions: 5,
-        onPortionChanged: (_, __) => callbackCount++,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          originalPortions: 5,
+          maxPortions: 5,
+          onPortionChanged: (_, __) => callbackCount++,
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(findControlIcon(Icons.add));
@@ -140,13 +155,15 @@ void main() {
       bool called = false;
       List<String> finalIngredients = [];
 
-      await tester.pumpWidget(buildScaler(
-        ingredients: americanIngredients,
-        onPortionChanged: (_, i) {
-          called = true;
-          finalIngredients = i;
-        },
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          ingredients: americanIngredients,
+          onPortionChanged: (_, i) {
+            called = true;
+            finalIngredients = i;
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Konvertera amerikanska enheter'));
@@ -183,13 +200,16 @@ void main() {
   });
 
   group('Integration with Logic', () {
-    testWidgets('scaled ingredients differ from original after change',
-        (tester) async {
+    testWidgets('scaled ingredients differ from original after change', (
+      tester,
+    ) async {
       List<String> scaled = [];
 
-      await tester.pumpWidget(buildScaler(
-        onPortionChanged: (_, i) => scaled = i,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          onPortionChanged: (_, i) => scaled = i,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Increase portions: 4 -> 5
@@ -226,44 +246,51 @@ void main() {
     );
 
     testWidgets(
-        'scales via persisted amounts when structuredIngredients provided',
-        (tester) async {
+      'scales via persisted amounts when structuredIngredients provided',
+      (tester) async {
+        List<String> scaled = [];
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: InputComponents.portionScaler(
+              originalPortions: 1,
+              originalIngredients: const ['ca 2,5 dl vispgrädde'],
+              structuredIngredients: const [structuredEntry],
+              onPortionChanged: (_, i) => scaled = i,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 1 -> 2 portions: factor 2.0 -> 2,5 dl becomes 5 dl.
+        await tester.tap(findControlIcon(Icons.add));
+        await tester.pumpAndSettle();
+
+        expect(
+          scaled.single,
+          '5 dl vispgrädde',
+          reason:
+              'the string path mangles this line to "2 dl vispgrädde" — '
+              'seeing that here means the widget/facade dropped the '
+              'structured route',
+        );
+      },
+    );
+
+    testWidgets('omitting structuredIngredients keeps the v1 string path', (
+      tester,
+    ) async {
       List<String> scaled = [];
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: InputComponents.portionScaler(
-          originalPortions: 1,
-          originalIngredients: const ['ca 2,5 dl vispgrädde'],
-          structuredIngredients: const [structuredEntry],
-          onPortionChanged: (_, i) => scaled = i,
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: InputComponents.portionScaler(
+            originalPortions: 1,
+            originalIngredients: const ['ca 2,5 dl vispgrädde'],
+            onPortionChanged: (_, i) => scaled = i,
+          ),
         ),
-      ));
-      await tester.pumpAndSettle();
-
-      // 1 -> 2 portions: factor 2.0 -> 2,5 dl becomes 5 dl.
-      await tester.tap(findControlIcon(Icons.add));
-      await tester.pumpAndSettle();
-
-      expect(
-        scaled.single,
-        '5 dl vispgrädde',
-        reason: 'the string path mangles this line to "2 dl vispgrädde" — '
-            'seeing that here means the widget/facade dropped the '
-            'structured route',
       );
-    });
-
-    testWidgets('omitting structuredIngredients keeps the v1 string path',
-        (tester) async {
-      List<String> scaled = [];
-
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: InputComponents.portionScaler(
-          originalPortions: 1,
-          originalIngredients: const ['ca 2,5 dl vispgrädde'],
-          onPortionChanged: (_, i) => scaled = i,
-        ),
-      ));
       await tester.pumpAndSettle();
 
       await tester.tap(findControlIcon(Icons.add));
@@ -282,10 +309,12 @@ void main() {
     testWidgets('handles empty ingredients list', (tester) async {
       bool called = false;
 
-      await tester.pumpWidget(buildScaler(
-        ingredients: const [],
-        onPortionChanged: (_, __) => called = true,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          ingredients: const [],
+          onPortionChanged: (_, __) => called = true,
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(PortionScaler), findsOneWidget);
@@ -299,12 +328,14 @@ void main() {
     testWidgets('handles rapid taps', (tester) async {
       int callbackCount = 0;
 
-      await tester.pumpWidget(buildScaler(
-        originalPortions: 10,
-        minPortions: 5,
-        maxPortions: 15,
-        onPortionChanged: (_, __) => callbackCount++,
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          originalPortions: 10,
+          minPortions: 5,
+          maxPortions: 15,
+          onPortionChanged: (_, __) => callbackCount++,
+        ),
+      );
       await tester.pumpAndSettle();
 
       for (int i = 0; i < 3; i++) {
@@ -321,17 +352,20 @@ void main() {
       expect(find.byType(PortionScaler), findsOneWidget);
     });
 
-    testWidgets('maintains consistent state across up-down sequence',
-        (tester) async {
+    testWidgets('maintains consistent state across up-down sequence', (
+      tester,
+    ) async {
       int lastPortions = 0;
       List<String> lastIngredients = [];
 
-      await tester.pumpWidget(buildScaler(
-        onPortionChanged: (p, i) {
-          lastPortions = p;
-          lastIngredients = List.from(i);
-        },
-      ));
+      await tester.pumpWidget(
+        buildScaler(
+          onPortionChanged: (p, i) {
+            lastPortions = p;
+            lastIngredients = List.from(i);
+          },
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(findControlIcon(Icons.add)); // 5

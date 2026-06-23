@@ -35,31 +35,34 @@ void main() {
   }
 
   testWidgets(
-      'idle: auto-starts the timer on first build and shows running controls',
-      (tester) async {
-    final service = StepTimerService();
+    'idle: auto-starts the timer on first build and shows running controls',
+    (tester) async {
+      final service = StepTimerService();
 
-    await tester.pumpWidget(
-        harness(service, initialDuration: const Duration(minutes: 3)));
-    // Let the post-frame auto-start fire.
-    await tester.pump();
+      await tester.pumpWidget(
+        harness(service, initialDuration: const Duration(minutes: 3)),
+      );
+      // Let the post-frame auto-start fire.
+      await tester.pump();
 
-    // mm:ss format with tabular figures.
-    expect(find.text('03:00'), findsOneWidget);
-    // Running state → Pausa button visible.
-    expect(find.text('Pausa'), findsOneWidget);
-    expect(service.isRunning, isTrue);
+      // mm:ss format with tabular figures.
+      expect(find.text('03:00'), findsOneWidget);
+      // Running state → Pausa button visible.
+      expect(find.text('Pausa'), findsOneWidget);
+      expect(service.isRunning, isTrue);
 
-    // Clear the periodic timer before the framework's pending-timer check.
-    service.reset();
-    await service.dispose();
-  });
+      // Clear the periodic timer before the framework's pending-timer check.
+      service.reset();
+      await service.dispose();
+    },
+  );
 
   testWidgets('running → paused shows "Återuppta" label', (tester) async {
     final service = StepTimerService();
 
     await tester.pumpWidget(
-        harness(service, initialDuration: const Duration(minutes: 2)));
+      harness(service, initialDuration: const Duration(minutes: 2)),
+    );
     await tester.pump();
 
     // Tap pause.
@@ -73,16 +76,19 @@ void main() {
     await service.dispose();
   });
 
-  testWidgets('expired: fires onExpired callback when timer hits zero',
-      (tester) async {
+  testWidgets('expired: fires onExpired callback when timer hits zero', (
+    tester,
+  ) async {
     var expiredCount = 0;
     final service = StepTimerService();
 
-    await tester.pumpWidget(harness(
-      service,
-      initialDuration: const Duration(seconds: 1),
-      onExpired: () => expiredCount++,
-    ));
+    await tester.pumpWidget(
+      harness(
+        service,
+        initialDuration: const Duration(seconds: 1),
+        onExpired: () => expiredCount++,
+      ),
+    );
     await tester.pump(); // post-frame auto-start
 
     // Drive the timer past expiry. StepTimerService uses Timer.periodic(1s),
@@ -101,13 +107,15 @@ void main() {
     await service.dispose();
   });
 
-  testWidgets('re-entry: reopening sheet does not reset a running timer',
-      (tester) async {
+  testWidgets('re-entry: reopening sheet does not reset a running timer', (
+    tester,
+  ) async {
     final service = StepTimerService();
 
     // First pump: service starts.
     await tester.pumpWidget(
-        harness(service, initialDuration: const Duration(minutes: 10)));
+      harness(service, initialDuration: const Duration(minutes: 10)),
+    );
     await tester.pump();
     expect(service.isRunning, isTrue);
 
@@ -118,7 +126,8 @@ void main() {
 
     // Simulate reopening the sheet: rebuild widget with same service.
     await tester.pumpWidget(
-        harness(service, initialDuration: const Duration(minutes: 10)));
+      harness(service, initialDuration: const Duration(minutes: 10)),
+    );
     await tester.pump();
 
     // Service must still be running with the original countdown, not reset.
@@ -133,59 +142,64 @@ void main() {
   });
 
   testWidgets(
-      'per-timerId (BUT-1242): two widgets on one service drive independent '
-      'timers, pausing one leaves the other running', (tester) async {
-    final service = StepTimerService();
+    'per-timerId (BUT-1242): two widgets on one service drive independent '
+    'timers, pausing one leaves the other running',
+    (tester) async {
+      final service = StepTimerService();
 
-    // Two widgets share the DI-singleton service but each owns a distinct
-    // step-N slot — this is the multi-timer wiring from cooking_mode_view.
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('sv'),
-        supportedLocales: const [Locale('sv'), Locale('en')],
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: Scaffold(
-          body: Column(
-            children: [
-              Expanded(
-                child: StepTimerWidget(
-                  service: service,
-                  timerId: 'step-0',
-                  initialDuration: const Duration(minutes: 10),
+      // Two widgets share the DI-singleton service but each owns a distinct
+      // step-N slot — this is the multi-timer wiring from cooking_mode_view.
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('sv'),
+          supportedLocales: const [Locale('sv'), Locale('en')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(
+            body: Column(
+              children: [
+                Expanded(
+                  child: StepTimerWidget(
+                    service: service,
+                    timerId: 'step-0',
+                    initialDuration: const Duration(minutes: 10),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: StepTimerWidget(
-                  service: service,
-                  timerId: 'step-1',
-                  initialDuration: const Duration(minutes: 3),
+                Expanded(
+                  child: StepTimerWidget(
+                    service: service,
+                    timerId: 'step-1',
+                    initialDuration: const Duration(minutes: 3),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump(); // post-frame auto-start for both
+      );
+      await tester.pump(); // post-frame auto-start for both
 
-    expect(service.isRunningFor('step-0'), isTrue);
-    expect(service.isRunningFor('step-1'), isTrue);
-    // Both countdowns render — distinct because the durations differ.
-    expect(find.text('10:00'), findsOneWidget);
-    expect(find.text('03:00'), findsOneWidget);
+      expect(service.isRunningFor('step-0'), isTrue);
+      expect(service.isRunningFor('step-1'), isTrue);
+      // Both countdowns render — distinct because the durations differ.
+      expect(find.text('10:00'), findsOneWidget);
+      expect(find.text('03:00'), findsOneWidget);
 
-    // Pause the second widget's timer only. The first must keep running.
-    await tester.tap(find.byTooltip('Pausa').last);
-    await tester.pump();
+      // Pause the second widget's timer only. The first must keep running.
+      await tester.tap(find.byTooltip('Pausa').last);
+      await tester.pump();
 
-    expect(service.isPausedFor('step-1'), isTrue);
-    expect(service.isRunningFor('step-0'), isTrue,
-        reason: 'pausing step-1 must not touch step-0');
+      expect(service.isPausedFor('step-1'), isTrue);
+      expect(
+        service.isRunningFor('step-0'),
+        isTrue,
+        reason: 'pausing step-1 must not touch step-0',
+      );
 
-    service.reset();
-    service.resetTimer('step-0');
-    service.resetTimer('step-1');
-    await tester.pumpWidget(const MaterialApp(home: Scaffold()));
-    await service.dispose();
-  });
+      service.reset();
+      service.resetTimer('step-0');
+      service.resetTimer('step-1');
+      await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+      await service.dispose();
+    },
+  );
 }

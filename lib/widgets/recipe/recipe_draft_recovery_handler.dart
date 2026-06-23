@@ -24,7 +24,8 @@ class RecipeDraftRecoveryHandler {
     // Only check for drafts when creating new recipes (not editing existing ones)
     if (viewModel.isEditMode) {
       AppLogger.debug(
-          '[$_logTag] Skipping draft check - editing existing recipe');
+        '[$_logTag] Skipping draft check - editing existing recipe',
+      );
       return;
     }
 
@@ -37,11 +38,13 @@ class RecipeDraftRecoveryHandler {
       }
 
       AppLogger.info(
-          '[$_logTag] Found ${availableDrafts.length} available drafts');
+        '[$_logTag] Found ${availableDrafts.length} available drafts',
+      );
 
       if (context.mounted) {
-        final selectedDraftId =
-            await context.showDraftRecovery(availableDrafts);
+        final selectedDraftId = await context.showDraftRecovery(
+          availableDrafts,
+        );
 
         if (selectedDraftId != null && context.mounted) {
           await restoreDraft(context, selectedDraftId);
@@ -78,7 +81,8 @@ class RecipeDraftRecoveryHandler {
           );
 
           AppLogger.info(
-              '[$_logTag] Draft restored successfully - $fieldCount fields loaded');
+            '[$_logTag] Draft restored successfully - $fieldCount fields loaded',
+          );
         } else {
           UtilityComponents.showErrorSnackbar(
             context,

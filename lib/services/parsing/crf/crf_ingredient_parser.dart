@@ -191,7 +191,8 @@ class CrfIngredientParser {
         if (!_punctuationOnly.hasMatch(tokens[i])) {
           // Inside parens: suppress QTY/UNIT to avoid "1 burk X (400 ml)"
           // leaking 400 into the quantity span
-          final suppress = parenDepth > 0 &&
+          final suppress =
+              parenDepth > 0 &&
               (type == _SpanType.qty || type == _SpanType.unit);
           if (!suppress) {
             result.putIfAbsent(type, () => []).add(tokens[i]);

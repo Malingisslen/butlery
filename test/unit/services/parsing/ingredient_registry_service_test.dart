@@ -38,9 +38,10 @@ class FakeIngredientRepository implements IngredientRepository {
   Future<IngredientData?> getById(String id) async => null;
 
   @override
-  Future<IngredientData?> findByName(String name,
-          {String language = 'sv'}) async =>
-      null;
+  Future<IngredientData?> findByName(
+    String name, {
+    String language = 'sv',
+  }) async => null;
 
   @override
   Future<List<IngredientData>> findByAlias(String alias) async => [];
@@ -49,9 +50,10 @@ class FakeIngredientRepository implements IngredientRepository {
   Future<List<IngredientData>> getByProperty(String property) async => [];
 
   @override
-  Future<List<IngredientData>> searchIngredients(String query,
-          {int limit = 20}) async =>
-      [];
+  Future<List<IngredientData>> searchIngredients(
+    String query, {
+    int limit = 20,
+  }) async => [];
 
   @override
   Stream<List<IngredientData>> watchAll() => const Stream.empty();
@@ -102,24 +104,26 @@ void main() {
         expect(names, equals(KnownIngredients.compoundNames));
       });
 
-      test('should include Firestore compound names after enrichment',
-          () async {
-        fakeRepo.addGroupIngredients('spice', [
-          _makeIngredient(
-            id: 'test-spice-blend',
-            swedish: 'testblandning',
-            group: 'spice',
-            isCompoundName: true,
-            aliasesSv: ['testblandning-alias'],
-          ),
-        ]);
+      test(
+        'should include Firestore compound names after enrichment',
+        () async {
+          fakeRepo.addGroupIngredients('spice', [
+            _makeIngredient(
+              id: 'test-spice-blend',
+              swedish: 'testblandning',
+              group: 'spice',
+              isCompoundName: true,
+              aliasesSv: ['testblandning-alias'],
+            ),
+          ]);
 
-        await service.enrichFromFirestore();
+          await service.enrichFromFirestore();
 
-        final names = service.allCompoundNames;
-        expect(names, contains('testblandning'));
-        expect(names, contains('testblandning-alias'));
-      });
+          final names = service.allCompoundNames;
+          expect(names, contains('testblandning'));
+          expect(names, contains('testblandning-alias'));
+        },
+      );
 
       test('compound names set is empty when Firebase has none', () async {
         fakeRepo.addGroupIngredients('spice', []);

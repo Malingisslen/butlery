@@ -79,7 +79,7 @@ void main() {
         recipes: [
           testPersonalRecipe,
           testCollaborativeRecipe,
-          testSharedRecipe
+          testSharedRecipe,
         ],
         currentUserId: testUserId,
         currentUserDisplayName: testUserName,
@@ -96,30 +96,36 @@ void main() {
       // clearError is void, no need to stub it
 
       // Stub UnifiedRecipeService methods
-      when(() => mockRecipeService.updateRecipe(any()))
-          .thenAnswer((_) async => true);
-      when(() => mockRecipeService.deleteRecipe(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockRecipeService.updateRecipe(any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockRecipeService.deleteRecipe(any()),
+      ).thenAnswer((_) async => true);
 
       // Personal operations
-      when(() => mockPersonalOps.createRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenAnswer((_) async => testRecipeId);
+      when(
+        () => mockPersonalOps.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenAnswer((_) async => testRecipeId);
 
-      when(() => mockPersonalOps.updateRecipe(any()))
-          .thenAnswer((_) async => true);
-      when(() => mockPersonalOps.deleteRecipe(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockPersonalOps.updateRecipe(any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockPersonalOps.deleteRecipe(any()),
+      ).thenAnswer((_) async => true);
 
       // Collaborative — left to Mock base (returns null by default).
       // Individual success tests override via when() as needed.
@@ -130,7 +136,8 @@ void main() {
       // Register mocks
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<UnifiedFriendsService>(
-          mockFriendsService);
+        mockFriendsService,
+      );
 
       // Create view model
       viewModel = UnifiedRecipeViewModel();
@@ -147,22 +154,24 @@ void main() {
     });
 
     group('Initialization and Default State', () {
-      test('should initialize with correct default state for all properties',
-          () {
-        // Assert
-        expect(viewModel.allRecipes, hasLength(3));
-        expect(viewModel.personalRecipes, hasLength(1));
-        expect(viewModel.collaborativeRecipes, hasLength(1));
-        expect(viewModel.isLoading, isFalse);
-        expect(viewModel.isInitialized, isTrue);
-        expect(viewModel.isSyncing, isFalse);
-        expect(viewModel.error, isNull);
-        expect(viewModel.hasError, isFalse);
-        expect(viewModel.hasRecipes, isTrue);
-        expect(viewModel.isOnline, isTrue);
-        expect(viewModel.currentUserId, equals(testUserId));
-        expect(viewModel.currentUserDisplayName, equals(testUserName));
-      });
+      test(
+        'should initialize with correct default state for all properties',
+        () {
+          // Assert
+          expect(viewModel.allRecipes, hasLength(3));
+          expect(viewModel.personalRecipes, hasLength(1));
+          expect(viewModel.collaborativeRecipes, hasLength(1));
+          expect(viewModel.isLoading, isFalse);
+          expect(viewModel.isInitialized, isTrue);
+          expect(viewModel.isSyncing, isFalse);
+          expect(viewModel.error, isNull);
+          expect(viewModel.hasError, isFalse);
+          expect(viewModel.hasRecipes, isTrue);
+          expect(viewModel.isOnline, isTrue);
+          expect(viewModel.currentUserId, equals(testUserId));
+          expect(viewModel.currentUserDisplayName, equals(testUserName));
+        },
+      );
 
       test('should initialize recipe service on initialize call', () async {
         // Act
@@ -195,19 +204,21 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockPersonalOps.createRecipe(
-              title: 'Minimal Recipe',
-              description: '',
-              ingredients: <String>[],
-              instructions: <String>[],
-              imageUrls: <String>[],
-              mealType: 'Lunch', // Default meal type in viewmodel
-              portions: null, // These are optional parameters
-              timeMinutes: null,
-              rating: null,
-              personalTagIds: null,
-              sourceUrl: null,
-            )).called(1);
+        verify(
+          () => mockPersonalOps.createRecipe(
+            title: 'Minimal Recipe',
+            description: '',
+            ingredients: <String>[],
+            instructions: <String>[],
+            imageUrls: <String>[],
+            mealType: 'Lunch', // Default meal type in viewmodel
+            portions: null, // These are optional parameters
+            timeMinutes: null,
+            rating: null,
+            personalTagIds: null,
+            sourceUrl: null,
+          ),
+        ).called(1);
       });
 
       test('should create personal recipe with all parameters', () async {
@@ -232,19 +243,21 @@ void main() {
 
       test('should handle personal recipe creation failure', () async {
         // Arrange
-        when(() => mockPersonalOps.createRecipe(
-              title: any(named: 'title'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-            )).thenThrow(Exception('Creation failed'));
+        when(
+          () => mockPersonalOps.createRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+          ),
+        ).thenThrow(Exception('Creation failed'));
 
         // Act
         final result = await viewModel.createPersonalRecipe(
@@ -281,19 +294,21 @@ void main() {
         expect(result, isFalse);
       });
 
-      test('should handle collaborative recipe with Swedish meal types',
-          () async {
-        // Act - createCollaborativeRecipe returns bool
-        final result = await viewModel.createCollaborativeRecipe(
-          name: 'Frukost Recept', // Changed from title to name
-          mealType: 'Frukost',
-          memberIds: ['user1'],
-          memberDisplayNames: {'user1': 'Anna Andersson'},
-        );
+      test(
+        'should handle collaborative recipe with Swedish meal types',
+        () async {
+          // Act - createCollaborativeRecipe returns bool
+          final result = await viewModel.createCollaborativeRecipe(
+            name: 'Frukost Recept', // Changed from title to name
+            mealType: 'Frukost',
+            memberIds: ['user1'],
+            memberDisplayNames: {'user1': 'Anna Andersson'},
+          );
 
-        // Assert - will return false since collaborative mock doesn't exist
-        expect(result, isFalse);
-      });
+          // Assert - will return false since collaborative mock doesn't exist
+          expect(result, isFalse);
+        },
+      );
 
       test('should handle collaborative recipe creation failure', () async {
         // Act - collaborative operations not available in mocks
@@ -327,8 +342,9 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockPersonalOps.updateRecipe(testPersonalRecipe))
-            .called(1);
+        verify(
+          () => mockPersonalOps.updateRecipe(testPersonalRecipe),
+        ).called(1);
       });
 
       test('should update collaborative recipe', () async {
@@ -337,14 +353,16 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.updateRecipe(testCollaborativeRecipe))
-            .called(1);
+        verify(
+          () => mockRecipeService.updateRecipe(testCollaborativeRecipe),
+        ).called(1);
       });
 
       test('should handle update failure with error message', () async {
         // Arrange
-        when(() => mockPersonalOps.updateRecipe(any()))
-            .thenThrow(Exception('Update failed'));
+        when(
+          () => mockPersonalOps.updateRecipe(any()),
+        ).thenThrow(Exception('Update failed'));
 
         // Act
         final result = await viewModel.updateRecipe(testPersonalRecipe);
@@ -377,8 +395,9 @@ void main() {
 
       test('should delete collaborative recipe', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         // Act - use deleteRecipeById with the recipe ID
         final result = await viewModel.deleteRecipeById('collab123');
@@ -391,8 +410,9 @@ void main() {
 
       test('should delete recipe by ID', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await viewModel.deleteRecipeById(testRecipeId);
@@ -404,8 +424,9 @@ void main() {
 
       test('should handle deletion failure', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any()))
-            .thenThrow(Exception('Delete failed'));
+        when(
+          () => mockRecipeService.deleteRecipe(any()),
+        ).thenThrow(Exception('Delete failed'));
 
         // Act - deleteRecipe takes String ID
         final result = await viewModel.deleteRecipeById(testRecipeId);
@@ -546,25 +567,28 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockPersonalOps.updateRecipe(testPersonalRecipe))
-            .called(1);
+        verify(
+          () => mockPersonalOps.updateRecipe(testPersonalRecipe),
+        ).called(1);
       });
 
       test('should handle legacy operation failure', () async {
         // Arrange
-        when(() => mockPersonalOps.createRecipe(
-              title: any(named: 'title'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              imageUrls: any(named: 'imageUrls'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-            )).thenThrow(Exception('Legacy failed'));
+        when(
+          () => mockPersonalOps.createRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+          ),
+        ).thenThrow(Exception('Legacy failed'));
 
         // Act
         final result = await viewModel.createPersonalRecipe(
@@ -682,7 +706,8 @@ void main() {
       test('should handle and report network errors', () {
         // Arrange
         mockRecipeService.setRecipeState(
-            error: 'Nätverksfel: Ingen anslutning');
+          error: 'Nätverksfel: Ingen anslutning',
+        );
 
         // Assert
         expect(viewModel.error, equals('Nätverksfel: Ingen anslutning'));
@@ -693,7 +718,8 @@ void main() {
       test('should handle permission errors with Swedish message', () {
         // Arrange
         mockRecipeService.setRecipeState(
-            error: 'Åtkomst nekad: Du har inte behörighet');
+          error: 'Åtkomst nekad: Du har inte behörighet',
+        );
 
         // Assert
         expect(viewModel.error, contains('Åtkomst nekad'));
@@ -714,8 +740,9 @@ void main() {
 
       test('should handle service initialization failure', () {
         // Arrange
-        when(() => mockRecipeService.initialize())
-            .thenThrow(Exception('Init failed'));
+        when(
+          () => mockRecipeService.initialize(),
+        ).thenThrow(Exception('Init failed'));
 
         // Act & Assert
         expectLater(() => viewModel.initialize(), throwsException);
@@ -742,7 +769,7 @@ void main() {
           'Lunch',
           'Middag',
           'Mellanmål',
-          'Kvällsmat'
+          'Kvällsmat',
         ];
 
         for (final mealType in swedishMeals) {

@@ -43,8 +43,9 @@ class AccountSecurityViewModel extends ChangeNotifier
     setLoading(true);
 
     // Reauthenticate first
-    final reauthed =
-        await _authService.reauthenticateWithPassword(currentPassword);
+    final reauthed = await _authService.reauthenticateWithPassword(
+      currentPassword,
+    );
     if (!reauthed) {
       setLoading(false);
       setError(_authService.errorMessage ?? AppLocale.current.errorUnexpected);
@@ -78,8 +79,9 @@ class AccountSecurityViewModel extends ChangeNotifier
     setLoading(true);
 
     // Reauthenticate first
-    final reauthed =
-        await _authService.reauthenticateWithPassword(currentPassword);
+    final reauthed = await _authService.reauthenticateWithPassword(
+      currentPassword,
+    );
     if (!reauthed) {
       setLoading(false);
       setError(_authService.errorMessage ?? AppLocale.current.errorUnexpected);

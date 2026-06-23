@@ -164,7 +164,8 @@ class AppTimestamp {
   /// Create AppTimestamp from milliseconds since epoch.
   /// Epoch time is inherently UTC.
   factory AppTimestamp.fromMilliseconds(int milliseconds) => AppTimestamp._(
-      DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true));
+    DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true),
+  );
 
   /// Get underlying DateTime (preserves internal timezone).
   /// For display purposes, prefer [localDateTime].
@@ -235,8 +236,8 @@ class AppTimestamp {
 
   /// JSON serialization support (stores in UTC milliseconds).
   Map<String, dynamic> toJson() => {
-        'timestamp': toMilliseconds(),
-      };
+    'timestamp': toMilliseconds(),
+  };
 
   /// JSON deserialization support.
   factory AppTimestamp.fromJson(Map<String, dynamic> json) =>

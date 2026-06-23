@@ -100,8 +100,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Card(
-      color: _getListTypeColor(cs)
-          .withValues(alpha: AppDimensions.opacityVeryLight),
+      color: _getListTypeColor(
+        cs,
+      ).withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -179,8 +180,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(permissionIcon,
-                    color: permissionColor, size: AppDimensions.iconSizeM),
+                Icon(
+                  permissionIcon,
+                  color: permissionColor,
+                  size: AppDimensions.iconSizeM,
+                ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingYourPermission,
@@ -225,8 +229,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.people,
-                    color: cs.primary, size: AppDimensions.iconSizeM),
+                Icon(
+                  Icons.people,
+                  color: cs.primary,
+                  size: AppDimensions.iconSizeM,
+                ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingMembersCount(allMembers.length),
@@ -247,8 +254,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMemberRow(BuildContext context, String userId,
-      SharedListPermission permission, bool isOwner) {
+  Widget _buildMemberRow(
+    BuildContext context,
+    String userId,
+    SharedListPermission permission,
+    bool isOwner,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final String displayName =
         userDisplayNames[userId] ?? context.l10n.shoppingUnknownUser;
@@ -287,8 +298,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor:
-                cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+            backgroundColor: cs.primary.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             child: Text(
               displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
               style: AppTextStyles.labelLarge.copyWith(
@@ -309,13 +321,17 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Icon(permissionIcon,
-                        size: AppDimensions.iconSizeS, color: permissionColor),
+                    Icon(
+                      permissionIcon,
+                      size: AppDimensions.iconSizeS,
+                      color: permissionColor,
+                    ),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       permissionLabel,
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: permissionColor),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: permissionColor,
+                      ),
                     ),
                   ],
                 ),
@@ -339,8 +355,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.history,
-                    color: cs.primary, size: AppDimensions.iconSizeM),
+                Icon(
+                  Icons.history,
+                  color: cs.primary,
+                  size: AppDimensions.iconSizeM,
+                ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingRecentActivity,
@@ -353,10 +372,14 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingM),
             if (list.lastActivityByDisplayName != null)
               _buildInfoRow(
-                  context.l10n.shoppingBy, list.lastActivityByDisplayName!),
+                context.l10n.shoppingBy,
+                list.lastActivityByDisplayName!,
+              ),
             if (list.lastActivityAt != null)
-              _buildInfoRow(context.l10n.shoppingWhen,
-                  _formatDateTime(context, list.lastActivityAt!)),
+              _buildInfoRow(
+                context.l10n.shoppingWhen,
+                _formatDateTime(context, list.lastActivityAt!),
+              ),
           ],
         ),
       ),
@@ -453,8 +476,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.shoppingCouldNotLoadFriends(e.toString())),
+            content: Text(
+              context.l10n.shoppingCouldNotLoadFriends(e.toString()),
+            ),
             backgroundColor: cs.error,
           ),
         );

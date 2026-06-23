@@ -24,9 +24,11 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
       builder: (ctx, setDialogState) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.visibility_outlined,
-                size: AppDimensions.iconSizeS,
-                color: Theme.of(ctx).colorScheme.onPrimaryContainer),
+            Icon(
+              Icons.visibility_outlined,
+              size: AppDimensions.iconSizeS,
+              color: Theme.of(ctx).colorScheme.onPrimaryContainer,
+            ),
             const SizedBox(width: AppDimensions.spacingXs),
             Expanded(
               child: Text(
@@ -47,7 +49,8 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
               title: ctx.l10n.cookSnapVisibilityChoiceSame,
               selected: selected == CookSnapVisibility.sameAsRecipe,
               onTap: () => setDialogState(
-                  () => selected = CookSnapVisibility.sameAsRecipe),
+                () => selected = CookSnapVisibility.sameAsRecipe,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             _VisibilityOptionTile(
@@ -155,8 +158,9 @@ class _VisibilityOptionTile extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
                           subtitle!,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: cs.onSurfaceVariant),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
                       ),
                   ],

@@ -266,7 +266,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         if (widget.config.showEditControls)
           EditActionsPanel(
             canAddImage: widget.imageUrls.length < widget.config.maxImages,
-            canSetPrimary: widget.imageUrls.length > 1 &&
+            canSetPrimary:
+                widget.imageUrls.length > 1 &&
                 _currentIndex != widget.primaryIndex,
             onAddImage: _addImage,
             onSetPrimary: _setPrimary,
@@ -379,8 +380,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       if (result.isNotEmpty) {
         final newUrls = List<String>.from(widget.imageUrls);
         final availableSlots = widget.config.maxImages - newUrls.length;
-        final imagesToAdd =
-            result.take(availableSlots).map((e) => e.path).toList();
+        final imagesToAdd = result
+            .take(availableSlots)
+            .map((e) => e.path)
+            .toList();
         newUrls.addAll(imagesToAdd);
         widget.onImagesChanged?.call(newUrls);
         AppLogger.debug('Added ${imagesToAdd.length} images');

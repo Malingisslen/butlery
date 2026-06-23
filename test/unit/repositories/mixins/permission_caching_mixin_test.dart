@@ -65,57 +65,67 @@ void main() {
       );
       expect(allowed, isFalse);
       expect(checked, 1);
-      verifyNever(() => cache.get(
-            userId: any(named: 'userId'),
-            resourceType: any(named: 'resourceType'),
-            resourceId: any(named: 'resourceId'),
-            operation: any(named: 'operation'),
-          ));
+      verifyNever(
+        () => cache.get(
+          userId: any(named: 'userId'),
+          resourceType: any(named: 'resourceType'),
+          resourceId: any(named: 'resourceId'),
+          operation: any(named: 'operation'),
+        ),
+      );
     });
 
-    test('returns cached value without invoking permissionCheck on hit',
-        () async {
-      final cache = _MockCache();
-      when(() => cache.isEnabled).thenReturn(true);
-      when(() => cache.get(
+    test(
+      'returns cached value without invoking permissionCheck on hit',
+      () async {
+        final cache = _MockCache();
+        when(() => cache.isEnabled).thenReturn(true);
+        when(
+          () => cache.get(
             userId: 'u',
             resourceType: 'recipe',
             resourceId: 'r',
             operation: 'read',
-          )).thenReturn(_entry(allowed: true));
+          ),
+        ).thenReturn(_entry(allowed: true));
 
-      var checked = 0;
-      final subject = _Subject(cache);
-      final allowed = await subject.checkCachedPermission(
-        userId: 'u',
-        resourceId: 'r',
-        operation: 'read',
-        permissionCheck: () async {
-          checked++;
-          return false;
-        },
-      );
-      expect(allowed, isTrue);
-      expect(checked, 0);
-    });
+        var checked = 0;
+        final subject = _Subject(cache);
+        final allowed = await subject.checkCachedPermission(
+          userId: 'u',
+          resourceId: 'r',
+          operation: 'read',
+          permissionCheck: () async {
+            checked++;
+            return false;
+          },
+        );
+        expect(allowed, isTrue);
+        expect(checked, 0);
+      },
+    );
 
     test('on cache miss: executes check, stores result, returns it', () async {
       final cache = _MockCache();
       when(() => cache.isEnabled).thenReturn(true);
-      when(() => cache.get(
-            userId: any(named: 'userId'),
-            resourceType: any(named: 'resourceType'),
-            resourceId: any(named: 'resourceId'),
-            operation: any(named: 'operation'),
-          )).thenReturn(null);
-      when(() => cache.set(
-            userId: any(named: 'userId'),
-            resourceType: any(named: 'resourceType'),
-            resourceId: any(named: 'resourceId'),
-            operation: any(named: 'operation'),
-            allowed: any(named: 'allowed'),
-            reason: any(named: 'reason'),
-          )).thenReturn(null);
+      when(
+        () => cache.get(
+          userId: any(named: 'userId'),
+          resourceType: any(named: 'resourceType'),
+          resourceId: any(named: 'resourceId'),
+          operation: any(named: 'operation'),
+        ),
+      ).thenReturn(null);
+      when(
+        () => cache.set(
+          userId: any(named: 'userId'),
+          resourceType: any(named: 'resourceType'),
+          resourceId: any(named: 'resourceId'),
+          operation: any(named: 'operation'),
+          allowed: any(named: 'allowed'),
+          reason: any(named: 'reason'),
+        ),
+      ).thenReturn(null);
 
       final subject = _Subject(cache);
       final allowed = await subject.checkCachedPermission(
@@ -126,14 +136,16 @@ void main() {
         reason: 'owner',
       );
       expect(allowed, isTrue);
-      verify(() => cache.set(
-            userId: 'u',
-            resourceType: 'recipe',
-            resourceId: 'r',
-            operation: 'write',
-            allowed: true,
-            reason: 'owner',
-          )).called(1);
+      verify(
+        () => cache.set(
+          userId: 'u',
+          resourceType: 'recipe',
+          resourceId: 'r',
+          operation: 'write',
+          allowed: true,
+          reason: 'owner',
+        ),
+      ).called(1);
     });
   });
 
@@ -142,26 +154,32 @@ void main() {
       final cache = _MockCache();
       when(() => cache.isEnabled).thenReturn(true);
       // r1 is cached, r2 is a miss
-      when(() => cache.get(
-            userId: 'u',
-            resourceType: 'recipe',
-            resourceId: 'r1',
-            operation: 'read',
-          )).thenReturn(_entry(allowed: true));
-      when(() => cache.get(
-            userId: 'u',
-            resourceType: 'recipe',
-            resourceId: 'r2',
-            operation: 'read',
-          )).thenReturn(null);
-      when(() => cache.set(
-            userId: any(named: 'userId'),
-            resourceType: any(named: 'resourceType'),
-            resourceId: any(named: 'resourceId'),
-            operation: any(named: 'operation'),
-            allowed: any(named: 'allowed'),
-            reason: any(named: 'reason'),
-          )).thenReturn(null);
+      when(
+        () => cache.get(
+          userId: 'u',
+          resourceType: 'recipe',
+          resourceId: 'r1',
+          operation: 'read',
+        ),
+      ).thenReturn(_entry(allowed: true));
+      when(
+        () => cache.get(
+          userId: 'u',
+          resourceType: 'recipe',
+          resourceId: 'r2',
+          operation: 'read',
+        ),
+      ).thenReturn(null);
+      when(
+        () => cache.set(
+          userId: any(named: 'userId'),
+          resourceType: any(named: 'resourceType'),
+          resourceId: any(named: 'resourceId'),
+          operation: any(named: 'operation'),
+          allowed: any(named: 'allowed'),
+          reason: any(named: 'reason'),
+        ),
+      ).thenReturn(null);
 
       final invoked = <String>[];
       final subject = _Subject(cache);
@@ -177,37 +195,43 @@ void main() {
 
       expect(results, {'r1': true, 'r2': true});
       expect(invoked, ['r2']); // r1 was a cache hit, not invoked
-      verify(() => cache.set(
-            userId: 'u',
-            resourceType: 'recipe',
-            resourceId: 'r2',
-            operation: 'read',
-            allowed: true,
-          )).called(1);
+      verify(
+        () => cache.set(
+          userId: 'u',
+          resourceType: 'recipe',
+          resourceId: 'r2',
+          operation: 'read',
+          allowed: true,
+        ),
+      ).called(1);
     });
 
-    test('skips cache entirely when service disabled — still returns results',
-        () async {
-      final cache = _MockCache();
-      when(() => cache.isEnabled).thenReturn(false);
+    test(
+      'skips cache entirely when service disabled — still returns results',
+      () async {
+        final cache = _MockCache();
+        when(() => cache.isEnabled).thenReturn(false);
 
-      final subject = _Subject(cache);
-      final results = await subject.checkCachedPermissions(
-        userId: 'u',
-        resourceIds: const ['r1', 'r2'],
-        operation: 'read',
-        permissionCheck: (id) async => id == 'r1',
-      );
-      expect(results, {'r1': true, 'r2': false});
-      verifyNever(() => cache.set(
+        final subject = _Subject(cache);
+        final results = await subject.checkCachedPermissions(
+          userId: 'u',
+          resourceIds: const ['r1', 'r2'],
+          operation: 'read',
+          permissionCheck: (id) async => id == 'r1',
+        );
+        expect(results, {'r1': true, 'r2': false});
+        verifyNever(
+          () => cache.set(
             userId: any(named: 'userId'),
             resourceType: any(named: 'resourceType'),
             resourceId: any(named: 'resourceId'),
             operation: any(named: 'operation'),
             allowed: any(named: 'allowed'),
             reason: any(named: 'reason'),
-          ));
-    });
+          ),
+        );
+      },
+    );
 
     test('works with null cache (no service registered)', () async {
       final subject = _Subject(null);
@@ -224,17 +248,21 @@ void main() {
   group('invalidation', () {
     test('invalidateResourcePermissions forwards to cache', () {
       final cache = _MockCache();
-      when(() => cache.invalidateResource(
-            resourceType: any(named: 'resourceType'),
-            resourceId: any(named: 'resourceId'),
-          )).thenReturn(null);
+      when(
+        () => cache.invalidateResource(
+          resourceType: any(named: 'resourceType'),
+          resourceId: any(named: 'resourceId'),
+        ),
+      ).thenReturn(null);
 
       _Subject(cache).invalidateResourcePermissions('r1');
 
-      verify(() => cache.invalidateResource(
-            resourceType: 'recipe',
-            resourceId: 'r1',
-          )).called(1);
+      verify(
+        () => cache.invalidateResource(
+          resourceType: 'recipe',
+          resourceId: 'r1',
+        ),
+      ).called(1);
     });
 
     test('invalidateUserPermissions forwards to cache', () {

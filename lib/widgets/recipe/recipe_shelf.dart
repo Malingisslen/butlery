@@ -55,8 +55,9 @@ class RecipeShelf extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingSm),
         Divider(
           height: 1,
-          color: cs.outlineVariant
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outlineVariant.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ],
     );
@@ -81,8 +82,9 @@ class _ShelfCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: AppDimensions.imageSizeThumbnail + AppDimensions.spacingMd,
-          margin:
-              const EdgeInsetsDirectional.only(end: AppDimensions.spacingSm),
+          margin: const EdgeInsetsDirectional.only(
+            end: AppDimensions.spacingSm,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -99,8 +101,9 @@ class _ShelfCard extends StatelessWidget {
                       )
                     : Center(
                         child: VegetableIllustration(
-                          type:
-                              VegetableIllustration.randomForRecipe(recipe.id),
+                          type: VegetableIllustration.randomForRecipe(
+                            recipe.id,
+                          ),
                           size: AppDimensions.imageSizeThumbnail / 2,
                           opacity: AppDimensions.opacityDark,
                         ),

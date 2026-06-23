@@ -69,7 +69,8 @@ class ActiveTimersStrip extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingSm),
+                  end: AppDimensions.spacingSm,
+                ),
                 child: Text(
                   context.l10n.cookingActiveTimersTitle,
                   style: AppTextStyles.bodyMedium.copyWith(

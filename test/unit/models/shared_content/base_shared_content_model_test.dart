@@ -80,10 +80,12 @@ void main() {
     });
   });
 
-  test('timeAgoText returns a non-empty string (delegates to TimeAgoFormatter)',
-      () {
-    expect(_stub().timeAgoText, isNotEmpty);
-  });
+  test(
+    'timeAgoText returns a non-empty string (delegates to TimeAgoFormatter)',
+    () {
+      expect(_stub().timeAgoText, isNotEmpty);
+    },
+  );
 
   group('getCommonFirestoreFields', () {
     test('includes the seven common fields', () {
@@ -124,7 +126,9 @@ void main() {
       expect(parsed['sharedByUserId'], 'alice');
       expect(parsed['sharedByDisplayName'], 'Alice');
       expect(
-          (parsed['sharedAt'] as DateTime).toUtc(), DateTime.utc(2026, 1, 1));
+        (parsed['sharedAt'] as DateTime).toUtc(),
+        DateTime.utc(2026, 1, 1),
+      );
       expect(parsed['shareMessage'], 'hej');
       expect(parsed['viewCount'], 5);
       expect(parsed['engagementCount'], 2);
@@ -156,7 +160,9 @@ void main() {
       expect(parsed['id'], 'doc-1');
       expect(parsed['sharedByUserId'], 'alice');
       expect(
-          (parsed['sharedAt'] as DateTime).toUtc(), DateTime.utc(2026, 1, 1));
+        (parsed['sharedAt'] as DateTime).toUtc(),
+        DateTime.utc(2026, 1, 1),
+      );
       expect(parsed['viewCount'], 7);
     });
   });

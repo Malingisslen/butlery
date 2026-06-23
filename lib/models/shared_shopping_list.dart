@@ -98,13 +98,18 @@ class SharedShoppingList
   }
 
   factory SharedShoppingList.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> doc) {
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data()!;
-    final commonFields =
-        BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
+    final commonFields = BaseSharedContentModel.parseCommonFieldsFromFirestore(
+      data,
+    );
 
-    final itemCount = SerializationUtils.safeInt(data, 'itemCount',
-        defaultValue: (data['listItems'] as List<dynamic>?)?.length ?? 0);
+    final itemCount = SerializationUtils.safeInt(
+      data,
+      'itemCount',
+      defaultValue: (data['listItems'] as List<dynamic>?)?.length ?? 0,
+    );
 
     return SharedShoppingList(
       id: doc.id,
@@ -113,14 +118,18 @@ class SharedShoppingList
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
-      engagementCount: SerializationUtils.safeInt(data, 'joinedCount',
-          defaultValue: commonFields['engagementCount'] as int),
+      engagementCount: SerializationUtils.safeInt(
+        data,
+        'joinedCount',
+        defaultValue: commonFields['engagementCount'] as int,
+      ),
       dismissalCount: commonFields['dismissalCount'] as int,
       listName: SerializationUtils.safeString(data, 'listName'),
       listDescription: data['listDescription'],
       itemCount: itemCount,
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
-      originalOwnerDisplayName: data['originalOwnerDisplayName'] ??
+      originalOwnerDisplayName:
+          data['originalOwnerDisplayName'] ??
           data['sharedByDisplayName'] ??
           AppLocale.current.displayUnknownUser,
       shoppingListId: data['shoppingListId'] as String?,
@@ -128,15 +137,19 @@ class SharedShoppingList
   }
 
   factory SharedShoppingList.fromMap(String id, Map<String, dynamic> data) {
-    final commonFields =
-        BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
+    final commonFields = BaseSharedContentModel.parseCommonFieldsFromFirestore(
+      data,
+    );
 
-    final itemCount = SerializationUtils.safeInt(data, 'itemCount',
-        defaultValue: SerializationUtils.safeObjectList(
-          data,
-          'listItems',
-          (itemData) => UnifiedShoppingItem.fromFirestore(itemData),
-        ).length);
+    final itemCount = SerializationUtils.safeInt(
+      data,
+      'itemCount',
+      defaultValue: SerializationUtils.safeObjectList(
+        data,
+        'listItems',
+        (itemData) => UnifiedShoppingItem.fromFirestore(itemData),
+      ).length,
+    );
 
     return SharedShoppingList(
       id: id,
@@ -145,22 +158,36 @@ class SharedShoppingList
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
-      engagementCount: SerializationUtils.safeInt(data, 'joinedCount',
-          defaultValue: commonFields['engagementCount'] as int),
+      engagementCount: SerializationUtils.safeInt(
+        data,
+        'joinedCount',
+        defaultValue: commonFields['engagementCount'] as int,
+      ),
       dismissalCount: commonFields['dismissalCount'] as int,
       listName: SerializationUtils.safeString(data, 'listName'),
-      listDescription:
-          SerializationUtils.safeNullableString(data, 'listDescription'),
+      listDescription: SerializationUtils.safeNullableString(
+        data,
+        'listDescription',
+      ),
       itemCount: itemCount,
-      originalOwnerId: SerializationUtils.safeString(data, 'originalOwnerId',
-          defaultValue: SerializationUtils.safeString(data, 'sharedByUserId')),
+      originalOwnerId: SerializationUtils.safeString(
+        data,
+        'originalOwnerId',
+        defaultValue: SerializationUtils.safeString(data, 'sharedByUserId'),
+      ),
       originalOwnerDisplayName: SerializationUtils.safeString(
-          data, 'originalOwnerDisplayName',
-          defaultValue: SerializationUtils.safeString(
-              data, 'sharedByDisplayName',
-              defaultValue: AppLocale.current.displayUnknownUser)),
-      shoppingListId:
-          SerializationUtils.safeNullableString(data, 'shoppingListId'),
+        data,
+        'originalOwnerDisplayName',
+        defaultValue: SerializationUtils.safeString(
+          data,
+          'sharedByDisplayName',
+          defaultValue: AppLocale.current.displayUnknownUser,
+        ),
+      ),
+      shoppingListId: SerializationUtils.safeNullableString(
+        data,
+        'shoppingListId',
+      ),
     );
   }
 
@@ -193,8 +220,11 @@ class SharedShoppingList
   factory SharedShoppingList.fromJson(Map<String, dynamic> json) {
     final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
 
-    final itemCount = SerializationUtils.safeInt(json, 'itemCount',
-        defaultValue: (json['listItems'] as List<dynamic>?)?.length ?? 0);
+    final itemCount = SerializationUtils.safeInt(
+      json,
+      'itemCount',
+      defaultValue: (json['listItems'] as List<dynamic>?)?.length ?? 0,
+    );
 
     return SharedShoppingList(
       id: commonFields['id'] as String,
@@ -203,18 +233,27 @@ class SharedShoppingList
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
-      engagementCount: SerializationUtils.safeInt(json, 'joinedCount',
-          defaultValue: commonFields['engagementCount'] as int),
+      engagementCount: SerializationUtils.safeInt(
+        json,
+        'joinedCount',
+        defaultValue: commonFields['engagementCount'] as int,
+      ),
       dismissalCount: commonFields['dismissalCount'] as int,
       listName: SerializationUtils.safeString(json, 'listName'),
-      listDescription:
-          SerializationUtils.safeNullableString(json, 'listDescription'),
+      listDescription: SerializationUtils.safeNullableString(
+        json,
+        'listDescription',
+      ),
       itemCount: itemCount,
       originalOwnerId: SerializationUtils.safeString(json, 'originalOwnerId'),
-      originalOwnerDisplayName:
-          SerializationUtils.safeString(json, 'originalOwnerDisplayName'),
-      shoppingListId:
-          SerializationUtils.safeNullableString(json, 'shoppingListId'),
+      originalOwnerDisplayName: SerializationUtils.safeString(
+        json,
+        'originalOwnerDisplayName',
+      ),
+      shoppingListId: SerializationUtils.safeNullableString(
+        json,
+        'shoppingListId',
+      ),
     );
   }
 

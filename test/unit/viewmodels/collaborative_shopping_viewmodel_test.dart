@@ -101,15 +101,18 @@ void main() {
       when(() => mockShoppingService.loadLists()).thenAnswer((_) async {});
 
       // Stub item operations
-      when(() => mockShoppingService.addItemToActiveList(
-            name: any(named: 'name'),
-            amount: any(named: 'amount'),
-            unit: any(named: 'unit'),
-            category: any(named: 'category'),
-          )).thenAnswer((_) async => true);
+      when(
+        () => mockShoppingService.addItemToActiveList(
+          name: any(named: 'name'),
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+        ),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockShoppingService.toggleItemBought(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockShoppingService.toggleItemBought(any()),
+      ).thenAnswer((_) async => true);
 
       mockPermissionService.setPermissionState(
         currentUserId: testUserId,
@@ -163,15 +166,18 @@ void main() {
         // Constructor fires _initialize() which rethrows via executeAsync.
         // Capture that uncaught future error so test framework ignores it.
         late CollaborativeShoppingViewModel missingViewModel;
-        await runZonedGuarded(() async {
-          missingViewModel = CollaborativeShoppingViewModel(
-            listId: 'nonexistent',
-            shoppingService: emptyMockService,
-          );
-          await Future.delayed(Duration.zero);
-        }, (_, __) {
-          // Expected: rethrown exception from executeAsync
-        });
+        await runZonedGuarded(
+          () async {
+            missingViewModel = CollaborativeShoppingViewModel(
+              listId: 'nonexistent',
+              shoppingService: emptyMockService,
+            );
+            await Future.delayed(Duration.zero);
+          },
+          (_, __) {
+            // Expected: rethrown exception from executeAsync
+          },
+        );
 
         expect(missingViewModel.hasError, isTrue);
         expect(missingViewModel.listTitle, equals('Laddar...'));
@@ -236,36 +242,42 @@ void main() {
         final result = await viewModel.addItem('Smör');
 
         expect(result, isTrue);
-        verify(() => mockShoppingService.addItemToActiveList(
-              name: 'Smör',
-              amount: 1.0,
-              unit: '',
-              category: 'Övrigt',
-            )).called(1);
+        verify(
+          () => mockShoppingService.addItemToActiveList(
+            name: 'Smör',
+            amount: 1.0,
+            unit: '',
+            category: 'Övrigt',
+          ),
+        ).called(1);
       });
 
       test('should reject empty item name', () async {
         final result = await viewModel.addItem('');
 
         expect(result, isFalse);
-        verifyNever(() => mockShoppingService.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-            ));
+        verifyNever(
+          () => mockShoppingService.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          ),
+        );
       });
 
       test('should trim whitespace from item name', () async {
         final result = await viewModel.addItem('  Ost  ');
 
         expect(result, isTrue);
-        verify(() => mockShoppingService.addItemToActiveList(
-              name: 'Ost',
-              amount: 1.0,
-              unit: '',
-              category: 'Övrigt',
-            )).called(1);
+        verify(
+          () => mockShoppingService.addItemToActiveList(
+            name: 'Ost',
+            amount: 1.0,
+            unit: '',
+            category: 'Övrigt',
+          ),
+        ).called(1);
       });
 
       test('should set loading state during item addition', () async {
@@ -281,12 +293,14 @@ void main() {
       });
 
       test('should handle item addition error', () async {
-        when(() => mockShoppingService.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-            )).thenThrow(Exception('Add failed'));
+        when(
+          () => mockShoppingService.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          ),
+        ).thenThrow(Exception('Add failed'));
 
         final result = await viewModel.addItem('Tomat');
 
@@ -305,8 +319,9 @@ void main() {
       });
 
       test('should handle toggle completion error', () async {
-        when(() => mockShoppingService.toggleItemBought(any()))
-            .thenThrow(Exception('Toggle failed'));
+        when(
+          () => mockShoppingService.toggleItemBought(any()),
+        ).thenThrow(Exception('Toggle failed'));
 
         final result = await viewModel.toggleItemCompletion('item1');
 
@@ -340,7 +355,8 @@ void main() {
         );
 
         TestServiceLocator.registerMock<PermissionService>(
-            restrictedPermissionService);
+          restrictedPermissionService,
+        );
 
         final restrictedViewModel = CollaborativeShoppingViewModel(
           listId: testListId,
@@ -355,7 +371,8 @@ void main() {
 
         // Restore
         TestServiceLocator.registerMock<PermissionService>(
-            mockPermissionService);
+          mockPermissionService,
+        );
       });
     });
 
@@ -535,12 +552,14 @@ void main() {
         final result = await viewModel.addItem('Räkor och ägg från Öland');
 
         expect(result, isTrue);
-        verify(() => mockShoppingService.addItemToActiveList(
-              name: 'Räkor och ägg från Öland',
-              amount: 1.0,
-              unit: '',
-              category: 'Övrigt',
-            )).called(1);
+        verify(
+          () => mockShoppingService.addItemToActiveList(
+            name: 'Räkor och ägg från Öland',
+            amount: 1.0,
+            unit: '',
+            category: 'Övrigt',
+          ),
+        ).called(1);
       });
 
       test('should handle very long item names', () async {
@@ -549,12 +568,14 @@ void main() {
         final result = await viewModel.addItem(longName);
 
         expect(result, isTrue);
-        verify(() => mockShoppingService.addItemToActiveList(
-              name: longName,
-              amount: 1.0,
-              unit: '',
-              category: 'Övrigt',
-            )).called(1);
+        verify(
+          () => mockShoppingService.addItemToActiveList(
+            name: longName,
+            amount: 1.0,
+            unit: '',
+            category: 'Övrigt',
+          ),
+        ).called(1);
       });
     });
   });

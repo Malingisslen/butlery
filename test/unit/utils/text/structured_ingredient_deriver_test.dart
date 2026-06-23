@@ -14,8 +14,11 @@ void main() {
       final entry = StructuredIngredientDeriver.derive('3 dl vetemjöl');
 
       expect(entry.amount, 3);
-      expect(entry.amount, isA<int>(),
-          reason: 'whole quantities persist as int, not 3.0');
+      expect(
+        entry.amount,
+        isA<int>(),
+        reason: 'whole quantities persist as int, not 3.0',
+      );
       expect(entry.unit, 'dl');
       expect(entry.name, 'vetemjöl');
       expect(entry.raw, '3 dl vetemjöl');
@@ -48,16 +51,18 @@ void main() {
       expect(entry.isStructured, isFalse);
     });
 
-    test('raw preserves the line verbatim including surrounding whitespace',
-        () {
-      final entry = StructuredIngredientDeriver.derive('  3 dl mjölk ');
+    test(
+      'raw preserves the line verbatim including surrounding whitespace',
+      () {
+        final entry = StructuredIngredientDeriver.derive('  3 dl mjölk ');
 
-      // Alignment invariant: form strings are persisted untrimmed, so raw
-      // must match exactly or the facade getter discards the entry.
-      expect(entry.raw, '  3 dl mjölk ');
-      expect(entry.amount, 3);
-      expect(entry.unit, 'dl');
-    });
+        // Alignment invariant: form strings are persisted untrimmed, so raw
+        // must match exactly or the facade getter discards the entry.
+        expect(entry.raw, '  3 dl mjölk ');
+        expect(entry.amount, 3);
+        expect(entry.unit, 'dl');
+      },
+    );
 
     test('empty/whitespace line degrades to raw-only', () {
       final entry = StructuredIngredientDeriver.derive('   ');
@@ -80,8 +85,7 @@ void main() {
       }
     });
 
-    test(
-        'reuse keeps existing entries on exact raw match instead of '
+    test('reuse keeps existing entries on exact raw match instead of '
         're-deriving (preserves richer import-time data)', () {
       const richEntry = RecipeIngredient(
         amount: 3,
@@ -96,8 +100,11 @@ void main() {
         reuse: const [richEntry],
       );
 
-      expect(entries[1], same(richEntry),
-          reason: 'unchanged line keeps its original entry across reorder');
+      expect(
+        entries[1],
+        same(richEntry),
+        reason: 'unchanged line keeps its original entry across reorder',
+      );
       expect(entries[0].amount, 2, reason: 'new line is derived');
     });
   });

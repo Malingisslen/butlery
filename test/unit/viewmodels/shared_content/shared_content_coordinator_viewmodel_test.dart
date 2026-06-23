@@ -69,8 +69,9 @@ void main() {
       when(() => mockRecipeViewModel.content).thenReturn([]);
       when(() => mockRecipeViewModel.getEngagementStats()).thenReturn({});
       when(() => mockRecipeViewModel.refreshContent()).thenAnswer((_) async {});
-      when(() => mockRecipeViewModel.markAllAsViewed())
-          .thenAnswer((_) async {});
+      when(
+        () => mockRecipeViewModel.markAllAsViewed(),
+      ).thenAnswer((_) async {});
 
       when(() => mockMenuViewModel.isLoading).thenReturn(false);
       when(() => mockMenuViewModel.isOperating).thenReturn(false);
@@ -91,10 +92,12 @@ void main() {
       when(() => mockShoppingViewModel.filteredContent).thenReturn([]);
       when(() => mockShoppingViewModel.content).thenReturn([]);
       when(() => mockShoppingViewModel.getEngagementStats()).thenReturn({});
-      when(() => mockShoppingViewModel.refreshContent())
-          .thenAnswer((_) async {});
-      when(() => mockShoppingViewModel.markAllAsViewed())
-          .thenAnswer((_) async {});
+      when(
+        () => mockShoppingViewModel.refreshContent(),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockShoppingViewModel.markAllAsViewed(),
+      ).thenAnswer((_) async {});
 
       when(() => mockSearchViewModel.isSearching).thenReturn(false);
       when(() => mockSearchViewModel.hasSearchQuery).thenReturn(false);
@@ -107,19 +110,25 @@ void main() {
       when(() => mockSocialSharingViewModel.isSharing).thenReturn(false);
       when(() => mockSocialSharingViewModel.isBusy).thenReturn(false);
       when(() => mockSocialSharingViewModel.getSharingStats()).thenReturn({});
-      when(() => mockSocialSharingViewModel.refreshFriends())
-          .thenAnswer((_) async {});
-      when(() => mockSocialSharingViewModel.prepareForSharing(
-            contentType: any(named: 'contentType'),
-            contentTitle: any(named: 'contentTitle'),
-            suggestedFriends: any(named: 'suggestedFriends'),
-          )).thenReturn(null);
-      when(() => mockSocialSharingViewModel.updateShareMessage(any()))
-          .thenReturn(null);
-      when(() => mockSocialSharingViewModel.shareContent(
-            contentId: any(named: 'contentId'),
-            contentType: any(named: 'contentType'),
-          )).thenAnswer((_) async => MockShareResult(success: true) as dynamic);
+      when(
+        () => mockSocialSharingViewModel.refreshFriends(),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockSocialSharingViewModel.prepareForSharing(
+          contentType: any(named: 'contentType'),
+          contentTitle: any(named: 'contentTitle'),
+          suggestedFriends: any(named: 'suggestedFriends'),
+        ),
+      ).thenReturn(null);
+      when(
+        () => mockSocialSharingViewModel.updateShareMessage(any()),
+      ).thenReturn(null);
+      when(
+        () => mockSocialSharingViewModel.shareContent(
+          contentId: any(named: 'contentId'),
+          contentType: any(named: 'contentType'),
+        ),
+      ).thenAnswer((_) async => MockShareResult(success: true) as dynamic);
 
       // Mock addListener and removeListener
       when(() => mockRecipeViewModel.addListener(any())).thenReturn(null);
@@ -138,10 +147,12 @@ void main() {
       when(() => mockSearchViewModel.removeListener(any())).thenReturn(null);
       when(() => mockSearchViewModel.dispose()).thenReturn(null);
 
-      when(() => mockSocialSharingViewModel.addListener(any()))
-          .thenReturn(null);
-      when(() => mockSocialSharingViewModel.removeListener(any()))
-          .thenReturn(null);
+      when(
+        () => mockSocialSharingViewModel.addListener(any()),
+      ).thenReturn(null);
+      when(
+        () => mockSocialSharingViewModel.removeListener(any()),
+      ).thenReturn(null);
       when(() => mockSocialSharingViewModel.dispose()).thenReturn(null);
     });
 
@@ -178,12 +189,18 @@ void main() {
         viewModel = createViewModel();
 
         // Assert
-        expect(viewModel.currentTab, ContentTab.recipes,
-            reason: 'Default tab should be recipes');
+        expect(
+          viewModel.currentTab,
+          ContentTab.recipes,
+          reason: 'Default tab should be recipes',
+        );
         expect(viewModel.isGloballyLoading, false);
         expect(viewModel.hasGlobalError, false);
-        expect(viewModel.isInitialized, false,
-            reason: 'Not initialized until initialize() called');
+        expect(
+          viewModel.isInitialized,
+          false,
+          reason: 'Not initialized until initialize() called',
+        );
         expect(viewModel.isInitializing, false);
       });
 
@@ -261,8 +278,11 @@ void main() {
         viewModel.setCurrentTab(ContentTab.recipes);
 
         // Assert
-        expect(notificationCount, 0,
-            reason: 'Should not notify when tab unchanged');
+        expect(
+          notificationCount,
+          0,
+          reason: 'Should not notify when tab unchanged',
+        );
       });
 
       test('should provide Swedish tab titles', () {
@@ -282,10 +302,14 @@ void main() {
         viewModel = createViewModel();
 
         // Act & Assert
-        expect(viewModel.getTabTitleWithUnreadCount(ContentTab.recipes),
-            'Recept (5)');
         expect(
-            viewModel.getTabTitleWithUnreadCount(ContentTab.menus), 'Menyer');
+          viewModel.getTabTitleWithUnreadCount(ContentTab.recipes),
+          'Recept (5)',
+        );
+        expect(
+          viewModel.getTabTitleWithUnreadCount(ContentTab.menus),
+          'Menyer',
+        );
       });
     });
 
@@ -436,14 +460,18 @@ void main() {
     group('Analytics', () {
       test('should provide comprehensive analytics', () {
         // Arrange
-        when(() => mockRecipeViewModel.getEngagementStats())
-            .thenReturn({'views': 10});
-        when(() => mockMenuViewModel.getEngagementStats())
-            .thenReturn({'views': 5});
-        when(() => mockShoppingViewModel.getEngagementStats())
-            .thenReturn({'views': 3});
-        when(() => mockSocialSharingViewModel.getSharingStats())
-            .thenReturn({'shared': 2});
+        when(
+          () => mockRecipeViewModel.getEngagementStats(),
+        ).thenReturn({'views': 10});
+        when(
+          () => mockMenuViewModel.getEngagementStats(),
+        ).thenReturn({'views': 5});
+        when(
+          () => mockShoppingViewModel.getEngagementStats(),
+        ).thenReturn({'views': 3});
+        when(
+          () => mockSocialSharingViewModel.getSharingStats(),
+        ).thenReturn({'shared': 2});
 
         viewModel = createViewModel();
 
@@ -476,8 +504,9 @@ void main() {
         verify(() => mockMenuViewModel.removeListener(any())).called(1);
         verify(() => mockShoppingViewModel.removeListener(any())).called(1);
         verify(() => mockSearchViewModel.removeListener(any())).called(1);
-        verify(() => mockSocialSharingViewModel.removeListener(any()))
-            .called(1);
+        verify(
+          () => mockSocialSharingViewModel.removeListener(any()),
+        ).called(1);
       });
 
       test('should dispose all specialized ViewModels', () {

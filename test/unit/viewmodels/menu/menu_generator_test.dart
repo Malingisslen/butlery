@@ -69,12 +69,13 @@ void main() {
 
   List<Recipe> createTestRecipes({int count = 3}) {
     return List.generate(
-        count,
-        (index) => RecipeFactory.build(
-              id: 'recipe_$index',
-              title: 'Recipe ${index + 1}',
-              mealType: index % 2 == 0 ? 'dinner' : 'lunch',
-            ));
+      count,
+      (index) => RecipeFactory.build(
+        id: 'recipe_$index',
+        title: 'Recipe ${index + 1}',
+        mealType: index % 2 == 0 ? 'dinner' : 'lunch',
+      ),
+    );
   }
 
   Map<String, List<Recipe>> createTestMenu() {
@@ -142,8 +143,10 @@ void main() {
 
       expect(result, equals(generatedMenu));
       expect(mockMenuService.lastGeneratePrompt, equals(prompt));
-      expect(mockMenuService.lastGenerateRecipes,
-          equals(mockRecipeService.recipes));
+      expect(
+        mockMenuService.lastGenerateRecipes,
+        equals(mockRecipeService.recipes),
+      );
     });
 
     test('should throw error when no recipes available', () async {
@@ -154,9 +157,13 @@ void main() {
 
       expect(
         () => menuGenerator.generateMenuFromPrompt('test prompt'),
-        throwsA(predicate((e) =>
-            e is Exception &&
-            e.toString().contains('Inga recept tillgängliga'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is Exception &&
+                e.toString().contains('Inga recept tillgängliga'),
+          ),
+        ),
       );
     });
 
@@ -165,26 +172,33 @@ void main() {
 
       expect(
         () => menuGenerator.generateMenuFromPrompt('test prompt'),
-        throwsA(predicate(
-            (e) => e is Exception && e.toString().contains('Ett fel uppstod'))),
+        throwsA(
+          predicate(
+            (e) => e is Exception && e.toString().contains('Ett fel uppstod'),
+          ),
+        ),
       );
     });
 
-    test('should handle recipe service initialization during generation',
-        () async {
-      mockRecipeService.setRecipeState(isInitialized: false);
-      mockMenuService.setGenerateMenuResult(createTestMenu());
+    test(
+      'should handle recipe service initialization during generation',
+      () async {
+        mockRecipeService.setRecipeState(isInitialized: false);
+        mockMenuService.setGenerateMenuResult(createTestMenu());
 
-      // Stub the initialize method
-      when(() => mockRecipeService.initialize()).thenAnswer((_) async {
-        mockRecipeService.setRecipeState(isInitialized: true);
-      });
+        // Stub the initialize method
+        when(() => mockRecipeService.initialize()).thenAnswer((_) async {
+          mockRecipeService.setRecipeState(isInitialized: true);
+        });
 
-      final result = await menuGenerator.generateMenuFromPrompt('test prompt');
+        final result = await menuGenerator.generateMenuFromPrompt(
+          'test prompt',
+        );
 
-      verify(() => mockRecipeService.initialize()).called(1);
-      expect(result, isNotEmpty);
-    });
+        verify(() => mockRecipeService.initialize()).called(1);
+        expect(result, isNotEmpty);
+      },
+    );
 
     test('should include delay during generation', () async {
       mockMenuService.setGenerateMenuResult(createTestMenu());
@@ -216,8 +230,10 @@ void main() {
 
       mockMenuService.setGenerateMenuResult({section: newRecipes});
 
-      final result =
-          await menuGenerator.regenerateMenuSection(section, currentMenu);
+      final result = await menuGenerator.regenerateMenuSection(
+        section,
+        currentMenu,
+      );
 
       expect(result, equals(newRecipes));
       expect(mockMenuService.lastGeneratePrompt, contains(section));
@@ -229,8 +245,10 @@ void main() {
 
       mockMenuService.setGenerateMenuResult(<String, List<Recipe>>{});
 
-      final result =
-          await menuGenerator.regenerateMenuSection(section, currentMenu);
+      final result = await menuGenerator.regenerateMenuSection(
+        section,
+        currentMenu,
+      );
 
       expect(result, isNull);
     });
@@ -245,7 +263,7 @@ void main() {
       };
 
       mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build()]
+        'Monday': [RecipeFactory.build()],
       });
 
       await menuGenerator.regenerateMenuSection('Monday', currentMenu);
@@ -255,7 +273,7 @@ void main() {
 
     test('should include regeneration delay', () async {
       mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build()]
+        'Monday': [RecipeFactory.build()],
       });
 
       final stopwatch = Stopwatch()..start();
@@ -272,7 +290,7 @@ void main() {
       };
 
       mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build()]
+        'Monday': [RecipeFactory.build()],
       });
 
       await menuGenerator.regenerateMenuSection('Monday', menuWithEmptySection);
@@ -294,18 +312,26 @@ void main() {
     test('should throw error for empty prompt', () {
       expect(
         () => menuGenerator.validateGenerationPrerequisites(''),
-        throwsA(predicate((e) =>
-            e is ArgumentError &&
-            e.toString().contains('Fyll i alla obligatoriska fält'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is ArgumentError &&
+                e.toString().contains('Fyll i alla obligatoriska fält'),
+          ),
+        ),
       );
     });
 
     test('should throw error for whitespace-only prompt', () {
       expect(
         () => menuGenerator.validateGenerationPrerequisites('   '),
-        throwsA(predicate((e) =>
-            e is ArgumentError &&
-            e.toString().contains('Fyll i alla obligatoriska fält'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is ArgumentError &&
+                e.toString().contains('Fyll i alla obligatoriska fält'),
+          ),
+        ),
       );
     });
 
@@ -314,9 +340,13 @@ void main() {
 
       expect(
         () => menuGenerator.validateGenerationPrerequisites('valid prompt'),
-        throwsA(predicate((e) =>
-            e is Exception &&
-            e.toString().contains('Inga recept tillgängliga'))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is Exception &&
+                e.toString().contains('Inga recept tillgängliga'),
+          ),
+        ),
       );
     });
   });
@@ -343,8 +373,9 @@ void main() {
     });
 
     test('should handle empty menu analysis', () {
-      final analysis =
-          menuGenerator.analyzeMenuQuality(<String, List<Recipe>>{});
+      final analysis = menuGenerator.analyzeMenuQuality(
+        <String, List<Recipe>>{},
+      );
 
       expect(analysis['totalRecipes'], equals(0));
       expect(analysis['sections'], equals(0));
@@ -373,9 +404,11 @@ void main() {
 
       for (int i = 0; i < 10; i++) {
         largeMenu['Section_$i'] = List.generate(
-            5,
-            (j) => RecipeFactory.build(
-                mealType: ['breakfast', 'lunch', 'dinner'][j % 3]));
+          5,
+          (j) => RecipeFactory.build(
+            mealType: ['breakfast', 'lunch', 'dinner'][j % 3],
+          ),
+        );
       }
 
       final analysis = menuGenerator.analyzeMenuQuality(largeMenu);
@@ -401,11 +434,15 @@ void main() {
     });
 
     test('should validate optimal prompts correctly', () {
-      expect(menuGenerator.isPromptOptimal('Vegetarisk veckomeny för familj'),
-          isTrue);
+      expect(
+        menuGenerator.isPromptOptimal('Vegetarisk veckomeny för familj'),
+        isTrue,
+      );
       expect(menuGenerator.isPromptOptimal('Snabb middag'), isTrue);
       expect(
-          menuGenerator.isPromptOptimal('Hälsosam kött och fisk meny'), isTrue);
+        menuGenerator.isPromptOptimal('Hälsosam kött och fisk meny'),
+        isTrue,
+      );
 
       expect(menuGenerator.isPromptOptimal('test'), isFalse);
       expect(menuGenerator.isPromptOptimal(''), isFalse);
@@ -414,23 +451,29 @@ void main() {
 
     test('should validate prompt length requirements', () {
       expect(menuGenerator.isPromptOptimal('short'), isFalse);
-      expect(menuGenerator.isPromptOptimal('this is a veckomeny'),
-          isTrue); // needs keyword
       expect(
-          menuGenerator.isPromptOptimal(
-              'veckomeny for everyone this is long enough now'),
-          isTrue);
+        menuGenerator.isPromptOptimal('this is a veckomeny'),
+        isTrue,
+      ); // needs keyword
+      expect(
+        menuGenerator.isPromptOptimal(
+          'veckomeny for everyone this is long enough now',
+        ),
+        isTrue,
+      );
       expect(menuGenerator.isPromptOptimal('x' * 201), isFalse);
     });
 
     test('should detect good keywords in prompts', () {
       expect(menuGenerator.isPromptOptimal('nothing special here'), isFalse);
       expect(
-          menuGenerator
-              .isPromptOptimal('create a great veckomeny for my family'),
-          isTrue);
-      expect(menuGenerator.isPromptOptimal('budget friendly meal planning'),
-          isTrue);
+        menuGenerator.isPromptOptimal('create a great veckomeny for my family'),
+        isTrue,
+      );
+      expect(
+        menuGenerator.isPromptOptimal('budget friendly meal planning'),
+        isTrue,
+      );
     });
 
     test('should handle case-insensitive keyword detection', () {
@@ -482,8 +525,10 @@ void main() {
       final newRecipes = [RecipeFactory.build(title: 'New Recipe')];
       mockMenuService.setGenerateMenuResult({'Monday': newRecipes});
 
-      final regeneratedSection =
-          await menuGenerator.regenerateMenuSection('Monday', menu);
+      final regeneratedSection = await menuGenerator.regenerateMenuSection(
+        'Monday',
+        menu,
+      );
 
       expect(regeneratedSection, equals(newRecipes));
     });
@@ -531,8 +576,10 @@ void main() {
     test('should handle prompt edge cases', () {
       expect(menuGenerator.isPromptOptimal('          '), isFalse);
       expect(menuGenerator.isPromptOptimal('a' * 9), isFalse);
-      expect(menuGenerator.isPromptOptimal('veckomeny weekly menu'),
-          isTrue); // needs to be longer
+      expect(
+        menuGenerator.isPromptOptimal('veckomeny weekly menu'),
+        isTrue,
+      ); // needs to be longer
     });
   });
 
@@ -558,40 +605,42 @@ void main() {
       );
     }
 
-    test('should exclude UNKNOWN dietary when includeUnknownInMenu is false',
-        () {
-      menuGenerator.filterByDietary = true;
+    test(
+      'should exclude UNKNOWN dietary when includeUnknownInMenu is false',
+      () {
+        menuGenerator.filterByDietary = true;
 
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {},
-          trackedDietary: {'vegetarisk'},
-          includeUnknownInMenu: false,
-        ),
-      );
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {},
+            trackedDietary: {'vegetarisk'},
+            includeUnknownInMenu: false,
+          ),
+        );
 
-      final freeRecipe = recipeWith(
-        'free',
-        makeTagResult(dietary: {'vegetarisk': TriState.free}),
-      );
-      final unknownRecipe = recipeWith(
-        'unknown',
-        makeTagResult(dietary: {'vegetarisk': TriState.unknown}),
-      );
-      final containsRecipe = recipeWith(
-        'contains',
-        makeTagResult(dietary: {'vegetarisk': TriState.contains}),
-      );
+        final freeRecipe = recipeWith(
+          'free',
+          makeTagResult(dietary: {'vegetarisk': TriState.free}),
+        );
+        final unknownRecipe = recipeWith(
+          'unknown',
+          makeTagResult(dietary: {'vegetarisk': TriState.unknown}),
+        );
+        final containsRecipe = recipeWith(
+          'contains',
+          makeTagResult(dietary: {'vegetarisk': TriState.contains}),
+        );
 
-      mockRecipeService.setRecipeState(
-        recipes: [freeRecipe, unknownRecipe, containsRecipe],
-        isInitialized: true,
-      );
+        mockRecipeService.setRecipeState(
+          recipes: [freeRecipe, unknownRecipe, containsRecipe],
+          isInitialized: true,
+        );
 
-      final available = menuGenerator.availableRecipes;
-      expect(available.length, equals(1));
-      expect(available.first.id, equals('free'));
-    });
+        final available = menuGenerator.availableRecipes;
+        expect(available.length, equals(1));
+        expect(available.first.id, equals('free'));
+      },
+    );
 
     test('should keep UNKNOWN dietary when includeUnknownInMenu is true', () {
       menuGenerator.filterByDietary = true;
@@ -669,36 +718,42 @@ void main() {
     }
 
     test(
-        'should exclude recipe when one of multiple tracked allergens is CONTAINS',
-        () {
-      menuGenerator.filterByAllergens = true;
+      'should exclude recipe when one of multiple tracked allergens is CONTAINS',
+      () {
+        menuGenerator.filterByAllergens = true;
 
-      // User tracks both gluten and mjölk
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {'gluten', 'mjölk'},
-          trackedDietary: {},
-        ),
-      );
+        // User tracks both gluten and mjölk
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {'gluten', 'mjölk'},
+            trackedDietary: {},
+          ),
+        );
 
-      // Recipe is gluten-free but contains mjölk
-      final recipe = recipeWith(
-        'gluten_free_but_milk_contains',
-        makeTagResult(allergen: {
-          'gluten': TriState.free,
-          'mjölk': TriState.contains,
-        }),
-      );
+        // Recipe is gluten-free but contains mjölk
+        final recipe = recipeWith(
+          'gluten_free_but_milk_contains',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.free,
+              'mjölk': TriState.contains,
+            },
+          ),
+        );
 
-      mockRecipeService.setRecipeState(
-        recipes: [recipe],
-        isInitialized: true,
-      );
+        mockRecipeService.setRecipeState(
+          recipes: [recipe],
+          isInitialized: true,
+        );
 
-      final available = menuGenerator.availableRecipes;
-      expect(available, isEmpty,
-          reason: 'mjölk is CONTAINS so recipe should be excluded');
-    });
+        final available = menuGenerator.availableRecipes;
+        expect(
+          available,
+          isEmpty,
+          reason: 'mjölk is CONTAINS so recipe should be excluded',
+        );
+      },
+    );
 
     test('should include recipe when all tracked allergens are FREE', () {
       menuGenerator.filterByAllergens = true;
@@ -714,10 +769,12 @@ void main() {
       // Recipe is free from both allergens
       final recipe = recipeWith(
         'both_free',
-        makeTagResult(allergen: {
-          'gluten': TriState.free,
-          'mjölk': TriState.free,
-        }),
+        makeTagResult(
+          allergen: {
+            'gluten': TriState.free,
+            'mjölk': TriState.free,
+          },
+        ),
       );
 
       mockRecipeService.setRecipeState(
@@ -731,170 +788,195 @@ void main() {
     });
 
     test(
-        'should exclude recipe when one tracked allergen is UNKNOWN and strict mode is on',
-        () {
-      menuGenerator.filterByAllergens = true;
+      'should exclude recipe when one tracked allergen is UNKNOWN and strict mode is on',
+      () {
+        menuGenerator.filterByAllergens = true;
 
-      // User tracks both, strict mode excludes UNKNOWN
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {'gluten', 'mjölk'},
-          trackedDietary: {},
-          includeUnknownInMenu: false,
-        ),
-      );
+        // User tracks both, strict mode excludes UNKNOWN
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {'gluten', 'mjölk'},
+            trackedDietary: {},
+            includeUnknownInMenu: false,
+          ),
+        );
 
-      // gluten is UNKNOWN, mjölk is FREE
-      final recipe = recipeWith(
-        'gluten_unknown_milk_free',
-        makeTagResult(allergen: {
-          'gluten': TriState.unknown,
-          'mjölk': TriState.free,
-        }),
-      );
+        // gluten is UNKNOWN, mjölk is FREE
+        final recipe = recipeWith(
+          'gluten_unknown_milk_free',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.unknown,
+              'mjölk': TriState.free,
+            },
+          ),
+        );
 
-      mockRecipeService.setRecipeState(
-        recipes: [recipe],
-        isInitialized: true,
-      );
+        mockRecipeService.setRecipeState(
+          recipes: [recipe],
+          isInitialized: true,
+        );
 
-      final available = menuGenerator.availableRecipes;
-      expect(available, isEmpty,
+        final available = menuGenerator.availableRecipes;
+        expect(
+          available,
+          isEmpty,
           reason:
-              'gluten is UNKNOWN and includeUnknownInMenu is false so recipe should be excluded');
-    });
+              'gluten is UNKNOWN and includeUnknownInMenu is false so recipe should be excluded',
+        );
+      },
+    );
 
     test(
-        'should include recipe when one tracked allergen is UNKNOWN and tolerant mode is on',
-        () {
-      menuGenerator.filterByAllergens = true;
+      'should include recipe when one tracked allergen is UNKNOWN and tolerant mode is on',
+      () {
+        menuGenerator.filterByAllergens = true;
 
-      // User tracks both, tolerant mode keeps UNKNOWN
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {'gluten', 'mjölk'},
-          trackedDietary: {},
-          includeUnknownInMenu: true,
-        ),
-      );
+        // User tracks both, tolerant mode keeps UNKNOWN
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {'gluten', 'mjölk'},
+            trackedDietary: {},
+            includeUnknownInMenu: true,
+          ),
+        );
 
-      // gluten is UNKNOWN, mjölk is FREE
-      final recipe = recipeWith(
-        'gluten_unknown_milk_free',
-        makeTagResult(allergen: {
-          'gluten': TriState.unknown,
-          'mjölk': TriState.free,
-        }),
-      );
+        // gluten is UNKNOWN, mjölk is FREE
+        final recipe = recipeWith(
+          'gluten_unknown_milk_free',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.unknown,
+              'mjölk': TriState.free,
+            },
+          ),
+        );
 
-      mockRecipeService.setRecipeState(
-        recipes: [recipe],
-        isInitialized: true,
-      );
+        mockRecipeService.setRecipeState(
+          recipes: [recipe],
+          isInitialized: true,
+        );
 
-      final available = menuGenerator.availableRecipes;
-      expect(available.length, equals(1));
-      expect(available.first.id, equals('gluten_unknown_milk_free'));
-    });
-
-    test(
-        'should filter correctly across a mixed set of recipes with multiple tracked allergens',
-        () {
-      menuGenerator.filterByAllergens = true;
-
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {'gluten', 'mjölk'},
-          trackedDietary: {},
-          includeUnknownInMenu: false,
-        ),
-      );
-
-      final allFree = recipeWith(
-        'all_free',
-        makeTagResult(allergen: {
-          'gluten': TriState.free,
-          'mjölk': TriState.free,
-        }),
-      );
-      final oneContains = recipeWith(
-        'one_contains',
-        makeTagResult(allergen: {
-          'gluten': TriState.free,
-          'mjölk': TriState.contains,
-        }),
-      );
-      final oneUnknown = recipeWith(
-        'one_unknown',
-        makeTagResult(allergen: {
-          'gluten': TriState.unknown,
-          'mjölk': TriState.free,
-        }),
-      );
-      final bothContains = recipeWith(
-        'both_contains',
-        makeTagResult(allergen: {
-          'gluten': TriState.contains,
-          'mjölk': TriState.contains,
-        }),
-      );
-
-      mockRecipeService.setRecipeState(
-        recipes: [allFree, oneContains, oneUnknown, bothContains],
-        isInitialized: true,
-      );
-
-      final available = menuGenerator.availableRecipes;
-      // Strict mode: only all-FREE passes
-      expect(available.length, equals(1));
-      expect(available.first.id, equals('all_free'));
-    });
+        final available = menuGenerator.availableRecipes;
+        expect(available.length, equals(1));
+        expect(available.first.id, equals('gluten_unknown_milk_free'));
+      },
+    );
 
     test(
-        'should pass UNKNOWN recipes in tolerant mode but still reject CONTAINS',
-        () {
-      menuGenerator.filterByAllergens = true;
+      'should filter correctly across a mixed set of recipes with multiple tracked allergens',
+      () {
+        menuGenerator.filterByAllergens = true;
 
-      when(() => mockUserService.allergenPreferences).thenReturn(
-        const UserAllergenPreferences(
-          trackedAllergens: {'gluten', 'mjölk'},
-          trackedDietary: {},
-          includeUnknownInMenu: true,
-        ),
-      );
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {'gluten', 'mjölk'},
+            trackedDietary: {},
+            includeUnknownInMenu: false,
+          ),
+        );
 
-      final allFree = recipeWith(
-        'all_free',
-        makeTagResult(allergen: {
-          'gluten': TriState.free,
-          'mjölk': TriState.free,
-        }),
-      );
-      final oneContains = recipeWith(
-        'one_contains',
-        makeTagResult(allergen: {
-          'gluten': TriState.free,
-          'mjölk': TriState.contains,
-        }),
-      );
-      final oneUnknown = recipeWith(
-        'one_unknown',
-        makeTagResult(allergen: {
-          'gluten': TriState.unknown,
-          'mjölk': TriState.free,
-        }),
-      );
+        final allFree = recipeWith(
+          'all_free',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.free,
+              'mjölk': TriState.free,
+            },
+          ),
+        );
+        final oneContains = recipeWith(
+          'one_contains',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.free,
+              'mjölk': TriState.contains,
+            },
+          ),
+        );
+        final oneUnknown = recipeWith(
+          'one_unknown',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.unknown,
+              'mjölk': TriState.free,
+            },
+          ),
+        );
+        final bothContains = recipeWith(
+          'both_contains',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.contains,
+              'mjölk': TriState.contains,
+            },
+          ),
+        );
 
-      mockRecipeService.setRecipeState(
-        recipes: [allFree, oneContains, oneUnknown],
-        isInitialized: true,
-      );
+        mockRecipeService.setRecipeState(
+          recipes: [allFree, oneContains, oneUnknown, bothContains],
+          isInitialized: true,
+        );
 
-      final available = menuGenerator.availableRecipes;
-      final availableIds = available.map((r) => r.id).toSet();
-      // Tolerant mode: FREE and UNKNOWN pass, CONTAINS still rejected
-      expect(availableIds, equals({'all_free', 'one_unknown'}));
-    });
+        final available = menuGenerator.availableRecipes;
+        // Strict mode: only all-FREE passes
+        expect(available.length, equals(1));
+        expect(available.first.id, equals('all_free'));
+      },
+    );
+
+    test(
+      'should pass UNKNOWN recipes in tolerant mode but still reject CONTAINS',
+      () {
+        menuGenerator.filterByAllergens = true;
+
+        when(() => mockUserService.allergenPreferences).thenReturn(
+          const UserAllergenPreferences(
+            trackedAllergens: {'gluten', 'mjölk'},
+            trackedDietary: {},
+            includeUnknownInMenu: true,
+          ),
+        );
+
+        final allFree = recipeWith(
+          'all_free',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.free,
+              'mjölk': TriState.free,
+            },
+          ),
+        );
+        final oneContains = recipeWith(
+          'one_contains',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.free,
+              'mjölk': TriState.contains,
+            },
+          ),
+        );
+        final oneUnknown = recipeWith(
+          'one_unknown',
+          makeTagResult(
+            allergen: {
+              'gluten': TriState.unknown,
+              'mjölk': TriState.free,
+            },
+          ),
+        );
+
+        mockRecipeService.setRecipeState(
+          recipes: [allFree, oneContains, oneUnknown],
+          isInitialized: true,
+        );
+
+        final available = menuGenerator.availableRecipes;
+        final availableIds = available.map((r) => r.id).toSet();
+        // Tolerant mode: FREE and UNKNOWN pass, CONTAINS still rejected
+        expect(availableIds, equals({'all_free', 'one_unknown'}));
+      },
+    );
   });
 
   group('MenuGenerator - SwapResult and Smart Swap', () {
@@ -949,7 +1031,7 @@ void main() {
         current,
         'Middag',
         {
-          'Middag': [current]
+          'Middag': [current],
         },
       );
 
@@ -972,7 +1054,7 @@ void main() {
         current,
         'Middag',
         {
-          'Middag': [current]
+          'Middag': [current],
         },
       );
 
@@ -985,12 +1067,21 @@ void main() {
     test('should prefer same cuisine when useSmartSwap is true', () {
       menuGenerator.useSmartSwap = true;
 
-      final current =
-          recipeWith('current', mealType: 'Middag', tags: {'italiensk'});
-      final sameCuisine =
-          recipeWith('same_cuisine', mealType: 'Middag', tags: {'italiensk'});
-      final diffCuisine =
-          recipeWith('diff_cuisine', mealType: 'Middag', tags: {'thailändsk'});
+      final current = recipeWith(
+        'current',
+        mealType: 'Middag',
+        tags: {'italiensk'},
+      );
+      final sameCuisine = recipeWith(
+        'same_cuisine',
+        mealType: 'Middag',
+        tags: {'italiensk'},
+      );
+      final diffCuisine = recipeWith(
+        'diff_cuisine',
+        mealType: 'Middag',
+        tags: {'thailändsk'},
+      );
 
       mockRecipeService.setRecipeState(
         recipes: [current, sameCuisine, diffCuisine],
@@ -1004,7 +1095,7 @@ void main() {
           current,
           'Middag',
           {
-            'Middag': [current]
+            'Middag': [current],
           },
         );
         if (result.recipe?.id == 'same_cuisine') sameCuisineCount++;
@@ -1017,8 +1108,11 @@ void main() {
     test('should pick randomly when useSmartSwap is false', () {
       menuGenerator.useSmartSwap = false;
 
-      final current =
-          recipeWith('current', mealType: 'Middag', tags: {'italiensk'});
+      final current = recipeWith(
+        'current',
+        mealType: 'Middag',
+        tags: {'italiensk'},
+      );
       final alt1 = recipeWith('alt1', mealType: 'Middag', tags: {'italiensk'});
       final alt2 = recipeWith('alt2', mealType: 'Middag', tags: {'thailändsk'});
 
@@ -1034,7 +1128,7 @@ void main() {
           current,
           'Middag',
           {
-            'Middag': [current]
+            'Middag': [current],
           },
         );
         if (result.recipe != null) picked.add(result.recipe!.id);
@@ -1061,7 +1155,7 @@ void main() {
         current,
         'Middag',
         {
-          'Middag': [current, inMenu]
+          'Middag': [current, inMenu],
         },
       );
 
@@ -1134,52 +1228,62 @@ void main() {
       mockMenuService.setGenerateMenuResult(createTestMenu());
     });
 
-    test('no plan service wired -> empty recent set, generation still proceeds',
-        () async {
-      final generator = generatorWithPlanService(null);
+    test(
+      'no plan service wired -> empty recent set, generation still proceeds',
+      () async {
+        final generator = generatorWithPlanService(null);
 
-      final result = await generator.generateMenuFromPrompt('veckomeny');
+        final result = await generator.generateMenuFromPrompt('veckomeny');
 
-      expect(result, isNotEmpty);
-      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
-    });
+        expect(result, isNotEmpty);
+        expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+      },
+    );
 
     test(
-        'plan-service read throws -> error swallowed, empty set, generation proceeds',
-        () async {
-      when(() => mockPlanService.getWeek(any()))
-          .thenThrow(StateError('boom — recent-plan read failed'));
-      final generator = generatorWithPlanService(mockPlanService);
+      'plan-service read throws -> error swallowed, empty set, generation proceeds',
+      () async {
+        when(
+          () => mockPlanService.getWeek(any()),
+        ).thenThrow(StateError('boom — recent-plan read failed'));
+        final generator = generatorWithPlanService(mockPlanService);
 
-      final result = await generator.generateMenuFromPrompt('veckomeny');
+        final result = await generator.generateMenuFromPrompt('veckomeny');
 
-      expect(result, isNotEmpty,
-          reason: 'a recent-plan read failure must never block generation');
-      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
-    });
+        expect(
+          result,
+          isNotEmpty,
+          reason: 'a recent-plan read failure must never block generation',
+        );
+        expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+      },
+    );
 
     test(
-        'reads this-week + last-week plans under a fixed clock and unions their recipe ids',
-        () async {
-      when(() => mockPlanService.getWeek(thisWeekStart))
-          .thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
-      when(() => mockPlanService.getWeek(lastWeekStart)).thenAnswer(
-          (_) async => planWithRecipeIds(lastWeekStart, ['r2', 'r3']));
-      final generator = generatorWithPlanService(mockPlanService);
+      'reads this-week + last-week plans under a fixed clock and unions their recipe ids',
+      () async {
+        when(
+          () => mockPlanService.getWeek(thisWeekStart),
+        ).thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
+        when(() => mockPlanService.getWeek(lastWeekStart)).thenAnswer(
+          (_) async => planWithRecipeIds(lastWeekStart, ['r2', 'r3']),
+        );
+        final generator = generatorWithPlanService(mockPlanService);
 
-      await withClock(Clock.fixed(fixedNow), () async {
-        await generator.generateMenuFromPrompt('veckomeny');
-      });
+        await withClock(Clock.fixed(fixedNow), () async {
+          await generator.generateMenuFromPrompt('veckomeny');
+        });
 
-      // 1-2 week window only: this week + last week, no other weeks.
-      verify(() => mockPlanService.getWeek(thisWeekStart)).called(1);
-      verify(() => mockPlanService.getWeek(lastWeekStart)).called(1);
-      verifyNoMoreInteractions(mockPlanService);
-      expect(
-        mockMenuService.lastRecentlyUsedRecipeIds,
-        equals({'r1', 'r2', 'r3'}),
-      );
-    });
+        // 1-2 week window only: this week + last week, no other weeks.
+        verify(() => mockPlanService.getWeek(thisWeekStart)).called(1);
+        verify(() => mockPlanService.getWeek(lastWeekStart)).called(1);
+        verifyNoMoreInteractions(mockPlanService);
+        expect(
+          mockMenuService.lastRecentlyUsedRecipeIds,
+          equals({'r1', 'r2', 'r3'}),
+        );
+      },
+    );
 
     test('empty history -> empty set, generation still proceeds', () async {
       when(() => mockPlanService.getWeek(any())).thenAnswer((invocation) async {
@@ -1197,39 +1301,43 @@ void main() {
     });
 
     test(
-        'BUT-1329: regenerateMenuSection threads the same recent set as full generation',
-        () async {
-      when(() => mockPlanService.getWeek(thisWeekStart))
-          .thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
-      when(() => mockPlanService.getWeek(lastWeekStart))
-          .thenAnswer((_) async => planWithRecipeIds(lastWeekStart, ['r2']));
-      final generator = generatorWithPlanService(mockPlanService);
-      mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build(title: 'New')]
-      });
+      'BUT-1329: regenerateMenuSection threads the same recent set as full generation',
+      () async {
+        when(
+          () => mockPlanService.getWeek(thisWeekStart),
+        ).thenAnswer((_) async => planWithRecipeIds(thisWeekStart, ['r1']));
+        when(
+          () => mockPlanService.getWeek(lastWeekStart),
+        ).thenAnswer((_) async => planWithRecipeIds(lastWeekStart, ['r2']));
+        final generator = generatorWithPlanService(mockPlanService);
+        mockMenuService.setGenerateMenuResult({
+          'Monday': [RecipeFactory.build(title: 'New')],
+        });
 
-      await withClock(Clock.fixed(fixedNow), () async {
-        await generator.regenerateMenuSection('Monday', createTestMenu());
-      });
+        await withClock(Clock.fixed(fixedNow), () async {
+          await generator.regenerateMenuSection('Monday', createTestMenu());
+        });
 
-      expect(
-        mockMenuService.lastRecentlyUsedRecipeIds,
-        equals({'r1', 'r2'}),
-        reason: 'a single-slot re-roll must get cross-week freshness too',
-      );
-    });
+        expect(
+          mockMenuService.lastRecentlyUsedRecipeIds,
+          equals({'r1', 'r2'}),
+          reason: 'a single-slot re-roll must get cross-week freshness too',
+        );
+      },
+    );
 
     test(
-        'BUT-1329: regenerateMenuSection with no plan service passes empty set',
-        () async {
-      final generator = generatorWithPlanService(null);
-      mockMenuService.setGenerateMenuResult({
-        'Monday': [RecipeFactory.build(title: 'New')]
-      });
+      'BUT-1329: regenerateMenuSection with no plan service passes empty set',
+      () async {
+        final generator = generatorWithPlanService(null);
+        mockMenuService.setGenerateMenuResult({
+          'Monday': [RecipeFactory.build(title: 'New')],
+        });
 
-      await generator.regenerateMenuSection('Monday', createTestMenu());
+        await generator.regenerateMenuSection('Monday', createTestMenu());
 
-      expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
-    });
+        expect(mockMenuService.lastRecentlyUsedRecipeIds, isEmpty);
+      },
+    );
   });
 }

@@ -28,7 +28,7 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
   static const int _maxCacheSize = 10;
 
   FriendsSearchManager({required UnifiedFriendsService friendsService})
-      : _friendsService = friendsService;
+    : _friendsService = friendsService;
 
   String get searchQuery => _searchQuery;
   List<UserProfile> get searchResults => List.unmodifiable(_searchResults);
@@ -76,7 +76,8 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
       _searchResults = _searchCache[_searchQuery]!;
       _searchError = null;
       AppLogger.info(
-          '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results (from cache)');
+        '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results (from cache)',
+      );
       _safeNotifyListeners();
       return;
     }
@@ -85,8 +86,9 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
     _safeNotifyListeners();
 
     try {
-      final results =
-          await _friendsService.management.searchUsers(_searchQuery);
+      final results = await _friendsService.management.searchUsers(
+        _searchQuery,
+      );
 
       if (_isDisposed) return;
 
@@ -97,13 +99,13 @@ class FriendsSearchManager extends ChangeNotifier with DebounceMixin {
       _cacheSearchResults(_searchQuery, results);
 
       AppLogger.info(
-          '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results');
+        '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results',
+      );
 
       // BUT-939: log only on actual network search (cache hits don't
       // qualify — they don't reflect user intent re-engaging the funnel).
       // tryGet so a missing analytics service can't break the search flow.
-      ServiceLocator.tryGet<AnalyticsService>()
-          ?.social
+      ServiceLocator.tryGet<AnalyticsService>()?.social
           .logFriendSearchPerformed(
             queryLength: _searchQuery.length,
             resultCount: results.length,

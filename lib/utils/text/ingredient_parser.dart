@@ -21,7 +21,10 @@ class IngredientParser {
 
   /// Normalizes whitespace and separates attached units.
   static String _normalizeWhitespace(String text) {
-    return text.trim().replaceAll(RegExp(r'\s+'), ' ').replaceAllMapped(
+    return text
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAllMapped(
           RegExp(r'(\d)([a-zåäöA-ZÅÄÖ])'),
           (m) => '${m[1]} ${m[2]}',
         );
@@ -134,7 +137,10 @@ class IngredientParser {
           );
         } else {
           return RegexParseResult(
-              quantity: quantity, unit: '', name: rest.toLowerCase());
+            quantity: quantity,
+            unit: '',
+            name: rest.toLowerCase(),
+          );
         }
       }
     }
@@ -150,7 +156,10 @@ class IngredientParser {
     }
 
     return RegexParseResult(
-        quantity: 1.0, unit: '', name: ingredient.toLowerCase());
+      quantity: 1.0,
+      unit: '',
+      name: ingredient.toLowerCase(),
+    );
   }
 
   /// Parses compound ingredients containing "och" (and) into separate items.
@@ -187,11 +196,13 @@ class IngredientParser {
       final inheritUnit = parsed.unit.isEmpty && first.unit.isNotEmpty;
 
       if (inheritQuantity || inheritUnit) {
-        results.add(RegexParseResult(
-          quantity: inheritQuantity ? first.quantity : parsed.quantity,
-          unit: inheritUnit ? first.unit : parsed.unit,
-          name: parsed.name,
-        ));
+        results.add(
+          RegexParseResult(
+            quantity: inheritQuantity ? first.quantity : parsed.quantity,
+            unit: inheritUnit ? first.unit : parsed.unit,
+            name: parsed.name,
+          ),
+        );
       } else {
         results.add(parsed);
       }
@@ -202,7 +213,9 @@ class IngredientParser {
 
   /// Scales and formats an ingredient with smart unit conversion.
   static String scaleAndFormatIngredient(
-      String rawIngredient, double scaleFactor) {
+    String rawIngredient,
+    double scaleFactor,
+  ) {
     if (rawIngredient.trim().isEmpty || scaleFactor <= 0) {
       return rawIngredient;
     }
@@ -223,14 +236,17 @@ class IngredientParser {
 
     if (parsed.unit.isNotEmpty &&
         SmartUnitConverter.shouldConvert(scaledQuantity, parsed.unit)) {
-      final converted =
-          SmartUnitConverter.convertToReadableUnit(scaledQuantity, parsed.unit);
+      final converted = SmartUnitConverter.convertToReadableUnit(
+        scaledQuantity,
+        parsed.unit,
+      );
       finalQuantity = converted.quantity;
       finalUnit = converted.unit;
     }
 
-    final formattedQuantity =
-        TextFormatting.toSwedishHalfFraction(finalQuantity);
+    final formattedQuantity = TextFormatting.toSwedishHalfFraction(
+      finalQuantity,
+    );
 
     if (finalUnit.isNotEmpty) {
       return '$formattedQuantity $finalUnit ${parsed.name}';

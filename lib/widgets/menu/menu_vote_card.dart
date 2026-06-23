@@ -52,20 +52,25 @@ class MenuVoteCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.how_to_vote,
-                    size: AppDimensions.iconSizeM, color: cs.primary),
+                Icon(
+                  Icons.how_to_vote,
+                  size: AppDimensions.iconSizeM,
+                  color: cs.primary,
+                ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
                     context.l10n.menuVoteTitle,
-                    style:
-                        AppTextStyles.titleMedium.copyWith(color: cs.primary),
+                    style: AppTextStyles.titleMedium.copyWith(
+                      color: cs.primary,
+                    ),
                   ),
                 ),
                 Text(
                   context.l10n.menuVoteCount(total),
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: cs.onSurfaceVariant),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -82,8 +87,9 @@ class MenuVoteCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
                 child: Semantics(
                   label: isSelected
-                      ? context.l10n
-                          .a11yMenuVoteOptionSelected(option.recipeName)
+                      ? context.l10n.a11yMenuVoteOptionSelected(
+                          option.recipeName,
+                        )
                       : context.l10n.a11yMenuVoteOption(option.recipeName),
                   button: true,
                   selected: isSelected,
@@ -95,11 +101,13 @@ class MenuVoteCard extends StatelessWidget {
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? cs.primary
-                                .withValues(alpha: AppDimensions.opacityLight)
+                            ? cs.primary.withValues(
+                                alpha: AppDimensions.opacityLight,
+                              )
                             : cs.surfaceContainer,
-                        border:
-                            isSelected ? Border.all(color: cs.primary) : null,
+                        border: isSelected
+                            ? Border.all(color: cs.primary)
+                            : null,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,16 +123,18 @@ class MenuVoteCard extends StatelessWidget {
                             child: LinearProgressIndicator(
                               value: fraction,
                               backgroundColor: cs.surfaceContainerHighest,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(cs.primary),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                cs.primary,
+                              ),
                               minHeight: AppDimensions.spacingXs,
                             ),
                           ),
                           const SizedBox(height: AppDimensions.spacingXxs),
                           Text(
                             context.l10n.menuVoteCount(count),
-                            style: AppTextStyles.labelSmall
-                                .copyWith(color: cs.onSurfaceVariant),
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
@@ -159,21 +169,26 @@ class MenuVoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
-            Icon(Icons.check_circle,
-                color: context.butleryColors.success,
-                size: AppDimensions.iconSizeL),
+            Icon(
+              Icons.check_circle,
+              color: context.butleryColors.success,
+              size: AppDimensions.iconSizeL,
+            ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.l10n.menuVoteResolved,
-                      style: AppTextStyles.titleSmall),
+                  Text(
+                    context.l10n.menuVoteResolved,
+                    style: AppTextStyles.titleSmall,
+                  ),
                   if (winner != null)
                     Text(
                       context.l10n.menuVoteWinner(winner.recipeName),
-                      style: AppTextStyles.bodySmall
-                          .copyWith(color: cs.onSurfaceVariant),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                 ],
               ),
@@ -190,19 +205,25 @@ class MenuVoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Row(
           children: [
-            Icon(Icons.timer_off,
-                color: cs.onSurfaceVariant, size: AppDimensions.iconSizeL),
+            Icon(
+              Icons.timer_off,
+              color: cs.onSurfaceVariant,
+              size: AppDimensions.iconSizeL,
+            ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.l10n.menuVoteExpired,
-                      style: AppTextStyles.titleSmall),
+                  Text(
+                    context.l10n.menuVoteExpired,
+                    style: AppTextStyles.titleSmall,
+                  ),
                   Text(
                     context.l10n.menuVoteCount(vote.totalVotes),
-                    style: AppTextStyles.bodySmall
-                        .copyWith(color: cs.onSurfaceVariant),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),

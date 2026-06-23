@@ -136,7 +136,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   /// Build lists section
   Widget _buildListsSection(
-      BuildContext context, UnifiedShoppingViewModel viewModel) {
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
     if (viewModel.lists.isEmpty) {
       return ShoppingListEmptyState(
         onCreateList: () => _createNewList(context),
@@ -163,7 +165,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   /// Build add to list section
   Widget _buildAddToListSection(
-      BuildContext context, UnifiedShoppingViewModel viewModel) {
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
     final selectedList = viewModel.lists.firstWhere(
       (list) => list.id == _selectedListId,
       orElse: () => viewModel.lists.first,
@@ -176,12 +180,15 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: context.butleryColors.success
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.success.withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-            color: context.butleryColors.success
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: context.butleryColors.success.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,7 +216,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
             menuItems.isEmpty
                 ? context.l10n.shoppingNoItemsFromMenu
                 : context.l10n.shoppingAddItemsFromMenu(
-                    menuItems.length, selectedList.name),
+                    menuItems.length,
+                    selectedList.name,
+                  ),
             style: AppTextStyles.bodyLarge,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -230,13 +239,17 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                   label: _isAddingToList
                       ? context.l10n.shoppingAdding
                       : menuItems.isEmpty
-                          ? context.l10n.shoppingNoItemsToAdd
-                          : context.l10n.shoppingAddItems,
+                      ? context.l10n.shoppingNoItemsToAdd
+                      : context.l10n.shoppingAddItems,
                   icon: _isAddingToList ? null : Icons.add_shopping_cart,
                   onPressed: (_isAddingToList || menuItems.isEmpty)
                       ? null
                       : () => _addMenuToList(
-                          context, viewModel, selectedList, menuItems),
+                          context,
+                          viewModel,
+                          selectedList,
+                          menuItems,
+                        ),
                   isLoading: _isAddingToList,
                   isExpanded: true,
                 ),
@@ -273,7 +286,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               success
                   ? context.l10n.shoppingListCreated(name)
                   : context.l10n.shoppingListCreateFailed(
-                      _viewModel.error ?? context.l10n.errorUnknown),
+                      _viewModel.error ?? context.l10n.errorUnknown,
+                    ),
             ),
             backgroundColor: success
                 ? context.butleryColors.success
@@ -283,8 +297,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
         if (success) {
           // Auto-select the newly created list
-          final newListId =
-              _viewModel.lists.isNotEmpty ? _viewModel.lists.last.id : null;
+          final newListId = _viewModel.lists.isNotEmpty
+              ? _viewModel.lists.last.id
+              : null;
           if (newListId != null) {
             await _viewModel.setActiveList(newListId);
             if (mounted) {
@@ -319,18 +334,23 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       }
 
       try {
-        final success =
-            await viewModel.addItemsToList(selectedList.id, menuItems);
+        final success = await viewModel.addItemsToList(
+          selectedList.id,
+          menuItems,
+        );
 
         if (mounted && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
                 success
-                    ? context.l10n
-                        .shoppingItemsAdded(menuItems.length, selectedList.name)
+                    ? context.l10n.shoppingItemsAdded(
+                        menuItems.length,
+                        selectedList.name,
+                      )
                     : context.l10n.shoppingItemsAddFailed(
-                        viewModel.error ?? context.l10n.errorUnknown),
+                        viewModel.error ?? context.l10n.errorUnknown,
+                      ),
               ),
               backgroundColor: success
                   ? context.butleryColors.success
@@ -355,7 +375,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
   /// Preview and edit menu items
   Future<void> _previewAndEditMenuItems(
-      BuildContext context, List<UnifiedShoppingItem> items) async {
+    BuildContext context,
+    List<UnifiedShoppingItem> items,
+  ) async {
     final selectedList = _viewModel.lists.firstWhere(
       (list) => list.id == _selectedListId,
       orElse: () => _viewModel.lists.first,

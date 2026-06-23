@@ -191,8 +191,9 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     recipeCardLeftBorder: Color(0xFF6B9B7A), // forestGreenLight
     recipeCardBottomBorder: Color(0xFFD4A88A), // rust tone 80
     navAccent: Color(0xFFD4A88A), // rust tone 80
-    iconMuted:
-        Color(0xFF7A9C7E), // muted green tone 80 — readable on dark surfaces
+    iconMuted: Color(
+      0xFF7A9C7E,
+    ), // muted green tone 80 — readable on dark surfaces
     // Categories: lighter for dark bg contrast
     categoryMeatFish: Color(0xFFD4A88A),
     categoryDairy: Color(0xFFE8C76E),
@@ -299,61 +300,115 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
   ButleryColors lerp(ThemeExtension<ButleryColors>? other, double t) {
     if (other is! ButleryColors) return this;
     return ButleryColors(
-      chatBubbleOutgoing:
-          Color.lerp(chatBubbleOutgoing, other.chatBubbleOutgoing, t)!,
-      chatBubbleIncoming:
-          Color.lerp(chatBubbleIncoming, other.chatBubbleIncoming, t)!,
-      chatTextOutgoing:
-          Color.lerp(chatTextOutgoing, other.chatTextOutgoing, t)!,
-      chatTextIncoming:
-          Color.lerp(chatTextIncoming, other.chatTextIncoming, t)!,
+      chatBubbleOutgoing: Color.lerp(
+        chatBubbleOutgoing,
+        other.chatBubbleOutgoing,
+        t,
+      )!,
+      chatBubbleIncoming: Color.lerp(
+        chatBubbleIncoming,
+        other.chatBubbleIncoming,
+        t,
+      )!,
+      chatTextOutgoing: Color.lerp(
+        chatTextOutgoing,
+        other.chatTextOutgoing,
+        t,
+      )!,
+      chatTextIncoming: Color.lerp(
+        chatTextIncoming,
+        other.chatTextIncoming,
+        t,
+      )!,
       success: Color.lerp(success, other.success, t)!,
       onSuccess: Color.lerp(onSuccess, other.onSuccess, t)!,
-      successContainer:
-          Color.lerp(successContainer, other.successContainer, t)!,
-      onSuccessContainer:
-          Color.lerp(onSuccessContainer, other.onSuccessContainer, t)!,
+      successContainer: Color.lerp(
+        successContainer,
+        other.successContainer,
+        t,
+      )!,
+      onSuccessContainer: Color.lerp(
+        onSuccessContainer,
+        other.onSuccessContainer,
+        t,
+      )!,
       warning: Color.lerp(warning, other.warning, t)!,
       onWarning: Color.lerp(onWarning, other.onWarning, t)!,
-      warningContainer:
-          Color.lerp(warningContainer, other.warningContainer, t)!,
-      onWarningContainer:
-          Color.lerp(onWarningContainer, other.onWarningContainer, t)!,
+      warningContainer: Color.lerp(
+        warningContainer,
+        other.warningContainer,
+        t,
+      )!,
+      onWarningContainer: Color.lerp(
+        onWarningContainer,
+        other.onWarningContainer,
+        t,
+      )!,
       info: Color.lerp(info, other.info, t)!,
       onInfo: Color.lerp(onInfo, other.onInfo, t)!,
       infoContainer: Color.lerp(infoContainer, other.infoContainer, t)!,
       onInfoContainer: Color.lerp(onInfoContainer, other.onInfoContainer, t)!,
       neutral: Color.lerp(neutral, other.neutral, t)!,
       starGold: Color.lerp(starGold, other.starGold, t)!,
-      recipeCardLeftBorder:
-          Color.lerp(recipeCardLeftBorder, other.recipeCardLeftBorder, t)!,
-      recipeCardBottomBorder:
-          Color.lerp(recipeCardBottomBorder, other.recipeCardBottomBorder, t)!,
+      recipeCardLeftBorder: Color.lerp(
+        recipeCardLeftBorder,
+        other.recipeCardLeftBorder,
+        t,
+      )!,
+      recipeCardBottomBorder: Color.lerp(
+        recipeCardBottomBorder,
+        other.recipeCardBottomBorder,
+        t,
+      )!,
       navAccent: Color.lerp(navAccent, other.navAccent, t)!,
       iconMuted: Color.lerp(iconMuted, other.iconMuted, t)!,
-      categoryMeatFish:
-          Color.lerp(categoryMeatFish, other.categoryMeatFish, t)!,
+      categoryMeatFish: Color.lerp(
+        categoryMeatFish,
+        other.categoryMeatFish,
+        t,
+      )!,
       categoryDairy: Color.lerp(categoryDairy, other.categoryDairy, t)!,
-      categoryVegetables:
-          Color.lerp(categoryVegetables, other.categoryVegetables, t)!,
+      categoryVegetables: Color.lerp(
+        categoryVegetables,
+        other.categoryVegetables,
+        t,
+      )!,
       categoryFruit: Color.lerp(categoryFruit, other.categoryFruit, t)!,
-      categoryBreadGrains:
-          Color.lerp(categoryBreadGrains, other.categoryBreadGrains, t)!,
+      categoryBreadGrains: Color.lerp(
+        categoryBreadGrains,
+        other.categoryBreadGrains,
+        t,
+      )!,
       categoryFrozen: Color.lerp(categoryFrozen, other.categoryFrozen, t)!,
-      categoryDryGoods:
-          Color.lerp(categoryDryGoods, other.categoryDryGoods, t)!,
+      categoryDryGoods: Color.lerp(
+        categoryDryGoods,
+        other.categoryDryGoods,
+        t,
+      )!,
       categoryOther: Color.lerp(categoryOther, other.categoryOther, t)!,
       categoryDrinks: Color.lerp(categoryDrinks, other.categoryDrinks, t)!,
-      categoryCleaning:
-          Color.lerp(categoryCleaning, other.categoryCleaning, t)!,
+      categoryCleaning: Color.lerp(
+        categoryCleaning,
+        other.categoryCleaning,
+        t,
+      )!,
       categorySnacks: Color.lerp(categorySnacks, other.categorySnacks, t)!,
       categoryCanned: Color.lerp(categoryCanned, other.categoryCanned, t)!,
-      sharedRecipeText:
-          Color.lerp(sharedRecipeText, other.sharedRecipeText, t)!,
-      sharedRecipeIcon:
-          Color.lerp(sharedRecipeIcon, other.sharedRecipeIcon, t)!,
-      sharedRecipeBackground:
-          Color.lerp(sharedRecipeBackground, other.sharedRecipeBackground, t)!,
+      sharedRecipeText: Color.lerp(
+        sharedRecipeText,
+        other.sharedRecipeText,
+        t,
+      )!,
+      sharedRecipeIcon: Color.lerp(
+        sharedRecipeIcon,
+        other.sharedRecipeIcon,
+        t,
+      )!,
+      sharedRecipeBackground: Color.lerp(
+        sharedRecipeBackground,
+        other.sharedRecipeBackground,
+        t,
+      )!,
     );
   }
 }

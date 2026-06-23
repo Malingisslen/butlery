@@ -52,46 +52,53 @@ void main() {
       await TestServiceLocator.reset();
     });
 
-    test('uploadImageData forwards cacheControl into SettableMetadata',
-        () async {
-      final bytes = Uint8List.fromList(List.filled(16, 1));
-      const path = 'users/$testUserId/recipes/r1/heirloom/deadbeefcafef00d.jpg';
-      const cacheControl = 'public, max-age=31536000, immutable';
+    test(
+      'uploadImageData forwards cacheControl into SettableMetadata',
+      () async {
+        final bytes = Uint8List.fromList(List.filled(16, 1));
+        const path =
+            'users/$testUserId/recipes/r1/heirloom/deadbeefcafef00d.jpg';
+        const cacheControl = 'public, max-age=31536000, immutable';
 
-      final url = await repository.uploadImageData(
-        imageData: bytes,
-        userId: testUserId,
-        path: path,
-        cacheControl: cacheControl,
-      );
+        final url = await repository.uploadImageData(
+          imageData: bytes,
+          userId: testUserId,
+          path: path,
+          cacheControl: cacheControl,
+        );
 
-      expect(url, isNotNull, reason: 'Upload should succeed');
+        expect(url, isNotNull, reason: 'Upload should succeed');
 
-      final storedKey = mockStorage.storedSettableMetadataMap.keys
-          .firstWhere((k) => k.endsWith(path));
-      final stored = mockStorage.storedSettableMetadataMap[storedKey];
-      expect(stored, isNotNull);
-      expect(stored!['cacheControl'], cacheControl);
-    });
+        final storedKey = mockStorage.storedSettableMetadataMap.keys.firstWhere(
+          (k) => k.endsWith(path),
+        );
+        final stored = mockStorage.storedSettableMetadataMap[storedKey];
+        expect(stored, isNotNull);
+        expect(stored!['cacheControl'], cacheControl);
+      },
+    );
 
-    test('uploadImageData without cacheControl stores null (legacy behavior)',
-        () async {
-      final bytes = Uint8List.fromList(List.filled(16, 2));
-      const path = 'users/$testUserId/recipes/r2/images/normal.jpg';
+    test(
+      'uploadImageData without cacheControl stores null (legacy behavior)',
+      () async {
+        final bytes = Uint8List.fromList(List.filled(16, 2));
+        const path = 'users/$testUserId/recipes/r2/images/normal.jpg';
 
-      await repository.uploadImageData(
-        imageData: bytes,
-        userId: testUserId,
-        path: path,
-      );
+        await repository.uploadImageData(
+          imageData: bytes,
+          userId: testUserId,
+          path: path,
+        );
 
-      final storedKey = mockStorage.storedSettableMetadataMap.keys
-          .firstWhere((k) => k.endsWith(path));
-      final stored = mockStorage.storedSettableMetadataMap[storedKey];
-      expect(stored, isNotNull);
-      // When the caller doesn't opt in, the header is absent (null) — ordinary
-      // recipe images keep their current CDN defaults.
-      expect(stored!['cacheControl'], isNull);
-    });
+        final storedKey = mockStorage.storedSettableMetadataMap.keys.firstWhere(
+          (k) => k.endsWith(path),
+        );
+        final stored = mockStorage.storedSettableMetadataMap[storedKey];
+        expect(stored, isNotNull);
+        // When the caller doesn't opt in, the header is absent (null) — ordinary
+        // recipe images keep their current CDN defaults.
+        expect(stored!['cacheControl'], isNull);
+      },
+    );
   });
 }

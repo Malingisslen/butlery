@@ -32,8 +32,8 @@ class CookSnapService extends BaseService {
   CookSnapService({
     required CookSnapRepository repository,
     required FriendsRepository friendsRepository,
-  })  : _repository = repository,
-        _friendsRepository = friendsRepository;
+  }) : _repository = repository,
+       _friendsRepository = friendsRepository;
 
   @override
   String get serviceName => 'CookSnapService';
@@ -70,11 +70,14 @@ class CookSnapService extends BaseService {
         var validCaption = caption;
         if (validCaption != null && validCaption.trim().isNotEmpty) {
           final filter = ServiceLocator.get<ContentFilterService>();
-          final result =
-              filter.ensureClean(validCaption, fieldName: 'cook_snap_caption');
+          final result = filter.ensureClean(
+            validCaption,
+            fieldName: 'cook_snap_caption',
+          );
           if (!result.isClean) {
             throw Exception(
-                result.reason ?? 'Caption contains inappropriate language');
+              result.reason ?? 'Caption contains inappropriate language',
+            );
           }
           if (validCaption.length > CookSnap.maxCaptionLength) {
             validCaption = validCaption.substring(0, CookSnap.maxCaptionLength);
@@ -206,12 +209,14 @@ class CookSnapService extends BaseService {
         .friendIdsStream(userId)
         .map((ids) => ids.toSet())
         .distinct(const SetEquality<String>().equals)
-        .switchMap((friendIds) => _repository.watchCookSnaps(
-              recipeId,
-              viewerId: userId,
-              friendIds: friendIds,
-              limit: limit,
-            ));
+        .switchMap(
+          (friendIds) => _repository.watchCookSnaps(
+            recipeId,
+            viewerId: userId,
+            friendIds: friendIds,
+            limit: limit,
+          ),
+        );
   }
 
   String? _currentUserId() =>

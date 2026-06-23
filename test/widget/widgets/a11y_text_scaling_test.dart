@@ -31,8 +31,9 @@ void main() {
   });
 
   group('BUT-547 200% text-scaling — no overflow on high-traffic widgets', () {
-    testWidgets('RecipeCard renders without overflow at 2x text scale',
-        (tester) async {
+    testWidgets('RecipeCard renders without overflow at 2x text scale', (
+      tester,
+    ) async {
       final recipe = RecipeFactory.build(
         id: 'r1',
         title: 'Köttbullar med potatismos och brunsås — en lång svensk titel',
@@ -65,8 +66,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('RecipeCard at 2x text scale with no description still safe',
-        (tester) async {
+    testWidgets('RecipeCard at 2x text scale with no description still safe', (
+      tester,
+    ) async {
       final minimal = RecipeFactory.build(
         id: 'r2',
         title: 'Pannkakor',
@@ -97,27 +99,29 @@ void main() {
 
   group('BUT-763 BaseScaffold AppBar text-scaling clamp', () {
     testWidgets(
-        'BaseScaffold AppBar with long title renders clean at 2x text scale',
-        (tester) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScaffold: false,
-          child: MediaQuery(
-            data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
-            child: const BaseScaffold(
-              title: 'Veckomeny för familjen Andersson — lång svensk titel',
-              body: SizedBox.shrink(),
+      'BaseScaffold AppBar with long title renders clean at 2x text scale',
+      (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: MediaQuery(
+              data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+              child: const BaseScaffold(
+                title: 'Veckomeny för familjen Andersson — lång svensk titel',
+                body: SizedBox.shrink(),
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Without the BUT-763 clamp this throws RenderFlex overflowed.
-      expect(tester.takeException(), isNull);
-    });
+        // Without the BUT-763 clamp this throws RenderFlex overflowed.
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-    testWidgets('BaseScaffold AppBar uses MediaQuery.withClampedTextScaling',
-        (tester) async {
+    testWidgets('BaseScaffold AppBar uses MediaQuery.withClampedTextScaling', (
+      tester,
+    ) async {
       // Structural assertion: the wrap helper produces a PreferredSize ↦
       // _MediaQueryFromView/MediaQuery → AppBar chain. We don't pin the
       // private chain; instead assert the BaseScaffold tree contains
@@ -140,8 +144,11 @@ void main() {
       final mediaQueryAncestors = find
           .ancestor(of: appBarFinder, matching: find.byType(MediaQuery))
           .evaluate();
-      expect(mediaQueryAncestors, isNotEmpty,
-          reason: 'AppBar should be wrapped in a MediaQuery (clamp wrap).');
+      expect(
+        mediaQueryAncestors,
+        isNotEmpty,
+        reason: 'AppBar should be wrapped in a MediaQuery (clamp wrap).',
+      );
     });
   });
 }

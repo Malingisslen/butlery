@@ -40,13 +40,13 @@ Border _accentedBorder(BuildContext context, Color left) {
 
 /// Small-caps slot label used at the top of every cell.
 Text _slotLabel(String text, Color color) => Text(
-      text.toUpperCase(),
-      style: AppTextStyles.labelSmall.copyWith(
-        fontSize: 8,
-        letterSpacing: 1,
-        color: color,
-      ),
-    );
+  text.toUpperCase(),
+  style: AppTextStyles.labelSmall.copyWith(
+    fontSize: 8,
+    letterSpacing: 1,
+    color: color,
+  ),
+);
 
 /// Callback fired when an empty slot is tapped — orchestrator owns the
 /// recipe-picker dialog flow.
@@ -342,7 +342,9 @@ class _AssignedSlot extends StatelessWidget {
                     ),
                   Expanded(
                     child: _slotLabel(
-                        entry.slot.displayLabel, cs.onPrimaryContainer),
+                      entry.slot.displayLabel,
+                      cs.onPrimaryContainer,
+                    ),
                   ),
                   if (showNewBadge) const MenuNewBadge(),
                 ],
@@ -437,8 +439,9 @@ class _OvrigtCell extends StatelessWidget {
                   const SizedBox(height: 3),
                 ],
                 Semantics(
-                  label:
-                      context.l10n.a11yMenuPlanOvrigtAddMore(day.displayLabel),
+                  label: context.l10n.a11yMenuPlanOvrigtAddMore(
+                    day.displayLabel,
+                  ),
                   button: true,
                   child: GestureDetector(
                     onTap: () => onTapEmptySlot(day, MealSlot.ovrigt),

@@ -46,7 +46,8 @@ class ConversationMutationModule {
       final conversationId = 'direct_${sortedIds[0]}_${sortedIds[1]}';
 
       AppLogger.info(
-          '🔍 Creating/getting direct conversation with deterministic ID: $conversationId');
+        '🔍 Creating/getting direct conversation with deterministic ID: $conversationId',
+      );
 
       // Check if conversation already exists directly in top-level collection.
       // Cannot use readFn here because UserScopedFirebaseRepository overrides
@@ -90,7 +91,10 @@ class ConversationMutationModule {
         metadata: {'creatorId': user1Id},
       );
 
-      await firestore.collection(collectionName).doc(conversationId).set(
+      await firestore
+          .collection(collectionName)
+          .doc(conversationId)
+          .set(
             ConversationDto.toFirestore(conversation),
             SetOptions(merge: true),
           );
@@ -112,7 +116,8 @@ class ConversationMutationModule {
       );
 
       AppLogger.success(
-          '✅ Direct conversation created with deterministic ID: $conversationId');
+        '✅ Direct conversation created with deterministic ID: $conversationId',
+      );
       return conversationId;
     } catch (e) {
       AppLogger.error('Failed to create direct conversation', e);
@@ -153,13 +158,16 @@ class ConversationMutationModule {
       final systemMessage = Message.system(
         conversationId: createdConversation.id,
         content: AppLocale.current.chatGroupCreatedMessage(
-            participantDisplayNames[creatorId] ?? '?', title),
+          participantDisplayNames[creatorId] ?? '?',
+          title,
+        ),
       );
 
       await sendMessageFn(systemMessage);
 
       AppLogger.success(
-          '✅ Group conversation created: ${createdConversation.id}');
+        '✅ Group conversation created: ${createdConversation.id}',
+      );
       return createdConversation.id;
     } catch (e) {
       AppLogger.error('Failed to create group conversation', e);
@@ -217,20 +225,21 @@ class ConversationMutationModule {
 
       if (!conversation.isGroup) {
         throw ValidationException(
-            'Cannot add participants to direct conversation');
+          'Cannot add participants to direct conversation',
+        );
       }
 
       final updatedParticipantIds = [
         ...conversation.participantIds,
-        ...participantIds
+        ...participantIds,
       ];
       final updatedDisplayNames = {
         ...conversation.participantDisplayNames,
-        ...participantDisplayNames
+        ...participantDisplayNames,
       };
       final updatedAvatarUrls = {
         ...conversation.participantAvatarUrls,
-        ...participantAvatarUrls
+        ...participantAvatarUrls,
       };
       final updatedLastReadTimestamps = {...conversation.lastReadTimestamps};
 
@@ -271,10 +280,13 @@ class ConversationMutationModule {
       }
 
       AppLogger.success(
-          '✅ Added ${participantIds.length} participants to conversation $conversationId');
+        '✅ Added ${participantIds.length} participants to conversation $conversationId',
+      );
     } catch (e) {
       AppLogger.error(
-          'Failed to add participants to conversation $conversationId', e);
+        'Failed to add participants to conversation $conversationId',
+        e,
+      );
       rethrow;
     }
   }
@@ -296,21 +308,22 @@ class ConversationMutationModule {
 
       if (!conversation.isGroup) {
         throw ValidationException(
-            'Cannot remove participants from direct conversation');
+          'Cannot remove participants from direct conversation',
+        );
       }
 
       final updatedParticipantIds = conversation.participantIds
           .where((id) => id != participantId)
           .toList();
-      final updatedDisplayNames =
-          Map<String, String>.from(conversation.participantDisplayNames)
-            ..remove(participantId);
-      final updatedAvatarUrls =
-          Map<String, String?>.from(conversation.participantAvatarUrls)
-            ..remove(participantId);
-      final updatedLastReadTimestamps =
-          Map<String, DateTime>.from(conversation.lastReadTimestamps)
-            ..remove(participantId);
+      final updatedDisplayNames = Map<String, String>.from(
+        conversation.participantDisplayNames,
+      )..remove(participantId);
+      final updatedAvatarUrls = Map<String, String?>.from(
+        conversation.participantAvatarUrls,
+      )..remove(participantId);
+      final updatedLastReadTimestamps = Map<String, DateTime>.from(
+        conversation.lastReadTimestamps,
+      )..remove(participantId);
 
       final updatedConversation = conversation.copyWith(
         participantIds: updatedParticipantIds,
@@ -338,17 +351,22 @@ class ConversationMutationModule {
       await sendMessageFn(systemMessage);
 
       AppLogger.success(
-          '✅ Removed participant $participantId from conversation $conversationId');
+        '✅ Removed participant $participantId from conversation $conversationId',
+      );
     } catch (e) {
       AppLogger.error(
-          'Failed to remove participant from conversation $conversationId', e);
+        'Failed to remove participant from conversation $conversationId',
+        e,
+      );
       rethrow;
     }
   }
 
   /// Delete conversation and all its messages.
-  Future<void> deleteConversation(String conversationId,
-      CollectionReference<Map<String, dynamic>> messagesRef) async {
+  Future<void> deleteConversation(
+    String conversationId,
+    CollectionReference<Map<String, dynamic>> messagesRef,
+  ) async {
     try {
       // First get all messages in the conversation
       final messagesQuery = await messagesRef
@@ -360,7 +378,8 @@ class ConversationMutationModule {
       final messages = messagesQuery.docs;
 
       AppLogger.info(
-          '🗑️ Deleting ${messages.length} messages from conversation $conversationId');
+        '🗑️ Deleting ${messages.length} messages from conversation $conversationId',
+      );
 
       for (int i = 0; i < messages.length; i += batchSize) {
         final batch = firestore.batch();
@@ -409,8 +428,9 @@ class ConversationMutationModule {
       // only touches the keys we're changing, preserving sibling users'
       // settings and other keys for this user, while also safely creating the
       // perUserSettings map and user sub-map when they don't exist yet.
-      final mergeFieldPaths =
-          settings.keys.map((key) => 'perUserSettings.$userId.$key').toList();
+      final mergeFieldPaths = settings.keys
+          .map((key) => 'perUserSettings.$userId.$key')
+          .toList();
 
       await docRef.set(
         {
@@ -422,7 +442,8 @@ class ConversationMutationModule {
       );
 
       AppLogger.debug(
-          'Updated conversation settings for user ${userId.maskedUserId} in $conversationId');
+        'Updated conversation settings for user ${userId.maskedUserId} in $conversationId',
+      );
     } catch (e) {
       AppLogger.error('Failed to update conversation user settings', e);
       rethrow;

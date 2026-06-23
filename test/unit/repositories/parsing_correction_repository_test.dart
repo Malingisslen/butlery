@@ -44,20 +44,22 @@ void main() {
     });
 
     group('save', () {
-      test('writes a correction document to the configured collection',
-          () async {
-        final correction = _makeCorrection(domain: 'ica.se');
+      test(
+        'writes a correction document to the configured collection',
+        () async {
+          final correction = _makeCorrection(domain: 'ica.se');
 
-        await repo.save(correction);
+          await repo.save(correction);
 
-        final doc = await firestore
-            .collection('parsing_corrections')
-            .doc(correction.id)
-            .get();
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['domain'], equals('ica.se'));
-        expect(doc.data()?['recipeId'], equals('recipe-1'));
-      });
+          final doc = await firestore
+              .collection('parsing_corrections')
+              .doc(correction.id)
+              .get();
+          expect(doc.exists, isTrue);
+          expect(doc.data()?['domain'], equals('ica.se'));
+          expect(doc.data()?['recipeId'], equals('recipe-1'));
+        },
+      );
 
       // Note: the "swallows errors silently" branch can't be exercised
       // through fake_cloud_firestore (no public way to force .set() to
@@ -136,10 +138,10 @@ void main() {
 
       test('uses "unknown" bucket when domain field is absent', () async {
         // Manually write a doc without a domain field.
-        await firestore
-            .collection('parsing_corrections')
-            .doc('manual-1')
-            .set({'userId': 'u1', 'recipeId': 'r1'});
+        await firestore.collection('parsing_corrections').doc('manual-1').set({
+          'userId': 'u1',
+          'recipeId': 'r1',
+        });
 
         final stats = await repo.getDomainStats();
 
@@ -155,8 +157,9 @@ void main() {
 
         await repo.deleteUserCorrections('user-a');
 
-        final remaining =
-            await firestore.collection('parsing_corrections').get();
+        final remaining = await firestore
+            .collection('parsing_corrections')
+            .get();
         expect(remaining.docs, hasLength(1));
         expect(remaining.docs.first.data()['userId'], equals('user-b'));
       });

@@ -80,7 +80,8 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   final FirebaseFunctions? _injectedFunctions;
   FirebaseFunctions? _functionsCache;
 
-  FirebaseFunctions get _functions => _functionsCache ??= (_injectedFunctions ??
+  FirebaseFunctions get _functions => _functionsCache ??=
+      (_injectedFunctions ??
       FirebaseFunctions.instanceFor(region: 'europe-west1'));
 
   FriendRelationshipRepository({
@@ -88,10 +89,10 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     AuthRepository? authRepository,
     super.timestampProvider,
     FirebaseFunctions? functions,
-  })  : _injectedFunctions = functions,
-        super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+  }) : _injectedFunctions = functions,
+       super(
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
 
   CollectionReference<Map<String, dynamic>> _userFriendsRef(String userId) =>
       firestore
@@ -112,7 +113,9 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   String getId(UserProfile entity) => entity.uid;
   @override
   Future<bool> validateCreatePermission(
-      String userId, UserProfile entity) async {
+    String userId,
+    UserProfile entity,
+  ) async {
     // Friend relationships are created through specific methods (addMutualFriends)
     // Not through generic CRUD, so we allow it and validate in specific methods
     return true;
@@ -120,7 +123,10 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, UserProfile? entity) async {
+    String userId,
+    String resourceId,
+    UserProfile? entity,
+  ) async {
     // Anyone authenticated can read public profiles (for friend discovery)
     // Privacy is controlled via isSearchable flag in the profile
     return true;
@@ -128,14 +134,19 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, UserProfile entity) async {
+    String userId,
+    String resourceId,
+    UserProfile entity,
+  ) async {
     // Users can only update their own profile
     return userId == entity.uid;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Users can only delete their own profile
     return userId == resourceId;
   }
@@ -160,7 +171,12 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
     await firestore.runTransaction((transaction) async {
       await _writeMutualFriendDocs(
-          transaction, userId1, userId2, user1Name, user2Name);
+        transaction,
+        userId1,
+        userId2,
+        user1Name,
+        user2Name,
+      );
     });
   }
 
@@ -193,15 +209,19 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   /// Fetch lowercased display names for two users concurrently.
   Future<(String, String)> _fetchDisplayNames(
-      String userId1, String userId2) async {
+    String userId1,
+    String userId2,
+  ) async {
     final results = await Future.wait([
       collection.doc(userId1).get(),
       collection.doc(userId2).get(),
     ]);
-    final user1Name =
-        (results[0].data()?['displayName'] as String?).orEmpty().toLowerCase();
-    final user2Name =
-        (results[1].data()?['displayName'] as String?).orEmpty().toLowerCase();
+    final user1Name = (results[0].data()?['displayName'] as String?)
+        .orEmpty()
+        .toLowerCase();
+    final user2Name = (results[1].data()?['displayName'] as String?)
+        .orEmpty()
+        .toLowerCase();
     return (user1Name, user2Name);
   }
 
@@ -244,10 +264,12 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     if (docsCreated == 2) {
       final user1Profile = collection.doc(userId1);
       final user2Profile = collection.doc(userId2);
-      transaction
-          .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
-      transaction
-          .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+      transaction.update(user1Profile, {
+        'friendsCount': FieldValue.increment(1),
+      });
+      transaction.update(user2Profile, {
+        'friendsCount': FieldValue.increment(1),
+      });
     }
   }
 
@@ -271,13 +293,15 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
       if (user1FriendDoc.exists) {
         transaction.delete(user1FriendRef);
-        transaction
-            .update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
+        transaction.update(user1Profile, {
+          'friendsCount': FieldValue.increment(-1),
+        });
       }
       if (user2FriendDoc.exists) {
         transaction.delete(user2FriendRef);
-        transaction
-            .update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
+        transaction.update(user2Profile, {
+          'friendsCount': FieldValue.increment(-1),
+        });
       }
     });
   }
@@ -332,9 +356,9 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     final mutualIds = <String>[];
 
     for (final batch in cappedFriends.chunked(kFirestoreWhereInLimit)) {
-      final snapshot = await _userFriendsRef(userId2)
-          .where(FieldPath.documentId, whereIn: batch)
-          .get();
+      final snapshot = await _userFriendsRef(
+        userId2,
+      ).where(FieldPath.documentId, whereIn: batch).get();
       mutualIds.addAll(snapshot.docs.map((doc) => doc.id));
     }
 
@@ -363,7 +387,8 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     return _userFriendsRef(userId).limit(1000).snapshots().map((snapshot) {
       if (snapshot.docs.length == 1000) {
         AppLogger.warning(
-            'friendIdsStream for user ${userId.maskedUserId} hit 1000-doc limit — results are truncated');
+          'friendIdsStream for user ${userId.maskedUserId} hit 1000-doc limit — results are truncated',
+        );
       }
       return snapshot.docs.map((doc) => doc.id).toList();
     });
@@ -374,8 +399,8 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     return friendIdsStream(userId)
         .distinct((a, b) => const ListEquality<String>().equals(a, b))
         .asyncMap((friendIds) async {
-      return await fetchFriendProfiles(friendIds);
-    });
+          return await fetchFriendProfiles(friendIds);
+        });
   }
 
   /// Check if user has any friends.
@@ -385,8 +410,10 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   }
 
   /// Get recently added friends (within last N days).
-  Future<List<UserProfile>> getRecentFriends(String userId,
-      {int days = 7}) async {
+  Future<List<UserProfile>> getRecentFriends(
+    String userId, {
+    int days = 7,
+  }) async {
     final cutoffDate = clock.now().subtract(Duration(days: days));
     final snapshot = await _userFriendsRef(userId)
         .where('addedAt', isGreaterThan: Timestamp.fromDate(cutoffDate))

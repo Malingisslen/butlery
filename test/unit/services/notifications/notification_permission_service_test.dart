@@ -23,8 +23,8 @@ class _FakeGateway implements PermissionGateway {
   _FakeGateway({
     required List<PermissionStatus> statusQueue,
     PermissionStatus requestOutcome = PermissionStatus.granted,
-  })  : _statusQueue = List.of(statusQueue),
-        _requestOutcome = requestOutcome;
+  }) : _statusQueue = List.of(statusQueue),
+       _requestOutcome = requestOutcome;
 
   final List<PermissionStatus> _statusQueue;
   PermissionStatus _requestOutcome;
@@ -194,8 +194,11 @@ void main() {
         final granted = await service.requestIfNeeded(host.context!);
 
         expect(granted, isFalse);
-        expect(gateway.requestCalls, 0,
-            reason: 'OS request must only fire on rationale accept');
+        expect(
+          gateway.requestCalls,
+          0,
+          reason: 'OS request must only fire on rationale accept',
+        );
         expect(gateway.openSettingsCalls, 0);
       },
     );
@@ -222,9 +225,13 @@ void main() {
 
         expect(granted, isFalse);
         expect(gateway.requestCalls, 1);
-        expect(snackbarShown, 0,
-            reason: 'Second denial must NOT trigger settings snackbar — '
-                'that is reserved for permanentlyDenied');
+        expect(
+          snackbarShown,
+          0,
+          reason:
+              'Second denial must NOT trigger settings snackbar — '
+              'that is reserved for permanentlyDenied',
+        );
         expect(gateway.openSettingsCalls, 0);
       },
     );
@@ -287,8 +294,11 @@ void main() {
 
         expect(granted, isFalse);
         expect(snackbarShown, 1);
-        expect(gateway.requestCalls, 0,
-            reason: 'We do not burn the OS prompt when already permanent');
+        expect(
+          gateway.requestCalls,
+          0,
+          reason: 'We do not burn the OS prompt when already permanent',
+        );
       },
     );
 

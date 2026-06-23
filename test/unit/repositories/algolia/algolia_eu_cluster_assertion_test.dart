@@ -34,8 +34,7 @@ void main() {
       expect(AlgoliaSearchRepository.isLikelyEuAppId(''), isFalse);
     });
 
-    test(
-        'constructor throws ArgumentError for non-EU app id when '
+    test('constructor throws ArgumentError for non-EU app id when '
         'assertEuCluster is on (default) — release-mode behaviour, not '
         'a debug-only assert', () {
       expect(
@@ -43,11 +42,13 @@ void main() {
           appId: 'ABCDEF1234', // no -eu suffix
           apiKey: 'fake-key',
         ),
-        throwsA(isA<ArgumentError>().having(
-          (e) => e.message.toString(),
-          'message',
-          contains('BUT-580'),
-        )),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message.toString(),
+            'message',
+            contains('BUT-580'),
+          ),
+        ),
       );
     });
 
@@ -60,8 +61,7 @@ void main() {
       expect(repo.usesExternalSearch, isTrue);
     });
 
-    test(
-        'constructor accepts non-EU app id when assertEuCluster: false '
+    test('constructor accepts non-EU app id when assertEuCluster: false '
         '(escape hatch for shared-cluster apps with region verified '
         'out-of-band)', () {
       final repo = AlgoliaSearchRepository(

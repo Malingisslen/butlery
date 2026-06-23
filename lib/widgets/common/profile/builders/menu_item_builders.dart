@@ -115,9 +115,9 @@ class MenuItemBuilders {
                         child: Text(
                           count > 99 ? '99+' : '$count',
                           style: AppTextStyles.badge.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                           ),
                           textAlign: TextAlign.center,
                         ),

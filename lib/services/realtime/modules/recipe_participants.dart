@@ -58,7 +58,8 @@ class RecipeParticipants {
     }
 
     AppLogger.info(
-        '👥 Adding participant: ${userDisplayName.maskedName} (${userId.maskedUserId}) with permission: ${permission.name}');
+      '👥 Adding participant: ${userDisplayName.maskedName} (${userId.maskedUserId}) with permission: ${permission.name}',
+    );
 
     return recipe.addParticipant(userId, userDisplayName, permission);
   }
@@ -136,12 +137,14 @@ class RecipeParticipants {
     final currentPermission = getUserPermission(recipe, userId);
     if (currentPermission == newPermission) {
       AppLogger.info(
-          '👥 Permission unchanged for user: ${userId.maskedUserId}');
+        '👥 Permission unchanged for user: ${userId.maskedUserId}',
+      );
       return recipe; // No change needed
     }
 
     AppLogger.info(
-        '👥 Updating permission for user ${userId.maskedUserId}: ${currentPermission?.name} -> ${newPermission.name}');
+      '👥 Updating permission for user ${userId.maskedUserId}: ${currentPermission?.name} -> ${newPermission.name}',
+    );
 
     return recipe.updateParticipantPermission(userId, newPermission);
   }
@@ -158,7 +161,9 @@ class RecipeParticipants {
 
   /// Get user's permission level
   static ResourcePermission? getUserPermission(
-      RealtimeRecipe recipe, String userId) {
+    RealtimeRecipe recipe,
+    String userId,
+  ) {
     // Owner has highest permission, check first
     if (recipe.ownerId == userId) {
       return ResourcePermission.owner;
@@ -202,10 +207,12 @@ class RecipeParticipants {
   static List<String> getEditorIds(RealtimeRecipe recipe) {
     // Owner is not in participants map anymore
     return recipe.participants.entries
-        .where((entry) =>
-            entry.value == ResourcePermission.editor ||
-            entry.value == ResourcePermission.write ||
-            entry.value == ResourcePermission.admin)
+        .where(
+          (entry) =>
+              entry.value == ResourcePermission.editor ||
+              entry.value == ResourcePermission.write ||
+              entry.value == ResourcePermission.admin,
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -213,9 +220,11 @@ class RecipeParticipants {
   /// Get viewer user IDs (read-only users)
   static List<String> getViewerIds(RealtimeRecipe recipe) {
     return recipe.participants.entries
-        .where((entry) =>
-            entry.value == ResourcePermission.viewer ||
-            entry.value == ResourcePermission.read)
+        .where(
+          (entry) =>
+              entry.value == ResourcePermission.viewer ||
+              entry.value == ResourcePermission.read,
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -299,16 +308,21 @@ class RecipeParticipants {
 
     final participantIds = recipe.participants.keys
         .where(
-            (id) => id != recipe.ownerId) // Exclude owner from participant list
+          (id) => id != recipe.ownerId,
+        ) // Exclude owner from participant list
         .toList();
 
-    return AppLocale.current
-        .participantSummary(recipe.ownerDisplayName, participantIds.length);
+    return AppLocale.current.participantSummary(
+      recipe.ownerDisplayName,
+      participantIds.length,
+    );
   }
 
   /// Find participant permission by user ID
   static ResourcePermission? findParticipantPermission(
-      RealtimeRecipe recipe, String userId) {
+    RealtimeRecipe recipe,
+    String userId,
+  ) {
     return recipe.participants[userId];
   }
 
@@ -356,7 +370,9 @@ class RecipeParticipants {
 
     if (editorCount > 0 && viewerCount > 0) {
       return l.collaborationCollaborativeEditorsViewers(
-          editorCount, viewerCount);
+        editorCount,
+        viewerCount,
+      );
     } else if (editorCount > 0) {
       return l.collaborationCollaborativeEditors(editorCount);
     } else if (viewerCount > 0) {

@@ -77,7 +77,7 @@ class StepTimerEntry {
 /// [resetTimer]) and observe [timers].
 class StepTimerService extends BaseService {
   StepTimerService({LocalTimerNotificationService? notifications})
-      : _notifications = notifications;
+    : _notifications = notifications;
 
   @override
   String get serviceName => 'StepTimerService';
@@ -275,11 +275,13 @@ class StepTimerService extends BaseService {
     final remaining = timer.computeRemaining();
     if (remaining <= Duration.zero) return;
     // Fire-and-forget: notification scheduling must never block the timer.
-    unawaited(notifications.schedule(
-      timerId: timer.id,
-      duration: remaining,
-      label: timer.label.isEmpty ? null : timer.label,
-    ));
+    unawaited(
+      notifications.schedule(
+        timerId: timer.id,
+        duration: remaining,
+        label: timer.label.isEmpty ? null : timer.label,
+      ),
+    );
   }
 
   void _cancelNotification(String id) {
@@ -307,16 +309,19 @@ class StepTimerService extends BaseService {
   }
 
   List<StepTimerEntry> _snapshot() {
-    final entries = _timers.values
-        .map((t) => StepTimerEntry(
-              id: t.id,
-              label: t.label,
-              state: t.state,
-              remaining: t.computeRemaining(),
-              total: t.total,
-            ))
-        .toList()
-      ..sort((a, b) => a.remaining.compareTo(b.remaining));
+    final entries =
+        _timers.values
+            .map(
+              (t) => StepTimerEntry(
+                id: t.id,
+                label: t.label,
+                state: t.state,
+                remaining: t.computeRemaining(),
+                total: t.total,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => a.remaining.compareTo(b.remaining));
     return entries;
   }
 }

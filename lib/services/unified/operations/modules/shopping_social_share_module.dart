@@ -16,8 +16,8 @@ class ShoppingSocialShareModule {
   ShoppingSocialShareModule({
     required FirebaseFirestore firestore,
     required PermissionService permissionService,
-  })  : _firestore = firestore,
-        _permissionService = permissionService;
+  }) : _firestore = firestore,
+       _permissionService = permissionService;
 
   /// Share shopping list with friends
   Future<bool> shareWithFriends({
@@ -73,8 +73,9 @@ class ShoppingSocialShareModule {
       };
 
       // Create shared list document in Firestore
-      final sharedListRef =
-          _firestore.collection(FirestoreCollections.sharedContent).doc();
+      final sharedListRef = _firestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc();
       await sharedListRef.set(sharedListData);
 
       // Create individual share records for each friend
@@ -101,7 +102,8 @@ class ShoppingSocialShareModule {
       await batch.commit();
 
       AppLogger.success(
-          '✅ Shopping list shared successfully with ${friendIds.length} friends');
+        '✅ Shopping list shared successfully with ${friendIds.length} friends',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to share shopping list with friends', e);
@@ -149,8 +151,9 @@ class ShoppingSocialShareModule {
             .get();
 
         for (final doc in groupDocs.docs) {
-          final memberIds =
-              List<String>.from(doc.data()['friendUserIds'] ?? []);
+          final memberIds = List<String>.from(
+            doc.data()['friendUserIds'] ?? [],
+          );
           allMemberIds.addAll(memberIds);
         }
       }
@@ -240,8 +243,10 @@ class ShoppingSocialShareModule {
       final allListDocs = <String, Map<String, dynamic>>{};
 
       for (int i = 0; i < sharedListIds.length; i += 10) {
-        final batchIds =
-            sharedListIds.sublist(i, min(i + 10, sharedListIds.length));
+        final batchIds = sharedListIds.sublist(
+          i,
+          min(i + 10, sharedListIds.length),
+        );
         final listDocs = await _firestore
             .collection(FirestoreCollections.sharedContent)
             .where(FieldPath.documentId, whereIn: batchIds)
@@ -265,7 +270,7 @@ class ShoppingSocialShareModule {
         // on pointer writes, this prevents cross-user inbox leakage.
         final sharedWithUserIds =
             (listData?['sharedWithUserIds'] as List?)?.cast<String>() ??
-                const <String>[];
+            const <String>[];
         if (!sharedWithUserIds.contains(currentUserId)) continue;
 
         if (listData != null &&
@@ -278,7 +283,8 @@ class ShoppingSocialShareModule {
             // BUT-1109: reuse the existing shoppingUnknownUser key (Swedish:
             // "Okänd användare") for a missing displayName — semantically a
             // person, not a list, so unnamedSharedList would be wrong here.
-            'sharedByDisplayName': listData['sharedByDisplayName'] ??
+            'sharedByDisplayName':
+                listData['sharedByDisplayName'] ??
                 AppLocale.current.shoppingUnknownUser,
             'sharedByAvatarUrl': listData['sharedByAvatarUrl'],
             'sharedAt': receivedData['sharedAt'],
@@ -351,8 +357,9 @@ class ShoppingSocialShareModule {
       final listData = listDoc.data()!;
 
       // Verify user has access to this list
-      final sharedWithUserIds =
-          List<String>.from(listData['sharedWithUserIds'] ?? []);
+      final sharedWithUserIds = List<String>.from(
+        listData['sharedWithUserIds'] ?? [],
+      );
       if (!sharedWithUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this shopping list');
         return null;
@@ -368,9 +375,9 @@ class ShoppingSocialShareModule {
           .collection(FirestoreCollections.receivedLists)
           .doc(sharedListId)
           .set({
-        'isImported': true,
-        'importedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+            'isImported': true,
+            'importedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       AppLogger.success('✅ Shopping list imported successfully');
       return sharedListId;
@@ -394,9 +401,9 @@ class ShoppingSocialShareModule {
           .collection(FirestoreCollections.receivedLists)
           .doc(sharedListId)
           .update({
-        'isViewed': true,
-        'viewedAt': FieldValue.serverTimestamp(),
-      });
+            'isViewed': true,
+            'viewedAt': FieldValue.serverTimestamp(),
+          });
 
       AppLogger.debug('Shopping list marked as viewed: $sharedListId');
       return true;
@@ -408,7 +415,8 @@ class ShoppingSocialShareModule {
 
   /// Get shopping list sharing stats
   Future<Map<String, dynamic>> getShoppingListSharingStats(
-      String listId) async {
+    String listId,
+  ) async {
     try {
       if (!_permissionService.isAuthenticated) return {};
 
@@ -425,7 +433,8 @@ class ShoppingSocialShareModule {
       final totalSharedByMe = querySnapshot.docs.length;
       final totalFriendsSharedWith = querySnapshot.docs
           .expand(
-              (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []))
+            (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []),
+          )
           .toSet()
           .length;
 

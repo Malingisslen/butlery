@@ -27,7 +27,7 @@ class TagPhase5Cuisine {
   final firebase_config.FirebaseTagConfig? _firebaseConfig;
 
   TagPhase5Cuisine({firebase_config.FirebaseTagConfig? firebaseConfig})
-      : _firebaseConfig = firebaseConfig;
+    : _firebaseConfig = firebaseConfig;
 
   /// Calculates Phase 5 cuisine tags (full chain).
   ///
@@ -200,9 +200,9 @@ class Phase5Result {
 
   /// Gets all tags from all phases combined.
   Set<String> get allTags => {
-        ...phase4.allTags,
-        ...tags,
-      };
+    ...phase4.allTags,
+    ...tags,
+  };
 
   /// Convenience: Check if a tag exists in any phase.
   bool hasTag(String tag) => allTags.contains(tag);
@@ -233,9 +233,9 @@ class Phase5ResultPartial {
 
   /// Gets all tags (Phase 1 + Phase 5 cuisine tags).
   Set<String> get allTags => {
-        ...phase1.tags,
-        ...tags,
-      };
+    ...phase1.tags,
+    ...tags,
+  };
 
   /// Convenience: Check if a tag exists.
   bool hasTag(String tag) => allTags.contains(tag);

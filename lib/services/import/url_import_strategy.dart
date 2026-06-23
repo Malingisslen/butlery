@@ -44,12 +44,12 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     // that resolves to 127.0.0.1). Defaults to InternetAddress.lookup in
     // HttpContentFetcher when null.
     Future<List<InternetAddress>> Function(String host)? dnsLookup,
-  })  : _fetcher = HttpContentFetcher(
-          httpClient: httpClient,
-          webScraperFactory: webScraperFactory,
-          dnsLookup: dnsLookup,
-        ),
-        _llmFallback = LlmExtractionFallback();
+  }) : _fetcher = HttpContentFetcher(
+         httpClient: httpClient,
+         webScraperFactory: webScraperFactory,
+         dnsLookup: dnsLookup,
+       ),
+       _llmFallback = LlmExtractionFallback();
 
   RecipeParserService? get _recipeParser {
     if (_parserService != null) return _parserService;
@@ -58,7 +58,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       return _parserService;
     } catch (e) {
       AppLogger.debug(
-          'UrlImportStrategy: RecipeParserService not available: $e');
+        'UrlImportStrategy: RecipeParserService not available: $e',
+      );
       return null;
     }
   }
@@ -94,8 +95,10 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   bool validateInput(String input) => canHandle(input);
 
   @override
-  Future<ImportResult> import(String input,
-      {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(
+    String input, {
+    Map<String, dynamic>? options,
+  }) async {
     try {
       final url = input.trim();
       final stopwatch = Stopwatch()..start();
@@ -104,7 +107,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       // Fetch HTML — try simple HTTP first
       final httpHtml = await _fetcher.fetchHtmlWithTimeout(url);
       AppLogger.debug(
-          'UrlImportStrategy: HTTP fetch for $domain → ${httpHtml == null ? "null" : "${httpHtml.length} chars"}');
+        'UrlImportStrategy: HTTP fetch for $domain → ${httpHtml == null ? "null" : "${httpHtml.length} chars"}',
+      );
 
       // Tier 1: Enhanced parser on HTTP HTML
       final parserResult = await _tryEnhancedParser(url, httpHtml, options);
@@ -123,14 +127,20 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       // Covers JS-rendered pages and sites blocking simple HTTP
       final scraperHtml = await _fetcher.tryWebScraperHtml(url);
       AppLogger.debug(
-          'UrlImportStrategy: WebScraper HTML for $domain → ${scraperHtml == null ? "null" : "${scraperHtml.length} chars"}');
+        'UrlImportStrategy: WebScraper HTML for $domain → ${scraperHtml == null ? "null" : "${scraperHtml.length} chars"}',
+      );
       if (scraperHtml != null) {
-        final scraperParserResult =
-            await _tryEnhancedParser(url, scraperHtml, options);
+        final scraperParserResult = await _tryEnhancedParser(
+          url,
+          scraperHtml,
+          options,
+        );
         if (scraperParserResult != null) return scraperParserResult;
 
-        final scraperStructuredResult =
-            _tryStructuredExtraction(scraperHtml, url);
+        final scraperStructuredResult = _tryStructuredExtraction(
+          scraperHtml,
+          url,
+        );
         if (scraperStructuredResult != null) {
           _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
           return scraperStructuredResult;
@@ -158,8 +168,11 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // Tier 6: LLM extraction
       if (bestHtml != null && bestHtml.length > 100) {
-        final llmResult =
-            await _llmFallback.tryExtraction(bestHtml, url, strategyName);
+        final llmResult = await _llmFallback.tryExtraction(
+          bestHtml,
+          url,
+          strategyName,
+        );
         if (llmResult != null) {
           _logImportEvent(url, domain, 'LLM', true, stopwatch, usedLlm: true);
           return llmResult;
@@ -189,16 +202,22 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   Future<ImportResult?> _tryEnhancedParser(
-      String url, String? htmlContent, Map<String, dynamic>? options) async {
+    String url,
+    String? htmlContent,
+    Map<String, dynamic>? options,
+  ) async {
     final parser = _recipeParser;
     if (parser == null || htmlContent == null) return null;
 
-    final parseResult =
-        await parser.parseFromUrl(url: url, htmlContent: htmlContent);
+    final parseResult = await parser.parseFromUrl(
+      url: url,
+      htmlContent: htmlContent,
+    );
     if (!parseResult.success || parseResult.recipe == null) return null;
 
     AppLogger.info(
-        'UrlImportStrategy: Enhanced parser extracted "${parseResult.recipe!.title.value}"');
+      'UrlImportStrategy: Enhanced parser extracted "${parseResult.recipe!.title.value}"',
+    );
     return _convertParsedRecipeToImportResult(parseResult, url);
   }
 
@@ -221,13 +240,16 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (recipeData == null) return null;
 
     final recipe = SchemaOrgRecipeExtractor.createRecipe(recipeData, url);
-    return ImportResult.success(recipe, metadata: {
-      'strategy': strategyName,
-      'extraction_method': extractionMethod,
-      'data_format': recipeData['@type'] ?? 'Recipe',
-      'url': url,
-      if (siteParserDomain != null) 'site_parser': siteParserDomain,
-    });
+    return ImportResult.success(
+      recipe,
+      metadata: {
+        'strategy': strategyName,
+        'extraction_method': extractionMethod,
+        'data_format': recipeData['@type'] ?? 'Recipe',
+        'url': url,
+        if (siteParserDomain != null) 'site_parser': siteParserDomain,
+      },
+    );
   }
 
   Future<ImportResult?> _tryWebScraperFallback(String url) async {
@@ -251,12 +273,12 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       recipe,
       warnings: [
         ...?(textResult.warnings),
-        'No structured data found - parsed as plain text'
+        'No structured data found - parsed as plain text',
       ],
       metadata: {
         'strategy': strategyName,
         'extraction_method': 'text_fallback',
-        'url': url
+        'url': url,
       },
     );
   }
@@ -298,14 +320,14 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (nonRecipeJsonLdDetected)
           AppLocale.current.warningUrlImportNotARecipe,
         ...?(textResult.warnings),
-        'Extracted from HTML text - quality may vary'
+        'Extracted from HTML text - quality may vary',
       ],
       metadata: {
         'strategy': strategyName,
         'extraction_method': 'html_text_parse',
         'url': url,
         // BUT-1076: was 3, now matches the Tier 5 source comment.
-        'tier': 5
+        'tier': 5,
       },
     );
   }
@@ -424,7 +446,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   ImportResult _convertParsedRecipeToImportResult(
-      ParseResult parseResult, String url) {
+    ParseResult parseResult,
+    String url,
+  ) {
     final parsed = parseResult.recipe!;
 
     final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
@@ -446,8 +470,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         ingredients: ingredients,
         // BUT-1216: persist the parser's structured form (amount/unit/name)
         // instead of discarding it — index-aligned with `ingredients`.
-        structuredIngredients:
-            parsedIngredients?.map(RecipeIngredient.fromParsed).toList(),
+        structuredIngredients: parsedIngredients
+            ?.map(RecipeIngredient.fromParsed)
+            .toList(),
         instructions: instructions,
         portions: parsed.portions.value,
         timeMinutes: parsed.totalTime.value?.inMinutes,
@@ -466,14 +491,17 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       type: RecipeType.personal,
     );
 
-    return ImportResult.success(recipe, metadata: {
-      'strategy': strategyName,
-      'extraction_method': 'enhanced_parser',
-      'url': url,
-      'tier': 'multi',
-      'fromCache': parseResult.fromCache,
-      'parseTime': parseResult.totalTime.inMilliseconds,
-      'overallQuality': parsed.overallQuality,
-    });
+    return ImportResult.success(
+      recipe,
+      metadata: {
+        'strategy': strategyName,
+        'extraction_method': 'enhanced_parser',
+        'url': url,
+        'tier': 'multi',
+        'fromCache': parseResult.fromCache,
+        'parseTime': parseResult.totalTime.inMilliseconds,
+        'overallQuality': parsed.overallQuality,
+      },
+    );
   }
 }

@@ -200,8 +200,10 @@ Future<void> _enableCollectionIfConsented() async {
     // BUT-751: shared fail-closed gate; denies on missing service or error.
     // `bootstrap.container` is a `DIContainer` wrapping the global GetIt
     // singleton (`GetIt.instance`); the helper takes the raw GetIt.
-    final hasConsent = await hasAnalyticsConsent(GetIt.instance,
-        logTag: 'EnableCollectionIfConsented');
+    final hasConsent = await hasAnalyticsConsent(
+      GetIt.instance,
+      logTag: 'EnableCollectionIfConsented',
+    );
 
     final analyticsEnabled = hasConsent && !kDebugMode;
 
@@ -216,10 +218,12 @@ Future<void> _enableCollectionIfConsented() async {
     // Crashlytics + Performance are mobile-only
     if (!kIsWeb) {
       await Future.wait([
-        FirebaseCrashlytics.instance
-            .setCrashlyticsCollectionEnabled(hasConsent && !kDebugMode),
-        FirebasePerformance.instance
-            .setPerformanceCollectionEnabled(hasConsent),
+        FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+          hasConsent && !kDebugMode,
+        ),
+        FirebasePerformance.instance.setPerformanceCollectionEnabled(
+          hasConsent,
+        ),
       ]);
     }
 

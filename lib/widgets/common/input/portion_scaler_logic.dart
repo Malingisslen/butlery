@@ -114,8 +114,9 @@ class PortionScalerLogic {
     if (noScale && !convertToSwedish) {
       return [for (final e in entries) e.raw];
     }
-    final factor =
-        noScale ? 1.0 : newPortions.toDouble() / originalPortions.toDouble();
+    final factor = noScale
+        ? 1.0
+        : newPortions.toDouble() / originalPortions.toDouble();
     return [for (final e in entries) _scaleEntry(e, factor, convertToSwedish)];
   }
 
@@ -153,11 +154,13 @@ class PortionScalerLogic {
       convertToSwedish,
     );
 
-    final note =
-        (entry.note != null && entry.note!.isNotEmpty) ? ', ${entry.note}' : '';
+    final note = (entry.note != null && entry.note!.isNotEmpty)
+        ? ', ${entry.note}'
+        : '';
     if (converted.unit.isNotEmpty) {
-      final formatted =
-          TextFormatting.toSwedishHalfFraction(converted.quantity);
+      final formatted = TextFormatting.toSwedishHalfFraction(
+        converted.quantity,
+      );
       return '$formatted ${converted.unit} ${entry.name}$note';
     }
     return '${SwedishPluralization.formatIngredient(entry.name, converted.quantity)}$note';
@@ -234,12 +237,16 @@ class PortionScalerLogic {
     // Scale the quantity
     final scaledQuantity = parsed.quantity * scaleFactor;
 
-    final converted =
-        _convertUnits(scaledQuantity, parsed.unit, convertToSwedish);
+    final converted = _convertUnits(
+      scaledQuantity,
+      parsed.unit,
+      convertToSwedish,
+    );
 
     // Format with Swedish fractions and units
-    final formattedQuantity =
-        TextFormatting.toSwedishHalfFraction(converted.quantity);
+    final formattedQuantity = TextFormatting.toSwedishHalfFraction(
+      converted.quantity,
+    );
 
     // Build together again
     if (converted.unit.isNotEmpty) {

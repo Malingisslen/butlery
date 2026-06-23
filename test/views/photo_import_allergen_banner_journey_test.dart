@@ -33,24 +33,25 @@ import '../test_support/base_unit_test.dart';
 class _MockUserService extends Mock implements UserService {}
 
 TagResult _allergenTags(Map<String, TriState> allergens) => TagResult(
-      tags: const {},
-      allergenStatus: allergens,
-      dietaryStatus: const {},
-      coverage: 1.0,
-      generatedAt: DateTime(2026, 6, 4),
-    );
+  tags: const {},
+  allergenStatus: allergens,
+  dietaryStatus: const {},
+  coverage: 1.0,
+  generatedAt: DateTime(2026, 6, 4),
+);
 
 Recipe _recipe(String title, Map<String, TriState> allergens) =>
-    RecipeFactory.build(title: title)
-        .copyWith(tagResult: _allergenTags(allergens));
+    RecipeFactory.build(
+      title: title,
+    ).copyWith(tagResult: _allergenTags(allergens));
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: child,
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: child,
+);
 
 void main() {
   setUpAll(() async {
@@ -122,8 +123,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('an untracked contained allergen surfaces the setup banner',
-      (tester) async {
+  testWidgets('an untracked contained allergen surfaces the setup banner', (
+    tester,
+  ) async {
     arrange(
       recipes: [
         _recipe('Pasta', {'gluten': TriState.contains}),
@@ -134,8 +136,11 @@ void main() {
 
     await saveBatch(tester);
 
-    expect(find.byType(MaterialBanner), findsOneWidget,
-        reason: 'a saved recipe contains an untracked allergen → prompt shows');
+    expect(
+      find.byType(MaterialBanner),
+      findsOneWidget,
+      reason: 'a saved recipe contains an untracked allergen → prompt shows',
+    );
   });
 
   testWidgets('a fully-tracked batch shows no banner', (tester) async {
@@ -150,8 +155,11 @@ void main() {
 
     await saveBatch(tester);
 
-    expect(find.byType(MaterialBanner), findsNothing,
-        reason: 'every contained allergen is already tracked → no prompt');
+    expect(
+      find.byType(MaterialBanner),
+      findsNothing,
+      reason: 'every contained allergen is already tracked → no prompt',
+    );
   });
 
   testWidgets('a failed save shows no banner', (tester) async {
@@ -165,7 +173,10 @@ void main() {
 
     await saveBatch(tester);
 
-    expect(find.byType(MaterialBanner), findsNothing,
-        reason: 'the save failed → the import did not complete → no prompt');
+    expect(
+      find.byType(MaterialBanner),
+      findsNothing,
+      reason: 'the save failed → the import did not complete → no prompt',
+    );
   });
 }

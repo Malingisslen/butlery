@@ -51,25 +51,32 @@ void main() {
         final first = await service.markAsCooked('r1');
         final second = await service.markAsCooked('r1');
         expect(first, isTrue, reason: 'first tap should commit');
-        expect(second, isFalse,
-            reason: 'second same-day tap must be swallowed by session guard');
+        expect(
+          second,
+          isFalse,
+          reason: 'second same-day tap must be swallowed by session guard',
+        );
       });
 
       verify(() => repo.logCookEvent('r1', any())).called(1);
     });
 
-    test('different recipes on the same day each count independently',
-        () async {
-      when(() => repo.logCookEvent(any(), any())).thenAnswer((_) async => true);
+    test(
+      'different recipes on the same day each count independently',
+      () async {
+        when(
+          () => repo.logCookEvent(any(), any()),
+        ).thenAnswer((_) async => true);
 
-      await withClock(Clock.fixed(DateTime(2026, 4, 18, 19, 00)), () async {
-        await service.markAsCooked('r1');
-        await service.markAsCooked('r2');
-      });
+        await withClock(Clock.fixed(DateTime(2026, 4, 18, 19, 00)), () async {
+          await service.markAsCooked('r1');
+          await service.markAsCooked('r2');
+        });
 
-      verify(() => repo.logCookEvent('r1', any())).called(1);
-      verify(() => repo.logCookEvent('r2', any())).called(1);
-    });
+        verify(() => repo.logCookEvent('r1', any())).called(1);
+        verify(() => repo.logCookEvent('r2', any())).called(1);
+      },
+    );
 
     test('next-day call after same-recipe counts again', () async {
       when(() => repo.logCookEvent(any(), any())).thenAnswer((_) async => true);
@@ -80,41 +87,55 @@ void main() {
       });
       await withClock(Clock.fixed(DateTime(2026, 4, 19, 7, 00)), () async {
         final dayTwo = await service.markAsCooked('r1');
-        expect(dayTwo, isTrue,
-            reason: 'session guard is day-bucketed so cooking the same recipe '
-                'the next day must be counted');
+        expect(
+          dayTwo,
+          isTrue,
+          reason:
+              'session guard is day-bucketed so cooking the same recipe '
+              'the next day must be counted',
+        );
       });
 
       verify(() => repo.logCookEvent('r1', any())).called(2);
     });
 
-    test('empty recipeId short-circuits without touching the repository',
-        () async {
-      final ok = await service.markAsCooked('');
-      expect(ok, isFalse);
-      verifyNever(() => repo.logCookEvent(any(), any()));
-    });
+    test(
+      'empty recipeId short-circuits without touching the repository',
+      () async {
+        final ok = await service.markAsCooked('');
+        expect(ok, isFalse);
+        verifyNever(() => repo.logCookEvent(any(), any()));
+      },
+    );
 
-    test('repository failure bubbles up and does NOT poison the guard',
-        () async {
-      when(() => repo.logCookEvent(any(), any()))
-          .thenAnswer((_) async => false);
+    test(
+      'repository failure bubbles up and does NOT poison the guard',
+      () async {
+        when(
+          () => repo.logCookEvent(any(), any()),
+        ).thenAnswer((_) async => false);
 
-      await withClock(Clock.fixed(DateTime(2026, 4, 18, 10, 00)), () async {
-        final firstAttempt = await service.markAsCooked('r1');
-        expect(firstAttempt, isFalse);
+        await withClock(Clock.fixed(DateTime(2026, 4, 18, 10, 00)), () async {
+          final firstAttempt = await service.markAsCooked('r1');
+          expect(firstAttempt, isFalse);
 
-        when(() => repo.logCookEvent(any(), any()))
-            .thenAnswer((_) async => true);
+          when(
+            () => repo.logCookEvent(any(), any()),
+          ).thenAnswer((_) async => true);
 
-        final retry = await service.markAsCooked('r1');
-        expect(retry, isTrue,
-            reason: 'a failed write must NOT mark the recipe as counted — '
-                'the user needs to be able to retry');
-      });
+          final retry = await service.markAsCooked('r1');
+          expect(
+            retry,
+            isTrue,
+            reason:
+                'a failed write must NOT mark the recipe as counted — '
+                'the user needs to be able to retry',
+          );
+        });
 
-      verify(() => repo.logCookEvent('r1', any())).called(2);
-    });
+        verify(() => repo.logCookEvent('r1', any())).called(2);
+      },
+    );
 
     test('passes a DateTime close to clock.now() to the repository', () async {
       DateTime? captured;

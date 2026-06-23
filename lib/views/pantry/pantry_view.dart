@@ -352,8 +352,9 @@ class _PantryBulkBar extends StatelessWidget {
               Expanded(
                 child: Text(
                   context.l10n.pantrySelectedCount(count),
-                  style: AppTextStyles.titleSmall
-                      .copyWith(color: cs.onPrimaryContainer),
+                  style: AppTextStyles.titleSmall.copyWith(
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
               TextButton.icon(

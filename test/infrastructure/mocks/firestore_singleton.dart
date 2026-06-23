@@ -39,7 +39,8 @@ class FirestoreSingleton {
     // Force reset if we've done too many operations
     if (_operationCount > _maxOperationsBeforeReset) {
       debugPrint(
-          'Force resetting FakeFirebaseFirestore after $_operationCount operations');
+        'Force resetting FakeFirebaseFirestore after $_operationCount operations',
+      );
       _forceRecreate();
     }
 
@@ -145,7 +146,8 @@ class FirestoreSingleton {
         _forceRecreate();
       } else if (totalDeleted > 0) {
         debugPrint(
-            'Cleared $totalDeleted documents from FakeFirebaseFirestore');
+          'Cleared $totalDeleted documents from FakeFirebaseFirestore',
+        );
       }
 
       // Clear test tracking
@@ -295,13 +297,13 @@ class FirestoreSingleton {
 
   /// Get current stats for debugging
   static Map<String, dynamic> get stats => {
-        'referenceCount': _referenceCount,
-        'operationCount': _operationCount,
-        'hasInstance': _instance != null ? 1 : 0,
-        'activeStreams': _activeStreams.length,
-        'currentTest': _currentTestName ?? 'none',
-        'testCollections': _testCollections.length,
-      };
+    'referenceCount': _referenceCount,
+    'operationCount': _operationCount,
+    'hasInstance': _instance != null ? 1 : 0,
+    'activeStreams': _activeStreams.length,
+    'currentTest': _currentTestName ?? 'none',
+    'testCollections': _testCollections.length,
+  };
 
   /// Check if we should force a cleanup
   static bool get shouldForceCleanup =>

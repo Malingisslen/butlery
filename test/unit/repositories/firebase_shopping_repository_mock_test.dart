@@ -18,17 +18,21 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      registerFallbackValue(UnifiedShoppingList.personal(
-        name: 'Fallback List',
-        ownerId: 'test-user',
-        ownerDisplayName: 'Test User',
-      ));
-      registerFallbackValue(UnifiedShoppingItem.basic(
-        name: 'Fallback Item',
-        amount: 1,
-        unit: 'st',
-        category: 'Test',
-      ));
+      registerFallbackValue(
+        UnifiedShoppingList.personal(
+          name: 'Fallback List',
+          ownerId: 'test-user',
+          ownerDisplayName: 'Test User',
+        ),
+      );
+      registerFallbackValue(
+        UnifiedShoppingItem.basic(
+          name: 'Fallback Item',
+          amount: 1,
+          unit: 'st',
+          category: 'Test',
+        ),
+      );
     });
 
     setUp(() async {
@@ -75,8 +79,9 @@ void main() {
           ownerDisplayName: 'Test User',
         );
 
-        when(() => mockRepository.read(listId))
-            .thenAnswer((_) async => expectedList);
+        when(
+          () => mockRepository.read(listId),
+        ).thenAnswer((_) async => expectedList);
 
         // Act
         final list = await mockRepository.read(listId);
@@ -179,8 +184,9 @@ void main() {
           category: 'Dairy',
         );
 
-        when(() => mockRepository.addItem(listId, item))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.addItem(listId, item),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.addItem(listId, item);
@@ -194,8 +200,9 @@ void main() {
         const listId = 'list-1';
         const itemId = 'item-1';
 
-        when(() => mockRepository.removeItem(listId, itemId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.removeItem(listId, itemId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.removeItem(listId, itemId);
@@ -219,8 +226,9 @@ void main() {
           priority: 4,
         );
 
-        when(() => mockRepository.addItem(listId, item))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.addItem(listId, item),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.addItem(listId, item);
@@ -239,13 +247,15 @@ void main() {
         final tags = ['weekly', 'groceries'];
         const isPublic = true;
 
-        when(() => mockRepository.saveAsTemplate(
-              listId: listId,
-              templateName: templateName,
-              description: description,
-              tags: tags,
-              isPublic: isPublic,
-            )).thenAnswer((_) async => 'template-1');
+        when(
+          () => mockRepository.saveAsTemplate(
+            listId: listId,
+            templateName: templateName,
+            description: description,
+            tags: tags,
+            isPublic: isPublic,
+          ),
+        ).thenAnswer((_) async => 'template-1');
 
         // Act
         final templateId = await mockRepository.saveAsTemplate(
@@ -258,13 +268,15 @@ void main() {
 
         // Assert
         expect(templateId, equals('template-1'));
-        verify(() => mockRepository.saveAsTemplate(
-              listId: listId,
-              templateName: templateName,
-              description: description,
-              tags: tags,
-              isPublic: isPublic,
-            )).called(1);
+        verify(
+          () => mockRepository.saveAsTemplate(
+            listId: listId,
+            templateName: templateName,
+            description: description,
+            tags: tags,
+            isPublic: isPublic,
+          ),
+        ).called(1);
       });
 
       test('should update template', () async {
@@ -275,13 +287,15 @@ void main() {
         final tags = ['updated', 'template'];
         const isPublic = false;
 
-        when(() => mockRepository.updateTemplate(
-              templateId: templateId,
-              name: name,
-              description: description,
-              tags: tags,
-              isPublic: isPublic,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateTemplate(
+            templateId: templateId,
+            name: name,
+            description: description,
+            tags: tags,
+            isPublic: isPublic,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateTemplate(
@@ -293,21 +307,24 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.updateTemplate(
-              templateId: templateId,
-              name: name,
-              description: description,
-              tags: tags,
-              isPublic: isPublic,
-            )).called(1);
+        verify(
+          () => mockRepository.updateTemplate(
+            templateId: templateId,
+            name: name,
+            description: description,
+            tags: tags,
+            isPublic: isPublic,
+          ),
+        ).called(1);
       });
 
       test('should delete template', () async {
         // Arrange
         const templateId = 'template-1';
 
-        when(() => mockRepository.deleteTemplate(templateId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteTemplate(templateId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteTemplate(templateId);
@@ -339,8 +356,9 @@ void main() {
           },
         ];
 
-        when(() => mockRepository.getUserTemplates())
-            .thenAnswer((_) async => templates);
+        when(
+          () => mockRepository.getUserTemplates(),
+        ).thenAnswer((_) async => templates);
 
         // Act
         final result = await mockRepository.getUserTemplates();
@@ -373,11 +391,13 @@ void main() {
           },
         ];
 
-        when(() => mockRepository.getPublicTemplates(
-              limit: limit,
-              searchQuery: searchQuery,
-              tags: tags,
-            )).thenAnswer((_) async => templates);
+        when(
+          () => mockRepository.getPublicTemplates(
+            limit: limit,
+            searchQuery: searchQuery,
+            tags: tags,
+          ),
+        ).thenAnswer((_) async => templates);
 
         // Act
         final result = await mockRepository.getPublicTemplates(
@@ -391,11 +411,13 @@ void main() {
         expect(result[0]['name'], contains('Weekly'));
         expect(result[0]['isPublic'], isTrue);
 
-        verify(() => mockRepository.getPublicTemplates(
-              limit: limit,
-              searchQuery: searchQuery,
-              tags: tags,
-            )).called(1);
+        verify(
+          () => mockRepository.getPublicTemplates(
+            limit: limit,
+            searchQuery: searchQuery,
+            tags: tags,
+          ),
+        ).called(1);
       });
 
       test('should create list from template', () async {
@@ -404,11 +426,13 @@ void main() {
         const listName = 'This Week Shopping';
         const description = 'Shopping for this week';
 
-        when(() => mockRepository.createListFromTemplate(
-              templateId: templateId,
-              listName: listName,
-              description: description,
-            )).thenAnswer((_) async => 'new-list-1');
+        when(
+          () => mockRepository.createListFromTemplate(
+            templateId: templateId,
+            listName: listName,
+            description: description,
+          ),
+        ).thenAnswer((_) async => 'new-list-1');
 
         // Act
         final listId = await mockRepository.createListFromTemplate(
@@ -419,11 +443,13 @@ void main() {
 
         // Assert
         expect(listId, equals('new-list-1'));
-        verify(() => mockRepository.createListFromTemplate(
-              templateId: templateId,
-              listName: listName,
-              description: description,
-            )).called(1);
+        verify(
+          () => mockRepository.createListFromTemplate(
+            templateId: templateId,
+            listName: listName,
+            description: description,
+          ),
+        ).called(1);
       });
     });
 

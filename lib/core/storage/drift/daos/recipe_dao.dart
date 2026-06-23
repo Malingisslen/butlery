@@ -12,8 +12,9 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
 
   /// Get all recipes for a user
   Future<List<OfflineRecipe>> getRecipesForUser(String userId) {
-    return (select(offlineRecipes)..where((r) => r.userId.equals(userId)))
-        .get();
+    return (select(
+      offlineRecipes,
+    )..where((r) => r.userId.equals(userId))).get();
   }
 
   /// Get a specific recipe by ID and user
@@ -25,9 +26,9 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
 
   /// Get all recipes that need syncing for a user
   Future<List<OfflineRecipe>> getRecipesNeedingSync(String userId) {
-    return (select(offlineRecipes)
-          ..where((r) => r.userId.equals(userId) & r.needsSync.equals(true)))
-        .get();
+    return (select(
+      offlineRecipes,
+    )..where((r) => r.userId.equals(userId) & r.needsSync.equals(true))).get();
   }
 
   /// Insert or update a recipe
@@ -50,9 +51,9 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
 
   /// Mark a recipe as synced
   Future<void> markSynced(String recipeId, String userId) {
-    return (update(offlineRecipes)
-          ..where((r) => r.id.equals(recipeId) & r.userId.equals(userId)))
-        .write(
+    return (update(
+      offlineRecipes,
+    )..where((r) => r.id.equals(recipeId) & r.userId.equals(userId))).write(
       OfflineRecipesCompanion(
         needsSync: const Value(false),
         lastSyncedAt: Value(clock.now()),
@@ -62,9 +63,9 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
 
   /// Delete a recipe
   Future<void> deleteRecipe(String recipeId, String userId) {
-    return (delete(offlineRecipes)
-          ..where((r) => r.id.equals(recipeId) & r.userId.equals(userId)))
-        .go();
+    return (delete(
+      offlineRecipes,
+    )..where((r) => r.id.equals(recipeId) & r.userId.equals(userId))).go();
   }
 
   /// Delete all recipes for a user
@@ -84,7 +85,8 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
 
   /// Watch all recipes for a user (reactive stream)
   Stream<List<OfflineRecipe>> watchRecipesForUser(String userId) {
-    return (select(offlineRecipes)..where((r) => r.userId.equals(userId)))
-        .watch();
+    return (select(
+      offlineRecipes,
+    )..where((r) => r.userId.equals(userId))).watch();
   }
 }

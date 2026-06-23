@@ -121,8 +121,9 @@ class _RelatedRecipesPickerDialogState
     }
 
     final excluded = {widget.currentRecipeId, ...widget.alreadyLinkedIds};
-    final selectable =
-        vm.recipes.where((r) => !excluded.contains(r.id)).toList();
+    final selectable = vm.recipes
+        .where((r) => !excluded.contains(r.id))
+        .toList();
 
     if (selectable.isEmpty) {
       return StateWidget.noRecipes(
@@ -180,8 +181,9 @@ class _RelatedRecipesPickerDialogState
   }
 
   void _confirm(BuildContext context, RecipeListViewModel vm) {
-    final selected =
-        vm.recipes.where((r) => _selectedIds.contains(r.id)).toList();
+    final selected = vm.recipes
+        .where((r) => _selectedIds.contains(r.id))
+        .toList();
     Navigator.pop(context, selected);
   }
 }

@@ -150,7 +150,9 @@ abstract final class ImportResultHandler {
           await recipeService.updateRecipe(merged);
           if (context.mounted) {
             SnackBarUtils.showSuccess(
-                context, context.l10n.duplicateMergeSuccess);
+              context,
+              context.l10n.duplicateMergeSuccess,
+            );
             Navigator.of(context).pushReplacementNamed(
               Routes.recipeDetail,
               arguments: matches.first.id,
@@ -166,7 +168,9 @@ abstract final class ImportResultHandler {
           await recipeService.updateRecipe(merged);
           if (context.mounted) {
             SnackBarUtils.showSuccess(
-                context, context.l10n.duplicateMergeSuccess);
+              context,
+              context.l10n.duplicateMergeSuccess,
+            );
             Navigator.of(context).pushReplacementNamed(
               Routes.recipeDetail,
               arguments: matches.first.id,
@@ -190,8 +194,10 @@ abstract final class ImportResultHandler {
   /// import.
   static void navigateToRecipeEditor(BuildContext context, Recipe recipe) {
     final prefs = ServiceLocator.get<UserService>().allergenPreferences;
-    if (AllergenMismatch.unconfiguredContainedAllergens(recipe, prefs)
-        .isNotEmpty) {
+    if (AllergenMismatch.unconfiguredContainedAllergens(
+      recipe,
+      prefs,
+    ).isNotEmpty) {
       AllergenSetupBanner.show(context);
     }
 

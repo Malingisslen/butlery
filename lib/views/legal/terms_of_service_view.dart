@@ -42,8 +42,9 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
         content = await rootBundle.loadString(assetPath);
       } catch (_) {
         // Fallback to Swedish
-        content =
-            await rootBundle.loadString('assets/legal/terms_of_service_sv.md');
+        content = await rootBundle.loadString(
+          'assets/legal/terms_of_service_sv.md',
+        );
       }
 
       if (mounted) {
@@ -54,7 +55,9 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
       }
     } catch (e) {
       app_logger.AppLogger.error(
-          '[TermsOfServiceView] Failed to load terms of service', e);
+        '[TermsOfServiceView] Failed to load terms of service',
+        e,
+      );
 
       if (mounted) {
         setState(() {
@@ -102,8 +105,11 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
-                  size: 64, color: Theme.of(context).colorScheme.error),
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(_errorMessage!, textAlign: TextAlign.center),
               const SizedBox(height: AppDimensions.spacingLg),
@@ -128,8 +134,8 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
             child: SelectableText(
               _content!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                  ),
+                height: 1.6,
+              ),
             ),
           ),
         ),

@@ -47,7 +47,7 @@ class OnnxLineClassifierService {
   String? _outputName;
 
   OnnxLineClassifierService({OnnxRuntime? runtime})
-      : _runtime = runtime ?? OnnxRuntime();
+    : _runtime = runtime ?? OnnxRuntime();
 
   bool get isAvailable => _initialized && !_initFailed && !_isDisposed;
 
@@ -114,11 +114,15 @@ class OnnxLineClassifierService {
     }
 
     // Run inference in chunks
-    for (var chunkStart = 0;
-        chunkStart < inferenceTexts.length;
-        chunkStart += _maxBatchSize) {
-      final chunkEnd =
-          (chunkStart + _maxBatchSize).clamp(0, inferenceTexts.length);
+    for (
+      var chunkStart = 0;
+      chunkStart < inferenceTexts.length;
+      chunkStart += _maxBatchSize
+    ) {
+      final chunkEnd = (chunkStart + _maxBatchSize).clamp(
+        0,
+        inferenceTexts.length,
+      );
       final chunkTexts = inferenceTexts.sublist(chunkStart, chunkEnd);
       final chunkIndices = inferenceIndices.sublist(chunkStart, chunkEnd);
 
@@ -177,22 +181,28 @@ class OnnxLineClassifierService {
 
       for (var b = 0; b < batchSize; b++) {
         final logitStart = b * numLabels;
-        final (bestIdx, confidence, secondIdx, secondConf) =
-            _topTwoSoftmax(flatLogits, logitStart, numLabels);
+        final (bestIdx, confidence, secondIdx, secondConf) = _topTwoSoftmax(
+          flatLogits,
+          logitStart,
+          numLabels,
+        );
 
-        final primaryType =
-            bestIdx < _labels.length ? _labels[bestIdx] : LineType.noise;
+        final primaryType = bestIdx < _labels.length
+            ? _labels[bestIdx]
+            : LineType.noise;
         final secondaryType =
             secondConf >= _secondaryTypeThreshold && secondIdx < _labels.length
-                ? _labels[secondIdx]
-                : null;
+            ? _labels[secondIdx]
+            : null;
 
-        results.add(ClassifiedLine(
-          text: texts[b],
-          type: primaryType,
-          confidence: confidence,
-          secondaryType: secondaryType,
-        ));
+        results.add(
+          ClassifiedLine(
+            text: texts[b],
+            type: primaryType,
+            confidence: confidence,
+            secondaryType: secondaryType,
+          ),
+        );
       }
 
       return results;
@@ -213,10 +223,12 @@ class OnnxLineClassifierService {
     final inputIds = await OrtValue.fromList(inputIdData, shape);
     final attentionMask = await OrtValue.fromList(attentionData, shape);
     try {
-      final outputs = await _session!.run({
-        _inputIdName!: inputIds,
-        _attentionMaskName!: attentionMask,
-      }).timeout(_batchTimeout);
+      final outputs = await _session!
+          .run({
+            _inputIdName!: inputIds,
+            _attentionMaskName!: attentionMask,
+          })
+          .timeout(_batchTimeout);
       try {
         final logitsRaw = await outputs[_outputName]!.asList();
         return _flattenToDoubles(logitsRaw);
@@ -233,7 +245,10 @@ class OnnxLineClassifierService {
 
   /// Top-2 softmax: returns (bestIdx, bestProb, secondIdx, secondProb).
   (int, double, int, double) _topTwoSoftmax(
-      List<double> logits, int offset, int length) {
+    List<double> logits,
+    int offset,
+    int length,
+  ) {
     var maxVal = logits[offset];
     for (var i = 1; i < length; i++) {
       final v = logits[offset + i];

@@ -17,8 +17,8 @@ class MessageReactionsService extends BaseService {
   MessageReactionsService({
     required FirestoreRepository firestoreRepository,
     required auth_repo.AuthRepository authRepository,
-  })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository;
+  }) : _firestoreRepository = firestoreRepository,
+       _authRepository = authRepository;
 
   @override
   String get serviceName => 'MessageReactionsService';
@@ -35,7 +35,8 @@ class MessageReactionsService extends BaseService {
     final currentUserId = _authRepository.currentUserId;
     if (currentUserId == null || currentUserId != userId) {
       AppLogger.warning(
-          'Unauthorized reaction attempt: ${userId.maskedUserId} != $currentUserId');
+        'Unauthorized reaction attempt: ${userId.maskedUserId} != $currentUserId',
+      );
       throw StateError('Cannot toggle reaction for another user');
     }
 
@@ -60,11 +61,11 @@ class MessageReactionsService extends BaseService {
 
         if (currentVoters.contains(userId)) {
           transaction.update(messageRef, {
-            field: FieldValue.arrayRemove([userId])
+            field: FieldValue.arrayRemove([userId]),
           });
         } else {
           transaction.update(messageRef, {
-            field: FieldValue.arrayUnion([userId])
+            field: FieldValue.arrayUnion([userId]),
           });
         }
       });

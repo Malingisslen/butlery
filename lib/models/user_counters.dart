@@ -57,16 +57,24 @@ class UserCounters {
   factory UserCounters.fromFirestore(String userId, Map<String, dynamic> data) {
     return UserCounters(
       userId: userId,
-      unreadSharedRecipes:
-          SerializationUtils.safeInt(data, 'unreadSharedRecipes'),
+      unreadSharedRecipes: SerializationUtils.safeInt(
+        data,
+        'unreadSharedRecipes',
+      ),
       unreadSharedMenus: SerializationUtils.safeInt(data, 'unreadSharedMenus'),
-      unreadSharedShoppingLists:
-          SerializationUtils.safeInt(data, 'unreadSharedShoppingLists'),
-      totalSharedContent:
-          SerializationUtils.safeInt(data, 'totalSharedContent'),
+      unreadSharedShoppingLists: SerializationUtils.safeInt(
+        data,
+        'unreadSharedShoppingLists',
+      ),
+      totalSharedContent: SerializationUtils.safeInt(
+        data,
+        'totalSharedContent',
+      ),
       unreadMessages: SerializationUtils.safeInt(data, 'unreadMessages'),
-      pendingFriendRequests:
-          SerializationUtils.safeInt(data, 'pendingFriendRequests'),
+      pendingFriendRequests: SerializationUtils.safeInt(
+        data,
+        'pendingFriendRequests',
+      ),
       lastUpdated:
           SerializationUtils.safeDateTime(data, 'lastUpdated') ?? clock.now(),
     );
@@ -122,7 +130,8 @@ class UserCounters {
       case 'shopping_lists':
       case 'shared_shopping_lists':
         return copyWith(
-            unreadSharedShoppingLists: unreadSharedShoppingLists + by);
+          unreadSharedShoppingLists: unreadSharedShoppingLists + by,
+        );
       case 'messages':
         return copyWith(unreadMessages: unreadMessages + by);
       case 'friend_requests':
@@ -138,20 +147,26 @@ class UserCounters {
       case 'recipes':
       case 'shared_recipes':
         return copyWith(
-          unreadSharedRecipes:
-              (unreadSharedRecipes - by).clamp(0, unreadSharedRecipes),
+          unreadSharedRecipes: (unreadSharedRecipes - by).clamp(
+            0,
+            unreadSharedRecipes,
+          ),
         );
       case 'menus':
       case 'shared_menus':
         return copyWith(
-          unreadSharedMenus:
-              (unreadSharedMenus - by).clamp(0, unreadSharedMenus),
+          unreadSharedMenus: (unreadSharedMenus - by).clamp(
+            0,
+            unreadSharedMenus,
+          ),
         );
       case 'shopping_lists':
       case 'shared_shopping_lists':
         return copyWith(
-          unreadSharedShoppingLists: (unreadSharedShoppingLists - by)
-              .clamp(0, unreadSharedShoppingLists),
+          unreadSharedShoppingLists: (unreadSharedShoppingLists - by).clamp(
+            0,
+            unreadSharedShoppingLists,
+          ),
         );
       case 'messages':
         return copyWith(
@@ -159,8 +174,10 @@ class UserCounters {
         );
       case 'friend_requests':
         return copyWith(
-          pendingFriendRequests:
-              (pendingFriendRequests - by).clamp(0, pendingFriendRequests),
+          pendingFriendRequests: (pendingFriendRequests - by).clamp(
+            0,
+            pendingFriendRequests,
+          ),
         );
       default:
         return this;

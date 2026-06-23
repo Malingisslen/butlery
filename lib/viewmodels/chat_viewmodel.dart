@@ -58,9 +58,9 @@ class ChatViewModel extends ChangeNotifier
     required this.conversationId,
     Conversation? initialConversation,
     PresenceService? presenceService,
-  })  : _messagingService = messagingService,
-        _presenceService = presenceService,
-        _conversation = initialConversation {
+  }) : _messagingService = messagingService,
+       _presenceService = presenceService,
+       _conversation = initialConversation {
     try {
       _contentFilter = ServiceLocator.get<ContentFilterService>();
     } catch (_) {
@@ -112,8 +112,10 @@ class ChatViewModel extends ChangeNotifier
     }
 
     // For direct conversations, show last seen or online status
-    final otherParticipantId = _conversation!.participantIds
-        .firstWhere((id) => id != currentUserId, orElse: () => '');
+    final otherParticipantId = _conversation!.participantIds.firstWhere(
+      (id) => id != currentUserId,
+      orElse: () => '',
+    );
 
     if (otherParticipantId.isEmpty) return '';
 
@@ -133,7 +135,8 @@ class ChatViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     AppLogger.info(
-        '🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId');
+      '🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId',
+    );
     _loadConversation();
     _loadMessages();
     _subscribeToTypingIndicators();
@@ -208,7 +211,8 @@ class ChatViewModel extends ChangeNotifier
 
     try {
       AppLogger.info(
-          '🔍 [ChatViewModel] Starting message stream for conversationId: $conversationId');
+        '🔍 [ChatViewModel] Starting message stream for conversationId: $conversationId',
+      );
       _messagesSubscription = _messagingService
           .getConversationMessages(
             conversationId: conversationId,
@@ -231,12 +235,15 @@ class ChatViewModel extends ChangeNotifier
     AppLogger.info('📬 [ChatViewModel] Message stream update received');
     AppLogger.debug('📬 [ChatViewModel] ConversationId: $conversationId');
     AppLogger.debug(
-        '📬 [ChatViewModel] Number of messages: ${messages.length}');
+      '📬 [ChatViewModel] Number of messages: ${messages.length}',
+    );
     if (messages.isNotEmpty) {
       AppLogger.debug(
-          '📬 [ChatViewModel] First message: ${messages.first.content.substring(0, messages.first.content.length > 50 ? 50 : messages.first.content.length)}...');
+        '📬 [ChatViewModel] First message: ${messages.first.content.substring(0, messages.first.content.length > 50 ? 50 : messages.first.content.length)}...',
+      );
       AppLogger.debug(
-          '📬 [ChatViewModel] Last message: ${messages.last.content.substring(0, messages.last.content.length > 50 ? 50 : messages.last.content.length)}...');
+        '📬 [ChatViewModel] Last message: ${messages.last.content.substring(0, messages.last.content.length > 50 ? 50 : messages.last.content.length)}...',
+      );
     }
 
     _messages = messages;
@@ -283,9 +290,9 @@ class ChatViewModel extends ChangeNotifier
       );
 
       await ServiceLocator.tryGet<AnalyticsService>()?.social.logMessageSent(
-            conversationId: conversationId,
-            messageType: 'text',
-          );
+        conversationId: conversationId,
+        messageType: 'text',
+      );
 
       // Clear reply if we had one
       if (_replyToMessage != null) {
@@ -327,9 +334,9 @@ class ChatViewModel extends ChangeNotifier
       );
 
       await ServiceLocator.tryGet<AnalyticsService>()?.social.logMessageSent(
-            conversationId: conversationId,
-            messageType: 'recipe_share',
-          );
+        conversationId: conversationId,
+        messageType: 'recipe_share',
+      );
 
       _isSending = false;
       _safeNotifyListeners();
@@ -446,13 +453,16 @@ class ChatViewModel extends ChangeNotifier
       _typingSubscribeRetries++;
       if (_typingSubscribeRetries > _maxTypingSubscribeRetries) {
         AppLogger.warning(
-            'Gave up waiting for conversation to subscribe to typing indicators');
+          'Gave up waiting for conversation to subscribe to typing indicators',
+        );
         return;
       }
       cancelNamedTimer('typing_retry');
-      createTimer(const Duration(milliseconds: 500),
-          () => _subscribeToTypingIndicators(),
-          name: 'typing_retry');
+      createTimer(
+        const Duration(milliseconds: 500),
+        () => _subscribeToTypingIndicators(),
+        name: 'typing_retry',
+      );
       return;
     }
 
@@ -468,16 +478,16 @@ class ChatViewModel extends ChangeNotifier
       _typingSubscription = _presenceService
           .getTypingUsersStream(conversationId, participantIds)
           .listen(
-        (typingUserIds) {
-          if (_isDisposed) return;
-          _typingUserIds = typingUserIds;
-          _loadUserDisplayNames(typingUserIds);
-          _safeNotifyListeners();
-        },
-        onError: (error) {
-          AppLogger.error('Typing subscription error', error);
-        },
-      );
+            (typingUserIds) {
+              if (_isDisposed) return;
+              _typingUserIds = typingUserIds;
+              _loadUserDisplayNames(typingUserIds);
+              _safeNotifyListeners();
+            },
+            onError: (error) {
+              AppLogger.error('Typing subscription error', error);
+            },
+          );
     } catch (e) {
       AppLogger.error('Failed to subscribe to typing indicators', e);
     }

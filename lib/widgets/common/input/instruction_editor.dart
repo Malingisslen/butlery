@@ -88,8 +88,9 @@ class _InstructionEditorState extends State<InstructionEditor> {
             controller: controllers[i],
             decoration: InputDecoration(
               border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
               ),
               labelText: context.l10n.instructionLabel(i + 1),
               labelStyle: AppTextStyles.labelLarge,

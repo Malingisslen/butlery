@@ -164,7 +164,8 @@ class UnitTestMatchers {
 
   /// Create a matcher for a specific exception type with message
   static Matcher throwsExceptionWithMessage<T extends Exception>(
-      String message) {
+    String message,
+  ) {
     return throwsA(
       allOf([
         isA<T>(),

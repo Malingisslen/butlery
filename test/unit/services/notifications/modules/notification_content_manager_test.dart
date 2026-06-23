@@ -30,7 +30,8 @@ void main() {
         type: type ?? NotificationType.immediate,
         priority: priority ?? NotificationPriority.medium,
         category: category ?? NotificationCategory.social,
-        localization: localization ??
+        localization:
+            localization ??
             {
               'title_sv': 'Test titel {senderName}',
               'body_sv': 'Test meddelande {recipeTitle}',
@@ -52,7 +53,8 @@ void main() {
       return NotificationTemplate(
         title: title ?? 'Test Notification',
         body: body ?? 'Test notification body',
-        data: data ??
+        data:
+            data ??
             {
               'category': 'social',
               'timestamp': DateTime.now().toIso8601String(),
@@ -82,8 +84,9 @@ void main() {
     group('Notification ID Generation', () {
       test('should generate unique notification IDs', () {
         // Arrange
-        final strategy =
-            createTestStrategy(category: NotificationCategory.recipes);
+        final strategy = createTestStrategy(
+          category: NotificationCategory.recipes,
+        );
 
         // Act
         final id1 = contentManager.generateNotificationId('user-456', strategy);
@@ -103,7 +106,9 @@ void main() {
 
         // Act - Generate with special characters in user ID
         final id = contentManager.generateNotificationId(
-            'user/with\\special:chars', strategy);
+          'user/with\\special:chars',
+          strategy,
+        );
 
         // Assert
         expect(id, isNotEmpty);
@@ -133,28 +138,31 @@ void main() {
 
     group('Template Creation', () {
       test(
-          'should create Swedish notification template with variable substitution',
-          () {
-        // Arrange
-        final strategy = createTestStrategy();
-        final variables = {
-          'senderName': 'Anna',
-          'recipeTitle': 'Köttbullar med gräddsås',
-        };
+        'should create Swedish notification template with variable substitution',
+        () {
+          // Arrange
+          final strategy = createTestStrategy();
+          final variables = {
+            'senderName': 'Anna',
+            'recipeTitle': 'Köttbullar med gräddsås',
+          };
 
-        // Act
-        final template = contentManager.createNotificationContent(
-          strategy: strategy,
-          variables: variables,
-        );
+          // Act
+          final template = contentManager.createNotificationContent(
+            strategy: strategy,
+            variables: variables,
+          );
 
-        // Assert
-        expect(template.title, equals('Test titel Anna'));
-        expect(
-            template.body, equals('Test meddelande Köttbullar med gräddsås'));
-        expect(template.data['category'], equals('social'));
-        expect(template.data['type'], equals('immediate'));
-      });
+          // Assert
+          expect(template.title, equals('Test titel Anna'));
+          expect(
+            template.body,
+            equals('Test meddelande Köttbullar med gräddsås'),
+          );
+          expect(template.data['category'], equals('social'));
+          expect(template.data['type'], equals('immediate'));
+        },
+      );
 
       test('should create English notification template', () {
         // Arrange
@@ -188,8 +196,10 @@ void main() {
         );
 
         // Assert
-        expect(template.title,
-            equals('Test titel {senderName}')); // Variable not replaced
+        expect(
+          template.title,
+          equals('Test titel {senderName}'),
+        ); // Variable not replaced
         expect(template.body, equals('Test meddelande {recipeTitle}'));
       });
 
@@ -300,10 +310,16 @@ void main() {
           final result = contentManager.buildBatchedNotification(notifications);
 
           // Assert
-          expect(result.title, equals(expectedTitle),
-              reason: 'Category: $category');
-          expect(result.body, equals(expectedBody),
-              reason: 'Category: $category');
+          expect(
+            result.title,
+            equals(expectedTitle),
+            reason: 'Category: $category',
+          );
+          expect(
+            result.body,
+            equals(expectedBody),
+            reason: 'Category: $category',
+          );
         }
       });
 
@@ -320,10 +336,12 @@ void main() {
         ];
 
         // Act
-        final recipesResult =
-            contentManager.buildBatchedNotification(recipesNotifications);
-        final friendsResult =
-            contentManager.buildBatchedNotification(friendsNotifications);
+        final recipesResult = contentManager.buildBatchedNotification(
+          recipesNotifications,
+        );
+        final friendsResult = contentManager.buildBatchedNotification(
+          friendsNotifications,
+        );
 
         // Assert
         expect(recipesResult.actions, hasLength(1));

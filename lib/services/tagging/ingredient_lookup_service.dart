@@ -38,8 +38,8 @@ class IngredientLookupService extends BaseService {
   IngredientLookupService({
     required IngredientRepository ingredientRepository,
     required UserIngredientRepository userIngredientRepository,
-  })  : _ingredientRepository = ingredientRepository,
-        _userIngredientRepository = userIngredientRepository;
+  }) : _ingredientRepository = ingredientRepository,
+       _userIngredientRepository = userIngredientRepository;
 
   @override
   String get serviceName => 'IngredientLookupService';
@@ -50,7 +50,8 @@ class IngredientLookupService extends BaseService {
     _cacheVersion++; // CRIT-3: Invalidate in-flight lookups
     _lookupCache.clear();
     AppLogger.debug(
-        'M3: Ingredient lookup cache cleared (version=$_cacheVersion)');
+      'M3: Ingredient lookup cache cleared (version=$_cacheVersion)',
+    );
   }
 
   /// M3: Current cache size for debugging.
@@ -130,8 +131,9 @@ class IngredientLookupService extends BaseService {
 
     // CRIT-3/HIGH-3: Create cache key using null character separator
     // Null character (\x00) cannot appear in user input, preventing collisions
-    final cacheKey =
-        userId != null ? 'u\x00$userId\x00$cleanName' : 'g\x00$cleanName';
+    final cacheKey = userId != null
+        ? 'u\x00$userId\x00$cleanName'
+        : 'g\x00$cleanName';
 
     // M3: Check cache first (null means "not found" was cached)
     if (_lookupCache.containsKey(cacheKey)) {
@@ -170,8 +172,10 @@ class IngredientLookupService extends BaseService {
     // 1. Try user-defined ingredients FIRST (allows override of global entries)
     // M2: This lets users customize properties for their own ingredients
     if (userId != null) {
-      final userResult =
-          await _userIngredientRepository.findByName(userId, cleanName);
+      final userResult = await _userIngredientRepository.findByName(
+        userId,
+        cleanName,
+      );
       if (userResult != null) return userResult;
     }
 
@@ -262,8 +266,9 @@ class IngredientLookupService extends BaseService {
     if (name.endsWith('ar')) {
       // L3 fix: Swedish plural "äpplar" → "äpple" (with 'e') is the correct form.
       // Check the correct form first, then fallback to without 'e'.
-      variations
-          .add('${name.substring(0, name.length - 2)}e'); // "äpple" - correct
+      variations.add(
+        '${name.substring(0, name.length - 2)}e',
+      ); // "äpple" - correct
       variations.add(name.substring(0, name.length - 2)); // "äppl" - fallback
     }
     if (name.endsWith('er')) {

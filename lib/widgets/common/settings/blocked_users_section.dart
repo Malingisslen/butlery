@@ -145,8 +145,10 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
         content: Text(
           succeeded == ids.length
               ? context.l10n.blockedUsersBulkUnblockResult(succeeded)
-              : context.l10n
-                  .blockedUsersBulkUnblockPartial(succeeded, ids.length),
+              : context.l10n.blockedUsersBulkUnblockPartial(
+                  succeeded,
+                  ids.length,
+                ),
         ),
       ),
     );

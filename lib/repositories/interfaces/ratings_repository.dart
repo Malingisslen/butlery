@@ -42,7 +42,8 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
 
   /// Get rating statistics for multiple recipes
   Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
-      List<String> recipeIds);
+    List<String> recipeIds,
+  );
 
   /// Get ratings stream for real-time updates
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId);
@@ -91,14 +92,14 @@ class RecipeRating {
   });
 
   Map<String, dynamic> toFirestore() => {
-        'recipeId': recipeId,
-        'userId': userId,
-        'rating': rating,
-        'review': review,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'updatedAt': Timestamp.fromDate(updatedAt),
-        if (recipeOwnerId != null) 'recipeOwnerId': recipeOwnerId,
-      };
+    'recipeId': recipeId,
+    'userId': userId,
+    'rating': rating,
+    'review': review,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'updatedAt': Timestamp.fromDate(updatedAt),
+    if (recipeOwnerId != null) 'recipeOwnerId': recipeOwnerId,
+  };
 
   factory RecipeRating.fromFirestore(Map<String, dynamic> data, String id) =>
       RecipeRating(

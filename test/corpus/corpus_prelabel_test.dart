@@ -70,107 +70,118 @@ void main() {
     await TestServiceLocator.initialize();
   });
 
-  test('prelabel: OCR + parse every inbox image into draft/gold seeds',
-      () async {
-    final paths = CorpusPaths.resolve();
-    if (!paths.exists) {
-      fail('Corpus root not found: ${paths.root}. '
-          'Create it or set BUTLERY_CORPUS_DIR.');
-    }
-
-    final ocrKey = Platform.environment['OCR_SPACE_API_KEY'] ?? '';
-    if (ocrKey.isEmpty) {
-      fail('OCR_SPACE_API_KEY env var not set — pass it to flutter test.');
-    }
-
-    final importManager = ImportManager(_NoopPersonalOps());
-    final ingredientParser = IngredientParsingStrategy();
-
-    var processed = 0;
-    var failed = 0;
-
-    for (final bookDir in paths.books()) {
-      final bookSlug = _basename(bookDir.path);
-      final inbox = Directory(paths.inbox(bookSlug));
-      if (!inbox.existsSync()) continue;
-
-      final images = inbox
-          .listSync()
-          .whereType<File>()
-          .where((f) => _isImage(f.path))
-          .toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
-
-      for (final image in images) {
-        final recipeId = _recipeIdFor(image.path);
-        final recipeDir = Directory(paths.recipe(bookSlug, recipeId));
-        recipeDir.createSync(recursive: true);
-
-        final bytes = await image.readAsBytes();
-        // page-01.jpg keeps the FULL-RES camera photo — the realistic
-        // production artifact the corpus is meant to preserve.
-        await File('${recipeDir.path}/page-01.jpg').writeAsBytes(bytes);
-
-        // OCR.space's free plan rejects payloads over 1.5 MB (E556). Phone
-        // photos are 2–4 MB, so shrink the COPY sent to OCR — mirrors the
-        // image_picker compression the real app applies before OCR. Text OCR
-        // gains nothing above ~1600px, so this costs no accuracy.
-        final ocrBytes = _shrinkForOcr(bytes);
-        final ocr = await _runOcr(ocrKey, ocrBytes, '$bookSlug/$recipeId');
-        File(paths.ocrText(bookSlug, recipeId)).writeAsStringSync(ocr.text);
-        File(paths.ocrMeta(bookSlug, recipeId))
-            .writeAsStringSync(encodeJsonPretty(ocr.meta.toJson()));
-
-        if (ocr.meta.isFailure || ocr.text.trim().isEmpty) {
-          failed++;
-          stderr
-              .writeln('OCR failed for $bookSlug/$recipeId: ${ocr.meta.error}');
-          // Leave the image in inbox-equivalent state (page-01.jpg kept) so it
-          // can be retried; no draft written.
-          continue;
-        }
-
-        final drafts = await _parseToDrafts(
-          importManager,
-          ingredientParser,
-          ocr.text,
+  test(
+    'prelabel: OCR + parse every inbox image into draft/gold seeds',
+    () async {
+      final paths = CorpusPaths.resolve();
+      if (!paths.exists) {
+        fail(
+          'Corpus root not found: ${paths.root}. '
+          'Create it or set BUTLERY_CORPUS_DIR.',
         );
-
-        if (drafts.length == 1) {
-          // Single-recipe page → flat layout (draft.json/gold.json at the image
-          // dir), exactly as before. Minimises churn on existing corpora.
-          _writeDraftAndSeed(
-            paths.draft(bookSlug, recipeId),
-            paths.gold(bookSlug, recipeId),
-            drafts.first,
-          );
-        } else {
-          // Multi-recipe page → one recipe-NN/ block per recipe; page-01.jpg and
-          // ocr.txt stay shared at the image level.
-          for (var i = 0; i < drafts.length; i++) {
-            final blockId = 'recipe-${(i + 1).toString().padLeft(2, '0')}';
-            Directory(paths.recipeBlock(bookSlug, recipeId, blockId))
-                .createSync(recursive: true);
-            _writeDraftAndSeed(
-              paths.draftBlock(bookSlug, recipeId, blockId),
-              paths.goldBlock(bookSlug, recipeId, blockId),
-              drafts[i],
-            );
-          }
-        }
-
-        processed++;
-        stdout.writeln('Prelabeled $bookSlug/$recipeId '
-            '(${drafts.length} recipe(s))');
       }
-    }
 
-    stdout
-        .writeln('Prelabel done: $processed processed, $failed OCR failures.');
-  },
-      skip: _shouldRun
-          ? false
-          : 'set RUN_CORPUS_PRELABEL=1 to run the prelabel batch');
+      final ocrKey = Platform.environment['OCR_SPACE_API_KEY'] ?? '';
+      if (ocrKey.isEmpty) {
+        fail('OCR_SPACE_API_KEY env var not set — pass it to flutter test.');
+      }
+
+      final importManager = ImportManager(_NoopPersonalOps());
+      final ingredientParser = IngredientParsingStrategy();
+
+      var processed = 0;
+      var failed = 0;
+
+      for (final bookDir in paths.books()) {
+        final bookSlug = _basename(bookDir.path);
+        final inbox = Directory(paths.inbox(bookSlug));
+        if (!inbox.existsSync()) continue;
+
+        final images =
+            inbox
+                .listSync()
+                .whereType<File>()
+                .where((f) => _isImage(f.path))
+                .toList()
+              ..sort((a, b) => a.path.compareTo(b.path));
+
+        for (final image in images) {
+          final recipeId = _recipeIdFor(image.path);
+          final recipeDir = Directory(paths.recipe(bookSlug, recipeId));
+          recipeDir.createSync(recursive: true);
+
+          final bytes = await image.readAsBytes();
+          // page-01.jpg keeps the FULL-RES camera photo — the realistic
+          // production artifact the corpus is meant to preserve.
+          await File('${recipeDir.path}/page-01.jpg').writeAsBytes(bytes);
+
+          // OCR.space's free plan rejects payloads over 1.5 MB (E556). Phone
+          // photos are 2–4 MB, so shrink the COPY sent to OCR — mirrors the
+          // image_picker compression the real app applies before OCR. Text OCR
+          // gains nothing above ~1600px, so this costs no accuracy.
+          final ocrBytes = _shrinkForOcr(bytes);
+          final ocr = await _runOcr(ocrKey, ocrBytes, '$bookSlug/$recipeId');
+          File(paths.ocrText(bookSlug, recipeId)).writeAsStringSync(ocr.text);
+          File(
+            paths.ocrMeta(bookSlug, recipeId),
+          ).writeAsStringSync(encodeJsonPretty(ocr.meta.toJson()));
+
+          if (ocr.meta.isFailure || ocr.text.trim().isEmpty) {
+            failed++;
+            stderr.writeln(
+              'OCR failed for $bookSlug/$recipeId: ${ocr.meta.error}',
+            );
+            // Leave the image in inbox-equivalent state (page-01.jpg kept) so it
+            // can be retried; no draft written.
+            continue;
+          }
+
+          final drafts = await _parseToDrafts(
+            importManager,
+            ingredientParser,
+            ocr.text,
+          );
+
+          if (drafts.length == 1) {
+            // Single-recipe page → flat layout (draft.json/gold.json at the image
+            // dir), exactly as before. Minimises churn on existing corpora.
+            _writeDraftAndSeed(
+              paths.draft(bookSlug, recipeId),
+              paths.gold(bookSlug, recipeId),
+              drafts.first,
+            );
+          } else {
+            // Multi-recipe page → one recipe-NN/ block per recipe; page-01.jpg and
+            // ocr.txt stay shared at the image level.
+            for (var i = 0; i < drafts.length; i++) {
+              final blockId = 'recipe-${(i + 1).toString().padLeft(2, '0')}';
+              Directory(
+                paths.recipeBlock(bookSlug, recipeId, blockId),
+              ).createSync(recursive: true);
+              _writeDraftAndSeed(
+                paths.draftBlock(bookSlug, recipeId, blockId),
+                paths.goldBlock(bookSlug, recipeId, blockId),
+                drafts[i],
+              );
+            }
+          }
+
+          processed++;
+          stdout.writeln(
+            'Prelabeled $bookSlug/$recipeId '
+            '(${drafts.length} recipe(s))',
+          );
+        }
+      }
+
+      stdout.writeln(
+        'Prelabel done: $processed processed, $failed OCR failures.',
+      );
+    },
+    skip: _shouldRun
+        ? false
+        : 'set RUN_CORPUS_PRELABEL=1 to run the prelabel batch',
+  );
 }
 
 /// Downscale (long edge ≤ 1600) + JPEG re-encode so the OCR payload clears
@@ -211,28 +222,36 @@ Future<_OcrOutcome> _runOcr(
 ) async {
   final ts = DateTime.now().toIso8601String();
   try {
-    final req = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://api.ocr.space/parse/image'),
-    )
-      ..fields['apikey'] = apiKey
-      ..fields['OCREngine'] = '2'
-      ..fields['language'] = 'eng'
-      ..fields['scale'] = 'true'
-      ..fields['isOverlayRequired'] = 'false'
-      ..fields['filetype'] = 'JPG'
-      ..files.add(
-          http.MultipartFile.fromBytes('file', jpgBytes, filename: 'page.jpg'));
+    final req =
+        http.MultipartRequest(
+            'POST',
+            Uri.parse('https://api.ocr.space/parse/image'),
+          )
+          ..fields['apikey'] = apiKey
+          ..fields['OCREngine'] = '2'
+          ..fields['language'] = 'eng'
+          ..fields['scale'] = 'true'
+          ..fields['isOverlayRequired'] = 'false'
+          ..fields['filetype'] = 'JPG'
+          ..files.add(
+            http.MultipartFile.fromBytes(
+              'file',
+              jpgBytes,
+              filename: 'page.jpg',
+            ),
+          );
 
     final resp = await http.Response.fromStream(await req.send());
     if (resp.statusCode != 200) {
       stderr.writeln('OCR[$label] HTTP ${resp.statusCode}: ${resp.body}');
       return _OcrOutcome(
-          '',
-          OcrMeta(
-              provider: 'ocr_space',
-              timestampIso: ts,
-              error: 'HTTP ${resp.statusCode}'));
+        '',
+        OcrMeta(
+          provider: 'ocr_space',
+          timestampIso: ts,
+          error: 'HTTP ${resp.statusCode}',
+        ),
+      );
     }
 
     final json = jsonDecode(resp.body) as Map<String, dynamic>;
@@ -241,7 +260,9 @@ Future<_OcrOutcome> _runOcr(
       final msg = em is List ? em.join('; ') : em.toString();
       stderr.writeln('OCR[$label] OCR.space error: $msg');
       return _OcrOutcome(
-          '', OcrMeta(provider: 'ocr_space', timestampIso: ts, error: msg));
+        '',
+        OcrMeta(provider: 'ocr_space', timestampIso: ts, error: msg),
+      );
     }
 
     final results = json['ParsedResults'] as List?;

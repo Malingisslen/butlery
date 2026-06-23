@@ -52,7 +52,8 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
         builder: (context, viewModel, child) {
           return AlertDialog(
             title: Text(
-                context.l10n.dialogAddRecipesToCategory(widget.categoryName)),
+              context.l10n.dialogAddRecipesToCategory(widget.categoryName),
+            ),
             contentPadding: EdgeInsets.zero,
             content: SizedBox(
               width: double.maxFinite,
@@ -69,20 +70,23 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                   onPressed: () => _addSelectedRecipes(context, viewModel),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusM,
+                      ),
                     ),
                   ),
                   icon: const Icon(Icons.add),
                   label: Text(
-                      '${context.l10n.commonAdd} (${_selectedRecipeIds.length})'),
+                    '${context.l10n.commonAdd} (${_selectedRecipeIds.length})',
+                  ),
                 ),
             ],
           );
@@ -115,15 +119,15 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
     final filteredRecipes = _searchQuery.isEmpty
         ? viewModel.recipes
         : viewModel.recipes.where((recipe) {
-            return recipe.title
-                    .toLowerCase()
-                    .contains(_searchQuery.toLowerCase()) ||
-                recipe.mealType
-                    .toLowerCase()
-                    .contains(_searchQuery.toLowerCase()) ||
-                recipe.description
-                    .toLowerCase()
-                    .contains(_searchQuery.toLowerCase());
+            return recipe.title.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                recipe.mealType.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                recipe.description.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                );
           }).toList();
 
     return Column(
@@ -160,8 +164,9 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                   itemCount: filteredRecipes.length,
                   itemBuilder: (context, index) {
                     final unifiedRecipe = filteredRecipes[index];
-                    final isSelected =
-                        _selectedRecipeIds.contains(unifiedRecipe.id);
+                    final isSelected = _selectedRecipeIds.contains(
+                      unifiedRecipe.id,
+                    );
 
                     return MenuRecipeListItem(
                       key: ValueKey(unifiedRecipe.id),
@@ -197,10 +202,9 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .primary
-                  .withValues(alpha: AppDimensions.opacityVeryLight),
+              color: Theme.of(context).colorScheme.primary.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Text(
@@ -227,7 +231,9 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
   }
 
   void _addSelectedRecipes(
-      BuildContext context, RecipeListViewModel viewModel) {
+    BuildContext context,
+    RecipeListViewModel viewModel,
+  ) {
     final selectedUnifiedRecipes = viewModel.recipes
         .where((recipe) => _selectedRecipeIds.contains(recipe.id))
         .toList();
@@ -275,7 +281,8 @@ class MenuRecipeListItem extends StatelessWidget {
         onChanged: (value) => onSelectionChanged(value ?? false),
         activeColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS)),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        ),
       ),
       onTap: () => onSelectionChanged(!isSelected),
     );
@@ -344,10 +351,9 @@ class MenuRecipeListItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primary
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Icon(

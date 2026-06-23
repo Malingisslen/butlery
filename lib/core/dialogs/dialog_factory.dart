@@ -33,8 +33,9 @@ class DialogFactory {
     final l10n = context.l10n;
     final effectiveConfirmText = confirmText ?? l10n.commonOk;
     final effectiveCancelText = cancelText ?? l10n.commonCancel;
-    final dangerColor =
-        isDangerous ? Theme.of(context).colorScheme.error : confirmColor;
+    final dangerColor = isDangerous
+        ? Theme.of(context).colorScheme.error
+        : confirmColor;
 
     if (_isIOS) {
       return showCupertinoDialog<bool>(
@@ -251,8 +252,9 @@ class DialogFactory {
           maxLines: maxLines,
           minLines: maxLines > 1 ? 2 : 1,
           autofocus: true,
-          keyboardType:
-              maxLines > 1 ? TextInputType.multiline : TextInputType.text,
+          keyboardType: maxLines > 1
+              ? TextInputType.multiline
+              : TextInputType.text,
         ),
         actions: [
           TextButton(

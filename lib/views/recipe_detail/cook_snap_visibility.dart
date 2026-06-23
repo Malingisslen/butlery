@@ -30,7 +30,7 @@ enum CookSnapVisibilityScope {
 /// A collaborative recipe whose only member is the current user resolves to
 /// [private] (no one else sees the snap → no warning).
 ({CookSnapVisibilityScope scope, List<String> resolvedNames, int total})
-    cookSnapAudience(
+cookSnapAudience(
   Recipe recipe,
   String currentUserId,
   Map<String, String> friendNames,

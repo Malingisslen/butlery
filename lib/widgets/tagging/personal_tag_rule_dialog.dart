@@ -149,11 +149,13 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
 
   void _addCondition() {
     setState(() {
-      _conditions.add(const RuleCondition(
-        type: ConditionType.ingredient,
-        operator: ConditionOperator.contains,
-        value: '',
-      ));
+      _conditions.add(
+        const RuleCondition(
+          type: ConditionType.ingredient,
+          operator: ConditionOperator.contains,
+          value: '',
+        ),
+      );
     });
   }
 
@@ -180,7 +182,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       // Reset operator if invalid for new type
       if (type != null &&
           !OperatorRegistry.isValidCombination(
-              updated.type, updated.operator)) {
+            updated.type,
+            updated.operator,
+          )) {
         updated = updated.copyWith(
           operator: OperatorRegistry.getValidOperators(updated.type).first,
         );
@@ -259,10 +263,12 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
 
     if (mounted) {
       if (widget.showApplyToExisting) {
-        Navigator.of(context).pop(PersonalTagRuleResult(
-          rule: rule,
-          applyToExisting: _applyToExisting,
-        ));
+        Navigator.of(context).pop(
+          PersonalTagRuleResult(
+            rule: rule,
+            applyToExisting: _applyToExisting,
+          ),
+        );
       } else {
         Navigator.of(context).pop(rule);
       }
@@ -274,8 +280,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-            maxWidth: AppDimensions.dialogMaxWidthMedium,
-            maxHeight: AppDimensions.dialogMaxHeightLarge),
+          maxWidth: AppDimensions.dialogMaxWidthMedium,
+          maxHeight: AppDimensions.dialogMaxHeightLarge,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Form(
@@ -372,9 +379,11 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              Icon(Icons.label,
-                  size: AppDimensions.iconSizeS,
-                  color: Theme.of(context).colorScheme.primary),
+              Icon(
+                Icons.label,
+                size: AppDimensions.iconSizeS,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -411,14 +420,18 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ButtonSegment(
               value: MatchMode.all,
               label: Text(context.l10n.ruleMatchModeAllConditions),
-              icon: const Icon(Icons.all_inclusive,
-                  size: AppDimensions.iconSize18),
+              icon: const Icon(
+                Icons.all_inclusive,
+                size: AppDimensions.iconSize18,
+              ),
             ),
             ButtonSegment(
               value: MatchMode.any,
               label: Text(context.l10n.ruleMatchModeAnyCondition),
-              icon:
-                  const Icon(Icons.call_split, size: AppDimensions.iconSize18),
+              icon: const Icon(
+                Icons.call_split,
+                size: AppDimensions.iconSize18,
+              ),
             ),
           ],
           selected: {_matchMode},
@@ -505,8 +518,8 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       subtitle: _isCalculatingCount
           ? Text(context.l10n.tagDetailRuleCalculating)
           : _affectedRecipeCount != null
-              ? Text(context.l10n.tagDetailRuleMatches(_affectedRecipeCount!))
-              : Text(context.l10n.ruleTagMatchingImmediately),
+          ? Text(context.l10n.tagDetailRuleMatches(_affectedRecipeCount!))
+          : Text(context.l10n.ruleTagMatchingImmediately),
       contentPadding: EdgeInsets.zero,
       controlAffinity: ListTileControlAffinity.leading,
     );
@@ -520,13 +533,16 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color:
-                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline,
-              color: cs.error, size: AppDimensions.iconSizeM),
+          Icon(
+            Icons.error_outline,
+            color: cs.error,
+            size: AppDimensions.iconSizeM,
+          ),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
@@ -552,9 +568,11 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           onPressed: _isSaving ? null : _save,
           child: _isSaving
               ? const LoadingIndicator(size: 20, strokeWidth: 2)
-              : Text(_isEditing
-                  ? context.l10n.commonSave
-                  : context.l10n.commonCreate),
+              : Text(
+                  _isEditing
+                      ? context.l10n.commonSave
+                      : context.l10n.commonCreate,
+                ),
         ),
       ],
     );
@@ -735,7 +753,7 @@ class _ConditionRow extends StatelessWidget {
         'celery',
         'mustard',
         'lupin',
-        'sulfites'
+        'sulfites',
       ],
       context.l10n.ruleCategoryLactose: ['contains-lactose'],
       context.l10n.ruleCategoryMeat: [
@@ -744,21 +762,21 @@ class _ConditionRow extends StatelessWidget {
         'beef',
         'poultry',
         'lamb',
-        'game'
+        'game',
       ],
       context.l10n.ruleCategorySeafood: [
         'seafood',
         'fish',
         'crustacean',
         'mollusc',
-        'high-mercury'
+        'high-mercury',
       ],
       context.l10n.ruleCategoryAnimal: ['animal-product'],
       context.l10n.ruleCategoryDiet: [
         'contains-alcohol',
         'is-spicy',
         'plant-based',
-        'nightshade'
+        'nightshade',
       ],
       context.l10n.ruleCategoryOther: ['doesnt-freeze-well', 'raw-safe'],
     };
@@ -767,32 +785,37 @@ class _ConditionRow extends StatelessWidget {
     final items = <DropdownMenuItem<String>>[];
     for (final entry in categories.entries) {
       // Category header (disabled)
-      items.add(DropdownMenuItem<String>(
-        enabled: false,
-        value: '__header_${entry.key}',
-        child: Text(
-          entry.key,
-          style: AppTextStyles.badgeLarge.copyWith(
-            fontWeight: FontWeight.bold,
+      items.add(
+        DropdownMenuItem<String>(
+          enabled: false,
+          value: '__header_${entry.key}',
+          child: Text(
+            entry.key,
+            style: AppTextStyles.badgeLarge.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-      ));
+      );
       // Properties in category
       for (final prop in entry.value) {
         if (PropertyRegistry.isValid(prop)) {
-          items.add(DropdownMenuItem<String>(
-            value: prop,
-            child: Padding(
-              padding: AppDimensions.paddingOnlyStart8,
-              child: Text(prop, style: AppTextStyles.formOption),
+          items.add(
+            DropdownMenuItem<String>(
+              value: prop,
+              child: Padding(
+                padding: AppDimensions.paddingOnlyStart8,
+                child: Text(prop, style: AppTextStyles.formOption),
+              ),
             ),
-          ));
+          );
         }
       }
     }
 
     return DropdownButtonFormField<String>(
-      initialValue: condition.value.isNotEmpty &&
+      initialValue:
+          condition.value.isNotEmpty &&
               PropertyRegistry.isValid(condition.value)
           ? condition.value
           : null,

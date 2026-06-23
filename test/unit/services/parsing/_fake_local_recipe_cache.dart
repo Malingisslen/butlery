@@ -49,9 +49,9 @@ class FakeLocalRecipeCache extends LocalRecipeCache {
     super.parserVersion = '2.0.0',
     String userId = 'fake-user',
   }) : super(
-          getCurrentUserId: () => userId,
-          cacheDao: _NoopCacheDao(),
-        );
+         getCurrentUserId: () => userId,
+         cacheDao: _NoopCacheDao(),
+       );
 
   @override
   Future<void> init() async {

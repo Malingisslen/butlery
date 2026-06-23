@@ -45,8 +45,12 @@ abstract final class PersonalTagBulkDialogs {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.l10n.personalTagMergeMessage(
-                      selectedTags.length, targetTag.name)),
+                  Text(
+                    context.l10n.personalTagMergeMessage(
+                      selectedTags.length,
+                      targetTag.name,
+                    ),
+                  ),
                   const SizedBox(height: AppDimensions.spacingM),
                   Text(context.l10n.personalTagMergeKeepLabel),
                   const SizedBox(height: AppDimensions.spacingXs),
@@ -76,8 +80,9 @@ abstract final class PersonalTagBulkDialogs {
               ),
               actions: [
                 TextButton(
-                  onPressed:
-                      isLoading ? null : () => Navigator.pop(dialogContext),
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
                   child: Text(context.l10n.commonCancel),
                 ),
                 FilledButton(
@@ -153,8 +158,9 @@ abstract final class PersonalTagBulkDialogs {
             ),
             actions: [
               TextButton(
-                onPressed:
-                    isLoading ? null : () => Navigator.pop(dialogContext),
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.pop(dialogContext),
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(

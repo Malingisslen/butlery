@@ -40,30 +40,38 @@ void main() {
       expect(vm.isLoading, isFalse);
     });
 
-    test('returns empty and sets the no-recipes status when none found',
-        () async {
-      final vm = FileImportViewModel(strategy: _FakeStrategy(result: const []));
-      addTearDown(vm.dispose);
+    test(
+      'returns empty and sets the no-recipes status when none found',
+      () async {
+        final vm = FileImportViewModel(
+          strategy: _FakeStrategy(result: const []),
+        );
+        addTearDown(vm.dispose);
 
-      final parsed = await vm.parseFile();
+        final parsed = await vm.parseFile();
 
-      expect(parsed, isEmpty);
-      expect(vm.isLoading, isFalse);
-      expect(
-          vm.statusMessage, equals(AppLocale.current.importNoFileOrNoRecipes));
-    });
+        expect(parsed, isEmpty);
+        expect(vm.isLoading, isFalse);
+        expect(
+          vm.statusMessage,
+          equals(AppLocale.current.importNoFileOrNoRecipes),
+        );
+      },
+    );
 
-    test('returns empty and surfaces a generic error when the strategy throws',
-        () async {
-      final vm = FileImportViewModel(strategy: _FakeStrategy(throws: true));
-      addTearDown(vm.dispose);
+    test(
+      'returns empty and surfaces a generic error when the strategy throws',
+      () async {
+        final vm = FileImportViewModel(strategy: _FakeStrategy(throws: true));
+        addTearDown(vm.dispose);
 
-      final parsed = await vm.parseFile();
+        final parsed = await vm.parseFile();
 
-      expect(parsed, isEmpty);
-      expect(vm.isLoading, isFalse);
-      expect(vm.statusMessage, equals(AppLocale.current.errorGeneric));
-    });
+        expect(parsed, isEmpty);
+        expect(vm.isLoading, isFalse);
+        expect(vm.statusMessage, equals(AppLocale.current.errorGeneric));
+      },
+    );
   });
 
   group('FileImportViewModel.importSelected', () {

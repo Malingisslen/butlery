@@ -66,9 +66,14 @@ void main() {
         },
       );
 
-      await firestore.collection('messages').doc(msg.id).set(
-            MessageDto.toFirestore(msg,
-                timestampProvider: const TestTimestampProvider()),
+      await firestore
+          .collection('messages')
+          .doc(msg.id)
+          .set(
+            MessageDto.toFirestore(
+              msg,
+              timestampProvider: const TestTimestampProvider(),
+            ),
           );
       final doc = await firestore.collection('messages').doc(msg.id).get();
       final restored = MessageDto.fromFirestore(doc);
@@ -154,9 +159,13 @@ void main() {
       final emptyMap = MessageDto.toMap(_message(reactions: const {}));
       expect(emptyMap.containsKey('reactions'), isFalse);
 
-      final withReactions = MessageDto.toMap(_message(reactions: const {
-        '😂': ['alice', 'bob'],
-      }));
+      final withReactions = MessageDto.toMap(
+        _message(
+          reactions: const {
+            '😂': ['alice', 'bob'],
+          },
+        ),
+      );
       expect(withReactions['reactions'], {
         '😂': ['alice', 'bob'],
       });

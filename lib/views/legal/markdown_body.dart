@@ -58,8 +58,10 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   void _parse() {
     // Recognizers must be disposed before re-parsing (callers: initState with
     // an empty list, didUpdateWidget after _disposeRecognizers).
-    assert(_recognizers.isEmpty,
-        '_parse() called without disposing recognizers first');
+    assert(
+      _recognizers.isEmpty,
+      '_parse() called without disposing recognizers first',
+    );
     final blocks = <_Block>[];
     for (final raw in widget.data.split('\n')) {
       final line = raw.trimRight();
@@ -121,23 +123,26 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   }
 
   List<InlineSpan> _spans(
-      List<_Token> tokens, TextStyle base, Color linkColor) {
+    List<_Token> tokens,
+    TextStyle base,
+    Color linkColor,
+  ) {
     return [
       for (final t in tokens)
         switch (t.kind) {
           _TokenKind.text => TextSpan(text: t.text, style: base),
           _TokenKind.bold => TextSpan(
-              text: t.text,
-              style: base.copyWith(fontWeight: FontWeight.bold),
-            ),
+            text: t.text,
+            style: base.copyWith(fontWeight: FontWeight.bold),
+          ),
           _TokenKind.link => TextSpan(
-              text: t.text,
-              style: base.copyWith(
-                color: linkColor,
-                decoration: TextDecoration.underline,
-              ),
-              recognizer: t.recognizer,
+            text: t.text,
+            style: base.copyWith(
+              color: linkColor,
+              decoration: TextDecoration.underline,
             ),
+            recognizer: t.recognizer,
+          ),
         },
     ];
   }
@@ -157,36 +162,63 @@ class _MarkdownBodyState extends State<MarkdownBody> {
         case _BlockType.rule:
           children.add(const Divider(height: AppDimensions.spacingXl));
         case _BlockType.h1:
-          children.add(_para(block.tokens, tt.headlineSmall, linkColor,
-              top: AppDimensions.spacingM));
+          children.add(
+            _para(
+              block.tokens,
+              tt.headlineSmall,
+              linkColor,
+              top: AppDimensions.spacingM,
+            ),
+          );
         case _BlockType.h2:
-          children.add(_para(block.tokens, tt.titleLarge, linkColor,
-              top: AppDimensions.spacingM));
+          children.add(
+            _para(
+              block.tokens,
+              tt.titleLarge,
+              linkColor,
+              top: AppDimensions.spacingM,
+            ),
+          );
         case _BlockType.h3:
-          children.add(_para(block.tokens, tt.titleMedium, linkColor,
-              top: AppDimensions.spacingS));
+          children.add(
+            _para(
+              block.tokens,
+              tt.titleMedium,
+              linkColor,
+              top: AppDimensions.spacingS,
+            ),
+          );
         case _BlockType.bullet:
-          children.add(Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.spacingM,
-              bottom: AppDimensions.spacingXs,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('•  ', style: bodyStyle),
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                        children: _spans(block.tokens, bodyStyle, linkColor)),
+          children.add(
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: AppDimensions.spacingM,
+                bottom: AppDimensions.spacingXs,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('•  ', style: bodyStyle),
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        children: _spans(block.tokens, bodyStyle, linkColor),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ));
+          );
         case _BlockType.paragraph:
-          children.add(_para(block.tokens, bodyStyle, linkColor,
-              top: AppDimensions.spacingXs));
+          children.add(
+            _para(
+              block.tokens,
+              bodyStyle,
+              linkColor,
+              top: AppDimensions.spacingXs,
+            ),
+          );
       }
     }
 
@@ -196,8 +228,12 @@ class _MarkdownBodyState extends State<MarkdownBody> {
     );
   }
 
-  Widget _para(List<_Token> tokens, TextStyle? style, Color linkColor,
-      {double top = 0}) {
+  Widget _para(
+    List<_Token> tokens,
+    TextStyle? style,
+    Color linkColor, {
+    double top = 0,
+  }) {
     final base = style ?? const TextStyle();
     return Padding(
       padding: EdgeInsets.only(top: top, bottom: AppDimensions.spacingXs),

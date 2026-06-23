@@ -70,12 +70,14 @@ class CategorySelectionWidgets {
             spacing: AppDimensions.spacingS,
             runSpacing: AppDimensions.spacingS,
             children: categories
-                .map((category) => friendCategoryChip(
-                      context,
-                      category: category,
-                      isSelected: selectedCategoryIds.contains(category.id),
-                      onTap: () => onCategoryToggled(category.id),
-                    ))
+                .map(
+                  (category) => friendCategoryChip(
+                    context,
+                    category: category,
+                    isSelected: selectedCategoryIds.contains(category.id),
+                    onTap: () => onCategoryToggled(category.id),
+                  ),
+                )
                 .toList(),
           ),
           if (showCreateNew && onCreateNew != null) ...[
@@ -120,10 +122,10 @@ class CategorySelectionWidgets {
             Text(
               '(${category.friendUserIds.length})',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.onSurface
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ],
@@ -134,10 +136,10 @@ class CategorySelectionWidgets {
       selectedColor: Theme.of(context).colorScheme.primary,
       checkmarkColor: Theme.of(context).colorScheme.onSurface,
       labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isSelected
-                ? Theme.of(context).colorScheme.onSurface
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+        color: isSelected
+            ? Theme.of(context).colorScheme.onSurface
+            : Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 
@@ -166,14 +168,11 @@ class CategorySelectionWidgets {
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withValues(alpha: AppDimensions.opacityVeryDark)
-                  : Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  ? Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: AppDimensions.opacityVeryDark)
+                  : Theme.of(context).colorScheme.primary.withValues(
+                      alpha: AppDimensions.opacityVeryLight,
+                    ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
             child: Text(
@@ -187,10 +186,9 @@ class CategorySelectionWidgets {
       ),
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
-      selectedColor: Theme.of(context)
-          .colorScheme
-          .primary
-          .withValues(alpha: AppDimensions.opacityLight),
+      selectedColor: Theme.of(
+        context,
+      ).colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
       checkmarkColor: Theme.of(context).colorScheme.primary,
       backgroundColor: Theme.of(context).colorScheme.surface,
       side: BorderSide(
@@ -212,12 +210,14 @@ class CategorySelectionWidgets {
   }) {
     return Container(
       height: height,
-      padding: padding ??
+      padding:
+          padding ??
           const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingMd,
+        ),
         itemCount: categories.length,
         separatorBuilder: (context, index) =>
             const SizedBox(width: AppDimensions.spacingS),
@@ -248,22 +248,22 @@ class CategorySelectionWidgets {
         .toList();
 
     final totalFriends = selectedCategories.fold<int>(
-        0, (sum, cat) => sum + cat.friendUserIds.length);
+      0,
+      (sum, cat) => sum + cat.friendUserIds.length,
+    );
 
     return Builder(
       builder: (context) => Container(
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: Theme.of(context)
-              .colorScheme
-              .primary
-              .withValues(alpha: AppDimensions.opacityVeryLight),
+          color: Theme.of(context).colorScheme.primary.withValues(
+            alpha: AppDimensions.opacityVeryLight,
+          ),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: Theme.of(context)
-                .colorScheme
-                .primary
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: Theme.of(context).colorScheme.primary.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
         ),
         child: Row(
@@ -272,8 +272,9 @@ class CategorySelectionWidgets {
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius6),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius6,
+                ),
               ),
               child: Icon(
                 Icons.category,
@@ -294,7 +295,9 @@ class CategorySelectionWidgets {
                   ),
                   Text(
                     context.l10n.friendSelectedCategoriesSummary(
-                        selectedCategories.length, totalFriends),
+                      selectedCategories.length,
+                      totalFriends,
+                    ),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -332,16 +335,18 @@ class CategorySelectionWidgets {
       builder: (context) => Container(
         width: width,
         decoration: BoxDecoration(
-          border:
-              Border.all(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: ExpansionTile(
           title: Text(
             selectedCategoryIds.isEmpty
                 ? (hint ?? context.l10n.friendSelectCategories)
-                : context.l10n
-                    .friendCategoriesSelected(selectedCategoryIds.length),
+                : context.l10n.friendCategoriesSelected(
+                    selectedCategoryIds.length,
+                  ),
             style: AppTextStyles.bodyMedium,
           ),
           children: categories.map((category) {
@@ -350,8 +355,9 @@ class CategorySelectionWidgets {
               value: isSelected,
               onChanged: (_) => onCategoryToggled(category.id),
               title: Text(category.name),
-              subtitle: Text(context.l10n
-                  .friendFriendsCount(category.friendUserIds.length)),
+              subtitle: Text(
+                context.l10n.friendFriendsCount(category.friendUserIds.length),
+              ),
               dense: true,
               activeColor: Theme.of(context).colorScheme.primary,
             );

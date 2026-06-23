@@ -35,8 +35,9 @@ void main() {
         title: 'Test Recipe',
       );
 
-      when(() => mockPersonalOps.addUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success('Added'));
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Added'));
 
       // Use withStrategies to avoid Firebase init in UrlImportStrategy
       importManager = ImportManager.withStrategies(
@@ -65,7 +66,9 @@ void main() {
 
       test('should get text import strategy', () {
         expect(
-            importManager.getTextImportStrategy(), isA<TextImportStrategy>());
+          importManager.getTextImportStrategy(),
+          isA<TextImportStrategy>(),
+        );
       });
 
       test('should get compatible strategies for text input', () {
@@ -108,8 +111,9 @@ void main() {
       test('should try preferred strategy first', () async {
         when(() => mockStrategy.canHandle(any())).thenReturn(true);
         mockStrategy.setStrategyState(strategyName: 'mock_strategy');
-        when(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer(
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
           (_) async => import_strategy.ImportResult.success(testRecipe),
         );
 
@@ -125,15 +129,17 @@ void main() {
 
         expect(result.isSuccess, isTrue);
         expect(result.strategy, equals('mock_strategy'));
-        verify(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .called(1);
+        verify(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).called(1);
       });
 
       test('should fallback when preferred strategy fails', () async {
         when(() => mockStrategy.canHandle(any())).thenReturn(true);
         mockStrategy.setStrategyState(strategyName: 'failing');
-        when(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer(
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
           (_) async => import_strategy.ImportResult.failure('Failed'),
         );
 
@@ -162,8 +168,9 @@ void main() {
       test('should handle strategy throwing exception', () async {
         when(() => mockStrategy.canHandle(any())).thenReturn(true);
         mockStrategy.setStrategyState(strategyName: 'error_strategy');
-        when(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .thenThrow(Exception('Boom'));
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenThrow(Exception('Boom'));
 
         final mgr = ImportManager.withStrategies(mockPersonalOps, []);
         final result = await mgr.autoImport(
@@ -174,8 +181,7 @@ void main() {
         expect(result.isSuccess, isFalse);
       });
 
-      test('propagates needsAssistance result instead of dropping it',
-          () async {
+      test('propagates needsAssistance result instead of dropping it', () async {
         // Tier-7 recovery: a strategy that can extract text but not structure
         // it returns ImportResult.assistance (isSuccess=false,
         // needsAssistance=true). The manager must surface this as an assistance
@@ -183,8 +189,9 @@ void main() {
         // extracted text the user could finish manually.
         when(() => mockStrategy.canHandle(any())).thenReturn(true);
         mockStrategy.setStrategyState(strategyName: 'assist');
-        when(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer(
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
           (_) async => import_strategy.ImportResult.assistance(
             extractedText: 'Some unstructured recipe text',
             suggestedTitle: 'Mormors kaka',
@@ -206,14 +213,14 @@ void main() {
         expect(result.strategy, 'assist');
       });
 
-      test('needsAssistance short-circuits the strategy fallback loop',
-          () async {
+      test('needsAssistance short-circuits the strategy fallback loop', () async {
         // An assistance result is terminal: the manager must NOT keep trying
         // other strategies after one returns needsAssistance.
         when(() => mockStrategy.canHandle(any())).thenReturn(true);
         mockStrategy.setStrategyState(strategyName: 'assist');
-        when(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer(
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
           (_) async => import_strategy.ImportResult.assistance(
             extractedText: 'partial',
           ),
@@ -229,8 +236,9 @@ void main() {
 
         expect(result.needsAssistance, isTrue);
         expect(result.extractedText, 'partial');
-        verify(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .called(1);
+        verify(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).called(1);
       });
 
       test('should pass options to strategy', () async {
@@ -267,14 +275,18 @@ void main() {
         2. Forma kottbullar
         ''';
 
-        final result =
-            await importManager.importWithStrategy('Text Import', input);
+        final result = await importManager.importWithStrategy(
+          'Text Import',
+          input,
+        );
         expect(result.strategy, equals('Text Import'));
       });
 
       test('should return failure for unknown strategy', () async {
-        final result =
-            await importManager.importWithStrategy('NonExistent', 'input');
+        final result = await importManager.importWithStrategy(
+          'NonExistent',
+          'input',
+        );
         expect(result.isSuccess, isFalse);
         expect(result.errorMessage, contains('Strategy not found'));
       });
@@ -320,8 +332,9 @@ void main() {
       test('should use preferred strategy for all batch items', () async {
         when(() => mockStrategy.canHandle(any())).thenReturn(true);
         mockStrategy.setStrategyState(strategyName: 'batch');
-        when(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer(
+        when(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
           (_) async => import_strategy.ImportResult.success(testRecipe),
         );
 
@@ -331,15 +344,17 @@ void main() {
         );
 
         expect(result.successCount, equals(2));
-        verify(() => mockStrategy.import(any(), options: any(named: 'options')))
-            .called(2);
+        verify(
+          () => mockStrategy.import(any(), options: any(named: 'options')),
+        ).called(2);
       });
     });
 
     group('Direct Recipe Save', () {
       test('should save recipe successfully', () async {
-        when(() => mockPersonalOps.addUnifiedRecipe(testRecipe))
-            .thenAnswer((_) async => RecipeOperationResult.success('Saved'));
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(testRecipe),
+        ).thenAnswer((_) async => RecipeOperationResult.success('Saved'));
 
         final result = await importManager.saveImportedRecipe(testRecipe);
 
@@ -360,8 +375,9 @@ void main() {
       });
 
       test('should handle save exception', () async {
-        when(() => mockPersonalOps.addUnifiedRecipe(testRecipe))
-            .thenThrow(Exception('Connection lost'));
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(testRecipe),
+        ).thenThrow(Exception('Connection lost'));
 
         final result = await importManager.saveImportedRecipe(testRecipe);
 
@@ -405,8 +421,10 @@ void main() {
         expect(suggestions, isNotEmpty);
 
         for (int i = 0; i < suggestions.length - 1; i++) {
-          expect(suggestions[i].confidence,
-              greaterThanOrEqualTo(suggestions[i + 1].confidence));
+          expect(
+            suggestions[i].confidence,
+            greaterThanOrEqualTo(suggestions[i + 1].confidence),
+          );
         }
       });
 

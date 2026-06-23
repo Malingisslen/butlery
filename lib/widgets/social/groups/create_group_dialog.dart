@@ -60,8 +60,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     if (widget.preSelectedMembers != null) {
       // Caller-provided pre-selection wins over any saved draft.
       _selectedFriends = List.from(widget.preSelectedMembers!);
-      _selectedFriendIds
-          .addAll(widget.preSelectedMembers!.map((member) => member.uid));
+      _selectedFriendIds.addAll(
+        widget.preSelectedMembers!.map((member) => member.uid),
+      );
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadDraft());
     }
@@ -69,12 +70,14 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     _descriptionController.addListener(_saveDraft);
   }
 
-  void _saveDraft() => _draftManager.save(buildGroupDraft(
-        name: _nameController.text,
-        description: _descriptionController.text,
-        emoji: _selectedEmoji,
-        friendIds: _selectedFriendIds.toList(),
-      ));
+  void _saveDraft() => _draftManager.save(
+    buildGroupDraft(
+      name: _nameController.text,
+      description: _descriptionController.text,
+      emoji: _selectedEmoji,
+      friendIds: _selectedFriendIds.toList(),
+    ),
+  );
 
   Future<void> _loadDraft() async {
     try {
@@ -85,7 +88,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       final savedEmoji = json['emoji'] as String? ?? _selectedEmoji;
       final savedFriendIds =
           (json['friendIds'] as List?)?.whereType<String>().toList() ??
-              const <String>[];
+          const <String>[];
 
       // Resolve saved friend IDs back to UserProfile via the cached
       // friends list. IDs that don't resolve (e.g. unfriended since draft
@@ -95,8 +98,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       try {
         final friendsService = ServiceLocator.get<UnifiedFriendsService>();
         final all = friendsService.friendsList;
-        resolvedFriends =
-            all.where((f) => savedFriendIds.contains(f.uid)).toList();
+        resolvedFriends = all
+            .where((f) => savedFriendIds.contains(f.uid))
+            .toList();
       } catch (e) {
         AppLogger.warning('CreateGroupDialog: friend resolve failed ($e)');
       }
@@ -160,8 +164,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
       if (categoryId != null) {
         // Get the created category to return it
-        final createdCategory =
-            friendsService.categories.getCategoryById(categoryId);
+        final createdCategory = friendsService.categories.getCategoryById(
+          categoryId,
+        );
 
         // BUT-919: user explicitly committed — drop the saved draft so
         // next "create group" opens blank.
@@ -174,7 +179,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         if (mounted) {
           setState(() {
             _error = context.l10n.errorCouldNotCreate(
-                context.l10n.socialGroupName.toLowerCase());
+              context.l10n.socialGroupName.toLowerCase(),
+            );
           });
         }
       }
@@ -182,7 +188,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       if (mounted) {
         setState(() {
           _error = context.l10n.errorWithContext(
-              context.l10n.statusCreating.toLowerCase(), e.toString());
+            context.l10n.statusCreating.toLowerCase(),
+            e.toString(),
+          );
         });
       }
     } finally {
@@ -199,8 +207,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     return Dialog(
       child: Container(
         constraints: const BoxConstraints(
-            maxWidth: AppDimensions.dialogMaxWidthMedium,
-            maxHeight: AppDimensions.dialogMaxHeightMedium),
+          maxWidth: AppDimensions.dialogMaxWidthMedium,
+          maxHeight: AppDimensions.dialogMaxHeightMedium,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
@@ -266,16 +275,18 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                       if (_selectedFriendIds.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingM),
                         Text(
-                          context.l10n
-                              .groupSelectedMembers(_selectedFriendIds.length),
+                          context.l10n.groupSelectedMembers(
+                            _selectedFriendIds.length,
+                          ),
                           style: AppTextStyles.titleMedium,
                         ),
                         const SizedBox(height: AppDimensions.spacingS),
                         Text(
                           context.l10n.groupInvitationNote,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -371,8 +382,11 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 onSelectionChanged: (selectedTargetsList) {
                   // Convert back to UserProfile
                   final selectedFriends = selectedTargetsList
-                      .map((target) => availableFriends.firstWhere(
-                          (friend) => friend.uid == target.targetId))
+                      .map(
+                        (target) => availableFriends.firstWhere(
+                          (friend) => friend.uid == target.targetId,
+                        ),
+                      )
                       .toList();
                   _onFriendSelectionChanged(selectedFriends);
                 },

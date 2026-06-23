@@ -30,8 +30,9 @@ void main() {
 
     setUp(() {
       mockPersonalOps = MockPersonalRecipeOperations();
-      when(() => mockPersonalOps.addUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success('Added'));
+      when(
+        () => mockPersonalOps.addUnifiedRecipe(any()),
+      ).thenAnswer((_) async => RecipeOperationResult.success('Added'));
       // Real ImportManager (single TextImportStrategy) so autoParseMulti
       // exercises the actual splitter + parser, not a DI mock.
       vm = PhotoImportViewModel(
@@ -82,20 +83,27 @@ Ingredienser:
 Gör så här:
 Stek små plättar i plättlagg.''';
 
-    test('single recipe → hasMultipleRecipes false, parsedRecipe set',
-        () async {
-      await vm.parseOcrTextForTesting(singleRecipe);
-      expect(vm.hasMultipleRecipes, isFalse);
-      expect(vm.parsedRecipe, isNotNull,
-          reason: 'single-recipe path still drives the existing getter');
-    });
+    test(
+      'single recipe → hasMultipleRecipes false, parsedRecipe set',
+      () async {
+        await vm.parseOcrTextForTesting(singleRecipe);
+        expect(vm.hasMultipleRecipes, isFalse);
+        expect(
+          vm.parsedRecipe,
+          isNotNull,
+          reason: 'single-recipe path still drives the existing getter',
+        );
+      },
+    );
 
-    test('three-recipe page → hasMultipleRecipes true, picker list populated',
-        () async {
-      await vm.parseOcrTextForTesting(threeRecipePage);
-      expect(vm.hasMultipleRecipes, isTrue);
-      expect(vm.parsedRecipes.length, greaterThanOrEqualTo(3));
-    });
+    test(
+      'three-recipe page → hasMultipleRecipes true, picker list populated',
+      () async {
+        await vm.parseOcrTextForTesting(threeRecipePage);
+        expect(vm.hasMultipleRecipes, isTrue);
+        expect(vm.parsedRecipes.length, greaterThanOrEqualTo(3));
+      },
+    );
 
     test('saveSelectedRecipes saves each selected recipe', () async {
       final recipes = [
@@ -107,41 +115,51 @@ Stek små plättar i plättlagg.''';
       verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(2);
     });
 
-    test('saveSelectedRecipes on empty list reports failure, saves nothing',
-        () async {
-      final ok = await vm.saveSelectedRecipes(const []);
-      expect(ok, isFalse);
-      verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
-    });
+    test(
+      'saveSelectedRecipes on empty list reports failure, saves nothing',
+      () async {
+        final ok = await vm.saveSelectedRecipes(const []);
+        expect(ok, isFalse);
+        verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+      },
+    );
 
-    test('saveSelectedRecipes continues past a failure and counts it',
-        () async {
-      // First save fails, second succeeds → partial: ok stays true (the saved
-      // one is kept), failure count is 1, and BOTH were attempted.
-      var call = 0;
-      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer((_) async {
-        call++;
-        return call == 1
-            ? RecipeOperationResult.failure('boom')
-            : RecipeOperationResult.success('Added');
-      });
-      final ok = await vm.saveSelectedRecipes([
-        RecipeFactory.build(id: 'bad', title: 'Bad'),
-        RecipeFactory.build(id: 'good', title: 'Good'),
-      ]);
-      expect(ok, isTrue);
-      expect(vm.lastSaveFailureCount, 1);
-      verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(2);
-    });
+    test(
+      'saveSelectedRecipes continues past a failure and counts it',
+      () async {
+        // First save fails, second succeeds → partial: ok stays true (the saved
+        // one is kept), failure count is 1, and BOTH were attempted.
+        var call = 0;
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer((
+          _,
+        ) async {
+          call++;
+          return call == 1
+              ? RecipeOperationResult.failure('boom')
+              : RecipeOperationResult.success('Added');
+        });
+        final ok = await vm.saveSelectedRecipes([
+          RecipeFactory.build(id: 'bad', title: 'Bad'),
+          RecipeFactory.build(id: 'good', title: 'Good'),
+        ]);
+        expect(ok, isTrue);
+        expect(vm.lastSaveFailureCount, 1);
+        verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(2);
+      },
+    );
 
-    test('saveSelectedRecipes reports a hard failure when every save fails',
-        () async {
-      when(() => mockPersonalOps.addUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.failure('boom'));
-      final ok = await vm
-          .saveSelectedRecipes([RecipeFactory.build(id: 'r1', title: 'A')]);
-      expect(ok, isFalse);
-    });
+    test(
+      'saveSelectedRecipes reports a hard failure when every save fails',
+      () async {
+        when(
+          () => mockPersonalOps.addUnifiedRecipe(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.failure('boom'));
+        final ok = await vm.saveSelectedRecipes([
+          RecipeFactory.build(id: 'r1', title: 'A'),
+        ]);
+        expect(ok, isFalse);
+      },
+    );
 
     // BUT-903 multi-page: collect ordered photos, OCR each, concatenate in
     // order before one parse.
@@ -185,15 +203,17 @@ Stek små plättar i plättlagg.''';
         expect(vm.ocrText, 'ONE\n\nTHREE');
       });
 
-      test('removing the last remaining page clears the whole import',
-          () async {
-        await vm.addPageForTesting(bytes(1), 'ONLY');
-        await vm.removePage(0);
+      test(
+        'removing the last remaining page clears the whole import',
+        () async {
+          await vm.addPageForTesting(bytes(1), 'ONLY');
+          await vm.removePage(0);
 
-        expect(vm.pageCount, 0);
-        expect(vm.hasImage, isFalse);
-        expect(vm.hasOcrResult, isFalse);
-      });
+          expect(vm.pageCount, 0);
+          expect(vm.hasImage, isFalse);
+          expect(vm.hasOcrResult, isFalse);
+        },
+      );
 
       test('reorderPage changes the concatenation order', () async {
         await vm.addPageForTesting(bytes(1), 'FIRST');
@@ -211,19 +231,27 @@ Stek små plättar i plättlagg.''';
       // being moved still occupies its old slot at drop time) so "drag the
       // first page to the end" actually lands it last instead of throwing or
       // no-op'ing. This is the off-by-one branch the production comment flags.
-      test('reorderPage handles drop-past-end index from ReorderableListView',
-          () async {
-        await vm.addPageForTesting(bytes(1), 'A');
-        await vm.addPageForTesting(bytes(2), 'B');
+      test(
+        'reorderPage handles drop-past-end index from ReorderableListView',
+        () async {
+          await vm.addPageForTesting(bytes(1), 'A');
+          await vm.addPageForTesting(bytes(2), 'B');
 
-        // List = [A, B]; drag A (index 0) to the end → newIndex == length (2).
-        await vm.reorderPage(0, 2);
+          // List = [A, B]; drag A (index 0) to the end → newIndex == length (2).
+          await vm.reorderPage(0, 2);
 
-        expect(vm.ocrText, 'B\n\nA',
-            reason: 'first page moved to the end becomes the last page');
-        expect(vm.imageBytes, bytes(2),
-            reason: 'B is now the first/cover page driving the preview');
-      });
+          expect(
+            vm.ocrText,
+            'B\n\nA',
+            reason: 'first page moved to the end becomes the last page',
+          );
+          expect(
+            vm.imageBytes,
+            bytes(2),
+            reason: 'B is now the first/cover page driving the preview',
+          );
+        },
+      );
 
       test('reorderPage to its own slot is a no-op', () async {
         await vm.addPageForTesting(bytes(1), 'A');

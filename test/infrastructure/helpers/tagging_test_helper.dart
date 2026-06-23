@@ -52,22 +52,24 @@ class TaggingTestHelper {
       final timeMinutes = 15 + (i % 6) * 15; // 15, 30, 45, 60, 75, 90
       final portions = 2 + (i % 4); // 2, 3, 4, 5
 
-      recipes.add(Recipe(
-        core: RecipeCore(
-          id: _uuid.v4(),
-          title: 'Test Recipe ${i + 1}',
-          description: 'Batch test recipe number ${i + 1}',
-          ingredients: ingredientSet,
-          instructions: ['Step 1', 'Step 2', 'Step 3'],
-          mealType: 'Middag',
-          timeMinutes: timeMinutes,
-          portions: portions,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          createdBy: 'test_user',
+      recipes.add(
+        Recipe(
+          core: RecipeCore(
+            id: _uuid.v4(),
+            title: 'Test Recipe ${i + 1}',
+            description: 'Batch test recipe number ${i + 1}',
+            ingredients: ingredientSet,
+            instructions: ['Step 1', 'Step 2', 'Step 3'],
+            mealType: 'Middag',
+            timeMinutes: timeMinutes,
+            portions: portions,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'test_user',
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
     }
 
     return recipes;
@@ -141,23 +143,27 @@ class TaggingTestHelper {
     final matched = <IngredientData>[];
 
     // First ingredient has the allergens
-    matched.add(IngredientData(
-      id: 'allergen-ingredient',
-      swedish: 'Allergen Ingrediens',
-      english: 'Allergen Ingredient',
-      group: 'test/allergen',
-      properties: allergenProperties,
-    ));
+    matched.add(
+      IngredientData(
+        id: 'allergen-ingredient',
+        swedish: 'Allergen Ingrediens',
+        english: 'Allergen Ingredient',
+        group: 'test/allergen',
+        properties: allergenProperties,
+      ),
+    );
 
     // Rest are neutral
     for (var i = 1; i < matchedCount; i++) {
-      matched.add(IngredientData(
-        id: 'ingredient-$i',
-        swedish: 'Ingrediens $i',
-        english: 'Ingredient $i',
-        group: 'test/neutral',
-        properties: const {},
-      ));
+      matched.add(
+        IngredientData(
+          id: 'ingredient-$i',
+          swedish: 'Ingrediens $i',
+          english: 'Ingredient $i',
+          group: 'test/neutral',
+          properties: const {},
+        ),
+      );
     }
 
     return IngredientLookupResult.fromLists(

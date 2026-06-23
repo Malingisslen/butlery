@@ -170,14 +170,16 @@ class RecipeSiteContentExtractor {
 
   /// Extract recipe content using CSS selectors with validation
   Future<String?> _extractRecipeContent(
-      InAppWebViewController controller) async {
+    InAppWebViewController controller,
+  ) async {
     // Skip structured data selectors (first 3 in the list)
     for (final selector in selectors.skip(3)) {
       if (isDisposed()) break;
 
       try {
         final result = await controller.evaluateJavascript(
-          source: '''
+          source:
+              '''
           (function() {
             try {
               const element = document.querySelector('$selector');

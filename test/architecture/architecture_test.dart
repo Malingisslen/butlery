@@ -156,8 +156,7 @@ void main() {
     //
     // Pre-existing violations are allow-listed inline below with a follow-up
     // ticket reference. New violations break the test → caught at PR time.
-    test(
-        'no direct Firebase{Auth,Storage,Analytics,Functions}.instance '
+    test('no direct Firebase{Auth,Storage,Analytics,Functions}.instance '
         'outside repositories', () {
       // Files allowed to touch the four non-Firestore singletons. Each entry
       // documents the reason. See BUT-777 follow-ups for cleanup tickets.
@@ -226,7 +225,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Direct FirebaseAuth/Storage/Analytics/Functions.instance '
+        reason:
+            'Direct FirebaseAuth/Storage/Analytics/Functions.instance '
             'usage should be confined to repositories or the explicit allow-list.\n'
             'New violations:\n${violations.join('\n')}',
       );
@@ -285,8 +285,9 @@ void main() {
         if (allowList.contains(relPath)) continue;
 
         final content = file.readAsStringSync();
-        if (content
-            .contains("import 'package:butlery/repositories/firebase/")) {
+        if (content.contains(
+          "import 'package:butlery/repositories/firebase/",
+        )) {
           violations.add(relPath);
         }
       }
@@ -294,7 +295,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Views must not import lib/repositories/firebase/ directly. '
+        reason:
+            'Views must not import lib/repositories/firebase/ directly. '
             'Route via a ViewModel.\n'
             'Violations:\n${violations.join('\n')}',
       );
@@ -324,8 +326,9 @@ void main() {
 
       // Match `.collection('name')` and `.collection("name")` literals; the
       // alternative is `.collection(Collections.something)` which we want.
-      final pattern =
-          RegExp(r"""\.collection\(['"][a-z_][a-zA-Z0-9_]*['"]\)""");
+      final pattern = RegExp(
+        r"""\.collection\(['"][a-z_][a-zA-Z0-9_]*['"]\)""",
+      );
 
       final violations = <String>[];
 
@@ -365,8 +368,7 @@ void main() {
     // regression — `EdgeInsets.only(left:)` / `(right:)` is LTR-fixed and
     // breaks RTL languages (Arabic, Hebrew). The directional variant flips
     // automatically when the ambient `Directionality` is RTL.
-    test(
-        'no LTR-fixed EdgeInsets.only(left:|right:) in lib/ '
+    test('no LTR-fixed EdgeInsets.only(left:|right:) in lib/ '
         '(use EdgeInsetsDirectional.only)', () {
       final pattern = RegExp(r'EdgeInsets\.only\([^)]*\b(left|right):');
 
@@ -387,7 +389,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'EdgeInsets.only(left:|right:) breaks RTL. Use '
+        reason:
+            'EdgeInsets.only(left:|right:) breaks RTL. Use '
             'EdgeInsetsDirectional.only(start:|end:) instead.\n'
             'Violations:\n${violations.join('\n')}',
       );
@@ -401,8 +404,7 @@ void main() {
     // a log STRING literal before the uid, and structured-arg uids (e.g.
     // `AppLogger.info('m', {'uid': uid})`) aren't interpolation — neither is
     // caught. Both are zero-instance today; this guards the common case.
-    test(
-        'no raw \$userId / \$uid interpolated into AppLogger calls in lib/ '
+    test('no raw \$userId / \$uid interpolated into AppLogger calls in lib/ '
         '(use .maskedUserId)', () {
       final pattern = RegExp(
         r'AppLogger\.\w+\([^;]*(\$userId\b|\$\{userId\}|\$uid\b|\$\{uid\})',
@@ -425,7 +427,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Raw user ids in logs are a privacy leak. Mask with '
+        reason:
+            'Raw user ids in logs are a privacy leak. Mask with '
             '`\${userId.maskedUserId}` (log_sanitizer.dart).\n'
             'Violations:\n${violations.join('\n')}',
       );
@@ -445,48 +448,52 @@ void main() {
     //   * Casts off a non-`data[...]` source (`params[...]`, `commonFields[...]`)
     //     — those reads are pre-coerced upstream by the parsing helpers.
     test(
-        'no unguarded `data[...] as DateTime|Timestamp` casts in lib/models/ '
-        '(use SerializationUtils.parseRequiredDateTimeValue or safeDateTime)',
-        () {
-      final pattern =
-          RegExp(r'''data\[[^\]]+\]\s+as\s+(?:DateTime|Timestamp)\b(?!\?)''');
-      // Guard pattern: `is DateTime` / `is Timestamp` indicates a runtime
-      // type check, which is the safe ternary form. The `?` of the ternary
-      // can land on the same OR the next line depending on the formatter.
-      final guardPattern = RegExp(r'\bis\s+(?:DateTime|Timestamp)\b');
+      'no unguarded `data[...] as DateTime|Timestamp` casts in lib/models/ '
+      '(use SerializationUtils.parseRequiredDateTimeValue or safeDateTime)',
+      () {
+        final pattern = RegExp(
+          r'''data\[[^\]]+\]\s+as\s+(?:DateTime|Timestamp)\b(?!\?)''',
+        );
+        // Guard pattern: `is DateTime` / `is Timestamp` indicates a runtime
+        // type check, which is the safe ternary form. The `?` of the ternary
+        // can land on the same OR the next line depending on the formatter.
+        final guardPattern = RegExp(r'\bis\s+(?:DateTime|Timestamp)\b');
 
-      final violations = <String>[];
+        final violations = <String>[];
 
-      for (final file in dartFiles) {
-        final relPath = relPathOf(file);
-        if (!relPath.startsWith('lib/models/')) continue;
+        for (final file in dartFiles) {
+          final relPath = relPathOf(file);
+          if (!relPath.startsWith('lib/models/')) continue;
 
-        final lines = file.readAsLinesSync();
-        for (var i = 0; i < lines.length; i++) {
-          final raw = lines[i];
-          // Strip line comments so commented-out examples don't trip us.
-          final code = raw.replaceAll(RegExp(r'//.*'), '');
-          if (!pattern.hasMatch(code)) continue;
-          if (guardPattern.hasMatch(code)) continue;
-          // Multi-line ternary: `is DateTime` may live on a previous line.
-          // 2 lines back covers the common formatter break.
-          final lookback =
-              lines.sublist((i - 2).clamp(0, lines.length), i).join('\n');
-          if (guardPattern.hasMatch(lookback)) continue;
-          violations.add('$relPath:${i + 1}: ${raw.trim()}');
+          final lines = file.readAsLinesSync();
+          for (var i = 0; i < lines.length; i++) {
+            final raw = lines[i];
+            // Strip line comments so commented-out examples don't trip us.
+            final code = raw.replaceAll(RegExp(r'//.*'), '');
+            if (!pattern.hasMatch(code)) continue;
+            if (guardPattern.hasMatch(code)) continue;
+            // Multi-line ternary: `is DateTime` may live on a previous line.
+            // 2 lines back covers the common formatter break.
+            final lookback = lines
+                .sublist((i - 2).clamp(0, lines.length), i)
+                .join('\n');
+            if (guardPattern.hasMatch(lookback)) continue;
+            violations.add('$relPath:${i + 1}: ${raw.trim()}');
+          }
         }
-      }
 
-      expect(
-        violations,
-        isEmpty,
-        reason: 'Raw `data[...] as DateTime|Timestamp` casts crash on raw '
-            'Firestore Timestamp/Map shapes. Use '
-            'SerializationUtils.parseRequiredDateTimeValue(data[\'x\']) '
-            'or safeDateTime/safeRequiredDateTime instead.\n'
-            'Violations:\n${violations.join('\n')}',
-      );
-    });
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'Raw `data[...] as DateTime|Timestamp` casts crash on raw '
+              'Firestore Timestamp/Map shapes. Use '
+              'SerializationUtils.parseRequiredDateTimeValue(data[\'x\']) '
+              'or safeDateTime/safeRequiredDateTime instead.\n'
+              'Violations:\n${violations.join('\n')}',
+        );
+      },
+    );
 
     // BUT-805: forbid raw `Image.network(` in `lib/` — bypasses cache and
     // re-downloads on every scroll. The canonical wrapper is
@@ -518,7 +525,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Raw `Image.network(...)` bypasses the cache and re-downloads '
+        reason:
+            'Raw `Image.network(...)` bypasses the cache and re-downloads '
             'on every scroll. Use CachedNetworkImage with '
             'FirebaseUrlUtils.stableCacheKey(url) for cache hits.\n'
             'Violations:\n${violations.join('\n')}',
@@ -538,8 +546,7 @@ void main() {
     // The long-tail migration (BUT-885 → BUT-1168) is COMPLETE: the allowlist
     // below is now empty, so every spinner in lib/widgets/ routes through
     // LoadingIndicator. The guard now enforces zero raw CircularProgressIndicator.
-    test(
-        'no raw CircularProgressIndicator in lib/widgets/ '
+    test('no raw CircularProgressIndicator in lib/widgets/ '
         'outside common/{indicators,state,loading}/ '
         '(use LoadingIndicator wrapper)', () {
       // Exempt prefixes — the adapter + canonical state layer.
@@ -580,7 +587,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Raw CircularProgressIndicator in lib/widgets/ bypasses '
+        reason:
+            'Raw CircularProgressIndicator in lib/widgets/ bypasses '
             'the LoadingIndicator wrapper (platform-adaptive, a11y, '
             'consistent sizing). Use LoadingIndicator instead.\n'
             'New violations:\n${violations.join('\n')}',
@@ -599,8 +607,7 @@ void main() {
     // snackbar_utils, application_provider, base_action_handler). Those are
     // the infrastructure layer, not the UI-component layer this rule governs,
     // and are intentionally out of scope here.
-    test(
-        'no raw CircularProgressIndicator in lib/views/ '
+    test('no raw CircularProgressIndicator in lib/views/ '
         '(use LoadingIndicator wrapper) — zero allowlist', () {
       final pattern = RegExp(r'\bCircularProgressIndicator\s*\(');
       final violations = <String>[];
@@ -622,7 +629,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Raw CircularProgressIndicator in lib/views/ bypasses the '
+        reason:
+            'Raw CircularProgressIndicator in lib/views/ bypasses the '
             'LoadingIndicator wrapper (platform-adaptive, a11y, consistent '
             'sizing). Use LoadingIndicator or StateWidget instead.\n'
             'Violations:\n${violations.join('\n')}',
@@ -720,7 +728,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: "Use `.orEmpty()` instead of raw `?? ''` — see "
+        reason:
+            "Use `.orEmpty()` instead of raw `?? ''` — see "
             'lib/core/extensions/default_value_extensions.dart. Dynamic '
             'receivers / chained `?? ` must stay `?? \'\'` and be added to '
             'the allowList with justification.\n'

@@ -133,31 +133,37 @@ void main() {
       );
 
       // Setup default mock behaviors
-      when(() => mockUserService.isDisplayNameAvailable(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockUserService.isDisplayNameAvailable(any()),
+      ).thenAnswer((_) async => true);
 
-      when(() => mockUserService.createOrUpdateProfile(
-            displayName: any(named: 'displayName'),
-            avatarUrl: any(named: 'avatarUrl'),
-            isSearchable: any(named: 'isSearchable'),
-            allowEmailSearch: any(named: 'allowEmailSearch'),
-            cookingSkillLevel: any(named: 'cookingSkillLevel'),
-            cuisineAffinities: any(named: 'cuisineAffinities'),
-            bio: any(named: 'bio'),
-            showOnlineStatus: any(named: 'showOnlineStatus'),
-            shareActivityToFeed: any(named: 'shareActivityToFeed'),
-          )).thenAnswer((_) async => UserProfileBuilder.build());
+      when(
+        () => mockUserService.createOrUpdateProfile(
+          displayName: any(named: 'displayName'),
+          avatarUrl: any(named: 'avatarUrl'),
+          isSearchable: any(named: 'isSearchable'),
+          allowEmailSearch: any(named: 'allowEmailSearch'),
+          cookingSkillLevel: any(named: 'cookingSkillLevel'),
+          cuisineAffinities: any(named: 'cuisineAffinities'),
+          bio: any(named: 'bio'),
+          showOnlineStatus: any(named: 'showOnlineStatus'),
+          shareActivityToFeed: any(named: 'shareActivityToFeed'),
+        ),
+      ).thenAnswer((_) async => UserProfileBuilder.build());
 
-      when(() => mockImagePickerService.pickImage(any()))
-          .thenAnswer((_) async => null);
+      when(
+        () => mockImagePickerService.pickImage(any()),
+      ).thenAnswer((_) async => null);
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UserService>(mockUserService);
       TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
       TestServiceLocator.registerMock<ImagePickerService>(
-          mockImagePickerService);
+        mockImagePickerService,
+      );
       TestServiceLocator.registerMock<ImageUploadService>(
-          mockImageUploadService);
+        mockImageUploadService,
+      );
 
       // Create viewModel with a profile for most tests
       final defaultProfile = UserProfileBuilder.build(
@@ -202,11 +208,12 @@ void main() {
       });
 
       test(
-          'should initialize without profile when permission service has no user',
-          () {
-        expect(viewModel.hasProfile, isTrue);
-        expect(viewModel.displayName, equals('Test User'));
-      });
+        'should initialize without profile when permission service has no user',
+        () {
+          expect(viewModel.hasProfile, isTrue);
+          expect(viewModel.displayName, equals('Test User'));
+        },
+      );
 
       test('should initialize with existing profile data', () {
         final existingProfile = UserProfileBuilder.build(
@@ -285,8 +292,7 @@ void main() {
         expect(viewModel.hasUnsavedChanges, isTrue);
       });
 
-      test(
-          'updateActivityEventType stores an explicit toggle and marks dirty '
+      test('updateActivityEventType stores an explicit toggle and marks dirty '
           '(BUT-1220)', () {
         // Pins that _profileFieldsEqual includes the per-type map (via
         // mapEquals); toggling one event type alone must register as an
@@ -295,16 +301,22 @@ void main() {
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
 
-        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.cooked),
-            isTrue);
+        expect(
+          viewModel.isActivityEventTypeEnabled(ActivityEventType.cooked),
+          isTrue,
+        );
 
         viewModel.updateActivityEventType(ActivityEventType.cooked, false);
 
-        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.cooked),
-            isFalse);
+        expect(
+          viewModel.isActivityEventTypeEnabled(ActivityEventType.cooked),
+          isFalse,
+        );
         // Other types are untouched and still read as enabled.
-        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.shared),
-            isTrue);
+        expect(
+          viewModel.isActivityEventTypeEnabled(ActivityEventType.shared),
+          isTrue,
+        );
         expect(viewModel.hasUnsavedChanges, isTrue);
         expect(notificationCount, greaterThan(0));
       });
@@ -316,8 +328,10 @@ void main() {
         viewModel.updateActivityEventType(ActivityEventType.pinged, false);
         viewModel.updateActivityEventType(ActivityEventType.pinged, true);
 
-        expect(viewModel.isActivityEventTypeEnabled(ActivityEventType.pinged),
-            isTrue);
+        expect(
+          viewModel.isActivityEventTypeEnabled(ActivityEventType.pinged),
+          isTrue,
+        );
       });
     });
 
@@ -332,8 +346,10 @@ void main() {
       test('should validate display name minimum length', () {
         viewModel.updateDisplayName('A');
 
-        expect(viewModel.displayNameError,
-            equals('Visningsnamn måste vara minst 2 tecken'));
+        expect(
+          viewModel.displayNameError,
+          equals('Visningsnamn måste vara minst 2 tecken'),
+        );
         expect(viewModel.isFormValid, isFalse);
       });
 
@@ -347,8 +363,10 @@ void main() {
       test('should validate display name invalid characters', () {
         viewModel.updateDisplayName('Test@#%');
 
-        expect(viewModel.displayNameError,
-            equals('Fyll i alla obligatoriska fält korrekt'));
+        expect(
+          viewModel.displayNameError,
+          equals('Fyll i alla obligatoriska fält korrekt'),
+        );
         expect(viewModel.isFormValid, isFalse);
       });
 
@@ -373,51 +391,65 @@ void main() {
       test('should upload avatar successfully', () async {
         final mockFile = MockFile();
         when(() => mockFile.path).thenReturn('/test/path/image.jpg');
-        when(() => mockFile.readAsBytes())
-            .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
-        when(() => mockImagePickerService.pickImage(
-              ImageSource.gallery,
-              maxWidth: any(named: 'maxWidth'),
-              maxHeight: any(named: 'maxHeight'),
-              imageQuality: any(named: 'imageQuality'),
-            )).thenAnswer((_) async => mockFile);
-        when(() => mockImageUploadService.uploadImageFromBytes(
-                  bytes: any(named: 'bytes'),
-                  userId: any(named: 'userId'),
-                  fileName: any(named: 'fileName'),
-                  prefix: any(named: 'prefix'),
-                ))
-            .thenAnswer((_) async =>
-                UploadResult.success('https://example.com/new-avatar.jpg'));
+        when(
+          () => mockFile.readAsBytes(),
+        ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+        when(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).thenAnswer((_) async => mockFile);
+        when(
+          () => mockImageUploadService.uploadImageFromBytes(
+            bytes: any(named: 'bytes'),
+            userId: any(named: 'userId'),
+            fileName: any(named: 'fileName'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              UploadResult.success('https://example.com/new-avatar.jpg'),
+        );
 
         final result = await viewModel.uploadAvatar();
 
         expect(result, isTrue);
         expect(
-            viewModel.avatarUrl, equals('https://example.com/new-avatar.jpg'));
+          viewModel.avatarUrl,
+          equals('https://example.com/new-avatar.jpg'),
+        );
         expect(viewModel.hasUnsavedChanges, isTrue);
         expect(viewModel.isUploadingAvatar, isFalse);
-        verify(() => mockImagePickerService.pickImage(
-              ImageSource.gallery,
-              maxWidth: any(named: 'maxWidth'),
-              maxHeight: any(named: 'maxHeight'),
-              imageQuality: any(named: 'imageQuality'),
-            )).called(1);
-        verify(() => mockImageUploadService.uploadImageFromBytes(
-              bytes: any(named: 'bytes'),
-              userId: testUserId,
-              fileName: 'image.jpg',
-              prefix: 'avatar',
-            )).called(1);
+        verify(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).called(1);
+        verify(
+          () => mockImageUploadService.uploadImageFromBytes(
+            bytes: any(named: 'bytes'),
+            userId: testUserId,
+            fileName: 'image.jpg',
+            prefix: 'avatar',
+          ),
+        ).called(1);
       });
 
       test('should handle cancelled image selection', () async {
-        when(() => mockImagePickerService.pickImage(
-              ImageSource.gallery,
-              maxWidth: any(named: 'maxWidth'),
-              maxHeight: any(named: 'maxHeight'),
-              imageQuality: any(named: 'imageQuality'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).thenAnswer((_) async => null);
 
         final result = await viewModel.uploadAvatar();
 
@@ -430,22 +462,30 @@ void main() {
       test('should handle upload failure', () async {
         final mockFile = MockFile();
         when(() => mockFile.path).thenReturn('/test/path/image.jpg');
-        when(() => mockFile.readAsBytes())
-            .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
-        when(() => mockImagePickerService.pickImage(
-              ImageSource.gallery,
-              maxWidth: any(named: 'maxWidth'),
-              maxHeight: any(named: 'maxHeight'),
-              imageQuality: any(named: 'imageQuality'),
-            )).thenAnswer((_) async => mockFile);
-        when(() => mockImageUploadService.uploadImageFromBytes(
-                  bytes: any(named: 'bytes'),
-                  userId: any(named: 'userId'),
-                  fileName: any(named: 'fileName'),
-                  prefix: any(named: 'prefix'),
-                ))
-            .thenAnswer((_) async => UploadResult.failure(
-                'Upload failed', ImageUploadErrorType.unknown));
+        when(
+          () => mockFile.readAsBytes(),
+        ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+        when(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).thenAnswer((_) async => mockFile);
+        when(
+          () => mockImageUploadService.uploadImageFromBytes(
+            bytes: any(named: 'bytes'),
+            userId: any(named: 'userId'),
+            fileName: any(named: 'fileName'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenAnswer(
+          (_) async => UploadResult.failure(
+            'Upload failed',
+            ImageUploadErrorType.unknown,
+          ),
+        );
 
         final result = await viewModel.uploadAvatar();
 
@@ -474,8 +514,10 @@ void main() {
           uploadService: mockImageUploadService,
         );
 
-        expect(viewModelWithAvatar.avatarUrl,
-            equals('https://example.com/existing-avatar.jpg'));
+        expect(
+          viewModelWithAvatar.avatarUrl,
+          equals('https://example.com/existing-avatar.jpg'),
+        );
         expect(viewModelWithAvatar.hasUnsavedChanges, isFalse);
 
         viewModelWithAvatar.removeAvatar();
@@ -489,27 +531,33 @@ void main() {
       test('should track upload progress state', () async {
         final mockFile = MockFile();
         when(() => mockFile.path).thenReturn('/test/path/image.jpg');
-        when(() => mockFile.readAsBytes())
-            .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
-        when(() => mockImagePickerService.pickImage(
-              ImageSource.gallery,
-              maxWidth: any(named: 'maxWidth'),
-              maxHeight: any(named: 'maxHeight'),
-              imageQuality: any(named: 'imageQuality'),
-            )).thenAnswer((_) async {
+        when(
+          () => mockFile.readAsBytes(),
+        ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+        when(
+          () => mockImagePickerService.pickImage(
+            ImageSource.gallery,
+            maxWidth: any(named: 'maxWidth'),
+            maxHeight: any(named: 'maxHeight'),
+            imageQuality: any(named: 'imageQuality'),
+          ),
+        ).thenAnswer((_) async {
           // Check loading state during operation
           expect(viewModel.isUploadingAvatar, isTrue);
           expect(viewModel.isLoading, isTrue);
           return mockFile;
         });
-        when(() => mockImageUploadService.uploadImageFromBytes(
-                  bytes: any(named: 'bytes'),
-                  userId: any(named: 'userId'),
-                  fileName: any(named: 'fileName'),
-                  prefix: any(named: 'prefix'),
-                ))
-            .thenAnswer((_) async =>
-                UploadResult.failure('test', ImageUploadErrorType.unknown));
+        when(
+          () => mockImageUploadService.uploadImageFromBytes(
+            bytes: any(named: 'bytes'),
+            userId: any(named: 'userId'),
+            fileName: any(named: 'fileName'),
+            prefix: any(named: 'prefix'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              UploadResult.failure('test', ImageUploadErrorType.unknown),
+        );
 
         await viewModel.uploadAvatar();
 
@@ -530,33 +578,37 @@ void main() {
           allowEmailSearch: true,
         );
 
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: 'Erik Svensson',
-              avatarUrl: any(named: 'avatarUrl'),
-              isSearchable: false,
-              allowEmailSearch: true,
-              cookingSkillLevel: any(named: 'cookingSkillLevel'),
-              cuisineAffinities: any(named: 'cuisineAffinities'),
-              bio: any(named: 'bio'),
-              showOnlineStatus: any(named: 'showOnlineStatus'),
-              shareActivityToFeed: any(named: 'shareActivityToFeed'),
-            )).thenAnswer((_) async => savedProfile);
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: 'Erik Svensson',
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: false,
+            allowEmailSearch: true,
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          ),
+        ).thenAnswer((_) async => savedProfile);
 
         final result = await viewModel.saveProfile();
 
         expect(result, isTrue);
         expect(viewModel.hasUnsavedChanges, isFalse);
-        verify(() => mockUserService.createOrUpdateProfile(
-              displayName: 'Erik Svensson',
-              avatarUrl: any(named: 'avatarUrl'),
-              isSearchable: false,
-              allowEmailSearch: true,
-              cookingSkillLevel: any(named: 'cookingSkillLevel'),
-              cuisineAffinities: any(named: 'cuisineAffinities'),
-              bio: any(named: 'bio'),
-              showOnlineStatus: any(named: 'showOnlineStatus'),
-              shareActivityToFeed: any(named: 'shareActivityToFeed'),
-            )).called(1);
+        verify(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: 'Erik Svensson',
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: false,
+            allowEmailSearch: true,
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          ),
+        ).called(1);
       });
 
       test('should reject save with invalid form', () async {
@@ -565,32 +617,36 @@ void main() {
         final result = await viewModel.saveProfile();
 
         expect(result, isFalse);
-        verifyNever(() => mockUserService.createOrUpdateProfile(
-              displayName: any(named: 'displayName'),
-              avatarUrl: any(named: 'avatarUrl'),
-              isSearchable: any(named: 'isSearchable'),
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-              cookingSkillLevel: any(named: 'cookingSkillLevel'),
-              cuisineAffinities: any(named: 'cuisineAffinities'),
-              bio: any(named: 'bio'),
-              showOnlineStatus: any(named: 'showOnlineStatus'),
-              shareActivityToFeed: any(named: 'shareActivityToFeed'),
-            ));
+        verifyNever(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          ),
+        );
       });
 
       test('should check display name availability on save', () async {
         // The ViewModel compares edited vs original profile — change displayName
         viewModel.updateDisplayName('New Name');
 
-        when(() => mockUserService.isDisplayNameAvailable('New Name'))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockUserService.isDisplayNameAvailable('New Name'),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.saveProfile();
 
         expect(result, isFalse);
         expect(viewModel.displayNameError, equals('Detta namn är redan taget'));
-        verify(() => mockUserService.isDisplayNameAvailable('New Name'))
-            .called(1);
+        verify(
+          () => mockUserService.isDisplayNameAvailable('New Name'),
+        ).called(1);
       });
 
       test('should not check availability if name unchanged', () async {
@@ -601,17 +657,19 @@ void main() {
           displayName: 'Test User',
           isSearchable: false,
         );
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: 'Test User',
-              avatarUrl: any(named: 'avatarUrl'),
-              isSearchable: false,
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-              cookingSkillLevel: any(named: 'cookingSkillLevel'),
-              cuisineAffinities: any(named: 'cuisineAffinities'),
-              bio: any(named: 'bio'),
-              showOnlineStatus: any(named: 'showOnlineStatus'),
-              shareActivityToFeed: any(named: 'shareActivityToFeed'),
-            )).thenAnswer((_) async => savedProfile);
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: 'Test User',
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: false,
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          ),
+        ).thenAnswer((_) async => savedProfile);
 
         final result = await viewModel.saveProfile();
 
@@ -622,17 +680,19 @@ void main() {
       test('should handle save failure', () async {
         viewModel.updateDisplayName('New Name');
 
-        when(() => mockUserService.createOrUpdateProfile(
-              displayName: any(named: 'displayName'),
-              avatarUrl: any(named: 'avatarUrl'),
-              isSearchable: any(named: 'isSearchable'),
-              allowEmailSearch: any(named: 'allowEmailSearch'),
-              cookingSkillLevel: any(named: 'cookingSkillLevel'),
-              cuisineAffinities: any(named: 'cuisineAffinities'),
-              bio: any(named: 'bio'),
-              showOnlineStatus: any(named: 'showOnlineStatus'),
-              shareActivityToFeed: any(named: 'shareActivityToFeed'),
-            )).thenAnswer((_) async => null);
+        when(
+          () => mockUserService.createOrUpdateProfile(
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+            isSearchable: any(named: 'isSearchable'),
+            allowEmailSearch: any(named: 'allowEmailSearch'),
+            cookingSkillLevel: any(named: 'cookingSkillLevel'),
+            cuisineAffinities: any(named: 'cuisineAffinities'),
+            bio: any(named: 'bio'),
+            showOnlineStatus: any(named: 'showOnlineStatus'),
+            shareActivityToFeed: any(named: 'shareActivityToFeed'),
+          ),
+        ).thenAnswer((_) async => null);
 
         mockUserService.setUserState(error: 'Network error');
 
@@ -646,8 +706,9 @@ void main() {
     group('Display Name Availability', () {
       test('should check availability successfully', () async {
         viewModel.updateDisplayName('UniqueUser');
-        when(() => mockUserService.isDisplayNameAvailable('UniqueUser'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockUserService.isDisplayNameAvailable('UniqueUser'),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.checkDisplayNameAvailability();
 
@@ -657,8 +718,9 @@ void main() {
 
       test('should handle unavailable display name', () async {
         viewModel.updateDisplayName('TakenUser');
-        when(() => mockUserService.isDisplayNameAvailable('TakenUser'))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockUserService.isDisplayNameAvailable('TakenUser'),
+        ).thenAnswer((_) async => false);
 
         final result = await viewModel.checkDisplayNameAvailability();
 
@@ -717,8 +779,10 @@ void main() {
         vmWithProfile.resetForm();
 
         expect(vmWithProfile.displayName, equals('Original Name'));
-        expect(vmWithProfile.avatarUrl,
-            equals('https://example.com/original.jpg'));
+        expect(
+          vmWithProfile.avatarUrl,
+          equals('https://example.com/original.jpg'),
+        );
         expect(vmWithProfile.isSearchable, isFalse);
         expect(vmWithProfile.allowEmailSearch, isTrue);
         expect(vmWithProfile.hasUnsavedChanges, isFalse);
@@ -847,8 +911,10 @@ void main() {
     group('Cooking Identity', () {
       test('should update cooking skill level', () {
         viewModel.updateCookingSkillLevel(CookingSkillLevel.intermediate);
-        expect(viewModel.cookingSkillLevel,
-            equals(CookingSkillLevel.intermediate));
+        expect(
+          viewModel.cookingSkillLevel,
+          equals(CookingSkillLevel.intermediate),
+        );
         expect(viewModel.hasUnsavedChanges, isTrue);
       });
 
@@ -919,8 +985,10 @@ void main() {
           uploadService: mockImageUploadService,
         );
 
-        expect(vmWithIdentity.cookingSkillLevel,
-            equals(CookingSkillLevel.advanced));
+        expect(
+          vmWithIdentity.cookingSkillLevel,
+          equals(CookingSkillLevel.advanced),
+        );
         expect(vmWithIdentity.cuisineAffinities, equals(['svensk', 'fransk']));
         expect(vmWithIdentity.bio, equals('Erfaren hobbykock'));
         expect(vmWithIdentity.hasUnsavedChanges, isFalse);

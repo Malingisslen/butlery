@@ -23,8 +23,8 @@ class StatusBadge extends StatelessWidget {
   const StatusBadge.primary({
     super.key,
     required this.text,
-  })  : backgroundColor = null,
-        textColor = null;
+  }) : backgroundColor = null,
+       textColor = null;
 
   @override
   Widget build(BuildContext context) {

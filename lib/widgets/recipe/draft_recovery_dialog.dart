@@ -124,8 +124,9 @@ class _DraftListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final draftTitle =
-        draft.title.isNotEmpty ? draft.title : context.l10n.draftUnnamedRecipe;
+    final draftTitle = draft.title.isNotEmpty
+        ? draft.title
+        : context.l10n.draftUnnamedRecipe;
 
     return Semantics(
       label: context.l10n.a11yDraftRecoverTile(draftTitle),

@@ -16,13 +16,17 @@ void main() {
 
     test('true when any field is populated', () {
       expect(
-          const TagOverrides(allergenOverrides: {'gluten': TriState.free})
-              .hasManualEdits,
-          isTrue);
+        const TagOverrides(
+          allergenOverrides: {'gluten': TriState.free},
+        ).hasManualEdits,
+        isTrue,
+      );
       expect(
-          const TagOverrides(dietaryOverrides: {'vegansk': TriState.contains})
-              .hasManualEdits,
-          isTrue);
+        const TagOverrides(
+          dietaryOverrides: {'vegansk': TriState.contains},
+        ).hasManualEdits,
+        isTrue,
+      );
       expect(const TagOverrides(addedTags: {'tag'}).hasManualEdits, isTrue);
       expect(const TagOverrides(removedTags: {'tag'}).hasManualEdits, isTrue);
     });
@@ -52,17 +56,25 @@ void main() {
     );
 
     test('returns override when present', () {
-      expect(o.getEffectiveAllergenStatus('gluten', TriState.contains),
-          TriState.free);
-      expect(o.getEffectiveDietaryStatus('vegansk', TriState.free),
-          TriState.contains);
+      expect(
+        o.getEffectiveAllergenStatus('gluten', TriState.contains),
+        TriState.free,
+      );
+      expect(
+        o.getEffectiveDietaryStatus('vegansk', TriState.free),
+        TriState.contains,
+      );
     });
 
     test('returns auto-generated when no override', () {
-      expect(o.getEffectiveAllergenStatus('dairy', TriState.unknown),
-          TriState.unknown);
-      expect(o.getEffectiveDietaryStatus('vegetarisk', TriState.free),
-          TriState.free);
+      expect(
+        o.getEffectiveAllergenStatus('dairy', TriState.unknown),
+        TriState.unknown,
+      );
+      expect(
+        o.getEffectiveDietaryStatus('vegetarisk', TriState.free),
+        TriState.free,
+      );
     });
   });
 
@@ -86,8 +98,11 @@ void main() {
   group('immutable update helpers', () {
     test('withAllergenOverride adds key + stamps editor', () {
       const original = TagOverrides();
-      final updated = original.withAllergenOverride('gluten', TriState.free,
-          editedBy: 'u1');
+      final updated = original.withAllergenOverride(
+        'gluten',
+        TriState.free,
+        editedBy: 'u1',
+      );
       expect(updated.allergenOverrides['gluten'], TriState.free);
       expect(updated.lastEditedBy, 'u1');
       expect(updated.lastEditedAt, isNotNull);
@@ -95,8 +110,11 @@ void main() {
 
     test('withDietaryOverride adds key + stamps editor', () {
       const original = TagOverrides();
-      final updated = original.withDietaryOverride('vegansk', TriState.contains,
-          editedBy: 'u2');
+      final updated = original.withDietaryOverride(
+        'vegansk',
+        TriState.contains,
+        editedBy: 'u2',
+      );
       expect(updated.dietaryOverrides['vegansk'], TriState.contains);
       expect(updated.lastEditedBy, 'u2');
     });
@@ -116,18 +134,24 @@ void main() {
     });
 
     test('withoutAllergenOverride removes the key', () {
-      const original =
-          TagOverrides(allergenOverrides: {'gluten': TriState.free});
-      final updated =
-          original.withoutAllergenOverride('gluten', editedBy: 'u1');
+      const original = TagOverrides(
+        allergenOverrides: {'gluten': TriState.free},
+      );
+      final updated = original.withoutAllergenOverride(
+        'gluten',
+        editedBy: 'u1',
+      );
       expect(updated.allergenOverrides, isEmpty);
     });
 
     test('withoutDietaryOverride removes the key', () {
-      const original =
-          TagOverrides(dietaryOverrides: {'vegansk': TriState.contains});
-      final updated =
-          original.withoutDietaryOverride('vegansk', editedBy: 'u1');
+      const original = TagOverrides(
+        dietaryOverrides: {'vegansk': TriState.contains},
+      );
+      final updated = original.withoutDietaryOverride(
+        'vegansk',
+        editedBy: 'u1',
+      );
       expect(updated.dietaryOverrides, isEmpty);
     });
 

@@ -27,9 +27,9 @@ class ActivityExportManager {
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     FeedbackRepository? feedbackRepository,
-  })  : _commentsRepo = commentsRepository,
-        _ratingsRepo = ratingsRepository,
-        _feedbackRepo = feedbackRepository;
+  }) : _commentsRepo = commentsRepository,
+       _ratingsRepo = ratingsRepository,
+       _feedbackRepo = feedbackRepository;
 
   CommentsRepository get _comments =>
       _commentsRepo ?? ServiceLocator.get<CommentsRepository>();
@@ -78,7 +78,9 @@ class ActivityExportManager {
       return data;
     } catch (e) {
       app_logger.AppLogger.error(
-          '[$_logTag] Failed to export comments and ratings', e);
+        '[$_logTag] Failed to export comments and ratings',
+        e,
+      );
       return {'error': e.toString()};
     }
   }
@@ -89,8 +91,9 @@ class ActivityExportManager {
       final feedback = await _feedback.exportFeedbackByUser(userId);
 
       return {
-        'submissions':
-            feedback.map((entry) => sanitizeForJson(entry['data'])).toList(),
+        'submissions': feedback
+            .map((entry) => sanitizeForJson(entry['data']))
+            .toList(),
         'total': feedback.length,
       };
     } catch (e) {

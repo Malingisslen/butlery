@@ -57,21 +57,27 @@ class UserAvatarWidgets {
                     fit: BoxFit.cover,
                     alignment: Alignment.center,
                     placeholder: (_, url) => _buildInitialsAvatar(
-                        displayName,
-                        avatarSize,
-                        effectiveBackgroundColor,
-                        effectiveTextColor),
+                      displayName,
+                      avatarSize,
+                      effectiveBackgroundColor,
+                      effectiveTextColor,
+                    ),
                     errorWidget: (_, url, error) => _buildInitialsAvatar(
-                        displayName,
-                        avatarSize,
-                        effectiveBackgroundColor,
-                        effectiveTextColor),
+                      displayName,
+                      avatarSize,
+                      effectiveBackgroundColor,
+                      effectiveTextColor,
+                    ),
                     fadeInDuration: AppDimensions.animationDurationCommon,
                     fadeOutDuration: AppDimensions.animationDurationCommon,
                   ),
                 )
-              : _buildInitialsAvatar(displayName, avatarSize,
-                  effectiveBackgroundColor, effectiveTextColor),
+              : _buildInitialsAvatar(
+                  displayName,
+                  avatarSize,
+                  effectiveBackgroundColor,
+                  effectiveTextColor,
+                ),
         );
 
         // Status indicator
@@ -173,8 +179,9 @@ class UserAvatarWidgets {
                   button: true,
                   child: InkWell(
                     onTap: onEditTap,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusL),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusL,
+                    ),
                     child: Container(
                       width: AppDimensions.iconSizeXl,
                       height: AppDimensions.iconSizeXl,

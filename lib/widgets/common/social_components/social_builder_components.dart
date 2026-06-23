@@ -209,8 +209,8 @@ class SocialBuilderComponents {
           Text(
             context.l10n.socialLastActive(_formatRelativeTime(lastActivity)),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ],
@@ -306,10 +306,12 @@ class SocialBuilderComponents {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ??
+      padding:
+          padding ??
           const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm),
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
       child: Row(
         children: [
           if (icon != null) ...[
@@ -328,8 +330,8 @@ class SocialBuilderComponents {
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
               ],
             ),
@@ -337,8 +339,10 @@ class SocialBuilderComponents {
           if (onAction != null && actionText != null)
             TextButton.icon(
               onPressed: onAction,
-              icon: Icon(actionIcon ?? Icons.arrow_forward,
-                  size: AppDimensions.iconSizeS),
+              icon: Icon(
+                actionIcon ?? Icons.arrow_forward,
+                size: AppDimensions.iconSizeS,
+              ),
               label: Text(actionText),
             ),
         ],
@@ -366,14 +370,16 @@ class SocialBuilderComponents {
       builder: (context) {
         final inkwell = InkWell(
           onTap: onTap,
-          borderRadius: borderRadius ??
+          borderRadius:
+              borderRadius ??
               BorderRadius.circular(AppDimensions.borderRadius8),
           child: Container(
             padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: border != null
                 ? BoxDecoration(
                     border: border,
-                    borderRadius: borderRadius ??
+                    borderRadius:
+                        borderRadius ??
                         BorderRadius.circular(AppDimensions.borderRadius8),
                   )
                 : null,
@@ -381,15 +387,19 @@ class SocialBuilderComponents {
           ),
         );
         return Container(
-          margin: margin ??
+          margin:
+              margin ??
               const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm),
+                horizontal: AppDimensions.spacingMd,
+                vertical: AppDimensions.spacingSm,
+              ),
           child: Material(
-            color: backgroundColor ??
+            color:
+                backgroundColor ??
                 Theme.of(context).colorScheme.surfaceContainerHighest,
             elevation: elevation ?? AppDimensions.elevationLow,
-            borderRadius: borderRadius ??
+            borderRadius:
+                borderRadius ??
                 BorderRadius.circular(AppDimensions.borderRadius8),
             child: semanticLabel == null
                 ? inkwell
@@ -414,7 +424,8 @@ class SocialBuilderComponents {
     EdgeInsets? margin,
   }) {
     return Container(
-      margin: margin ??
+      margin:
+          margin ??
           const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
       child: Divider(
         height: height,
@@ -460,8 +471,8 @@ class SocialBuilderComponents {
             Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

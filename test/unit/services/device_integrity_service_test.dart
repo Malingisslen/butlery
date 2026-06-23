@@ -51,28 +51,30 @@ void main() {
       );
     });
 
-    test('iOS release with placeholder teamId crashes (Apple enrollment gate)',
-        () {
-      expect(
-        () => assertReleaseConfig(
-          isReleaseMode: true,
-          runtimePlatform: TargetPlatform.iOS,
-          teamId: _placeholderTeamId,
-          androidCertHash: _realCertHash,
-        ),
-        throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            allOf(
-              contains('BUT-426'),
-              contains('FREE_RASP_TEAM_ID'),
-              contains('iOS release'),
+    test(
+      'iOS release with placeholder teamId crashes (Apple enrollment gate)',
+      () {
+        expect(
+          () => assertReleaseConfig(
+            isReleaseMode: true,
+            runtimePlatform: TargetPlatform.iOS,
+            teamId: _placeholderTeamId,
+            androidCertHash: _realCertHash,
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              allOf(
+                contains('BUT-426'),
+                contains('FREE_RASP_TEAM_ID'),
+                contains('iOS release'),
+              ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('Android release with placeholder iOS teamId is ALLOWED', () {
       // The whole point of the platform gate: we ship Android today
@@ -89,20 +91,22 @@ void main() {
       );
     });
 
-    test('release build with both real values is allowed on either platform',
-        () {
-      for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
-        expect(
-          () => assertReleaseConfig(
-            isReleaseMode: true,
-            runtimePlatform: platform,
-            teamId: _realTeamId,
-            androidCertHash: _realCertHash,
-          ),
-          returnsNormally,
-          reason: 'platform=$platform',
-        );
-      }
-    });
+    test(
+      'release build with both real values is allowed on either platform',
+      () {
+        for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
+          expect(
+            () => assertReleaseConfig(
+              isReleaseMode: true,
+              runtimePlatform: platform,
+              teamId: _realTeamId,
+              androidCertHash: _realCertHash,
+            ),
+            returnsNormally,
+            reason: 'platform=$platform',
+          );
+        }
+      },
+    );
   });
 }

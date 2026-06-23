@@ -11,7 +11,7 @@ class TagResolutionService {
   final TagEditingService _tagEditingService;
 
   TagResolutionService({required TagEditingService tagEditingService})
-      : _tagEditingService = tagEditingService;
+    : _tagEditingService = tagEditingService;
 
   /// Resolves all tag data for a recipe into a single unified result.
   ///

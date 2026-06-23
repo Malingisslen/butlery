@@ -53,8 +53,9 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         content = await rootBundle.loadString(assetPath);
       } catch (_) {
         // Fallback to Swedish
-        content =
-            await rootBundle.loadString('assets/legal/privacy_policy_sv.md');
+        content = await rootBundle.loadString(
+          'assets/legal/privacy_policy_sv.md',
+        );
       }
 
       if (mounted) {
@@ -65,10 +66,13 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       }
 
       app_logger.AppLogger.info(
-          '[PrivacyPolicyView] Privacy policy loaded successfully');
+        '[PrivacyPolicyView] Privacy policy loaded successfully',
+      );
     } catch (e) {
       app_logger.AppLogger.error(
-          '[PrivacyPolicyView] Failed to load privacy policy', e);
+        '[PrivacyPolicyView] Failed to load privacy policy',
+        e,
+      );
 
       if (mounted) {
         setState(() {
@@ -140,8 +144,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           Text(
             context.l10n.privacyLoading,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+              color: cs.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -191,8 +195,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       child: Text(
         context.l10n.privacyNotAvailable,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
+          color: cs.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -217,27 +221,32 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: context.butleryColors.info
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.info.withValues(
+          alpha: AppDimensions.opacityVeryLight,
+        ),
         border: Border(
           bottom: BorderSide(
-            color: context.butleryColors.info
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: context.butleryColors.info.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
             width: 1,
           ),
         ),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline,
-              color: context.butleryColors.info, size: AppDimensions.iconSizeM),
+          Icon(
+            Icons.info_outline,
+            color: context.butleryColors.info,
+            size: AppDimensions.iconSizeM,
+          ),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: Text(
               context.l10n.privacyGdprCompliant,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: context.butleryColors.info,
-                  ),
+                color: context.butleryColors.info,
+              ),
             ),
           ),
         ],

@@ -58,8 +58,9 @@ class _DeferredRouteLoaderState extends State<DeferredRouteLoader> {
           return ModuleLoadErrorScreen(
             error: snapshot.error,
             onRetry: _retry,
-            onGoHome: () => Navigator.of(context)
-                .pushNamedAndRemoveUntil(Routes.home, (route) => false),
+            onGoHome: () => Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(Routes.home, (route) => false),
           );
         }
 
@@ -76,8 +77,9 @@ class _DeferredRouteLoaderState extends State<DeferredRouteLoader> {
         return ModuleLoadErrorScreen(
           error: 'Module not found: ${widget.moduleName}',
           onRetry: _retry,
-          onGoHome: () => Navigator.of(context)
-              .pushNamedAndRemoveUntil(Routes.home, (route) => false),
+          onGoHome: () => Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(Routes.home, (route) => false),
         );
       }
       return module.buildRoute(widget.routeName, widget.settings);
@@ -85,8 +87,9 @@ class _DeferredRouteLoaderState extends State<DeferredRouteLoader> {
       return ModuleLoadErrorScreen(
         error: e,
         onRetry: _retry,
-        onGoHome: () => Navigator.of(context)
-            .pushNamedAndRemoveUntil(Routes.home, (route) => false),
+        onGoHome: () => Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(Routes.home, (route) => false),
       );
     }
   }

@@ -93,12 +93,18 @@ void main() {
         expect(list.type, equals(ListType.collaborative));
         expect(list.isCollaborative, isTrue);
         expect(list.memberPermissions, isNotNull);
-        expect(list.memberPermissions['owner_123'],
-            equals(SharedListPermission.admin));
-        expect(list.memberPermissions['member1'],
-            equals(SharedListPermission.edit));
-        expect(list.memberPermissions['member2'],
-            equals(SharedListPermission.view));
+        expect(
+          list.memberPermissions['owner_123'],
+          equals(SharedListPermission.admin),
+        );
+        expect(
+          list.memberPermissions['member1'],
+          equals(SharedListPermission.edit),
+        );
+        expect(
+          list.memberPermissions['member2'],
+          equals(SharedListPermission.view),
+        );
       });
 
       test('should generate unique ID if not provided', () {
@@ -354,7 +360,9 @@ void main() {
           syncStatus: SyncStatus.local,
         );
         expect(
-            neverSynced.needsSync, isFalse); // needsSync only true when pending
+          neverSynced.needsSync,
+          isFalse,
+        ); // needsSync only true when pending
 
         // Pending changes
         final pending = testList.copyWith(
@@ -563,8 +571,10 @@ void main() {
         expect(list.name, equals(validJson['name']));
         expect(list.ownerId, equals(validJson['ownerId']));
         expect(list.items.length, equals(validJson['items'].length));
-        expect(list.type.toString().split('.').last,
-            equals(validJson['type'] ?? 'personal'));
+        expect(
+          list.type.toString().split('.').last,
+          equals(validJson['type'] ?? 'personal'),
+        );
       });
 
       test('should round-trip JSON serialization', () {
@@ -665,8 +675,10 @@ void main() {
       test('round-trips through toFirestore/fromMap', () {
         final marked = testList.copyWith(generatedForWeek: '2026-W24');
 
-        final restored =
-            UnifiedShoppingList.fromMap(marked.id, marked.toFirestore());
+        final restored = UnifiedShoppingList.fromMap(
+          marked.id,
+          marked.toFirestore(),
+        );
 
         expect(restored.generatedForWeek, equals('2026-W24'));
       });
@@ -699,8 +711,11 @@ void main() {
         // An unrelated copyWith (e.g. the rename flow) must not lose it.
         final renamed = marked.copyWith(name: 'veckans mat');
         expect(renamed.generatedForWeek, equals('2026-W24'));
-        expect(testList.generatedForWeek, isNull,
-            reason: 'baseline list starts unmarked');
+        expect(
+          testList.generatedForWeek,
+          isNull,
+          reason: 'baseline list starts unmarked',
+        );
       });
     });
 
@@ -708,43 +723,47 @@ void main() {
       test('should validate shopping list constraints', () {
         // Valid list
         expect(
-            ValidationHelper.isValidShoppingList(
-              id: testList.id,
-              name: testList.name,
-              ownerId: testList.ownerId,
-              items: testList.items,
-            ),
-            isTrue);
+          ValidationHelper.isValidShoppingList(
+            id: testList.id,
+            name: testList.name,
+            ownerId: testList.ownerId,
+            items: testList.items,
+          ),
+          isTrue,
+        );
 
         // Invalid - empty ID
         expect(
-            ValidationHelper.isValidShoppingList(
-              id: '',
-              name: 'Test',
-              ownerId: 'owner',
-              items: [],
-            ),
-            isFalse);
+          ValidationHelper.isValidShoppingList(
+            id: '',
+            name: 'Test',
+            ownerId: 'owner',
+            items: [],
+          ),
+          isFalse,
+        );
 
         // Invalid - empty name
         expect(
-            ValidationHelper.isValidShoppingList(
-              id: 'id',
-              name: '',
-              ownerId: 'owner',
-              items: [],
-            ),
-            isFalse);
+          ValidationHelper.isValidShoppingList(
+            id: 'id',
+            name: '',
+            ownerId: 'owner',
+            items: [],
+          ),
+          isFalse,
+        );
 
         // Invalid - null items
         expect(
-            ValidationHelper.isValidShoppingList(
-              id: 'id',
-              name: 'Test',
-              ownerId: 'owner',
-              items: null,
-            ),
-            isFalse);
+          ValidationHelper.isValidShoppingList(
+            id: 'id',
+            name: 'Test',
+            ownerId: 'owner',
+            items: null,
+          ),
+          isFalse,
+        );
       });
 
       test('should handle empty items list', () {
@@ -833,8 +852,10 @@ void main() {
 
         // Assert
         // Owner gets admin permission automatically
-        expect(collaborative.memberPermissions['owner_123'],
-            equals(SharedListPermission.admin));
+        expect(
+          collaborative.memberPermissions['owner_123'],
+          equals(SharedListPermission.admin),
+        );
         // Check member permissions
         expect(collaborative.memberPermissions.length, equals(3));
 
@@ -842,8 +863,10 @@ void main() {
         final json = collaborative.toJson();
         final deserialized = UnifiedShoppingList.fromJson(json);
         // Check deserialized member permissions
-        expect(deserialized.memberPermissions['owner_123'],
-            equals(SharedListPermission.admin));
+        expect(
+          deserialized.memberPermissions['owner_123'],
+          equals(SharedListPermission.admin),
+        );
       });
     });
   });

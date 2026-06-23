@@ -31,11 +31,11 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _setError = setError,
-        _notifyListeners = notifyListeners,
-        _saveRecipe = saveRecipe {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _setError = setError,
+       _notifyListeners = notifyListeners,
+       _saveRecipe = saveRecipe {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
@@ -118,7 +118,8 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
 
       _notifyListeners();
       AppLogger.success(
-          '✅ Collaborative recipe created: ${recipeWithPermissions.id}');
+        '✅ Collaborative recipe created: ${recipeWithPermissions.id}',
+      );
 
       return recipeWithPermissions.id;
     } catch (e) {
@@ -177,7 +178,8 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
   /// Create success result for operations
   RecipeOperationResult createSuccessResult([String? message]) {
     return RecipeOperationResult.success(
-        message ?? 'Operation completed successfully');
+      message ?? 'Operation completed successfully',
+    );
   }
 
   /// Create failure result for operations

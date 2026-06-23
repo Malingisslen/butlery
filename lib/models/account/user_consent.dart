@@ -29,9 +29,12 @@ class UserConsent {
     final data = doc.data() as Map<String, dynamic>;
     return UserConsent(
       userId: SerializationUtils.safeString(
-          data, 'userId'), // Read from document data for data integrity
-      purposes:
-          ConsentPurposes.fromMap(SerializationUtils.safeMap(data, 'purposes')),
+        data,
+        'userId',
+      ), // Read from document data for data integrity
+      purposes: ConsentPurposes.fromMap(
+        SerializationUtils.safeMap(data, 'purposes'),
+      ),
       grantedAt:
           SerializationUtils.safeDateTime(data, 'grantedAt') ?? clock.now(),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
@@ -95,7 +98,7 @@ enum ConsentPurpose {
   marketing,
   socialFeatures,
   pushNotifications,
-  aiProcessing;
+  aiProcessing,
 }
 
 /// Tracks consent for different data processing purposes
@@ -123,24 +126,40 @@ class ConsentPurposes {
   factory ConsentPurposes.fromMap(Map<String, dynamic> map) {
     return ConsentPurposes(
       essentialServices: SerializationUtils.safeBool(
-          map, ConsentPurpose.essentialServices.name,
-          defaultValue: true),
+        map,
+        ConsentPurpose.essentialServices.name,
+        defaultValue: true,
+      ),
       dataProcessing: SerializationUtils.safeBool(
-          map, ConsentPurpose.dataProcessing.name,
-          defaultValue: true),
-      analytics: SerializationUtils.safeBool(map, ConsentPurpose.analytics.name,
-          defaultValue: false),
-      marketing: SerializationUtils.safeBool(map, ConsentPurpose.marketing.name,
-          defaultValue: false),
+        map,
+        ConsentPurpose.dataProcessing.name,
+        defaultValue: true,
+      ),
+      analytics: SerializationUtils.safeBool(
+        map,
+        ConsentPurpose.analytics.name,
+        defaultValue: false,
+      ),
+      marketing: SerializationUtils.safeBool(
+        map,
+        ConsentPurpose.marketing.name,
+        defaultValue: false,
+      ),
       socialFeatures: SerializationUtils.safeBool(
-          map, ConsentPurpose.socialFeatures.name,
-          defaultValue: false),
+        map,
+        ConsentPurpose.socialFeatures.name,
+        defaultValue: false,
+      ),
       pushNotifications: SerializationUtils.safeBool(
-          map, ConsentPurpose.pushNotifications.name,
-          defaultValue: false),
+        map,
+        ConsentPurpose.pushNotifications.name,
+        defaultValue: false,
+      ),
       aiProcessing: SerializationUtils.safeBool(
-          map, ConsentPurpose.aiProcessing.name,
-          defaultValue: false),
+        map,
+        ConsentPurpose.aiProcessing.name,
+        defaultValue: false,
+      ),
     );
   }
 
@@ -159,14 +178,14 @@ class ConsentPurposes {
 
   /// Type-safe accessor — exhaustive switch ensures compile error when new purposes are added.
   bool operator [](ConsentPurpose purpose) => switch (purpose) {
-        ConsentPurpose.essentialServices => essentialServices,
-        ConsentPurpose.dataProcessing => dataProcessing,
-        ConsentPurpose.analytics => analytics,
-        ConsentPurpose.marketing => marketing,
-        ConsentPurpose.socialFeatures => socialFeatures,
-        ConsentPurpose.pushNotifications => pushNotifications,
-        ConsentPurpose.aiProcessing => aiProcessing,
-      };
+    ConsentPurpose.essentialServices => essentialServices,
+    ConsentPurpose.dataProcessing => dataProcessing,
+    ConsentPurpose.analytics => analytics,
+    ConsentPurpose.marketing => marketing,
+    ConsentPurpose.socialFeatures => socialFeatures,
+    ConsentPurpose.pushNotifications => pushNotifications,
+    ConsentPurpose.aiProcessing => aiProcessing,
+  };
 
   /// Create default consents (only essential services)
   factory ConsentPurposes.defaults() {

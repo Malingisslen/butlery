@@ -77,25 +77,31 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       // Register fallback values for mocktail's any() matcher
-      registerFallbackValue(PersonalTag(
-        id: 'fallback',
-        name: 'fallback',
-        createdAt: DateTime(2020),
-        updatedAt: DateTime(2020),
-      ));
-      registerFallbackValue(PersonalTagGroup(
-        id: 'fallback',
-        name: 'fallback',
-        createdAt: DateTime(2020),
-        updatedAt: DateTime(2020),
-      ));
-      registerFallbackValue(PersonalTagRule(
-        id: 'fallback',
-        name: 'fallback',
-        conditions: const [],
-        createdAt: DateTime(2020),
-        updatedAt: DateTime(2020),
-      ));
+      registerFallbackValue(
+        PersonalTag(
+          id: 'fallback',
+          name: 'fallback',
+          createdAt: DateTime(2020),
+          updatedAt: DateTime(2020),
+        ),
+      );
+      registerFallbackValue(
+        PersonalTagGroup(
+          id: 'fallback',
+          name: 'fallback',
+          createdAt: DateTime(2020),
+          updatedAt: DateTime(2020),
+        ),
+      );
+      registerFallbackValue(
+        PersonalTagRule(
+          id: 'fallback',
+          name: 'fallback',
+          conditions: const [],
+          createdAt: DateTime(2020),
+          updatedAt: DateTime(2020),
+        ),
+      );
       registerFallbackValue(<Recipe>[]);
     });
 
@@ -120,8 +126,9 @@ void main() {
       // Default stubs
       when(() => mockService.getAllTags()).thenAnswer((_) async => []);
       when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
-      when(() => mockService.watchTagsWithGroups())
-          .thenAnswer((_) => tagsStreamController.stream);
+      when(
+        () => mockService.watchTagsWithGroups(),
+      ).thenAnswer((_) => tagsStreamController.stream);
 
       viewModel = PersonalTagViewModel(service: mockService);
     });
@@ -151,10 +158,12 @@ void main() {
       });
 
       test('should load tags and groups on initialize', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1, testTag2]);
-        when(() => mockService.getAllGroups())
-            .thenAnswer((_) async => [testGroup]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1, testTag2]);
+        when(
+          () => mockService.getAllGroups(),
+        ).thenAnswer((_) async => [testGroup]);
 
         await viewModel.initialize();
 
@@ -175,14 +184,16 @@ void main() {
       test('should update state when stream emits data', () async {
         await viewModel.initialize();
 
-        tagsStreamController.add(PersonalTagsWithGroups(
-          groups: [testGroup],
-          tagsByGroup: {
-            'group-1': [testTag2],
-            null: [testTag1],
-          },
-          ungroupedTags: [testTag1],
-        ));
+        tagsStreamController.add(
+          PersonalTagsWithGroups(
+            groups: [testGroup],
+            tagsByGroup: {
+              'group-1': [testTag2],
+              null: [testTag1],
+            },
+            ungroupedTags: [testTag1],
+          ),
+        );
 
         // Allow stream event to propagate
         await Future.delayed(Duration.zero);
@@ -206,10 +217,12 @@ void main() {
 
     group('tag CRUD', () {
       test('should return true when createTag succeeds', () async {
-        when(() => mockService.getNextTagSortOrder())
-            .thenAnswer((_) async => 0);
-        when(() => mockService.createTag(any()))
-            .thenAnswer((_) async => testTag1);
+        when(
+          () => mockService.getNextTagSortOrder(),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockService.createTag(any()),
+        ).thenAnswer((_) async => testTag1);
 
         final result = await viewModel.createTag(name: 'Favoriter');
 
@@ -218,8 +231,9 @@ void main() {
       });
 
       test('should return false when createTag returns null', () async {
-        when(() => mockService.getNextTagSortOrder())
-            .thenAnswer((_) async => 0);
+        when(
+          () => mockService.getNextTagSortOrder(),
+        ).thenAnswer((_) async => 0);
         when(() => mockService.createTag(any())).thenAnswer((_) async => null);
 
         final result = await viewModel.createTag(name: 'Favoriter');
@@ -229,10 +243,12 @@ void main() {
       });
 
       test('should return false when createTag throws', () async {
-        when(() => mockService.getNextTagSortOrder())
-            .thenAnswer((_) async => 0);
-        when(() => mockService.createTag(any()))
-            .thenThrow(Exception('Firestore error'));
+        when(
+          () => mockService.getNextTagSortOrder(),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockService.createTag(any()),
+        ).thenThrow(Exception('Firestore error'));
 
         final result = await viewModel.createTag(name: 'Favoriter');
 
@@ -241,15 +257,18 @@ void main() {
       });
 
       test('should pass groupId when creating tag in group', () async {
-        when(() => mockService.getNextTagSortOrder())
-            .thenAnswer((_) async => 1);
-        when(() => mockService.createTag(any()))
-            .thenAnswer((_) async => testTag2);
+        when(
+          () => mockService.getNextTagSortOrder(),
+        ).thenAnswer((_) async => 1);
+        when(
+          () => mockService.createTag(any()),
+        ).thenAnswer((_) async => testTag2);
 
         await viewModel.createTag(name: 'Snabbt', groupId: 'group-1');
 
-        final captured =
-            verify(() => mockService.createTag(captureAny())).captured;
+        final captured = verify(
+          () => mockService.createTag(captureAny()),
+        ).captured;
         final createdTag = captured.first as PersonalTag;
         expect(createdTag.groupId, 'group-1');
       });
@@ -264,8 +283,9 @@ void main() {
       });
 
       test('should return false when updateTag throws', () async {
-        when(() => mockService.updateTag(any()))
-            .thenThrow(Exception('Update failed'));
+        when(
+          () => mockService.updateTag(any()),
+        ).thenThrow(Exception('Update failed'));
 
         final result = await viewModel.updateTag(testTag1);
 
@@ -273,30 +293,35 @@ void main() {
         expect(viewModel.hasError, true);
       });
 
-      test('should return true when deleteTag succeeds with known tag',
-          () async {
-        // Populate viewModel with tags first
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1]);
-        when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
-        await viewModel.initialize();
+      test(
+        'should return true when deleteTag succeeds with known tag',
+        () async {
+          // Populate viewModel with tags first
+          when(
+            () => mockService.getAllTags(),
+          ).thenAnswer((_) async => [testTag1]);
+          when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
+          await viewModel.initialize();
 
-        when(() => mockService.deleteTag('tag-1')).thenAnswer((_) async {});
+          when(() => mockService.deleteTag('tag-1')).thenAnswer((_) async {});
 
-        final result = await viewModel.deleteTag('tag-1');
+          final result = await viewModel.deleteTag('tag-1');
 
-        expect(result, true);
-        verify(() => mockService.deleteTag('tag-1')).called(1);
-      });
+          expect(result, true);
+          verify(() => mockService.deleteTag('tag-1')).called(1);
+        },
+      );
 
-      test('should return false when deleteTag called with unknown id',
-          () async {
-        final result = await viewModel.deleteTag('nonexistent');
+      test(
+        'should return false when deleteTag called with unknown id',
+        () async {
+          final result = await viewModel.deleteTag('nonexistent');
 
-        expect(result, false);
-        expect(viewModel.hasError, true);
-        verifyNever(() => mockService.deleteTag(any()));
-      });
+          expect(result, false);
+          expect(viewModel.hasError, true);
+          verifyNever(() => mockService.deleteTag(any()));
+        },
+      );
 
       test('should return true when reorderTags succeeds', () async {
         when(() => mockService.reorderTags(any())).thenAnswer((_) async {});
@@ -307,8 +332,9 @@ void main() {
       });
 
       test('should return true when moveTagToGroup succeeds', () async {
-        when(() => mockService.moveTagToGroup(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockService.moveTagToGroup(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await viewModel.moveTagToGroup('tag-1', 'group-1');
 
@@ -321,10 +347,12 @@ void main() {
 
     group('group CRUD', () {
       test('should return true when createGroup succeeds', () async {
-        when(() => mockService.getNextGroupSortOrder())
-            .thenAnswer((_) async => 0);
-        when(() => mockService.createGroup(any()))
-            .thenAnswer((_) async => testGroup);
+        when(
+          () => mockService.getNextGroupSortOrder(),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockService.createGroup(any()),
+        ).thenAnswer((_) async => testGroup);
 
         final result = await viewModel.createGroup(name: 'Svårighetsgrad');
 
@@ -333,10 +361,12 @@ void main() {
       });
 
       test('should return false when createGroup returns null', () async {
-        when(() => mockService.getNextGroupSortOrder())
-            .thenAnswer((_) async => 0);
-        when(() => mockService.createGroup(any()))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockService.getNextGroupSortOrder(),
+        ).thenAnswer((_) async => 0);
+        when(
+          () => mockService.createGroup(any()),
+        ).thenAnswer((_) async => null);
 
         final result = await viewModel.createGroup(name: 'Test');
 
@@ -353,8 +383,9 @@ void main() {
       });
 
       test('should return false when updateGroup throws', () async {
-        when(() => mockService.updateGroup(any()))
-            .thenThrow(Exception('Update failed'));
+        when(
+          () => mockService.updateGroup(any()),
+        ).thenThrow(Exception('Update failed'));
 
         final result = await viewModel.updateGroup(testGroup);
 
@@ -362,29 +393,36 @@ void main() {
         expect(viewModel.hasError, true);
       });
 
-      test('should return true when deleteGroup succeeds with known group',
-          () async {
-        when(() => mockService.getAllTags()).thenAnswer((_) async => []);
-        when(() => mockService.getAllGroups())
-            .thenAnswer((_) async => [testGroup]);
-        await viewModel.initialize();
+      test(
+        'should return true when deleteGroup succeeds with known group',
+        () async {
+          when(() => mockService.getAllTags()).thenAnswer((_) async => []);
+          when(
+            () => mockService.getAllGroups(),
+          ).thenAnswer((_) async => [testGroup]);
+          await viewModel.initialize();
 
-        when(() => mockService.deleteGroup('group-1')).thenAnswer((_) async {});
+          when(
+            () => mockService.deleteGroup('group-1'),
+          ).thenAnswer((_) async {});
 
-        final result = await viewModel.deleteGroup('group-1');
+          final result = await viewModel.deleteGroup('group-1');
 
-        expect(result, true);
-        verify(() => mockService.deleteGroup('group-1')).called(1);
-      });
+          expect(result, true);
+          verify(() => mockService.deleteGroup('group-1')).called(1);
+        },
+      );
 
-      test('should return false when deleteGroup called with unknown id',
-          () async {
-        final result = await viewModel.deleteGroup('nonexistent');
+      test(
+        'should return false when deleteGroup called with unknown id',
+        () async {
+          final result = await viewModel.deleteGroup('nonexistent');
 
-        expect(result, false);
-        expect(viewModel.hasError, true);
-        verifyNever(() => mockService.deleteGroup(any()));
-      });
+          expect(result, false);
+          expect(viewModel.hasError, true);
+          verifyNever(() => mockService.deleteGroup(any()));
+        },
+      );
 
       test('should return true when reorderGroups succeeds', () async {
         when(() => mockService.reorderGroups(any())).thenAnswer((_) async {});
@@ -399,8 +437,9 @@ void main() {
 
     group('rule CRUD', () {
       test('should return true when createRule succeeds', () async {
-        when(() => mockService.addRuleToTag(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockService.addRuleToTag(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await viewModel.createRule('tag-1', testRule);
 
@@ -409,8 +448,9 @@ void main() {
       });
 
       test('should return false when createRule throws', () async {
-        when(() => mockService.addRuleToTag(any(), any()))
-            .thenThrow(Exception('Rule creation failed'));
+        when(
+          () => mockService.addRuleToTag(any(), any()),
+        ).thenThrow(Exception('Rule creation failed'));
 
         final result = await viewModel.createRule('tag-1', testRule);
 
@@ -419,8 +459,9 @@ void main() {
       });
 
       test('should return true when updateRule succeeds', () async {
-        when(() => mockService.updateRuleInTag(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockService.updateRuleInTag(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await viewModel.updateRule('tag-1', testRule);
 
@@ -429,8 +470,9 @@ void main() {
       });
 
       test('should return false when updateRule throws', () async {
-        when(() => mockService.updateRuleInTag(any(), any()))
-            .thenThrow(Exception('Update failed'));
+        when(
+          () => mockService.updateRuleInTag(any(), any()),
+        ).thenThrow(Exception('Update failed'));
 
         final result = await viewModel.updateRule('tag-1', testRule);
 
@@ -439,19 +481,22 @@ void main() {
       });
 
       test('should return true when deleteRule succeeds', () async {
-        when(() => mockService.removeRuleFromTag(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockService.removeRuleFromTag(any(), any()),
+        ).thenAnswer((_) async {});
 
         final result = await viewModel.deleteRule('tag-1', 'rule-1');
 
         expect(result, true);
-        verify(() => mockService.removeRuleFromTag('tag-1', 'rule-1'))
-            .called(1);
+        verify(
+          () => mockService.removeRuleFromTag('tag-1', 'rule-1'),
+        ).called(1);
       });
 
       test('should return false when deleteRule throws', () async {
-        when(() => mockService.removeRuleFromTag(any(), any()))
-            .thenThrow(Exception('Delete failed'));
+        when(
+          () => mockService.removeRuleFromTag(any(), any()),
+        ).thenThrow(Exception('Delete failed'));
 
         final result = await viewModel.deleteRule('tag-1', 'rule-1');
 
@@ -461,43 +506,53 @@ void main() {
 
       test('should toggle rule enabled state', () async {
         // Populate viewModel with tag that has a rule
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTagWithRule]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTagWithRule]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
-        when(() => mockService.setRuleEnabled(
-              any(),
-              any(),
-              enabled: any(named: 'enabled'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockService.setRuleEnabled(
+            any(),
+            any(),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
 
         final result = await viewModel.toggleRuleEnabled('tag-3', 'rule-1');
 
         expect(result, true);
         // Rule was enabled, so toggle should set enabled: false
-        verify(() => mockService.setRuleEnabled(
-              'tag-3',
-              'rule-1',
-              enabled: false,
-            )).called(1);
+        verify(
+          () => mockService.setRuleEnabled(
+            'tag-3',
+            'rule-1',
+            enabled: false,
+          ),
+        ).called(1);
       });
 
       test('should return false when toggling rule for unknown tag', () async {
-        final result =
-            await viewModel.toggleRuleEnabled('nonexistent', 'rule-1');
+        final result = await viewModel.toggleRuleEnabled(
+          'nonexistent',
+          'rule-1',
+        );
 
         expect(result, false);
       });
 
       test('should return false when toggling unknown rule', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTagWithRule]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTagWithRule]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
-        final result =
-            await viewModel.toggleRuleEnabled('tag-3', 'nonexistent');
+        final result = await viewModel.toggleRuleEnabled(
+          'tag-3',
+          'nonexistent',
+        );
 
         expect(result, false);
       });
@@ -506,29 +561,38 @@ void main() {
     // ---- Merge (BUT-1188) ----
 
     group('mergeTagsInto', () {
-      test('merges N>2 sources into the target sequentially in order',
-          () async {
-        final calls = <String>[];
-        when(() => mockService.mergeTags(any(), any())).thenAnswer((inv) async {
-          calls.add(inv.positionalArguments[0] as String);
-          return 1; // recipes retagged (ignored by the tags-merged metric)
-        });
+      test(
+        'merges N>2 sources into the target sequentially in order',
+        () async {
+          final calls = <String>[];
+          when(() => mockService.mergeTags(any(), any())).thenAnswer((
+            inv,
+          ) async {
+            calls.add(inv.positionalArguments[0] as String);
+            return 1; // recipes retagged (ignored by the tags-merged metric)
+          });
 
-        final merged = await viewModel.mergeTagsInto(
-          'target',
-          ['a', 'b', 'c'],
-        );
+          final merged = await viewModel.mergeTagsInto(
+            'target',
+            ['a', 'b', 'c'],
+          );
 
-        expect(merged, 3, reason: 'count is source tags merged, not recipes');
-        expect(calls, ['a', 'b', 'c'], reason: 'sequential, preserving order');
-        verify(() => mockService.mergeTags('a', 'target')).called(1);
-        verify(() => mockService.mergeTags('b', 'target')).called(1);
-        verify(() => mockService.mergeTags('c', 'target')).called(1);
-      });
+          expect(merged, 3, reason: 'count is source tags merged, not recipes');
+          expect(calls, [
+            'a',
+            'b',
+            'c',
+          ], reason: 'sequential, preserving order');
+          verify(() => mockService.mergeTags('a', 'target')).called(1);
+          verify(() => mockService.mergeTags('b', 'target')).called(1);
+          verify(() => mockService.mergeTags('c', 'target')).called(1);
+        },
+      );
 
       test('never merges the target into itself', () async {
-        when(() => mockService.mergeTags(any(), any()))
-            .thenAnswer((_) async => 0);
+        when(
+          () => mockService.mergeTags(any(), any()),
+        ).thenAnswer((_) async => 0);
 
         final merged = await viewModel.mergeTagsInto(
           'target',
@@ -572,8 +636,11 @@ void main() {
           ['a', '', 'a', 'b', 'target', ''],
         );
 
-        expect(merged, 2,
-            reason: 'a + b once each; empties/dupes/target dropped');
+        expect(
+          merged,
+          2,
+          reason: 'a + b once each; empties/dupes/target dropped',
+        );
         expect(calls.toSet(), {'a', 'b'});
         expect(calls.length, 2);
       });
@@ -603,8 +670,9 @@ void main() {
       });
 
       test('should resolve selectedTag from tags list', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1, testTag2]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1, testTag2]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
@@ -615,8 +683,9 @@ void main() {
       });
 
       test('should return null selectedTag when id not found', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
@@ -626,8 +695,9 @@ void main() {
       });
 
       test('should return selected tag rules', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTagWithRule]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTagWithRule]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
@@ -655,10 +725,12 @@ void main() {
 
     group('lookup helpers', () {
       setUp(() async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1, testTag2, testTagWithRule]);
-        when(() => mockService.getAllGroups())
-            .thenAnswer((_) async => [testGroup]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1, testTag2, testTagWithRule]);
+        when(
+          () => mockService.getAllGroups(),
+        ).thenAnswer((_) async => [testGroup]);
         await viewModel.initialize();
       });
 
@@ -705,16 +777,18 @@ void main() {
 
     group('statistics', () {
       test('should set isLoadingStats during loadTagStatistics', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
         mockPermissionService.setPermissionState(
           currentUserId: 'user-1',
         );
-        when(() => mockRecipeRepo.fetchAllUserRecipes('user-1'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRecipeRepo.fetchAllUserRecipes('user-1'),
+        ).thenAnswer((_) async => []);
 
         bool wasLoadingStats = false;
         viewModel.addListener(() {
@@ -730,18 +804,22 @@ void main() {
       });
 
       test('should populate tagUsageCounts from recipes', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1, testTag2]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1, testTag2]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
         mockPermissionService.setPermissionState(currentUserId: 'user-1');
 
         final mockRecipe1 = _createMockRecipe('r1', personalTagIds: ['tag-1']);
-        final mockRecipe2 =
-            _createMockRecipe('r2', personalTagIds: ['tag-1', 'tag-2']);
-        when(() => mockRecipeRepo.fetchAllUserRecipes('user-1'))
-            .thenAnswer((_) async => [mockRecipe1, mockRecipe2]);
+        final mockRecipe2 = _createMockRecipe(
+          'r2',
+          personalTagIds: ['tag-1', 'tag-2'],
+        );
+        when(
+          () => mockRecipeRepo.fetchAllUserRecipes('user-1'),
+        ).thenAnswer((_) async => [mockRecipe1, mockRecipe2]);
 
         await viewModel.loadTagStatistics();
 
@@ -769,18 +847,22 @@ void main() {
 
     group('batch apply', () {
       test('should return zero-result when no recipes exist', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
         mockPermissionService.setPermissionState(currentUserId: 'user-1');
-        when(() => mockRecipeRepo.fetchAllUserRecipes('user-1'))
-            .thenAnswer((_) async => []);
-        when(() => mockService.getCurrentTagVersion())
-            .thenAnswer((_) async => 100);
-        when(() => mockService.evaluateRulesWithSourcesForRecipes(any()))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockRecipeRepo.fetchAllUserRecipes('user-1'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockService.getCurrentTagVersion(),
+        ).thenAnswer((_) async => 100);
+        when(
+          () => mockService.evaluateRulesWithSourcesForRecipes(any()),
+        ).thenAnswer((_) async => {});
 
         final result = await viewModel.applyRulesToExistingRecipes();
 
@@ -791,19 +873,23 @@ void main() {
       });
 
       test('should return result when no rules match', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
         mockPermissionService.setPermissionState(currentUserId: 'user-1');
         final recipe = _createMockRecipe('r1');
-        when(() => mockRecipeRepo.fetchAllUserRecipes('user-1'))
-            .thenAnswer((_) async => [recipe]);
-        when(() => mockService.getCurrentTagVersion())
-            .thenAnswer((_) async => 100);
-        when(() => mockService.evaluateRulesWithSourcesForRecipes(any()))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockRecipeRepo.fetchAllUserRecipes('user-1'),
+        ).thenAnswer((_) async => [recipe]);
+        when(
+          () => mockService.getCurrentTagVersion(),
+        ).thenAnswer((_) async => 100);
+        when(
+          () => mockService.evaluateRulesWithSourcesForRecipes(any()),
+        ).thenAnswer((_) async => {});
 
         final result = await viewModel.applyRulesToExistingRecipes();
 
@@ -813,17 +899,20 @@ void main() {
       });
 
       test('should return empty result when userId is null', () async {
-        when(() => mockService.getAllTags())
-            .thenAnswer((_) async => [testTag1]);
+        when(
+          () => mockService.getAllTags(),
+        ).thenAnswer((_) async => [testTag1]);
         when(() => mockService.getAllGroups()).thenAnswer((_) async => []);
         await viewModel.initialize();
 
         // No userId set on permission service
         mockPermissionService.setPermissionState(currentUserId: null);
-        when(() => mockService.getCurrentTagVersion())
-            .thenAnswer((_) async => 100);
-        when(() => mockService.evaluateRulesWithSourcesForRecipes(any()))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockService.getCurrentTagVersion(),
+        ).thenAnswer((_) async => 100);
+        when(
+          () => mockService.evaluateRulesWithSourcesForRecipes(any()),
+        ).thenAnswer((_) async => {});
 
         final result = await viewModel.applyRulesToExistingRecipes();
 
@@ -844,11 +933,13 @@ void main() {
         disposableViewModel.dispose();
 
         // Emit on stream after dispose -- should not crash or notify
-        tagsStreamController.add(PersonalTagsWithGroups(
-          groups: [],
-          tagsByGroup: {null: []},
-          ungroupedTags: [],
-        ));
+        tagsStreamController.add(
+          PersonalTagsWithGroups(
+            groups: [],
+            tagsByGroup: {null: []},
+            ungroupedTags: [],
+          ),
+        );
 
         await Future.delayed(Duration.zero);
 
@@ -860,8 +951,12 @@ void main() {
 
     group('tag name validation', () {
       test('should delegate tagNameExists to service', () async {
-        when(() => mockService.tagNameExists(any(),
-            excludeId: any(named: 'excludeId'))).thenAnswer((_) async => true);
+        when(
+          () => mockService.tagNameExists(
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
+        ).thenAnswer((_) async => true);
 
         final result = await viewModel.tagNameExists('Favoriter');
 
@@ -870,15 +965,22 @@ void main() {
       });
 
       test('should delegate tagNameExists with excludeId', () async {
-        when(() => mockService.tagNameExists(any(),
-            excludeId: any(named: 'excludeId'))).thenAnswer((_) async => false);
+        when(
+          () => mockService.tagNameExists(
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
+        ).thenAnswer((_) async => false);
 
-        final result =
-            await viewModel.tagNameExists('Favoriter', excludeId: 'tag-1');
+        final result = await viewModel.tagNameExists(
+          'Favoriter',
+          excludeId: 'tag-1',
+        );
 
         expect(result, false);
-        verify(() => mockService.tagNameExists('Favoriter', excludeId: 'tag-1'))
-            .called(1);
+        verify(
+          () => mockService.tagNameExists('Favoriter', excludeId: 'tag-1'),
+        ).called(1);
       });
     });
   });

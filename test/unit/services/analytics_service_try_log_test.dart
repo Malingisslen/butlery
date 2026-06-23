@@ -47,10 +47,12 @@ void main() {
   group('BUT-766: AnalyticsService.tryLog', () {
     test('forwards event when AnalyticsService is registered', () async {
       final repo = _MockRepo();
-      when(() => repo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
       final service = _buildServiceWithConsent(repo);
 
       prod.ServiceLocator.initialize(DIContainer());
@@ -64,10 +66,12 @@ void main() {
         await Future<void>.delayed(Duration.zero);
       }
 
-      verify(() => repo.logEvent(
-            name: 'demo_event',
-            parameters: {'flag': 'on'},
-          )).called(1);
+      verify(
+        () => repo.logEvent(
+          name: 'demo_event',
+          parameters: {'flag': 'on'},
+        ),
+      ).called(1);
     });
 
     test('no-ops when AnalyticsService is NOT registered', () {
@@ -88,10 +92,12 @@ void main() {
 
     test('swallows exceptions from logEvent', () async {
       final repo = _MockRepo();
-      when(() => repo.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenThrow(StateError('simulated logEvent crash'));
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenThrow(StateError('simulated logEvent crash'));
       final service = _buildServiceWithConsent(repo);
 
       prod.ServiceLocator.initialize(DIContainer());

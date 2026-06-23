@@ -52,7 +52,8 @@ class RecipeDiffCalculator {
     );
 
     // Count total corrections
-    final totalCorrections = (titleDiff != null ? 1 : 0) +
+    final totalCorrections =
+        (titleDiff != null ? 1 : 0) +
         (portionsDiff != null ? 1 : 0) +
         (timeDiff != null ? 1 : 0) +
         ingredientDiffs.length +
@@ -95,10 +96,12 @@ class RecipeDiffCalculator {
 
     // Parse corrected strings
     final correctedParsed = corrected
-        .map((line) => (
-              line: line,
-              parsed: IngredientParser.parseIngredient(line),
-            ))
+        .map(
+          (line) => (
+            line: line,
+            parsed: IngredientParser.parseIngredient(line),
+          ),
+        )
         .toList();
 
     // Step 1: Match by exact name
@@ -106,8 +109,11 @@ class RecipeDiffCalculator {
       for (var j = 0; j < correctedParsed.length; j++) {
         if (matchedCorrected.contains(j)) continue;
 
-        if (_namesMatch(original[i].name, correctedParsed[j].parsed.name,
-            threshold: 0.9)) {
+        if (_namesMatch(
+          original[i].name,
+          correctedParsed[j].parsed.name,
+          threshold: 0.9,
+        )) {
           matchedOriginal.add(i);
           matchedCorrected.add(j);
 
@@ -134,8 +140,11 @@ class RecipeDiffCalculator {
       for (var j = 0; j < correctedParsed.length; j++) {
         if (matchedCorrected.contains(j)) continue;
 
-        if (_namesMatch(original[i].name, correctedParsed[j].parsed.name,
-            threshold: 0.5)) {
+        if (_namesMatch(
+          original[i].name,
+          correctedParsed[j].parsed.name,
+          threshold: 0.5,
+        )) {
           matchedOriginal.add(i);
           matchedCorrected.add(j);
 
@@ -158,23 +167,27 @@ class RecipeDiffCalculator {
     // Step 3: Unmatched original = removed
     for (var i = 0; i < original.length; i++) {
       if (!matchedOriginal.contains(i)) {
-        corrections.add(IngredientCorrection.removed(
-          originalIndex: i,
-          originalLine: original[i].originalLine,
-          originalQuantity: original[i].quantity,
-          originalUnit: original[i].unit,
-          originalName: original[i].name,
-        ));
+        corrections.add(
+          IngredientCorrection.removed(
+            originalIndex: i,
+            originalLine: original[i].originalLine,
+            originalQuantity: original[i].quantity,
+            originalUnit: original[i].unit,
+            originalName: original[i].name,
+          ),
+        );
       }
     }
 
     // Step 4: Unmatched corrected = added
     for (var j = 0; j < correctedParsed.length; j++) {
       if (!matchedCorrected.contains(j)) {
-        corrections.add(IngredientCorrection.added(
-          correctedIndex: j,
-          correctedLine: correctedParsed[j].line,
-        ));
+        corrections.add(
+          IngredientCorrection.added(
+            correctedIndex: j,
+            correctedLine: correctedParsed[j].line,
+          ),
+        );
       }
     }
 
@@ -259,11 +272,13 @@ class RecipeDiffCalculator {
 
           // Check for reordering
           if (i != j) {
-            corrections.add(InstructionCorrection.reordered(
-              originalIndex: i,
-              correctedIndex: j,
-              text: original[i],
-            ));
+            corrections.add(
+              InstructionCorrection.reordered(
+                originalIndex: i,
+                correctedIndex: j,
+                text: original[i],
+              ),
+            );
           }
           break;
         }
@@ -281,12 +296,14 @@ class RecipeDiffCalculator {
           matchedOriginal.add(i);
           matchedCorrected.add(j);
 
-          corrections.add(InstructionCorrection.modified(
-            originalIndex: i,
-            correctedIndex: j,
-            originalText: original[i],
-            correctedText: corrected[j],
-          ));
+          corrections.add(
+            InstructionCorrection.modified(
+              originalIndex: i,
+              correctedIndex: j,
+              originalText: original[i],
+              correctedText: corrected[j],
+            ),
+          );
           break;
         }
       }
@@ -295,20 +312,24 @@ class RecipeDiffCalculator {
     // Step 3: Unmatched original = removed
     for (var i = 0; i < original.length; i++) {
       if (!matchedOriginal.contains(i)) {
-        corrections.add(InstructionCorrection.removed(
-          originalIndex: i,
-          originalText: original[i],
-        ));
+        corrections.add(
+          InstructionCorrection.removed(
+            originalIndex: i,
+            originalText: original[i],
+          ),
+        );
       }
     }
 
     // Step 4: Unmatched corrected = added
     for (var j = 0; j < corrected.length; j++) {
       if (!matchedCorrected.contains(j)) {
-        corrections.add(InstructionCorrection.added(
-          correctedIndex: j,
-          correctedText: corrected[j],
-        ));
+        corrections.add(
+          InstructionCorrection.added(
+            correctedIndex: j,
+            correctedText: corrected[j],
+          ),
+        );
       }
     }
 

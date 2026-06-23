@@ -99,8 +99,8 @@ class CommentStatistics {
 /// can enforce read access without an N+1 lookup. Callers without access to
 /// the recipe ownership graph may pass null — the comment then writes
 /// without these fields and reads fall back to author-only.
-typedef RecipeOwnershipResolver = Future<RecipeOwnershipSnapshot?> Function(
-    String recipeId);
+typedef RecipeOwnershipResolver =
+    Future<RecipeOwnershipSnapshot?> Function(String recipeId);
 
 /// Plain snapshot of the recipe-ownership fields needed to denormalize onto
 /// a comment doc at write time.

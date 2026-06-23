@@ -95,7 +95,8 @@ final RegExp _swedishStreetAddressRegex = RegExp(
 
 /// RULE B triggers. Case spelled per-letter instead of `caseSensitive: false`
 /// so the NAME part stays strictly capital-initial.
-const String _relationOrHonorific = '(?:[Mm]ormor|[Ff]armor|[Mm]orfar|[Ff]arfar'
+const String _relationOrHonorific =
+    '(?:[Mm]ormor|[Ff]armor|[Mm]orfar|[Ff]arfar'
     '|[Mm]oster|[Ff]aster|[Mm]orbror|[Ff]arbror'
     '|[Mm]in vän(?:inna)?|[Vv]år vän(?:inna)?'
     '|[Hh]err|[Ff]röken|[Ff]ru)';

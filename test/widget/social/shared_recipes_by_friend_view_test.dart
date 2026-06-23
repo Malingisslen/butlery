@@ -106,9 +106,9 @@ class _FakeRecipeViewModel extends SharedRecipeViewModel {
     this.errorMessage,
     this.recipes = const [],
   }) : super(
-          socialRecipeCoordinator: _FakeSocialRecipeCoordinator(),
-          permissionService: _FakePermissionService(),
-        );
+         socialRecipeCoordinator: _FakeSocialRecipeCoordinator(),
+         permissionService: _FakePermissionService(),
+       );
 
   final bool loading;
   final String? errorMessage;
@@ -143,26 +143,26 @@ class _FakeRecipeViewModel extends SharedRecipeViewModel {
 /// real locator.
 class _FakeCoordinator extends SharedContentCoordinatorViewModel {
   _FakeCoordinator(this._recipeVm)
-      : super(
-          recipeViewModel: _recipeVm,
-          menuViewModel: SharedMenuViewModel(
-            socialMenuCoordinator: _FakeSocialMenuCoordinator(),
-            permissionService: _FakePermissionService(),
-          ),
-          shoppingViewModel: SharedShoppingViewModel(
-            socialShoppingCoordinator: _FakeSocialShoppingCoordinator(),
-            shoppingService: _FakeShoppingService(),
-            permissionService: _FakePermissionService(),
-          ),
-          socialSharingViewModel: SocialSharingViewModel(
-            friendsService: _FakeFriendsService(),
-            recipeCoordinator: _FakeSocialRecipeCoordinator(),
-            menuCoordinator: _FakeSocialMenuCoordinator(),
-            shoppingCoordinator: _FakeSocialShoppingCoordinator(),
-            menuService: _FakeMenuService(),
-            shoppingService: _FakeShoppingService(),
-          ),
-        );
+    : super(
+        recipeViewModel: _recipeVm,
+        menuViewModel: SharedMenuViewModel(
+          socialMenuCoordinator: _FakeSocialMenuCoordinator(),
+          permissionService: _FakePermissionService(),
+        ),
+        shoppingViewModel: SharedShoppingViewModel(
+          socialShoppingCoordinator: _FakeSocialShoppingCoordinator(),
+          shoppingService: _FakeShoppingService(),
+          permissionService: _FakePermissionService(),
+        ),
+        socialSharingViewModel: SocialSharingViewModel(
+          friendsService: _FakeFriendsService(),
+          recipeCoordinator: _FakeSocialRecipeCoordinator(),
+          menuCoordinator: _FakeSocialMenuCoordinator(),
+          shoppingCoordinator: _FakeSocialShoppingCoordinator(),
+          menuService: _FakeMenuService(),
+          shoppingService: _FakeShoppingService(),
+        ),
+      );
 
   final _FakeRecipeViewModel _recipeVm;
 
@@ -213,19 +213,19 @@ SharedRecipe _sharedRecipe({required String id, required String title}) =>
     );
 
 Widget _wrap() => MaterialApp(
-      locale: const Locale('sv'),
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: const SharedRecipesByFriendView(
-        friendId: 'friend-1',
-        friendDisplayName: 'Erik',
-      ),
-    );
+  locale: const Locale('sv'),
+  supportedLocales: AppLocalizations.supportedLocales,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  home: const SharedRecipesByFriendView(
+    friendId: 'friend-1',
+    friendDisplayName: 'Erik',
+  ),
+);
 
 void main() {
   setUp(() async {
@@ -239,116 +239,152 @@ void main() {
   });
 
   group('SharedRecipesByFriendView render states (BUT-1000)', () {
-    testWidgets('loading state shows a spinner, no list or error',
-        (tester) async {
+    testWidgets('loading state shows a spinner, no list or error', (
+      tester,
+    ) async {
       _register(_FakeRecipeViewModel(loading: true));
       await tester.pumpWidget(_wrap());
       await tester.pump(); // run the post-frame initialize()
 
-      expect(find.byType(LoadingIndicator), findsOneWidget,
-          reason: 'isLoading must render the loading indicator');
+      expect(
+        find.byType(LoadingIndicator),
+        findsOneWidget,
+        reason: 'isLoading must render the loading indicator',
+      );
       expect(find.byType(ListView), findsNothing);
     });
 
-    testWidgets(
-        'error state shows the error widget and its retry dispatches '
+    testWidgets('error state shows the error widget and its retry dispatches '
         'refreshAllContent', (tester) async {
-      final coordinator =
-          _register(_FakeRecipeViewModel(errorMessage: 'Något gick fel'));
+      final coordinator = _register(
+        _FakeRecipeViewModel(errorMessage: 'Något gick fel'),
+      );
       await tester.pumpWidget(_wrap());
       await tester.pump();
 
-      expect(find.text('Något gick fel'), findsOneWidget,
-          reason: 'hasError must surface the error message');
+      expect(
+        find.text('Något gick fel'),
+        findsOneWidget,
+        reason: 'hasError must surface the error message',
+      );
       // StateWidget.error renders a retry button wired to refreshAllContent.
       expect(find.byType(StateWidget), findsOneWidget);
 
       // BUT-1296: tapping retry must actually re-fetch — assert the dispatch,
       // not merely the presence of a refresh-labelled button. The retry is the
       // outlined button carrying the refresh icon (see MessageStates.error).
-      expect(coordinator.refreshAllContentCalls, 0,
-          reason: 'no retry has happened before the tap');
+      expect(
+        coordinator.refreshAllContentCalls,
+        0,
+        reason: 'no retry has happened before the tap',
+      );
       await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
 
-      expect(coordinator.refreshAllContentCalls, 1,
-          reason: 'tapping retry must call back into refreshAllContent');
+      expect(
+        coordinator.refreshAllContentCalls,
+        1,
+        reason: 'tapping retry must call back into refreshAllContent',
+      );
     });
 
-    testWidgets('empty state shows the branded "no recipes" empty widget',
-        (tester) async {
+    testWidgets('empty state shows the branded "no recipes" empty widget', (
+      tester,
+    ) async {
       _register(_FakeRecipeViewModel(recipes: const []));
       await tester.pumpWidget(_wrap());
       await tester.pump();
 
       // sharedNoRecipesFromFriend(name) — Swedish copy includes the friend name.
-      expect(find.byType(StateWidget), findsOneWidget,
-          reason: 'an empty friend list must render the empty state');
+      expect(
+        find.byType(StateWidget),
+        findsOneWidget,
+        reason: 'an empty friend list must render the empty state',
+      );
       expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
     });
 
     testWidgets(
-        'populated state renders the list with one card title per shared recipe',
-        (tester) async {
-      _register(_FakeRecipeViewModel(recipes: [
-        _sharedRecipe(id: 'r1', title: 'Köttbullar'),
-        _sharedRecipe(id: 'r2', title: 'Pannkakor'),
-        _sharedRecipe(id: 'r3', title: 'Ärtsoppa'),
-      ]));
-      await tester.pumpWidget(_wrap());
-      await tester.pump();
+      'populated state renders the list with one card title per shared recipe',
+      (tester) async {
+        _register(
+          _FakeRecipeViewModel(
+            recipes: [
+              _sharedRecipe(id: 'r1', title: 'Köttbullar'),
+              _sharedRecipe(id: 'r2', title: 'Pannkakor'),
+              _sharedRecipe(id: 'r3', title: 'Ärtsoppa'),
+            ],
+          ),
+        );
+        await tester.pumpWidget(_wrap());
+        await tester.pump();
 
-      // The non-empty branch builds a ListView, NOT the empty StateWidget.
-      expect(find.byType(ListView), findsOneWidget,
-          reason: 'a non-empty friend list must render the scrollable list');
-      expect(find.byType(StateWidget), findsNothing,
+        // The non-empty branch builds a ListView, NOT the empty StateWidget.
+        expect(
+          find.byType(ListView),
+          findsOneWidget,
+          reason: 'a non-empty friend list must render the scrollable list',
+        );
+        expect(
+          find.byType(StateWidget),
+          findsNothing,
           reason:
               'the populated branch must not fall through to an empty/error '
-              'state widget');
+              'state widget',
+        );
 
-      // The view keys each card by recipe id — one keyed card per shared
-      // recipe proves the list rendered all N, not a deduped/truncated subset.
-      expect(find.byKey(const ValueKey('r1')), findsOneWidget);
-      expect(find.byKey(const ValueKey('r2')), findsOneWidget);
-      expect(find.byKey(const ValueKey('r3')), findsOneWidget);
+        // The view keys each card by recipe id — one keyed card per shared
+        // recipe proves the list rendered all N, not a deduped/truncated subset.
+        expect(find.byKey(const ValueKey('r1')), findsOneWidget);
+        expect(find.byKey(const ValueKey('r2')), findsOneWidget);
+        expect(find.byKey(const ValueKey('r3')), findsOneWidget);
 
-      // Each recipe's title renders inside its card.
-      expect(find.text('Köttbullar'), findsOneWidget);
-      expect(find.text('Pannkakor'), findsOneWidget);
-      expect(find.text('Ärtsoppa'), findsOneWidget);
-    });
+        // Each recipe's title renders inside its card.
+        expect(find.text('Köttbullar'), findsOneWidget);
+        expect(find.text('Pannkakor'), findsOneWidget);
+        expect(find.text('Ärtsoppa'), findsOneWidget);
+      },
+    );
 
     testWidgets('the title carries the friend display name', (tester) async {
       _register(_FakeRecipeViewModel(recipes: const []));
       await tester.pumpWidget(_wrap());
       await tester.pump();
 
-      expect(find.textContaining('Erik'), findsWidgets,
-          reason: 'the app bar title is scoped to the friend');
+      expect(
+        find.textContaining('Erik'),
+        findsWidgets,
+        reason: 'the app bar title is scoped to the friend',
+      );
     });
   });
 
   group('SharedRecipesByFriendView design language (BUT-1000)', () {
     testWidgets(
-        'the view introduces no rounded BorderRadius.circular in its own chrome',
-        (tester) async {
-      _register(_FakeRecipeViewModel(recipes: const []));
-      await tester.pumpWidget(_wrap());
-      await tester.pump();
+      'the view introduces no rounded BorderRadius.circular in its own chrome',
+      (tester) async {
+        _register(_FakeRecipeViewModel(recipes: const []));
+        await tester.pumpWidget(_wrap());
+        await tester.pump();
 
-      // Square design language: the view's scaffold/empty-state chrome must not
-      // round any container it owns. (The list-card rounding lives in the card,
-      // which this empty state does not render.)
-      final rounded = find.byWidgetPredicate((w) {
-        if (w is Container) {
-          final deco = w.decoration;
-          if (deco is BoxDecoration && deco.borderRadius != null) return true;
-        }
-        if (w is ClipRRect && w.borderRadius != BorderRadius.zero) return true;
-        return false;
-      });
-      expect(rounded, findsNothing,
-          reason: 'the view chrome must stay square (no rounded corners)');
-    });
+        // Square design language: the view's scaffold/empty-state chrome must not
+        // round any container it owns. (The list-card rounding lives in the card,
+        // which this empty state does not render.)
+        final rounded = find.byWidgetPredicate((w) {
+          if (w is Container) {
+            final deco = w.decoration;
+            if (deco is BoxDecoration && deco.borderRadius != null) return true;
+          }
+          if (w is ClipRRect && w.borderRadius != BorderRadius.zero)
+            return true;
+          return false;
+        });
+        expect(
+          rounded,
+          findsNothing,
+          reason: 'the view chrome must stay square (no rounded corners)',
+        );
+      },
+    );
   });
 }

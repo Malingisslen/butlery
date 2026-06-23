@@ -161,11 +161,13 @@ class PermissionService extends BaseService {
 
     // S7 fix: Delegate to UserService for real profile lookup (cached)
     try {
-      return await ServiceLocator.get<user_svc.UserService>()
-          .getUserProfile(userId);
+      return await ServiceLocator.get<user_svc.UserService>().getUserProfile(
+        userId,
+      );
     } catch (e) {
       AppLogger.warning(
-          'Failed to fetch user profile for ${userId.maskedUserId}: $e');
+        'Failed to fetch user profile for ${userId.maskedUserId}: $e',
+      );
       return null;
     }
   }

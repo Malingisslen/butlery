@@ -73,8 +73,9 @@ class _RelatedSection extends StatelessWidget {
         // Divider + header
         Divider(color: cs.surfaceContainerHigh),
         Padding(
-          padding:
-              const EdgeInsetsDirectional.only(start: AppDimensions.paddingL),
+          padding: const EdgeInsetsDirectional.only(
+            start: AppDimensions.paddingL,
+          ),
           child: Semantics(
             header: true,
             child: Text(
@@ -123,8 +124,11 @@ class _RelatedThumbnail extends StatelessWidget {
       label: context.l10n.a11yRelatedRecipeThumbnail(recipe.title),
       button: true,
       child: InkWell(
-        onTap: () => Navigator.pushNamed(context, Routes.recipeDetail,
-            arguments: recipe),
+        onTap: () => Navigator.pushNamed(
+          context,
+          Routes.recipeDetail,
+          arguments: recipe,
+        ),
         child: SizedBox(
           width: _thumbnailSize,
           child: Column(
@@ -148,8 +152,9 @@ class _RelatedThumbnail extends StatelessWidget {
                       )
                     : Center(
                         child: VegetableIllustration(
-                          type:
-                              VegetableIllustration.randomForRecipe(recipe.id),
+                          type: VegetableIllustration.randomForRecipe(
+                            recipe.id,
+                          ),
                           size:
                               (_thumbnailSize - AppDimensions.spacingXl) * 0.65,
                           opacity: 0.8,

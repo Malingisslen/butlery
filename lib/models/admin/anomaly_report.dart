@@ -21,12 +21,12 @@ class Anomaly {
   bool get isUp => direction == 'up';
 
   factory Anomaly.fromMap(Map<String, dynamic> data) => Anomaly(
-        metric: (data['metric'] as String?) ?? 'unknown',
-        today: (data['today'] as num?) ?? 0,
-        mean: (data['mean'] as num?) ?? 0,
-        z: (data['z'] as num?)?.toDouble() ?? 0,
-        direction: (data['direction'] as String?) ?? 'up',
-      );
+    metric: (data['metric'] as String?) ?? 'unknown',
+    today: (data['today'] as num?) ?? 0,
+    mean: (data['mean'] as num?) ?? 0,
+    z: (data['z'] as num?)?.toDouble() ?? 0,
+    direction: (data['direction'] as String?) ?? 'up',
+  );
 }
 
 /// Today's anomaly report (the doc at `analytics/anomalies/{date}`), or empty.
@@ -46,9 +46,9 @@ class AnomalyReport {
       date: (data['date'] as String?) ?? id,
       anomalies: raw is List
           ? raw
-              .whereType<Map>()
-              .map((m) => Anomaly.fromMap(Map<String, dynamic>.from(m)))
-              .toList()
+                .whereType<Map>()
+                .map((m) => Anomaly.fromMap(Map<String, dynamic>.from(m)))
+                .toList()
           : const [],
     );
   }

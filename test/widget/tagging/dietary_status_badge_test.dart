@@ -40,8 +40,9 @@ void main() {
         expect(find.byIcon(Icons.help_outline), findsNothing);
       });
 
-      testWidgets('UNKNOWN renders help_outline icon and "okänd" label',
-          (tester) async {
+      testWidgets('UNKNOWN renders help_outline icon and "okänd" label', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: const DietaryStatusBadge(

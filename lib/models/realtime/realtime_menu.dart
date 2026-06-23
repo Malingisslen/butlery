@@ -25,10 +25,10 @@ class RealtimeMenu extends RealtimeResource {
     super.isActive,
     super.metadata,
     required RealtimeMenuData data,
-  })  : _data = data,
-        super(
-          type: RealtimeResourceType.menu,
-        );
+  }) : _data = data,
+       super(
+         type: RealtimeResourceType.menu,
+       );
 
   factory RealtimeMenu.fromMenuCategories({
     required String menuTitle,
@@ -68,7 +68,9 @@ class RealtimeMenu extends RealtimeResource {
 
   /// @deprecated Use fromData() instead.
   factory RealtimeMenu.fromRepositoryData(
-      String id, Map<String, dynamic> data) {
+    String id,
+    Map<String, dynamic> data,
+  ) {
     final params = RealtimeMenuFactory.parseRepositoryData(id, data);
 
     return RealtimeMenu(
@@ -355,7 +357,9 @@ class RealtimeMenu extends RealtimeResource {
 
   Map<String, List<Recipe>> createPersonalMenuCopy() {
     return RealtimeMenuOperations.createPersonalMenuCopy(
-        _data, ownerDisplayName);
+      _data,
+      ownerDisplayName,
+    );
   }
 
   List<Recipe> searchRecipes(String query) =>
@@ -369,17 +373,16 @@ class RealtimeMenu extends RealtimeResource {
     int? minPortions,
     int? maxPortions,
     double? minRating,
-  }) =>
-      RealtimeMenuAnalytics.searchRecipesAdvanced(
-        _data,
-        query: query,
-        mealType: mealType,
-        tags: tags,
-        maxTimeMinutes: maxTimeMinutes,
-        minPortions: minPortions,
-        maxPortions: maxPortions,
-        minRating: minRating,
-      );
+  }) => RealtimeMenuAnalytics.searchRecipesAdvanced(
+    _data,
+    query: query,
+    mealType: mealType,
+    tags: tags,
+    maxTimeMinutes: maxTimeMinutes,
+    minPortions: minPortions,
+    maxPortions: maxPortions,
+    minRating: minRating,
+  );
 
   Map<String, List<Recipe>> filterByMealType(String mealType) =>
       RealtimeMenuAnalytics.filterByMealType(_data, mealType);
@@ -402,8 +405,9 @@ class RealtimeMenu extends RealtimeResource {
     String userDisplayName,
     ResourcePermission permission,
   ) {
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(
+      participants,
+    );
     updatedParticipants[userId] = permission;
 
     return copyWithMetadata(
@@ -421,8 +425,9 @@ class RealtimeMenu extends RealtimeResource {
       throw ArgumentError('Cannot remove owner from menu');
     }
 
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(
+      participants,
+    );
     updatedParticipants.remove(userId);
 
     return copyWithMetadata(
@@ -443,8 +448,9 @@ class RealtimeMenu extends RealtimeResource {
       throw ArgumentError('Owner must maintain owner permission');
     }
 
-    final updatedParticipants =
-        Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants = Map<String, ResourcePermission>.from(
+      participants,
+    );
     updatedParticipants[userId] = newPermission;
 
     return copyWithMetadata(

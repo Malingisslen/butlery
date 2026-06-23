@@ -128,13 +128,16 @@ class _MinaReceptViewState extends State<MinaReceptView> {
         ChangeNotifierProvider.value(value: ServiceLocator.get<UserService>()),
         // Social relationship and friend management
         ChangeNotifierProvider<FriendsViewModel>.value(
-            value: _friendsViewModel),
+          value: _friendsViewModel,
+        ),
         // Shared content and notification management (modular coordinator)
         ChangeNotifierProvider.value(
-            value: ServiceLocator.get<SharedContentCoordinatorViewModel>()),
+          value: ServiceLocator.get<SharedContentCoordinatorViewModel>(),
+        ),
         // Offline functionality and synchronization service
         ChangeNotifierProvider.value(
-            value: ServiceLocator.get<offline_service.OfflineService>()),
+          value: ServiceLocator.get<offline_service.OfflineService>(),
+        ),
         // Personal tags for filtering (singleton from DI)
         ChangeNotifierProvider<PersonalTagViewModel>.value(
           value: ServiceLocator.get<PersonalTagViewModel>(),
@@ -226,7 +229,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void _applyPendingRestore() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _pendingRestoreOffset == null) return;
-      final notReady = !_scrollController.hasClients ||
+      final notReady =
+          !_scrollController.hasClients ||
           _scrollController.position.maxScrollExtent <= 0;
       if (notReady) {
         if (_restoreAttempts++ < 30) _applyPendingRestore();
@@ -278,20 +282,25 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
           // Only refresh friends - SharedContentCoordinatorViewModel loads automatically via service
           AppLogger.info(
-              '🔄 Refreshing friends data for MinaReceptView (delayed)...');
+            '🔄 Refreshing friends data for MinaReceptView (delayed)...',
+          );
           friendsViewModel.refresh();
 
           AppLogger.success(
-              '✅ Friends data refreshed for MinaReceptView (delayed)');
+            '✅ Friends data refreshed for MinaReceptView (delayed)',
+          );
         } catch (e) {
           AppLogger.error(
-              '❌ Error during delayed friends data refresh in MinaReceptView',
-              e);
+            '❌ Error during delayed friends data refresh in MinaReceptView',
+            e,
+          );
         }
       });
     } catch (e) {
       AppLogger.error(
-          '❌ Error setting up delayed friends refresh in MinaReceptView', e);
+        '❌ Error setting up delayed friends refresh in MinaReceptView',
+        e,
+      );
     }
   }
 
@@ -337,10 +346,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       } catch (e) {
         if (mounted) {
           SnackBarUtils.showError(
-              context,
-              context.l10n.syncFailed(
-                SnackBarUtils.userFriendlyMessage(context, e),
-              ));
+            context,
+            context.l10n.syncFailed(
+              SnackBarUtils.userFriendlyMessage(context, e),
+            ),
+          );
         }
       }
     }
@@ -350,10 +360,12 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeListViewModel>();
-    final isOnline = context
-        .select<offline_service.OfflineService, bool>((svc) => svc.isOnline);
+    final isOnline = context.select<offline_service.OfflineService, bool>(
+      (svc) => svc.isOnline,
+    );
     final allergenPrefs = context.select<UserService, UserAllergenPreferences>(
-        (svc) => svc.allergenPreferences);
+      (svc) => svc.allergenPreferences,
+    );
     final personalTags = context.watch<PersonalTagViewModel>().tags;
     final recipeCount = viewModel.recipes.length;
 
@@ -391,84 +403,87 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     return Scaffold(
       appBar: appBar,
       body: FocusTraversalGroup(
-          child: Column(
-        children: [
-          LayoutComponents.offlineIndicator(),
-          SyncIndicator(
-            hasPendingWrites: viewModel.hasPendingWrites,
-            isFromCache: viewModel.isFromCache,
-          ),
-          // BUT-407: live online-members presence bar (union across groups).
-          const FamilyPresenceBar(),
-          // BUT-408: live cooking session card for the user's friend groups.
-          _buildCookingSessionCard(),
-          if (!viewModel.isSelectionMode) ...[
-            SearchFilterWidget(
-              searchQuery: viewModel.searchQuery,
-              onSearchChanged: viewModel.updateSearch,
-              searchHint: context.l10n.recipeSearchHint,
-              activeTimeFilters: viewModel.activeTimeFilters,
-              activeMealTypeFilters: viewModel.activeMealTypeFilters,
-              activeRatingFilters: viewModel.activeRatingFilters,
-              activeAllergenFilters: viewModel.activeAllergenFilters,
-              activeDietaryFilters: viewModel.activeDietaryFilters,
-              onTimeFilterToggle: viewModel.toggleTimeFilter,
-              onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
-              onRatingFilterToggle: viewModel.toggleRatingFilter,
-              onAllergenFilterToggle: viewModel.toggleAllergenFilter,
-              onDietaryFilterToggle: viewModel.toggleDietaryFilter,
-              personalTagIds: personalTags,
-              activePersonalTagFilters: viewModel.activePersonalTagFilters,
-              excludedPersonalTagFilters: viewModel.excludedPersonalTagFilters,
-              onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
-              onExcludedPersonalTagFilterToggle:
-                  viewModel.toggleExcludedPersonalTagFilter,
-              onManagePersonalTags: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PersonalTagsView(),
-                  ),
-                );
-              },
-              // BUT-987: deep-link to allergen/dietary prefs from the filter
-              // panel — the prefs drive the allergen/dietary filters above.
-              onManageFoodPreferences: () =>
-                  Navigator.of(context).pushNamed(Routes.settingsAllergens),
-              searchHistory: viewModel.searchHistory,
-              onHistoryTap: (query) => viewModel.updateSearch(query),
-              onHistoryRemove: viewModel.removeFromSearchHistory,
-              showFilters: _showFilters,
-              onToggleFilters: () =>
-                  setState(() => _showFilters = !_showFilters),
-              hasActiveFilters: viewModel.hasActiveFilters,
-              onClearAllFilters: viewModel.clearAllFilters,
-              resultCount: recipeCount,
-              showStats: false,
+        child: Column(
+          children: [
+            LayoutComponents.offlineIndicator(),
+            SyncIndicator(
+              hasPendingWrites: viewModel.hasPendingWrites,
+              isFromCache: viewModel.isFromCache,
             ),
-            Selector<UserService, Set<String>>(
-              selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
-              builder: (context, trackedAllergens, _) => QuickFilterChips(
-                options: [
-                  ...QuickFilterChips.getDefaultRecipeFilters(context),
-                  ...QuickFilterChips.getAllergenFilters(trackedAllergens),
-                ],
-                selectedIds: getMinaReceptQuickFilterIds(viewModel),
-                onFilterToggle: (filterId) => handleMinaReceptQuickFilterToggle(
-                  context,
-                  viewModel,
-                  filterId,
-                ),
-                trailing: MinaReceptSortChip(viewModel: viewModel),
+            // BUT-407: live online-members presence bar (union across groups).
+            const FamilyPresenceBar(),
+            // BUT-408: live cooking session card for the user's friend groups.
+            _buildCookingSessionCard(),
+            if (!viewModel.isSelectionMode) ...[
+              SearchFilterWidget(
+                searchQuery: viewModel.searchQuery,
+                onSearchChanged: viewModel.updateSearch,
+                searchHint: context.l10n.recipeSearchHint,
+                activeTimeFilters: viewModel.activeTimeFilters,
+                activeMealTypeFilters: viewModel.activeMealTypeFilters,
+                activeRatingFilters: viewModel.activeRatingFilters,
+                activeAllergenFilters: viewModel.activeAllergenFilters,
+                activeDietaryFilters: viewModel.activeDietaryFilters,
+                onTimeFilterToggle: viewModel.toggleTimeFilter,
+                onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
+                onRatingFilterToggle: viewModel.toggleRatingFilter,
+                onAllergenFilterToggle: viewModel.toggleAllergenFilter,
+                onDietaryFilterToggle: viewModel.toggleDietaryFilter,
+                personalTagIds: personalTags,
+                activePersonalTagFilters: viewModel.activePersonalTagFilters,
+                excludedPersonalTagFilters:
+                    viewModel.excludedPersonalTagFilters,
+                onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
+                onExcludedPersonalTagFilterToggle:
+                    viewModel.toggleExcludedPersonalTagFilter,
+                onManagePersonalTags: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PersonalTagsView(),
+                    ),
+                  );
+                },
+                // BUT-987: deep-link to allergen/dietary prefs from the filter
+                // panel — the prefs drive the allergen/dietary filters above.
+                onManageFoodPreferences: () =>
+                    Navigator.of(context).pushNamed(Routes.settingsAllergens),
+                searchHistory: viewModel.searchHistory,
+                onHistoryTap: (query) => viewModel.updateSearch(query),
+                onHistoryRemove: viewModel.removeFromSearchHistory,
+                showFilters: _showFilters,
+                onToggleFilters: () =>
+                    setState(() => _showFilters = !_showFilters),
+                hasActiveFilters: viewModel.hasActiveFilters,
+                onClearAllFilters: viewModel.clearAllFilters,
+                resultCount: recipeCount,
+                showStats: false,
               ),
-            ),
-            // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
-            // gesture; self-dismisses once per device.
-            const SwipeHintBanner(),
+              Selector<UserService, Set<String>>(
+                selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
+                builder: (context, trackedAllergens, _) => QuickFilterChips(
+                  options: [
+                    ...QuickFilterChips.getDefaultRecipeFilters(context),
+                    ...QuickFilterChips.getAllergenFilters(trackedAllergens),
+                  ],
+                  selectedIds: getMinaReceptQuickFilterIds(viewModel),
+                  onFilterToggle: (filterId) =>
+                      handleMinaReceptQuickFilterToggle(
+                        context,
+                        viewModel,
+                        filterId,
+                      ),
+                  trailing: MinaReceptSortChip(viewModel: viewModel),
+                ),
+              ),
+              // BUT-982: first-use hint teaching the swipe-to-edit / -delete card
+              // gesture; self-dismisses once per device.
+              const SwipeHintBanner(),
+            ],
+            Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
           ],
-          Expanded(child: _buildContent(viewModel, isOnline, allergenPrefs)),
-        ],
-      )),
+        ),
+      ),
     );
   }
 
@@ -485,8 +500,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (userId == null) return const SizedBox.shrink();
 
     final groups = friends.categoriesList
-        .where((FriendCategory c) =>
-            c.ownerId == userId || c.friendUserIds.contains(userId))
+        .where(
+          (FriendCategory c) =>
+              c.ownerId == userId || c.friendUserIds.contains(userId),
+        )
         .map((g) => g.id)
         .toList(growable: false);
     if (groups.isEmpty) return const SizedBox.shrink();
@@ -574,7 +591,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           await viewModel.refresh();
           if (mounted) {
             SnackBarUtils.showWarning(
-                context, context.l10n.offlineShowingLocal);
+              context,
+              context.l10n.offlineShowingLocal,
+            );
           }
         }
       },
@@ -606,12 +625,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                         crossAxisCount: LayoutComponents.isMobile(context)
                             ? 2
                             : LayoutComponents.isTablet(context)
-                                ? 3
-                                : 4,
-                        crossAxisSpacing:
-                            AppDimensions.responsiveGridSpacing(context),
-                        mainAxisSpacing:
-                            AppDimensions.responsiveGridSpacing(context),
+                            ? 3
+                            : 4,
+                        crossAxisSpacing: AppDimensions.responsiveGridSpacing(
+                          context,
+                        ),
+                        mainAxisSpacing: AppDimensions.responsiveGridSpacing(
+                          context,
+                        ),
                         childAspectRatio: 0.75,
                       ),
                       itemCount: recipes.length,
@@ -631,8 +652,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                         tabletColumns: 2,
                         desktopColumns: 3,
                         spacing: AppDimensions.responsiveGridSpacing(context),
-                        padding:
-                            AppDimensions.responsiveContentPadding(context),
+                        padding: AppDimensions.responsiveContentPadding(
+                          context,
+                        ),
                         shrinkWrap: false,
                         gridChildAspectRatio: 0.75,
                         animate: true,

@@ -188,10 +188,10 @@ void main() {
   });
 
   SharedContentSearchViewModel makeVm() => SharedContentSearchViewModel(
-        recipeViewModel: recipeVm,
-        menuViewModel: menuVm,
-        shoppingViewModel: shoppingVm,
-      );
+    recipeViewModel: recipeVm,
+    menuViewModel: menuVm,
+    shoppingViewModel: shoppingVm,
+  );
 
   group('debounce', () {
     /// Three rapid keystrokes within the 300ms window must produce exactly
@@ -203,8 +203,9 @@ void main() {
         when(() => recipeVm.content).thenReturn([r1]);
         // Track the queries actually used so we can assert no in-flight 'a'/'ab' search ran.
         final queriesSeen = <String>[];
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenAnswer((invocation) {
+        when(() => recipeVm.contentMatchesSearch(any(), any())).thenAnswer((
+          invocation,
+        ) {
           queriesSeen.add(invocation.positionalArguments[1] as String);
           return true;
         });
@@ -247,10 +248,12 @@ void main() {
     /// Clearing the box mid-typing must wipe results and not fire a search.
     test('empty query clears results and skips repository call', () {
       fakeAsync((async) {
-        when(() => recipeVm.content)
-            .thenReturn([_makeRecipe(id: 'r1', title: 'Pasta')]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.content,
+        ).thenReturn([_makeRecipe(id: 'r1', title: 'Pasta')]);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         final vm = makeVm();
         vm.updateSearchQuery('pasta');
@@ -273,26 +276,30 @@ void main() {
     /// observed behaviour so any future change is intentional. If you change
     /// the production behaviour to skip whitespace, update this test and add
     /// a deliberate trim() — don't weaken silently.
-    test('whitespace query is treated as a real query (pins current behaviour)',
-        () {
-      fakeAsync((async) {
-        when(() => recipeVm.content)
-            .thenReturn([_makeRecipe(id: 'r1', title: 'Pasta')]);
-        // Nothing matches whitespace, so result count = 0.
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(false);
+    test(
+      'whitespace query is treated as a real query (pins current behaviour)',
+      () {
+        fakeAsync((async) {
+          when(
+            () => recipeVm.content,
+          ).thenReturn([_makeRecipe(id: 'r1', title: 'Pasta')]);
+          // Nothing matches whitespace, so result count = 0.
+          when(
+            () => recipeVm.contentMatchesSearch(any(), any()),
+          ).thenReturn(false);
 
-        final vm = makeVm();
-        vm.updateSearchQuery('   ');
-        async.elapse(const Duration(milliseconds: 300));
-        async.flushMicrotasks();
+          final vm = makeVm();
+          vm.updateSearchQuery('   ');
+          async.elapse(const Duration(milliseconds: 300));
+          async.flushMicrotasks();
 
-        // Search ran (verify), even though no results came back.
-        verify(() => recipeVm.contentMatchesSearch(any(), any())).called(1);
-        expect(vm.allResults, isEmpty);
-        vm.dispose();
-      });
-    });
+          // Search ran (verify), even though no results came back.
+          verify(() => recipeVm.contentMatchesSearch(any(), any())).called(1);
+          expect(vm.allResults, isEmpty);
+          vm.dispose();
+        });
+      },
+    );
   });
 
   group('search history', () {
@@ -327,10 +334,12 @@ void main() {
     /// stale results appear.
     test('cancels pending debounced search and wipes results', () {
       fakeAsync((async) {
-        when(() => recipeVm.content)
-            .thenReturn([_makeRecipe(id: 'r1', title: 'Pasta')]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.content,
+        ).thenReturn([_makeRecipe(id: 'r1', title: 'Pasta')]);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         final vm = makeVm();
         vm.updateSearchQuery('pasta');
@@ -364,8 +373,9 @@ void main() {
 
       when(() => recipeVm.contentMatchesSearch(any(), any())).thenReturn(true);
       when(() => menuVm.contentMatchesSearch(any(), any())).thenReturn(true);
-      when(() => shoppingVm.contentMatchesSearch(any(), any()))
-          .thenReturn(true);
+      when(
+        () => shoppingVm.contentMatchesSearch(any(), any()),
+      ).thenReturn(true);
 
       // r1 unread, r2 viewed.
       when(() => recipeVm.isRecipeViewed(r1)).thenReturn(false);
@@ -443,16 +453,21 @@ void main() {
     test('DateRange.today includes today and excludes yesterday', () {
       withClock(Clock.fixed(_kNow), () {
         fakeAsync((async) {
-          final today =
-              _makeRecipe(id: 'today', title: 'pasta', sharedAt: _kNow);
+          final today = _makeRecipe(
+            id: 'today',
+            title: 'pasta',
+            sharedAt: _kNow,
+          );
           final yesterday = _makeRecipe(
-              id: 'yesterday',
-              title: 'pasta',
-              sharedAt: _kNow.subtract(const Duration(days: 1)));
+            id: 'yesterday',
+            title: 'pasta',
+            sharedAt: _kNow.subtract(const Duration(days: 1)),
+          );
 
           when(() => recipeVm.content).thenReturn([today, yesterday]);
-          when(() => recipeVm.contentMatchesSearch(any(), any()))
-              .thenReturn(true);
+          when(
+            () => recipeVm.contentMatchesSearch(any(), any()),
+          ).thenReturn(true);
 
           final vm = makeVm();
           vm.updateSearchQuery('pasta');
@@ -477,11 +492,13 @@ void main() {
         when(() => recipeVm.content).thenReturn([r1]);
         when(() => menuVm.content).thenReturn([m1]);
         when(() => shoppingVm.content).thenReturn([s1]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
         when(() => menuVm.contentMatchesSearch(any(), any())).thenReturn(true);
-        when(() => shoppingVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => shoppingVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         final vm = makeVm();
         vm.updateSearchQuery('pasta');
@@ -510,8 +527,9 @@ void main() {
         final contains = _makeRecipe(id: 'con', title: 'easy pasta');
 
         when(() => recipeVm.content).thenReturn([contains, prefix]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         final vm = makeVm();
         vm.updateSearchQuery('pasta');
@@ -550,8 +568,9 @@ void main() {
           );
 
           when(() => recipeVm.content).thenReturn([oldest, middle, newest]);
-          when(() => recipeVm.contentMatchesSearch(any(), any()))
-              .thenReturn(true);
+          when(
+            () => recipeVm.contentMatchesSearch(any(), any()),
+          ).thenReturn(true);
 
           final vm = makeVm();
           vm.updateSearchQuery('pasta night');
@@ -559,8 +578,11 @@ void main() {
           async.flushMicrotasks();
 
           // Date DESC tie-break: newest, middle, oldest.
-          expect(vm.filteredResults.map((r) => r.id).toList(),
-              ['newest', 'middle', 'oldest']);
+          expect(vm.filteredResults.map((r) => r.id).toList(), [
+            'newest',
+            'middle',
+            'oldest',
+          ]);
           vm.dispose();
         });
       });
@@ -572,10 +594,12 @@ void main() {
     /// not invoke notifyListeners after super.dispose().
     test('dispose() mid-debounce does not throw and does not call back', () {
       fakeAsync((async) {
-        when(() => recipeVm.content)
-            .thenReturn([_makeRecipe(id: 'r1', title: 'pasta')]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.content,
+        ).thenReturn([_makeRecipe(id: 'r1', title: 'pasta')]);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         final vm = makeVm();
         vm.updateSearchQuery('pasta');
@@ -613,10 +637,12 @@ void main() {
     /// imported/viewed/dismissed status. This re-search is itself debounced.
     test('re-runs search when collaborator notifies and query is active', () {
       fakeAsync((async) {
-        when(() => recipeVm.content)
-            .thenReturn([_makeRecipe(id: 'r1', title: 'pasta')]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.content,
+        ).thenReturn([_makeRecipe(id: 'r1', title: 'pasta')]);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         // Capture the listener so we can invoke it manually.
         late VoidCallback capturedListener;
@@ -632,10 +658,12 @@ void main() {
 
         clearInteractions(recipeVm);
         // Re-stub after clearInteractions so the next search call works.
-        when(() => recipeVm.content)
-            .thenReturn([_makeRecipe(id: 'r1', title: 'pasta')]);
-        when(() => recipeVm.contentMatchesSearch(any(), any()))
-            .thenReturn(true);
+        when(
+          () => recipeVm.content,
+        ).thenReturn([_makeRecipe(id: 'r1', title: 'pasta')]);
+        when(
+          () => recipeVm.contentMatchesSearch(any(), any()),
+        ).thenReturn(true);
 
         // Simulate the collaborator firing notifyListeners.
         capturedListener();

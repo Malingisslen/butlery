@@ -15,7 +15,7 @@ class AllergenPreferencesViewModel extends BaseViewModel {
   bool _hasChanges = false;
 
   AllergenPreferencesViewModel({UserService? userService})
-      : _userService = userService ?? ServiceLocator.get<UserService>() {
+    : _userService = userService ?? ServiceLocator.get<UserService>() {
     _preferences = _userService.allergenPreferences;
   }
 
@@ -91,13 +91,17 @@ class AllergenPreferencesViewModel extends BaseViewModel {
   Future<bool> save() async {
     return executeAsyncVoid(
       () async {
-        final success =
-            await _userService.updateAllergenPreferences(_preferences);
+        final success = await _userService.updateAllergenPreferences(
+          _preferences,
+        );
         if (success) {
           _hasChanges = false;
         } else {
-          throw Exception(AppLocale.current
-              .errorCouldNotUpdate(AppLocale.current.nounSettings));
+          throw Exception(
+            AppLocale.current.errorCouldNotUpdate(
+              AppLocale.current.nounSettings,
+            ),
+          );
         }
       },
       errorPrefix: AppLocale.current.errorCouldNotUpdateAllergenSettings,

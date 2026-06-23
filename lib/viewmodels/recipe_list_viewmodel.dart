@@ -129,11 +129,11 @@ class RecipeListViewModel extends ChangeNotifier {
     UnifiedRecipeService? recipeService,
     SearchService? searchService,
     TagEditingService? tagEditingService,
-  })  : _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-        _searchService = searchService ?? ServiceLocator.get<SearchService>(),
-        _tagEditingService =
-            tagEditingService ?? ServiceLocator.get<TagEditingService>() {
+  }) : _recipeService =
+           recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+       _searchService = searchService ?? ServiceLocator.get<SearchService>(),
+       _tagEditingService =
+           tagEditingService ?? ServiceLocator.get<TagEditingService>() {
     _deleteManager = RecipeDeleteManager(
       recipeService: _recipeService,
       invalidateCache: _invalidateCache,
@@ -141,8 +141,9 @@ class RecipeListViewModel extends ChangeNotifier {
       onError: (_) => notifyListeners(),
     );
     _selectionManager.addListener(notifyListeners);
-    _recipeServiceSubscription =
-        _recipeService.stateStream.listen((_) => _onRecipesChanged());
+    _recipeServiceSubscription = _recipeService.stateStream.listen(
+      (_) => _onRecipesChanged(),
+    );
     _recipeService.initialize();
     _loadDisplayPreferences();
     _loadOnboardingBannerState();
@@ -199,16 +200,16 @@ class RecipeListViewModel extends ChangeNotifier {
           ..addAll(savedDietaryFilters);
         _invalidateCache();
       }
-      final savedPersonalTagFilters =
-          await persistence.getRecipePersonalTagFilters();
+      final savedPersonalTagFilters = await persistence
+          .getRecipePersonalTagFilters();
       if (savedPersonalTagFilters.isNotEmpty) {
         _activePersonalTagFilters
           ..clear()
           ..addAll(savedPersonalTagFilters);
         _invalidateCache();
       }
-      final savedExcludedPersonalTagFilters =
-          await persistence.getRecipeExcludedPersonalTagFilters();
+      final savedExcludedPersonalTagFilters = await persistence
+          .getRecipeExcludedPersonalTagFilters();
       if (savedExcludedPersonalTagFilters.isNotEmpty) {
         _excludedPersonalTagFilters
           ..clear()
@@ -241,19 +242,30 @@ class RecipeListViewModel extends ChangeNotifier {
       try {
         final persistence = ServiceLocator.get<PersistenceService>();
         unawaited(
-            persistence.setRecipeTimeFilters(_activeTimeFilters.toList()));
-        unawaited(persistence
-            .setRecipeMealTypeFilters(_activeMealTypeFilters.toList()));
+          persistence.setRecipeTimeFilters(_activeTimeFilters.toList()),
+        );
         unawaited(
-            persistence.setRecipeRatingFilters(_activeRatingFilters.toList()));
-        unawaited(persistence
-            .setRecipeAllergenFilters(_activeAllergenFilters.toList()));
-        unawaited(persistence
-            .setRecipeDietaryFilters(_activeDietaryFilters.toList()));
-        unawaited(persistence
-            .setRecipePersonalTagFilters(_activePersonalTagFilters.toList()));
-        unawaited(persistence.setRecipeExcludedPersonalTagFilters(
-            _excludedPersonalTagFilters.toList()));
+          persistence.setRecipeMealTypeFilters(_activeMealTypeFilters.toList()),
+        );
+        unawaited(
+          persistence.setRecipeRatingFilters(_activeRatingFilters.toList()),
+        );
+        unawaited(
+          persistence.setRecipeAllergenFilters(_activeAllergenFilters.toList()),
+        );
+        unawaited(
+          persistence.setRecipeDietaryFilters(_activeDietaryFilters.toList()),
+        );
+        unawaited(
+          persistence.setRecipePersonalTagFilters(
+            _activePersonalTagFilters.toList(),
+          ),
+        );
+        unawaited(
+          persistence.setRecipeExcludedPersonalTagFilters(
+            _excludedPersonalTagFilters.toList(),
+          ),
+        );
         unawaited(persistence.setRecipeFavoritesOnly(_favoritesOnly));
       } catch (_) {
         // Persistence not available — keep in-memory filters working.
@@ -324,11 +336,13 @@ class RecipeListViewModel extends ChangeNotifier {
   int get untaggedRecipeCount {
     if (!hasTagBasedFilters) return 0;
     return _recipeService.recipes
-        .where((r) =>
-            r.tagResult == null ||
-            r.tagResult!.hasFailed ||
-            r.tagResult!.needsRetagging ||
-            r.tagResult!.coverage < 1.0)
+        .where(
+          (r) =>
+              r.tagResult == null ||
+              r.tagResult!.hasFailed ||
+              r.tagResult!.needsRetagging ||
+              r.tagResult!.coverage < 1.0,
+        )
         .length;
   }
 
@@ -405,8 +419,10 @@ class RecipeListViewModel extends ChangeNotifier {
     _invalidateCache();
     notifyListeners();
     try {
-      ServiceLocator.get<PersistenceService>()
-          .setSortPreferences(_sortCriteria.name, _sortAscending);
+      ServiceLocator.get<PersistenceService>().setSortPreferences(
+        _sortCriteria.name,
+        _sortAscending,
+      );
     } catch (_) {
       // PersistenceService not registered yet during early init
     }
@@ -591,8 +607,9 @@ class RecipeListViewModel extends ChangeNotifier {
       // Re-read current state to avoid overwriting concurrent changes
       final current = _recipeService.getRecipeById(recipeId);
       if (current != null) {
-        _recipeService
-            .optimisticUpdate(current.copyWith(isFavorite: !newValue));
+        _recipeService.optimisticUpdate(
+          current.copyWith(isFavorite: !newValue),
+        );
       }
     }
   }
@@ -780,7 +797,9 @@ class RecipeListViewModel extends ChangeNotifier {
         _setEquals(_lastDietaryFilters, _activeDietaryFilters) &&
         _setEquals(_lastPersonalTagFilters, _activePersonalTagFilters) &&
         _setEquals(
-            _lastExcludedPersonalTagFilters, _excludedPersonalTagFilters) &&
+          _lastExcludedPersonalTagFilters,
+          _excludedPersonalTagFilters,
+        ) &&
         _lastFavoritesOnly == _favoritesOnly &&
         _lastPantryOnly == _pantryOnly) {
       return _cachedFilteredRecipes!;
@@ -836,8 +855,9 @@ class RecipeListViewModel extends ChangeNotifier {
     // hasn't resolved yet or returned nothing, which correctly yields an
     // empty list until the view rebuilds after notifyListeners().
     if (_pantryOnly) {
-      filtered =
-          filtered.where((r) => _pantryMatches.containsKey(r.id)).toList();
+      filtered = filtered
+          .where((r) => _pantryMatches.containsKey(r.id))
+          .toList();
     }
 
     // Search
@@ -972,7 +992,9 @@ class RecipeListViewModel extends ChangeNotifier {
         final filterValue = RecipeFilters.allergenFilterValue(filterId);
         if (filterValue != null) {
           final effectiveStatus = _tagEditingService.getEffectiveAllergenStatus(
-              recipe, filterValue);
+            recipe,
+            filterValue,
+          );
           if (effectiveStatus != TriState.free) {
             return false;
           }
@@ -1004,8 +1026,10 @@ class RecipeListViewModel extends ChangeNotifier {
       for (final filterId in _activeDietaryFilters) {
         final filterValue = RecipeFilters.dietaryFilterValue(filterId);
         if (filterValue != null) {
-          final effectiveStatus =
-              _tagEditingService.getEffectiveDietaryStatus(recipe, filterValue);
+          final effectiveStatus = _tagEditingService.getEffectiveDietaryStatus(
+            recipe,
+            filterValue,
+          );
           if (effectiveStatus != TriState.free) {
             return false;
           }
@@ -1076,8 +1100,10 @@ class RecipeListViewModel extends ChangeNotifier {
     _showOnboardingBanner = false;
     notifyListeners();
     try {
-      ServiceLocator.get<PersistenceService>()
-          .setBool(_bannerDismissedKey, true);
+      ServiceLocator.get<PersistenceService>().setBool(
+        _bannerDismissedKey,
+        true,
+      );
     } catch (_) {}
   }
 

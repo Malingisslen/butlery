@@ -65,22 +65,26 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     UnifiedShoppingService? shoppingService,
     UserService? userService,
     ShoppingPresenceModule? presenceModule,
-  })  : _shoppingService =
-            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
-        _presenceModule = presenceModule ??
-            (ServiceLocator.isRegistered<ShoppingPresenceModule>()
-                ? ServiceLocator.get<ShoppingPresenceModule>()
-                : null) {
+  }) : _shoppingService =
+           shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
+       _presenceModule =
+           presenceModule ??
+           (ServiceLocator.isRegistered<ShoppingPresenceModule>()
+               ? ServiceLocator.get<ShoppingPresenceModule>()
+               : null) {
     _permissionManager = ShoppingPermissionManager(listId);
-    _itemOperationsManager =
-        ShoppingItemOperationsManager(_shoppingService, listId);
+    _itemOperationsManager = ShoppingItemOperationsManager(
+      _shoppingService,
+      listId,
+    );
     _displayManager = ShoppingDisplayManager();
 
     _itemOperationsManager.addListener(_onManagerChanged);
 
     _initialize();
-    _stateSubscription =
-        _shoppingService.stateStream.listen(_onServiceStateChanged);
+    _stateSubscription = _shoppingService.stateStream.listen(
+      _onServiceStateChanged,
+    );
 
     _startPresenceTracking();
   }
@@ -150,14 +154,16 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     try {
       AppLogger.info('📋 Laddar kollaborativ lista: $listId');
 
-      var targetList =
-          _shoppingService.lists.firstWhereOrNull((list) => list.id == listId);
+      var targetList = _shoppingService.lists.firstWhereOrNull(
+        (list) => list.id == listId,
+      );
 
       // If not in memory, try loading from service first
       if (targetList == null) {
         await _shoppingService.loadLists();
-        targetList = _shoppingService.lists
-            .firstWhereOrNull((list) => list.id == listId);
+        targetList = _shoppingService.lists.firstWhereOrNull(
+          (list) => list.id == listId,
+        );
       }
 
       if (targetList != null) {

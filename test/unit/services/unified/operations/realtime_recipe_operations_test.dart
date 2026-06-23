@@ -36,19 +36,21 @@ void main() {
       production.ServiceLocator.initialize(DIContainer());
 
       // Register fallback values for mocktail
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
       registerFallbackValue(RealtimeRecipeBuilder().build());
       registerFallbackValue(<String, dynamic>{});
       registerFallbackValue(<String>[]);
@@ -64,7 +66,8 @@ void main() {
         GetIt.instance.unregister<FirebaseRecipePresenceRepository>();
       }
       GetIt.instance.registerSingleton<FirebaseRecipePresenceRepository>(
-          _MockFirebaseRecipePresenceRepository());
+        _MockFirebaseRecipePresenceRepository(),
+      );
 
       // Create mocks
       mockParent = MockUnifiedRecipeService();
@@ -148,28 +151,30 @@ void main() {
         expect(status, containsPair('notificationModule', isA<Map>()));
       });
 
-      test('should initialize without realtime service and handle gracefully',
-          () {
-        // Act
-        final ops = RealtimeRecipeOperations(
-          getCurrentUserId: () => 'test-user',
-          getCurrentUserDisplayName: () => 'Test',
-          getRecipes: () => [],
-          notificationParent: _TestNotificationParent(),
-          updateRecipeContent: _stubUpdateRecipeContent,
-          createCollaborativeRecipe: _stubCreateCollaborativeRecipe,
-          createPersonalRecipe: _stubCreatePersonalRecipe,
-          deleteRecipe: (id) async => true,
-        );
+      test(
+        'should initialize without realtime service and handle gracefully',
+        () {
+          // Act
+          final ops = RealtimeRecipeOperations(
+            getCurrentUserId: () => 'test-user',
+            getCurrentUserDisplayName: () => 'Test',
+            getRecipes: () => [],
+            notificationParent: _TestNotificationParent(),
+            updateRecipeContent: _stubUpdateRecipeContent,
+            createCollaborativeRecipe: _stubCreateCollaborativeRecipe,
+            createPersonalRecipe: _stubCreatePersonalRecipe,
+            deleteRecipe: (id) async => true,
+          );
 
-        // Assert
-        expect(ops, isNotNull);
-        expect(ops.isConnected, isFalse);
-        expect(ops.isWatchingAvailable(), isFalse);
+          // Assert
+          expect(ops, isNotNull);
+          expect(ops.isConnected, isFalse);
+          expect(ops.isWatchingAvailable(), isFalse);
 
-        final capabilities = ops.getWatchingCapabilities();
-        expect(capabilities, isA<Map>());
-      });
+          final capabilities = ops.getWatchingCapabilities();
+          expect(capabilities, isA<Map>());
+        },
+      );
 
       test('should report comprehensive realtime operations status', () {
         // Act
@@ -185,194 +190,223 @@ void main() {
     });
 
     group('Real-time Watching with Stream Behavior', () {
-      test('should watch recipe and transform RealtimeRecipe to Recipe',
-          () async {
-        // Arrange - use local controller to avoid generic type cast issues
-        final controller = StreamController<RealtimeRecipe>.broadcast();
-        when(() =>
-                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
-            .thenAnswer((_) => controller.stream);
+      test(
+        'should watch recipe and transform RealtimeRecipe to Recipe',
+        () async {
+          // Arrange - use local controller to avoid generic type cast issues
+          final controller = StreamController<RealtimeRecipe>.broadcast();
+          when(
+            () =>
+                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'),
+          ).thenAnswer((_) => controller.stream);
 
-        // Act
-        final stream = operations.watchRecipe('recipe-123');
-        final emittedRecipes = <Recipe>[];
-        final subscription = stream.listen(emittedRecipes.add);
+          // Act
+          final stream = operations.watchRecipe('recipe-123');
+          final emittedRecipes = <Recipe>[];
+          final subscription = stream.listen(emittedRecipes.add);
 
-        // Emit updates
-        final updatedRecipe1 = RealtimeRecipeBuilder()
-            .withId('recipe-123')
-            .withTitle('Updated Title 1')
-            .build();
-        final updatedRecipe2 = RealtimeRecipeBuilder()
-            .withId('recipe-123')
-            .withTitle('Updated Title 2')
-            .build();
+          // Emit updates
+          final updatedRecipe1 = RealtimeRecipeBuilder()
+              .withId('recipe-123')
+              .withTitle('Updated Title 1')
+              .build();
+          final updatedRecipe2 = RealtimeRecipeBuilder()
+              .withId('recipe-123')
+              .withTitle('Updated Title 2')
+              .build();
 
-        controller.add(updatedRecipe1);
-        await Future.delayed(Duration(milliseconds: 100));
-        controller.add(updatedRecipe2);
-        await Future.delayed(Duration(milliseconds: 100));
+          controller.add(updatedRecipe1);
+          await Future.delayed(Duration(milliseconds: 100));
+          controller.add(updatedRecipe2);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        expect(emittedRecipes.length, equals(2));
-        expect(emittedRecipes[0].core.title, equals('Updated Title 1'));
-        expect(emittedRecipes[1].core.title, equals('Updated Title 2'));
+          // Assert
+          expect(emittedRecipes.length, equals(2));
+          expect(emittedRecipes[0].core.title, equals('Updated Title 1'));
+          expect(emittedRecipes[1].core.title, equals('Updated Title 2'));
 
-        // Cleanup
-        await subscription.cancel();
-        await controller.close();
-      });
+          // Cleanup
+          await subscription.cancel();
+          await controller.close();
+        },
+      );
 
       test('should validate empty recipe ID and throw ArgumentError', () {
         // Act & Assert
         expect(
           () => operations.watchRecipe(''),
           throwsA(
-            isA<ArgumentError>().having((e) => e.message, 'message',
-                contains('cannot be null or empty')),
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains('cannot be null or empty'),
+            ),
           ),
         );
       });
 
       test(
-          'should watch recipe with retry and recover from connection failures',
-          () async {
-        // Arrange
-        var attemptCount = 0;
-        final errorController = StreamController<RealtimeRecipe>();
-        final successController = StreamController<RealtimeRecipe>();
+        'should watch recipe with retry and recover from connection failures',
+        () async {
+          // Arrange
+          var attemptCount = 0;
+          final errorController = StreamController<RealtimeRecipe>();
+          final successController = StreamController<RealtimeRecipe>();
 
-        when(() =>
-                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
-            .thenAnswer((_) {
-          attemptCount++;
-          if (attemptCount == 1) {
-            // First attempt fails - return a controller that will emit an error
-            Timer(Duration(milliseconds: 10), () {
-              errorController.addError(Exception('Connection failed'));
-            });
-            return errorController.stream;
-          } else {
-            // Second attempt succeeds - return a controller that will emit data
-            Timer(Duration(milliseconds: 10), () {
-              successController.add(testRealtimeRecipe);
-            });
-            return successController.stream;
-          }
-        });
+          when(
+            () =>
+                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'),
+          ).thenAnswer((_) {
+            attemptCount++;
+            if (attemptCount == 1) {
+              // First attempt fails - return a controller that will emit an error
+              Timer(Duration(milliseconds: 10), () {
+                errorController.addError(Exception('Connection failed'));
+              });
+              return errorController.stream;
+            } else {
+              // Second attempt succeeds - return a controller that will emit data
+              Timer(Duration(milliseconds: 10), () {
+                successController.add(testRealtimeRecipe);
+              });
+              return successController.stream;
+            }
+          });
 
-        // Act
-        final stream = operations.watchRecipeWithRetry(
-          'recipe-123',
-          maxRetries: 2,
-          retryDelay: Duration(milliseconds: 50),
-        );
+          // Act
+          final stream = operations.watchRecipeWithRetry(
+            'recipe-123',
+            maxRetries: 2,
+            retryDelay: Duration(milliseconds: 50),
+          );
 
-        // Wait for the retry to succeed
-        final recipes = await stream
-            .take(1)
-            .timeout(
-              Duration(seconds: 2),
-              onTimeout: (sink) =>
-                  throw TimeoutException('Retry did not succeed'),
-            )
-            .toList();
+          // Wait for the retry to succeed
+          final recipes = await stream
+              .take(1)
+              .timeout(
+                Duration(seconds: 2),
+                onTimeout: (sink) =>
+                    throw TimeoutException('Retry did not succeed'),
+              )
+              .toList();
 
-        // Assert
-        expect(attemptCount, equals(2));
-        expect(recipes.length, equals(1));
-        expect(recipes.first.core.title, equals('Swedish Meatballs'));
+          // Assert
+          expect(attemptCount, equals(2));
+          expect(recipes.length, equals(1));
+          expect(recipes.first.core.title, equals('Swedish Meatballs'));
 
-        // Cleanup
-        await errorController.close();
-        await successController.close();
-      });
+          // Cleanup
+          await errorController.close();
+          await successController.close();
+        },
+      );
 
-      test('should watch multiple recipes and combine streams correctly',
-          () async {
-        // Arrange - use local controllers to avoid generic type cast issues
-        final controller1 = StreamController<RealtimeRecipe>.broadcast();
-        final controller2 = StreamController<RealtimeRecipe>.broadcast();
+      test(
+        'should watch multiple recipes and combine streams correctly',
+        () async {
+          // Arrange - use local controllers to avoid generic type cast issues
+          final controller1 = StreamController<RealtimeRecipe>.broadcast();
+          final controller2 = StreamController<RealtimeRecipe>.broadcast();
 
-        when(() =>
-                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
-            .thenAnswer((_) => controller1.stream);
-        when(() =>
-                mockRealtimeService.watchResource<RealtimeRecipe>('collab-456'))
-            .thenAnswer((_) => controller2.stream);
+          when(
+            () =>
+                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'),
+          ).thenAnswer((_) => controller1.stream);
+          when(
+            () =>
+                mockRealtimeService.watchResource<RealtimeRecipe>('collab-456'),
+          ).thenAnswer((_) => controller2.stream);
 
-        // Act
-        final stream =
-            operations.watchMultipleRecipes(['recipe-123', 'collab-456']);
-        final emittedLists = <List<Recipe>>[];
-        final subscription = stream.listen(emittedLists.add);
+          // Act
+          final stream = operations.watchMultipleRecipes([
+            'recipe-123',
+            'collab-456',
+          ]);
+          final emittedLists = <List<Recipe>>[];
+          final subscription = stream.listen(emittedLists.add);
 
-        // Emit updates
-        final recipe1Update = RealtimeRecipeBuilder()
-            .withId('recipe-123')
-            .withTitle('Updated Meatballs')
-            .build();
-        final recipe2Update = RealtimeRecipeBuilder()
-            .withId('collab-456')
-            .withTitle('Updated Fika')
-            .build();
+          // Emit updates
+          final recipe1Update = RealtimeRecipeBuilder()
+              .withId('recipe-123')
+              .withTitle('Updated Meatballs')
+              .build();
+          final recipe2Update = RealtimeRecipeBuilder()
+              .withId('collab-456')
+              .withTitle('Updated Fika')
+              .build();
 
-        controller1.add(recipe1Update);
-        controller2.add(recipe2Update);
-        await Future.delayed(Duration(milliseconds: 100));
+          controller1.add(recipe1Update);
+          controller2.add(recipe2Update);
+          await Future.delayed(Duration(milliseconds: 100));
 
-        // Assert
-        expect(emittedLists, isNotEmpty);
-        final lastEmitted = emittedLists.last;
-        expect(lastEmitted.length, equals(2));
-        expect(lastEmitted.any((r) => r.core.title == 'Updated Meatballs'),
-            isTrue);
-        expect(lastEmitted.any((r) => r.core.title == 'Updated Fika'), isTrue);
+          // Assert
+          expect(emittedLists, isNotEmpty);
+          final lastEmitted = emittedLists.last;
+          expect(lastEmitted.length, equals(2));
+          expect(
+            lastEmitted.any((r) => r.core.title == 'Updated Meatballs'),
+            isTrue,
+          );
+          expect(
+            lastEmitted.any((r) => r.core.title == 'Updated Fika'),
+            isTrue,
+          );
 
-        // Cleanup
-        await subscription.cancel();
-        await controller1.close();
-        await controller2.close();
-      });
+          // Cleanup
+          await subscription.cancel();
+          await controller1.close();
+          await controller2.close();
+        },
+      );
 
-      test('should watch multiple recipes individually with error isolation',
-          () async {
-        // Arrange - use local controller to avoid generic type cast issues
-        final controller1 = StreamController<RealtimeRecipe>.broadcast();
+      test(
+        'should watch multiple recipes individually with error isolation',
+        () async {
+          // Arrange - use local controller to avoid generic type cast issues
+          final controller1 = StreamController<RealtimeRecipe>.broadcast();
 
-        when(() =>
-                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
-            .thenAnswer((_) => controller1.stream);
-        when(() => mockRealtimeService
-                .watchResource<RealtimeRecipe>('error-recipe'))
-            .thenAnswer((_) => Stream.error(Exception('Recipe not found')));
+          when(
+            () =>
+                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'),
+          ).thenAnswer((_) => controller1.stream);
+          when(
+            () => mockRealtimeService.watchResource<RealtimeRecipe>(
+              'error-recipe',
+            ),
+          ).thenAnswer((_) => Stream.error(Exception('Recipe not found')));
 
-        // Act
-        final stream = operations
-            .watchMultipleRecipesIndividually(['recipe-123', 'error-recipe']);
+          // Act
+          final stream = operations.watchMultipleRecipesIndividually([
+            'recipe-123',
+            'error-recipe',
+          ]);
 
-        // Skip the initial state (all nulls) and wait for updates
-        final resultsFuture = stream.skip(1).first;
+          // Skip the initial state (all nulls) and wait for updates
+          final resultsFuture = stream.skip(1).first;
 
-        // Emit update after starting to listen
-        controller1.add(testRealtimeRecipe);
+          // Emit update after starting to listen
+          controller1.add(testRealtimeRecipe);
 
-        final results = await resultsFuture;
+          final results = await resultsFuture;
 
-        // Assert
-        expect(results['recipe-123'], isNotNull);
-        expect(results['error-recipe'], isNull); // Error isolated, returns null
+          // Assert
+          expect(results['recipe-123'], isNotNull);
+          expect(
+            results['error-recipe'],
+            isNull,
+          ); // Error isolated, returns null
 
-        // Cleanup
-        await controller1.close();
-      });
+          // Cleanup
+          await controller1.close();
+        },
+      );
 
       test('should start watching with callback and handle updates', () async {
         // Arrange - use local controller to avoid generic type cast issues
         final controller = StreamController<RealtimeRecipe>.broadcast();
-        when(() =>
-                mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'))
-            .thenAnswer((_) => controller.stream);
+        when(
+          () => mockRealtimeService.watchResource<RealtimeRecipe>('recipe-123'),
+        ).thenAnswer((_) => controller.stream);
 
         Recipe? receivedRecipe;
 
@@ -412,8 +446,9 @@ void main() {
       test('should stream connection status changes', () async {
         // Arrange - stub connectionStream with a controllable broadcast stream
         final connectionController = StreamController<bool>.broadcast();
-        when(() => mockRealtimeService.connectionStream)
-            .thenAnswer((_) => connectionController.stream);
+        when(
+          () => mockRealtimeService.connectionStream,
+        ).thenAnswer((_) => connectionController.stream);
 
         // Act
         final statusStream = operations.connectionStream;
@@ -438,8 +473,9 @@ void main() {
       test('should wait for connection with timeout', () async {
         // Arrange - stub connectionStream so waitForConnection can listen
         final connectionController = StreamController<bool>.broadcast();
-        when(() => mockRealtimeService.connectionStream)
-            .thenAnswer((_) => connectionController.stream);
+        when(
+          () => mockRealtimeService.connectionStream,
+        ).thenAnswer((_) => connectionController.stream);
         mockRealtimeService.setConnectionState(false);
 
         // Simulate connection becoming true after a delay
@@ -462,8 +498,9 @@ void main() {
       test('should monitor connection status with detailed info', () async {
         // Arrange - stub connectionStream
         final connectionController = StreamController<bool>.broadcast();
-        when(() => mockRealtimeService.connectionStream)
-            .thenAnswer((_) => connectionController.stream);
+        when(
+          () => mockRealtimeService.connectionStream,
+        ).thenAnswer((_) => connectionController.stream);
 
         // Act
         final statusStream = operations.monitorConnectionStatus();
@@ -518,8 +555,9 @@ void main() {
 
       test('should validate edit changes', () {
         // Act
-        final isValid = operations
-            .validateEditChanges('recipe-123', {'title': 'New Title'});
+        final isValid = operations.validateEditChanges('recipe-123', {
+          'title': 'New Title',
+        });
 
         // Assert
         expect(isValid, isA<bool>());
@@ -581,8 +619,10 @@ void main() {
         expect(opsWithoutRealtime.isWatchingAvailable(), isFalse);
 
         // Should not throw when calling methods
-        expect(() => opsWithoutRealtime.watchRecipe('recipe-123'),
-            returnsNormally);
+        expect(
+          () => opsWithoutRealtime.watchRecipe('recipe-123'),
+          returnsNormally,
+        );
       });
 
       test('should validate multiple recipe IDs for batch watching', () {
@@ -595,8 +635,9 @@ void main() {
 
       test('should handle stream errors in watching', () async {
         // Arrange
-        when(() => mockRealtimeService.watchResource<RealtimeRecipe>(any()))
-            .thenAnswer((_) => Stream.error(Exception('Connection lost')));
+        when(
+          () => mockRealtimeService.watchResource<RealtimeRecipe>(any()),
+        ).thenAnswer((_) => Stream.error(Exception('Connection lost')));
 
         // Act
         final stream = operations.watchRecipe('recipe-123');
@@ -632,8 +673,7 @@ Future<bool> _stubUpdateRecipeContent({
   double? rating,
   List<String>? personalTagIds,
   String? sourceUrl,
-}) async =>
-    true;
+}) async => true;
 
 Future<String?> _stubCreateCollaborativeRecipe({
   required String title,
@@ -652,8 +692,7 @@ Future<String?> _stubCreateCollaborativeRecipe({
   bool allowGuestViewing = false,
   bool allowMemberInvites = false,
   List<String>? categoryIds,
-}) async =>
-    null;
+}) async => null;
 
 Future<String?> _stubCreatePersonalRecipe({
   required String title,
@@ -667,8 +706,7 @@ Future<String?> _stubCreatePersonalRecipe({
   double? rating,
   List<String>? personalTagIds,
   String? sourceUrl,
-}) async =>
-    null;
+}) async => null;
 
 class _TestNotificationParent implements NotificationParent {
   @override

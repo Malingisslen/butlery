@@ -113,21 +113,25 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
     try {
       AppLogger.info(
-          '📤 [ChatInputSection] Starting send for message: "${text.substring(0, text.length > 20 ? 20 : text.length)}..."');
+        '📤 [ChatInputSection] Starting send for message: "${text.substring(0, text.length > 20 ? 20 : text.length)}..."',
+      );
       AppLogger.debug('📤 [ChatInputSection] Full message content: "$text"');
       AppLogger.debug(
-          '📤 [ChatInputSection] Conversation ID: ${widget.conversationId}');
+        '📤 [ChatInputSection] Conversation ID: ${widget.conversationId}',
+      );
 
       // Send message through action handler FIRST
       AppLogger.debug('📤 [ChatInputSection] Calling action handler...');
       await widget.onSendMessage(text, type: MessageType.text);
 
       AppLogger.success(
-          '✅ [ChatInputSection] Message send completed successfully');
+        '✅ [ChatInputSection] Message send completed successfully',
+      );
 
       // Only clear input AFTER successful send
       AppLogger.debug(
-          '📤 [ChatInputSection] Clearing input after successful send...');
+        '📤 [ChatInputSection] Clearing input after successful send...',
+      );
       _textController.clear();
       if (mounted) {
         setState(() {
@@ -212,20 +216,36 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       child: Row(
         children: [
           Expanded(
-            child: _buildAttachmentOption(context, Icons.restaurant_menu,
-                context.l10n.chatAttachmentRecipe, 'recipe'),
+            child: _buildAttachmentOption(
+              context,
+              Icons.restaurant_menu,
+              context.l10n.chatAttachmentRecipe,
+              'recipe',
+            ),
           ),
           Expanded(
-            child: _buildAttachmentOption(context, Icons.calendar_month,
-                context.l10n.chatAttachmentMenu, 'menu'),
+            child: _buildAttachmentOption(
+              context,
+              Icons.calendar_month,
+              context.l10n.chatAttachmentMenu,
+              'menu',
+            ),
           ),
           Expanded(
-            child: _buildAttachmentOption(context, Icons.shopping_cart,
-                context.l10n.chatAttachmentShoppingList, 'shopping_list'),
+            child: _buildAttachmentOption(
+              context,
+              Icons.shopping_cart,
+              context.l10n.chatAttachmentShoppingList,
+              'shopping_list',
+            ),
           ),
           Expanded(
-            child: _buildAttachmentOption(context, Icons.photo_outlined,
-                context.l10n.chatAttachmentPhoto, 'photo'),
+            child: _buildAttachmentOption(
+              context,
+              Icons.photo_outlined,
+              context.l10n.chatAttachmentPhoto,
+              'photo',
+            ),
           ),
         ],
       ),
@@ -233,7 +253,11 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   }
 
   Widget _buildAttachmentOption(
-      BuildContext context, IconData icon, String label, String type) {
+    BuildContext context,
+    IconData icon,
+    String label,
+    String type,
+  ) {
     final cs = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -263,8 +287,9 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: cs.onSurfaceVariant
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: cs.onSurfaceVariant.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
             width: 1,
           ),
         ),
@@ -338,10 +363,13 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     // Send button
                     AnimatedContainer(
                       duration: AnimationUtils.getDuration(
-                          context, AppDimensions.animationDurationMedium),
+                        context,
+                        AppDimensions.animationDurationMedium,
+                      ),
                       child: IconButton(
-                        onPressed:
-                            _state.isComposing ? _handleSendMessage : null,
+                        onPressed: _state.isComposing
+                            ? _handleSendMessage
+                            : null,
                         icon: Icon(
                           Icons.send,
                           color: _state.isComposing

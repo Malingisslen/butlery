@@ -18,7 +18,7 @@ class FriendsProfileCacheManager extends ChangeNotifier {
   bool _isDisposed = false;
 
   FriendsProfileCacheManager({required UserService userService})
-      : _userService = userService;
+    : _userService = userService;
 
   bool get isLoadingUserProfiles => _isLoadingUserProfiles;
 
@@ -51,7 +51,8 @@ class FriendsProfileCacheManager extends ChangeNotifier {
 
       if (uncachedUserIds.isNotEmpty) {
         AppLogger.info(
-            '👥 Loading ${uncachedUserIds.length} user profiles for requests');
+          '👥 Loading ${uncachedUserIds.length} user profiles for requests',
+        );
 
         final profiles = await _userService.getUserProfiles(uncachedUserIds);
 
@@ -67,15 +68,18 @@ class FriendsProfileCacheManager extends ChangeNotifier {
         }
 
         AppLogger.success(
-            '✅ ${profiles.length}/${uncachedUserIds.length} user profiles loaded');
+          '✅ ${profiles.length}/${uncachedUserIds.length} user profiles loaded',
+        );
 
         // Log missing profiles
         final loadedIds = profiles.map((p) => p.uid).toSet();
-        final missingIds =
-            uncachedUserIds.where((id) => !loadedIds.contains(id));
+        final missingIds = uncachedUserIds.where(
+          (id) => !loadedIds.contains(id),
+        );
         if (missingIds.isNotEmpty) {
           AppLogger.warning(
-              '⚠️ Could not load profiles for: ${missingIds.join(', ')}');
+            '⚠️ Could not load profiles for: ${missingIds.join(', ')}',
+          );
         }
       }
     } catch (e) {

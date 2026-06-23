@@ -58,8 +58,9 @@ class AuthTestHelper {
     when(() => mockAuthRepo.getCurrentUser()).thenReturn(mockUser);
 
     // Setup common auth methods
-    when(() => mockAuthRepo.authStateChanges())
-        .thenAnswer((_) => Stream.value(mockUser));
+    when(
+      () => mockAuthRepo.authStateChanges(),
+    ).thenAnswer((_) => Stream.value(mockUser));
 
     when(() => mockAuthRepo.signOut()).thenAnswer((_) async {
       when(() => mockAuthRepo.currentUser).thenReturn(null);
@@ -79,8 +80,9 @@ class AuthTestHelper {
     when(() => mockAuthRepo.getCurrentUser()).thenReturn(null);
 
     // Setup auth state stream
-    when(() => mockAuthRepo.authStateChanges())
-        .thenAnswer((_) => Stream.value(null));
+    when(
+      () => mockAuthRepo.authStateChanges(),
+    ).thenAnswer((_) => Stream.value(null));
 
     return mockAuthRepo;
   }
@@ -163,22 +165,30 @@ class AuthTestHelper {
     when(() => mockAuthRepo.getCurrentUser()).thenReturn(null);
 
     // Setup to throw error on sign in
-    when(() => mockAuthRepo.signIn(
-          email: any(named: 'email'),
-          password: any(named: 'password'),
-        )).thenThrow(FirebaseAuthException(
-      code: errorCode,
-      message: errorMessage,
-    ));
+    when(
+      () => mockAuthRepo.signIn(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenThrow(
+      FirebaseAuthException(
+        code: errorCode,
+        message: errorMessage,
+      ),
+    );
 
     // Setup to throw error on sign up
-    when(() => mockAuthRepo.createUser(
-          any(),
-          any(),
-        )).thenThrow(FirebaseAuthException(
-      code: errorCode,
-      message: errorMessage,
-    ));
+    when(
+      () => mockAuthRepo.createUser(
+        any(),
+        any(),
+      ),
+    ).thenThrow(
+      FirebaseAuthException(
+        code: errorCode,
+        message: errorMessage,
+      ),
+    );
 
     return mockAuthRepo;
   }
@@ -193,10 +203,12 @@ class AuthTestHelper {
     bool? deleteUserCalled,
   }) {
     if (signInCalled == true) {
-      verify(() => authRepository.signIn(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).called(1);
+      verify(
+        () => authRepository.signIn(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).called(1);
     }
 
     if (signOutCalled == true) {

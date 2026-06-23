@@ -157,11 +157,11 @@ class OCRExtractionService extends BaseService {
     String? testGoogleVisionKey,
     String? testTesseractApiUrl,
     DateTime Function()? testTimeProvider,
-  })  : _testHttpClient = testHttpClient,
-        _testOcrApiKey = testOcrApiKey,
-        _testGoogleVisionKey = testGoogleVisionKey,
-        _testTesseractApiUrl = testTesseractApiUrl,
-        _testTimeProvider = testTimeProvider {
+  }) : _testHttpClient = testHttpClient,
+       _testOcrApiKey = testOcrApiKey,
+       _testGoogleVisionKey = testGoogleVisionKey,
+       _testTesseractApiUrl = testTesseractApiUrl,
+       _testTimeProvider = testTimeProvider {
     // Initialize circuit breakers with time provider
     _ocrSpaceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
     _googleVisionCircuitBreaker = CircuitBreaker(
@@ -234,7 +234,8 @@ class OCRExtractionService extends BaseService {
   late final LruMap<String, OCRResult> _cache = LruMap(
     maxSize: _maxCacheSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=OCRExtractionService cache=preprocessed key=$key bound=$_maxCacheSize'),
+      'cache_eviction service=OCRExtractionService cache=preprocessed key=$key bound=$_maxCacheSize',
+    ),
   );
 
   /// Fast-path index: SHA-256 of *raw* bytes → preprocessed-bytes hash. Lets
@@ -243,7 +244,8 @@ class OCRExtractionService extends BaseService {
   late final LruMap<String, String> _rawHashToPreprocessedHash = LruMap(
     maxSize: _maxCacheSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=OCRExtractionService cache=raw_index key=$key bound=$_maxCacheSize'),
+      'cache_eviction service=OCRExtractionService cache=raw_index key=$key bound=$_maxCacheSize',
+    ),
   );
   static const Duration _cacheExpiry = Duration(hours: 24);
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
@@ -323,7 +325,8 @@ class OCRExtractionService extends BaseService {
     if (qualityAssessment.isRejected) {
       return OCRResult.failure(
         method: 'pre_ocr_quality_gate',
-        error: qualityAssessment.rejectionReason ??
+        error:
+            qualityAssessment.rejectionReason ??
             'Image rejected by quality gate before OCR',
         metadata: {
           'quality_assessment': qualityAssessment.qualityScore,
@@ -357,7 +360,8 @@ class OCRExtractionService extends BaseService {
     // surfacing the misleading "try better lighting" copy for what is actually
     // a missing-credentials misconfiguration. Mark every breaker `open` so the
     // message builder's "services unavailable" branch produces accurate copy.
-    final noProviderConfigured = _ocrApiKey.isEmpty &&
+    final noProviderConfigured =
+        _ocrApiKey.isEmpty &&
         _googleVisionKey.isEmpty &&
         _tesseractApiUrl.isEmpty;
     if (noProviderConfigured) {
@@ -565,8 +569,9 @@ class OCRExtractionService extends BaseService {
     // _httpClient.send(request) routes through the (test-)injected client.
     // request.send() would create a fresh internal IOClient and bypass the
     // injected one, breaking testability and the singleton lifecycle.
-    final response =
-        await _httpClient.send(request).timeout(const Duration(seconds: 30));
+    final response = await _httpClient
+        .send(request)
+        .timeout(const Duration(seconds: 30));
     final responseBody = await response.stream.bytesToString();
 
     if (response.statusCode == 200) {
@@ -575,7 +580,8 @@ class OCRExtractionService extends BaseService {
       if (json['IsErroredOnProcessing'] == false) {
         final parsedResults = json['ParsedResults'] as List?;
         final extractedText = HtmlSanitizer.instance.sanitizeText(
-            (parsedResults?.first['ParsedText'] as String?).orEmpty());
+          (parsedResults?.first['ParsedText'] as String?).orEmpty(),
+        );
 
         return OCRResult(
           text: extractedText,
@@ -614,8 +620,9 @@ class OCRExtractionService extends BaseService {
           ],
           'imageContext': {
             // BUT-1053: user-locale first, fallback retained for robustness.
-            'languageHints':
-                googleVisionLanguageHints(AppLocale.current.localeName),
+            'languageHints': googleVisionLanguageHints(
+              AppLocale.current.localeName,
+            ),
           },
         },
       ],
@@ -641,7 +648,8 @@ class OCRExtractionService extends BaseService {
 
         if (textAnnotations != null && textAnnotations.isNotEmpty) {
           final extractedText = HtmlSanitizer.instance.sanitizeText(
-              (textAnnotations.first['description'] as String?).orEmpty());
+            (textAnnotations.first['description'] as String?).orEmpty(),
+          );
 
           return OCRResult(
             text: extractedText,
@@ -650,8 +658,9 @@ class OCRExtractionService extends BaseService {
             metadata: {
               // BUT-1053: reflect the hints actually sent (locale-derived),
               // not a hardcoded pair — keeps debug/monitoring metadata honest.
-              'language_hints':
-                  googleVisionLanguageHints(AppLocale.current.localeName),
+              'language_hints': googleVisionLanguageHints(
+                AppLocale.current.localeName,
+              ),
               'processing_time': _now.millisecondsSinceEpoch,
               'annotations_count': textAnnotations.length,
             },
@@ -694,8 +703,9 @@ class OCRExtractionService extends BaseService {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        final extractedText = HtmlSanitizer.instance
-            .sanitizeText((json['text'] as String?).orEmpty());
+        final extractedText = HtmlSanitizer.instance.sanitizeText(
+          (json['text'] as String?).orEmpty(),
+        );
 
         return OCRResult(
           text: extractedText,
@@ -889,8 +899,10 @@ class OCRExtractionService extends BaseService {
     if (text.isEmpty) return 0.0;
 
     final textLength = text.trim().length;
-    final lineCount =
-        text.split('\n').where((line) => line.trim().isNotEmpty).length;
+    final lineCount = text
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .length;
 
     if (textLength == 0) return 0.0;
     if (textLength < 10) return 0.3;
@@ -908,8 +920,9 @@ class OCRExtractionService extends BaseService {
       'portioner',
       'minut',
     ];
-    final keywordMatches =
-        keywords.where((k) => text.toLowerCase().contains(k)).length;
+    final keywordMatches = keywords
+        .where((k) => text.toLowerCase().contains(k))
+        .length;
     final keywordBonus = math.min(0.15, keywordMatches * 0.03);
     return math.min(1.0, baseConfidence + structureBonus + keywordBonus);
   }

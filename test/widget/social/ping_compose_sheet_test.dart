@@ -29,12 +29,14 @@ class _FakePingService implements PingService {
     required PingType type,
     String? message,
   }) async {
-    calls.add(_SentCall(
-      groupId: groupId,
-      toUserId: toUserId,
-      type: type,
-      message: message,
-    ));
+    calls.add(
+      _SentCall(
+        groupId: groupId,
+        toUserId: toUserId,
+        type: type,
+        message: message,
+      ),
+    );
     if (errorToThrow != null) {
       final e = errorToThrow!;
       errorToThrow = null;
@@ -78,14 +80,19 @@ Widget _wrap(Widget child) {
 
 void main() {
   group('PingComposeSheet', () {
-    testWidgets('renders 3 type chips, message field, and send button',
-        (tester) async {
+    testWidgets('renders 3 type chips, message field, and send button', (
+      tester,
+    ) async {
       final svc = _FakePingService();
-      await tester.pumpWidget(_wrap(PingComposeSheet(
-        groupId: 'g1',
-        targetUserId: 'erik',
-        pingService: svc,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          PingComposeSheet(
+            groupId: 'g1',
+            targetUserId: 'erik',
+            pingService: svc,
+          ),
+        ),
+      );
       await tester.pump();
 
       // All three chips are present by their keys.
@@ -99,11 +106,15 @@ void main() {
 
     testWidgets('send disabled until a type is selected', (tester) async {
       final svc = _FakePingService();
-      await tester.pumpWidget(_wrap(PingComposeSheet(
-        groupId: 'g1',
-        targetUserId: 'erik',
-        pingService: svc,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          PingComposeSheet(
+            groupId: 'g1',
+            targetUserId: 'erik',
+            pingService: svc,
+          ),
+        ),
+      );
       await tester.pump();
 
       // Tapping Send without a selection must not call the service.
@@ -121,68 +132,82 @@ void main() {
     });
 
     testWidgets(
-        'type + send → pingService.sendPing called with correct args and sheet pops',
-        (tester) async {
-      final svc = _FakePingService();
+      'type + send → pingService.sendPing called with correct args and sheet pops',
+      (tester) async {
+        final svc = _FakePingService();
 
-      // Show the sheet via the helper so we can verify the pop behavior.
-      late BuildContext rootContext;
-      await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
-        rootContext = ctx;
-        return const SizedBox.shrink();
-      })));
+        // Show the sheet via the helper so we can verify the pop behavior.
+        late BuildContext rootContext;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (ctx) {
+                rootContext = ctx;
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        );
 
-      // Push a modal sheet containing our widget.
-      unawaited(showModalBottomSheet<void>(
-        context: rootContext,
-        builder: (_) => PingComposeSheet(
-          groupId: 'g42',
-          targetUserId: 'sara',
-          pingService: svc,
-        ),
-      ));
-      await tester.pumpAndSettle();
+        // Push a modal sheet containing our widget.
+        unawaited(
+          showModalBottomSheet<void>(
+            context: rootContext,
+            builder: (_) => PingComposeSheet(
+              groupId: 'g42',
+              targetUserId: 'sara',
+              pingService: svc,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Sheet is open.
-      expect(find.byKey(const Key('ping-send-button')), findsOneWidget);
+        // Sheet is open.
+        expect(find.byKey(const Key('ping-send-button')), findsOneWidget);
 
-      // Choose helpMe + enter a message.
-      await tester.tap(find.byKey(const Key('ping-type-help')));
-      await tester.pump();
-      await tester.enterText(
-        find.byKey(const Key('ping-message-field')),
-        'kom och rör',
-      );
-      await tester.pump();
+        // Choose helpMe + enter a message.
+        await tester.tap(find.byKey(const Key('ping-type-help')));
+        await tester.pump();
+        await tester.enterText(
+          find.byKey(const Key('ping-message-field')),
+          'kom och rör',
+        );
+        await tester.pump();
 
-      await tester.tap(find.byKey(const Key('ping-send-button')));
-      // Microtasks first — sendPing resolves, then pop + snackbar schedule.
-      await tester.pump();
-      await tester.pump();
+        await tester.tap(find.byKey(const Key('ping-send-button')));
+        // Microtasks first — sendPing resolves, then pop + snackbar schedule.
+        await tester.pump();
+        await tester.pump();
 
-      // Service got the right args.
-      expect(svc.calls, hasLength(1));
-      final call = svc.calls.first;
-      expect(call.groupId, 'g42');
-      expect(call.toUserId, 'sara');
-      expect(call.type, PingType.helpMe);
-      expect(call.message, 'kom och rör');
+        // Service got the right args.
+        expect(svc.calls, hasLength(1));
+        final call = svc.calls.first;
+        expect(call.groupId, 'g42');
+        expect(call.toUserId, 'sara');
+        expect(call.type, PingType.helpMe);
+        expect(call.message, 'kom och rör');
 
-      // Snackbar is visible right after pop is requested.
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text('Skickat'), findsOneWidget);
-    });
+        // Snackbar is visible right after pop is requested.
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(find.text('Skickat'), findsOneWidget);
+      },
+    );
 
-    testWidgets('rate-limit thrown → inline error shown, sheet stays open',
-        (tester) async {
+    testWidgets('rate-limit thrown → inline error shown, sheet stays open', (
+      tester,
+    ) async {
       final svc = _FakePingService()
         ..errorToThrow = PingRateLimitedException('nope');
 
-      await tester.pumpWidget(_wrap(PingComposeSheet(
-        groupId: 'g1',
-        targetUserId: 'erik',
-        pingService: svc,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          PingComposeSheet(
+            groupId: 'g1',
+            targetUserId: 'erik',
+            pingService: svc,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.tap(find.byKey(const Key('ping-type-nudge')));
@@ -202,11 +227,15 @@ void main() {
 
     testWidgets('message field enforces 100-char cap', (tester) async {
       final svc = _FakePingService();
-      await tester.pumpWidget(_wrap(PingComposeSheet(
-        groupId: 'g1',
-        targetUserId: 'erik',
-        pingService: svc,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          PingComposeSheet(
+            groupId: 'g1',
+            targetUserId: 'erik',
+            pingService: svc,
+          ),
+        ),
+      );
       await tester.pump();
 
       final longText = 'å' * 200;

@@ -68,9 +68,11 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
               _allSelected ? Icons.deselect : Icons.select_all,
               size: AppDimensions.iconSizeS,
             ),
-            label: Text(_allSelected
-                ? context.l10n.importDeselectAll
-                : context.l10n.importSelectAll),
+            label: Text(
+              _allSelected
+                  ? context.l10n.importDeselectAll
+                  : context.l10n.importSelectAll,
+            ),
           ),
         ],
       ),
@@ -109,8 +111,9 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
           child: FilledButton.icon(
             onPressed: _selectedIndices.isEmpty ? null : _confirm,
             icon: const Icon(Icons.file_download),
-            label:
-                Text(context.l10n.importConfirmButton(_selectedIndices.length)),
+            label: Text(
+              context.l10n.importConfirmButton(_selectedIndices.length),
+            ),
           ),
         ),
       ),

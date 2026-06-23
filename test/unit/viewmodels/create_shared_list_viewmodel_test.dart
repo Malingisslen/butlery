@@ -40,7 +40,8 @@ void main() {
 
     // Register mocks
     TestServiceLocator.registerMock<UnifiedShoppingService>(
-        mockShoppingService);
+      mockShoppingService,
+    );
     TestServiceLocator.registerMock<UnifiedFriendsService>(mockFriendsService);
     TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
 
@@ -237,12 +238,14 @@ void main() {
       expect(viewModel.canCreate, isTrue);
 
       // Start creation (will fail but sets isCreating)
-      when(() => mockShoppingService.createCollaborativeList(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenAnswer((_) async {
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenAnswer((_) async {
         await Future.delayed(Duration(milliseconds: 50));
         return null;
       });
@@ -267,15 +270,17 @@ void main() {
       viewModel.updateDescription('Weekly groceries');
       viewModel.updateSelectedFriends(['friend_1', 'friend_2']);
 
-      when(() => mockShoppingService.createCollaborativeList(
-            name: 'Grocery List',
-            description: 'Weekly groceries',
-            memberIds: ['friend_1', 'friend_2'],
-            memberDisplayNames: {
-              'friend_1': 'Anna Andersson',
-              'friend_2': 'Erik Eriksson',
-            },
-          )).thenAnswer((_) async => 'list_123');
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: 'Grocery List',
+          description: 'Weekly groceries',
+          memberIds: ['friend_1', 'friend_2'],
+          memberDisplayNames: {
+            'friend_1': 'Anna Andersson',
+            'friend_2': 'Erik Eriksson',
+          },
+        ),
+      ).thenAnswer((_) async => 'list_123');
 
       final listId = await viewModel.createSharedList();
 
@@ -293,12 +298,14 @@ void main() {
       viewModel.updateTitle('Simple List');
       viewModel.updateSelectedFriends(['friend_1']);
 
-      when(() => mockShoppingService.createCollaborativeList(
-            name: 'Simple List',
-            description: null,
-            memberIds: ['friend_1'],
-            memberDisplayNames: {'friend_1': 'Anna Andersson'},
-          )).thenAnswer((_) async => 'list_456');
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: 'Simple List',
+          description: null,
+          memberIds: ['friend_1'],
+          memberDisplayNames: {'friend_1': 'Anna Andersson'},
+        ),
+      ).thenAnswer((_) async => 'list_456');
 
       final listId = await viewModel.createSharedList();
 
@@ -310,12 +317,14 @@ void main() {
       viewModel.updateSelectedFriends(['unknown_friend']);
 
       // VM uses friend?.displayName ?? '?' for unknown friends
-      when(() => mockShoppingService.createCollaborativeList(
-            name: 'List',
-            description: null,
-            memberIds: ['unknown_friend'],
-            memberDisplayNames: {'unknown_friend': '?'},
-          )).thenAnswer((_) async => 'list_789');
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: 'List',
+          description: null,
+          memberIds: ['unknown_friend'],
+          memberDisplayNames: {'unknown_friend': '?'},
+        ),
+      ).thenAnswer((_) async => 'list_789');
 
       final listId = await viewModel.createSharedList();
 
@@ -326,12 +335,14 @@ void main() {
       viewModel.updateTitle('List');
       viewModel.updateSelectedFriends(['friend_1']);
 
-      when(() => mockShoppingService.createCollaborativeList(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenAnswer((_) async => null);
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenAnswer((_) async => null);
 
       mockShoppingService.setShoppingState(error: 'Creation failed');
 
@@ -346,12 +357,14 @@ void main() {
       viewModel.updateTitle('List');
       viewModel.updateSelectedFriends(['friend_1']);
 
-      when(() => mockShoppingService.createCollaborativeList(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenThrow(Exception('Network error'));
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
       final listId = await viewModel.createSharedList();
 
@@ -379,12 +392,14 @@ void main() {
       expect(listId, isNull);
       expect(viewModel.error, equals('Du måste skapa en profil först'));
 
-      verifyNever(() => mockShoppingService.createCollaborativeList(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          ));
+      verifyNever(
+        () => mockShoppingService.createCollaborativeList(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      );
     });
   });
 
@@ -476,12 +491,14 @@ void main() {
 
       // Defer completion so we can dispose mid-flight, then resolve the gap.
       final gate = Completer<String?>();
-      when(() => mockShoppingService.createCollaborativeList(
-            name: any(named: 'name'),
-            description: any(named: 'description'),
-            memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
-          )).thenAnswer((_) => gate.future);
+      when(
+        () => mockShoppingService.createCollaborativeList(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+        ),
+      ).thenAnswer((_) => gate.future);
 
       disposableVm.updateTitle('List');
       disposableVm.updateSelectedFriends(['friend_1']);

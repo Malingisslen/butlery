@@ -10,7 +10,7 @@ import 'package:butlery/services/import/index_page_detector.dart';
 /// SSRF host-guard + DNS-rebinding protection — never a raw HTTP call.
 class IndexPageExpander {
   IndexPageExpander({HttpContentFetcher? fetcher})
-      : _fetcher = fetcher ?? HttpContentFetcher();
+    : _fetcher = fetcher ?? HttpContentFetcher();
 
   final HttpContentFetcher _fetcher;
 

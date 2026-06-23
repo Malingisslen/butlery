@@ -93,8 +93,10 @@ class PermissionWidgets {
             children: [
               Icon(Icons.block, color: cs.error),
               const SizedBox(width: AppDimensions.spacingM),
-              Text(context.l10n.permissionNoAccess,
-                  style: AppTextStyles.bodyMediumError),
+              Text(
+                context.l10n.permissionNoAccess,
+                style: AppTextStyles.bodyMediumError,
+              ),
             ],
           ),
         );

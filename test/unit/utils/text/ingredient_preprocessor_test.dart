@@ -94,8 +94,9 @@ void main() {
       });
 
       test('should remove ungefär', () {
-        final result =
-            IngredientPreprocessor.preprocess('ungefär 500 g potatis');
+        final result = IngredientPreprocessor.preprocess(
+          'ungefär 500 g potatis',
+        );
         expect(result.cleaned, '500 g potatis');
         expect(result.hadApproximation, isTrue);
       });
@@ -155,8 +156,9 @@ void main() {
       });
 
       test('should remove multiple parenthetical segments', () {
-        final result =
-            IngredientPreprocessor.preprocess('1 citron (saften) (skalet)');
+        final result = IngredientPreprocessor.preprocess(
+          '1 citron (saften) (skalet)',
+        );
         expect(result.cleaned, '1 citron');
         expect(result.hadParentheses, isTrue);
       });
@@ -176,8 +178,9 @@ void main() {
       });
 
       test('should remove valfritt marker', () {
-        final result =
-            IngredientPreprocessor.preprocess('valfritt 2 msk socker');
+        final result = IngredientPreprocessor.preprocess(
+          'valfritt 2 msk socker',
+        );
         expect(result.cleaned, '2 msk socker');
         expect(result.hadOptionalMarker, isTrue);
       });
@@ -191,68 +194,78 @@ void main() {
 
     group('substitution detection', () {
       test('detects "eller X" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('grädde (eller kokosmjölk)');
+        final result = IngredientPreprocessor.preprocess(
+          'grädde (eller kokosmjölk)',
+        );
         expect(result.substitutes, ['kokosmjölk']);
         expect(result.cleaned, 'grädde');
         expect(result.hadParentheses, isTrue);
       });
 
       test('detects "kan bytas mot X" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('smör (kan bytas mot olja)');
+        final result = IngredientPreprocessor.preprocess(
+          'smör (kan bytas mot olja)',
+        );
         expect(result.substitutes, ['olja']);
         expect(result.cleaned, 'smör');
       });
 
       test('detects "kan bytas ut mot X" pattern', () {
         final result = IngredientPreprocessor.preprocess(
-            'smör (kan bytas ut mot kokosolja)');
+          'smör (kan bytas ut mot kokosolja)',
+        );
         expect(result.substitutes, ['kokosolja']);
       });
 
       test('detects "X funkar också" pattern', () {
         final result = IngredientPreprocessor.preprocess(
-            'vetemjöl (dinkelmjöl funkar också)');
+          'vetemjöl (dinkelmjöl funkar också)',
+        );
         expect(result.substitutes, ['dinkelmjöl']);
         expect(result.cleaned, 'vetemjöl');
       });
 
       test('detects "X fungerar också" pattern', () {
         final result = IngredientPreprocessor.preprocess(
-            'vetemjöl (dinkelmjöl fungerar också)');
+          'vetemjöl (dinkelmjöl fungerar också)',
+        );
         expect(result.substitutes, ['dinkelmjöl']);
       });
 
       test('detects "alternativt X" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('smör (alternativt kokosolja)');
+        final result = IngredientPreprocessor.preprocess(
+          'smör (alternativt kokosolja)',
+        );
         expect(result.substitutes, ['kokosolja']);
         expect(result.cleaned, 'smör');
       });
 
       test('detects "X istället" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('grädde (havremjölk istället)');
+        final result = IngredientPreprocessor.preprocess(
+          'grädde (havremjölk istället)',
+        );
         expect(result.substitutes, ['havremjölk']);
         expect(result.cleaned, 'grädde');
       });
 
       test('detects "ersätt med X" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('smör (ersätt med margarin)');
+        final result = IngredientPreprocessor.preprocess(
+          'smör (ersätt med margarin)',
+        );
         expect(result.substitutes, ['margarin']);
       });
 
       test('detects "kan ersättas med X" pattern', () {
         final result = IngredientPreprocessor.preprocess(
-            'mjölk (kan ersättas med havredryck)');
+          'mjölk (kan ersättas med havredryck)',
+        );
         expect(result.substitutes, ['havredryck']);
       });
 
       test('detects "t.ex. X" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('olja (t.ex. rapsolja)');
+        final result = IngredientPreprocessor.preprocess(
+          'olja (t.ex. rapsolja)',
+        );
         expect(result.substitutes, ['rapsolja']);
       });
 
@@ -262,8 +275,9 @@ void main() {
       });
 
       test('detects "till exempel X" pattern', () {
-        final result =
-            IngredientPreprocessor.preprocess('olja (till exempel rapsolja)');
+        final result = IngredientPreprocessor.preprocess(
+          'olja (till exempel rapsolja)',
+        );
         expect(result.substitutes, ['rapsolja']);
       });
 
@@ -275,7 +289,8 @@ void main() {
 
       test('handles both substitution and hint in separate parentheses', () {
         final result = IngredientPreprocessor.preprocess(
-            'mjöl (fint) (eller majsstärkelse)');
+          'mjöl (fint) (eller majsstärkelse)',
+        );
         expect(result.preparationHint, 'fint');
         expect(result.substitutes, ['majsstärkelse']);
       });
@@ -287,8 +302,9 @@ void main() {
       });
 
       test('includes substitutes in toString', () {
-        final result =
-            IngredientPreprocessor.preprocess('grädde (eller kokosmjölk)');
+        final result = IngredientPreprocessor.preprocess(
+          'grädde (eller kokosmjölk)',
+        );
         final str = result.toString();
         expect(str, contains('substitutes'));
         expect(str, contains('kokosmjölk'));
@@ -298,7 +314,8 @@ void main() {
     group('combined preprocessing', () {
       test('should handle multiple preprocessing steps', () {
         final result = IngredientPreprocessor.preprocess(
-            '\u2022 ca 3-5 dl grädde (vispgrädde)');
+          '\u2022 ca 3-5 dl grädde (vispgrädde)',
+        );
         expect(result.cleaned, '5 dl grädde');
         expect(result.hadBullet, isTrue);
         expect(result.hadApproximation, isTrue);
@@ -349,8 +366,9 @@ void main() {
 
     group('PreprocessingResult', () {
       test('should include flags in toString', () {
-        final result =
-            IngredientPreprocessor.preprocess('\u2022 ca 3 dl mjölk');
+        final result = IngredientPreprocessor.preprocess(
+          '\u2022 ca 3 dl mjölk',
+        );
         final str = result.toString();
 
         expect(str, contains('bullet'));

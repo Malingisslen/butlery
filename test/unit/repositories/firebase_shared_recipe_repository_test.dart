@@ -95,16 +95,20 @@ void main() {
       int? engagementCount,
       int? dismissalCount,
     }) {
-      final recipe = recipeSnapshot ??
-          createTestRecipe(originalRecipeId ?? testOriginalRecipeId,
-              sharedByUserId ?? testUserId);
+      final recipe =
+          recipeSnapshot ??
+          createTestRecipe(
+            originalRecipeId ?? testOriginalRecipeId,
+            sharedByUserId ?? testUserId,
+          );
 
       return SharedRecipe(
         id: id ?? testRecipeId,
         originalRecipeId: originalRecipeId ?? testOriginalRecipeId,
         recipeTitle: recipe.title,
-        recipeImageUrl:
-            recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
+        recipeImageUrl: recipe.imageUrls.isNotEmpty
+            ? recipe.imageUrls.first
+            : null,
         recipePortions: recipe.portions,
         recipeTimeMinutes: recipe.timeMinutes,
         recipeDescription: recipe.description,
@@ -138,8 +142,9 @@ void main() {
           .doc(sharedRecipe.id)
           .set(data);
 
-      final recipeRef =
-          fakeFirestore.collection('shared_content').doc(sharedRecipe.id);
+      final recipeRef = fakeFirestore
+          .collection('shared_content')
+          .doc(sharedRecipe.id);
 
       if (memberUserIds != null) {
         for (final userId in memberUserIds) {
@@ -187,20 +192,22 @@ void main() {
       // Note: the create-with-recipients happy path moved to the emulator lane
       // (addMember uses FieldValue.arrayUnion/increment) — see
       // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
-      test('should reject user from creating shared recipe as another user',
-          () async {
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-        );
+      test(
+        'should reject user from creating shared recipe as another user',
+        () async {
+          final sharedRecipe = createSharedRecipe(
+            sharedByUserId: testOtherUserId,
+          );
 
-        expect(
-          () => repository.createSharedRecipe(
-            sharedRecipe,
-            recipientIds: [testFriendId],
-          ),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          expect(
+            () => repository.createSharedRecipe(
+              sharedRecipe,
+              recipientIds: [testFriendId],
+            ),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
 
       test('should reject shared recipe with no recipients', () async {
         final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
@@ -214,35 +221,41 @@ void main() {
         );
       });
 
-      test('should allow user to view shared recipe they are member of',
-          () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
-        await seedSharedRecipe(
-          sharedRecipe,
-          memberUserIds: [testUserId],
-        );
+      test(
+        'should allow user to view shared recipe they are member of',
+        () async {
+          final sharedRecipe = createSharedRecipe(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedRecipe(
+            sharedRecipe,
+            memberUserIds: [testUserId],
+          );
 
-        final result = await repository.getSharedRecipe(testRecipeId);
+          final result = await repository.getSharedRecipe(testRecipeId);
 
-        expect(result, isNotNull);
-        expect(result!.id, testRecipeId);
-      });
+          expect(result, isNotNull);
+          expect(result!.id, testRecipeId);
+        },
+      );
 
-      test('should reject user from viewing shared recipe not member of',
-          () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
-        await seedSharedRecipe(
-          sharedRecipe,
-          memberUserIds: [testFriendId],
-        );
+      test(
+        'should reject user from viewing shared recipe not member of',
+        () async {
+          final sharedRecipe = createSharedRecipe(
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedRecipe(
+            sharedRecipe,
+            memberUserIds: [testFriendId],
+          );
 
-        expect(
-          () => repository.getSharedRecipe(testRecipeId),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
+          expect(
+            () => repository.getSharedRecipe(testRecipeId),
+            throwsA(isA<PermissionDeniedException>()),
+          );
+        },
+      );
     });
 
     // ===== CRUD OPERATIONS =====
@@ -251,36 +264,39 @@ void main() {
       // Note: the create-with-members happy path moved to the emulator lane
       // (addMember uses FieldValue.arrayUnion/increment) — see
       // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
-      test('should get all shared recipes for user via members subcollection',
-          () async {
-        final recipe1 = createSharedRecipe(
-          id: 'recipe-1',
-          sharedByUserId: testOtherUserId,
-        );
-        final recipe2 = createSharedRecipe(
-          id: 'recipe-2',
-          sharedByUserId: testFriendId,
-        );
-        final recipe3 = createSharedRecipe(
-          id: 'recipe-3',
-          sharedByUserId: testOtherUserId,
-        );
+      test(
+        'should get all shared recipes for user via members subcollection',
+        () async {
+          final recipe1 = createSharedRecipe(
+            id: 'recipe-1',
+            sharedByUserId: testOtherUserId,
+          );
+          final recipe2 = createSharedRecipe(
+            id: 'recipe-2',
+            sharedByUserId: testFriendId,
+          );
+          final recipe3 = createSharedRecipe(
+            id: 'recipe-3',
+            sharedByUserId: testOtherUserId,
+          );
 
-        await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
-        await seedSharedRecipe(recipe2, memberUserIds: [testUserId]);
-        await seedSharedRecipe(recipe3, memberUserIds: [testFriendId]);
+          await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
+          await seedSharedRecipe(recipe2, memberUserIds: [testUserId]);
+          await seedSharedRecipe(recipe3, memberUserIds: [testFriendId]);
 
-        final recipes = await repository.getSharedRecipesForUser(testUserId);
+          final recipes = await repository.getSharedRecipesForUser(testUserId);
 
-        expect(recipes.length, 2);
-        expect(recipes.any((r) => r.id == 'recipe-1'), isTrue);
-        expect(recipes.any((r) => r.id == 'recipe-2'), isTrue);
-        expect(recipes.any((r) => r.id == 'recipe-3'), isFalse);
-      });
+          expect(recipes.length, 2);
+          expect(recipes.any((r) => r.id == 'recipe-1'), isTrue);
+          expect(recipes.any((r) => r.id == 'recipe-2'), isTrue);
+          expect(recipes.any((r) => r.id == 'recipe-3'), isFalse);
+        },
+      );
 
       test('should get specific shared recipe by ID', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
         await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
 
         final result = await repository.getSharedRecipe(testRecipeId);
@@ -318,32 +334,36 @@ void main() {
       // FieldValue.arrayUnion/increment) — see
       // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
       test(
-          'dedup query returns existing doc id when shared_content already has matching (sharedByUserId, originalRecipeId) pair',
-          () async {
-        // Direct probe of the dedup query — proves the where() chain finds the
-        // pre-existing doc. Does NOT call createSharedRecipe (which would hit
-        // the FieldValue limitation in addMember), so this test runs.
-        // Does NOT exercise the post-query consume branch — see
-        // firebase_shared_recipe_repository_integration_test.dart (emulator
-        // lane) for the fix-regression guard (BUT-1151).
-        final preExisting = createSharedRecipe(
-          id: 'pre-existing-doc',
-          sharedByUserId: testUserId,
-        );
-        await seedSharedRecipe(preExisting, memberUserIds: [testUserId]);
+        'dedup query returns existing doc id when shared_content already has matching (sharedByUserId, originalRecipeId) pair',
+        () async {
+          // Direct probe of the dedup query — proves the where() chain finds the
+          // pre-existing doc. Does NOT call createSharedRecipe (which would hit
+          // the FieldValue limitation in addMember), so this test runs.
+          // Does NOT exercise the post-query consume branch — see
+          // firebase_shared_recipe_repository_integration_test.dart (emulator
+          // lane) for the fix-regression guard (BUT-1151).
+          final preExisting = createSharedRecipe(
+            id: 'pre-existing-doc',
+            sharedByUserId: testUserId,
+          );
+          await seedSharedRecipe(preExisting, memberUserIds: [testUserId]);
 
-        final query = await fakeFirestore
-            .collection('shared_content')
-            .where('sharedByUserId', isEqualTo: testUserId)
-            .where('originalRecipeId', isEqualTo: testOriginalRecipeId)
-            .limit(1)
-            .get();
+          final query = await fakeFirestore
+              .collection('shared_content')
+              .where('sharedByUserId', isEqualTo: testUserId)
+              .where('originalRecipeId', isEqualTo: testOriginalRecipeId)
+              .limit(1)
+              .get();
 
-        expect(query.docs.length, equals(1),
+          expect(
+            query.docs.length,
+            equals(1),
             reason:
-                'BUT-1132: dedup query must find the existing doc by (sharedByUserId, originalRecipeId)');
-        expect(query.docs.first.id, equals('pre-existing-doc'));
-      });
+                'BUT-1132: dedup query must find the existing doc by (sharedByUserId, originalRecipeId)',
+          );
+          expect(query.docs.first.id, equals('pre-existing-doc'));
+        },
+      );
     });
 
     // ===== STATUS MANAGEMENT (SUBCOLLECTIONS) =====
@@ -355,8 +375,9 @@ void main() {
       // firebase_shared_recipe_repository_integration_test.dart (BUT-1151).
       // The read-side hasViewed/hasEngaged/hasDismissed tests stay here.
       test('should check if user has viewed via hasViewed()', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
         await seedSharedRecipe(
           sharedRecipe,
           memberUserIds: [testUserId],
@@ -369,31 +390,37 @@ void main() {
       });
 
       test('should check if user has engaged via hasEngaged()', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
         await seedSharedRecipe(
           sharedRecipe,
           memberUserIds: [testUserId],
           engagedByUserIds: [testUserId],
         );
 
-        final hasEngaged =
-            await repository.hasEngaged(testRecipeId, testUserId);
+        final hasEngaged = await repository.hasEngaged(
+          testRecipeId,
+          testUserId,
+        );
 
         expect(hasEngaged, isTrue);
       });
 
       test('should check if user has dismissed via hasDismissed()', () async {
-        final sharedRecipe =
-            createSharedRecipe(sharedByUserId: testOtherUserId);
+        final sharedRecipe = createSharedRecipe(
+          sharedByUserId: testOtherUserId,
+        );
         await seedSharedRecipe(
           sharedRecipe,
           memberUserIds: [testUserId],
           dismissedByUserIds: [testUserId],
         );
 
-        final hasDismissed =
-            await repository.hasDismissed(testRecipeId, testUserId);
+        final hasDismissed = await repository.hasDismissed(
+          testRecipeId,
+          testUserId,
+        );
 
         expect(hasDismissed, isTrue);
       });
@@ -403,64 +430,75 @@ void main() {
 
     group('Query Operations', () {
       test(
-          'should return 0 unread count when no counter document exists (denormalized counter)',
-          () async {
-        // getUnreadCountForUser reads from denormalized counter doc,
-        // not from actual view subcollections. Without seeding counters
-        // the count is 0.
-        final recipe1 = createSharedRecipe(
-          id: 'recipe-1',
-          sharedByUserId: testOtherUserId,
-        );
-        await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
+        'should return 0 unread count when no counter document exists (denormalized counter)',
+        () async {
+          // getUnreadCountForUser reads from denormalized counter doc,
+          // not from actual view subcollections. Without seeding counters
+          // the count is 0.
+          final recipe1 = createSharedRecipe(
+            id: 'recipe-1',
+            sharedByUserId: testOtherUserId,
+          );
+          await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
 
-        final unreadCount = await repository.getUnreadCountForUser(testUserId);
+          final unreadCount = await repository.getUnreadCountForUser(
+            testUserId,
+          );
 
-        expect(unreadCount, 0);
-      });
+          expect(unreadCount, 0);
+        },
+      );
 
-      test('should get imported recipes using engagements subcollection',
-          () async {
-        final recipe1 = createSharedRecipe(
-          id: 'recipe-1',
-          sharedByUserId: testOtherUserId,
-        );
-        final recipe2 = createSharedRecipe(
-          id: 'recipe-2',
-          sharedByUserId: testOtherUserId,
-        );
+      test(
+        'should get imported recipes using engagements subcollection',
+        () async {
+          final recipe1 = createSharedRecipe(
+            id: 'recipe-1',
+            sharedByUserId: testOtherUserId,
+          );
+          final recipe2 = createSharedRecipe(
+            id: 'recipe-2',
+            sharedByUserId: testOtherUserId,
+          );
 
-        await seedSharedRecipe(recipe1,
-            memberUserIds: [testUserId], engagedByUserIds: [testUserId]);
-        await seedSharedRecipe(recipe2, memberUserIds: [testUserId]);
+          await seedSharedRecipe(
+            recipe1,
+            memberUserIds: [testUserId],
+            engagedByUserIds: [testUserId],
+          );
+          await seedSharedRecipe(recipe2, memberUserIds: [testUserId]);
 
-        final importedRecipes =
-            await repository.getImportedRecipesForUser(testUserId);
+          final importedRecipes = await repository.getImportedRecipesForUser(
+            testUserId,
+          );
 
-        expect(importedRecipes.length, 1);
-        expect(importedRecipes.first.id, 'recipe-1');
-      });
+          expect(importedRecipes.length, 1);
+          expect(importedRecipes.first.id, 'recipe-1');
+        },
+      );
 
-      test('should not return non-member recipes via subcollection query',
-          () async {
-        final recipe1 = createSharedRecipe(
-          id: 'recipe-1',
-          sharedByUserId: testOtherUserId,
-        );
-        final recipe2 = createSharedRecipe(
-          id: 'recipe-2',
-          sharedByUserId: testOtherUserId,
-        );
+      test(
+        'should not return non-member recipes via subcollection query',
+        () async {
+          final recipe1 = createSharedRecipe(
+            id: 'recipe-1',
+            sharedByUserId: testOtherUserId,
+          );
+          final recipe2 = createSharedRecipe(
+            id: 'recipe-2',
+            sharedByUserId: testOtherUserId,
+          );
 
-        // recipe-1 has testUserId as member, recipe-2 does not
-        await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
-        await seedSharedRecipe(recipe2, memberUserIds: [testFriendId]);
+          // recipe-1 has testUserId as member, recipe-2 does not
+          await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
+          await seedSharedRecipe(recipe2, memberUserIds: [testFriendId]);
 
-        final recipes = await repository.getSharedRecipesForUser(testUserId);
+          final recipes = await repository.getSharedRecipesForUser(testUserId);
 
-        expect(recipes.length, 1);
-        expect(recipes.first.id, 'recipe-1');
-      });
+          expect(recipes.length, 1);
+          expect(recipes.first.id, 'recipe-1');
+        },
+      );
     });
 
     // ===== EDGE CASES =====

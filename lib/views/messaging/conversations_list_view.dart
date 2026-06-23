@@ -208,8 +208,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         return RefreshIndicator(
           onRefresh: vm.refresh,
           child: ListView.builder(
-            padding:
-                const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.paddingS,
+            ),
             itemCount: items.length,
             itemBuilder: (context, index) => items[index],
           ),
@@ -253,7 +254,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   Widget _buildArchivedSection(
-      ConversationsViewModel vm, List<Conversation> archived) {
+    ConversationsViewModel vm,
+    List<Conversation> archived,
+  ) {
     final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
@@ -306,7 +309,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   Widget _buildConversationItem(
-      ConversationsViewModel vm, Conversation conversation) {
+    ConversationsViewModel vm,
+    Conversation conversation,
+  ) {
     return Column(
       children: [
         ConversationListItem(
@@ -330,7 +335,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _showConversationActions(
-      ConversationsViewModel vm, Conversation conversation) {
+    ConversationsViewModel vm,
+    Conversation conversation,
+  ) {
     final l10n = context.l10n;
 
     StyledModalBottomSheet.show(
@@ -338,14 +345,17 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       child: ModalContentContainer(
         children: [
           ModalHeaderText(
-              conversation.getDisplayTitle(vm.currentUserId.orEmpty())),
+            conversation.getDisplayTitle(vm.currentUserId.orEmpty()),
+          ),
           ListTile(
             leading: Icon(
               conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
             ),
-            title: Text(conversation.isPinned
-                ? context.l10n.messagingUnpin
-                : context.l10n.messagingPin),
+            title: Text(
+              conversation.isPinned
+                  ? context.l10n.messagingUnpin
+                  : context.l10n.messagingPin,
+            ),
             onTap: () {
               Navigator.pop(context);
               vm.togglePin(conversation.id);
@@ -420,8 +430,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.messagingLeaveGroup),
-        content:
-            Text(l10n.messagingConfirmLeaveGroup(conversation.title.orEmpty())),
+        content: Text(
+          l10n.messagingConfirmLeaveGroup(conversation.title.orEmpty()),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
@@ -436,7 +447,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                   SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
                 } else {
                   SnackBarUtils.showError(
-                      context, l10n.messagingCouldNotLeaveGroup(''));
+                    context,
+                    l10n.messagingCouldNotLeaveGroup(''),
+                  );
                 }
               }
             },
@@ -448,7 +461,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _deleteConversation(
-      ConversationsViewModel vm, Conversation conversation) {
+    ConversationsViewModel vm,
+    Conversation conversation,
+  ) {
     final l10n = context.l10n;
 
     showDialog(
@@ -468,12 +483,16 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               if (mounted) {
                 if (success) {
                   SnackBarUtils.showSuccess(
-                      context,
-                      l10n.messagingConversationDeleted(
-                          conversation.title.orEmpty()));
+                    context,
+                    l10n.messagingConversationDeleted(
+                      conversation.title.orEmpty(),
+                    ),
+                  );
                 } else {
                   SnackBarUtils.showError(
-                      context, l10n.messagingCouldNotDeleteConversation(''));
+                    context,
+                    l10n.messagingCouldNotDeleteConversation(''),
+                  );
                 }
               }
             },
@@ -492,21 +511,27 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  Future<void> _navigateToUserProfile(BuildContext context,
-      ConversationsViewModel vm, Conversation conversation) async {
+  Future<void> _navigateToUserProfile(
+    BuildContext context,
+    ConversationsViewModel vm,
+    Conversation conversation,
+  ) async {
     final l10n = context.l10n;
 
     try {
       final otherParticipantId = conversation.participantIds.firstWhere(
-          (id) => id != vm.currentUserId,
-          orElse: () => conversation.participantIds.firstOrNull.orEmpty());
+        (id) => id != vm.currentUserId,
+        orElse: () => conversation.participantIds.firstOrNull.orEmpty(),
+      );
 
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
 
       // Try friends list first, fall back to UserService for non-friend DM partners
-      final profile = friendsService.friendByUid(otherParticipantId) ??
-          await ServiceLocator.get<UserService>()
-              .getUserProfile(otherParticipantId);
+      final profile =
+          friendsService.friendByUid(otherParticipantId) ??
+          await ServiceLocator.get<UserService>().getUserProfile(
+            otherParticipantId,
+          );
 
       if (profile == null) throw Exception('Profile not found');
 
@@ -520,10 +545,11 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     } catch (e) {
       if (context.mounted) {
         SnackBarUtils.showError(
-            context,
-            l10n.messagingCouldNotShowProfile(
-              SnackBarUtils.userFriendlyMessage(context, e),
-            ));
+          context,
+          l10n.messagingCouldNotShowProfile(
+            SnackBarUtils.userFriendlyMessage(context, e),
+          ),
+        );
       }
     }
   }

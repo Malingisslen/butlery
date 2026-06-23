@@ -107,15 +107,18 @@ void main() {
     );
   }
 
-  testWidgets('shows the "keep my version" bar only when the local side lost',
-      (tester) async {
+  testWidgets('shows the "keep my version" bar only when the local side lost', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       harness(_event(strategy: ConflictResolutionStrategy.remoteWon)),
     );
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget,
-        reason:
-            'remoteWon means the user lost — they must be offered recovery');
+    expect(
+      find.widgetWithText(FilledButton, keepMine),
+      findsOneWidget,
+      reason: 'remoteWon means the user lost — they must be offered recovery',
+    );
   });
 
   testWidgets('hides the keep bar when the local side won', (tester) async {
@@ -123,121 +126,142 @@ void main() {
       harness(_event(strategy: ConflictResolutionStrategy.localWon)),
     );
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(FilledButton, keepMine), findsNothing,
-        reason: 'localWon means nothing was lost — no recovery button');
-  });
-
-  testWidgets(
-      'keep re-persists the LOCAL snapshot via updateResource and pops the route',
-      (tester) async {
-    final event = _event(
-      strategy: ConflictResolutionStrategy.remoteWon,
-      local: {'title': 'Min version'},
-      remote: {'title': 'Deras version'},
-    );
-    when(() => service.recoverLocalVersion<RealtimeResource>(any()))
-        .thenAnswer((_) async {});
-
-    // Push the view as a real route so we can assert it pops on success.
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (context) {
-            keepMine = context.l10n.conflictDiffKeepMine;
-            return ElevatedButton(
-              onPressed: () => ConflictDiffView.show(context, event),
-              child: const Text('open'),
-            );
-          },
-        ),
-      ),
-    );
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(FilledButton, keepMine));
-    await tester.pumpAndSettle();
-
-    final captured = verify(
-      () => service.recoverLocalVersion<RealtimeResource>(captureAny()),
-    ).captured.single as RealtimeResource;
-    expect(captured.toFirestore()['title'], 'Min version',
-        reason: 'must re-apply the local value the user was overwriting with, '
-            'not the remote one that won');
-
-    // Route popped: the diff view is gone, the launcher button is back.
-    expect(find.widgetWithText(FilledButton, keepMine), findsNothing);
-    expect(find.text('open'), findsOneWidget);
-  });
-
-  testWidgets(
-      'shows an error toast and does NOT pop when the service is absent',
-      (tester) async {
-    // Remove the service so ServiceLocator.tryGet returns null.
-    await GetIt.instance.reset();
-    prod.ServiceLocator.initialize(DIContainer());
-
-    final event = _event(strategy: ConflictResolutionStrategy.remoteWon);
-    late String keepFailed;
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (context) {
-            keepMine = context.l10n.conflictDiffKeepMine;
-            keepFailed = context.l10n.conflictDiffKeepFailed;
-            return ConflictDiffView(event: event);
-          },
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(FilledButton, keepMine));
-    await tester.pumpAndSettle();
-
-    expect(find.text(keepFailed), findsOneWidget);
-    // Bar is still present (we didn't pop) and re-enabled for a retry.
-    expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget);
-  });
-
-  testWidgets('shows an error toast and stays open when updateResource throws',
-      (tester) async {
-    when(() => service.recoverLocalVersion<RealtimeResource>(any())).thenThrow(
-      SyncError(type: SyncErrorType.firestoreError, message: 'boom'),
-    );
-
-    final event = _event(strategy: ConflictResolutionStrategy.remoteWon);
-    late String keepFailed;
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (context) {
-            keepMine = context.l10n.conflictDiffKeepMine;
-            keepFailed = context.l10n.conflictDiffKeepFailed;
-            return ConflictDiffView(event: event);
-          },
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.widgetWithText(FilledButton, keepMine));
-    await tester.pumpAndSettle();
-
-    expect(find.text(keepFailed), findsOneWidget,
-        reason: 'a failed re-apply must not silently look successful');
-    // Re-enabled so the user can retry, not stuck on the spinner.
     expect(
-      tester
-          .widget<FilledButton>(find.widgetWithText(FilledButton, keepMine))
-          .onPressed,
-      isNotNull,
+      find.widgetWithText(FilledButton, keepMine),
+      findsNothing,
+      reason: 'localWon means nothing was lost — no recovery button',
     );
   });
 
-  testWidgets('renders the no-changes empty state for identical snapshots',
-      (tester) async {
+  testWidgets(
+    'keep re-persists the LOCAL snapshot via updateResource and pops the route',
+    (tester) async {
+      final event = _event(
+        strategy: ConflictResolutionStrategy.remoteWon,
+        local: {'title': 'Min version'},
+        remote: {'title': 'Deras version'},
+      );
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenAnswer((_) async {});
+
+      // Push the view as a real route so we can assert it pops on success.
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              keepMine = context.l10n.conflictDiffKeepMine;
+              return ElevatedButton(
+                onPressed: () => ConflictDiffView.show(context, event),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, keepMine));
+      await tester.pumpAndSettle();
+
+      final captured =
+          verify(
+                () =>
+                    service.recoverLocalVersion<RealtimeResource>(captureAny()),
+              ).captured.single
+              as RealtimeResource;
+      expect(
+        captured.toFirestore()['title'],
+        'Min version',
+        reason:
+            'must re-apply the local value the user was overwriting with, '
+            'not the remote one that won',
+      );
+
+      // Route popped: the diff view is gone, the launcher button is back.
+      expect(find.widgetWithText(FilledButton, keepMine), findsNothing);
+      expect(find.text('open'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'shows an error toast and does NOT pop when the service is absent',
+    (tester) async {
+      // Remove the service so ServiceLocator.tryGet returns null.
+      await GetIt.instance.reset();
+      prod.ServiceLocator.initialize(DIContainer());
+
+      final event = _event(strategy: ConflictResolutionStrategy.remoteWon);
+      late String keepFailed;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              keepMine = context.l10n.conflictDiffKeepMine;
+              keepFailed = context.l10n.conflictDiffKeepFailed;
+              return ConflictDiffView(event: event);
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, keepMine));
+      await tester.pumpAndSettle();
+
+      expect(find.text(keepFailed), findsOneWidget);
+      // Bar is still present (we didn't pop) and re-enabled for a retry.
+      expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'shows an error toast and stays open when updateResource throws',
+    (tester) async {
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenThrow(
+        SyncError(type: SyncErrorType.firestoreError, message: 'boom'),
+      );
+
+      final event = _event(strategy: ConflictResolutionStrategy.remoteWon);
+      late String keepFailed;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              keepMine = context.l10n.conflictDiffKeepMine;
+              keepFailed = context.l10n.conflictDiffKeepFailed;
+              return ConflictDiffView(event: event);
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, keepMine));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(keepFailed),
+        findsOneWidget,
+        reason: 'a failed re-apply must not silently look successful',
+      );
+      // Re-enabled so the user can retry, not stuck on the spinner.
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, keepMine))
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
+
+  testWidgets('renders the no-changes empty state for identical snapshots', (
+    tester,
+  ) async {
     final event = _event(
       strategy: ConflictResolutionStrategy.localWon,
       local: {'title': 'Soppa'},
@@ -249,8 +273,9 @@ void main() {
     expect(find.text(noChanges), findsOneWidget);
   });
 
-  testWidgets('renders both local and remote values for a differing field',
-      (tester) async {
+  testWidgets('renders both local and remote values for a differing field', (
+    tester,
+  ) async {
     final event = _event(
       strategy: ConflictResolutionStrategy.remoteWon,
       local: {'title': 'Min titel'},
@@ -266,19 +291,24 @@ void main() {
   });
 
   testWidgets(
-      'shows the empty-value placeholder for a field present on one side only',
-      (tester) async {
-    final event = _event(
-      strategy: ConflictResolutionStrategy.remoteWon,
-      local: {'subtitle': ''},
-      remote: {'subtitle': 'Vegetarisk'},
-    );
-    await tester.pumpWidget(harness(event));
-    await tester.pumpAndSettle();
+    'shows the empty-value placeholder for a field present on one side only',
+    (tester) async {
+      final event = _event(
+        strategy: ConflictResolutionStrategy.remoteWon,
+        local: {'subtitle': ''},
+        remote: {'subtitle': 'Vegetarisk'},
+      );
+      await tester.pumpWidget(harness(event));
+      await tester.pumpAndSettle();
 
-    expect(find.text(emptyValue), findsOneWidget,
-        reason: 'an empty local value must render the (tomt) placeholder, '
-            'not a blank box the user can\'t interpret');
-    expect(find.text('Vegetarisk'), findsOneWidget);
-  });
+      expect(
+        find.text(emptyValue),
+        findsOneWidget,
+        reason:
+            'an empty local value must render the (tomt) placeholder, '
+            'not a blank box the user can\'t interpret',
+      );
+      expect(find.text('Vegetarisk'), findsOneWidget);
+    },
+  );
 }

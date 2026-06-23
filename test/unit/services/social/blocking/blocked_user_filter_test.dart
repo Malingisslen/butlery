@@ -61,9 +61,13 @@ void main() {
         authorOf: (s) => s.split(':').first,
         blockedIds: const {'alice'},
       );
-      expect(result, isNot(same(input)),
-          reason: 'Filter must not return the same instance — callers may '
-              'rely on input being untouched (streams, shared caches).');
+      expect(
+        result,
+        isNot(same(input)),
+        reason:
+            'Filter must not return the same instance — callers may '
+            'rely on input being untouched (streams, shared caches).',
+      );
     });
 
     test('blocking every author yields an empty list', () {

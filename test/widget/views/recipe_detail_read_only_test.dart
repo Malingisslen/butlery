@@ -73,12 +73,14 @@ void main() {
     production.ServiceLocator.initialize(DIContainer());
     registerFallbackValue(RecipeFactory.build(id: 'fallback'));
     // Mocktail requires a fallback value for any() matchers on SocialRequest.
-    registerFallbackValue(SocialRequest(
-      id: 'fallback',
-      type: SocialRequestType.recipeShareRequest,
-      fromUserId: 'from',
-      toUserId: 'to',
-    ));
+    registerFallbackValue(
+      SocialRequest(
+        id: 'fallback',
+        type: SocialRequestType.recipeShareRequest,
+        fromUserId: 'from',
+        toUserId: 'to',
+      ),
+    );
   });
 
   setUp(() async {
@@ -106,17 +108,22 @@ void main() {
 
     recipeService = MockUnifiedRecipeService();
     recipeService.setRecipeState(
-        recipes: [ownedRecipe, friendRecipe], isInitialized: true);
-    when(() => recipeService.toggleFavorite(any(), any()))
-        .thenAnswer((_) async => true);
+      recipes: [ownedRecipe, friendRecipe],
+      isInitialized: true,
+    );
+    when(
+      () => recipeService.toggleFavorite(any(), any()),
+    ).thenAnswer((_) async => true);
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
 
     TestServiceLocator.registerMock<RecipeCookingService>(
-        MockFactory.createRecipeCookingService());
+      MockFactory.createRecipeCookingService(),
+    );
 
     userService = MockUserService();
-    when(() => userService.allergenPreferences)
-        .thenReturn(UserAllergenPreferences.defaults);
+    when(
+      () => userService.allergenPreferences,
+    ).thenReturn(UserAllergenPreferences.defaults);
     when(() => userService.addListener(any())).thenReturn(null);
     when(() => userService.removeListener(any())).thenReturn(null);
     TestServiceLocator.registerMock<UserService>(userService);
@@ -169,14 +176,16 @@ void main() {
   }
 
   group('RecipeDetailView — share-request banner (Task 8)', () {
-    testWidgets('banner and share action render when shareRequest is provided',
-        (tester) async {
+    testWidgets('banner and share action render when shareRequest is provided', (
+      tester,
+    ) async {
       // Proves: when the owner opens their own recipe via a share-request
       // notification, a banner with the requester's name is shown together with
       // a one-tap share action button.
       final socialRecipeService = _MockSocialRecipeService();
-      when(() => socialRecipeService.acceptRecipeShareRequest(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => socialRecipeService.acceptRecipeShareRequest(any()),
+      ).thenAnswer((_) async => true);
       TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
 
       final shareRequest = SocialRequest(
@@ -215,19 +224,21 @@ void main() {
       await tester.tap(find.textContaining('Dela med Anna'));
       await tester.pumpAndSettle();
 
-      verify(() => socialRecipeService.acceptRecipeShareRequest(any()))
-          .called(1);
+      verify(
+        () => socialRecipeService.acceptRecipeShareRequest(any()),
+      ).called(1);
     });
 
-    testWidgets(
-        'banner is suppressed when current user is NOT the recipe owner',
-        (tester) async {
+    testWidgets('banner is suppressed when current user is NOT the recipe owner', (
+      tester,
+    ) async {
       // Proves: removing the `recipe.createdBy == currentUserId` guard in
       // production would cause this test to fail — the banner must only render
       // when the logged-in user owns the recipe.
       final socialRecipeService = _MockSocialRecipeService();
-      when(() => socialRecipeService.acceptRecipeShareRequest(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => socialRecipeService.acceptRecipeShareRequest(any()),
+      ).thenAnswer((_) async => true);
       TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
 
       // shareRequest targets the friend's recipe (createdBy == _friendUserId),
@@ -266,35 +277,45 @@ void main() {
   });
 
   group('RecipeDetailView — readOnly mode (Task 4)', () {
-    testWidgets('readOnly:true hides the favorite toggle and shows save-copy',
-        (tester) async {
+    testWidgets('readOnly:true hides the favorite toggle and shows save-copy', (
+      tester,
+    ) async {
       // Proves: when a friend's recipe is shown with readOnly:true, the
       // favorite toggle (owner action) is absent and the save-a-copy fork
       // button (non-owner action) is present.
       await pumpView(
-          tester, RecipeDetailView(recipe: friendRecipe, readOnly: true));
+        tester,
+        RecipeDetailView(recipe: friendRecipe, readOnly: true),
+      );
 
       expect(tester.takeException(), isNull);
       // Owner action hidden:
-      expect(find.byKey(const ValueKey('test-recipe-detail-favorite')),
-          findsNothing,
-          reason: 'Favorite toggle must be hidden when readOnly:true');
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-favorite')),
+        findsNothing,
+        reason: 'Favorite toggle must be hidden when readOnly:true',
+      );
       // Non-owner/retained action present:
-      expect(find.byKey(const ValueKey('test-recipe-detail-save-copy')),
-          findsOneWidget,
-          reason: 'Save-a-copy must remain visible when readOnly:true');
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-save-copy')),
+        findsOneWidget,
+        reason: 'Save-a-copy must remain visible when readOnly:true',
+      );
     });
 
-    testWidgets('readOnly:false (default) keeps the favorite toggle visible',
-        (tester) async {
+    testWidgets('readOnly:false (default) keeps the favorite toggle visible', (
+      tester,
+    ) async {
       // Proves: the default behavior (owned recipe, readOnly omitted) still
       // shows the favorite toggle — the flag does not regress the normal path.
       await pumpView(tester, RecipeDetailView(recipe: ownedRecipe));
 
       expect(tester.takeException(), isNull);
-      expect(find.byKey(const ValueKey('test-recipe-detail-favorite')),
-          findsOneWidget,
-          reason: 'Favorite toggle must be visible when readOnly:false');
+      expect(
+        find.byKey(const ValueKey('test-recipe-detail-favorite')),
+        findsOneWidget,
+        reason: 'Favorite toggle must be visible when readOnly:false',
+      );
     });
   });
 }

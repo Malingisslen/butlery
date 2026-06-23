@@ -87,18 +87,19 @@ void main() {
     });
 
     test(
-        'handles missing file (mock returns empty metadata, real returns null)',
-        () async {
-      final repo = _repo(MockFirebaseStorage());
-      // MockFirebaseStorage diverges from real Firebase here — real
-      // backend throws object-not-found, mock returns an empty FullMetadata.
-      // Either return-type is acceptable; absent throw is the contract.
-      final metadata = await repo.publicGetMetadata('users/alice/ghost.jpg');
-      // Acceptable: either null (real Firebase swallows object-not-found) or
-      // a FullMetadata instance (mock returns an empty one). Either way,
-      // the absence of a thrown exception is the contract.
-      expect(metadata, anyOf(isNull, isA<FullMetadata>()));
-    });
+      'handles missing file (mock returns empty metadata, real returns null)',
+      () async {
+        final repo = _repo(MockFirebaseStorage());
+        // MockFirebaseStorage diverges from real Firebase here — real
+        // backend throws object-not-found, mock returns an empty FullMetadata.
+        // Either return-type is acceptable; absent throw is the contract.
+        final metadata = await repo.publicGetMetadata('users/alice/ghost.jpg');
+        // Acceptable: either null (real Firebase swallows object-not-found) or
+        // a FullMetadata instance (mock returns an empty one). Either way,
+        // the absence of a thrown exception is the contract.
+        expect(metadata, anyOf(isNull, isA<FullMetadata>()));
+      },
+    );
   });
 
   group('listFiles', () {
@@ -124,12 +125,14 @@ void main() {
       expect(await repo.publicGetDownloadURL('users/alice/img.jpg'), isNull);
     });
 
-    test('handles missing file gracefully (object-not-found swallowed)',
-        () async {
-      final repo = _repo(MockFirebaseStorage());
-      // Should not throw.
-      await repo.publicDeleteFile('users/alice/ghost.jpg');
-    });
+    test(
+      'handles missing file gracefully (object-not-found swallowed)',
+      () async {
+        final repo = _repo(MockFirebaseStorage());
+        // Should not throw.
+        await repo.publicDeleteFile('users/alice/ghost.jpg');
+      },
+    );
 
     test('logAudit:false skips audit-log branch', () async {
       final storage = MockFirebaseStorage();
@@ -192,19 +195,26 @@ void main() {
       );
     });
 
-    test('succeeds when user accesses own path with users/{uid}/ prefix',
-        () async {
-      final repo = _repo(MockFirebaseStorage(), authedUserId: 'alice');
-      await repo.publicValidatePath(
-          'alice', 'users/alice/recipes/img.jpg', 'upload');
-    });
+    test(
+      'succeeds when user accesses own path with users/{uid}/ prefix',
+      () async {
+        final repo = _repo(MockFirebaseStorage(), authedUserId: 'alice');
+        await repo.publicValidatePath(
+          'alice',
+          'users/alice/recipes/img.jpg',
+          'upload',
+        );
+      },
+    );
   });
 
   group('extractUserIdFromPath', () {
     test('extracts uid from path format', () {
       final repo = _repo(MockFirebaseStorage());
       expect(
-          repo.publicExtractUserId('users/u-anna/recipes/abc.jpg'), 'u-anna');
+        repo.publicExtractUserId('users/u-anna/recipes/abc.jpg'),
+        'u-anna',
+      );
     });
 
     test('extracts uid from URL-encoded firebase URL', () {

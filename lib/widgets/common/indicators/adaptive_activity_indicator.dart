@@ -34,22 +34,22 @@ class AdaptiveActivityIndicator extends StatelessWidget {
   const AdaptiveActivityIndicator.small({
     super.key,
     this.color,
-  })  : radius = 8.0,
-        strokeWidth = 2.0;
+  }) : radius = 8.0,
+       strokeWidth = 2.0;
 
   /// Creates a medium activity indicator for general use.
   const AdaptiveActivityIndicator.medium({
     super.key,
     this.color,
-  })  : radius = 12.0,
-        strokeWidth = 3.0;
+  }) : radius = 12.0,
+       strokeWidth = 3.0;
 
   /// Creates a large activity indicator for page-level loading states.
   const AdaptiveActivityIndicator.large({
     super.key,
     this.color,
-  })  : radius = 16.0,
-        strokeWidth = 4.0;
+  }) : radius = 16.0,
+       strokeWidth = 4.0;
 
   @override
   Widget build(BuildContext context) {

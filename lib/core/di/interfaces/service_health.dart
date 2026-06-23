@@ -73,8 +73,9 @@ class HealthCheckResult {
   @override
   String toString() {
     final status = isHealthy ? '✅ HEALTHY' : '❌ UNHEALTHY';
-    final time =
-        responseTime != null ? ' (${responseTime!.inMilliseconds}ms)' : '';
+    final time = responseTime != null
+        ? ' (${responseTime!.inMilliseconds}ms)'
+        : '';
     final msg = message != null ? ': $message' : '';
     return '$status $serviceName$time$msg';
   }
@@ -105,12 +106,12 @@ class HealthReport {
 
   /// Get summary statistics.
   Map<String, dynamic> get summary => {
-        'healthy': healthyCount,
-        'unhealthy': unhealthyCount,
-        'total': totalCount,
-        'overall_status': isHealthy ? 'HEALTHY' : 'UNHEALTHY',
-        'generated_at': generatedAt.toIso8601String(),
-      };
+    'healthy': healthyCount,
+    'unhealthy': unhealthyCount,
+    'total': totalCount,
+    'overall_status': isHealthy ? 'HEALTHY' : 'UNHEALTHY',
+    'generated_at': generatedAt.toIso8601String(),
+  };
 
   @override
   String toString() {
@@ -138,8 +139,9 @@ class HealthChecker {
         return HealthCheckResult(
           isHealthy: isHealthy,
           serviceName: serviceName,
-          message:
-              isHealthy ? service.healthStatus : 'Custom health check failed',
+          message: isHealthy
+              ? service.healthStatus
+              : 'Custom health check failed',
           responseTime: stopwatch.elapsed,
         );
       } else {

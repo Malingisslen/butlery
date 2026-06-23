@@ -45,8 +45,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     if (recipe.isPersonal || (recipe.rating ?? 0) <= 0) return;
 
     try {
-      final userRating =
-          await widget.viewModel.recipeService.social.getUserRating(recipe.id);
+      final userRating = await widget.viewModel.recipeService.social
+          .getUserRating(recipe.id);
       if (mounted) {
         setState(() {
           _hasUserRating = userRating != null;
@@ -71,77 +71,89 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
 
     // Time with clock icon
     if ((recipe.timeMinutes ?? 0) > 0) {
-      metadataWidgets.add(Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.access_time,
-              size: AppDimensions.iconSizeS, color: cs.primary),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
-            style: AppTextStyles.bodySmall.copyWith(
-              color: widget.isScaled ? cs.primary : cs.onSurface,
-              fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
+      metadataWidgets.add(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.access_time,
+              size: AppDimensions.iconSizeS,
+              color: cs.primary,
             ),
-          ),
-        ],
-      ));
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: widget.isScaled ? cs.primary : cs.onSurface,
+                fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     // Portions with person icon
     if (widget.currentPortions > 0) {
-      metadataWidgets.add(Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.person_outline,
-              size: AppDimensions.iconSizeS, color: cs.primary),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: widget.isScaled ? cs.primary : cs.onSurface,
-              fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
+      metadataWidgets.add(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.person_outline,
+              size: AppDimensions.iconSizeS,
+              color: cs.primary,
             ),
-          ),
-        ],
-      ));
-    }
-
-    // Star rating row — always visible, tappable to set rating
-    metadataWidgets.add(Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        StarRatingRow(
-          rating: recipe.rating ?? 0,
-          onRatingChanged: (value) => _rateRecipe(context, value),
-          semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
-        ),
-        if ((recipe.rating ?? 0) > 0) ...[
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            // sv-SE decimal comma (4.5 → "4,5"); whole ratings drop the decimal.
-            TextFormatting.formatFractional(recipe.rating!),
-            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
-          ),
-          // Remove own rating — only when the user has rated
-          if (_checkedUserRating && _hasUserRating) ...[
             const SizedBox(width: AppDimensions.spacingXs),
-            Semantics(
-              label: context.l10n.a11yRemoveOwnRating,
-              button: true,
-              child: GestureDetector(
-                onTap: () => _removeMyRating(context),
-                child: Icon(
-                  Icons.close,
-                  size: 14,
-                  color: cs.onSurfaceVariant,
-                ),
+            Text(
+              '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: widget.isScaled ? cs.primary : cs.onSurface,
+                fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],
+        ),
+      );
+    }
+
+    // Star rating row — always visible, tappable to set rating
+    metadataWidgets.add(
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          StarRatingRow(
+            rating: recipe.rating ?? 0,
+            onRatingChanged: (value) => _rateRecipe(context, value),
+            semanticsLabel: (star) => context.l10n.ratingStarLabel(star),
+          ),
+          if ((recipe.rating ?? 0) > 0) ...[
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              // sv-SE decimal comma (4.5 → "4,5"); whole ratings drop the decimal.
+              TextFormatting.formatFractional(recipe.rating!),
+              style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
+            ),
+            // Remove own rating — only when the user has rated
+            if (_checkedUserRating && _hasUserRating) ...[
+              const SizedBox(width: AppDimensions.spacingXs),
+              Semantics(
+                label: context.l10n.a11yRemoveOwnRating,
+                button: true,
+                child: GestureDetector(
+                  onTap: () => _removeMyRating(context),
+                  child: Icon(
+                    Icons.close,
+                    size: 14,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ],
-      ],
-    ));
+      ),
+    );
 
     // "Lagat idag" chip — disabled after first tap per calendar day.
     // BUT-403: `btn-mark-cooked` identifier for browser a11y tree queries.
@@ -168,8 +180,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           ),
           style: OutlinedButton.styleFrom(
             foregroundColor: context.butleryColors.success,
-            disabledForegroundColor:
-                context.butleryColors.success.withValues(alpha: 0.5),
+            disabledForegroundColor: context.butleryColors.success.withValues(
+              alpha: 0.5,
+            ),
             side: BorderSide(
               color: cookedToday
                   ? context.butleryColors.success.withValues(alpha: 0.3)

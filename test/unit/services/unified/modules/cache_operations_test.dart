@@ -61,10 +61,12 @@ void main() {
         }
 
         // Set up cache state with test recipes
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+          },
+        );
 
         // Act
         final recipes = await CacheOperations.initializeCache(
@@ -141,9 +143,11 @@ void main() {
 
       test('should load recipe from cache', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         // Act
         final recipe = await CacheOperations.loadRecipeFromCache(
@@ -173,9 +177,11 @@ void main() {
 
       test('should remove recipe from cache', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         // Act
         await CacheOperations.removeRecipeFromCache(
@@ -190,14 +196,17 @@ void main() {
 
       test('should load all cached recipes', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+          },
+        );
 
         // Act
-        final recipes =
-            await CacheOperations.loadAllCachedRecipes(mockCacheHelper);
+        final recipes = await CacheOperations.loadAllCachedRecipes(
+          mockCacheHelper,
+        );
 
         // Assert
         expect(recipes, hasLength(2));
@@ -208,15 +217,18 @@ void main() {
     group('Cache Queries', () {
       test('should get cached recipe count', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'recipe_3': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'recipe_3': testRecipe.toJson(),
+          },
+        );
 
         // Act
-        final count =
-            await CacheOperations.getCachedRecipeCount(mockCacheHelper);
+        final count = await CacheOperations.getCachedRecipeCount(
+          mockCacheHelper,
+        );
 
         // Assert
         expect(count, equals(3));
@@ -224,11 +236,13 @@ void main() {
 
       test('should get cached recipe IDs', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'recipe_3': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'recipe_3': testRecipe.toJson(),
+          },
+        );
 
         // Act
         final ids = await CacheOperations.getCachedRecipeIds(mockCacheHelper);
@@ -239,9 +253,11 @@ void main() {
 
       test('should check if recipe is cached', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         // Act
         final isCached1 = await CacheOperations.isRecipeCached(
@@ -261,9 +277,11 @@ void main() {
       test('should get cached recipe data without deserializing', () async {
         // Arrange
         final recipeData = testRecipe.toJson();
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': recipeData,
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': recipeData,
+          },
+        );
 
         // Act
         final data = await CacheOperations.getCachedRecipeData(
@@ -297,10 +315,12 @@ void main() {
 
       test('should load multiple recipes from cache', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+          },
+        );
 
         // Act
         final recipes = await CacheOperations.loadMultipleRecipesFromCache(
@@ -315,11 +335,13 @@ void main() {
 
       test('should remove multiple recipes from cache', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'recipe_3': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'recipe_3': testRecipe.toJson(),
+          },
+        );
 
         // Act
         await CacheOperations.removeMultipleRecipesFromCache(
@@ -340,11 +362,13 @@ void main() {
     group('Cache Management', () {
       test('should clear all cached recipes', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'recipe_3': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'recipe_3': testRecipe.toJson(),
+          },
+        );
 
         // Act
         await CacheOperations.clearCache(mockCacheHelper);
@@ -356,10 +380,12 @@ void main() {
 
       test('should clear cache for specific user', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(), // Created by user_123
-          'recipe_2': testRecipe2.toJson(), // Created by user_456
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(), // Created by user_123
+            'recipe_2': testRecipe2.toJson(), // Created by user_456
+          },
+        );
 
         // Act
         await CacheOperations.clearCacheForUser(
@@ -376,10 +402,12 @@ void main() {
 
       test('should handle corrupted entries when clearing for user', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'corrupted': {'invalid': 'data'}, // Will throw when parsing
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'corrupted': {'invalid': 'data'}, // Will throw when parsing
+          },
+        );
 
         // Act
         await CacheOperations.clearCacheForUser(
@@ -398,23 +426,28 @@ void main() {
     group('Cache Validation', () {
       test('should validate cache integrity', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'corrupted': {'invalid': 'data'}, // Missing required fields
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'corrupted': {'invalid': 'data'}, // Missing required fields
+          },
+        );
 
         // Create a special mock helper that can return null for specific keys
         final validationHelper = FakeJsonCacheHelper();
-        validationHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'corrupted': {'invalid': 'data'},
-        });
+        validationHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'corrupted': {'invalid': 'data'},
+          },
+        );
 
         // Act
-        final result =
-            await CacheOperations.validateCacheIntegrity(validationHelper);
+        final result = await CacheOperations.validateCacheIntegrity(
+          validationHelper,
+        );
 
         // Assert — Recipe.fromJson handles missing fields with safe defaults,
         // so {'invalid': 'data'} parses successfully as a valid Recipe.
@@ -427,10 +460,12 @@ void main() {
       test('should fix cache corruption', () async {
         // Arrange
         final fixHelper = FakeJsonCacheHelper();
-        fixHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'corrupted': {'invalid': 'data'},
-        });
+        fixHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'corrupted': {'invalid': 'data'},
+          },
+        );
 
         // Act
         final fixedCount = await CacheOperations.fixCacheCorruption(fixHelper);
@@ -447,22 +482,27 @@ void main() {
     group('Cache Utilities', () {
       test('should get cache size info', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+          },
+        );
 
         // Act
-        final sizeInfo =
-            await CacheOperations.getCacheSizeInfo(mockCacheHelper);
+        final sizeInfo = await CacheOperations.getCacheSizeInfo(
+          mockCacheHelper,
+        );
 
         // Assert
         expect(sizeInfo['totalEntries'], equals(2));
         expect(sizeInfo['totalDataSize'], greaterThan(0));
         expect(sizeInfo['averageRecipeSize'], greaterThan(0));
         expect(sizeInfo['recipeSizes'], isA<Map<String, int>>());
-        expect((sizeInfo['recipeSizes'] as Map).keys,
-            containsAll(['recipe_1', 'recipe_2']));
+        expect(
+          (sizeInfo['recipeSizes'] as Map).keys,
+          containsAll(['recipe_1', 'recipe_2']),
+        );
       });
 
       test('should check if cache needs compaction', () async {
@@ -478,8 +518,9 @@ void main() {
         compactionHelper.setCacheState(cache: cacheData);
 
         // Act
-        final needsCompaction =
-            await CacheOperations.needsCacheCompaction(compactionHelper);
+        final needsCompaction = await CacheOperations.needsCacheCompaction(
+          compactionHelper,
+        );
 
         // Assert
         expect(needsCompaction, isFalse);
@@ -495,8 +536,9 @@ void main() {
         compactionHelper.setCacheState(cache: cacheData);
 
         // Act
-        final needsCompaction =
-            await CacheOperations.needsCacheCompaction(compactionHelper);
+        final needsCompaction = await CacheOperations.needsCacheCompaction(
+          compactionHelper,
+        );
 
         // Assert
         expect(needsCompaction, isFalse);
@@ -531,9 +573,11 @@ void main() {
       test('should handle load errors gracefully', () async {
         // Arrange — Recipe.fromJson handles missing fields with safe defaults,
         // so {'invalid': 'data'} parses successfully into a Recipe with empty defaults.
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': {'invalid': 'data'},
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': {'invalid': 'data'},
+          },
+        );
 
         // Act
         final recipe = await CacheOperations.loadRecipeFromCache(
@@ -550,8 +594,9 @@ void main() {
         mockCacheHelper.setCacheState(cache: {});
 
         // Act
-        final count =
-            await CacheOperations.getCachedRecipeCount(mockCacheHelper);
+        final count = await CacheOperations.getCachedRecipeCount(
+          mockCacheHelper,
+        );
 
         // Assert
         expect(count, equals(0));

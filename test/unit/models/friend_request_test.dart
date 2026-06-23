@@ -60,11 +60,13 @@ void main() {
         final afterCreation = DateTime.now();
 
         expect(
-            request.sentAt
-                .isAfter(beforeCreation.subtract(Duration(seconds: 1))),
-            isTrue);
-        expect(request.sentAt.isBefore(afterCreation.add(Duration(seconds: 1))),
-            isTrue);
+          request.sentAt.isAfter(beforeCreation.subtract(Duration(seconds: 1))),
+          isTrue,
+        );
+        expect(
+          request.sentAt.isBefore(afterCreation.add(Duration(seconds: 1))),
+          isTrue,
+        );
       });
     });
 
@@ -119,13 +121,15 @@ void main() {
         expect(accepted.status, equals(FriendRequestStatus.accepted));
         expect(accepted.respondedAt, isNotNull);
         expect(
-            accepted.respondedAt!
-                .isAfter(beforeAccept.subtract(Duration(seconds: 1))),
-            isTrue);
+          accepted.respondedAt!.isAfter(
+            beforeAccept.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            accepted.respondedAt!
-                .isBefore(afterAccept.add(Duration(seconds: 1))),
-            isTrue);
+          accepted.respondedAt!.isBefore(afterAccept.add(Duration(seconds: 1))),
+          isTrue,
+        );
         expect(accepted.sentAt, equals(pendingRequest.sentAt));
       });
 
@@ -138,13 +142,15 @@ void main() {
         expect(rejected.status, equals(FriendRequestStatus.rejected));
         expect(rejected.respondedAt, isNotNull);
         expect(
-            rejected.respondedAt!
-                .isAfter(beforeReject.subtract(Duration(seconds: 1))),
-            isTrue);
+          rejected.respondedAt!.isAfter(
+            beforeReject.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            rejected.respondedAt!
-                .isBefore(afterReject.add(Duration(seconds: 1))),
-            isTrue);
+          rejected.respondedAt!.isBefore(afterReject.add(Duration(seconds: 1))),
+          isTrue,
+        );
       });
 
       test('should cancel request with updated status and timestamp', () {
@@ -156,13 +162,17 @@ void main() {
         expect(cancelled.status, equals(FriendRequestStatus.cancelled));
         expect(cancelled.respondedAt, isNotNull);
         expect(
-            cancelled.respondedAt!
-                .isAfter(beforeCancel.subtract(Duration(seconds: 1))),
-            isTrue);
+          cancelled.respondedAt!.isAfter(
+            beforeCancel.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            cancelled.respondedAt!
-                .isBefore(afterCancel.add(Duration(seconds: 1))),
-            isTrue);
+          cancelled.respondedAt!.isBefore(
+            afterCancel.add(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
       });
 
       test('should preserve message when changing status', () {
@@ -303,8 +313,10 @@ void main() {
             sentAt: clock.now().subtract(Duration(days: 7)),
           );
 
-          expect(request.isExpired,
-              isFalse); // Not expired until > 7 complete days
+          expect(
+            request.isExpired,
+            isFalse,
+          ); // Not expired until > 7 complete days
         });
       });
     });
@@ -493,8 +505,10 @@ void main() {
         expect(firestore['toUserId'], equals('user_2'));
         expect(firestore['status'], equals('accepted'));
         expect(firestore['message'], equals('Test message'));
-        expect(firestore.containsKey('id'),
-            isFalse); // ID is document ID, not in data
+        expect(
+          firestore.containsKey('id'),
+          isFalse,
+        ); // ID is document ID, not in data
 
         // Check timestamp format
         expect(firestore['sentAt'], isNotNull);
@@ -566,11 +580,13 @@ void main() {
         final afterCreation = DateTime.now();
 
         expect(
-            request.sentAt
-                .isAfter(beforeCreation.subtract(Duration(seconds: 1))),
-            isTrue);
-        expect(request.sentAt.isBefore(afterCreation.add(Duration(seconds: 1))),
-            isTrue);
+          request.sentAt.isAfter(beforeCreation.subtract(Duration(seconds: 1))),
+          isTrue,
+        );
+        expect(
+          request.sentAt.isBefore(afterCreation.add(Duration(seconds: 1))),
+          isTrue,
+        );
       });
     });
 

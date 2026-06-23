@@ -139,13 +139,19 @@ class _HeaderRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text(l10n.adminParsingColCount,
-                style: _h, textAlign: TextAlign.end),
+            child: Text(
+              l10n.adminParsingColCount,
+              style: _h,
+              textAlign: TextAlign.end,
+            ),
           ),
           Expanded(
             flex: 3,
-            child: Text(l10n.adminParsingColIssue,
-                style: _h, textAlign: TextAlign.end),
+            child: Text(
+              l10n.adminParsingColIssue,
+              style: _h,
+              textAlign: TextAlign.end,
+            ),
           ),
         ],
       ),
@@ -178,8 +184,11 @@ class _DomainRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text('${stat.corrections}',
-                style: AppTextStyles.bodyMedium, textAlign: TextAlign.end),
+            child: Text(
+              '${stat.corrections}',
+              style: AppTextStyles.bodyMedium,
+              textAlign: TextAlign.end,
+            ),
           ),
           Expanded(
             flex: 3,

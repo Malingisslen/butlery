@@ -68,7 +68,9 @@ void main() {
     test('toFirestore uses millisecondsSinceEpoch for addedAt', () {
       final payload = _member().toFirestore();
       expect(
-          payload['addedAt'], DateTime.utc(2026, 1, 1).millisecondsSinceEpoch);
+        payload['addedAt'],
+        DateTime.utc(2026, 1, 1).millisecondsSinceEpoch,
+      );
     });
 
     test('fromFirestore round-trips via toFirestore', () {
@@ -77,8 +79,9 @@ void main() {
         role: 'admin',
         hasViewed: true,
       );
-      final restored =
-          SharedContentMember.fromFirestore(original.toFirestore());
+      final restored = SharedContentMember.fromFirestore(
+        original.toFirestore(),
+      );
       expect(restored.userId, original.userId);
       expect(restored.displayName, original.displayName);
       expect(restored.avatarUrl, original.avatarUrl);

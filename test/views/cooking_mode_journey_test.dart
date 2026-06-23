@@ -131,8 +131,9 @@ class _CookingModeBody extends StatelessWidget {
                                 return Container(
                                   key: Key('step_$index'),
                                   padding: const EdgeInsets.all(8),
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 4),
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
                                   color: isActive
                                       ? cs.primaryContainer
                                       : cs.surfaceContainerHighest,
@@ -156,8 +157,9 @@ class _CookingModeBody extends StatelessWidget {
                             children: [
                               TextButton(
                                 key: const Key('prev_step'),
-                                onPressed:
-                                    vm.hasPreviousStep ? vm.previousStep : null,
+                                onPressed: vm.hasPreviousStep
+                                    ? vm.previousStep
+                                    : null,
                                 child: const Text('Föregående'),
                               ),
                               TextButton(
@@ -198,10 +200,12 @@ Widget _testApp({
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: AppTheme.lightTheme,
-      home: Builder(builder: (context) {
-        schemeHolder.value = Theme.of(context).colorScheme;
-        return _CookingModeBody(onClose: onClose);
-      }),
+      home: Builder(
+        builder: (context) {
+          schemeHolder.value = Theme.of(context).colorScheme;
+          return _CookingModeBody(onClose: onClose);
+        },
+      ),
     ),
   );
 }
@@ -263,113 +267,126 @@ void main() {
 
   group('Cooking mode journey', () {
     testWidgets(
-        'both panels render with ingredients and instructions from the recipe',
-        (tester) async {
-      await tester.binding.setSurfaceSize(landscapeSize);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      'both panels render with ingredients and instructions from the recipe',
+      (tester) async {
+        await tester.binding.setSurfaceSize(landscapeSize);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final schemeHolder = ValueNotifier<ColorScheme?>(null);
-      await tester.pumpWidget(_testApp(
-        viewModel: viewModel,
-        onClose: () => closed = true,
-        schemeHolder: schemeHolder,
-      ));
-      await tester.pumpAndSettle();
+        final schemeHolder = ValueNotifier<ColorScheme?>(null);
+        await tester.pumpWidget(
+          _testApp(
+            viewModel: viewModel,
+            onClose: () => closed = true,
+            schemeHolder: schemeHolder,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Both panels are present — the two-panel layout is the defining
-      // feature of cooking mode per the mockup decision (landscape split).
-      expect(find.byKey(const Key('ingredients_panel')), findsOneWidget);
-      expect(find.byKey(const Key('instructions_panel')), findsOneWidget);
+        // Both panels are present — the two-panel layout is the defining
+        // feature of cooking mode per the mockup decision (landscape split).
+        expect(find.byKey(const Key('ingredients_panel')), findsOneWidget);
+        expect(find.byKey(const Key('instructions_panel')), findsOneWidget);
 
-      // Title renders lowercased per the project's recipe-detail convention.
-      expect(find.text('köttbullar'), findsOneWidget);
+        // Title renders lowercased per the project's recipe-detail convention.
+        expect(find.text('köttbullar'), findsOneWidget);
 
-      // Every ingredient is visible on the left.
-      expect(find.text('500 g blandfärs'), findsOneWidget);
-      expect(find.text('1 gul lök'), findsOneWidget);
-      expect(find.text('2 dl mjölk'), findsOneWidget);
+        // Every ingredient is visible on the left.
+        expect(find.text('500 g blandfärs'), findsOneWidget);
+        expect(find.text('1 gul lök'), findsOneWidget);
+        expect(find.text('2 dl mjölk'), findsOneWidget);
 
-      // Every instruction is visible on the right.
-      for (final step in viewModel.instructions) {
-        expect(find.text(step), findsOneWidget);
-      }
-      expect(find.byKey(const Key('step_counter')), findsOneWidget);
-      expect(find.text('Steg 1 / 3'), findsOneWidget);
+        // Every instruction is visible on the right.
+        for (final step in viewModel.instructions) {
+          expect(find.text(step), findsOneWidget);
+        }
+        expect(find.byKey(const Key('step_counter')), findsOneWidget);
+        expect(find.text('Steg 1 / 3'), findsOneWidget);
 
-      // Panel colors come from the live theme (survives a palette refactor).
-      final cs = schemeHolder.value!;
-      final ingredientsPanel = tester.widget<Container>(
-        find.byKey(const Key('ingredients_panel')),
-      );
-      final instructionsPanel = tester.widget<Container>(
-        find.byKey(const Key('instructions_panel')),
-      );
-      expect(ingredientsPanel.color, cs.primary);
-      expect(instructionsPanel.color, cs.surface);
-    });
+        // Panel colors come from the live theme (survives a palette refactor).
+        final cs = schemeHolder.value!;
+        final ingredientsPanel = tester.widget<Container>(
+          find.byKey(const Key('ingredients_panel')),
+        );
+        final instructionsPanel = tester.widget<Container>(
+          find.byKey(const Key('instructions_panel')),
+        );
+        expect(ingredientsPanel.color, cs.primary);
+        expect(instructionsPanel.color, cs.surface);
+      },
+    );
 
     testWidgets(
-        'tapping Nästa advances the active step; close invokes the exit callback',
-        (tester) async {
-      await tester.binding.setSurfaceSize(landscapeSize);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      'tapping Nästa advances the active step; close invokes the exit callback',
+      (tester) async {
+        await tester.binding.setSurfaceSize(landscapeSize);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final schemeHolder = ValueNotifier<ColorScheme?>(null);
-      await tester.pumpWidget(_testApp(
-        viewModel: viewModel,
-        onClose: () => closed = true,
-        schemeHolder: schemeHolder,
-      ));
-      await tester.pumpAndSettle();
+        final schemeHolder = ValueNotifier<ColorScheme?>(null);
+        await tester.pumpWidget(
+          _testApp(
+            viewModel: viewModel,
+            onClose: () => closed = true,
+            schemeHolder: schemeHolder,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Step 0 is active initially.
-      expect(viewModel.currentStepIndex, 0);
-      expect(viewModel.hasPreviousStep, isFalse);
-      expect(find.text('Steg 1 / 3'), findsOneWidget);
+        // Step 0 is active initially.
+        expect(viewModel.currentStepIndex, 0);
+        expect(viewModel.hasPreviousStep, isFalse);
+        expect(find.text('Steg 1 / 3'), findsOneWidget);
 
-      // Active step's container uses primaryContainer; others use
-      // surfaceContainerHighest. Verify the active-step indicator tracks
-      // the VM, not a hardcoded index.
-      final cs = schemeHolder.value!;
-      Container stepContainer(int i) =>
-          tester.widget<Container>(find.byKey(Key('step_$i')));
-      expect(stepContainer(0).color, cs.primaryContainer);
-      expect(stepContainer(1).color, cs.surfaceContainerHighest);
-      expect(stepContainer(2).color, cs.surfaceContainerHighest);
+        // Active step's container uses primaryContainer; others use
+        // surfaceContainerHighest. Verify the active-step indicator tracks
+        // the VM, not a hardcoded index.
+        final cs = schemeHolder.value!;
+        Container stepContainer(int i) =>
+            tester.widget<Container>(find.byKey(Key('step_$i')));
+        expect(stepContainer(0).color, cs.primaryContainer);
+        expect(stepContainer(1).color, cs.surfaceContainerHighest);
+        expect(stepContainer(2).color, cs.surfaceContainerHighest);
 
-      // Advance.
-      await tester.tap(find.byKey(const Key('next_step')));
-      await tester.pumpAndSettle();
+        // Advance.
+        await tester.tap(find.byKey(const Key('next_step')));
+        await tester.pumpAndSettle();
 
-      expect(viewModel.currentStepIndex, 1);
-      expect(viewModel.hasPreviousStep, isTrue);
-      expect(viewModel.hasNextStep, isTrue);
-      expect(find.text('Steg 2 / 3'), findsOneWidget);
-      expect(stepContainer(0).color, cs.surfaceContainerHighest);
-      expect(stepContainer(1).color, cs.primaryContainer);
+        expect(viewModel.currentStepIndex, 1);
+        expect(viewModel.hasPreviousStep, isTrue);
+        expect(viewModel.hasNextStep, isTrue);
+        expect(find.text('Steg 2 / 3'), findsOneWidget);
+        expect(stepContainer(0).color, cs.surfaceContainerHighest);
+        expect(stepContainer(1).color, cs.primaryContainer);
 
-      // Advance to the final step — Nästa becomes disabled.
-      await tester.tap(find.byKey(const Key('next_step')));
-      await tester.pumpAndSettle();
-      expect(viewModel.currentStepIndex, 2);
-      expect(viewModel.hasNextStep, isFalse);
-      final nextButton =
-          tester.widget<TextButton>(find.byKey(const Key('next_step')));
-      expect(nextButton.onPressed, isNull,
-          reason: 'Nästa must disable at the last step');
+        // Advance to the final step — Nästa becomes disabled.
+        await tester.tap(find.byKey(const Key('next_step')));
+        await tester.pumpAndSettle();
+        expect(viewModel.currentStepIndex, 2);
+        expect(viewModel.hasNextStep, isFalse);
+        final nextButton = tester.widget<TextButton>(
+          find.byKey(const Key('next_step')),
+        );
+        expect(
+          nextButton.onPressed,
+          isNull,
+          reason: 'Nästa must disable at the last step',
+        );
 
-      // Go back one step with Föregående.
-      await tester.tap(find.byKey(const Key('prev_step')));
-      await tester.pumpAndSettle();
-      expect(viewModel.currentStepIndex, 1);
+        // Go back one step with Föregående.
+        await tester.tap(find.byKey(const Key('prev_step')));
+        await tester.pumpAndSettle();
+        expect(viewModel.currentStepIndex, 1);
 
-      // Tapping close fires the exit callback (in production this pops
-      // the cooking-mode route back to the recipe detail view).
-      expect(closed, isFalse);
-      await tester.tap(find.byKey(const Key('close')));
-      await tester.pumpAndSettle();
-      expect(closed, isTrue,
-          reason: 'Close control must invoke the exit callback');
-    });
+        // Tapping close fires the exit callback (in production this pops
+        // the cooking-mode route back to the recipe detail view).
+        expect(closed, isFalse);
+        await tester.tap(find.byKey(const Key('close')));
+        await tester.pumpAndSettle();
+        expect(
+          closed,
+          isTrue,
+          reason: 'Close control must invoke the exit callback',
+        );
+      },
+    );
   });
 }

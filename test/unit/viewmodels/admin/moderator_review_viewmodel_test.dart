@@ -21,14 +21,14 @@ import '../../../test_support/base_unit_test.dart';
 class _MockReportService extends Mock implements ReportService {}
 
 ContentReport _report({required ContentType contentType}) => ContentReport(
-      id: 'r1',
-      reporterId: 'reporter',
-      contentType: contentType,
-      contentId: 'c1',
-      contentOwnerId: 'owner',
-      reason: 'spam',
-      createdAt: DateTime(2026, 4, 26),
-    );
+  id: 'r1',
+  reporterId: 'reporter',
+  contentType: contentType,
+  contentId: 'c1',
+  contentOwnerId: 'owner',
+  reason: 'spam',
+  createdAt: DateTime(2026, 4, 26),
+);
 
 void main() {
   group('ModeratorReviewViewModel.takeDown dispatch', () {
@@ -42,42 +42,58 @@ void main() {
 
     setUp(() {
       mockService = _MockReportService();
-      when(() => mockService.suspendReportedProfile(any()))
-          .thenAnswer((_) async => true);
-      when(() => mockService.deleteReportedContent(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockService.suspendReportedProfile(any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockService.deleteReportedContent(any()),
+      ).thenAnswer((_) async => true);
       vm = ModeratorReviewViewModel(reportService: mockService);
     });
 
     tearDown(() => vm.dispose());
 
-    test('profile report routes to suspendReportedProfile (NOT delete)',
-        () async {
-      final report = _report(contentType: ContentType.profile);
-      await vm.takeDown(report);
-      verify(() => mockService.suspendReportedProfile(report)).called(1);
-      verifyNever(() => mockService.deleteReportedContent(any()));
-    });
+    test(
+      'profile report routes to suspendReportedProfile (NOT delete)',
+      () async {
+        final report = _report(contentType: ContentType.profile);
+        await vm.takeDown(report);
+        verify(() => mockService.suspendReportedProfile(report)).called(1);
+        verifyNever(() => mockService.deleteReportedContent(any()));
+      },
+    );
 
-    test('non-profile report routes to deleteReportedContent (NOT suspend)',
-        () async {
-      final report = _report(contentType: ContentType.cookSnap);
-      await vm.takeDown(report);
-      verify(() => mockService.deleteReportedContent(report)).called(1);
-      verifyNever(() => mockService.suspendReportedProfile(any()));
-    });
+    test(
+      'non-profile report routes to deleteReportedContent (NOT suspend)',
+      () async {
+        final report = _report(contentType: ContentType.cookSnap);
+        await vm.takeDown(report);
+        verify(() => mockService.deleteReportedContent(report)).called(1);
+        verifyNever(() => mockService.suspendReportedProfile(any()));
+      },
+    );
 
     test('isReversibleAction is true only for profile reports', () {
-      expect(vm.isReversibleAction(_report(contentType: ContentType.profile)),
-          isTrue);
-      expect(vm.isReversibleAction(_report(contentType: ContentType.recipe)),
-          isFalse);
-      expect(vm.isReversibleAction(_report(contentType: ContentType.cookSnap)),
-          isFalse);
-      expect(vm.isReversibleAction(_report(contentType: ContentType.group)),
-          isFalse);
-      expect(vm.isReversibleAction(_report(contentType: ContentType.message)),
-          isFalse);
+      expect(
+        vm.isReversibleAction(_report(contentType: ContentType.profile)),
+        isTrue,
+      );
+      expect(
+        vm.isReversibleAction(_report(contentType: ContentType.recipe)),
+        isFalse,
+      );
+      expect(
+        vm.isReversibleAction(_report(contentType: ContentType.cookSnap)),
+        isFalse,
+      );
+      expect(
+        vm.isReversibleAction(_report(contentType: ContentType.group)),
+        isFalse,
+      );
+      expect(
+        vm.isReversibleAction(_report(contentType: ContentType.message)),
+        isFalse,
+      );
     });
   });
 }

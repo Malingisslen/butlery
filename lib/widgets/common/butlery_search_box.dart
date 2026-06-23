@@ -144,13 +144,15 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: cs.outline,
           ),
-          prefixIcon: widget.prefixIcon ??
+          prefixIcon:
+              widget.prefixIcon ??
               Icon(
                 Icons.search,
                 color: _isFocused ? cs.primary : cs.outline,
                 size: AppDimensions.iconSizeM,
               ),
-          suffixIcon: widget.suffixIcon ??
+          suffixIcon:
+              widget.suffixIcon ??
               (_hasText
                   ? IconButton(
                       icon: Icon(

@@ -77,7 +77,9 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
       if (success) {
         await onListRefresh();
         onActivityUpdate(
-            AppLocale.current.shoppingItemAdded(itemName), clock.now());
+          AppLocale.current.shoppingItemAdded(itemName),
+          clock.now(),
+        );
         AppLogger.success('✅ Artikel tillagd: $itemName');
         return true;
       } else {
@@ -178,8 +180,10 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         displayName: currentUser.displayName,
       );
 
-      final success =
-          await _shoppingService.updateCollaborativeItem(listId, claimed);
+      final success = await _shoppingService.updateCollaborativeItem(
+        listId,
+        claimed,
+      );
       if (success) {
         await onListRefresh();
         onActivityUpdate(
@@ -222,8 +226,10 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         userId: currentUser.uid,
         displayName: currentUser.displayName,
       );
-      final success =
-          await _shoppingService.updateCollaborativeItem(listId, released);
+      final success = await _shoppingService.updateCollaborativeItem(
+        listId,
+        released,
+      );
       if (success) {
         await onListRefresh();
         onActivityUpdate(

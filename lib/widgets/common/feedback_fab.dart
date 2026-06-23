@@ -102,8 +102,9 @@ class _FeedbackFABState extends State<FeedbackFAB> {
 
     // Attempt to capture screenshot via the RepaintBoundary
     try {
-      final boundary = feedbackRepaintBoundaryKey.currentContext
-          ?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary =
+          feedbackRepaintBoundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary != null) {
         final image = await boundary.toImage(pixelRatio: 1.5);
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);

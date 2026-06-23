@@ -34,14 +34,14 @@ class _MockFriendsService extends Mock implements UnifiedFriendsService {}
 // Helpers
 // ---------------------------------------------------------------------------
 UserProfile _profile(String uid, String name) => UserProfile(
-      uid: uid,
-      email: '$uid@example.com',
-      displayName: name,
-      avatarUrl: null,
-      isOnline: false,
-      joinedAt: DateTime(2024),
-      lastActiveAt: DateTime(2024),
-    );
+  uid: uid,
+  email: '$uid@example.com',
+  displayName: name,
+  avatarUrl: null,
+  isOnline: false,
+  joinedAt: DateTime(2024),
+  lastActiveAt: DateTime(2024),
+);
 
 final _friend1 = _profile('uid-anna', 'Anna Andersson');
 final _friend2 = _profile('uid-erik', 'Erik Eriksson');
@@ -123,7 +123,9 @@ void main() {
       final members = viewModel.selectedMembers;
       expect(members.length, 2);
       expect(
-          members.map((m) => m.uid), containsAll([_friend1.uid, _friend3.uid]));
+        members.map((m) => m.uid),
+        containsAll([_friend1.uid, _friend3.uid]),
+      );
     });
   });
 
@@ -182,34 +184,40 @@ void main() {
   group('createGroupConversation — success path', () {
     // Intent: when validation passes and the service succeeds, the VM
     // returns the conversation ID and ends in a clean (no-error, no-loading) state.
-    test('returns conversationId and clears isCreatingGroup on success',
-        () async {
-      when(() => mockMessaging.createGroupConversation(
+    test(
+      'returns conversationId and clears isCreatingGroup on success',
+      () async {
+        when(
+          () => mockMessaging.createGroupConversation(
             participantIds: any(named: 'participantIds'),
             participantDisplayNames: any(named: 'participantDisplayNames'),
             participantAvatarUrls: any(named: 'participantAvatarUrls'),
             title: any(named: 'title'),
-          )).thenAnswer((_) async => 'conv-new-group');
+          ),
+        ).thenAnswer((_) async => 'conv-new-group');
 
-      await viewModel.loadFriends();
-      viewModel.updateGroupName('Fredagsmat');
-      viewModel.toggleMemberSelection(_friend1.uid);
-      viewModel.toggleMemberSelection(_friend2.uid);
+        await viewModel.loadFriends();
+        viewModel.updateGroupName('Fredagsmat');
+        viewModel.toggleMemberSelection(_friend1.uid);
+        viewModel.toggleMemberSelection(_friend2.uid);
 
-      final result = await viewModel.createGroupConversation();
+        final result = await viewModel.createGroupConversation();
 
-      expect(result, equals('conv-new-group'));
-      expect(viewModel.isCreatingGroup, isFalse);
-      expect(viewModel.hasError, isFalse);
-    });
+        expect(result, equals('conv-new-group'));
+        expect(viewModel.isCreatingGroup, isFalse);
+        expect(viewModel.hasError, isFalse);
+      },
+    );
 
     test('passes participant display names and title to the service', () async {
-      when(() => mockMessaging.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: any(named: 'title'),
-          )).thenAnswer((_) async => 'conv-abc');
+      when(
+        () => mockMessaging.createGroupConversation(
+          participantIds: any(named: 'participantIds'),
+          participantDisplayNames: any(named: 'participantDisplayNames'),
+          participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          title: any(named: 'title'),
+        ),
+      ).thenAnswer((_) async => 'conv-abc');
 
       await viewModel.loadFriends();
       viewModel.updateGroupName('  Köttbullsälskare  '); // trims whitespace
@@ -218,13 +226,14 @@ void main() {
 
       await viewModel.createGroupConversation();
 
-      final captured = verify(() => mockMessaging.createGroupConversation(
-            participantIds: captureAny(named: 'participantIds'),
-            participantDisplayNames:
-                captureAny(named: 'participantDisplayNames'),
-            participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
-            title: captureAny(named: 'title'),
-          )).captured;
+      final captured = verify(
+        () => mockMessaging.createGroupConversation(
+          participantIds: captureAny(named: 'participantIds'),
+          participantDisplayNames: captureAny(named: 'participantDisplayNames'),
+          participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
+          title: captureAny(named: 'title'),
+        ),
+      ).captured;
 
       // captured[0]=participantIds, [1]=displayNames, [2]=avatarUrls, [3]=title
       expect(captured[3], equals('Köttbullsälskare'));
@@ -234,12 +243,14 @@ void main() {
     });
 
     test('isCreatingGroup transitions true → false during creation', () async {
-      when(() => mockMessaging.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: any(named: 'title'),
-          )).thenAnswer((_) async => 'conv-xyz');
+      when(
+        () => mockMessaging.createGroupConversation(
+          participantIds: any(named: 'participantIds'),
+          participantDisplayNames: any(named: 'participantDisplayNames'),
+          participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          title: any(named: 'title'),
+        ),
+      ).thenAnswer((_) async => 'conv-xyz');
 
       await viewModel.loadFriends();
       viewModel.updateGroupName('Min grupp');
@@ -253,8 +264,11 @@ void main() {
 
       await viewModel.createGroupConversation();
 
-      expect(wasCreating, isTrue,
-          reason: 'isCreatingGroup must be true at least once during creation');
+      expect(
+        wasCreating,
+        isTrue,
+        reason: 'isCreatingGroup must be true at least once during creation',
+      );
       expect(viewModel.isCreatingGroup, isFalse);
     });
   });
@@ -264,12 +278,14 @@ void main() {
     // Intent: when the service throws, the VM returns null, sets an error
     // state visible to the UI, and leaves isCreatingGroup=false.
     test('returns null and sets error on service failure', () async {
-      when(() => mockMessaging.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: any(named: 'title'),
-          )).thenThrow(Exception('Network error'));
+      when(
+        () => mockMessaging.createGroupConversation(
+          participantIds: any(named: 'participantIds'),
+          participantDisplayNames: any(named: 'participantDisplayNames'),
+          participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          title: any(named: 'title'),
+        ),
+      ).thenThrow(Exception('Network error'));
 
       await viewModel.loadFriends();
       viewModel.updateGroupName('Testgrupp');
@@ -283,22 +299,26 @@ void main() {
       expect(viewModel.isCreatingGroup, isFalse);
     });
 
-    test('returns null immediately when validation fails (no service call)',
-        () async {
-      // Only one member selected — validation must block.
-      viewModel.updateGroupName('Liten grupp');
-      viewModel.toggleMemberSelection(_friend1.uid); // only 1
+    test(
+      'returns null immediately when validation fails (no service call)',
+      () async {
+        // Only one member selected — validation must block.
+        viewModel.updateGroupName('Liten grupp');
+        viewModel.toggleMemberSelection(_friend1.uid); // only 1
 
-      final result = await viewModel.createGroupConversation();
+        final result = await viewModel.createGroupConversation();
 
-      expect(result, isNull);
-      verifyNever(() => mockMessaging.createGroupConversation(
+        expect(result, isNull);
+        verifyNever(
+          () => mockMessaging.createGroupConversation(
             participantIds: any(named: 'participantIds'),
             participantDisplayNames: any(named: 'participantDisplayNames'),
             participantAvatarUrls: any(named: 'participantAvatarUrls'),
             title: any(named: 'title'),
-          ));
-    });
+          ),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -311,8 +331,10 @@ void main() {
       await viewModel.loadFriends();
 
       expect(viewModel.availableFriends.length, 3);
-      expect(viewModel.availableFriends.map((f) => f.uid),
-          containsAll([_friend1.uid, _friend2.uid, _friend3.uid]));
+      expect(
+        viewModel.availableFriends.map((f) => f.uid),
+        containsAll([_friend1.uid, _friend2.uid, _friend3.uid]),
+      );
     });
 
     test('availableFriends is empty when service returns empty list', () async {

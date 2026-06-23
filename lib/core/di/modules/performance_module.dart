@@ -44,16 +44,15 @@ class PerformanceModule implements DIModule {
 
   @override
   List<Type> get provides => [
-        IntelligentCacheManager,
-        PerformanceMonitoringService,
-        AppMonitoringService,
-        JsonCacheHelper,
-        PermissionCacheService,
-      ];
+    IntelligentCacheManager,
+    PerformanceMonitoringService,
+    AppMonitoringService,
+    JsonCacheHelper,
+    PermissionCacheService,
+  ];
 
   @override
-  int get priority =>
-      15; // Medium priority - cache infrastructure needed by Social module (priority 20)
+  int get priority => 15; // Medium priority - cache infrastructure needed by Social module (priority 20)
 
   @override
   Future<void> configureUserScope(GetIt container) async {

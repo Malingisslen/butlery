@@ -132,16 +132,18 @@ void main() {
         }
 
         if (expected.containsKey('ingredientSubstrings')) {
-          final substrings =
-              (expected['ingredientSubstrings'] as List).cast<String>();
+          final substrings = (expected['ingredientSubstrings'] as List)
+              .cast<String>();
           // Schema-org/RuleBased ingredients have `originalLine`; LLM-tier
           // ingredients populate `originalLine` from the formatted string —
           // both expose the field, so the assertion shape is identical.
-          final ingredientText = ingredients.map((dynamic ing) {
-            final original = ing.originalLine as String?;
-            final name = ing.name as String?;
-            return '${original ?? ''} ${name ?? ''}'.toLowerCase();
-          }).join(' ');
+          final ingredientText = ingredients
+              .map((dynamic ing) {
+                final original = ing.originalLine as String?;
+                final name = ing.name as String?;
+                return '${original ?? ''} ${name ?? ''}'.toLowerCase();
+              })
+              .join(' ');
           for (final sub in substrings) {
             expect(
               ingredientText,
@@ -162,10 +164,11 @@ void main() {
         }
 
         if (expected.containsKey('instructionSubstrings')) {
-          final substrings =
-              (expected['instructionSubstrings'] as List).cast<String>();
-          final instructionText =
-              instructions.map((s) => s.toString().toLowerCase()).join(' ');
+          final substrings = (expected['instructionSubstrings'] as List)
+              .cast<String>();
+          final instructionText = instructions
+              .map((s) => s.toString().toLowerCase())
+              .join(' ');
           for (final sub in substrings) {
             expect(
               instructionText,

@@ -110,8 +110,10 @@ class _TestShared {
     this.cowTriggered = false,
     this.staticCopyId,
   });
-  _TestShared withCow(
-      {required String editingUserId, required String staticCopyId}) {
+  _TestShared withCow({
+    required String editingUserId,
+    required String staticCopyId,
+  }) {
     return _TestShared(
       id: id,
       sharedByUserId: sharedByUserId,
@@ -233,7 +235,9 @@ class _TestSocialCoordinator
 
   @override
   Future<String?> createStaticCopyForOwner(
-      dynamic originalContent, String ownerId) async {
+    dynamic originalContent,
+    String ownerId,
+  ) async {
     return createStaticCopyResult;
   }
 
@@ -280,7 +284,8 @@ class _StubDIContainer extends Mock implements DIContainer {
   T get<T extends Object>() {
     if (T == UserService) return userService as T;
     throw StateError(
-        'StubDIContainer only provides UserService for these tests; got $T');
+      'StubDIContainer only provides UserService for these tests; got $T',
+    );
   }
 
   @override
@@ -336,29 +341,37 @@ void main() {
       fakeUserService.profilesToReturn = const [];
 
       // Default repository stubs. Override in individual tests.
-      when(() => mockRepo.createSharedContent(any()))
-          .thenAnswer((_) async => 'invitation-id');
-      when(() => mockRepo.addMember(
-            any(),
-            any(),
-            addedBy: any(named: 'addedBy'),
-            displayName: any(named: 'displayName'),
-            avatarUrl: any(named: 'avatarUrl'),
-          )).thenAnswer((_) async {});
-      when(() => mockRepo.getSharedContentForUser(
-            any(),
-            limit: any(named: 'limit'),
-            startAfter: any(named: 'startAfter'),
-          )).thenAnswer((_) async => <_TestShared>[]);
+      when(
+        () => mockRepo.createSharedContent(any()),
+      ).thenAnswer((_) async => 'invitation-id');
+      when(
+        () => mockRepo.addMember(
+          any(),
+          any(),
+          addedBy: any(named: 'addedBy'),
+          displayName: any(named: 'displayName'),
+          avatarUrl: any(named: 'avatarUrl'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.getSharedContentForUser(
+          any(),
+          limit: any(named: 'limit'),
+          startAfter: any(named: 'startAfter'),
+        ),
+      ).thenAnswer((_) async => <_TestShared>[]);
       when(() => mockRepo.read(any())).thenAnswer((_) async => null);
-      when(() => mockRepo.markAsImportedOrJoined(any(), any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepo.markAsDismissed(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockRepo.markAsImportedOrJoined(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockRepo.markAsDismissed(any(), any()),
+      ).thenAnswer((_) async {});
       when(() => mockRepo.undismiss(any(), any())).thenAnswer((_) async {});
       when(() => mockRepo.markAsViewed(any(), any())).thenAnswer((_) async {});
-      when(() => mockRepo.getUnreadCountForUser(any()))
-          .thenAnswer((_) async => 0);
+      when(
+        () => mockRepo.getUnreadCountForUser(any()),
+      ).thenAnswer((_) async => 0);
 
       coordinator = _TestSocialCoordinator(
         getCurrentUserId: () => currentUserId,
@@ -423,12 +436,20 @@ void main() {
 
         expect(out, isNull);
         verifyNever(() => mockRepo.createSharedContent(any()));
-        verifyNever(() => mockRepo.addMember(any(), any(),
+        verifyNever(
+          () => mockRepo.addMember(
+            any(),
+            any(),
             addedBy: any(named: 'addedBy'),
             displayName: any(named: 'displayName'),
-            avatarUrl: any(named: 'avatarUrl')));
-        expect(errors, isEmpty,
-            reason: 'pre-flight failure logs but does not setError');
+            avatarUrl: any(named: 'avatarUrl'),
+          ),
+        );
+        expect(
+          errors,
+          isEmpty,
+          reason: 'pre-flight failure logs but does not setError',
+        );
       });
 
       /// Pin: missing content → null AND never reaches createSharedContent.
@@ -448,8 +469,10 @@ void main() {
       /// Pin: missing user profile → null AND never reaches createSharedContent.
       /// Without this guard, `currentUserProfile.displayName` would NPE.
       test('no current-user profile → null, never creates a share', () async {
-        coordinator.contentStore['c-1'] =
-            const _TestContent(id: 'c-1', title: 'Pannkakor');
+        coordinator.contentStore['c-1'] = const _TestContent(
+          id: 'c-1',
+          title: 'Pannkakor',
+        );
         fakeUserService.currentProfile = null;
 
         final out = await coordinator.createInvitation(
@@ -467,59 +490,65 @@ void main() {
       /// `Future.wait`ing it would break this test (and would be wrong:
       /// downstream Firestore writes need deterministic ordering for the
       /// audit log).
-      test('happy path → createSharedContent then addMember per invitee',
-          () async {
-        coordinator.contentStore['c-1'] =
-            const _TestContent(id: 'c-1', title: 'Pannkakor');
-        fakeUserService.profilesToReturn = [
-          UserProfile(
-            uid: 'friend-1',
-            displayName: 'Bob',
-            email: 'b@example.com',
-            joinedAt: DateTime(2024, 1, 1),
-            lastActiveAt: DateTime(2024, 1, 1),
-          ),
-          UserProfile(
-            uid: 'friend-2',
-            displayName: 'Carol',
-            email: 'c@example.com',
-            joinedAt: DateTime(2024, 1, 1),
-            lastActiveAt: DateTime(2024, 1, 1),
-          ),
-        ];
+      test(
+        'happy path → createSharedContent then addMember per invitee',
+        () async {
+          coordinator.contentStore['c-1'] = const _TestContent(
+            id: 'c-1',
+            title: 'Pannkakor',
+          );
+          fakeUserService.profilesToReturn = [
+            UserProfile(
+              uid: 'friend-1',
+              displayName: 'Bob',
+              email: 'b@example.com',
+              joinedAt: DateTime(2024, 1, 1),
+              lastActiveAt: DateTime(2024, 1, 1),
+            ),
+            UserProfile(
+              uid: 'friend-2',
+              displayName: 'Carol',
+              email: 'c@example.com',
+              joinedAt: DateTime(2024, 1, 1),
+              lastActiveAt: DateTime(2024, 1, 1),
+            ),
+          ];
 
-        final out = await coordinator.createInvitation(
-          contentId: 'c-1',
-          inviteeUserIds: const ['friend-1', 'friend-2'],
-        );
+          final out = await coordinator.createInvitation(
+            contentId: 'c-1',
+            inviteeUserIds: const ['friend-1', 'friend-2'],
+          );
 
-        expect(out, 'invitation-id');
-        // Members added in input order, with displayName denormalized.
-        verifyInOrder([
-          () => mockRepo.createSharedContent(any()),
-          () => mockRepo.addMember(
-                'invitation-id',
-                'friend-1',
-                addedBy: 'me-uid',
-                displayName: 'Bob',
-                avatarUrl: any(named: 'avatarUrl'),
-              ),
-          () => mockRepo.addMember(
-                'invitation-id',
-                'friend-2',
-                addedBy: 'me-uid',
-                displayName: 'Carol',
-                avatarUrl: any(named: 'avatarUrl'),
-              ),
-        ]);
-      });
+          expect(out, 'invitation-id');
+          // Members added in input order, with displayName denormalized.
+          verifyInOrder([
+            () => mockRepo.createSharedContent(any()),
+            () => mockRepo.addMember(
+              'invitation-id',
+              'friend-1',
+              addedBy: 'me-uid',
+              displayName: 'Bob',
+              avatarUrl: any(named: 'avatarUrl'),
+            ),
+            () => mockRepo.addMember(
+              'invitation-id',
+              'friend-2',
+              addedBy: 'me-uid',
+              displayName: 'Carol',
+              avatarUrl: any(named: 'avatarUrl'),
+            ),
+          ]);
+        },
+      );
 
       /// Pin: when a profile lookup returns nothing for an invitee, the
       /// fallback display name is the literal '?'. A bug that left this
       /// empty-string would render headless member chips in the UI.
       test("invitee profile missing → addMember falls back to '?'", () async {
-        coordinator.contentStore['c-1'] =
-            const _TestContent(id: 'c-1', title: 'Pannkakor');
+        coordinator.contentStore['c-1'] = const _TestContent(
+          id: 'c-1',
+          title: 'Pannkakor',
+        );
         // Profiles list intentionally does NOT contain friend-1.
         fakeUserService.profilesToReturn = const [];
 
@@ -529,13 +558,15 @@ void main() {
         );
 
         expect(out, 'invitation-id');
-        verify(() => mockRepo.addMember(
-              'invitation-id',
-              'friend-1',
-              addedBy: 'me-uid',
-              displayName: '?',
-              avatarUrl: null,
-            )).called(1);
+        verify(
+          () => mockRepo.addMember(
+            'invitation-id',
+            'friend-1',
+            addedBy: 'me-uid',
+            displayName: '?',
+            avatarUrl: null,
+          ),
+        ).called(1);
       });
 
       /// Pin: any throw inside the try-block surfaces as `_setError(...)`
@@ -543,10 +574,13 @@ void main() {
       /// → "user sees a snackbar" UX. A regression that dropped the catch
       /// would crash the whole share sheet.
       test('repo throw → null AND error captured via setError', () async {
-        coordinator.contentStore['c-1'] =
-            const _TestContent(id: 'c-1', title: 'Pannkakor');
-        when(() => mockRepo.createSharedContent(any()))
-            .thenThrow(Exception('permission denied'));
+        coordinator.contentStore['c-1'] = const _TestContent(
+          id: 'c-1',
+          title: 'Pannkakor',
+        );
+        when(
+          () => mockRepo.createSharedContent(any()),
+        ).thenThrow(Exception('permission denied'));
 
         final out = await coordinator.createInvitation(
           contentId: 'c-1',
@@ -554,8 +588,11 @@ void main() {
         );
 
         expect(out, isNull);
-        expect(errors, isNotEmpty,
-            reason: 'createInvitation must surface errors via setError');
+        expect(
+          errors,
+          isNotEmpty,
+          reason: 'createInvitation must surface errors via setError',
+        );
       });
     });
 
@@ -567,8 +604,10 @@ void main() {
       /// non-null id. A flipped boolean here would make every share UI
       /// claim success even when nothing was written.
       test('non-null invitation id → true', () async {
-        coordinator.contentStore['c-1'] =
-            const _TestContent(id: 'c-1', title: 'Pannkakor');
+        coordinator.contentStore['c-1'] = const _TestContent(
+          id: 'c-1',
+          title: 'Pannkakor',
+        );
 
         final ok = await coordinator.shareWithFriends(
           contentId: 'c-1',
@@ -603,8 +642,13 @@ void main() {
         final out = await coordinator.getReceivedInvitations();
 
         expect(out, isEmpty);
-        verifyNever(() => mockRepo.getSharedContentForUser(any(),
-            limit: any(named: 'limit'), startAfter: any(named: 'startAfter')));
+        verifyNever(
+          () => mockRepo.getSharedContentForUser(
+            any(),
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        );
       });
 
       /// Pin: pagination params are forwarded verbatim. Off-by-one or
@@ -618,22 +662,26 @@ void main() {
 
         await coordinator.getReceivedInvitations(limit: 7, startAfter: snap);
 
-        verify(() => mockRepo.getSharedContentForUser(
-              'me-uid',
-              limit: 7,
-              startAfter: snap,
-            )).called(1);
+        verify(
+          () => mockRepo.getSharedContentForUser(
+            'me-uid',
+            limit: 7,
+            startAfter: snap,
+          ),
+        ).called(1);
       });
 
       /// Pin: throw inside the try → empty list AND setError invoked.
       /// Same shape as `createInvitation` — every "list" surface must not
       /// crash the consuming view.
       test('repo throw → empty list AND setError invoked', () async {
-        when(() => mockRepo.getSharedContentForUser(
-              any(),
-              limit: any(named: 'limit'),
-              startAfter: any(named: 'startAfter'),
-            )).thenThrow(Exception('boom'));
+        when(
+          () => mockRepo.getSharedContentForUser(
+            any(),
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        ).thenThrow(Exception('boom'));
 
         final out = await coordinator.getReceivedInvitations();
 
@@ -650,8 +698,9 @@ void main() {
       test('no authenticated user → null, repo never called', () async {
         currentUserId = null;
 
-        final out =
-            await coordinator.importSharedContent(sharedContentId: 'sc-1');
+        final out = await coordinator.importSharedContent(
+          sharedContentId: 'sc-1',
+        );
 
         expect(out, isNull);
         verifyNever(() => mockRepo.read(any()));
@@ -662,8 +711,9 @@ void main() {
       test('unknown shared id → null, no notify', () async {
         when(() => mockRepo.read('nope')).thenAnswer((_) async => null);
 
-        final out =
-            await coordinator.importSharedContent(sharedContentId: 'nope');
+        final out = await coordinator.importSharedContent(
+          sharedContentId: 'nope',
+        );
 
         expect(out, isNull);
         expect(notifyCount, 0);
@@ -672,31 +722,36 @@ void main() {
 
       /// Happy path pin: marks as joined under the CURRENT uid AND notifies.
       /// The notification is what makes the "Delat med mig" tab refresh.
-      test('happy → markAsImportedOrJoined under current uid AND notifies',
-          () async {
-        final shared = _TestShared(
-          id: 'sc-1',
-          sharedByUserId: 'friend-1',
-          snapshot: const _TestContent(id: 'c-1', title: 'X'),
-        );
-        when(() => mockRepo.read('sc-1')).thenAnswer((_) async => shared);
+      test(
+        'happy → markAsImportedOrJoined under current uid AND notifies',
+        () async {
+          final shared = _TestShared(
+            id: 'sc-1',
+            sharedByUserId: 'friend-1',
+            snapshot: const _TestContent(id: 'c-1', title: 'X'),
+          );
+          when(() => mockRepo.read('sc-1')).thenAnswer((_) async => shared);
 
-        final out =
-            await coordinator.importSharedContent(sharedContentId: 'sc-1');
+          final out = await coordinator.importSharedContent(
+            sharedContentId: 'sc-1',
+          );
 
-        expect(out, 'sc-1');
-        verify(() => mockRepo.markAsImportedOrJoined('sc-1', 'me-uid'))
-            .called(1);
-        expect(notifyCount, 1);
-      });
+          expect(out, 'sc-1');
+          verify(
+            () => mockRepo.markAsImportedOrJoined('sc-1', 'me-uid'),
+          ).called(1);
+          expect(notifyCount, 1);
+        },
+      );
 
       /// Pin: throw → null + setError + NO notify. The "no notify on error"
       /// half matters: notifying on failure would briefly flash a stale list.
       test('throw → null + setError invoked + no notify', () async {
         when(() => mockRepo.read('sc-1')).thenThrow(Exception('forbidden'));
 
-        final out =
-            await coordinator.importSharedContent(sharedContentId: 'sc-1');
+        final out = await coordinator.importSharedContent(
+          sharedContentId: 'sc-1',
+        );
 
         expect(out, isNull);
         expect(errors, isNotEmpty);
@@ -725,24 +780,25 @@ void main() {
       /// this guard, the collaborative version would diverge from a
       /// non-existent static copy — orphan data.
       test(
-          'createStaticCopyForOwner returns null → null, no updateSharedContent',
-          () async {
-        final shared = _TestShared(
-          id: 'sc-1',
-          sharedByUserId: 'owner-uid',
-          snapshot: const _TestContent(id: 'c-1', title: 'X'),
-        );
-        when(() => mockRepo.read('sc-1')).thenAnswer((_) async => shared);
-        coordinator.createStaticCopyResult = null;
+        'createStaticCopyForOwner returns null → null, no updateSharedContent',
+        () async {
+          final shared = _TestShared(
+            id: 'sc-1',
+            sharedByUserId: 'owner-uid',
+            snapshot: const _TestContent(id: 'c-1', title: 'X'),
+          );
+          when(() => mockRepo.read('sc-1')).thenAnswer((_) async => shared);
+          coordinator.createStaticCopyResult = null;
 
-        final out = await coordinator.triggerCopyOnWrite(
-          sharedContentId: 'sc-1',
-          editingUserId: 'editor-uid',
-        );
+          final out = await coordinator.triggerCopyOnWrite(
+            sharedContentId: 'sc-1',
+            editingUserId: 'editor-uid',
+          );
 
-        expect(out, isNull);
-        expect(coordinator.updateSharedContentCalls, isEmpty);
-      });
+          expect(out, isNull);
+          expect(coordinator.updateSharedContentCalls, isEmpty);
+        },
+      );
 
       /// Pin: when the subclass refuses to fork (returns null from
       /// triggerCopyOnWriteForContent), the base aborts. This is the
@@ -768,26 +824,30 @@ void main() {
       /// Happy path pin: returns the shared id AND updates the doc AND
       /// notifies. The id-equality matters: the editor opens the same
       /// shared doc, now in collaborative mode.
-      test('happy → updateSharedContent called + notifies + returns shared id',
-          () async {
-        final shared = _TestShared(
-          id: 'sc-1',
-          sharedByUserId: 'owner-uid',
-          snapshot: const _TestContent(id: 'c-1', title: 'X'),
-        );
-        when(() => mockRepo.read('sc-1')).thenAnswer((_) async => shared);
+      test(
+        'happy → updateSharedContent called + notifies + returns shared id',
+        () async {
+          final shared = _TestShared(
+            id: 'sc-1',
+            sharedByUserId: 'owner-uid',
+            snapshot: const _TestContent(id: 'c-1', title: 'X'),
+          );
+          when(() => mockRepo.read('sc-1')).thenAnswer((_) async => shared);
 
-        final out = await coordinator.triggerCopyOnWrite(
-          sharedContentId: 'sc-1',
-          editingUserId: 'editor-uid',
-        );
+          final out = await coordinator.triggerCopyOnWrite(
+            sharedContentId: 'sc-1',
+            editingUserId: 'editor-uid',
+          );
 
-        expect(out, 'sc-1');
-        expect(coordinator.updateSharedContentCalls, hasLength(1));
-        expect(
-            coordinator.updateSharedContentCalls.single.cowTriggered, isTrue);
-        expect(notifyCount, 1);
-      });
+          expect(out, 'sc-1');
+          expect(coordinator.updateSharedContentCalls, hasLength(1));
+          expect(
+            coordinator.updateSharedContentCalls.single.cowTriggered,
+            isTrue,
+          );
+          expect(notifyCount, 1);
+        },
+      );
 
       /// Pin: throw inside the try → null + setError. A regression that
       /// dropped the catch would crash the recipe-edit screen mid-tap.
@@ -830,8 +890,9 @@ void main() {
       /// Pin: throw → false + setError invoked + no notify. The UI must
       /// surface the error AND not optimistically remove the item.
       test('throw → false + setError + no notify', () async {
-        when(() => mockRepo.markAsDismissed(any(), any()))
-            .thenThrow(Exception('forbidden'));
+        when(
+          () => mockRepo.markAsDismissed(any(), any()),
+        ).thenThrow(Exception('forbidden'));
 
         final ok = await coordinator.dismissSharedContent('sc-1');
 
@@ -866,8 +927,9 @@ void main() {
 
       /// Pin: throw → false + setError invoked.
       test('throw → false + setError + no notify', () async {
-        when(() => mockRepo.undismiss(any(), any()))
-            .thenThrow(Exception('forbidden'));
+        when(
+          () => mockRepo.undismiss(any(), any()),
+        ).thenThrow(Exception('forbidden'));
 
         final ok = await coordinator.restoreSharedContent('sc-1');
 
@@ -906,14 +968,18 @@ void main() {
       /// with every other catch in the file. The bug-pin assertion has
       /// been flipped to assert the fixed behaviour.
       test('throw → false AND errors is populated (BUT-1094 fix)', () async {
-        when(() => mockRepo.markAsViewed(any(), any()))
-            .thenThrow(Exception('forbidden'));
+        when(
+          () => mockRepo.markAsViewed(any(), any()),
+        ).thenThrow(Exception('forbidden'));
 
         final ok = await coordinator.markAsViewed('sc-1');
 
         expect(ok, isFalse);
-        expect(errors, isNotEmpty,
-            reason: 'BUT-1094 fix: production line 408 must call setError.');
+        expect(
+          errors,
+          isNotEmpty,
+          reason: 'BUT-1094 fix: production line 408 must call setError.',
+        );
         expect(notifyCount, 0, reason: 'No notify on the error path.');
       });
     });
@@ -935,8 +1001,9 @@ void main() {
       /// Happy path pin: returns repo value verbatim. A mistakenly-doubled
       /// or zero-clamped value would break the badge UI.
       test('happy → returns repo value verbatim', () async {
-        when(() => mockRepo.getUnreadCountForUser('me-uid'))
-            .thenAnswer((_) async => 7);
+        when(
+          () => mockRepo.getUnreadCountForUser('me-uid'),
+        ).thenAnswer((_) async => 7);
 
         final count = await coordinator.getUnreadCount();
 
@@ -946,14 +1013,18 @@ void main() {
       /// **BUT-1094 FIX VERIFIED** (commit fee1147ae): throw → 0 AND
       /// errors populated, matching the markAsViewed fix.
       test('throw → 0 AND errors is populated (BUT-1094 fix)', () async {
-        when(() => mockRepo.getUnreadCountForUser(any()))
-            .thenThrow(Exception('forbidden'));
+        when(
+          () => mockRepo.getUnreadCountForUser(any()),
+        ).thenThrow(Exception('forbidden'));
 
         final count = await coordinator.getUnreadCount();
 
         expect(count, 0);
-        expect(errors, isNotEmpty,
-            reason: 'BUT-1094 fix: production line 425 must call setError.');
+        expect(
+          errors,
+          isNotEmpty,
+          reason: 'BUT-1094 fix: production line 425 must call setError.',
+        );
       });
     });
 
@@ -992,43 +1063,54 @@ void main() {
       /// (the success boolean still reflects what the repo did) but must NOT
       /// call notify on the dead parent ViewModel.
       test(
-          'in-flight markAsDismissed resolving after dispose suppresses notify',
-          () async {
-        final completer = Completer<void>();
-        when(() => mockRepo.markAsDismissed(any(), any()))
-            .thenAnswer((_) => completer.future);
+        'in-flight markAsDismissed resolving after dispose suppresses notify',
+        () async {
+          final completer = Completer<void>();
+          when(
+            () => mockRepo.markAsDismissed(any(), any()),
+          ).thenAnswer((_) => completer.future);
 
-        final inFlight = coordinator.dismissSharedContent('sc-1');
-        await coordinator.dispose();
-        completer.complete();
+          final inFlight = coordinator.dismissSharedContent('sc-1');
+          await coordinator.dispose();
+          completer.complete();
 
-        final ok = await inFlight;
-        // The repo write succeeded, so the operation still reports true...
-        expect(ok, isTrue);
-        // ...but the post-dispose notify is suppressed by the _disposed gate.
-        expect(notifyCount, 0,
+          final ok = await inFlight;
+          // The repo write succeeded, so the operation still reports true...
+          expect(ok, isTrue);
+          // ...but the post-dispose notify is suppressed by the _disposed gate.
+          expect(
+            notifyCount,
+            0,
             reason:
-                'BUT-1110 fix: _disposed gate suppresses notify after dispose.');
-      });
+                'BUT-1110 fix: _disposed gate suppresses notify after dispose.',
+          );
+        },
+      );
 
       /// Pin the error half of the BUT-1110 gate: a throw that surfaces after
       /// dispose must NOT call setError on the disposed parent either.
-      test('in-flight failure resolving after dispose suppresses setError',
-          () async {
-        final completer = Completer<void>();
-        when(() => mockRepo.markAsDismissed(any(), any()))
-            .thenAnswer((_) => completer.future);
+      test(
+        'in-flight failure resolving after dispose suppresses setError',
+        () async {
+          final completer = Completer<void>();
+          when(
+            () => mockRepo.markAsDismissed(any(), any()),
+          ).thenAnswer((_) => completer.future);
 
-        final inFlight = coordinator.dismissSharedContent('sc-1');
-        await coordinator.dispose();
-        completer.completeError(Exception('forbidden'));
+          final inFlight = coordinator.dismissSharedContent('sc-1');
+          await coordinator.dispose();
+          completer.completeError(Exception('forbidden'));
 
-        final ok = await inFlight;
-        expect(ok, isFalse);
-        expect(errors, isEmpty,
+          final ok = await inFlight;
+          expect(ok, isFalse);
+          expect(
+            errors,
+            isEmpty,
             reason:
-                'BUT-1110 fix: _disposed gate suppresses setError after dispose.');
-      });
+                'BUT-1110 fix: _disposed gate suppresses setError after dispose.',
+          );
+        },
+      );
     });
   });
 }

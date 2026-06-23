@@ -51,10 +51,9 @@ class EmptyStateScaffold extends StatelessWidget {
                 Icon(
                   emptyIcon,
                   size: iconSize,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: AppDimensions.opacityMediumDark),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
+                    alpha: AppDimensions.opacityMediumDark,
+                  ),
                 ),
                 SizedBox(height: spacing),
               ],

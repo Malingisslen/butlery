@@ -80,22 +80,24 @@ void main() {
       expect(config.isReliable, isFalse);
     });
 
-    test('reliable when computed score >= 0.7 with selectors and supported',
-        () {
-      const config = SiteConfig(
-        domain: 'good.se',
-        titleSelector: 'h1',
-        ingredientsSelector: '.ing',
-        instructionsSelector: '.steps',
-        qualityScore: 0.5,
-        isSupported: true,
-        successCount: 8,
-        failureCount: 2,
-      );
+    test(
+      'reliable when computed score >= 0.7 with selectors and supported',
+      () {
+        const config = SiteConfig(
+          domain: 'good.se',
+          titleSelector: 'h1',
+          ingredientsSelector: '.ing',
+          instructionsSelector: '.steps',
+          qualityScore: 0.5,
+          isSupported: true,
+          successCount: 8,
+          failureCount: 2,
+        );
 
-      // total = 10 >= 5, computedQualityScore = 0.8
-      expect(config.isReliable, isTrue);
-    });
+        // total = 10 >= 5, computedQualityScore = 0.8
+        expect(config.isReliable, isTrue);
+      },
+    );
 
     test('not reliable without selectors even with high score', () {
       const config = SiteConfig(

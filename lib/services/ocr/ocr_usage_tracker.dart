@@ -39,7 +39,7 @@ class OCRUsageTracker {
   static const double _googleVisionCostPerCall = 0.05;
 
   OCRUsageTracker({DateTime Function()? timeProvider})
-      : _timeProvider = timeProvider {
+    : _timeProvider = timeProvider {
     _monthStartDate = _now;
   }
 
@@ -114,8 +114,9 @@ class OCRUsageTracker {
   /// Get usage statistics (for monitoring dashboard).
   Map<String, dynamic> getUsageStats() {
     final total = _providerUsage.values.fold(0, (a, b) => a + b);
-    final cacheHitRate =
-        total > 0 ? (_providerUsage['cache_hits'] ?? 0) / total : 0.0;
+    final cacheHitRate = total > 0
+        ? (_providerUsage['cache_hits'] ?? 0) / total
+        : 0.0;
 
     return {
       'daily_count': _dailyRequestCount,
@@ -145,16 +146,17 @@ class OCRUsageTracker {
     if (_monthlyRequestCount >= freeMonthlyLimit) {
       warnings.add('Exceeded monthly limit - consider reducing usage');
     } else if (_monthlyRequestCount >= (freeMonthlyLimit * _warningThreshold)) {
-      final percentUsed =
-          ((_monthlyRequestCount / freeMonthlyLimit) * 100).toInt();
+      final percentUsed = ((_monthlyRequestCount / freeMonthlyLimit) * 100)
+          .toInt();
       warnings.add('Approaching monthly limit ($percentUsed%)');
     }
 
     final cacheHitRate = calculateCacheHitRate();
     if (cacheHitRate < 0.2 && _monthlyRequestCount > 100) {
       final hitPercent = (cacheHitRate * 100).toInt();
-      warnings
-          .add('Low cache hit rate ($hitPercent%) - many duplicate requests');
+      warnings.add(
+        'Low cache hit rate ($hitPercent%) - many duplicate requests',
+      );
     }
 
     return warnings;

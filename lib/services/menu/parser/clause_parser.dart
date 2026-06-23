@@ -12,8 +12,9 @@ final _digitTillRe = RegExp(r'^(\d+)\s+till\s+(\d+)');
 final _wordRangeRe = RegExp(r'^([a-zåäö]+)\s+till\s+([a-zåäö]+)');
 final _digitRe = RegExp(r'^(\d+)');
 final _wordRe = RegExp(r'^([a-zåäö]+)');
-final _timeRe =
-    RegExp(r'(?:max|under|tar|på)?\s*(\d+)\s*(?:min|minut|minuter)');
+final _timeRe = RegExp(
+  r'(?:max|under|tar|på)?\s*(\d+)\s*(?:min|minut|minuter)',
+);
 final _tokenSplitRe = RegExp(r'[\s\-_]+');
 final _digitOnlyRe = RegExp(r'^\d+$');
 final _subClauseSplitRe = RegExp(r' och | eller |,');
@@ -77,7 +78,14 @@ SlotRequest? parseClause(
   if (mealType == null && countResult.count == 1) {
     if (hasAnyModifier(rest, lexicon)) {
       return _buildSlot(
-          'middag', count, rest, lexicon, understood, notUnderstood, warnings);
+        'middag',
+        count,
+        rest,
+        lexicon,
+        understood,
+        notUnderstood,
+        warnings,
+      );
     }
     if (rest.isNotEmpty) notUnderstood.add(clause);
     return null;
@@ -86,16 +94,20 @@ SlotRequest? parseClause(
   final effectiveMealType = mealType ?? 'middag';
 
   if (countResult.label != null) {
-    understood.add(TraceEntry(
-      label:
-          '${countResult.label} ${mealResult.matchedStem ?? effectiveMealType}',
-      category: TraceCategory.count,
-    ));
+    understood.add(
+      TraceEntry(
+        label:
+            '${countResult.label} ${mealResult.matchedStem ?? effectiveMealType}',
+        category: TraceCategory.count,
+      ),
+    );
   } else if (mealResult.matchedStem != null) {
-    understood.add(TraceEntry(
-      label: mealResult.matchedStem!,
-      category: TraceCategory.mealType,
-    ));
+    understood.add(
+      TraceEntry(
+        label: mealResult.matchedStem!,
+        category: TraceCategory.mealType,
+      ),
+    );
   }
 
   return _buildSlot(
@@ -215,16 +227,20 @@ RecipeConstraint extractModifierSet(
   if (timeMatch != null) {
     maxTimeMinutes = int.tryParse(timeMatch.group(1)!);
     if (maxTimeMinutes != null) {
-      understood.add(TraceEntry(
-        label: 'max $maxTimeMinutes min',
-        category: TraceCategory.time,
-      ));
+      understood.add(
+        TraceEntry(
+          label: 'max $maxTimeMinutes min',
+          category: TraceCategory.time,
+        ),
+      );
       fragment = fragment.replaceFirst(timeMatch.group(0)!, ' ');
     }
   }
 
-  final tokens =
-      fragment.split(_tokenSplitRe).where((t) => t.isNotEmpty).toList();
+  final tokens = fragment
+      .split(_tokenSplitRe)
+      .where((t) => t.isNotEmpty)
+      .toList();
   final consumed = <int>{};
 
   for (int i = 0; i < tokens.length; i++) {
@@ -239,10 +255,12 @@ RecipeConstraint extractModifierSet(
 
     if (tok.startsWith('snabb') && maxTimeMinutes == null) {
       maxTimeMinutes = 30;
-      understood.add(const TraceEntry(
-        label: 'snabba (max 30 min)',
-        category: TraceCategory.time,
-      ));
+      understood.add(
+        const TraceEntry(
+          label: 'snabba (max 30 min)',
+          category: TraceCategory.time,
+        ),
+      );
       consumed.add(i);
       continue;
     }

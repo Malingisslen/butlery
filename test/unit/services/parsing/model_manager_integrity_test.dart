@@ -42,49 +42,64 @@ void main() {
       if (tempDir.existsSync()) await tempDir.delete(recursive: true);
     });
 
-    test('mismatched bytes leave no .tmp file in cache dir and return null',
-        () async {
-      // Pre-stage Storage with bytes that will NOT hash to
-      // kExpectedNerModelHashes[1]. The registered hash is for a 20-MB ONNX
-      // blob; arbitrary placeholder bytes can never collide.
-      final tamperedModel =
-          Uint8List.fromList(utf8.encode('tampered-ner-bytes'));
-      await mockStorage
-          .ref('models/ingredient_ner/latest_version.txt')
-          .putData(Uint8List.fromList(utf8.encode('1')));
-      await mockStorage
-          .ref('models/ingredient_ner/v1/model.onnx')
-          .putData(tamperedModel);
-      await mockStorage
-          .ref('models/ingredient_ner/v1/vocab.txt')
-          .putData(Uint8List.fromList(utf8.encode('vocab')));
+    test(
+      'mismatched bytes leave no .tmp file in cache dir and return null',
+      () async {
+        // Pre-stage Storage with bytes that will NOT hash to
+        // kExpectedNerModelHashes[1]. The registered hash is for a 20-MB ONNX
+        // blob; arbitrary placeholder bytes can never collide.
+        final tamperedModel = Uint8List.fromList(
+          utf8.encode('tampered-ner-bytes'),
+        );
+        await mockStorage
+            .ref('models/ingredient_ner/latest_version.txt')
+            .putData(Uint8List.fromList(utf8.encode('1')));
+        await mockStorage
+            .ref('models/ingredient_ner/v1/model.onnx')
+            .putData(tamperedModel);
+        await mockStorage
+            .ref('models/ingredient_ner/v1/vocab.txt')
+            .putData(Uint8List.fromList(utf8.encode('vocab')));
 
-      final result = await manager.ensureModelAvailable();
+        final result = await manager.ensureModelAvailable();
 
-      expect(result, isNull,
+        expect(
+          result,
+          isNull,
           reason:
               'Mismatched SHA-256 must short-circuit ensureModelAvailable() '
-              'so the caller treats the model as unavailable for this session.');
+              'so the caller treats the model as unavailable for this session.',
+        );
 
-      final tmpArtifacts = tempDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.tmp'))
-          .toList();
-      expect(tmpArtifacts, isEmpty,
+        final tmpArtifacts = tempDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.tmp'))
+            .toList();
+        expect(
+          tmpArtifacts,
+          isEmpty,
           reason:
               'BUT-792 security claim: tampered bytes never touch disk — no '
-              '.tmp files should be produced by the aborted download.');
+              '.tmp files should be produced by the aborted download.',
+        );
 
-      // And no committed files either (the .tmp → rename happens later in
-      // _downloadModel; verifying the cache stays empty doubles as a
-      // regression test on the order of operations).
-      final committed =
-          tempDir.listSync(recursive: true).whereType<File>().toList();
-      expect(committed, isEmpty,
-          reason: 'No model artifacts should be committed on integrity '
-              'failure.');
-    });
+        // And no committed files either (the .tmp → rename happens later in
+        // _downloadModel; verifying the cache stays empty doubles as a
+        // regression test on the order of operations).
+        final committed = tempDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .toList();
+        expect(
+          committed,
+          isEmpty,
+          reason:
+              'No model artifacts should be committed on integrity '
+              'failure.',
+        );
+      },
+    );
   });
 
   group('NerModelManager error-envelope coverage (BUT-870)', () {
@@ -102,8 +117,7 @@ void main() {
       if (tempDir.existsSync()) await tempDir.delete(recursive: true);
     });
 
-    test(
-        'latest version absent from hash registry refuses the load '
+    test('latest version absent from hash registry refuses the load '
         '(fail-close, BUT-877)', () async {
       // Version 999 is not in `kExpectedNerModelHashes`. Per the fail-close
       // contract in `lib/services/parsing/_expected_model_hashes.dart`, an
@@ -123,97 +137,134 @@ void main() {
 
       final result = await manager.ensureModelAvailable();
 
-      expect(result, isNull,
-          reason: 'Unregistered version must be refused (verifyModelDownload '
-              'returns false on unverified) so the parser falls back to the '
-              'rule-based / LLM path instead of running unvetted bytes.');
+      expect(
+        result,
+        isNull,
+        reason:
+            'Unregistered version must be refused (verifyModelDownload '
+            'returns false on unverified) so the parser falls back to the '
+            'rule-based / LLM path instead of running unvetted bytes.',
+      );
 
-      final committed =
-          tempDir.listSync(recursive: true).whereType<File>().toList();
-      expect(committed, isEmpty,
-          reason: 'Refused unverified bytes never touch disk — no .tmp or '
-              'committed artifacts.');
-    });
-
-    test('cached load deletes leftover .tmp from prior interrupted write',
-        () async {
-      // Stage a valid-looking cache + a leftover `.tmp` file from a previous
-      // interrupted write. `_tryLoadCached` should return the cached files
-      // and clean up the stale `.tmp` (see ner_model_manager.dart:82-83).
-      final modelPath = '${tempDir.path}/model.onnx';
-      await File(modelPath).writeAsBytes(
-          Uint8List.fromList(List<int>.generate(1024, (i) => i & 0xff)));
-      await File('${tempDir.path}/vocab.txt').writeAsString('vocab');
-      await File('${tempDir.path}/version.txt').writeAsString('1');
-      final staleTmp = File('$modelPath.tmp');
-      await staleTmp.writeAsBytes(Uint8List.fromList([0xde, 0xad]));
-      expect(staleTmp.existsSync(), isTrue,
-          reason: 'Pre-condition: stale .tmp exists before cache load.');
-
-      final result = await manager.ensureModelAvailable();
-
-      expect(result, isNotNull,
-          reason: 'Valid cache should be returned even with stale .tmp '
-              'present.');
-      expect(staleTmp.existsSync(), isFalse,
-          reason: 'Stale .tmp from interrupted prior write must be deleted '
-              'as part of cache load.');
-    });
-  });
-
-  group('NerModelManager transient FirebaseException mid-download (BUT-872)',
-      () {
-    late Directory tempDir;
-    late MockFirebaseStorage mockStorage;
-    late _TestNerModelManager manager;
-
-    setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('but872_ner_');
-      mockStorage = MockFirebaseStorage();
-    });
-
-    tearDown(() async {
-      if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+      final committed = tempDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .toList();
+      expect(
+        committed,
+        isEmpty,
+        reason:
+            'Refused unverified bytes never touch disk — no .tmp or '
+            'committed artifacts.',
+      );
     });
 
     test(
-        'transient FirebaseException on model.onnx getData() leaves no '
-        '.tmp file and no committed cache files', () async {
-      // Stage version metadata + vocab so latestVersion resolves. The
-      // throwing-storage wrapper intercepts only model.onnx.
-      await mockStorage
-          .ref('models/ingredient_ner/latest_version.txt')
-          .putData(Uint8List.fromList(utf8.encode('1')));
-      await mockStorage
-          .ref('models/ingredient_ner/v1/vocab.txt')
-          .putData(Uint8List.fromList(utf8.encode('vocab')));
+      'cached load deletes leftover .tmp from prior interrupted write',
+      () async {
+        // Stage a valid-looking cache + a leftover `.tmp` file from a previous
+        // interrupted write. `_tryLoadCached` should return the cached files
+        // and clean up the stale `.tmp` (see ner_model_manager.dart:82-83).
+        final modelPath = '${tempDir.path}/model.onnx';
+        await File(modelPath).writeAsBytes(
+          Uint8List.fromList(List<int>.generate(1024, (i) => i & 0xff)),
+        );
+        await File('${tempDir.path}/vocab.txt').writeAsString('vocab');
+        await File('${tempDir.path}/version.txt').writeAsString('1');
+        final staleTmp = File('$modelPath.tmp');
+        await staleTmp.writeAsBytes(Uint8List.fromList([0xde, 0xad]));
+        expect(
+          staleTmp.existsSync(),
+          isTrue,
+          reason: 'Pre-condition: stale .tmp exists before cache load.',
+        );
 
-      final throwingStorage = _ThrowingPathStorage(
-        delegate: mockStorage,
-        throwingPath: 'models/ingredient_ner/v1/model.onnx',
-        error: FirebaseException(
-          plugin: 'firebase_storage',
-          code: 'unavailable',
-          message: 'transient backend error',
-        ),
-      );
-      manager =
-          _TestNerModelManager(storage: throwingStorage, cacheDir: tempDir);
+        final result = await manager.ensureModelAvailable();
 
-      final result = await manager.ensureModelAvailable();
-
-      expect(result, isNull,
-          reason: 'Mid-download FirebaseException must short-circuit the '
-              'download — the `on FirebaseException catch` block in '
-              'ner_model_manager.dart:186 returns null.');
-
-      final committed =
-          tempDir.listSync(recursive: true).whereType<File>().toList();
-      expect(committed, isEmpty,
-          reason: 'No files (including .tmp) should land when getData() '
-              'throws — the hash + write phase never runs.');
-    });
+        expect(
+          result,
+          isNotNull,
+          reason:
+              'Valid cache should be returned even with stale .tmp '
+              'present.',
+        );
+        expect(
+          staleTmp.existsSync(),
+          isFalse,
+          reason:
+              'Stale .tmp from interrupted prior write must be deleted '
+              'as part of cache load.',
+        );
+      },
+    );
   });
+
+  group(
+    'NerModelManager transient FirebaseException mid-download (BUT-872)',
+    () {
+      late Directory tempDir;
+      late MockFirebaseStorage mockStorage;
+      late _TestNerModelManager manager;
+
+      setUp(() async {
+        tempDir = await Directory.systemTemp.createTemp('but872_ner_');
+        mockStorage = MockFirebaseStorage();
+      });
+
+      tearDown(() async {
+        if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+      });
+
+      test('transient FirebaseException on model.onnx getData() leaves no '
+          '.tmp file and no committed cache files', () async {
+        // Stage version metadata + vocab so latestVersion resolves. The
+        // throwing-storage wrapper intercepts only model.onnx.
+        await mockStorage
+            .ref('models/ingredient_ner/latest_version.txt')
+            .putData(Uint8List.fromList(utf8.encode('1')));
+        await mockStorage
+            .ref('models/ingredient_ner/v1/vocab.txt')
+            .putData(Uint8List.fromList(utf8.encode('vocab')));
+
+        final throwingStorage = _ThrowingPathStorage(
+          delegate: mockStorage,
+          throwingPath: 'models/ingredient_ner/v1/model.onnx',
+          error: FirebaseException(
+            plugin: 'firebase_storage',
+            code: 'unavailable',
+            message: 'transient backend error',
+          ),
+        );
+        manager = _TestNerModelManager(
+          storage: throwingStorage,
+          cacheDir: tempDir,
+        );
+
+        final result = await manager.ensureModelAvailable();
+
+        expect(
+          result,
+          isNull,
+          reason:
+              'Mid-download FirebaseException must short-circuit the '
+              'download — the `on FirebaseException catch` block in '
+              'ner_model_manager.dart:186 returns null.',
+        );
+
+        final committed = tempDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .toList();
+        expect(
+          committed,
+          isEmpty,
+          reason:
+              'No files (including .tmp) should land when getData() '
+              'throws — the hash + write phase never runs.',
+        );
+      });
+    },
+  );
 
   group('LineClassifierModelManager integrity short-circuit (BUT-823)', () {
     late Directory tempDir;
@@ -224,46 +275,52 @@ void main() {
       tempDir = await Directory.systemTemp.createTemp('but823_lc_');
       mockStorage = MockFirebaseStorage();
       manager = _TestLineClassifierModelManager(
-          storage: mockStorage, cacheDir: tempDir);
+        storage: mockStorage,
+        cacheDir: tempDir,
+      );
     });
 
     tearDown(() async {
       if (tempDir.existsSync()) await tempDir.delete(recursive: true);
     });
 
-    test('mismatched bytes leave no .tmp file in cache dir and return null',
-        () async {
-      final tamperedModel =
-          Uint8List.fromList(utf8.encode('tampered-line-classifier-bytes'));
-      await mockStorage
-          .ref('models/line_classifier/latest_version.txt')
-          .putData(Uint8List.fromList(utf8.encode('1')));
-      await mockStorage
-          .ref('models/line_classifier/v1/model.onnx')
-          .putData(tamperedModel);
-      await mockStorage
-          .ref('models/line_classifier/v1/vocab.txt')
-          .putData(Uint8List.fromList(utf8.encode('vocab')));
+    test(
+      'mismatched bytes leave no .tmp file in cache dir and return null',
+      () async {
+        final tamperedModel = Uint8List.fromList(
+          utf8.encode('tampered-line-classifier-bytes'),
+        );
+        await mockStorage
+            .ref('models/line_classifier/latest_version.txt')
+            .putData(Uint8List.fromList(utf8.encode('1')));
+        await mockStorage
+            .ref('models/line_classifier/v1/model.onnx')
+            .putData(tamperedModel);
+        await mockStorage
+            .ref('models/line_classifier/v1/vocab.txt')
+            .putData(Uint8List.fromList(utf8.encode('vocab')));
 
-      final result = await manager.ensureModelAvailable();
+        final result = await manager.ensureModelAvailable();
 
-      expect(result, isNull);
+        expect(result, isNull);
 
-      final tmpArtifacts = tempDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.tmp'))
-          .toList();
-      expect(tmpArtifacts, isEmpty);
+        final tmpArtifacts = tempDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.tmp'))
+            .toList();
+        expect(tmpArtifacts, isEmpty);
 
-      final committed =
-          tempDir.listSync(recursive: true).whereType<File>().toList();
-      expect(committed, isEmpty);
-    });
+        final committed = tempDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .toList();
+        expect(committed, isEmpty);
+      },
+    );
   });
 
-  group(
-      'LineClassifierModelManager transient FirebaseException mid-download '
+  group('LineClassifierModelManager transient FirebaseException mid-download '
       '(BUT-872)', () {
     late Directory tempDir;
     late MockFirebaseStorage mockStorage;
@@ -278,8 +335,7 @@ void main() {
       if (tempDir.existsSync()) await tempDir.delete(recursive: true);
     });
 
-    test(
-        'transient FirebaseException on model.onnx getData() leaves no '
+    test('transient FirebaseException on model.onnx getData() leaves no '
         '.tmp file and no committed cache files', () async {
       await mockStorage
           .ref('models/line_classifier/latest_version.txt')
@@ -298,19 +354,31 @@ void main() {
         ),
       );
       manager = _TestLineClassifierModelManager(
-          storage: throwingStorage, cacheDir: tempDir);
+        storage: throwingStorage,
+        cacheDir: tempDir,
+      );
 
       final result = await manager.ensureModelAvailable();
 
-      expect(result, isNull,
-          reason: 'Mid-download FirebaseException must short-circuit the '
-              'download (line_classifier_model_manager.dart:174).');
+      expect(
+        result,
+        isNull,
+        reason:
+            'Mid-download FirebaseException must short-circuit the '
+            'download (line_classifier_model_manager.dart:174).',
+      );
 
-      final committed =
-          tempDir.listSync(recursive: true).whereType<File>().toList();
-      expect(committed, isEmpty,
-          reason: 'No files (including .tmp) should land when getData() '
-              'throws.');
+      final committed = tempDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .toList();
+      expect(
+        committed,
+        isEmpty,
+        reason:
+            'No files (including .tmp) should land when getData() '
+            'throws.',
+      );
     });
   });
 }
@@ -321,8 +389,8 @@ class _TestNerModelManager extends NerModelManager {
   _TestNerModelManager({
     required FirebaseStorage storage,
     required Directory cacheDir,
-  })  : _testCacheDir = cacheDir,
-        super(storage: storage);
+  }) : _testCacheDir = cacheDir,
+       super(storage: storage);
 
   @override
   Future<Directory> getCacheDir() async => _testCacheDir;
@@ -334,8 +402,8 @@ class _TestLineClassifierModelManager extends LineClassifierModelManager {
   _TestLineClassifierModelManager({
     required FirebaseStorage storage,
     required Directory cacheDir,
-  })  : _testCacheDir = cacheDir,
-        super(storage: storage);
+  }) : _testCacheDir = cacheDir,
+       super(storage: storage);
 
   @override
   Future<Directory> getCacheDir() async => _testCacheDir;
@@ -369,9 +437,9 @@ class _ThrowingPathStorage extends Fake implements FirebaseStorage {
     required FirebaseStorage delegate,
     required String throwingPath,
     required FirebaseException error,
-  })  : _delegate = delegate,
-        _throwingPath = throwingPath,
-        _error = error;
+  }) : _delegate = delegate,
+       _throwingPath = throwingPath,
+       _error = error;
 
   @override
   Reference ref([String? path]) {

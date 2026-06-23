@@ -55,15 +55,17 @@ void main() {
       );
 
       // Stub the repository methods
-      when(() => mockRepository.getNotificationPreferences(any()))
-          .thenAnswer((invocation) async {
+      when(() => mockRepository.getNotificationPreferences(any())).thenAnswer((
+        invocation,
+      ) async {
         final userId = invocation.positionalArguments[0] as String;
         return mockRepository.userPreferences[userId] ??
             NotificationPreferences.defaults();
       });
 
-      when(() => mockRepository.updateNotificationPreferences(any(), any()))
-          .thenAnswer((invocation) async {
+      when(
+        () => mockRepository.updateNotificationPreferences(any(), any()),
+      ).thenAnswer((invocation) async {
         final userId = invocation.positionalArguments[0] as String;
         final prefs =
             invocation.positionalArguments[1] as NotificationPreferences;
@@ -161,17 +163,19 @@ void main() {
             NotificationPreferences.defaults();
 
         // Act
-        final filteredUsers =
-            await preferenceManager.filterUsersForNotification(
-          userIds,
-          NotificationCategory.recipes,
-          NotificationType.immediate,
-        );
+        final filteredUsers = await preferenceManager
+            .filterUsersForNotification(
+              userIds,
+              NotificationCategory.recipes,
+              NotificationType.immediate,
+            );
 
         // Assert
         expect(filteredUsers, contains('user1'));
         expect(
-            filteredUsers, isNot(contains('user2'))); // Should be filtered out
+          filteredUsers,
+          isNot(contains('user2')),
+        ); // Should be filtered out
         expect(filteredUsers, contains('user3'));
       });
     });
@@ -212,8 +216,10 @@ void main() {
           allowBatching: prefs.allowBatching,
           digestFrequency: prefs.digestFrequency,
           quietHoursStart: const TimeOfDay(hour: 0, minute: 0),
-          quietHoursEnd:
-              const TimeOfDay(hour: 23, minute: 59), // Always in quiet hours
+          quietHoursEnd: const TimeOfDay(
+            hour: 23,
+            minute: 59,
+          ), // Always in quiet hours
           soundEnabled: prefs.soundEnabled,
           vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
@@ -221,11 +227,11 @@ void main() {
         await preferenceManager.updatePreferences(updatedPrefs);
 
         // Act - Immediate notifications should bypass quiet hours
-        final shouldReceiveImmediate =
-            await preferenceManager.shouldReceiveNotification(
-          NotificationCategory.friends,
-          NotificationType.immediate,
-        );
+        final shouldReceiveImmediate = await preferenceManager
+            .shouldReceiveNotification(
+              NotificationCategory.friends,
+              NotificationType.immediate,
+            );
 
         // Assert
         expect(shouldReceiveImmediate, isTrue);
@@ -246,8 +252,9 @@ void main() {
         expect(prefs1.enabled, equals(prefs2.enabled));
 
         // Verify repository was called only once (due to caching)
-        verify(() => mockRepository.getNotificationPreferences('test-user-123'))
-            .called(1);
+        verify(
+          () => mockRepository.getNotificationPreferences('test-user-123'),
+        ).called(1);
       });
 
       test('should update preferences and clear cache', () async {
@@ -304,10 +311,14 @@ void main() {
         expect(prefs.enabled, isTrue);
         expect(prefs.allowBatching, isTrue);
         expect(prefs.digestFrequency, equals('never'));
-        expect(prefs.quietHoursStart,
-            equals(const TimeOfDay(hour: 22, minute: 0)));
         expect(
-            prefs.quietHoursEnd, equals(const TimeOfDay(hour: 8, minute: 0)));
+          prefs.quietHoursStart,
+          equals(const TimeOfDay(hour: 22, minute: 0)),
+        );
+        expect(
+          prefs.quietHoursEnd,
+          equals(const TimeOfDay(hour: 8, minute: 0)),
+        );
         expect(prefs.soundEnabled, isTrue);
         expect(prefs.vibrationEnabled, isTrue);
       });
@@ -332,8 +343,8 @@ void main() {
         await preferenceManager.updatePreferences(updatedPrefs);
 
         // Act
-        final digestEnabled =
-            await preferenceManager.areDigestNotificationsEnabled();
+        final digestEnabled = await preferenceManager
+            .areDigestNotificationsEnabled();
 
         // Assert
         expect(digestEnabled, isTrue);
@@ -353,8 +364,8 @@ void main() {
         );
         await preferenceManager.updatePreferences(disabledPrefs);
 
-        final digestDisabled =
-            await preferenceManager.areDigestNotificationsEnabled();
+        final digestDisabled = await preferenceManager
+            .areDigestNotificationsEnabled();
         expect(digestDisabled, isFalse);
       });
 
@@ -389,16 +400,20 @@ void main() {
         await preferenceManager.updatePreferences(updatedPrefs);
 
         // Act
-        final enabledCategories =
-            await preferenceManager.getEnabledCategories();
+        final enabledCategories = await preferenceManager
+            .getEnabledCategories();
 
         // Assert
         expect(enabledCategories, contains(NotificationCategory.recipes));
         expect(enabledCategories, contains(NotificationCategory.friends));
         expect(
-            enabledCategories, isNot(contains(NotificationCategory.shopping)));
-        expect(enabledCategories,
-            isNot(contains(NotificationCategory.collaboration)));
+          enabledCategories,
+          isNot(contains(NotificationCategory.shopping)),
+        );
+        expect(
+          enabledCategories,
+          isNot(contains(NotificationCategory.collaboration)),
+        );
         expect(enabledCategories, contains(NotificationCategory.social));
         expect(enabledCategories, contains(NotificationCategory.system));
       });

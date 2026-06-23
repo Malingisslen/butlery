@@ -61,7 +61,7 @@ import '../../../test_support/base_unit_test.dart';
 /// and inspections target *that* instance, not the shared singleton.
 class _TestFirestoreRepository extends FakeFirestoreRepository {
   _TestFirestoreRepository(FakeFirebaseFirestore firestore)
-      : super(firestore: firestore);
+    : super(firestore: firestore);
 }
 
 /// Minimal mock of the Firebase Core platform-host API so we can call
@@ -249,12 +249,14 @@ void main() {
       /// silently corrupting service state.
       test('menus getter returns an unmodifiable view', () {
         expect(
-          () => service.menus.add(SharedMenu.create(
-            sharedByUserId: 'x',
-            sharedByDisplayName: 'X',
-            sharedToUserIds: [],
-            menuSnapshot: {},
-          )),
+          () => service.menus.add(
+            SharedMenu.create(
+              sharedByUserId: 'x',
+              sharedByDisplayName: 'X',
+              sharedToUserIds: [],
+              menuSnapshot: {},
+            ),
+          ),
           throwsA(isA<UnsupportedError>()),
         );
       });
@@ -268,8 +270,11 @@ void main() {
       /// whatever the user owns. This is the contract the UI relies on
       /// for "loading complete, render now".
       test('emits MenuStateData after successful init', () async {
-        await _seedOwnedMenu(fakeFirestore,
-            ownerId: 'user-1', title: 'My weekly menu');
+        await _seedOwnedMenu(
+          fakeFirestore,
+          ownerId: 'user-1',
+          title: 'My weekly menu',
+        );
 
         await service.initialize();
 
@@ -282,22 +287,35 @@ void main() {
 
       /// Proves: a second initialize() call is a no-op. If it weren't,
       /// every navigation tap would re-hit Firestore — a real cost bug.
-      test('is idempotent — second call does not reload from Firestore',
-          () async {
-        await _seedOwnedMenu(fakeFirestore, ownerId: 'user-1', title: 'Menu A');
-        await service.initialize();
-        expect(service.menus.length, 1);
+      test(
+        'is idempotent — second call does not reload from Firestore',
+        () async {
+          await _seedOwnedMenu(
+            fakeFirestore,
+            ownerId: 'user-1',
+            title: 'Menu A',
+          );
+          await service.initialize();
+          expect(service.menus.length, 1);
 
-        // Add another menu directly to firestore. If init re-runs
-        // _loadMenus, our list would grow to 2. The contract says it
-        // should NOT.
-        await _seedOwnedMenu(fakeFirestore, ownerId: 'user-1', title: 'Menu B');
+          // Add another menu directly to firestore. If init re-runs
+          // _loadMenus, our list would grow to 2. The contract says it
+          // should NOT.
+          await _seedOwnedMenu(
+            fakeFirestore,
+            ownerId: 'user-1',
+            title: 'Menu B',
+          );
 
-        await service.initialize();
+          await service.initialize();
 
-        expect(service.menus.length, 1,
-            reason: 'initialize must be a no-op once initialized');
-      });
+          expect(
+            service.menus.length,
+            1,
+            reason: 'initialize must be a no-op once initialized',
+          );
+        },
+      );
 
       /// Proves: _loadMenus filters by sharedByUserId. A bug that drops
       /// the where() clause would leak other users' menus — exactly the
@@ -305,8 +323,11 @@ void main() {
       /// security rules become the last line of defence.
       test('only loads menus owned by current user', () async {
         await _seedOwnedMenu(fakeFirestore, ownerId: 'user-1', title: 'Mine');
-        await _seedOwnedMenu(fakeFirestore,
-            ownerId: 'user-2', title: 'Someone else');
+        await _seedOwnedMenu(
+          fakeFirestore,
+          ownerId: 'user-2',
+          title: 'Someone else',
+        );
 
         await service.initialize();
 
@@ -357,38 +378,43 @@ void main() {
 
         await service.initialize();
 
-        expect(service.menus, isEmpty,
-            reason:
-                'user-owned realtime menus must be skipped to avoid duplicate display');
+        expect(
+          service.menus,
+          isEmpty,
+          reason:
+              'user-owned realtime menus must be skipped to avoid duplicate display',
+        );
       });
 
       /// Proves: a corrupt realtime_menu doc (missing menuSnapshot) is
       /// silently skipped rather than crashing the entire load — one bad
       /// doc must not deny the user access to all their menus.
-      test('skips realtime menus with null menuSnapshot, keeps others',
-          () async {
-        // Bad doc
-        await fakeFirestore.collection('realtime_menus').add({
-          'ownerId': 'user-2',
-          'participantIds': ['user-1'],
-          'menuSnapshot': null,
-        });
-        // Good doc
-        await fakeFirestore.collection('realtime_menus').add({
-          'ownerId': 'user-2',
-          'ownerDisplayName': 'Bea',
-          'participantIds': ['user-1'],
-          'menuSnapshot': {
-            'title': 'Good one',
-            'categories': <String, dynamic>{},
-          },
-        });
+      test(
+        'skips realtime menus with null menuSnapshot, keeps others',
+        () async {
+          // Bad doc
+          await fakeFirestore.collection('realtime_menus').add({
+            'ownerId': 'user-2',
+            'participantIds': ['user-1'],
+            'menuSnapshot': null,
+          });
+          // Good doc
+          await fakeFirestore.collection('realtime_menus').add({
+            'ownerId': 'user-2',
+            'ownerDisplayName': 'Bea',
+            'participantIds': ['user-1'],
+            'menuSnapshot': {
+              'title': 'Good one',
+              'categories': <String, dynamic>{},
+            },
+          });
 
-        await service.initialize();
+          await service.initialize();
 
-        expect(service.menus.length, 1);
-        expect(service.menus.first.menuTitle, 'Good one');
-      });
+          expect(service.menus.length, 1);
+          expect(service.menus.first.menuTitle, 'Good one');
+        },
+      );
 
       /// Proves: when there is no signed-in user, _loadMenus exits early
       /// without throwing — the UI should just show empty state, not an
@@ -425,37 +451,45 @@ void main() {
         // safeExecute swallows the throw and returns null (defaultValue).
         expect(result, isNull);
         final snap = await fakeFirestore.collection('menus').get();
-        expect(snap.docs, isEmpty,
-            reason: 'no doc must be written when auth check fails');
+        expect(
+          snap.docs,
+          isEmpty,
+          reason: 'no doc must be written when auth check fails',
+        );
       });
 
       /// Proves: createMenu writes BOTH the Firestore doc AND updates the
       /// in-memory list AND emits state. The atomic-from-listener
       /// invariant: a UI subscriber awaiting createMenu() must see the
       /// new menu in the next state emission.
-      test('writes doc + updates list + emits state in one operation',
-          () async {
-        await service.initialize();
-        expect(service.menus, isEmpty);
+      test(
+        'writes doc + updates list + emits state in one operation',
+        () async {
+          await service.initialize();
+          expect(service.menus, isEmpty);
 
-        final menuId = await service.createMenu(
-          name: 'Weekly plan',
-          description: 'For week 12',
-        );
+          final menuId = await service.createMenu(
+            name: 'Weekly plan',
+            description: 'For week 12',
+          );
 
-        expect(menuId, isNotNull);
-        // Firestore side
-        final snap = await fakeFirestore.collection('menus').doc(menuId).get();
-        expect(snap.exists, isTrue);
-        expect(snap.data()!['menuTitle'], 'Weekly plan');
-        // In-memory side
-        expect(service.menus.length, 1);
-        expect(service.menus.first.id, menuId);
-        // State stream side
-        expect(service.currentState, isA<MenuStateData>());
-        final data = service.currentState as MenuStateData;
-        expect(data.menus.map((m) => m.id), contains(menuId));
-      });
+          expect(menuId, isNotNull);
+          // Firestore side
+          final snap = await fakeFirestore
+              .collection('menus')
+              .doc(menuId)
+              .get();
+          expect(snap.exists, isTrue);
+          expect(snap.data()!['menuTitle'], 'Weekly plan');
+          // In-memory side
+          expect(service.menus.length, 1);
+          expect(service.menus.first.id, menuId);
+          // State stream side
+          expect(service.currentState, isA<MenuStateData>());
+          final data = service.currentState as MenuStateData;
+          expect(data.menus.map((m) => m.id), contains(menuId));
+        },
+      );
 
       /// Proves: empty `initialRecipes` (null map) defaults to empty
       /// menu, not a crash. Off-by-one / null-deref classic.
@@ -481,7 +515,9 @@ void main() {
         final menuId = await service.createMenu(name: 'Original');
         expect(menuId, isNotNull);
 
-        final updated = service.getMenuById(menuId!)!.copyWith(
+        final updated = service
+            .getMenuById(menuId!)!
+            .copyWith(
               allowCollaboration: true,
             );
 
@@ -516,9 +552,11 @@ void main() {
         final ok = await service.updateMenu(unknown);
 
         expect(ok, isTrue);
-        expect(service.menus, isEmpty,
-            reason:
-                'service must not synthesize an entry for an untracked menu');
+        expect(
+          service.menus,
+          isEmpty,
+          reason: 'service must not synthesize an entry for an untracked menu',
+        );
       });
     });
 
@@ -665,8 +703,11 @@ void main() {
       /// subscribed after init must still receive the latest Data on
       /// subscription (BehaviorSubject contract).
       test('late subscriber receives the latest state on subscribe', () async {
-        await _seedOwnedMenu(fakeFirestore,
-            ownerId: 'user-1', title: 'Late check');
+        await _seedOwnedMenu(
+          fakeFirestore,
+          ownerId: 'user-1',
+          title: 'Late check',
+        );
         await service.initialize();
 
         final received = await service.stateStream.first;
@@ -701,16 +742,22 @@ void main() {
           // Touching `collaborative` triggers _initializeCollaborativeOperations.
           // If the override seam works, the fake is wired in and called below.
           // If broken, the ServiceLocator stub throws -> test fails.
-          final result =
-              await overrideService.collaborative.enableMenuCollaboration(
-            menuId: 'm-1',
-            collaboratorIds: const ['u-1'],
-          );
+          final result = await overrideService.collaborative
+              .enableMenuCollaboration(
+                menuId: 'm-1',
+                collaboratorIds: const ['u-1'],
+              );
 
-          expect(result, isTrue,
-              reason: 'fake should return its configured success value');
-          expect(fakeRepo.enableCollaborationCalls.length, 1,
-              reason: 'override path was not used — ctor seam is broken');
+          expect(
+            result,
+            isTrue,
+            reason: 'fake should return its configured success value',
+          );
+          expect(
+            fakeRepo.enableCollaborationCalls.length,
+            1,
+            reason: 'override path was not used — ctor seam is broken',
+          );
           expect(fakeRepo.enableCollaborationCalls.single.menuId, 'm-1');
         } finally {
           overrideService.dispose();
@@ -766,11 +813,16 @@ void main() {
         );
 
         try {
-          expect(overrideService.currentUserId, equals('override-user-123'),
-              reason: 'override path was not used — ctor seam is broken');
           expect(
-              overrideService.currentUserDisplayName, equals('Override User'),
-              reason: 'displayName override path was not used');
+            overrideService.currentUserId,
+            equals('override-user-123'),
+            reason: 'override path was not used — ctor seam is broken',
+          );
+          expect(
+            overrideService.currentUserDisplayName,
+            equals('Override User'),
+            reason: 'displayName override path was not used',
+          );
         } finally {
           overrideService.dispose();
         }
@@ -806,7 +858,7 @@ void main() {
 class _RecordingMenuCollaborationRepository extends Fake
     implements MenuCollaborationRepository {
   final List<({String menuId, List<String> collaboratorIds})>
-      enableCollaborationCalls = [];
+  enableCollaborationCalls = [];
   Object? throwOnEnable;
 
   @override
@@ -815,8 +867,10 @@ class _RecordingMenuCollaborationRepository extends Fake
     required List<String> collaboratorIds,
     Map<String, String>? collaboratorDisplayNames,
   }) async {
-    enableCollaborationCalls
-        .add((menuId: menuId, collaboratorIds: collaboratorIds));
+    enableCollaborationCalls.add((
+      menuId: menuId,
+      collaboratorIds: collaboratorIds,
+    ));
     final err = throwOnEnable;
     if (err != null) {
       throw err;
@@ -826,7 +880,9 @@ class _RecordingMenuCollaborationRepository extends Fake
 
   @override
   void startCollaborationListener(
-      String menuId, Function(SharedMenu) onUpdate) {}
+    String menuId,
+    Function(SharedMenu) onUpdate,
+  ) {}
 
   @override
   void disposeAllListeners() {}
@@ -843,7 +899,8 @@ class _ThrowingMenuCollaborationRepository extends Fake
     Map<String, String>? collaboratorDisplayNames,
   }) async {
     throw StateError(
-        'ServiceLocator path used — ctor override seam is broken (BUT-1142).');
+      'ServiceLocator path used — ctor override seam is broken (BUT-1142).',
+    );
   }
 }
 

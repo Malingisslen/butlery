@@ -132,8 +132,9 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-            maxWidth: AppDimensions.dialogMaxHeightSmall,
-            maxHeight: AppDimensions.dialogMaxHeightMedium),
+          maxWidth: AppDimensions.dialogMaxHeightSmall,
+          maxHeight: AppDimensions.dialogMaxHeightMedium,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
@@ -235,7 +236,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                   hintText: context.l10n.tagWriteTagHint,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(
-                                        AppDimensions.borderRadiusM),
+                                      AppDimensions.borderRadiusM,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: AppDimensions.paddingM,
@@ -341,10 +343,13 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       ),
       backgroundColor: cs.surface.withValues(alpha: AppDimensions.opacityHalf),
       side: BorderSide(
-          color:
-              cs.outlineVariant.withValues(alpha: AppDimensions.opacityHalf)),
-      avatar: Icon(Icons.undo,
-          size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
+        color: cs.outlineVariant.withValues(alpha: AppDimensions.opacityHalf),
+      ),
+      avatar: Icon(
+        Icons.undo,
+        size: AppDimensions.iconSizeS,
+        color: cs.onSurfaceVariant,
+      ),
       onPressed: () => _restoreTag(tag),
       tooltip: context.l10n.tagClickToRestore,
     );

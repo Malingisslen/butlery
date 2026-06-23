@@ -30,7 +30,7 @@ class PresenceTrackingModule {
   final Map<String, DateTime> _presenceTimestamps =
       {}; // userId_recipeId -> timestamp
   final StreamController<Map<String, List<Map<String, dynamic>>>>
-      _presenceController =
+  _presenceController =
       StreamController<Map<String, List<Map<String, dynamic>>>>.broadcast();
 
   // Timer and subscription tracking for proper cleanup (#042)
@@ -42,10 +42,10 @@ class PresenceTrackingModule {
     required List<Recipe> Function() getRecipes,
     required RealtimeSyncService? realtimeSyncService,
     required FirebaseRecipePresenceRepository presenceRepository,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getRecipes = getRecipes,
-        _realtimeSyncService = realtimeSyncService,
-        _presenceRepository = presenceRepository {
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getRecipes = getRecipes,
+       _realtimeSyncService = realtimeSyncService,
+       _presenceRepository = presenceRepository {
     _startPresenceCleanup();
   }
 
@@ -75,7 +75,8 @@ class PresenceTrackingModule {
       }
 
       AppLogger.info(
-          'Showing presence for ${currentUser.displayName} in recipe: $recipeId');
+        'Showing presence for ${currentUser.displayName} in recipe: $recipeId',
+      );
       _notifyPresenceChange(recipeId);
       return true;
     } catch (e) {
@@ -108,7 +109,8 @@ class PresenceTrackingModule {
       }
 
       AppLogger.info(
-          'Hiding presence for ${currentUser.displayName} in recipe: $recipeId');
+        'Hiding presence for ${currentUser.displayName} in recipe: $recipeId',
+      );
       _notifyPresenceChange(recipeId);
       return true;
     } catch (e) {
@@ -140,7 +142,8 @@ class PresenceTrackingModule {
       }
 
       AppLogger.debug(
-          'Updated presence heartbeat for user: $currentUserId in recipe: $recipeId');
+        'Updated presence heartbeat for user: $currentUserId in recipe: $recipeId',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to update presence heartbeat', e);
@@ -173,8 +176,10 @@ class PresenceTrackingModule {
               'userId': userId,
               'displayName': _getUserDisplayName(userId),
               'avatarUrl': _getUserAvatarUrl(userId),
-              'isEditing':
-                  RealtimeRecipeUtils.isUserActivelyViewing(userId, recipeId),
+              'isEditing': RealtimeRecipeUtils.isUserActivelyViewing(
+                userId,
+                recipeId,
+              ),
               'permission': member.toString().split('.').last,
               'lastSeen': lastSeen,
               'joinedAt': lastSeen, // Simplified - would track actual join time
@@ -184,8 +189,9 @@ class PresenceTrackingModule {
       }
 
       // Add active editors from recipe metadata
-      final activeEditors =
-          RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
+      final activeEditors = RealtimeRecipeUtils.getActiveEditorsFromRecipe(
+        recipe,
+      );
       for (final editorId in activeEditors) {
         if (!presence.any((p) => p['userId'] == editorId)) {
           final member = recipe.socialData?.memberPermissions?[editorId];
@@ -204,7 +210,8 @@ class PresenceTrackingModule {
       }
 
       AppLogger.debug(
-          'Recipe presence for $recipeId: ${presence.length} active users');
+        'Recipe presence for $recipeId: ${presence.length} active users',
+      );
       return presence;
     } catch (e) {
       AppLogger.error('Failed to get recipe presence', e);
@@ -214,7 +221,8 @@ class PresenceTrackingModule {
 
   /// Get presence for multiple recipes
   Future<Map<String, List<Map<String, dynamic>>>> getMultipleRecipePresence(
-      List<String> recipeIds) async {
+    List<String> recipeIds,
+  ) async {
     final presenceMap = <String, List<Map<String, dynamic>>>{};
 
     for (final recipeId in recipeIds) {
@@ -254,7 +262,8 @@ class PresenceTrackingModule {
 
   /// Stream of presence updates for multiple recipes
   Stream<Map<String, List<Map<String, dynamic>>>> watchMultipleRecipePresence(
-      List<String> recipeIds) {
+    List<String> recipeIds,
+  ) {
     return _presenceController.stream.map((presenceMap) {
       final filtered = <String, List<Map<String, dynamic>>>{};
       for (final recipeId in recipeIds) {
@@ -273,8 +282,9 @@ class PresenceTrackingModule {
   /// Fixed (#042): Track subscription internally for proper cleanup
   StreamSubscription<void>? startAutomaticPresenceTracking(
     String recipeId, {
-    Duration heartbeatInterval =
-        const Duration(seconds: 60), // Optimized: 50% write reduction (#037)
+    Duration heartbeatInterval = const Duration(
+      seconds: 60,
+    ), // Optimized: 50% write reduction (#037)
   }) {
     // Cancel existing subscription for this recipe if any
     _heartbeatSubscriptions[recipeId]?.cancel();
@@ -297,7 +307,8 @@ class PresenceTrackingModule {
 
   /// Bulk update presence for multiple recipes
   Future<void> updateMultipleRecipePresence(
-      Map<String, bool> recipePresenceMap) async {
+    Map<String, bool> recipePresenceMap,
+  ) async {
     for (final entry in recipePresenceMap.entries) {
       if (entry.value) {
         await showPresence(entry.key);
@@ -336,8 +347,10 @@ class PresenceTrackingModule {
   /// Get presence statistics
   Map<String, dynamic> getPresenceStatistics() {
     final totalActiveRecipes = _recipePresence.keys.length;
-    final totalActiveUsers =
-        _recipePresence.values.expand((users) => users).toSet().length;
+    final totalActiveUsers = _recipePresence.values
+        .expand((users) => users)
+        .toSet()
+        .length;
 
     final presenceByRecipe = <String, int>{};
     for (final entry in _recipePresence.entries) {
@@ -346,8 +359,8 @@ class PresenceTrackingModule {
 
     final mostActiveRecipe = presenceByRecipe.isNotEmpty
         ? presenceByRecipe.entries
-            .reduce((a, b) => a.value > b.value ? a : b)
-            .key
+              .reduce((a, b) => a.value > b.value ? a : b)
+              .key
         : null;
 
     return {
@@ -378,8 +391,10 @@ class PresenceTrackingModule {
     }
 
     // Sort by timestamp (newest first)
-    history.sort((a, b) =>
-        (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+    history.sort(
+      (a, b) =>
+          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime),
+    );
 
     return history;
   }
@@ -431,8 +446,9 @@ class PresenceTrackingModule {
   /// Clean up stale presence data
   void _cleanupStalePresence() {
     final now = clock.now();
-    const staleThreshold =
-        Duration(minutes: 10); // Optimized: less aggressive cleanup (#037)
+    const staleThreshold = Duration(
+      minutes: 10,
+    ); // Optimized: less aggressive cleanup (#037)
     final keysToRemove = <String>[];
 
     for (final entry in _presenceTimestamps.entries) {
@@ -459,7 +475,8 @@ class PresenceTrackingModule {
 
     if (keysToRemove.isNotEmpty) {
       AppLogger.debug(
-          'Cleaned up ${keysToRemove.length} stale presence entries');
+        'Cleaned up ${keysToRemove.length} stale presence entries',
+      );
       _updatePresenceStream();
     }
   }

@@ -32,7 +32,7 @@ void main() {
           'key': 'gluten',
           'triggerProperties': ['gluten'],
           'tags': {
-            'sv': {'contains': 'Innehåller gluten'}
+            'sv': {'contains': 'Innehåller gluten'},
           },
           'isEuAllergen': true,
           'description': {'sv': 'Gluten'},
@@ -43,7 +43,7 @@ void main() {
           'key': 'mjolk',
           'triggerProperties': ['dairy'],
           'tags': {
-            'sv': {'contains': 'Innehåller mjölk'}
+            'sv': {'contains': 'Innehåller mjölk'},
           },
           'isEuAllergen': true,
           'description': {'sv': 'Mjölk'},
@@ -111,7 +111,7 @@ void main() {
       'updatedBy': 'test',
       'categoryOrder': ['allergens', 'dietary'],
       'uiGroupNames': {
-        'sv': {'allergens': 'Allergener'}
+        'sv': {'allergens': 'Allergener'},
       },
     });
   }
@@ -147,13 +147,17 @@ void main() {
         // First: seed and initialize to populate the cache
         await seedFirestoreConfigs(fakeFirestore);
         final warmupService = TagConfigService(
-            firestore: fakeFirestore, initialRetryDelay: Duration.zero);
+          firestore: fakeFirestore,
+          initialRetryDelay: Duration.zero,
+        );
         await warmupService.initialize();
 
         // Now create a new service with an empty Firestore (simulates failure)
         final emptyFirestore = FakeFirebaseFirestore();
         final freshService = TagConfigService(
-            firestore: emptyFirestore, initialRetryDelay: Duration.zero);
+          firestore: emptyFirestore,
+          initialRetryDelay: Duration.zero,
+        );
         await freshService.initialize();
 
         expect(freshService.isInitialized, isTrue);
@@ -204,10 +208,9 @@ void main() {
         final versionBefore = service.config.combinedVersion;
 
         // Change version
-        await fakeFirestore
-            .collection('tag_configs')
-            .doc('allergens')
-            .update({'version': 5});
+        await fakeFirestore.collection('tag_configs').doc('allergens').update({
+          'version': 5,
+        });
         await service.refreshIfNeeded();
 
         expect(service.config.combinedVersion, isNot(versionBefore));
@@ -251,28 +254,31 @@ void main() {
       });
 
       test(
-          'collision resistance — different version sets produce different values',
-          () {
-        final v1 = FirebaseTagConfig.combineVersions(1, 1, 1, 1, 1);
-        final v2 = FirebaseTagConfig.combineVersions(1, 1, 1, 1, 2);
-        final v3 = FirebaseTagConfig.combineVersions(2, 1, 1, 1, 1);
+        'collision resistance — different version sets produce different values',
+        () {
+          final v1 = FirebaseTagConfig.combineVersions(1, 1, 1, 1, 1);
+          final v2 = FirebaseTagConfig.combineVersions(1, 1, 1, 1, 2);
+          final v3 = FirebaseTagConfig.combineVersions(2, 1, 1, 1, 1);
 
-        expect(v1, isNot(v2));
-        expect(v1, isNot(v3));
-        expect(v2, isNot(v3));
-      });
+          expect(v1, isNot(v2));
+          expect(v1, isNot(v3));
+          expect(v2, isNot(v3));
+        },
+      );
 
-      test('persistence — value saved to SharedPreferences matches computation',
-          () async {
-        await seedFirestoreConfigs(fakeFirestore);
-        await service.initialize();
+      test(
+        'persistence — value saved to SharedPreferences matches computation',
+        () async {
+          await seedFirestoreConfigs(fakeFirestore);
+          await service.initialize();
 
-        final computed = service.config.combinedVersion;
-        final prefs = await SharedPreferences.getInstance();
-        final stored = prefs.getInt('tag_config_version');
+          final computed = service.config.combinedVersion;
+          final prefs = await SharedPreferences.getInstance();
+          final stored = prefs.getInt('tag_config_version');
 
-        expect(stored, equals(computed));
-      });
+          expect(stored, equals(computed));
+        },
+      );
     });
 
     group('cache serialization', () {
@@ -286,12 +292,16 @@ void main() {
         // Create new service with empty Firestore — should load from cache
         final emptyFirestore = FakeFirebaseFirestore();
         final freshService = TagConfigService(
-            firestore: emptyFirestore, initialRetryDelay: Duration.zero);
+          firestore: emptyFirestore,
+          initialRetryDelay: Duration.zero,
+        );
         await freshService.initialize();
 
         expect(freshService.config.combinedVersion, originalVersion);
-        expect(freshService.config.allergens.entries.length,
-            originalAllergenCount);
+        expect(
+          freshService.config.allergens.entries.length,
+          originalAllergenCount,
+        );
       });
 
       test('cache JSON is valid', () async {
@@ -304,9 +314,15 @@ void main() {
         expect(cachedJson, isNotNull);
         final data = jsonDecode(cachedJson!) as Map<String, dynamic>;
         expect(
-            data.keys,
-            containsAll(
-                ['allergens', 'dietary', 'cuisines', 'properties', 'display']));
+          data.keys,
+          containsAll([
+            'allergens',
+            'dietary',
+            'cuisines',
+            'properties',
+            'display',
+          ]),
+        );
       });
     });
 
@@ -316,10 +332,9 @@ void main() {
         await service.initialize();
 
         // Update data
-        await fakeFirestore
-            .collection('tag_configs')
-            .doc('allergens')
-            .update({'version': 99});
+        await fakeFirestore.collection('tag_configs').doc('allergens').update({
+          'version': 99,
+        });
 
         await service.forceRefresh();
 
@@ -334,7 +349,9 @@ void main() {
         // Create a service pointing to empty Firestore
         final emptyFirestore = FakeFirebaseFirestore();
         final freshService = TagConfigService(
-            firestore: emptyFirestore, initialRetryDelay: Duration.zero);
+          firestore: emptyFirestore,
+          initialRetryDelay: Duration.zero,
+        );
         await freshService.initialize(); // initializes from cache
 
         // forceRefresh on empty Firestore should throw
@@ -380,7 +397,7 @@ void main() {
               'key': 'gluten',
               'triggerProperties': ['nonexistent_property'],
               'tags': {
-                'sv': {'contains': 'Gluten'}
+                'sv': {'contains': 'Gluten'},
               },
               'isEuAllergen': true,
               'description': {'sv': 'Gluten'},
@@ -434,11 +451,13 @@ void main() {
       test('config throws when not initialized', () {
         expect(
           () => service.config,
-          throwsA(isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('not initialized'),
-          )),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains('not initialized'),
+            ),
+          ),
         );
       });
 

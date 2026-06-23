@@ -24,13 +24,13 @@ void main() {
     const testSourceUrl = 'https://example.com/recipe';
     final testImageUrls = [
       'https://example.com/image1.jpg',
-      'https://example.com/image2.png'
+      'https://example.com/image2.png',
     ];
     final testIngredients = ['500g köttfärs', '1 ägg', 'Ströbröd'];
     final testInstructions = [
       'Blanda köttfärsen',
       'Forma kulor',
-      'Stek i panna'
+      'Stek i panna',
     ];
     final testTags = ['Svenska', 'Klassiker', 'Huvudrätt'];
 
@@ -69,7 +69,9 @@ void main() {
         expect(formState.sourceUrl, isNull);
         expect(formState.ingredients, equals([''])); // Default empty ingredient
         expect(
-            formState.instructions, equals([''])); // Default empty instruction
+          formState.instructions,
+          equals(['']),
+        ); // Default empty instruction
         expect(formState.tags, equals([''])); // Default empty tag
       });
 
@@ -89,9 +91,13 @@ void main() {
         expect(formState.instructionsManager, isNotNull);
         expect(formState.tagsManager, isNotNull);
         expect(
-            formState.ingredientsManager.length, equals(1)); // One empty field
+          formState.ingredientsManager.length,
+          equals(1),
+        ); // One empty field
         expect(
-            formState.instructionsManager.length, equals(1)); // One empty field
+          formState.instructionsManager.length,
+          equals(1),
+        ); // One empty field
         expect(formState.tagsManager.length, equals(1)); // One empty field
       });
 
@@ -118,40 +124,42 @@ void main() {
     });
 
     group('Initialization with Initial Recipe', () {
-      test('should load recipe data correctly when initializing with recipe',
-          () {
-        // Arrange
-        final recipe = RecipeFactory.build(
-          title: testTitle,
-          description: testDescription,
-          mealType: testMealType,
-          portions: testPortions,
-          timeMinutes: testTimeMinutes,
-          rating: testRating,
-          imageUrls: testImageUrls,
-          sourceUrl: testSourceUrl,
-          ingredients: testIngredients,
-          instructions: testInstructions,
-          personalTagIds: testTags,
-        );
+      test(
+        'should load recipe data correctly when initializing with recipe',
+        () {
+          // Arrange
+          final recipe = RecipeFactory.build(
+            title: testTitle,
+            description: testDescription,
+            mealType: testMealType,
+            portions: testPortions,
+            timeMinutes: testTimeMinutes,
+            rating: testRating,
+            imageUrls: testImageUrls,
+            sourceUrl: testSourceUrl,
+            ingredients: testIngredients,
+            instructions: testInstructions,
+            personalTagIds: testTags,
+          );
 
-        // Act
-        formState = RecipeFormState(initialRecipe: recipe);
+          // Act
+          formState = RecipeFormState(initialRecipe: recipe);
 
-        // Assert
-        expect(formState.title, equals(testTitle));
-        expect(formState.description, equals(testDescription));
-        expect(formState.mealType, equals(testMealType));
-        expect(formState.portions, equals(testPortions));
-        expect(formState.timeMinutes, equals(testTimeMinutes));
-        expect(formState.rating, equals(testRating));
-        expect(formState.imageUrls, equals(testImageUrls));
-        expect(formState.sourceUrl, equals(testSourceUrl));
-        // Production code appends a trailing empty string for auto-add UX
-        expect(formState.ingredients, equals([...testIngredients, '']));
-        expect(formState.instructions, equals([...testInstructions, '']));
-        expect(formState.tags, equals([...testTags, '']));
-      });
+          // Assert
+          expect(formState.title, equals(testTitle));
+          expect(formState.description, equals(testDescription));
+          expect(formState.mealType, equals(testMealType));
+          expect(formState.portions, equals(testPortions));
+          expect(formState.timeMinutes, equals(testTimeMinutes));
+          expect(formState.rating, equals(testRating));
+          expect(formState.imageUrls, equals(testImageUrls));
+          expect(formState.sourceUrl, equals(testSourceUrl));
+          // Production code appends a trailing empty string for auto-add UX
+          expect(formState.ingredients, equals([...testIngredients, '']));
+          expect(formState.instructions, equals([...testInstructions, '']));
+          expect(formState.tags, equals([...testTags, '']));
+        },
+      );
 
       test('should set editing mode when initialized with recipe', () {
         // Arrange
@@ -178,10 +186,14 @@ void main() {
         formState = RecipeFormState(initialRecipe: recipe);
 
         // Assert
-        expect(formState.ingredients,
-            equals([''])); // Should default to empty field
-        expect(formState.instructions,
-            equals([''])); // Should default to empty field
+        expect(
+          formState.ingredients,
+          equals(['']),
+        ); // Should default to empty field
+        expect(
+          formState.instructions,
+          equals(['']),
+        ); // Should default to empty field
         expect(formState.tags, equals([''])); // Should default to empty field
       });
 
@@ -213,11 +225,15 @@ void main() {
         formState = RecipeFormState(initialRecipe: recipe, isTemplate: true);
 
         // Assert
-        expect(formState.originalRecipe,
-            isNull); // Should not set original when template
+        expect(
+          formState.originalRecipe,
+          isNull,
+        ); // Should not set original when template
         expect(formState.isEditing, isFalse); // Template mode is not editing
         expect(
-            formState.title, equals(testTitle)); // Data should still be loaded
+          formState.title,
+          equals(testTitle),
+        ); // Data should still be loaded
         expect(formState.description, equals(testDescription));
       });
 
@@ -234,15 +250,23 @@ void main() {
 
         // Assert
         // Production code appends a trailing empty string for auto-add UX
-        expect(formState.ingredientsManager.values,
-            equals([...testIngredients, '']));
-        expect(formState.instructionsManager.values,
-            equals([...testInstructions, '']));
+        expect(
+          formState.ingredientsManager.values,
+          equals([...testIngredients, '']),
+        );
+        expect(
+          formState.instructionsManager.values,
+          equals([...testInstructions, '']),
+        );
         expect(formState.tagsManager.values, equals([...testTags, '']));
-        expect(formState.ingredientsManager.length,
-            equals(testIngredients.length + 1));
-        expect(formState.instructionsManager.length,
-            equals(testInstructions.length + 1));
+        expect(
+          formState.ingredientsManager.length,
+          equals(testIngredients.length + 1),
+        );
+        expect(
+          formState.instructionsManager.length,
+          equals(testInstructions.length + 1),
+        );
         expect(formState.tagsManager.length, equals(testTags.length + 1));
       });
     });
@@ -268,7 +292,9 @@ void main() {
         // Assert
         expect(formState.title, equals(''));
         expect(
-            formState.isValid, isFalse); // Empty title should make form invalid
+          formState.isValid,
+          isFalse,
+        ); // Empty title should make form invalid
       });
 
       test('should handle title with whitespace', () {
@@ -474,8 +500,10 @@ void main() {
         originalUrls.add('https://example.com/image3.jpg'); // Modify original
 
         // Assert
-        expect(formState.imageUrls,
-            equals(testImageUrls)); // Should not be affected
+        expect(
+          formState.imageUrls,
+          equals(testImageUrls),
+        ); // Should not be affected
         expect(formState.imageUrls, isNot(same(originalUrls)));
       });
 
@@ -488,8 +516,10 @@ void main() {
         retrievedUrls.add('https://example.com/image3.jpg'); // Try to modify
 
         // Assert
-        expect(formState.imageUrls,
-            equals(testImageUrls)); // Should not be affected
+        expect(
+          formState.imageUrls,
+          equals(testImageUrls),
+        ); // Should not be affected
       });
 
       test('should add image URL correctly and notify listeners', () {
@@ -518,8 +548,10 @@ void main() {
 
         // Assert - should not exceed maximum
         expect(formState.imageUrls.length, equals(RecipeFormState.maxImages));
-        expect(formState.imageUrls,
-            isNot(contains('https://example.com/extra-image.jpg')));
+        expect(
+          formState.imageUrls,
+          isNot(contains('https://example.com/extra-image.jpg')),
+        );
       });
 
       test('should remove image URL correctly and notify listeners', () {
@@ -546,8 +578,10 @@ void main() {
         formState.removeImageUrl(nonExistentUrl);
 
         // Assert
-        expect(formState.imageUrls,
-            equals(testImageUrls)); // Should remain unchanged
+        expect(
+          formState.imageUrls,
+          equals(testImageUrls),
+        ); // Should remain unchanged
       });
 
       test('should move image to first position correctly', () {
@@ -575,8 +609,10 @@ void main() {
         formState.moveImageToFirst(nonExistentUrl);
 
         // Assert
-        expect(formState.imageUrls,
-            equals(testImageUrls)); // Should remain unchanged
+        expect(
+          formState.imageUrls,
+          equals(testImageUrls),
+        ); // Should remain unchanged
       });
 
       test('should handle moving already-first image', () {
@@ -589,8 +625,10 @@ void main() {
 
         // Assert
         expect(formState.imageUrls.first, equals(firstImage));
-        expect(formState.imageUrls,
-            equals(testImageUrls)); // Order should remain the same
+        expect(
+          formState.imageUrls,
+          equals(testImageUrls),
+        ); // Order should remain the same
       });
     });
 
@@ -666,8 +704,10 @@ void main() {
 
         // Assert
         expect(formState.error, equals(''));
-        expect(formState.hasError,
-            isTrue); // Empty string is still considered an error
+        expect(
+          formState.hasError,
+          isTrue,
+        ); // Empty string is still considered an error
       });
     });
 
@@ -728,12 +768,17 @@ void main() {
         formState.instructionsManager.updateValue(0, 'Some instruction');
 
         // Update the ingredients list directly to simulate multiple ingredients
-        formState.ingredientsManager
-            .updateItems(['', 'Valid ingredient', '   ']);
+        formState.ingredientsManager.updateItems([
+          '',
+          'Valid ingredient',
+          '   ',
+        ]);
 
         // Assert
-        expect(formState.isValid,
-            isTrue); // Should be valid because one ingredient is non-empty
+        expect(
+          formState.isValid,
+          isTrue,
+        ); // Should be valid because one ingredient is non-empty
       });
 
       test('should handle multiple instructions with some empty', () {
@@ -742,12 +787,17 @@ void main() {
         formState.ingredientsManager.updateValue(0, 'Some ingredient');
 
         // Update the instructions list directly to simulate multiple instructions
-        formState.instructionsManager
-            .updateItems(['', 'Valid instruction', '   ']);
+        formState.instructionsManager.updateItems([
+          '',
+          'Valid instruction',
+          '   ',
+        ]);
 
         // Assert
-        expect(formState.isValid,
-            isTrue); // Should be valid because one instruction is non-empty
+        expect(
+          formState.isValid,
+          isTrue,
+        ); // Should be valid because one instruction is non-empty
       });
     });
 
@@ -838,15 +888,22 @@ void main() {
         formState.setTitle(testTitle);
         formState.instructionsManager.updateValue(0, 'Some instruction');
 
-        formState.ingredientsManager.updateItems(
-            ['', 'Valid ingredient', '   ', 'Another ingredient', '']);
+        formState.ingredientsManager.updateItems([
+          '',
+          'Valid ingredient',
+          '   ',
+          'Another ingredient',
+          '',
+        ]);
 
         // Act
         final recipe = formState.createRecipe();
 
         // Assert
-        expect(recipe.ingredients,
-            equals(['Valid ingredient', 'Another ingredient']));
+        expect(
+          recipe.ingredients,
+          equals(['Valid ingredient', 'Another ingredient']),
+        );
         expect(recipe.ingredients, isNot(contains('')));
         expect(recipe.ingredients, isNot(contains('   ')));
       });
@@ -856,15 +913,22 @@ void main() {
         formState.setTitle(testTitle);
         formState.ingredientsManager.updateValue(0, 'Some ingredient');
 
-        formState.instructionsManager.updateItems(
-            ['', 'Valid instruction', '   ', 'Another instruction', '']);
+        formState.instructionsManager.updateItems([
+          '',
+          'Valid instruction',
+          '   ',
+          'Another instruction',
+          '',
+        ]);
 
         // Act
         final recipe = formState.createRecipe();
 
         // Assert
-        expect(recipe.instructions,
-            equals(['Valid instruction', 'Another instruction']));
+        expect(
+          recipe.instructions,
+          equals(['Valid instruction', 'Another instruction']),
+        );
         expect(recipe.instructions, isNot(contains('')));
         expect(recipe.instructions, isNot(contains('   ')));
       });
@@ -875,8 +939,13 @@ void main() {
         formState.ingredientsManager.updateValue(0, 'Some ingredient');
         formState.instructionsManager.updateValue(0, 'Some instruction');
 
-        formState.tagsManager
-            .updateItems(['', 'Valid tag', '   ', 'Another tag', '']);
+        formState.tagsManager.updateItems([
+          '',
+          'Valid tag',
+          '   ',
+          'Another tag',
+          '',
+        ]);
 
         // Act
         final recipe = formState.createRecipe();
@@ -900,7 +969,9 @@ void main() {
         // Assert
         expect(recipe.title, equals(testTitle)); // Should be trimmed
         expect(
-            recipe.description, equals(testDescription)); // Should be trimmed
+          recipe.description,
+          equals(testDescription),
+        ); // Should be trimmed
       });
 
       test('should trim source URL in created recipe', () {
@@ -930,19 +1001,25 @@ void main() {
 
         // Assert
         expect(
-            recipe.createdAt
-                .isAfter(beforeCreation.subtract(Duration(seconds: 1))),
-            isTrue);
+          recipe.createdAt.isAfter(
+            beforeCreation.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            recipe.createdAt.isBefore(afterCreation.add(Duration(seconds: 1))),
-            isTrue);
+          recipe.createdAt.isBefore(afterCreation.add(Duration(seconds: 1))),
+          isTrue,
+        );
         expect(
-            recipe.updatedAt
-                .isAfter(beforeCreation.subtract(Duration(seconds: 1))),
-            isTrue);
+          recipe.updatedAt.isAfter(
+            beforeCreation.subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
         expect(
-            recipe.updatedAt.isBefore(afterCreation.add(Duration(seconds: 1))),
-            isTrue);
+          recipe.updatedAt.isBefore(afterCreation.add(Duration(seconds: 1))),
+          isTrue,
+        );
       });
 
       test('should preserve original created date when editing', () {
@@ -972,8 +1049,11 @@ void main() {
       test('derives index-aligned structured entries from form strings', () {
         formState.setTitle(testTitle);
         formState.instructionsManager.updateValue(0, 'Some instruction');
-        formState.ingredientsManager
-            .updateItems(['3 dl vetemjöl', '2 ägg', 'färsk basilika']);
+        formState.ingredientsManager.updateItems([
+          '3 dl vetemjöl',
+          '2 ägg',
+          'färsk basilika',
+        ]);
 
         final recipe = formState.createRecipe();
         final stored = recipe.core.structuredIngredients;
@@ -990,26 +1070,33 @@ void main() {
         expect(stored[2].unit, isNull);
       });
 
-      test('re-derives after editing so edited lines never carry stale data',
-          () {
-        final originalRecipe = RecipeFactory.build(
-          title: 'Original Title',
-          ingredients: ['3 dl vetemjöl'],
-        ).copyWith(
-          structuredIngredients: const [
-            RecipeIngredient(
-                amount: 3, unit: 'dl', name: 'vetemjöl', raw: '3 dl vetemjöl'),
-          ],
-        );
-        formState = RecipeFormState(initialRecipe: originalRecipe);
-        formState.ingredientsManager.updateValue(0, '4 dl vetemjöl');
+      test(
+        're-derives after editing so edited lines never carry stale data',
+        () {
+          final originalRecipe =
+              RecipeFactory.build(
+                title: 'Original Title',
+                ingredients: ['3 dl vetemjöl'],
+              ).copyWith(
+                structuredIngredients: const [
+                  RecipeIngredient(
+                    amount: 3,
+                    unit: 'dl',
+                    name: 'vetemjöl',
+                    raw: '3 dl vetemjöl',
+                  ),
+                ],
+              );
+          formState = RecipeFormState(initialRecipe: originalRecipe);
+          formState.ingredientsManager.updateValue(0, '4 dl vetemjöl');
 
-        final recipe = formState.createRecipe();
-        final stored = recipe.core.structuredIngredients!;
+          final recipe = formState.createRecipe();
+          final stored = recipe.core.structuredIngredients!;
 
-        expect(stored.single.raw, '4 dl vetemjöl');
-        expect(stored.single.amount, 4);
-      });
+          expect(stored.single.raw, '4 dl vetemjöl');
+          expect(stored.single.amount, 4);
+        },
+      );
 
       test('unchanged lines keep richer import-time entries (raw match)', () {
         // A note can only come from the CRF/LLM import path — regex
@@ -1129,8 +1216,9 @@ void main() {
         formState.addListener(() => listenerCalled = true);
 
         // Get existing controllers from current state
-        final controllers =
-            formState.ingredientsManager.getControllers(formState.ingredients);
+        final controllers = formState.ingredientsManager.getControllers(
+          formState.ingredients,
+        );
 
         // Act - simulate controller text change (which should trigger the callback)
         controllers[0].text = 'New ingredient';
@@ -1141,15 +1229,15 @@ void main() {
         expect(listenerCalled, isTrue);
       });
 
-      test('should update instructions through FormFieldsManager callbacks',
-          () {
+      test('should update instructions through FormFieldsManager callbacks', () {
         // Arrange
         bool listenerCalled = false;
         formState.addListener(() => listenerCalled = true);
 
         // Get existing controllers from current state
-        final controllers = formState.instructionsManager
-            .getControllers(formState.instructions);
+        final controllers = formState.instructionsManager.getControllers(
+          formState.instructions,
+        );
 
         // Act - simulate controller text change (which should trigger the callback)
         controllers[0].text = 'New instruction';
@@ -1174,8 +1262,10 @@ void main() {
 
       test('should handle FormFieldsManager bounds checking', () {
         // Act - try to update beyond bounds
-        formState.ingredientsManager
-            .updateValue(99, 'Out of bounds ingredient');
+        formState.ingredientsManager.updateValue(
+          99,
+          'Out of bounds ingredient',
+        );
 
         // Assert - should not crash and should not affect existing data
         expect(formState.ingredients, equals(['']));
@@ -1190,8 +1280,10 @@ void main() {
         ingredients.add('Modified ingredient');
 
         // Assert
-        expect(formState.ingredients,
-            equals(testIngredients)); // Should not be affected
+        expect(
+          formState.ingredients,
+          equals(testIngredients),
+        ); // Should not be affected
       });
 
       test('should synchronize with FormFieldsManagers on recipe load', () {
@@ -1207,10 +1299,14 @@ void main() {
 
         // Assert
         // Production code appends a trailing empty string for auto-add UX
-        expect(formState.ingredientsManager.values,
-            equals([...testIngredients, '']));
-        expect(formState.instructionsManager.values,
-            equals([...testInstructions, '']));
+        expect(
+          formState.ingredientsManager.values,
+          equals([...testIngredients, '']),
+        );
+        expect(
+          formState.instructionsManager.values,
+          equals([...testInstructions, '']),
+        );
         expect(formState.tagsManager.values, equals([...testTags, '']));
       });
     });
@@ -1224,7 +1320,9 @@ void main() {
         // Act & Assert - should not crash
         expect(() => formState.setTitle(longTitle), returnsNormally);
         expect(
-            () => formState.setDescription(longDescription), returnsNormally);
+          () => formState.setDescription(longDescription),
+          returnsNormally,
+        );
         // Production code truncates title to 100 chars max
         expect(formState.title.length, equals(100));
         expect(formState.title, startsWith('Title '));
@@ -1274,8 +1372,10 @@ void main() {
         formState.tagsManager.updateItems([]);
 
         // Assert
-        expect(formState.ingredients,
-            equals([''])); // Should default to single empty field
+        expect(
+          formState.ingredients,
+          equals(['']),
+        ); // Should default to single empty field
         expect(formState.instructions, equals(['']));
         expect(formState.tags, equals(['']));
       });
@@ -1285,14 +1385,18 @@ void main() {
         formState.setMealType('Invalid Meal Type');
 
         // Assert
-        expect(formState.mealType,
-            equals('Invalid Meal Type')); // Should accept any string
+        expect(
+          formState.mealType,
+          equals('Invalid Meal Type'),
+        ); // Should accept any string
       });
 
       test('should handle large image URL lists within limit', () {
         // Arrange
-        final manyUrls = List.generate(RecipeFormState.maxImages,
-            (i) => 'https://example.com/image$i.jpg');
+        final manyUrls = List.generate(
+          RecipeFormState.maxImages,
+          (i) => 'https://example.com/image$i.jpg',
+        );
 
         // Act
         formState.setImageUrls(manyUrls);

@@ -22,8 +22,9 @@ class ActionButtons {
     bool enablePressAnimation = true,
   }) {
     final effectiveOnPressed = isLoading ? null : onPressed;
-    final effectiveLabel =
-        isLoading ? (loadingText ?? context.l10n.commonLoading) : label;
+    final effectiveLabel = isLoading
+        ? (loadingText ?? context.l10n.commonLoading)
+        : label;
 
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
@@ -41,8 +42,9 @@ class ActionButtons {
             )
           else if (icon != null)
             Padding(
-              padding:
-                  const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+              padding: const EdgeInsetsDirectional.only(
+                end: AppDimensions.spacingS,
+              ),
               child: Icon(icon),
             ),
           Flexible(
@@ -79,8 +81,9 @@ class ActionButtons {
         break;
     }
 
-    final semanticLabel =
-        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
+    final semanticLabel = isLoading
+        ? '$label, ${context.l10n.commonLoading}'
+        : label;
 
     final result = Semantics(
       label: semanticLabel,
@@ -135,8 +138,9 @@ class ActionButtons {
     String? loadingText,
     bool enablePressAnimation = true,
   }) {
-    final semanticLabel =
-        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
+    final semanticLabel = isLoading
+        ? '$label, ${context.l10n.commonLoading}'
+        : label;
 
     final result = Semantics(
       label: semanticLabel,
@@ -189,8 +193,9 @@ class ActionButtons {
     EdgeInsets? margin,
     bool enablePressAnimation = true,
   }) {
-    final semanticLabel =
-        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
+    final semanticLabel = isLoading
+        ? '$label, ${context.l10n.commonLoading}'
+        : label;
 
     final Widget button = Semantics(
       label: semanticLabel,
@@ -206,9 +211,11 @@ class ActionButtons {
                   strokeWidth: 2,
                   color: Theme.of(context).colorScheme.onPrimary,
                 )
-              : Icon(icon,
+              : Icon(
+                  icon,
                   size: AppDimensions.iconSizeXl,
-                  color: Theme.of(context).colorScheme.onPrimary),
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
           label: Text(
             isLoading ? (loadingText ?? context.l10n.commonLoading) : label,
             style: AppTextStyles.labelLarge.copyWith(
@@ -219,8 +226,9 @@ class ActionButtons {
       ),
     );
 
-    final Widget result =
-        margin != null ? Padding(padding: margin, child: button) : button;
+    final Widget result = margin != null
+        ? Padding(padding: margin, child: button)
+        : button;
 
     if (!enablePressAnimation || isLoading) return result;
     return AnimatedPressable(
@@ -290,8 +298,9 @@ class ActionButtons {
     bool enablePressAnimation = true,
   }) {
     final effectiveOnPressed = isLoading ? null : onPressed;
-    final effectiveLabel =
-        isLoading ? (loadingText ?? context.l10n.commonLoading) : label;
+    final effectiveLabel = isLoading
+        ? (loadingText ?? context.l10n.commonLoading)
+        : label;
 
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
@@ -309,8 +318,9 @@ class ActionButtons {
             )
           else if (icon != null)
             Padding(
-              padding:
-                  const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+              padding: const EdgeInsetsDirectional.only(
+                end: AppDimensions.spacingS,
+              ),
               child: Icon(icon),
             ),
           Flexible(
@@ -331,15 +341,17 @@ class ActionButtons {
       child: buttonChild,
     );
 
-    final semanticLabel =
-        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
+    final semanticLabel = isLoading
+        ? '$label, ${context.l10n.commonLoading}'
+        : label;
 
     final result = Semantics(
       label: semanticLabel,
       button: true,
       enabled: effectiveOnPressed != null,
-      child:
-          isExpanded ? SizedBox(width: double.infinity, child: button) : button,
+      child: isExpanded
+          ? SizedBox(width: double.infinity, child: button)
+          : button,
     );
 
     if (!enablePressAnimation || isLoading) return result;
@@ -392,10 +404,10 @@ class FloatingActionButtonWidget extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.enablePressAnimation = true,
-  })  : child = const Icon(Icons.message),
-        backgroundColor = null,
-        foregroundColor = null,
-        semanticLabel = 'Nytt meddelande';
+  }) : child = const Icon(Icons.message),
+       backgroundColor = null,
+       foregroundColor = null,
+       semanticLabel = 'Nytt meddelande';
 
   @override
   Widget build(BuildContext context) {

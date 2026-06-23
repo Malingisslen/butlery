@@ -120,7 +120,7 @@ class MockFactory {
 
   /// Create mock collaborative recipe repository
   static production.MockCollaborativeRecipeRepository
-      createCollaborativeRecipeRepository({
+  createCollaborativeRecipeRepository({
     Map<String, RealtimeRecipe>? realtimeRecipes,
     Map<String, Map<String, Map<String, dynamic>>>? presenceData,
     Map<String, List<LiveEditor>>? participants,
@@ -177,8 +177,9 @@ class MockFactory {
       replyCounts: replyCounts,
     );
     // Setup default behavior for getCommentsStream
-    when(() => mock.getCommentsStream(any()))
-        .thenAnswer((_) => Stream.value(<RecipeComment>[]));
+    when(
+      () => mock.getCommentsStream(any()),
+    ).thenAnswer((_) => Stream.value(<RecipeComment>[]));
     return mock;
   }
 
@@ -400,7 +401,7 @@ class MockFactory {
   /// tests that don't care about connectivity. Offline-path tests override with
   /// `when(() => mock.isConnectedToInternet).thenReturn(false)`.
   static production.MockConnectivityMonitoringService
-      createConnectivityMonitoringService() {
+  createConnectivityMonitoringService() {
     final mock = production.MockConnectivityMonitoringService();
     when(() => mock.isConnectedToInternet).thenReturn(true);
     return mock;
@@ -412,8 +413,11 @@ class MockFactory {
   }
 
   /// Create fake XFile for image picker testing
-  static production.FakeXFile createXFile(String path,
-      {String? name, int? length}) {
+  static production.FakeXFile createXFile(
+    String path, {
+    String? name,
+    int? length,
+  }) {
     return production.FakeXFile(name: name ?? 'test.jpg', path: path);
   }
 
@@ -538,7 +542,7 @@ class MockFactory {
 
   /// Create mock shared content coordinator viewmodel
   static production.MockSharedContentCoordinatorViewModel
-      createSharedContentCoordinatorViewModel({
+  createSharedContentCoordinatorViewModel({
     bool isLoading = false,
     String? error,
     List? sharedContent,
@@ -550,8 +554,9 @@ class MockFactory {
     final mock = production.MockSharedContentCoordinatorViewModel();
 
     // Use non-empty content if hasSharedContent is true
-    final contentList =
-        hasSharedContent ? (sharedContent ?? ['test-content']) : <dynamic>[];
+    final contentList = hasSharedContent
+        ? (sharedContent ?? ['test-content'])
+        : <dynamic>[];
 
     mock.setSharedContentState(
       isLoading: isLoading,
@@ -710,10 +715,12 @@ class MockFactory {
     final mock = production.MockParticipantTracker();
     // Configure with standard mocktail stubbing
     when(() => mock.activeCount).thenReturn(activeCount);
-    when(() => mock.allActivities)
-        .thenReturn(allActivities ?? <ParticipantActivity>[]);
-    when(() => mock.onlineParticipants)
-        .thenReturn(onlineParticipants ?? <String>[]);
+    when(
+      () => mock.allActivities,
+    ).thenReturn(allActivities ?? <ParticipantActivity>[]);
+    when(
+      () => mock.onlineParticipants,
+    ).thenReturn(onlineParticipants ?? <String>[]);
     return mock;
   }
 

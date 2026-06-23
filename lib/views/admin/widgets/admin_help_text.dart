@@ -28,8 +28,9 @@ class AdminHelpText extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ),
         ],

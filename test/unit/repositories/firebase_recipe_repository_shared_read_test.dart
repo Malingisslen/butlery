@@ -51,31 +51,35 @@ void main() {
       await TestServiceLocator.reset();
     });
 
-    test('returns the recipe when the doc exists under the owner collection',
-        () async {
-      // Arrange: seed a recipe owned by ownerId using the real toFirestore()
-      // shape so deserialization is faithful.
-      final seedRecipe = RecipeFactory.build(
-        id: 'r1',
-        title: 'Pannkakor',
-        createdBy: ownerId,
-      );
-      await fakeFirestore
-          .collection('users')
-          .doc(ownerId)
-          .collection('recipes')
-          .doc('r1')
-          .set(seedRecipe.toFirestore());
+    test(
+      'returns the recipe when the doc exists under the owner collection',
+      () async {
+        // Arrange: seed a recipe owned by ownerId using the real toFirestore()
+        // shape so deserialization is faithful.
+        final seedRecipe = RecipeFactory.build(
+          id: 'r1',
+          title: 'Pannkakor',
+          createdBy: ownerId,
+        );
+        await fakeFirestore
+            .collection('users')
+            .doc(ownerId)
+            .collection('recipes')
+            .doc('r1')
+            .set(seedRecipe.toFirestore());
 
-      // Act
-      final result =
-          await repository.readSharedRecipe(ownerId: ownerId, recipeId: 'r1');
+        // Act
+        final result = await repository.readSharedRecipe(
+          ownerId: ownerId,
+          recipeId: 'r1',
+        );
 
-      // Assert
-      expect(result, isNotNull);
-      expect(result!.id, 'r1');
-      expect(result.title, 'Pannkakor');
-    });
+        // Assert
+        expect(result, isNotNull);
+        expect(result!.id, 'r1');
+        expect(result.title, 'Pannkakor');
+      },
+    );
 
     test('returns null when the doc does not exist', () async {
       // Act — no seed, doc is absent

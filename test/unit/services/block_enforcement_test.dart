@@ -47,8 +47,9 @@ void main() {
       // UnifiedFriendsService.initialize() subscribes to authStateChanges;
       // empty stream is enough — no actual auth events are needed for the
       // block-enforcement assertions.
-      when(() => mockAuthRepo.authStateChanges())
-          .thenAnswer((_) => const Stream<User?>.empty());
+      when(
+        () => mockAuthRepo.authStateChanges(),
+      ).thenAnswer((_) => const Stream<User?>.empty());
       mockPermissionService = FakePermissionService();
 
       mockPermissionService.setPermissionState(
@@ -132,182 +133,194 @@ void main() {
     // test exercises the cleanup side and needs either a real Firestore
     // emulator or a relationship-repo injection seam — out of scope for
     // the current unit-lane cleanup. Track as a follow-up.
-    test('blockUser removes existing friendship AND adds to blocked list',
-        skip:
-            'Pending: fake_cloud_firestore + FieldValue.increment incompatibility',
-        () async {
-      await friendsService.initialize();
+    test(
+      'blockUser removes existing friendship AND adds to blocked list',
+      skip:
+          'Pending: fake_cloud_firestore + FieldValue.increment incompatibility',
+      () async {
+        await friendsService.initialize();
 
-      // Set up an existing friendship by adding a friend to the state
-      final friendProfile = UserProfile(
-        uid: 'friend-to-block',
-        displayName: 'Friend To Block',
-        email: 'friend@example.com',
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      );
-      friendsService.addFriendInternal(friendProfile);
+        // Set up an existing friendship by adding a friend to the state
+        final friendProfile = UserProfile(
+          uid: 'friend-to-block',
+          displayName: 'Friend To Block',
+          email: 'friend@example.com',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+        friendsService.addFriendInternal(friendProfile);
 
-      // Pre-create the mutual friendship subdocs at users/<a>/friends/<b>
-      // so FriendRelationshipRepository.removeMutualFriends actually finds
-      // work to do — its transaction is no-op when both sides are missing.
-      await mockFirestoreRepo.firestore
-          .collection('users')
-          .doc('test-user-id')
-          .collection('friends')
-          .doc('friend-to-block')
-          .set({'friendId': 'friend-to-block'});
-      await mockFirestoreRepo.firestore
-          .collection('users')
-          .doc('friend-to-block')
-          .collection('friends')
-          .doc('test-user-id')
-          .set({'friendId': 'test-user-id'});
+        // Pre-create the mutual friendship subdocs at users/<a>/friends/<b>
+        // so FriendRelationshipRepository.removeMutualFriends actually finds
+        // work to do — its transaction is no-op when both sides are missing.
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .collection('friends')
+            .doc('friend-to-block')
+            .set({'friendId': 'friend-to-block'});
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('friend-to-block')
+            .collection('friends')
+            .doc('test-user-id')
+            .set({'friendId': 'test-user-id'});
 
-      // Pre-create the public profile docs (separate collection from /users)
-      // with friendsCount: 1 so the FieldValue.increment(-1) update inside
-      // removeMutualFriends commits without "document not found".
-      await mockFirestoreRepo.firestore
-          .collection('public_profiles')
-          .doc('test-user-id')
-          .set({'displayName': 'Test User', 'friendsCount': 1});
-      await mockFirestoreRepo.firestore
-          .collection('public_profiles')
-          .doc('friend-to-block')
-          .set({'displayName': 'Friend To Block', 'friendsCount': 1});
+        // Pre-create the public profile docs (separate collection from /users)
+        // with friendsCount: 1 so the FieldValue.increment(-1) update inside
+        // removeMutualFriends commits without "document not found".
+        await mockFirestoreRepo.firestore
+            .collection('public_profiles')
+            .doc('test-user-id')
+            .set({'displayName': 'Test User', 'friendsCount': 1});
+        await mockFirestoreRepo.firestore
+            .collection('public_profiles')
+            .doc('friend-to-block')
+            .set({'displayName': 'Friend To Block', 'friendsCount': 1});
 
-      // Verify the friend exists before blocking
-      expect(
-        friendsService.friends.any((f) => f.uid == 'friend-to-block'),
-        isTrue,
-      );
-      expect(friendsService.blockedUsers.contains('friend-to-block'), isFalse);
+        // Verify the friend exists before blocking
+        expect(
+          friendsService.friends.any((f) => f.uid == 'friend-to-block'),
+          isTrue,
+        );
+        expect(
+          friendsService.blockedUsers.contains('friend-to-block'),
+          isFalse,
+        );
 
-      // Block the user
-      final result =
-          await friendsService.management.blockUser('friend-to-block');
+        // Block the user
+        final result = await friendsService.management.blockUser(
+          'friend-to-block',
+        );
 
-      expect(result, isTrue);
+        expect(result, isTrue);
 
-      // Verify friendship was removed
-      expect(
-        friendsService.friends.any((f) => f.uid == 'friend-to-block'),
-        isFalse,
-      );
+        // Verify friendship was removed
+        expect(
+          friendsService.friends.any((f) => f.uid == 'friend-to-block'),
+          isFalse,
+        );
 
-      // Verify user was added to blocked list
-      expect(friendsService.blockedUsers.contains('friend-to-block'), isTrue);
-    });
+        // Verify user was added to blocked list
+        expect(friendsService.blockedUsers.contains('friend-to-block'), isTrue);
+      },
+    );
 
     test(
-        'SocialCommentsManager._filterBlockedUsers removes blocked author comments',
-        () async {
-      await TestServiceLocator.initialize();
+      'SocialCommentsManager._filterBlockedUsers removes blocked author comments',
+      () async {
+        await TestServiceLocator.initialize();
 
-      final productionContainer = DIContainer();
-      prod_locator.ServiceLocator.initialize(productionContainer);
+        final productionContainer = DIContainer();
+        prod_locator.ServiceLocator.initialize(productionContainer);
 
-      // Create a mock friends service with blocked users
-      final mockFriendsService = MockUnifiedFriendsService();
-      TestServiceLocator.registerMock<UnifiedFriendsService>(
-        mockFriendsService,
-      );
+        // Create a mock friends service with blocked users
+        final mockFriendsService = MockUnifiedFriendsService();
+        TestServiceLocator.registerMock<UnifiedFriendsService>(
+          mockFriendsService,
+        );
 
-      // Create a mock recipe service
-      final mockRecipeService = MockUnifiedRecipeService();
-      mockRecipeService.setRecipeState(isInitialized: true);
-      TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
+        // Create a mock recipe service
+        final mockRecipeService = MockUnifiedRecipeService();
+        mockRecipeService.setRecipeState(isInitialized: true);
+        TestServiceLocator.registerMock<UnifiedRecipeService>(
+          mockRecipeService,
+        );
 
-      // Ensure ContentFilterService doesn't interfere
-      TestServiceLocator.registerMock<ContentFilterService>(
-        MockContentFilterService(),
-      );
+        // Ensure ContentFilterService doesn't interfere
+        TestServiceLocator.registerMock<ContentFilterService>(
+          MockContentFilterService(),
+        );
 
-      // Create the comments manager -- it pulls friends service from ServiceLocator
-      final commentsManager = SocialCommentsManager(mockRecipeService);
+        // Create the comments manager -- it pulls friends service from ServiceLocator
+        final commentsManager = SocialCommentsManager(mockRecipeService);
 
-      // Create test comments from various authors
-      final comments = [
-        RecipeComment(
-          id: 'c1',
-          recipeId: 'recipe-1',
-          authorId: 'normal-user',
-          authorDisplayName: 'Normal User',
-          text: 'Great recipe!',
-        ),
-        RecipeComment(
-          id: 'c2',
-          recipeId: 'recipe-1',
-          authorId: 'blocked-user-1',
-          authorDisplayName: 'Blocked User 1',
-          text: 'Spam comment',
-        ),
-        RecipeComment(
-          id: 'c3',
-          recipeId: 'recipe-1',
-          authorId: 'another-user',
-          authorDisplayName: 'Another User',
-          text: 'Nice!',
-        ),
-        RecipeComment(
-          id: 'c4',
-          recipeId: 'recipe-1',
-          authorId: 'blocked-user-2',
-          authorDisplayName: 'Blocked User 2',
-          text: 'Another spam',
-        ),
-      ];
+        // Create test comments from various authors
+        final comments = [
+          RecipeComment(
+            id: 'c1',
+            recipeId: 'recipe-1',
+            authorId: 'normal-user',
+            authorDisplayName: 'Normal User',
+            text: 'Great recipe!',
+          ),
+          RecipeComment(
+            id: 'c2',
+            recipeId: 'recipe-1',
+            authorId: 'blocked-user-1',
+            authorDisplayName: 'Blocked User 1',
+            text: 'Spam comment',
+          ),
+          RecipeComment(
+            id: 'c3',
+            recipeId: 'recipe-1',
+            authorId: 'another-user',
+            authorDisplayName: 'Another User',
+            text: 'Nice!',
+          ),
+          RecipeComment(
+            id: 'c4',
+            recipeId: 'recipe-1',
+            authorId: 'blocked-user-2',
+            authorDisplayName: 'Blocked User 2',
+            text: 'Another spam',
+          ),
+        ];
 
-      // _filterBlockedUsers is private, so we test via the public comments getter.
-      // The manager loads comments through refreshComments which calls _filterBlockedUsers.
-      // We need to stub the blocked users on the friends service.
-      // Since MockUnifiedFriendsService uses Mock, we use when() for blockedUsers.
-      // But the mock already has a blockedUsers getter that returns empty set by default.
-      // We need to configure it properly.
+        // _filterBlockedUsers is private, so we test via the public comments getter.
+        // The manager loads comments through refreshComments which calls _filterBlockedUsers.
+        // We need to stub the blocked users on the friends service.
+        // Since MockUnifiedFriendsService uses Mock, we use when() for blockedUsers.
+        // But the mock already has a blockedUsers getter that returns empty set by default.
+        // We need to configure it properly.
 
-      // The SocialCommentsManager constructor does ServiceLocator.tryGet<UnifiedFriendsService>()
-      // and stores _friendsService. Then _filterBlockedUsers checks _friendsService?.blockedUsers.
-      // MockUnifiedFriendsService extends Mock with ChangeNotifier and its blockedUsers
-      // is not configured by default (returns null from Mock).
-      // Let's use when() to configure it.
+        // The SocialCommentsManager constructor does ServiceLocator.tryGet<UnifiedFriendsService>()
+        // and stores _friendsService. Then _filterBlockedUsers checks _friendsService?.blockedUsers.
+        // MockUnifiedFriendsService extends Mock with ChangeNotifier and its blockedUsers
+        // is not configured by default (returns null from Mock).
+        // Let's use when() to configure it.
 
-      // Actually MockUnifiedFriendsService doesn't override blockedUsers,
-      // so Mock will return a default. Let's verify the filtering manually
-      // by directly testing the filter logic pattern.
+        // Actually MockUnifiedFriendsService doesn't override blockedUsers,
+        // so Mock will return a default. Let's verify the filtering manually
+        // by directly testing the filter logic pattern.
 
-      // The _filterBlockedUsers method is:
-      //   final blocked = _friendsService?.blockedUsers;
-      //   if (blocked == null || blocked.isEmpty) return comments;
-      //   return comments.where((c) => !blocked.contains(c.authorId)).toList();
+        // The _filterBlockedUsers method is:
+        //   final blocked = _friendsService?.blockedUsers;
+        //   if (blocked == null || blocked.isEmpty) return comments;
+        //   return comments.where((c) => !blocked.contains(c.authorId)).toList();
 
-      // We test this by verifying the filtering logic directly:
-      // Simulate what _filterBlockedUsers does
-      final blockedUserIds = {'blocked-user-1', 'blocked-user-2'};
-      final filtered =
-          comments.where((c) => !blockedUserIds.contains(c.authorId)).toList();
+        // We test this by verifying the filtering logic directly:
+        // Simulate what _filterBlockedUsers does
+        final blockedUserIds = {'blocked-user-1', 'blocked-user-2'};
+        final filtered = comments
+            .where((c) => !blockedUserIds.contains(c.authorId))
+            .toList();
 
-      // Verify blocked user comments are removed
-      expect(filtered.length, equals(2));
-      expect(filtered.map((c) => c.authorId), contains('normal-user'));
-      expect(filtered.map((c) => c.authorId), contains('another-user'));
-      expect(
-        filtered.map((c) => c.authorId),
-        isNot(contains('blocked-user-1')),
-      );
-      expect(
-        filtered.map((c) => c.authorId),
-        isNot(contains('blocked-user-2')),
-      );
+        // Verify blocked user comments are removed
+        expect(filtered.length, equals(2));
+        expect(filtered.map((c) => c.authorId), contains('normal-user'));
+        expect(filtered.map((c) => c.authorId), contains('another-user'));
+        expect(
+          filtered.map((c) => c.authorId),
+          isNot(contains('blocked-user-1')),
+        );
+        expect(
+          filtered.map((c) => c.authorId),
+          isNot(contains('blocked-user-2')),
+        );
 
-      // Also verify that with no blocked users, all comments pass through
-      final emptyBlocked = <String>{};
-      final unfiltered = emptyBlocked.isEmpty
-          ? comments
-          : comments.where((c) => !emptyBlocked.contains(c.authorId)).toList();
-      expect(unfiltered.length, equals(4));
+        // Also verify that with no blocked users, all comments pass through
+        final emptyBlocked = <String>{};
+        final unfiltered = emptyBlocked.isEmpty
+            ? comments
+            : comments
+                  .where((c) => !emptyBlocked.contains(c.authorId))
+                  .toList();
+        expect(unfiltered.length, equals(4));
 
-      commentsManager.dispose();
-    });
+        commentsManager.dispose();
+      },
+    );
   });
 }
 

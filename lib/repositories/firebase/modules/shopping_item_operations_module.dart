@@ -22,27 +22,30 @@ class ShoppingItemOperationsModule {
   final String Function() requireCurrentUserId;
   final Future<UnifiedShoppingList?> Function(String id) readList;
   final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity)
-      updateCollaborativeList;
+  updateCollaborativeList;
   final CollectionReference<Map<String, dynamic>> Function(String userId)
-      getUserCollection;
+  getUserCollection;
   final Future<void> Function({
     required String currentUserId,
     required String resourceOwnerId,
     required String resourceType,
     required String resourceId,
-  }) validateOwnership;
+  })
+  validateOwnership;
   final void Function({
     required Map<String, dynamic> data,
     required List<String> requiredFields,
     required String resourceType,
-  }) validateRequiredFields;
+  })
+  validateRequiredFields;
   final void Function({
     required String userId,
     required String resource,
     required String operation,
     required bool granted,
     String? details,
-  }) logPermissionCheck;
+  })
+  logPermissionCheck;
 
   ShoppingItemOperationsModule({
     required this.firestore,
@@ -78,8 +81,10 @@ class ShoppingItemOperationsModule {
     );
 
     if (list.type == ListType.collaborative) {
-      AppLogger.info('Adding item to collaborative list (inline storage)',
-          'ShoppingRepository');
+      AppLogger.info(
+        'Adding item to collaborative list (inline storage)',
+        'ShoppingRepository',
+      );
 
       final updatedItems = [...list.items, item];
       final updatedList = list.copyWith(
@@ -93,8 +98,10 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info('Adding item to personal list (subcollection storage)',
-          'ShoppingRepository');
+      AppLogger.info(
+        'Adding item to personal list (subcollection storage)',
+        'ShoppingRepository',
+      );
 
       // For personal lists, verify ownership
       await validateOwnership(
@@ -122,7 +129,9 @@ class ShoppingItemOperationsModule {
 
   /// Add multiple items to a list using Firebase batch operations
   Future<void> addItemsBatch(
-      String listId, List<UnifiedShoppingItem> items) async {
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
     final uid = requireCurrentUserId();
 
     // Verify list exists and user has access
@@ -149,13 +158,15 @@ class ShoppingItemOperationsModule {
     if (list.type == ListType.collaborative) {
       // Validate collaborative list edit permissions before adding items
       final userPermission = list.memberPermissions[uid];
-      final canEdit = userPermission == SharedListPermission.admin ||
+      final canEdit =
+          userPermission == SharedListPermission.admin ||
           userPermission == SharedListPermission.edit;
 
       if (!canEdit) {
         AppLogger.warning(
-            'PERMISSION DENIED: User ${uid.maskedUserId} cannot edit collaborative list ${list.id} (permission: $userPermission)',
-            'ShoppingRepository');
+          'PERMISSION DENIED: User ${uid.maskedUserId} cannot edit collaborative list ${list.id} (permission: $userPermission)',
+          'ShoppingRepository',
+        );
         throw PermissionDeniedException(
           AppLocale.current.shoppingListEditPermissionDenied,
           resource: 'collaborative_list:${list.id}',
@@ -164,8 +175,9 @@ class ShoppingItemOperationsModule {
       }
 
       AppLogger.info(
-          'Adding ${items.length} items to collaborative list (inline storage) - permission validated',
-          'ShoppingRepository');
+        'Adding ${items.length} items to collaborative list (inline storage) - permission validated',
+        'ShoppingRepository',
+      );
 
       final updatedItems = [...list.items, ...items];
       final updatedList = list.copyWith(
@@ -180,8 +192,9 @@ class ShoppingItemOperationsModule {
     } else {
       // Handle personal lists - items stored in subcollection
       AppLogger.info(
-          'Adding ${items.length} items to personal list (subcollection storage)',
-          'ShoppingRepository');
+        'Adding ${items.length} items to personal list (subcollection storage)',
+        'ShoppingRepository',
+      );
 
       // For personal lists, verify ownership
       await validateOwnership(
@@ -193,9 +206,9 @@ class ShoppingItemOperationsModule {
 
       // Use Firebase batch for atomic operation
       final batch = firestore.batch();
-      final itemsCollection = getUserCollection(uid)
-          .doc(listId)
-          .collection(FirestoreCollections.items);
+      final itemsCollection = getUserCollection(
+        uid,
+      ).doc(listId).collection(FirestoreCollections.items);
 
       for (final item in items) {
         batch.set(itemsCollection.doc(item.id), item.toFirestore());
@@ -278,11 +291,14 @@ class ShoppingItemOperationsModule {
     }
 
     if (list.type == ListType.collaborative) {
-      AppLogger.info('Removing item from collaborative list (inline storage)',
-          'ShoppingRepository');
+      AppLogger.info(
+        'Removing item from collaborative list (inline storage)',
+        'ShoppingRepository',
+      );
 
-      final updatedItems =
-          list.items.where((item) => item.id != itemId).toList();
+      final updatedItems = list.items
+          .where((item) => item.id != itemId)
+          .toList();
       final updatedList = list.copyWith(
         items: updatedItems,
         updatedAt: clock.now().toUtc(),
@@ -294,8 +310,10 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info('Removing item from personal list (subcollection storage)',
-          'ShoppingRepository');
+      AppLogger.info(
+        'Removing item from personal list (subcollection storage)',
+        'ShoppingRepository',
+      );
 
       // For personal lists, verify ownership
       await validateOwnership(
@@ -305,11 +323,9 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
 
-      await getUserCollection(uid)
-          .doc(listId)
-          .collection(FirestoreCollections.items)
-          .doc(itemId)
-          .delete();
+      await getUserCollection(
+        uid,
+      ).doc(listId).collection(FirestoreCollections.items).doc(itemId).delete();
     }
 
     logPermissionCheck(
@@ -339,8 +355,9 @@ class ShoppingItemOperationsModule {
     final itemIdSet = itemIds.toSet();
 
     if (list.type == ListType.collaborative) {
-      final updatedItems =
-          list.items.where((item) => !itemIdSet.contains(item.id)).toList();
+      final updatedItems = list.items
+          .where((item) => !itemIdSet.contains(item.id))
+          .toList();
       final updatedList = list.copyWith(
         items: updatedItems,
         updatedAt: clock.now().toUtc(),
@@ -357,9 +374,9 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
 
-      final itemsCollection = getUserCollection(uid)
-          .doc(listId)
-          .collection(FirestoreCollections.items);
+      final itemsCollection = getUserCollection(
+        uid,
+      ).doc(listId).collection(FirestoreCollections.items);
 
       for (final chunk in itemIds.chunked(kFirestoreBatchSafeChunkSize)) {
         final batch = firestore.batch();

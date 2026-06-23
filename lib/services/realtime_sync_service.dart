@@ -34,15 +34,18 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   RealtimeSyncService({
     required FirestoreRepository firestoreRepository,
     required auth.AuthRepository authRepository,
-  })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository {
+  }) : _firestoreRepository = firestoreRepository,
+       _authRepository = authRepository {
     // Initialize StreamControllers using StreamManagementMixin
-    _connectionController =
-        createBroadcastController<bool>(name: 'connection_state');
-    _errorController =
-        createBroadcastController<SyncError>(name: 'sync_errors');
-    _conflictController =
-        createBroadcastController<ConflictEvent>(name: 'sync_conflicts');
+    _connectionController = createBroadcastController<bool>(
+      name: 'connection_state',
+    );
+    _errorController = createBroadcastController<SyncError>(
+      name: 'sync_errors',
+    );
+    _conflictController = createBroadcastController<ConflictEvent>(
+      name: 'sync_conflicts',
+    );
 
     // Initialize modules
     _initializeModules();
@@ -65,7 +68,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     // production logs (debug is silenced/stripped in release builds, defeating
     // the whole purpose of the eviction telemetry).
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=$serviceName key=$key bound=$_cachedResourcesMaxSize'),
+      'cache_eviction service=$serviceName key=$key bound=$_cachedResourcesMaxSize',
+    ),
   );
   SyncError? _lastError;
   void _initializeModules() {
@@ -174,47 +178,53 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
     final docRef = _parserModule.getResourceDocRef(resourceId);
 
-    return docRef.snapshots().map<T>((snapshot) {
-      if (!snapshot.exists) {
-        throw SyncError(
-          type: SyncErrorType.documentNotFound,
-          message: AppLocale.current.errorResourceNotFound,
-          resourceId: resourceId,
+    return docRef
+        .snapshots()
+        .map<T>((snapshot) {
+          if (!snapshot.exists) {
+            throw SyncError(
+              type: SyncErrorType.documentNotFound,
+              message: AppLocale.current.errorResourceNotFound,
+              resourceId: resourceId,
+            );
+          }
+
+          try {
+            // Parse generic resource from snapshot using module
+            final resource = _parserModule.parseResourceFromSnapshot<T>(
+              snapshot,
+            );
+
+            // Cache resource locally
+            _cachedResources[resourceId] = resource;
+
+            AppLogger.info(
+              '📥 Resurs uppdaterad: $resourceId (${resource.runtimeType})',
+            );
+            return resource;
+          } catch (e) {
+            AppLogger.error('❌ Kunde inte parsa resurs $resourceId', e);
+            throw SyncError(
+              type: SyncErrorType.firestoreError,
+              message: AppLocale.current.syncErrorParsingResource,
+              resourceId: resourceId,
+              originalError: e,
+            );
+          }
+        })
+        .transform(
+          StreamTransformer<T, T>.fromHandlers(
+            handleError: (error, stackTrace, sink) {
+              _handleError(
+                SyncErrorType.firestoreError,
+                AppLocale.current.syncErrorWatchingResource(resourceId),
+                resourceId: resourceId,
+                originalError: error,
+              );
+              sink.addError(error, stackTrace);
+            },
+          ),
         );
-      }
-
-      try {
-        // Parse generic resource from snapshot using module
-        final resource = _parserModule.parseResourceFromSnapshot<T>(snapshot);
-
-        // Cache resource locally
-        _cachedResources[resourceId] = resource;
-
-        AppLogger.info(
-            '📥 Resurs uppdaterad: $resourceId (${resource.runtimeType})');
-        return resource;
-      } catch (e) {
-        AppLogger.error('❌ Kunde inte parsa resurs $resourceId', e);
-        throw SyncError(
-          type: SyncErrorType.firestoreError,
-          message: AppLocale.current.syncErrorParsingResource,
-          resourceId: resourceId,
-          originalError: e,
-        );
-      }
-    }).transform(
-      StreamTransformer<T, T>.fromHandlers(
-        handleError: (error, stackTrace, sink) {
-          _handleError(
-            SyncErrorType.firestoreError,
-            AppLocale.current.syncErrorWatchingResource(resourceId),
-            resourceId: resourceId,
-            originalError: error,
-          );
-          sink.addError(error, stackTrace);
-        },
-      ),
-    );
   }
 
   /// Update a resource with conflict resolution
@@ -229,7 +239,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     }
 
     AppLogger.info(
-        '💾 Uppdaterar resurs: ${resource.id} (${resource.runtimeType})');
+      '💾 Uppdaterar resurs: ${resource.id} (${resource.runtimeType})',
+    );
 
     try {
       // Check permission (from the model, not business logic here)
@@ -245,8 +256,9 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       final docRef = _parserModule.getResourceDocRef(resource.id);
 
       // Check if conflict resolution is needed
-      final shouldResolveConflict =
-          await _conflictModule.shouldResolveConflict(resource);
+      final shouldResolveConflict = await _conflictModule.shouldResolveConflict(
+        resource,
+      );
 
       // Track which version actually reached Firestore so the local cache
       // stays coherent with persisted state. When conflict resolution picks
@@ -273,15 +285,21 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       AppLogger.error('❌ Kunde inte uppdatera resurs ${resource.id}', e);
 
       if (e is SyncError) {
-        _handleError(e.type, e.message,
-            resourceId: resource.id,
-            resourceType: resource.type,
-            originalError: e.originalError);
+        _handleError(
+          e.type,
+          e.message,
+          resourceId: resource.id,
+          resourceType: resource.type,
+          originalError: e.originalError,
+        );
       } else {
-        _handleError(SyncErrorType.firestoreError, 'Uppdateringsfel: $e',
-            resourceId: resource.id,
-            resourceType: resource.type,
-            originalError: e);
+        _handleError(
+          SyncErrorType.firestoreError,
+          'Uppdateringsfel: $e',
+          resourceId: resource.id,
+          resourceType: resource.type,
+          originalError: e,
+        );
       }
       rethrow;
     }
@@ -309,21 +327,26 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.warning(
-          '⚠️ Kunde inte hämta remote-version vid återställning ${local.id}: $e');
+        '⚠️ Kunde inte hämta remote-version vid återställning ${local.id}: $e',
+      );
     }
 
-    final recovered = local.copyWithMetadata(
-      editCount: baseEditCount + 1,
-      lastEditedAt: clock.now(),
-      lastEditedBy: _currentUserId ?? local.lastEditedBy,
-    ) as T;
+    final recovered =
+        local.copyWithMetadata(
+              editCount: baseEditCount + 1,
+              lastEditedAt: clock.now(),
+              lastEditedBy: _currentUserId ?? local.lastEditedBy,
+            )
+            as T;
 
     await updateResource<T>(recovered);
   }
 
   /// Ta bort en realtidsresurs
   Future<void> deleteResource(
-      String resourceId, RealtimeResourceType type) async {
+    String resourceId,
+    RealtimeResourceType type,
+  ) async {
     if (_currentUserId == null) {
       throw SyncError(
         type: SyncErrorType.permissionDenied,
@@ -337,8 +360,9 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
     try {
       // Fetch resource to check permissions
-      final resource =
-          await _parserModule.getLatestResource<RealtimeResource>(resourceId);
+      final resource = await _parserModule.getLatestResource<RealtimeResource>(
+        resourceId,
+      );
 
       if (!resource.canUserDelete(_currentUserId!)) {
         throw SyncError(
@@ -361,13 +385,21 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       AppLogger.error('❌ Kunde inte ta bort resurs $resourceId', e);
 
       if (e is SyncError) {
-        _handleError(e.type, e.message,
-            resourceId: resourceId,
-            resourceType: type,
-            originalError: e.originalError);
+        _handleError(
+          e.type,
+          e.message,
+          resourceId: resourceId,
+          resourceType: type,
+          originalError: e.originalError,
+        );
       } else {
-        _handleError(SyncErrorType.firestoreError, 'Borttagningsfel: $e',
-            resourceId: resourceId, resourceType: type, originalError: e);
+        _handleError(
+          SyncErrorType.firestoreError,
+          'Borttagningsfel: $e',
+          resourceId: resourceId,
+          resourceType: type,
+          originalError: e,
+        );
       }
       rethrow;
     }
@@ -415,7 +447,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// Fetch the latest version of a resource directly from Firestore (bypasses cache).
   /// Use this before read-modify-write operations to avoid stale data.
   Future<T?> fetchLatestResource<T extends RealtimeResource>(
-      String resourceId) async {
+    String resourceId,
+  ) async {
     try {
       return await _parserModule.getLatestResource<T>(resourceId);
     } catch (e) {

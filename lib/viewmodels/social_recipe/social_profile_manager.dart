@@ -25,7 +25,8 @@ class SocialProfileManager extends ChangeNotifier {
       _friends = _friendsService.friends;
 
       AppLogger.info(
-          'SocialProfileManager initialized - User: ${_currentUser?.displayName ?? "Not logged in"}, Friends: ${_friends.length}');
+        'SocialProfileManager initialized - User: ${_currentUser?.displayName ?? "Not logged in"}, Friends: ${_friends.length}',
+      );
       notifyListeners();
     } catch (e) {
       AppLogger.error('Failed to initialize SocialProfileManager: $e');

@@ -91,8 +91,10 @@ class ServiceWidgets {
             color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-                color: cs.error
-                    .withValues(alpha: AppDimensions.opacityMediumLight)),
+              color: cs.error.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
+            ),
           ),
           child: Text(
             error,
@@ -108,15 +110,17 @@ class ServiceWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return ColoredBox(
-          color:
-              cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.onSurface.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
           child: Center(
             child: Container(
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusL),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusL,
+                ),
               ),
               child: LoadingIndicator(
                 size: AppDimensions.iconSizeM,
@@ -137,7 +141,8 @@ class _RecipeServiceConsumer extends StatelessWidget {
     BuildContext context,
     dynamic value,
     Widget? child,
-  ) builder;
+  )
+  builder;
 
   const _RecipeServiceConsumer({required this.builder});
 

@@ -30,12 +30,12 @@ const _kUrlKey = 'url_import_draft_v1';
 const _kTextKey = 'text_import_draft_v1';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('sv'),
-      home: child,
-    );
+  theme: AppTheme.lightTheme,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: child,
+);
 
 void main() {
   setUpAll(() async {
@@ -59,20 +59,26 @@ void main() {
   });
 
   group('URL import draft', () {
-    testWidgets('restores the persisted URL into the field on mount',
-        (tester) async {
-      SharedPreferences.setMockInitialValues(
-          {_kUrlKey: 'https://example.com/recipe'});
+    testWidgets('restores the persisted URL into the field on mount', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        _kUrlKey: 'https://example.com/recipe',
+      });
 
       await tester.pumpWidget(_wrap(const ImportViaUrlView()));
       await tester.pumpAndSettle();
 
-      expect(find.text('https://example.com/recipe'), findsOneWidget,
-          reason: 'a persisted url_import_draft_v1 must repopulate the field');
+      expect(
+        find.text('https://example.com/recipe'),
+        findsOneWidget,
+        reason: 'a persisted url_import_draft_v1 must repopulate the field',
+      );
     });
 
-    testWidgets('persists the URL under the byte-identical key on keystroke',
-        (tester) async {
+    testWidgets('persists the URL under the byte-identical key on keystroke', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
       await tester.pumpWidget(_wrap(const ImportViaUrlView()));
@@ -103,22 +109,29 @@ void main() {
       TestServiceLocator.registerMock<TextImportViewModel>(mockVm);
     });
 
-    testWidgets('restores the persisted text into the field on mount',
-        (tester) async {
-      SharedPreferences.setMockInitialValues(
-          {_kTextKey: 'Pannkakor\n3 ägg, 3 dl mjölk'});
+    testWidgets('restores the persisted text into the field on mount', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        _kTextKey: 'Pannkakor\n3 ägg, 3 dl mjölk',
+      });
 
       await tester.pumpWidget(_wrap(const FranSocialaMedierView()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pannkakor\n3 ägg, 3 dl mjölk'), findsOneWidget,
-          reason: 'a persisted text_import_draft_v1 must repopulate the field');
-      verify(() => mockVm.updateInputText('Pannkakor\n3 ägg, 3 dl mjölk'))
-          .called(1);
+      expect(
+        find.text('Pannkakor\n3 ägg, 3 dl mjölk'),
+        findsOneWidget,
+        reason: 'a persisted text_import_draft_v1 must repopulate the field',
+      );
+      verify(
+        () => mockVm.updateInputText('Pannkakor\n3 ägg, 3 dl mjölk'),
+      ).called(1);
     });
 
-    testWidgets('persists the text under the byte-identical key on keystroke',
-        (tester) async {
+    testWidgets('persists the text under the byte-identical key on keystroke', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
       await tester.pumpWidget(_wrap(const FranSocialaMedierView()));

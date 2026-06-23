@@ -53,17 +53,19 @@ void main() {
       expect(stage, LifecycleStage.activated);
     });
 
-    test('cook on day 8 from signup, only one cook → new_ (past activation)',
-        () {
-      final signupAt = now.subtract(const Duration(days: 10));
-      final stage = classifyLifecycleStage(
-        signupAt: signupAt,
-        lastCookAt: signupAt.add(const Duration(days: 8)),
-        cooksLast14Days: 1,
-        now: now,
-      );
-      expect(stage, LifecycleStage.new_);
-    });
+    test(
+      'cook on day 8 from signup, only one cook → new_ (past activation)',
+      () {
+        final signupAt = now.subtract(const Duration(days: 10));
+        final stage = classifyLifecycleStage(
+          signupAt: signupAt,
+          lastCookAt: signupAt.add(const Duration(days: 8)),
+          cooksLast14Days: 1,
+          now: now,
+        );
+        expect(stage, LifecycleStage.new_);
+      },
+    );
 
     test('3+ cooks last 14 days → habitual', () {
       final stage = classifyLifecycleStage(
@@ -115,29 +117,33 @@ void main() {
       expect(stage, LifecycleStage.churned);
     });
 
-    test('priority: 5 cooks but lastCookAt 40d ago → churned (recency wins)',
-        () {
-      // Spec-mandated: stale-but-prolific user must classify as churned.
-      // The 5 in cooksLast14Days is irrelevant if lastCookAt > 30d.
-      final stage = classifyLifecycleStage(
-        signupAt: now.subtract(const Duration(days: 200)),
-        lastCookAt: now.subtract(const Duration(days: 40)),
-        cooksLast14Days: 5,
-        now: now,
-      );
-      expect(stage, LifecycleStage.churned);
-    });
+    test(
+      'priority: 5 cooks but lastCookAt 40d ago → churned (recency wins)',
+      () {
+        // Spec-mandated: stale-but-prolific user must classify as churned.
+        // The 5 in cooksLast14Days is irrelevant if lastCookAt > 30d.
+        final stage = classifyLifecycleStage(
+          signupAt: now.subtract(const Duration(days: 200)),
+          lastCookAt: now.subtract(const Duration(days: 40)),
+          cooksLast14Days: 5,
+          now: now,
+        );
+        expect(stage, LifecycleStage.churned);
+      },
+    );
 
-    test('priority: 4 cooks but lastCookAt 20d ago → dormant (recency wins)',
-        () {
-      final stage = classifyLifecycleStage(
-        signupAt: now.subtract(const Duration(days: 200)),
-        lastCookAt: now.subtract(const Duration(days: 20)),
-        cooksLast14Days: 4,
-        now: now,
-      );
-      expect(stage, LifecycleStage.dormant);
-    });
+    test(
+      'priority: 4 cooks but lastCookAt 20d ago → dormant (recency wins)',
+      () {
+        final stage = classifyLifecycleStage(
+          signupAt: now.subtract(const Duration(days: 200)),
+          lastCookAt: now.subtract(const Duration(days: 20)),
+          cooksLast14Days: 4,
+          now: now,
+        );
+        expect(stage, LifecycleStage.dormant);
+      },
+    );
 
     test('never cooked, signed up 35d ago → churned', () {
       final stage = classifyLifecycleStage(

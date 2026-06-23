@@ -17,8 +17,9 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
   group('SubstitutionBottomSheet', () {
-    testWidgets('renders 3 suggestion rows with names and ratios',
-        (tester) async {
+    testWidgets('renders 3 suggestion rows with names and ratios', (
+      tester,
+    ) async {
       const suggestions = [
         IngredientSubstitution(
           name: 'yoghurt',
@@ -38,8 +39,11 @@ void main() {
         ),
       );
 
-      expect(find.textContaining('smetana'), findsOneWidget,
-          reason: 'title should surface the source ingredient');
+      expect(
+        find.textContaining('smetana'),
+        findsOneWidget,
+        reason: 'title should surface the source ingredient',
+      );
       expect(find.text('yoghurt'), findsOneWidget);
       expect(find.text('crème fraîche'), findsOneWidget);
       expect(find.text('kvarg'), findsOneWidget);
@@ -52,8 +56,9 @@ void main() {
       expect(find.text('i bakning'), findsOneWidget);
     });
 
-    testWidgets('tap Byt i receptet fires onReplace with that suggestion',
-        (tester) async {
+    testWidgets('tap Byt i receptet fires onReplace with that suggestion', (
+      tester,
+    ) async {
       IngredientSubstitution? captured;
 
       const suggestions = [
@@ -83,8 +88,9 @@ void main() {
       expect(captured!.ratio, 0.5);
     });
 
-    testWidgets('empty suggestions show empty-state copy and disabled CTA',
-        (tester) async {
+    testWidgets('empty suggestions show empty-state copy and disabled CTA', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: const SubstitutionBottomSheet(
@@ -117,15 +123,18 @@ void main() {
         ),
       );
 
-      expect(find.text('Förslag på alternativ är inte tillgängliga offline.'),
-          findsOneWidget);
+      expect(
+        find.text('Förslag på alternativ är inte tillgängliga offline.'),
+        findsOneWidget,
+      );
       // The generic empty copy and the future-feature CTA are suppressed offline.
       expect(find.text('Inga förslag just nu'), findsNothing);
       expect(find.text('Föreslå ett alternativ'), findsNothing);
     });
 
-    testWidgets('online + empty does NOT show the offline message',
-        (tester) async {
+    testWidgets('online + empty does NOT show the offline message', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: const SubstitutionBottomSheet(
@@ -136,8 +145,10 @@ void main() {
         ),
       );
 
-      expect(find.text('Förslag på alternativ är inte tillgängliga offline.'),
-          findsNothing);
+      expect(
+        find.text('Förslag på alternativ är inte tillgängliga offline.'),
+        findsNothing,
+      );
       // Online empty state is unchanged: generic copy + disabled CTA still show.
       expect(find.text('Inga förslag just nu'), findsOneWidget);
       expect(find.text('Föreslå ett alternativ'), findsOneWidget);

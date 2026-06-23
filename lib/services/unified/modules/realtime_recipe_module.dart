@@ -64,7 +64,7 @@ class RealtimeRecipeModule {
 
   /// Active editing sessions by recipe ID
   final Map<String, StreamSubscription<DocumentSnapshot>>
-      _activeEditingSessions = {};
+  _activeEditingSessions = {};
 
   /// Pending real-time edits waiting for sync
   final Map<String, List<Map<String, dynamic>>> _pendingRealtimeEdits = {};
@@ -83,19 +83,21 @@ class RealtimeRecipeModule {
     required void Function(String) setError,
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
-  })  : _firestore = firestore,
-        _getCacheHelper = getCacheHelper,
-        _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _setError = setError,
-        _notifyListeners = notifyListeners,
-        _getRecipe = getRecipe {
+  }) : _firestore = firestore,
+       _getCacheHelper = getCacheHelper,
+       _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _setError = setError,
+       _notifyListeners = notifyListeners,
+       _getRecipe = getRecipe {
     // Initialize notification module with a mock parent interface
-    _notificationModule = RealtimeNotificationModule(_ParentInterface(
-      firestore: _firestore,
-      getCurrentUserId: _getCurrentUserId,
-      getCurrentUserDisplayName: _getCurrentUserDisplayName,
-    ));
+    _notificationModule = RealtimeNotificationModule(
+      _ParentInterface(
+        firestore: _firestore,
+        getCurrentUserId: _getCurrentUserId,
+        getCurrentUserDisplayName: _getCurrentUserDisplayName,
+      ),
+    );
   }
 
   /// Start real-time editing session for a recipe
@@ -134,7 +136,8 @@ class RealtimeRecipeModule {
   /// Get all active editing sessions
   List<String> get activeEditingSessions {
     return RealtimeSessionManager.getActiveEditingSessions(
-        _activeEditingSessions);
+      _activeEditingSessions,
+    );
   }
 
   /// Helper to create RealtimeEditContext for all operations
@@ -151,7 +154,9 @@ class RealtimeRecipeModule {
 
   /// Make a real-time edit to recipe content
   Future<bool> makeRealtimeEdit(
-      String recipeId, Map<String, dynamic> changes) async {
+    String recipeId,
+    Map<String, dynamic> changes,
+  ) async {
     return await RealtimeContentOperations.makeRealtimeEdit(
       context: _createEditContext(),
       recipeId: recipeId,
@@ -170,7 +175,9 @@ class RealtimeRecipeModule {
 
   /// Update recipe description in real-time
   Future<bool> updateDescriptionRealtime(
-      String recipeId, String newDescription) async {
+    String recipeId,
+    String newDescription,
+  ) async {
     return await RealtimeContentOperations.updateDescriptionRealtime(
       context: _createEditContext(),
       recipeId: recipeId,
@@ -180,7 +187,10 @@ class RealtimeRecipeModule {
 
   /// Add ingredient in real-time
   Future<bool> addIngredientRealtime(
-      String recipeId, String ingredient, int? index) async {
+    String recipeId,
+    String ingredient,
+    int? index,
+  ) async {
     return await RealtimeContentOperations.addIngredientRealtime(
       context: _createEditContext(),
       recipeId: recipeId,
@@ -191,7 +201,10 @@ class RealtimeRecipeModule {
 
   /// Update ingredient in real-time
   Future<bool> updateIngredientRealtime(
-      String recipeId, int index, String newIngredient) async {
+    String recipeId,
+    int index,
+    String newIngredient,
+  ) async {
     return await RealtimeContentOperations.updateIngredientRealtime(
       context: _createEditContext(),
       recipeId: recipeId,
@@ -211,7 +224,10 @@ class RealtimeRecipeModule {
 
   /// Add instruction in real-time
   Future<bool> addInstructionRealtime(
-      String recipeId, String instruction, int? index) async {
+    String recipeId,
+    String instruction,
+    int? index,
+  ) async {
     return await RealtimeContentOperations.addInstructionRealtime(
       context: _createEditContext(),
       recipeId: recipeId,
@@ -222,7 +238,10 @@ class RealtimeRecipeModule {
 
   /// Update instruction in real-time
   Future<bool> updateInstructionRealtime(
-      String recipeId, int index, String newInstruction) async {
+    String recipeId,
+    int index,
+    String newInstruction,
+  ) async {
     return await RealtimeContentOperations.updateInstructionRealtime(
       context: _createEditContext(),
       recipeId: recipeId,
@@ -267,7 +286,9 @@ class RealtimeRecipeModule {
 
   /// Apply real-time edit with conflict resolution
   Future<void> _applyRealtimeEditWithConflictResolution(
-      String recipeId, Map<String, dynamic> editMetadata) async {
+    String recipeId,
+    Map<String, dynamic> editMetadata,
+  ) async {
     await RealtimeConflictResolver.applyEditWithConflictResolution(
       firestore: _firestore,
       recipeId: recipeId,
@@ -303,7 +324,10 @@ class RealtimeRecipeModule {
 
   /// Send silent notification about real-time edit
   Future<void> _sendRealtimeEditNotification(
-      String recipeId, String? editedBy, Map<String, dynamic> data) async {
+    String recipeId,
+    String? editedBy,
+    Map<String, dynamic> data,
+  ) async {
     try {
       // Get the full recipe data for collaborative check and member notifications
       final recipe = await _getRecipe(recipeId);

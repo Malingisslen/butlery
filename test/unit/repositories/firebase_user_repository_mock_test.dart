@@ -53,8 +53,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.saveProfile(profile))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.saveProfile(profile),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.saveProfile(profile);
@@ -73,8 +74,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.fetchProfile(userId))
-            .thenAnswer((_) async => expectedProfile);
+        when(
+          () => mockRepository.fetchProfile(userId),
+        ).thenAnswer((_) async => expectedProfile);
 
         // Act
         final profile = await mockRepository.fetchProfile(userId);
@@ -92,8 +94,9 @@ void main() {
         const userId = 'non-existent';
 
         // Stub the repository method
-        when(() => mockRepository.fetchProfile(userId))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockRepository.fetchProfile(userId),
+        ).thenAnswer((_) async => null);
 
         // Act
         final profile = await mockRepository.fetchProfile(userId);
@@ -113,8 +116,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.fetchProfiles(userIds))
-            .thenAnswer((_) async => expectedProfiles);
+        when(
+          () => mockRepository.fetchProfiles(userIds),
+        ).thenAnswer((_) async => expectedProfiles);
 
         // Act
         final profiles = await mockRepository.fetchProfiles(userIds);
@@ -131,8 +135,9 @@ void main() {
         const userId = 'test-user-123';
 
         // Stub the repository method
-        when(() => mockRepository.ensureBaseUserDocument(userId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.ensureBaseUserDocument(userId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.ensureBaseUserDocument(userId);
@@ -150,11 +155,13 @@ void main() {
         const publicRecipeCount = 10;
 
         // Stub the repository method
-        when(() => mockRepository.updateProfileStats(
-              userId,
-              friendsCount: friendsCount,
-              publicRecipeCount: publicRecipeCount,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateProfileStats(
+            userId,
+            friendsCount: friendsCount,
+            publicRecipeCount: publicRecipeCount,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateProfileStats(
@@ -164,11 +171,13 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.updateProfileStats(
-              userId,
-              friendsCount: friendsCount,
-              publicRecipeCount: publicRecipeCount,
-            )).called(1);
+        verify(
+          () => mockRepository.updateProfileStats(
+            userId,
+            friendsCount: friendsCount,
+            publicRecipeCount: publicRecipeCount,
+          ),
+        ).called(1);
       });
 
       test('should update online status', () async {
@@ -177,15 +186,17 @@ void main() {
         const isOnline = true;
 
         // Stub the repository method
-        when(() => mockRepository.updateOnlineStatus(userId, isOnline))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateOnlineStatus(userId, isOnline),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateOnlineStatus(userId, isOnline);
 
         // Assert
-        verify(() => mockRepository.updateOnlineStatus(userId, isOnline))
-            .called(1);
+        verify(
+          () => mockRepository.updateOnlineStatus(userId, isOnline),
+        ).called(1);
       });
     });
 
@@ -199,8 +210,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.searchProfiles(query))
-            .thenAnswer((_) async => expectedResults);
+        when(
+          () => mockRepository.searchProfiles(query),
+        ).thenAnswer((_) async => expectedResults);
 
         // Act
         final results = await mockRepository.searchProfiles(query);
@@ -218,8 +230,9 @@ void main() {
         const query = '';
 
         // Stub the repository method
-        when(() => mockRepository.searchProfiles(query))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockRepository.searchProfiles(query),
+        ).thenAnswer((_) async => []);
 
         // Act
         final results = await mockRepository.searchProfiles(query);
@@ -235,25 +248,30 @@ void main() {
         const availableName = 'Jane Smith';
 
         // Stub the repository methods
-        when(() => mockRepository.isDisplayNameAvailable(takenName))
-            .thenAnswer((_) async => false);
-        when(() => mockRepository.isDisplayNameAvailable(availableName))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockRepository.isDisplayNameAvailable(takenName),
+        ).thenAnswer((_) async => false);
+        when(
+          () => mockRepository.isDisplayNameAvailable(availableName),
+        ).thenAnswer((_) async => true);
 
         // Act
-        final isTakenAvailable =
-            await mockRepository.isDisplayNameAvailable(takenName);
-        final isAvailableAvailable =
-            await mockRepository.isDisplayNameAvailable(availableName);
+        final isTakenAvailable = await mockRepository.isDisplayNameAvailable(
+          takenName,
+        );
+        final isAvailableAvailable = await mockRepository
+            .isDisplayNameAvailable(availableName);
 
         // Assert
         expect(isTakenAvailable, isFalse);
         expect(isAvailableAvailable, isTrue);
 
-        verify(() => mockRepository.isDisplayNameAvailable(takenName))
-            .called(1);
-        verify(() => mockRepository.isDisplayNameAvailable(availableName))
-            .called(1);
+        verify(
+          () => mockRepository.isDisplayNameAvailable(takenName),
+        ).called(1);
+        verify(
+          () => mockRepository.isDisplayNameAvailable(availableName),
+        ).called(1);
       });
     });
 
@@ -264,8 +282,9 @@ void main() {
         const token = 'fcm-token-123';
 
         // Stub the repository method
-        when(() => mockRepository.updateFCMToken(userId, token))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateFCMToken(userId, token),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateFCMToken(userId, token);
@@ -280,15 +299,17 @@ void main() {
         const enabled = true;
 
         // Stub the repository method
-        when(() => mockRepository.updateNotificationSettings(userId, enabled))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateNotificationSettings(userId, enabled),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateNotificationSettings(userId, enabled);
 
         // Assert
-        verify(() => mockRepository.updateNotificationSettings(userId, enabled))
-            .called(1);
+        verify(
+          () => mockRepository.updateNotificationSettings(userId, enabled),
+        ).called(1);
       });
 
       test('should clear FCM token', () async {
@@ -296,8 +317,9 @@ void main() {
         const userId = 'test-user-123';
 
         // Stub the repository method
-        when(() => mockRepository.clearFCMToken(userId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.clearFCMToken(userId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.clearFCMToken(userId);

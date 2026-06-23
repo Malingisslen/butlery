@@ -18,9 +18,11 @@ void main() {
   group('🔥 Firebase Service Hang Diagnostic', () {
     setUpAll(() {
       print(
-          '🔥 ULTRATHINK: Isolating Firebase service hang in CoreModule.configure()');
+        '🔥 ULTRATHINK: Isolating Firebase service hang in CoreModule.configure()',
+      );
       print(
-          '   Testing each service instantiation step to find the hanging component');
+        '   Testing each service instantiation step to find the hanging component',
+      );
     });
 
     setUp(() {
@@ -28,11 +30,13 @@ void main() {
       GetIt.instance.reset();
     });
 
-    testWidgets('🔍 Step 1: SharedPreferences.getInstance()',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Step 1: SharedPreferences.getInstance()', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TESTING: SharedPreferences.getInstance() performance');
       print(
-          '   This is step 1 in CoreModule.configure() - testing for hang...');
+        '   This is step 1 in CoreModule.configure() - testing for hang...',
+      );
 
       final stopwatch = Stopwatch()..start();
 
@@ -42,7 +46,8 @@ void main() {
         );
 
         print(
-            '   ✅ SharedPreferences.getInstance() completed in ${stopwatch.elapsedMilliseconds}ms');
+          '   ✅ SharedPreferences.getInstance() completed in ${stopwatch.elapsedMilliseconds}ms',
+        );
         expect(sharedPreferences, isNotNull);
 
         // Test basic functionality
@@ -54,16 +59,19 @@ void main() {
         print('   ❌ SharedPreferences.getInstance() TIMED OUT: $e');
         print('   🚨 HANG IDENTIFIED: SharedPreferences is hanging!');
         print(
-            '   💡 Possible cause: File system access issues in test environment');
+          '   💡 Possible cause: File system access issues in test environment',
+        );
         rethrow;
       }
     });
 
-    testWidgets('🔍 Step 2: FirebaseAuthRepository() instantiation',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Step 2: FirebaseAuthRepository() instantiation', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TESTING: FirebaseAuthRepository instantiation performance');
       print(
-          '   This is step 2 in CoreModule.configure() - testing for hang...');
+        '   This is step 2 in CoreModule.configure() - testing for hang...',
+      );
 
       final stopwatch = Stopwatch()..start();
 
@@ -74,27 +82,32 @@ void main() {
         );
 
         print(
-            '   ✅ FirebaseAuthRepository instantiated in ${stopwatch.elapsedMilliseconds}ms');
+          '   ✅ FirebaseAuthRepository instantiated in ${stopwatch.elapsedMilliseconds}ms',
+        );
         expect(authRepo, isNotNull);
 
         // Test basic functionality (should not require Firebase connection)
         final currentUser = authRepo.getCurrentUser();
         print(
-            '   ✅ FirebaseAuthRepository basic functionality verified (currentUser: $currentUser)');
+          '   ✅ FirebaseAuthRepository basic functionality verified (currentUser: $currentUser)',
+        );
       } catch (e) {
         print('   ❌ FirebaseAuthRepository instantiation TIMED OUT: $e');
         print('   🚨 HANG IDENTIFIED: FirebaseAuthRepository is hanging!');
         print(
-            '   💡 Possible cause: Firebase Auth initialization waiting for connection');
+          '   💡 Possible cause: Firebase Auth initialization waiting for connection',
+        );
         rethrow;
       }
     });
 
-    testWidgets('🔍 Step 3: FirestoreRepository() instantiation',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Step 3: FirestoreRepository() instantiation', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TESTING: FirestoreRepository instantiation performance');
       print(
-          '   This is step 3 in CoreModule.configure() - testing for hang...');
+        '   This is step 3 in CoreModule.configure() - testing for hang...',
+      );
 
       final stopwatch = Stopwatch()..start();
 
@@ -105,49 +118,57 @@ void main() {
         );
 
         print(
-            '   ✅ FirestoreRepository instantiated in ${stopwatch.elapsedMilliseconds}ms');
+          '   ✅ FirestoreRepository instantiated in ${stopwatch.elapsedMilliseconds}ms',
+        );
         expect(firestoreRepo, isNotNull);
         print('   ✅ FirestoreRepository basic functionality verified');
       } catch (e) {
         print('   ❌ FirestoreRepository instantiation TIMED OUT: $e');
         print('   🚨 HANG IDENTIFIED: FirestoreRepository is hanging!');
         print(
-            '   💡 Possible cause: Firestore initialization waiting for connection');
+          '   💡 Possible cause: Firestore initialization waiting for connection',
+        );
         rethrow;
       }
     });
 
-    testWidgets('🔍 Step 4: FirebaseAnalyticsRepository() instantiation',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Step 4: FirebaseAnalyticsRepository() instantiation', (
+      WidgetTester tester,
+    ) async {
       print(
-          '🧪 TESTING: FirebaseAnalyticsRepository instantiation performance');
+        '🧪 TESTING: FirebaseAnalyticsRepository instantiation performance',
+      );
       print(
-          '   This is step 4 in CoreModule.configure() - testing for hang...');
+        '   This is step 4 in CoreModule.configure() - testing for hang...',
+      );
 
       final stopwatch = Stopwatch()..start();
 
       try {
         // Create FirebaseAnalyticsRepository with timeout
-        final analyticsRepo =
-            await Future.value(FirebaseAnalyticsRepository()).timeout(
-          const Duration(seconds: 10),
-        );
+        final analyticsRepo = await Future.value(FirebaseAnalyticsRepository())
+            .timeout(
+              const Duration(seconds: 10),
+            );
 
         print(
-            '   ✅ FirebaseAnalyticsRepository instantiated in ${stopwatch.elapsedMilliseconds}ms');
+          '   ✅ FirebaseAnalyticsRepository instantiated in ${stopwatch.elapsedMilliseconds}ms',
+        );
         expect(analyticsRepo, isNotNull);
         print('   ✅ FirebaseAnalyticsRepository basic functionality verified');
       } catch (e) {
         print('   ❌ FirebaseAnalyticsRepository instantiation TIMED OUT: $e');
         print('   🚨 HANG IDENTIFIED: FirebaseAnalyticsRepository is hanging!');
         print(
-            '   💡 Possible cause: Firebase Analytics initialization waiting for connection');
+          '   💡 Possible cause: Firebase Analytics initialization waiting for connection',
+        );
         rethrow;
       }
     });
 
-    testWidgets('🔍 Step 5: Service Layer Instantiation',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Step 5: Service Layer Instantiation', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TESTING: Service layer instantiation performance');
       print('   Testing AuthService, PersistenceService, AnalyticsService...');
 
@@ -162,30 +183,35 @@ void main() {
         final sharedPrefs = await SharedPreferences.getInstance();
         container.registerSingleton<SharedPreferences>(sharedPrefs);
         print(
-            '   ✅ SharedPreferences registered in ${stopwatch1.elapsedMilliseconds}ms');
+          '   ✅ SharedPreferences registered in ${stopwatch1.elapsedMilliseconds}ms',
+        );
 
         // Auth Repository
         final stopwatch2 = Stopwatch()..start();
         final authRepo = FirebaseAuthRepository();
         container.registerSingleton<AuthRepository>(authRepo);
         print(
-            '   ✅ AuthRepository registered in ${stopwatch2.elapsedMilliseconds}ms');
+          '   ✅ AuthRepository registered in ${stopwatch2.elapsedMilliseconds}ms',
+        );
 
         // Analytics Repository
         final stopwatch3 = Stopwatch()..start();
         final analyticsRepo = FirebaseAnalyticsRepository();
         container.registerSingleton<AnalyticsRepository>(analyticsRepo);
         print(
-            '   ✅ AnalyticsRepository registered in ${stopwatch3.elapsedMilliseconds}ms');
+          '   ✅ AnalyticsRepository registered in ${stopwatch3.elapsedMilliseconds}ms',
+        );
 
         // Now test service creation
         print('   🔧 Testing service instantiation...');
 
         final stopwatch4 = Stopwatch()..start();
-        final analyticsService =
-            AnalyticsService(repository: container<AnalyticsRepository>());
+        final analyticsService = AnalyticsService(
+          repository: container<AnalyticsRepository>(),
+        );
         print(
-            '   ✅ AnalyticsService created in ${stopwatch4.elapsedMilliseconds}ms');
+          '   ✅ AnalyticsService created in ${stopwatch4.elapsedMilliseconds}ms',
+        );
 
         final stopwatch5 = Stopwatch()..start();
         AuthService(
@@ -193,12 +219,14 @@ void main() {
           analyticsService: analyticsService,
         );
         print(
-            '   ✅ AuthService created in ${stopwatch5.elapsedMilliseconds}ms');
+          '   ✅ AuthService created in ${stopwatch5.elapsedMilliseconds}ms',
+        );
 
         final stopwatch6 = Stopwatch()..start();
         PersistenceService();
         print(
-            '   ✅ PersistenceService created in ${stopwatch6.elapsedMilliseconds}ms');
+          '   ✅ PersistenceService created in ${stopwatch6.elapsedMilliseconds}ms',
+        );
 
         print('   🎉 ALL SERVICES CREATED SUCCESSFULLY');
       } catch (e) {
@@ -208,8 +236,9 @@ void main() {
       }
     });
 
-    testWidgets('🔍 Complete CoreModule.configure() Simulation',
-        (WidgetTester tester) async {
+    testWidgets('🔍 Complete CoreModule.configure() Simulation', (
+      WidgetTester tester,
+    ) async {
       print('🧪 TESTING: Complete CoreModule.configure() simulation');
       print('   Running the exact same sequence as CoreModule.configure()...');
 
@@ -222,26 +251,31 @@ void main() {
         final sharedPreferences = await SharedPreferences.getInstance();
         container.registerSingleton<SharedPreferences>(sharedPreferences);
         print(
-            '   ✅ Step 1 completed in ${step1Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 1 completed in ${step1Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   📦 Step 2: AuthRepository registration...');
         final step2Stopwatch = Stopwatch()..start();
         container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
         print(
-            '   ✅ Step 2 completed in ${step2Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 2 completed in ${step2Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   📦 Step 3: FirestoreRepository registration...');
         final step3Stopwatch = Stopwatch()..start();
         container.registerSingleton<FirestoreRepository>(FirestoreRepository());
         print(
-            '   ✅ Step 3 completed in ${step3Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 3 completed in ${step3Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   📦 Step 4: AnalyticsRepository registration...');
         final step4Stopwatch = Stopwatch()..start();
         container.registerSingleton<AnalyticsRepository>(
-            FirebaseAnalyticsRepository());
+          FirebaseAnalyticsRepository(),
+        );
         print(
-            '   ✅ Step 4 completed in ${step4Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 4 completed in ${step4Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   📦 Step 5: AnalyticsService registration...');
         final step5Stopwatch = Stopwatch()..start();
@@ -249,7 +283,8 @@ void main() {
           AnalyticsService(repository: container<AnalyticsRepository>()),
         );
         print(
-            '   ✅ Step 5 completed in ${step5Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 5 completed in ${step5Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   📦 Step 6: AuthService registration...');
         final step6Stopwatch = Stopwatch()..start();
@@ -260,29 +295,35 @@ void main() {
           ),
         );
         print(
-            '   ✅ Step 6 completed in ${step6Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 6 completed in ${step6Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   📦 Step 7: PersistenceService registration...');
         final step7Stopwatch = Stopwatch()..start();
         container.registerSingleton<PersistenceService>(PersistenceService());
         print(
-            '   ✅ Step 7 completed in ${step7Stopwatch.elapsedMilliseconds}ms');
+          '   ✅ Step 7 completed in ${step7Stopwatch.elapsedMilliseconds}ms',
+        );
 
         print('   🎉 COMPLETE COREMODULE SIMULATION SUCCESSFUL!');
         print('   ⏱️ Total time: ${overallStopwatch.elapsedMilliseconds}ms');
 
         if (overallStopwatch.elapsedMilliseconds < 1000) {
           print(
-              '   ✅ PERFORMANCE GOOD: CoreModule.configure() simulation under 1 second');
+            '   ✅ PERFORMANCE GOOD: CoreModule.configure() simulation under 1 second',
+          );
         } else {
           print(
-              '   ⚠️ PERFORMANCE ISSUE: CoreModule.configure() simulation took >1 second');
+            '   ⚠️ PERFORMANCE ISSUE: CoreModule.configure() simulation took >1 second',
+          );
         }
       } catch (e) {
         print(
-            '   ❌ CoreModule.configure() simulation FAILED after ${overallStopwatch.elapsedMilliseconds}ms');
+          '   ❌ CoreModule.configure() simulation FAILED after ${overallStopwatch.elapsedMilliseconds}ms',
+        );
         print(
-            '   🚨 HANG CONFIRMED: The issue is in CoreModule.configure() sequence');
+          '   🚨 HANG CONFIRMED: The issue is in CoreModule.configure() sequence',
+        );
         print('   💡 This confirms our production bug location');
         rethrow;
       }

@@ -21,8 +21,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier
 
   /// Create RealtimeRecipeViewModel with dependency injection
   RealtimeRecipeViewModel([UnifiedRecipeService? recipeService])
-      : _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+    : _recipeService =
+          recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
 
   @override
   void addListener(VoidCallback listener) {
@@ -115,8 +115,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       ),
       operationName: 'Realtime Recipe Edit',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<bool> addIngredientRealtime(String recipeId, String ingredient) async {
@@ -133,12 +132,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       () => _recipeService.addIngredient(recipeId, ingredient),
       operationName: 'Add Ingredient',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<bool> updateIngredientRealtime(
-      String recipeId, int index, String newIngredient) async {
+    String recipeId,
+    int index,
+    String newIngredient,
+  ) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) ||
         ValidationUtils.isNullOrEmpty(newIngredient)) {
       return false;
@@ -152,8 +153,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       () => _recipeService.updateIngredient(recipeId, index, newIngredient),
       operationName: 'Update Ingredient',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<bool> removeIngredientRealtime(String recipeId, int index) async {
@@ -167,12 +167,13 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       () => _recipeService.removeIngredient(recipeId, index),
       operationName: 'Remove Ingredient',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<bool> addInstructionRealtime(
-      String recipeId, String instruction) async {
+    String recipeId,
+    String instruction,
+  ) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) ||
         ValidationUtils.isNullOrEmpty(instruction)) {
       return false;
@@ -186,12 +187,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       () => _recipeService.addInstruction(recipeId, instruction),
       operationName: 'Add Instruction',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<bool> updateInstructionRealtime(
-      String recipeId, int index, String newInstruction) async {
+    String recipeId,
+    int index,
+    String newInstruction,
+  ) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) ||
         ValidationUtils.isNullOrEmpty(newInstruction)) {
       return false;
@@ -205,8 +208,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       () => _recipeService.updateInstruction(recipeId, index, newInstruction),
       operationName: 'Update Instruction',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<bool> removeInstructionRealtime(String recipeId, int index) async {
@@ -220,8 +222,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       () => _recipeService.removeInstruction(recipeId, index),
       operationName: 'Remove Instruction',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Stream<Recipe> watchRecipe(String recipeId) {
@@ -245,8 +246,9 @@ class RealtimeRecipeViewModel extends ChangeNotifier
 
     return await safeExecute(
           () async {
-            final presence =
-                await _recipeService.realtime.getRecipePresence(recipeId);
+            final presence = await _recipeService.realtime.getRecipePresence(
+              recipeId,
+            );
             return presence
                 .map((p) => (p['userId'] as String?).orEmpty())
                 .toList();
@@ -284,9 +286,12 @@ class RealtimeRecipeViewModel extends ChangeNotifier
     }
 
     // Watch presence updates and extract user IDs
-    return _recipeService.realtime.watchRecipePresence(recipeId).map(
-        (presence) =>
-            presence.map((p) => (p['userId'] as String?).orEmpty()).toList());
+    return _recipeService.realtime
+        .watchRecipePresence(recipeId)
+        .map(
+          (presence) =>
+              presence.map((p) => (p['userId'] as String?).orEmpty()).toList(),
+        );
   }
 
   Future<bool> reconnectRealtime() async {
@@ -303,8 +308,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       },
       operationName: 'Reconnect Realtime',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Future<void> disconnectRealtime() async {
@@ -328,8 +332,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
   }
 
   List<String> getActiveRealtimeRecipeIds() {
-    return getActiveRealtimeSessions()
-        .entries
+    return getActiveRealtimeSessions().entries
         .where((entry) => entry.value)
         .map((entry) => entry.key)
         .toList();
@@ -388,8 +391,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       },
       operationName: 'Resolve Edit Conflict',
       defaultValue: false,
-    ))
-        .orFalse();
+    )).orFalse();
   }
 
   Recipe _applyChangesToRecipe(Recipe recipe, Map<String, dynamic> changes) {

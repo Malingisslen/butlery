@@ -84,7 +84,8 @@ class _EditRecipeViewState extends State<EditRecipeView> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthService>.value(
-            value: ServiceLocator.get<AuthService>()),
+          value: ServiceLocator.get<AuthService>(),
+        ),
         ChangeNotifierProvider<RecipeFormViewModel>(
           create: (_) => RecipeFormViewModel(
             recipeService: ServiceLocator.get(),
@@ -118,8 +119,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   @override
   void initState() {
     super.initState();
-    _currentUserId =
-        ServiceLocator.get<PermissionService>().currentUserId.orEmpty();
+    _currentUserId = ServiceLocator.get<PermissionService>().currentUserId
+        .orEmpty();
   }
 
   @override
@@ -165,8 +166,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     ConflictBanner(filterDocId: widget.recipe.id),
                     Expanded(
                       child: Padding(
-                        padding:
-                            AppDimensions.responsiveContentPadding(context),
+                        padding: AppDimensions.responsiveContentPadding(
+                          context,
+                        ),
                         child: KeyboardSubmittableForm(
                           formKey: _formKey,
                           onSubmit: () {
@@ -193,10 +195,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
               ColoredBox(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface
-                    .withValues(alpha: AppDimensions.opacityVeryDark),
+                color: Theme.of(context).colorScheme.surface.withValues(
+                  alpha: AppDimensions.opacityVeryDark,
+                ),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -229,10 +230,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           return AppBar(
             title: Text(context.l10n.recipeEdit),
             backgroundColor: isCollaborative
-                ? Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: AppDimensions.opacityVeryLight)
+                ? Theme.of(context).colorScheme.primary.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  )
                 : null,
             actions: [
               Selector<RecipeFormViewModel, (bool, bool)>(
@@ -242,16 +242,20 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   if (isAutoSaving) {
                     return const Padding(
                       padding: EdgeInsetsDirectional.only(
-                          end: AppDimensions.spacingL),
+                        end: AppDimensions.spacingL,
+                      ),
                       child: Center(
                         child: LoadingIndicator(
-                            size: AppDimensions.iconSizeS, strokeWidth: 2),
+                          size: AppDimensions.iconSizeS,
+                          strokeWidth: 2,
+                        ),
                       ),
                     );
                   } else if (hasRecentAutoSave) {
                     return Padding(
                       padding: const EdgeInsetsDirectional.only(
-                          end: AppDimensions.spacingL),
+                        end: AppDimensions.spacingL,
+                      ),
                       child: Center(
                         child: Icon(
                           Icons.cloud_done_outlined,
@@ -267,13 +271,14 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               if (isCollaborative)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(
-                      end: AppDimensions.spacingL),
+                    end: AppDimensions.spacingL,
+                  ),
                   child: Center(
                     child:
                         SocialCollaborativeComponents.collaborativeStatusBadge(
-                      text: context.l10n.socialShared,
-                      icon: Icons.people,
-                    ),
+                          text: context.l10n.socialShared,
+                          icon: Icons.people,
+                        ),
                   ),
                 ),
             ],
@@ -354,7 +359,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   }
 
   List<Widget> _buildFormFields(
-      BuildContext context, RecipeFormViewModel viewModel) {
+    BuildContext context,
+    RecipeFormViewModel viewModel,
+  ) {
     return [
       // Meal type dropdown
       Column(
@@ -566,7 +573,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   }
 
   Widget _buildManageTagsButton(
-      BuildContext context, RecipeFormViewModel viewModel) {
+    BuildContext context,
+    RecipeFormViewModel viewModel,
+  ) {
     final hasAutoTags = viewModel.recipe?.tagResult?.tags.isNotEmpty ?? false;
 
     return OutlinedButton.icon(
@@ -590,7 +599,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   }
 
   Future<void> _openTagEditor(
-      BuildContext context, RecipeFormViewModel viewModel) async {
+    BuildContext context,
+    RecipeFormViewModel viewModel,
+  ) async {
     final recipe = viewModel.recipe;
     if (recipe == null) return;
 
@@ -599,7 +610,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       viewModel.setTagOverrides(result);
       if (context.mounted) {
         UtilityComponents.showSuccessSnackbar(
-            context, context.l10n.recipeTagsUpdated);
+          context,
+          context.l10n.recipeTagsUpdated,
+        );
       }
     }
   }
@@ -617,16 +630,20 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
     if (context.mounted) {
       if (savedRecipe != null) {
-        final collaborativeViewModel =
-            context.read<CollaborativeStatusViewModel>();
+        final collaborativeViewModel = context
+            .read<CollaborativeStatusViewModel>();
         collaborativeViewModel.invalidateRecipeStatus(widget.recipe.id);
 
         UtilityComponents.showSuccessSnackbar(
-            context, context.l10n.recipeChangesSaved);
+          context,
+          context.l10n.recipeChangesSaved,
+        );
         Navigator.pop(context, true);
       } else {
         UtilityComponents.showErrorSnackbar(
-            context, viewModel.error ?? context.l10n.recipeCouldNotSaveChanges);
+          context,
+          viewModel.error ?? context.l10n.recipeCouldNotSaveChanges,
+        );
       }
     }
   }

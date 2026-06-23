@@ -81,10 +81,18 @@ class ShoppingListFactory {
         buildItem(name: 'Ägg', amount: 12, unit: 'st', category: 'Mejeri'),
         buildItem(name: 'Köttfärs', amount: 500, unit: 'g', category: 'Kött'),
         buildItem(
-            name: 'Potatis', amount: 2, unit: 'kg', category: 'Grönsaker'),
+          name: 'Potatis',
+          amount: 2,
+          unit: 'kg',
+          category: 'Grönsaker',
+        ),
         buildItem(name: 'Lök', amount: 3, unit: 'st', category: 'Grönsaker'),
         buildItem(
-            name: 'Tomater', amount: 500, unit: 'g', category: 'Grönsaker'),
+          name: 'Tomater',
+          amount: 500,
+          unit: 'g',
+          category: 'Grönsaker',
+        ),
         buildItem(name: 'Ost', amount: 200, unit: 'g', category: 'Mejeri'),
         buildItem(name: 'Smör', amount: 500, unit: 'g', category: 'Mejeri'),
         buildItem(name: 'Kaffe', amount: 500, unit: 'g', category: 'Skafferi'),
@@ -105,7 +113,8 @@ class ShoppingListFactory {
       ownerId: ownerId ?? 'test-user-123',
       ownerDisplayName: ownerDisplayName ?? 'Test Användare',
       type: ListType.collaborative,
-      memberPermissions: memberPermissions ??
+      memberPermissions:
+          memberPermissions ??
           {
             'user-456': SharedListPermission.edit,
             'user-789': SharedListPermission.view,

@@ -227,8 +227,8 @@ class IngredientLineDetector {
       if (_isLikelyIngredient(line)) continue;
 
       // Instruction indicators
-      final isInstruction = line.length >
-              20 || // Longer lines are likely instructions
+      final isInstruction =
+          line.length > 20 || // Longer lines are likely instructions
           RegExp(r'^\d+[\.\)]\s').hasMatch(line) || // Numbered step
           RegExp(r'^(steg|step)\s*\d', caseSensitive: false).hasMatch(line) ||
           _containsVerb(line);

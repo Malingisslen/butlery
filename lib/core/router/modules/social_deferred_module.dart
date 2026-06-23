@@ -38,18 +38,18 @@ class SocialDeferredModule implements DeferredModule {
 
   @override
   Set<String> get handledRoutes => {
-        Routes.profileEdit,
-        Routes.friends,
-        Routes.friendRequests,
-        Routes.shared,
-        Routes.collaborativeShopping,
-        Routes.menuPreview,
-        Routes.createSharedShopping,
-        Routes.friendProfile,
-        Routes.publicProfile,
-        Routes.sharedShoppingLists,
-        Routes.groupDetail,
-      };
+    Routes.profileEdit,
+    Routes.friends,
+    Routes.friendRequests,
+    Routes.shared,
+    Routes.collaborativeShopping,
+    Routes.menuPreview,
+    Routes.createSharedShopping,
+    Routes.friendProfile,
+    Routes.publicProfile,
+    Routes.sharedShoppingLists,
+    Routes.groupDetail,
+  };
 
   @override
   Future<void> load() async {
@@ -72,7 +72,8 @@ class SocialDeferredModule implements DeferredModule {
       ]);
     } on Exception catch (e) {
       throw StateError(
-          'SocialDeferredModule: deferred library load failed: $e');
+        'SocialDeferredModule: deferred library load failed: $e',
+      );
     }
 
     _isLoaded = true;
@@ -97,7 +98,8 @@ class SocialDeferredModule implements DeferredModule {
         final listId = settings.arguments as String?;
         if (listId == null) {
           throw ArgumentError(
-              'List ID argument missing for collaborative shopping');
+            'List ID argument missing for collaborative shopping',
+          );
         }
         return collab_shopping.CollaborativeShoppingView(listId: listId);
 

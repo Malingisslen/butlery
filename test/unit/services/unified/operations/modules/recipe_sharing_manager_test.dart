@@ -26,19 +26,21 @@ void main() {
       registerFallbackValue(NotificationStrategy.recipeShared);
       registerFallbackValue(NotificationAction.viewRecipe);
       registerFallbackValue(<NotificationAction>[]);
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
     });
 
     setUp(() async {
@@ -145,14 +147,16 @@ void main() {
         // captured call list instead of mocktail verify().
         mockParentService.setCollaborativeState(shouldSucceed: true);
 
-        when(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: any(named: 'targetUserIds'),
-              strategy: any(named: 'strategy'),
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              imageUrl: any(named: 'imageUrl'),
-              actions: any(named: 'actions'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: any(named: 'targetUserIds'),
+            strategy: any(named: 'strategy'),
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            imageUrl: any(named: 'imageUrl'),
+            actions: any(named: 'actions'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         final newId = await sharingManager.shareRecipe(
@@ -176,114 +180,124 @@ void main() {
         expect(call['ingredients'], equals(['ingredient 1', 'ingredient 2']));
         expect(call['instructions'], equals(['step 1', 'step 2']));
         expect(call['mealType'], equals('Middag'));
-        expect(call['descriptionCollaborative'],
-            equals('Sharing my recipe with the team'));
+        expect(
+          call['descriptionCollaborative'],
+          equals('Sharing my recipe with the team'),
+        );
         expect(call['allowGuestViewing'], isTrue);
         expect(call['allowMemberInvites'], isFalse);
         expect(call['categoryIds'], equals(['category_1']));
 
-        verify(() => mockNotificationService.sendImmediateNotification(
-              targetUserIds: memberIds,
-              strategy: NotificationStrategy.recipeShared,
-              variables: any(named: 'variables'),
-              additionalData: any(named: 'additionalData'),
-              imageUrl: any(named: 'imageUrl'),
-              actions: any(named: 'actions'),
-            )).called(1);
-      });
-
-      test('rejects share when projected size would exceed cap (BUT-955)',
-          () async {
-        // Stage a collaborative recipe already at cap: 200 distinct members.
-        // Adding the owner (user_123) via the set union puts the projected
-        // size at 201, then the new member pushes it to 202 — over the
-        // Recipe.maxSharesPerRecipe ceiling. Cap-guard must short-circuit
-        // before any createCollaborativeRecipe call.
-        final atCapMembers = <String, ResourcePermission>{
-          for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
-        };
-        final atCapRecipe = Recipe(
-          core: testCollaborativeRecipe.core,
-          type: RecipeType.collaborative,
-          socialData: RecipeSocialData(
-            ownerId: 'user_123',
-            ownerDisplayName: 'Recipe Owner',
-            memberPermissions: atCapMembers,
-            allowGuestViewing: false,
-            allowMemberInvites: true,
+        verify(
+          () => mockNotificationService.sendImmediateNotification(
+            targetUserIds: memberIds,
+            strategy: NotificationStrategy.recipeShared,
+            variables: any(named: 'variables'),
+            additionalData: any(named: 'additionalData'),
+            imageUrl: any(named: 'imageUrl'),
+            actions: any(named: 'actions'),
           ),
-        );
-        mockParentService.setRecipeState(
-          currentUserId: 'user_123',
-          currentUserDisplayName: 'Current User',
-          recipes: [atCapRecipe],
-          isInitialized: true,
-        );
-
-        final newId = await sharingManager.shareRecipe(
-          recipeId: 'collab_1',
-          memberIds: ['new-member-1'],
-          memberDisplayNames: {'new-member-1': 'New Member'},
-        );
-
-        expect(newId, isNull, reason: 'cap-guard must reject');
-        expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
+        ).called(1);
       });
 
       test(
-          'BUT-1056: cap-rejection routes the localized message to onShareError',
-          () async {
-        // Same at-cap staging as above, but this manager wires an onShareError
-        // sink — proving the UI gets the dedicated cap message instead of a
-        // bare null it can't distinguish from "not found" / "save failed".
-        String? surfacedError;
-        final manager = RecipeSharingManager(
-          getCurrentUserId: () => mockParentService.currentUserId,
-          getCurrentUserDisplayName: () =>
-              mockParentService.currentUserDisplayName,
-          getRecipes: () => mockParentService.recipes,
-          createCollaborativeRecipe:
-              mockParentService.createCollaborativeRecipe,
-          createPersonalRecipe: mockParentService.createPersonalRecipe,
-          notificationService: mockNotificationService,
-          onShareError: (msg) => surfacedError = msg,
-        );
+        'rejects share when projected size would exceed cap (BUT-955)',
+        () async {
+          // Stage a collaborative recipe already at cap: 200 distinct members.
+          // Adding the owner (user_123) via the set union puts the projected
+          // size at 201, then the new member pushes it to 202 — over the
+          // Recipe.maxSharesPerRecipe ceiling. Cap-guard must short-circuit
+          // before any createCollaborativeRecipe call.
+          final atCapMembers = <String, ResourcePermission>{
+            for (var i = 0; i < 200; i++)
+              'member_$i': ResourcePermission.viewer,
+          };
+          final atCapRecipe = Recipe(
+            core: testCollaborativeRecipe.core,
+            type: RecipeType.collaborative,
+            socialData: RecipeSocialData(
+              ownerId: 'user_123',
+              ownerDisplayName: 'Recipe Owner',
+              memberPermissions: atCapMembers,
+              allowGuestViewing: false,
+              allowMemberInvites: true,
+            ),
+          );
+          mockParentService.setRecipeState(
+            currentUserId: 'user_123',
+            currentUserDisplayName: 'Current User',
+            recipes: [atCapRecipe],
+            isInitialized: true,
+          );
 
-        final atCapMembers = <String, ResourcePermission>{
-          for (var i = 0; i < 200; i++) 'member_$i': ResourcePermission.viewer,
-        };
-        final atCapRecipe = Recipe(
-          core: testCollaborativeRecipe.core,
-          type: RecipeType.collaborative,
-          socialData: RecipeSocialData(
-            ownerId: 'user_123',
-            ownerDisplayName: 'Recipe Owner',
-            memberPermissions: atCapMembers,
-            allowGuestViewing: false,
-            allowMemberInvites: true,
-          ),
-        );
-        mockParentService.setRecipeState(
-          currentUserId: 'user_123',
-          currentUserDisplayName: 'Current User',
-          recipes: [atCapRecipe],
-          isInitialized: true,
-        );
+          final newId = await sharingManager.shareRecipe(
+            recipeId: 'collab_1',
+            memberIds: ['new-member-1'],
+            memberDisplayNames: {'new-member-1': 'New Member'},
+          );
 
-        final newId = await manager.shareRecipe(
-          recipeId: 'collab_1',
-          memberIds: ['new-member-1'],
-          memberDisplayNames: {'new-member-1': 'New Member'},
-        );
+          expect(newId, isNull, reason: 'cap-guard must reject');
+          expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
+        },
+      );
 
-        expect(newId, isNull, reason: 'cap-guard still rejects');
-        expect(
-          surfacedError,
-          equals(AppLocale.current
-              .errorShareCapReached(Recipe.maxSharesPerRecipe)),
-          reason: 'cap message must reach the UI error sink',
-        );
-      });
+      test(
+        'BUT-1056: cap-rejection routes the localized message to onShareError',
+        () async {
+          // Same at-cap staging as above, but this manager wires an onShareError
+          // sink — proving the UI gets the dedicated cap message instead of a
+          // bare null it can't distinguish from "not found" / "save failed".
+          String? surfacedError;
+          final manager = RecipeSharingManager(
+            getCurrentUserId: () => mockParentService.currentUserId,
+            getCurrentUserDisplayName: () =>
+                mockParentService.currentUserDisplayName,
+            getRecipes: () => mockParentService.recipes,
+            createCollaborativeRecipe:
+                mockParentService.createCollaborativeRecipe,
+            createPersonalRecipe: mockParentService.createPersonalRecipe,
+            notificationService: mockNotificationService,
+            onShareError: (msg) => surfacedError = msg,
+          );
+
+          final atCapMembers = <String, ResourcePermission>{
+            for (var i = 0; i < 200; i++)
+              'member_$i': ResourcePermission.viewer,
+          };
+          final atCapRecipe = Recipe(
+            core: testCollaborativeRecipe.core,
+            type: RecipeType.collaborative,
+            socialData: RecipeSocialData(
+              ownerId: 'user_123',
+              ownerDisplayName: 'Recipe Owner',
+              memberPermissions: atCapMembers,
+              allowGuestViewing: false,
+              allowMemberInvites: true,
+            ),
+          );
+          mockParentService.setRecipeState(
+            currentUserId: 'user_123',
+            currentUserDisplayName: 'Current User',
+            recipes: [atCapRecipe],
+            isInitialized: true,
+          );
+
+          final newId = await manager.shareRecipe(
+            recipeId: 'collab_1',
+            memberIds: ['new-member-1'],
+            memberDisplayNames: {'new-member-1': 'New Member'},
+          );
+
+          expect(newId, isNull, reason: 'cap-guard still rejects');
+          expect(
+            surfacedError,
+            equals(
+              AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe),
+            ),
+            reason: 'cap message must reach the UI error sink',
+          );
+        },
+      );
 
       test('should fail when recipe not found', () async {
         // Act
@@ -334,19 +348,21 @@ void main() {
     group('Recipe Personal Copy (Collaborative to Personal)', () {
       test('should make personal copy of collaborative recipe', () async {
         // Arrange
-        when(() => mockParentService.createPersonalRecipe(
-              title: any(named: 'title'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              imageUrls: any(named: 'imageUrls'),
-            )).thenAnswer((_) async => 'new_personal_id');
+        when(
+          () => mockParentService.createPersonalRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).thenAnswer((_) async => 'new_personal_id');
 
         // Act
         final newId = await sharingManager.makeRecipePersonal(
@@ -357,36 +373,40 @@ void main() {
         // Assert
         expect(newId, equals('new_personal_id'));
 
-        verify(() => mockParentService.createPersonalRecipe(
-              title: 'My Copy',
-              description: 'A collaborative recipe',
-              ingredients: ['shared ingredient'],
-              instructions: ['shared step'],
-              mealType: 'Lunch',
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              imageUrls: any(named: 'imageUrls'),
-            )).called(1);
+        verify(
+          () => mockParentService.createPersonalRecipe(
+            title: 'My Copy',
+            description: 'A collaborative recipe',
+            ingredients: ['shared ingredient'],
+            instructions: ['shared step'],
+            mealType: 'Lunch',
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).called(1);
       });
 
       test('should use default title when not specified', () async {
         // Arrange
-        when(() => mockParentService.createPersonalRecipe(
-              title: any(named: 'title'),
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              imageUrls: any(named: 'imageUrls'),
-            )).thenAnswer((_) async => 'new_personal_id');
+        when(
+          () => mockParentService.createPersonalRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).thenAnswer((_) async => 'new_personal_id');
 
         // Act
         final newId = await sharingManager.makeRecipePersonal(
@@ -395,19 +415,21 @@ void main() {
 
         // Assert
         expect(newId, equals('new_personal_id'));
-        verify(() => mockParentService.createPersonalRecipe(
-              title: 'Shared Team Recipe (Min kopia)',
-              description: any(named: 'description'),
-              ingredients: any(named: 'ingredients'),
-              instructions: any(named: 'instructions'),
-              mealType: any(named: 'mealType'),
-              portions: any(named: 'portions'),
-              timeMinutes: any(named: 'timeMinutes'),
-              rating: any(named: 'rating'),
-              personalTagIds: any(named: 'personalTagIds'),
-              sourceUrl: any(named: 'sourceUrl'),
-              imageUrls: any(named: 'imageUrls'),
-            )).called(1);
+        verify(
+          () => mockParentService.createPersonalRecipe(
+            title: 'Shared Team Recipe (Min kopia)',
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: any(named: 'sourceUrl'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).called(1);
       });
 
       test('should fail when recipe not collaborative', () async {

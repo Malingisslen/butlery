@@ -84,8 +84,9 @@ ImageUploadStatus _statusWith({
   int maxRetryAttempts = 3,
   double? uploadSpeedBytesPerSecond,
 }) {
-  final effectiveFile =
-      (file == null && url == null) ? _f('/placeholder') : file;
+  final effectiveFile = (file == null && url == null)
+      ? _f('/placeholder')
+      : file;
   return ImageUploadStatus(
     state: state,
     progress: progress,
@@ -122,7 +123,10 @@ void main() {
     /// is plumbed correctly through to UploadRetryManager later.
     test('inserts pending status with caller-supplied retry budget', () {
       mgr.addUpload(
-          filePath: '/a.jpg', file: _f('/a.jpg'), maxRetryAttempts: 7);
+        filePath: '/a.jpg',
+        file: _f('/a.jpg'),
+        maxRetryAttempts: 7,
+      );
 
       final status = mgr.getStatus('/a.jpg');
       expect(status, isNotNull);
@@ -177,8 +181,7 @@ void main() {
     /// existing keys are preserved with a warning, not overwritten. Prevents
     /// the retry-race where a late completion event would silently mark an
     /// in-flight upload as done.
-    test(
-        'BUT-1118: existing entry is preserved (no-op + warning), '
+    test('BUT-1118: existing entry is preserved (no-op + warning), '
         'matching addUpload guard contract', () {
       mgr.addUpload(filePath: '/x.jpg', file: _f('/x.jpg'));
       mgr.updateStatus(
@@ -195,13 +198,22 @@ void main() {
       // The previously-uploading entry is preserved — file handle intact,
       // progress unchanged, state still uploading.
       final status = mgr.getStatus('/x.jpg')!;
-      expect(status.state, ImageUploadState.uploading,
-          reason: 'in-flight state must not be clobbered');
-      expect(status.file, isNotNull,
-          reason: 'file handle must survive a duplicate completion event');
+      expect(
+        status.state,
+        ImageUploadState.uploading,
+        reason: 'in-flight state must not be clobbered',
+      );
+      expect(
+        status.file,
+        isNotNull,
+        reason: 'file handle must survive a duplicate completion event',
+      );
       expect(status.progress, 0.4);
-      expect(status.url, isNull,
-          reason: 'late URL must not be applied to the in-flight entry');
+      expect(
+        status.url,
+        isNull,
+        reason: 'late URL must not be applied to the in-flight entry',
+      );
     });
   });
 
@@ -244,24 +256,26 @@ void main() {
     /// an assertion instead of silently dropping the entry out of
     /// `validUploads`/display logic. (Assertions are active in `flutter
     /// test`, so this fires here.)
-    test('BUT-1120: non-displayable status on existing key trips the assert',
-        () {
-      mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
+    test(
+      'BUT-1120: non-displayable status on existing key trips the assert',
+      () {
+        mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
 
-      expect(
-        () => mgr.updateStatus(
-          '/a.jpg',
-          // Built from scratch with neither file nor url — the footgun the
-          // assert is meant to catch. (Construct directly, not via the helper,
-          // because the helper defaults a placeholder file.)
-          const ImageUploadStatus(
-            state: ImageUploadState.failed,
-            error: 'boom',
+        expect(
+          () => mgr.updateStatus(
+            '/a.jpg',
+            // Built from scratch with neither file nor url — the footgun the
+            // assert is meant to catch. (Construct directly, not via the helper,
+            // because the helper defaults a placeholder file.)
+            const ImageUploadStatus(
+              state: ImageUploadState.failed,
+              error: 'boom',
+            ),
           ),
-        ),
-        throwsA(isA<AssertionError>()),
-      );
-    });
+          throwsA(isA<AssertionError>()),
+        );
+      },
+    );
   });
 
   group('updateProgress', () {
@@ -345,15 +359,18 @@ void main() {
       mgr.updateStatus(
         '/uploading.jpg',
         _statusWith(
-            state: ImageUploadState.uploading, file: _f('/uploading.jpg')),
+          state: ImageUploadState.uploading,
+          file: _f('/uploading.jpg'),
+        ),
       );
       mgr.addUpload(filePath: '/failed.jpg', file: _f('/failed.jpg'));
       mgr.updateStatus(
         '/failed.jpg',
         _statusWith(
-            state: ImageUploadState.failed,
-            error: 'x',
-            file: _f('/failed.jpg')),
+          state: ImageUploadState.failed,
+          error: 'x',
+          file: _f('/failed.jpg'),
+        ),
       );
 
       mgr.removeByState(ImageUploadState.failed);
@@ -381,8 +398,10 @@ void main() {
 
       expect(() => view.remove('/a.jpg'), throwsUnsupportedError);
       expect(
-        () => view['/b.jpg'] =
-            _statusWith(state: ImageUploadState.pending, file: _f('/b.jpg')),
+        () => view['/b.jpg'] = _statusWith(
+          state: ImageUploadState.pending,
+          file: _f('/b.jpg'),
+        ),
         throwsUnsupportedError,
       );
     });
@@ -421,7 +440,9 @@ void main() {
       );
 
       mgr.addUpload(
-          filePath: '/failed-retriable.jpg', file: _f('/failed-retriable.jpg'));
+        filePath: '/failed-retriable.jpg',
+        file: _f('/failed-retriable.jpg'),
+      );
       mgr.updateStatus(
         '/failed-retriable.jpg',
         _statusWith(
@@ -434,7 +455,9 @@ void main() {
       );
 
       mgr.addUpload(
-          filePath: '/failed-exhausted.jpg', file: _f('/failed-exhausted.jpg'));
+        filePath: '/failed-exhausted.jpg',
+        file: _f('/failed-exhausted.jpg'),
+      );
       mgr.updateStatus(
         '/failed-exhausted.jpg',
         _statusWith(
@@ -450,7 +473,9 @@ void main() {
       mgr.updateStatus(
         '/cancelled.jpg',
         _statusWith(
-            state: ImageUploadState.cancelled, file: _f('/cancelled.jpg')),
+          state: ImageUploadState.cancelled,
+          file: _f('/cancelled.jpg'),
+        ),
       );
     });
 
@@ -478,13 +503,15 @@ void main() {
     });
 
     /// failedUploads — both retriable and exhausted failures.
-    test('failedUploads contains every failed entry (regardless of canRetry)',
-        () {
-      expect(
-        mgr.failedUploads.keys.toSet(),
-        equals({'/failed-retriable.jpg', '/failed-exhausted.jpg'}),
-      );
-    });
+    test(
+      'failedUploads contains every failed entry (regardless of canRetry)',
+      () {
+        expect(
+          mgr.failedUploads.keys.toSet(),
+          equals({'/failed-retriable.jpg', '/failed-exhausted.jpg'}),
+        );
+      },
+    );
 
     /// retriableFailedUploads filters by both state==failed AND canRetry.
     /// The exhausted entry (retryAttempts == maxRetryAttempts) MUST be
@@ -616,28 +643,29 @@ void main() {
     /// of 1 uploading + 1 retrying reports `uploading: 1`, `retrying: 1`,
     /// `active: 2`.
     test(
-        "BUT-1119: summary['uploading'] is strictly uploading, not uploading+retrying",
-        () {
-      mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
-      mgr.updateStatus(
-        '/a.jpg',
-        _statusWith(state: ImageUploadState.uploading),
-      );
-      mgr.addUpload(filePath: '/b.jpg', file: _f('/b.jpg'));
-      mgr.updateStatus(
-        '/b.jpg',
-        _statusWith(
-          state: ImageUploadState.retrying,
-          error: 'x',
-          retryAttempts: 1,
-        ),
-      );
+      "BUT-1119: summary['uploading'] is strictly uploading, not uploading+retrying",
+      () {
+        mgr.addUpload(filePath: '/a.jpg', file: _f('/a.jpg'));
+        mgr.updateStatus(
+          '/a.jpg',
+          _statusWith(state: ImageUploadState.uploading),
+        );
+        mgr.addUpload(filePath: '/b.jpg', file: _f('/b.jpg'));
+        mgr.updateStatus(
+          '/b.jpg',
+          _statusWith(
+            state: ImageUploadState.retrying,
+            error: 'x',
+            retryAttempts: 1,
+          ),
+        );
 
-      final s = mgr.getSummary();
-      expect(s['uploading'], 1);
-      expect(s['retrying'], 1);
-      expect(s['active'], 2);
-    });
+        final s = mgr.getSummary();
+        expect(s['uploading'], 1);
+        expect(s['retrying'], 1);
+        expect(s['active'], 2);
+      },
+    );
   });
 
   group('getAnalytics', () {

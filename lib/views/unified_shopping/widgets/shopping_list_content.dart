@@ -134,7 +134,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final itemsHash = Object.hashAll(
       items.map((i) => Object.hash(i.id, i.category, i.isCompleted)),
     );
-    final orderChanged = _lastCategoryOrder == null ||
+    final orderChanged =
+        _lastCategoryOrder == null ||
         !listEquals(_lastCategoryOrder, categoryOrder);
 
     if (itemsHash == _lastItemsHash && !orderChanged) return;
@@ -144,8 +145,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     // Compute category progress
     final progress = <String, ({int total, int completed})>{};
     for (final item in viewModel.items) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      final category = item.category.isEmpty
+          ? ShoppingCategory.other
+          : item.category;
       final existing = progress[category] ?? (total: 0, completed: 0);
       progress[category] = (
         total: existing.total + 1,
@@ -158,8 +160,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final pendingMap = <String, List<UnifiedShoppingItem>>{};
     final completedMap = <String, List<UnifiedShoppingItem>>{};
     for (final item in viewModel.items) {
-      final category =
-          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      final category = item.category.isEmpty
+          ? ShoppingCategory.other
+          : item.category;
       if (item.isCompleted) {
         completedMap.putIfAbsent(category, () => []).add(item);
       } else {
@@ -231,8 +234,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     // Determine which categories have no pending items (for empty drop targets)
     final allCategories = viewModel.categoryOrder;
-    final emptyCategories =
-        allCategories.where((cat) => !pendingKeys.contains(cat)).toList();
+    final emptyCategories = allCategories
+        .where((cat) => !pendingKeys.contains(cat))
+        .toList();
 
     // BUT-403: running counter so every item gets a unique `item-toggle-{n}`
     // regardless of category, in visual order (pending first, then completed).
@@ -240,27 +244,31 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     final pendingSections = <Widget>[];
     for (final key in pendingKeys) {
       final items = pendingMap[key]!;
-      pendingSections.add(_buildCategorySection(
-        context,
-        key,
-        items,
-        false,
-        progress: categoryProgress[key],
-        startingIndex: runningIndex,
-      ));
+      pendingSections.add(
+        _buildCategorySection(
+          context,
+          key,
+          items,
+          false,
+          progress: categoryProgress[key],
+          startingIndex: runningIndex,
+        ),
+      );
       runningIndex += items.length;
     }
 
     final completedSections = <Widget>[];
     for (final key in completedKeys) {
       final items = completedMap[key]!;
-      completedSections.add(_buildCategorySection(
-        context,
-        key,
-        items,
-        true,
-        startingIndex: runningIndex,
-      ));
+      completedSections.add(
+        _buildCategorySection(
+          context,
+          key,
+          items,
+          true,
+          startingIndex: runningIndex,
+        ),
+      );
       runningIndex += items.length;
     }
 
@@ -330,7 +338,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           builder: (context, candidateData, rejectedData) {
             return Semantics(
               label: context.l10n.a11yToggleShoppingCategory(
-                  ShoppingCategory.displayName(category)),
+                ShoppingCategory.displayName(category),
+              ),
               button: true,
               toggled: !isCollapsed,
               child: GestureDetector(
@@ -344,19 +353,22 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                   });
                 },
                 child: AnimatedContainer(
-                  duration:
-                      ThemeConstants.durationFast.respectingMotion(context),
+                  duration: ThemeConstants.durationFast.respectingMotion(
+                    context,
+                  ),
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingMd,
                     vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
                   ),
-                  margin:
-                      const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                  margin: const EdgeInsets.only(
+                    bottom: AppDimensions.spacingSm,
+                  ),
                   decoration: BoxDecoration(
                     color: categoryColor,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusS,
+                    ),
                     border: isDragOver
                         ? Border.all(color: cs.onPrimary, width: 2)
                         : null,
@@ -379,8 +391,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                             // both roles. The button-with-toggled state is
                             // more informative for the actionable case.
                             child: Text(
-                              ShoppingCategory.displayName(category)
-                                  .toUpperCase(),
+                              ShoppingCategory.displayName(
+                                category,
+                              ).toUpperCase(),
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: cs.onPrimary,
                                 fontWeight: FontWeight.w700,
@@ -399,7 +412,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                             decoration: BoxDecoration(
                               color: cs.onPrimary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadiusS),
+                                AppDimensions.borderRadiusS,
+                              ),
                             ),
                             child: Text(
                               progress != null
@@ -418,12 +432,14 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                         const SizedBox(height: AppDimensions.spacingXs),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusS),
+                            AppDimensions.borderRadiusS,
+                          ),
                           child: LinearProgressIndicator(
                             value: progress.completed / progress.total,
                             minHeight: 3,
-                            backgroundColor:
-                                cs.onPrimary.withValues(alpha: 0.2),
+                            backgroundColor: cs.onPrimary.withValues(
+                              alpha: 0.2,
+                            ),
                             valueColor: AlwaysStoppedAnimation<Color>(
                               cs.onPrimary.withValues(alpha: 0.7),
                             ),
@@ -468,8 +484,11 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     if (moved && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.l10n
-              .shoppingItemMoved(ShoppingCategory.displayName(category))),
+          content: Text(
+            context.l10n.shoppingItemMoved(
+              ShoppingCategory.displayName(category),
+            ),
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -535,10 +554,12 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
         ),
         if (_showEmptyCategories) ...[
           const SizedBox(height: AppDimensions.spacingSm),
-          ...emptyCategories.map((category) => _buildEmptyCategoryDropTarget(
-                context,
-                category,
-              )),
+          ...emptyCategories.map(
+            (category) => _buildEmptyCategoryDropTarget(
+              context,
+              category,
+            ),
+          ),
         ],
       ],
     );
@@ -549,8 +570,10 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
     String category,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final categoryColor =
-        ShoppingListContentWidget.getCategoryColor(context, category);
+    final categoryColor = ShoppingListContentWidget.getCategoryColor(
+      context,
+      category,
+    );
     final isDragOver = _dragOverCategory == category;
 
     return DragTarget<UnifiedShoppingItem>(
@@ -599,8 +622,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                 height: 16,
                 decoration: BoxDecoration(
                   color: categoryColor,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusS,
+                  ),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
@@ -618,7 +642,9 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   }
 
   Widget _buildCompletedItemsHeader(
-      BuildContext context, UnifiedShoppingViewModel viewModel) {
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return Row(
@@ -641,10 +667,13 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
               ),
               Text(
                 context.l10n.shoppingBoughtOfTotal(
-                    viewModel.boughtItems, viewModel.totalItems),
+                  viewModel.boughtItems,
+                  viewModel.totalItems,
+                ),
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.primary
-                      .withValues(alpha: AppDimensions.opacityVeryDark),
+                  color: cs.primary.withValues(
+                    alpha: AppDimensions.opacityVeryDark,
+                  ),
                 ),
               ),
             ],

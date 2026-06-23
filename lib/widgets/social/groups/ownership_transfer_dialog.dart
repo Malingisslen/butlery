@@ -54,19 +54,21 @@ class OwnershipTransferDialog extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           // List of available members
-          ...availableMembers.map((member) => ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: member.avatarUrl != null
-                      ? NetworkImage(member.avatarUrl!)
-                      : null,
-                  child: member.avatarUrl == null
-                      ? Text(member.displayName[0].toUpperCase())
-                      : null,
-                ),
-                title: Text(member.displayName),
-                subtitle: Text(member.email),
-                onTap: () => Navigator.pop(context, member),
-              )),
+          ...availableMembers.map(
+            (member) => ListTile(
+              leading: CircleAvatar(
+                backgroundImage: member.avatarUrl != null
+                    ? NetworkImage(member.avatarUrl!)
+                    : null,
+                child: member.avatarUrl == null
+                    ? Text(member.displayName[0].toUpperCase())
+                    : null,
+              ),
+              title: Text(member.displayName),
+              subtitle: Text(member.email),
+              onTap: () => Navigator.pop(context, member),
+            ),
+          ),
         ],
       ),
       actions: [

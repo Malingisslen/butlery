@@ -37,11 +37,11 @@ class ChatActionHandler {
     required this.conversationId,
     required this.context,
     this.onReplyToMessage,
-  })  : _messagingService = ServiceLocator.get<MessagingService>(),
-        _mediaService = MessagingMediaService(
-          messagingService: ServiceLocator.get(),
-          authRepository: ServiceLocator.get(),
-        );
+  }) : _messagingService = ServiceLocator.get<MessagingService>(),
+       _mediaService = MessagingMediaService(
+         messagingService: ServiceLocator.get(),
+         authRepository: ServiceLocator.get(),
+       );
 
   /// Handle menu actions from chat app bar
   Future<void> handleMenuAction(String action) async {
@@ -89,12 +89,15 @@ class ChatActionHandler {
   }
 
   /// Handle sending new messages
-  Future<void> handleSendMessage(String content,
-      {MessageType type = MessageType.text}) async {
+  Future<void> handleSendMessage(
+    String content, {
+    MessageType type = MessageType.text,
+  }) async {
     try {
       if (content.trim().isEmpty) {
         AppLogger.warning(
-            '📤 [ChatActionHandler] Empty content, aborting send');
+          '📤 [ChatActionHandler] Empty content, aborting send',
+        );
         return;
       }
 
@@ -102,18 +105,21 @@ class ChatActionHandler {
       AppLogger.debug('📤 [ChatActionHandler] Content: "$content"');
       AppLogger.debug('📤 [ChatActionHandler] Type: $type');
       AppLogger.debug(
-          '📤 [ChatActionHandler] Conversation ID: $conversationId');
+        '📤 [ChatActionHandler] Conversation ID: $conversationId',
+      );
 
       // Send based on message type
       if (type == MessageType.text) {
         AppLogger.debug(
-            '📤 [ChatActionHandler] Calling MessagingService.sendTextMessage...');
+          '📤 [ChatActionHandler] Calling MessagingService.sendTextMessage...',
+        );
         await _messagingService.sendTextMessage(
           conversationId: conversationId,
           content: content,
         );
         AppLogger.success(
-            '✅ [ChatActionHandler] MessagingService.sendTextMessage completed');
+          '✅ [ChatActionHandler] MessagingService.sendTextMessage completed',
+        );
       } else if (type == MessageType.image) {
         AppLogger.debug('📤 [ChatActionHandler] Sending image message...');
         // For images, content would be the path - in production this would upload first
@@ -132,7 +138,8 @@ class ChatActionHandler {
         AppLogger.success('✅ [ChatActionHandler] Other type message sent');
       }
       AppLogger.success(
-          '✅ [ChatActionHandler] Message send operation completed successfully');
+        '✅ [ChatActionHandler] Message send operation completed successfully',
+      );
     } catch (e, stackTrace) {
       AppLogger.error('❌ [ChatActionHandler] Failed to send message', e);
       AppLogger.error('❌ [ChatActionHandler] Stack trace: $stackTrace');
@@ -153,8 +160,9 @@ class ChatActionHandler {
     // Check if it's a photo attachment with source
     if (attachmentType.startsWith('photo:')) {
       final sourceName = attachmentType.split(':')[1];
-      final source =
-          sourceName == 'camera' ? ImageSource.camera : ImageSource.gallery;
+      final source = sourceName == 'camera'
+          ? ImageSource.camera
+          : ImageSource.gallery;
       await _sharePhoto(source: source);
       return;
     }
@@ -201,8 +209,9 @@ class ChatActionHandler {
       if (!context.mounted) return;
 
       // Get conversation to check if it's a group
-      final conversation =
-          await _messagingService.getConversation(conversationId);
+      final conversation = await _messagingService.getConversation(
+        conversationId,
+      );
 
       if (!context.mounted) return;
 
@@ -229,10 +238,11 @@ class ChatActionHandler {
                 Text(l10n.chatTypeDirectMessage),
                 if (conversation != null) ...[
                   const SizedBox(height: AppDimensions.spacingSm),
-                  Text(l10n.chatCreatedAt(conversation.createdAt
-                      .toLocal()
-                      .toString()
-                      .split('.')[0])),
+                  Text(
+                    l10n.chatCreatedAt(
+                      conversation.createdAt.toLocal().toString().split('.')[0],
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -268,7 +278,8 @@ class ChatActionHandler {
 
     try {
       final l10n = context.l10n;
-      final confirmed = await showDialog<bool>(
+      final confirmed =
+          await showDialog<bool>(
             context: context,
             builder: (dialogContext) => AlertDialog(
               title: Text(l10n.chatLeaveConversation),
@@ -401,8 +412,9 @@ class ChatActionHandler {
         final recipeId = selectedRecipes.first;
         // Look up the real title so the share card shows the recipe name
         // (read() is user-scoped; falls back to a generic label if null).
-        final recipe =
-            await ServiceLocator.get<RecipeRepository>().read(recipeId);
+        final recipe = await ServiceLocator.get<RecipeRepository>().read(
+          recipeId,
+        );
         if (!context.mounted) return;
         await _messagingService.sendRecipeShare(
           conversationId: conversationId,
@@ -429,8 +441,9 @@ class ChatActionHandler {
       );
       if (weekStart == null) return;
 
-      final plan =
-          await ServiceLocator.get<WeeklyMenuPlanService>().getWeek(weekStart);
+      final plan = await ServiceLocator.get<WeeklyMenuPlanService>().getWeek(
+        weekStart,
+      );
       if (!context.mounted) return;
 
       if (plan.isEmpty) {
@@ -477,7 +490,8 @@ class ChatActionHandler {
 
   Future<void> _sharePhoto({ImageSource source = ImageSource.gallery}) async {
     AppLogger.info(
-        'Sharing photo from ${source == ImageSource.camera ? "camera" : "gallery"}');
+      'Sharing photo from ${source == ImageSource.camera ? "camera" : "gallery"}',
+    );
 
     try {
       final l10n = context.l10n;
@@ -491,7 +505,8 @@ class ChatActionHandler {
         onProgress: (progress) {
           // Could update UI with progress here
           AppLogger.debug(
-              'Upload progress: ${(progress * 100).toStringAsFixed(0)}%');
+            'Upload progress: ${(progress * 100).toStringAsFixed(0)}%',
+          );
         },
       );
 

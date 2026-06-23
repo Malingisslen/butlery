@@ -163,11 +163,13 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
       spacing: AppDimensions.spacingSm,
       runSpacing: AppDimensions.spacingSm,
       children: tagsToShow
-          .map((tag) => _QuickTagChip(
-                tag: tag,
-                isSelected: _isTagSelected(tag),
-                onTap: () => _toggleTag(tag),
-              ))
+          .map(
+            (tag) => _QuickTagChip(
+              tag: tag,
+              isSelected: _isTagSelected(tag),
+              onTap: () => _toggleTag(tag),
+            ),
+          )
           .toList(),
     );
   }
@@ -227,8 +229,9 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadius2),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadius2,
+                  ),
                 ),
               ),
               // Header
@@ -343,8 +346,12 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         ],
 
         // All tags (excluding suggested if suggestions shown)
-        _buildTagWrap(tags.where((tag) =>
-            _suggestedTagIds.isEmpty || !_suggestedTagIds.contains(tag.id))),
+        _buildTagWrap(
+          tags.where(
+            (tag) =>
+                _suggestedTagIds.isEmpty || !_suggestedTagIds.contains(tag.id),
+          ),
+        ),
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Manage tags link
@@ -434,8 +441,9 @@ class _QuickTagChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: cs.surface,
-        selectedColor:
-            cs.primary.withValues(alpha: AppDimensions.opacityLightMedium),
+        selectedColor: cs.primary.withValues(
+          alpha: AppDimensions.opacityLightMedium,
+        ),
         checkmarkColor: cs.primary,
         side: BorderSide(
           color: isSelected ? cs.primary : cs.outlineVariant,
@@ -444,8 +452,8 @@ class _QuickTagChip extends StatelessWidget {
         labelStyle:
             (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
                 .copyWith(
-          color: isSelected ? cs.primary : cs.onSurface,
-        ),
+                  color: isSelected ? cs.primary : cs.onSurface,
+                ),
         showCheckmark: isSelected,
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingSm,

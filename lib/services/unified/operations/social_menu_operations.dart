@@ -22,8 +22,8 @@ class SocialMenuOperations {
   SocialMenuOperations({
     required FirebaseFirestore firestore,
     required UnifiedFriendsService friendsService,
-  })  : _firestore = firestore,
-        _friendsService = friendsService;
+  }) : _firestore = firestore,
+       _friendsService = friendsService;
 
   /// Share menu with selected friends
   Future<bool> shareMenuWithFriends({
@@ -53,8 +53,9 @@ class SocialMenuOperations {
 
       // Validate that all friend IDs are actual friends
       final userFriends = _friendsService.friends.map((f) => f.uid).toSet();
-      final invalidFriendIds =
-          friendUserIds.where((id) => !userFriends.contains(id)).toList();
+      final invalidFriendIds = friendUserIds
+          .where((id) => !userFriends.contains(id))
+          .toList();
 
       if (invalidFriendIds.isNotEmpty) {
         AppLogger.error('Invalid friend IDs: ${invalidFriendIds.join(', ')}');
@@ -62,9 +63,12 @@ class SocialMenuOperations {
       }
 
       // Calculate menu statistics
-      final totalRecipes =
-          menu.values.fold(0, (total, recipes) => total + recipes.length);
-      final menuTitle = customTitle ??
+      final totalRecipes = menu.values.fold(
+        0,
+        (total, recipes) => total + recipes.length,
+      );
+      final menuTitle =
+          customTitle ??
           AppLocale.current.menuDefaultTitle(currentUser.displayName);
 
       // Prepare menu data for Firebase
@@ -72,10 +76,12 @@ class SocialMenuOperations {
         'contentType': 'menu',
         'title': menuTitle,
         'description': message?.trim(),
-        'menu': menu.map((category, recipes) => MapEntry(
-              category,
-              recipes.map((recipe) => recipe.toJson()).toList(),
-            )),
+        'menu': menu.map(
+          (category, recipes) => MapEntry(
+            category,
+            recipes.map((recipe) => recipe.toJson()).toList(),
+          ),
+        ),
         'totalRecipes': totalRecipes,
         'sharedByUserId': currentUser.uid,
         'sharedByDisplayName': currentUser.displayName,
@@ -87,8 +93,9 @@ class SocialMenuOperations {
       };
 
       // Create shared menu document in Firestore
-      final sharedMenuRef =
-          _firestore.collection(FirestoreCollections.sharedContent).doc();
+      final sharedMenuRef = _firestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc();
       await sharedMenuRef.set(menuData);
 
       // Create individual share records for each friend
@@ -115,7 +122,8 @@ class SocialMenuOperations {
       await batch.commit();
 
       AppLogger.success(
-          '✅ Menu shared successfully with ${friendUserIds.length} friends');
+        '✅ Menu shared successfully with ${friendUserIds.length} friends',
+      );
       return true;
     } catch (e) {
       AppLogger.error('Failed to share menu with friends', e);
@@ -132,8 +140,9 @@ class SocialMenuOperations {
   }) async {
     try {
       // Get friends in the specified category
-      final friendsInCategory =
-          _friendsService.categories.getFriendsInCategory(categoryId);
+      final friendsInCategory = _friendsService.categories.getFriendsInCategory(
+        categoryId,
+      );
 
       if (friendsInCategory.isEmpty) {
         AppLogger.error('No friends found in category');
@@ -145,7 +154,7 @@ class SocialMenuOperations {
       // Use existing shareMenuWithFriends method
       final categoryName =
           _friendsService.categories.getCategoryById(categoryId)?.name ??
-              AppLocale.current.menuShareGroupFallback;
+          AppLocale.current.menuShareGroupFallback;
       final enhancedTitle =
           customTitle ?? AppLocale.current.menuShareGroupTitle(categoryName);
 
@@ -290,8 +299,9 @@ class SocialMenuOperations {
       final menuData = menuDoc.data()!;
 
       // Verify user has access to this menu
-      final sharedWithUserIds =
-          List<String>.from(menuData['sharedWithUserIds'] ?? []);
+      final sharedWithUserIds = List<String>.from(
+        menuData['sharedWithUserIds'] ?? [],
+      );
       if (!sharedWithUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this menu');
         return false;
@@ -304,9 +314,9 @@ class SocialMenuOperations {
           .collection(FirestoreCollections.receivedMenus)
           .doc(sharedMenuId)
           .update({
-        'isImported': true,
-        'importedAt': FieldValue.serverTimestamp(),
-      });
+            'isImported': true,
+            'importedAt': FieldValue.serverTimestamp(),
+          });
 
       AppLogger.success('✅ Menu imported successfully');
       return true;
@@ -331,9 +341,9 @@ class SocialMenuOperations {
           .collection(FirestoreCollections.receivedMenus)
           .doc(sharedMenuId)
           .update({
-        'isViewed': true,
-        'viewedAt': FieldValue.serverTimestamp(),
-      });
+            'isViewed': true,
+            'viewedAt': FieldValue.serverTimestamp(),
+          });
 
       AppLogger.debug('Menu marked as viewed: $sharedMenuId');
     } catch (e) {
@@ -364,8 +374,9 @@ class SocialMenuOperations {
       final menuData = menuDoc.data()!;
 
       // Verify user has access to this menu
-      final sharedWithUserIds =
-          List<String>.from(menuData['sharedWithUserIds'] ?? []);
+      final sharedWithUserIds = List<String>.from(
+        menuData['sharedWithUserIds'] ?? [],
+      );
       if (!sharedWithUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this menu');
         return null;
@@ -378,8 +389,10 @@ class SocialMenuOperations {
         menuJson.forEach((category, recipeList) {
           if (recipeList is List) {
             menu[category] = recipeList
-                .map((recipeData) =>
-                    Recipe.fromJson(recipeData as Map<String, dynamic>))
+                .map(
+                  (recipeData) =>
+                      Recipe.fromJson(recipeData as Map<String, dynamic>),
+                )
                 .toList();
           }
         });
@@ -435,9 +448,9 @@ class SocialMenuOperations {
           .collection(FirestoreCollections.sharedContent)
           .doc(sharedMenuId)
           .update({
-        'isActive': false,
-        'deletedAt': FieldValue.serverTimestamp(),
-      });
+            'isActive': false,
+            'deletedAt': FieldValue.serverTimestamp(),
+          });
 
       AppLogger.success('✅ Shared menu deleted successfully');
       return true;
@@ -477,7 +490,8 @@ class SocialMenuOperations {
       // Calculate total friends shared with
       final totalFriendsSharedWith = sharedByMeQuery.docs
           .expand(
-              (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []))
+            (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []),
+          )
           .toSet()
           .length;
 

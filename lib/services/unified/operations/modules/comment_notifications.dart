@@ -36,7 +36,8 @@ class CommentNotifications {
     }
 
     AppLogger.info(
-        '📬 Sending comment notifications to ${targetUserIds.length} users');
+      '📬 Sending comment notifications to ${targetUserIds.length} users',
+    );
 
     // Send comment notification (batchable to prevent spam)
     await NotificationHelper.sendBatchableSafely(
@@ -68,7 +69,8 @@ class CommentNotifications {
     // Don't notify if replying to own comment
     if (reply.authorId == parentComment.authorId) {
       AppLogger.debug(
-          '📋 Skipping reply notification (replying to own comment)');
+        '📋 Skipping reply notification (replying to own comment)',
+      );
       return;
     }
 
@@ -107,8 +109,9 @@ class CommentNotifications {
     }
 
     // Filter out the commenter from mentions
-    final targetUserIds =
-        mentionedUserIds.where((userId) => userId != comment.authorId).toList();
+    final targetUserIds = mentionedUserIds
+        .where((userId) => userId != comment.authorId)
+        .toList();
 
     if (targetUserIds.isEmpty) {
       AppLogger.debug('📋 No users to notify for mentions');
@@ -116,7 +119,8 @@ class CommentNotifications {
     }
 
     AppLogger.info(
-        '📬 Sending mention notifications to ${targetUserIds.length} users');
+      '📬 Sending mention notifications to ${targetUserIds.length} users',
+    );
 
     // Send mention notifications
     await NotificationHelper.sendBatchableSafely(
@@ -262,11 +266,17 @@ class CommentNotifications {
     final uniqueCommenters = comments.map((c) => c.authorDisplayName).toSet();
     if (uniqueCommenters.length == 1) {
       return l.notificationCommentMultipleSameAuthor(
-          uniqueCommenters.first, comments.length, recipeName);
+        uniqueCommenters.first,
+        comments.length,
+        recipeName,
+      );
     }
 
     return l.notificationCommentMultipleAuthors(
-        uniqueCommenters.length, comments.length, recipeName);
+      uniqueCommenters.length,
+      comments.length,
+      recipeName,
+    );
   }
 
   /// Generate notification batch key for comment notifications

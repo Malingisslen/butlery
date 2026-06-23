@@ -51,7 +51,7 @@ class ExportPaginationHelper {
   ///
   /// Returns list of document snapshots from all batches
   static Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      paginatedQuery({
+  paginatedQuery({
     required Query<Map<String, dynamic>> query,
     int batchSize = defaultBatchSize,
     int maxDocuments = defaultMaxDocuments,
@@ -78,7 +78,8 @@ class ExportPaginationHelper {
       lastDoc = snapshot.docs.last;
 
       app_logger.AppLogger.debug(
-          '[$_logTag] Fetched batch: ${snapshot.docs.length} docs (total: $totalFetched)');
+        '[$_logTag] Fetched batch: ${snapshot.docs.length} docs (total: $totalFetched)',
+      );
 
       // If batch returned fewer than requested, we've reached the end
       if (snapshot.docs.length < batchSize) {
@@ -88,7 +89,8 @@ class ExportPaginationHelper {
 
     if (totalFetched >= maxDocuments) {
       app_logger.AppLogger.warning(
-          '[$_logTag] Export hit max document limit ($maxDocuments). Some data may be truncated.');
+        '[$_logTag] Export hit max document limit ($maxDocuments). Some data may be truncated.',
+      );
     }
 
     return results;
@@ -96,7 +98,7 @@ class ExportPaginationHelper {
 
   /// Export collection reference with pagination (for user subcollections)
   static Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      paginatedCollectionExport({
+  paginatedCollectionExport({
     required CollectionReference<Map<String, dynamic>> collection,
     int batchSize = defaultBatchSize,
     int maxDocuments = defaultMaxDocuments,
@@ -138,10 +140,12 @@ class ExportPaginationHelper {
     );
 
     return docs
-        .map((doc) => {
-              idField: doc.id,
-              ...doc.data(),
-            })
+        .map(
+          (doc) => {
+            idField: doc.id,
+            ...doc.data(),
+          },
+        )
         .toList();
   }
 
@@ -152,7 +156,8 @@ class ExportPaginationHelper {
       return countQuery.count ?? 0;
     } catch (e) {
       app_logger.AppLogger.warning(
-          '[$_logTag] Count query failed, falling back to limit estimate: $e');
+        '[$_logTag] Count query failed, falling back to limit estimate: $e',
+      );
       // Fallback: fetch minimal data to estimate
       final snapshot = await query.limit(1).get();
       return snapshot.docs.isEmpty ? 0 : -1; // -1 indicates unknown

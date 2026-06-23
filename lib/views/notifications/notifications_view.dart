@@ -200,8 +200,9 @@ class _NotificationsContentState extends State<_NotificationsContent> {
               onTap: _selectionMode
                   ? () => _toggle(entry.id)
                   : () => _handleEntryTap(vm, entry),
-              onLongPress:
-                  _selectionMode ? null : () => _enterSelection(entry.id),
+              onLongPress: _selectionMode
+                  ? null
+                  : () => _enterSelection(entry.id),
             );
           },
         ),

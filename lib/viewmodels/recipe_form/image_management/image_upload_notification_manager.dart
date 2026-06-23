@@ -48,7 +48,8 @@ class ImageUploadNotificationManager {
   void sendNotificationEvent(UploadNotificationEvent event) {
     if (!_canSendNotification()) {
       AppLogger.debug(
-          '🔔 NOTIFICATION: Skipping notification due to cooldown: ${event.trigger.name}');
+        '🔔 NOTIFICATION: Skipping notification due to cooldown: ${event.trigger.name}',
+      );
       return;
     }
 
@@ -57,24 +58,28 @@ class ImageUploadNotificationManager {
     _safeController.add(event);
 
     AppLogger.info(
-        '🔔 NOTIFICATION: Sent ${event.trigger.name} notification: ${event.message}');
+      '🔔 NOTIFICATION: Sent ${event.trigger.name} notification: ${event.message}',
+    );
   }
 
   /// Trigger completion notification when all uploads are done
   void triggerCompletionNotification(int totalImages) {
-    if (_notificationTriggers
-        .contains(UploadNotificationTrigger.allCompleted)) {
+    if (_notificationTriggers.contains(
+      UploadNotificationTrigger.allCompleted,
+    )) {
       return; // Already sent
     }
 
-    sendNotificationEvent(UploadNotificationEvent(
-      trigger: UploadNotificationTrigger.allCompleted,
-      title: AppLocale.current.statusDone,
-      message: AppLocale.current.statusDone,
-      priority: NotificationPriority.medium,
-      data: {'totalImages': totalImages},
-      timestamp: clock.now(),
-    ));
+    sendNotificationEvent(
+      UploadNotificationEvent(
+        trigger: UploadNotificationTrigger.allCompleted,
+        title: AppLocale.current.statusDone,
+        message: AppLocale.current.statusDone,
+        priority: NotificationPriority.medium,
+        data: {'totalImages': totalImages},
+        timestamp: clock.now(),
+      ),
+    );
   }
 
   /// Trigger major failure notification when significant uploads fail.
@@ -84,21 +89,24 @@ class ImageUploadNotificationManager {
     int totalCount, {
     ImageUploadErrorType? dominantErrorType,
   }) {
-    if (_notificationTriggers
-        .contains(UploadNotificationTrigger.majorFailure)) {
+    if (_notificationTriggers.contains(
+      UploadNotificationTrigger.majorFailure,
+    )) {
       return; // Already sent
     }
 
     if (failedCount >= 2 || (totalCount > 1 && failedCount >= totalCount / 2)) {
       final message = _errorMessageForType(dominantErrorType);
-      sendNotificationEvent(UploadNotificationEvent(
-        trigger: UploadNotificationTrigger.majorFailure,
-        title: AppLocale.current.errorGeneric,
-        message: message,
-        priority: NotificationPriority.high,
-        data: {'failedCount': failedCount, 'totalCount': totalCount},
-        timestamp: clock.now(),
-      ));
+      sendNotificationEvent(
+        UploadNotificationEvent(
+          trigger: UploadNotificationTrigger.majorFailure,
+          title: AppLocale.current.errorGeneric,
+          message: message,
+          priority: NotificationPriority.high,
+          data: {'failedCount': failedCount, 'totalCount': totalCount},
+          timestamp: clock.now(),
+        ),
+      );
     }
   }
 
@@ -115,51 +123,60 @@ class ImageUploadNotificationManager {
 
   /// Trigger retry success notification (when previously failed upload succeeds)
   void triggerRetrySuccessNotification(String imagePath) {
-    sendNotificationEvent(UploadNotificationEvent(
-      trigger: UploadNotificationTrigger.retrySuccess,
-      title: AppLocale.current.statusDone,
-      message: AppLocale.current.statusDone,
-      priority: NotificationPriority.low,
-      data: {'imagePath': imagePath},
-      timestamp: clock.now(),
-    ));
+    sendNotificationEvent(
+      UploadNotificationEvent(
+        trigger: UploadNotificationTrigger.retrySuccess,
+        title: AppLocale.current.statusDone,
+        message: AppLocale.current.statusDone,
+        priority: NotificationPriority.low,
+        data: {'imagePath': imagePath},
+        timestamp: clock.now(),
+      ),
+    );
   }
 
   /// Trigger queue cleared notification when all uploads are handled
   void triggerQueueClearedNotification(int totalProcessed) {
     if (_notificationTriggers.isNotEmpty && totalProcessed == 0) {
-      sendNotificationEvent(UploadNotificationEvent(
-        trigger: UploadNotificationTrigger.queueCleared,
-        title: AppLocale.current.commonDone,
-        message: AppLocale.current.commonDone,
-        priority: NotificationPriority.low,
-        data: {'totalProcessed': totalProcessed},
-        timestamp: clock.now(),
-      ));
+      sendNotificationEvent(
+        UploadNotificationEvent(
+          trigger: UploadNotificationTrigger.queueCleared,
+          title: AppLocale.current.commonDone,
+          message: AppLocale.current.commonDone,
+          priority: NotificationPriority.low,
+          data: {'totalProcessed': totalProcessed},
+          timestamp: clock.now(),
+        ),
+      );
       _notificationTriggers.clear(); // Reset triggers
     }
   }
 
   /// Trigger progress milestone notification (e.g., 25%, 50%, 75% complete)
   void triggerSignificantProgressNotification(
-      int completed, int total, double percentage) {
+    int completed,
+    int total,
+    double percentage,
+  ) {
     // Only notify at significant milestones (25%, 50%, 75%)
     final milestones = [25, 50, 75];
     final currentPercentage = (percentage * 100).round();
 
     if (milestones.contains(currentPercentage)) {
-      sendNotificationEvent(UploadNotificationEvent(
-        trigger: UploadNotificationTrigger.significantProgress,
-        title: AppLocale.current.commonLoading,
-        message: '$completed/$total ($currentPercentage%)',
-        priority: NotificationPriority.low,
-        data: {
-          'completed': completed,
-          'total': total,
-          'percentage': percentage,
-        },
-        timestamp: clock.now(),
-      ));
+      sendNotificationEvent(
+        UploadNotificationEvent(
+          trigger: UploadNotificationTrigger.significantProgress,
+          title: AppLocale.current.commonLoading,
+          message: '$completed/$total ($currentPercentage%)',
+          priority: NotificationPriority.low,
+          data: {
+            'completed': completed,
+            'total': total,
+            'percentage': percentage,
+          },
+          timestamp: clock.now(),
+        ),
+      );
     }
   }
 
@@ -178,8 +195,11 @@ class ImageUploadNotificationManager {
 
     // Trigger major failure notification if significant failures
     if (failed > 0) {
-      triggerMajorFailureNotification(failed, total,
-          dominantErrorType: dominantErrorType);
+      triggerMajorFailureNotification(
+        failed,
+        total,
+        dominantErrorType: dominantErrorType,
+      );
     }
 
     // Trigger queue cleared if everything is finished

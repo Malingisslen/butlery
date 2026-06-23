@@ -13,28 +13,30 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
 
   /// Get a cached value
   Future<String?> getJson(String boxName, String userId, String key) async {
-    final result = await (select(jsonCacheEntries)
-          ..where((e) =>
-              e.boxName.equals(boxName) &
-              e.userId.equals(userId) &
-              e.key.equals(key)))
-        .getSingleOrNull();
+    final result =
+        await (select(jsonCacheEntries)..where(
+              (e) =>
+                  e.boxName.equals(boxName) &
+                  e.userId.equals(userId) &
+                  e.key.equals(key),
+            ))
+            .getSingleOrNull();
     return result?.value;
   }
 
   /// Get all entries for a box and user
   Future<Map<String, String>> getAllJson(String boxName, String userId) async {
-    final results = await (select(jsonCacheEntries)
-          ..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId)))
-        .get();
+    final results = await (select(
+      jsonCacheEntries,
+    )..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId))).get();
     return {for (final e in results) e.key: e.value};
   }
 
   /// Get all keys for a box and user
   Future<List<String>> getJsonKeys(String boxName, String userId) async {
-    final results = await (select(jsonCacheEntries)
-          ..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId)))
-        .get();
+    final results = await (select(
+      jsonCacheEntries,
+    )..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId))).get();
     return results.map((e) => e.key).toList();
   }
 
@@ -86,19 +88,20 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
 
   /// Delete a JSON entry
   Future<void> deleteJson(String boxName, String userId, String key) {
-    return (delete(jsonCacheEntries)
-          ..where((e) =>
+    return (delete(jsonCacheEntries)..where(
+          (e) =>
               e.boxName.equals(boxName) &
               e.userId.equals(userId) &
-              e.key.equals(key)))
+              e.key.equals(key),
+        ))
         .go();
   }
 
   /// Clear all entries for a box and user
   Future<void> clearJsonBox(String boxName, String userId) {
-    return (delete(jsonCacheEntries)
-          ..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId)))
-        .go();
+    return (delete(
+      jsonCacheEntries,
+    )..where((e) => e.boxName.equals(boxName) & e.userId.equals(userId))).go();
   }
 
   /// Count entries in a box for a user
@@ -106,17 +109,19 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
     final count = countAll();
     final query = selectOnly(jsonCacheEntries)
       ..addColumns([count])
-      ..where(jsonCacheEntries.boxName.equals(boxName) &
-          jsonCacheEntries.userId.equals(userId));
+      ..where(
+        jsonCacheEntries.boxName.equals(boxName) &
+            jsonCacheEntries.userId.equals(userId),
+      );
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }
 
   /// Get a cached parsed recipe
   Future<ParseCacheEntry?> getParsedRecipe(String cacheKey) {
-    return (select(parseCacheEntries)
-          ..where((e) => e.cacheKey.equals(cacheKey)))
-        .getSingleOrNull();
+    return (select(
+      parseCacheEntries,
+    )..where((e) => e.cacheKey.equals(cacheKey))).getSingleOrNull();
   }
 
   /// Save a parsed recipe to cache
@@ -141,30 +146,31 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
 
   /// Delete a parse cache entry
   Future<void> deleteParsedRecipe(String cacheKey) {
-    return (delete(parseCacheEntries)
-          ..where((e) => e.cacheKey.equals(cacheKey)))
-        .go();
+    return (delete(
+      parseCacheEntries,
+    )..where((e) => e.cacheKey.equals(cacheKey))).go();
   }
 
   /// Clean up old parse cache entries
   Future<int> cleanupParseCacheOlderThan(int maxAgeDays) async {
     final cutoff = clock.now().subtract(Duration(days: maxAgeDays));
-    return (delete(parseCacheEntries)
-          ..where((e) => e.cachedAt.isSmallerThanValue(cutoff)))
-        .go();
+    return (delete(
+      parseCacheEntries,
+    )..where((e) => e.cachedAt.isSmallerThanValue(cutoff))).go();
   }
 
   /// Clean up parse cache entries with wrong parser version
   Future<int> cleanupParseCacheWrongVersion(String currentVersion) async {
-    return (delete(parseCacheEntries)
-          ..where((e) => e.parserVersion.equals(currentVersion).not()))
-        .go();
+    return (delete(
+      parseCacheEntries,
+    )..where((e) => e.parserVersion.equals(currentVersion).not())).go();
   }
 
   /// Get all parse cache entries for a user (for stats/debugging)
   Future<List<ParseCacheEntry>> getParseCacheForUser(String userId) {
-    return (select(parseCacheEntries)..where((e) => e.userId.equals(userId)))
-        .get();
+    return (select(
+      parseCacheEntries,
+    )..where((e) => e.userId.equals(userId))).get();
   }
 
   /// Count parse cache entries for a user
@@ -184,11 +190,12 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
 
     // Delete oldest entries to get under limit
     final toDelete = count - maxEntries;
-    final oldestEntries = await (select(parseCacheEntries)
-          ..where((e) => e.userId.equals(userId))
-          ..orderBy([(e) => OrderingTerm.asc(e.cachedAt)])
-          ..limit(toDelete))
-        .get();
+    final oldestEntries =
+        await (select(parseCacheEntries)
+              ..where((e) => e.userId.equals(userId))
+              ..orderBy([(e) => OrderingTerm.asc(e.cachedAt)])
+              ..limit(toDelete))
+            .get();
 
     for (final entry in oldestEntries) {
       await deleteParsedRecipe(entry.cacheKey);

@@ -32,10 +32,13 @@ class CategoryDisplayWidgets {
           title: Text(category.name),
           subtitle: showMemberCount
               ? Text(
-                  context.l10n.friendMemberCount(category.friendUserIds.length))
+                  context.l10n.friendMemberCount(category.friendUserIds.length),
+                )
               : null,
-          trailing: const Icon(Icons.arrow_forward_ios,
-              size: AppDimensions.iconSizeS),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: AppDimensions.iconSizeS,
+          ),
           onTap: () => onCategoryTap(category),
         );
       },
@@ -88,8 +91,9 @@ class CategoryDisplayWidgets {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      context.l10n
-                          .friendMemberCount(category.friendUserIds.length),
+                      context.l10n.friendMemberCount(
+                        category.friendUserIds.length,
+                      ),
                       style: AppTextStyles.bodySmall,
                       textAlign: TextAlign.center,
                     ),
@@ -109,13 +113,17 @@ class CategoryDisplayWidgets {
     required List<FriendCategory> categories,
     EdgeInsets? padding,
   }) {
-    final totalMembers =
-        categories.fold<int>(0, (sum, cat) => sum + cat.memberIds.length);
-    final averageSize =
-        categories.isNotEmpty ? (totalMembers / categories.length).round() : 0;
+    final totalMembers = categories.fold<int>(
+      0,
+      (sum, cat) => sum + cat.memberIds.length,
+    );
+    final averageSize = categories.isNotEmpty
+        ? (totalMembers / categories.length).round()
+        : 0;
     final largestCategory = categories.isNotEmpty
-        ? categories
-            .reduce((a, b) => a.memberIds.length > b.memberIds.length ? a : b)
+        ? categories.reduce(
+            (a, b) => a.memberIds.length > b.memberIds.length ? a : b,
+          )
         : null;
 
     return Card(
@@ -170,7 +178,9 @@ class CategoryDisplayWidgets {
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 context.l10n.friendLargestCategory(
-                    largestCategory.name, largestCategory.memberIds.length),
+                  largestCategory.name,
+                  largestCategory.memberIds.length,
+                ),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -252,11 +262,13 @@ class CategoryDisplayWidgets {
                         ),
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
-                          context.l10n
-                              .friendMemberCount(category.friendUserIds.length),
+                          context.l10n.friendMemberCount(
+                            category.friendUserIds.length,
+                          ),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -282,7 +294,8 @@ class CategoryDisplayWidgets {
       height: height,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: padding ??
+        padding:
+            padding ??
             const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
         itemCount: categories.length,
         separatorBuilder: (context, index) =>
@@ -308,8 +321,10 @@ class CategoryDisplayWidgets {
     bool showTotalMembers = true,
     EdgeInsets? padding,
   }) {
-    final totalMembers =
-        categories.fold<int>(0, (sum, cat) => sum + cat.friendUserIds.length);
+    final totalMembers = categories.fold<int>(
+      0,
+      (sum, cat) => sum + cat.friendUserIds.length,
+    );
 
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),

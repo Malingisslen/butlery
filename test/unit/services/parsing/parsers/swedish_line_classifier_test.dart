@@ -7,22 +7,25 @@ void main() {
 
   group('SwedishLineClassifier', () {
     group('BUG-14: Substring food-word matching', () {
-      test('should not inflate ingredient score from "ost" inside "rostad"',
-          () {
-        final result = classifier.classifyLine('rostad bröd');
+      test(
+        'should not inflate ingredient score from "ost" inside "rostad"',
+        () {
+          final result = classifier.classifyLine('rostad bröd');
 
-        // "rostad bröd" contains the substring "ost" inside "rostad",
-        // but word-set matching should prevent a false food-word hit.
-        // With the fix, "ost" only matches as a standalone word.
-        // The line should NOT be classified as ingredient since there is
-        // no quantity, no unit, and no actual food word match.
-        expect(
-          result.type,
-          isNot(LineType.ingredient),
-          reason: '"rostad bröd" should not be classified as ingredient — '
-              '"ost" is a substring of "rostad", not a standalone word',
-        );
-      });
+          // "rostad bröd" contains the substring "ost" inside "rostad",
+          // but word-set matching should prevent a false food-word hit.
+          // With the fix, "ost" only matches as a standalone word.
+          // The line should NOT be classified as ingredient since there is
+          // no quantity, no unit, and no actual food word match.
+          expect(
+            result.type,
+            isNot(LineType.ingredient),
+            reason:
+                '"rostad bröd" should not be classified as ingredient — '
+                '"ost" is a substring of "rostad", not a standalone word',
+          );
+        },
+      );
 
       test('should classify standalone "ost" as ingredient in "2 dl ost"', () {
         final result = classifier.classifyLine('2 dl ost');
@@ -31,7 +34,8 @@ void main() {
         expect(
           result.confidence,
           greaterThan(0.6),
-          reason: '"2 dl ost" has quantity, unit, and food word — '
+          reason:
+              '"2 dl ost" has quantity, unit, and food word — '
               'should be a high-confidence ingredient',
         );
       });
@@ -89,7 +93,8 @@ void main() {
         expect(
           result.type,
           isNot(LineType.metadata),
-          reason: '"4 st ägg" is an ingredient line, not metadata — '
+          reason:
+              '"4 st ägg" is an ingredient line, not metadata — '
               '"st" means pieces, not portions',
         );
         expect(result.type, LineType.ingredient);
@@ -131,12 +136,14 @@ void main() {
         expect(result.type, isNot(LineType.metadata));
       });
 
-      test('should classify "10 st köttbullar" as ingredient, not metadata',
-          () {
-        final result = classifier.classifyLine('10 st köttbullar');
+      test(
+        'should classify "10 st köttbullar" as ingredient, not metadata',
+        () {
+          final result = classifier.classifyLine('10 st köttbullar');
 
-        expect(result.type, isNot(LineType.metadata));
-      });
+          expect(result.type, isNot(LineType.metadata));
+        },
+      );
     });
 
     group('Ingredient classification', () {
@@ -168,27 +175,29 @@ void main() {
     });
 
     group('Instruction classification', () {
-      test('should classify lines starting with cooking verbs as instruction',
-          () {
-        // Longer instruction lines score higher because length > 40 adds 0.1
-        // and length > 80 adds another 0.1. Short lines with food words
-        // can be ambiguous (title vs instruction).
-        final cases = [
-          'Koka pastan al dente och häll av vattnet',
-          'Blanda mjöl och socker noggrant i en stor bunke',
-          'Vispa ägg och mjölk till en slät smet och ställ åt sidan',
-          'Grädda i ugn på 200 grader i cirka 20 minuter tills gyllene',
-        ];
+      test(
+        'should classify lines starting with cooking verbs as instruction',
+        () {
+          // Longer instruction lines score higher because length > 40 adds 0.1
+          // and length > 80 adds another 0.1. Short lines with food words
+          // can be ambiguous (title vs instruction).
+          final cases = [
+            'Koka pastan al dente och häll av vattnet',
+            'Blanda mjöl och socker noggrant i en stor bunke',
+            'Vispa ägg och mjölk till en slät smet och ställ åt sidan',
+            'Grädda i ugn på 200 grader i cirka 20 minuter tills gyllene',
+          ];
 
-        for (final line in cases) {
-          final result = classifier.classifyLine(line);
-          expect(
-            result.type,
-            LineType.instruction,
-            reason: '"$line" should be classified as instruction',
-          );
-        }
-      });
+          for (final line in cases) {
+            final result = classifier.classifyLine(line);
+            expect(
+              result.type,
+              LineType.instruction,
+              reason: '"$line" should be classified as instruction',
+            );
+          }
+        },
+      );
 
       test('should give instruction score boost for cooking verb at start', () {
         // Even short lines starting with cooking verbs get a 0.4 boost
@@ -348,39 +357,53 @@ Ingredienser:
 
         // All lines should remain as ingredients in the Viterbi output
         for (var i = 0; i < contextual.length; i++) {
-          expect(contextual[i].type, LineType.ingredient,
-              reason: 'Line $i should be ingredient in ingredient run');
+          expect(
+            contextual[i].type,
+            LineType.ingredient,
+            reason: 'Line $i should be ingredient in ingredient run',
+          );
         }
       });
 
-      test('section header "Ingredienser:" boosts subsequent ambiguous lines',
-          () {
-        // After an ingredient header, even ambiguous short food words
-        // should be classified as ingredients due to emission boosting.
-        final lines = [
-          classifier.classifyLine('Ingredienser:'),
-          classifier.classifyLine('smör'),
-          classifier.classifyLine('lök'),
-          classifier.classifyLine('vitlök'),
-        ];
+      test(
+        'section header "Ingredienser:" boosts subsequent ambiguous lines',
+        () {
+          // After an ingredient header, even ambiguous short food words
+          // should be classified as ingredients due to emission boosting.
+          final lines = [
+            classifier.classifyLine('Ingredienser:'),
+            classifier.classifyLine('smör'),
+            classifier.classifyLine('lök'),
+            classifier.classifyLine('vitlök'),
+          ];
 
-        // Without context, these are all title (60%)
-        expect(lines[1].type, LineType.title);
-        expect(lines[2].type, LineType.title);
-        expect(lines[3].type, LineType.title);
+          // Without context, these are all title (60%)
+          expect(lines[1].type, LineType.title);
+          expect(lines[2].type, LineType.title);
+          expect(lines[3].type, LineType.title);
 
-        final contextual = viterbi.classifyWithContext(lines);
+          final contextual = viterbi.classifyWithContext(lines);
 
-        // The header should still be a header
-        expect(contextual[0].type, LineType.sectionHeader);
-        // Subsequent lines should be ingredients due to header boost
-        expect(contextual[1].type, LineType.ingredient,
-            reason: '"smör" after ingredient header should be ingredient');
-        expect(contextual[2].type, LineType.ingredient,
-            reason: '"lök" after ingredient header should be ingredient');
-        expect(contextual[3].type, LineType.ingredient,
-            reason: '"vitlök" after ingredient header should be ingredient');
-      });
+          // The header should still be a header
+          expect(contextual[0].type, LineType.sectionHeader);
+          // Subsequent lines should be ingredients due to header boost
+          expect(
+            contextual[1].type,
+            LineType.ingredient,
+            reason: '"smör" after ingredient header should be ingredient',
+          );
+          expect(
+            contextual[2].type,
+            LineType.ingredient,
+            reason: '"lök" after ingredient header should be ingredient',
+          );
+          expect(
+            contextual[3].type,
+            LineType.ingredient,
+            reason: '"vitlök" after ingredient header should be ingredient',
+          );
+        },
+      );
 
       test('instruction header switches context from ingredients', () {
         final lines = [
@@ -389,8 +412,9 @@ Ingredienser:
           classifier.classifyLine('3 ägg'),
           classifier.classifyLine('Gör så här:'),
           classifier.classifyLine('Koka pastan al dente och häll av vattnet.'),
-          classifier
-              .classifyLine('Blanda mjöl och socker noggrant i en stor bunke.'),
+          classifier.classifyLine(
+            'Blanda mjöl och socker noggrant i en stor bunke.',
+          ),
         ];
 
         final contextual = viterbi.classifyWithContext(lines);
@@ -420,8 +444,11 @@ Ingredienser:
 
         final contextual = viterbi.classifyWithContext(lines);
 
-        expect(contextual[1].type, LineType.metadata,
-            reason: 'Metadata before ingredient section should survive');
+        expect(
+          contextual[1].type,
+          LineType.metadata,
+          reason: 'Metadata before ingredient section should survive',
+        );
         expect(contextual[3].type, LineType.sectionHeader);
         expect(contextual[4].type, LineType.ingredient);
       });
@@ -445,9 +472,12 @@ Ingredienser:
         final contextual = viterbi.classifyWithContext(lines);
 
         // Empty line should not break the ingredient context
-        expect(contextual[5].type, LineType.ingredient,
-            reason:
-                'Ingredient after header + ingredients + empty should stay ingredient');
+        expect(
+          contextual[5].type,
+          LineType.ingredient,
+          reason:
+              'Ingredient after header + ingredients + empty should stay ingredient',
+        );
       });
 
       test('single line unchanged by Viterbi', () {
@@ -476,9 +506,12 @@ Ingredienser:
         final foodLines = ingredientSection.lines
             .where((l) => l.type == LineType.ingredient)
             .toList();
-        expect(foodLines.length, greaterThanOrEqualTo(3),
-            reason:
-                '"smör", "lök", "vitlök" should all be ingredients in context');
+        expect(
+          foodLines.length,
+          greaterThanOrEqualTo(3),
+          reason:
+              '"smör", "lök", "vitlök" should all be ingredients in context',
+        );
       });
     });
   });

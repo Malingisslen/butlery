@@ -27,18 +27,32 @@ void main() {
         expect(QuantityParser.parse('\u00BE'), equals(0.75));
       });
 
-      test('BUT-804 HIGH-AI7: parses the previously-missing Unicode fractions',
-          () {
-        // Without these, ingredient lines using these fractions fell
-        // through to parse()'s 1.0 fallback. Each is from the Unicode
-        // "Number Forms" block (U+2150\u2013U+215E).
-        expect(QuantityParser.parse('\u2158'), closeTo(0.8, 1e-9)); // \u2158
-        expect(QuantityParser.parse('\u2159'), closeTo(1 / 6, 1e-9)); // \u2159
-        expect(QuantityParser.parse('\u215A'), closeTo(5 / 6, 1e-9)); // \u215A
-        expect(QuantityParser.parse('\u2150'), closeTo(1 / 7, 1e-9)); // \u2150
-        expect(QuantityParser.parse('\u2151'), closeTo(1 / 9, 1e-9)); // \u2151
-        expect(QuantityParser.parse('\u2152'), equals(0.1)); // \u2152
-      });
+      test(
+        'BUT-804 HIGH-AI7: parses the previously-missing Unicode fractions',
+        () {
+          // Without these, ingredient lines using these fractions fell
+          // through to parse()'s 1.0 fallback. Each is from the Unicode
+          // "Number Forms" block (U+2150\u2013U+215E).
+          expect(QuantityParser.parse('\u2158'), closeTo(0.8, 1e-9)); // \u2158
+          expect(
+            QuantityParser.parse('\u2159'),
+            closeTo(1 / 6, 1e-9),
+          ); // \u2159
+          expect(
+            QuantityParser.parse('\u215A'),
+            closeTo(5 / 6, 1e-9),
+          ); // \u215A
+          expect(
+            QuantityParser.parse('\u2150'),
+            closeTo(1 / 7, 1e-9),
+          ); // \u2150
+          expect(
+            QuantityParser.parse('\u2151'),
+            closeTo(1 / 9, 1e-9),
+          ); // \u2151
+          expect(QuantityParser.parse('\u2152'), equals(0.1)); // \u2152
+        },
+      );
     });
 
     group('Mixed fractions (whole + Unicode)', () {
@@ -170,15 +184,20 @@ void main() {
         expect(QuantityParser.parseAsciiFraction('2 1/0'), isNull);
       });
 
-      test('returns null (no FormatException) for digit runs that overflow int',
-          () {
-        // A 64-bit int cannot hold this; int.parse would throw. tryParse must
-        // make the parser degrade gracefully instead of crashing the caller.
-        final huge = '9' * 40;
-        expect(QuantityParser.parseAsciiFraction('1/$huge'), isNull);
-        expect(QuantityParser.parseAsciiFraction('$huge/2'), isNull);
-        expect(QuantityParser.parseAsciiFraction('$huge $huge/$huge'), isNull);
-      });
+      test(
+        'returns null (no FormatException) for digit runs that overflow int',
+        () {
+          // A 64-bit int cannot hold this; int.parse would throw. tryParse must
+          // make the parser degrade gracefully instead of crashing the caller.
+          final huge = '9' * 40;
+          expect(QuantityParser.parseAsciiFraction('1/$huge'), isNull);
+          expect(QuantityParser.parseAsciiFraction('$huge/2'), isNull);
+          expect(
+            QuantityParser.parseAsciiFraction('$huge $huge/$huge'),
+            isNull,
+          );
+        },
+      );
     });
   });
 }

@@ -164,19 +164,21 @@ void main() {
     TestServiceLocator.registerMock<FirebaseAuthRepository>(mockAuthRepo);
 
     // Default: createRecipe returns a fake id so the loop counts a success.
-    when(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          imageUrls: any(named: 'imageUrls'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          rating: any(named: 'rating'),
-          personalTagIds: any(named: 'personalTagIds'),
-          sourceUrl: any(named: 'sourceUrl'),
-        )).thenAnswer((_) async => 'new-id');
+    when(
+      () => mockPersonalOps.createRecipe(
+        title: any(named: 'title'),
+        description: any(named: 'description'),
+        ingredients: any(named: 'ingredients'),
+        instructions: any(named: 'instructions'),
+        imageUrls: any(named: 'imageUrls'),
+        mealType: any(named: 'mealType'),
+        portions: any(named: 'portions'),
+        timeMinutes: any(named: 'timeMinutes'),
+        rating: any(named: 'rating'),
+        personalTagIds: any(named: 'personalTagIds'),
+        sourceUrl: any(named: 'sourceUrl'),
+      ),
+    ).thenAnswer((_) async => 'new-id');
 
     // Swap the file_picker platform with a programmable fake so tests can
     // drive the picker without a real native channel.
@@ -201,38 +203,42 @@ void main() {
     /// Empty recipe list short-circuits with the Swedish "no recipes" message
     /// and never tries to allocate a file path or Firebase auth — proves the
     /// early-return is in front of the platform branch.
-    test('returns localized error when recipe service has no recipes',
-        () async {
-      mockRecipeService.setRecipeState(recipes: []);
+    test(
+      'returns localized error when recipe service has no recipes',
+      () async {
+        mockRecipeService.setRecipeState(recipes: []);
 
-      final result = await service.exportToFile();
+        final result = await service.exportToFile();
 
-      expect(result.success, isFalse);
-      expect(result.message, equals('Inga recept att exportera'));
-      expect(result.filePath, isNull);
-      expect(result.recipeCount, isNull);
-    });
+        expect(result.success, isFalse);
+        expect(result.message, equals('Inga recept att exportera'));
+        expect(result.filePath, isNull);
+        expect(result.recipeCount, isNull);
+      },
+    );
 
     /// Production constructs `FirebaseAuthRepository()` directly inside
     /// exportToFile. In a unit-test context Firebase isn't initialised, so
     /// the constructor throws — but the outer try/catch must convert that
     /// into a [BackupResult.error], NOT propagate. Pins "export never throws
     /// to caller" so a future refactor that drops the try/catch is caught.
-    test('returns BackupResult.error instead of throwing on Firebase failure',
-        () async {
-      mockRecipeService.setRecipeState(
-        recipes: RecipeFactory.buildList(count: 2),
-      );
+    test(
+      'returns BackupResult.error instead of throwing on Firebase failure',
+      () async {
+        mockRecipeService.setRecipeState(
+          recipes: RecipeFactory.buildList(count: 2),
+        );
 
-      final result = await service.exportToFile();
+        final result = await service.exportToFile();
 
-      // We assert structurally — the message is localised and includes the
-      // wrapped exception, so we check the success flag is false and the
-      // failure path is engaged (no filePath populated).
-      expect(result.success, isFalse);
-      expect(result.filePath, isNull);
-      expect(result.message, isNotEmpty);
-    });
+        // We assert structurally — the message is localised and includes the
+        // wrapped exception, so we check the success flag is false and the
+        // failure path is engaged (no filePath populated).
+        expect(result.success, isFalse);
+        expect(result.filePath, isNull);
+        expect(result.message, isNotEmpty);
+      },
+    );
   });
 
   group('importFromFile — file-picker boundary conditions', () {
@@ -246,8 +252,11 @@ void main() {
 
       expect(result.cancelled, isTrue);
       expect(result.success, isFalse);
-      expect(result.errorMessage, isNull,
-          reason: 'cancellation is not an error');
+      expect(
+        result.errorMessage,
+        isNull,
+        reason: 'cancellation is not an error',
+      );
     });
 
     /// PlatformFile arrived but with null bytes (e.g. cloud-provider import
@@ -280,58 +289,70 @@ void main() {
     /// Foreign JSON top-level (no `butlery_backup` AND no `butlery_export`)
     /// → reject with "Ogiltig backup-fil". Pins the "we only import our own
     /// format" contract.
-    test('rejects JSON missing both butlery_backup and butlery_export keys',
-        () async {
-      final foreign = {
-        'some_other_app': {'recipes': []},
-      };
-      fakeFilePicker.respondWithBytes(_utf8Bytes(foreign));
+    test(
+      'rejects JSON missing both butlery_backup and butlery_export keys',
+      () async {
+        final foreign = {
+          'some_other_app': {'recipes': []},
+        };
+        fakeFilePicker.respondWithBytes(_utf8Bytes(foreign));
 
-      final result = await service.importFromFile();
+        final result = await service.importFromFile();
 
-      expect(result.success, isFalse);
-      expect(result.errorMessage, contains('Ogiltig backup-fil'));
-    });
+        expect(result.success, isFalse);
+        expect(result.errorMessage, contains('Ogiltig backup-fil'));
+      },
+    );
 
     /// Backward-compat: the legacy `butlery_export` wrapper must still be
     /// accepted (users running the old build shipped backups with that key).
     /// Bug if a future refactor removes the OR branch silently.
     test(
-        'accepts legacy butlery_export envelope as equivalent to butlery_backup',
-        () async {
-      final legacy = {
-        'butlery_export': {
-          'version': '0.9',
-          'exported_at': DateTime(2024, 6, 1).toIso8601String(),
-          'recipes': [RecipeFactory.build(title: 'Legacy Pasta').toJson()],
-        },
-      };
-      fakeFilePicker.respondWithBytes(_utf8Bytes(legacy));
+      'accepts legacy butlery_export envelope as equivalent to butlery_backup',
+      () async {
+        final legacy = {
+          'butlery_export': {
+            'version': '0.9',
+            'exported_at': DateTime(2024, 6, 1).toIso8601String(),
+            'recipes': [RecipeFactory.build(title: 'Legacy Pasta').toJson()],
+          },
+        };
+        fakeFilePicker.respondWithBytes(_utf8Bytes(legacy));
 
-      final result = await service.importFromFile();
+        final result = await service.importFromFile();
 
-      expect(result.totalRecipes, equals(1));
-      expect(result.successCount, equals(1));
-      expect(result.exportDate, equals(DateTime(2024, 6, 1)));
-    });
+        expect(result.totalRecipes, equals(1));
+        expect(result.successCount, equals(1));
+        expect(result.exportDate, equals(DateTime(2024, 6, 1)));
+      },
+    );
 
     /// Current `butlery_backup` envelope succeeds (sanity for the
     /// happy-path branch that does the work).
-    test('accepts current butlery_backup envelope and counts successes',
-        () async {
-      final recipes = RecipeFactory.buildList(count: 3, titlePrefix: 'Unique');
-      fakeFilePicker.respondWithBytes(_utf8Bytes(_backupEnvelope(
-        recipes: recipes,
-        exportedAt: DateTime(2025, 1, 15).toIso8601String(),
-      )));
+    test(
+      'accepts current butlery_backup envelope and counts successes',
+      () async {
+        final recipes = RecipeFactory.buildList(
+          count: 3,
+          titlePrefix: 'Unique',
+        );
+        fakeFilePicker.respondWithBytes(
+          _utf8Bytes(
+            _backupEnvelope(
+              recipes: recipes,
+              exportedAt: DateTime(2025, 1, 15).toIso8601String(),
+            ),
+          ),
+        );
 
-      final result = await service.importFromFile();
+        final result = await service.importFromFile();
 
-      expect(result.totalRecipes, equals(3));
-      expect(result.successCount, equals(3));
-      expect(result.skipCount, equals(0));
-      expect(result.exportDate, equals(DateTime(2025, 1, 15)));
-    });
+        expect(result.totalRecipes, equals(3));
+        expect(result.successCount, equals(3));
+        expect(result.skipCount, equals(0));
+        expect(result.exportDate, equals(DateTime(2025, 1, 15)));
+      },
+    );
   });
 
   group('importFromFile — duplicate detection contract', () {
@@ -346,8 +367,9 @@ void main() {
       );
 
       final incoming = RecipeFactory.build(title: 'PASTA CARBONARA');
-      fakeFilePicker
-          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [incoming])));
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: [incoming])),
+      );
 
       final result = await service.importFromFile();
 
@@ -355,19 +377,21 @@ void main() {
       expect(result.successCount, equals(0));
       expect(result.skipCount, equals(1));
       expect(result.skippedTitles, equals(['PASTA CARBONARA']));
-      verifyNever(() => mockPersonalOps.createRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          ));
+      verifyNever(
+        () => mockPersonalOps.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      );
     });
 
     /// Empty existing library + N unique titles in backup → all imported.
@@ -377,8 +401,9 @@ void main() {
         RecipeFactory.build(title: 'Köttbullar'),
         RecipeFactory.build(title: 'Janssons frestelse'),
       ];
-      fakeFilePicker
-          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: recipes)));
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: recipes)),
+      );
 
       final result = await service.importFromFile();
 
@@ -393,34 +418,44 @@ void main() {
     /// rest. Recipes 1 and 3 must still be imported. Pins "no
     /// transactional rollback" — a future refactor that decides "all-or-
     /// nothing" would break this test, which forces an explicit decision.
-    test('continues importing remaining recipes when one is malformed',
-        () async {
-      final good1 = RecipeFactory.build(title: 'Good One').toJson();
-      // Malformed: `core` is non-Map; RecipeCore.fromJson cast will throw.
-      final bad = {'core': 'not-a-map', 'type': 0};
-      final good2 = RecipeFactory.build(title: 'Good Two').toJson();
+    test(
+      'continues importing remaining recipes when one is malformed',
+      () async {
+        final good1 = RecipeFactory.build(title: 'Good One').toJson();
+        // Malformed: `core` is non-Map; RecipeCore.fromJson cast will throw.
+        final bad = {'core': 'not-a-map', 'type': 0};
+        final good2 = RecipeFactory.build(title: 'Good Two').toJson();
 
-      final envelope = {
-        'butlery_backup': {
-          'version': '1.0',
-          'exported_at': DateTime(2025, 5, 1).toIso8601String(),
-          'recipes': [good1, bad, good2],
-        },
-      };
-      fakeFilePicker.respondWithBytes(_utf8Bytes(envelope));
+        final envelope = {
+          'butlery_backup': {
+            'version': '1.0',
+            'exported_at': DateTime(2025, 5, 1).toIso8601String(),
+            'recipes': [good1, bad, good2],
+          },
+        };
+        fakeFilePicker.respondWithBytes(_utf8Bytes(envelope));
 
-      final result = await service.importFromFile();
+        final result = await service.importFromFile();
 
-      expect(result.totalRecipes, equals(3));
-      expect(result.successCount, equals(2),
-          reason: 'good recipes either side of the malformed entry must still '
-              'be imported (no rollback)');
-      expect(result.skipCount, equals(1));
-      expect(result.errors.length, equals(1));
-      expect(result.errors.first, contains('Okänt recept'),
-          reason: 'malformed entry without a `title` field uses the localised '
-              'fallback label');
-    });
+        expect(result.totalRecipes, equals(3));
+        expect(
+          result.successCount,
+          equals(2),
+          reason:
+              'good recipes either side of the malformed entry must still '
+              'be imported (no rollback)',
+        );
+        expect(result.skipCount, equals(1));
+        expect(result.errors.length, equals(1));
+        expect(
+          result.errors.first,
+          contains('Okänt recept'),
+          reason:
+              'malformed entry without a `title` field uses the localised '
+              'fallback label',
+        );
+      },
+    );
 
     /// One of the createRecipe calls throws (Firestore quota, network…).
     /// The exception must be captured per-recipe and NOT abort the import
@@ -436,37 +471,50 @@ void main() {
         RecipeFactory.build(title: 'Will Fail'),
       ];
 
-      when(() => mockPersonalOps.createRecipe(
-            title: 'Will Fail',
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).thenThrow(StateError('quota exceeded'));
+      when(
+        () => mockPersonalOps.createRecipe(
+          title: 'Will Fail',
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).thenThrow(StateError('quota exceeded'));
 
-      fakeFilePicker
-          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: recipes)));
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: recipes)),
+      );
 
       final result = await service.importFromFile();
 
       expect(result.successCount, equals(1));
       expect(result.skipCount, equals(1));
       expect(result.errors.length, equals(1));
-      expect(result.errors.first, contains('quota exceeded'),
-          reason: 'raw exception must surface for diagnostics');
+      expect(
+        result.errors.first,
+        contains('quota exceeded'),
+        reason: 'raw exception must surface for diagnostics',
+      );
       // BUT-1139: error message now contains the REAL recipe title
       // (sourced from core.title) so users know which entry failed.
-      expect(result.errors.first, contains('Will Fail'),
-          reason: 'BUT-1139 fix: per-recipe error label resolves via '
-              'core.title (nested) instead of top-level title');
-      expect(result.errors.first, isNot(contains('Okänt recept')),
-          reason: 'fallback label must NOT win when a real title is available');
+      expect(
+        result.errors.first,
+        contains('Will Fail'),
+        reason:
+            'BUT-1139 fix: per-recipe error label resolves via '
+            'core.title (nested) instead of top-level title',
+      );
+      expect(
+        result.errors.first,
+        isNot(contains('Okänt recept')),
+        reason: 'fallback label must NOT win when a real title is available',
+      );
     });
   });
 
@@ -475,26 +523,29 @@ void main() {
     /// user-facing field that BackupService forwards to createRecipe.
     /// This is the GDPR-critical contract: no silent data loss in the
     /// export/import boundary.
-    test('preserves all forwarded fields end-to-end via createRecipe',
-        () async {
-      final source = RecipeFactory.build(
-        title: 'Köttbullar med potatismos',
-        description: 'Klassiska svenska köttbullar',
-        ingredients: ['500g köttfärs', '1 dl ströbröd', '2 dl mjölk'],
-        instructions: ['Stek', 'Servera'],
-        imageUrls: ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
-        mealType: 'Middag',
-        portions: 6,
-        timeMinutes: 45,
-        rating: 4.8,
-        personalTagIds: ['svensk', 'middag', 'köttbullar'],
-      );
-      fakeFilePicker
-          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [source])));
+    test(
+      'preserves all forwarded fields end-to-end via createRecipe',
+      () async {
+        final source = RecipeFactory.build(
+          title: 'Köttbullar med potatismos',
+          description: 'Klassiska svenska köttbullar',
+          ingredients: ['500g köttfärs', '1 dl ströbröd', '2 dl mjölk'],
+          instructions: ['Stek', 'Servera'],
+          imageUrls: ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
+          mealType: 'Middag',
+          portions: 6,
+          timeMinutes: 45,
+          rating: 4.8,
+          personalTagIds: ['svensk', 'middag', 'köttbullar'],
+        );
+        fakeFilePicker.respondWithBytes(
+          _utf8Bytes(_backupEnvelope(recipes: [source])),
+        );
 
-      await service.importFromFile();
+        await service.importFromFile();
 
-      final captured = verify(() => mockPersonalOps.createRecipe(
+        final captured = verify(
+          () => mockPersonalOps.createRecipe(
             title: captureAny(named: 'title'),
             description: captureAny(named: 'description'),
             ingredients: captureAny(named: 'ingredients'),
@@ -506,22 +557,28 @@ void main() {
             rating: captureAny(named: 'rating'),
             personalTagIds: captureAny(named: 'personalTagIds'),
             sourceUrl: captureAny(named: 'sourceUrl'),
-          )).captured;
+          ),
+        ).captured;
 
-      expect(captured[0], equals('Köttbullar med potatismos'));
-      expect(captured[1], equals('Klassiska svenska köttbullar'));
-      expect(captured[2],
-          equals(['500g köttfärs', '1 dl ströbröd', '2 dl mjölk']));
-      expect(captured[3], equals(['Stek', 'Servera']));
-      expect(captured[4],
-          equals(['https://example.com/a.jpg', 'https://example.com/b.jpg']));
-      expect(captured[5], equals('Middag'));
-      expect(captured[6], equals(6));
-      expect(captured[7], equals(45));
-      expect(captured[8], equals(4.8));
-      expect(captured[9], equals(['svensk', 'middag', 'köttbullar']));
-      // sourceUrl is rewritten — covered by its own dedicated test.
-    });
+        expect(captured[0], equals('Köttbullar med potatismos'));
+        expect(captured[1], equals('Klassiska svenska köttbullar'));
+        expect(
+          captured[2],
+          equals(['500g köttfärs', '1 dl ströbröd', '2 dl mjölk']),
+        );
+        expect(captured[3], equals(['Stek', 'Servera']));
+        expect(
+          captured[4],
+          equals(['https://example.com/a.jpg', 'https://example.com/b.jpg']),
+        );
+        expect(captured[5], equals('Middag'));
+        expect(captured[6], equals(6));
+        expect(captured[7], equals(45));
+        expect(captured[8], equals(4.8));
+        expect(captured[9], equals(['svensk', 'middag', 'köttbullar']));
+        // sourceUrl is rewritten — covered by its own dedicated test.
+      },
+    );
 
     /// Imported recipes get their `sourceUrl` rewritten to the Swedish
     /// "Importerat från backup <day month year>" string built from
@@ -533,26 +590,29 @@ void main() {
         title: 'Original Source',
         sourceUrl: 'https://example.com/original',
       );
-      fakeFilePicker
-          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [recipe])));
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: [recipe])),
+      );
 
       await withClock(Clock.fixed(fixedNow), () async {
         await service.importFromFile();
       });
 
-      final captured = verify(() => mockPersonalOps.createRecipe(
-            title: any(named: 'title'),
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: captureAny(named: 'sourceUrl'),
-          )).captured;
+      final captured = verify(
+        () => mockPersonalOps.createRecipe(
+          title: any(named: 'title'),
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: captureAny(named: 'sourceUrl'),
+        ),
+      ).captured;
 
       expect(captured.single, equals('Importerat från backup 15 mars 2025'));
     });
@@ -572,8 +632,10 @@ void main() {
       final result = await service.importFromFile();
 
       expect(result.exportDate, isNotNull);
-      expect(result.exportDate!.toUtc(),
-          equals(DateTime.utc(2025, 1, 14, 10, 30)));
+      expect(
+        result.exportDate!.toUtc(),
+        equals(DateTime.utc(2025, 1, 14, 10, 30)),
+      );
     });
 
     /// BUT-1137 FIXED: exporter now writes BOTH `user_id` and `user_email`,
@@ -604,9 +666,13 @@ void main() {
       fakeFilePicker.respondWithBytes(_utf8Bytes(envelopeAsExporterEmits));
       final fromRealExporterResult = await service.importFromFile();
 
-      expect(fromRealExporterResult.exportEmail, equals('exporter@example.com'),
-          reason: 'BUT-1137: post-fix exporter writes user_email, importer '
-              'reads it — round-trip preserves the address');
+      expect(
+        fromRealExporterResult.exportEmail,
+        equals('exporter@example.com'),
+        reason:
+            'BUT-1137: post-fix exporter writes user_email, importer '
+            'reads it — round-trip preserves the address',
+      );
     });
 
     /// Backward compatibility sentinel: legacy backups produced BEFORE
@@ -621,25 +687,32 @@ void main() {
 
       final result = await service.importFromFile();
 
-      expect(result.exportEmail, isNull,
-          reason: 'pre-1137 backups had no user_email — import must not crash');
+      expect(
+        result.exportEmail,
+        isNull,
+        reason: 'pre-1137 backups had no user_email — import must not crash',
+      );
     });
 
     /// Empty `recipes` array is structurally valid (a backup with zero
     /// recipes) — must not crash, returns totals all zero. Pins
     /// "empty list != malformed file".
-    test('handles backup with empty recipes list as zero-success import',
-        () async {
-      fakeFilePicker.respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [])));
+    test(
+      'handles backup with empty recipes list as zero-success import',
+      () async {
+        fakeFilePicker.respondWithBytes(
+          _utf8Bytes(_backupEnvelope(recipes: [])),
+        );
 
-      final result = await service.importFromFile();
+        final result = await service.importFromFile();
 
-      expect(result.success, isTrue);
-      expect(result.totalRecipes, equals(0));
-      expect(result.successCount, equals(0));
-      expect(result.skipCount, equals(0));
-      expect(result.errors, isEmpty);
-    });
+        expect(result.success, isTrue);
+        expect(result.totalRecipes, equals(0));
+        expect(result.successCount, equals(0));
+        expect(result.skipCount, equals(0));
+        expect(result.errors, isEmpty);
+      },
+    );
   });
 
   group('importFromFile — PII scoping', () {
@@ -654,8 +727,9 @@ void main() {
         title: 'From Alice',
         createdBy: 'alice-uid', // foreign owner in source backup
       );
-      fakeFilePicker
-          .respondWithBytes(_utf8Bytes(_backupEnvelope(recipes: [foreign])));
+      fakeFilePicker.respondWithBytes(
+        _utf8Bytes(_backupEnvelope(recipes: [foreign])),
+      );
 
       await service.importFromFile();
 
@@ -665,19 +739,21 @@ void main() {
       // through the import path) without forwarding alien identity. The
       // absence of a createdBy named parameter in `createRecipe` is itself
       // the structural guarantee.
-      verify(() => mockPersonalOps.createRecipe(
-            title: 'From Alice',
-            description: any(named: 'description'),
-            ingredients: any(named: 'ingredients'),
-            instructions: any(named: 'instructions'),
-            imageUrls: any(named: 'imageUrls'),
-            mealType: any(named: 'mealType'),
-            portions: any(named: 'portions'),
-            timeMinutes: any(named: 'timeMinutes'),
-            rating: any(named: 'rating'),
-            personalTagIds: any(named: 'personalTagIds'),
-            sourceUrl: any(named: 'sourceUrl'),
-          )).called(1);
+      verify(
+        () => mockPersonalOps.createRecipe(
+          title: 'From Alice',
+          description: any(named: 'description'),
+          ingredients: any(named: 'ingredients'),
+          instructions: any(named: 'instructions'),
+          imageUrls: any(named: 'imageUrls'),
+          mealType: any(named: 'mealType'),
+          portions: any(named: 'portions'),
+          timeMinutes: any(named: 'timeMinutes'),
+          rating: any(named: 'rating'),
+          personalTagIds: any(named: 'personalTagIds'),
+          sourceUrl: any(named: 'sourceUrl'),
+        ),
+      ).called(1);
     });
   });
 
@@ -699,21 +775,23 @@ void main() {
     /// BackupResult.success populates filePath + recipeCount; .error leaves
     /// them null. Lets a UI safely render "saved to <path>" only when both
     /// fields are non-null.
-    test('BackupResult.success vs .error populate optional fields distinctly',
-        () {
-      final ok = BackupResult.success(
-        message: 'Saved',
-        filePath: '/tmp/x.json',
-        recipeCount: 7,
-      );
-      final fail = BackupResult.error('Disk full');
+    test(
+      'BackupResult.success vs .error populate optional fields distinctly',
+      () {
+        final ok = BackupResult.success(
+          message: 'Saved',
+          filePath: '/tmp/x.json',
+          recipeCount: 7,
+        );
+        final fail = BackupResult.error('Disk full');
 
-      expect(ok.success, isTrue);
-      expect(ok.filePath, equals('/tmp/x.json'));
-      expect(ok.recipeCount, equals(7));
-      expect(fail.success, isFalse);
-      expect(fail.filePath, isNull);
-      expect(fail.recipeCount, isNull);
-    });
+        expect(ok.success, isTrue);
+        expect(ok.filePath, equals('/tmp/x.json'));
+        expect(ok.recipeCount, equals(7));
+        expect(fail.success, isFalse);
+        expect(fail.filePath, isNull);
+        expect(fail.recipeCount, isNull);
+      },
+    );
   });
 }

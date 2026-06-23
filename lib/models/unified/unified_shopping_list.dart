@@ -66,16 +66,12 @@ import 'package:butlery/core/l10n/app_locale.dart';
 enum SyncStatus {
   /// Successfully synchronized with Firebase backend.
   synced, // Synkad med Firebase
-
   /// Pending synchronization with backend, changes waiting to be uploaded.
   pending, // Waiting for sync
-
   /// Synchronization conflict detected, requires user resolution.
   conflict, // Conflict that needs resolution
-
   /// Local-only data, not synchronized with backend (offline mode).
   local, // Endast lokal (offline)
-
   /// Synchronization error occurred, retry or manual intervention needed.
   error, // Synk-fel
 }
@@ -86,10 +82,8 @@ enum SyncStatus {
 enum ListType {
   /// Personal shopping list for individual use without collaboration.
   personal, // Personlig lista
-
   /// Collaborative shopping list shared with other users with real-time sync.
   collaborative, // Delad med andra, real-time sync
-
   /// Template shopping list for reuse and duplication across users.
   template, // Template list for reuse
 }
@@ -103,10 +97,8 @@ typedef ShoppingListType = ListType;
 enum SharedListPermission {
   /// View-only permission, can see list and items but cannot modify.
   view, // Kan bara se listan
-
   /// Edit permission, can add, remove, and modify items in the list.
   edit, // Can add/remove items
-
   /// Administrative permission, can manage permissions and delete the list.
   admin, // Can edit permissions and delete list
 }
@@ -160,7 +152,7 @@ class UnifiedShoppingList {
   /// Member permissions mapping for collaborative access control.
   /// Maps user IDs to their permission levels for granular collaborative list management.
   final Map<String, SharedListPermission>
-      memberPermissions; // userId -> permission
+  memberPermissions; // userId -> permission
 
   /// Optional timestamp of the most recent activity on the shopping list.
   /// Used for activity tracking and determining list engagement for collaborative features.
@@ -259,9 +251,9 @@ class UnifiedShoppingList {
     this.collaborativeOrigin,
     this.generatedForWeek,
     this.schemaVersion = 1,
-  })  : id = id ?? const Uuid().v4(),
-        createdAt = createdAt ?? clock.now(),
-        updatedAt = updatedAt ?? clock.now();
+  }) : id = id ?? const Uuid().v4(),
+       createdAt = createdAt ?? clock.now(),
+       updatedAt = updatedAt ?? clock.now();
 
   /// Factory constructors for simplified shopping list creation with specific configurations.
 
@@ -317,8 +309,9 @@ class UnifiedShoppingList {
     bool autoRemoveCompleted = false,
   }) {
     final now = clock.now();
-    final permissions =
-        Map<String, SharedListPermission>.from(memberPermissions);
+    final permissions = Map<String, SharedListPermission>.from(
+      memberPermissions,
+    );
     permissions[ownerId] = SharedListPermission.admin; // Owner gets admin
 
     return UnifiedShoppingList(
@@ -543,8 +536,12 @@ class UnifiedShoppingList {
       userDisplayName: userDisplayName,
     );
 
-    return updateItem(itemId, updatedItem,
-        userId: userId, userDisplayName: userDisplayName);
+    return updateItem(
+      itemId,
+      updatedItem,
+      userId: userId,
+      userDisplayName: userDisplayName,
+    );
   }
 
   UnifiedShoppingList clearBoughtItems({
@@ -569,8 +566,9 @@ class UnifiedShoppingList {
     String? userDisplayName,
   }) {
     final now = clock.now();
-    final uncheckedItems =
-        items.map((item) => item.copyWith(bought: false)).toList();
+    final uncheckedItems = items
+        .map((item) => item.copyWith(bought: false))
+        .toList();
 
     return copyWith(
       items: uncheckedItems,
@@ -596,14 +594,16 @@ class UnifiedShoppingList {
       'items': items.map((item) => item.toFirestore()).toList(),
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
-      'lastSyncedAt':
-          lastSyncedAt != null ? Timestamp.fromDate(lastSyncedAt!) : null,
+      'lastSyncedAt': lastSyncedAt != null
+          ? Timestamp.fromDate(lastSyncedAt!)
+          : null,
       'type': type.name,
       'memberPermissions': memberPermissions.map(
         (userId, permission) => MapEntry(userId, permission.name),
       ),
-      'lastActivityAt':
-          lastActivityAt != null ? Timestamp.fromDate(lastActivityAt!) : null,
+      'lastActivityAt': lastActivityAt != null
+          ? Timestamp.fromDate(lastActivityAt!)
+          : null,
       'lastActivityByUserId': lastActivityByUserId,
       'lastActivityByDisplayName': lastActivityByDisplayName,
       'description': description,
@@ -654,10 +654,14 @@ class UnifiedShoppingList {
   /// type conversion and collaborative metadata deserialization for client-side caching support.
   /// Returns a new [UnifiedShoppingList] instance with all data properly parsed from JSON.
   factory UnifiedShoppingList.fromJson(Map<String, dynamic> json) {
-    final lastSyncedAtStr =
-        SerializationUtils.safeNullableString(json, 'lastSyncedAt');
-    final lastActivityAtStr =
-        SerializationUtils.safeNullableString(json, 'lastActivityAt');
+    final lastSyncedAtStr = SerializationUtils.safeNullableString(
+      json,
+      'lastSyncedAt',
+    );
+    final lastActivityAtStr = SerializationUtils.safeNullableString(
+      json,
+      'lastActivityAt',
+    );
 
     return UnifiedShoppingList(
       id: SerializationUtils.safeString(json, 'id'),
@@ -671,8 +675,9 @@ class UnifiedShoppingList {
       ),
       createdAt: SerializationUtils.safeRequiredDateTime(json, 'createdAt'),
       updatedAt: SerializationUtils.safeRequiredDateTime(json, 'updatedAt'),
-      lastSyncedAt:
-          lastSyncedAtStr != null ? DateTime.tryParse(lastSyncedAtStr) : null,
+      lastSyncedAt: lastSyncedAtStr != null
+          ? DateTime.tryParse(lastSyncedAtStr)
+          : null,
       syncStatus: SyncStatus.values.firstWhere(
         (s) => s.name == SerializationUtils.safeString(json, 'syncStatus'),
         orElse: () => SyncStatus.local,
@@ -682,28 +687,42 @@ class UnifiedShoppingList {
         orElse: () => ListType.personal,
       ),
       memberPermissions: SerializationUtils.safeMap(json, 'memberPermissions')
-          .map((userId, permissionName) => MapEntry(
+          .map(
+            (userId, permissionName) => MapEntry(
               userId,
               SharedListPermission.values.firstWhere(
                 (p) => p.name == permissionName,
                 orElse: () => SharedListPermission.view,
-              ))),
+              ),
+            ),
+          ),
       lastActivityAt: lastActivityAtStr != null
           ? DateTime.tryParse(lastActivityAtStr)
           : null,
-      lastActivityByUserId:
-          SerializationUtils.safeNullableString(json, 'lastActivityByUserId'),
+      lastActivityByUserId: SerializationUtils.safeNullableString(
+        json,
+        'lastActivityByUserId',
+      ),
       lastActivityByDisplayName: SerializationUtils.safeNullableString(
-          json, 'lastActivityByDisplayName'),
+        json,
+        'lastActivityByDisplayName',
+      ),
       description: SerializationUtils.safeNullableString(json, 'description'),
       settings: SerializationUtils.safeMap(json, 'settings'),
       categoryIds: SerializationUtils.safeStringList(json, 'categoryIds'),
-      allowGuestEditing: SerializationUtils.safeBool(json, 'allowGuestEditing',
-          defaultValue: true),
-      autoRemoveCompleted:
-          SerializationUtils.safeBool(json, 'autoRemoveCompleted'),
-      generatedForWeek:
-          SerializationUtils.safeNullableString(json, 'generatedForWeek'),
+      allowGuestEditing: SerializationUtils.safeBool(
+        json,
+        'allowGuestEditing',
+        defaultValue: true,
+      ),
+      autoRemoveCompleted: SerializationUtils.safeBool(
+        json,
+        'autoRemoveCompleted',
+      ),
+      generatedForWeek: SerializationUtils.safeNullableString(
+        json,
+        'generatedForWeek',
+      ),
       schemaVersion: json['schemaVersion'] as int? ?? 1,
     );
   }
@@ -739,37 +758,55 @@ class UnifiedShoppingList {
         orElse: () => ListType.personal,
       ),
       memberPermissions: SerializationUtils.safeMap(data, 'memberPermissions')
-          .map((userId, permissionName) => MapEntry(
+          .map(
+            (userId, permissionName) => MapEntry(
               userId,
               SharedListPermission.values.firstWhere(
                 (p) => p.name == permissionName,
                 orElse: () => SharedListPermission.view,
-              ))),
+              ),
+            ),
+          ),
       lastActivityAt: data['lastActivityAt'] is DateTime
           ? data['lastActivityAt'] as DateTime
           : SerializationUtils.safeDateTime(data, 'lastActivityAt'),
-      lastActivityByUserId:
-          SerializationUtils.safeNullableString(data, 'lastActivityByUserId'),
+      lastActivityByUserId: SerializationUtils.safeNullableString(
+        data,
+        'lastActivityByUserId',
+      ),
       lastActivityByDisplayName: SerializationUtils.safeNullableString(
-          data, 'lastActivityByDisplayName'),
+        data,
+        'lastActivityByDisplayName',
+      ),
       description: SerializationUtils.safeNullableString(data, 'description'),
       settings: SerializationUtils.safeMap(data, 'settings'),
       categoryIds: SerializationUtils.safeStringList(data, 'categoryIds'),
-      allowGuestEditing: SerializationUtils.safeBool(data, 'allowGuestEditing',
-          defaultValue: true),
-      autoRemoveCompleted:
-          SerializationUtils.safeBool(data, 'autoRemoveCompleted'),
-      collaborativeOrigin:
-          SerializationUtils.safeNullableString(data, 'collaborativeOrigin'),
-      generatedForWeek:
-          SerializationUtils.safeNullableString(data, 'generatedForWeek'),
+      allowGuestEditing: SerializationUtils.safeBool(
+        data,
+        'allowGuestEditing',
+        defaultValue: true,
+      ),
+      autoRemoveCompleted: SerializationUtils.safeBool(
+        data,
+        'autoRemoveCompleted',
+      ),
+      collaborativeOrigin: SerializationUtils.safeNullableString(
+        data,
+        'collaborativeOrigin',
+      ),
+      generatedForWeek: SerializationUtils.safeNullableString(
+        data,
+        'generatedForWeek',
+      ),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
     );
   }
 
   factory UnifiedShoppingList.fromFirestore(DocumentSnapshot doc) {
     return UnifiedShoppingList.fromMap(
-        doc.id, doc.data() as Map<String, dynamic>);
+      doc.id,
+      doc.data() as Map<String, dynamic>,
+    );
   }
 
   /// Standard object methods for debugging, comparison, and identity management.

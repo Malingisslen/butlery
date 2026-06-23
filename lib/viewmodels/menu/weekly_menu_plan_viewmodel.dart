@@ -21,9 +21,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     required WeeklyMenuPlanService service,
     required UnifiedRecipeService recipeService,
     required MenuShoppingListGenerator shoppingListGenerator,
-  })  : _service = service,
-        _recipeService = recipeService,
-        _shoppingListGenerator = shoppingListGenerator;
+  }) : _service = service,
+       _recipeService = recipeService,
+       _shoppingListGenerator = shoppingListGenerator;
 
   WeeklyMenuPlan? _plan;
   List<Recipe> _overflow = const [];
@@ -149,8 +149,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     try {
       final ok = await executeAsyncVoid(
         () async {
-          final base =
-              replaceExisting ? _plan?.copyWith(entries: const []) : _plan;
+          final base = replaceExisting
+              ? _plan?.copyWith(entries: const [])
+              : _plan;
           final baseIds = base?.entries.map((e) => e.id).toSet() ?? const {};
           final result = _service.distributeFromGeneratedMenu(
             generated: generated,

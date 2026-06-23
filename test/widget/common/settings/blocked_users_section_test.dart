@@ -33,8 +33,9 @@ void main() {
       // it) to the shared test GetIt.
       prod_locator.ServiceLocator.initialize(DIContainer());
 
-      final friends = prod_locator.ServiceLocator.get<UnifiedFriendsService>()
-          as MockUnifiedFriendsService;
+      final friends =
+          prod_locator.ServiceLocator.get<UnifiedFriendsService>()
+              as MockUnifiedFriendsService;
       friends.setFriendsState(
         management: MockFriendsManagementOperations()
           ..setManagementState(blockedUsers: {'u1', 'u2', 'u3'}),
@@ -56,8 +57,9 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('lists blocked users; no selection bar until long-press',
-        (tester) async {
+    testWidgets('lists blocked users; no selection bar until long-press', (
+      tester,
+    ) async {
       await pumpExpanded(tester);
 
       // No profiles seeded → tiles fall back to the userId as the label.
@@ -68,8 +70,9 @@ void main() {
       expect(find.byIcon(Icons.lock_open), findsNothing);
     });
 
-    testWidgets('long-press enters selection mode and selects that tile',
-        (tester) async {
+    testWidgets('long-press enters selection mode and selects that tile', (
+      tester,
+    ) async {
       await pumpExpanded(tester);
 
       await tester.longPress(find.text('u1'));
@@ -80,8 +83,9 @@ void main() {
       expect(find.byIcon(Icons.check_box_outline_blank), findsNWidgets(2));
     });
 
-    testWidgets('tap toggles additional tiles in selection mode',
-        (tester) async {
+    testWidgets('tap toggles additional tiles in selection mode', (
+      tester,
+    ) async {
       await pumpExpanded(tester);
       await tester.longPress(find.text('u1'));
       await tester.pumpAndSettle();
@@ -106,23 +110,25 @@ void main() {
     });
 
     testWidgets(
-        'bulk-unblock opens the bulk confirmation dialog (not per-tile)',
-        (tester) async {
-      await pumpExpanded(tester);
-      await tester.longPress(find.text('u1'));
-      await tester.pumpAndSettle();
+      'bulk-unblock opens the bulk confirmation dialog (not per-tile)',
+      (tester) async {
+        await pumpExpanded(tester);
+        await tester.longPress(find.text('u1'));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.lock_open));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.lock_open));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDialog), findsOneWidget);
-      // Assert the bulk message (with count) so this can't pass on the per-tile
-      // unblock dialog, which raises an AlertDialog too.
-      expect(find.text('Vill du avblockera 1 användare?'), findsOneWidget);
-    });
+        expect(find.byType(AlertDialog), findsOneWidget);
+        // Assert the bulk message (with count) so this can't pass on the per-tile
+        // unblock dialog, which raises an AlertDialog too.
+        expect(find.text('Vill du avblockera 1 användare?'), findsOneWidget);
+      },
+    );
 
-    testWidgets('confirming bulk-unblock shows the count snackbar and exits',
-        (tester) async {
+    testWidgets('confirming bulk-unblock shows the count snackbar and exits', (
+      tester,
+    ) async {
       await pumpExpanded(tester);
       await tester.longPress(find.text('u1'));
       await tester.pumpAndSettle();

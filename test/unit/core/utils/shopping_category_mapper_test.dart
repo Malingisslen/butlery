@@ -31,7 +31,8 @@ void main() {
   test('protein/dairy → dairy', () {
     expect(
       ShoppingCategoryMapper.categoryFromIngredientGroup(
-          'protein/dairy/cheese'),
+        'protein/dairy/cheese',
+      ),
       ShoppingCategory.dairy,
     );
   });
@@ -122,10 +123,16 @@ void main() {
     ];
     for (final group in groups) {
       final result = ShoppingCategoryMapper.categoryFromIngredientGroup(group);
-      expect(result, isNot(ShoppingCategory.meatFish),
-          reason: '"$group" must not map to legacy meatFish');
-      expect(result, isNot(ShoppingCategory.fruitVeg),
-          reason: '"$group" must not map to legacy fruitVeg');
+      expect(
+        result,
+        isNot(ShoppingCategory.meatFish),
+        reason: '"$group" must not map to legacy meatFish',
+      );
+      expect(
+        result,
+        isNot(ShoppingCategory.fruitVeg),
+        reason: '"$group" must not map to legacy fruitVeg',
+      );
     }
   });
 }

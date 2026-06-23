@@ -14,11 +14,11 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 /// - Zero ingredients or zero recipes short-circuit safely.
 void main() {
   SeasonalMonth aprilMonth() => const SeasonalMonth(
-        monthIndex: 4,
-        monthKey: 'april',
-        ingredients: ['sparris', 'rabarber', 'purjolök'],
-        vegetableType: VegetableType.asparagus,
-      );
+    monthIndex: 4,
+    monthKey: 'april',
+    ingredients: ['sparris', 'rabarber', 'purjolök'],
+    vegetableType: VegetableType.asparagus,
+  );
 
   int recipeCounter = 0;
   Recipe recipe({required List<String> ingredients}) {
@@ -53,12 +53,14 @@ void main() {
       expect(matches, isEmpty);
     });
 
-    test('includes recipes whose ingredient list contains a seasonal needle',
-        () {
-      final hit = recipe(ingredients: const ['pasta', 'sparris', 'citron']);
-      final miss = recipe(ingredients: const ['ris', 'kyckling']);
-      expect(service.matchUserRecipes(aprilMonth(), [hit, miss]), [hit]);
-    });
+    test(
+      'includes recipes whose ingredient list contains a seasonal needle',
+      () {
+        final hit = recipe(ingredients: const ['pasta', 'sparris', 'citron']);
+        final miss = recipe(ingredients: const ['ris', 'kyckling']);
+        expect(service.matchUserRecipes(aprilMonth(), [hit, miss]), [hit]);
+      },
+    );
 
     test('substring match catches compound ingredients', () {
       // User has "sparrissoppa" as an ingredient — should match "sparris".
@@ -95,7 +97,7 @@ void main() {
     test('returns null when match count is below threshold', () async {
       final result = await service.resolveHero(
         [
-          recipe(ingredients: const ['sparris'])
+          recipe(ingredients: const ['sparris']),
         ],
         now: DateTime(2026, 4, 15),
       );
@@ -119,18 +121,20 @@ void main() {
       expect(result.matchCount, 2);
     });
 
-    test('returns null when month not curated (no data for that month)',
-        () async {
-      // Only April injected. August has no data → null.
-      final result = await service.resolveHero(
-        [
-          recipe(ingredients: const ['jordgubbar']),
-          recipe(ingredients: const ['blåbär']),
-        ],
-        now: DateTime(2026, 8, 15),
-      );
-      expect(result, isNull);
-    });
+    test(
+      'returns null when month not curated (no data for that month)',
+      () async {
+        // Only April injected. August has no data → null.
+        final result = await service.resolveHero(
+          [
+            recipe(ingredients: const ['jordgubbar']),
+            recipe(ingredients: const ['blåbär']),
+          ],
+          now: DateTime(2026, 8, 15),
+        );
+        expect(result, isNull);
+      },
+    );
   });
 
   group('SeasonalMonth.fromJson', () {
@@ -151,12 +155,13 @@ void main() {
 
     test('rejects missing monthIndex', () {
       expect(
-          () => SeasonalMonth.fromJson({
-                'monthKey': 'april',
-                'ingredients': ['x'],
-                'vegetableType': 'asparagus',
-              }),
-          throwsFormatException);
+        () => SeasonalMonth.fromJson({
+          'monthKey': 'april',
+          'ingredients': ['x'],
+          'vegetableType': 'asparagus',
+        }),
+        throwsFormatException,
+      );
     });
   });
 }

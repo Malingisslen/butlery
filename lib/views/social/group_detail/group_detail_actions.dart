@@ -75,8 +75,10 @@ class GroupDetailActions {
     final shouldRemove = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: context.l10n.groupRemoveMember,
-      message:
-          context.l10n.groupRemoveMultipleConfirm(members.length, group.name),
+      message: context.l10n.groupRemoveMultipleConfirm(
+        members.length,
+        group.name,
+      ),
       confirmText: context.l10n.commonRemove,
       icon: Icons.person_remove,
       isDangerous: true,
@@ -113,8 +115,10 @@ class GroupDetailActions {
         messenger.showSnackBar(
           SnackBar(
             content: Text(
-              context.l10n
-                  .groupMembersPartiallyRemoved(removed, failed.join(', ')),
+              context.l10n.groupMembersPartiallyRemoved(
+                removed,
+                failed.join(', '),
+              ),
             ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
@@ -135,8 +139,10 @@ class GroupDetailActions {
     final shouldRemove = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: context.l10n.groupRemoveMember,
-      message:
-          context.l10n.groupRemoveMemberConfirm(member.displayName, group.name),
+      message: context.l10n.groupRemoveMemberConfirm(
+        member.displayName,
+        group.name,
+      ),
       confirmText: context.l10n.commonRemove,
       icon: Icons.person_remove,
       isDangerous: true,
@@ -145,17 +151,18 @@ class GroupDetailActions {
     if (shouldRemove == true) {
       try {
         final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
-        final success =
-            await categoriesService.categories.removeFriendFromCategory(
-          member.uid,
-          group.id,
-        );
+        final success = await categoriesService.categories
+            .removeFriendFromCategory(
+              member.uid,
+              group.id,
+            );
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(context.l10n.groupMemberRemoved(member.displayName)),
+              content: Text(
+                context.l10n.groupMemberRemoved(member.displayName),
+              ),
               backgroundColor: context.butleryColors.success,
             ),
           );
@@ -183,8 +190,9 @@ class GroupDetailActions {
     FriendCategory group,
   ) async {
     final nameController = TextEditingController(text: group.name);
-    final descriptionController =
-        TextEditingController(text: group.description);
+    final descriptionController = TextEditingController(
+      text: group.description,
+    );
     final emojiController = TextEditingController(text: group.emoji);
 
     final result = await showDialog<bool>(
@@ -278,8 +286,9 @@ class GroupDetailActions {
     if (shouldDelete == true) {
       try {
         final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
-        final success =
-            await categoriesService.categories.deleteCategory(group.id);
+        final success = await categoriesService.categories.deleteCategory(
+          group.id,
+        );
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -329,11 +338,11 @@ class GroupDetailActions {
         final currentUserId = permissionService.currentUserId;
 
         if (currentUserId != null) {
-          final success =
-              await categoriesService.categories.removeFriendFromCategory(
-            currentUserId,
-            group.id,
-          );
+          final success = await categoriesService.categories
+              .removeFriendFromCategory(
+                currentUserId,
+                group.id,
+              );
 
           if (success && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(

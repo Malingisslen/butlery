@@ -28,7 +28,7 @@ import '../../../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('RealtimeSessionManager', () {
     late Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions;
+    activeEditingSessions;
     late Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits;
     late Map<String, Timer> conflictResolutionTimers;
     late String? lastError;
@@ -36,8 +36,9 @@ void main() {
     late Map<String, bool> registeredEditors;
 
     // Helper function to create mock subscription using centralized infrastructure
-    StreamSubscription<DocumentSnapshot> createMockSubscription(
-        {bool isPaused = false}) {
+    StreamSubscription<DocumentSnapshot> createMockSubscription({
+      bool isPaused = false,
+    }) {
       final mockSub = MockStreamSubscription<DocumentSnapshot>();
       when(() => mockSub.isPaused).thenReturn(isPaused);
       when(() => mockSub.cancel()).thenAnswer((_) async {});
@@ -157,7 +158,7 @@ void main() {
         final mockSubscription = createMockSubscription();
         activeEditingSessions[recipeId] = mockSubscription;
         pendingRealtimeEdits[recipeId] = [
-          {'edit': 'test'}
+          {'edit': 'test'},
         ];
         conflictResolutionTimers[recipeId] = createMockTimer();
 
@@ -204,10 +205,10 @@ void main() {
         activeEditingSessions['recipe-1'] = mockSub1;
         activeEditingSessions['recipe-2'] = mockSub2;
         pendingRealtimeEdits['recipe-1'] = [
-          {'edit': '1'}
+          {'edit': '1'},
         ];
         pendingRealtimeEdits['recipe-2'] = [
-          {'edit': '2'}
+          {'edit': '2'},
         ];
 
         // Act
@@ -230,8 +231,9 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
         final mockSubscription = createMockSubscription();
-        when(() => mockSubscription.cancel())
-            .thenThrow(Exception('Cancel failed'));
+        when(
+          () => mockSubscription.cancel(),
+        ).thenThrow(Exception('Cancel failed'));
         activeEditingSessions[recipeId] = mockSubscription;
 
         // Act
@@ -385,12 +387,15 @@ void main() {
     group('Session Health Monitoring', () {
       test('should check session health', () {
         // Arrange
-        activeEditingSessions['recipe-1'] =
-            createMockSubscription(isPaused: false);
-        activeEditingSessions['recipe-2'] =
-            createMockSubscription(isPaused: true);
-        activeEditingSessions['recipe-3'] =
-            createMockSubscription(isPaused: false);
+        activeEditingSessions['recipe-1'] = createMockSubscription(
+          isPaused: false,
+        );
+        activeEditingSessions['recipe-2'] = createMockSubscription(
+          isPaused: true,
+        );
+        activeEditingSessions['recipe-3'] = createMockSubscription(
+          isPaused: false,
+        );
 
         // Act
         final health = RealtimeSessionManager.checkSessionHealth(
@@ -452,7 +457,7 @@ void main() {
         activeEditingSessions['recipe-2'] = createMockSubscription();
         pendingRealtimeEdits['recipe-1'] = [
           {'edit': '1'},
-          {'edit': '2'}
+          {'edit': '2'},
         ];
         conflictResolutionTimers['recipe-1'] = createMockTimer(isActive: true);
         conflictResolutionTimers['recipe-2'] = createMockTimer(isActive: false);
@@ -481,7 +486,7 @@ void main() {
         activeEditingSessions['recipe-1'] = createMockSubscription();
         activeEditingSessions['recipe-2'] = createMockSubscription();
         pendingRealtimeEdits['recipe-1'] = [
-          {'edit': '1'}
+          {'edit': '1'},
         ];
         conflictResolutionTimers['recipe-1'] = createMockTimer();
 
@@ -505,7 +510,7 @@ void main() {
       test('should check if session needs recovery', () {
         // Scenario 1: Has pending edits but no subscription (needs recovery)
         pendingRealtimeEdits['recipe-1'] = [
-          {'edit': 'test'}
+          {'edit': 'test'},
         ];
         expect(
           RealtimeSessionManager.needsSessionRecovery(
@@ -519,7 +524,7 @@ void main() {
         // Scenario 2: Has subscription and pending edits (no recovery needed)
         activeEditingSessions['recipe-2'] = createMockSubscription();
         pendingRealtimeEdits['recipe-2'] = [
-          {'edit': 'test'}
+          {'edit': 'test'},
         ];
         expect(
           RealtimeSessionManager.needsSessionRecovery(

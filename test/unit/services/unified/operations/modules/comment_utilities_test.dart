@@ -19,14 +19,16 @@ void main() {
   // Register the mock BEFORE any test groups to ensure it's available when CommentUtilities loads
   setUpAll(() async {
     // Register fallback values for mocktail
-    registerFallbackValue(RecipeComment(
-      id: 'test',
-      recipeId: 'test',
-      authorId: 'test',
-      authorDisplayName: 'Test',
-      text: 'Test',
-      createdAt: DateTime.now(),
-    ));
+    registerFallbackValue(
+      RecipeComment(
+        id: 'test',
+        recipeId: 'test',
+        authorId: 'test',
+        authorDisplayName: 'Test',
+        text: 'Test',
+        createdAt: DateTime.now(),
+      ),
+    );
 
     // Initialize base test infrastructure
     await BaseUnitTest.setupUnit();
@@ -227,10 +229,12 @@ void main() {
     group('Reply Count Management', () {
       test('should increment reply count', () async {
         // Arrange
-        when(() => mockCommentsRepository.read('comment_1'))
-            .thenAnswer((_) async => testComment);
-        when(() => mockCommentsRepository.update(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockCommentsRepository.read('comment_1'),
+        ).thenAnswer((_) async => testComment);
+        when(
+          () => mockCommentsRepository.update(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await CommentUtilities.incrementReplyCount(
@@ -244,10 +248,12 @@ void main() {
 
       test('should decrement reply count', () async {
         // Arrange
-        when(() => mockCommentsRepository.read('comment_1'))
-            .thenAnswer((_) async => testComment);
-        when(() => mockCommentsRepository.update(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockCommentsRepository.read('comment_1'),
+        ).thenAnswer((_) async => testComment);
+        when(
+          () => mockCommentsRepository.update(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await CommentUtilities.decrementReplyCount(
@@ -262,10 +268,12 @@ void main() {
       test('should not decrement below zero', () async {
         // Arrange
         final zeroReplyComment = testComment.copyWith(replyCount: 0);
-        when(() => mockCommentsRepository.read('comment_1'))
-            .thenAnswer((_) async => zeroReplyComment);
-        when(() => mockCommentsRepository.update(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockCommentsRepository.read('comment_1'),
+        ).thenAnswer((_) async => zeroReplyComment);
+        when(
+          () => mockCommentsRepository.update(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         await CommentUtilities.decrementReplyCount(
@@ -274,16 +282,18 @@ void main() {
 
         // Assert
         final capturedComment =
-            verify(() => mockCommentsRepository.update(captureAny()))
-                .captured
-                .first as RecipeComment;
+            verify(
+                  () => mockCommentsRepository.update(captureAny()),
+                ).captured.first
+                as RecipeComment;
         expect(capturedComment.replyCount, equals(0));
       });
 
       test('should get reply count', () async {
         // Arrange
-        when(() => mockCommentsRepository.read('comment_1'))
-            .thenAnswer((_) async => testComment);
+        when(
+          () => mockCommentsRepository.read('comment_1'),
+        ).thenAnswer((_) async => testComment);
 
         // Act
         final count = await CommentUtilities.getReplyCount(
@@ -322,9 +332,9 @@ void main() {
             likesCount: 0,
           ),
         ];
-        when(() =>
-                mockCommentsRepository.getCommentsForRecipe('collab_recipe_1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('collab_recipe_1'),
+        ).thenAnswer((_) async => comments);
 
         // Act
         final stats = await CommentUtilities.getCommentStatistics(
@@ -369,9 +379,9 @@ void main() {
             isDeleted: testReply.isDeleted,
           ),
         ];
-        when(() =>
-                mockCommentsRepository.getCommentsForRecipe('collab_recipe_1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('collab_recipe_1'),
+        ).thenAnswer((_) async => comments);
 
         // Act
         final timeline = await CommentUtilities.getCommentActivityTimeline(
@@ -412,9 +422,9 @@ void main() {
           ),
           testReply,
         ];
-        when(() =>
-                mockCommentsRepository.getCommentsForRecipe('collab_recipe_1'))
-            .thenAnswer((_) async => comments);
+        when(
+          () => mockCommentsRepository.getCommentsForRecipe('collab_recipe_1'),
+        ).thenAnswer((_) async => comments);
 
         // Act
         final activeCommenters = await CommentUtilities.getMostActiveCommenters(

@@ -171,42 +171,70 @@ void main() {
 
       test('should check if user can edit', () {
         expect(
-            RealtimeParticipants.canEdit(participants, 'user_owner'), isTrue);
+          RealtimeParticipants.canEdit(participants, 'user_owner'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.canEdit(participants, 'user_admin'), isTrue);
+          RealtimeParticipants.canEdit(participants, 'user_admin'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.canEdit(participants, 'user_editor'), isTrue);
+          RealtimeParticipants.canEdit(participants, 'user_editor'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.canEdit(participants, 'user_viewer'), isFalse);
-        expect(RealtimeParticipants.canEdit(participants, 'user_unknown'),
-            isFalse);
+          RealtimeParticipants.canEdit(participants, 'user_viewer'),
+          isFalse,
+        );
+        expect(
+          RealtimeParticipants.canEdit(participants, 'user_unknown'),
+          isFalse,
+        );
       });
 
       test('should check if user can view', () {
         expect(
-            RealtimeParticipants.canView(participants, 'user_owner'), isTrue);
+          RealtimeParticipants.canView(participants, 'user_owner'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.canView(participants, 'user_viewer'), isTrue);
-        expect(RealtimeParticipants.canView(participants, 'user_unknown'),
-            isFalse);
+          RealtimeParticipants.canView(participants, 'user_viewer'),
+          isTrue,
+        );
+        expect(
+          RealtimeParticipants.canView(participants, 'user_unknown'),
+          isFalse,
+        );
       });
 
       test('should check if user is owner', () {
         expect(
-            RealtimeParticipants.isOwner(participants, 'user_owner'), isTrue);
+          RealtimeParticipants.isOwner(participants, 'user_owner'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.isOwner(participants, 'user_admin'), isFalse);
-        expect(RealtimeParticipants.isOwner(participants, 'user_unknown'),
-            isFalse);
+          RealtimeParticipants.isOwner(participants, 'user_admin'),
+          isFalse,
+        );
+        expect(
+          RealtimeParticipants.isOwner(participants, 'user_unknown'),
+          isFalse,
+        );
       });
 
       test('should check if user is admin', () {
         expect(
-            RealtimeParticipants.isAdmin(participants, 'user_owner'), isTrue);
+          RealtimeParticipants.isAdmin(participants, 'user_owner'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.isAdmin(participants, 'user_admin'), isTrue);
+          RealtimeParticipants.isAdmin(participants, 'user_admin'),
+          isTrue,
+        );
         expect(
-            RealtimeParticipants.isAdmin(participants, 'user_editor'), isFalse);
+          RealtimeParticipants.isAdmin(participants, 'user_editor'),
+          isFalse,
+        );
       });
 
       test('should validate permission change', () {
@@ -316,15 +344,19 @@ void main() {
 
         expect(editors.length, equals(3));
         expect(
-            editors, containsAll(['user_owner', 'user_admin', 'user_editor']));
+          editors,
+          containsAll(['user_owner', 'user_admin', 'user_editor']),
+        );
         expect(editors, isNot(contains('user_viewer')));
       });
 
       test('should calculate collaboration level', () {
         // Single user = 0
         var participants = {'user_owner': ResourcePermission.owner};
-        expect(RealtimeParticipants.getCollaborationLevel(participants),
-            equals(0));
+        expect(
+          RealtimeParticipants.getCollaborationLevel(participants),
+          equals(0),
+        );
 
         // Two users, both editors = high collaboration
         participants = {
@@ -345,7 +377,9 @@ void main() {
         };
         level = RealtimeParticipants.getCollaborationLevel(participants);
         expect(
-            level, greaterThan(30)); // Good collaboration with multiple editors
+          level,
+          greaterThan(30),
+        ); // Good collaboration with multiple editors
         expect(level, lessThanOrEqualTo(100));
       });
     });
@@ -385,8 +419,9 @@ void main() {
           '   ': ResourcePermission.admin, // Should be removed
         };
 
-        final sanitized =
-            RealtimeParticipants.sanitizeParticipants(participants);
+        final sanitized = RealtimeParticipants.sanitizeParticipants(
+          participants,
+        );
 
         expect(sanitized.length, equals(2));
         expect(sanitized['user_owner'], equals(ResourcePermission.owner));
@@ -476,11 +511,11 @@ void main() {
           editorIds: [
             'user_editor1',
             'user_editor2',
-            'user_owner'
+            'user_owner',
           ], // Owner should be excluded
           viewerIds: [
             'user_viewer1',
-            'user_editor1'
+            'user_editor1',
           ], // Duplicate should keep higher permission
         );
 
@@ -525,9 +560,14 @@ void main() {
 
         expect(canEdit.length, equals(4)); // owner, admin, 2 editors
         expect(
-            canEdit,
-            containsAll(
-                ['user_owner', 'user_admin', 'user_editor1', 'user_editor2']));
+          canEdit,
+          containsAll([
+            'user_owner',
+            'user_admin',
+            'user_editor1',
+            'user_editor2',
+          ]),
+        );
       });
 
       test('should find participants with maximum permission', () {
@@ -538,13 +578,14 @@ void main() {
 
         expect(limited.length, equals(4)); // 2 editors, 2 viewers
         expect(
-            limited,
-            containsAll([
-              'user_editor1',
-              'user_editor2',
-              'user_viewer1',
-              'user_viewer2'
-            ]));
+          limited,
+          containsAll([
+            'user_editor1',
+            'user_editor2',
+            'user_viewer1',
+            'user_viewer2',
+          ]),
+        );
       });
 
       test('should count participants by criteria', () {
@@ -570,8 +611,10 @@ void main() {
       test('should handle empty participants map', () {
         final empty = <String, ResourcePermission>{};
 
-        expect(RealtimeParticipants.getParticipantStats(empty)['total'],
-            equals(0));
+        expect(
+          RealtimeParticipants.getParticipantStats(empty)['total'],
+          equals(0),
+        );
         expect(RealtimeParticipants.getAllEditors(empty), isEmpty);
         expect(RealtimeParticipants.getCollaborationLevel(empty), equals(0));
         expect(RealtimeParticipants.isValidParticipants(empty), isFalse);
@@ -584,7 +627,9 @@ void main() {
         };
 
         expect(
-            RealtimeParticipants.canEdit(participants, 'user_write'), isTrue);
+          RealtimeParticipants.canEdit(participants, 'user_write'),
+          isTrue,
+        );
         expect(RealtimeParticipants.canView(participants, 'user_read'), isTrue);
 
         final stats = RealtimeParticipants.getParticipantStats(participants);
@@ -603,17 +648,26 @@ void main() {
         // Owner > Admin > Editor > Viewer
         expect(
           RealtimeParticipants.hasPermission(
-              participants, 'user_owner', ResourcePermission.admin),
+            participants,
+            'user_owner',
+            ResourcePermission.admin,
+          ),
           isTrue,
         );
         expect(
           RealtimeParticipants.hasPermission(
-              participants, 'user_admin', ResourcePermission.owner),
+            participants,
+            'user_admin',
+            ResourcePermission.owner,
+          ),
           isFalse,
         );
         expect(
           RealtimeParticipants.hasPermission(
-              participants, 'user_editor', ResourcePermission.viewer),
+            participants,
+            'user_editor',
+            ResourcePermission.viewer,
+          ),
           isTrue,
         );
       });

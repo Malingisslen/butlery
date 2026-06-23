@@ -39,7 +39,7 @@ void main() {
             ResourcePermission.owner: true,
             ResourcePermission.editor: true,
             ResourcePermission.viewer: true,
-          }
+          },
         },
       );
 
@@ -70,8 +70,10 @@ void main() {
 
         // Assert - verify through behavior that recipe ID was set
         // Since we can't access _recipeId directly, we test through getters that depend on it
-        expect(permissionManager.canShare,
-            isTrue); // Should be true for existing recipe with owner permissions
+        expect(
+          permissionManager.canShare,
+          isTrue,
+        ); // Should be true for existing recipe with owner permissions
       });
 
       test('should clear recipe ID when set to null', () {
@@ -82,8 +84,10 @@ void main() {
         permissionManager.setRecipeId(null);
 
         // Assert - verify through behavior that recipe ID was cleared
-        expect(permissionManager.canShare,
-            isFalse); // Should be false for null recipe ID
+        expect(
+          permissionManager.canShare,
+          isFalse,
+        ); // Should be false for null recipe ID
       });
 
       test('should handle multiple recipe ID changes', () {
@@ -93,18 +97,24 @@ void main() {
 
         // Act & Assert - first recipe
         permissionManager.setRecipeId(firstRecipeId);
-        expect(permissionManager.canEdit,
-            isTrue); // Assuming authenticated user has edit permissions
+        expect(
+          permissionManager.canEdit,
+          isTrue,
+        ); // Assuming authenticated user has edit permissions
 
         // Act & Assert - second recipe
         permissionManager.setRecipeId(secondRecipeId);
-        expect(permissionManager.canEdit,
-            isTrue); // Should work for second recipe too
+        expect(
+          permissionManager.canEdit,
+          isTrue,
+        ); // Should work for second recipe too
 
         // Act & Assert - clear recipe
         permissionManager.setRecipeId(null);
-        expect(permissionManager.canEdit,
-            isTrue); // Should be true for new recipe creation (null ID)
+        expect(
+          permissionManager.canEdit,
+          isTrue,
+        ); // Should be true for new recipe creation (null ID)
       });
     });
 
@@ -150,7 +160,7 @@ void main() {
             testRecipeId: {
               ResourcePermission.viewer: true,
               ResourcePermission.editor: false,
-            }
+            },
           },
         );
 
@@ -180,7 +190,7 @@ void main() {
               ResourcePermission.viewer: true,
               ResourcePermission.admin: false,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
 
@@ -209,7 +219,7 @@ void main() {
             testRecipeId: {
               ResourcePermission.editor: true,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
 
@@ -239,27 +249,40 @@ void main() {
 
     group('UI State Permission Getters - New Recipe Creation', () {
       test(
-          'should allow all permissions for new recipe creation (null recipe ID)',
-          () {
-        // Arrange - ensure no recipe ID is set
-        permissionManager.setRecipeId(null);
+        'should allow all permissions for new recipe creation (null recipe ID)',
+        () {
+          // Arrange - ensure no recipe ID is set
+          permissionManager.setRecipeId(null);
 
-        // Act & Assert
-        expect(permissionManager.canEdit,
-            isTrue); // New recipe creation always allows editing
-        expect(permissionManager.canView,
-            isTrue); // New recipe creation always allows viewing
-        expect(permissionManager.isOwner,
-            isTrue); // User is owner of new recipe during creation
+          // Act & Assert
+          expect(
+            permissionManager.canEdit,
+            isTrue,
+          ); // New recipe creation always allows editing
+          expect(
+            permissionManager.canView,
+            isTrue,
+          ); // New recipe creation always allows viewing
+          expect(
+            permissionManager.isOwner,
+            isTrue,
+          ); // User is owner of new recipe during creation
 
-        // These should be false for null recipe ID
-        expect(permissionManager.canShare,
-            isFalse); // Cannot share non-existent recipe
-        expect(permissionManager.canInvite,
-            isFalse); // Cannot invite to non-existent recipe
-        expect(permissionManager.canDelete,
-            isFalse); // Cannot delete non-existent recipe
-      });
+          // These should be false for null recipe ID
+          expect(
+            permissionManager.canShare,
+            isFalse,
+          ); // Cannot share non-existent recipe
+          expect(
+            permissionManager.canInvite,
+            isFalse,
+          ); // Cannot invite to non-existent recipe
+          expect(
+            permissionManager.canDelete,
+            isFalse,
+          ); // Cannot delete non-existent recipe
+        },
+      );
     });
 
     group('UI State Permission Getters - Existing Recipe', () {
@@ -276,27 +299,28 @@ void main() {
       });
 
       test(
-          'should deny edit permission when not authorized for existing recipe',
-          () {
-        // Arrange - reconfigure with no edit permissions
-        mockPermissionService.setPermissionState(
-          currentUserId: testCurrentUserId,
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.viewer: true,
-              ResourcePermission.editor: false,
-            }
-          },
-        );
+        'should deny edit permission when not authorized for existing recipe',
+        () {
+          // Arrange - reconfigure with no edit permissions
+          mockPermissionService.setPermissionState(
+            currentUserId: testCurrentUserId,
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.viewer: true,
+                ResourcePermission.editor: false,
+              },
+            },
+          );
 
-        // Act
-        final canEdit = permissionManager.canEdit;
+          // Act
+          final canEdit = permissionManager.canEdit;
 
-        // Assert
-        expect(canEdit, isFalse);
-      });
+          // Assert
+          expect(canEdit, isFalse);
+        },
+      );
 
       test('should check view permission for existing recipe', () {
         // Act
@@ -307,26 +331,27 @@ void main() {
       });
 
       test(
-          'should deny view permission when not authorized for existing recipe',
-          () {
-        // Arrange - reconfigure with no view permissions
-        mockPermissionService.setPermissionState(
-          currentUserId: testCurrentUserId,
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.viewer: false,
-            }
-          },
-        );
+        'should deny view permission when not authorized for existing recipe',
+        () {
+          // Arrange - reconfigure with no view permissions
+          mockPermissionService.setPermissionState(
+            currentUserId: testCurrentUserId,
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.viewer: false,
+              },
+            },
+          );
 
-        // Act
-        final canView = permissionManager.canView;
+          // Act
+          final canView = permissionManager.canView;
 
-        // Assert
-        expect(canView, isFalse);
-      });
+          // Assert
+          expect(canView, isFalse);
+        },
+      );
 
       test('should check share permission for existing recipe', () {
         // Act
@@ -336,27 +361,29 @@ void main() {
         expect(canShare, isTrue);
       });
 
-      test('should deny share permission when not owner of existing recipe',
-          () {
-        // Arrange - reconfigure as non-owner
-        mockPermissionService.setPermissionState(
-          currentUserId: 'different_user',
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.editor: true,
-              ResourcePermission.owner: false,
-            }
-          },
-        );
+      test(
+        'should deny share permission when not owner of existing recipe',
+        () {
+          // Arrange - reconfigure as non-owner
+          mockPermissionService.setPermissionState(
+            currentUserId: 'different_user',
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.editor: true,
+                ResourcePermission.owner: false,
+              },
+            },
+          );
 
-        // Act
-        final canShare = permissionManager.canShare;
+          // Act
+          final canShare = permissionManager.canShare;
 
-        // Assert
-        expect(canShare, isFalse);
-      });
+          // Assert
+          expect(canShare, isFalse);
+        },
+      );
 
       test('should check invite permission for existing recipe', () {
         // Act
@@ -367,28 +394,29 @@ void main() {
       });
 
       test(
-          'should deny invite permission when not authorized for existing recipe',
-          () {
-        // Arrange - reconfigure with no invitation permissions
-        mockPermissionService.setPermissionState(
-          currentUserId: testCurrentUserId,
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.viewer: true,
-              ResourcePermission.admin: false,
-              ResourcePermission.owner: false,
-            }
-          },
-        );
+        'should deny invite permission when not authorized for existing recipe',
+        () {
+          // Arrange - reconfigure with no invitation permissions
+          mockPermissionService.setPermissionState(
+            currentUserId: testCurrentUserId,
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.viewer: true,
+                ResourcePermission.admin: false,
+                ResourcePermission.owner: false,
+              },
+            },
+          );
 
-        // Act
-        final canInvite = permissionManager.canInvite;
+          // Act
+          final canInvite = permissionManager.canInvite;
 
-        // Assert
-        expect(canInvite, isFalse);
-      });
+          // Assert
+          expect(canInvite, isFalse);
+        },
+      );
 
       test('should check delete permission for existing recipe', () {
         // Act
@@ -398,27 +426,29 @@ void main() {
         expect(canDelete, isTrue);
       });
 
-      test('should deny delete permission when not owner of existing recipe',
-          () {
-        // Arrange - reconfigure as non-owner
-        mockPermissionService.setPermissionState(
-          currentUserId: 'different_user',
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.editor: true,
-              ResourcePermission.owner: false,
-            }
-          },
-        );
+      test(
+        'should deny delete permission when not owner of existing recipe',
+        () {
+          // Arrange - reconfigure as non-owner
+          mockPermissionService.setPermissionState(
+            currentUserId: 'different_user',
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.editor: true,
+                ResourcePermission.owner: false,
+              },
+            },
+          );
 
-        // Act
-        final canDelete = permissionManager.canDelete;
+          // Act
+          final canDelete = permissionManager.canDelete;
 
-        // Assert
-        expect(canDelete, isFalse);
-      });
+          // Assert
+          expect(canDelete, isFalse);
+        },
+      );
 
       test('should check owner status for existing recipe', () {
         // Act
@@ -438,7 +468,7 @@ void main() {
             testRecipeId: {
               ResourcePermission.editor: true,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
 
@@ -521,7 +551,10 @@ void main() {
       test('should update user permission successfully when authorized', () {
         // Act
         final result = permissionManager.updateUserPermission(
-            testRecipeId, testUserId, 'editor');
+          testRecipeId,
+          testUserId,
+          'editor',
+        );
 
         // Assert
         expect(result, isTrue);
@@ -537,13 +570,16 @@ void main() {
             testRecipeId: {
               ResourcePermission.editor: true,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
 
         // Act
         final result = permissionManager.updateUserPermission(
-            testRecipeId, testUserId, 'editor');
+          testRecipeId,
+          testUserId,
+          'editor',
+        );
 
         // Assert
         expect(result, isFalse);
@@ -555,18 +591,27 @@ void main() {
         for (final permission in permissions) {
           // Act
           final result = permissionManager.updateUserPermission(
-              testRecipeId, testUserId, permission);
+            testRecipeId,
+            testUserId,
+            permission,
+          );
 
           // Assert
-          expect(result, isTrue,
-              reason: 'Should update permission to $permission');
+          expect(
+            result,
+            isTrue,
+            reason: 'Should update permission to $permission',
+          );
         }
       });
 
       test('should handle null permission in update gracefully', () {
         // Act
         final result = permissionManager.updateUserPermission(
-            testRecipeId, testUserId, null);
+          testRecipeId,
+          testUserId,
+          null,
+        );
 
         // Assert
         expect(result, isTrue); // Should not crash and return success
@@ -574,8 +619,11 @@ void main() {
 
       test('should handle empty recipe ID in permission update', () {
         // Act
-        final result =
-            permissionManager.updateUserPermission('', testUserId, 'editor');
+        final result = permissionManager.updateUserPermission(
+          '',
+          testUserId,
+          'editor',
+        );
 
         // Assert
         expect(result, isFalse); // Should fail for empty recipe ID
@@ -583,8 +631,11 @@ void main() {
 
       test('should handle empty user ID in permission update', () {
         // Act
-        final result =
-            permissionManager.updateUserPermission(testRecipeId, '', 'editor');
+        final result = permissionManager.updateUserPermission(
+          testRecipeId,
+          '',
+          'editor',
+        );
 
         // Assert
         expect(result, isTrue); // Current implementation allows empty user ID
@@ -593,7 +644,10 @@ void main() {
       test('should share recipe with user successfully', () {
         // Act
         final result = permissionManager.shareRecipeWithUser(
-            testRecipeId, testUserId, 'viewer');
+          testRecipeId,
+          testUserId,
+          'viewer',
+        );
 
         // Assert
         expect(result, isTrue);
@@ -605,28 +659,38 @@ void main() {
         for (final permission in permissions) {
           // Act
           final result = permissionManager.shareRecipeWithUser(
-              testRecipeId, testUserId, permission);
+            testRecipeId,
+            testUserId,
+            permission,
+          );
 
           // Assert
-          expect(result, isTrue,
-              reason: 'Should share with $permission permission');
+          expect(
+            result,
+            isTrue,
+            reason: 'Should share with $permission permission',
+          );
         }
       });
 
       test('should handle null values in recipe sharing', () {
         // Act & Assert
-        expect(permissionManager.shareRecipeWithUser('', testUserId, 'viewer'),
-            isTrue);
         expect(
-            permissionManager.shareRecipeWithUser(testRecipeId, '', 'viewer'),
-            isTrue);
+          permissionManager.shareRecipeWithUser('', testUserId, 'viewer'),
+          isTrue,
+        );
         expect(
-            permissionManager.shareRecipeWithUser(
-                testRecipeId, testUserId, null),
-            isTrue);
+          permissionManager.shareRecipeWithUser(testRecipeId, '', 'viewer'),
+          isTrue,
+        );
         expect(
-            permissionManager.shareRecipeWithUser(testRecipeId, testUserId, ''),
-            isTrue);
+          permissionManager.shareRecipeWithUser(testRecipeId, testUserId, null),
+          isTrue,
+        );
+        expect(
+          permissionManager.shareRecipeWithUser(testRecipeId, testUserId, ''),
+          isTrue,
+        );
       });
     });
 
@@ -639,7 +703,7 @@ void main() {
           'share',
           'invite',
           'comment',
-          'rate'
+          'rate',
         ];
 
         for (final action in actions) {
@@ -664,7 +728,7 @@ void main() {
           'ingredients',
           'instructions',
           'tags',
-          'image'
+          'image',
         ];
 
         for (final field in fields) {
@@ -686,7 +750,7 @@ void main() {
         final specialActions = [
           'action-with-dash',
           'action_with_underscore',
-          'action.with.dots'
+          'action.with.dots',
         ];
 
         for (final action in specialActions) {
@@ -694,8 +758,11 @@ void main() {
           final canPerform = permissionManager.canPerformAction(action);
 
           // Assert
-          expect(canPerform, isTrue,
-              reason: 'Should handle special action: $action');
+          expect(
+            canPerform,
+            isTrue,
+            reason: 'Should handle special action: $action',
+          );
         }
       });
 
@@ -703,7 +770,7 @@ void main() {
         final specialFields = [
           'field-with-dash',
           'field_with_underscore',
-          'field.with.dots'
+          'field.with.dots',
         ];
 
         for (final field in specialFields) {
@@ -711,8 +778,11 @@ void main() {
           final canEdit = permissionManager.canEditField(field);
 
           // Assert
-          expect(canEdit, isTrue,
-              reason: 'Should handle special field: $field');
+          expect(
+            canEdit,
+            isTrue,
+            reason: 'Should handle special field: $field',
+          );
         }
       });
     });
@@ -724,7 +794,9 @@ void main() {
 
         // Act & Assert - should not throw
         expect(
-            () => permissionManager.addListener(testListener), returnsNormally);
+          () => permissionManager.addListener(testListener),
+          returnsNormally,
+        );
       });
 
       test('should remove listener without throwing', () {
@@ -733,8 +805,10 @@ void main() {
         permissionManager.addListener(testListener);
 
         // Act & Assert - should not throw
-        expect(() => permissionManager.removeListener(testListener),
-            returnsNormally);
+        expect(
+          () => permissionManager.removeListener(testListener),
+          returnsNormally,
+        );
       });
 
       test('should handle null listener in add', () {
@@ -772,8 +846,10 @@ void main() {
         void nonExistentListener() {}
 
         // Act & Assert - should not throw
-        expect(() => permissionManager.removeListener(nonExistentListener),
-            returnsNormally);
+        expect(
+          () => permissionManager.removeListener(nonExistentListener),
+          returnsNormally,
+        );
       });
 
       test('should handle duplicate listener additions', () {
@@ -836,10 +912,14 @@ void main() {
 
         // Act & Assert - should not throw even after disposal
         expect(() => permissionManager.hasPermission('test'), returnsNormally);
-        expect(() => permissionManager.canEditRecipe(testRecipeId),
-            returnsNormally);
         expect(
-            () => permissionManager.setRecipeId(testRecipeId), returnsNormally);
+          () => permissionManager.canEditRecipe(testRecipeId),
+          returnsNormally,
+        );
+        expect(
+          () => permissionManager.setRecipeId(testRecipeId),
+          returnsNormally,
+        );
       });
     });
 
@@ -850,11 +930,17 @@ void main() {
 
         // Act & Assert - should not crash
         expect(
-            () => permissionManager.setRecipeId(longRecipeId), returnsNormally);
-        expect(() => permissionManager.canEditRecipe(longRecipeId),
-            returnsNormally);
-        expect(() => permissionManager.canInviteMembers(longRecipeId),
-            returnsNormally);
+          () => permissionManager.setRecipeId(longRecipeId),
+          returnsNormally,
+        );
+        expect(
+          () => permissionManager.canEditRecipe(longRecipeId),
+          returnsNormally,
+        );
+        expect(
+          () => permissionManager.canInviteMembers(longRecipeId),
+          returnsNormally,
+        );
       });
 
       test('should handle special characters in recipe IDs', () {
@@ -870,9 +956,13 @@ void main() {
         for (final recipeId in specialIds) {
           // Act & Assert - should not crash
           expect(
-              () => permissionManager.setRecipeId(recipeId), returnsNormally);
+            () => permissionManager.setRecipeId(recipeId),
+            returnsNormally,
+          );
           expect(
-              () => permissionManager.canEditRecipe(recipeId), returnsNormally);
+            () => permissionManager.canEditRecipe(recipeId),
+            returnsNormally,
+          );
         }
       });
 
@@ -887,9 +977,13 @@ void main() {
         for (final recipeId in unicodeIds) {
           // Act & Assert - should not crash
           expect(
-              () => permissionManager.setRecipeId(recipeId), returnsNormally);
+            () => permissionManager.setRecipeId(recipeId),
+            returnsNormally,
+          );
           expect(
-              () => permissionManager.canEditRecipe(recipeId), returnsNormally);
+            () => permissionManager.canEditRecipe(recipeId),
+            returnsNormally,
+          );
         }
       });
 
@@ -899,12 +993,18 @@ void main() {
 
         for (final extremeId in extremeIds) {
           // Act & Assert - should not crash with extreme values
-          expect(() => permissionManager.canEditRecipe(extremeId),
-              returnsNormally);
-          expect(() => permissionManager.canInviteMembers(extremeId),
-              returnsNormally);
-          expect(() => permissionManager.canManageMembers(extremeId),
-              returnsNormally);
+          expect(
+            () => permissionManager.canEditRecipe(extremeId),
+            returnsNormally,
+          );
+          expect(
+            () => permissionManager.canInviteMembers(extremeId),
+            returnsNormally,
+          );
+          expect(
+            () => permissionManager.canManageMembers(extremeId),
+            returnsNormally,
+          );
         }
       });
 
@@ -924,15 +1024,17 @@ void main() {
 
         // Assert - state should be consistent for same conditions
         expect(
-            canEdit1,
-            equals(
-                canEdit3)); // Same recipe ID should give same edit permission
+          canEdit1,
+          equals(canEdit3),
+        ); // Same recipe ID should give same edit permission
         expect(
-            canShare1,
-            equals(
-                canShare3)); // Same recipe ID should give same share permission
-        expect(canEdit2,
-            isTrue); // Null recipe ID should allow editing (new recipe)
+          canShare1,
+          equals(canShare3),
+        ); // Same recipe ID should give same share permission
+        expect(
+          canEdit2,
+          isTrue,
+        ); // Null recipe ID should allow editing (new recipe)
         expect(canShare2, isFalse); // Null recipe ID should not allow sharing
       });
     });
@@ -963,105 +1065,128 @@ void main() {
         expect(permissionManager.canPerformAction('edit'), isTrue);
         expect(permissionManager.canEditField('title'), isTrue);
         expect(
-            permissionManager.updateUserPermission(
-                testRecipeId, testUserId, 'editor'),
-            isTrue);
-        expect(
-            permissionManager.shareRecipeWithUser(
-                testRecipeId, testUserId, 'viewer'),
-            isTrue);
-      });
-
-      test(
-          'should handle complete permission workflow for existing recipe as owner',
-          () {
-        // Arrange
-        permissionManager.setRecipeId(testRecipeId);
-
-        // Act & Assert - Complete workflow as owner
-        expect(permissionManager.canEdit, isTrue);
-        expect(permissionManager.canView, isTrue);
-        expect(permissionManager.canShare, isTrue);
-        expect(permissionManager.canInvite, isTrue);
-        expect(permissionManager.canDelete, isTrue);
-        expect(permissionManager.isOwner, isTrue);
-        expect(permissionManager.hasPermissions, isTrue);
-        expect(permissionManager.canManageMembers(testRecipeId), isTrue);
-        expect(permissionManager.canEditRecipe(testRecipeId), isTrue);
-        expect(permissionManager.canInviteMembers(testRecipeId), isTrue);
-      });
-
-      test(
-          'should handle complete permission workflow for existing recipe as editor',
-          () {
-        // Arrange - configure as editor (not owner)
-        mockPermissionService.setPermissionState(
-          currentUserId: 'editor_user',
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.editor: true,
-              ResourcePermission.viewer: true,
-              ResourcePermission.owner: false,
-            }
-          },
+          permissionManager.updateUserPermission(
+            testRecipeId,
+            testUserId,
+            'editor',
+          ),
+          isTrue,
         );
-        permissionManager.setRecipeId(testRecipeId);
-
-        // Act & Assert - Complete workflow as editor
-        expect(permissionManager.canEdit, isTrue);
-        expect(permissionManager.canView, isTrue);
-        expect(permissionManager.canShare, isFalse); // Not owner
-        expect(permissionManager.canInvite, isTrue); // Editors can invite
-        expect(permissionManager.canDelete, isFalse); // Not owner
-        expect(permissionManager.isOwner, isFalse);
-        expect(permissionManager.hasPermissions, isTrue);
-        expect(permissionManager.canManageMembers(testRecipeId),
-            isFalse); // Not owner
-        expect(permissionManager.canEditRecipe(testRecipeId), isTrue);
-        expect(permissionManager.canInviteMembers(testRecipeId),
-            isTrue); // Editors can invite
         expect(
-            permissionManager.updateUserPermission(
-                testRecipeId, testUserId, 'viewer'),
-            isFalse); // Not owner
+          permissionManager.shareRecipeWithUser(
+            testRecipeId,
+            testUserId,
+            'viewer',
+          ),
+          isTrue,
+        );
       });
 
       test(
-          'should handle complete permission workflow for existing recipe as viewer',
-          () {
-        // Arrange - configure as viewer only
-        mockPermissionService.setPermissionState(
-          currentUserId: 'viewer_user',
-          isAuthenticated: true,
-          defaultHasPermission: false,
-          permissions: {
-            testRecipeId: {
-              ResourcePermission.viewer: true,
-              ResourcePermission.editor: false,
-              ResourcePermission.owner: false,
-            }
-          },
-        );
-        permissionManager.setRecipeId(testRecipeId);
+        'should handle complete permission workflow for existing recipe as owner',
+        () {
+          // Arrange
+          permissionManager.setRecipeId(testRecipeId);
 
-        // Act & Assert - Complete workflow as viewer
-        expect(permissionManager.canEdit, isFalse);
-        expect(permissionManager.canView, isTrue);
-        expect(permissionManager.canShare, isFalse);
-        expect(permissionManager.canInvite, isFalse);
-        expect(permissionManager.canDelete, isFalse);
-        expect(permissionManager.isOwner, isFalse);
-        expect(permissionManager.hasPermissions, isTrue);
-        expect(permissionManager.canManageMembers(testRecipeId), isFalse);
-        expect(permissionManager.canEditRecipe(testRecipeId), isFalse);
-        expect(permissionManager.canInviteMembers(testRecipeId), isFalse);
-        expect(
+          // Act & Assert - Complete workflow as owner
+          expect(permissionManager.canEdit, isTrue);
+          expect(permissionManager.canView, isTrue);
+          expect(permissionManager.canShare, isTrue);
+          expect(permissionManager.canInvite, isTrue);
+          expect(permissionManager.canDelete, isTrue);
+          expect(permissionManager.isOwner, isTrue);
+          expect(permissionManager.hasPermissions, isTrue);
+          expect(permissionManager.canManageMembers(testRecipeId), isTrue);
+          expect(permissionManager.canEditRecipe(testRecipeId), isTrue);
+          expect(permissionManager.canInviteMembers(testRecipeId), isTrue);
+        },
+      );
+
+      test(
+        'should handle complete permission workflow for existing recipe as editor',
+        () {
+          // Arrange - configure as editor (not owner)
+          mockPermissionService.setPermissionState(
+            currentUserId: 'editor_user',
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.editor: true,
+                ResourcePermission.viewer: true,
+                ResourcePermission.owner: false,
+              },
+            },
+          );
+          permissionManager.setRecipeId(testRecipeId);
+
+          // Act & Assert - Complete workflow as editor
+          expect(permissionManager.canEdit, isTrue);
+          expect(permissionManager.canView, isTrue);
+          expect(permissionManager.canShare, isFalse); // Not owner
+          expect(permissionManager.canInvite, isTrue); // Editors can invite
+          expect(permissionManager.canDelete, isFalse); // Not owner
+          expect(permissionManager.isOwner, isFalse);
+          expect(permissionManager.hasPermissions, isTrue);
+          expect(
+            permissionManager.canManageMembers(testRecipeId),
+            isFalse,
+          ); // Not owner
+          expect(permissionManager.canEditRecipe(testRecipeId), isTrue);
+          expect(
+            permissionManager.canInviteMembers(testRecipeId),
+            isTrue,
+          ); // Editors can invite
+          expect(
             permissionManager.updateUserPermission(
-                testRecipeId, testUserId, 'viewer'),
-            isFalse);
-      });
+              testRecipeId,
+              testUserId,
+              'viewer',
+            ),
+            isFalse,
+          ); // Not owner
+        },
+      );
+
+      test(
+        'should handle complete permission workflow for existing recipe as viewer',
+        () {
+          // Arrange - configure as viewer only
+          mockPermissionService.setPermissionState(
+            currentUserId: 'viewer_user',
+            isAuthenticated: true,
+            defaultHasPermission: false,
+            permissions: {
+              testRecipeId: {
+                ResourcePermission.viewer: true,
+                ResourcePermission.editor: false,
+                ResourcePermission.owner: false,
+              },
+            },
+          );
+          permissionManager.setRecipeId(testRecipeId);
+
+          // Act & Assert - Complete workflow as viewer
+          expect(permissionManager.canEdit, isFalse);
+          expect(permissionManager.canView, isTrue);
+          expect(permissionManager.canShare, isFalse);
+          expect(permissionManager.canInvite, isFalse);
+          expect(permissionManager.canDelete, isFalse);
+          expect(permissionManager.isOwner, isFalse);
+          expect(permissionManager.hasPermissions, isTrue);
+          expect(permissionManager.canManageMembers(testRecipeId), isFalse);
+          expect(permissionManager.canEditRecipe(testRecipeId), isFalse);
+          expect(permissionManager.canInviteMembers(testRecipeId), isFalse);
+          expect(
+            permissionManager.updateUserPermission(
+              testRecipeId,
+              testUserId,
+              'viewer',
+            ),
+            isFalse,
+          );
+        },
+      );
 
       test('should handle permission changes during recipe lifecycle', () {
         // Start as owner
@@ -1078,7 +1203,7 @@ void main() {
             testRecipeId: {
               ResourcePermission.editor: true,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
 
@@ -1097,7 +1222,7 @@ void main() {
               ResourcePermission.viewer: true,
               ResourcePermission.editor: false,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
 

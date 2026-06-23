@@ -302,10 +302,12 @@ class _Screenshot extends StatelessWidget {
         onTap: () => _openFullScreen(context),
         child: Container(
           width: double.infinity,
-          constraints:
-              const BoxConstraints(maxHeight: AppDimensions.heightXLarge),
-          decoration:
-              BoxDecoration(border: Border.all(color: cs.outlineVariant)),
+          constraints: const BoxConstraints(
+            maxHeight: AppDimensions.heightXLarge,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(color: cs.outlineVariant),
+          ),
           child: _image(context, BoxFit.contain),
         ),
       ),

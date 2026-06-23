@@ -21,7 +21,7 @@ class RecipeEditAnalyticsEmitter {
   final AnalyticsService? _analytics;
 
   RecipeEditAnalyticsEmitter({AnalyticsService? analytics})
-      : _analytics = analytics ?? ServiceLocator.tryGet<AnalyticsService>();
+    : _analytics = analytics ?? ServiceLocator.tryGet<AnalyticsService>();
 
   /// Compute the diff between [original] and [savedRecipe] and emit:
   ///   - `recipe_edited` (always when the recipe has a previous state).

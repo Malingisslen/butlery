@@ -79,15 +79,17 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       if (success) {
         if (mounted) {
           // Return updated category to match expected FriendCategory? return type
-          final updatedCategory =
-              friendsService.getCategoryById(widget.group.id);
+          final updatedCategory = friendsService.getCategoryById(
+            widget.group.id,
+          );
           Navigator.of(context).pop(updatedCategory);
         }
       } else {
         if (mounted) {
           setState(() {
             _error = context.l10n.errorCouldNotUpdate(
-                context.l10n.socialGroupName.toLowerCase());
+              context.l10n.socialGroupName.toLowerCase(),
+            );
           });
         }
       }
@@ -96,7 +98,9 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       if (mounted) {
         setState(() {
           _error = context.l10n.errorWithContext(
-              context.l10n.statusUpdating.toLowerCase(), e.toString());
+            context.l10n.statusUpdating.toLowerCase(),
+            e.toString(),
+          );
         });
       }
     } finally {
@@ -112,8 +116,9 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        constraints:
-            const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium),
+        constraints: const BoxConstraints(
+          maxWidth: AppDimensions.dialogMaxWidthMedium,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
@@ -159,7 +164,8 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         validator: FormValidators.combine([
                           (v) => ValidationUtils.validateGroupName(v),
                           FormValidators.contentFilter(
-                              context.l10n.socialGroupName),
+                            context.l10n.socialGroupName,
+                          ),
                         ]),
                         maxLength: 50,
                         textCapitalization: TextCapitalization.words,
@@ -177,7 +183,8 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         ),
                         // BUT-517
                         validator: FormValidators.contentFilter(
-                            context.l10n.groupDescriptionLabel),
+                          context.l10n.groupDescriptionLabel,
+                        ),
                         maxLines: 3,
                         maxLength: 200,
                         textCapitalization: TextCapitalization.sentences,

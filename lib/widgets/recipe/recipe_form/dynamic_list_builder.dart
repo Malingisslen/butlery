@@ -61,8 +61,9 @@ class DynamicListBuilder extends StatelessWidget {
             if (!AnimationUtils.shouldAnimate(context)) {
               return Material(
                 elevation: 4,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusS,
+                ),
                 child: child,
               );
             }
@@ -103,11 +104,13 @@ class DynamicListBuilder extends StatelessWidget {
               maxLines: null,
               maxLength: maxLength,
               maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              buildCounter: (context,
-                      {required currentLength,
-                      required isFocused,
-                      required maxLength}) =>
-                  null,
+              buildCounter:
+                  (
+                    context, {
+                    required currentLength,
+                    required isFocused,
+                    required maxLength,
+                  }) => null,
               keyboardType: TextInputType.multiline,
               onChanged: (value) => _handleChange(index, value),
             ),
@@ -136,11 +139,13 @@ class DynamicListBuilder extends StatelessWidget {
                 maxLines: null,
                 maxLength: maxLength,
                 maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                buildCounter: (context,
-                        {required currentLength,
-                        required isFocused,
-                        required maxLength}) =>
-                    null,
+                buildCounter:
+                    (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      required maxLength,
+                    }) => null,
                 keyboardType: TextInputType.multiline,
                 onChanged: (value) => _handleChange(index, value),
               ),

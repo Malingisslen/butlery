@@ -96,8 +96,9 @@ class ContentFingerprint {
   static final _punctuationRe = RegExp(r'[^\wåäö\s]');
   static final _multiSpaceRe = RegExp(r'\s+');
   static final _leadingNumbersRe = RegExp(r'^\s*\d+[\s,./]*\d*\s*');
-  static final _approximateWordsRe =
-      RegExp(r'\b(ca|cirka|ungefär|about|approximately)\b');
+  static final _approximateWordsRe = RegExp(
+    r'\b(ca|cirka|ungefär|about|approximately)\b',
+  );
   static final _parentheticalRe = RegExp(r'\([^)]*\)');
   static final _allUnitsRe = RegExp(
     '\\b(${_units.join('|')})\\b',
@@ -125,12 +126,13 @@ class ContentFingerprint {
     }
 
     // Normalize and sort ingredients
-    final normalizedIngredients = ingredients
-        .map(_normalizeIngredient)
-        .where((i) => i.isNotEmpty)
-        .toSet() // Remove duplicates
-        .toList()
-      ..sort();
+    final normalizedIngredients =
+        ingredients
+            .map(_normalizeIngredient)
+            .where((i) => i.isNotEmpty)
+            .toSet() // Remove duplicates
+            .toList()
+          ..sort();
 
     if (normalizedIngredients.isEmpty) {
       return null;

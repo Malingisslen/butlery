@@ -57,8 +57,9 @@ void main() {
   /// minimal [UserProfile] so [startSession] completes without blowing up.
   void stubAuthenticated({bool authenticated = true}) {
     when(() => permission.isAuthenticated).thenReturn(authenticated);
-    when(() => permission.currentUserId)
-        .thenReturn(authenticated ? currentUserId : null);
+    when(
+      () => permission.currentUserId,
+    ).thenReturn(authenticated ? currentUserId : null);
     when(() => permission.currentUser).thenReturn(
       authenticated
           ? UserProfile(
@@ -86,11 +87,13 @@ void main() {
   void stubGroups(List<String> groupIds) {
     when(() => friends.categoriesList).thenReturn(
       groupIds
-          .map((id) => FriendCategory(
-                id: id,
-                ownerId: currentUserId,
-                name: id,
-              ))
+          .map(
+            (id) => FriendCategory(
+              id: id,
+              ownerId: currentUserId,
+              name: id,
+            ),
+          )
           .toList(growable: false),
     );
   }
@@ -101,20 +104,26 @@ void main() {
     friends = _MockFriendsService();
     userSvc = _MockUserService();
 
-    when(() => repository.startSession(
-          groupId: any(named: 'groupId'),
-          session: any(named: 'session'),
-        )).thenAnswer((_) async {});
-    when(() => repository.endSession(
-          groupId: any(named: 'groupId'),
-          userId: any(named: 'userId'),
-        )).thenAnswer((_) async {});
-    when(() => repository.updateStep(
-          groupId: any(named: 'groupId'),
-          userId: any(named: 'userId'),
-          currentStep: any(named: 'currentStep'),
-          totalSteps: any(named: 'totalSteps'),
-        )).thenAnswer((_) async {});
+    when(
+      () => repository.startSession(
+        groupId: any(named: 'groupId'),
+        session: any(named: 'session'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => repository.endSession(
+        groupId: any(named: 'groupId'),
+        userId: any(named: 'userId'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => repository.updateStep(
+        groupId: any(named: 'groupId'),
+        userId: any(named: 'userId'),
+        currentStep: any(named: 'currentStep'),
+        totalSteps: any(named: 'totalSteps'),
+      ),
+    ).thenAnswer((_) async {});
 
     stubAuthenticated();
     stubGroups(const ['family']);
@@ -134,21 +143,25 @@ void main() {
   });
 
   group('updateStep (debounce)', () {
-    test('no-op when no active session — nothing scheduled, nothing written',
-        () {
-      fakeAsync((async) {
-        // No startSession call → _activeGroupIds is empty.
-        module.updateStep(currentStep: 1, totalSteps: 3);
-        async.elapse(const Duration(seconds: 2));
+    test(
+      'no-op when no active session — nothing scheduled, nothing written',
+      () {
+        fakeAsync((async) {
+          // No startSession call → _activeGroupIds is empty.
+          module.updateStep(currentStep: 1, totalSteps: 3);
+          async.elapse(const Duration(seconds: 2));
 
-        verifyNever(() => repository.updateStep(
+          verifyNever(
+            () => repository.updateStep(
               groupId: any(named: 'groupId'),
               userId: any(named: 'userId'),
               currentStep: any(named: 'currentStep'),
               totalSteps: any(named: 'totalSteps'),
-            ));
-      });
-    });
+            ),
+          );
+        });
+      },
+    );
 
     test('collapses three rapid calls within the window into ONE write', () {
       fakeAsync((async) {
@@ -162,22 +175,26 @@ void main() {
         module.updateStep(currentStep: 3, totalSteps: 3);
 
         // No write yet — still inside the window.
-        verifyNever(() => repository.updateStep(
-              groupId: any(named: 'groupId'),
-              userId: any(named: 'userId'),
-              currentStep: any(named: 'currentStep'),
-              totalSteps: any(named: 'totalSteps'),
-            ));
+        verifyNever(
+          () => repository.updateStep(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+            currentStep: any(named: 'currentStep'),
+            totalSteps: any(named: 'totalSteps'),
+          ),
+        );
 
         async.elapse(stepDebounce + const Duration(milliseconds: 10));
 
         // Exactly one write, carrying the LAST pair (3 of 3).
-        final captured = verify(() => repository.updateStep(
-              groupId: 'family',
-              userId: currentUserId,
-              currentStep: captureAny(named: 'currentStep'),
-              totalSteps: captureAny(named: 'totalSteps'),
-            )).captured;
+        final captured = verify(
+          () => repository.updateStep(
+            groupId: 'family',
+            userId: currentUserId,
+            currentStep: captureAny(named: 'currentStep'),
+            totalSteps: captureAny(named: 'totalSteps'),
+          ),
+        ).captured;
         expect(captured, hasLength(2)); // currentStep + totalSteps captured
         expect(captured[0], 3);
         expect(captured[1], 3);
@@ -194,19 +211,23 @@ void main() {
 
         // The repository.updateStep API accepts exactly the two int fields;
         // verifying it was called at all proves no full-node set() happened.
-        verify(() => repository.updateStep(
-              groupId: 'family',
-              userId: currentUserId,
-              currentStep: 2,
-              totalSteps: 5,
-            )).called(1);
+        verify(
+          () => repository.updateStep(
+            groupId: 'family',
+            userId: currentUserId,
+            currentStep: 2,
+            totalSteps: 5,
+          ),
+        ).called(1);
 
         // And crucially, startSession's initial set is the ONLY full-node
         // write — no second set() after updateStep.
-        verify(() => repository.startSession(
-              groupId: 'family',
-              session: any(named: 'session'),
-            )).called(1);
+        verify(
+          () => repository.startSession(
+            groupId: 'family',
+            session: any(named: 'session'),
+          ),
+        ).called(1);
       });
     });
 
@@ -226,12 +247,14 @@ void main() {
         module.updateStep(currentStep: 2, totalSteps: 3);
         async.elapse(stepDebounce + const Duration(milliseconds: 10));
 
-        verify(() => repository.updateStep(
-              groupId: any(named: 'groupId'),
-              userId: any(named: 'userId'),
-              currentStep: any(named: 'currentStep'),
-              totalSteps: any(named: 'totalSteps'),
-            )).called(2);
+        verify(
+          () => repository.updateStep(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+            currentStep: any(named: 'currentStep'),
+            totalSteps: any(named: 'totalSteps'),
+          ),
+        ).called(2);
       });
     });
 
@@ -247,23 +270,27 @@ void main() {
         async.elapse(stepDebounce + const Duration(milliseconds: 50));
 
         // Step write must NOT have been issued — the node is gone.
-        verifyNever(() => repository.updateStep(
-              groupId: any(named: 'groupId'),
-              userId: any(named: 'userId'),
-              currentStep: any(named: 'currentStep'),
-              totalSteps: any(named: 'totalSteps'),
-            ));
+        verifyNever(
+          () => repository.updateStep(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+            currentStep: any(named: 'currentStep'),
+            totalSteps: any(named: 'totalSteps'),
+          ),
+        );
       });
     });
 
     test('swallows repo errors silently — a failed write must not throw', () {
       fakeAsync((async) {
-        when(() => repository.updateStep(
-              groupId: any(named: 'groupId'),
-              userId: any(named: 'userId'),
-              currentStep: any(named: 'currentStep'),
-              totalSteps: any(named: 'totalSteps'),
-            )).thenThrow(StateError('offline'));
+        when(
+          () => repository.updateStep(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+            currentStep: any(named: 'currentStep'),
+            totalSteps: any(named: 'totalSteps'),
+          ),
+        ).thenThrow(StateError('offline'));
 
         module.startSession(recipe);
         async.flushMicrotasks();
@@ -292,12 +319,14 @@ void main() {
 
         async.elapse(stepDebounce + const Duration(milliseconds: 10));
 
-        verifyNever(() => repository.updateStep(
-              groupId: any(named: 'groupId'),
-              userId: any(named: 'userId'),
-              currentStep: any(named: 'currentStep'),
-              totalSteps: any(named: 'totalSteps'),
-            ));
+        verifyNever(
+          () => repository.updateStep(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+            currentStep: any(named: 'currentStep'),
+            totalSteps: any(named: 'totalSteps'),
+          ),
+        );
       });
     });
   });

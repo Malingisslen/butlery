@@ -27,61 +27,68 @@ void main() {
 
   group('BUT-699 Semantics(header: true) wrapper contract', () {
     testWidgets(
-        'Ingredienser heading carries isHeader flag with the production label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: const _HeadingProbe(_ProductionHeading.ingredients),
-        ),
-      );
+      'Ingredienser heading carries isHeader flag with the production label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const _HeadingProbe(_ProductionHeading.ingredients),
+          ),
+        );
 
-      final finder = find.bySemanticsLabel('Ingredienser');
-      expect(finder, findsOneWidget,
-          reason: 'A semantics node labelled "Ingredienser" should exist');
-      final data = tester.getSemantics(finder);
-      expect(
-        data.flagsCollection.isHeader,
-        isTrue,
-        reason: 'Ingredients section title must be flagged as a heading',
-      );
-      handle.dispose();
-    });
-
-    testWidgets(
-        'Instruktioner heading carries isHeader flag with the production label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: const _HeadingProbe(_ProductionHeading.instructions),
-        ),
-      );
-
-      final finder = find.bySemanticsLabel('Instruktioner');
-      expect(finder, findsOneWidget);
-      expect(tester.getSemantics(finder).flagsCollection.isHeader, isTrue);
-      handle.dispose();
-    });
+        final finder = find.bySemanticsLabel('Ingredienser');
+        expect(
+          finder,
+          findsOneWidget,
+          reason: 'A semantics node labelled "Ingredienser" should exist',
+        );
+        final data = tester.getSemantics(finder);
+        expect(
+          data.flagsCollection.isHeader,
+          isTrue,
+          reason: 'Ingredients section title must be flagged as a heading',
+        );
+        handle.dispose();
+      },
+    );
 
     testWidgets(
-        'Kommentarer heading carries isHeader flag with the production label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: const _HeadingProbe(_ProductionHeading.comments),
-        ),
-      );
+      'Instruktioner heading carries isHeader flag with the production label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const _HeadingProbe(_ProductionHeading.instructions),
+          ),
+        );
 
-      final finder = find.bySemanticsLabel('Kommentarer');
-      expect(finder, findsOneWidget);
-      expect(tester.getSemantics(finder).flagsCollection.isHeader, isTrue);
-      handle.dispose();
-    });
+        final finder = find.bySemanticsLabel('Instruktioner');
+        expect(finder, findsOneWidget);
+        expect(tester.getSemantics(finder).flagsCollection.isHeader, isTrue);
+        handle.dispose();
+      },
+    );
 
-    testWidgets('non-wrapped heading does NOT carry isHeader flag (negative)',
-        (tester) async {
+    testWidgets(
+      'Kommentarer heading carries isHeader flag with the production label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const _HeadingProbe(_ProductionHeading.comments),
+          ),
+        );
+
+        final finder = find.bySemanticsLabel('Kommentarer');
+        expect(finder, findsOneWidget);
+        expect(tester.getSemantics(finder).flagsCollection.isHeader, isTrue);
+        handle.dispose();
+      },
+    );
+
+    testWidgets('non-wrapped heading does NOT carry isHeader flag (negative)', (
+      tester,
+    ) async {
       // Negative control — proves the test harness can DISTINGUISH between
       // wrapped and unwrapped headings; otherwise a passing positive case is
       // meaningless.
@@ -99,7 +106,8 @@ void main() {
       expect(
         tester.getSemantics(finder).flagsCollection.isHeader,
         isFalse,
-        reason: 'Plain Text without Semantics(header:true) must not be '
+        reason:
+            'Plain Text without Semantics(header:true) must not be '
             'announced as a heading',
       );
       handle.dispose();

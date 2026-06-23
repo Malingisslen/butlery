@@ -47,8 +47,10 @@ void main() {
         );
 
         // Assert
-        expect(updated.recipe.description,
-            'En detaljerad beskrivning av receptet');
+        expect(
+          updated.recipe.description,
+          'En detaljerad beskrivning av receptet',
+        );
       });
 
       test('should update meal type', () {
@@ -105,8 +107,9 @@ void main() {
     group('Ingredient Operations', () {
       test('should add ingredient to recipe', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withIngredients(['Ingredient 1']).build();
+        final recipe = realtimeRecipeBuilder.withIngredients([
+          'Ingredient 1',
+        ]).build();
 
         // Act
         final updated = RecipeContentOperations.addIngredient(
@@ -123,8 +126,11 @@ void main() {
 
       test('should remove ingredient by index', () {
         // Arrange
-        final recipe = realtimeRecipeBuilder
-            .withIngredients(['First', 'Second', 'Third']).build();
+        final recipe = realtimeRecipeBuilder.withIngredients([
+          'First',
+          'Second',
+          'Third',
+        ]).build();
 
         // Act
         final updated = RecipeContentOperations.removeIngredient(
@@ -141,8 +147,10 @@ void main() {
 
       test('should update all ingredients', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withIngredients(['Old 1', 'Old 2']).build();
+        final recipe = realtimeRecipeBuilder.withIngredients([
+          'Old 1',
+          'Old 2',
+        ]).build();
         final newIngredients = ['New 1', 'New 2', 'New 3'];
 
         // Act
@@ -160,8 +168,9 @@ void main() {
 
       test('should handle empty ingredient list', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withIngredients(['Something']).build();
+        final recipe = realtimeRecipeBuilder.withIngredients([
+          'Something',
+        ]).build();
 
         // Act & Assert - Should throw error for empty ingredients
         expect(
@@ -200,8 +209,9 @@ void main() {
 
       test('should validate index when removing ingredient', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withIngredients(['Only one']).build();
+        final recipe = realtimeRecipeBuilder.withIngredients([
+          'Only one',
+        ]).build();
 
         // Act & Assert
         expect(
@@ -219,8 +229,9 @@ void main() {
     group('Instruction Operations', () {
       test('should add instruction to recipe', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withInstructions(['Step 1']).build();
+        final recipe = realtimeRecipeBuilder.withInstructions([
+          'Step 1',
+        ]).build();
 
         // Act
         final updated = RecipeContentOperations.addInstruction(
@@ -237,8 +248,11 @@ void main() {
 
       test('should remove instruction by index', () {
         // Arrange
-        final recipe = realtimeRecipeBuilder
-            .withInstructions(['Step 1', 'Step 2', 'Step 3']).build();
+        final recipe = realtimeRecipeBuilder.withInstructions([
+          'Step 1',
+          'Step 2',
+          'Step 3',
+        ]).build();
 
         // Act
         final updated = RecipeContentOperations.removeInstruction(
@@ -278,8 +292,12 @@ void main() {
 
       test('should handle reordering instructions', () {
         // Arrange
-        final recipe = realtimeRecipeBuilder
-            .withInstructions(['A', 'B', 'C', 'D']).build();
+        final recipe = realtimeRecipeBuilder.withInstructions([
+          'A',
+          'B',
+          'C',
+          'D',
+        ]).build();
 
         // Act - Simulate reordering
         final reordered = ['D', 'A', 'C', 'B'];
@@ -296,8 +314,9 @@ void main() {
 
       test('should handle empty instruction list', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withInstructions(['Something']).build();
+        final recipe = realtimeRecipeBuilder.withInstructions([
+          'Something',
+        ]).build();
 
         // Act & Assert - Should throw error for empty instructions
         expect(
@@ -353,8 +372,11 @@ Forma till köttbullar.''';
 
       test('should remove image by index', () {
         // Arrange
-        final recipe = realtimeRecipeBuilder
-            .withImages(['img1.jpg', 'img2.jpg', 'img3.jpg']).build();
+        final recipe = realtimeRecipeBuilder.withImages([
+          'img1.jpg',
+          'img2.jpg',
+          'img3.jpg',
+        ]).build();
 
         // Act
         final updated = RecipeContentOperations.removeImage(
@@ -371,8 +393,10 @@ Forma till köttbullar.''';
 
       test('should update all images', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.withImages(['old1.jpg', 'old2.jpg']).build();
+        final recipe = realtimeRecipeBuilder.withImages([
+          'old1.jpg',
+          'old2.jpg',
+        ]).build();
         final newImages = ['new1.jpg', 'new2.jpg', 'new3.jpg'];
 
         // Act
@@ -424,8 +448,9 @@ Forma till köttbullar.''';
     group('Validation & Utilities', () {
       test('should check recipe completeness', () {
         // Arrange
-        final complete =
-            realtimeRecipeBuilder.asCollaborativeSwedishDinner().build();
+        final complete = realtimeRecipeBuilder
+            .asCollaborativeSwedishDinner()
+            .build();
         final incomplete = realtimeRecipeBuilder.asIncompleteRecipe().build();
 
         // Act & Assert
@@ -435,8 +460,9 @@ Forma till köttbullar.''';
 
       test('should validate recipe content', () {
         // Arrange
-        final valid =
-            realtimeRecipeBuilder.asCollaborativeSwedishDinner().build();
+        final valid = realtimeRecipeBuilder
+            .asCollaborativeSwedishDinner()
+            .build();
         final invalid = realtimeRecipeBuilder
             .withTitle('') // Empty title
             .build();
@@ -446,8 +472,9 @@ Forma till köttbullar.''';
         final errors = RecipeContentOperations.validateRecipeContent(invalid);
         expect(errors, isNotEmpty);
         expect(
-          errors.any((error) =>
-              error.contains('titel') || error.contains('Recepttitel')),
+          errors.any(
+            (error) => error.contains('titel') || error.contains('Recepttitel'),
+          ),
           true,
           reason: 'Should contain Swedish error message about title',
         );
@@ -497,14 +524,17 @@ Forma till köttbullar.''';
         // Assert - Personal copy has different ID and owner
         expect(copy.id, isNot(original.recipe.id));
         expect(copy.createdBy, newUserId);
-        expect(copy.title,
-            'Kopia av ${original.recipe.title}'); // Title gets "Kopia av " prefix
+        expect(
+          copy.title,
+          'Kopia av ${original.recipe.title}',
+        ); // Title gets "Kopia av " prefix
       });
 
       test('should generate content summary', () {
         // Arrange
-        final recipe =
-            realtimeRecipeBuilder.asCollaborativeSwedishDinner().build();
+        final recipe = realtimeRecipeBuilder
+            .asCollaborativeSwedishDinner()
+            .build();
 
         // Act
         final summary = RecipeContentOperations.getContentSummary(recipe);
@@ -534,12 +564,14 @@ Forma till köttbullar.''';
         // Arrange
         final swedishRecipe = realtimeRecipeBuilder
             .withTitle('Köttbullar med gräddsås')
-            .withIngredients(['Köttfärs', 'Ägg', 'Mjölk']).withInstructions(
-                ['Värm ugnen', 'Blanda köttfärsen']).build();
+            .withIngredients(['Köttfärs', 'Ägg', 'Mjölk'])
+            .withInstructions(['Värm ugnen', 'Blanda köttfärsen'])
+            .build();
 
         // Act
-        final errors =
-            RecipeContentOperations.validateRecipeContent(swedishRecipe);
+        final errors = RecipeContentOperations.validateRecipeContent(
+          swedishRecipe,
+        );
 
         // Assert
         expect(errors, isEmpty); // Swedish characters are valid

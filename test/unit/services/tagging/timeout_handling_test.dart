@@ -27,12 +27,17 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Test Recipe')
             .withTimeMinutes(30)
-            .withIngredients(['milk', 'eggs']).build();
+            .withIngredients(['milk', 'eggs'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'milk', 'dairy', {'dairy', 'contains-lactose'}),
-          TaggingTestHelper.ingredient(
-              'eggs', 'protein/eggs', {'egg', 'animal-product'}),
+          TaggingTestHelper.ingredient('milk', 'dairy', {
+            'dairy',
+            'contains-lactose',
+          }),
+          TaggingTestHelper.ingredient('eggs', 'protein/eggs', {
+            'egg',
+            'animal-product',
+          }),
         ]);
 
         // Use a Duration.zero timeout - everything should be "timed out"
@@ -54,10 +59,12 @@ void main() {
       test('allergen status populated even on immediate timeout', () {
         final recipe = RecipeBuilder()
             .withTitle('Gluten Recipe')
-            .withIngredients(['wheat flour']).build();
+            .withIngredients(['wheat flour'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'wheat flour', 'grain', {'contains-gluten'}),
+          TaggingTestHelper.ingredient('wheat flour', 'grain', {
+            'contains-gluten',
+          }),
         ]);
 
         final result = generator.generate(
@@ -74,12 +81,15 @@ void main() {
       test('dietary status populated even on immediate timeout', () {
         final recipe = RecipeBuilder()
             .withTitle('Vegan Recipe')
-            .withIngredients(['tofu', 'vegetables']).build();
+            .withIngredients(['tofu', 'vegetables'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'tofu', 'protein/plant', {'plant-based'}),
-          TaggingTestHelper.ingredient(
-              'vegetables', 'vegetable', {'plant-based'}),
+          TaggingTestHelper.ingredient('tofu', 'protein/plant', {
+            'plant-based',
+          }),
+          TaggingTestHelper.ingredient('vegetables', 'vegetable', {
+            'plant-based',
+          }),
         ]);
 
         final result = generator.generate(
@@ -100,7 +110,8 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Normal Recipe')
             .withTimeMinutes(30)
-            .withIngredients(['rice']).build();
+            .withIngredients(['rice'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('rice', 'grain', {}),
         ]);
@@ -118,7 +129,8 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Test Recipe')
             .withTimeMinutes(30)
-            .withIngredients(['pasta']).build();
+            .withIngredients(['pasta'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('pasta', 'grain', {'contains-gluten'}),
         ]);
@@ -137,10 +149,13 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Normal Recipe')
             .withTimeMinutes(30)
-            .withIngredients(['chicken']).build();
+            .withIngredients(['chicken'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+          TaggingTestHelper.ingredient('chicken', 'protein/meat/poultry', {
+            'meat',
+            'poultry',
+          }),
         ]);
 
         // Generous timeout - all phases should complete
@@ -159,10 +174,13 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Preview Recipe')
             .withTimeMinutes(20)
-            .withIngredients(['salmon']).build();
+            .withIngredients(['salmon'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'salmon', 'protein/seafood/fish', {'fish', 'seafood'}),
+          TaggingTestHelper.ingredient('salmon', 'protein/seafood/fish', {
+            'fish',
+            'seafood',
+          }),
         ]);
 
         final result = generator.generatePhase1Only(
@@ -178,9 +196,10 @@ void main() {
       });
 
       test('generatePhase1Only includes allergen status', () {
-        final recipe = RecipeBuilder()
-            .withTitle('Nut Recipe')
-            .withIngredients(['almonds', 'walnuts']).build();
+        final recipe = RecipeBuilder().withTitle('Nut Recipe').withIngredients([
+          'almonds',
+          'walnuts',
+        ]).build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('almonds', 'nut', {'tree-nut'}),
           TaggingTestHelper.ingredient('walnuts', 'nut', {'tree-nut'}),
@@ -197,12 +216,15 @@ void main() {
       test('generatePhase1Only includes dietary status', () {
         final recipe = RecipeBuilder()
             .withTitle('Vegetarian Recipe')
-            .withIngredients(['tofu', 'broccoli']).build();
+            .withIngredients(['tofu', 'broccoli'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'tofu', 'protein/plant', {'plant-based'}),
-          TaggingTestHelper.ingredient(
-              'broccoli', 'vegetable', {'plant-based'}),
+          TaggingTestHelper.ingredient('tofu', 'protein/plant', {
+            'plant-based',
+          }),
+          TaggingTestHelper.ingredient('broccoli', 'vegetable', {
+            'plant-based',
+          }),
         ]);
 
         final result = generator.generatePhase1Only(
@@ -220,7 +242,8 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Quick Recipe')
             .withTimeMinutes(15)
-            .withIngredients(['lettuce']).build();
+            .withIngredients(['lettuce'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('lettuce', 'vegetable', {'plant-based'}),
         ]);
@@ -240,10 +263,14 @@ void main() {
         // Protein tags like 'kyckling' are generated when ingredient name contains the word
         final recipe = RecipeBuilder()
             .withTitle('Kycklinggryta')
-            .withIngredients(['kycklingbröst']).build();
+            .withIngredients(['kycklingbröst'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient(
-              'kycklingbröst', 'protein/meat/poultry', {'meat', 'poultry'}),
+            'kycklingbröst',
+            'protein/meat/poultry',
+            {'meat', 'poultry'},
+          ),
         ]);
 
         final result = generator.generate(
@@ -259,10 +286,13 @@ void main() {
       test('allergen decision logs (H3) preserved on timeout', () {
         final recipe = RecipeBuilder()
             .withTitle('Dairy Recipe')
-            .withIngredients(['milk', 'cheese']).build();
+            .withIngredients(['milk', 'cheese'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'milk', 'dairy', {'dairy', 'contains-lactose'}),
+          TaggingTestHelper.ingredient('milk', 'dairy', {
+            'dairy',
+            'contains-lactose',
+          }),
           TaggingTestHelper.ingredient('cheese', 'dairy', {'dairy'}),
         ]);
 
@@ -288,12 +318,17 @@ void main() {
       test('decisions explain allergen status even with timeout', () {
         final recipe = RecipeBuilder()
             .withTitle('Shellfish Recipe')
-            .withIngredients(['shrimp', 'crab']).build();
+            .withIngredients(['shrimp', 'crab'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'shrimp', 'protein/seafood', {'crustacean', 'seafood'}),
-          TaggingTestHelper.ingredient(
-              'crab', 'protein/seafood', {'crustacean', 'seafood'}),
+          TaggingTestHelper.ingredient('shrimp', 'protein/seafood', {
+            'crustacean',
+            'seafood',
+          }),
+          TaggingTestHelper.ingredient('crab', 'protein/seafood', {
+            'crustacean',
+            'seafood',
+          }),
         ]);
 
         final result = generator.generate(

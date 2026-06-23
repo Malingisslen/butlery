@@ -19,8 +19,9 @@ void main() {
     }
 
     group('Default Constructor', () {
-      testWidgets('should render with required icon',
-          (WidgetTester tester) async {
+      testWidgets('should render with required icon', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -33,8 +34,9 @@ void main() {
         expect(find.byIcon(Icons.star), findsOneWidget);
       });
 
-      testWidgets('should use theme primary as default background',
-          (WidgetTester tester) async {
+      testWidgets('should use theme primary as default background', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -49,8 +51,9 @@ void main() {
         expect(decoration.color, equals(cs.primary));
       });
 
-      testWidgets('should use theme surface as default icon color',
-          (WidgetTester tester) async {
+      testWidgets('should use theme surface as default icon color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -83,8 +86,9 @@ void main() {
         expect(icon.size, equals(AppDimensions.iconSizeS));
       });
 
-      testWidgets('should apply custom background color',
-          (WidgetTester tester) async {
+      testWidgets('should apply custom background color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -101,8 +105,9 @@ void main() {
         expect(decoration.color, equals(Colors.red));
       });
 
-      testWidgets('should apply custom icon color',
-          (WidgetTester tester) async {
+      testWidgets('should apply custom icon color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -171,8 +176,9 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('should use theme primary background',
-          (WidgetTester tester) async {
+      testWidgets('should use theme primary background', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -187,8 +193,9 @@ void main() {
         expect(decoration.color, equals(cs.primary));
       });
 
-      testWidgets('should use theme surface icon color',
-          (WidgetTester tester) async {
+      testWidgets('should use theme surface icon color', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -257,8 +264,9 @@ void main() {
         expect(container.child, isA<Icon>());
       });
 
-      testWidgets('should work with different icon types',
-          (WidgetTester tester) async {
+      testWidgets('should work with different icon types', (
+        WidgetTester tester,
+      ) async {
         const icons = [
           Icons.favorite,
           Icons.settings,
@@ -399,8 +407,9 @@ void main() {
         expect(renderBox.size.height, equals(largeSize));
       });
 
-      testWidgets('should handle transparent colors',
-          (WidgetTester tester) async {
+      testWidgets('should handle transparent colors', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(

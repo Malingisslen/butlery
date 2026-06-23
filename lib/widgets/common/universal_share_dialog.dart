@@ -119,7 +119,7 @@ class UniversalShareDialog extends StatefulWidget {
   factory UniversalShareDialog.bulkShare({
     required List<dynamic> contentItems,
     required ShareContentType
-        primaryContentType, // Type for the majority of items
+    primaryContentType, // Type for the majority of items
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
@@ -178,21 +178,25 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     super.initState();
 
     // Initiera controllers
-    _messageController =
-        TextEditingController(text: widget.initialMessage.orEmpty());
+    _messageController = TextEditingController(
+      text: widget.initialMessage.orEmpty(),
+    );
 
     // Determine if realtime sharing is supported
-    _supportsRealtimeSharing =
-        ShareDialogHelpers.supportsRealtimeSharing(widget.contentType);
+    _supportsRealtimeSharing = ShareDialogHelpers.supportsRealtimeSharing(
+      widget.contentType,
+    );
 
     // Set default share mode - collaborative for shopping lists, static copy for others
-    _selectedMode = (widget.contentType == ShareContentType.shoppingList &&
+    _selectedMode =
+        (widget.contentType == ShareContentType.shoppingList &&
             _supportsRealtimeSharing)
         ? ShareMode.realtime
         : ShareMode.staticCopy;
 
     // Check if we have friends or groups
-    _hasFriends = (widget.availableFriends?.isNotEmpty ?? false) ||
+    _hasFriends =
+        (widget.availableFriends?.isNotEmpty ?? false) ||
         (widget.availableGroups?.isNotEmpty ?? false);
   }
 
@@ -296,8 +300,8 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     if (widget.contentType == ShareContentType.shoppingList &&
         widget.content is UnifiedShoppingList) {
       final shoppingList = widget.content as UnifiedShoppingList;
-      existingCollaborators =
-          shoppingList.collaborators.toSet(); // Get current collaborators
+      existingCollaborators = shoppingList.collaborators
+          .toSet(); // Get current collaborators
     }
 
     return ShareTargetSelectionEnhanced.build(
@@ -445,7 +449,8 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             content: Text(widget.viewModel.errorMessage!),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(
-                seconds: 4), // Longer duration for validation messages
+              seconds: 4,
+            ), // Longer duration for validation messages
           ),
         );
       }

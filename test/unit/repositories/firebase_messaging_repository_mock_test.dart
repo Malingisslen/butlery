@@ -19,18 +19,22 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      registerFallbackValue(Conversation.direct(
-        user1Id: 'fallback1',
-        user1DisplayName: 'Fallback User 1',
-        user2Id: 'fallback2',
-        user2DisplayName: 'Fallback User 2',
-      ));
-      registerFallbackValue(Message.text(
-        conversationId: 'fallback_conv',
-        senderId: 'fallback_sender',
-        senderDisplayName: 'Fallback User',
-        content: 'Fallback message',
-      ));
+      registerFallbackValue(
+        Conversation.direct(
+          user1Id: 'fallback1',
+          user1DisplayName: 'Fallback User 1',
+          user2Id: 'fallback2',
+          user2DisplayName: 'Fallback User 2',
+        ),
+      );
+      registerFallbackValue(
+        Message.text(
+          conversationId: 'fallback_conv',
+          senderId: 'fallback_sender',
+          senderDisplayName: 'Fallback User',
+          content: 'Fallback message',
+        ),
+      );
     });
 
     setUp(() async {
@@ -64,12 +68,14 @@ void main() {
         const expectedConversationId = 'conv_123';
 
         // Stub the repository method
-        when(() => mockRepository.createDirectConversation(
-              user1Id: user1Id,
-              user1DisplayName: user1Name,
-              user2Id: user2Id,
-              user2DisplayName: user2Name,
-            )).thenAnswer((_) async => expectedConversationId);
+        when(
+          () => mockRepository.createDirectConversation(
+            user1Id: user1Id,
+            user1DisplayName: user1Name,
+            user2Id: user2Id,
+            user2DisplayName: user2Name,
+          ),
+        ).thenAnswer((_) async => expectedConversationId);
 
         // Act
         final conversationId = await mockRepository.createDirectConversation(
@@ -81,12 +87,14 @@ void main() {
 
         // Assert
         expect(conversationId, equals(expectedConversationId));
-        verify(() => mockRepository.createDirectConversation(
-              user1Id: user1Id,
-              user1DisplayName: user1Name,
-              user2Id: user2Id,
-              user2DisplayName: user2Name,
-            )).called(1);
+        verify(
+          () => mockRepository.createDirectConversation(
+            user1Id: user1Id,
+            user1DisplayName: user1Name,
+            user2Id: user2Id,
+            user2DisplayName: user2Name,
+          ),
+        ).called(1);
       });
 
       test('should find existing direct conversation', () async {
@@ -96,10 +104,12 @@ void main() {
         const existingConversationId = 'existing_conv_123';
 
         // Stub the repository method
-        when(() => mockRepository.findDirectConversation(
-              user1Id: user1Id,
-              user2Id: user2Id,
-            )).thenAnswer((_) async => existingConversationId);
+        when(
+          () => mockRepository.findDirectConversation(
+            user1Id: user1Id,
+            user2Id: user2Id,
+          ),
+        ).thenAnswer((_) async => existingConversationId);
 
         // Act
         final conversationId = await mockRepository.findDirectConversation(
@@ -109,10 +119,12 @@ void main() {
 
         // Assert
         expect(conversationId, equals(existingConversationId));
-        verify(() => mockRepository.findDirectConversation(
-              user1Id: user1Id,
-              user2Id: user2Id,
-            )).called(1);
+        verify(
+          () => mockRepository.findDirectConversation(
+            user1Id: user1Id,
+            user2Id: user2Id,
+          ),
+        ).called(1);
       });
 
       test('should create group conversation', () async {
@@ -133,13 +145,15 @@ void main() {
         const expectedConversationId = 'group_conv_123';
 
         // Stub the repository method
-        when(() => mockRepository.createGroupConversation(
-              participantIds: participantIds,
-              participantDisplayNames: participantNames,
-              participantAvatarUrls: participantAvatars,
-              title: title,
-              creatorId: creatorId,
-            )).thenAnswer((_) async => expectedConversationId);
+        when(
+          () => mockRepository.createGroupConversation(
+            participantIds: participantIds,
+            participantDisplayNames: participantNames,
+            participantAvatarUrls: participantAvatars,
+            title: title,
+            creatorId: creatorId,
+          ),
+        ).thenAnswer((_) async => expectedConversationId);
 
         // Act
         final conversationId = await mockRepository.createGroupConversation(
@@ -152,13 +166,15 @@ void main() {
 
         // Assert
         expect(conversationId, equals(expectedConversationId));
-        verify(() => mockRepository.createGroupConversation(
-              participantIds: participantIds,
-              participantDisplayNames: participantNames,
-              participantAvatarUrls: participantAvatars,
-              title: title,
-              creatorId: creatorId,
-            )).called(1);
+        verify(
+          () => mockRepository.createGroupConversation(
+            participantIds: participantIds,
+            participantDisplayNames: participantNames,
+            participantAvatarUrls: participantAvatars,
+            title: title,
+            creatorId: creatorId,
+          ),
+        ).called(1);
       });
 
       test('should get conversation by ID', () async {
@@ -172,12 +188,14 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.getConversation(conversationId))
-            .thenAnswer((_) async => expectedConversation);
+        when(
+          () => mockRepository.getConversation(conversationId),
+        ).thenAnswer((_) async => expectedConversation);
 
         // Act
-        final conversation =
-            await mockRepository.getConversation(conversationId);
+        final conversation = await mockRepository.getConversation(
+          conversationId,
+        );
 
         // Assert
         expect(conversation, isNotNull);
@@ -204,8 +222,9 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getUserConversations(userId))
-            .thenAnswer((_) => Stream.value(conversations));
+        when(
+          () => mockRepository.getUserConversations(userId),
+        ).thenAnswer((_) => Stream.value(conversations));
 
         // Act
         final stream = mockRepository.getUserConversations(userId);
@@ -229,8 +248,9 @@ void main() {
         );
 
         // Stub the repository method
-        when(() => mockRepository.sendMessage(message))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.sendMessage(message),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.sendMessage(message);
@@ -258,10 +278,12 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getConversationMessages(
-              conversationId: conversationId,
-              limit: 50,
-            )).thenAnswer((_) => Stream.value(messages));
+        when(
+          () => mockRepository.getConversationMessages(
+            conversationId: conversationId,
+            limit: 50,
+          ),
+        ).thenAnswer((_) => Stream.value(messages));
 
         // Act
         final stream = mockRepository.getConversationMessages(
@@ -274,10 +296,12 @@ void main() {
         expect(result.first.content, equals('Hello!'));
         expect(result[1].content, equals('Hi Alice!'));
 
-        verify(() => mockRepository.getConversationMessages(
-              conversationId: conversationId,
-              limit: 50,
-            )).called(1);
+        verify(
+          () => mockRepository.getConversationMessages(
+            conversationId: conversationId,
+            limit: 50,
+          ),
+        ).called(1);
       });
 
       test('should get paginated messages', () async {
@@ -300,11 +324,13 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.getConversationMessagesPage(
-              conversationId: conversationId,
-              limit: 50,
-              startAfter: startAfter,
-            )).thenAnswer((_) async => messages);
+        when(
+          () => mockRepository.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: 50,
+            startAfter: startAfter,
+          ),
+        ).thenAnswer((_) async => messages);
 
         // Act
         final result = await mockRepository.getConversationMessagesPage(
@@ -314,11 +340,13 @@ void main() {
 
         // Assert
         expect(result, hasLength(2));
-        verify(() => mockRepository.getConversationMessagesPage(
-              conversationId: conversationId,
-              limit: 50,
-              startAfter: startAfter,
-            )).called(1);
+        verify(
+          () => mockRepository.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: 50,
+            startAfter: startAfter,
+          ),
+        ).called(1);
       });
 
       test('should update message content', () async {
@@ -327,10 +355,12 @@ void main() {
         const newContent = 'Edited message content';
 
         // Stub the repository method
-        when(() => mockRepository.updateMessageContent(
-              messageId: messageId,
-              newContent: newContent,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateMessageContent(
+            messageId: messageId,
+            newContent: newContent,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateMessageContent(
@@ -339,10 +369,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.updateMessageContent(
-              messageId: messageId,
-              newContent: newContent,
-            )).called(1);
+        verify(
+          () => mockRepository.updateMessageContent(
+            messageId: messageId,
+            newContent: newContent,
+          ),
+        ).called(1);
       });
 
       test('should delete message', () async {
@@ -350,8 +382,9 @@ void main() {
         const messageId = 'msg_to_delete';
 
         // Stub the repository method
-        when(() => mockRepository.deleteMessage(messageId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteMessage(messageId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteMessage(messageId);
@@ -369,11 +402,13 @@ void main() {
         final timestamp = DateTime.now();
 
         // Stub the repository method
-        when(() => mockRepository.updateMessageStatus(
-              messageId: messageId,
-              status: status,
-              timestamp: timestamp,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.updateMessageStatus(
+            messageId: messageId,
+            status: status,
+            timestamp: timestamp,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.updateMessageStatus(
@@ -383,11 +418,13 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.updateMessageStatus(
-              messageId: messageId,
-              status: status,
-              timestamp: timestamp,
-            )).called(1);
+        verify(
+          () => mockRepository.updateMessageStatus(
+            messageId: messageId,
+            status: status,
+            timestamp: timestamp,
+          ),
+        ).called(1);
       });
 
       test('should mark message as read', () async {
@@ -396,10 +433,12 @@ void main() {
         const userId = 'user_1';
 
         // Stub the repository method
-        when(() => mockRepository.markMessageAsRead(
-              messageId: messageId,
-              userId: userId,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.markMessageAsRead(
+            messageId: messageId,
+            userId: userId,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.markMessageAsRead(
@@ -408,10 +447,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.markMessageAsRead(
-              messageId: messageId,
-              userId: userId,
-            )).called(1);
+        verify(
+          () => mockRepository.markMessageAsRead(
+            messageId: messageId,
+            userId: userId,
+          ),
+        ).called(1);
       });
 
       test('should mark conversation as read', () async {
@@ -420,10 +461,12 @@ void main() {
         const userId = 'user_1';
 
         // Stub the repository method
-        when(() => mockRepository.markConversationAsRead(
-              conversationId: conversationId,
-              userId: userId,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.markConversationAsRead(
+            conversationId: conversationId,
+            userId: userId,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.markConversationAsRead(
@@ -432,10 +475,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.markConversationAsRead(
-              conversationId: conversationId,
-              userId: userId,
-            )).called(1);
+        verify(
+          () => mockRepository.markConversationAsRead(
+            conversationId: conversationId,
+            userId: userId,
+          ),
+        ).called(1);
       });
 
       test('should batch mark messages as delivered', () async {
@@ -444,10 +489,12 @@ void main() {
         const userId = 'user_1';
 
         // Stub the repository method
-        when(() => mockRepository.batchMarkAsDelivered(
-              messageIds: messageIds,
-              userId: userId,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.batchMarkAsDelivered(
+            messageIds: messageIds,
+            userId: userId,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.batchMarkAsDelivered(
@@ -456,10 +503,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.batchMarkAsDelivered(
-              messageIds: messageIds,
-              userId: userId,
-            )).called(1);
+        verify(
+          () => mockRepository.batchMarkAsDelivered(
+            messageIds: messageIds,
+            userId: userId,
+          ),
+        ).called(1);
       });
     });
 
@@ -478,12 +527,14 @@ void main() {
         };
 
         // Stub the repository method
-        when(() => mockRepository.addParticipants(
-              conversationId: conversationId,
-              participantIds: newParticipantIds,
-              participantDisplayNames: newParticipantNames,
-              participantAvatarUrls: newParticipantAvatars,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.addParticipants(
+            conversationId: conversationId,
+            participantIds: newParticipantIds,
+            participantDisplayNames: newParticipantNames,
+            participantAvatarUrls: newParticipantAvatars,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.addParticipants(
@@ -494,12 +545,14 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.addParticipants(
-              conversationId: conversationId,
-              participantIds: newParticipantIds,
-              participantDisplayNames: newParticipantNames,
-              participantAvatarUrls: newParticipantAvatars,
-            )).called(1);
+        verify(
+          () => mockRepository.addParticipants(
+            conversationId: conversationId,
+            participantIds: newParticipantIds,
+            participantDisplayNames: newParticipantNames,
+            participantAvatarUrls: newParticipantAvatars,
+          ),
+        ).called(1);
       });
 
       test('should remove participant from group', () async {
@@ -508,10 +561,12 @@ void main() {
         const participantId = 'user_3';
 
         // Stub the repository method
-        when(() => mockRepository.removeParticipant(
-              conversationId: conversationId,
-              participantId: participantId,
-            )).thenAnswer((_) async {});
+        when(
+          () => mockRepository.removeParticipant(
+            conversationId: conversationId,
+            participantId: participantId,
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.removeParticipant(
@@ -520,10 +575,12 @@ void main() {
         );
 
         // Assert
-        verify(() => mockRepository.removeParticipant(
-              conversationId: conversationId,
-              participantId: participantId,
-            )).called(1);
+        verify(
+          () => mockRepository.removeParticipant(
+            conversationId: conversationId,
+            participantId: participantId,
+          ),
+        ).called(1);
       });
 
       test('should get conversation participants', () async {
@@ -532,17 +589,20 @@ void main() {
         final expectedParticipants = ['user_1', 'user_2', 'user_3'];
 
         // Stub the repository method
-        when(() => mockRepository.getConversationParticipants(conversationId))
-            .thenAnswer((_) async => expectedParticipants);
+        when(
+          () => mockRepository.getConversationParticipants(conversationId),
+        ).thenAnswer((_) async => expectedParticipants);
 
         // Act
-        final participants =
-            await mockRepository.getConversationParticipants(conversationId);
+        final participants = await mockRepository.getConversationParticipants(
+          conversationId,
+        );
 
         // Assert
         expect(participants, equals(expectedParticipants));
-        verify(() => mockRepository.getConversationParticipants(conversationId))
-            .called(1);
+        verify(
+          () => mockRepository.getConversationParticipants(conversationId),
+        ).called(1);
       });
     });
 
@@ -553,8 +613,9 @@ void main() {
         const expectedCount = 5;
 
         // Stub the repository method
-        when(() => mockRepository.getUnreadMessageCount(userId))
-            .thenAnswer((_) async => expectedCount);
+        when(
+          () => mockRepository.getUnreadMessageCount(userId),
+        ).thenAnswer((_) async => expectedCount);
 
         // Act
         final count = await mockRepository.getUnreadMessageCount(userId);
@@ -570,16 +631,18 @@ void main() {
         const expectedCount = 3;
 
         // Stub the repository method
-        when(() => mockRepository.getUnreadConversationsCount(userId))
-            .thenAnswer((_) async => expectedCount);
+        when(
+          () => mockRepository.getUnreadConversationsCount(userId),
+        ).thenAnswer((_) async => expectedCount);
 
         // Act
         final count = await mockRepository.getUnreadConversationsCount(userId);
 
         // Assert
         expect(count, equals(expectedCount));
-        verify(() => mockRepository.getUnreadConversationsCount(userId))
-            .called(1);
+        verify(
+          () => mockRepository.getUnreadConversationsCount(userId),
+        ).called(1);
       });
 
       test('should search messages in conversation', () async {
@@ -602,11 +665,13 @@ void main() {
         ];
 
         // Stub the repository method
-        when(() => mockRepository.searchMessages(
-              conversationId: conversationId,
-              query: query,
-              limit: 20,
-            )).thenAnswer((_) async => expectedMessages);
+        when(
+          () => mockRepository.searchMessages(
+            conversationId: conversationId,
+            query: query,
+            limit: 20,
+          ),
+        ).thenAnswer((_) async => expectedMessages);
 
         // Act
         final messages = await mockRepository.searchMessages(
@@ -616,14 +681,18 @@ void main() {
 
         // Assert
         expect(messages, hasLength(2));
-        expect(messages.every((m) => m.content.toLowerCase().contains(query)),
-            isTrue);
+        expect(
+          messages.every((m) => m.content.toLowerCase().contains(query)),
+          isTrue,
+        );
 
-        verify(() => mockRepository.searchMessages(
-              conversationId: conversationId,
-              query: query,
-              limit: 20,
-            )).called(1);
+        verify(
+          () => mockRepository.searchMessages(
+            conversationId: conversationId,
+            query: query,
+            limit: 20,
+          ),
+        ).called(1);
       });
 
       test('should delete conversation', () async {
@@ -631,15 +700,17 @@ void main() {
         const conversationId = 'conv_to_delete';
 
         // Stub the repository method
-        when(() => mockRepository.deleteConversation(conversationId))
-            .thenAnswer((_) async {});
+        when(
+          () => mockRepository.deleteConversation(conversationId),
+        ).thenAnswer((_) async {});
 
         // Act
         await mockRepository.deleteConversation(conversationId);
 
         // Assert
-        verify(() => mockRepository.deleteConversation(conversationId))
-            .called(1);
+        verify(
+          () => mockRepository.deleteConversation(conversationId),
+        ).called(1);
       });
     });
   });

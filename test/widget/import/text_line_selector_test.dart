@@ -32,8 +32,9 @@ void main() {
   }
 
   group('TextLineSelector AI-provenance chip (BUT-931)', () {
-    testWidgets('shows the Butlerys förslag chip only on ai-suggested lines',
-        (tester) async {
+    testWidgets('shows the Butlerys förslag chip only on ai-suggested lines', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildSelector(aiSuggested: {0}));
 
       // Swedish locale → "Butlerys förslag". One suggested line ⇒ exactly one chip.
@@ -55,20 +56,23 @@ void main() {
       expect(find.text('Butlerys förslag'), findsNWidgets(2));
     });
 
-    testWidgets('chip colour comes from the live theme, not a hardcoded value',
-        (tester) async {
+    testWidgets('chip colour comes from the live theme, not a hardcoded value', (
+      tester,
+    ) async {
       late ColorScheme cs;
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: Builder(builder: (context) {
-            cs = Theme.of(context).colorScheme;
-            return TextLineSelector(
-              lines: lines,
-              selectedIndices: const {},
-              aiSuggestedIndices: const {0},
-              onSelectionChanged: (_) {},
-            );
-          }),
+          child: Builder(
+            builder: (context) {
+              cs = Theme.of(context).colorScheme;
+              return TextLineSelector(
+                lines: lines,
+                selectedIndices: const {},
+                aiSuggestedIndices: const {0},
+                onSelectionChanged: (_) {},
+              );
+            },
+          ),
         ),
       );
 
@@ -81,29 +85,31 @@ void main() {
 
   group('TextLineSelector a11y provenance (BUT-931)', () {
     testWidgets(
-        'ai-suggested line carries the provenance hint in its semantics',
-        (tester) async {
-      await tester.pumpWidget(buildSelector(aiSuggested: {0}));
+      'ai-suggested line carries the provenance hint in its semantics',
+      (tester) async {
+        await tester.pumpWidget(buildSelector(aiSuggested: {0}));
 
-      // The AI line's semantics label includes the provenance hint; a
-      // non-AI line does not. Asserting on substrings keeps this robust to
-      // copy tweaks to the surrounding selected/not-selected text.
-      final aiSemantics = tester.getSemantics(
-        find.bySemanticsLabel(RegExp('200 g smör.*Butlerys förslag')),
-      );
-      expect(aiSemantics, isNotNull);
+        // The AI line's semantics label includes the provenance hint; a
+        // non-AI line does not. Asserting on substrings keeps this robust to
+        // copy tweaks to the surrounding selected/not-selected text.
+        final aiSemantics = tester.getSemantics(
+          find.bySemanticsLabel(RegExp('200 g smör.*Butlerys förslag')),
+        );
+        expect(aiSemantics, isNotNull);
 
-      // The plain instruction line must NOT advertise AI provenance.
-      expect(
-        find.bySemanticsLabel(RegExp('Vispa ihop.*Butlerys förslag')),
-        findsNothing,
-      );
-    });
+        // The plain instruction line must NOT advertise AI provenance.
+        expect(
+          find.bySemanticsLabel(RegExp('Vispa ihop.*Butlerys förslag')),
+          findsNothing,
+        );
+      },
+    );
   });
 
   group('TextLineSelector selection behaviour', () {
-    testWidgets('tapping an ai-suggested line still toggles its selection',
-        (tester) async {
+    testWidgets('tapping an ai-suggested line still toggles its selection', (
+      tester,
+    ) async {
       Set<int>? lastSelection;
       await tester.pumpWidget(
         buildSelector(aiSuggested: {0}, onChanged: (s) => lastSelection = s),

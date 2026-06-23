@@ -602,12 +602,13 @@ void main() {
         };
 
         final rapidEdits = List.generate(
-            10,
-            (i) => {
-                  'field': 'cookTime',
-                  'cookTime': 30 + i,
-                  'editedBy': 'user_$i',
-                });
+          10,
+          (i) => {
+            'field': 'cookTime',
+            'cookTime': 30 + i,
+            'editedBy': 'user_$i',
+          },
+        );
 
         // Act
         final result = RealtimeConflictResolver.mergeConflictingEdits(
@@ -728,7 +729,7 @@ void main() {
         final edits = [
           {
             'field': 'tags',
-            'tags': ['tag1', 'tag2', 'tag3']
+            'tags': ['tag1', 'tag2', 'tag3'],
           },
           {'field': 'rating', 'rating': 4.8},
           {'field': 'isPublic', 'isPublic': false},
@@ -752,11 +753,12 @@ void main() {
         // Arrange
         final currentData = {'counter': 0};
         final manyEdits = List.generate(
-            100,
-            (i) => {
-                  'field': 'counter',
-                  'counter': i + 1,
-                });
+          100,
+          (i) => {
+            'field': 'counter',
+            'counter': i + 1,
+          },
+        );
 
         // Act
         final stopwatch = Stopwatch()..start();
@@ -834,7 +836,9 @@ void main() {
 
         // Assert - should handle gracefully
         expect(
-            result['title'], anyOf(equals('Original'), equals('No field key')));
+          result['title'],
+          anyOf(equals('Original'), equals('No field key')),
+        );
       });
     });
 
@@ -869,8 +873,10 @@ void main() {
         expect(result['title'], equals('Köttbullar med gräddsås'));
         expect(result['description'], contains('Småland'));
         // editedByDisplayName may or may not be preserved depending on merge implementation
-        expect(result['editedBy'] ?? result['editedByDisplayName'],
-            anyOf(equals('user_åäö'), equals('Björn Ström'), isNull));
+        expect(
+          result['editedBy'] ?? result['editedByDisplayName'],
+          anyOf(equals('user_åäö'), equals('Björn Ström'), isNull),
+        );
       });
     });
   });

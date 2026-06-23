@@ -268,7 +268,8 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                         ActionButtons.primaryButton(
                           context,
                           label: context.l10n.importUrlBatchImport(
-                              viewModel.successfulUrlCount),
+                            viewModel.successfulUrlCount,
+                          ),
                           onPressed: viewModel.isLoading
                               ? null
                               : _navigateToBatchTextImport,
@@ -290,9 +291,11 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                       ActionButtons.primaryButton(
                         context,
                         label: context.l10n.importIndexPageExpand(
-                            viewModel.indexPageLinks.length),
-                        onPressed:
-                            viewModel.isLoading ? null : _expandIndexPage,
+                          viewModel.indexPageLinks.length,
+                        ),
+                        onPressed: viewModel.isLoading
+                            ? null
+                            : _expandIndexPage,
                         isExpanded: true,
                       ),
                     ],
@@ -301,8 +304,10 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                     if (viewModel.urlResults.isEmpty &&
                         viewModel.hasExtractedText) ...[
                       const SizedBox(height: AppDimensions.spacingXl),
-                      Text(context.l10n.importExtractedText,
-                          style: AppTextStyles.headlineSmall),
+                      Text(
+                        context.l10n.importExtractedText,
+                        style: AppTextStyles.headlineSmall,
+                      ),
                       const SizedBox(height: AppDimensions.spacingS),
                       Expanded(
                         child: StyledInput(
@@ -413,14 +418,23 @@ class _UrlResultRow extends StatelessWidget {
           child: CircularProgressIndicator(strokeWidth: 2),
         );
       case UrlFetchStatus.success:
-        return Icon(Icons.check_circle,
-            color: context.butleryColors.success, size: 20);
+        return Icon(
+          Icons.check_circle,
+          color: context.butleryColors.success,
+          size: 20,
+        );
       case UrlFetchStatus.failure:
-        return Icon(Icons.error,
-            color: Theme.of(context).colorScheme.error, size: 20);
+        return Icon(
+          Icons.error,
+          color: Theme.of(context).colorScheme.error,
+          size: 20,
+        );
       case UrlFetchStatus.pending:
-        return const Icon(Icons.schedule,
-            color: AppColors.greenMuted, size: 20);
+        return const Icon(
+          Icons.schedule,
+          color: AppColors.greenMuted,
+          size: 20,
+        );
     }
   }
 }

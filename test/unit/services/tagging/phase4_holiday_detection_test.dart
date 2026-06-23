@@ -23,10 +23,13 @@ void main() {
       test('detects jul from title containing jul', () {
         final recipe = RecipeBuilder()
             .withTitle('Julskinka med senap')
-            .withIngredients(['skinka', 'senap', 'ägg']).build();
+            .withIngredients(['skinka', 'senap', 'ägg'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'skinka', 'protein/meat/pork', {'meat', 'pork'}),
+          TaggingTestHelper.ingredient('skinka', 'protein/meat/pork', {
+            'meat',
+            'pork',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -37,10 +40,13 @@ void main() {
       test('detects jul from julskinka ingredient', () {
         final recipe = RecipeBuilder()
             .withTitle('Klassisk julmat')
-            .withIngredients(['julskinka', 'brödsmulor', 'senap']).build();
+            .withIngredients(['julskinka', 'brödsmulor', 'senap'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'julskinka', 'protein/meat/pork', {'meat', 'pork'}),
+          TaggingTestHelper.ingredient('julskinka', 'protein/meat/pork', {
+            'meat',
+            'pork',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -51,10 +57,12 @@ void main() {
       test('detects jul from lutfisk ingredient', () {
         final recipe = RecipeBuilder()
             .withTitle('Traditionell Lutfisk')
-            .withIngredients(['lutfisk', 'vitsås', 'ärtor']).build();
+            .withIngredients(['lutfisk', 'vitsås', 'ärtor'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'lutfisk', 'protein/seafood/fish', {'fish'}),
+          TaggingTestHelper.ingredient('lutfisk', 'protein/seafood/fish', {
+            'fish',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -65,13 +73,17 @@ void main() {
       test('detects jul from janssons frestelse', () {
         final recipe = RecipeBuilder()
             .withTitle('Janssons frestelse')
-            .withIngredients(['potatis', 'ansjovis', 'grädde', 'lök']).build();
+            .withIngredients(['potatis', 'ansjovis', 'grädde', 'lök'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('potatis', 'vegetable/root', {}),
-          TaggingTestHelper.ingredient(
-              'ansjovis', 'protein/seafood/fish', {'fish'}),
-          TaggingTestHelper.ingredient(
-              'grädde', 'protein/dairy', {'dairy', 'cream'}),
+          TaggingTestHelper.ingredient('ansjovis', 'protein/seafood/fish', {
+            'fish',
+          }),
+          TaggingTestHelper.ingredient('grädde', 'protein/dairy', {
+            'dairy',
+            'cream',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -82,12 +94,16 @@ void main() {
       test('does not detect jul from regular recipes', () {
         final recipe = RecipeBuilder()
             .withTitle('Pasta med köttfärssås')
-            .withIngredients(['pasta', 'köttfärs', 'tomatsås']).build();
+            .withIngredients(['pasta', 'köttfärs', 'tomatsås'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'pasta', 'grain/pasta-bread', {'contains-gluten'}),
-          TaggingTestHelper.ingredient(
-              'köttfärs', 'protein/meat/beef', {'meat', 'beef'}),
+          TaggingTestHelper.ingredient('pasta', 'grain/pasta-bread', {
+            'contains-gluten',
+          }),
+          TaggingTestHelper.ingredient('köttfärs', 'protein/meat/beef', {
+            'meat',
+            'beef',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -100,11 +116,12 @@ void main() {
       test('detects midsommar from title', () {
         final recipe = RecipeBuilder()
             .withTitle('Midsommarmat - Sill och potatis')
-            .withIngredients(
-                ['inlagd sill', 'färskpotatis', 'gräddfil']).build();
+            .withIngredients(['inlagd sill', 'färskpotatis', 'gräddfil'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'inlagd sill', 'protein/seafood/fish', {'fish'}),
+          TaggingTestHelper.ingredient('inlagd sill', 'protein/seafood/fish', {
+            'fish',
+          }),
           TaggingTestHelper.ingredient('färskpotatis', 'vegetable/root', {}),
         ]);
 
@@ -116,7 +133,8 @@ void main() {
       test('does not detect midsommar from single ingredient', () {
         final recipe = RecipeBuilder()
             .withTitle('Kokt potatis')
-            .withIngredients(['potatis', 'smör', 'dill']).build();
+            .withIngredients(['potatis', 'smör', 'dill'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('potatis', 'vegetable/root', {}),
           TaggingTestHelper.ingredient('smör', 'protein/dairy', {'dairy'}),
@@ -132,10 +150,13 @@ void main() {
       test('detects påsk from title', () {
         final recipe = RecipeBuilder()
             .withTitle('Påskmiddag med lamm')
-            .withIngredients(['lammkotlett', 'rosmarin', 'vitlök']).build();
+            .withIngredients(['lammkotlett', 'rosmarin', 'vitlök'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'lammkotlett', 'protein/meat/lamb', {'meat', 'lamb'}),
+          TaggingTestHelper.ingredient('lammkotlett', 'protein/meat/lamb', {
+            'meat',
+            'lamb',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -147,10 +168,13 @@ void main() {
         // System intentionally tags lamb dishes as Easter (cultural association)
         final recipe = RecipeBuilder()
             .withTitle('Vardaglig lammgryta')
-            .withIngredients(['lammkött', 'tomat', 'vitlök']).build();
+            .withIngredients(['lammkött', 'tomat', 'vitlök'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
-          TaggingTestHelper.ingredient(
-              'lammkött', 'protein/meat/lamb', {'meat', 'lamb'}),
+          TaggingTestHelper.ingredient('lammkött', 'protein/meat/lamb', {
+            'meat',
+            'lamb',
+          }),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -164,7 +188,8 @@ void main() {
       test('does not false-detect holidays from similar words', () {
         final recipe = RecipeBuilder()
             .withTitle('Julienne skurna grönsaker')
-            .withIngredients(['morot', 'selleri', 'purjolök']).build();
+            .withIngredients(['morot', 'selleri', 'purjolök'])
+            .build();
         final lookup = TaggingTestHelper.createLookup([
           TaggingTestHelper.ingredient('morot', 'vegetable', {}),
           TaggingTestHelper.ingredient('selleri', 'vegetable', {}),

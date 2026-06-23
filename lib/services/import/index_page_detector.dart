@@ -135,8 +135,9 @@ class IndexPageDetector {
   /// (a slug) rather than a short top-level nav target. Filters most header/
   /// footer chrome without a brittle site-specific allowlist.
   static bool _looksLikeRecipeSlug(Uri uri) {
-    final segments =
-        uri.pathSegments.where((s) => s.isNotEmpty).toList(growable: false);
+    final segments = uri.pathSegments
+        .where((s) => s.isNotEmpty)
+        .toList(growable: false);
     if (segments.isEmpty) return false;
 
     for (final segment in segments) {

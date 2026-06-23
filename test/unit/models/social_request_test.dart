@@ -13,8 +13,10 @@ void main() {
   group('friend-request factory', () {
     test('builds with type=friend and 7-day expiry', () {
       withClock(Clock.fixed(DateTime.utc(2026, 1, 1)), () {
-        final r =
-            SocialRequest.friendRequest(fromUserId: 'alice', toUserId: 'bob');
+        final r = SocialRequest.friendRequest(
+          fromUserId: 'alice',
+          toUserId: 'bob',
+        );
         expect(r.type, SocialRequestType.friend);
         expect(r.status, SocialRequestStatus.pending);
         expect(r.fromUserId, 'alice');
@@ -60,8 +62,10 @@ void main() {
         toUserId: 'bob',
         message: 'Hej!',
       );
-      final restored =
-          SocialRequest.fromMap(original.id, original.toFirestore());
+      final restored = SocialRequest.fromMap(
+        original.id,
+        original.toFirestore(),
+      );
       expect(restored.id, original.id);
       expect(restored.type, original.type);
       expect(restored.fromUserId, original.fromUserId);
@@ -82,8 +86,10 @@ void main() {
         groupEmoji: '👥',
         fromUserName: 'Alice',
       );
-      final restored =
-          SocialRequest.fromMap(original.id, original.toFirestore());
+      final restored = SocialRequest.fromMap(
+        original.id,
+        original.toFirestore(),
+      );
       expect(restored.type, SocialRequestType.groupInvitation);
       expect(restored.groupId, 'g1');
       expect(restored.groupName, 'Squad');
@@ -123,8 +129,10 @@ void main() {
 
   group('predicates', () {
     test('isPending only when status == pending', () {
-      final pending =
-          SocialRequest.friendRequest(fromUserId: 'a', toUserId: 'b');
+      final pending = SocialRequest.friendRequest(
+        fromUserId: 'a',
+        toUserId: 'b',
+      );
       expect(pending.isPending, isTrue);
 
       final accepted = pending.copyWith(status: SocialRequestStatus.accepted);
@@ -133,8 +141,10 @@ void main() {
 
     test('isExpired true when status==expired OR now > expiresAt', () {
       // Explicit expired status
-      final r1 = SocialRequest.friendRequest(fromUserId: 'a', toUserId: 'b')
-          .copyWith(status: SocialRequestStatus.expired);
+      final r1 = SocialRequest.friendRequest(
+        fromUserId: 'a',
+        toUserId: 'b',
+      ).copyWith(status: SocialRequestStatus.expired);
       expect(r1.isExpired, isTrue);
 
       // Time-based expiry — clock past expiresAt
@@ -150,8 +160,10 @@ void main() {
     });
 
     test('isFriendRequest + isGroupInvitation discriminators', () {
-      final friend =
-          SocialRequest.friendRequest(fromUserId: 'a', toUserId: 'b');
+      final friend = SocialRequest.friendRequest(
+        fromUserId: 'a',
+        toUserId: 'b',
+      );
       expect(friend.isFriendRequest, isTrue);
       expect(friend.isGroupInvitation, isFalse);
 
@@ -170,9 +182,10 @@ void main() {
 
   group('legacy converters', () {
     test('toFriendRequest maps status by name', () {
-      final r =
-          SocialRequest.friendRequest(fromUserId: 'alice', toUserId: 'bob')
-              .copyWith(status: SocialRequestStatus.accepted);
+      final r = SocialRequest.friendRequest(
+        fromUserId: 'alice',
+        toUserId: 'bob',
+      ).copyWith(status: SocialRequestStatus.accepted);
       final fr = r.toFriendRequest();
       expect(fr.id, r.id);
       expect(fr.fromUserId, 'alice');
@@ -199,16 +212,18 @@ void main() {
       expect(gi.status, GroupInvitationStatus.rejected);
     });
 
-    test('toGroupInvitation falls back to "" / "👥" when group fields null',
-        () {
-      // Construct a friend-typed request and convert — fields are null.
-      final r = SocialRequest.friendRequest(fromUserId: 'a', toUserId: 'b');
-      final gi = r.toGroupInvitation();
-      expect(gi.groupId, '');
-      expect(gi.groupName, '');
-      expect(gi.groupEmoji, '👥');
-      expect(gi.fromUserName, '');
-    });
+    test(
+      'toGroupInvitation falls back to "" / "👥" when group fields null',
+      () {
+        // Construct a friend-typed request and convert — fields are null.
+        final r = SocialRequest.friendRequest(fromUserId: 'a', toUserId: 'b');
+        final gi = r.toGroupInvitation();
+        expect(gi.groupId, '');
+        expect(gi.groupName, '');
+        expect(gi.groupEmoji, '👥');
+        expect(gi.fromUserName, '');
+      },
+    );
   });
 
   group('equality + hash', () {

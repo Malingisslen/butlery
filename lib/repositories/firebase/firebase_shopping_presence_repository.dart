@@ -37,10 +37,10 @@ class FirebaseShoppingPresenceRepository {
   FirebaseShoppingPresenceRepository({
     FirestoreRepository? firestoreRepository,
     TimestampProvider? timestampProvider,
-  })  : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
-        _timestampProvider =
-            timestampProvider ?? const ServerTimestampProvider();
+  }) : _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+       _timestampProvider =
+           timestampProvider ?? const ServerTimestampProvider();
 
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
@@ -59,16 +59,17 @@ class FirebaseShoppingPresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .set({
-        'userId': userId,
-        'displayName': displayName,
-        'avatarUrl': avatarUrl,
-        'joinedAt': _timestampProvider.serverTimestamp(),
-        'lastSeen': _timestampProvider.serverTimestamp(),
-        'expiresAt': PresenceTtl.computeExpiresAt(),
-        'isActive': true,
-      }, SetOptions(merge: true));
+            'userId': userId,
+            'displayName': displayName,
+            'avatarUrl': avatarUrl,
+            'joinedAt': _timestampProvider.serverTimestamp(),
+            'lastSeen': _timestampProvider.serverTimestamp(),
+            'expiresAt': PresenceTtl.computeExpiresAt(),
+            'isActive': true,
+          }, SetOptions(merge: true));
       AppLogger.debug(
-          'Shopping presence set for ${userId.maskedUserId} on list $listId');
+        'Shopping presence set for ${userId.maskedUserId} on list $listId',
+      );
     } catch (e) {
       AppLogger.error('Failed to set shopping presence: $e');
       rethrow;
@@ -87,13 +88,14 @@ class FirebaseShoppingPresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .set({
-        'isActive': false,
-        'leftAt': _timestampProvider.serverTimestamp(),
-        // Force immediate TTL eviction — the user explicitly left.
-        'expiresAt': Timestamp.fromDate(clock.now().toUtc()),
-      }, SetOptions(merge: true));
+            'isActive': false,
+            'leftAt': _timestampProvider.serverTimestamp(),
+            // Force immediate TTL eviction — the user explicitly left.
+            'expiresAt': Timestamp.fromDate(clock.now().toUtc()),
+          }, SetOptions(merge: true));
       AppLogger.debug(
-          'Shopping presence cleared for ${userId.maskedUserId} on list $listId');
+        'Shopping presence cleared for ${userId.maskedUserId} on list $listId',
+      );
     } catch (e) {
       AppLogger.error('Failed to clear shopping presence: $e');
       rethrow;
@@ -112,10 +114,10 @@ class FirebaseShoppingPresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .set({
-        'lastSeen': _timestampProvider.serverTimestamp(),
-        'expiresAt': PresenceTtl.computeExpiresAt(),
-        'isActive': true,
-      }, SetOptions(merge: true));
+            'lastSeen': _timestampProvider.serverTimestamp(),
+            'expiresAt': PresenceTtl.computeExpiresAt(),
+            'isActive': true,
+          }, SetOptions(merge: true));
     } catch (e) {
       AppLogger.error('Failed to update shopping presence heartbeat: $e');
       rethrow;
@@ -132,7 +134,8 @@ class FirebaseShoppingPresenceRepository {
           .where('isActive', isEqualTo: true)
           .get();
       return PresenceTtl.filterStaleRows(
-          snapshot.docs.map((doc) => doc.data()));
+        snapshot.docs.map((doc) => doc.data()),
+      );
     } catch (e) {
       AppLogger.error('Failed to get active shoppers: $e');
       return [];
@@ -147,7 +150,10 @@ class FirebaseShoppingPresenceRepository {
         .collection(FirestoreCollections.activeUsers)
         .where('isActive', isEqualTo: true)
         .snapshots()
-        .map((snapshot) => PresenceTtl.filterStaleRows(
-            snapshot.docs.map((doc) => doc.data())));
+        .map(
+          (snapshot) => PresenceTtl.filterStaleRows(
+            snapshot.docs.map((doc) => doc.data()),
+          ),
+        );
   }
 }

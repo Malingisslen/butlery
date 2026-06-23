@@ -35,7 +35,7 @@ class DefaultImagePickerProvider implements ImagePickerProvider {
   final ImagePicker _picker;
 
   DefaultImagePickerProvider({ImagePicker? picker})
-      : _picker = picker ?? ImagePicker();
+    : _picker = picker ?? ImagePicker();
 
   @override
   Future<XFile?> pickImage({
@@ -46,7 +46,8 @@ class DefaultImagePickerProvider implements ImagePickerProvider {
   }) async {
     try {
       AppLogger.debug(
-          '🎯 PICKER_PROVIDER: Calling ImagePicker.pickImage with source: ${source.name}');
+        '🎯 PICKER_PROVIDER: Calling ImagePicker.pickImage with source: ${source.name}',
+      );
       final result = await _picker.pickImage(
         source: source,
         maxWidth: maxWidth,
@@ -54,7 +55,8 @@ class DefaultImagePickerProvider implements ImagePickerProvider {
         imageQuality: imageQuality,
       );
       AppLogger.debug(
-          '🎯 PICKER_PROVIDER: ImagePicker returned: ${result?.path ?? "null"}');
+        '🎯 PICKER_PROVIDER: ImagePicker returned: ${result?.path ?? "null"}',
+      );
       return result;
     } catch (e, stackTrace) {
       AppLogger.error('💥 PICKER_PROVIDER ERROR: Exception in pickImage: $e');

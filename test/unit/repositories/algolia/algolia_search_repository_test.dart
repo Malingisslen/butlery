@@ -116,24 +116,24 @@ class _FakeAlgoliaClient implements AlgoliaClient {
 }
 
 Recipe _personalRecipe({String title = 'Hemlig pasta'}) => Recipe.personal(
-      title: title,
-      description: 'desc',
-      ingredients: const ['mjölk'],
-      instructions: const ['blanda'],
-      mealType: 'Middag',
-      createdBy: 'user-alice',
-    );
+  title: title,
+  description: 'desc',
+  ingredients: const ['mjölk'],
+  instructions: const ['blanda'],
+  mealType: 'Middag',
+  createdBy: 'user-alice',
+);
 
 /// A truly-public, discoverable recipe (`isPublic == true`).
 Recipe _sharedRecipe({String title = 'Delad pasta'}) => Recipe.collaborative(
-      title: title,
-      description: 'desc',
-      ingredients: const ['mjölk'],
-      instructions: const ['blanda'],
-      mealType: 'Middag',
-      ownerId: 'user-alice',
-      ownerDisplayName: 'Alice',
-    );
+  title: title,
+  description: 'desc',
+  ingredients: const ['mjölk'],
+  instructions: const ['blanda'],
+  mealType: 'Middag',
+  ownerId: 'user-alice',
+  ownerDisplayName: 'Alice',
+);
 
 /// A group-scoped recipe shared with a specific group/friend but NOT publicly
 /// discoverable (`isPublic == false`). `collaborative`/`shared` only describe
@@ -155,24 +155,27 @@ void main() {
     /// to their own recipes, the `ownerId` MUST reach Algolia in the
     /// `filters` string. A regression that dropped the filter would expose
     /// every user's recipes to every search — a horizontal-privilege leak.
-    test('carries the caller ownerId into the Algolia filters string',
-        () async {
-      final fake = _FakeAlgoliaClient();
-      final repo = repoWith(fake);
+    test(
+      'carries the caller ownerId into the Algolia filters string',
+      () async {
+        final fake = _FakeAlgoliaClient();
+        final repo = repoWith(fake);
 
-      await repo.searchRecipes(
-        'pasta',
-        filters: const SearchFilters(ownerId: 'user-alice'),
-      );
+        await repo.searchRecipes(
+          'pasta',
+          filters: const SearchFilters(ownerId: 'user-alice'),
+        );
 
-      expect(fake.searchRequests, hasLength(1));
-      expect(
-        fake.searchRequests.single.filters,
-        contains('ownerId:"user-alice"'),
-        reason: 'Missing ownerId scope leaks other users\' recipes into '
-            'the result set.',
-      );
-    });
+        expect(fake.searchRequests, hasLength(1));
+        expect(
+          fake.searchRequests.single.filters,
+          contains('ownerId:"user-alice"'),
+          reason:
+              'Missing ownerId scope leaks other users\' recipes into '
+              'the result set.',
+        );
+      },
+    );
 
     /// Recipe search must hit the recipes index, never the users index.
     /// Index confusion would return user-profile docs (with emails /
@@ -189,29 +192,33 @@ void main() {
     /// A search failure must degrade gracefully to an empty result — the
     /// user's search box must not crash because Algolia hiccuped. This is
     /// half of the asymmetric error contract.
-    test('swallows a search failure and returns an empty SearchResult',
-        () async {
-      final fake = _FakeAlgoliaClient(throwOnSearch: true);
-      final repo = repoWith(fake);
+    test(
+      'swallows a search failure and returns an empty SearchResult',
+      () async {
+        final fake = _FakeAlgoliaClient(throwOnSearch: true);
+        final repo = repoWith(fake);
 
-      final result = await repo.searchRecipes('pasta');
+        final result = await repo.searchRecipes('pasta');
 
-      expect(result.hits, isEmpty);
-      expect(result.totalHits, 0);
-    });
+        expect(result.hits, isEmpty);
+        expect(result.totalHits, 0);
+      },
+    );
 
     /// And the happy path actually maps hits through, proving the fake
     /// round-trips real data (not a vacuously-passing empty default).
     test('maps Algolia hits into RecipeSearchHit on success', () async {
-      final fake = _FakeAlgoliaClient(searchHits: [
-        const Hit(
-          objectID: 'recipe-1',
-          additionalProperties: {
-            'title': 'Pasta carbonara',
-            'ownerId': 'user-alice',
-          },
-        ),
-      ]);
+      final fake = _FakeAlgoliaClient(
+        searchHits: [
+          const Hit(
+            objectID: 'recipe-1',
+            additionalProperties: {
+              'title': 'Pasta carbonara',
+              'ownerId': 'user-alice',
+            },
+          ),
+        ],
+      );
       final repo = repoWith(fake);
 
       final result = await repo.searchRecipes('pasta');
@@ -243,16 +250,18 @@ void main() {
     /// bug shape. This complements the recipe-hit mapping test above so
     /// both index shapes are round-tripped, not just routed.
     test('maps Algolia hits into UserSearchHit on success', () async {
-      final fake = _FakeAlgoliaClient(searchHits: [
-        const Hit(
-          objectID: 'user-bob',
-          additionalProperties: {
-            'displayName': 'Bob',
-            'recipeCount': 7,
-            'followerCount': 42,
-          },
-        ),
-      ]);
+      final fake = _FakeAlgoliaClient(
+        searchHits: [
+          const Hit(
+            objectID: 'user-bob',
+            additionalProperties: {
+              'displayName': 'Bob',
+              'recipeCount': 7,
+              'followerCount': 42,
+            },
+          ),
+        ],
+      );
       final repo = repoWith(fake);
 
       final result = await repo.searchUsers('bob');
@@ -267,16 +276,18 @@ void main() {
     /// Symmetry with the recipe-search swallow test: a users-index search
     /// failure must also degrade to an empty result, never crash the
     /// people-search box.
-    test('swallows a search failure and returns an empty SearchResult',
-        () async {
-      final fake = _FakeAlgoliaClient(throwOnSearch: true);
-      final repo = repoWith(fake);
+    test(
+      'swallows a search failure and returns an empty SearchResult',
+      () async {
+        final fake = _FakeAlgoliaClient(throwOnSearch: true);
+        final repo = repoWith(fake);
 
-      final result = await repo.searchUsers('alice');
+        final result = await repo.searchUsers('alice');
 
-      expect(result.hits, isEmpty);
-      expect(result.totalHits, 0);
-    });
+        expect(result.hits, isEmpty);
+        expect(result.totalHits, 0);
+      },
+    );
   });
 
   group('indexUser / removeUser route to the users index (BUT-1130)', () {
@@ -344,61 +355,73 @@ void main() {
     });
   });
 
-  group('getSuggestions happy path: index switching + extraction (BUT-1130)',
-      () {
-    /// A >=2-char recipe suggestion query must hit the RECIPES index and
-    /// extract the `title` attribute. The default `index: 'recipes'` path
-    /// is the typeahead users see most; a regression that read the wrong
-    /// attribute would return blank suggestions.
-    test('recipes suggestions query the recipes index and return titles',
+  group(
+    'getSuggestions happy path: index switching + extraction (BUT-1130)',
+    () {
+      /// A >=2-char recipe suggestion query must hit the RECIPES index and
+      /// extract the `title` attribute. The default `index: 'recipes'` path
+      /// is the typeahead users see most; a regression that read the wrong
+      /// attribute would return blank suggestions.
+      test(
+        'recipes suggestions query the recipes index and return titles',
         () async {
-      final fake = _FakeAlgoliaClient(searchHits: [
-        const Hit(
-          objectID: 'r1',
-          additionalProperties: {'title': 'Pasta carbonara'},
-        ),
-      ]);
-      final repo = repoWith(fake);
+          final fake = _FakeAlgoliaClient(
+            searchHits: [
+              const Hit(
+                objectID: 'r1',
+                additionalProperties: {'title': 'Pasta carbonara'},
+              ),
+            ],
+          );
+          final repo = repoWith(fake);
 
-      final result = await repo.getSuggestions('pa');
+          final result = await repo.getSuggestions('pa');
 
-      expect(fake.searchRequests.single.indexName, 'recipes');
-      expect(result, ['Pasta carbonara']);
-    });
+          expect(fake.searchRequests.single.indexName, 'recipes');
+          expect(result, ['Pasta carbonara']);
+        },
+      );
 
-    /// The `index: 'users'` branch must switch to the USERS index and
-    /// extract `displayName` — the other half of the index-switch fork.
-    /// This pins that the two branches don't collapse to one index.
-    test('users suggestions query the users index and return displayNames',
+      /// The `index: 'users'` branch must switch to the USERS index and
+      /// extract `displayName` — the other half of the index-switch fork.
+      /// This pins that the two branches don't collapse to one index.
+      test(
+        'users suggestions query the users index and return displayNames',
         () async {
-      final fake = _FakeAlgoliaClient(searchHits: [
-        const Hit(
-          objectID: 'u1',
-          additionalProperties: {'displayName': 'Alice'},
-        ),
-      ]);
-      final repo = repoWith(fake);
+          final fake = _FakeAlgoliaClient(
+            searchHits: [
+              const Hit(
+                objectID: 'u1',
+                additionalProperties: {'displayName': 'Alice'},
+              ),
+            ],
+          );
+          final repo = repoWith(fake);
 
-      final result = await repo.getSuggestions('al', index: 'users');
+          final result = await repo.getSuggestions('al', index: 'users');
 
-      expect(fake.searchRequests.single.indexName, 'users');
-      expect(result, ['Alice']);
-    });
+          expect(fake.searchRequests.single.indexName, 'users');
+          expect(result, ['Alice']);
+        },
+      );
 
-    /// Hits missing the searched attribute resolve to empty strings and
-    /// MUST be filtered out — otherwise the typeahead shows blank rows.
-    test('drops hits with an empty/absent attribute value', () async {
-      final fake = _FakeAlgoliaClient(searchHits: const [
-        Hit(objectID: 'r1', additionalProperties: {'title': 'Pizza'}),
-        Hit(objectID: 'r2', additionalProperties: {}),
-      ]);
-      final repo = repoWith(fake);
+      /// Hits missing the searched attribute resolve to empty strings and
+      /// MUST be filtered out — otherwise the typeahead shows blank rows.
+      test('drops hits with an empty/absent attribute value', () async {
+        final fake = _FakeAlgoliaClient(
+          searchHits: const [
+            Hit(objectID: 'r1', additionalProperties: {'title': 'Pizza'}),
+            Hit(objectID: 'r2', additionalProperties: {}),
+          ],
+        );
+        final repo = repoWith(fake);
 
-      final result = await repo.getSuggestions('pi');
+        final result = await repo.getSuggestions('pi');
 
-      expect(result, ['Pizza']);
-    });
-  });
+        expect(result, ['Pizza']);
+      });
+    },
+  );
 
   group('healthCheck (BUT-1130)', () {
     /// healthCheck is the SearchModule's reachability probe used to decide
@@ -437,7 +460,8 @@ void main() {
       expect(
         fake.saveCalls,
         isEmpty,
-        reason: 'A personal recipe must NEVER be written to the public '
+        reason:
+            'A personal recipe must NEVER be written to the public '
             'recipes index.',
       );
       expect(fake.deleteCalls, hasLength(1));
@@ -468,22 +492,26 @@ void main() {
     /// (deleteObject), never saved into it — mirroring the personal-recipe
     /// invariant. The previous `!recipe.isPersonal` guard leaked these into
     /// global discovery. This test fails against that buggy guard.
-    test(
-        'group-scoped recipe (isPublic:false) routes to deleteObject, '
+    test('group-scoped recipe (isPublic:false) routes to deleteObject, '
         'never saveObject', () async {
       final fake = _FakeAlgoliaClient();
       final repo = repoWith(fake);
       final recipe = _groupScopedRecipe();
-      expect(recipe.isPersonal, isFalse,
-          reason: 'Guards the test premise: this is a non-personal recipe '
-              'that is nonetheless not publicly discoverable.');
+      expect(
+        recipe.isPersonal,
+        isFalse,
+        reason:
+            'Guards the test premise: this is a non-personal recipe '
+            'that is nonetheless not publicly discoverable.',
+      );
 
       await repo.indexRecipe(recipe, ownerId: 'user-alice');
 
       expect(
         fake.saveCalls,
         isEmpty,
-        reason: 'A group-scoped recipe must NEVER be written to the public '
+        reason:
+            'A group-scoped recipe must NEVER be written to the public '
             'discovery index just because it is non-personal.',
       );
       expect(fake.deleteCalls, hasLength(1));
@@ -492,55 +520,58 @@ void main() {
     });
   });
 
-  group('asymmetric error contract: search swallows, write rethrows (BUT-1130)',
-      () {
-    /// The write path must rethrow so the Cloud Function / caller can
-    /// retry or alert. Silently swallowing an index failure would leave
-    /// the public index permanently stale.
-    test('indexRecipe rethrows when saveObject fails', () async {
-      final fake = _FakeAlgoliaClient(throwOnSave: true);
-      final repo = repoWith(fake);
+  group(
+    'asymmetric error contract: search swallows, write rethrows (BUT-1130)',
+    () {
+      /// The write path must rethrow so the Cloud Function / caller can
+      /// retry or alert. Silently swallowing an index failure would leave
+      /// the public index permanently stale.
+      test('indexRecipe rethrows when saveObject fails', () async {
+        final fake = _FakeAlgoliaClient(throwOnSave: true);
+        final repo = repoWith(fake);
 
-      await expectLater(
-        () => repo.indexRecipe(_sharedRecipe(), ownerId: 'user-alice'),
-        throwsA(isA<StateError>()),
-      );
-    });
+        await expectLater(
+          () => repo.indexRecipe(_sharedRecipe(), ownerId: 'user-alice'),
+          throwsA(isA<StateError>()),
+        );
+      });
 
-    /// removeRecipe is also a write — a failed delete must rethrow so a
-    /// personal recipe is not silently left in the public index.
-    test('removeRecipe rethrows when deleteObject fails', () async {
-      final fake = _FakeAlgoliaClient(throwOnDelete: true);
-      final repo = repoWith(fake);
+      /// removeRecipe is also a write — a failed delete must rethrow so a
+      /// personal recipe is not silently left in the public index.
+      test('removeRecipe rethrows when deleteObject fails', () async {
+        final fake = _FakeAlgoliaClient(throwOnDelete: true);
+        final repo = repoWith(fake);
 
-      await expectLater(
-        () => repo.removeRecipe('recipe-1'),
-        throwsA(isA<StateError>()),
-      );
-    });
+        await expectLater(
+          () => repo.removeRecipe('recipe-1'),
+          throwsA(isA<StateError>()),
+        );
+      });
 
-    /// batchIndexRecipes is a write — a failed batch must rethrow.
-    test('batchIndexRecipes rethrows when batch fails', () async {
-      final fake = _FakeAlgoliaClient(throwOnBatch: true);
-      final repo = repoWith(fake);
+      /// batchIndexRecipes is a write — a failed batch must rethrow.
+      test('batchIndexRecipes rethrows when batch fails', () async {
+        final fake = _FakeAlgoliaClient(throwOnBatch: true);
+        final repo = repoWith(fake);
 
-      await expectLater(
-        () => repo.batchIndexRecipes([_sharedRecipe()], ownerId: 'user-alice'),
-        throwsA(isA<StateError>()),
-      );
-    });
+        await expectLater(
+          () =>
+              repo.batchIndexRecipes([_sharedRecipe()], ownerId: 'user-alice'),
+          throwsA(isA<StateError>()),
+        );
+      });
 
-    /// getSuggestions is a read — like search it must swallow and return
-    /// an empty list rather than crash the typeahead.
-    test('getSuggestions swallows a search failure and returns []', () async {
-      final fake = _FakeAlgoliaClient(throwOnSearch: true);
-      final repo = repoWith(fake);
+      /// getSuggestions is a read — like search it must swallow and return
+      /// an empty list rather than crash the typeahead.
+      test('getSuggestions swallows a search failure and returns []', () async {
+        final fake = _FakeAlgoliaClient(throwOnSearch: true);
+        final repo = repoWith(fake);
 
-      final result = await repo.getSuggestions('pasta');
+        final result = await repo.getSuggestions('pasta');
 
-      expect(result, isEmpty);
-    });
-  });
+        expect(result, isEmpty);
+      });
+    },
+  );
 
   group('batchIndexRecipes routes to the recipes index (BUT-1130)', () {
     test('non-empty batch targets the recipes index', () async {
@@ -560,19 +591,24 @@ void main() {
     /// Group-scoped (isPublic:false) recipes must be filtered out of the batch
     /// — same discoverability invariant as the single-write path. Only the
     /// public recipe is sent.
-    test('drops group-scoped (isPublic:false) recipes from the batch',
-        () async {
-      final fake = _FakeAlgoliaClient();
-      final repo = repoWith(fake);
+    test(
+      'drops group-scoped (isPublic:false) recipes from the batch',
+      () async {
+        final fake = _FakeAlgoliaClient();
+        final repo = repoWith(fake);
 
-      await repo.batchIndexRecipes(
-        [_sharedRecipe(title: 'Public'), _groupScopedRecipe(title: 'Private')],
-        ownerId: 'user-alice',
-      );
+        await repo.batchIndexRecipes(
+          [
+            _sharedRecipe(title: 'Public'),
+            _groupScopedRecipe(title: 'Private'),
+          ],
+          ownerId: 'user-alice',
+        );
 
-      expect(fake.batchCalls, hasLength(1));
-      expect(fake.batchCalls.single.params.requests, hasLength(1));
-    });
+        expect(fake.batchCalls, hasLength(1));
+        expect(fake.batchCalls.single.params.requests, hasLength(1));
+      },
+    );
 
     /// If every recipe in the batch is group-scoped, nothing is discoverable,
     /// so no client call is made at all (an empty BatchWriteParams is a
@@ -651,53 +687,64 @@ void main() {
     test('empty partial returns [] without contacting Algolia', () async {
       final repo = newRepo();
 
-      final result =
-          await repo.getSuggestions('').timeout(const Duration(seconds: 1));
+      final result = await repo
+          .getSuggestions('')
+          .timeout(const Duration(seconds: 1));
 
       expect(
         result,
         isEmpty,
-        reason: 'Empty partial must short-circuit. If this hangs (>1s) the '
+        reason:
+            'Empty partial must short-circuit. If this hangs (>1s) the '
             'guard is gone and we are doing a match-everything call.',
       );
     });
 
-    test('single-character partial returns [] without contacting Algolia',
-        () async {
-      final repo = newRepo();
+    test(
+      'single-character partial returns [] without contacting Algolia',
+      () async {
+        final repo = newRepo();
 
-      final result =
-          await repo.getSuggestions('a').timeout(const Duration(seconds: 1));
+        final result = await repo
+            .getSuggestions('a')
+            .timeout(const Duration(seconds: 1));
 
-      expect(result, isEmpty);
-    });
+        expect(result, isEmpty);
+      },
+    );
 
-    test('whitespace-only single char also short-circuits (length-based guard)',
-        () async {
-      final repo = newRepo();
+    test(
+      'whitespace-only single char also short-circuits (length-based guard)',
+      () async {
+        final repo = newRepo();
 
-      final result =
-          await repo.getSuggestions(' ').timeout(const Duration(seconds: 1));
+        final result = await repo
+            .getSuggestions(' ')
+            .timeout(const Duration(seconds: 1));
 
-      expect(result, isEmpty);
-    });
+        expect(result, isEmpty);
+      },
+    );
   });
 
   group('batchIndexRecipes empty-list guard', () {
-    test('returns immediately when recipes list is empty (no client call)',
-        () async {
-      final fake = _FakeAlgoliaClient();
-      final repo = repoWith(fake);
+    test(
+      'returns immediately when recipes list is empty (no client call)',
+      () async {
+        final fake = _FakeAlgoliaClient();
+        final repo = repoWith(fake);
 
-      await repo.batchIndexRecipes(const [], ownerId: 'user-abc');
+        await repo.batchIndexRecipes(const [], ownerId: 'user-abc');
 
-      expect(
-        fake.batchCalls,
-        isEmpty,
-        reason: 'Empty batch must short-circuit before any client call — '
-            'an empty BatchWriteParams is a metered 400 from Algolia.',
-      );
-    });
+        expect(
+          fake.batchCalls,
+          isEmpty,
+          reason:
+              'Empty batch must short-circuit before any client call — '
+              'an empty BatchWriteParams is a metered 400 from Algolia.',
+        );
+      },
+    );
   });
 
   group('index name defaults pin the public contract', () {
@@ -752,7 +799,8 @@ void main() {
       expect(
         sw.elapsedMilliseconds,
         lessThan(200),
-        reason: '5 repo constructions should be near-instant. If this is slow, '
+        reason:
+            '5 repo constructions should be near-instant. If this is slow, '
             'something in _buildClient added an eager network/IO call.',
       );
     });

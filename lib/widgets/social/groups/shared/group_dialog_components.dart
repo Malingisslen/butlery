@@ -33,7 +33,7 @@ class GroupEmojiConstants {
     '💡',
     '🎨',
     '🌈',
-    '⭐'
+    '⭐',
   ];
 }
 
@@ -98,8 +98,9 @@ class EmojiSelector extends StatelessWidget {
                         color: isSelected
                             ? Theme.of(context).colorScheme.primaryContainer
                             : null,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadius8),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadius8,
+                        ),
                         border: isSelected
                             ? Border.all(
                                 color: Theme.of(context).colorScheme.primary,
@@ -184,8 +185,9 @@ class WarningDisplayWidget extends StatelessWidget {
         color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(
-          color:
-              warningColor.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: warningColor.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
       ),
       child: Row(
@@ -305,7 +307,8 @@ class DialogFooter extends StatelessWidget {
               style: primaryActionColor != null
                   ? FilledButton.styleFrom(
                       backgroundColor: primaryActionColor,
-                      foregroundColor: primaryActionForegroundColor ??
+                      foregroundColor:
+                          primaryActionForegroundColor ??
                           Theme.of(context).colorScheme.surfaceContainerHighest,
                     )
                   : null,
@@ -313,7 +316,8 @@ class DialogFooter extends StatelessWidget {
                   ? LoadingIndicator(
                       size: 16,
                       strokeWidth: 2,
-                      color: primaryActionForegroundColor ??
+                      color:
+                          primaryActionForegroundColor ??
                           Theme.of(context).colorScheme.onPrimary,
                     )
                   : Icon(primaryActionIcon),

@@ -42,13 +42,13 @@ class _FakeResource extends Fake implements RealtimeResource {}
 class _FakeSharedMenu extends Fake implements SharedMenu {}
 
 ConflictEvent _event({required String docId}) => ConflictEvent(
-      collectionPath: 'menus',
-      docId: docId,
-      localValue: _FakeResource(),
-      remoteValue: _FakeResource(),
-      chosenStrategy: ConflictResolutionStrategy.localWon,
-      occurredAt: DateTime(2026, 5, 28),
-    );
+  collectionPath: 'menus',
+  docId: docId,
+  localValue: _FakeResource(),
+  remoteValue: _FakeResource(),
+  chosenStrategy: ConflictResolutionStrategy.localWon,
+  occurredAt: DateTime(2026, 5, 28),
+);
 
 void main() {
   late _MockRealtimeSyncService realtime;
@@ -94,39 +94,51 @@ void main() {
   });
 
   testWidgets(
-      'ConflictBanner is wired into MenuPreviewView and surfaces only for this '
-      'menu doc', (tester) async {
-    late String bannerMessage;
+    'ConflictBanner is wired into MenuPreviewView and surfaces only for this '
+    'menu doc',
+    (tester) async {
+      late String bannerMessage;
 
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        wrapInScaffold: false, // MenuPreviewView provides its own Scaffold
-        child: ChangeNotifierProvider<SharedContentCoordinatorViewModel>.value(
-          value: coordinator,
-          child: Builder(
-            builder: (context) {
-              bannerMessage = context.l10n.conflictBannerMessage;
-              return MenuPreviewView(sharedMenu: menu);
-            },
-          ),
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false, // MenuPreviewView provides its own Scaffold
+          child:
+              ChangeNotifierProvider<SharedContentCoordinatorViewModel>.value(
+                value: coordinator,
+                child: Builder(
+                  builder: (context) {
+                    bannerMessage = context.l10n.conflictBannerMessage;
+                    return MenuPreviewView(sharedMenu: menu);
+                  },
+                ),
+              ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+      await tester.pump();
 
-    expect(find.text(bannerMessage), findsNothing,
-        reason: 'no banner before any conflict event');
+      expect(
+        find.text(bannerMessage),
+        findsNothing,
+        reason: 'no banner before any conflict event',
+      );
 
-    // A conflict for a DIFFERENT menu must be filtered out by filterDocId.
-    conflicts.add(_event(docId: 'some-other-menu'));
-    await tester.pumpAndSettle();
-    expect(find.text(bannerMessage), findsNothing,
-        reason: 'filterDocId must ignore conflicts for other menus');
+      // A conflict for a DIFFERENT menu must be filtered out by filterDocId.
+      conflicts.add(_event(docId: 'some-other-menu'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(bannerMessage),
+        findsNothing,
+        reason: 'filterDocId must ignore conflicts for other menus',
+      );
 
-    // A conflict for THIS menu must surface the banner on the real surface.
-    conflicts.add(_event(docId: menu.id));
-    await tester.pumpAndSettle();
-    expect(find.text(bannerMessage), findsOneWidget,
-        reason: 'a conflict on this menu doc must surface the wired banner');
-  });
+      // A conflict for THIS menu must surface the banner on the real surface.
+      conflicts.add(_event(docId: menu.id));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(bannerMessage),
+        findsOneWidget,
+        reason: 'a conflict on this menu doc must surface the wired banner',
+      );
+    },
+  );
 }

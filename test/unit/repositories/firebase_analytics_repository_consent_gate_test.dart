@@ -29,8 +29,9 @@ void main() {
       await TestServiceLocator.initialize();
 
       mockAnalytics = _MockFirebaseAnalytics();
-      when(() => mockAnalytics.setAnalyticsCollectionEnabled(any()))
-          .thenAnswer((_) async {});
+      when(
+        () => mockAnalytics.setAnalyticsCollectionEnabled(any()),
+      ).thenAnswer((_) async {});
 
       repository = FirebaseAnalyticsRepository(
         analytics: mockAnalytics,
@@ -44,16 +45,17 @@ void main() {
     });
 
     test(
-        '(a) after initialize() with no consent, collection is OFF — fail closed by default',
-        () async {
-      await repository.initialize();
+      '(a) after initialize() with no consent, collection is OFF — fail closed by default',
+      () async {
+        await repository.initialize();
 
-      // The only collection-enabled call made by initialize() must pass false.
-      final calls = verify(
-              () => mockAnalytics.setAnalyticsCollectionEnabled(captureAny()))
-          .captured;
-      expect(calls, equals(<bool>[false]));
-    });
+        // The only collection-enabled call made by initialize() must pass false.
+        final calls = verify(
+          () => mockAnalytics.setAnalyticsCollectionEnabled(captureAny()),
+        ).captured;
+        expect(calls, equals(<bool>[false]));
+      },
+    );
 
     test('(b) after consent granted, caller flips collection ON', () async {
       await repository.initialize();
@@ -63,30 +65,32 @@ void main() {
       await repository.setAnalyticsCollectionEnabled(true);
 
       final calls = verify(
-              () => mockAnalytics.setAnalyticsCollectionEnabled(captureAny()))
-          .captured;
+        () => mockAnalytics.setAnalyticsCollectionEnabled(captureAny()),
+      ).captured;
       // bootstrap disable then post-consent enable.
       expect(calls, equals(<bool>[false, true]));
     });
 
     test(
-        '(c) after consent withdrawn mid-session, caller flips collection back OFF',
-        () async {
-      await repository.initialize();
-      await repository.setAnalyticsCollectionEnabled(true); // granted
-      await repository.setAnalyticsCollectionEnabled(false); // withdrawn
+      '(c) after consent withdrawn mid-session, caller flips collection back OFF',
+      () async {
+        await repository.initialize();
+        await repository.setAnalyticsCollectionEnabled(true); // granted
+        await repository.setAnalyticsCollectionEnabled(false); // withdrawn
 
-      final calls = verify(
-              () => mockAnalytics.setAnalyticsCollectionEnabled(captureAny()))
-          .captured;
-      expect(calls, equals(<bool>[false, true, false]));
-    });
+        final calls = verify(
+          () => mockAnalytics.setAnalyticsCollectionEnabled(captureAny()),
+        ).captured;
+        expect(calls, equals(<bool>[false, true, false]));
+      },
+    );
 
     test(
-        'initialize() NEVER calls setAnalyticsCollectionEnabled(true) regardless of debug mode',
-        () async {
-      await repository.initialize();
-      verifyNever(() => mockAnalytics.setAnalyticsCollectionEnabled(true));
-    });
+      'initialize() NEVER calls setAnalyticsCollectionEnabled(true) regardless of debug mode',
+      () async {
+        await repository.initialize();
+        verifyNever(() => mockAnalytics.setAnalyticsCollectionEnabled(true));
+      },
+    );
   });
 }

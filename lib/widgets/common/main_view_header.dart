@@ -61,8 +61,8 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(
-        headerHeight + (showAccentBar ? accentBarHeight : 0),
-      );
+    headerHeight + (showAccentBar ? accentBarHeight : 0),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -118,8 +118,8 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                                             title.toLowerCase(),
                                             style: AppTextStyles.mainViewTitle
                                                 .copyWith(
-                                              color: cs.surface,
-                                            ),
+                                                  color: cs.surface,
+                                                ),
                                           ),
                                         ),
                                       ),
@@ -127,10 +127,12 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                                     // Count badge — rust text, to the right
                                     if (countBadge != null) ...[
                                       const SizedBox(
-                                          width: AppDimensions.spacingSm),
+                                        width: AppDimensions.spacingSm,
+                                      ),
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                            bottom: AppDimensions.spacingXs),
+                                          bottom: AppDimensions.spacingXs,
+                                        ),
                                         child: Semantics(
                                           liveRegion: true,
                                           child: Text(
@@ -273,8 +275,9 @@ class _FilterChip extends StatelessWidget {
                 vertical: AppDimensions.spacingSm,
               ),
               decoration: BoxDecoration(
-                border:
-                    isSelected ? null : Border.all(color: cs.primary, width: 2),
+                border: isSelected
+                    ? null
+                    : Border.all(color: cs.primary, width: 2),
               ),
               child: Text(
                 label,

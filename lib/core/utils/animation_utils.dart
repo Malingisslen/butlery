@@ -25,8 +25,10 @@ class AnimationUtils {
 
   /// Returns the animation curve, or [Curves.linear] if animations
   /// are disabled (for instant state changes).
-  static Curve getCurve(BuildContext context,
-      [Curve normalCurve = Curves.easeInOut]) {
+  static Curve getCurve(
+    BuildContext context, [
+    Curve normalCurve = Curves.easeInOut,
+  ]) {
     return shouldAnimate(context) ? normalCurve : Curves.linear;
   }
 

@@ -110,7 +110,9 @@ class SchemaOrgRecipeExtractor {
   /// "Förberedelse"/"Tillagning") yielded ZERO instructions. We recurse into
   /// `itemListElement` so sectioned steps are collected too.
   static void _collectInstructionSteps(
-      dynamic instruction, List<String> steps) {
+    dynamic instruction,
+    List<String> steps,
+  ) {
     if (instruction is String) {
       steps.add(instruction.trim());
       return;
@@ -221,8 +223,9 @@ class SchemaOrgRecipeExtractor {
   static NutritionInfo? extractNutrition(Map<String, dynamic> data) {
     final nutrition = data['nutrition'];
     if (nutrition is Map) {
-      final info =
-          NutritionInfo.fromSchemaOrg(Map<String, dynamic>.from(nutrition));
+      final info = NutritionInfo.fromSchemaOrg(
+        Map<String, dynamic>.from(nutrition),
+      );
       return info.isEmpty ? null : info;
     }
     return null;

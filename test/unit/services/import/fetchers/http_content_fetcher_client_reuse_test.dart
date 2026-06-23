@@ -25,8 +25,7 @@ import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 
 void main() {
   group('HttpContentFetcher client reuse (BUT-735)', () {
-    test(
-        'reuses the injected http.Client across multiple fetch calls and '
+    test('reuses the injected http.Client across multiple fetch calls and '
         'does not close it', () async {
       var sendCount = 0;
       final inner = MockClient((request) async {
@@ -54,14 +53,19 @@ void main() {
 
       expect(r1, isNotNull);
       expect(r2, isNotNull);
-      expect(sendCount, 2,
-          reason: 'both calls must reach the same underlying client');
-      expect(tracking.closeCount, 0,
-          reason: 'an injected (DI-owned) client must not be closed');
+      expect(
+        sendCount,
+        2,
+        reason: 'both calls must reach the same underlying client',
+      );
+      expect(
+        tracking.closeCount,
+        0,
+        reason: 'an injected (DI-owned) client must not be closed',
+      );
     });
 
-    test(
-        'when no client is injected, the per-call fallback closes its '
+    test('when no client is injected, the per-call fallback closes its '
         'transient client (preserved legacy behaviour)', () async {
       // The fallback path matters for ad-hoc / test construction without
       // DI. Closing the transient client there prevents socket leaks.
@@ -74,8 +78,11 @@ void main() {
       );
 
       final result = await fetcher.fetchHtmlWithTimeout('https://example.com/');
-      expect(result, isNull,
-          reason: 'DNS failure makes the fetch fail-closed before any HTTP');
+      expect(
+        result,
+        isNull,
+        reason: 'DNS failure makes the fetch fail-closed before any HTTP',
+      );
     });
   });
 }

@@ -98,10 +98,12 @@ class FirebaseRecipeOwnershipResolver {
     // rule's owner-branch handles them. Keeps the array minimal.
     final ownerId = recipe.socialData?.ownerId;
     return permissions.keys
-        .where((uid) =>
-            uid.isNotEmpty &&
-            uid != ownerId &&
-            _isReadablePermission(permissions[uid]))
+        .where(
+          (uid) =>
+              uid.isNotEmpty &&
+              uid != ownerId &&
+              _isReadablePermission(permissions[uid]),
+        )
         .toList();
   }
 

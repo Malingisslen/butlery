@@ -24,15 +24,17 @@ class MessageStatusWidget extends StatelessWidget {
           Icon(
             _getStatusIcon(),
             size: AppDimensions.iconSizeXs,
-            color: cs.surfaceContainerHighest
-                .withValues(alpha: AppDimensions.opacityDark),
+            color: cs.surfaceContainerHighest.withValues(
+              alpha: AppDimensions.opacityDark,
+            ),
           ),
           const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             _getStatusText(context),
             style: AppTextStyles.textXs.copyWith(
-              color: cs.surfaceContainerHighest
-                  .withValues(alpha: AppDimensions.opacityDark),
+              color: cs.surfaceContainerHighest.withValues(
+                alpha: AppDimensions.opacityDark,
+              ),
             ),
           ),
         ],

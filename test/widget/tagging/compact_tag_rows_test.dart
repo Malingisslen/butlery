@@ -29,61 +29,64 @@ void main() {
   group('CompactDietaryRow', () {
     group('Bug 1a regression - all FREE diets render', () {
       testWidgets(
-          'should render all three dietary badges when barnvanlig, graviditetssaker, and notkottsfri are FREE',
-          (WidgetTester tester) async {
-        final tagResult = _buildTagResult(
-          dietaryStatus: {
-            'barnvänlig': TriState.free,
-            'graviditetssäker': TriState.free,
-            'nötkötsfri': TriState.free,
-          },
-        );
+        'should render all three dietary badges when barnvanlig, graviditetssaker, and notkottsfri are FREE',
+        (WidgetTester tester) async {
+          final tagResult = _buildTagResult(
+            dietaryStatus: {
+              'barnvänlig': TriState.free,
+              'graviditetssäker': TriState.free,
+              'nötkötsfri': TriState.free,
+            },
+          );
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScrollView: true,
-            child: CompactDietaryRow(
-              tagResult: tagResult,
-              // No userPrefs - should show all FREE diets from DietaryConfig order
-              maxBadges: 10,
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScrollView: true,
+              child: CompactDietaryRow(
+                tagResult: tagResult,
+                // No userPrefs - should show all FREE diets from DietaryConfig order
+                maxBadges: 10,
+              ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // All three FREE diets should produce DietaryStatusBadge widgets
-        expect(find.byType(DietaryStatusBadge), findsNWidgets(3));
-      });
+          // All three FREE diets should produce DietaryStatusBadge widgets
+          expect(find.byType(DietaryStatusBadge), findsNWidgets(3));
+        },
+      );
 
       testWidgets(
-          'should render badges with eco_outlined icon for FREE dietary status',
-          (WidgetTester tester) async {
-        final tagResult = _buildTagResult(
-          dietaryStatus: {
-            'barnvänlig': TriState.free,
-            'graviditetssäker': TriState.free,
-          },
-        );
+        'should render badges with eco_outlined icon for FREE dietary status',
+        (WidgetTester tester) async {
+          final tagResult = _buildTagResult(
+            dietaryStatus: {
+              'barnvänlig': TriState.free,
+              'graviditetssäker': TriState.free,
+            },
+          );
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScrollView: true,
-            child: CompactDietaryRow(
-              tagResult: tagResult,
-              maxBadges: 10,
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScrollView: true,
+              child: CompactDietaryRow(
+                tagResult: tagResult,
+                maxBadges: 10,
+              ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // DietaryStatusBadge FREE uses Icons.eco_outlined
-        expect(find.byIcon(Icons.eco_outlined), findsNWidgets(2));
-      });
+          // DietaryStatusBadge FREE uses Icons.eco_outlined
+          expect(find.byIcon(Icons.eco_outlined), findsNWidgets(2));
+        },
+      );
     });
 
     group('User prefs filter', () {
-      testWidgets('should only show diets in userPrefs when provided',
-          (WidgetTester tester) async {
+      testWidgets('should only show diets in userPrefs when provided', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.free,
@@ -108,8 +111,9 @@ void main() {
         expect(find.byType(DietaryStatusBadge), findsNWidgets(2));
       });
 
-      testWidgets('should show nothing when userPrefs diets are not FREE',
-          (WidgetTester tester) async {
+      testWidgets('should show nothing when userPrefs diets are not FREE', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.contains,
@@ -135,8 +139,9 @@ void main() {
     });
 
     group('Max badges limit', () {
-      testWidgets('should respect maxBadges limit',
-          (WidgetTester tester) async {
+      testWidgets('should respect maxBadges limit', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.free,
@@ -161,8 +166,9 @@ void main() {
         expect(find.byType(DietaryStatusBadge), findsNWidgets(2));
       });
 
-      testWidgets('should default to maxBadges of 2',
-          (WidgetTester tester) async {
+      testWidgets('should default to maxBadges of 2', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.free,
@@ -185,8 +191,9 @@ void main() {
     });
 
     group('Only FREE shown', () {
-      testWidgets('should not render CONTAINS dietary status',
-          (WidgetTester tester) async {
+      testWidgets('should not render CONTAINS dietary status', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.contains,
@@ -209,8 +216,9 @@ void main() {
         expect(find.byType(DietaryStatusBadge), findsOneWidget);
       });
 
-      testWidgets('should not render UNKNOWN dietary status',
-          (WidgetTester tester) async {
+      testWidgets('should not render UNKNOWN dietary status', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.unknown,
@@ -233,8 +241,9 @@ void main() {
         expect(find.byType(DietaryStatusBadge), findsOneWidget);
       });
 
-      testWidgets('should render empty when all statuses are non-FREE',
-          (WidgetTester tester) async {
+      testWidgets('should render empty when all statuses are non-FREE', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           dietaryStatus: {
             'vegetarisk': TriState.contains,
@@ -262,8 +271,9 @@ void main() {
 
   group('CompactAllergenRow', () {
     group('Priority ordering', () {
-      testWidgets('should show CONTAINS badges before FREE badges',
-          (WidgetTester tester) async {
+      testWidgets('should show CONTAINS badges before FREE badges', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.free,
@@ -298,8 +308,9 @@ void main() {
         expect(badges[3].status, TriState.free);
       });
 
-      testWidgets('should order CONTAINS before FREE before UNKNOWN',
-          (WidgetTester tester) async {
+      testWidgets('should order CONTAINS before FREE before UNKNOWN', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.unknown,
@@ -337,36 +348,38 @@ void main() {
 
     group('Default allergens', () {
       testWidgets(
-          'should show default four allergens when no userPrefs provided',
-          (WidgetTester tester) async {
-        final tagResult = _buildTagResult(
-          allergenStatus: {
-            'gluten': TriState.free,
-            'mjölk': TriState.free,
-            'nötter': TriState.free,
-            'ägg': TriState.free,
-            'soja': TriState.free,
-            'sesam': TriState.free,
-          },
-        );
+        'should show default four allergens when no userPrefs provided',
+        (WidgetTester tester) async {
+          final tagResult = _buildTagResult(
+            allergenStatus: {
+              'gluten': TriState.free,
+              'mjölk': TriState.free,
+              'nötter': TriState.free,
+              'ägg': TriState.free,
+              'soja': TriState.free,
+              'sesam': TriState.free,
+            },
+          );
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            wrapInScrollView: true,
-            child: CompactAllergenRow(
-              tagResult: tagResult,
-              maxBadges: 10,
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              wrapInScrollView: true,
+              child: CompactAllergenRow(
+                tagResult: tagResult,
+                maxBadges: 10,
+              ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        // Default allergens: gluten, mjolk, notter, agg (4 total)
-        expect(find.byType(AllergenStatusBadge), findsNWidgets(4));
-      });
+          // Default allergens: gluten, mjolk, notter, agg (4 total)
+          expect(find.byType(AllergenStatusBadge), findsNWidgets(4));
+        },
+      );
 
-      testWidgets('should use custom userPrefs when provided',
-          (WidgetTester tester) async {
+      testWidgets('should use custom userPrefs when provided', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.free,
@@ -394,8 +407,9 @@ void main() {
     });
 
     group('Max badges limit', () {
-      testWidgets('should respect maxBadges limit',
-          (WidgetTester tester) async {
+      testWidgets('should respect maxBadges limit', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.free,
@@ -420,8 +434,9 @@ void main() {
         expect(find.byType(AllergenStatusBadge), findsNWidgets(2));
       });
 
-      testWidgets('should default to maxBadges of 4',
-          (WidgetTester tester) async {
+      testWidgets('should default to maxBadges of 4', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.free,
@@ -443,8 +458,9 @@ void main() {
         expect(find.byType(AllergenStatusBadge), findsNWidgets(4));
       });
 
-      testWidgets('should prioritize CONTAINS in limited badges',
-          (WidgetTester tester) async {
+      testWidgets('should prioritize CONTAINS in limited badges', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.free,
@@ -477,8 +493,9 @@ void main() {
     });
 
     group('Empty state', () {
-      testWidgets('should render empty when no allergens have status',
-          (WidgetTester tester) async {
+      testWidgets('should render empty when no allergens have status', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(allergenStatus: {});
 
         await tester.pumpWidget(
@@ -496,8 +513,9 @@ void main() {
         expect(find.byType(AllergenStatusBadge), findsNWidgets(4));
       });
 
-      testWidgets('should use compact mode and hide labels',
-          (WidgetTester tester) async {
+      testWidgets('should use compact mode and hide labels', (
+        WidgetTester tester,
+      ) async {
         final tagResult = _buildTagResult(
           allergenStatus: {
             'gluten': TriState.free,

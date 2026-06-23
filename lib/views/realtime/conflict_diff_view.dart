@@ -188,8 +188,9 @@ class _DiffFieldCard extends StatelessWidget {
             label: context.l10n.conflictDiffLocalLabel,
             text: field.localText,
             accent: butlery.success,
-            background: butlery.success
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            background: butlery.success.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             textColor: cs.onSurface,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -197,8 +198,9 @@ class _DiffFieldCard extends StatelessWidget {
             label: context.l10n.conflictDiffRemoteLabel,
             text: field.remoteText,
             accent: butlery.warning,
-            background: butlery.warning
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            background: butlery.warning.withValues(
+              alpha: AppDimensions.opacityVeryLight,
+            ),
             textColor: cs.onSurface,
           ),
         ],

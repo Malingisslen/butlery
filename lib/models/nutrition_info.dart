@@ -33,26 +33,26 @@ class NutritionInfo {
       sodium == null;
 
   Map<String, dynamic> toJson() => {
-        if (calories != null) 'calories': calories,
-        if (fat != null) 'fat': fat,
-        if (protein != null) 'protein': protein,
-        if (carbs != null) 'carbs': carbs,
-        if (fiber != null) 'fiber': fiber,
-        if (sugar != null) 'sugar': sugar,
-        if (sodium != null) 'sodium': sodium,
-      };
+    if (calories != null) 'calories': calories,
+    if (fat != null) 'fat': fat,
+    if (protein != null) 'protein': protein,
+    if (carbs != null) 'carbs': carbs,
+    if (fiber != null) 'fiber': fiber,
+    if (sugar != null) 'sugar': sugar,
+    if (sodium != null) 'sodium': sodium,
+  };
 
   Map<String, dynamic> toFirestore() => toJson();
 
   factory NutritionInfo.fromJson(Map<String, dynamic> json) => NutritionInfo(
-        calories: SerializationUtils.safeNullableInt(json, 'calories'),
-        fat: SerializationUtils.safeNullableString(json, 'fat'),
-        protein: SerializationUtils.safeNullableString(json, 'protein'),
-        carbs: SerializationUtils.safeNullableString(json, 'carbs'),
-        fiber: SerializationUtils.safeNullableString(json, 'fiber'),
-        sugar: SerializationUtils.safeNullableString(json, 'sugar'),
-        sodium: SerializationUtils.safeNullableString(json, 'sodium'),
-      );
+    calories: SerializationUtils.safeNullableInt(json, 'calories'),
+    fat: SerializationUtils.safeNullableString(json, 'fat'),
+    protein: SerializationUtils.safeNullableString(json, 'protein'),
+    carbs: SerializationUtils.safeNullableString(json, 'carbs'),
+    fiber: SerializationUtils.safeNullableString(json, 'fiber'),
+    sugar: SerializationUtils.safeNullableString(json, 'sugar'),
+    sodium: SerializationUtils.safeNullableString(json, 'sodium'),
+  );
 
   /// Parse from Schema.org NutritionInformation map.
   /// Fields use strings like "270 calories", "12 grams" — extract numeric prefix.
@@ -94,16 +94,15 @@ class NutritionInfo {
     Object? fiber = _sentinel,
     Object? sugar = _sentinel,
     Object? sodium = _sentinel,
-  }) =>
-      NutritionInfo(
-        calories: calories == _sentinel ? this.calories : calories as int?,
-        fat: fat == _sentinel ? this.fat : fat as String?,
-        protein: protein == _sentinel ? this.protein : protein as String?,
-        carbs: carbs == _sentinel ? this.carbs : carbs as String?,
-        fiber: fiber == _sentinel ? this.fiber : fiber as String?,
-        sugar: sugar == _sentinel ? this.sugar : sugar as String?,
-        sodium: sodium == _sentinel ? this.sodium : sodium as String?,
-      );
+  }) => NutritionInfo(
+    calories: calories == _sentinel ? this.calories : calories as int?,
+    fat: fat == _sentinel ? this.fat : fat as String?,
+    protein: protein == _sentinel ? this.protein : protein as String?,
+    carbs: carbs == _sentinel ? this.carbs : carbs as String?,
+    fiber: fiber == _sentinel ? this.fiber : fiber as String?,
+    sugar: sugar == _sentinel ? this.sugar : sugar as String?,
+    sodium: sodium == _sentinel ? this.sodium : sodium as String?,
+  );
 
   @override
   String toString() => 'NutritionInfo(calories: $calories)';

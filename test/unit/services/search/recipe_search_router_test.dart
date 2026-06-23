@@ -47,15 +47,24 @@ class _DelegatingProxy implements SearchRepository {
   bool get usesExternalSearch => delegate.usesExternalSearch;
 
   @override
-  Future<SearchResult<RecipeSearchHit>> searchRecipes(String query,
-          {SearchFilters? filters, int page = 0, int hitsPerPage = 20}) =>
-      delegate.searchRecipes(query,
-          filters: filters, page: page, hitsPerPage: hitsPerPage);
+  Future<SearchResult<RecipeSearchHit>> searchRecipes(
+    String query, {
+    SearchFilters? filters,
+    int page = 0,
+    int hitsPerPage = 20,
+  }) => delegate.searchRecipes(
+    query,
+    filters: filters,
+    page: page,
+    hitsPerPage: hitsPerPage,
+  );
 
   @override
-  Future<SearchResult<UserSearchHit>> searchUsers(String query,
-          {int page = 0, int hitsPerPage = 20}) =>
-      delegate.searchUsers(query, page: page, hitsPerPage: hitsPerPage);
+  Future<SearchResult<UserSearchHit>> searchUsers(
+    String query, {
+    int page = 0,
+    int hitsPerPage = 20,
+  }) => delegate.searchUsers(query, page: page, hitsPerPage: hitsPerPage);
 
   @override
   Future<void> indexRecipe(Recipe recipe, {required String ownerId}) =>
@@ -71,14 +80,17 @@ class _DelegatingProxy implements SearchRepository {
   Future<void> removeUser(String userId) => delegate.removeUser(userId);
 
   @override
-  Future<void> batchIndexRecipes(List<Recipe> recipes,
-          {required String ownerId}) =>
-      delegate.batchIndexRecipes(recipes, ownerId: ownerId);
+  Future<void> batchIndexRecipes(
+    List<Recipe> recipes, {
+    required String ownerId,
+  }) => delegate.batchIndexRecipes(recipes, ownerId: ownerId);
 
   @override
-  Future<List<String>> getSuggestions(String partial,
-          {String index = 'recipes', int limit = 5}) =>
-      delegate.getSuggestions(partial, index: index, limit: limit);
+  Future<List<String>> getSuggestions(
+    String partial, {
+    String index = 'recipes',
+    int limit = 5,
+  }) => delegate.getSuggestions(partial, index: index, limit: limit);
 
   @override
   Future<bool> healthCheck() => delegate.healthCheck();
@@ -99,13 +111,16 @@ void main() {
       analytics = _MockAnalytics();
       flags = _MockFeatureFlags();
 
-      when(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
+      when(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => recipeRepo.searchRecipes(any()))
-          .thenAnswer((_) async => const <Recipe>[]);
+      when(
+        () => recipeRepo.searchRecipes(any()),
+      ).thenAnswer((_) async => const <Recipe>[]);
     });
 
     tearDown(() {
@@ -120,19 +135,25 @@ void main() {
       final algolia = _MockAlgolia();
       final proxy = _DelegatingProxy(algolia);
 
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(true);
-      when(() => algolia.searchRecipes(any(),
-              filters: any(named: 'filters'),
-              page: any(named: 'page'),
-              hitsPerPage: any(named: 'hitsPerPage')))
-          .thenAnswer((_) async => const SearchResult<RecipeSearchHit>(
-                hits: [],
-                totalHits: 0,
-                page: 0,
-                totalPages: 0,
-                processingTimeMs: 1,
-              ));
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(true);
+      when(
+        () => algolia.searchRecipes(
+          any(),
+          filters: any(named: 'filters'),
+          page: any(named: 'page'),
+          hitsPerPage: any(named: 'hitsPerPage'),
+        ),
+      ).thenAnswer(
+        (_) async => const SearchResult<RecipeSearchHit>(
+          hits: [],
+          totalHits: 0,
+          page: 0,
+          totalPages: 0,
+          processingTimeMs: 1,
+        ),
+      );
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -143,10 +164,14 @@ void main() {
 
       await router.searchRecipes('pasta');
 
-      verify(() => algolia.searchRecipes('pasta',
+      verify(
+        () => algolia.searchRecipes(
+          'pasta',
           filters: any(named: 'filters'),
           page: any(named: 'page'),
-          hitsPerPage: any(named: 'hitsPerPage'))).called(1);
+          hitsPerPage: any(named: 'hitsPerPage'),
+        ),
+      ).called(1);
       verifyNever(() => recipeRepo.searchRecipes(any()));
     });
 
@@ -154,8 +179,9 @@ void main() {
       final firestore = _MockFirestoreSearch();
       final proxy = _DelegatingProxy(firestore);
 
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(true); // Flag on, but delegate is non-Algolia.
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(true); // Flag on, but delegate is non-Algolia.
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -167,18 +193,23 @@ void main() {
       await router.searchRecipes('pasta');
 
       verify(() => recipeRepo.searchRecipes('pasta')).called(1);
-      verifyNever(() => firestore.searchRecipes(any(),
+      verifyNever(
+        () => firestore.searchRecipes(
+          any(),
           filters: any(named: 'filters'),
           page: any(named: 'page'),
-          hitsPerPage: any(named: 'hitsPerPage')));
+          hitsPerPage: any(named: 'hitsPerPage'),
+        ),
+      );
     });
 
     test('falls back to Firestore when feature flag is OFF', () async {
       final algolia = _MockAlgolia();
       final proxy = _DelegatingProxy(algolia);
 
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(false); // Kill switch.
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(false); // Kill switch.
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -196,8 +227,9 @@ void main() {
     test('empty query returns empty without hitting either repo', () async {
       final firestore = _MockFirestoreSearch();
       final proxy = _DelegatingProxy(firestore);
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(false);
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(false);
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -219,19 +251,25 @@ void main() {
       final algolia = _MockAlgolia();
       final proxy = _DelegatingProxy(algolia);
 
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(true);
-      when(() => algolia.searchRecipes(any(),
-              filters: any(named: 'filters'),
-              page: any(named: 'page'),
-              hitsPerPage: any(named: 'hitsPerPage')))
-          .thenAnswer((_) async => const SearchResult<RecipeSearchHit>(
-                hits: [],
-                totalHits: 0,
-                page: 0,
-                totalPages: 0,
-                processingTimeMs: 1,
-              ));
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(true);
+      when(
+        () => algolia.searchRecipes(
+          any(),
+          filters: any(named: 'filters'),
+          page: any(named: 'page'),
+          hitsPerPage: any(named: 'hitsPerPage'),
+        ),
+      ).thenAnswer(
+        (_) async => const SearchResult<RecipeSearchHit>(
+          hits: [],
+          totalHits: 0,
+          page: 0,
+          totalPages: 0,
+          processingTimeMs: 1,
+        ),
+      );
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -242,17 +280,20 @@ void main() {
 
       await router.searchRecipes('pasta');
 
-      verify(() => analytics.setUserProperty(
-            name: 'has_algolia_search',
-            value: 'true',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'has_algolia_search',
+          value: 'true',
+        ),
+      ).called(1);
     });
 
     test('sets has_algolia_search=false when on Firestore fallback', () async {
       final firestore = _MockFirestoreSearch();
       final proxy = _DelegatingProxy(firestore);
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(false);
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(false);
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -263,17 +304,20 @@ void main() {
 
       await router.searchRecipes('pasta');
 
-      verify(() => analytics.setUserProperty(
-            name: 'has_algolia_search',
-            value: 'false',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'has_algolia_search',
+          value: 'false',
+        ),
+      ).called(1);
     });
 
     test('user property fires only once, even across many searches', () async {
       final firestore = _MockFirestoreSearch();
       final proxy = _DelegatingProxy(firestore);
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(false);
+      when(
+        () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+      ).thenReturn(false);
 
       final router = RecipeSearchRouter(
         recipeRepository: recipeRepo,
@@ -286,36 +330,44 @@ void main() {
       await router.searchRecipes('lasagne');
       await router.searchRecipes('soppa');
 
-      verify(() => analytics.setUserProperty(
-            name: 'has_algolia_search',
-            value: 'false',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'has_algolia_search',
+          value: 'false',
+        ),
+      ).called(1);
     });
 
-    test('Algolia exception falls back to RecipeRepository transparently',
-        () async {
-      final algolia = _MockAlgolia();
-      final proxy = _DelegatingProxy(algolia);
+    test(
+      'Algolia exception falls back to RecipeRepository transparently',
+      () async {
+        final algolia = _MockAlgolia();
+        final proxy = _DelegatingProxy(algolia);
 
-      when(() => flags.isEnabled(FeatureFlags.enableAlgoliaSearch))
-          .thenReturn(true);
-      when(() => algolia.searchRecipes(any(),
-              filters: any(named: 'filters'),
-              page: any(named: 'page'),
-              hitsPerPage: any(named: 'hitsPerPage')))
-          .thenThrow(Exception('Algolia 503'));
+        when(
+          () => flags.isEnabled(FeatureFlags.enableAlgoliaSearch),
+        ).thenReturn(true);
+        when(
+          () => algolia.searchRecipes(
+            any(),
+            filters: any(named: 'filters'),
+            page: any(named: 'page'),
+            hitsPerPage: any(named: 'hitsPerPage'),
+          ),
+        ).thenThrow(Exception('Algolia 503'));
 
-      final router = RecipeSearchRouter(
-        recipeRepository: recipeRepo,
-        searchRepository: proxy,
-        analytics: analytics,
-        featureFlags: flags,
-      );
+        final router = RecipeSearchRouter(
+          recipeRepository: recipeRepo,
+          searchRepository: proxy,
+          analytics: analytics,
+          featureFlags: flags,
+        );
 
-      final results = await router.searchRecipes('pasta');
+        final results = await router.searchRecipes('pasta');
 
-      expect(results, isEmpty);
-      verify(() => recipeRepo.searchRecipes('pasta')).called(1);
-    });
+        expect(results, isEmpty);
+        verify(() => recipeRepo.searchRecipes('pasta')).called(1);
+      },
+    );
   });
 }

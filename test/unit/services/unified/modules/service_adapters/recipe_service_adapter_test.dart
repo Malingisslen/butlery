@@ -80,8 +80,9 @@ void main() {
           createdBy: 'user-123',
         );
 
-        when(() => mockRecipeRepository.create(any()))
-            .thenAnswer((_) async => recipe);
+        when(
+          () => mockRecipeRepository.create(any()),
+        ).thenAnswer((_) async => recipe);
 
         // Act
         final result = await adapter.createRecipe(recipe);
@@ -95,8 +96,9 @@ void main() {
         // Arrange
         final recipe = RecipeFactory.buildPersonal();
 
-        when(() => mockRecipeRepository.create(any()))
-            .thenThrow(Exception('Create failed'));
+        when(
+          () => mockRecipeRepository.create(any()),
+        ).thenThrow(Exception('Create failed'));
 
         // Act
         final result = await adapter.createRecipe(recipe);
@@ -126,8 +128,9 @@ void main() {
         // Arrange
         final recipe = RecipeFactory.buildPersonal();
 
-        when(() => mockRecipeRepository.update(any()))
-            .thenThrow(Exception('Update failed'));
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenThrow(Exception('Update failed'));
 
         // Act
         final result = await adapter.updateRecipe(recipe);
@@ -143,8 +146,9 @@ void main() {
         // Production calls .read() first to fetch imageUrls before delete.
         // Without a stub mocktail throws on the unstubbed call, which the
         // adapter's broad catch swallows -> result returns false silently.
-        when(() => mockRecipeRepository.read(any()))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockRecipeRepository.read(any()),
+        ).thenAnswer((_) async => null);
         when(() => mockRecipeRepository.delete(any())).thenAnswer((_) async {});
 
         // Act
@@ -159,8 +163,9 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
 
-        when(() => mockRecipeRepository.delete(any()))
-            .thenThrow(Exception('Delete failed'));
+        when(
+          () => mockRecipeRepository.delete(any()),
+        ).thenThrow(Exception('Delete failed'));
 
         // Act
         final result = await adapter.deleteRecipe(recipeId);
@@ -189,8 +194,9 @@ void main() {
           RecipeFactory.buildPersonal(id: 'recipe-2'),
         ];
 
-        when(() => mockRecipeRepository.fetchUserRecipes(any()))
-            .thenAnswer((_) async => recipes);
+        when(
+          () => mockRecipeRepository.fetchUserRecipes(any()),
+        ).thenAnswer((_) async => recipes);
 
         // Act
         final result = await adapter.getRecipesForUser(userId);
@@ -200,20 +206,23 @@ void main() {
         verify(() => mockRecipeRepository.fetchUserRecipes(userId)).called(1);
       });
 
-      test('should return empty list when fetching user recipes fails',
-          () async {
-        // Arrange
-        const userId = 'user-123';
+      test(
+        'should return empty list when fetching user recipes fails',
+        () async {
+          // Arrange
+          const userId = 'user-123';
 
-        when(() => mockRecipeRepository.fetchUserRecipes(any()))
-            .thenThrow(Exception('Fetch failed'));
+          when(
+            () => mockRecipeRepository.fetchUserRecipes(any()),
+          ).thenThrow(Exception('Fetch failed'));
 
-        // Act
-        final result = await adapter.getRecipesForUser(userId);
+          // Act
+          final result = await adapter.getRecipesForUser(userId);
 
-        // Assert
-        expect(result, isEmpty);
-      });
+          // Assert
+          expect(result, isEmpty);
+        },
+      );
 
       test('should search recipes', () async {
         // Arrange
@@ -223,8 +232,9 @@ void main() {
           RecipeFactory.buildPersonal(id: 'recipe-2', title: 'Pasta Bolognese'),
         ];
 
-        when(() => mockRecipeRepository.searchRecipes(any()))
-            .thenAnswer((_) async => recipes);
+        when(
+          () => mockRecipeRepository.searchRecipes(any()),
+        ).thenAnswer((_) async => recipes);
 
         // Act
         final result = await adapter.searchRecipes(query);
@@ -238,8 +248,9 @@ void main() {
         // Arrange
         const query = 'pasta';
 
-        when(() => mockRecipeRepository.searchRecipes(any()))
-            .thenThrow(Exception('Search failed'));
+        when(
+          () => mockRecipeRepository.searchRecipes(any()),
+        ).thenThrow(Exception('Search failed'));
 
         // Act
         final result = await adapter.searchRecipes(query);
@@ -258,13 +269,15 @@ void main() {
         const body = 'Check out this new recipe!';
         final data = {'recipeId': 'recipe-1'};
 
-        when(() => mockNotificationsRepository.sendNotification(
-              userId: any(named: 'userId'),
-              type: any(named: 'type'),
-              title: any(named: 'title'),
-              body: any(named: 'body'),
-              data: any(named: 'data'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockNotificationsRepository.sendNotification(
+            userId: any(named: 'userId'),
+            type: any(named: 'type'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            data: any(named: 'data'),
+          ),
+        ).thenAnswer((_) async {});
 
         // Act
         await adapter.sendNotification(
@@ -276,13 +289,15 @@ void main() {
         );
 
         // Assert
-        verify(() => mockNotificationsRepository.sendNotification(
-              userId: userId,
-              type: type,
-              title: title,
-              body: body,
-              data: data,
-            )).called(1);
+        verify(
+          () => mockNotificationsRepository.sendNotification(
+            userId: userId,
+            type: type,
+            title: title,
+            body: body,
+            data: data,
+          ),
+        ).called(1);
       });
 
       test('should handle notification sending errors', () async {
@@ -292,13 +307,15 @@ void main() {
         const title = 'New Recipe';
         const body = 'Check out this new recipe!';
 
-        when(() => mockNotificationsRepository.sendNotification(
-              userId: any(named: 'userId'),
-              type: any(named: 'type'),
-              title: any(named: 'title'),
-              body: any(named: 'body'),
-              data: any(named: 'data'),
-            )).thenThrow(Exception('Send failed'));
+        when(
+          () => mockNotificationsRepository.sendNotification(
+            userId: any(named: 'userId'),
+            type: any(named: 'type'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            data: any(named: 'data'),
+          ),
+        ).thenThrow(Exception('Send failed'));
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -332,24 +349,27 @@ void main() {
           ),
         };
 
-        when(() => mockRatingsRepository.getBulkRatingStatistics(any()))
-            .thenAnswer((_) async => statistics);
+        when(
+          () => mockRatingsRepository.getBulkRatingStatistics(any()),
+        ).thenAnswer((_) async => statistics);
 
         // Act
         final result = await adapter.getBulkRatingStatistics(recipeIds);
 
         // Assert
         expect(result, equals(statistics));
-        verify(() => mockRatingsRepository.getBulkRatingStatistics(recipeIds))
-            .called(1);
+        verify(
+          () => mockRatingsRepository.getBulkRatingStatistics(recipeIds),
+        ).called(1);
       });
 
       test('should return empty map when bulk statistics fails', () async {
         // Arrange
         final recipeIds = ['recipe-1', 'recipe-2'];
 
-        when(() => mockRatingsRepository.getBulkRatingStatistics(any()))
-            .thenThrow(Exception('Bulk fetch failed'));
+        when(
+          () => mockRatingsRepository.getBulkRatingStatistics(any()),
+        ).thenThrow(Exception('Bulk fetch failed'));
 
         // Act
         final result = await adapter.getBulkRatingStatistics(recipeIds);
@@ -374,8 +394,9 @@ void main() {
           ),
         ];
 
-        when(() => mockCommentsRepository.getCommentsStream(any()))
-            .thenAnswer((_) => Stream.value(comments));
+        when(
+          () => mockCommentsRepository.getCommentsStream(any()),
+        ).thenAnswer((_) => Stream.value(comments));
 
         // Act
         final stream = adapter.getCommentsStream(recipeId);
@@ -383,69 +404,83 @@ void main() {
         // Assert
         final result = await stream.first;
         expect(result, equals(comments));
-        verify(() => mockCommentsRepository.getCommentsStream(recipeId))
-            .called(1);
+        verify(
+          () => mockCommentsRepository.getCommentsStream(recipeId),
+        ).called(1);
       });
 
-      test('BUT-894: deleteRecipe drains orphan shared_content records',
-          () async {
-        // Arrange: real adapter wired with a FakeFirebaseFirestore via a
-        // mocked FirestoreRepository, plus a stubbed RecipeRepository.
-        final fakeFirestore = FakeFirebaseFirestore();
-        final firestoreRepo = _MockFirestoreRepository();
-        when(() => firestoreRepo.firestore).thenReturn(fakeFirestore);
+      test(
+        'BUT-894: deleteRecipe drains orphan shared_content records',
+        () async {
+          // Arrange: real adapter wired with a FakeFirebaseFirestore via a
+          // mocked FirestoreRepository, plus a stubbed RecipeRepository.
+          final fakeFirestore = FakeFirebaseFirestore();
+          final firestoreRepo = _MockFirestoreRepository();
+          when(() => firestoreRepo.firestore).thenReturn(fakeFirestore);
 
-        const recipeId = 'recipe-orphan-1';
-        final localRecipeRepo = MockRecipeRepository();
-        when(() => localRecipeRepo.read(any())).thenAnswer((_) async => null);
-        when(() => localRecipeRepo.delete(any())).thenAnswer((_) async {});
+          const recipeId = 'recipe-orphan-1';
+          final localRecipeRepo = MockRecipeRepository();
+          when(() => localRecipeRepo.read(any())).thenAnswer((_) async => null);
+          when(() => localRecipeRepo.delete(any())).thenAnswer((_) async {});
 
-        final orphanAdapter = RecipeServiceAdapter(
-          recipeRepository: localRecipeRepo,
-          firestoreRepository: firestoreRepo,
-        );
+          final orphanAdapter = RecipeServiceAdapter(
+            recipeRepository: localRecipeRepo,
+            firestoreRepository: firestoreRepo,
+          );
 
-        // Seed a shared_content doc pointing at recipeId — what BUT-894
-        // calls a recipient's dead inbox entry after owner deletes the
-        // source recipe.
-        final sharedRef = await fakeFirestore.collection('shared_content').add({
-          'originalRecipeId': recipeId,
-          'sharedByUserId': 'owner-1',
-          'recipeTitle': 'Soon-orphan',
-        });
-        // Member doc in the subcollection (drained by the soft-cascade).
-        await sharedRef.collection('members').doc('user-A').set({
-          'userId': 'user-A',
-          'role': 'viewer',
-        });
+          // Seed a shared_content doc pointing at recipeId — what BUT-894
+          // calls a recipient's dead inbox entry after owner deletes the
+          // source recipe.
+          final sharedRef = await fakeFirestore
+              .collection('shared_content')
+              .add({
+                'originalRecipeId': recipeId,
+                'sharedByUserId': 'owner-1',
+                'recipeTitle': 'Soon-orphan',
+              });
+          // Member doc in the subcollection (drained by the soft-cascade).
+          await sharedRef.collection('members').doc('user-A').set({
+            'userId': 'user-A',
+            'role': 'viewer',
+          });
 
-        // Sanity: doc exists before delete.
-        final beforeQuery = await fakeFirestore
-            .collection('shared_content')
-            .where('originalRecipeId', isEqualTo: recipeId)
-            .get();
-        expect(beforeQuery.docs.length, 1,
-            reason: 'seed shared_content record must be present');
+          // Sanity: doc exists before delete.
+          final beforeQuery = await fakeFirestore
+              .collection('shared_content')
+              .where('originalRecipeId', isEqualTo: recipeId)
+              .get();
+          expect(
+            beforeQuery.docs.length,
+            1,
+            reason: 'seed shared_content record must be present',
+          );
 
-        // Act
-        final result = await orphanAdapter.deleteRecipe(recipeId);
+          // Act
+          final result = await orphanAdapter.deleteRecipe(recipeId);
 
-        // Assert: adapter reports success and the shared_content record
-        // (plus its members subcollection) is gone.
-        expect(result, isTrue);
-        verify(() => localRecipeRepo.delete(recipeId)).called(1);
+          // Assert: adapter reports success and the shared_content record
+          // (plus its members subcollection) is gone.
+          expect(result, isTrue);
+          verify(() => localRecipeRepo.delete(recipeId)).called(1);
 
-        final afterQuery = await fakeFirestore
-            .collection('shared_content')
-            .where('originalRecipeId', isEqualTo: recipeId)
-            .get();
-        expect(afterQuery.docs, isEmpty,
-            reason: 'orphan shared_content must be deleted by BUT-894 cascade');
+          final afterQuery = await fakeFirestore
+              .collection('shared_content')
+              .where('originalRecipeId', isEqualTo: recipeId)
+              .get();
+          expect(
+            afterQuery.docs,
+            isEmpty,
+            reason: 'orphan shared_content must be deleted by BUT-894 cascade',
+          );
 
-        final memberDocs = await sharedRef.collection('members').get();
-        expect(memberDocs.docs, isEmpty,
-            reason: 'members subcollection must be drained before parent doc');
-      });
+          final memberDocs = await sharedRef.collection('members').get();
+          expect(
+            memberDocs.docs,
+            isEmpty,
+            reason: 'members subcollection must be drained before parent doc',
+          );
+        },
+      );
 
       test('BUT-892: deleteRecipe drains orphan cook_snaps records', () async {
         // Arrange: real adapter wired with a FakeFirebaseFirestore via a
@@ -478,8 +513,11 @@ void main() {
             .collection('cook_snaps')
             .where('recipeId', isEqualTo: recipeId)
             .get();
-        expect(beforeQuery.docs.length, 1,
-            reason: 'seed cook_snap record must be present');
+        expect(
+          beforeQuery.docs.length,
+          1,
+          reason: 'seed cook_snap record must be present',
+        );
 
         // Act
         final result = await orphanAdapter.deleteRecipe(recipeId);
@@ -492,8 +530,11 @@ void main() {
             .collection('cook_snaps')
             .where('recipeId', isEqualTo: recipeId)
             .get();
-        expect(afterQuery.docs, isEmpty,
-            reason: 'orphan cook_snaps must be deleted by BUT-892 cascade');
+        expect(
+          afterQuery.docs,
+          isEmpty,
+          reason: 'orphan cook_snaps must be deleted by BUT-892 cascade',
+        );
       });
 
       test('should get rating statistics stream', () async {
@@ -506,8 +547,9 @@ void main() {
           ratingDistribution: {1: 2, 2: 3, 3: 7, 4: 15, 5: 15},
         );
 
-        when(() => mockRatingsRepository.getRatingStatisticsStream(any()))
-            .thenAnswer((_) => Stream.value(statistics));
+        when(
+          () => mockRatingsRepository.getRatingStatisticsStream(any()),
+        ).thenAnswer((_) => Stream.value(statistics));
 
         // Act
         final stream = adapter.getRatingStatisticsStream(recipeId);
@@ -515,8 +557,9 @@ void main() {
         // Assert
         final result = await stream.first;
         expect(result, equals(statistics));
-        verify(() => mockRatingsRepository.getRatingStatisticsStream(recipeId))
-            .called(1);
+        verify(
+          () => mockRatingsRepository.getRatingStatisticsStream(recipeId),
+        ).called(1);
       });
     });
   });

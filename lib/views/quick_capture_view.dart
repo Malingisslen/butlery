@@ -186,8 +186,8 @@ class _MealTypeSelector extends StatelessWidget {
 /// Minimal ViewModel for quick capture — handles save + loading/error state.
 class _QuickCaptureViewModel extends ChangeNotifier {
   _QuickCaptureViewModel({UnifiedRecipeService? recipeService})
-      : _recipeService =
-            recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+    : _recipeService =
+          recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
 
   final UnifiedRecipeService _recipeService;
 

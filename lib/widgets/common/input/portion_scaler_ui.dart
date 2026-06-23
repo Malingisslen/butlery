@@ -123,7 +123,8 @@ class PortionScalerUI {
               // Current portions
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingM),
+                  horizontal: AppDimensions.paddingM,
+                ),
                 child: Text(
                   '$currentPortions',
                   style: AppTextStyles.bodyBold.copyWith(
@@ -220,8 +221,12 @@ class PortionScalerUI {
               const SizedBox(width: AppDimensions.spacingXs),
               Flexible(
                 child: Text(
-                  _buildStatusText(context, currentPortions, originalPortions,
-                      convertToSwedish),
+                  _buildStatusText(
+                    context,
+                    currentPortions,
+                    originalPortions,
+                    convertToSwedish,
+                  ),
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
                   ),
@@ -268,10 +273,9 @@ class PortionScalerUI {
                       : Theme.of(context).colorScheme.outline,
                 ),
                 backgroundColor: convertToSwedish
-                    ? Theme.of(context)
-                        .colorScheme
-                        .primaryContainer
-                        .withValues(alpha: AppDimensions.opacityMediumLight)
+                    ? Theme.of(context).colorScheme.primaryContainer.withValues(
+                        alpha: AppDimensions.opacityMediumLight,
+                      )
                     : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingS,
@@ -296,7 +300,8 @@ class PortionScalerUI {
 
     if (currentPortions != originalPortions) {
       status.add(
-          context.l10n.scalerScaledFromTo(originalPortions, currentPortions));
+        context.l10n.scalerScaledFromTo(originalPortions, currentPortions),
+      );
     }
 
     if (convertToSwedish) {

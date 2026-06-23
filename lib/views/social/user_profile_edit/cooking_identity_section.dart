@@ -26,7 +26,8 @@ class CookingIdentitySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final atMax = viewModel.cuisineAffinities.length >=
+    final atMax =
+        viewModel.cuisineAffinities.length >=
         UserProfileViewModel.maxCuisineAffinities;
 
     return Column(
@@ -76,8 +77,9 @@ class CookingIdentitySection extends StatelessWidget {
             style: ButtonStyle(
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadius8),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadius8,
+                  ),
                 ),
               ),
             ),
@@ -116,8 +118,9 @@ class CookingIdentitySection extends StatelessWidget {
                 }
               },
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadius8),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadius8,
+                ),
               ),
             );
           }).toList(),

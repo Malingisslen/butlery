@@ -24,22 +24,23 @@ class VoteOption {
   });
 
   Map<String, dynamic> toFirestore() => {
-        'id': id,
-        'recipeId': recipeId,
-        'recipeName': recipeName,
-        'recipeImageUrl': recipeImageUrl,
-        'suggestedByUserId': suggestedByUserId,
-      };
+    'id': id,
+    'recipeId': recipeId,
+    'recipeName': recipeName,
+    'recipeImageUrl': recipeImageUrl,
+    'suggestedByUserId': suggestedByUserId,
+  };
 
   factory VoteOption.fromMap(Map<String, dynamic> data) => VoteOption(
-        id: SerializationUtils.safeString(data, 'id'),
-        recipeId: SerializationUtils.safeString(data, 'recipeId'),
-        recipeName: SerializationUtils.safeString(data, 'recipeName'),
-        recipeImageUrl:
-            SerializationUtils.safeNullableString(data, 'recipeImageUrl'),
-        suggestedByUserId:
-            SerializationUtils.safeString(data, 'suggestedByUserId'),
-      );
+    id: SerializationUtils.safeString(data, 'id'),
+    recipeId: SerializationUtils.safeString(data, 'recipeId'),
+    recipeName: SerializationUtils.safeString(data, 'recipeName'),
+    recipeImageUrl: SerializationUtils.safeNullableString(
+      data,
+      'recipeImageUrl',
+    ),
+    suggestedByUserId: SerializationUtils.safeString(data, 'suggestedByUserId'),
+  );
 }
 
 /// A vote on a menu slot — multiple recipe alternatives, household members vote.
@@ -163,20 +164,21 @@ class MenuSlotVote {
   // --- Serialization ---
 
   Map<String, dynamic> toFirestore() => {
-        'menuId': menuId,
-        'category': category,
-        'slotIndex': slotIndex,
-        'alternatives': alternatives.map((o) => o.toFirestore()).toList(),
-        'votes': votes,
-        'deadline': AppTimestamp.fromDateTime(deadline).toFirestore(),
-        'isResolved': isResolved,
-        'winningOptionId': winningOptionId,
-        'createdByUserId': createdByUserId,
-        'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
-      };
+    'menuId': menuId,
+    'category': category,
+    'slotIndex': slotIndex,
+    'alternatives': alternatives.map((o) => o.toFirestore()).toList(),
+    'votes': votes,
+    'deadline': AppTimestamp.fromDateTime(deadline).toFirestore(),
+    'isResolved': isResolved,
+    'winningOptionId': winningOptionId,
+    'createdByUserId': createdByUserId,
+    'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
+  };
 
   factory MenuSlotVote.fromMap(String id, Map<String, dynamic> data) {
-    final alternativesList = (data['alternatives'] as List<dynamic>?)
+    final alternativesList =
+        (data['alternatives'] as List<dynamic>?)
             ?.map((e) => VoteOption.fromMap(e as Map<String, dynamic>))
             .toList() ??
         [];
@@ -197,11 +199,14 @@ class MenuSlotVote {
       votes: votesMap,
       deadline: SerializationUtils.parseRequiredDateTimeValue(data['deadline']),
       isResolved: SerializationUtils.safeBool(data, 'isResolved'),
-      winningOptionId:
-          SerializationUtils.safeNullableString(data, 'winningOptionId'),
+      winningOptionId: SerializationUtils.safeNullableString(
+        data,
+        'winningOptionId',
+      ),
       createdByUserId: SerializationUtils.safeString(data, 'createdByUserId'),
-      createdAt:
-          SerializationUtils.parseRequiredDateTimeValue(data['createdAt']),
+      createdAt: SerializationUtils.parseRequiredDateTimeValue(
+        data['createdAt'],
+      ),
     );
   }
 

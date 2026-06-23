@@ -78,8 +78,10 @@ void main() {
       // Each card has label + description; page has title + description
       // So at minimum _dietaryOptionCount*2 + 2 Text widgets
       final textWidgets = tester.widgetList<Text>(find.byType(Text));
-      expect(textWidgets.length,
-          greaterThanOrEqualTo(_dietaryOptionCount * 2 + 2));
+      expect(
+        textWidgets.length,
+        greaterThanOrEqualTo(_dietaryOptionCount * 2 + 2),
+      );
     });
 
     testWidgets('can select multiple simultaneously', (tester) async {

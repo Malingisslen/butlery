@@ -62,8 +62,10 @@ void main() {
         expect(menuData.menuSnapshot, equals(testMenuSnapshot));
         expect(menuData.menuNotes, equals('Extra grönsaker till barnen'));
         expect(menuData.favoriteRecipeIds, equals(['recipe_1', 'recipe_3']));
-        expect(menuData.originalPrompt,
-            equals('Skapa en veckomeny för familj med små barn'));
+        expect(
+          menuData.originalPrompt,
+          equals('Skapa en veckomeny för familj med små barn'),
+        );
       });
     });
 
@@ -86,26 +88,30 @@ void main() {
         expect(menuData.createdForDate, equals(DateTime(2025, 1, 20)));
       });
 
-      test('should use current date when not provided in fromMenuCategories',
-          () {
-        final before = DateTime.now();
+      test(
+        'should use current date when not provided in fromMenuCategories',
+        () {
+          final before = DateTime.now();
 
-        final menuData = RealtimeMenuData.fromMenuCategories(
-          menuTitle: 'Test Meny',
-          menuSnapshot: testMenuSnapshot,
-        );
+          final menuData = RealtimeMenuData.fromMenuCategories(
+            menuTitle: 'Test Meny',
+            menuSnapshot: testMenuSnapshot,
+          );
 
-        final after = DateTime.now();
+          final after = DateTime.now();
 
-        expect(
+          expect(
             menuData.createdForDate.isAfter(before) ||
                 menuData.createdForDate.isAtSameMomentAs(before),
-            isTrue);
-        expect(
+            isTrue,
+          );
+          expect(
             menuData.createdForDate.isBefore(after) ||
                 menuData.createdForDate.isAtSameMomentAs(after),
-            isTrue);
-      });
+            isTrue,
+          );
+        },
+      );
     });
 
     group('Data Access Methods', () {
@@ -137,8 +143,10 @@ void main() {
         final uniqueRecipes = menuData.allUniqueRecipes;
 
         expect(uniqueRecipes.length, equals(3)); // Deduplicates recipes
-        expect(uniqueRecipes.map((r) => r.id),
-            containsAll(['recipe_1', 'recipe_2', 'recipe_3']));
+        expect(
+          uniqueRecipes.map((r) => r.id),
+          containsAll(['recipe_1', 'recipe_2', 'recipe_3']),
+        );
       });
 
       test('should get recipes for specific category', () {
@@ -210,8 +218,10 @@ void main() {
         // Check menu snapshot serialization
         final menuSnapshotData =
             serialized['menuSnapshot'] as Map<String, dynamic>;
-        expect(menuSnapshotData.keys,
-            containsAll(['Måndag', 'Tisdag', 'Efterrätt']));
+        expect(
+          menuSnapshotData.keys,
+          containsAll(['Måndag', 'Tisdag', 'Efterrätt']),
+        );
         expect(menuSnapshotData['Måndag'], isA<List>());
       });
 
@@ -221,23 +231,28 @@ void main() {
 
         expect(restored.menuTitle, equals(menuData.menuTitle));
         // Firestore round-trip converts to UTC
-        expect(restored.createdForDate.toUtc(),
-            equals(menuData.createdForDate.toUtc()));
+        expect(
+          restored.createdForDate.toUtc(),
+          equals(menuData.createdForDate.toUtc()),
+        );
         expect(restored.menuNotes, equals(menuData.menuNotes));
         expect(restored.favoriteRecipeIds, equals(menuData.favoriteRecipeIds));
         expect(restored.originalPrompt, equals(menuData.originalPrompt));
 
         // Check recipes are restored correctly
         expect(restored.menuSnapshot.keys, equals(menuData.menuSnapshot.keys));
-        expect(restored.allUniqueRecipes.length,
-            equals(menuData.allUniqueRecipes.length));
+        expect(
+          restored.allUniqueRecipes.length,
+          equals(menuData.allUniqueRecipes.length),
+        );
       });
 
       test('should handle missing fields in Firestore data', () {
         final minimalData = {
           'menuTitle': null,
-          'createdForDate':
-              AppTimestamp.fromDateTime(DateTime(2025, 1, 1)).toFirestore(),
+          'createdForDate': AppTimestamp.fromDateTime(
+            DateTime(2025, 1, 1),
+          ).toFirestore(),
           'menuSnapshot': {},
         };
 
@@ -260,8 +275,10 @@ void main() {
         expect(json['originalPrompt'], equals('Test prompt'));
 
         final menuSnapshotData = json['menuSnapshot'] as Map<String, dynamic>;
-        expect(menuSnapshotData.keys,
-            containsAll(['Måndag', 'Tisdag', 'Efterrätt']));
+        expect(
+          menuSnapshotData.keys,
+          containsAll(['Måndag', 'Tisdag', 'Efterrätt']),
+        );
       });
 
       test('should round-trip through JSON', () {
@@ -275,8 +292,10 @@ void main() {
         expect(restored.originalPrompt, equals(menuData.originalPrompt));
 
         expect(restored.menuSnapshot.keys, equals(menuData.menuSnapshot.keys));
-        expect(restored.allUniqueRecipes.length,
-            equals(menuData.allUniqueRecipes.length));
+        expect(
+          restored.allUniqueRecipes.length,
+          equals(menuData.allUniqueRecipes.length),
+        );
       });
 
       test('should handle missing fields in JSON', () {
@@ -312,7 +331,7 @@ void main() {
       test('should copy with new values', () {
         final newDate = DateTime(2025, 2, 1);
         final newMenuSnapshot = {
-          'Fredag': [testRecipe1]
+          'Fredag': [testRecipe1],
         };
 
         final copied = original.copyWith(
@@ -377,8 +396,9 @@ void main() {
         );
 
         final differentTitle = baseMenu.copyWith(menuTitle: 'Different');
-        final differentDate =
-            baseMenu.copyWith(createdForDate: DateTime(2025, 2, 1));
+        final differentDate = baseMenu.copyWith(
+          createdForDate: DateTime(2025, 2, 1),
+        );
         final differentSnapshot = baseMenu.copyWith(menuSnapshot: {});
 
         expect(baseMenu, isNot(equals(differentTitle)));
@@ -454,11 +474,13 @@ void main() {
         );
 
         expect(
-            menuData.categories,
-            containsAll(
-                ['Måndag-Lunch', 'Tisdag/Middag', 'Onsdag (Efterrätt)']));
+          menuData.categories,
+          containsAll(['Måndag-Lunch', 'Tisdag/Middag', 'Onsdag (Efterrätt)']),
+        );
         expect(
-            menuData.getRecipesForCategory('Måndag-Lunch').length, equals(1));
+          menuData.getRecipesForCategory('Måndag-Lunch').length,
+          equals(1),
+        );
       });
 
       test('should handle very large menu snapshots', () {

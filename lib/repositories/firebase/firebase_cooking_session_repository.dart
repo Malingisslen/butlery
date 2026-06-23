@@ -16,7 +16,7 @@ class FirebaseCookingSessionRepository {
   final FirebaseDatabase _database;
 
   FirebaseCookingSessionRepository({required FirebaseDatabase database})
-      : _database = database;
+    : _database = database;
 
   /// Root node for all cooking session presence data.
   static const String _rootPath = 'cooking_sessions';

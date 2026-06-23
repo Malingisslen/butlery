@@ -26,7 +26,8 @@ class ResourceParserModule {
 
   /// Parse resource from Firestore snapshot with type safety
   T parseResourceFromSnapshot<T extends RealtimeResource>(
-      DocumentSnapshot snapshot) {
+    DocumentSnapshot snapshot,
+  ) {
     final data = snapshot.data() as Map<String, dynamic>;
     final typeString = data['type'] as String? ?? 'recipe';
 
@@ -42,10 +43,16 @@ class ResourceParserModule {
     switch (type) {
       case RealtimeResourceType.recipe:
         return RealtimeRecipe.fromMap(
-            snapshot.id, snapshot.data()! as Map<String, dynamic>) as T;
+              snapshot.id,
+              snapshot.data()! as Map<String, dynamic>,
+            )
+            as T;
       case RealtimeResourceType.menu:
         return RealtimeMenu.fromMap(
-            snapshot.id, snapshot.data()! as Map<String, dynamic>) as T;
+              snapshot.id,
+              snapshot.data()! as Map<String, dynamic>,
+            )
+            as T;
       case RealtimeResourceType.shoppingList:
         // return RealtimeShoppingList.fromFirestore(snapshot) as T;
         throw SyncError(
@@ -58,9 +65,11 @@ class ResourceParserModule {
 
   /// Fetch latest version of resource from Firebase
   Future<T> getLatestResource<T extends RealtimeResource>(
-      String resourceId) async {
-    final snapshot =
-        await firestoreRepository.getDocument(getResourceDocRef(resourceId));
+    String resourceId,
+  ) async {
+    final snapshot = await firestoreRepository.getDocument(
+      getResourceDocRef(resourceId),
+    );
 
     if (!snapshot.exists) {
       throw SyncError(

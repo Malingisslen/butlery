@@ -31,10 +31,12 @@ void main() {
       await TestServiceLocator.initialize();
       mockUserService = MockUserService();
 
-      when(() => mockUserService.allergenPreferences)
-          .thenReturn(seedPreferences);
-      when(() => mockUserService.updateAllergenPreferences(any()))
-          .thenAnswer((_) async => true);
+      when(
+        () => mockUserService.allergenPreferences,
+      ).thenReturn(seedPreferences);
+      when(
+        () => mockUserService.updateAllergenPreferences(any()),
+      ).thenAnswer((_) async => true);
 
       TestServiceLocator.registerMock<UserService>(mockUserService);
       viewModel = AllergenPreferencesViewModel(userService: mockUserService);
@@ -110,7 +112,9 @@ void main() {
 
         expect(viewModel.isAllergenTracked('nötter'), isTrue);
         expect(
-            viewModel.trackedAllergens, equals({'gluten', 'mjölk', 'nötter'}));
+          viewModel.trackedAllergens,
+          equals({'gluten', 'mjölk', 'nötter'}),
+        );
       });
 
       test('should set hasChanges to true after toggle', () {
@@ -239,8 +243,9 @@ void main() {
         final result = await viewModel.save();
 
         expect(result, isTrue);
-        verify(() => mockUserService.updateAllergenPreferences(any()))
-            .called(1);
+        verify(
+          () => mockUserService.updateAllergenPreferences(any()),
+        ).called(1);
       });
 
       test('should clear hasChanges on successful save', () async {
@@ -253,8 +258,9 @@ void main() {
       });
 
       test('should set hasError when service returns false', () async {
-        when(() => mockUserService.updateAllergenPreferences(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockUserService.updateAllergenPreferences(any()),
+        ).thenAnswer((_) async => false);
 
         viewModel.toggleAllergen('gluten');
         final result = await viewModel.save();
@@ -265,8 +271,9 @@ void main() {
       });
 
       test('should keep hasChanges when save fails', () async {
-        when(() => mockUserService.updateAllergenPreferences(any()))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockUserService.updateAllergenPreferences(any()),
+        ).thenAnswer((_) async => false);
 
         viewModel.toggleAllergen('gluten');
         await viewModel.save();
@@ -276,8 +283,9 @@ void main() {
       });
 
       test('should set hasError when service throws', () async {
-        when(() => mockUserService.updateAllergenPreferences(any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockUserService.updateAllergenPreferences(any()),
+        ).thenThrow(Exception('Network error'));
 
         viewModel.toggleAllergen('gluten');
         final result = await viewModel.save();
@@ -292,9 +300,11 @@ void main() {
 
         await viewModel.save();
 
-        final captured = verify(
-          () => mockUserService.updateAllergenPreferences(captureAny()),
-        ).captured.single as UserAllergenPreferences;
+        final captured =
+            verify(
+                  () => mockUserService.updateAllergenPreferences(captureAny()),
+                ).captured.single
+                as UserAllergenPreferences;
 
         expect(captured.trackedAllergens, equals({'mjölk'}));
         expect(captured.showCoverage, isTrue);
@@ -323,8 +333,10 @@ void main() {
       test('should have default tracked allergens', () {
         viewModel.resetToDefaults();
 
-        expect(viewModel.trackedAllergens,
-            equals({'gluten', 'mjölk', 'nötter', 'jordnötter'}));
+        expect(
+          viewModel.trackedAllergens,
+          equals({'gluten', 'mjölk', 'nötter', 'jordnötter'}),
+        );
       });
 
       test('should have default tracked dietary', () {
@@ -395,8 +407,9 @@ void main() {
           showOnDetail: false,
           showCoverage: true,
         );
-        when(() => mockUserService.allergenPreferences)
-            .thenReturn(updatedPreferences);
+        when(
+          () => mockUserService.allergenPreferences,
+        ).thenReturn(updatedPreferences);
 
         viewModel.discardChanges();
 

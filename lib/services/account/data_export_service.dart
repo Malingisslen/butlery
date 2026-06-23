@@ -83,9 +83,10 @@ class DataExportService extends BaseService {
     // Tests inject a pre-built manager with a mocked FirebaseFunctions
     // to bypass the Firebase.app dependency.
     ComplianceExportManager? complianceExportManager,
-  })  : _authRepository = authRepository,
-        _firestoreRepository = firestoreRepository {
-    _exportRepo = dataExportRepository ??
+  }) : _authRepository = authRepository,
+       _firestoreRepository = firestoreRepository {
+    _exportRepo =
+        dataExportRepository ??
         FirebaseDataExportRepository(
           firestore: _firestoreRepository.firestore,
           authRepository: authRepository,
@@ -108,7 +109,8 @@ class DataExportService extends BaseService {
       ratingsRepository: ratingsRepository,
       feedbackRepository: feedbackRepository,
     );
-    _complianceManager = complianceExportManager ??
+    _complianceManager =
+        complianceExportManager ??
         ComplianceExportManager(
           dataExportRepository: _exportRepo,
         );
@@ -129,7 +131,8 @@ class DataExportService extends BaseService {
 
     final userId = user.uid;
     app_logger.AppLogger.info(
-        '[$_logTag] Starting data export for user: ${userId.maskedUserId}');
+      '[$_logTag] Starting data export for user: ${userId.maskedUserId}',
+    );
 
     // Fan out all collection reads in parallel — wall time becomes max(t)
     // instead of sum(t). Each manager method is read-only, stateless, takes
@@ -155,15 +158,17 @@ class DataExportService extends BaseService {
       'consent_records': _complianceManager.exportConsentRecords(userId),
       'preferences': _preferencesManager.exportPreferences(userId),
       'notifications': _preferencesManager.exportNotifications(userId),
-      'notification_preferences':
-          _preferencesManager.exportNotificationPreferences(userId),
+      'notification_preferences': _preferencesManager
+          .exportNotificationPreferences(userId),
       'blocks': _socialManager.exportBlocks(userId),
-      'conversation_memberships':
-          _socialManager.exportConversationMemberships(userId),
+      'conversation_memberships': _socialManager.exportConversationMemberships(
+        userId,
+      ),
       'feedback': _activityManager.exportFeedback(userId),
       'fcm_tokens': _preferencesManager.exportFcmTokens(userId),
-      'category_preferences':
-          _preferencesManager.exportCategoryPreferences(userId),
+      'category_preferences': _preferencesManager.exportCategoryPreferences(
+        userId,
+      ),
     };
 
     final keys = futures.keys.toList();
@@ -232,7 +237,8 @@ class DataExportService extends BaseService {
     final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
 
     app_logger.AppLogger.success(
-        '[$_logTag] Data export completed successfully');
+      '[$_logTag] Data export completed successfully',
+    );
     return jsonString;
   }
 
@@ -242,8 +248,9 @@ class DataExportService extends BaseService {
           () async {
             // BUT-501: profile reads route through FirebaseDataExportRepository
             // which validates ownership before each fetch.
-            final privateProfile =
-                await _exportRepo.exportPrivateProfile(userId);
+            final privateProfile = await _exportRepo.exportPrivateProfile(
+              userId,
+            );
             final publicProfile = await _exportRepo.exportPublicProfile(userId);
 
             final currentUser = _authRepository.currentUser;
@@ -254,10 +261,10 @@ class DataExportService extends BaseService {
                 'uid': userId,
                 'email': currentUser?.email,
                 'email_verified': currentUser?.emailVerified,
-                'creation_time':
-                    currentUser?.metadata.creationTime?.toIso8601String(),
-                'last_sign_in':
-                    currentUser?.metadata.lastSignInTime?.toIso8601String(),
+                'creation_time': currentUser?.metadata.creationTime
+                    ?.toIso8601String(),
+                'last_sign_in': currentUser?.metadata.lastSignInTime
+                    ?.toIso8601String(),
               },
             };
           },

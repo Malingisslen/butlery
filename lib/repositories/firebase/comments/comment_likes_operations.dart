@@ -37,8 +37,9 @@ mixin CommentLikesOperations on BaseFirebaseRepository<RecipeComment> {
       );
     }
 
-    final likesCollection =
-        collection.doc(commentId).collection(FirestoreCollections.likes);
+    final likesCollection = collection
+        .doc(commentId)
+        .collection(FirestoreCollections.likes);
     final userLikeDoc = likesCollection.doc(userId);
     final likeSnapshot = await userLikeDoc.get();
 
@@ -85,8 +86,10 @@ mixin CommentLikesOperations on BaseFirebaseRepository<RecipeComment> {
     return likeDoc.exists;
   }
 
-  Future<List<String>> getCommentLikers(String commentId,
-      {int limit = 100}) async {
+  Future<List<String>> getCommentLikers(
+    String commentId, {
+    int limit = 100,
+  }) async {
     final likesSnapshot = await collection
         .doc(commentId)
         .collection(FirestoreCollections.likes)

@@ -69,11 +69,10 @@ Future<void> _seedPersonalList(
     'createdAt': Timestamp.fromDate(updatedAt),
   });
   for (var i = 0; i < items.length; i++) {
-    await _userLists(firestore, _userId)
-        .doc(id)
-        .collection('items')
-        .doc('item-$i')
-        .set(items[i]);
+    await _userLists(
+      firestore,
+      _userId,
+    ).doc(id).collection('items').doc('item-$i').set(items[i]);
   }
 }
 
@@ -103,14 +102,16 @@ void main() {
 
     test('hydrates each personal list with its items subcollection', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedPersonalList(firestore,
-          id: 'l1',
-          name: 'Veckans',
-          updatedAt: DateTime.utc(2026, 1, 2),
-          items: [
-            _itemDoc(name: 'Mjölk'),
-            _itemDoc(name: 'Bröd', bought: true),
-          ]);
+      await _seedPersonalList(
+        firestore,
+        id: 'l1',
+        name: 'Veckans',
+        updatedAt: DateTime.utc(2026, 1, 2),
+        items: [
+          _itemDoc(name: 'Mjölk'),
+          _itemDoc(name: 'Bröd', bought: true),
+        ],
+      );
 
       final result = await _module(firestore).readAll();
       expect(result, hasLength(1));
@@ -128,12 +129,24 @@ void main() {
       // then degenerates to insertion order. We assert membership only,
       // not the sort key.
       final firestore = FakeFirebaseFirestore();
-      await _seedPersonalList(firestore,
-          id: 'old', name: 'Old', updatedAt: DateTime.utc(2026, 1, 1));
-      await _seedPersonalList(firestore,
-          id: 'new', name: 'New', updatedAt: DateTime.utc(2026, 1, 5));
-      await _seedPersonalList(firestore,
-          id: 'mid', name: 'Mid', updatedAt: DateTime.utc(2026, 1, 3));
+      await _seedPersonalList(
+        firestore,
+        id: 'old',
+        name: 'Old',
+        updatedAt: DateTime.utc(2026, 1, 1),
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'new',
+        name: 'New',
+        updatedAt: DateTime.utc(2026, 1, 5),
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'mid',
+        name: 'Mid',
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
 
       final result = await _module(firestore).readAll();
       expect(result.map((l) => l.id).toSet(), {'old', 'new', 'mid'});
@@ -156,10 +169,13 @@ void main() {
         ownerId: _userId,
         ownerDisplayName: 'Alice',
       );
-      final result = await _module(firestore, readList: (id) async {
-        capturedId = id;
-        return stub;
-      }).getActiveList('l1');
+      final result = await _module(
+        firestore,
+        readList: (id) async {
+          capturedId = id;
+          return stub;
+        },
+      ).getActiveList('l1');
       expect(capturedId, 'l1');
       expect(result, same(stub));
     });
@@ -168,12 +184,24 @@ void main() {
   group('personalListsStream', () {
     test('emits all personal lists newest-first', () async {
       final firestore = FakeFirebaseFirestore();
-      await _seedPersonalList(firestore,
-          id: 'a', name: 'A', updatedAt: DateTime.utc(2026, 1, 1));
-      await _seedPersonalList(firestore,
-          id: 'b', name: 'B', updatedAt: DateTime.utc(2026, 1, 3));
-      await _seedPersonalList(firestore,
-          id: 'c', name: 'C', updatedAt: DateTime.utc(2026, 1, 2));
+      await _seedPersonalList(
+        firestore,
+        id: 'a',
+        name: 'A',
+        updatedAt: DateTime.utc(2026, 1, 1),
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'b',
+        name: 'B',
+        updatedAt: DateTime.utc(2026, 1, 3),
+      );
+      await _seedPersonalList(
+        firestore,
+        id: 'c',
+        name: 'C',
+        updatedAt: DateTime.utc(2026, 1, 2),
+      );
 
       final lists = await _module(firestore).personalListsStream().first;
       expect(lists.map((l) => l.id), ['b', 'c', 'a']);

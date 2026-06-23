@@ -149,7 +149,8 @@ class RealtimeParticipants {
   }
 
   static Map<String, int> getParticipantStats(
-      Map<String, ResourcePermission> participants) {
+    Map<String, ResourcePermission> participants,
+  ) {
     final stats = <String, int>{
       'total': participants.length,
       'owners': 0,
@@ -189,18 +190,22 @@ class RealtimeParticipants {
 
   /// Get all editors (including admins and owners)
   static List<String> getAllEditors(
-      Map<String, ResourcePermission> participants) {
+    Map<String, ResourcePermission> participants,
+  ) {
     return participants.entries
-        .where((entry) =>
-            _getPermissionLevel(entry.value) >=
-            _getPermissionLevel(ResourcePermission.editor))
+        .where(
+          (entry) =>
+              _getPermissionLevel(entry.value) >=
+              _getPermissionLevel(ResourcePermission.editor),
+        )
         .map((entry) => entry.key)
         .toList();
   }
 
   /// Get collaboration level (0-100)
   static int getCollaborationLevel(
-      Map<String, ResourcePermission> participants) {
+    Map<String, ResourcePermission> participants,
+  ) {
     final total = participants.length;
     if (total <= 1) return 0;
 
@@ -215,7 +220,8 @@ class RealtimeParticipants {
   }
 
   static bool isValidParticipants(
-      Map<String, ResourcePermission> participants) {
+    Map<String, ResourcePermission> participants,
+  ) {
     if (participants.isEmpty) return false;
 
     // Must have at least one owner

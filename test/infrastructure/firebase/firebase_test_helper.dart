@@ -28,15 +28,19 @@ class FirebaseTestHelper {
 
     try {
       // Connect Firestore emulator
-      FirebaseFirestore.instance
-          .useFirestoreEmulator(_emulatorHost, _firestorePort);
+      FirebaseFirestore.instance.useFirestoreEmulator(
+        _emulatorHost,
+        _firestorePort,
+      );
 
       // Connect Auth emulator
       await FirebaseAuth.instance.useAuthEmulator(_emulatorHost, _authPort);
 
       // Connect Storage emulator
-      await FirebaseStorage.instance
-          .useStorageEmulator(_emulatorHost, _storagePort);
+      await FirebaseStorage.instance.useStorageEmulator(
+        _emulatorHost,
+        _storagePort,
+      );
 
       _emulatorsConnected = true;
       print('✅ Connected to Firebase emulators');
@@ -146,11 +150,14 @@ class FirebaseTestHelper {
     final data = snapshot.data()!;
 
     expect(data['createdAt'], isA<Timestamp>());
-    final createdAtMillis =
-        (data['createdAt'] as Timestamp).toDate().millisecondsSinceEpoch;
+    final createdAtMillis = (data['createdAt'] as Timestamp)
+        .toDate()
+        .millisecondsSinceEpoch;
     final nowMillis = DateTime.now().millisecondsSinceEpoch;
-    expect(createdAtMillis,
-        closeTo(nowMillis, 5000)); // 5000 milliseconds = 5 seconds
+    expect(
+      createdAtMillis,
+      closeTo(nowMillis, 5000),
+    ); // 5000 milliseconds = 5 seconds
   }
 
   /// Test FieldValue.increment() properly
@@ -176,7 +183,7 @@ class FirebaseTestHelper {
     // Create document with initial array
     final docRef = firestore.collection('test').doc();
     await docRef.set({
-      'tags': ['tag1', 'tag2']
+      'tags': ['tag1', 'tag2'],
     });
 
     // Add new tags
@@ -199,7 +206,7 @@ class FirebaseTestHelper {
     // Create document with initial array
     final docRef = firestore.collection('test').doc();
     await docRef.set({
-      'tags': ['tag1', 'tag2', 'tag3']
+      'tags': ['tag1', 'tag2', 'tag3'],
     });
 
     // Remove tags
@@ -240,7 +247,7 @@ class FirebaseTestHelper {
     final updateBatch = firestore.batch();
     updateBatch.update(doc1, {'counter': FieldValue.increment(5)});
     updateBatch.update(doc2, {
-      'tags': FieldValue.arrayUnion(['tag1'])
+      'tags': FieldValue.arrayUnion(['tag1']),
     });
     await updateBatch.commit();
 
@@ -518,7 +525,9 @@ class FirebaseTestHelper {
   /// This creates a friendship between two test users to support
   /// social feature testing in E2E scenarios.
   static Future<void> createE2EFriendship(
-      String userId1, String userId2) async {
+    String userId1,
+    String userId2,
+  ) async {
     final firestore = FirebaseFirestore.instance;
     final batch = firestore.batch();
 

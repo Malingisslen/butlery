@@ -370,8 +370,10 @@ void main() {
     group('Permission Level Determination', () {
       test('should return correct permission level for owner', () {
         // Act
-        final permission =
-            helper.getUserPermission(testCollaborativeRecipe, 'user_123');
+        final permission = helper.getUserPermission(
+          testCollaborativeRecipe,
+          'user_123',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.owner));
@@ -379,8 +381,10 @@ void main() {
 
       test('should return correct permission level for editor', () {
         // Act
-        final permission =
-            helper.getUserPermission(testCollaborativeRecipe, 'user_456');
+        final permission = helper.getUserPermission(
+          testCollaborativeRecipe,
+          'user_456',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.editor));
@@ -388,8 +392,10 @@ void main() {
 
       test('should return viewer permission for explicit viewer', () {
         // Act
-        final permission =
-            helper.getUserPermission(testCollaborativeRecipe, 'user_789');
+        final permission = helper.getUserPermission(
+          testCollaborativeRecipe,
+          'user_789',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.viewer));
@@ -398,9 +404,15 @@ void main() {
       test('should check minimum permission correctly', () {
         // Act
         final hasEditor = helper.hasMinimumPermission(
-            testCollaborativeRecipe, 'user_456', ResourcePermission.editor);
+          testCollaborativeRecipe,
+          'user_456',
+          ResourcePermission.editor,
+        );
         final hasAdmin = helper.hasMinimumPermission(
-            testCollaborativeRecipe, 'user_456', ResourcePermission.admin);
+          testCollaborativeRecipe,
+          'user_456',
+          ResourcePermission.admin,
+        );
 
         // Assert
         expect(hasEditor, isTrue);
@@ -415,53 +427,91 @@ void main() {
 
         // Act & Assert
         expect(
-            helper.checkLegacyPermission(
-                testCollaborativeRecipe, 'user_456', 'view'),
-            isTrue);
+          helper.checkLegacyPermission(
+            testCollaborativeRecipe,
+            'user_456',
+            'view',
+          ),
+          isTrue,
+        );
         expect(
-            helper.checkLegacyPermission(
-                testCollaborativeRecipe, 'user_456', 'edit'),
-            isTrue);
+          helper.checkLegacyPermission(
+            testCollaborativeRecipe,
+            'user_456',
+            'edit',
+          ),
+          isTrue,
+        );
         expect(
-            helper.checkLegacyPermission(
-                testCollaborativeRecipe, 'user_456', 'delete'),
-            isFalse);
+          helper.checkLegacyPermission(
+            testCollaborativeRecipe,
+            'user_456',
+            'delete',
+          ),
+          isFalse,
+        );
         expect(
-            helper.checkLegacyPermission(
-                testCollaborativeRecipe, 'user_456', 'comment'),
-            isTrue);
+          helper.checkLegacyPermission(
+            testCollaborativeRecipe,
+            'user_456',
+            'comment',
+          ),
+          isTrue,
+        );
       });
 
       test('should parse legacy permission strings', () {
         // Act & Assert
-        expect(helper.parseLegacyPermission('owner'),
-            equals(ResourcePermission.owner));
-        expect(helper.parseLegacyPermission('admin'),
-            equals(ResourcePermission.admin));
-        expect(helper.parseLegacyPermission('editor'),
-            equals(ResourcePermission.editor));
-        expect(helper.parseLegacyPermission('viewer'),
-            equals(ResourcePermission.viewer));
-        expect(helper.parseLegacyPermission('unknown'),
-            equals(ResourcePermission.read));
-        expect(helper.parseLegacyPermission(null),
-            equals(ResourcePermission.read));
+        expect(
+          helper.parseLegacyPermission('owner'),
+          equals(ResourcePermission.owner),
+        );
+        expect(
+          helper.parseLegacyPermission('admin'),
+          equals(ResourcePermission.admin),
+        );
+        expect(
+          helper.parseLegacyPermission('editor'),
+          equals(ResourcePermission.editor),
+        );
+        expect(
+          helper.parseLegacyPermission('viewer'),
+          equals(ResourcePermission.viewer),
+        );
+        expect(
+          helper.parseLegacyPermission('unknown'),
+          equals(ResourcePermission.read),
+        );
+        expect(
+          helper.parseLegacyPermission(null),
+          equals(ResourcePermission.read),
+        );
       });
     });
 
     group('Permission Utilities', () {
       test('should get permission description in Swedish', () {
         // Act & Assert
-        expect(helper.getPermissionDescription(ResourcePermission.owner),
-            equals('Ägare av recept'));
-        expect(helper.getPermissionDescription(ResourcePermission.admin),
-            equals('Kan hantera medlemmar'));
-        expect(helper.getPermissionDescription(ResourcePermission.editor),
-            equals('Kan redigera recept'));
-        expect(helper.getPermissionDescription(ResourcePermission.viewer),
-            equals('Kan visa recept'));
-        expect(helper.getPermissionDescription(ResourcePermission.read),
-            equals('Ingen åtkomst'));
+        expect(
+          helper.getPermissionDescription(ResourcePermission.owner),
+          equals('Ägare av recept'),
+        );
+        expect(
+          helper.getPermissionDescription(ResourcePermission.admin),
+          equals('Kan hantera medlemmar'),
+        );
+        expect(
+          helper.getPermissionDescription(ResourcePermission.editor),
+          equals('Kan redigera recept'),
+        );
+        expect(
+          helper.getPermissionDescription(ResourcePermission.viewer),
+          equals('Kan visa recept'),
+        );
+        expect(
+          helper.getPermissionDescription(ResourcePermission.read),
+          equals('Ingen åtkomst'),
+        );
       });
 
       test('should get available actions for user', () {
@@ -469,8 +519,10 @@ void main() {
         mockParentService.setRecipeState(currentUserId: 'user_456');
 
         // Act
-        final actions =
-            helper.getAvailableActions(testCollaborativeRecipe, 'user_456');
+        final actions = helper.getAvailableActions(
+          testCollaborativeRecipe,
+          'user_456',
+        );
 
         // Assert
         expect(actions, contains('view'));
@@ -495,8 +547,10 @@ void main() {
         mockParentService.setRecipeState(currentUserId: 'user_456');
 
         // Act
-        final summary =
-            helper.getPermissionSummary(testCollaborativeRecipe, 'user_456');
+        final summary = helper.getPermissionSummary(
+          testCollaborativeRecipe,
+          'user_456',
+        );
 
         // Assert
         expect(summary['user_id'], equals('user_456'));
@@ -525,14 +579,16 @@ void main() {
                 ownerId: 'user_owner',
                 memberPermissions: Map.fromEntries(
                   List.generate(
-                      100,
-                      (i) => MapEntry(
-                          'user_$i',
-                          i % 3 == 0
-                              ? ResourcePermission.admin
-                              : i % 2 == 0
-                                  ? ResourcePermission.editor
-                                  : ResourcePermission.viewer)),
+                    100,
+                    (i) => MapEntry(
+                      'user_$i',
+                      i % 3 == 0
+                          ? ResourcePermission.admin
+                          : i % 2 == 0
+                          ? ResourcePermission.editor
+                          : ResourcePermission.viewer,
+                    ),
+                  ),
                 ),
               ),
             )
@@ -548,7 +604,9 @@ void main() {
         // Assert
         expect(permission, isA<ResourcePermission>());
         expect(
-            stopwatch.elapsedMilliseconds, lessThan(10)); // Should be very fast
+          stopwatch.elapsedMilliseconds,
+          lessThan(10),
+        ); // Should be very fast
       });
 
       test('should handle concurrent permission operations', () async {
@@ -562,8 +620,12 @@ void main() {
           Future(() => helper.canDeleteRecipe(testCollaborativeRecipe)),
           Future(() => helper.canManageMembers(testCollaborativeRecipe)),
           Future(() => helper.canInviteMembers(testCollaborativeRecipe)),
-          Future(() => helper.getUserPermission(
-              testCollaborativeRecipe, 'user_concurrent')),
+          Future(
+            () => helper.getUserPermission(
+              testCollaborativeRecipe,
+              'user_concurrent',
+            ),
+          ),
         ];
 
         // Assert

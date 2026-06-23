@@ -44,8 +44,9 @@ void main() {
         expect(find.text('Ange ditt namn'), findsOneWidget);
       });
 
-      testWidgets('displays prefix icon when provided',
-          (WidgetTester tester) async {
+      testWidgets('displays prefix icon when provided', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -61,8 +62,9 @@ void main() {
         expect(find.byIcon(Icons.email), findsOneWidget);
       });
 
-      testWidgets('enforces max length constraint',
-          (WidgetTester tester) async {
+      testWidgets('enforces max length constraint', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -146,14 +148,17 @@ void main() {
         );
 
         await tester.enterText(
-            find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
+          find.byType(TextFormField),
+          'Line 1\nLine 2\nLine 3',
+        );
         await tester.pump();
 
         expect(controller.text, equals('Line 1\nLine 2\nLine 3'));
       });
 
-      testWidgets('disables field when enabled is false',
-          (WidgetTester tester) async {
+      testWidgets('disables field when enabled is false', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -166,8 +171,9 @@ void main() {
           ),
         );
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.enabled, isFalse);
       });
 
@@ -221,8 +227,9 @@ void main() {
     });
 
     group('Specialized Fields', () {
-      testWidgets('renders name field with defaults',
-          (WidgetTester tester) async {
+      testWidgets('renders name field with defaults', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -258,8 +265,9 @@ void main() {
         expect(find.byIcon(Icons.description_outlined), findsOneWidget);
       });
 
-      testWidgets('renders amount field with numeric keyboard',
-          (WidgetTester tester) async {
+      testWidgets('renders amount field with numeric keyboard', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -277,8 +285,9 @@ void main() {
         expect(find.byIcon(Icons.numbers), findsOneWidget);
       });
 
-      testWidgets('validates amount field min/max',
-          (WidgetTester tester) async {
+      testWidgets('validates amount field min/max', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
         final formKey = GlobalKey<FormState>();
 
@@ -419,14 +428,17 @@ void main() {
         );
 
         await tester.enterText(
-            find.byType(TextFormField), 'abc+46()70-123 45 67xyz');
+          find.byType(TextFormField),
+          'abc+46()70-123 45 67xyz',
+        );
         await tester.pump();
 
         expect(controller.text, equals('+46()70-123 45 67'));
       });
 
-      testWidgets('validates required empty field',
-          (WidgetTester tester) async {
+      testWidgets('validates required empty field', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
         final formKey = GlobalKey<FormState>();
 
@@ -482,8 +494,9 @@ void main() {
         expect(isValid, isTrue);
       });
 
-      testWidgets('rejects phone with fewer than 10 digits',
-          (WidgetTester tester) async {
+      testWidgets('rejects phone with fewer than 10 digits', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
         final formKey = GlobalKey<FormState>();
 
@@ -533,8 +546,9 @@ void main() {
         expect(isValid, isTrue);
       });
 
-      testWidgets('disabled when enabled is false',
-          (WidgetTester tester) async {
+      testWidgets('disabled when enabled is false', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -549,13 +563,15 @@ void main() {
           ),
         );
 
-        final textField =
-            tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextFormField>(
+          find.byType(TextFormField),
+        );
         expect(textField.enabled, isFalse);
       });
 
-      testWidgets('supports custom label and hint',
-          (WidgetTester tester) async {
+      testWidgets('supports custom label and hint', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -751,8 +767,9 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('form fields have semantic labels',
-          (WidgetTester tester) async {
+      testWidgets('form fields have semantic labels', (
+        WidgetTester tester,
+      ) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -805,8 +822,9 @@ void main() {
         if (GetIt.instance.isRegistered<ContentFilterService>()) {
           GetIt.instance.unregister<ContentFilterService>();
         }
-        GetIt.instance
-            .registerSingleton<ContentFilterService>(ContentFilterService());
+        GetIt.instance.registerSingleton<ContentFilterService>(
+          ContentFilterService(),
+        );
       });
 
       tearDown(() {
@@ -817,82 +835,86 @@ void main() {
       });
 
       testWidgets(
-          'profanity is rejected even when customValidator returns null',
-          (WidgetTester tester) async {
-        // The bug: a permissive customValidator used to short-circuit the
-        // entire chain — including the profanity gate. This test pins that
-        // contract: customValidator returning null must NOT bypass
-        // FormValidators.contentFilter.
-        final controller = TextEditingController();
-        final formKey = GlobalKey<FormState>();
+        'profanity is rejected even when customValidator returns null',
+        (WidgetTester tester) async {
+          // The bug: a permissive customValidator used to short-circuit the
+          // entire chain — including the profanity gate. This test pins that
+          // contract: customValidator returning null must NOT bypass
+          // FormValidators.contentFilter.
+          final controller = TextEditingController();
+          final formKey = GlobalKey<FormState>();
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: Form(
-              key: formKey,
-              child: DialogFormFields.buildTextFormField(
-                controller: controller,
-                labelText: 'Beskrivning',
-                customValidator: (_) => null,
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: Form(
+                key: formKey,
+                child: DialogFormFields.buildTextFormField(
+                  controller: controller,
+                  labelText: 'Beskrivning',
+                  customValidator: (_) => null,
+                ),
               ),
             ),
-          ),
-        );
+          );
 
-        // 'fan' is a Swedish profanity token in ContentFilterService's list,
-        // matched as a standalone word by the word-boundary regex.
-        await tester.enterText(find.byType(TextFormField), 'vad fan');
-        formKey.currentState!.validate();
-        await tester.pump();
+          // 'fan' is a Swedish profanity token in ContentFilterService's list,
+          // matched as a standalone word by the word-boundary regex.
+          await tester.enterText(find.byType(TextFormField), 'vad fan');
+          formKey.currentState!.validate();
+          await tester.pump();
 
-        // The localized contentFilterWarning (Swedish locale is the test
-        // default in createLocalizedTestApp) must surface as the field error.
-        expect(
-          find.textContaining('olämpligt språk'),
-          findsOneWidget,
-          reason: 'contentFilter must run even when customValidator '
-              'returns null — otherwise UGC fields can be opted out of '
-              'moderation by passing a permissive customValidator.',
-        );
-      });
+          // The localized contentFilterWarning (Swedish locale is the test
+          // default in createLocalizedTestApp) must surface as the field error.
+          expect(
+            find.textContaining('olämpligt språk'),
+            findsOneWidget,
+            reason:
+                'contentFilter must run even when customValidator '
+                'returns null — otherwise UGC fields can be opted out of '
+                'moderation by passing a permissive customValidator.',
+          );
+        },
+      );
 
       testWidgets(
-          'customValidator error wins on its own concern with clean input',
-          (WidgetTester tester) async {
-        // Compose order: customValidator runs FIRST so its domain-specific
-        // error (e.g. "must contain @") still surfaces ahead of length /
-        // required / contentFilter. Verifies the new order doesn't suppress
-        // legitimate customValidator errors.
-        final controller = TextEditingController();
-        final formKey = GlobalKey<FormState>();
+        'customValidator error wins on its own concern with clean input',
+        (WidgetTester tester) async {
+          // Compose order: customValidator runs FIRST so its domain-specific
+          // error (e.g. "must contain @") still surfaces ahead of length /
+          // required / contentFilter. Verifies the new order doesn't suppress
+          // legitimate customValidator errors.
+          final controller = TextEditingController();
+          final formKey = GlobalKey<FormState>();
 
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: Form(
-              key: formKey,
-              child: DialogFormFields.buildTextFormField(
-                controller: controller,
-                labelText: 'Email',
-                customValidator: (value) {
-                  if (value == null || !value.contains('@')) {
-                    return 'Saknar @-tecken';
-                  }
-                  return null;
-                },
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: Form(
+                key: formKey,
+                child: DialogFormFields.buildTextFormField(
+                  controller: controller,
+                  labelText: 'Email',
+                  customValidator: (value) {
+                    if (value == null || !value.contains('@')) {
+                      return 'Saknar @-tecken';
+                    }
+                    return null;
+                  },
+                ),
               ),
             ),
-          ),
-        );
+          );
 
-        await tester.enterText(find.byType(TextFormField), 'utan-snabel-a');
-        formKey.currentState!.validate();
-        await tester.pump();
+          await tester.enterText(find.byType(TextFormField), 'utan-snabel-a');
+          formKey.currentState!.validate();
+          await tester.pump();
 
-        expect(find.text('Saknar @-tecken'), findsOneWidget);
-      });
+          expect(find.text('Saknar @-tecken'), findsOneWidget);
+        },
+      );
 
-      testWidgets('clean input passes when customValidator also passes',
-          (WidgetTester tester) async {
+      testWidgets('clean input passes when customValidator also passes', (
+        WidgetTester tester,
+      ) async {
         // Round-trip sanity: when both customValidator and contentFilter are
         // happy with the input, the field validates. Guards against the fix
         // accidentally turning every form into a permanent error state.
@@ -914,7 +936,9 @@ void main() {
         );
 
         await tester.enterText(
-            find.byType(TextFormField), 'En helt vanlig beskrivning');
+          find.byType(TextFormField),
+          'En helt vanlig beskrivning',
+        );
         validatorReturn = formKey.currentState!.validate();
         await tester.pump();
 

@@ -35,13 +35,14 @@ class ImagePreviewCard extends StatelessWidget {
     required this.child,
     this.height,
     required BuildContext context,
-  })  : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius = const BorderRadius.all(
-            Radius.circular(AppDimensions.borderRadiusL)),
-        boxShadow = AppShadows.card,
-        showBorder = false,
-        borderColor = null,
-        borderWidth = null;
+  }) : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
+       borderRadius = const BorderRadius.all(
+         Radius.circular(AppDimensions.borderRadiusL),
+       ),
+       boxShadow = AppShadows.card,
+       showBorder = false,
+       borderColor = null,
+       borderWidth = null;
 
   /// Empty state card with border
   ImagePreviewCard.empty({
@@ -49,13 +50,14 @@ class ImagePreviewCard extends StatelessWidget {
     required this.child,
     this.height,
     required BuildContext context,
-  })  : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius = const BorderRadius.all(
-            Radius.circular(AppDimensions.borderRadiusL)),
-        boxShadow = null,
-        showBorder = true,
-        borderColor = Theme.of(context).colorScheme.outline,
-        borderWidth = 2.0;
+  }) : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
+       borderRadius = const BorderRadius.all(
+         Radius.circular(AppDimensions.borderRadiusL),
+       ),
+       boxShadow = null,
+       showBorder = true,
+       borderColor = Theme.of(context).colorScheme.outline,
+       borderWidth = 2.0;
 
   @override
   Widget build(BuildContext context) {

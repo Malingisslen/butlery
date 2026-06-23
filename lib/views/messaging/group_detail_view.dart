@@ -60,7 +60,9 @@ class ConversationGroupDetailView extends StatelessWidget {
   }
 
   PreferredSizeWidget _buildAppBar(
-      BuildContext context, GroupDetailViewModel viewModel) {
+    BuildContext context,
+    GroupDetailViewModel viewModel,
+  ) {
     return AppBar(
       title: Text(
         context.l10n.messagingGroupInfo,
@@ -83,7 +85,8 @@ class ConversationGroupDetailView extends StatelessWidget {
   Widget _buildBody(BuildContext context, GroupDetailViewModel viewModel) {
     if (viewModel.isLoading && !viewModel.hasConversation) {
       return StateWidget.loading(
-          message: context.l10n.messagingLoadingGroupInfo);
+        message: context.l10n.messagingLoadingGroupInfo,
+      );
     }
 
     if (viewModel.error != null && !viewModel.hasConversation) {
@@ -130,7 +133,9 @@ class ConversationGroupDetailView extends StatelessWidget {
   }
 
   Widget _buildMembersSection(
-      BuildContext context, GroupDetailViewModel viewModel) {
+    BuildContext context,
+    GroupDetailViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -168,7 +173,11 @@ class ConversationGroupDetailView extends StatelessWidget {
             canRemove: canRemove,
             onRemove: canRemove
                 ? () => _confirmRemoveMember(
-                    context, viewModel, memberId, displayName)
+                    context,
+                    viewModel,
+                    memberId,
+                    displayName,
+                  )
                 : null,
           );
         }),
@@ -177,7 +186,9 @@ class ConversationGroupDetailView extends StatelessWidget {
   }
 
   Widget _buildActionButtons(
-      BuildContext context, GroupDetailViewModel viewModel) {
+    BuildContext context,
+    GroupDetailViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -209,7 +220,9 @@ class ConversationGroupDetailView extends StatelessWidget {
   // Dialog methods
 
   Future<void> _showEditGroupNameDialog(
-      BuildContext context, GroupDetailViewModel viewModel) async {
+    BuildContext context,
+    GroupDetailViewModel viewModel,
+  ) async {
     final controller = TextEditingController(text: viewModel.groupTitle);
 
     final newName = await showDialog<String>(
@@ -243,7 +256,9 @@ class ConversationGroupDetailView extends StatelessWidget {
       if (context.mounted) {
         if (success) {
           SnackBarUtils.showSuccess(
-              context, context.l10n.messagingGroupNameUpdated);
+            context,
+            context.l10n.messagingGroupNameUpdated,
+          );
         } else {
           SnackBarUtils.showError(
             context,
@@ -255,7 +270,9 @@ class ConversationGroupDetailView extends StatelessWidget {
   }
 
   Future<void> _showAddMembersDialog(
-      BuildContext context, GroupDetailViewModel viewModel) async {
+    BuildContext context,
+    GroupDetailViewModel viewModel,
+  ) async {
     // Get available friends
     final availableFriends = await viewModel.getAvailableFriendsToAdd();
 
@@ -270,20 +287,25 @@ class ConversationGroupDetailView extends StatelessWidget {
     }
 
     // Show friend selection dialog
-    final selectedFriends =
-        await AddGroupMembersDialog.show(context, availableFriends);
+    final selectedFriends = await AddGroupMembersDialog.show(
+      context,
+      availableFriends,
+    );
 
     if (selectedFriends != null &&
         selectedFriends.isNotEmpty &&
         context.mounted) {
       final memberIds = selectedFriends.map((f) => f.uid).toList();
       final displayNames = {
-        for (var f in selectedFriends) f.uid: f.displayName
+        for (var f in selectedFriends) f.uid: f.displayName,
       };
       final avatarUrls = {for (var f in selectedFriends) f.uid: f.avatarUrl};
 
-      final success =
-          await viewModel.addMembers(memberIds, displayNames, avatarUrls);
+      final success = await viewModel.addMembers(
+        memberIds,
+        displayNames,
+        avatarUrls,
+      );
 
       if (context.mounted) {
         if (success) {
@@ -318,7 +340,9 @@ class ConversationGroupDetailView extends StatelessWidget {
       if (context.mounted) {
         if (success) {
           SnackBarUtils.showSuccess(
-              context, context.l10n.messagingMemberRemoved(memberName));
+            context,
+            context.l10n.messagingMemberRemoved(memberName),
+          );
         } else {
           SnackBarUtils.showError(
             context,
@@ -330,7 +354,9 @@ class ConversationGroupDetailView extends StatelessWidget {
   }
 
   Future<void> _confirmLeaveGroup(
-      BuildContext context, GroupDetailViewModel viewModel) async {
+    BuildContext context,
+    GroupDetailViewModel viewModel,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

@@ -39,19 +39,24 @@ void main() {
     });
 
     testWidgets('renders with current locale name as subtitle', (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const LanguageTile(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const LanguageTile(),
+        ),
+      );
 
       // Default locale is sv → 'Svenska'.
       expect(find.text('Svenska'), findsOneWidget);
     });
 
-    testWidgets('opens a dialog with both supported locales when tapped',
-        (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const LanguageTile(),
-      ));
+    testWidgets('opens a dialog with both supported locales when tapped', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const LanguageTile(),
+        ),
+      );
 
       await tester.tap(find.byType(LanguageTile));
       await tester.pumpAndSettle();
@@ -76,12 +81,13 @@ void main() {
       );
     });
 
-    testWidgets(
-        'selecting a non-current locale calls setLocale and updates '
+    testWidgets('selecting a non-current locale calls setLocale and updates '
         'the subtitle', (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const LanguageTile(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const LanguageTile(),
+        ),
+      );
 
       expect(localeProvider.locale.languageCode, 'sv');
 
@@ -89,36 +95,50 @@ void main() {
       await tester.pumpAndSettle();
 
       // Pick the English ListTile inside the dialog.
-      await tester.tap(find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('English'),
-      ));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('English'),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      expect(localeProvider.locale.languageCode, 'en',
-          reason: 'Tapping English must call LocaleProvider.setLocale("en").');
+      expect(
+        localeProvider.locale.languageCode,
+        'en',
+        reason: 'Tapping English must call LocaleProvider.setLocale("en").',
+      );
       // Subtitle reflects the new locale via the tile's ChangeNotifier listener.
       expect(find.text('English'), findsOneWidget);
     });
 
-    testWidgets('selecting the current locale does not change state',
-        (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        child: const LanguageTile(),
-      ));
+    testWidgets('selecting the current locale does not change state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const LanguageTile(),
+        ),
+      );
 
       await tester.tap(find.byType(LanguageTile));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Svenska'),
-      ));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Svenska'),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      expect(localeProvider.locale.languageCode, 'sv',
-          reason: 'LocaleProvider.setLocale short-circuits when the locale '
-              "already matches; this confirms the tile doesn't double-fire.");
+      expect(
+        localeProvider.locale.languageCode,
+        'sv',
+        reason:
+            'LocaleProvider.setLocale short-circuits when the locale '
+            "already matches; this confirms the tile doesn't double-fire.",
+      );
     });
   });
 }

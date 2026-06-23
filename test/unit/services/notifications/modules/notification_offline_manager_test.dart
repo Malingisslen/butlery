@@ -338,7 +338,9 @@ void main() {
         // Assert
         expect(callCount, equals(3));
         expect(
-            offlineManager.queueSize, equals(1)); // Only failed one re-queued
+          offlineManager.queueSize,
+          equals(1),
+        ); // Only failed one re-queued
       });
 
       test('should prioritize critical notifications', () async {
@@ -346,15 +348,23 @@ void main() {
         offlineManager.setOnlineStatus(false);
 
         // Add notifications with different priorities
-        offlineManager.addToQueue(createTestNotification(
-          strategy: createTestStrategy(priority: NotificationPriority.low),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          strategy: createTestStrategy(priority: NotificationPriority.critical),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          strategy: createTestStrategy(priority: NotificationPriority.medium),
-        ));
+        offlineManager.addToQueue(
+          createTestNotification(
+            strategy: createTestStrategy(priority: NotificationPriority.low),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            strategy: createTestStrategy(
+              priority: NotificationPriority.critical,
+            ),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            strategy: createTestStrategy(priority: NotificationPriority.medium),
+          ),
+        );
 
         // Act
         offlineManager.setOnlineStatus(true);
@@ -397,15 +407,21 @@ void main() {
 
       test('should clean up old queue items', () {
         // Arrange - Add old and new notifications
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: DateTime.now().subtract(const Duration(hours: 25)),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: DateTime.now().subtract(const Duration(hours: 23)),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: DateTime.now(),
-        ));
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: DateTime.now().subtract(const Duration(hours: 25)),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: DateTime.now().subtract(const Duration(hours: 23)),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: DateTime.now(),
+          ),
+        );
 
         // Act
         final removed = offlineManager.cleanupExpiredNotifications();
@@ -442,15 +458,27 @@ void main() {
         // Arrange
         offlineManager.setOnlineStatus(false);
 
-        offlineManager.addToQueue(createTestNotification(
-          strategy: createTestStrategy(category: NotificationCategory.friends),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          strategy: createTestStrategy(category: NotificationCategory.friends),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          strategy: createTestStrategy(category: NotificationCategory.recipes),
-        ));
+        offlineManager.addToQueue(
+          createTestNotification(
+            strategy: createTestStrategy(
+              category: NotificationCategory.friends,
+            ),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            strategy: createTestStrategy(
+              category: NotificationCategory.friends,
+            ),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            strategy: createTestStrategy(
+              category: NotificationCategory.recipes,
+            ),
+          ),
+        );
 
         // Act
         final stats = offlineManager.getQueueStatistics();
@@ -466,19 +494,25 @@ void main() {
 
       test('should track oldest notification age', () {
         // Arrange
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: DateTime.now().subtract(const Duration(minutes: 10)),
-        ));
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: DateTime.now().subtract(const Duration(minutes: 10)),
+          ),
+        );
 
         // Act
         final stats = offlineManager.getQueueStatistics();
 
         // Assert
         expect(
-            stats['oldest_notification_age_minutes'], greaterThanOrEqualTo(29));
+          stats['oldest_notification_age_minutes'],
+          greaterThanOrEqualTo(29),
+        );
         expect(stats['oldest_notification_age_minutes'], lessThanOrEqualTo(31));
       });
     });
@@ -524,8 +558,9 @@ void main() {
 
         // Act - Multiple concurrent operations
         for (int i = 0; i < 10; i++) {
-          futures.add(Future(
-              () => offlineManager.addToQueue(createTestNotification())));
+          futures.add(
+            Future(() => offlineManager.addToQueue(createTestNotification())),
+          );
         }
 
         await Future.wait(futures);
@@ -548,12 +583,16 @@ void main() {
           clock: clock,
         );
 
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: now.subtract(const Duration(hours: 25)),
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          queuedAt: now,
-        ));
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: now.subtract(const Duration(hours: 25)),
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            queuedAt: now,
+          ),
+        );
 
         // Act
         await offlineManager.processOfflineQueue();
@@ -576,9 +615,11 @@ void main() {
         );
 
         for (int i = 0; i < 5; i++) {
-          offlineManager.addToQueue(createTestNotification(
-            queuedAt: now.subtract(Duration(hours: 20 + i * 2)),
-          ));
+          offlineManager.addToQueue(
+            createTestNotification(
+              queuedAt: now.subtract(Duration(hours: 20 + i * 2)),
+            ),
+          );
         }
 
         // Act
@@ -606,12 +647,16 @@ void main() {
 
       test('should allow queue inspection', () {
         // Arrange
-        offlineManager.addToQueue(createTestNotification(
-          variables: {'id': '1'},
-        ));
-        offlineManager.addToQueue(createTestNotification(
-          variables: {'id': '2'},
-        ));
+        offlineManager.addToQueue(
+          createTestNotification(
+            variables: {'id': '1'},
+          ),
+        );
+        offlineManager.addToQueue(
+          createTestNotification(
+            variables: {'id': '2'},
+          ),
+        );
 
         // Act
         final queue = offlineManager.queuedNotifications;

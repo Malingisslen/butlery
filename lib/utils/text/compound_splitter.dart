@@ -23,7 +23,8 @@ class CompoundSplitter {
   static final LruMap<String, String> _cache = LruMap(
     maxSize: _maxCacheSize,
     onEvict: (key, _) => AppLogger.info(
-        'cache_eviction service=CompoundSplitter key=$key bound=$_maxCacheSize'),
+      'cache_eviction service=CompoundSplitter key=$key bound=$_maxCacheSize',
+    ),
   );
 
   /// Suffix set built once from CompoundSuffixes for O(1) lookup
@@ -105,7 +106,11 @@ class CompoundSplitter {
         final leftGenitive = word.substring(0, i - 1);
         if (_isKnownIngredient(leftGenitive, knownIngredients)) {
           final score = _scoreSplit(
-              leftGenitive, right, knownIngredients, _genitivePenalty);
+            leftGenitive,
+            right,
+            knownIngredients,
+            _genitivePenalty,
+          );
           if (score > bestScore) {
             bestScore = score;
             bestBase = leftGenitive;

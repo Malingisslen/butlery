@@ -74,9 +74,11 @@ void main() {
 
       test('should load recipe from cache for real-time operations', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         // Act
         final loadedRecipe = await RealtimeCacheManager.loadFromCache(
@@ -108,9 +110,11 @@ void main() {
         // Arrange — Recipe.fromJson is defensive and fills defaults for missing
         // fields, so partial data produces a valid (but empty) Recipe rather
         // than throwing.
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': {'invalid': 'data'},
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': {'invalid': 'data'},
+          },
+        );
 
         // Act
         final loadedRecipe = await RealtimeCacheManager.loadFromCache(
@@ -127,9 +131,11 @@ void main() {
       test('should update cached recipe with real-time changes', () async {
         // Arrange
         final existingData = testRecipe.toJson();
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': existingData,
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': existingData,
+          },
+        );
 
         final editData = {
           'title': 'Updated Title',
@@ -157,9 +163,11 @@ void main() {
       test('should skip metadata fields when updating cache', () async {
         // Arrange
         final existingData = testRecipe.toJson();
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': existingData,
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': existingData,
+          },
+        );
 
         final editData = {
           'title': 'Updated Title',
@@ -212,10 +220,12 @@ void main() {
     group('Cache Cleanup', () {
       test('should clear cache for specific recipe', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+          },
+        );
 
         // Act
         await RealtimeCacheManager.clearRecipeCache(
@@ -274,9 +284,11 @@ void main() {
 
       test('should skip already cached recipes when preloading', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(), // Already cached
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(), // Already cached
+          },
+        );
 
         var firestoreCalled = false;
         Future<Recipe?> loadRecipeFromFirestore(String recipeId) async {
@@ -296,7 +308,9 @@ void main() {
 
         // Assert - recipe_1 was already cached, recipe_2 should be added
         expect(
-            firestoreCalled, isFalse); // recipe_1 wasn't loaded from Firestore
+          firestoreCalled,
+          isFalse,
+        ); // recipe_1 wasn't loaded from Firestore
         final recipe2 = await mockCacheHelper.loadJson('recipe_2');
         expect(recipe2, isNotNull);
         expect(recipe2?['core']?['title'], equals('Another Recipe'));
@@ -304,27 +318,29 @@ void main() {
     });
 
     group('Cache Synchronization', () {
-      test('should sync cache with Firestore during real-time editing',
-          () async {
-        // Arrange
-        final updatedRecipe = RecipeBuilder()
-            .withId('recipe_1')
-            .withTitle('Synced Recipe')
-            .build();
+      test(
+        'should sync cache with Firestore during real-time editing',
+        () async {
+          // Arrange
+          final updatedRecipe = RecipeBuilder()
+              .withId('recipe_1')
+              .withTitle('Synced Recipe')
+              .build();
 
-        mockCacheHelper.setCacheState(cache: {});
+          mockCacheHelper.setCacheState(cache: {});
 
-        // Act
-        await RealtimeCacheManager.syncCacheWithFirestore(
-          recipeId: 'recipe_1',
-          latestRecipe: updatedRecipe,
-          cacheHelper: mockCacheHelper,
-        );
+          // Act
+          await RealtimeCacheManager.syncCacheWithFirestore(
+            recipeId: 'recipe_1',
+            latestRecipe: updatedRecipe,
+            cacheHelper: mockCacheHelper,
+          );
 
-        // Assert
-        final cachedRecipe = await mockCacheHelper.loadJson('recipe_1');
-        expect(cachedRecipe?['core']?['title'], equals('Synced Recipe'));
-      });
+          // Assert
+          final cachedRecipe = await mockCacheHelper.loadJson('recipe_1');
+          expect(cachedRecipe?['core']?['title'], equals('Synced Recipe'));
+        },
+      );
 
       test('should check if cached recipe is stale', () async {
         // Arrange
@@ -332,9 +348,11 @@ void main() {
           ...testRecipe.toJson(),
           'editedAt': DateTime(2024, 1, 1).toIso8601String(),
         };
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': cachedData,
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': cachedData,
+          },
+        );
 
         final lastFirestoreUpdate = DateTime(2024, 1, 2); // Newer than cache
 
@@ -349,27 +367,31 @@ void main() {
         expect(isStale, isTrue);
       });
 
-      test('should return true for stale check when recipe not in cache',
-          () async {
-        // Arrange
-        mockCacheHelper.setCacheState(cache: {});
+      test(
+        'should return true for stale check when recipe not in cache',
+        () async {
+          // Arrange
+          mockCacheHelper.setCacheState(cache: {});
 
-        // Act
-        final isStale = await RealtimeCacheManager.isCacheStale(
-          recipeId: 'recipe_1',
-          lastFirestoreUpdate: DateTime.now(),
-          cacheHelper: mockCacheHelper,
-        );
+          // Act
+          final isStale = await RealtimeCacheManager.isCacheStale(
+            recipeId: 'recipe_1',
+            lastFirestoreUpdate: DateTime.now(),
+            cacheHelper: mockCacheHelper,
+          );
 
-        // Assert
-        expect(isStale, isTrue);
-      });
+          // Assert
+          expect(isStale, isTrue);
+        },
+      );
 
       test('should force refresh cache from Firestore', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         final refreshedRecipe = RecipeBuilder()
             .withId('recipe_1')
@@ -400,12 +422,12 @@ void main() {
         // No need to stub cancel() - it's already implemented in the mock
         final activeEditingSessions =
             <String, StreamSubscription<DocumentSnapshot>>{
-          'recipe_1': mockSubscription,
-        };
+              'recipe_1': mockSubscription,
+            };
 
         final pendingRealtimeEdits = <String, List<Map<String, dynamic>>>{
           'recipe_1': [
-            {'edit': 'data'}
+            {'edit': 'data'},
           ],
         };
 
@@ -464,10 +486,12 @@ void main() {
 
         // Act
         await Future.wait(
-          recipes.map((recipe) => RealtimeCacheManager.saveToCache(
-                recipe: recipe,
-                cacheHelper: mockCacheHelper,
-              )),
+          recipes.map(
+            (recipe) => RealtimeCacheManager.saveToCache(
+              recipe: recipe,
+              cacheHelper: mockCacheHelper,
+            ),
+          ),
         );
 
         // Assert
@@ -479,11 +503,13 @@ void main() {
 
       test('should clear multiple recipe caches at once', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-          'recipe_2': testRecipe2.toJson(),
-          'recipe_3': RecipeBuilder().withId('recipe_3').build().toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+            'recipe_2': testRecipe2.toJson(),
+            'recipe_3': RecipeBuilder().withId('recipe_3').build().toJson(),
+          },
+        );
 
         // Act - clear recipes 1 and 2, keep 3
         await Future.wait([
@@ -505,9 +531,11 @@ void main() {
 
       test('should handle batch updates to cache', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         final updates = [
           {'field': 'title', 'title': 'Batch Update 1'},
@@ -536,9 +564,11 @@ void main() {
       test('should validate cached recipe data integrity', () async {
         // Arrange
         final validRecipe = testRecipe;
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': validRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': validRecipe.toJson(),
+          },
+        );
 
         // Act
         final loaded = await RealtimeCacheManager.loadFromCache(
@@ -558,12 +588,14 @@ void main() {
 
       test('should detect and handle corrupted cache data', () async {
         // Arrange - corrupted data missing required fields
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': {
-            'partial': 'data',
-            // Missing core fields
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': {
+              'partial': 'data',
+              // Missing core fields
+            },
           },
-        });
+        );
 
         // Act
         final loaded = await RealtimeCacheManager.loadFromCache(
@@ -582,7 +614,8 @@ void main() {
             .withId('swedish_1')
             .withTitle('Köttbullar med gräddsås')
             .withDescription('Äkta svenska köttbullar från Småland')
-            .withIngredients(['Färs', 'Ägg', 'Mjölk', 'Lök']).build();
+            .withIngredients(['Färs', 'Ägg', 'Mjölk', 'Lök'])
+            .build();
 
         mockCacheHelper.setCacheState(cache: {});
 
@@ -613,7 +646,8 @@ void main() {
             .withDescription('Very long description ' * 100)
             .withIngredients(List.generate(50, (i) => 'Ingredient $i'))
             .withInstructions(
-                List.generate(30, (i) => 'Step $i: ${'instruction ' * 20}'))
+              List.generate(30, (i) => 'Step $i: ${'instruction ' * 20}'),
+            )
             .build();
 
         mockCacheHelper.setCacheState(cache: {});
@@ -637,9 +671,11 @@ void main() {
 
       test('should skip unnecessary cache operations', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         // Act - save the same recipe twice
         await RealtimeCacheManager.saveToCache(
@@ -662,17 +698,20 @@ void main() {
     group('Concurrent Access', () {
       test('should handle concurrent cache reads safely', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         // Act - multiple concurrent reads
         final futures = List.generate(
-            10,
-            (_) => RealtimeCacheManager.loadFromCache(
-                  recipeId: 'recipe_1',
-                  cacheHelper: mockCacheHelper,
-                ));
+          10,
+          (_) => RealtimeCacheManager.loadFromCache(
+            recipeId: 'recipe_1',
+            cacheHelper: mockCacheHelper,
+          ),
+        );
 
         final results = await Future.wait(futures);
 
@@ -684,17 +723,22 @@ void main() {
         // Arrange
         mockCacheHelper.setCacheState(cache: {});
         final recipes = List.generate(
-            5,
-            (i) => RecipeBuilder()
-                .withId('concurrent_$i')
-                .withTitle('Concurrent Recipe $i')
-                .build());
+          5,
+          (i) => RecipeBuilder()
+              .withId('concurrent_$i')
+              .withTitle('Concurrent Recipe $i')
+              .build(),
+        );
 
         // Act - concurrent writes
-        await Future.wait(recipes.map((r) => RealtimeCacheManager.saveToCache(
+        await Future.wait(
+          recipes.map(
+            (r) => RealtimeCacheManager.saveToCache(
               recipe: r,
               cacheHelper: mockCacheHelper,
-            )));
+            ),
+          ),
+        );
 
         // Assert - all should be cached
         for (int i = 0; i < 5; i++) {
@@ -719,9 +763,11 @@ void main() {
 
       test('should handle null edit data fields', () async {
         // Arrange
-        mockCacheHelper.setCacheState(cache: {
-          'recipe_1': testRecipe.toJson(),
-        });
+        mockCacheHelper.setCacheState(
+          cache: {
+            'recipe_1': testRecipe.toJson(),
+          },
+        );
 
         final editData = <String, dynamic>{
           'title': null,

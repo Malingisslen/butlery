@@ -35,13 +35,14 @@ class InvitationStates {
     return Builder(
       builder: (context) => Column(
         children: List.generate(
-            count,
-            (index) => Card(
-                  child: ListTile(
-                    leading: const LoadingIndicator(),
-                    title: Text(context.l10n.commonLoading),
-                  ),
-                )),
+          count,
+          (index) => Card(
+            child: ListTile(
+              leading: const LoadingIndicator(),
+              title: Text(context.l10n.commonLoading),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -79,14 +80,20 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(errorIcon,
-              size: AppDimensions.iconSizeXXXl,
-              color: Theme.of(context).colorScheme.error),
+          Icon(
+            errorIcon,
+            size: AppDimensions.iconSizeXXXl,
+            color: Theme.of(context).colorScheme.error,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationCouldNotLoadTargets,
-              style: AppTextStyles.titleBold),
-          Text(message ?? context.l10n.invitationCheckConnectionAndRetry,
-              textAlign: TextAlign.center),
+          Text(
+            title ?? context.l10n.invitationCouldNotLoadTargets,
+            style: AppTextStyles.titleBold,
+          ),
+          Text(
+            message ?? context.l10n.invitationCheckConnectionAndRetry,
+            textAlign: TextAlign.center,
+          ),
           if (onRetry != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton(
@@ -129,14 +136,20 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.lock,
-              size: AppDimensions.iconSizeXXXl,
-              color: context.butleryColors.warning),
+          Icon(
+            Icons.lock,
+            size: AppDimensions.iconSizeXXXl,
+            color: context.butleryColors.warning,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationNoAccessTitle,
-              style: AppTextStyles.titleBold),
-          Text(message ?? context.l10n.invitationNoAccessSubtitle,
-              textAlign: TextAlign.center),
+          Text(
+            title ?? context.l10n.invitationNoAccessTitle,
+            style: AppTextStyles.titleBold,
+          ),
+          Text(
+            message ?? context.l10n.invitationNoAccessSubtitle,
+            textAlign: TextAlign.center,
+          ),
           if (onRequestAccess != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton(
@@ -163,14 +176,20 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXXXl,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXXXl,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationNoTargetsAvailable,
-              style: AppTextStyles.titleBold),
-          Text(message ?? context.l10n.invitationNoFriendsOrGroupsYet,
-              textAlign: TextAlign.center),
+          Text(
+            title ?? context.l10n.invitationNoTargetsAvailable,
+            style: AppTextStyles.titleBold,
+          ),
+          Text(
+            message ?? context.l10n.invitationNoFriendsOrGroupsYet,
+            textAlign: TextAlign.center,
+          ),
           if (showAddButton && onAddTargets != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton(
@@ -198,26 +217,34 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXXXl,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXXXl,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationNoSearchResults,
-              style: AppTextStyles.titleBold),
-          Text(message ?? context.l10n.invitationTryDifferentSearch,
-              textAlign: TextAlign.center),
+          Text(
+            title ?? context.l10n.invitationNoSearchResults,
+            style: AppTextStyles.titleBold,
+          ),
+          Text(
+            message ?? context.l10n.invitationTryDifferentSearch,
+            textAlign: TextAlign.center,
+          ),
           if (query != null)
-            Text(context.l10n.invitationSearchQuery(query),
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(fontStyle: FontStyle.italic)),
+            Text(
+              context.l10n.invitationSearchQuery(query),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+            ),
           if (showClearButton && onClearSearch != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             TextButton(
               onPressed: onClearSearch,
-              child:
-                  Text(clearButtonText ?? context.l10n.invitationClearSearch),
+              child: Text(
+                clearButtonText ?? context.l10n.invitationClearSearch,
+              ),
             ),
           ],
         ],
@@ -236,14 +263,20 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXXXl,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXXXl,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationNoSelectedTargets,
-              style: AppTextStyles.titleBold),
-          Text(message ?? context.l10n.invitationSelectTargetsToContinue,
-              textAlign: TextAlign.center),
+          Text(
+            title ?? context.l10n.invitationNoSelectedTargets,
+            style: AppTextStyles.titleBold,
+          ),
+          Text(
+            message ?? context.l10n.invitationSelectTargetsToContinue,
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -264,16 +297,21 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXXXl,
-              color: successColor ?? context.butleryColors.success),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXXXl,
+            color: successColor ?? context.butleryColors.success,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationTargetsLoaded,
-              style: AppTextStyles.titleBold),
+          Text(
+            title ?? context.l10n.invitationTargetsLoaded,
+            style: AppTextStyles.titleBold,
+          ),
           Text(
             (message ??
-                    context.l10n
-                        .invitationTargetsSelectedForInvitation(selectedCount))
+                    context.l10n.invitationTargetsSelectedForInvitation(
+                      selectedCount,
+                    ))
                 .replaceAll('{count}', selectedCount.toString()),
             textAlign: TextAlign.center,
           ),
@@ -304,12 +342,16 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon,
-              size: AppDimensions.iconSizeXXXl,
-              color: successColor ?? context.butleryColors.success),
+          Icon(
+            icon,
+            size: AppDimensions.iconSizeXXXl,
+            color: successColor ?? context.butleryColors.success,
+          ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationsSentTitle,
-              style: AppTextStyles.titleBold),
+          Text(
+            title ?? context.l10n.invitationsSentTitle,
+            style: AppTextStyles.titleBold,
+          ),
           Text(
             (message ?? context.l10n.invitationsSentMessage(sentCount))
                 .replaceAll('{count}', sentCount.toString()),
@@ -345,8 +387,10 @@ class InvitationStates {
             strokeWidth: 8,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
-          Text(title ?? context.l10n.invitationSendingInvitations,
-              style: AppTextStyles.titleBold),
+          Text(
+            title ?? context.l10n.invitationSendingInvitations,
+            style: AppTextStyles.titleBold,
+          ),
           if (showPercentage) Text('${(progress * 100).toInt()}%'),
           if (subtitle != null) Text(subtitle, textAlign: TextAlign.center),
         ],

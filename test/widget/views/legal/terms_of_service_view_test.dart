@@ -52,10 +52,12 @@ void main() {
 
   group('TermsOfServiceView (BUT-1340 SET-11)', () {
     testWidgets('renders the real bundled terms content', (tester) async {
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const TermsOfServiceView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const TermsOfServiceView(),
+        ),
+      );
       await tester.pumpAndSettle();
 
       // The real asset is declared in pubspec under assets/legal/, so the
@@ -65,38 +67,50 @@ void main() {
       expect(body.data, isNotEmpty);
     });
 
-    testWidgets(
-        'shows localized error message + retry button when every asset '
+    testWidgets('shows localized error message + retry button when every asset '
         'load fails', (tester) async {
       final sv = AppLocalizationsSv();
       failAllAssetLoads();
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const TermsOfServiceView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const TermsOfServiceView(),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.text(sv.privacyCouldNotLoad), findsOneWidget,
-          reason: 'When every asset load fails the localized error copy must '
-              'surface — proves the catch block ran.');
-      expect(find.text(sv.commonRetry), findsOneWidget,
-          reason: 'A retry affordance must be offered in the error state.');
-      expect(find.byIcon(Icons.refresh), findsOneWidget,
-          reason: 'The retry button carries the refresh icon.');
+      expect(
+        find.text(sv.privacyCouldNotLoad),
+        findsOneWidget,
+        reason:
+            'When every asset load fails the localized error copy must '
+            'surface — proves the catch block ran.',
+      );
+      expect(
+        find.text(sv.commonRetry),
+        findsOneWidget,
+        reason: 'A retry affordance must be offered in the error state.',
+      );
+      expect(
+        find.byIcon(Icons.refresh),
+        findsOneWidget,
+        reason: 'The retry button carries the refresh icon.',
+      );
       expect(find.byType(SelectableText), findsNothing);
     });
 
-    testWidgets(
-        'retry button re-runs the load (stays in error while the '
+    testWidgets('retry button re-runs the load (stays in error while the '
         'bundle is still broken)', (tester) async {
       final sv = AppLocalizationsSv();
       failAllAssetLoads();
 
-      await tester.pumpWidget(createLocalizedTestApp(
-        wrapInScaffold: false,
-        child: const TermsOfServiceView(),
-      ));
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const TermsOfServiceView(),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text(sv.privacyCouldNotLoad), findsOneWidget);
@@ -109,9 +123,13 @@ void main() {
       await tester.tap(find.byIcon(Icons.refresh));
       await tester.pumpAndSettle();
 
-      expect(find.text(sv.privacyCouldNotLoad), findsOneWidget,
-          reason: 'Retry must re-attempt the load; with the bundle still '
-              'broken the error state must persist.');
+      expect(
+        find.text(sv.privacyCouldNotLoad),
+        findsOneWidget,
+        reason:
+            'Retry must re-attempt the load; with the bundle still '
+            'broken the error state must persist.',
+      );
       expect(find.byIcon(Icons.refresh), findsOneWidget);
     });
   });

@@ -20,14 +20,15 @@ class RecipeGdprExportOperations {
 
   final FirebaseFirestore firestore;
   final CollectionReference<Map<String, dynamic>> Function(String userId)
-      getCollectionForUser;
+  getCollectionForUser;
   final String Function() requireCurrentUserId;
   final Future<void> Function({
     required String? currentUserId,
     required String resourceOwnerId,
     required String resourceType,
     String? resourceId,
-  }) validateOwnership;
+  })
+  validateOwnership;
 
   /// BUT-501: Export every personal recipe under `users/{userId}/recipes`
   /// for GDPR Article 20. Ownership is structural — caller must verify
@@ -41,8 +42,9 @@ class RecipeGdprExportOperations {
       resourceOwnerId: userId,
       resourceType: 'recipes',
     );
-    final snapshot =
-        await getCollectionForUser(userId).limit(maxDocuments).get();
+    final snapshot = await getCollectionForUser(
+      userId,
+    ).limit(maxDocuments).get();
     return snapshot.docs
         .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
         .toList();

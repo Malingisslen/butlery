@@ -28,20 +28,18 @@ class CookingSession {
     this.userAvatar,
     this.currentStep,
     this.totalSteps,
-  })  : assert(
-          (currentStep == null) == (totalSteps == null),
-          'currentStep and totalSteps must both be null or both be non-null',
-        ),
-        assert(
-          currentStep == null || currentStep >= 1,
-          'currentStep is 1-based and must be >= 1',
-        ),
-        assert(
-          currentStep == null ||
-              totalSteps == null ||
-              currentStep <= totalSteps,
-          'currentStep must not exceed totalSteps',
-        );
+  }) : assert(
+         (currentStep == null) == (totalSteps == null),
+         'currentStep and totalSteps must both be null or both be non-null',
+       ),
+       assert(
+         currentStep == null || currentStep >= 1,
+         'currentStep is 1-based and must be >= 1',
+       ),
+       assert(
+         currentStep == null || totalSteps == null || currentStep <= totalSteps,
+         'currentStep must not exceed totalSteps',
+       );
 
   /// Serialize for RTDB. `startedAt` goes out as epoch millis so RTDB
   /// (which has no native Timestamp type) can round-trip it losslessly.
@@ -75,7 +73,8 @@ class CookingSession {
     // Defensive: a malformed RTDB row with only one of the two set, or an
     // out-of-range pair, must not crash the stream via the constructor
     // assertion. Treat any inconsistent pair as "no step data".
-    final keepSteps = rawCurrent != null &&
+    final keepSteps =
+        rawCurrent != null &&
         rawTotal != null &&
         rawCurrent >= 1 &&
         rawCurrent <= rawTotal;
@@ -83,9 +82,12 @@ class CookingSession {
     return CookingSession(
       recipeId: SerializationUtils.safeString(typed, 'recipeId'),
       recipeTitle: SerializationUtils.safeString(typed, 'recipeTitle'),
-      recipeImageUrl:
-          SerializationUtils.safeNullableString(typed, 'recipeImageUrl'),
-      startedAt: SerializationUtils.parseDateTimeValue(typed['startedAt']) ??
+      recipeImageUrl: SerializationUtils.safeNullableString(
+        typed,
+        'recipeImageUrl',
+      ),
+      startedAt:
+          SerializationUtils.parseDateTimeValue(typed['startedAt']) ??
           DateTime.fromMillisecondsSinceEpoch(0),
       userId: SerializationUtils.safeString(typed, 'userId'),
       userName: SerializationUtils.safeString(typed, 'userName'),
@@ -144,16 +146,16 @@ class CookingSession {
 
   @override
   int get hashCode => Object.hash(
-        recipeId,
-        recipeTitle,
-        recipeImageUrl,
-        startedAt,
-        userId,
-        userName,
-        userAvatar,
-        currentStep,
-        totalSteps,
-      );
+    recipeId,
+    recipeTitle,
+    recipeImageUrl,
+    startedAt,
+    userId,
+    userName,
+    userAvatar,
+    currentStep,
+    totalSteps,
+  );
 
   @override
   String toString() =>

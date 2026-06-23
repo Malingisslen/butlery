@@ -39,19 +39,21 @@ void main() {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
       registerFallbackValue(ResourcePermission.viewer);
-      registerFallbackValue(RealtimeMenu(
-        id: 'fb',
-        ownerId: 'fb',
-        ownerDisplayName: 'fb',
-        participants: {},
-        lastEditedBy: 'fb',
-        lastEditedByDisplayName: 'fb',
-        data: RealtimeMenuData(
-          menuTitle: 'fb',
-          createdForDate: DateTime.now(),
-          menuSnapshot: {},
+      registerFallbackValue(
+        RealtimeMenu(
+          id: 'fb',
+          ownerId: 'fb',
+          ownerDisplayName: 'fb',
+          participants: {},
+          lastEditedBy: 'fb',
+          lastEditedByDisplayName: 'fb',
+          data: RealtimeMenuData(
+            menuTitle: 'fb',
+            createdForDate: DateTime.now(),
+            menuSnapshot: {},
+          ),
         ),
-      ));
+      );
     });
 
     setUp(() {
@@ -69,7 +71,7 @@ void main() {
             ResourcePermission.editor: true,
             ResourcePermission.admin: true,
             ResourcePermission.owner: false,
-          }
+          },
         },
       );
 
@@ -83,23 +85,29 @@ void main() {
       when(() => mockTracker.dispose()).thenReturn(null);
 
       // Menu service stubs
-      when(() => mockMenuService.addParticipant(
-            resourceId: any(named: 'resourceId'),
-            userId: any(named: 'userId'),
-            userDisplayName: any(named: 'userDisplayName'),
-            permission: any(named: 'permission'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.addParticipant(
+          resourceId: any(named: 'resourceId'),
+          userId: any(named: 'userId'),
+          userDisplayName: any(named: 'userDisplayName'),
+          permission: any(named: 'permission'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMenuService.removeParticipant(
-            resourceId: any(named: 'resourceId'),
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.removeParticipant(
+          resourceId: any(named: 'resourceId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer((_) async {});
 
-      when(() => mockMenuService.updateParticipantPermission(
-            resourceId: any(named: 'resourceId'),
-            userId: any(named: 'userId'),
-            newPermission: any(named: 'newPermission'),
-          )).thenAnswer((_) async {});
+      when(
+        () => mockMenuService.updateParticipantPermission(
+          resourceId: any(named: 'resourceId'),
+          userId: any(named: 'userId'),
+          newPermission: any(named: 'newPermission'),
+        ),
+      ).thenAnswer((_) async {});
 
       testMenu = RealtimeMenu(
         id: testMenuId,
@@ -144,7 +152,9 @@ void main() {
 
         // Null user
         mockPermission.setPermissionState(
-            currentUserId: null, isAuthenticated: false);
+          currentUserId: null,
+          isAuthenticated: false,
+        );
         expect(manager.currentUserId, isNull);
 
         // Insufficient permissions
@@ -158,7 +168,7 @@ void main() {
               ResourcePermission.editor: false,
               ResourcePermission.admin: false,
               ResourcePermission.owner: false,
-            }
+            },
           },
         );
         expect(manager.canEdit(testMenuId), isFalse);
@@ -175,19 +185,27 @@ void main() {
           userDisplayName: 'New User',
           permission: ResourcePermission.viewer,
         );
-        verify(() => mockMenuService.addParticipant(
+        verify(
+          () => mockMenuService.addParticipant(
             resourceId: testMenuId,
             userId: 'new_user',
             userDisplayName: 'New User',
-            permission: ResourcePermission.viewer)).called(1);
-        verify(() => mockTracker.updateDisplayName('new_user', 'New User'))
-            .called(1);
+            permission: ResourcePermission.viewer,
+          ),
+        ).called(1);
+        verify(
+          () => mockTracker.updateDisplayName('new_user', 'New User'),
+        ).called(1);
       });
 
       test('should remove participant and update tracker', () async {
         await manager.removeParticipant(menuId: testMenuId, userId: 'x');
-        verify(() => mockMenuService.removeParticipant(
-            resourceId: testMenuId, userId: 'x')).called(1);
+        verify(
+          () => mockMenuService.removeParticipant(
+            resourceId: testMenuId,
+            userId: 'x',
+          ),
+        ).called(1);
         verify(() => mockTracker.removeParticipant('x')).called(1);
       });
 
@@ -197,10 +215,13 @@ void main() {
           userId: 'x',
           newPermission: ResourcePermission.editor,
         );
-        verify(() => mockMenuService.updateParticipantPermission(
+        verify(
+          () => mockMenuService.updateParticipantPermission(
             resourceId: testMenuId,
             userId: 'x',
-            newPermission: ResourcePermission.editor)).called(1);
+            newPermission: ResourcePermission.editor,
+          ),
+        ).called(1);
       });
 
       test('should throw without permission for add/remove/update', () {
@@ -211,76 +232,112 @@ void main() {
           permissions: {},
         );
         expect(
-            () => manager.addParticipant(
-                menuId: testMenuId,
-                userId: 'x',
-                userDisplayName: 'X',
-                permission: ResourcePermission.viewer),
-            throwsA(isA<Exception>()));
-        expect(() => manager.removeParticipant(menuId: testMenuId, userId: 'x'),
-            throwsA(isA<Exception>()));
+          () => manager.addParticipant(
+            menuId: testMenuId,
+            userId: 'x',
+            userDisplayName: 'X',
+            permission: ResourcePermission.viewer,
+          ),
+          throwsA(isA<Exception>()),
+        );
         expect(
-            () => manager.updateParticipantPermission(
-                menuId: testMenuId,
-                userId: 'x',
-                newPermission: ResourcePermission.editor),
-            throwsA(isA<Exception>()));
+          () => manager.removeParticipant(menuId: testMenuId, userId: 'x'),
+          throwsA(isA<Exception>()),
+        );
+        expect(
+          () => manager.updateParticipantPermission(
+            menuId: testMenuId,
+            userId: 'x',
+            newPermission: ResourcePermission.editor,
+          ),
+          throwsA(isA<Exception>()),
+        );
       });
 
       test('should prevent self-remove and self-permission-change', () {
         expect(
-            () => manager.removeParticipant(
-                menuId: testMenuId, userId: testUserId),
-            throwsA(isA<Exception>().having(
-                (e) => e.toString(), 'msg', contains('ta bort sig själv'))));
+          () =>
+              manager.removeParticipant(menuId: testMenuId, userId: testUserId),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'msg',
+              contains('ta bort sig själv'),
+            ),
+          ),
+        );
         expect(
-            () => manager.updateParticipantPermission(
-                menuId: testMenuId,
-                userId: testUserId,
-                newPermission: ResourcePermission.admin),
-            throwsA(isA<Exception>().having(
-                (e) => e.toString(), 'msg', contains('egna behörigheter'))));
+          () => manager.updateParticipantPermission(
+            menuId: testMenuId,
+            userId: testUserId,
+            newPermission: ResourcePermission.admin,
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'msg',
+              contains('egna behörigheter'),
+            ),
+          ),
+        );
       });
 
       test('should rethrow service errors', () {
-        when(() => mockMenuService.addParticipant(
-              resourceId: any(named: 'resourceId'),
-              userId: any(named: 'userId'),
-              userDisplayName: any(named: 'userDisplayName'),
-              permission: any(named: 'permission'),
-            )).thenThrow(Exception('fail'));
+        when(
+          () => mockMenuService.addParticipant(
+            resourceId: any(named: 'resourceId'),
+            userId: any(named: 'userId'),
+            userDisplayName: any(named: 'userDisplayName'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenThrow(Exception('fail'));
         expect(
-            () => manager.addParticipant(
-                menuId: testMenuId,
-                userId: 'x',
-                userDisplayName: 'X',
-                permission: ResourcePermission.viewer),
-            throwsA(isA<Exception>()));
+          () => manager.addParticipant(
+            menuId: testMenuId,
+            userId: 'x',
+            userDisplayName: 'X',
+            permission: ResourcePermission.viewer,
+          ),
+          throwsA(isA<Exception>()),
+        );
       });
     });
 
     group('Leave Menu', () {
       test('should leave menu successfully', () async {
         await manager.leaveMenu(menuId: testMenuId);
-        verify(() => mockMenuService.removeParticipant(
-            resourceId: testMenuId, userId: testUserId)).called(1);
+        verify(
+          () => mockMenuService.removeParticipant(
+            resourceId: testMenuId,
+            userId: testUserId,
+          ),
+        ).called(1);
       });
 
       test('should throw when no current user', () {
         mockPermission.setPermissionState(
-            currentUserId: null, isAuthenticated: false);
+          currentUserId: null,
+          isAuthenticated: false,
+        );
         expect(
           () => manager.leaveMenu(menuId: testMenuId),
-          throwsA(isA<Exception>()
-              .having((e) => e.toString(), 'msg', contains('användar-ID'))),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'msg',
+              contains('användar-ID'),
+            ),
+          ),
         );
       });
 
       test('should rethrow service error', () {
-        when(() => mockMenuService.removeParticipant(
-              resourceId: any(named: 'resourceId'),
-              userId: any(named: 'userId'),
-            )).thenThrow(Exception('fail'));
+        when(
+          () => mockMenuService.removeParticipant(
+            resourceId: any(named: 'resourceId'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(Exception('fail'));
 
         expect(
           () => manager.leaveMenu(menuId: testMenuId),
@@ -321,18 +378,25 @@ void main() {
         expect(manager.isUserParticipant(testOther, testMenu), isTrue);
         expect(manager.isUserParticipant('nobody', testMenu), isFalse);
         expect(manager.canAddMoreParticipants(testMenu), isTrue);
-        expect(manager.canAddMoreParticipants(testMenu, maxParticipants: 2),
-            isFalse);
+        expect(
+          manager.canAddMoreParticipants(testMenu, maxParticipants: 2),
+          isFalse,
+        );
       });
 
       test('should analyze permissions on menu', () {
-        expect(manager.getParticipantPermission(testOther, testMenu),
-            equals(ResourcePermission.owner));
+        expect(
+          manager.getParticipantPermission(testOther, testMenu),
+          equals(ResourcePermission.owner),
+        );
         expect(manager.getParticipantPermission('nobody', testMenu), isNull);
         expect(
-            manager.getParticipantsWithPermission(
-                testMenu, ResourcePermission.owner),
-            contains(testOther));
+          manager.getParticipantsWithPermission(
+            testMenu,
+            ResourcePermission.owner,
+          ),
+          contains(testOther),
+        );
         final grouped = manager.groupParticipantsByPermission(testMenu);
         expect(grouped[ResourcePermission.owner], contains(testOther));
         expect(grouped[ResourcePermission.editor], contains(testUserId));
@@ -364,99 +428,139 @@ void main() {
           lastEditedBy: testUserId,
           lastEditedByDisplayName: 'Me',
           data: RealtimeMenuData(
-              menuTitle: 'Solo',
-              createdForDate: DateTime.now(),
-              menuSnapshot: {}),
+            menuTitle: 'Solo',
+            createdForDate: DateTime.now(),
+            menuSnapshot: {},
+          ),
         );
         expect(manager.getParticipationSummary(solo), equals('Bara du'));
 
         // All online / all offline / mixed
-        when(() => mockTracker.onlineParticipants)
-            .thenReturn([testOther, testUserId, testViewer]);
-        expect(manager.getParticipationSummary(testMenu),
-            equals('3 deltagare (alla online)'));
+        when(
+          () => mockTracker.onlineParticipants,
+        ).thenReturn([testOther, testUserId, testViewer]);
+        expect(
+          manager.getParticipationSummary(testMenu),
+          equals('3 deltagare (alla online)'),
+        );
         when(() => mockTracker.onlineParticipants).thenReturn([]);
-        expect(manager.getParticipationSummary(testMenu),
-            equals('3 deltagare (alla offline)'));
+        expect(
+          manager.getParticipationSummary(testMenu),
+          equals('3 deltagare (alla offline)'),
+        );
         when(() => mockTracker.onlineParticipants).thenReturn([testUserId]);
-        expect(manager.getParticipationSummary(testMenu),
-            equals('3 deltagare (1 online)'));
+        expect(
+          manager.getParticipationSummary(testMenu),
+          equals('3 deltagare (1 online)'),
+        );
       });
     });
 
     group('Bulk & Edge Cases', () {
       test('should add multiple participants', () async {
-        await manager
-            .addMultipleParticipants(menuId: testMenuId, participants: [
-          {
-            'userId': 'u1',
-            'displayName': 'U1',
-            'permission': ResourcePermission.viewer
-          },
-          {
-            'userId': 'u2',
-            'displayName': 'U2',
-            'permission': ResourcePermission.editor
-          },
-        ]);
-        verify(() => mockMenuService.addParticipant(
+        await manager.addMultipleParticipants(
+          menuId: testMenuId,
+          participants: [
+            {
+              'userId': 'u1',
+              'displayName': 'U1',
+              'permission': ResourcePermission.viewer,
+            },
+            {
+              'userId': 'u2',
+              'displayName': 'U2',
+              'permission': ResourcePermission.editor,
+            },
+          ],
+        );
+        verify(
+          () => mockMenuService.addParticipant(
             resourceId: testMenuId,
             userId: 'u1',
             userDisplayName: 'U1',
-            permission: ResourcePermission.viewer)).called(1);
-        verify(() => mockMenuService.addParticipant(
+            permission: ResourcePermission.viewer,
+          ),
+        ).called(1);
+        verify(
+          () => mockMenuService.addParticipant(
             resourceId: testMenuId,
             userId: 'u2',
             userDisplayName: 'U2',
-            permission: ResourcePermission.editor)).called(1);
+            permission: ResourcePermission.editor,
+          ),
+        ).called(1);
       });
 
       test('should throw for bulk add without permission', () {
         mockPermission.setPermissionState(
-            currentUserId: testUserId,
-            isAuthenticated: true,
-            defaultHasPermission: false,
-            permissions: {});
+          currentUserId: testUserId,
+          isAuthenticated: true,
+          defaultHasPermission: false,
+          permissions: {},
+        );
         expect(
-            () => manager
-                .addMultipleParticipants(menuId: testMenuId, participants: []),
-            throwsA(isA<Exception>()));
+          () => manager.addMultipleParticipants(
+            menuId: testMenuId,
+            participants: [],
+          ),
+          throwsA(isA<Exception>()),
+        );
       });
 
       test('should bulk remove filtering out current user', () async {
         await manager.removeMultipleParticipants(
-            menuId: testMenuId, userIds: [testUserId, 'a', 'b']);
-        verifyNever(() => mockMenuService.removeParticipant(
-            resourceId: testMenuId, userId: testUserId));
-        verify(() => mockMenuService.removeParticipant(
-            resourceId: testMenuId, userId: 'a')).called(1);
-        verify(() => mockMenuService.removeParticipant(
-            resourceId: testMenuId, userId: 'b')).called(1);
+          menuId: testMenuId,
+          userIds: [testUserId, 'a', 'b'],
+        );
+        verifyNever(
+          () => mockMenuService.removeParticipant(
+            resourceId: testMenuId,
+            userId: testUserId,
+          ),
+        );
+        verify(
+          () => mockMenuService.removeParticipant(
+            resourceId: testMenuId,
+            userId: 'a',
+          ),
+        ).called(1);
+        verify(
+          () => mockMenuService.removeParticipant(
+            resourceId: testMenuId,
+            userId: 'b',
+          ),
+        ).called(1);
       });
 
       test('should handle timeout, empty menu, concurrent, dispose', () async {
         // Timeout
-        when(() => mockMenuService.addParticipant(
-              resourceId: any(named: 'resourceId'),
-              userId: any(named: 'userId'),
-              userDisplayName: any(named: 'userDisplayName'),
-              permission: any(named: 'permission'),
-            )).thenThrow(TimeoutException('Timeout'));
+        when(
+          () => mockMenuService.addParticipant(
+            resourceId: any(named: 'resourceId'),
+            userId: any(named: 'userId'),
+            userDisplayName: any(named: 'userDisplayName'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenThrow(TimeoutException('Timeout'));
         expect(
-            () => manager.addParticipant(
-                menuId: testMenuId,
-                userId: 'x',
-                userDisplayName: 'X',
-                permission: ResourcePermission.viewer),
-            throwsA(isA<TimeoutException>()));
+          () => manager.addParticipant(
+            menuId: testMenuId,
+            userId: 'x',
+            userDisplayName: 'X',
+            permission: ResourcePermission.viewer,
+          ),
+          throwsA(isA<TimeoutException>()),
+        );
 
         // Reset stub and clear interaction count for concurrent test
-        when(() => mockMenuService.addParticipant(
-              resourceId: any(named: 'resourceId'),
-              userId: any(named: 'userId'),
-              userDisplayName: any(named: 'userDisplayName'),
-              permission: any(named: 'permission'),
-            )).thenAnswer((_) async {});
+        when(
+          () => mockMenuService.addParticipant(
+            resourceId: any(named: 'resourceId'),
+            userId: any(named: 'userId'),
+            userDisplayName: any(named: 'userDisplayName'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenAnswer((_) async {});
         clearInteractions(mockMenuService);
 
         // Empty menu
@@ -468,25 +572,37 @@ void main() {
           lastEditedBy: testOther,
           lastEditedByDisplayName: 'Owner',
           data: RealtimeMenuData(
-              menuTitle: 'E', createdForDate: DateTime.now(), menuSnapshot: {}),
+            menuTitle: 'E',
+            createdForDate: DateTime.now(),
+            menuSnapshot: {},
+          ),
         );
         expect(manager.isUserParticipant(testUserId, empty), isFalse);
         expect(
-            manager.getParticipantStats(empty)['totalParticipants'], equals(0));
+          manager.getParticipantStats(empty)['totalParticipants'],
+          equals(0),
+        );
 
         // Concurrent
-        await Future.wait(List.generate(
+        await Future.wait(
+          List.generate(
             3,
             (i) => manager.addParticipant(
-                menuId: testMenuId,
-                userId: 'user_$i',
-                userDisplayName: 'User $i',
-                permission: ResourcePermission.viewer)));
-        verify(() => mockMenuService.addParticipant(
+              menuId: testMenuId,
+              userId: 'user_$i',
+              userDisplayName: 'User $i',
+              permission: ResourcePermission.viewer,
+            ),
+          ),
+        );
+        verify(
+          () => mockMenuService.addParticipant(
             resourceId: testMenuId,
             userId: any(named: 'userId'),
             userDisplayName: any(named: 'userDisplayName'),
-            permission: ResourcePermission.viewer)).called(3);
+            permission: ResourcePermission.viewer,
+          ),
+        ).called(3);
 
         // Dispose
         manager.dispose();

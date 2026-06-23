@@ -115,8 +115,11 @@ void main() {
 
         // Act & Assert
         for (final input in inputs) {
-          expect(strategy.canHandle(input), isTrue,
-              reason: 'Should handle: $input');
+          expect(
+            strategy.canHandle(input),
+            isTrue,
+            reason: 'Should handle: $input',
+          );
         }
       });
 
@@ -158,16 +161,21 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(
-                  _createTestRecipe(),
-                ));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
+          (_) async => ImportResult.success(
+            _createTestRecipe(),
+          ),
+        );
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -188,14 +196,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'base64Image': base64Image,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'base64Image': base64Image,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -204,9 +215,12 @@ void main() {
 
       test('should return failure for empty imageBytes', () async {
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': Uint8List(0),
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': Uint8List(0),
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isFalse);
@@ -230,14 +244,20 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(expectedText,
-                options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(
+            expectedText,
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -245,8 +265,12 @@ void main() {
         expect(result.metadata?['ocr_confidence'], equals(0.92));
         verify(() => mockOcrService.initialize()).called(1);
         verify(() => mockOcrService.extractText(testImageBytes)).called(1);
-        verify(() => mockTextStrategy.import(expectedText,
-            options: any(named: 'options'))).called(1);
+        verify(
+          () => mockTextStrategy.import(
+            expectedText,
+            options: any(named: 'options'),
+          ),
+        ).called(1);
       });
 
       test('should handle OCR failure', () async {
@@ -262,9 +286,12 @@ void main() {
         );
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isFalse);
@@ -283,9 +310,12 @@ void main() {
         );
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isFalse);
@@ -303,14 +333,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -329,14 +362,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -357,19 +393,23 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
         expect(result.metadata?['ocr_confidence_level'], equals('high'));
-        final hasConfidenceWarning = result.warnings?.any(
+        final hasConfidenceWarning =
+            result.warnings?.any(
               (w) => w.toLowerCase().contains('confidence'),
             ) ??
             false;
@@ -387,14 +427,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -414,14 +457,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -442,14 +488,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -479,14 +528,18 @@ void main() {
           instructions: ['Vispa', 'Stek'],
         );
 
-        when(() => mockTextStrategy.import(ocrText,
-                options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(testRecipe));
+        when(
+          () =>
+              mockTextStrategy.import(ocrText, options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(testRecipe));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -507,16 +560,21 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.failure(
-                  'No recipe structure detected',
-                ));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
+          (_) async => ImportResult.failure(
+            'No recipe structure detected',
+          ),
+        );
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isFalse);
@@ -534,20 +592,25 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(
-                  _createTestRecipe(),
-                  warnings: [
-                    'Missing portion information',
-                    'Incomplete instructions'
-                  ],
-                ));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer(
+          (_) async => ImportResult.success(
+            _createTestRecipe(),
+            warnings: [
+              'Missing portion information',
+              'Incomplete instructions',
+            ],
+          ),
+        );
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -568,18 +631,23 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
-        expect(result.metadata?['image_size_bytes'],
-            equals(testImageBytes.length));
+        expect(
+          result.metadata?['image_size_bytes'],
+          equals(testImageBytes.length),
+        );
         expect(result.metadata?['image_size_kb'], isNotNull);
       });
 
@@ -594,15 +662,18 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-          'sourceType': 'camera',
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+            'sourceType': 'camera',
+          },
+        );
 
         // Assert
         expect(result.metadata?['source_type'], equals('camera'));
@@ -621,18 +692,23 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(
-            result.metadata?['extracted_text_length'], equals(longText.length));
+          result.metadata?['extracted_text_length'],
+          equals(longText.length),
+        );
       });
 
       test('should mark as Swedish optimized', () async {
@@ -646,14 +722,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.metadata?['swedish_optimized'], isTrue);
@@ -675,14 +754,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.metadata?['ocr_details'], isNotNull);
@@ -693,13 +775,17 @@ void main() {
     group('Error Handling', () {
       test('should handle OCR service exception', () async {
         // Arrange
-        when(() => mockOcrService.extractText(any()))
-            .thenThrow(Exception('Network error'));
+        when(
+          () => mockOcrService.extractText(any()),
+        ).thenThrow(Exception('Network error'));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         // Production deliberately surfaces a user-friendly generic message
@@ -722,14 +808,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenThrow(Exception('Parsing error'));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenThrow(Exception('Parsing error'));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isFalse);
@@ -761,14 +850,17 @@ void main() {
           ),
         );
 
-        when(() =>
-                mockTextStrategy.import(any(), options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': largeImage,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': largeImage,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
@@ -788,19 +880,25 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(longText,
-                options: any(named: 'options')))
-            .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+        when(
+          () =>
+              mockTextStrategy.import(longText, options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isTrue);
         expect(
-            result.metadata?['extracted_text_length'], equals(longText.length));
+          result.metadata?['extracted_text_length'],
+          equals(longText.length),
+        );
       });
 
       test('should handle whitespace-only OCR result', () async {
@@ -815,9 +913,12 @@ void main() {
         );
 
         // Act
-        final result = await strategy.import('photo', options: {
-          'imageBytes': testImageBytes,
-        });
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
 
         // Assert
         expect(result.isSuccess, isFalse);

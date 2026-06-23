@@ -106,10 +106,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primaryContainer
-            .withValues(alpha: AppDimensions.opacityMediumLight),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(
+          alpha: AppDimensions.opacityMediumLight,
+        ),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
@@ -122,8 +121,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             context.l10n.menuRecipesInCategories(
-                widget.viewModel.totalRecipeCount,
-                widget.viewModel.menu.length),
+              widget.viewModel.totalRecipeCount,
+              widget.viewModel.menu.length,
+            ),
             style: AppTextStyles.bodySmall,
           ),
         ],
@@ -196,16 +196,16 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             border: Border.all(color: Theme.of(context).colorScheme.outline),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
-          child: widget.availableFriends == null ||
+          child:
+              widget.availableFriends == null ||
                   widget.availableFriends!.isEmpty
               ? Center(
                   child: Builder(
                     builder: (context) => Text(
                       context.l10n.menuNoFriendsAvailable,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 )
@@ -289,8 +289,9 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(widget.viewModel.error ?? context.l10n.menuSaveFailed),
+              content: Text(
+                widget.viewModel.error ?? context.l10n.menuSaveFailed,
+              ),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

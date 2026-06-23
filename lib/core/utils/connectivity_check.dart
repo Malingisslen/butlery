@@ -134,8 +134,9 @@ class ConnectivityCheck {
 
     for (final server in dnsServers) {
       try {
-        final result = await InternetAddress.lookup(server)
-            .timeout(const Duration(seconds: 5));
+        final result = await InternetAddress.lookup(
+          server,
+        ).timeout(const Duration(seconds: 5));
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           return true;
         }
@@ -221,7 +222,8 @@ class ConnectivityCheck {
       return await _testFirebaseWithDNSFailover();
     } catch (e) {
       AppLogger.debug(
-          'Firebase connectivity test failed, trying DNS failover: $e');
+        'Firebase connectivity test failed, trying DNS failover: $e',
+      );
 
       // If repository completely fails, try DNS failover
       return await _testFirebaseWithDNSFailover();
@@ -246,15 +248,17 @@ class ConnectivityCheck {
 
       // First try domain resolution
       try {
-        final result = await InternetAddress.lookup(domain)
-            .timeout(const Duration(seconds: 3));
+        final result = await InternetAddress.lookup(
+          domain,
+        ).timeout(const Duration(seconds: 3));
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           AppLogger.debug('Firebase domain resolution successful: $domain');
           return true;
         }
       } on SocketException catch (_) {
         AppLogger.debug(
-            'Domain resolution failed for $domain, trying IP fallback');
+          'Domain resolution failed for $domain, trying IP fallback',
+        );
       } catch (e) {
         AppLogger.debug('Domain test error for $domain: $e');
       }
@@ -262,8 +266,9 @@ class ConnectivityCheck {
       // If domain fails, try direct IP addresses
       for (final ip in ipAddresses) {
         try {
-          final result = await InternetAddress.lookup(ip)
-              .timeout(const Duration(seconds: 3));
+          final result = await InternetAddress.lookup(
+            ip,
+          ).timeout(const Duration(seconds: 3));
           if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
             AppLogger.debug('Firebase IP connection successful: $ip');
             return true;
@@ -333,7 +338,8 @@ class ConnectivityCheck {
       if (!hasFirebase) {
         // If Firebase fails but internet works, it might be DNS issues - mark as limited
         AppLogger.warning(
-            'Internet available but Firebase unreachable - possible DNS issues');
+          'Internet available but Firebase unreachable - possible DNS issues',
+        );
         return ConnectivityResult.limited;
       }
 
@@ -367,8 +373,9 @@ class ConnectivityCheck {
     if (kIsWeb) return false;
     for (final server in _enhancedDnsServers) {
       try {
-        final result = await InternetAddress.lookup(server)
-            .timeout(const Duration(seconds: 3));
+        final result = await InternetAddress.lookup(
+          server,
+        ).timeout(const Duration(seconds: 3));
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           return true;
         }

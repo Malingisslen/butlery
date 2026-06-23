@@ -20,26 +20,29 @@ class MessageQueryModule {
   }) {
     try {
       AppLogger.info(
-          '🔍 [MessageQuery] Creating message stream for conversationId: $conversationId');
+        '🔍 [MessageQuery] Creating message stream for conversationId: $conversationId',
+      );
       return messagesRef
           .where('conversationId', isEqualTo: conversationId)
           .orderBy('sentAt', descending: true)
           .limit(limit)
           .snapshots()
           .map((snapshot) {
-        AppLogger.debug(
-            '📬 [MessageQuery] Stream update: ${snapshot.docs.length} messages for conversation $conversationId');
-        final messages = snapshot.docs
-            .map((doc) => MessageDto.fromFirestore(doc))
-            .toList()
-            .reversed // Reverse to show oldest first
-            .toList();
-        return messages;
-      });
+            AppLogger.debug(
+              '📬 [MessageQuery] Stream update: ${snapshot.docs.length} messages for conversation $conversationId',
+            );
+            final messages = snapshot.docs
+                .map((doc) => MessageDto.fromFirestore(doc))
+                .toList()
+                .reversed // Reverse to show oldest first
+                .toList();
+            return messages;
+          });
     } catch (e) {
       AppLogger.error(
-          '❌ [MessageQuery] Failed to get messages for conversation $conversationId',
-          e);
+        '❌ [MessageQuery] Failed to get messages for conversation $conversationId',
+        e,
+      );
       return const Stream.empty();
     }
   }
@@ -68,7 +71,9 @@ class MessageQueryModule {
           .toList();
     } catch (e) {
       AppLogger.error(
-          'Failed to get messages page for conversation $conversationId', e);
+        'Failed to get messages page for conversation $conversationId',
+        e,
+      );
       return [];
     }
   }
@@ -108,12 +113,15 @@ class MessageQueryModule {
       return messages.docs
           .map((doc) => MessageDto.fromFirestore(doc))
           .where(
-              (message) => message.content.toLowerCase().contains(lowerQuery))
+            (message) => message.content.toLowerCase().contains(lowerQuery),
+          )
           .take(limit)
           .toList();
     } catch (e) {
       AppLogger.error(
-          'Failed to search messages in conversation $conversationId', e);
+        'Failed to search messages in conversation $conversationId',
+        e,
+      );
       return [];
     }
   }

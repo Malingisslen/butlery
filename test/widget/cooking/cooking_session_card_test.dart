@@ -21,16 +21,15 @@ void main() {
     DateTime? at,
     int? currentStep,
     int? totalSteps,
-  }) =>
-      CookingSession(
-        recipeId: id,
-        recipeTitle: title,
-        startedAt: at ?? DateTime(2026, 4, 20, 18),
-        userId: userId,
-        userName: userName,
-        currentStep: currentStep,
-        totalSteps: totalSteps,
-      );
+  }) => CookingSession(
+    recipeId: id,
+    recipeTitle: title,
+    startedAt: at ?? DateTime(2026, 4, 20, 18),
+    userId: userId,
+    userName: userName,
+    currentStep: currentStep,
+    totalSteps: totalSteps,
+  );
 
   Widget wrap(Widget child, {bool disableAnimations = false}) {
     return MaterialApp(
@@ -58,8 +57,9 @@ void main() {
       expect(find.byType(PulseDot), findsNothing);
     });
 
-    testWidgets('single session renders "Erik lagar kycklinggryta"',
-        (tester) async {
+    testWidgets('single session renders "Erik lagar kycklinggryta"', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           CookingSessionCard(sessions: [session()]),
@@ -76,14 +76,17 @@ void main() {
       expect(find.byIcon(Icons.chevron_right), findsOneWidget);
     });
 
-    testWidgets('two sessions on the same recipe merge with ampersand',
-        (tester) async {
+    testWidgets('two sessions on the same recipe merge with ampersand', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
-          CookingSessionCard(sessions: [
-            session(userId: 'u1', userName: 'Erik'),
-            session(userId: 'u2', userName: 'Sara'),
-          ]),
+          CookingSessionCard(
+            sessions: [
+              session(userId: 'u1', userName: 'Erik'),
+              session(userId: 'u2', userName: 'Sara'),
+            ],
+          ),
           disableAnimations: true,
         ),
       );
@@ -97,8 +100,9 @@ void main() {
     // BUT-408 follow-up: step suffix rendering.
     // -------------------------------------------------------------------
 
-    testWidgets('single session WITHOUT step fields renders no suffix',
-        (tester) async {
+    testWidgets('single session WITHOUT step fields renders no suffix', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           CookingSessionCard(sessions: [session()]),
@@ -112,13 +116,16 @@ void main() {
       expect(find.textContaining('steg'), findsNothing);
     });
 
-    testWidgets('single session WITH step fields renders "· steg 3 av 7"',
-        (tester) async {
+    testWidgets('single session WITH step fields renders "· steg 3 av 7"', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
-          CookingSessionCard(sessions: [
-            session(currentStep: 3, totalSteps: 7),
-          ]),
+          CookingSessionCard(
+            sessions: [
+              session(currentStep: 3, totalSteps: 7),
+            ],
+          ),
           disableAnimations: true,
         ),
       );
@@ -132,27 +139,30 @@ void main() {
       );
     });
 
-    testWidgets('merge case hides the step suffix even when set per-session',
-        (tester) async {
+    testWidgets('merge case hides the step suffix even when set per-session', (
+      tester,
+    ) async {
       // Two cooks on the same recipe; the primary has step tracking but the
       // merged line must NOT carry the step — different cooks are on
       // different steps.
       await tester.pumpWidget(
         wrap(
-          CookingSessionCard(sessions: [
-            session(
-              userId: 'u1',
-              userName: 'Erik',
-              currentStep: 3,
-              totalSteps: 7,
-            ),
-            session(
-              userId: 'u2',
-              userName: 'Sara',
-              currentStep: 5,
-              totalSteps: 7,
-            ),
-          ]),
+          CookingSessionCard(
+            sessions: [
+              session(
+                userId: 'u1',
+                userName: 'Erik',
+                currentStep: 3,
+                totalSteps: 7,
+              ),
+              session(
+                userId: 'u2',
+                userName: 'Sara',
+                currentStep: 5,
+                totalSteps: 7,
+              ),
+            ],
+          ),
           disableAnimations: true,
         ),
       );
@@ -162,8 +172,9 @@ void main() {
       expect(find.textContaining('steg'), findsNothing);
     });
 
-    testWidgets('reduce-motion: pulse dot is rendered but not animated',
-        (tester) async {
+    testWidgets('reduce-motion: pulse dot is rendered but not animated', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           CookingSessionCard(sessions: [session()]),

@@ -34,7 +34,8 @@ void main() {
 
     test('strips tracking params (utm_*, fbclid, gclid, etc.)', () {
       final r = n.normalize(
-          'https://example.com/r?id=42&utm_source=ig&fbclid=abc&gclid=xyz');
+        'https://example.com/r?id=42&utm_source=ig&fbclid=abc&gclid=xyz',
+      );
       expect(r, 'https://example.com/r?id=42');
     });
 
@@ -54,9 +55,13 @@ void main() {
 
     test('removes trailing slash from non-root paths', () {
       expect(
-          n.normalize('https://example.com/path/'), 'https://example.com/path');
+        n.normalize('https://example.com/path/'),
+        'https://example.com/path',
+      );
       expect(
-          n.normalize('https://example.com/a/b/'), 'https://example.com/a/b');
+        n.normalize('https://example.com/a/b/'),
+        'https://example.com/a/b',
+      );
     });
 
     test('root-only path is preserved as "/" by Uri canonicalization', () {

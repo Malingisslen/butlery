@@ -396,8 +396,8 @@ class PhotoImportViewModel extends ImportBaseViewModel
       notifyListeners();
 
       // Pre-flight quality assessment (Phase 2 Enhancement)
-      final qualityAssessment =
-          await OCRExtractionService.instance.assessImageQuality(bytes);
+      final qualityAssessment = await OCRExtractionService.instance
+          .assessImageQuality(bytes);
       _lastQualityScore = qualityAssessment.qualityScore;
       _lastRecommendations = qualityAssessment.recommendations;
 
@@ -406,8 +406,10 @@ class PhotoImportViewModel extends ImportBaseViewModel
       // service has a defense-in-depth gate too, but throwing here surfaces
       // the message via the standard error path the UI already renders.
       if (qualityAssessment.isRejected) {
-        throw Exception(qualityAssessment.rejectionReason ??
-            AppLocale.current.ocrImageRejected);
+        throw Exception(
+          qualityAssessment.rejectionReason ??
+              AppLocale.current.ocrImageRejected,
+        );
       }
 
       // OCR just this page, append it, then combine + parse the whole set.
@@ -529,15 +531,15 @@ class PhotoImportViewModel extends ImportBaseViewModel
 
   @override
   Map<String, dynamic> get debugState => {
-        ...super.debugState,
-        'hasImage': hasImage,
-        'hasOcrResult': hasOcrResult,
-        'pageCount': pageCount,
-        'ocrTextLength': _ocrText.length,
-        'isProcessing': isProcessing,
-        'imageBytesSize': _imageBytes?.length ?? 0,
-        'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
-      };
+    ...super.debugState,
+    'hasImage': hasImage,
+    'hasOcrResult': hasOcrResult,
+    'pageCount': pageCount,
+    'ocrTextLength': _ocrText.length,
+    'isProcessing': isProcessing,
+    'imageBytesSize': _imageBytes?.length ?? 0,
+    'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
+  };
 
   @override
   void dispose() {

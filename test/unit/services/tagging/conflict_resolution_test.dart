@@ -44,7 +44,8 @@ void main() {
         // Arrange: Recipe that somehow gets both tags
         final recipe = RecipeBuilder()
             .withTitle('Kryddig men mild rätt')
-            .withIngredients(['chili', 'grädde']).build();
+            .withIngredients(['chili', 'grädde'])
+            .build();
 
         final lookup = createMinimalLookup();
 
@@ -57,14 +58,18 @@ void main() {
         // Assert: If both tags were somehow generated, only stark should remain
         // Note: In practice this tests the resolution logic, not tag generation
         final tags = result.tags;
-        expect(tags.contains('stark') && tags.contains('mild'), isFalse,
-            reason: 'stark and mild should never coexist');
+        expect(
+          tags.contains('stark') && tags.contains('mild'),
+          isFalse,
+          reason: 'stark and mild should never coexist',
+        );
       });
 
       test('mild alone is preserved', () {
-        final recipe = RecipeBuilder()
-            .withTitle('Mild rätt')
-            .withIngredients(['grädde', 'potatis']).build();
+        final recipe = RecipeBuilder().withTitle('Mild rätt').withIngredients([
+          'grädde',
+          'potatis',
+        ]).build();
 
         final lookup = createMinimalLookup();
 
@@ -82,7 +87,8 @@ void main() {
       test('stark alone is preserved', () {
         final recipe = RecipeBuilder()
             .withTitle('Stark rätt med chili')
-            .withIngredients(['chili', 'habanero']).build();
+            .withIngredients(['chili', 'habanero'])
+            .build();
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
@@ -126,8 +132,11 @@ void main() {
 
         // If both somehow generated, only avancerad should remain
         final tags = result.tags;
-        expect(tags.contains('avancerad') && tags.contains('enkel'), isFalse,
-            reason: 'avancerad and enkel should never coexist');
+        expect(
+          tags.contains('avancerad') && tags.contains('enkel'),
+          isFalse,
+          reason: 'avancerad and enkel should never coexist',
+        );
       });
 
       test('enkel alone is preserved for quick recipes', () {
@@ -155,7 +164,8 @@ void main() {
       test('varm-rätt wins over kall-rätt when both present', () {
         final recipe = RecipeBuilder()
             .withTitle('Varm och kall kombination')
-            .withIngredients(['ingrediens']).build();
+            .withIngredients(['ingrediens'])
+            .build();
 
         final lookup = createMinimalLookup();
 
@@ -167,14 +177,16 @@ void main() {
         // Temperature tags are mutually exclusive
         final tags = result.tags;
         expect(
-            tags.contains('varm-rätt') && tags.contains('kall-rätt'), isFalse,
-            reason: 'varm-rätt and kall-rätt should never coexist');
+          tags.contains('varm-rätt') && tags.contains('kall-rätt'),
+          isFalse,
+          reason: 'varm-rätt and kall-rätt should never coexist',
+        );
       });
 
       test('kall-rätt alone is preserved for cold dishes', () {
-        final recipe = RecipeBuilder()
-            .withTitle('Kall sallad')
-            .withIngredients(['sallad', 'tomat', 'gurka']).build();
+        final recipe = RecipeBuilder().withTitle('Kall sallad').withIngredients(
+          ['sallad', 'tomat', 'gurka'],
+        ).build();
 
         final lookup = createMinimalLookup();
 
@@ -194,7 +206,8 @@ void main() {
       test('no season tags when ingredients lack seasonal data', () {
         final recipe = RecipeBuilder()
             .withTitle('Sommar vinter höst vår recept')
-            .withIngredients(['ingrediens']).build();
+            .withIngredients(['ingrediens'])
+            .build();
 
         final lookup = createMinimalLookup();
 
@@ -205,17 +218,22 @@ void main() {
 
         // Minimal lookup has no seasonal ingredients, so no season tags
         const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
-        final presentSeasons =
-            seasonTags.where((s) => result.tags.contains(s)).toList();
+        final presentSeasons = seasonTags
+            .where((s) => result.tags.contains(s))
+            .toList();
 
-        expect(presentSeasons.length, equals(0),
-            reason: 'No season tags without sufficient seasonal ingredients');
+        expect(
+          presentSeasons.length,
+          equals(0),
+          reason: 'No season tags without sufficient seasonal ingredients',
+        );
       });
 
       test('single season tag when only one season detected', () {
         final recipe = RecipeBuilder()
             .withTitle('Sommarrecept med jordgubbar')
-            .withIngredients(['jordgubbar', 'grädde']).build();
+            .withIngredients(['jordgubbar', 'grädde'])
+            .build();
 
         final lookup = createMinimalLookup();
 
@@ -226,15 +244,17 @@ void main() {
 
         // With minimal lookup, at most one season via name-based fallback
         const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
-        final presentSeasons =
-            seasonTags.where((s) => result.tags.contains(s)).toList();
+        final presentSeasons = seasonTags
+            .where((s) => result.tags.contains(s))
+            .toList();
         expect(presentSeasons.length, lessThanOrEqualTo(1));
       });
 
       test('vinter tag detected when winter ingredients present', () {
         final recipe = RecipeBuilder()
             .withTitle('Vinterrecept med glögg')
-            .withIngredients(['glögg', 'kanel']).build();
+            .withIngredients(['glögg', 'kanel'])
+            .build();
 
         final lookup = createMinimalLookup();
 
@@ -246,8 +266,9 @@ void main() {
         // With minimal lookup, verify vinter can still be detected
         // (name-based fallback needs >=2 matching winter ingredients)
         const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
-        final presentSeasons =
-            seasonTags.where((s) => result.tags.contains(s)).toList();
+        final presentSeasons = seasonTags
+            .where((s) => result.tags.contains(s))
+            .toList();
         expect(presentSeasons.length, lessThanOrEqualTo(4));
       });
     });

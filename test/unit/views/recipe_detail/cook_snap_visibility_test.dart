@@ -30,8 +30,10 @@ void main() {
         type: RecipeType.collaborative,
         isPublic: true,
       );
-      expect(cookSnapAudience(recipe, 'test_user', const {}).scope,
-          CookSnapVisibilityScope.public);
+      expect(
+        cookSnapAudience(recipe, 'test_user', const {}).scope,
+        CookSnapVisibilityScope.public,
+      );
     });
 
     test('a personal recipe keeps the snap private (no warning)', () {
@@ -74,8 +76,11 @@ void main() {
       final recipe = RecipeFactory.buildCollaborative(permissions: const {});
       final a = cookSnapAudience(recipe, 'test_user', const {});
 
-      expect(a.scope, CookSnapVisibilityScope.private,
-          reason: 'self-only collaborative recipe → no audience → private');
+      expect(
+        a.scope,
+        CookSnapVisibilityScope.private,
+        reason: 'self-only collaborative recipe → no audience → private',
+      );
     });
   });
 }

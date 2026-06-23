@@ -37,7 +37,9 @@ void main() {
       final roundTripped = PollOption.fromMap(map);
       expect(roundTripped.recipeId, equals('recipe-abc'));
       expect(
-          roundTripped.recipeImageUrl, equals('https://example.com/img.jpg'));
+        roundTripped.recipeImageUrl,
+        equals('https://example.com/img.jpg'),
+      );
       expect(roundTripped.recipePortions, equals(4));
       expect(roundTripped.hasRecipe, isTrue);
     });
@@ -70,37 +72,41 @@ void main() {
   });
 
   group('Poll serialization with recipe options', () {
-    test('Poll.fromOptions preserves recipe metadata through full round-trip',
-        () {
-      final options = [
-        PollOption.create(
-          text: 'Tacos',
-          recipeId: 'r-1',
-          recipeImageUrl: 'https://example.com/tacos.jpg',
-          recipePortions: 4,
-        ),
-        PollOption.create(
-          text: 'Pasta bolognese',
-          recipeId: 'r-2',
-          recipePortions: 2,
-        ),
-      ];
-      final poll = Poll.fromOptions(
-        question: 'Vad ska vi äta?',
-        options: options,
-        creatorId: 'creator-1',
-      );
+    test(
+      'Poll.fromOptions preserves recipe metadata through full round-trip',
+      () {
+        final options = [
+          PollOption.create(
+            text: 'Tacos',
+            recipeId: 'r-1',
+            recipeImageUrl: 'https://example.com/tacos.jpg',
+            recipePortions: 4,
+          ),
+          PollOption.create(
+            text: 'Pasta bolognese',
+            recipeId: 'r-2',
+            recipePortions: 2,
+          ),
+        ];
+        final poll = Poll.fromOptions(
+          question: 'Vad ska vi äta?',
+          options: options,
+          creatorId: 'creator-1',
+        );
 
-      final roundTripped = Poll.fromMap(poll.toMap());
-      expect(roundTripped.options, hasLength(2));
-      expect(roundTripped.options[0].recipeId, equals('r-1'));
-      expect(roundTripped.options[0].recipeImageUrl,
-          equals('https://example.com/tacos.jpg'));
-      expect(roundTripped.options[0].recipePortions, equals(4));
-      expect(roundTripped.options[1].recipeId, equals('r-2'));
-      expect(roundTripped.options[1].recipeImageUrl, isNull);
-      expect(roundTripped.options[1].recipePortions, equals(2));
-    });
+        final roundTripped = Poll.fromMap(poll.toMap());
+        expect(roundTripped.options, hasLength(2));
+        expect(roundTripped.options[0].recipeId, equals('r-1'));
+        expect(
+          roundTripped.options[0].recipeImageUrl,
+          equals('https://example.com/tacos.jpg'),
+        );
+        expect(roundTripped.options[0].recipePortions, equals(4));
+        expect(roundTripped.options[1].recipeId, equals('r-2'));
+        expect(roundTripped.options[1].recipeImageUrl, isNull);
+        expect(roundTripped.options[1].recipePortions, equals(2));
+      },
+    );
 
     test('Poll.create (text-only) remains backward compatible', () {
       final poll = Poll.create(

@@ -98,8 +98,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   Future<void> _loadViewModePreference() async {
-    final stored =
-        await ServiceLocator.get<PersistenceService>().getVeckomenyViewMode();
+    final stored = await ServiceLocator.get<PersistenceService>()
+        .getVeckomenyViewMode();
     if (!mounted) return;
     if (stored != null) {
       final mode = VeckomenyViewMode.values.firstWhere(
@@ -129,8 +129,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   Future<void> _setViewMode(VeckomenyViewMode mode) async {
     if (mode == _viewMode) return;
     setState(() => _viewMode = mode);
-    await ServiceLocator.get<PersistenceService>()
-        .setVeckomenyViewMode(mode.name);
+    await ServiceLocator.get<PersistenceService>().setVeckomenyViewMode(
+      mode.name,
+    );
   }
 
   Future<void> _generateMenu() async {
@@ -328,12 +329,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// alreadyRunning = silence, empty-plan sentinel = warning, otherwise
   /// success).
   Future<void> _generateWeekShoppingList() async {
-    final result =
-        await context.read<WeeklyMenuPlanViewModel>().generateShoppingList();
+    final result = await context
+        .read<WeeklyMenuPlanViewModel>()
+        .generateShoppingList();
     if (!mounted) return;
     if (result == null) {
       SnackBarUtils.showError(
-          context, context.l10n.menuShoppingListGenerationFailed);
+        context,
+        context.l10n.menuShoppingListGenerationFailed,
+      );
       return;
     }
     // A double-tap raced an in-flight generation — the first call's
@@ -343,13 +347,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
     if (result.isEmptyPlan) {
       SnackBarUtils.showWarning(
-          context, context.l10n.menuShoppingListGenerationEmpty);
+        context,
+        context.l10n.menuShoppingListGenerationEmpty,
+      );
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(context.l10n
-            .menuShoppingListGenerated(result.listName, result.itemCount)),
+        content: Text(
+          context.l10n.menuShoppingListGenerated(
+            result.listName,
+            result.itemCount,
+          ),
+        ),
         action: SnackBarAction(
           label: context.l10n.commonShow,
           // The snackbar can outlive this route — guard the late tap.
@@ -364,7 +374,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   List<Widget> _buildHeaderActions(
-      BuildContext context, MenuViewModel viewModel) {
+    BuildContext context,
+    MenuViewModel viewModel,
+  ) {
     return [
       VeckomenyViewModeToggle(
         mode: _viewMode,
@@ -372,8 +384,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       ),
       // Load menu / template button
       IconButton(
-        icon: Icon(Icons.folder_open,
-            color: Theme.of(context).colorScheme.onPrimary),
+        icon: Icon(
+          Icons.folder_open,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
@@ -387,8 +401,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Save menu button (only when menu exists)
       if (viewModel.hasMenu)
         IconButton(
-          icon:
-              Icon(Icons.save, color: Theme.of(context).colorScheme.onPrimary),
+          icon: Icon(
+            Icons.save,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
@@ -399,8 +415,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Clear menu button
       if (viewModel.hasMenu)
         IconButton(
-          icon:
-              Icon(Icons.clear, color: Theme.of(context).colorScheme.onPrimary),
+          icon: Icon(
+            Icons.clear,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
           onPressed: _clearMenu,
           tooltip: context.l10n.menuClear,
         ),
@@ -496,7 +514,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                                   onPlaceAuto: () =>
                                       unawaited(_onPlaceAutomatically()),
                                   onPlaceManual: () => unawaited(
-                                      _openPlacement(redoAuto: false)),
+                                    _openPlacement(redoAuto: false),
+                                  ),
                                 ),
                             ],
                           ),

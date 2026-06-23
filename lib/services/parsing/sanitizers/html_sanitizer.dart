@@ -74,12 +74,14 @@ class HtmlSanitizer {
     for (final pattern in _scriptPatterns) {
       final matches = pattern.allMatches(content);
       for (final match in matches) {
-        issues.add(SanitizationIssue(
-          type: IssueType.scriptInjection,
-          description: 'Script injection pattern detected: ${match.group(0)}',
-          position: match.start,
-          severity: IssueSeverity.critical,
-        ));
+        issues.add(
+          SanitizationIssue(
+            type: IssueType.scriptInjection,
+            description: 'Script injection pattern detected: ${match.group(0)}',
+            position: match.start,
+            severity: IssueSeverity.critical,
+          ),
+        );
       }
     }
 
@@ -87,54 +89,64 @@ class HtmlSanitizer {
     // strips them, but the warning lets callers audit/log instead of the
     // tags vanishing silently.
     for (final match in _scriptTagPattern.allMatches(content)) {
-      issues.add(SanitizationIssue(
-        type: IssueType.scriptInjection,
-        description:
-            'Non-JSON-LD script tag present (will be stripped by sanitize)',
-        position: match.start,
-        severity: IssueSeverity.warning,
-      ));
+      issues.add(
+        SanitizationIssue(
+          type: IssueType.scriptInjection,
+          description:
+              'Non-JSON-LD script tag present (will be stripped by sanitize)',
+          position: match.start,
+          severity: IssueSeverity.warning,
+        ),
+      );
     }
 
     // Check for homoglyphs
     final homoglyphResult = _detectHomoglyphs(content);
     if (homoglyphResult.hasHomoglyphs) {
-      issues.add(SanitizationIssue(
-        type: IssueType.homoglyph,
-        description:
-            'Homoglyph characters detected (${homoglyphResult.count} instances)',
-        position: homoglyphResult.firstPosition ?? 0,
-        severity: IssueSeverity.warning,
-      ));
+      issues.add(
+        SanitizationIssue(
+          type: IssueType.homoglyph,
+          description:
+              'Homoglyph characters detected (${homoglyphResult.count} instances)',
+          position: homoglyphResult.firstPosition ?? 0,
+          severity: IssueSeverity.warning,
+        ),
+      );
     }
 
     // Check for null bytes
     if (content.contains('\x00')) {
-      issues.add(SanitizationIssue(
-        type: IssueType.nullByte,
-        description: 'Null byte detected in content',
-        position: content.indexOf('\x00'),
-        severity: IssueSeverity.critical,
-      ));
+      issues.add(
+        SanitizationIssue(
+          type: IssueType.nullByte,
+          description: 'Null byte detected in content',
+          position: content.indexOf('\x00'),
+          severity: IssueSeverity.critical,
+        ),
+      );
     }
 
     // Check for excessively long strings (potential DoS)
     if (content.length > 5000000) {
       // 5MB
-      issues.add(const SanitizationIssue(
-        type: IssueType.excessiveLength,
-        description: 'Content exceeds maximum safe length (5MB)',
-        position: 0,
-        severity: IssueSeverity.critical,
-      ));
+      issues.add(
+        const SanitizationIssue(
+          type: IssueType.excessiveLength,
+          description: 'Content exceeds maximum safe length (5MB)',
+          position: 0,
+          severity: IssueSeverity.critical,
+        ),
+      );
     }
 
     return SanitizationResult(
-      isClean: issues.isEmpty ||
+      isClean:
+          issues.isEmpty ||
           issues.every((i) => i.severity != IssueSeverity.critical),
       issues: issues,
-      hasCriticalIssues:
-          issues.any((i) => i.severity == IssueSeverity.critical),
+      hasCriticalIssues: issues.any(
+        (i) => i.severity == IssueSeverity.critical,
+      ),
     );
   }
 
@@ -195,8 +207,10 @@ class HtmlSanitizer {
 
     // Remove javascript: URLs
     result = result.replaceAll(
-      RegExp('href\\s*=\\s*["\']?\\s*javascript:[^"\'\\s>]*',
-          caseSensitive: false),
+      RegExp(
+        'href\\s*=\\s*["\']?\\s*javascript:[^"\'\\s>]*',
+        caseSensitive: false,
+      ),
       'href="#"',
     );
 
@@ -244,7 +258,8 @@ class HtmlSanitizer {
             // Keep the entire block
             if (closeIdx >= 0) {
               result.write(
-                  html.substring(searchStart, closeIdx + closeTag.length));
+                html.substring(searchStart, closeIdx + closeTag.length),
+              );
               searchStart = closeIdx + closeTag.length;
               continue;
             } else {
@@ -426,8 +441,9 @@ class HtmlSanitizer {
   /// Removes script/style blocks, replaces block elements with newlines,
   /// strips remaining tags, decodes HTML entities, and normalizes whitespace.
   static String stripToPlainText(String html) {
-    var text =
-        html.replaceAll(_scriptPattern, '').replaceAll(_stylePattern, '');
+    var text = html
+        .replaceAll(_scriptPattern, '')
+        .replaceAll(_stylePattern, '');
 
     text = text.replaceAll(_blockElementPattern, '\n');
     text = text.replaceAll(_tagPattern, '');
@@ -472,7 +488,8 @@ class SanitizationResult {
   });
 
   @override
-  String toString() => 'SanitizationResult(clean: $isClean, '
+  String toString() =>
+      'SanitizationResult(clean: $isClean, '
       'issues: ${issues.length}, critical: $hasCriticalIssues)';
 }
 

@@ -70,7 +70,8 @@ class RecipeOperations {
   }) {
     if (index < 0 || index >= recipe.ingredients.length) {
       throw ArgumentError(
-          AppLocale.current.validationInvalidIngredientIndex(index));
+        AppLocale.current.validationInvalidIngredientIndex(index),
+      );
     }
 
     final updatedIngredients = List<String>.from(recipe.ingredients);
@@ -94,7 +95,8 @@ class RecipeOperations {
   }) {
     if (index < 0 || index >= recipe.ingredients.length) {
       throw ArgumentError(
-          AppLocale.current.validationInvalidIngredientIndex(index));
+        AppLocale.current.validationInvalidIngredientIndex(index),
+      );
     }
 
     final updatedIngredients = List<String>.from(recipe.ingredients);
@@ -149,7 +151,8 @@ class RecipeOperations {
   }) {
     if (index < 0 || index >= recipe.instructions.length) {
       throw ArgumentError(
-          AppLocale.current.validationInvalidInstructionIndex(index));
+        AppLocale.current.validationInvalidInstructionIndex(index),
+      );
     }
 
     final updatedInstructions = List<String>.from(recipe.instructions);
@@ -173,7 +176,8 @@ class RecipeOperations {
   }) {
     if (index < 0 || index >= recipe.instructions.length) {
       throw ArgumentError(
-          AppLocale.current.validationInvalidInstructionIndex(index));
+        AppLocale.current.validationInvalidInstructionIndex(index),
+      );
     }
 
     final updatedInstructions = List<String>.from(recipe.instructions);

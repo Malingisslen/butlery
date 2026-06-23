@@ -101,9 +101,9 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     required FirestoreRepository firestoreRepository,
     required auth_repo.AuthRepository authRepository,
     required FirebaseDatabase database,
-  })  : _firestoreRepository = firestoreRepository,
-        _authRepository = authRepository,
-        _database = database;
+  }) : _firestoreRepository = firestoreRepository,
+       _authRepository = authRepository,
+       _database = database;
 
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
@@ -127,24 +127,31 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       }
 
       AppLogger.info(
-          'Initializing presence for user: ${currentUser.uid.maskedUserId}');
+        'Initializing presence for user: ${currentUser.uid.maskedUserId}',
+      );
 
       _presenceRef = _database.ref('presence/${currentUser.uid}');
 
       // Register disconnect handler BEFORE setting online — if the process
       // dies between these two calls, onDisconnect is already in place.
       // Timeout prevents hanging boot on flaky networks (BUG-043 RC2).
-      await _presenceRef!.onDisconnect().set({
-        'status': 'offline',
-        'lastSeen': ServerValue.timestamp
-      }).timeout(const Duration(seconds: 5), onTimeout: () {
-        AppLogger.warning('RTDB onDisconnect timed out (5s)');
-      });
       await _presenceRef!
-          .set({'status': 'online', 'lastSeen': ServerValue.timestamp}).timeout(
-              const Duration(seconds: 5), onTimeout: () {
-        AppLogger.warning('RTDB presence set timed out (5s)');
-      });
+          .onDisconnect()
+          .set({'status': 'offline', 'lastSeen': ServerValue.timestamp})
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+              AppLogger.warning('RTDB onDisconnect timed out (5s)');
+            },
+          );
+      await _presenceRef!
+          .set({'status': 'online', 'lastSeen': ServerValue.timestamp})
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+              AppLogger.warning('RTDB presence set timed out (5s)');
+            },
+          );
 
       // Register lifecycle observer for graceful backgrounding
       WidgetsBinding.instance.addObserver(this);
@@ -174,8 +181,10 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     // onDisconnect handler armed; on the next reconnect it can fire and
     // broadcast bogus offline status while the user is online elsewhere.
     try {
-      await _presenceRef
-          ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
+      await _presenceRef?.set({
+        'status': 'offline',
+        'lastSeen': ServerValue.timestamp,
+      });
     } catch (e) {
       AppLogger.warning('Failed to set offline status on dispose: $e');
     }
@@ -202,8 +211,10 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
     // BUT-1098: same split as dispose() — set/cancel are independent.
     try {
-      await _presenceRef
-          ?.set({'status': 'offline', 'lastSeen': ServerValue.timestamp});
+      await _presenceRef?.set({
+        'status': 'offline',
+        'lastSeen': ServerValue.timestamp,
+      });
     } catch (e) {
       AppLogger.warning('Failed to set offline status on logout: $e');
     }
@@ -222,14 +233,16 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     return _database.ref('presence/$userId').onValue.map((event) {
       if (event.snapshot.value == null) return null;
       final data = Map<dynamic, dynamic>.from(
-          event.snapshot.value as Map<dynamic, dynamic>);
+        event.snapshot.value as Map<dynamic, dynamic>,
+      );
       return UserPresence.fromRtdb(data, userId);
     });
   }
 
   /// Stream presence for multiple users via individual RTDB listeners.
   Stream<Map<String, UserPresence>> getMultiplePresenceStream(
-      List<String> userIds) {
+    List<String> userIds,
+  ) {
     if (userIds.isEmpty) return Stream.value({});
 
     final latestValues = <String, UserPresence>{};
@@ -242,7 +255,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
           (event) {
             if (event.snapshot.value != null) {
               final data = Map<dynamic, dynamic>.from(
-                  event.snapshot.value as Map<dynamic, dynamic>);
+                event.snapshot.value as Map<dynamic, dynamic>,
+              );
               latestValues[userId] = UserPresence.fromRtdb(data, userId);
             } else {
               latestValues.remove(userId);
@@ -275,8 +289,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
           .collection(FirestoreCollections.presence)
           .doc(currentUser.uid)
           .set({
-        'typingIn.$conversationId': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+            'typingIn.$conversationId': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       _typingDebounceTimers[conversationId] = Timer(_typingDebounce, () {
         stopTyping(conversationId);
@@ -298,8 +312,8 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
           .collection(FirestoreCollections.presence)
           .doc(currentUser.uid)
           .set({
-        'typingIn.$conversationId': FieldValue.delete(),
-      }, SetOptions(merge: true));
+            'typingIn.$conversationId': FieldValue.delete(),
+          }, SetOptions(merge: true));
     } catch (e) {
       AppLogger.error('Failed to clear typing status', e);
     }
@@ -307,7 +321,9 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
 
   /// Typing users derived from Firestore presence docs (typingIn field).
   Stream<List<String>> getTypingUsersStream(
-      String conversationId, List<String> participantIds) {
+    String conversationId,
+    List<String> participantIds,
+  ) {
     if (participantIds.isEmpty) return Stream.value([]);
 
     // Typing data is in Firestore — batch query via `whereIn`.
@@ -319,15 +335,15 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
           .where(FieldPath.documentId, whereIn: batch)
           .snapshots()
           .map((snapshot) {
-        final typing = <String>[];
-        for (final doc in snapshot.docs) {
-          final presence = UserPresence.fromFirestore(doc.data(), doc.id);
-          if (presence.isTypingIn(conversationId)) {
-            typing.add(doc.id);
-          }
-        }
-        return typing;
-      });
+            final typing = <String>[];
+            for (final doc in snapshot.docs) {
+              final presence = UserPresence.fromFirestore(doc.data(), doc.id);
+              if (presence.isTypingIn(conversationId)) {
+                typing.add(doc.id);
+              }
+            }
+            return typing;
+          });
     }).toList();
 
     if (streams.length == 1) return streams.first;
@@ -338,8 +354,9 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     try {
       final snapshot = await _database.ref('presence/$userId').get();
       if (!snapshot.exists || snapshot.value == null) return false;
-      final data =
-          Map<dynamic, dynamic>.from(snapshot.value as Map<dynamic, dynamic>);
+      final data = Map<dynamic, dynamic>.from(
+        snapshot.value as Map<dynamic, dynamic>,
+      );
       return data['status'] == 'online';
     } catch (e) {
       AppLogger.error('Failed to check online status', e);
@@ -357,9 +374,11 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
     if (ref == null) return;
 
     void swallow(Future<void> Function() body, String op) {
-      unawaited(Future.sync(body).catchError((e) {
-        AppLogger.warning('Lifecycle presence write failed ($op): $e');
-      }));
+      unawaited(
+        Future.sync(body).catchError((e) {
+          AppLogger.warning('Lifecycle presence write failed ($op): $e');
+        }),
+      );
     }
 
     switch (state) {
@@ -376,9 +395,10 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       case AppLifecycleState.resumed:
         // Re-establish onDisconnect first, then set online
         swallow(
-          () => ref
-              .onDisconnect()
-              .set({'status': 'offline', 'lastSeen': ServerValue.timestamp}),
+          () => ref.onDisconnect().set({
+            'status': 'offline',
+            'lastSeen': ServerValue.timestamp,
+          }),
           'resume-onDisconnect',
         );
         swallow(
@@ -441,9 +461,11 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
   }
 
   Stream<List<String>> _combineTypingStreams(
-      List<Stream<List<String>>> streams) {
-    return Rx.combineLatestList(streams)
-        .map((lists) => lists.expand((l) => l).toList());
+    List<Stream<List<String>>> streams,
+  ) {
+    return Rx.combineLatestList(
+      streams,
+    ).map((lists) => lists.expand((l) => l).toList());
   }
 
   /// Delete the user's `presence/{uid}` document. Called from the
@@ -459,7 +481,9 @@ class PresenceService extends BaseService with WidgetsBindingObserver {
       return true;
     } catch (e) {
       AppLogger.error(
-          'Failed to delete presence for ${userId.maskedUserId}', e);
+        'Failed to delete presence for ${userId.maskedUserId}',
+        e,
+      );
       return false;
     }
   }

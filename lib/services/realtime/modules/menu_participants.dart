@@ -49,7 +49,8 @@ class MenuParticipants {
     }
 
     AppLogger.info(
-        '👥 Adding participant: ${userDisplayName.maskedName} (${userId.maskedUserId}) with permission: ${permission.name}');
+      '👥 Adding participant: ${userDisplayName.maskedName} (${userId.maskedUserId}) with permission: ${permission.name}',
+    );
 
     return menu.addParticipant(userId, userDisplayName, permission);
   }
@@ -136,12 +137,14 @@ class MenuParticipants {
     final currentPermission = getUserPermission(menu, userId);
     if (currentPermission == newPermission) {
       AppLogger.info(
-          '👥 Permission unchanged for user: ${userId.maskedUserId}');
+        '👥 Permission unchanged for user: ${userId.maskedUserId}',
+      );
       return menu; // No change needed
     }
 
     AppLogger.info(
-        '👥 Updating permission for user ${userId.maskedUserId}: ${currentPermission?.name} -> ${newPermission.name}');
+      '👥 Updating permission for user ${userId.maskedUserId}: ${currentPermission?.name} -> ${newPermission.name}',
+    );
 
     return menu.updateParticipantPermission(userId, newPermission);
   }
@@ -158,7 +161,9 @@ class MenuParticipants {
 
   /// Get user's permission level
   static ResourcePermission? getUserPermission(
-      RealtimeMenu menu, String userId) {
+    RealtimeMenu menu,
+    String userId,
+  ) {
     // Owner has highest permission, check first
     if (menu.ownerId == userId) {
       return ResourcePermission.owner;
@@ -201,10 +206,12 @@ class MenuParticipants {
   /// Get editor user IDs (NOT including owner since owner is not in participants)
   static List<String> getEditorIds(RealtimeMenu menu) {
     return menu.participants.entries
-        .where((entry) =>
-            entry.value == ResourcePermission.editor ||
-            entry.value == ResourcePermission.write ||
-            entry.value == ResourcePermission.admin)
+        .where(
+          (entry) =>
+              entry.value == ResourcePermission.editor ||
+              entry.value == ResourcePermission.write ||
+              entry.value == ResourcePermission.admin,
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -212,9 +219,11 @@ class MenuParticipants {
   /// Get viewer user IDs (read-only users)
   static List<String> getViewerIds(RealtimeMenu menu) {
     return menu.participants.entries
-        .where((entry) =>
-            entry.value == ResourcePermission.viewer ||
-            entry.value == ResourcePermission.read)
+        .where(
+          (entry) =>
+              entry.value == ResourcePermission.viewer ||
+              entry.value == ResourcePermission.read,
+        )
         .map((entry) => entry.key)
         .toList();
   }
@@ -296,16 +305,21 @@ class MenuParticipants {
 
     final participantIds = menu.participants.keys
         .where(
-            (id) => id != menu.ownerId) // Exclude owner from participant list
+          (id) => id != menu.ownerId,
+        ) // Exclude owner from participant list
         .toList();
 
-    return AppLocale.current
-        .participantSummary(menu.ownerDisplayName, participantIds.length);
+    return AppLocale.current.participantSummary(
+      menu.ownerDisplayName,
+      participantIds.length,
+    );
   }
 
   /// Find participant permission by user ID
   static ResourcePermission? findParticipantPermission(
-      RealtimeMenu menu, String userId) {
+    RealtimeMenu menu,
+    String userId,
+  ) {
     return menu.participants[userId];
   }
 

@@ -175,8 +175,9 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  cs.surfaceContainerHighest
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  cs.surfaceContainerHighest.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
                 ],
               ),
             ),
@@ -274,8 +275,10 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
           return RepaintBoundary(
             key: ValueKey('recipe_image_$imageUrl'),
             child: Semantics(
-              label: context.l10n
-                  .a11yViewFullSizeImageOf(index + 1, widget.imageUrls.length),
+              label: context.l10n.a11yViewFullSizeImageOf(
+                index + 1,
+                widget.imageUrls.length,
+              ),
               button: true,
               child: GestureDetector(
                 onTap: () {
@@ -400,8 +403,10 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
               itemCount: widget.imageUrls.length,
               itemBuilder: (context, index) {
                 return Semantics(
-                  label: context.l10n
-                      .a11ySwitchToImageOf(index + 1, widget.imageUrls.length),
+                  label: context.l10n.a11ySwitchToImageOf(
+                    index + 1,
+                    widget.imageUrls.length,
+                  ),
                   button: true,
                   child: GestureDetector(
                     onTap: () {

@@ -302,13 +302,16 @@ mixin ErrorHandlingMixin {
         if (attempts >= maxRetries) {
           final opName = operationName ?? 'Network operation';
           AppLogger.error(
-              '$opName failed after $maxRetries attempts: $e', stackTrace);
+            '$opName failed after $maxRetries attempts: $e',
+            stackTrace,
+          );
           handleUserError(AppLocale.current.errorNetwork);
           return defaultValue;
         }
 
         AppLogger.warning(
-            'Network operation attempt $attempts failed, retrying: $e');
+          'Network operation attempt $attempts failed, retrying: $e',
+        );
         await Future.delayed(retryDelay);
         if (this is StateNotifierMixin &&
             (this as StateNotifierMixin).isDisposed) {
@@ -408,8 +411,10 @@ mixin ErrorHandlingMixin {
       try {
         return await fallbackOperation();
       } catch (fallbackError, fallbackStackTrace) {
-        AppLogger.error('$operationName fallback also failed: $fallbackError',
-            fallbackStackTrace);
+        AppLogger.error(
+          '$operationName fallback also failed: $fallbackError',
+          fallbackStackTrace,
+        );
         rethrow;
       }
     }
@@ -434,21 +439,24 @@ mixin ErrorHandlingMixin {
 
         if (attempts >= maxRetries) {
           AppLogger.error(
-              '$operationName failed after $maxRetries attempts: $e',
-              stackTrace);
+            '$operationName failed after $maxRetries attempts: $e',
+            stackTrace,
+          );
           rethrow;
         }
 
         AppLogger.warning(
-            '$operationName attempt $attempts failed, retrying in ${currentDelay.inSeconds}s: $e');
+          '$operationName attempt $attempts failed, retrying in ${currentDelay.inSeconds}s: $e',
+        );
         await Future.delayed(currentDelay);
         if (this is StateNotifierMixin &&
             (this as StateNotifierMixin).isDisposed) {
           rethrow;
         }
         currentDelay = Duration(
-            milliseconds:
-                (currentDelay.inMilliseconds * backoffMultiplier).round());
+          milliseconds: (currentDelay.inMilliseconds * backoffMultiplier)
+              .round(),
+        );
       }
     }
 
@@ -474,7 +482,8 @@ mixin ErrorHandlingMixin {
 
     // Enhanced logging with error classification
     AppLogger.error(
-        'Categorized error in $operation [${errorCategory.name}]: $error');
+      'Categorized error in $operation [${errorCategory.name}]: $error',
+    );
   }
 
   /// Classifies errors into specific categories for intelligent handling.

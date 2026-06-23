@@ -128,8 +128,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outlineVariant.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
         ),
         color: cs.surfaceContainerHighest,
       ),
@@ -140,24 +141,28 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Icon(
               Icons.photo_library_outlined,
               size: AppDimensions.iconSizeXxl,
-              color:
-                  cs.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+              color: cs.onSurface.withValues(
+                alpha: AppDimensions.opacityMedium,
+              ),
             ),
             const SizedBox(
-                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            ),
             Text(
               context.l10n.imageNoImagesYet,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: cs.onSurface
-                    .withValues(alpha: AppDimensions.opacityMediumDark),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityMediumDark,
+                ),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               context.l10n.imageWillAppearHere,
               style: AppTextStyles.bodyMedium.copyWith(
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityMedium,
+                ),
               ),
             ),
           ],
@@ -175,7 +180,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         color: cs.primary,
         borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppDimensions.borderRadius16)),
+          top: Radius.circular(AppDimensions.borderRadius16),
+        ),
       ),
       child: Row(
         children: [
@@ -213,8 +219,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: cs.outlineVariant
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outlineVariant.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -266,8 +273,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             border: Border.all(
               color: isSelected
                   ? cs.primary
-                  : cs.outlineVariant
-                      .withValues(alpha: AppDimensions.opacityLight),
+                  : cs.outlineVariant.withValues(
+                      alpha: AppDimensions.opacityLight,
+                    ),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -298,8 +306,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                     // Selection overlay
                     if (isSelected)
                       Container(
-                        color: cs.primary
-                            .withValues(alpha: AppDimensions.opacityLight),
+                        color: cs.primary.withValues(
+                          alpha: AppDimensions.opacityLight,
+                        ),
                       ),
                   ],
                 ),
@@ -319,11 +328,13 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 shape: BoxShape.circle,
                 color: isSelected
                     ? cs.primary
-                    : cs.surfaceContainerHighest
-                        .withValues(alpha: AppDimensions.opacityVeryDark),
+                    : cs.surfaceContainerHighest.withValues(
+                        alpha: AppDimensions.opacityVeryDark,
+                      ),
                 border: Border.all(
-                  color: cs.outlineVariant
-                      .withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: cs.outlineVariant.withValues(
+                    alpha: AppDimensions.opacityMediumLight,
+                  ),
                 ),
               ),
               child: Icon(
@@ -331,8 +342,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 size: AppDimensions.iconSizeS,
                 color: isSelected
                     ? cs.surfaceContainerHighest
-                    : cs.onSurface
-                        .withValues(alpha: AppDimensions.opacityMediumDark),
+                    : cs.onSurface.withValues(
+                        alpha: AppDimensions.opacityMediumDark,
+                      ),
               ),
             ),
           ),
@@ -433,8 +445,9 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
           border: Border.all(
-            color: cs.outlineVariant
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: cs.outlineVariant.withValues(
+              alpha: AppDimensions.opacityMediumLight,
+            ),
           ),
           color: cs.surfaceContainerHighest,
         ),
@@ -445,16 +458,19 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               Icon(
                 Icons.photo_library_outlined,
                 size: AppDimensions.iconSizeXxl,
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityMedium,
+                ),
               ),
               const SizedBox(
-                  height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              ),
               Text(
                 context.l10n.imageNoImagesToDisplay,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: cs.onSurface
-                      .withValues(alpha: AppDimensions.opacityMediumDark),
+                  color: cs.onSurface.withValues(
+                    alpha: AppDimensions.opacityMediumDark,
+                  ),
                 ),
               ),
             ],

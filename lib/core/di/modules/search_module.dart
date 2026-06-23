@@ -81,7 +81,8 @@ class SearchModule implements DIModule {
       _proxy = _DelegatingSearchRepository(FirestoreSearchRepository());
       container.registerLazySingleton<SearchRepository>(() => _proxy!);
       AppLogger.info(
-          'SearchModule: Registered default Firestore search provider');
+        'SearchModule: Registered default Firestore search provider',
+      );
 
       // BUT-475: router that prefers Algolia (uncapped) over the legacy
       // Firestore client-side filter (200-cap) for recipe text search.
@@ -150,7 +151,8 @@ class SearchModule implements DIModule {
     // anonymously), the query text + IP-level metadata reaching a
     // third-party EU processor still requires the analytics consent
     // bucket. BUT-751: shared fail-closed gate.
-    final hasConsent = useAlgolia &&
+    final hasConsent =
+        useAlgolia &&
         await hasAnalyticsConsent(container, logTag: 'SearchModule');
     final wantAlgolia = useAlgolia && hasConsent;
 
@@ -161,7 +163,8 @@ class SearchModule implements DIModule {
       const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
       if (appId.isEmpty || apiKey.isEmpty) {
         AppLogger.warning(
-            'SearchModule: Algolia enabled but credentials missing, keeping Firestore');
+          'SearchModule: Algolia enabled but credentials missing, keeping Firestore',
+        );
         return;
       }
       try {
@@ -170,20 +173,25 @@ class SearchModule implements DIModule {
           apiKey: apiKey,
         );
         _algoliaActive = true;
-        AppLogger.info('SearchModule: Switched to Algolia search provider '
-            '(feature flag + analytics consent)');
+        AppLogger.info(
+          'SearchModule: Switched to Algolia search provider '
+          '(feature flag + analytics consent)',
+        );
       } on ArgumentError catch (e) {
         // BUT-580: EU-cluster invariant violated. Refuse to init and stay
         // on Firestore — better degraded search than a Chapter V breach.
-        AppLogger.warning('SearchModule: Algolia init refused — $e. '
-            'Keeping Firestore search.');
+        AppLogger.warning(
+          'SearchModule: Algolia init refused — $e. '
+          'Keeping Firestore search.',
+        );
       }
     } else {
       _proxy!.delegate = FirestoreSearchRepository();
       _algoliaActive = false;
       AppLogger.info(
-          'SearchModule: Reverted to Firestore search (consent revoked '
-          'or feature flag off) (BUT-752)');
+        'SearchModule: Reverted to Firestore search (consent revoked '
+        'or feature flag off) (BUT-752)',
+      );
     }
   }
 
@@ -217,15 +225,24 @@ class _DelegatingSearchRepository implements SearchRepository {
   bool get usesExternalSearch => delegate.usesExternalSearch;
 
   @override
-  Future<SearchResult<RecipeSearchHit>> searchRecipes(String query,
-          {SearchFilters? filters, int page = 0, int hitsPerPage = 20}) =>
-      delegate.searchRecipes(query,
-          filters: filters, page: page, hitsPerPage: hitsPerPage);
+  Future<SearchResult<RecipeSearchHit>> searchRecipes(
+    String query, {
+    SearchFilters? filters,
+    int page = 0,
+    int hitsPerPage = 20,
+  }) => delegate.searchRecipes(
+    query,
+    filters: filters,
+    page: page,
+    hitsPerPage: hitsPerPage,
+  );
 
   @override
-  Future<SearchResult<UserSearchHit>> searchUsers(String query,
-          {int page = 0, int hitsPerPage = 20}) =>
-      delegate.searchUsers(query, page: page, hitsPerPage: hitsPerPage);
+  Future<SearchResult<UserSearchHit>> searchUsers(
+    String query, {
+    int page = 0,
+    int hitsPerPage = 20,
+  }) => delegate.searchUsers(query, page: page, hitsPerPage: hitsPerPage);
 
   @override
   Future<void> indexRecipe(Recipe recipe, {required String ownerId}) =>
@@ -241,14 +258,17 @@ class _DelegatingSearchRepository implements SearchRepository {
   Future<void> removeUser(String userId) => delegate.removeUser(userId);
 
   @override
-  Future<void> batchIndexRecipes(List<Recipe> recipes,
-          {required String ownerId}) =>
-      delegate.batchIndexRecipes(recipes, ownerId: ownerId);
+  Future<void> batchIndexRecipes(
+    List<Recipe> recipes, {
+    required String ownerId,
+  }) => delegate.batchIndexRecipes(recipes, ownerId: ownerId);
 
   @override
-  Future<List<String>> getSuggestions(String partial,
-          {String index = 'recipes', int limit = 5}) =>
-      delegate.getSuggestions(partial, index: index, limit: limit);
+  Future<List<String>> getSuggestions(
+    String partial, {
+    String index = 'recipes',
+    int limit = 5,
+  }) => delegate.getSuggestions(partial, index: index, limit: limit);
 
   @override
   Future<bool> healthCheck() => delegate.healthCheck();

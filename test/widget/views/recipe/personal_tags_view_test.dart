@@ -104,20 +104,24 @@ void main() {
     expect(find.text('Personliga taggar'), findsOneWidget);
   });
 
-  testWidgets('empty state shows the localized empty title and create CTA',
-      (tester) async {
+  testWidgets('empty state shows the localized empty title and create CTA', (
+    tester,
+  ) async {
     // Proves: with no tags the user sees the empty-state guidance, not a blank
     // screen or an error — the !hasTags branch.
     fakeVm.setState(tags: const [], isLoading: false);
     await pumpView(tester);
 
     expect(find.text('Inga personliga taggar'), findsOneWidget);
-    expect(find.text('Skapa taggar för att organisera dina recept'),
-        findsOneWidget);
+    expect(
+      find.text('Skapa taggar för att organisera dina recept'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('error state shows the VM error message with a retry action',
-      (tester) async {
+  testWidgets('error state shows the VM error message with a retry action', (
+    tester,
+  ) async {
     // Proves: when the VM reports hasError the error message surfaces with a
     // retry CTA (StateWidget.error wired to viewModel.initialize).
     fakeVm.setState(tags: const [], isLoading: false, error: 'Något gick fel');
@@ -127,8 +131,9 @@ void main() {
     expect(find.text('Försök igen'), findsOneWidget); // commonRetry
   });
 
-  testWidgets('loading state (no tags yet) shows the loading widget, not empty',
-      (tester) async {
+  testWidgets('loading state (no tags yet) shows the loading widget, not empty', (
+    tester,
+  ) async {
     // Proves: the isLoading && !hasTags branch renders the branded loading
     // state — the empty/error copy must NOT appear while first load is pending.
     fakeVm.setState(tags: const [], isLoading: true);
@@ -139,30 +144,33 @@ void main() {
     expect(find.text('Något gick fel'), findsNothing);
   });
 
-  testWidgets('with tags the list renders the tag and the Tags section header',
-      (tester) async {
-    // Proves: the happy path — a tag the user created appears under the
-    // "Taggar" section header, not the empty state.
-    final tag = PersonalTag.create(name: 'Vegetariskt');
-    fakeVm.setState(
-      tags: [tag],
-      groups: const <PersonalTagGroup>[],
-      isLoading: false,
-      usageCounts: {'Vegetariskt': 4},
-    );
-    await pumpView(tester);
+  testWidgets(
+    'with tags the list renders the tag and the Tags section header',
+    (tester) async {
+      // Proves: the happy path — a tag the user created appears under the
+      // "Taggar" section header, not the empty state.
+      final tag = PersonalTag.create(name: 'Vegetariskt');
+      fakeVm.setState(
+        tags: [tag],
+        groups: const <PersonalTagGroup>[],
+        isLoading: false,
+        usageCounts: {'Vegetariskt': 4},
+      );
+      await pumpView(tester);
 
-    expect(find.text('Taggar'), findsOneWidget); // personalTagSectionTags
-    expect(find.text('Vegetariskt'), findsWidgets);
-    expect(find.text('Inga personliga taggar'), findsNothing);
-  });
+      expect(find.text('Taggar'), findsOneWidget); // personalTagSectionTags
+      expect(find.text('Vegetariskt'), findsWidgets);
+      expect(find.text('Inga personliga taggar'), findsNothing);
+    },
+  );
 
   // Negative control: proves the empty and list branches are genuinely
   // distinguished by hasTags. A list render must NOT also surface the
   // empty-state guidance copy — otherwise the empty-state positive test above
   // would be meaningless.
-  testWidgets('tag-list state does not render the empty-state guidance copy',
-      (tester) async {
+  testWidgets('tag-list state does not render the empty-state guidance copy', (
+    tester,
+  ) async {
     final tag = PersonalTag.create(name: 'Snabbt');
     fakeVm.setState(
       tags: [tag],
@@ -173,7 +181,9 @@ void main() {
 
     expect(find.text('Inga personliga taggar'), findsNothing);
     expect(
-        find.text('Skapa taggar för att organisera dina recept'), findsNothing);
+      find.text('Skapa taggar för att organisera dina recept'),
+      findsNothing,
+    );
     expect(find.text('Snabbt'), findsWidgets);
   });
 }

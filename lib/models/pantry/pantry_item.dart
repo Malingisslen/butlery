@@ -12,7 +12,8 @@ enum PantryLocation {
   fridge,
   freezer,
   pantry,
-  spiceRack;
+  spiceRack
+  ;
 
   /// Infers a location from an [IngredientData.typicalStorage] value.
   ///
@@ -136,8 +137,9 @@ class PantryItem {
   }) {
     return PantryItem(
       id: id ?? this.id,
-      ingredientId:
-          clearIngredientId ? null : (ingredientId ?? this.ingredientId),
+      ingredientId: clearIngredientId
+          ? null
+          : (ingredientId ?? this.ingredientId),
       ingredientName: ingredientName ?? this.ingredientName,
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,

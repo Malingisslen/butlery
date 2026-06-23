@@ -18,32 +18,46 @@ void main() {
       test('unknown locale falls back to eng', () {
         expect(OCRExtractionService.ocrSpaceLanguage('de'), 'eng');
       });
-      test('regional locale en_US strips region → eng (not the sv default)',
-          () {
-        expect(OCRExtractionService.ocrSpaceLanguage('en_US'), 'eng');
-        expect(OCRExtractionService.ocrSpaceLanguage('en-GB'), 'eng');
-      });
+      test(
+        'regional locale en_US strips region → eng (not the sv default)',
+        () {
+          expect(OCRExtractionService.ocrSpaceLanguage('en_US'), 'eng');
+          expect(OCRExtractionService.ocrSpaceLanguage('en-GB'), 'eng');
+        },
+      );
     });
 
     group('googleVisionLanguageHints (ISO 639-1 array, user-locale first)', () {
       test('sv → [sv, en] (user locale first, fallback retained)', () {
-        expect(
-            OCRExtractionService.googleVisionLanguageHints('sv'), ['sv', 'en']);
+        expect(OCRExtractionService.googleVisionLanguageHints('sv'), [
+          'sv',
+          'en',
+        ]);
       });
       test('en → [en, sv] (user locale first, fallback retained)', () {
-        expect(
-            OCRExtractionService.googleVisionLanguageHints('en'), ['en', 'sv']);
+        expect(OCRExtractionService.googleVisionLanguageHints('en'), [
+          'en',
+          'sv',
+        ]);
       });
-      test('unknown locale → [sv, en] (Swedish-first default, both retained)',
-          () {
-        expect(
-            OCRExtractionService.googleVisionLanguageHints('de'), ['sv', 'en']);
-      });
-      test('regional locale en_US strips region → [en, sv] (English-first)',
-          () {
-        expect(OCRExtractionService.googleVisionLanguageHints('en_US'),
-            ['en', 'sv']);
-      });
+      test(
+        'unknown locale → [sv, en] (Swedish-first default, both retained)',
+        () {
+          expect(OCRExtractionService.googleVisionLanguageHints('de'), [
+            'sv',
+            'en',
+          ]);
+        },
+      );
+      test(
+        'regional locale en_US strips region → [en, sv] (English-first)',
+        () {
+          expect(OCRExtractionService.googleVisionLanguageHints('en_US'), [
+            'en',
+            'sv',
+          ]);
+        },
+      );
     });
 
     group("tesseractLanguage ('+'-joined ISO 639-2, user-locale first)", () {

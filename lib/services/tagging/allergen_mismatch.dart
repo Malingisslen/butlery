@@ -35,8 +35,7 @@ class AllergenMismatch {
   static bool anyUnconfigured(
     Iterable<Recipe> recipes,
     UserAllergenPreferences prefs,
-  ) =>
-      recipes.any(
-        (recipe) => unconfiguredContainedAllergens(recipe, prefs).isNotEmpty,
-      );
+  ) => recipes.any(
+    (recipe) => unconfiguredContainedAllergens(recipe, prefs).isNotEmpty,
+  );
 }

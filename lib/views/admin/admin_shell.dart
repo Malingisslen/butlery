@@ -39,34 +39,34 @@ class _AdminShellState extends State<AdminShell> {
   // their localized title, so the list is built per render. Migrating tabs are
   // swapped to MetricTabView one at a time (Phase 1).
   List<Widget> get _pages => [
-        const FeedbackInboxView(),
-        MetricTabView(
-          title: (l) => l.adminImportTitle,
-          keys: const [
-            MetricKey.importDomains,
-            MetricKey.importSuccess,
-            MetricKey.importFailure,
-            MetricKey.importSuccessRate,
-            MetricKey.importDomainTable,
-          ],
-        ),
-        MetricTabView(
-          title: (l) => l.adminEngagementTitle,
-          keys: const [
-            MetricKey.engagementUsers,
-            MetricKey.engagementActiveToday,
-            MetricKey.engagementActive7d,
-            MetricKey.engagementActive28d,
-            MetricKey.engagementDailyTable,
-          ],
-        ),
-        const ParsingDetailsView(),
-        MetricTabView(
-          title: (l) => l.adminRecipesTitle,
-          keys: const [MetricKey.recipeTotal, MetricKey.recipeByMethod],
-        ),
-        const OpsLogView(),
-      ];
+    const FeedbackInboxView(),
+    MetricTabView(
+      title: (l) => l.adminImportTitle,
+      keys: const [
+        MetricKey.importDomains,
+        MetricKey.importSuccess,
+        MetricKey.importFailure,
+        MetricKey.importSuccessRate,
+        MetricKey.importDomainTable,
+      ],
+    ),
+    MetricTabView(
+      title: (l) => l.adminEngagementTitle,
+      keys: const [
+        MetricKey.engagementUsers,
+        MetricKey.engagementActiveToday,
+        MetricKey.engagementActive7d,
+        MetricKey.engagementActive28d,
+        MetricKey.engagementDailyTable,
+      ],
+    ),
+    const ParsingDetailsView(),
+    MetricTabView(
+      title: (l) => l.adminRecipesTitle,
+      keys: const [MetricKey.recipeTotal, MetricKey.recipeByMethod],
+    ),
+    const OpsLogView(),
+  ];
 
   @override
   Widget build(BuildContext context) {

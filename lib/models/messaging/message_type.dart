@@ -151,15 +151,15 @@ extension MessageTypeExtension on MessageType {
   /// and universally recognizable symbols for enhanced user interface experience.
   /// Returns emoji icon appropriate for visual message type representation.
   String get icon => switch (this) {
-        MessageType.text => '💬',
-        MessageType.recipeShare => '🍽️',
-        MessageType.menuShare => '📋',
-        MessageType.shoppingListShare => '🛒',
-        MessageType.system => 'ℹ️',
-        MessageType.image => '📷',
-        MessageType.voice => '🎤',
-        MessageType.poll => '📊',
-      };
+    MessageType.text => '💬',
+    MessageType.recipeShare => '🍽️',
+    MessageType.menuShare => '📋',
+    MessageType.shoppingListShare => '🛒',
+    MessageType.system => 'ℹ️',
+    MessageType.image => '📷',
+    MessageType.voice => '🎤',
+    MessageType.poll => '📊',
+  };
 }
 
 /// Extension providing Swedish localization and delivery status indicators for MessageStatus enumeration.
@@ -189,10 +189,10 @@ extension MessageStatusExtension on MessageStatus {
   /// confirmation, read receipts, and error indication in messaging interfaces.
   /// Returns emoji icon appropriate for delivery status visualization and user feedback.
   String get icon => switch (this) {
-        MessageStatus.sending => '⏳',
-        MessageStatus.sent => '✓',
-        MessageStatus.delivered => '✓✓',
-        MessageStatus.read => '👁️',
-        MessageStatus.failed => '❌',
-      };
+    MessageStatus.sending => '⏳',
+    MessageStatus.sent => '✓',
+    MessageStatus.delivered => '✓✓',
+    MessageStatus.read => '👁️',
+    MessageStatus.failed => '❌',
+  };
 }

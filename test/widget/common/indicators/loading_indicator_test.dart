@@ -14,12 +14,14 @@ Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 /// (its direct child). On non-iOS hosts AdaptiveActivityIndicator also
 /// contains a SizedBox internally, so we cannot use `.single`.
 SizedBox _sizedBoxFor(WidgetTester tester) {
-  return tester.widget<SizedBox>(find
-      .descendant(
-        of: find.byType(LoadingIndicator),
-        matching: find.byType(SizedBox),
-      )
-      .first);
+  return tester.widget<SizedBox>(
+    find
+        .descendant(
+          of: find.byType(LoadingIndicator),
+          matching: find.byType(SizedBox),
+        )
+        .first,
+  );
 }
 
 AdaptiveActivityIndicator _adaptiveOf(WidgetTester tester) {
@@ -30,16 +32,18 @@ AdaptiveActivityIndicator _adaptiveOf(WidgetTester tester) {
 
 void main() {
   group('LoadingIndicator — default', () {
-    testWidgets('renders an AdaptiveActivityIndicator inside a SizedBox',
-        (tester) async {
+    testWidgets('renders an AdaptiveActivityIndicator inside a SizedBox', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator()));
       expect(find.byType(AdaptiveActivityIndicator), findsOneWidget);
       expect(_sizedBoxFor(tester).width, AppDimensions.iconSizeM);
       expect(_sizedBoxFor(tester).height, AppDimensions.iconSizeM);
     });
 
-    testWidgets('default has no Padding wrapper (padding is null)',
-        (tester) async {
+    testWidgets('default has no Padding wrapper (padding is null)', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator()));
       // The widget tree under LoadingIndicator should be SizedBox directly
       // — no Padding descendant of LoadingIndicator.
@@ -52,8 +56,9 @@ void main() {
       );
     });
 
-    testWidgets('passes default strokeWidth=3 to inner indicator',
-        (tester) async {
+    testWidgets('passes default strokeWidth=3 to inner indicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator()));
       expect(_adaptiveOf(tester).strokeWidth, 3);
     });
@@ -68,37 +73,49 @@ void main() {
   });
 
   group('LoadingIndicator — explicit props', () {
-    testWidgets('explicit size sets SizedBox dimensions + radius',
-        (tester) async {
+    testWidgets('explicit size sets SizedBox dimensions + radius', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator(size: 80)));
       expect(_sizedBoxFor(tester).width, 80);
       expect(_sizedBoxFor(tester).height, 80);
       expect(_adaptiveOf(tester).radius, 40);
     });
 
-    testWidgets('explicit strokeWidth forwards to AdaptiveActivityIndicator',
-        (tester) async {
+    testWidgets('explicit strokeWidth forwards to AdaptiveActivityIndicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator(strokeWidth: 6)));
       expect(_adaptiveOf(tester).strokeWidth, 6);
     });
 
-    testWidgets('explicit color forwards to AdaptiveActivityIndicator',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        const LoadingIndicator(color: Colors.deepOrange),
-      ));
+    testWidgets('explicit color forwards to AdaptiveActivityIndicator', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const LoadingIndicator(color: Colors.deepOrange),
+        ),
+      );
       expect(_adaptiveOf(tester).color, Colors.deepOrange);
     });
 
-    testWidgets('explicit padding wraps the SizedBox in a Padding',
-        (tester) async {
-      await tester.pumpWidget(_wrap(const LoadingIndicator(
-        padding: EdgeInsets.all(24),
-      )));
-      final padding = tester.widget<Padding>(find.descendant(
-        of: find.byType(LoadingIndicator),
-        matching: find.byType(Padding),
-      ));
+    testWidgets('explicit padding wraps the SizedBox in a Padding', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const LoadingIndicator(
+            padding: EdgeInsets.all(24),
+          ),
+        ),
+      );
+      final padding = tester.widget<Padding>(
+        find.descendant(
+          of: find.byType(LoadingIndicator),
+          matching: find.byType(Padding),
+        ),
+      );
       expect(padding.padding, const EdgeInsets.all(24));
     });
   });
@@ -117,10 +134,12 @@ void main() {
 
     testWidgets('wraps content in Padding(all: spacingL)', (tester) async {
       await tester.pumpWidget(_wrap(const LoadingIndicator.small()));
-      final padding = tester.widget<Padding>(find.descendant(
-        of: find.byType(LoadingIndicator),
-        matching: find.byType(Padding),
-      ));
+      final padding = tester.widget<Padding>(
+        find.descendant(
+          of: find.byType(LoadingIndicator),
+          matching: find.byType(Padding),
+        ),
+      );
       expect(
         padding.padding,
         const EdgeInsets.all(AppDimensions.spacingL),
@@ -128,9 +147,11 @@ void main() {
     });
 
     testWidgets('forwards color', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const LoadingIndicator.small(color: Colors.teal),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          const LoadingIndicator.small(color: Colors.teal),
+        ),
+      );
       expect(_adaptiveOf(tester).color, Colors.teal);
     });
   });

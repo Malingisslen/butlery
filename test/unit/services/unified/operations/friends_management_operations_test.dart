@@ -30,19 +30,23 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
 
-      registerFallbackValue(UserProfile(
-        uid: 'test',
-        email: 'test@example.com',
-        displayName: 'Test User',
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      ));
-      registerFallbackValue(FriendRequest(
-        id: 'test',
-        fromUserId: 'test',
-        toUserId: 'test',
-        sentAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        UserProfile(
+          uid: 'test',
+          email: 'test@example.com',
+          displayName: 'Test User',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        ),
+      );
+      registerFallbackValue(
+        FriendRequest(
+          id: 'test',
+          fromUserId: 'test',
+          toUserId: 'test',
+          sentAt: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() async {
@@ -107,8 +111,10 @@ void main() {
     group('Core Functionality', () {
       test('should initialize with parent service', () {
         expect(managementOperations, isNotNull);
-        expect(managementOperations.serviceName,
-            equals('FriendsManagementOperations'));
+        expect(
+          managementOperations.serviceName,
+          equals('FriendsManagementOperations'),
+        );
       });
 
       test('should get friend statistics', () {
@@ -164,18 +170,25 @@ void main() {
         mockParentService.setFriendsState(
           friends: [friend],
         );
-        when(() => mockParentService.removeFriendInternal('friend_123'))
-            .thenReturn(null);
-        when(() => mockRelationshipRepo.removeMutualFriends(any(), any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockParentService.removeFriendInternal('friend_123'),
+        ).thenReturn(null);
+        when(
+          () => mockRelationshipRepo.removeMutualFriends(any(), any()),
+        ).thenAnswer((_) async {});
 
         final success = await managementOperations.removeFriend('friend_123');
 
         expect(success, isTrue);
-        verify(() => mockParentService.removeFriendInternal('friend_123'))
-            .called(1);
-        verify(() => mockRelationshipRepo.removeMutualFriends(
-            'current_user', 'friend_123')).called(1);
+        verify(
+          () => mockParentService.removeFriendInternal('friend_123'),
+        ).called(1);
+        verify(
+          () => mockRelationshipRepo.removeMutualFriends(
+            'current_user',
+            'friend_123',
+          ),
+        ).called(1);
       });
 
       test('should not remove non-existent friend', () async {
@@ -203,18 +216,22 @@ void main() {
           outgoingRequests: [request],
           isInitialized: true,
         );
-        when(() => mockParentService.removeOutgoingRequestInternal('req_1'))
-            .thenReturn(null);
-        when(() => mockParentService.updateFriendRequestStatus(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockParentService.removeOutgoingRequestInternal('req_1'),
+        ).thenReturn(null);
+        when(
+          () => mockParentService.updateFriendRequestStatus(any()),
+        ).thenAnswer((_) async {});
 
         final success = await managementOperations.cancelFriendRequest('req_1');
 
         expect(success, isTrue);
-        verify(() => mockParentService.removeOutgoingRequestInternal('req_1'))
-            .called(1);
-        verify(() => mockParentService.updateFriendRequestStatus(any()))
-            .called(1);
+        verify(
+          () => mockParentService.removeOutgoingRequestInternal('req_1'),
+        ).called(1);
+        verify(
+          () => mockParentService.updateFriendRequestStatus(any()),
+        ).called(1);
       });
 
       test('should return false when request not found', () async {
@@ -223,8 +240,9 @@ void main() {
           isInitialized: true,
         );
 
-        final success =
-            await managementOperations.cancelFriendRequest('nonexistent');
+        final success = await managementOperations.cancelFriendRequest(
+          'nonexistent',
+        );
 
         expect(success, isFalse);
       });
@@ -254,19 +272,22 @@ void main() {
           outgoingRequests: [],
           isInitialized: true,
         );
-        when(() => mockParentService.removeIncomingRequestInternal('inc_req_1'))
-            .thenReturn(null);
-        when(() => mockParentService.updateFriendRequestStatus(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockParentService.removeIncomingRequestInternal('inc_req_1'),
+        ).thenReturn(null);
+        when(
+          () => mockParentService.updateFriendRequestStatus(any()),
+        ).thenAnswer((_) async {});
 
         final success = await managementOperations.blockUser('blocked_person');
 
         expect(success, isTrue);
-        verify(() =>
-                mockParentService.removeIncomingRequestInternal('inc_req_1'))
-            .called(1);
-        verify(() => mockParentService.updateFriendRequestStatus(any()))
-            .called(1);
+        verify(
+          () => mockParentService.removeIncomingRequestInternal('inc_req_1'),
+        ).called(1);
+        verify(
+          () => mockParentService.updateFriendRequestStatus(any()),
+        ).called(1);
         verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
       });
 
@@ -285,17 +306,19 @@ void main() {
           outgoingRequests: [outgoingRequest],
           isInitialized: true,
         );
-        when(() => mockParentService.removeOutgoingRequestInternal('out_req_1'))
-            .thenReturn(null);
-        when(() => mockParentService.updateFriendRequestStatus(any()))
-            .thenAnswer((_) async {});
+        when(
+          () => mockParentService.removeOutgoingRequestInternal('out_req_1'),
+        ).thenReturn(null);
+        when(
+          () => mockParentService.updateFriendRequestStatus(any()),
+        ).thenAnswer((_) async {});
 
         final success = await managementOperations.blockUser('blocked_person');
 
         expect(success, isTrue);
-        verify(() =>
-                mockParentService.removeOutgoingRequestInternal('out_req_1'))
-            .called(1);
+        verify(
+          () => mockParentService.removeOutgoingRequestInternal('out_req_1'),
+        ).called(1);
         verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
       });
 

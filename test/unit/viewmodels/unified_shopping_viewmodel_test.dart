@@ -47,16 +47,15 @@ class _FakeConnectivity extends ConnectivityMonitoringService {
 UserProfile _seamProfile({
   required bool autoAdd,
   required bool prompted,
-}) =>
-    UserProfile(
-      uid: 'test-user-123',
-      displayName: 'Test User',
-      email: 't@example.com',
-      joinedAt: DateTime(2024, 1, 1),
-      lastActiveAt: DateTime(2024, 1, 1),
-      autoAddBoughtToPantry: autoAdd,
-      pantryAutoAddPrompted: prompted,
-    );
+}) => UserProfile(
+  uid: 'test-user-123',
+  displayName: 'Test User',
+  email: 't@example.com',
+  joinedAt: DateTime(2024, 1, 1),
+  lastActiveAt: DateTime(2024, 1, 1),
+  autoAddBoughtToPantry: autoAdd,
+  pantryAutoAddPrompted: prompted,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -123,58 +122,76 @@ void main() {
     // Stub service methods
     when(() => mockShoppingService.initialize()).thenAnswer((_) async {});
     when(() => mockShoppingService.loadLists()).thenAnswer((_) async {});
-    when(() => mockShoppingService.createPersonalList(any()))
-        .thenAnswer((_) async => 'new-list-id');
-    when(() => mockShoppingService.createCollaborativeList(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
-          items: any(named: 'items'),
-          categoryIds: any(named: 'categoryIds'),
-          allowGuestEditing: any(named: 'allowGuestEditing'),
-          autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
-        )).thenAnswer((_) async => 'collab-list-id');
-    when(() => mockShoppingService.setActiveList(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.renameList(any(), any()))
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.deleteList(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.addItemToActiveList(
-          name: any(named: 'name'),
-          amount: any(named: 'amount'),
-          unit: any(named: 'unit'),
-          category: any(named: 'category'),
-          note: any(named: 'note'),
-          estimatedPrice: any(named: 'estimatedPrice'),
-          priority: any(named: 'priority'),
-        )).thenAnswer((_) async => true);
-    when(() => mockShoppingService.toggleItemBought(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.removeItemFromActiveList(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.updateItemInActiveList(
-          itemId: any(named: 'itemId'),
-          name: any(named: 'name'),
-          quantity: any(named: 'quantity'),
-          unit: any(named: 'unit'),
-          category: any(named: 'category'),
-          notes: any(named: 'notes'),
-          estimatedPrice: any(named: 'estimatedPrice'),
-          priority: any(named: 'priority'),
-        )).thenAnswer((_) async => true);
-    when(() => mockShoppingService.clearBoughtItems())
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.uncheckAllItems())
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.addItemsBatch(any()))
-        .thenAnswer((_) async => true);
-    when(() => mockShoppingService.createListFromTemplate(
-          templateId: any(named: 'templateId'),
-        )).thenAnswer((_) async => 'template-list-id');
-    when(() => mockShoppingService.exportListAsText(any()))
-        .thenReturn('Mjolk - 2 liter');
+    when(
+      () => mockShoppingService.createPersonalList(any()),
+    ).thenAnswer((_) async => 'new-list-id');
+    when(
+      () => mockShoppingService.createCollaborativeList(
+        name: any(named: 'name'),
+        description: any(named: 'description'),
+        memberIds: any(named: 'memberIds'),
+        memberDisplayNames: any(named: 'memberDisplayNames'),
+        items: any(named: 'items'),
+        categoryIds: any(named: 'categoryIds'),
+        allowGuestEditing: any(named: 'allowGuestEditing'),
+        autoRemoveCompleted: any(named: 'autoRemoveCompleted'),
+      ),
+    ).thenAnswer((_) async => 'collab-list-id');
+    when(
+      () => mockShoppingService.setActiveList(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.renameList(any(), any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.deleteList(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.addItemToActiveList(
+        name: any(named: 'name'),
+        amount: any(named: 'amount'),
+        unit: any(named: 'unit'),
+        category: any(named: 'category'),
+        note: any(named: 'note'),
+        estimatedPrice: any(named: 'estimatedPrice'),
+        priority: any(named: 'priority'),
+      ),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.toggleItemBought(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.removeItemFromActiveList(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.updateItemInActiveList(
+        itemId: any(named: 'itemId'),
+        name: any(named: 'name'),
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        category: any(named: 'category'),
+        notes: any(named: 'notes'),
+        estimatedPrice: any(named: 'estimatedPrice'),
+        priority: any(named: 'priority'),
+      ),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.clearBoughtItems(),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.uncheckAllItems(),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.addItemsBatch(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.createListFromTemplate(
+        templateId: any(named: 'templateId'),
+      ),
+    ).thenAnswer((_) async => 'template-list-id');
+    when(
+      () => mockShoppingService.exportListAsText(any()),
+    ).thenReturn('Mjolk - 2 liter');
 
     // Register mocks
     if (getIt.isRegistered<UnifiedShoppingService>()) {
@@ -254,8 +271,9 @@ void main() {
     test('createPersonalList delegates to service', () async {
       final result = await viewModel.createPersonalList('Min lista');
       expect(result, isTrue);
-      verify(() => mockShoppingService.createPersonalList('Min lista'))
-          .called(1);
+      verify(
+        () => mockShoppingService.createPersonalList('Min lista'),
+      ).called(1);
     });
 
     test('createPersonalList rejects empty name', () async {
@@ -271,8 +289,9 @@ void main() {
     test('createList is alias for createPersonalList', () async {
       final result = await viewModel.createList('Ny lista');
       expect(result, isTrue);
-      verify(() => mockShoppingService.createPersonalList('Ny lista'))
-          .called(1);
+      verify(
+        () => mockShoppingService.createPersonalList('Ny lista'),
+      ).called(1);
     });
 
     test('setActiveList delegates to service', () async {
@@ -283,8 +302,9 @@ void main() {
     test('renameActiveList delegates to service', () async {
       final result = await viewModel.renameActiveList('Nytt namn');
       expect(result, isTrue);
-      verify(() => mockShoppingService.renameList(testListId, 'Nytt namn'))
-          .called(1);
+      verify(
+        () => mockShoppingService.renameList(testListId, 'Nytt namn'),
+      ).called(1);
     });
 
     test('renameActiveList rejects empty name', () async {
@@ -472,40 +492,54 @@ void main() {
       expect(viewModel.totalItems, 1);
     });
 
-    test('isOnline reflects the live connectivity signal, not init/error state',
-        () {
-      // BUT-610: isOnline must follow real network connectivity. Inject a
-      // connectivity source and flip it offline -> online, asserting the VM's
-      // isOnline follows AND that crossing the boundary notifies the view (so
-      // the offline banner can appear/disappear).
-      final connectivity = _FakeConnectivity(MockConnectivityRepository());
-      final vm = UnifiedShoppingViewModel(connectivity: connectivity);
-      addTearDown(vm.dispose);
+    test(
+      'isOnline reflects the live connectivity signal, not init/error state',
+      () {
+        // BUT-610: isOnline must follow real network connectivity. Inject a
+        // connectivity source and flip it offline -> online, asserting the VM's
+        // isOnline follows AND that crossing the boundary notifies the view (so
+        // the offline banner can appear/disappear).
+        final connectivity = _FakeConnectivity(MockConnectivityRepository());
+        final vm = UnifiedShoppingViewModel(connectivity: connectivity);
+        addTearDown(vm.dispose);
 
-      var notifyCount = 0;
-      vm.addListener(() => notifyCount++);
+        var notifyCount = 0;
+        vm.addListener(() => notifyCount++);
 
-      expect(vm.isOnline, isTrue, reason: 'starts online');
+        expect(vm.isOnline, isTrue, reason: 'starts online');
 
-      connectivity.setOnline(false);
-      expect(vm.isOnline, isFalse, reason: 'follows source going offline');
-      expect(notifyCount, greaterThan(0),
-          reason: 'connectivity change rebuilds the view');
+        connectivity.setOnline(false);
+        expect(vm.isOnline, isFalse, reason: 'follows source going offline');
+        expect(
+          notifyCount,
+          greaterThan(0),
+          reason: 'connectivity change rebuilds the view',
+        );
 
-      final afterOffline = notifyCount;
-      connectivity.setOnline(true);
-      expect(vm.isOnline, isTrue, reason: 'follows source coming back online');
-      expect(notifyCount, greaterThan(afterOffline),
-          reason: 'coming back online also notifies');
-    });
+        final afterOffline = notifyCount;
+        connectivity.setOnline(true);
+        expect(
+          vm.isOnline,
+          isTrue,
+          reason: 'follows source coming back online',
+        );
+        expect(
+          notifyCount,
+          greaterThan(afterOffline),
+          reason: 'coming back online also notifies',
+        );
+      },
+    );
 
-    test('isOnline defaults to true when no connectivity source is available',
-        () {
-      // The default-injected VM (used in this suite) has no
-      // ConnectivityMonitoringService registered, so it treats the app as
-      // online — the offline banner stays hidden by default.
-      expect(viewModel.isOnline, isTrue);
-    });
+    test(
+      'isOnline defaults to true when no connectivity source is available',
+      () {
+        // The default-injected VM (used in this suite) has no
+        // ConnectivityMonitoringService registered, so it treats the app as
+        // online — the offline banner stays hidden by default.
+        expect(viewModel.isOnline, isTrue);
+      },
+    );
 
     test('listSummary returns string', () {
       expect(viewModel.listSummary, isA<String>());
@@ -561,12 +595,19 @@ void main() {
       mockCheckoff = _MockCheckoffPantryService();
       mockUserService = _MockUserServiceForSeam();
 
-      when(() => mockCheckoff.onItemCheckedOff(any(), any(),
-          wasBought: any(named: 'wasBought'))).thenAnswer((_) async {});
-      when(() => mockUserService.setAutoAddToPantry(any()))
-          .thenAnswer((_) async {});
-      when(() => mockUserService.markPantryAutoAddPrompted())
-          .thenAnswer((_) async {});
+      when(
+        () => mockCheckoff.onItemCheckedOff(
+          any(),
+          any(),
+          wasBought: any(named: 'wasBought'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockUserService.setAutoAddToPantry(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockUserService.markPantryAutoAddPrompted(),
+      ).thenAnswer((_) async {});
 
       if (getIt.isRegistered<ShoppingCheckoffPantryService>()) {
         getIt.unregister<ShoppingCheckoffPantryService>();
@@ -593,92 +634,104 @@ void main() {
     });
 
     test(
-        'toggleItemBought feeds the pre-toggle bought-state as wasBought to the '
-        'pantry seam', () async {
-      // Active item starts NOT bought -> a fresh check-off, wasBought=false.
-      final unbought = ShoppingListFactory.buildItem(
-        id: 'item-1',
-        name: 'Mjolk',
-        bought: false,
-      );
-      mockShoppingService.setShoppingState(
-        lists: [
-          ShoppingListFactory.build(
-            id: testListId,
-            ownerId: testUserId,
-            items: [unbought],
-          )
-        ],
-        activeListId: testListId,
-        isInitialized: true,
-        currentUserId: testUserId,
-      );
+      'toggleItemBought feeds the pre-toggle bought-state as wasBought to the '
+      'pantry seam',
+      () async {
+        // Active item starts NOT bought -> a fresh check-off, wasBought=false.
+        final unbought = ShoppingListFactory.buildItem(
+          id: 'item-1',
+          name: 'Mjolk',
+          bought: false,
+        );
+        mockShoppingService.setShoppingState(
+          lists: [
+            ShoppingListFactory.build(
+              id: testListId,
+              ownerId: testUserId,
+              items: [unbought],
+            ),
+          ],
+          activeListId: testListId,
+          isInitialized: true,
+          currentUserId: testUserId,
+        );
 
-      await viewModel.toggleItemBought('item-1');
+        await viewModel.toggleItemBought('item-1');
 
-      verify(() => mockCheckoff.onItemCheckedOff(
+        verify(
+          () => mockCheckoff.onItemCheckedOff(
             testUserId,
             any(),
             wasBought: false,
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
     test(
-        'toggleItemBought feeds wasBought=true when un-checking an already-bought '
-        'item (lets the service no-op correctly)', () async {
-      final bought = ShoppingListFactory.buildItem(
-        id: 'item-1',
-        name: 'Mjolk',
-        bought: true,
-      );
-      mockShoppingService.setShoppingState(
-        lists: [
-          ShoppingListFactory.build(
-            id: testListId,
-            ownerId: testUserId,
-            items: [bought],
-          )
-        ],
-        activeListId: testListId,
-        isInitialized: true,
-        currentUserId: testUserId,
-      );
+      'toggleItemBought feeds wasBought=true when un-checking an already-bought '
+      'item (lets the service no-op correctly)',
+      () async {
+        final bought = ShoppingListFactory.buildItem(
+          id: 'item-1',
+          name: 'Mjolk',
+          bought: true,
+        );
+        mockShoppingService.setShoppingState(
+          lists: [
+            ShoppingListFactory.build(
+              id: testListId,
+              ownerId: testUserId,
+              items: [bought],
+            ),
+          ],
+          activeListId: testListId,
+          isInitialized: true,
+          currentUserId: testUserId,
+        );
 
-      await viewModel.toggleItemBought('item-1');
+        await viewModel.toggleItemBought('item-1');
 
-      verify(() => mockCheckoff.onItemCheckedOff(
+        verify(
+          () => mockCheckoff.onItemCheckedOff(
             testUserId,
             any(),
             wasBought: true,
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
     test('autoAddBoughtToPantry reflects the user profile', () {
-      when(() => mockUserService.currentUserProfile)
-          .thenReturn(_seamProfile(autoAdd: true, prompted: true));
+      when(
+        () => mockUserService.currentUserProfile,
+      ).thenReturn(_seamProfile(autoAdd: true, prompted: true));
       expect(viewModel.autoAddBoughtToPantry, isTrue);
 
-      when(() => mockUserService.currentUserProfile)
-          .thenReturn(_seamProfile(autoAdd: false, prompted: true));
+      when(
+        () => mockUserService.currentUserProfile,
+      ).thenReturn(_seamProfile(autoAdd: false, prompted: true));
       expect(viewModel.autoAddBoughtToPantry, isFalse);
     });
 
-    test(
-        'shouldShowFirstCheckoffPrompt is true only when not yet prompted AND '
+    test('shouldShowFirstCheckoffPrompt is true only when not yet prompted AND '
         'not already opted in', () {
       // Never prompted, not opted in -> show.
-      when(() => mockUserService.currentUserProfile)
-          .thenReturn(_seamProfile(autoAdd: false, prompted: false));
+      when(
+        () => mockUserService.currentUserProfile,
+      ).thenReturn(_seamProfile(autoAdd: false, prompted: false));
       expect(viewModel.shouldShowFirstCheckoffPrompt, isTrue);
 
       // Already opted in -> never prompt even if unprompted.
-      when(() => mockUserService.currentUserProfile)
-          .thenReturn(_seamProfile(autoAdd: true, prompted: false));
+      when(
+        () => mockUserService.currentUserProfile,
+      ).thenReturn(_seamProfile(autoAdd: true, prompted: false));
       expect(viewModel.shouldShowFirstCheckoffPrompt, isFalse);
 
       // Already prompted -> never prompt again.
-      when(() => mockUserService.currentUserProfile)
-          .thenReturn(_seamProfile(autoAdd: false, prompted: true));
+      when(
+        () => mockUserService.currentUserProfile,
+      ).thenReturn(_seamProfile(autoAdd: false, prompted: true));
       expect(viewModel.shouldShowFirstCheckoffPrompt, isFalse);
     });
 
@@ -715,31 +768,41 @@ void main() {
       verify(() => mockShoppingService.removeItemFromActiveList('c')).called(1);
     });
 
-    test('bulkRemoveItems denies (no removal) when the user cannot edit',
-        () async {
-      mockPermissionService.setPermissionState(
-        currentUserId: testUserId,
-        userDisplayName: 'Test User',
-        isAuthenticated: true,
-        defaultHasPermission: false,
-      );
+    test(
+      'bulkRemoveItems denies (no removal) when the user cannot edit',
+      () async {
+        mockPermissionService.setPermissionState(
+          currentUserId: testUserId,
+          userDisplayName: 'Test User',
+          isAuthenticated: true,
+          defaultHasPermission: false,
+        );
 
-      final ok = await viewModel.bulkRemoveItems({'a', 'b'});
+        final ok = await viewModel.bulkRemoveItems({'a', 'b'});
 
-      expect(ok, isFalse,
-          reason: 'permission gate must block bulk delete entirely');
-      verifyNever(() => mockShoppingService.removeItemFromActiveList(any()));
-    });
+        expect(
+          ok,
+          isFalse,
+          reason: 'permission gate must block bulk delete entirely',
+        );
+        verifyNever(() => mockShoppingService.removeItemFromActiveList(any()));
+      },
+    );
 
     test('bulkRemoveItems returns false if any single removal fails', () async {
-      when(() => mockShoppingService.removeItemFromActiveList('b'))
-          .thenAnswer((_) async => false);
+      when(
+        () => mockShoppingService.removeItemFromActiveList('b'),
+      ).thenAnswer((_) async => false);
 
       final ok = await viewModel.bulkRemoveItems({'a', 'b'});
 
-      expect(ok, isFalse,
-          reason: 'a partial failure must be reported so the caller can skip '
-              'offering an undo that would double-add the survivors');
+      expect(
+        ok,
+        isFalse,
+        reason:
+            'a partial failure must be reported so the caller can skip '
+            'offering an undo that would double-add the survivors',
+      );
     });
 
     test('restoreItems re-adds every removed item', () async {
@@ -749,22 +812,26 @@ void main() {
       final ok = await viewModel.restoreItems([a, b]);
 
       expect(ok, isTrue);
-      verify(() => mockShoppingService.addItemToActiveList(
-            name: 'Salt',
-            amount: any(named: 'amount'),
-            unit: any(named: 'unit'),
-            category: any(named: 'category'),
-            note: any(named: 'note'),
-            priority: any(named: 'priority'),
-          )).called(1);
-      verify(() => mockShoppingService.addItemToActiveList(
-            name: 'Peppar',
-            amount: any(named: 'amount'),
-            unit: any(named: 'unit'),
-            category: any(named: 'category'),
-            note: any(named: 'note'),
-            priority: any(named: 'priority'),
-          )).called(1);
+      verify(
+        () => mockShoppingService.addItemToActiveList(
+          name: 'Salt',
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+          note: any(named: 'note'),
+          priority: any(named: 'priority'),
+        ),
+      ).called(1);
+      verify(
+        () => mockShoppingService.addItemToActiveList(
+          name: 'Peppar',
+          amount: any(named: 'amount'),
+          unit: any(named: 'unit'),
+          category: any(named: 'category'),
+          note: any(named: 'note'),
+          priority: any(named: 'priority'),
+        ),
+      ).called(1);
     });
   });
 }

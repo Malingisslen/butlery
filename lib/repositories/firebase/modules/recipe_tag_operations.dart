@@ -26,7 +26,7 @@ class RecipeTagOperations {
 
   final FirebaseFirestore firestore;
   final CollectionReference<Map<String, dynamic>> Function(String userId)
-      getCollectionForUser;
+  getCollectionForUser;
 
   /// Renames a personal tag across all user recipes that contain it.
   ///
@@ -56,9 +56,9 @@ class RecipeTagOperations {
     if (userId == null) return 0;
 
     try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagId)
-          .get();
+      final snap = await getCollectionForUser(
+        userId,
+      ).where('core.personalTagIds', arrayContains: tagId).get();
 
       if (snap.docs.isEmpty) return 0;
 
@@ -120,9 +120,9 @@ class RecipeTagOperations {
     if (userId == null) return 0;
 
     try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagId)
-          .get();
+      final snap = await getCollectionForUser(
+        userId,
+      ).where('core.personalTagIds', arrayContains: tagId).get();
 
       if (snap.docs.isEmpty) return 0;
 
@@ -134,7 +134,9 @@ class RecipeTagOperations {
 
         for (final doc in chunk) {
           batch.update(
-              doc.reference, _buildTagRemovalUpdate(doc.data(), tagId));
+            doc.reference,
+            _buildTagRemovalUpdate(doc.data(), tagId),
+          );
         }
 
         await batch.commit();
@@ -171,9 +173,9 @@ class RecipeTagOperations {
     if (tagId.isEmpty) return 0;
     if (userId == null) return 0;
 
-    final snap = await getCollectionForUser(userId)
-        .where('core.personalTagIds', arrayContains: tagId)
-        .get();
+    final snap = await getCollectionForUser(
+      userId,
+    ).where('core.personalTagIds', arrayContains: tagId).get();
 
     if (snap.docs.isEmpty) return 0;
 
@@ -228,9 +230,9 @@ class RecipeTagOperations {
     if (fromTagId == toTagId) return 0;
 
     try {
-      final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: fromTagId)
-          .get();
+      final snap = await getCollectionForUser(
+        userId,
+      ).where('core.personalTagIds', arrayContains: fromTagId).get();
 
       if (snap.docs.isEmpty) return 0;
 
@@ -303,7 +305,8 @@ class RecipeTagOperations {
   ) {
     final coreData = data['core'] as Map<String, dynamic>? ?? {};
 
-    final ids = (coreData['personalTagIds'] as List?)
+    final ids =
+        (coreData['personalTagIds'] as List?)
             ?.where((id) => id != fromTagId)
             .toList() ??
         <dynamic>[];
@@ -320,8 +323,9 @@ class RecipeTagOperations {
       final richTags = personalTags
           .where((entry) => entry is Map && entry['tagId'] != fromTagId)
           .toList();
-      final hasTo =
-          richTags.any((entry) => entry is Map && entry['tagId'] == toTagId);
+      final hasTo = richTags.any(
+        (entry) => entry is Map && entry['tagId'] == toTagId,
+      );
       if (!hasTo) {
         richTags.add(toTagRichEntry);
       }

@@ -14,38 +14,40 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
 
-typedef CreateCollaborativeRecipeFn = Future<String?> Function({
-  required String title,
-  required List<String> memberIds,
-  String description,
-  List<String> ingredients,
-  List<String> instructions,
-  List<String> imageUrls,
-  String mealType,
-  int? portions,
-  int? timeMinutes,
-  double? rating,
-  List<String>? personalTagIds,
-  String? sourceUrl,
-  String? descriptionCollaborative,
-  bool allowGuestViewing,
-  bool allowMemberInvites,
-  List<String>? categoryIds,
-});
+typedef CreateCollaborativeRecipeFn =
+    Future<String?> Function({
+      required String title,
+      required List<String> memberIds,
+      String description,
+      List<String> ingredients,
+      List<String> instructions,
+      List<String> imageUrls,
+      String mealType,
+      int? portions,
+      int? timeMinutes,
+      double? rating,
+      List<String>? personalTagIds,
+      String? sourceUrl,
+      String? descriptionCollaborative,
+      bool allowGuestViewing,
+      bool allowMemberInvites,
+      List<String>? categoryIds,
+    });
 
-typedef CreatePersonalRecipeFn = Future<String?> Function({
-  required String title,
-  String description,
-  List<String> ingredients,
-  List<String> instructions,
-  List<String> imageUrls,
-  String mealType,
-  int? portions,
-  int? timeMinutes,
-  double? rating,
-  List<String>? personalTagIds,
-  String? sourceUrl,
-});
+typedef CreatePersonalRecipeFn =
+    Future<String?> Function({
+      required String title,
+      String description,
+      List<String> ingredients,
+      List<String> instructions,
+      List<String> imageUrls,
+      String mealType,
+      int? portions,
+      int? timeMinutes,
+      double? rating,
+      List<String>? personalTagIds,
+      String? sourceUrl,
+    });
 
 /// Focused module for recipe sharing and collaboration setup
 /// This module handles ONLY recipe sharing responsibilities:
@@ -80,15 +82,15 @@ class RecipeSharingManager {
     required NotificationService? notificationService,
     FirestoreRepository? firestoreRepository,
     void Function(String)? onShareError,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getCurrentUserDisplayName = getCurrentUserDisplayName,
-        _getRecipes = getRecipes,
-        _createCollaborativeRecipe = createCollaborativeRecipe,
-        _createPersonalRecipe = createPersonalRecipe,
-        _notificationService = notificationService,
-        _onShareError = onShareError,
-        _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getCurrentUserDisplayName = getCurrentUserDisplayName,
+       _getRecipes = getRecipes,
+       _createCollaborativeRecipe = createCollaborativeRecipe,
+       _createPersonalRecipe = createPersonalRecipe,
+       _notificationService = notificationService,
+       _onShareError = onShareError,
+       _firestoreRepository =
+           firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   /// Share a personal recipe with other users (convert to collaborative)
   /// Main entry point for recipe sharing - converts personal recipe to collaborative format
@@ -110,17 +112,20 @@ class RecipeSharingManager {
 
       try {
         // Try personal recipe first
-        recipeToShare =
-            _getRecipes().firstWhere((r) => r.id == recipeId && r.isPersonal);
+        recipeToShare = _getRecipes().firstWhere(
+          (r) => r.id == recipeId && r.isPersonal,
+        );
         AppLogger.info('📋 Found personal recipe: ${recipeToShare.title}');
       } catch (e) {
         // If not personal, try collaborative
         try {
-          recipeToShare = _getRecipes()
-              .firstWhere((r) => r.id == recipeId && r.isCollaborative);
+          recipeToShare = _getRecipes().firstWhere(
+            (r) => r.id == recipeId && r.isCollaborative,
+          );
           isAlreadyCollaborative = true;
           AppLogger.info(
-              '📋 Found collaborative recipe: ${recipeToShare.title}');
+            '📋 Found collaborative recipe: ${recipeToShare.title}',
+          );
         } catch (e2) {
           AppLogger.error('❌ Recipe not found: $recipeId');
           return null;
@@ -132,7 +137,7 @@ class RecipeSharingManager {
       final ownerId = _getCurrentUserId();
       final existingMembers =
           recipeToShare.socialData?.memberPermissions?.keys.toSet() ??
-              <String>{};
+          <String>{};
       final projected = <String>{
         if (ownerId != null) ownerId,
         ...existingMembers,
@@ -142,12 +147,14 @@ class RecipeSharingManager {
         // BUT-804 polish: user-input validation, not internal error —
         // warning is the right level; error pollutes prod dashboards.
         AppLogger.warning(
-            'Share denied: recipe $recipeId would have ${projected.length} '
-            'shares (cap: ${Recipe.maxSharesPerRecipe})');
+          'Share denied: recipe $recipeId would have ${projected.length} '
+          'shares (cap: ${Recipe.maxSharesPerRecipe})',
+        );
         // BUT-1056: surface the localized cap message to the UI instead of a
         // bare null that reads as a generic "could not save" error.
         _onShareError?.call(
-            AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe));
+          AppLocale.current.errorShareCapReached(Recipe.maxSharesPerRecipe),
+        );
         return null;
       }
 
@@ -164,7 +171,8 @@ class RecipeSharingManager {
         AppLogger.success('✅ Collaborative recipe synced to shared collection');
       } else {
         // Create collaborative version for personal recipes
-        finalRecipeId = await _createCollaborativeRecipe(
+        finalRecipeId =
+            await _createCollaborativeRecipe(
               title: recipeToShare.title,
               memberIds: memberIds,
               description: recipeToShare.description,
@@ -234,21 +242,25 @@ class RecipeSharingManager {
   }) async {
     try {
       AppLogger.info(
-          '🔄 Converting collaborative recipe to personal: $collaborativeRecipeId');
+        '🔄 Converting collaborative recipe to personal: $collaborativeRecipeId',
+      );
 
       // Find the collaborative recipe
       dynamic collaborativeRecipe;
       try {
         collaborativeRecipe = _getRecipes().firstWhere(
-            (r) => r.id == collaborativeRecipeId && r.isCollaborative);
+          (r) => r.id == collaborativeRecipeId && r.isCollaborative,
+        );
       } catch (e) {
         AppLogger.error(
-            '❌ Cannot convert recipe: Collaborative recipe not found');
+          '❌ Cannot convert recipe: Collaborative recipe not found',
+        );
         return null;
       }
 
       AppLogger.info(
-          '📋 Found collaborative recipe: ${collaborativeRecipe.title}');
+        '📋 Found collaborative recipe: ${collaborativeRecipe.title}',
+      );
 
       // Create personal copy with new title if provided
       final personalRecipeId = await _createPersonalRecipe(
@@ -336,7 +348,8 @@ class RecipeSharingManager {
     required Map<String, String> memberDisplayNames,
   }) async {
     AppLogger.info(
-        '📬 Sending sharing notifications to ${memberIds.length} members');
+      '📬 Sending sharing notifications to ${memberIds.length} members',
+    );
 
     // Get current user display name for notification
     final currentUserId = _getCurrentUserId();
@@ -395,8 +408,9 @@ class RecipeSharingManager {
     try {
       dynamic originalRecipe;
       try {
-        originalRecipe =
-            _getRecipes().firstWhere((r) => r.id == recipeId && r.isPersonal);
+        originalRecipe = _getRecipes().firstWhere(
+          (r) => r.id == recipeId && r.isPersonal,
+        );
       } catch (e) {
         AppLogger.error('❌ Cannot duplicate: Recipe not found');
         return null;
@@ -470,7 +484,7 @@ class RecipeSharingManager {
         recipeTitle: recipe.title,
         memberIds: [
           ...existingMembers,
-          ...memberIds
+          ...memberIds,
         ], // Combine existing + new members
         recipeData: recipe,
       );
@@ -510,12 +524,15 @@ class RecipeSharingManager {
           .toList();
 
       final personalRecipes = userRecipes.where((r) => r.isPersonal).length;
-      final collaborativeRecipes =
-          userRecipes.where((r) => r.isCollaborative).length;
+      final collaborativeRecipes = userRecipes
+          .where((r) => r.isCollaborative)
+          .length;
       final sharedRecipes = userRecipes
-          .where((r) =>
-              r.isCollaborative &&
-              (r.socialData?.memberPermissions?.isNotEmpty ?? false))
+          .where(
+            (r) =>
+                r.isCollaborative &&
+                (r.socialData?.memberPermissions?.isNotEmpty ?? false),
+          )
           .length;
 
       return {
@@ -547,7 +564,8 @@ class RecipeSharingManager {
       final currentUserId = permissionService.currentUserId;
       if (currentUserId == null) {
         AppLogger.warning(
-            'Cannot write to shared_recipes: No authenticated user');
+          'Cannot write to shared_recipes: No authenticated user',
+        );
         return;
       }
 
@@ -558,25 +576,26 @@ class RecipeSharingManager {
           .collection(FirestoreCollections.sharedContent)
           .doc(recipeId)
           .set({
-        'contentType': 'recipe',
-        'recipeId': recipeId,
-        'title': recipeTitle,
-        'description': recipeData.description ?? '',
-        'sharedByUserId': currentUserId,
-        'sharedByDisplayName':
-            permissionService.currentUser?.displayName ?? 'Unknown',
-        'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
-        'sharedWithUserIds': allUserIds,
-        'sharedAt': FieldValue.serverTimestamp(),
-        'isActive': true,
-        'imageUrl': recipeData.imageUrls?.isNotEmpty == true
-            ? recipeData.imageUrls.first
-            : null,
-        'mealType': recipeData.mealType ?? '',
-      }, SetOptions(merge: true));
+            'contentType': 'recipe',
+            'recipeId': recipeId,
+            'title': recipeTitle,
+            'description': recipeData.description ?? '',
+            'sharedByUserId': currentUserId,
+            'sharedByDisplayName':
+                permissionService.currentUser?.displayName ?? 'Unknown',
+            'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
+            'sharedWithUserIds': allUserIds,
+            'sharedAt': FieldValue.serverTimestamp(),
+            'isActive': true,
+            'imageUrl': recipeData.imageUrls?.isNotEmpty == true
+                ? recipeData.imageUrls.first
+                : null,
+            'mealType': recipeData.mealType ?? '',
+          }, SetOptions(merge: true));
 
       AppLogger.debug(
-          '✅ Recipe written to shared_content collection for group discovery');
+        '✅ Recipe written to shared_content collection for group discovery',
+      );
     } catch (e) {
       AppLogger.warning('Failed to write to shared_content collection: $e');
       // Don't fail the whole sharing operation if this fails

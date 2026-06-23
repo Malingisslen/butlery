@@ -75,24 +75,27 @@ class FirebaseSharedShoppingRepository
     SharedShoppingViewRepository? viewRepository,
     SharedShoppingEngagementRepository? engagementRepository,
     SharedShoppingDismissalRepository? dismissalRepository,
-  })  : _viewRepository = viewRepository ??
-            SharedShoppingViewRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        _engagementRepository = engagementRepository ??
-            SharedShoppingEngagementRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        _dismissalRepository = dismissalRepository ??
-            SharedShoppingDismissalRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+  }) : _viewRepository =
+           viewRepository ??
+           SharedShoppingViewRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       _engagementRepository =
+           engagementRepository ??
+           SharedShoppingEngagementRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       _dismissalRepository =
+           dismissalRepository ??
+           SharedShoppingDismissalRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       super(
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
 
   @override
   String get collectionName => FirestoreCollections.sharedContent;
@@ -186,7 +189,8 @@ class FirebaseSharedShoppingRepository
     // Shopping list-specific validations
     if (sharedShoppingList.sharedByUserId != uid) {
       throw PermissionDeniedException(
-          'Cannot create shared shopping list for another user');
+        'Cannot create shared shopping list for another user',
+      );
     }
 
     if (recipientIds.isEmpty) {
@@ -202,14 +206,16 @@ class FirebaseSharedShoppingRepository
     }
 
     AppLogger.success(
-        '✅ Created shared shopping list with ${recipientIds.length} members in subcollection');
+      '✅ Created shared shopping list with ${recipientIds.length} members in subcollection',
+    );
 
     return listId;
   }
 
   /// Get all shared shopping lists for a specific user
   Future<List<SharedShoppingList>> getSharedShoppingListsForUser(
-      String userId) async {
+    String userId,
+  ) async {
     // Use subcollection-based query (Issue #014: Unlimited sharing support)
     return await getSharedContentForUserViaSubcollection(userId);
   }
@@ -236,7 +242,8 @@ class FirebaseSharedShoppingRepository
 
     if (!canAccess) {
       throw PermissionDeniedException(
-          'Cannot access this shared shopping list');
+        'Cannot access this shared shopping list',
+      );
     }
 
     // Shopping list-specific logging
@@ -293,12 +300,14 @@ class FirebaseSharedShoppingRepository
 
   /// Get joined shared shopping lists for user
   Future<List<SharedShoppingList>> getJoinedShoppingListsForUser(
-      String userId) async {
+    String userId,
+  ) async {
     final uid = requireCurrentUserId();
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot get joined lists for another user');
+        'Cannot get joined lists for another user',
+      );
     }
 
     try {
@@ -312,7 +321,8 @@ class FirebaseSharedShoppingRepository
 
       if (engagementsSnapshot.docs.isEmpty) {
         AppLogger.info(
-            '📋 User ${userId.maskedUserId} has no joined shopping lists');
+          '📋 User ${userId.maskedUserId} has no joined shopping lists',
+        );
         return [];
       }
 
@@ -338,11 +348,13 @@ class FirebaseSharedShoppingRepository
       }
 
       AppLogger.info(
-          '📋 User ${userId.maskedUserId} has joined ${joinedLists.length} shopping lists');
+        '📋 User ${userId.maskedUserId} has joined ${joinedLists.length} shopping lists',
+      );
       return joinedLists;
     } catch (e) {
       AppLogger.error(
-          'Failed to get joined shopping lists for user ${userId.maskedUserId}: $e');
+        'Failed to get joined shopping lists for user ${userId.maskedUserId}: $e',
+      );
       throw RepositoryException('Failed to retrieve joined shopping lists: $e');
     }
   }
@@ -388,20 +400,24 @@ class FirebaseSharedShoppingRepository
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if batch operation fails
   Future<void> addItemsBatch(
-      String listId, List<UnifiedShoppingItem> items) async {
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
     if (items.isEmpty) return;
 
     try {
       await validateListAccess(listId);
 
       final batch = firestore.batch();
-      final listRef =
-          firestore.collection(FirestoreCollections.sharedContent).doc(listId);
+      final listRef = firestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc(listId);
 
       // Add all items to subcollection
       for (final item in items) {
-        final itemRef =
-            listRef.collection(FirestoreCollections.items).doc(item.id);
+        final itemRef = listRef
+            .collection(FirestoreCollections.items)
+            .doc(item.id);
         batch.set(itemRef, item.toFirestore());
       }
 
@@ -413,7 +429,8 @@ class FirebaseSharedShoppingRepository
       AppLogger.info('🛒 Added ${items.length} items to shopping list $listId');
     } catch (e) {
       AppLogger.error(
-          'Failed to add ${items.length} items to shopping list $listId: $e');
+        'Failed to add ${items.length} items to shopping list $listId: $e',
+      );
       throw RepositoryException('Failed to add items in batch: $e');
     }
   }
@@ -441,7 +458,8 @@ class FirebaseSharedShoppingRepository
           .toList();
 
       AppLogger.info(
-          '🛒 Loaded ${items.length} items from shopping list $listId');
+        '🛒 Loaded ${items.length} items from shopping list $listId',
+      );
       return items;
     } catch (e) {
       AppLogger.error('Failed to get items from shopping list $listId: $e');
@@ -472,7 +490,8 @@ class FirebaseSharedShoppingRepository
       return UnifiedShoppingItem.fromFirestore(doc.data()!);
     } catch (e) {
       AppLogger.error(
-          'Failed to get item $itemId from shopping list $listId: $e');
+        'Failed to get item $itemId from shopping list $listId: $e',
+      );
       throw RepositoryException('Failed to retrieve item: $e');
     }
   }
@@ -537,7 +556,10 @@ class FirebaseSharedShoppingRepository
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if update fails
   Future<void> toggleItemBought(
-      String listId, String itemId, bool bought) async {
+    String listId,
+    String itemId,
+    bool bought,
+  ) async {
     try {
       await validateListAccess(listId);
 
@@ -555,10 +577,12 @@ class FirebaseSharedShoppingRepository
           .update(updateData);
 
       AppLogger.info(
-          '🛒 Toggled item $itemId bought status to $bought in list $listId');
+        '🛒 Toggled item $itemId bought status to $bought in list $listId',
+      );
     } catch (e) {
       AppLogger.error(
-          'Failed to toggle item bought status in list $listId: $e');
+        'Failed to toggle item bought status in list $listId: $e',
+      );
       throw RepositoryException('Failed to toggle item bought status: $e');
     }
   }
@@ -598,7 +622,8 @@ class FirebaseSharedShoppingRepository
 
       final deletedCount = snapshot.docs.length;
       AppLogger.info(
-          '🛒 Cleared $deletedCount completed items from list $listId');
+        '🛒 Cleared $deletedCount completed items from list $listId',
+      );
       return deletedCount;
     } catch (e) {
       AppLogger.error('Failed to clear completed items from list $listId: $e');
@@ -665,9 +690,11 @@ class FirebaseSharedShoppingRepository
           .collection(FirestoreCollections.items)
           .orderBy('addedAt', descending: false)
           .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))
-              .toList());
+          .map(
+            (snapshot) => snapshot.docs
+                .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))
+                .toList(),
+          );
     } catch (e) {
       AppLogger.error('Failed to create item stream for list $listId: $e');
       throw RepositoryException('Failed to stream items: $e');
@@ -693,16 +720,19 @@ class FirebaseSharedShoppingRepository
     bool recalculate = false,
   }) async {
     try {
-      final listRef =
-          firestore.collection(FirestoreCollections.sharedContent).doc(listId);
+      final listRef = firestore
+          .collection(FirestoreCollections.sharedContent)
+          .doc(listId);
 
       if (recalculate) {
         // Recalculate from subcollection (for bulk operations)
-        final snapshot =
-            await listRef.collection(FirestoreCollections.items).get();
+        final snapshot = await listRef
+            .collection(FirestoreCollections.items)
+            .get();
         await listRef.update({'itemCount': snapshot.size});
         AppLogger.debug(
-            '🛒 Recalculated itemCount for list $listId: ${snapshot.size}');
+          '🛒 Recalculated itemCount for list $listId: ${snapshot.size}',
+        );
       } else if (increment != 0) {
         // Atomic increment/decrement (for single item operations)
         await listRef.update({'itemCount': FieldValue.increment(increment)});
@@ -727,7 +757,8 @@ class FirebaseSharedShoppingRepository
       final userId = authRepository.currentUserId;
       if (userId == null) {
         throw PermissionDeniedException(
-            'User must be authenticated to access shopping list');
+          'User must be authenticated to access shopping list',
+        );
       }
 
       // Check if user is owner
@@ -757,7 +788,8 @@ class FirebaseSharedShoppingRepository
 
       if (!memberDoc.exists) {
         throw PermissionDeniedException(
-            'User does not have access to shopping list $listId');
+          'User does not have access to shopping list $listId',
+        );
       }
     } catch (e) {
       if (e is PermissionDeniedException || e is AuthenticationException) {

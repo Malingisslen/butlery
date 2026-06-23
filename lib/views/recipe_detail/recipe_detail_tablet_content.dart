@@ -107,7 +107,9 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
               children: [
                 if (recipe.completenessScore < incompleteThreshold)
                   RecipeDetailSharedWidgets.buildCompletenessBanner(
-                      context, recipe),
+                    context,
+                    recipe,
+                  ),
                 Selector<UserService, UserAllergenPreferences>(
                   selector: (_, svc) => svc.allergenPreferences,
                   builder: (context, allergenPrefs, _) {
@@ -122,7 +124,10 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                       },
                       onImageTap: (imageUrls, index) =>
                           RecipeDetailSharedWidgets.showFullscreenImage(
-                              context, imageUrls, index),
+                            context,
+                            imageUrls,
+                            index,
+                          ),
                       userAllergenPrefs: allergenPrefs.showOnDetail
                           ? allergenPrefs.trackedAllergens
                           : null,

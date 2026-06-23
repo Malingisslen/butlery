@@ -11,8 +11,10 @@ import 'package:butlery/core/utils/retry_helper.dart';
 void main() {
   group('retryWithBackoff', () {
     test('returns value on first success', () async {
-      final result =
-          await RetryHelper.retryWithBackoff(() async => 'ok', maxRetries: 3);
+      final result = await RetryHelper.retryWithBackoff(
+        () async => 'ok',
+        maxRetries: 3,
+      );
       expect(result, 'ok');
     });
 
@@ -47,9 +49,12 @@ void main() {
             throw Exception('always fails');
           },
           maxRetries: 3,
-        ).then((_) {}, onError: (Object e) {
-          thrown = e;
-        });
+        ).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
+          },
+        );
         async.elapse(const Duration(seconds: 30));
 
         expect(attempts, 3);
@@ -68,9 +73,12 @@ void main() {
           },
           maxRetries: 5,
           shouldRetry: (e) => false,
-        ).then((_) {}, onError: (Object e) {
-          thrown = e;
-        });
+        ).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
+          },
+        );
         async.elapse(const Duration(milliseconds: 1));
 
         expect(attempts, 1);
@@ -139,9 +147,12 @@ void main() {
             attempts++;
             throw Exception('permission-denied');
           },
-        ).then((_) {}, onError: (Object e) {
-          thrown = e;
-        });
+        ).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
+          },
+        );
         async.elapse(const Duration(seconds: 1));
 
         expect(attempts, 1);
@@ -200,9 +211,12 @@ void main() {
             attempts++;
             throw Exception('not-found');
           },
-        ).then((_) {}, onError: (Object e) {
-          thrown = e;
-        });
+        ).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
+          },
+        );
         async.elapse(const Duration(seconds: 1));
 
         expect(attempts, 1);
@@ -217,9 +231,12 @@ void main() {
         RetryHelper.retryFirebaseOperation(() async {
           attempts++;
           throw Exception('failed-precondition');
-        }).then((_) {}, onError: (Object e) {
-          thrown = e;
-        });
+        }).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
+          },
+        );
         async.elapse(const Duration(seconds: 1));
         expect(attempts, 1);
         expect(thrown, isNotNull);
@@ -239,9 +256,12 @@ void main() {
           },
           maxRetries: 3,
           delay: const Duration(milliseconds: 100),
-        ).then((_) {}, onError: (Object e) {
-          thrown = e;
-        });
+        ).then(
+          (_) {},
+          onError: (Object e) {
+            thrown = e;
+          },
+        );
         async.elapse(const Duration(seconds: 1));
 
         expect(attempts, 3);
@@ -272,12 +292,15 @@ void main() {
   });
 
   group('Future extension methods', () {
-    test('retryWithBackoff extension wraps RetryHelper.retryWithBackoff',
-        () async {
-      final result =
-          await Future<int>.value(42).retryWithBackoff(maxRetries: 1);
-      expect(result, 42);
-    });
+    test(
+      'retryWithBackoff extension wraps RetryHelper.retryWithBackoff',
+      () async {
+        final result = await Future<int>.value(
+          42,
+        ).retryWithBackoff(maxRetries: 1);
+        expect(result, 42);
+      },
+    );
 
     test('retryNetworkOperation extension', () async {
       final result = await Future<int>.value(42).retryNetworkOperation();

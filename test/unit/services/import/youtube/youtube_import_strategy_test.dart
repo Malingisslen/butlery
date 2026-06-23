@@ -117,8 +117,9 @@ class _FakeTranscriptService extends YouTubeTranscriptService {
   VideoMetadata? cannedMetadata;
 
   /// Canned transcript result.
-  TranscriptResult cannedTranscript =
-      TranscriptResult.failure('No captions available');
+  TranscriptResult cannedTranscript = TranscriptResult.failure(
+    'No captions available',
+  );
 
   /// Call counters / arg captures.
   int extractVideoIdCalls = 0;
@@ -189,33 +190,31 @@ const _watchUrl = 'https://www.youtube.com/watch?v=$_vid';
 const _hqThumb = 'https://img.youtube.com/vi/$_vid/hqdefault.jpg';
 
 Recipe _recipe({String title = 'Pannkakor'}) => Recipe.personal(
-      title: title,
-      description: 'Klassiska svenska pannkakor',
-      mealType: 'breakfast',
-      ingredients: const ['3 ägg', '5 dl mjölk', '3 dl mjöl'],
-      instructions: const ['Vispa.', 'Stek.'],
-    );
+  title: title,
+  description: 'Klassiska svenska pannkakor',
+  mealType: 'breakfast',
+  ingredients: const ['3 ägg', '5 dl mjölk', '3 dl mjöl'],
+  instructions: const ['Vispa.', 'Stek.'],
+);
 
 VideoMetadata _metadata({
   String videoId = _vid,
   String title = 'Best Pannkakor Ever',
   String? channelName = 'Chef Anna',
-}) =>
-    VideoMetadata(
-      videoId: videoId,
-      title: title,
-      channelName: channelName,
-      sourceUrl: 'https://www.youtube.com/watch?v=$videoId',
-    );
+}) => VideoMetadata(
+  videoId: videoId,
+  title: title,
+  channelName: channelName,
+  sourceUrl: 'https://www.youtube.com/watch?v=$videoId',
+);
 
 YouTubeImportStrategy _strategy({
   required _FakeTranscriptService transcript,
   required _FakeLlmEnhancement llm,
-}) =>
-    YouTubeImportStrategy(
-      transcriptService: transcript,
-      llmService: llm,
-    );
+}) => YouTubeImportStrategy(
+  transcriptService: transcript,
+  llmService: llm,
+);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -255,8 +254,7 @@ void main() {
     /// this self-consistency invariant — a placeholder the strategy would
     /// reject is a contract bug (and a UX bug: users see a "valid" example
     /// the importer can't actually parse).
-    test(
-        'inputExample self-consistency — BUT-1117: real video ID satisfies '
+    test('inputExample self-consistency — BUT-1117: real video ID satisfies '
         'canHandle', () {
       final realStrategy = YouTubeImportStrategy(
         transcriptService: YouTubeTranscriptService(),
@@ -265,7 +263,8 @@ void main() {
       expect(
         realStrategy.canHandle(realStrategy.inputExample),
         isTrue,
-        reason: 'BUT-1117: inputExample must satisfy canHandle — placeholder '
+        reason:
+            'BUT-1117: inputExample must satisfy canHandle — placeholder '
             'must be a real 11-char video ID, not a documentation token like '
             "'VIDEO_ID'.",
       );
@@ -299,61 +298,91 @@ void main() {
     /// Transcript fetch fails entirely (no captions) → screenshot prompt.
     /// LLM must NOT be called (cost contract). Pin platform + watch URL
     /// so the UI can route the prompt by platform.
-    test('failed transcript fetch → ImportNeedsScreenshot, LLM never called',
-        () async {
-      transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.failure('No captions available');
+    test(
+      'failed transcript fetch → ImportNeedsScreenshot, LLM never called',
+      () async {
+        transcript.cannedMetadata = _metadata();
+        transcript.cannedTranscript = TranscriptResult.failure(
+          'No captions available',
+        );
 
-      final result = await strategy.importV2(_watchUrl);
+        final result = await strategy.importV2(_watchUrl);
 
-      expect(result, isA<ImportNeedsScreenshot>());
-      final ns = result as ImportNeedsScreenshot;
-      expect(ns.platform, 'YouTube',
-          reason: 'UI segments screenshot prompts by platform — must be exact');
-      expect(ns.url, _watchUrl);
-      expect(ns.thumbnailUrl, _hqThumb,
-          reason: 'thumbnail comes from metadata.hqThumbnailUrl');
-      expect(ns.message, isNotEmpty,
-          reason: 'shown verbatim to the user in Swedish');
-      expect(llm.seenTranscripts, isEmpty,
-          reason: 'cost contract: no transcript ⇒ no LLM call');
-    });
+        expect(result, isA<ImportNeedsScreenshot>());
+        final ns = result as ImportNeedsScreenshot;
+        expect(
+          ns.platform,
+          'YouTube',
+          reason: 'UI segments screenshot prompts by platform — must be exact',
+        );
+        expect(ns.url, _watchUrl);
+        expect(
+          ns.thumbnailUrl,
+          _hqThumb,
+          reason: 'thumbnail comes from metadata.hqThumbnailUrl',
+        );
+        expect(
+          ns.message,
+          isNotEmpty,
+          reason: 'shown verbatim to the user in Swedish',
+        );
+        expect(
+          llm.seenTranscripts,
+          isEmpty,
+          reason: 'cost contract: no transcript ⇒ no LLM call',
+        );
+      },
+    );
 
     /// Whitespace-only transcript counts as empty → screenshot path.
     /// A future "trim later, treat empty-after-trim as valid" regression
     /// would burn LLM budget on garbage prompts.
-    test('whitespace-only transcript treated as empty → screenshot path',
-        () async {
-      transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: '   \n  \t  ');
+    test(
+      'whitespace-only transcript treated as empty → screenshot path',
+      () async {
+        transcript.cannedMetadata = _metadata();
+        transcript.cannedTranscript = TranscriptResult.success(
+          transcript: '   \n  \t  ',
+        );
 
-      final result = await strategy.importV2(_watchUrl);
+        final result = await strategy.importV2(_watchUrl);
 
-      expect(result, isA<ImportNeedsScreenshot>());
-      expect(llm.seenTranscripts, isEmpty,
-          reason: 'whitespace must not be sent to the LLM');
-    });
+        expect(result, isA<ImportNeedsScreenshot>());
+        expect(
+          llm.seenTranscripts,
+          isEmpty,
+          reason: 'whitespace must not be sent to the LLM',
+        );
+      },
+    );
 
     /// When metadata fetch fails (returns null), the screenshot must
     /// still carry a synthesised watch URL — never crash on null. This
     /// is the BUT-987-class null-propagation regression catcher.
-    test('null metadata → URL synthesised from videoId, thumbnail null',
-        () async {
-      transcript.cannedMetadata = null;
-      transcript.cannedTranscript =
-          TranscriptResult.failure('No captions available');
+    test(
+      'null metadata → URL synthesised from videoId, thumbnail null',
+      () async {
+        transcript.cannedMetadata = null;
+        transcript.cannedTranscript = TranscriptResult.failure(
+          'No captions available',
+        );
 
-      final result = await strategy.importV2('some input');
+        final result = await strategy.importV2('some input');
 
-      expect(result, isA<ImportNeedsScreenshot>());
-      final ns = result as ImportNeedsScreenshot;
-      expect(ns.url, 'https://www.youtube.com/watch?v=$_vid',
-          reason: 'must synthesise canonical watch URL when metadata is null');
-      expect(ns.thumbnailUrl, isNull,
-          reason: 'no metadata means no thumbnail — must not throw');
-    });
+        expect(result, isA<ImportNeedsScreenshot>());
+        final ns = result as ImportNeedsScreenshot;
+        expect(
+          ns.url,
+          'https://www.youtube.com/watch?v=$_vid',
+          reason: 'must synthesise canonical watch URL when metadata is null',
+        );
+        expect(
+          ns.thumbnailUrl,
+          isNull,
+          reason: 'no metadata means no thumbnail — must not throw',
+        );
+      },
+    );
   });
 
   // =========================================================================
@@ -369,162 +398,199 @@ void main() {
     /// carrying the raw transcript so the re-extract flow (BUT-940) can
     /// re-run the LLM step offline.
     test(
-        'on LLM success — recipe.sourceUrl = watch URL AND '
-        'recipe.sourceArtefact = SourceArtefact(youtubeTranscript, payload)',
-        () async {
-      transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript = TranscriptResult.success(
-        transcript: 'ingredients: eggs, milk. instructions: whisk.',
-        language: 'sv',
-        isAutoGenerated: false,
-      );
-      llm.responses.add(ImportSuccess(
-        recipe: _recipe(title: 'Pannkakor'),
-        confidence: 0.85,
-        pipeline: 'video',
-        tier: 5,
-        method: 'llm-transcript',
-        usedLlm: true,
-        metadata: const {'llmCost': 0.0012},
-      ));
+      'on LLM success — recipe.sourceUrl = watch URL AND '
+      'recipe.sourceArtefact = SourceArtefact(youtubeTranscript, payload)',
+      () async {
+        transcript.cannedMetadata = _metadata();
+        transcript.cannedTranscript = TranscriptResult.success(
+          transcript: 'ingredients: eggs, milk. instructions: whisk.',
+          language: 'sv',
+          isAutoGenerated: false,
+        );
+        llm.responses.add(
+          ImportSuccess(
+            recipe: _recipe(title: 'Pannkakor'),
+            confidence: 0.85,
+            pipeline: 'video',
+            tier: 5,
+            method: 'llm-transcript',
+            usedLlm: true,
+            metadata: const {'llmCost': 0.0012},
+          ),
+        );
 
-      final result = await strategy.importV2(_watchUrl);
+        final result = await strategy.importV2(_watchUrl);
 
-      expect(result, isA<ImportSuccess>());
-      final success = result as ImportSuccess;
-      // BUT-980 pin
-      expect(success.recipe.core.sourceUrl, _watchUrl,
-          reason: 'BUT-980: strategy must wire the watch URL onto the recipe');
-      // BUT-1045 pin
-      expect(success.recipe.core.sourceArtefact, isNotNull,
+        expect(result, isA<ImportSuccess>());
+        final success = result as ImportSuccess;
+        // BUT-980 pin
+        expect(
+          success.recipe.core.sourceUrl,
+          _watchUrl,
+          reason: 'BUT-980: strategy must wire the watch URL onto the recipe',
+        );
+        // BUT-1045 pin
+        expect(
+          success.recipe.core.sourceArtefact,
+          isNotNull,
           reason:
-              'BUT-1045: strategy must wire a SourceArtefact for re-extract');
-      final art = success.recipe.core.sourceArtefact!;
-      expect(art.type, SourceArtefactType.youtubeTranscript,
-          reason: 'artefact type discriminates the re-extract path');
-      expect(art.payload, 'ingredients: eggs, milk. instructions: whisk.',
-          reason: 'payload must be the RAW transcript, not the recipe text');
-    });
+              'BUT-1045: strategy must wire a SourceArtefact for re-extract',
+        );
+        final art = success.recipe.core.sourceArtefact!;
+        expect(
+          art.type,
+          SourceArtefactType.youtubeTranscript,
+          reason: 'artefact type discriminates the re-extract path',
+        );
+        expect(
+          art.payload,
+          'ingredients: eggs, milk. instructions: whisk.',
+          reason: 'payload must be the RAW transcript, not the recipe text',
+        );
+      },
+    );
 
     /// `fetchedAt` is `clock.now()` from package:clock, NOT the global
     /// wall clock. Pinning with `withClock` proves the strategy uses the
     /// injectable clock — a regression that switches to the global wall
     /// clock would make the field non-deterministic in tests and break
     /// the re-extract "captured X days ago" affordance.
-    test('SourceArtefact.fetchedAt uses package:clock (deterministic)',
-        () async {
-      transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'some recipe transcript');
-      llm.responses.add(ImportSuccess(
-        recipe: _recipe(),
-        confidence: 0.8,
-        pipeline: 'video',
-        tier: 5,
-        method: 'llm-transcript',
-        usedLlm: true,
-      ));
+    test(
+      'SourceArtefact.fetchedAt uses package:clock (deterministic)',
+      () async {
+        transcript.cannedMetadata = _metadata();
+        transcript.cannedTranscript = TranscriptResult.success(
+          transcript: 'some recipe transcript',
+        );
+        llm.responses.add(
+          ImportSuccess(
+            recipe: _recipe(),
+            confidence: 0.8,
+            pipeline: 'video',
+            tier: 5,
+            method: 'llm-transcript',
+            usedLlm: true,
+          ),
+        );
 
-      final frozen = DateTime.utc(2026, 5, 25, 12, 0, 0);
-      final result = await withClock(
-        Clock.fixed(frozen),
-        () => strategy.importV2(_watchUrl),
-      );
+        final frozen = DateTime.utc(2026, 5, 25, 12, 0, 0);
+        final result = await withClock(
+          Clock.fixed(frozen),
+          () => strategy.importV2(_watchUrl),
+        );
 
-      expect(result, isA<ImportSuccess>());
-      final art = (result as ImportSuccess).recipe.core.sourceArtefact!;
-      expect(art.fetchedAt, frozen,
+        expect(result, isA<ImportSuccess>());
+        final art = (result as ImportSuccess).recipe.core.sourceArtefact!;
+        expect(
+          art.fetchedAt,
+          frozen,
           reason:
-              'fetchedAt must come from package:clock so withClock can pin it');
-    });
+              'fetchedAt must come from package:clock so withClock can pin it',
+        );
+      },
+    );
 
     /// Pin the success-tier metadata. usedLlm/requiresReview/tier/method
     /// are part of the contract — they drive UI badges ("AI generated —
     /// please review"). A regression flipping any of these silently
     /// changes UX.
-    test(
-        'on LLM success — tier=1, method="transcript-llm", usedLlm=true, '
+    test('on LLM success — tier=1, method="transcript-llm", usedLlm=true, '
         'requiresReview=true, pipeline="youtube"', () async {
       transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'transcript');
-      llm.responses.add(ImportSuccess(
-        recipe: _recipe(),
-        confidence: 0.8,
-        pipeline: 'video', // From the LLM service — strategy overrides this
-        tier: 5,
-        method: 'llm-transcript',
-        usedLlm: true,
-      ));
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'transcript',
+      );
+      llm.responses.add(
+        ImportSuccess(
+          recipe: _recipe(),
+          confidence: 0.8,
+          pipeline: 'video', // From the LLM service — strategy overrides this
+          tier: 5,
+          method: 'llm-transcript',
+          usedLlm: true,
+        ),
+      );
 
       final result = await strategy.importV2(_watchUrl) as ImportSuccess;
 
       expect(result.tier, 1, reason: 'YouTube Tier-1 is the LLM success path');
       expect(result.method, 'transcript-llm');
       expect(result.usedLlm, isTrue);
-      expect(result.requiresReview, isTrue,
-          reason: 'AI extractions must surface a "please review" badge');
-      expect(result.pipeline, 'youtube',
-          reason: 'strategy stamps its own pipeline name (not LLM-side value)');
+      expect(
+        result.requiresReview,
+        isTrue,
+        reason: 'AI extractions must surface a "please review" badge',
+      );
+      expect(
+        result.pipeline,
+        'youtube',
+        reason: 'strategy stamps its own pipeline name (not LLM-side value)',
+      );
     });
 
     /// Metadata merge contract: LLM metadata stays, strategy adds videoId,
     /// videoTitle, channelName, thumbnailUrl, transcriptLanguage,
     /// transcriptAutoGenerated. A regression that overwrites instead of
     /// merges would erase llmCost telemetry.
-    test('metadata merge — LLM keys preserved, YouTube context appended',
-        () async {
-      transcript.cannedMetadata = _metadata(
-        title: 'Pannkakstutorial',
-        channelName: 'Anna lagar',
-      );
-      transcript.cannedTranscript = TranscriptResult.success(
-        transcript: 'whisk eggs',
-        language: 'sv',
-        isAutoGenerated: true,
-      );
-      llm.responses.add(ImportSuccess(
-        recipe: _recipe(),
-        confidence: 0.8,
-        pipeline: 'video',
-        tier: 5,
-        method: 'llm-transcript',
-        usedLlm: true,
-        metadata: const {'llmCost': 0.003, 'rawResponseId': 'r-42'},
-      ));
+    test(
+      'metadata merge — LLM keys preserved, YouTube context appended',
+      () async {
+        transcript.cannedMetadata = _metadata(
+          title: 'Pannkakstutorial',
+          channelName: 'Anna lagar',
+        );
+        transcript.cannedTranscript = TranscriptResult.success(
+          transcript: 'whisk eggs',
+          language: 'sv',
+          isAutoGenerated: true,
+        );
+        llm.responses.add(
+          ImportSuccess(
+            recipe: _recipe(),
+            confidence: 0.8,
+            pipeline: 'video',
+            tier: 5,
+            method: 'llm-transcript',
+            usedLlm: true,
+            metadata: const {'llmCost': 0.003, 'rawResponseId': 'r-42'},
+          ),
+        );
 
-      final result = await strategy.importV2(_watchUrl) as ImportSuccess;
-      final md = result.metadata!;
+        final result = await strategy.importV2(_watchUrl) as ImportSuccess;
+        final md = result.metadata!;
 
-      // LLM telemetry preserved
-      expect(md['llmCost'], 0.003);
-      expect(md['rawResponseId'], 'r-42');
-      // YouTube-side context appended
-      expect(md['videoId'], _vid);
-      expect(md['videoTitle'], 'Pannkakstutorial');
-      expect(md['channelName'], 'Anna lagar');
-      expect(md['thumbnailUrl'], _hqThumb);
-      expect(md['transcriptLanguage'], 'sv');
-      expect(md['transcriptAutoGenerated'], isTrue);
-    });
+        // LLM telemetry preserved
+        expect(md['llmCost'], 0.003);
+        expect(md['rawResponseId'], 'r-42');
+        // YouTube-side context appended
+        expect(md['videoId'], _vid);
+        expect(md['videoTitle'], 'Pannkakstutorial');
+        expect(md['channelName'], 'Anna lagar');
+        expect(md['thumbnailUrl'], _hqThumb);
+        expect(md['transcriptLanguage'], 'sv');
+        expect(md['transcriptAutoGenerated'], isTrue);
+      },
+    );
 
     /// LLM gets called with (transcript, watchUrl, videoTitle) — the
     /// exact triple. A regression that passes the URL as the transcript
     /// (easy to mix up given both are positional) is a real bug class.
-    test(
-        'LLM call args — transcript text + watch URL + metadata title '
+    test('LLM call args — transcript text + watch URL + metadata title '
         '(positional order pinned)', () async {
       transcript.cannedMetadata = _metadata(title: 'TitleFromMetadata');
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'TRANSCRIPT-BODY');
-      llm.responses.add(ImportSuccess(
-        recipe: _recipe(),
-        confidence: 0.8,
-        pipeline: 'video',
-        tier: 5,
-        method: 'llm-transcript',
-        usedLlm: true,
-      ));
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'TRANSCRIPT-BODY',
+      );
+      llm.responses.add(
+        ImportSuccess(
+          recipe: _recipe(),
+          confidence: 0.8,
+          pipeline: 'video',
+          tier: 5,
+          method: 'llm-transcript',
+          usedLlm: true,
+        ),
+      );
 
       await strategy.importV2(_watchUrl);
 
@@ -541,58 +607,80 @@ void main() {
     /// Rate-limited LLM → assistance prompt with the transcript text so
     /// the user can still recover the recipe manually. Message must be
     /// the "AI-kvoten är slut" Swedish copy.
-    test(
-        'LLM rate-limited → ImportNeedsAssistance with transcript + '
+    test('LLM rate-limited → ImportNeedsAssistance with transcript + '
         '"AI-kvoten" message + partialData', () async {
       transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'fall back to user');
-      llm.responses.add(ImportFailure.rateLimited(
-        message: 'rate limited',
-        retryAfter: const Duration(minutes: 5),
-      ));
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'fall back to user',
+      );
+      llm.responses.add(
+        ImportFailure.rateLimited(
+          message: 'rate limited',
+          retryAfter: const Duration(minutes: 5),
+        ),
+      );
 
       final result = await strategy.importV2(_watchUrl);
 
       expect(result, isA<ImportNeedsAssistance>());
       final ass = result as ImportNeedsAssistance;
-      expect(ass.extractedText, 'fall back to user',
-          reason: 'user needs the transcript to mark up manually');
-      expect(ass.message, contains('AI-kvoten'),
-          reason: 'rate-limit message is the Swedish quota-exhausted copy');
+      expect(
+        ass.extractedText,
+        'fall back to user',
+        reason: 'user needs the transcript to mark up manually',
+      );
+      expect(
+        ass.message,
+        contains('AI-kvoten'),
+        reason: 'rate-limit message is the Swedish quota-exhausted copy',
+      );
       expect(ass.partialData?['videoId'], _vid);
       expect(ass.partialData?['sourceUrl'], _watchUrl);
-      expect(ass.suggestedTitle, 'Best Pannkakor Ever',
-          reason: 'metadata title becomes the suggested recipe title');
+      expect(
+        ass.suggestedTitle,
+        'Best Pannkakor Ever',
+        reason: 'metadata title becomes the suggested recipe title',
+      );
       expect(ass.thumbnailUrl, _hqThumb);
     });
 
     /// LLM returns assistance itself → strategy preserves LLM's
     /// extractedText (in case it differs from the transcript), but
     /// prefers metadata title when both are present.
-    test(
-        'LLM returns ImportNeedsAssistance → metadata title preferred over '
+    test('LLM returns ImportNeedsAssistance → metadata title preferred over '
         'LLM suggestedTitle; partialData merged', () async {
       transcript.cannedMetadata = _metadata(title: 'YT-Title');
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'fall back');
-      llm.responses.add(ImportNeedsAssistance(
-        extractedText: 'LLM-cleaned text',
-        suggestedTitle: 'LLM-Title',
-        message: 'inner LLM message',
-        partialData: const {'llmHint': 42},
-      ));
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'fall back',
+      );
+      llm.responses.add(
+        ImportNeedsAssistance(
+          extractedText: 'LLM-cleaned text',
+          suggestedTitle: 'LLM-Title',
+          message: 'inner LLM message',
+          partialData: const {'llmHint': 42},
+        ),
+      );
 
       final result = await strategy.importV2(_watchUrl);
 
       expect(result, isA<ImportNeedsAssistance>());
       final ass = result as ImportNeedsAssistance;
-      expect(ass.extractedText, 'LLM-cleaned text',
-          reason: 'LLM has more context — its cleaned text wins');
-      expect(ass.suggestedTitle, 'YT-Title',
-          reason: 'YouTube canonical title is more trustworthy than LLM guess');
-      expect(ass.message, 'inner LLM message',
-          reason: 'LLM message bubbles up so the user sees the reason');
+      expect(
+        ass.extractedText,
+        'LLM-cleaned text',
+        reason: 'LLM has more context — its cleaned text wins',
+      );
+      expect(
+        ass.suggestedTitle,
+        'YT-Title',
+        reason: 'YouTube canonical title is more trustworthy than LLM guess',
+      );
+      expect(
+        ass.message,
+        'inner LLM message',
+        reason: 'LLM message bubbles up so the user sees the reason',
+      );
       // Merge: LLM partialData + videoId + sourceUrl
       expect(ass.partialData?['llmHint'], 42);
       expect(ass.partialData?['videoId'], _vid);
@@ -601,15 +689,16 @@ void main() {
 
     /// LLM returns assistance with a NULL suggestedTitle and metadata
     /// title is also missing — must not crash; suggestedTitle is null.
-    test(
-        'LLM assistance + null titles everywhere → suggestedTitle null '
+    test('LLM assistance + null titles everywhere → suggestedTitle null '
         '(no crash)', () async {
       transcript.cannedMetadata = null;
       transcript.cannedTranscript = TranscriptResult.success(transcript: 'x');
-      llm.responses.add(const ImportNeedsAssistance(
-        extractedText: 'x',
-        message: 'm',
-      ));
+      llm.responses.add(
+        const ImportNeedsAssistance(
+          extractedText: 'x',
+          message: 'm',
+        ),
+      );
 
       final result = await strategy.importV2('some input');
 
@@ -623,29 +712,39 @@ void main() {
     /// invariant: once we have a transcript, the user always gets
     /// something to work with.
     test(
-        'LLM returns generic ImportFailure → ImportNeedsAssistance with '
-        '"AI kunde inte" Swedish message (NOT failure, NOT screenshot)',
-        () async {
-      transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'transcript body');
-      llm.responses.add(const ImportFailure(
-        message: 'parse failed',
-        errorCode: ImportErrorCode.parsingFailed,
-      ));
+      'LLM returns generic ImportFailure → ImportNeedsAssistance with '
+      '"AI kunde inte" Swedish message (NOT failure, NOT screenshot)',
+      () async {
+        transcript.cannedMetadata = _metadata();
+        transcript.cannedTranscript = TranscriptResult.success(
+          transcript: 'transcript body',
+        );
+        llm.responses.add(
+          const ImportFailure(
+            message: 'parse failed',
+            errorCode: ImportErrorCode.parsingFailed,
+          ),
+        );
 
-      final result = await strategy.importV2(_watchUrl);
+        final result = await strategy.importV2(_watchUrl);
 
-      expect(result, isA<ImportNeedsAssistance>(),
-          reason: 'once we have a transcript, the user always gets assistance');
-      expect(result, isNot(isA<ImportFailure>()));
-      expect(result, isNot(isA<ImportNeedsScreenshot>()));
-      final ass = result as ImportNeedsAssistance;
-      expect(ass.extractedText, 'transcript body');
-      expect(ass.message, contains('AI'),
-          reason: 'message must mention AI failure context in Swedish');
-      expect(ass.partialData?['videoId'], _vid);
-    });
+        expect(
+          result,
+          isA<ImportNeedsAssistance>(),
+          reason: 'once we have a transcript, the user always gets assistance',
+        );
+        expect(result, isNot(isA<ImportFailure>()));
+        expect(result, isNot(isA<ImportNeedsScreenshot>()));
+        final ass = result as ImportNeedsAssistance;
+        expect(ass.extractedText, 'transcript body');
+        expect(
+          ass.message,
+          contains('AI'),
+          reason: 'message must mention AI failure context in Swedish',
+        );
+        expect(ass.partialData?['videoId'], _vid);
+      },
+    );
   });
 
   // =========================================================================
@@ -655,8 +754,7 @@ void main() {
     /// `extractVideoId` returns null → immediate ImportFailure with
     /// errorCode.invalidUrl, tier 0. Transcript service must not be
     /// asked for metadata or transcript on this path.
-    test(
-        'null videoId → ImportFailure(invalidUrl, tier=0); no metadata or '
+    test('null videoId → ImportFailure(invalidUrl, tier=0); no metadata or '
         'transcript fetched', () async {
       transcript.cannedVideoId = null;
 
@@ -667,15 +765,27 @@ void main() {
       expect(fail.errorCode, ImportErrorCode.invalidUrl);
       expect(fail.pipeline, 'youtube');
       expect(fail.tier, 0);
-      expect(fail.message, isNotEmpty,
-          reason: 'message rendered as toast — must not be blank');
+      expect(
+        fail.message,
+        isNotEmpty,
+        reason: 'message rendered as toast — must not be blank',
+      );
 
-      expect(transcript.fetchMetadataCalls, 0,
-          reason: 'invalid URL ⇒ no metadata fetch (HTTP cost)');
-      expect(transcript.fetchTranscriptCalls, 0,
-          reason: 'invalid URL ⇒ no transcript fetch (HTTP cost)');
-      expect(llm.seenTranscripts, isEmpty,
-          reason: 'invalid URL ⇒ no LLM call (real money)');
+      expect(
+        transcript.fetchMetadataCalls,
+        0,
+        reason: 'invalid URL ⇒ no metadata fetch (HTTP cost)',
+      );
+      expect(
+        transcript.fetchTranscriptCalls,
+        0,
+        reason: 'invalid URL ⇒ no transcript fetch (HTTP cost)',
+      );
+      expect(
+        llm.seenTranscripts,
+        isEmpty,
+        reason: 'invalid URL ⇒ no LLM call (real money)',
+      );
     });
   });
 
@@ -685,50 +795,60 @@ void main() {
   group('legacy import() adapter — _convertToLegacyResult contract', () {
     /// ImportSuccess → ImportResult.success with merged metadata.
     /// Tier/method/pipeline/usedLlm all surfaced.
-    test(
-        'success path — legacy ImportResult.success carries recipe + '
+    test('success path — legacy ImportResult.success carries recipe + '
         'pipeline/tier/method/usedLlm + merged LLM metadata', () async {
       transcript.cannedMetadata = _metadata();
       transcript.cannedTranscript = TranscriptResult.success(transcript: 'x');
-      llm.responses.add(ImportSuccess(
-        recipe: _recipe(),
-        confidence: 0.8,
-        pipeline: 'video',
-        tier: 5,
-        method: 'llm-transcript',
-        usedLlm: true,
-        metadata: const {'llmCost': 0.001},
-      ));
+      llm.responses.add(
+        ImportSuccess(
+          recipe: _recipe(),
+          confidence: 0.8,
+          pipeline: 'video',
+          tier: 5,
+          method: 'llm-transcript',
+          usedLlm: true,
+          metadata: const {'llmCost': 0.001},
+        ),
+      );
 
       final legacy = await strategy.import(_watchUrl);
 
       expect(legacy.isSuccess, isTrue);
       expect(legacy.recipe, isNotNull);
-      expect(legacy.recipe!.core.sourceUrl, _watchUrl,
-          reason: 'sourceUrl must survive the legacy conversion');
+      expect(
+        legacy.recipe!.core.sourceUrl,
+        _watchUrl,
+        reason: 'sourceUrl must survive the legacy conversion',
+      );
       expect(legacy.metadata?['pipeline'], 'youtube');
       expect(legacy.metadata?['tier'], 1);
       expect(legacy.metadata?['method'], 'transcript-llm');
       expect(legacy.metadata?['usedLlm'], isTrue);
-      expect(legacy.metadata?['llmCost'], 0.001,
-          reason: 'LLM telemetry must round-trip through the adapter');
+      expect(
+        legacy.metadata?['llmCost'],
+        0.001,
+        reason: 'LLM telemetry must round-trip through the adapter',
+      );
       expect(legacy.metadata?['videoId'], _vid);
     });
 
     /// ImportNeedsScreenshot → legacy failure (NOT assistance) with
     /// needsScreenshot=true so the UI can route to the screenshot prompt.
-    test(
-        'screenshot path — legacy ImportResult.failure with '
+    test('screenshot path — legacy ImportResult.failure with '
         'needsScreenshot=true (NOT needsAssistance)', () async {
       transcript.cannedMetadata = _metadata();
-      transcript.cannedTranscript =
-          TranscriptResult.failure('No captions available');
+      transcript.cannedTranscript = TranscriptResult.failure(
+        'No captions available',
+      );
 
       final legacy = await strategy.import(_watchUrl);
 
       expect(legacy.isSuccess, isFalse);
-      expect(legacy.needsAssistance, isFalse,
-          reason: 'screenshot is a distinct UI branch from assistance');
+      expect(
+        legacy.needsAssistance,
+        isFalse,
+        reason: 'screenshot is a distinct UI branch from assistance',
+      );
       expect(legacy.errorMessage, isNotEmpty);
       expect(legacy.metadata?['needsScreenshot'], isTrue);
       expect(legacy.metadata?['platform'], 'YouTube');
@@ -738,16 +858,18 @@ void main() {
 
     /// ImportNeedsAssistance → legacy assistance carrying extractedText,
     /// suggestedTitle, and partialData → metadata.
-    test(
-        'assistance path — legacy ImportResult.assistance carries '
+    test('assistance path — legacy ImportResult.assistance carries '
         'extractedText + suggestedTitle + partialData→metadata', () async {
       transcript.cannedMetadata = _metadata(title: 'Suggested-Title');
-      transcript.cannedTranscript =
-          TranscriptResult.success(transcript: 'TRANSCRIPT');
-      llm.responses.add(ImportFailure.rateLimited(
-        message: 'rl',
-        retryAfter: const Duration(minutes: 1),
-      ));
+      transcript.cannedTranscript = TranscriptResult.success(
+        transcript: 'TRANSCRIPT',
+      );
+      llm.responses.add(
+        ImportFailure.rateLimited(
+          message: 'rl',
+          retryAfter: const Duration(minutes: 1),
+        ),
+      );
 
       final legacy = await strategy.import(_watchUrl);
 
@@ -755,15 +877,17 @@ void main() {
       expect(legacy.needsAssistance, isTrue);
       expect(legacy.extractedText, 'TRANSCRIPT');
       expect(legacy.suggestedTitle, 'Suggested-Title');
-      expect(legacy.metadata?['videoId'], _vid,
-          reason: 'partialData must surface as legacy metadata');
+      expect(
+        legacy.metadata?['videoId'],
+        _vid,
+        reason: 'partialData must surface as legacy metadata',
+      );
       expect(legacy.metadata?['sourceUrl'], _watchUrl);
     });
 
     /// ImportFailure (invalid URL) → legacy failure with errorCode/pipeline/tier
     /// in metadata.
-    test(
-        'failure path — legacy ImportResult.failure with errorCode + '
+    test('failure path — legacy ImportResult.failure with errorCode + '
         'pipeline + tier in metadata', () async {
       transcript.cannedVideoId = null;
 
@@ -786,8 +910,7 @@ void main() {
     /// `caseSensitive: false`, so shared URLs with uppercase host letters
     /// extract correctly. Same fix as BUT-1092 (tiktok) and BUT-1113
     /// (instagram).
-    test(
-        'BUT-1116: mixed-case host `YouTube.com` is accepted '
+    test('BUT-1116: mixed-case host `YouTube.com` is accepted '
         '(case-insensitive regex)', () {
       // Real transcript service — NOT the fake. We want production parsing.
       final realStrategy = YouTubeImportStrategy(

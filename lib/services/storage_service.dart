@@ -245,12 +245,14 @@ class StorageService extends BaseService
 
     if (userId == null) {
       AppLogger.error(
-          '🚫 STORAGE_SERVICE: No authenticated user for image upload');
+        '🚫 STORAGE_SERVICE: No authenticated user for image upload',
+      );
       return null;
     }
 
     AppLogger.info(
-        '🎯 STORAGE_SERVICE: Uploading recipe image for user: ${userId.maskedUserId}');
+      '🎯 STORAGE_SERVICE: Uploading recipe image for user: ${userId.maskedUserId}',
+    );
     return await uploadImageFile(imageFile, userId, onProgress: onProgress);
   }
 
@@ -279,7 +281,8 @@ class StorageService extends BaseService
 
     if (userId == null) {
       AppLogger.error(
-          '🚫 STORAGE_SERVICE: No authenticated user for comment image upload');
+        '🚫 STORAGE_SERVICE: No authenticated user for comment image upload',
+      );
       return null;
     }
 

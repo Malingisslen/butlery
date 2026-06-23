@@ -70,8 +70,9 @@ class TagDetailRuleTile extends StatelessWidget {
                   color: matchCount > 0
                       ? context.butleryColors.success
                       : colorScheme.onSurfaceVariant,
-                  fontWeight:
-                      matchCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                  fontWeight: matchCount > 0
+                      ? FontWeight.w500
+                      : FontWeight.normal,
                 ),
               ),
           ],
@@ -99,8 +100,10 @@ class TagDetailRuleTile extends StatelessWidget {
                   value: 'delete',
                   child: ListTile(
                     leading: Icon(Icons.delete, color: colorScheme.error),
-                    title: Text(context.l10n.commonDelete,
-                        style: TextStyle(color: colorScheme.error)),
+                    title: Text(
+                      context.l10n.commonDelete,
+                      style: TextStyle(color: colorScheme.error),
+                    ),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -123,14 +126,17 @@ class TagDetailRuleTile extends StatelessWidget {
   }
 
   static String _buildConditionSummary(
-      BuildContext context, PersonalTagRule rule) {
+    BuildContext context,
+    PersonalTagRule rule,
+  ) {
     if (rule.conditions.isEmpty) return context.l10n.tagDetailRuleNoConditions;
 
     final parts = rule.conditions.take(3).map((c) {
       final type = c.type.label;
       final op = c.operator.label;
-      final value =
-          c.type.isNumeric ? c.numericValue.toString() : c.stringValue;
+      final value = c.type.isNumeric
+          ? c.numericValue.toString()
+          : c.stringValue;
       return '$type $op "$value"';
     }).toList();
 

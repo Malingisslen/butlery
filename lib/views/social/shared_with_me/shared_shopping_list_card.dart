@@ -23,14 +23,17 @@ class SharedShoppingListCard {
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) {
-    final isRead =
-        viewModel.shoppingViewModel.isShoppingListViewed(sharedShoppingList);
-    final isJoined =
-        viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
+    final isRead = viewModel.shoppingViewModel.isShoppingListViewed(
+      sharedShoppingList,
+    );
+    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(
+      sharedShoppingList,
+    );
 
     return Material(
-      elevation:
-          isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      elevation: isRead
+          ? AppDimensions.elevationLow
+          : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Semantics(
         label: context.l10n.a11ySharedShoppingList(sharedShoppingList.listName),
@@ -226,17 +229,18 @@ class SharedShoppingListCard {
         Expanded(
           child: ActionButtons.primaryButton(
             context,
-            label:
-                isJoined ? context.l10n.sharedMember : context.l10n.sharedJoin,
+            label: isJoined
+                ? context.l10n.sharedMember
+                : context.l10n.sharedJoin,
             icon: isJoined ? Icons.check : Icons.add_shopping_cart,
             isLoading: viewModel.shoppingViewModel.isOperating,
             onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                 ? null
                 : () => SharedContentActions.joinShoppingList(
-                      context,
-                      viewModel,
-                      sharedShoppingList,
-                    ),
+                    context,
+                    viewModel,
+                    sharedShoppingList,
+                  ),
           ),
         ),
       ],
@@ -272,8 +276,9 @@ class SharedShoppingListCard {
     SharedShoppingList sharedShoppingList,
     ScrollController scrollController,
   ) {
-    final isJoined =
-        viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
+    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(
+      sharedShoppingList,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -288,8 +293,9 @@ class SharedShoppingListCard {
           Container(
             width: 32,
             height: 4,
-            margin:
-                const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+            margin: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingS,
+            ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -326,19 +332,27 @@ class SharedShoppingListCard {
             child: ListView.builder(
               controller: scrollController,
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL),
+                horizontal: AppDimensions.paddingL,
+              ),
               // Issue #015: Items in subcollection - show placeholder
               itemCount: 1,
               itemBuilder: (context, index) {
                 // Note: Items need to be loaded from repository.getItems() for display
                 return ListTile(
-                  leading: const Icon(Icons.shopping_basket_outlined,
-                      size: AppDimensions.iconSizeM),
-                  title: Text(context.l10n
-                      .shoppingItemCountText(sharedShoppingList.itemCount)),
+                  leading: const Icon(
+                    Icons.shopping_basket_outlined,
+                    size: AppDimensions.iconSizeM,
+                  ),
+                  title: Text(
+                    context.l10n.shoppingItemCountText(
+                      sharedShoppingList.itemCount,
+                    ),
+                  ),
                   subtitle: Text(context.l10n.sharedTapToSeeAllItems),
-                  trailing: const Icon(Icons.arrow_forward_ios,
-                      size: AppDimensions.iconSizeS),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: AppDimensions.iconSizeS,
+                  ),
                 );
               },
             ),
@@ -367,15 +381,15 @@ class SharedShoppingListCard {
                     isLoading: viewModel.shoppingViewModel.isOperating,
                     onPressed:
                         isJoined || viewModel.shoppingViewModel.isOperating
-                            ? null
-                            : () {
-                                SharedContentActions.joinShoppingList(
-                                  context,
-                                  viewModel,
-                                  sharedShoppingList,
-                                );
-                                Navigator.pop(context);
-                              },
+                        ? null
+                        : () {
+                            SharedContentActions.joinShoppingList(
+                              context,
+                              viewModel,
+                              sharedShoppingList,
+                            );
+                            Navigator.pop(context);
+                          },
                   ),
                 ),
               ],

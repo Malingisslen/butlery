@@ -43,7 +43,9 @@ class FirstRecipeCelebrationOverlay extends StatefulWidget {
         );
       },
       transitionDuration: AnimationUtils.getDuration(
-          context, const Duration(milliseconds: 300)),
+        context,
+        const Duration(milliseconds: 300),
+      ),
     );
   }
 

@@ -46,14 +46,16 @@ WeeklyMenuPlan _plan({
 }) {
   final base = WeeklyMenuPlan.empty(userId: userId, date: date);
   if (!withSharedRecipe) return base;
-  return base.copyWith(entries: [
-    WeeklyMenuPlanEntry.create(
-      day: DayOfWeek.mon,
-      slot: MealSlot.middag,
-      recipeId: _sharedRecipe,
-      recipeTitle: 'Delad rätt',
-    ),
-  ]);
+  return base.copyWith(
+    entries: [
+      WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.mon,
+        slot: MealSlot.middag,
+        recipeId: _sharedRecipe,
+        recipeTitle: 'Delad rätt',
+      ),
+    ],
+  );
 }
 
 Future<void> _seed(FakeFirebaseFirestore firestore, WeeklyMenuPlan plan) async {
@@ -74,10 +76,14 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
 
-      await _seed(firestore,
-          _plan(userId: _alice, date: week1, withSharedRecipe: true));
-      await _seed(firestore,
-          _plan(userId: _alice, date: week2, withSharedRecipe: true));
+      await _seed(
+        firestore,
+        _plan(userId: _alice, date: week1, withSharedRecipe: true),
+      );
+      await _seed(
+        firestore,
+        _plan(userId: _alice, date: week2, withSharedRecipe: true),
+      );
 
       final affected = await repo.removeRecipeFromAllPlans(
         userId: _alice,
@@ -101,10 +107,14 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);
 
-      await _seed(firestore,
-          _plan(userId: _alice, date: week1, withSharedRecipe: true));
       await _seed(
-          firestore, _plan(userId: _bob, date: week1, withSharedRecipe: true));
+        firestore,
+        _plan(userId: _alice, date: week1, withSharedRecipe: true),
+      );
+      await _seed(
+        firestore,
+        _plan(userId: _bob, date: week1, withSharedRecipe: true),
+      );
 
       await repo.removeRecipeFromAllPlans(
         userId: _alice,

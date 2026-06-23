@@ -233,8 +233,9 @@ class AvatarWidgets {
     bool shrinkWrap = true,
     ScrollPhysics? physics,
   }) {
-    final userData =
-        users.map((user) => UserDisplayData.fromUserProfile(user)).toList();
+    final userData = users
+        .map((user) => UserDisplayData.fromUserProfile(user))
+        .toList();
 
     return UserDisplayWidgets.userList(
       users: userData,
@@ -269,8 +270,9 @@ class AvatarWidgets {
     bool shrinkWrap = true,
     ScrollPhysics? physics,
   }) {
-    final userData =
-        users.map((user) => UserDisplayData.fromUserProfile(user)).toList();
+    final userData = users
+        .map((user) => UserDisplayData.fromUserProfile(user))
+        .toList();
 
     return UserDisplayWidgets.userGrid(
       users: userData,

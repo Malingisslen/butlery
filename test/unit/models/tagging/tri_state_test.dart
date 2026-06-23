@@ -164,7 +164,9 @@ void main() {
 
       test('single value returns that value', () {
         expect(
-            TriStateCalculator.orAll([TriState.contains]), TriState.contains);
+          TriStateCalculator.orAll([TriState.contains]),
+          TriState.contains,
+        );
         expect(TriStateCalculator.orAll([TriState.free]), TriState.free);
         expect(TriStateCalculator.orAll([TriState.unknown]), TriState.unknown);
       });

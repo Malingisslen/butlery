@@ -96,7 +96,8 @@ class ParsingCorrection {
     List<IngredientCorrection> ingredientCorrections = const [],
     List<InstructionCorrection> instructionCorrections = const [],
   }) {
-    final totalCorrections = (titleCorrection != null ? 1 : 0) +
+    final totalCorrections =
+        (titleCorrection != null ? 1 : 0) +
         (portionsCorrection != null ? 1 : 0) +
         (timeCorrection != null ? 1 : 0) +
         ingredientCorrections.length +
@@ -169,25 +170,26 @@ class ParsingCorrection {
   }
 
   Map<String, dynamic> toFirestore() => {
-        'id': id,
-        'recipeId': recipeId,
-        'userId': userId,
-        'timestamp': Timestamp.fromDate(timestamp),
-        'source': source.name,
-        if (domain != null) 'domain': domain,
-        if (successfulTier != null) 'successfulTier': successfulTier,
-        'originalQuality': originalQuality,
-        if (titleCorrection != null)
-          'titleCorrection': titleCorrection!.toJson(),
-        if (portionsCorrection != null)
-          'portionsCorrection': portionsCorrection!.toJson(),
-        if (timeCorrection != null) 'timeCorrection': timeCorrection!.toJson(),
-        'ingredientCorrections':
-            ingredientCorrections.map((c) => c.toJson()).toList(),
-        'instructionCorrections':
-            instructionCorrections.map((c) => c.toJson()).toList(),
-        'totalCorrections': totalCorrections,
-      };
+    'id': id,
+    'recipeId': recipeId,
+    'userId': userId,
+    'timestamp': Timestamp.fromDate(timestamp),
+    'source': source.name,
+    if (domain != null) 'domain': domain,
+    if (successfulTier != null) 'successfulTier': successfulTier,
+    'originalQuality': originalQuality,
+    if (titleCorrection != null) 'titleCorrection': titleCorrection!.toJson(),
+    if (portionsCorrection != null)
+      'portionsCorrection': portionsCorrection!.toJson(),
+    if (timeCorrection != null) 'timeCorrection': timeCorrection!.toJson(),
+    'ingredientCorrections': ingredientCorrections
+        .map((c) => c.toJson())
+        .toList(),
+    'instructionCorrections': instructionCorrections
+        .map((c) => c.toJson())
+        .toList(),
+    'totalCorrections': totalCorrections,
+  };
 
   factory ParsingCorrection.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -195,12 +197,18 @@ class ParsingCorrection {
   }
 
   factory ParsingCorrection.fromJson(Map<String, dynamic> json) {
-    final titleCorrectionData =
-        SerializationUtils.safeNullableMap(json, 'titleCorrection');
-    final portionsCorrectionData =
-        SerializationUtils.safeNullableMap(json, 'portionsCorrection');
-    final timeCorrectionData =
-        SerializationUtils.safeNullableMap(json, 'timeCorrection');
+    final titleCorrectionData = SerializationUtils.safeNullableMap(
+      json,
+      'titleCorrection',
+    );
+    final portionsCorrectionData = SerializationUtils.safeNullableMap(
+      json,
+      'portionsCorrection',
+    );
+    final timeCorrectionData = SerializationUtils.safeNullableMap(
+      json,
+      'timeCorrection',
+    );
 
     return ParsingCorrection(
       id: SerializationUtils.safeString(json, 'id'),
@@ -212,8 +220,10 @@ class ParsingCorrection {
         orElse: () => ImportSource.unknown,
       ),
       domain: SerializationUtils.safeNullableString(json, 'domain'),
-      successfulTier:
-          SerializationUtils.safeNullableString(json, 'successfulTier'),
+      successfulTier: SerializationUtils.safeNullableString(
+        json,
+        'successfulTier',
+      ),
       originalQuality: SerializationUtils.safeDouble(json, 'originalQuality'),
       titleCorrection: titleCorrectionData != null
           ? FieldCorrection.fromJson(titleCorrectionData)
@@ -239,7 +249,8 @@ class ParsingCorrection {
   }
 
   @override
-  String toString() => 'ParsingCorrection('
+  String toString() =>
+      'ParsingCorrection('
       'id: $id, '
       'recipeId: $recipeId, '
       'source: ${source.name}, '

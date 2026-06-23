@@ -30,7 +30,8 @@ class InlineWarning extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: textStyle ??
+            style:
+                textStyle ??
                 AppTextStyles.bodySmall.copyWith(
                   color: color,
                   fontStyle: FontStyle.italic,

@@ -90,12 +90,12 @@ Future<void> _seedDoc(
           .collection('members')
           .doc(uid)
           .set({
-        'userId': uid,
-        'displayName': uid,
-        'addedAt': DateTime.utc(2026, 1, 15).millisecondsSinceEpoch,
-        'addedBy': list.sharedByUserId,
-        'role': 'viewer',
-      });
+            'userId': uid,
+            'displayName': uid,
+            'addedAt': DateTime.utc(2026, 1, 15).millisecondsSinceEpoch,
+            'addedBy': list.sharedByUserId,
+            'role': 'viewer',
+          });
     }
   }
 }
@@ -257,84 +257,115 @@ void main() {
   });
 
   group('BaseSharedContentRepository — members subcollection', () {
-    test('addMember writes member doc + sharedToUserIds + counter bump',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
+    test(
+      'addMember writes member doc + sharedToUserIds + counter bump',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
 
-      await repo.addMember(_listId, 'friend-1',
-          addedBy: _userId, displayName: 'Bob', role: 'editor');
+        await repo.addMember(
+          _listId,
+          'friend-1',
+          addedBy: _userId,
+          displayName: 'Bob',
+          role: 'editor',
+        );
 
-      final memberDoc = await firestore
-          .collection('shared_content')
-          .doc(_listId)
-          .collection('members')
-          .doc('friend-1')
-          .get();
-      expect(memberDoc.exists, isTrue);
-      expect(memberDoc.data()?['role'], 'editor');
-      expect(memberDoc.data()?['displayName'], 'Bob');
+        final memberDoc = await firestore
+            .collection('shared_content')
+            .doc(_listId)
+            .collection('members')
+            .doc('friend-1')
+            .get();
+        expect(memberDoc.exists, isTrue);
+        expect(memberDoc.data()?['role'], 'editor');
+        expect(memberDoc.data()?['displayName'], 'Bob');
 
-      final parent =
-          await firestore.collection('shared_content').doc(_listId).get();
-      expect(parent.data()?['sharedToUserIds'], contains('friend-1'));
+        final parent = await firestore
+            .collection('shared_content')
+            .doc(_listId)
+            .get();
+        expect(parent.data()?['sharedToUserIds'], contains('friend-1'));
 
-      final counter = await firestore
-          .collection('users')
-          .doc('friend-1')
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(counter.data()?['unreadSharedShoppingLists'], 1);
-    });
+        final counter = await firestore
+            .collection('users')
+            .doc('friend-1')
+            .collection('counters')
+            .doc('shared_content')
+            .get();
+        expect(counter.data()?['unreadSharedShoppingLists'], 1);
+      },
+    );
 
     /// BUT-1152: re-adding an existing member must be idempotent w.r.t.
     /// the unread counter and must preserve the original addedAt. Before
     /// the fix, a second addMember overwrote addedAt with `now` and fired
     /// incrementUnreadCounter again — inflating the recipient's badge and
     /// reordering the member list. This pins both invariants.
-    test('addMember on existing member preserves addedAt + skips counter bump',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
+    test(
+      'addMember on existing member preserves addedAt + skips counter bump',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
 
-      await repo.addMember(_listId, 'friend-1',
-          addedBy: _userId, displayName: 'Bob', role: 'viewer');
+        await repo.addMember(
+          _listId,
+          'friend-1',
+          addedBy: _userId,
+          displayName: 'Bob',
+          role: 'viewer',
+        );
 
-      final firstAddedAt = (await firestore
-              .collection('shared_content')
-              .doc(_listId)
-              .collection('members')
-              .doc('friend-1')
-              .get())
-          .data()?['addedAt'];
+        final firstAddedAt =
+            (await firestore
+                    .collection('shared_content')
+                    .doc(_listId)
+                    .collection('members')
+                    .doc('friend-1')
+                    .get())
+                .data()?['addedAt'];
 
-      // Re-add the same member (e.g. role bump / re-share).
-      await repo.addMember(_listId, 'friend-1',
-          addedBy: _userId, displayName: 'Bob', role: 'editor');
+        // Re-add the same member (e.g. role bump / re-share).
+        await repo.addMember(
+          _listId,
+          'friend-1',
+          addedBy: _userId,
+          displayName: 'Bob',
+          role: 'editor',
+        );
 
-      final memberDoc = await firestore
-          .collection('shared_content')
-          .doc(_listId)
-          .collection('members')
-          .doc('friend-1')
-          .get();
-      expect(memberDoc.data()?['addedAt'], firstAddedAt,
-          reason: 'original addedAt must survive a re-add');
-      expect(memberDoc.data()?['role'], 'editor',
-          reason: 'metadata (role) still updates on re-add');
+        final memberDoc = await firestore
+            .collection('shared_content')
+            .doc(_listId)
+            .collection('members')
+            .doc('friend-1')
+            .get();
+        expect(
+          memberDoc.data()?['addedAt'],
+          firstAddedAt,
+          reason: 'original addedAt must survive a re-add',
+        );
+        expect(
+          memberDoc.data()?['role'],
+          'editor',
+          reason: 'metadata (role) still updates on re-add',
+        );
 
-      final counter = await firestore
-          .collection('users')
-          .doc('friend-1')
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(counter.data()?['unreadSharedShoppingLists'], 1,
-          reason: 're-add must NOT bump the unread counter a second time');
-    });
+        final counter = await firestore
+            .collection('users')
+            .doc('friend-1')
+            .collection('counters')
+            .doc('shared_content')
+            .get();
+        expect(
+          counter.data()?['unreadSharedShoppingLists'],
+          1,
+          reason: 're-add must NOT bump the unread counter a second time',
+        );
+      },
+    );
 
     test('addMember rejects when current user is not owner', () async {
       final firestore = FakeFirebaseFirestore();
@@ -347,48 +378,52 @@ void main() {
       );
     });
 
-    test('addMember throws repository exception when content missing',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Owner check reads the doc, gets null → wrapped as PermissionDenied.
-      expect(
-        () => repo.addMember('missing', 'friend-1', addedBy: _userId),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
+    test(
+      'addMember throws repository exception when content missing',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        // Owner check reads the doc, gets null → wrapped as PermissionDenied.
+        expect(
+          () => repo.addMember('missing', 'friend-1', addedBy: _userId),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      },
+    );
 
-    test('getMembers and getMembersWithInfo round-trip in addedAt order',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
+    test(
+      'getMembers and getMembersWithInfo round-trip in addedAt order',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
 
-      // Seed members with explicit ordering timestamps.
-      final listRef = firestore.collection('shared_content').doc(_listId);
-      await listRef.collection('members').doc('m1').set({
-        'userId': 'm1',
-        'displayName': 'Alice One',
-        'addedAt': DateTime.utc(2026, 1, 10).millisecondsSinceEpoch,
-        'addedBy': _userId,
-        'role': 'viewer',
-      });
-      await listRef.collection('members').doc('m2').set({
-        'userId': 'm2',
-        'displayName': 'Bob Two',
-        'addedAt': DateTime.utc(2026, 1, 11).millisecondsSinceEpoch,
-        'addedBy': _userId,
-        'role': 'editor',
-      });
+        // Seed members with explicit ordering timestamps.
+        final listRef = firestore.collection('shared_content').doc(_listId);
+        await listRef.collection('members').doc('m1').set({
+          'userId': 'm1',
+          'displayName': 'Alice One',
+          'addedAt': DateTime.utc(2026, 1, 10).millisecondsSinceEpoch,
+          'addedBy': _userId,
+          'role': 'viewer',
+        });
+        await listRef.collection('members').doc('m2').set({
+          'userId': 'm2',
+          'displayName': 'Bob Two',
+          'addedAt': DateTime.utc(2026, 1, 11).millisecondsSinceEpoch,
+          'addedBy': _userId,
+          'role': 'editor',
+        });
 
-      final ids = await repo.getMembers(_listId);
-      expect(ids, ['m1', 'm2']);
+        final ids = await repo.getMembers(_listId);
+        expect(ids, ['m1', 'm2']);
 
-      final infos = await repo.getMembersWithInfo(_listId, limit: 5);
-      expect(infos.length, 2);
-      expect(infos[0].userId, 'm1');
-      expect(infos[1].role, 'editor');
-    });
+        final infos = await repo.getMembersWithInfo(_listId, limit: 5);
+        expect(infos.length, 2);
+        expect(infos[0].userId, 'm1');
+        expect(infos[1].role, 'editor');
+      },
+    );
 
     test('isMember returns true/false correctly', () async {
       final firestore = FakeFirebaseFirestore();
@@ -399,17 +434,19 @@ void main() {
       expect(await repo.isMember(_listId, 'm2'), isFalse);
     });
 
-    test('removeMember allows self-removal even without owner status',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: 'm1');
-      await _seedDoc(firestore, _list(), members: ['m1']);
+    test(
+      'removeMember allows self-removal even without owner status',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore, authedUserId: 'm1');
+        await _seedDoc(firestore, _list(), members: ['m1']);
 
-      await repo.removeMember(_listId, 'm1');
+        await repo.removeMember(_listId, 'm1');
 
-      final stillMember = await repo.isMember(_listId, 'm1');
-      expect(stillMember, isFalse);
-    });
+        final stillMember = await repo.isMember(_listId, 'm1');
+        expect(stillMember, isFalse);
+      },
+    );
 
     test('removeMember rejects removing someone else when not owner', () async {
       final firestore = FakeFirebaseFirestore();
@@ -430,10 +467,14 @@ void main() {
 
       await repo.removeMember(_listId, 'friend-1');
 
-      final parent =
-          await firestore.collection('shared_content').doc(_listId).get();
-      expect(parent.data()?['sharedToUserIds'] ?? const [],
-          isNot(contains('friend-1')));
+      final parent = await firestore
+          .collection('shared_content')
+          .doc(_listId)
+          .get();
+      expect(
+        parent.data()?['sharedToUserIds'] ?? const [],
+        isNot(contains('friend-1')),
+      );
     });
   });
 
@@ -467,17 +508,19 @@ void main() {
       );
     });
 
-    test('isCollaborator + getCollaborators reflect subcollection state',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
-      await repo.addCollaborator(_listId, 'collab-1');
+    test(
+      'isCollaborator + getCollaborators reflect subcollection state',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
+        await repo.addCollaborator(_listId, 'collab-1');
 
-      expect(await repo.isCollaborator(_listId, 'collab-1'), isTrue);
-      expect(await repo.isCollaborator(_listId, 'collab-2'), isFalse);
-      expect(await repo.getCollaborators(_listId, limit: 5), ['collab-1']);
-    });
+        expect(await repo.isCollaborator(_listId, 'collab-1'), isTrue);
+        expect(await repo.isCollaborator(_listId, 'collab-2'), isFalse);
+        expect(await repo.getCollaborators(_listId, limit: 5), ['collab-1']);
+      },
+    );
 
     test('removeCollaborator allows self-removal', () async {
       final firestore = FakeFirebaseFirestore();
@@ -492,19 +535,21 @@ void main() {
       expect(await selfRepo.isCollaborator(_listId, 'collab-1'), isFalse);
     });
 
-    test('removeCollaborator rejects removing another when not owner',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
-      await repo.addCollaborator(_listId, 'collab-2');
+    test(
+      'removeCollaborator rejects removing another when not owner',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
+        await repo.addCollaborator(_listId, 'collab-2');
 
-      final intruder = _repo(firestore, authedUserId: 'collab-1');
-      expect(
-        () => intruder.removeCollaborator(_listId, 'collab-2'),
-        throwsA(isA<PermissionDeniedException>()),
-      );
-    });
+        final intruder = _repo(firestore, authedUserId: 'collab-1');
+        expect(
+          () => intruder.removeCollaborator(_listId, 'collab-2'),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      },
+    );
   });
 
   group('BaseSharedContentRepository — view / engagement / dismissal', () {
@@ -524,8 +569,12 @@ void main() {
       await _seedDoc(firestore, _list());
 
       expect(await repo.hasEngaged(_listId, _userId), isFalse);
-      await repo.addEngagement(_listId, _userId,
-          action: 'import', targetId: 'recipe-9');
+      await repo.addEngagement(
+        _listId,
+        _userId,
+        action: 'import',
+        targetId: 'recipe-9',
+      );
       expect(await repo.hasEngaged(_listId, _userId), isTrue);
     });
 
@@ -540,19 +589,21 @@ void main() {
       expect(await repo.hasDismissed(_listId, _userId), isFalse);
     });
 
-    test('markAsImportedOrJoined writes engagement + view + bumps counter',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
-      // Pre-bump counter so decrement has somewhere to land.
-      await repo.incrementUnreadCounter(_userId);
+    test(
+      'markAsImportedOrJoined writes engagement + view + bumps counter',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
+        // Pre-bump counter so decrement has somewhere to land.
+        await repo.incrementUnreadCounter(_userId);
 
-      await repo.markAsImportedOrJoined(_listId, _userId);
+        await repo.markAsImportedOrJoined(_listId, _userId);
 
-      expect(await repo.hasEngaged(_listId, _userId), isTrue);
-      expect(await repo.hasViewed(_listId, _userId), isTrue);
-    });
+        expect(await repo.hasEngaged(_listId, _userId), isTrue);
+        expect(await repo.hasViewed(_listId, _userId), isTrue);
+      },
+    );
 
     test('markAsImportedOrJoined rejects acting on another user', () async {
       final repo = _repo(FakeFirebaseFirestore());
@@ -583,8 +634,10 @@ void main() {
 
       await repo.deleteSharedContent(_listId);
 
-      final doc =
-          await firestore.collection('shared_content').doc(_listId).get();
+      final doc = await firestore
+          .collection('shared_content')
+          .doc(_listId)
+          .get();
       expect(doc.exists, isFalse);
     });
 
@@ -615,43 +668,47 @@ void main() {
       expect(await repo.getLastDocumentForUser(_userId), isNull);
     });
 
-    test('getSharedContentForUser filters by contentType discriminator',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Seed one matching shopping_list and one foreign-type doc.
-      await _seedDoc(firestore, _list(), members: [_userId]);
-      await firestore
-          .collection('shared_content')
-          .doc('foreign')
-          .set({'contentType': 'recipe', 'sharedAt': Timestamp.now()});
-      await firestore
-          .collection('shared_content')
-          .doc('foreign')
-          .collection('members')
-          .doc(_userId)
-          .set({
-        'userId': _userId,
-        'displayName': _userId,
-        'addedAt': DateTime.utc(2026, 1, 15).millisecondsSinceEpoch,
-        'addedBy': _userId,
-        'role': 'viewer',
-      });
+    test(
+      'getSharedContentForUser filters by contentType discriminator',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        // Seed one matching shopping_list and one foreign-type doc.
+        await _seedDoc(firestore, _list(), members: [_userId]);
+        await firestore.collection('shared_content').doc('foreign').set({
+          'contentType': 'recipe',
+          'sharedAt': Timestamp.now(),
+        });
+        await firestore
+            .collection('shared_content')
+            .doc('foreign')
+            .collection('members')
+            .doc(_userId)
+            .set({
+              'userId': _userId,
+              'displayName': _userId,
+              'addedAt': DateTime.utc(2026, 1, 15).millisecondsSinceEpoch,
+              'addedBy': _userId,
+              'role': 'viewer',
+            });
 
-      final results = await repo.getSharedContentForUser(_userId);
+        final results = await repo.getSharedContentForUser(_userId);
 
-      expect(results.map((l) => l.id), [_listId]);
-    });
+        expect(results.map((l) => l.id), [_listId]);
+      },
+    );
 
-    test('getSharedContentForUser empty when user has no memberships',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Owner doc, no member subcollection for _userId.
-      await _seedDoc(firestore, _list(sharedBy: _otherUserId));
+    test(
+      'getSharedContentForUser empty when user has no memberships',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        // Owner doc, no member subcollection for _userId.
+        await _seedDoc(firestore, _list(sharedBy: _otherUserId));
 
-      expect(await repo.getSharedContentForUser(_userId), isEmpty);
-    });
+        expect(await repo.getSharedContentForUser(_userId), isEmpty);
+      },
+    );
 
     test('getSharedContentForUser rejects cross-user access', () async {
       final repo = _repo(FakeFirebaseFirestore());
@@ -662,27 +719,29 @@ void main() {
       );
     });
 
-    test('recalculateUnreadCount syncs counter to actual unread membership',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      // Two lists the user is a member of; neither viewed.
-      await _seedDoc(firestore, _list(id: 'l1'), members: [_userId]);
-      await _seedDoc(firestore, _list(id: 'l2'), members: [_userId]);
+    test(
+      'recalculateUnreadCount syncs counter to actual unread membership',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        // Two lists the user is a member of; neither viewed.
+        await _seedDoc(firestore, _list(id: 'l1'), members: [_userId]);
+        await _seedDoc(firestore, _list(id: 'l2'), members: [_userId]);
 
-      final count = await repo.recalculateUnreadCount(_userId);
+        final count = await repo.recalculateUnreadCount(_userId);
 
-      // FirebaseSharedShoppingRepository.shouldShowToUser → true,
-      // isViewedByUser → false, so both contribute.
-      expect(count, 2);
-      final counter = await firestore
-          .collection('users')
-          .doc(_userId)
-          .collection('counters')
-          .doc('shared_content')
-          .get();
-      expect(counter.data()?['unreadSharedShoppingLists'], 2);
-    });
+        // FirebaseSharedShoppingRepository.shouldShowToUser → true,
+        // isViewedByUser → false, so both contribute.
+        expect(count, 2);
+        final counter = await firestore
+            .collection('users')
+            .doc(_userId)
+            .collection('counters')
+            .doc('shared_content')
+            .get();
+        expect(counter.data()?['unreadSharedShoppingLists'], 2);
+      },
+    );
 
     test('recalculateUnreadCount rejects cross-user', () async {
       final repo = _repo(FakeFirebaseFirestore());
@@ -695,45 +754,60 @@ void main() {
   });
 
   group('BaseSharedContentRepository — permission validators', () {
-    test('validateCreatePermission only true when sharedByUserId matches',
-        () async {
-      final repo = _repo(FakeFirebaseFirestore());
+    test(
+      'validateCreatePermission only true when sharedByUserId matches',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
 
-      expect(await repo.validateCreatePermission(_userId, _list()), isTrue);
-      expect(
-          await repo.validateCreatePermission(_otherUserId, _list()), isFalse);
-    });
+        expect(await repo.validateCreatePermission(_userId, _list()), isTrue);
+        expect(
+          await repo.validateCreatePermission(_otherUserId, _list()),
+          isFalse,
+        );
+      },
+    );
 
     test('validateReadPermission is true for any non-null entity', () async {
       final repo = _repo(FakeFirebaseFirestore());
 
       // FirebaseSharedShoppingRepository.shouldShowToUser always returns true.
       expect(
-          await repo.validateReadPermission(_userId, _listId, _list()), isTrue);
+        await repo.validateReadPermission(_userId, _listId, _list()),
+        isTrue,
+      );
       expect(
-          await repo.validateReadPermission(_userId, _listId, null), isFalse);
+        await repo.validateReadPermission(_userId, _listId, null),
+        isFalse,
+      );
     });
 
     test('validateUpdatePermission delegates to isCreatedBy', () async {
       final repo = _repo(FakeFirebaseFirestore());
 
-      expect(await repo.validateUpdatePermission(_userId, _listId, _list()),
-          isTrue);
       expect(
-          await repo.validateUpdatePermission(_otherUserId, _listId, _list()),
-          isFalse);
+        await repo.validateUpdatePermission(_userId, _listId, _list()),
+        isTrue,
+      );
+      expect(
+        await repo.validateUpdatePermission(_otherUserId, _listId, _list()),
+        isFalse,
+      );
     });
 
-    test('validateDeletePermission reads content then checks ownership',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
-      await _seedDoc(firestore, _list());
+    test(
+      'validateDeletePermission reads content then checks ownership',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        await _seedDoc(firestore, _list());
 
-      expect(await repo.validateDeletePermission(_userId, _listId), isTrue);
-      expect(
-          await repo.validateDeletePermission(_otherUserId, _listId), isFalse);
-    });
+        expect(await repo.validateDeletePermission(_userId, _listId), isTrue);
+        expect(
+          await repo.validateDeletePermission(_otherUserId, _listId),
+          isFalse,
+        );
+      },
+    );
 
     test('validateDeletePermission false when content missing', () async {
       final repo = _repo(FakeFirebaseFirestore());

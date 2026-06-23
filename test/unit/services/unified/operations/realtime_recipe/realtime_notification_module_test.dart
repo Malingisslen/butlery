@@ -21,19 +21,21 @@ void main() {
 
     setUpAll(() async {
       // Register fallback values for mocktail
-      registerFallbackValue(Recipe(
-        core: RecipeCore(
-          id: 'test',
-          title: 'Test',
-          description: 'Test',
-          ingredients: [],
-          instructions: [],
-          mealType: 'Test',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      registerFallbackValue(
+        Recipe(
+          core: RecipeCore(
+            id: 'test',
+            title: 'Test',
+            description: 'Test',
+            ingredients: [],
+            instructions: [],
+            mealType: 'Test',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          type: RecipeType.personal,
         ),
-        type: RecipeType.personal,
-      ));
+      );
       registerFallbackValue(<String>[]);
       registerFallbackValue(<Map<String, dynamic>>[]);
     });
@@ -103,8 +105,9 @@ void main() {
       test('should send collaboration joined notification', () async {
         // Act & Assert (should not throw)
         await expectLater(
-          notificationModule
-              .sendCollaborationJoinedNotification(collaborativeRecipe),
+          notificationModule.sendCollaborationJoinedNotification(
+            collaborativeRecipe,
+          ),
           completes,
         );
       });
@@ -112,20 +115,23 @@ void main() {
       test('should send collaboration left notification', () async {
         // Act & Assert (should not throw)
         await expectLater(
-          notificationModule
-              .sendCollaborationLeftNotification(collaborativeRecipe),
+          notificationModule.sendCollaborationLeftNotification(
+            collaborativeRecipe,
+          ),
           completes,
         );
       });
 
-      test('should not send notification for non-collaborative recipe',
-          () async {
-        // Act & Assert (should handle gracefully)
-        await expectLater(
-          notificationModule.sendCollaborationJoinedNotification(testRecipe),
-          completes,
-        );
-      });
+      test(
+        'should not send notification for non-collaborative recipe',
+        () async {
+          // Act & Assert (should handle gracefully)
+          await expectLater(
+            notificationModule.sendCollaborationJoinedNotification(testRecipe),
+            completes,
+          );
+        },
+      );
 
       test('should send collaboration enabled notification', () async {
         // Act & Assert (should not throw)
@@ -141,8 +147,9 @@ void main() {
       test('should send collaboration disabled notification', () async {
         // Act & Assert (should not throw)
         await expectLater(
-          notificationModule
-              .sendCollaborationDisabledNotification(collaborativeRecipe),
+          notificationModule.sendCollaborationDisabledNotification(
+            collaborativeRecipe,
+          ),
           completes,
         );
       });
@@ -155,7 +162,7 @@ void main() {
           notificationModule.sendRealtimeEditNotification(
             collaborativeRecipe,
             {
-              'ingredients': ['New ingredient']
+              'ingredients': ['New ingredient'],
             },
             'Added new ingredient',
           ),
@@ -170,10 +177,10 @@ void main() {
             collaborativeRecipe,
             [
               {
-                'ingredients': ['Salt']
+                'ingredients': ['Salt'],
               },
               {
-                'instructions': ['Mix well']
+                'instructions': ['Mix well'],
               },
             ],
             'Multiple edits made',
@@ -243,7 +250,7 @@ void main() {
             data: {
               'title': 'Recipe Published',
               'body': 'Your collaborative recipe has been published',
-              'publishedAt': DateTime.now().toIso8601String()
+              'publishedAt': DateTime.now().toIso8601String(),
             },
             targetMemberIds: ['user_456', 'user_789'],
           ),
@@ -275,8 +282,9 @@ void main() {
 
         // Act & Assert (should handle gracefully)
         await expectLater(
-          notificationModule
-              .sendCollaborationJoinedNotification(collaborativeRecipe),
+          notificationModule.sendCollaborationJoinedNotification(
+            collaborativeRecipe,
+          ),
           completes,
         );
       });
@@ -298,8 +306,10 @@ void main() {
 
       test('should handle recipe without member permissions', () async {
         // Arrange
-        final simpleRecipe =
-            RecipeBuilder().withId('recipe_3').asCollaborative().build();
+        final simpleRecipe = RecipeBuilder()
+            .withId('recipe_3')
+            .asCollaborative()
+            .build();
 
         // Act & Assert (should handle gracefully)
         await expectLater(

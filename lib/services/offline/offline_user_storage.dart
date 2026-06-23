@@ -17,8 +17,8 @@ class OfflineUserStorage {
 
   OfflineUserStorage({
     required AppDatabase database,
-  })  : _recipeDao = database.recipeDao,
-        _syncQueueDao = database.syncQueueDao;
+  }) : _recipeDao = database.recipeDao,
+       _syncQueueDao = database.syncQueueDao;
 
   /// Get recipes for specific user
   Future<List<Recipe>> getRecipesForUser(String userId) async {
@@ -37,7 +37,8 @@ class OfflineUserStorage {
       }
 
       AppLogger.info(
-          '📦 Found ${recipes.length} offline recipes for user: ${userId.maskedUserId}');
+        '📦 Found ${recipes.length} offline recipes for user: ${userId.maskedUserId}',
+      );
       return recipes;
     } catch (e) {
       AppLogger.error('❌ Error getting user recipes: $e');
@@ -46,8 +47,11 @@ class OfflineUserStorage {
   }
 
   /// Save recipe with user-specific key
-  Future<void> saveRecipeForUser(Recipe recipe, String userId,
-      {required bool isOnline}) async {
+  Future<void> saveRecipeForUser(
+    Recipe recipe,
+    String userId, {
+    required bool isOnline,
+  }) async {
     try {
       final recipeJson = jsonEncode(recipe.toJson());
 
@@ -74,12 +78,14 @@ class OfflineUserStorage {
             operation: SyncOperation.tag,
           );
           AppLogger.debug(
-              '📋 Queued offline tagging for recipe: ${recipe.title}');
+            '📋 Queued offline tagging for recipe: ${recipe.title}',
+          );
         }
       }
 
       AppLogger.info(
-          '💾 Recipe saved offline for user ${userId.maskedUserId}: ${recipe.title}');
+        '💾 Recipe saved offline for user ${userId.maskedUserId}: ${recipe.title}',
+      );
     } catch (e) {
       AppLogger.error('❌ Error saving recipe offline: $e');
       rethrow;
@@ -123,7 +129,8 @@ class OfflineUserStorage {
     await _recipeDao.deleteRecipe(recipeId, userId);
     await _syncQueueDao.removeForRecipe(userId, recipeId);
     AppLogger.info(
-        '🗑️ Recipe deleted offline for user ${userId.maskedUserId}: $recipeId');
+      '🗑️ Recipe deleted offline for user ${userId.maskedUserId}: $recipeId',
+    );
   }
 
   /// Clear data for specific user
@@ -134,7 +141,8 @@ class OfflineUserStorage {
       await _syncQueueDao.clearForUser(userId);
 
       AppLogger.success(
-          '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)');
+        '✅ Cleared offline data for user: ${userId.maskedUserId} ($count recipes)',
+      );
     } catch (e) {
       AppLogger.error('❌ Error clearing user data: $e');
     }

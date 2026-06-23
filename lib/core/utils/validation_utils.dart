@@ -162,14 +162,16 @@ class ValidationUtils {
 
     if (minLength != null && value.length < minLength) {
       return AppLocale.current.validationFieldTooShort(
-          fieldName ?? AppLocale.current.validationDefaultValueLabel,
-          minLength);
+        fieldName ?? AppLocale.current.validationDefaultValueLabel,
+        minLength,
+      );
     }
 
     if (maxLength != null && value.length > maxLength) {
       return AppLocale.current.validationFieldTooLong(
-          fieldName ?? AppLocale.current.validationDefaultValueLabel,
-          maxLength);
+        fieldName ?? AppLocale.current.validationDefaultValueLabel,
+        maxLength,
+      );
     }
 
     return null;
@@ -191,38 +193,50 @@ class ValidationUtils {
 
   /// Recipe name validation - consolidates patterns from recipe-related files
   static String? validateRecipeName(String? name) {
-    final requiredCheck = validateRequired(name,
-        fieldName: AppLocale.current.validationFieldRecipeName);
+    final requiredCheck = validateRequired(
+      name,
+      fieldName: AppLocale.current.validationFieldRecipeName,
+    );
     if (requiredCheck != null) return requiredCheck;
 
-    return validateLength(name,
-        minLength: 2,
-        maxLength: 100,
-        fieldName: AppLocale.current.validationFieldRecipeName);
+    return validateLength(
+      name,
+      minLength: 2,
+      maxLength: 100,
+      fieldName: AppLocale.current.validationFieldRecipeName,
+    );
   }
 
   /// Group name validation - consolidates patterns from group-related files
   static String? validateGroupName(String? name) {
-    final requiredCheck = validateRequired(name,
-        fieldName: AppLocale.current.validationFieldGroupName);
+    final requiredCheck = validateRequired(
+      name,
+      fieldName: AppLocale.current.validationFieldGroupName,
+    );
     if (requiredCheck != null) return requiredCheck;
 
-    return validateLength(name,
-        minLength: 2,
-        maxLength: 50,
-        fieldName: AppLocale.current.validationFieldGroupName);
+    return validateLength(
+      name,
+      minLength: 2,
+      maxLength: 50,
+      fieldName: AppLocale.current.validationFieldGroupName,
+    );
   }
 
   /// Shopping item validation - consolidates patterns from shopping files
   static String? validateShoppingItemName(String? name) {
-    final requiredCheck = validateRequired(name,
-        fieldName: AppLocale.current.validationFieldArticle);
+    final requiredCheck = validateRequired(
+      name,
+      fieldName: AppLocale.current.validationFieldArticle,
+    );
     if (requiredCheck != null) return requiredCheck;
 
-    return validateLength(name,
-        minLength: 1,
-        maxLength: 100,
-        fieldName: AppLocale.current.validationFieldArticle);
+    return validateLength(
+      name,
+      minLength: 1,
+      maxLength: 100,
+      fieldName: AppLocale.current.validationFieldArticle,
+    );
   }
 
   /// Amount validation - consolidates numeric validation patterns
@@ -269,7 +283,8 @@ class ValidationUtils {
 
   /// Multi-field validation - consolidates complex validation patterns
   static List<String> validateMultiple(
-      Map<String, String? Function()> validators) {
+    Map<String, String? Function()> validators,
+  ) {
     final errors = <String>[];
 
     for (final entry in validators.entries) {
@@ -296,8 +311,9 @@ class ValidationUtils {
       final result = await validator();
       return syncValidator(result);
     } catch (e) {
-      return AppLocale.current
-          .validationFailedWith(AppLocale.current.errorGeneric);
+      return AppLocale.current.validationFailedWith(
+        AppLocale.current.errorGeneric,
+      );
     }
   }
 

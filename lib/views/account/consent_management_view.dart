@@ -106,40 +106,52 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
-                  child: Text(context.l10n.consentYourConsents,
-                      style: AppTextStyles.titleBold),
+                  child: Text(
+                    context.l10n.consentYourConsents,
+                    style: AppTextStyles.titleBold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            Text(context.l10n.consentGdprDescription,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: cs.onSurfaceVariant, height: 1.5)),
+            Text(
+              context.l10n.consentGdprDescription,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: cs.onSurfaceVariant,
+                height: 1.5,
+              ),
+            ),
             if (viewModel.hasConsent) ...[
               const SizedBox(height: AppDimensions.spacingL),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: context.butleryColors.info
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  color: context.butleryColors.info.withValues(
+                    alpha: AppDimensions.opacityVeryLight,
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                   border: Border.all(
-                      color: context.butleryColors.info
-                          .withValues(alpha: AppDimensions.opacityMediumLight)),
+                    color: context.butleryColors.info.withValues(
+                      alpha: AppDimensions.opacityMediumLight,
+                    ),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline,
-                        color: context.butleryColors.info,
-                        size: AppDimensions.iconSizeM),
+                    Icon(
+                      Icons.info_outline,
+                      color: context.butleryColors.info,
+                      size: AppDimensions.iconSizeM,
+                    ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
-                        child: Text(
-                            '${context.l10n.consentLastUpdated}: ${viewModel.getConsentTimestampText()}',
-                            style: AppTextStyles.infoText)),
+                      child: Text(
+                        '${context.l10n.consentLastUpdated}: ${viewModel.getConsentTimestampText()}',
+                        style: AppTextStyles.infoText,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -163,16 +175,23 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(Icons.lock,
-                    color: cs.onSurfaceVariant, size: AppDimensions.iconSizeM),
+                Icon(
+                  Icons.lock,
+                  color: cs.onSurfaceVariant,
+                  size: AppDimensions.iconSizeM,
+                ),
                 const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.consentRequiredTitle,
-                    style: AppTextStyles.titleBold),
+                Text(
+                  context.l10n.consentRequiredTitle,
+                  style: AppTextStyles.titleBold,
+                ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            Text(context.l10n.consentRequiredDescription,
-                style: AppTextStyles.metadataEmphasized),
+            Text(
+              context.l10n.consentRequiredDescription,
+              style: AppTextStyles.metadataEmphasized,
+            ),
             const SizedBox(height: AppDimensions.spacingMd),
             _buildRequiredConsentItem(
               context.l10n.consentBasicServices,
@@ -192,15 +211,20 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildRequiredConsentItem(
-      String title, String description, IconData icon) {
+    String title,
+    String description,
+    IconData icon,
+  ) {
     final cs = Theme.of(context).colorScheme;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon,
-            size: AppDimensions.iconSizeM,
-            color: context.butleryColors.success),
+        Icon(
+          icon,
+          size: AppDimensions.iconSizeM,
+          color: context.butleryColors.success,
+        ),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
@@ -208,17 +232,21 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             children: [
               Text(title, style: AppTextStyles.bodyBold),
               const SizedBox(height: AppDimensions.spacingXs),
-              Text(description,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: cs.onSurfaceVariant, height: 1.4)),
+              Text(
+                description,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
             ],
           ),
         ),
-        Icon(Icons.check_circle,
-            color: context.butleryColors.success,
-            size: AppDimensions.iconSizeM),
+        Icon(
+          Icons.check_circle,
+          color: context.butleryColors.success,
+          size: AppDimensions.iconSizeM,
+        ),
       ],
     );
   }
@@ -232,11 +260,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(context.l10n.consentOptionalTitle,
-                style: AppTextStyles.titleBold),
+            Text(
+              context.l10n.consentOptionalTitle,
+              style: AppTextStyles.titleBold,
+            ),
             TextButton.icon(
-              onPressed:
-                  viewModel.isSaving ? null : () => _handleRevokeAll(viewModel),
+              onPressed: viewModel.isSaving
+                  ? null
+                  : () => _handleRevokeAll(viewModel),
               icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
               label: Text(context.l10n.consentRejectAll),
               style: TextButton.styleFrom(
@@ -246,8 +277,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingXs),
-        Text(context.l10n.consentOptionalDescription,
-            style: AppTextStyles.metadataEmphasized),
+        Text(
+          context.l10n.consentOptionalDescription,
+          style: AppTextStyles.metadataEmphasized,
+        ),
         const SizedBox(height: AppDimensions.spacingMd),
         _buildConsentToggle(
           viewModel,
@@ -313,11 +346,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               padding: AppDimensions.paddingAll8,
               decoration: BoxDecoration(
                 color: value
-                    ? cs.primary
-                        .withValues(alpha: AppDimensions.opacityVeryLight)
+                    ? cs.primary.withValues(
+                        alpha: AppDimensions.opacityVeryLight,
+                      )
                     : cs.surfaceContainerLow,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
               ),
               child: Icon(
                 icon,
@@ -338,9 +373,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                          height: 1.4,
-                        ),
+                      color: cs.onSurfaceVariant,
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),
@@ -371,7 +406,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           AnalyticsEvents.appOpened,
           AnalyticsEvents.appBackgrounded,
           AnalyticsEvents.logout,
-        ]
+        ],
       ),
       (
         l10n.consentLogCategoryRecipes,
@@ -380,35 +415,35 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           AnalyticsEvents.recipeCooked,
           AnalyticsEvents.recipeViewed,
           AnalyticsEvents.recipeSearchPerformed,
-        ]
+        ],
       ),
       (
         l10n.consentLogCategoryMenuShopping,
         [
           AnalyticsEvents.menuGenerated,
           AnalyticsEvents.shoppingListItemChecked,
-        ]
+        ],
       ),
       (
         l10n.consentLogCategoryImport,
         [
           AnalyticsEvents.importStarted,
           AnalyticsEvents.importSuccess,
-        ]
+        ],
       ),
       (
         l10n.consentLogCategorySocial,
         [
           AnalyticsEvents.friendRequestSent,
           AnalyticsEvents.recipeShared,
-        ]
+        ],
       ),
       (
         l10n.consentLogCategoryOnboarding,
         [
           AnalyticsEvents.onboardingCompleted,
           AnalyticsEvents.timeToFirstRecipe,
-        ]
+        ],
       ),
     ];
 
@@ -427,8 +462,11 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             AppDimensions.spacingMd,
             AppDimensions.spacingMd,
           ),
-          leading: Icon(Icons.fact_check_outlined,
-              size: AppDimensions.iconSizeM, color: cs.onSurfaceVariant),
+          leading: Icon(
+            Icons.fact_check_outlined,
+            size: AppDimensions.iconSizeM,
+            color: cs.onSurfaceVariant,
+          ),
           title: Text(l10n.consentWhatWeLog, style: AppTextStyles.titleSmall),
           children: [
             Align(
@@ -436,9 +474,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               child: Text(
                 l10n.consentWhatWeLogIntro,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      height: 1.4,
-                    ),
+                  color: cs.onSurfaceVariant,
+                  height: 1.4,
+                ),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
@@ -462,9 +500,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           Text(
             eventNames.join(', '),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  height: 1.4,
-                ),
+              color: cs.onSurfaceVariant,
+              height: 1.4,
+            ),
           ),
         ],
       ),
@@ -480,20 +518,23 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color:
-                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline,
-              color: cs.error, size: AppDimensions.iconSizeM),
+          Icon(
+            Icons.error_outline,
+            color: cs.error,
+            size: AppDimensions.iconSizeM,
+          ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
               viewModel.errorMessage!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.error,
-                  ),
+                color: cs.error,
+              ),
             ),
           ),
         ],
@@ -505,8 +546,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     final cs = Theme.of(context).colorScheme;
 
     return ElevatedButton(
-      onPressed:
-          viewModel.isSaving ? null : () => _handleSaveConsent(viewModel),
+      onPressed: viewModel.isSaving
+          ? null
+          : () => _handleSaveConsent(viewModel),
       style: ElevatedButton.styleFrom(
         backgroundColor: cs.primary,
         foregroundColor: cs.onPrimary,
@@ -539,8 +581,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color: context.butleryColors.info
-          .withValues(alpha: AppDimensions.opacityExtraVeryLight),
+      color: context.butleryColors.info.withValues(
+        alpha: AppDimensions.opacityExtraVeryLight,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
@@ -548,9 +591,11 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(Icons.info_outline,
-                    color: context.butleryColors.info,
-                    size: AppDimensions.iconSizeM),
+                Icon(
+                  Icons.info_outline,
+                  color: context.butleryColors.info,
+                  size: AppDimensions.iconSizeM,
+                ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   context.l10n.consentGoodToKnow,
@@ -580,16 +625,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           Text(
             '• ',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+              color: cs.onSurfaceVariant,
+            ),
           ),
           Expanded(
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: cs.onSurfaceVariant,
-                    height: 1.4,
-                  ),
+                color: cs.onSurfaceVariant,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -647,8 +692,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle,
-                    color: context.butleryColors.onSuccess),
+                Icon(
+                  Icons.check_circle,
+                  color: context.butleryColors.onSuccess,
+                ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.consentAllRevoked),
               ],

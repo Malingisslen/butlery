@@ -47,20 +47,22 @@ class DefaultPermissionGateway implements PermissionGateway {
 
 /// Rationale dialog presenter — injectable so tests can stub the user's
 /// choice without pumping the real dialog.
-typedef RationaleDialogPresenter = Future<bool> Function(
-  BuildContext context,
-  String title,
-  String body,
-  String grantLabel,
-);
+typedef RationaleDialogPresenter =
+    Future<bool> Function(
+      BuildContext context,
+      String title,
+      String body,
+      String grantLabel,
+    );
 
 /// Settings-snackbar presenter — injectable for the same reason.
-typedef SettingsSnackbarPresenter = void Function(
-  BuildContext context,
-  String message,
-  String openSettingsLabel,
-  VoidCallback onOpenSettings,
-);
+typedef SettingsSnackbarPresenter =
+    void Function(
+      BuildContext context,
+      String message,
+      String openSettingsLabel,
+      VoidCallback onOpenSettings,
+    );
 
 /// Pure helper encapsulating Butlery's OS-permission UX contract.
 ///
@@ -209,11 +211,11 @@ class OsPermissionRationaleDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _OsPermissionRationaleDialog(
-        title: title,
-        body: body,
-        grantLabel: grantLabel,
-        cancelLabel: cancelLabel,
-      );
+    title: title,
+    body: body,
+    grantLabel: grantLabel,
+    cancelLabel: cancelLabel,
+  );
 }
 
 class _OsPermissionRationaleDialog extends StatelessWidget {

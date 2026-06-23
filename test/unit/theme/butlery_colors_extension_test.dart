@@ -13,10 +13,12 @@ void main() {
       expect(ButleryColors.light.iconMuted, equals(const Color(0xFF526A55)));
     });
 
-    test('dark value is a lighter brand-green tone (readable on dark surfaces)',
-        () {
-      expect(ButleryColors.dark.iconMuted, equals(const Color(0xFF7A9C7E)));
-    });
+    test(
+      'dark value is a lighter brand-green tone (readable on dark surfaces)',
+      () {
+        expect(ButleryColors.dark.iconMuted, equals(const Color(0xFF7A9C7E)));
+      },
+    );
 
     test('copyWith preserves iconMuted when not overridden', () {
       final copy = ButleryColors.light.copyWith();
@@ -39,8 +41,9 @@ void main() {
       expect(mid.iconMuted, equals(expected));
     });
 
-    testWidgets('extension accessor resolves iconMuted via Theme',
-        (tester) async {
+    testWidgets('extension accessor resolves iconMuted via Theme', (
+      tester,
+    ) async {
       Color? observed;
       await tester.pumpWidget(
         MaterialApp(

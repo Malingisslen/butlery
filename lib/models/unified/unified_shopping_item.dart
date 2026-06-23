@@ -576,16 +576,17 @@ class UnifiedShoppingItem {
       addedAt: addedAt,
       purchasedByUserId: effectiveBought
           ? (becameBought
-              ? (lastModifiedByUserId ?? purchasedByUserId)
-              : purchasedByUserId)
+                ? (lastModifiedByUserId ?? purchasedByUserId)
+                : purchasedByUserId)
           : null,
       purchasedByDisplayName: effectiveBought
           ? (becameBought
-              ? (lastModifiedByDisplayName ?? purchasedByDisplayName)
-              : purchasedByDisplayName)
+                ? (lastModifiedByDisplayName ?? purchasedByDisplayName)
+                : purchasedByDisplayName)
           : null,
-      purchasedAt:
-          effectiveBought ? (becameBought ? clock.now() : purchasedAt) : null,
+      purchasedAt: effectiveBought
+          ? (becameBought ? clock.now() : purchasedAt)
+          : null,
       lastModifiedByUserId: lastModifiedByUserId ?? this.lastModifiedByUserId,
       lastModifiedByDisplayName:
           lastModifiedByDisplayName ?? this.lastModifiedByDisplayName,
@@ -758,12 +759,14 @@ class UnifiedShoppingItem {
       'addedAt': addedAt != null ? Timestamp.fromDate(addedAt!) : null,
       'purchasedByUserId': purchasedByUserId,
       'purchasedByDisplayName': purchasedByDisplayName,
-      'purchasedAt':
-          purchasedAt != null ? Timestamp.fromDate(purchasedAt!) : null,
+      'purchasedAt': purchasedAt != null
+          ? Timestamp.fromDate(purchasedAt!)
+          : null,
       'lastModifiedByUserId': lastModifiedByUserId,
       'lastModifiedByDisplayName': lastModifiedByDisplayName,
-      'lastModifiedAt':
-          lastModifiedAt != null ? Timestamp.fromDate(lastModifiedAt!) : null,
+      'lastModifiedAt': lastModifiedAt != null
+          ? Timestamp.fromDate(lastModifiedAt!)
+          : null,
       'note': note,
       'estimatedPrice': estimatedPrice,
       'priority': priority,
@@ -784,32 +787,53 @@ class UnifiedShoppingItem {
       name: SerializationUtils.safeString(json, 'name'),
       amount: SerializationUtils.safeDouble(json, 'amount'),
       unit: SerializationUtils.safeString(json, 'unit'),
-      category: SerializationUtils.safeString(json, 'category',
-          defaultValue: ShoppingCategory.other),
+      category: SerializationUtils.safeString(
+        json,
+        'category',
+        defaultValue: ShoppingCategory.other,
+      ),
       bought: SerializationUtils.safeBool(json, 'bought'),
-      addedByUserId:
-          SerializationUtils.safeNullableString(json, 'addedByUserId'),
-      addedByDisplayName:
-          SerializationUtils.safeNullableString(json, 'addedByDisplayName'),
+      addedByUserId: SerializationUtils.safeNullableString(
+        json,
+        'addedByUserId',
+      ),
+      addedByDisplayName: SerializationUtils.safeNullableString(
+        json,
+        'addedByDisplayName',
+      ),
       addedAt: SerializationUtils.safeDateTime(json, 'addedAt'),
-      purchasedByUserId:
-          SerializationUtils.safeNullableString(json, 'purchasedByUserId'),
-      purchasedByDisplayName:
-          SerializationUtils.safeNullableString(json, 'purchasedByDisplayName'),
+      purchasedByUserId: SerializationUtils.safeNullableString(
+        json,
+        'purchasedByUserId',
+      ),
+      purchasedByDisplayName: SerializationUtils.safeNullableString(
+        json,
+        'purchasedByDisplayName',
+      ),
       purchasedAt: SerializationUtils.safeDateTime(json, 'purchasedAt'),
-      lastModifiedByUserId:
-          SerializationUtils.safeNullableString(json, 'lastModifiedByUserId'),
+      lastModifiedByUserId: SerializationUtils.safeNullableString(
+        json,
+        'lastModifiedByUserId',
+      ),
       lastModifiedByDisplayName: SerializationUtils.safeNullableString(
-          json, 'lastModifiedByDisplayName'),
+        json,
+        'lastModifiedByDisplayName',
+      ),
       lastModifiedAt: SerializationUtils.safeDateTime(json, 'lastModifiedAt'),
       note: SerializationUtils.safeNullableString(json, 'note'),
-      estimatedPrice:
-          SerializationUtils.safeNullableDouble(json, 'estimatedPrice'),
+      estimatedPrice: SerializationUtils.safeNullableDouble(
+        json,
+        'estimatedPrice',
+      ),
       priority: SerializationUtils.safeInt(json, 'priority', defaultValue: 3),
-      assignedToUserId:
-          SerializationUtils.safeNullableString(json, 'assignedToUserId'),
-      assignedToDisplayName:
-          SerializationUtils.safeNullableString(json, 'assignedToDisplayName'),
+      assignedToUserId: SerializationUtils.safeNullableString(
+        json,
+        'assignedToUserId',
+      ),
+      assignedToDisplayName: SerializationUtils.safeNullableString(
+        json,
+        'assignedToDisplayName',
+      ),
       assignedAt: SerializationUtils.safeDateTime(json, 'assignedAt'),
     );
   }
@@ -826,32 +850,53 @@ class UnifiedShoppingItem {
       name: SerializationUtils.safeString(data, 'name'),
       amount: SerializationUtils.safeDouble(data, 'amount'),
       unit: SerializationUtils.safeString(data, 'unit'),
-      category: SerializationUtils.safeString(data, 'category',
-          defaultValue: ShoppingCategory.other),
+      category: SerializationUtils.safeString(
+        data,
+        'category',
+        defaultValue: ShoppingCategory.other,
+      ),
       bought: SerializationUtils.safeBool(data, 'bought'),
-      addedByUserId:
-          SerializationUtils.safeNullableString(data, 'addedByUserId'),
-      addedByDisplayName:
-          SerializationUtils.safeNullableString(data, 'addedByDisplayName'),
+      addedByUserId: SerializationUtils.safeNullableString(
+        data,
+        'addedByUserId',
+      ),
+      addedByDisplayName: SerializationUtils.safeNullableString(
+        data,
+        'addedByDisplayName',
+      ),
       addedAt: SerializationUtils.safeDateTime(data, 'addedAt'),
-      purchasedByUserId:
-          SerializationUtils.safeNullableString(data, 'purchasedByUserId'),
-      purchasedByDisplayName:
-          SerializationUtils.safeNullableString(data, 'purchasedByDisplayName'),
+      purchasedByUserId: SerializationUtils.safeNullableString(
+        data,
+        'purchasedByUserId',
+      ),
+      purchasedByDisplayName: SerializationUtils.safeNullableString(
+        data,
+        'purchasedByDisplayName',
+      ),
       purchasedAt: SerializationUtils.safeDateTime(data, 'purchasedAt'),
-      lastModifiedByUserId:
-          SerializationUtils.safeNullableString(data, 'lastModifiedByUserId'),
+      lastModifiedByUserId: SerializationUtils.safeNullableString(
+        data,
+        'lastModifiedByUserId',
+      ),
       lastModifiedByDisplayName: SerializationUtils.safeNullableString(
-          data, 'lastModifiedByDisplayName'),
+        data,
+        'lastModifiedByDisplayName',
+      ),
       lastModifiedAt: SerializationUtils.safeDateTime(data, 'lastModifiedAt'),
       note: SerializationUtils.safeNullableString(data, 'note'),
-      estimatedPrice:
-          SerializationUtils.safeNullableDouble(data, 'estimatedPrice'),
+      estimatedPrice: SerializationUtils.safeNullableDouble(
+        data,
+        'estimatedPrice',
+      ),
       priority: SerializationUtils.safeInt(data, 'priority', defaultValue: 3),
-      assignedToUserId:
-          SerializationUtils.safeNullableString(data, 'assignedToUserId'),
-      assignedToDisplayName:
-          SerializationUtils.safeNullableString(data, 'assignedToDisplayName'),
+      assignedToUserId: SerializationUtils.safeNullableString(
+        data,
+        'assignedToUserId',
+      ),
+      assignedToDisplayName: SerializationUtils.safeNullableString(
+        data,
+        'assignedToDisplayName',
+      ),
       assignedAt: SerializationUtils.safeDateTime(data, 'assignedAt'),
     );
   }

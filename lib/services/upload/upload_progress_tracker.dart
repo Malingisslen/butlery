@@ -59,8 +59,9 @@ class UploadProgressTracker {
 
       if (uploadSpeed > 0) {
         final remainingBytes = fileSize - bytesTransferred;
-        timeRemaining =
-            Duration(seconds: (remainingBytes / uploadSpeed).round());
+        timeRemaining = Duration(
+          seconds: (remainingBytes / uploadSpeed).round(),
+        );
       }
     }
 
@@ -76,7 +77,8 @@ class UploadProgressTracker {
     final milestone = _checkMilestoneCrossed(previousProgress, progress);
     if (milestone != null) {
       AppLogger.info(
-          '📊 PROGRESS: Milestone ${(milestone * 100).round()}% reached for $filePath');
+        '📊 PROGRESS: Milestone ${(milestone * 100).round()}% reached for $filePath',
+      );
     }
 
     return currentStatus.copyWith(
@@ -114,7 +116,9 @@ class UploadProgressTracker {
   /// Check if a progress milestone was crossed
   /// Returns the milestone value (0.25, 0.50, 0.75) if crossed, null otherwise
   double? _checkMilestoneCrossed(
-      double previousProgress, double currentProgress) {
+    double previousProgress,
+    double currentProgress,
+  ) {
     for (final milestone in progressMilestones) {
       if (previousProgress < milestone && currentProgress >= milestone) {
         return milestone;

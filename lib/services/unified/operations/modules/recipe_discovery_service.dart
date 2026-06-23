@@ -25,8 +25,8 @@ class RecipeDiscoveryService extends BaseService {
   RecipeDiscoveryService({
     required String? Function() getCurrentUserId,
     required List<Recipe> Function() getRecipes,
-  })  : _getCurrentUserId = getCurrentUserId,
-        _getRecipes = getRecipes;
+  }) : _getCurrentUserId = getCurrentUserId,
+       _getRecipes = getRecipes;
   Future<List<Recipe>> getCollaborativeRecipes({
     int limit = 50,
     String? startAfter,
@@ -63,8 +63,9 @@ class RecipeDiscoveryService extends BaseService {
       if (categoryFilter != null && categoryFilter.isNotEmpty) {
         collaborativeRecipes = collaborativeRecipes.where((recipe) {
           final recipeCategoryIds = recipe.socialData?.categoryIds ?? [];
-          return categoryFilter
-              .any((categoryId) => recipeCategoryIds.contains(categoryId));
+          return categoryFilter.any(
+            (categoryId) => recipeCategoryIds.contains(categoryId),
+          );
         }).toList();
       }
 
@@ -74,8 +75,9 @@ class RecipeDiscoveryService extends BaseService {
         collaborativeRecipes = collaborativeRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.personalTagIds
-                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds?.any(
+                    (tag) => tag.toLowerCase().contains(query),
+                  ) ??
                   false);
         }).toList();
       }
@@ -91,7 +93,8 @@ class RecipeDiscoveryService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Found ${collaborativeRecipes.length} collaborative recipes');
+        '✅ Found ${collaborativeRecipes.length} collaborative recipes',
+      );
       return collaborativeRecipes;
     } catch (e) {
       AppLogger.error('❌ Failed to get collaborative recipes', e);
@@ -134,8 +137,9 @@ class RecipeDiscoveryService extends BaseService {
       if (categoryFilter != null && categoryFilter.isNotEmpty) {
         sharedRecipes = sharedRecipes.where((recipe) {
           final recipeCategoryIds = recipe.socialData?.categoryIds ?? [];
-          return categoryFilter
-              .any((categoryId) => recipeCategoryIds.contains(categoryId));
+          return categoryFilter.any(
+            (categoryId) => recipeCategoryIds.contains(categoryId),
+          );
         }).toList();
       }
 
@@ -145,12 +149,13 @@ class RecipeDiscoveryService extends BaseService {
         sharedRecipes = sharedRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.personalTagIds
-                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds?.any(
+                    (tag) => tag.toLowerCase().contains(query),
+                  ) ??
                   false) ||
-              (recipe.socialData?.ownerDisplayName
-                      ?.toLowerCase()
-                      .contains(query) ??
+              (recipe.socialData?.ownerDisplayName?.toLowerCase().contains(
+                    query,
+                  ) ??
                   false);
         }).toList();
       }
@@ -165,7 +170,8 @@ class RecipeDiscoveryService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Found ${sharedRecipes.length} recipes shared with user');
+        '✅ Found ${sharedRecipes.length} recipes shared with user',
+      );
       return sharedRecipes;
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes shared with user', e);
@@ -209,8 +215,9 @@ class RecipeDiscoveryService extends BaseService {
       if (categoryFilter != null && categoryFilter.isNotEmpty) {
         sharedRecipes = sharedRecipes.where((recipe) {
           final recipeCategoryIds = recipe.socialData?.categoryIds ?? [];
-          return categoryFilter
-              .any((categoryId) => recipeCategoryIds.contains(categoryId));
+          return categoryFilter.any(
+            (categoryId) => recipeCategoryIds.contains(categoryId),
+          );
         }).toList();
       }
 
@@ -220,8 +227,9 @@ class RecipeDiscoveryService extends BaseService {
         sharedRecipes = sharedRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.personalTagIds
-                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds?.any(
+                    (tag) => tag.toLowerCase().contains(query),
+                  ) ??
                   false);
         }).toList();
       }
@@ -237,7 +245,8 @@ class RecipeDiscoveryService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Found ${sharedRecipes.length} recipes shared by user');
+        '✅ Found ${sharedRecipes.length} recipes shared by user',
+      );
       return sharedRecipes;
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes shared by user', e);
@@ -278,8 +287,9 @@ class RecipeDiscoveryService extends BaseService {
           if (currentUserId == userId) {
             return true; // Owner can see all their recipes
           }
-          return recipe.socialData?.memberPermissions
-                  ?.containsKey(currentUserId) ??
+          return recipe.socialData?.memberPermissions?.containsKey(
+                currentUserId,
+              ) ??
               false;
         }
 
@@ -290,8 +300,9 @@ class RecipeDiscoveryService extends BaseService {
       if (categoryFilter != null && categoryFilter.isNotEmpty) {
         userRecipes = userRecipes.where((recipe) {
           final recipeCategoryIds = recipe.socialData?.categoryIds ?? [];
-          return categoryFilter
-              .any((categoryId) => recipeCategoryIds.contains(categoryId));
+          return categoryFilter.any(
+            (categoryId) => recipeCategoryIds.contains(categoryId),
+          );
         }).toList();
       }
 
@@ -301,8 +312,9 @@ class RecipeDiscoveryService extends BaseService {
         userRecipes = userRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.personalTagIds
-                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds?.any(
+                    (tag) => tag.toLowerCase().contains(query),
+                  ) ??
                   false);
         }).toList();
       }
@@ -316,7 +328,8 @@ class RecipeDiscoveryService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Found ${userRecipes.length} accessible recipes by user ${userId.maskedUserId}');
+        '✅ Found ${userRecipes.length} accessible recipes by user ${userId.maskedUserId}',
+      );
       return userRecipes;
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes by user', e);
@@ -353,8 +366,9 @@ class RecipeDiscoveryService extends BaseService {
       if (categoryFilter != null && categoryFilter.isNotEmpty) {
         trendingRecipes = trendingRecipes.where((recipe) {
           final recipeCategoryIds = recipe.socialData?.categoryIds ?? [];
-          return categoryFilter
-              .any((categoryId) => recipeCategoryIds.contains(categoryId));
+          return categoryFilter.any(
+            (categoryId) => recipeCategoryIds.contains(categoryId),
+          );
         }).toList();
       }
 
@@ -371,7 +385,7 @@ class RecipeDiscoveryService extends BaseService {
         // Member count score (more members = higher score)
         final memberCount =
             (recipe.socialData?.memberPermissions?.length ?? 0) +
-                1; // +1 for owner
+            1; // +1 for owner
         score += memberCount * 10;
 
         // Recent activity score
@@ -387,11 +401,12 @@ class RecipeDiscoveryService extends BaseService {
         }
 
         return MapEntry(recipe, score);
-      }).toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
+      }).toList()..sort((a, b) => b.value.compareTo(a.value));
 
-      final result =
-          scoredRecipes.take(limit).map((entry) => entry.key).toList();
+      final result = scoredRecipes
+          .take(limit)
+          .map((entry) => entry.key)
+          .toList();
 
       AppLogger.success('✅ Found ${result.length} trending recipes');
       return result;
@@ -411,27 +426,33 @@ class RecipeDiscoveryService extends BaseService {
       final currentUserId = _getCurrentUserId();
       if (currentUserId == null) return [];
 
-      final cutoffTime =
-          clock.now().subtract(timeWindow ?? const Duration(days: 7));
+      final cutoffTime = clock.now().subtract(
+        timeWindow ?? const Duration(days: 7),
+      );
 
       // Get collaborative recipes from parent service
       final allRecipes = _getRecipes();
-      var recentlyShared = allRecipes.where((recipe) {
-        if (!recipe.isCollaborative) return false;
+      var recentlyShared = allRecipes
+          .where((recipe) {
+            if (!recipe.isCollaborative) return false;
 
-        // Check if user has access
-        final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
-        if (ownerId == currentUserId) return true;
-        if (recipe.socialData?.memberPermissions?.containsKey(currentUserId) ==
-            true) {
-          return true;
-        }
+            // Check if user has access
+            final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+            if (ownerId == currentUserId) return true;
+            if (recipe.socialData?.memberPermissions?.containsKey(
+                  currentUserId,
+                ) ==
+                true) {
+              return true;
+            }
 
-        return false;
-      }).where((recipe) {
-        // Filter by creation time (assuming collaborative recipes are created when shared)
-        return recipe.createdAt.isAfter(cutoffTime);
-      }).toList();
+            return false;
+          })
+          .where((recipe) {
+            // Filter by creation time (assuming collaborative recipes are created when shared)
+            return recipe.createdAt.isAfter(cutoffTime);
+          })
+          .toList();
 
       // Sort by creation date (most recent first)
       recentlyShared.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -442,7 +463,8 @@ class RecipeDiscoveryService extends BaseService {
       }
 
       AppLogger.success(
-          '✅ Found ${recentlyShared.length} recently shared recipes');
+        '✅ Found ${recentlyShared.length} recently shared recipes',
+      );
       return recentlyShared;
     } catch (e) {
       AppLogger.error('❌ Failed to get recently shared recipes', e);
@@ -492,8 +514,8 @@ class RecipeDiscoveryService extends BaseService {
             : 0,
         'collaboration_ratio': (personalRecipes + ownedCollaborative) > 0
             ? ((ownedCollaborative / (personalRecipes + ownedCollaborative)) *
-                    100)
-                .round()
+                      100)
+                  .round()
             : 0,
       };
     } catch (e) {
@@ -502,8 +524,9 @@ class RecipeDiscoveryService extends BaseService {
     }
   }
 
-  Future<Map<String, int>> getPopularCollaborativeCategories(
-      {int limit = 10}) async {
+  Future<Map<String, int>> getPopularCollaborativeCategories({
+    int limit = 10,
+  }) async {
     try {
       final collaborativeRecipes = await getCollaborativeRecipes(limit: 0);
       final categoryCount = <String, int>{};
@@ -554,8 +577,9 @@ class RecipeDiscoveryService extends BaseService {
           return includePersonal && ownerId == currentUserId;
         } else if (recipe.isCollaborative) {
           return ownerId == currentUserId ||
-              (recipe.socialData?.memberPermissions
-                      ?.containsKey(currentUserId) ??
+              (recipe.socialData?.memberPermissions?.containsKey(
+                    currentUserId,
+                  ) ??
                   false);
         }
         return false;
@@ -565,8 +589,9 @@ class RecipeDiscoveryService extends BaseService {
       if (categoryFilter != null && categoryFilter.isNotEmpty) {
         searchableRecipes = searchableRecipes.where((recipe) {
           final recipeCategoryIds = recipe.socialData?.categoryIds ?? [];
-          return categoryFilter
-              .any((categoryId) => recipeCategoryIds.contains(categoryId));
+          return categoryFilter.any(
+            (categoryId) => recipeCategoryIds.contains(categoryId),
+          );
         }).toList();
       }
 
@@ -574,14 +599,16 @@ class RecipeDiscoveryService extends BaseService {
       final searchResults = searchableRecipes.where((recipe) {
         return recipe.title.toLowerCase().contains(searchQuery) ||
             recipe.description.toLowerCase().contains(searchQuery) ||
-            (recipe.personalTagIds
-                    ?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
+            (recipe.personalTagIds?.any(
+                  (tag) => tag.toLowerCase().contains(searchQuery),
+                ) ??
                 false) ||
-            recipe.ingredients.any((ingredient) =>
-                ingredient.toLowerCase().contains(searchQuery)) ||
-            (recipe.socialData?.ownerDisplayName
-                    ?.toLowerCase()
-                    .contains(searchQuery) ??
+            recipe.ingredients.any(
+              (ingredient) => ingredient.toLowerCase().contains(searchQuery),
+            ) ||
+            (recipe.socialData?.ownerDisplayName?.toLowerCase().contains(
+                  searchQuery,
+                ) ??
                 false);
       }).toList();
 
@@ -599,13 +626,15 @@ class RecipeDiscoveryService extends BaseService {
         if (b.description.toLowerCase().contains(searchQuery)) bScore += 50;
 
         // Tag/ingredient matches get lower score
-        if (a.personalTagIds
-                ?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
+        if (a.personalTagIds?.any(
+              (tag) => tag.toLowerCase().contains(searchQuery),
+            ) ??
             false) {
           aScore += 25;
         }
-        if (b.personalTagIds
-                ?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
+        if (b.personalTagIds?.any(
+              (tag) => tag.toLowerCase().contains(searchQuery),
+            ) ??
             false) {
           bScore += 25;
         }

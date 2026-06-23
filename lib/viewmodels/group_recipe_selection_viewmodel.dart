@@ -30,10 +30,10 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
     required this.groupMembers,
     AnalyticsService? analyticsService,
     UserService? userService,
-  })  : _recipeService = recipeService,
-        _analyticsService =
-            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
-        _userService = userService ?? ServiceLocator.tryGet<UserService>();
+  }) : _recipeService = recipeService,
+       _analyticsService =
+           analyticsService ?? ServiceLocator.tryGet<AnalyticsService>(),
+       _userService = userService ?? ServiceLocator.tryGet<UserService>();
 
   final AnalyticsService? _analyticsService;
   final UserService? _userService;
@@ -94,8 +94,8 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
         // Check if recipe is collaborative and has any group member as member
         if (recipe.isCollaborative &&
             recipe.socialData?.memberPermissions != null) {
-          final recipeMembers =
-              recipe.socialData!.memberPermissions!.keys.toSet();
+          final recipeMembers = recipe.socialData!.memberPermissions!.keys
+              .toSet();
           final groupMemberIds = targetGroup.friendUserIds.toSet();
 
           // If any group member is already a member of this recipe, mark as shared
@@ -108,7 +108,8 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
       _alreadySharedRecipeIds.addAll(sharedRecipeIds);
 
       AppLogger.debug(
-          'Found ${sharedRecipeIds.length} recipes already shared with group members');
+        'Found ${sharedRecipeIds.length} recipes already shared with group members',
+      );
     } catch (e) {
       AppLogger.error('Error loading shared recipes', e);
     }
@@ -158,7 +159,8 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
 
     try {
       AppLogger.info(
-          '📤 Delar ${_selectedRecipeIds.length} recept med grupp ${targetGroup.name}');
+        '📤 Delar ${_selectedRecipeIds.length} recept med grupp ${targetGroup.name}',
+      );
 
       final recipes = selectedRecipes;
       final memberIds = targetGroup.friendUserIds;
@@ -186,19 +188,21 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
       // post-share UI return.
       final analytics = _analyticsService;
       if (analytics != null) {
-        unawaited(Future.wait([
-          for (final recipe in recipes)
-            analytics.logRecipeShared(
-              method: 'group',
-              recipeId: recipe.id,
-              recipientCount: memberIds.length,
+        unawaited(
+          Future.wait([
+            for (final recipe in recipes)
+              analytics.logRecipeShared(
+                method: 'group',
+                recipeId: recipe.id,
+                recipientCount: memberIds.length,
+              ),
+            analytics.recipe.logFirstShareIfMilestone(
+              userId: _userService?.currentUserId,
+              shareMethod: 'group',
+              joinedAt: _userService?.currentUserProfile?.joinedAt,
             ),
-          analytics.recipe.logFirstShareIfMilestone(
-            userId: _userService?.currentUserId,
-            shareMethod: 'group',
-            joinedAt: _userService?.currentUserProfile?.joinedAt,
-          ),
-        ]));
+          ]),
+        );
       }
 
       // Add shared recipes to already-shared list
@@ -223,11 +227,12 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
     // Apply text search
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((recipe) {
-        final titleMatch =
-            recipe.title.toLowerCase().contains(_searchQuery.toLowerCase());
-        final descMatch = recipe.description
-            .toLowerCase()
-            .contains(_searchQuery.toLowerCase());
+        final titleMatch = recipe.title.toLowerCase().contains(
+          _searchQuery.toLowerCase(),
+        );
+        final descMatch = recipe.description.toLowerCase().contains(
+          _searchQuery.toLowerCase(),
+        );
         return titleMatch || descMatch;
       }).toList();
     }

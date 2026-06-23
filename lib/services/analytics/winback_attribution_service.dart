@@ -95,9 +95,9 @@ class WinbackAttributionService extends BaseService {
     required AnalyticsService analytics,
     required ExperimentAssignment experimentAssignment,
     required FirestoreRepository firestoreRepository,
-  })  : _analytics = analytics,
-        _experimentAssignment = experimentAssignment,
-        _firestoreRepository = firestoreRepository;
+  }) : _analytics = analytics,
+       _experimentAssignment = experimentAssignment,
+       _firestoreRepository = firestoreRepository;
 
   @override
   String get serviceName => 'WinbackAttributionService';

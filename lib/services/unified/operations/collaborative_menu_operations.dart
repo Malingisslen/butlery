@@ -16,8 +16,8 @@ class CollaborativeMenuOperations {
   CollaborativeMenuOperations({
     required VoidCallback notifyListeners,
     required MenuCollaborationRepository repository,
-  })  : _notifyListeners = notifyListeners,
-        _repository = repository;
+  }) : _notifyListeners = notifyListeners,
+       _repository = repository;
 
   /// Enable real-time collaboration for a menu
   Future<bool> enableMenuCollaboration({

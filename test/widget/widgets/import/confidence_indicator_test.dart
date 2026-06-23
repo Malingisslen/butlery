@@ -25,21 +25,25 @@ class _Tokens {
 
 Future<_Tokens> _pump(WidgetTester tester, double confidence) async {
   final tokens = _Tokens();
-  await tester.pumpWidget(MaterialApp(
-    theme: AppTheme.lightTheme,
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    locale: const Locale('sv'),
-    home: Scaffold(
-      body: Builder(builder: (context) {
-        tokens
-          ..success = context.butleryColors.success
-          ..warning = context.butleryColors.warning
-          ..error = Theme.of(context).colorScheme.error;
-        return ConfidenceIndicator(confidence: confidence);
-      }),
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: AppTheme.lightTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      home: Scaffold(
+        body: Builder(
+          builder: (context) {
+            tokens
+              ..success = context.butleryColors.success
+              ..warning = context.butleryColors.warning
+              ..error = Theme.of(context).colorScheme.error;
+            return ConfidenceIndicator(confidence: confidence);
+          },
+        ),
+      ),
     ),
-  ));
+  );
   return tokens;
 }
 

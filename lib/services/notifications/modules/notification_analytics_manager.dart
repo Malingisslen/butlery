@@ -24,9 +24,9 @@ class NotificationAnalyticsManager {
   NotificationAnalyticsManager({
     required String userId,
     NotificationAnalyticsRepository? repository,
-  })  : _repository =
-            repository ?? ServiceLocator.get<NotificationAnalyticsRepository>(),
-        _userId = userId;
+  }) : _repository =
+           repository ?? ServiceLocator.get<NotificationAnalyticsRepository>(),
+       _userId = userId;
 
   /// Record notification sent (call after FCM send attempt)
   Future<void> recordNotificationSent({
@@ -45,8 +45,9 @@ class NotificationAnalyticsManager {
         'type': type.name,
         'status': 'sent',
         'sentAt': FieldValue.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
         'metadata': metadata,
       };
 
@@ -93,7 +94,8 @@ class NotificationAnalyticsManager {
       });
 
       AppLogger.debug(
-          '📊 Recorded notification failed: $notificationId ($errorCode)');
+        '📊 Recorded notification failed: $notificationId ($errorCode)',
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to record notification failure: $e');
     }
@@ -110,8 +112,9 @@ class NotificationAnalyticsManager {
         'userId': _userId,
         'action': 'opened',
         'timestamp': FieldValue.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
         'context': context ?? {},
       };
 
@@ -140,8 +143,9 @@ class NotificationAnalyticsManager {
         'userId': _userId,
         'action': 'dismissed',
         'timestamp': FieldValue.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
         'reason': dismissalReason,
       };
 
@@ -166,15 +170,17 @@ class NotificationAnalyticsManager {
         'action': 'action_taken',
         'actionId': actionId,
         'timestamp': FieldValue.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
         'actionData': actionData ?? {},
       };
 
       await _repository.addEngagementEvent(engagementEvent);
 
       AppLogger.info(
-          '📊 Recorded notification action taken: $notificationId ($actionId)');
+        '📊 Recorded notification action taken: $notificationId ($actionId)',
+      );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to record notification action: $e');
     }
@@ -187,10 +193,14 @@ class NotificationAnalyticsManager {
     try {
       final since = clock.now().subtract(period ?? const Duration(days: 30));
 
-      final deliveryDocs =
-          await _repository.getDeliveriesForUser(_userId, since);
-      final engagementDocs =
-          await _repository.getEngagementsForUser(_userId, since);
+      final deliveryDocs = await _repository.getDeliveriesForUser(
+        _userId,
+        since,
+      );
+      final engagementDocs = await _repository.getEngagementsForUser(
+        _userId,
+        since,
+      );
 
       return _calculateEngagementSummary(deliveryDocs, engagementDocs);
     } catch (e) {
@@ -204,8 +214,10 @@ class NotificationAnalyticsManager {
     List<QueryDocumentSnapshot> engagementDocs,
   ) {
     final received = deliveryDocs
-        .where((doc) =>
-            (doc.data() as Map<String, dynamic>)['status'] == 'delivered')
+        .where(
+          (doc) =>
+              (doc.data() as Map<String, dynamic>)['status'] == 'delivered',
+        )
         .length;
 
     final actions = <String, int>{};
@@ -224,8 +236,9 @@ class NotificationAnalyticsManager {
       'notifications_dismissed': dismissed,
       'actions_taken': actionsTaken,
       'open_rate': received > 0 ? opened / received : 0.0,
-      'engagement_rate':
-          received > 0 ? (opened + actionsTaken) / received : 0.0,
+      'engagement_rate': received > 0
+          ? (opened + actionsTaken) / received
+          : 0.0,
       'dismissal_rate': received > 0 ? dismissed / received : 0.0,
     };
   }
@@ -251,7 +264,8 @@ class NotificationAnalyticsManager {
 
   Future<void> dispose() async {
     AppLogger.info(
-        '📊 Disposing NotificationAnalyticsManager for user $_userId');
+      '📊 Disposing NotificationAnalyticsManager for user $_userId',
+    );
 
     await _flushPendingEvents();
 

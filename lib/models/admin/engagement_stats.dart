@@ -29,8 +29,13 @@ class FeatureCounts {
   /// Upper-bound proxy for distinct active users in the window: at least this
   /// many users were active in the busiest single feature. Exact distinct
   /// counts aren't stored per-feature, so this is intentionally a floor.
-  int get max => [cooked, imported, shared, mealPlanned, shopped]
-      .reduce((a, b) => a > b ? a : b);
+  int get max => [
+    cooked,
+    imported,
+    shared,
+    mealPlanned,
+    shopped,
+  ].reduce((a, b) => a > b ? a : b);
 
   factory FeatureCounts.fromMap(Map<String, dynamic>? map) {
     final m = map ?? const {};

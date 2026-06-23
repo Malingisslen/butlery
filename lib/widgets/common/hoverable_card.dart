@@ -86,8 +86,9 @@ class _HoverableCardState extends State<HoverableCard> {
         child: AnimatedContainer(
           duration: effectiveDuration,
           curve: widget.curve,
-          decoration:
-              showHover ? widget.hoverDecoration : widget.restDecoration,
+          decoration: showHover
+              ? widget.hoverDecoration
+              : widget.restDecoration,
           child: widget.child,
         ),
       ),

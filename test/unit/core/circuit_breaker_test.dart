@@ -167,19 +167,25 @@ void main() {
       final cb = CircuitBreaker(failureThreshold: 1);
       cb.recordFailure(); // open
 
-      final result =
-          await cb.executeWithFallback(() async => 'never', 'fallback');
+      final result = await cb.executeWithFallback(
+        () async => 'never',
+        'fallback',
+      );
       expect(result, 'fallback');
     });
 
-    test('returns fallback and records failure when operation throws',
-        () async {
-      final cb = CircuitBreaker(failureThreshold: 5);
-      final result = await cb.executeWithFallback(
-          () async => throw StateError('boom'), 'fb');
-      expect(result, 'fb');
-      expect(cb.failureCount, 1);
-    });
+    test(
+      'returns fallback and records failure when operation throws',
+      () async {
+        final cb = CircuitBreaker(failureThreshold: 5);
+        final result = await cb.executeWithFallback(
+          () async => throw StateError('boom'),
+          'fb',
+        );
+        expect(result, 'fb');
+        expect(cb.failureCount, 1);
+      },
+    );
   });
 
   test('toString includes counts and open/halfOpen flags', () {

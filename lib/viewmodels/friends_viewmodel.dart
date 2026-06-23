@@ -51,25 +51,27 @@ class FriendsViewModel extends ChangeNotifier
     required UserService userService,
     AnalyticsService? analyticsService,
     PermissionService? permissionService,
-  })  : _friendsService = friendsService,
-        _userService = userService,
-        _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
-        _permissionService =
-            permissionService ?? ServiceLocator.get<PermissionService>() {
+  }) : _friendsService = friendsService,
+       _userService = userService,
+       _analyticsService =
+           analyticsService ?? ServiceLocator.get<AnalyticsService>(),
+       _permissionService =
+           permissionService ?? ServiceLocator.get<PermissionService>() {
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
 
     AppLogger.info('Registering Friends ViewModel service listeners...');
-    _friendsServiceSubscription =
-        _friendsService.stateStream.listen((_) => _onFriendsServiceChanged());
+    _friendsServiceSubscription = _friendsService.stateStream.listen(
+      (_) => _onFriendsServiceChanged(),
+    );
     _userService.addListener(_onUserServiceChanged);
     _searchManager.addListener(_onSearchChanged);
     _profileCacheManager.addListener(_onProfileCacheChanged);
     _selectionManager.addListener(_onSelectionChanged);
     AppLogger.success(
-        'All Friends ViewModel listeners registered successfully');
+      'All Friends ViewModel listeners registered successfully',
+    );
 
     Future.delayed(Duration.zero, () {
       if (!_isDisposed) {
@@ -181,12 +183,15 @@ class FriendsViewModel extends ChangeNotifier
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
     AppLogger.info('🔄 Sending friend request to ${userId.maskedUserId}...');
 
-    final success = await _friendsService.management
-        .sendFriendRequest(userId, message: message);
+    final success = await _friendsService.management.sendFriendRequest(
+      userId,
+      message: message,
+    );
 
     if (success) {
       AppLogger.success(
-          '✅ Friend request sent successfully to ${userId.maskedUserId}');
+        '✅ Friend request sent successfully to ${userId.maskedUserId}',
+      );
 
       // Track friend request sent
       await _analyticsService.logFriendRequestSent(
@@ -201,10 +206,12 @@ class FriendsViewModel extends ChangeNotifier
       notifyListeners();
 
       AppLogger.debug(
-          '🔄 UI notified of friend request state change with search cleared');
+        '🔄 UI notified of friend request state change with search cleared',
+      );
     } else {
       AppLogger.error(
-          '❌ Failed to send friend request to ${userId.maskedUserId}');
+        '❌ Failed to send friend request to ${userId.maskedUserId}',
+      );
     }
 
     return success;
@@ -227,8 +234,9 @@ class FriendsViewModel extends ChangeNotifier
     // throw; the service safely no-ops on a missing request.
     final request = incomingRequests.firstWhereOrNull((r) => r.id == requestId);
 
-    final success =
-        await _friendsService.management.acceptFriendRequest(requestId);
+    final success = await _friendsService.management.acceptFriendRequest(
+      requestId,
+    );
 
     if (success) {
       // Track friend request accepted (only when we still have the sender id).
@@ -254,12 +262,14 @@ class FriendsViewModel extends ChangeNotifier
     // throw; the service safely no-ops on a missing request.
     final request = incomingRequests.firstWhereOrNull((r) => r.id == requestId);
 
-    final success =
-        await _friendsService.management.rejectFriendRequest(requestId);
+    final success = await _friendsService.management.rejectFriendRequest(
+      requestId,
+    );
 
     if (success && request != null) {
-      await _analyticsService.social
-          .logFriendRequestRejected(senderId: request.fromUserId);
+      await _analyticsService.social.logFriendRequestRejected(
+        senderId: request.fromUserId,
+      );
     }
 
     return success;
@@ -310,7 +320,8 @@ class FriendsViewModel extends ChangeNotifier
           AppLogger.success('✅ Grupp "$name" skapad!');
           return true;
         } else {
-          _groupCreationError = _friendsService.error ??
+          _groupCreationError =
+              _friendsService.error ??
               AppLocale.current.errorCouldNotCreateGroup;
           throw Exception(_groupCreationError!);
         }
@@ -355,14 +366,16 @@ class FriendsViewModel extends ChangeNotifier
     }
 
     // Check if there's an outgoing request
-    if (_friendsService.outgoingRequests
-        .any((request) => request.toUserId == userId)) {
+    if (_friendsService.outgoingRequests.any(
+      (request) => request.toUserId == userId,
+    )) {
       return FriendshipStatus.requestSent;
     }
 
     // Check if there's an incoming request
-    if (_friendsService.incomingRequests
-        .any((request) => request.fromUserId == userId)) {
+    if (_friendsService.incomingRequests.any(
+      (request) => request.fromUserId == userId,
+    )) {
       return FriendshipStatus.requestReceived;
     }
 

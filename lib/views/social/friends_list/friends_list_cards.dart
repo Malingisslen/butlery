@@ -82,7 +82,9 @@ class FriendRequestCard {
     final success = await viewModel.acceptFriendRequest(request.id);
     if (success && context.mounted) {
       SnackBarUtils.showSuccess(
-          context, context.l10n.socialFriendRequestAccepted);
+        context,
+        context.l10n.socialFriendRequestAccepted,
+      );
     }
   }
 
@@ -94,7 +96,9 @@ class FriendRequestCard {
     final success = await viewModel.rejectFriendRequest(request.id);
     if (success && context.mounted) {
       SnackBarUtils.showWarning(
-          context, context.l10n.socialFriendRequestDeclined);
+        context,
+        context.l10n.socialFriendRequestDeclined,
+      );
     }
   }
 }
@@ -109,10 +113,9 @@ class GroupCard {
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context)
-              .colorScheme
-              .primary
-              .withValues(alpha: AppDimensions.opacityVeryLight),
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(
+            alpha: AppDimensions.opacityVeryLight,
+          ),
           child: Text(
             group.emoji ?? '👥',
             style: AppTextStyles.headlineMedium,
@@ -153,7 +156,9 @@ class GroupCard {
   }
 
   static void _navigateToGroupDetail(
-      BuildContext context, FriendCategory group) {
+    BuildContext context,
+    FriendCategory group,
+  ) {
     Navigator.pushNamed(
       context,
       Routes.groupDetail,

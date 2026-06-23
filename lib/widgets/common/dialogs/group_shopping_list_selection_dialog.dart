@@ -45,11 +45,13 @@ class _GroupShoppingListSelectionDialogState
     try {
       if (!_shoppingService.isInitialized) {
         AppLogger.debug(
-            '[ShoppingListDialog] Initializing shopping service...');
+          '[ShoppingListDialog] Initializing shopping service...',
+        );
         await _shoppingService.initialize();
       } else {
         AppLogger.debug(
-            '[ShoppingListDialog] Service already initialized, refreshing...');
+          '[ShoppingListDialog] Service already initialized, refreshing...',
+        );
         await _shoppingService.loadLists();
       }
 
@@ -85,8 +87,10 @@ class _GroupShoppingListSelectionDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child:
-              Text(context.l10n.commonCancel, style: AppTextStyles.labelLarge),
+          child: Text(
+            context.l10n.commonCancel,
+            style: AppTextStyles.labelLarge,
+          ),
         ),
       ],
     );
@@ -173,8 +177,9 @@ class _ShoppingListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color:
-                  cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: cs.primary.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
             child: Icon(
@@ -210,8 +215,10 @@ class _ShoppingListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing:
-          const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: AppDimensions.iconSizeS,
+      ),
       onTap: onTap,
     );
   }

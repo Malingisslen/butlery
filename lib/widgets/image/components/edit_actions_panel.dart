@@ -86,8 +86,9 @@ class _EditActionButton extends StatelessWidget {
               child: Icon(
                 icon,
                 size: AppDimensions.iconSizeM,
-                color:
-                    isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
+                color: isDestructive
+                    ? cs.surfaceContainerHighest
+                    : cs.onSurface,
               ),
             ),
           ),

@@ -27,7 +27,7 @@ class ParseEventsRepository {
   static const int _cap = 200;
 
   ParseEventsRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Recent parse events for [domain], newest first. [failuresOnly] keeps just
   /// the failed attempts (the usual "why does this site fail" view).

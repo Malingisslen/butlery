@@ -35,50 +35,56 @@ void main() {
       return out;
     }
 
-    test('online: empty emissions pass straight through (live behaviour)',
-        () async {
-      final out = await run(
-        [
+    test(
+      'online: empty emissions pass straight through (live behaviour)',
+      () async {
+        final out = await run(
+          [
+            [1, 2],
+            [], // legitimately empty while online — must pass through
+            [3],
+          ],
+          isOffline: () => false,
+        );
+        expect(out, [
           [1, 2],
-          [], // legitimately empty while online — must pass through
+          [],
           [3],
-        ],
-        isOffline: () => false,
-      );
-      expect(out, [
-        [1, 2],
-        [],
-        [3],
-      ]);
-    });
+        ]);
+      },
+    );
 
-    test('offline: an empty emission replays the last non-empty value',
-        () async {
-      // The core ticket assertion: non-empty then empty (offline) → still
-      // shows the non-empty value instead of vanishing.
-      final out = await run(
-        [
+    test(
+      'offline: an empty emission replays the last non-empty value',
+      () async {
+        // The core ticket assertion: non-empty then empty (offline) → still
+        // shows the non-empty value instead of vanishing.
+        final out = await run(
+          [
+            [7, 8],
+            [], // offline empty — should be suppressed
+          ],
+          isOffline: () => true,
+        );
+        expect(out, [
           [7, 8],
-          [], // offline empty — should be suppressed
-        ],
-        isOffline: () => true,
-      );
-      expect(out, [
-        [7, 8],
-        [7, 8], // retained, not blanked
-      ]);
-    });
+          [7, 8], // retained, not blanked
+        ]);
+      },
+    );
 
-    test('offline with no prior non-empty value: empty passes through',
-        () async {
-      // First load while offline → no last-known-good → render nothing (we
-      // never invent data).
-      final out = await run(
-        [[]],
-        isOffline: () => true,
-      );
-      expect(out, [<int>[]]);
-    });
+    test(
+      'offline with no prior non-empty value: empty passes through',
+      () async {
+        // First load while offline → no last-known-good → render nothing (we
+        // never invent data).
+        final out = await run(
+          [[]],
+          isOffline: () => true,
+        );
+        expect(out, [<int>[]]);
+      },
+    );
 
     test('non-empty change always passes through, even offline', () async {
       // Erik+Sara online → Erik leaves, Sara stays: a non-empty shrink is a
@@ -97,39 +103,40 @@ void main() {
     });
 
     test(
-        'flips with connectivity: retain while offline, then trust on reconnect',
-        () async {
-      var offline = false;
-      final controller = StreamController<List<int>>();
-      final out = <List<int>>[];
-      final sub = controller.stream
-          .transform(
-            retainLastNonEmptyWhileOffline<List<int>>(
-              isEmpty: (v) => v.isEmpty,
-              isOffline: () => offline,
-            ),
-          )
-          .listen(out.add);
+      'flips with connectivity: retain while offline, then trust on reconnect',
+      () async {
+        var offline = false;
+        final controller = StreamController<List<int>>();
+        final out = <List<int>>[];
+        final sub = controller.stream
+            .transform(
+              retainLastNonEmptyWhileOffline<List<int>>(
+                isEmpty: (v) => v.isEmpty,
+                isOffline: () => offline,
+              ),
+            )
+            .listen(out.add);
 
-      controller.add([5]); // online, non-empty
-      await Future<void>.delayed(Duration.zero);
+        controller.add([5]); // online, non-empty
+        await Future<void>.delayed(Duration.zero);
 
-      offline = true;
-      controller.add([]); // offline empty → retained as [5]
-      await Future<void>.delayed(Duration.zero);
+        offline = true;
+        controller.add([]); // offline empty → retained as [5]
+        await Future<void>.delayed(Duration.zero);
 
-      offline = false;
-      controller.add([]); // back online, empty is authoritative → passes
-      await Future<void>.delayed(Duration.zero);
+        offline = false;
+        controller.add([]); // back online, empty is authoritative → passes
+        await Future<void>.delayed(Duration.zero);
 
-      await controller.close();
-      await sub.cancel();
+        await controller.close();
+        await sub.cancel();
 
-      expect(out, [
-        [5],
-        [5], // retained while offline
-        [], // trusted once reconnected — legitimately empty now shows
-      ]);
-    });
+        expect(out, [
+          [5],
+          [5], // retained while offline
+          [], // trusted once reconnected — legitimately empty now shows
+        ]);
+      },
+    );
   });
 }

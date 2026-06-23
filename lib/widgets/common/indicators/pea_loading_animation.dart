@@ -193,8 +193,9 @@ class PeaLoadingIndicatorSmall extends StatelessWidget {
   Widget build(BuildContext context) {
     return PeaLoadingAnimation(
       size: size,
-      frameInterval:
-          const Duration(milliseconds: 100), // Slightly faster for small
+      frameInterval: const Duration(
+        milliseconds: 100,
+      ), // Slightly faster for small
     );
   }
 }

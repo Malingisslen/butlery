@@ -117,8 +117,8 @@ void main() {
     final Map<String, dynamic> testOcrResponse = {
       'IsErroredOnProcessing': false,
       'ParsedResults': [
-        {'ParsedText': testOcrText}
-      ]
+        {'ParsedText': testOcrText},
+      ],
     };
 
     setUpAll(() async {
@@ -166,8 +166,9 @@ void main() {
 
       // Configure ImportManager mock using centralized setImportManagerState()
       final mockTextStrategy = MockTextImportStrategy();
-      when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
-          .thenAnswer((_) async {
+      when(
+        () => mockTextStrategy.import(any(), options: any(named: 'options')),
+      ).thenAnswer((_) async {
         return ImportResult.success(
           RecipeFactory.build(
             title: 'Parsed from OCR',
@@ -190,7 +191,7 @@ void main() {
               'Vispa ihop',
               'Tillsätt mjöl',
               'Låt svälla',
-              'Stek pannkakor'
+              'Stek pannkakor',
             ],
             portions: 4,
             timeMinutes: 20,
@@ -199,8 +200,9 @@ void main() {
         );
       });
 
-      when(() => mockImportManager.saveImportedRecipe(any()))
-          .thenAnswer((_) async {
+      when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer((
+        _,
+      ) async {
         return ImportManagerResult.success(
           RecipeFactory.build(),
           strategy: 'photo',
@@ -209,18 +211,21 @@ void main() {
 
       // Configure ImagePicker mock
       final mockXFile = MockXFile();
-      when(() => mockXFile.readAsBytes())
-          .thenAnswer((_) async => testImageBytes);
+      when(
+        () => mockXFile.readAsBytes(),
+      ).thenAnswer((_) async => testImageBytes);
 
-      when(() => mockImagePicker.pickImage(source: any(named: 'source')))
-          .thenAnswer((_) async => mockXFile);
+      when(
+        () => mockImagePicker.pickImage(source: any(named: 'source')),
+      ).thenAnswer((_) async => mockXFile);
 
       // Configure HTTP Client mock for OCR
-      when(() => mockHttpClient.send(any()))
-          .thenAnswer((_) async => MockStreamedResponse(
-                jsonEncode(testOcrResponse),
-                200,
-              ));
+      when(() => mockHttpClient.send(any())).thenAnswer(
+        (_) async => MockStreamedResponse(
+          jsonEncode(testOcrResponse),
+          200,
+        ),
+      );
 
       // Create viewModel
       viewModel = TestablePhotoImportViewModel(
@@ -273,8 +278,9 @@ void main() {
         viewModel.setTestOcrText(testOcrText);
 
         // Act - simulate auto-parse
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -330,8 +336,9 @@ void main() {
         viewModel.setTestOcrText(testOcrText);
 
         // Act - simulate auto-parse
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -400,7 +407,8 @@ void main() {
         // Don't set OCR text to simulate processing failure
         // ignore: invalid_use_of_protected_member
         viewModel.setError(
-            'OCR-bearbetningsfel: Invalid image format, Processing failed');
+          'OCR-bearbetningsfel: Invalid image format, Processing failed',
+        );
 
         // Act - nothing to do, error is set
 
@@ -444,8 +452,9 @@ void main() {
         viewModel.setTestOcrText(testOcrText);
 
         // Act - perform auto-parse
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -464,8 +473,9 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        when(() => mockImportManager.autoImport(any()))
-            .thenThrow(Exception('Parse failed'));
+        when(
+          () => mockImportManager.autoImport(any()),
+        ).thenThrow(Exception('Parse failed'));
 
         // Act - try auto-parse (will fail)
         try {
@@ -478,7 +488,9 @@ void main() {
         expect(viewModel.hasOcrResult, isTrue); // OCR still succeeded
         expect(viewModel.hasParsedRecipe, isFalse); // But auto-parse failed
         expect(
-            viewModel.hasError, isFalse); // No error shown (graceful failure)
+          viewModel.hasError,
+          isFalse,
+        ); // No error shown (graceful failure)
       });
 
       test('should handle unsuccessful import result', () async {
@@ -493,8 +505,9 @@ void main() {
         });
 
         // Act - try auto-parse (will fail)
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -517,8 +530,9 @@ void main() {
         });
 
         // Act - try auto-parse (will return empty)
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -535,8 +549,12 @@ void main() {
         // Arrange
         viewModel.setTestOcrText('Recipe text from OCR');
         final localMockTextStrategy = MockTextImportStrategy();
-        when(() => localMockTextStrategy.import(any(),
-            options: any(named: 'options'))).thenAnswer((_) async {
+        when(
+          () => localMockTextStrategy.import(
+            any(),
+            options: any(named: 'options'),
+          ),
+        ).thenAnswer((_) async {
           return ImportResult.success(
             RecipeFactory.build(
               title: 'Manual Import',
@@ -576,8 +594,9 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -614,8 +633,10 @@ void main() {
 
         // Assert
         expect(wasProcessing, isTrue);
-        expect(viewModel.isProcessing,
-            isFalse); // Should be false after completion
+        expect(
+          viewModel.isProcessing,
+          isFalse,
+        ); // Should be false after completion
       });
 
       test('should update canImport based on OCR result', () {
@@ -641,8 +662,9 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -673,14 +695,16 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
         }
-        when(() => mockImportManager.saveImportedRecipe(any()))
-            .thenAnswer((_) async {
+        when(() => mockImportManager.saveImportedRecipe(any())).thenAnswer((
+          _,
+        ) async {
           return ImportManagerResult.failure(
             'Failed to save',
             strategy: 'photo',
@@ -701,8 +725,9 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -721,8 +746,9 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -743,8 +769,9 @@ void main() {
         viewModel.setTestOcrText(testOcrText);
 
         // First auto-parse fails
-        when(() => mockImportManager.autoImport(any()))
-            .thenThrow(Exception('Auto-parse failed'));
+        when(
+          () => mockImportManager.autoImport(any()),
+        ).thenThrow(Exception('Auto-parse failed'));
 
         try {
           await mockImportManager.autoImport(viewModel.ocrText);
@@ -777,8 +804,9 @@ void main() {
         // Arrange
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -852,8 +880,9 @@ void main() {
         // Final selection
         viewModel.setTestImageBytes(testImageBytes);
         viewModel.setTestOcrText(testOcrText);
-        final importResult =
-            await mockImportManager.autoImport(viewModel.ocrText);
+        final importResult = await mockImportManager.autoImport(
+          viewModel.ocrText,
+        );
         if (importResult.isSuccess && importResult.importedRecipes.isNotEmpty) {
           // ignore: invalid_use_of_protected_member
           viewModel.setParsedRecipe(importResult.importedRecipes.first);
@@ -874,8 +903,7 @@ void main() {
     // `_attachHeirloomIfPending` actually runs (it early-returns in every other
     // test because no draft is pending). Complements the base-class coverage in
     // import_base_viewmodel_heirloom_test.dart with a concrete-VM proof.
-    group('BUT-1175: VM-level heirloom-pending upload via saveImportedRecipe',
-        () {
+    group('BUT-1175: VM-level heirloom-pending upload via saveImportedRecipe', () {
       late MockStorageRepository mockStorage;
       late HeirloomBridge bridge;
 
@@ -893,71 +921,100 @@ void main() {
             .setPermissionState(currentUserId: 'user-abc');
       });
 
-      test('pending draft + upload OK → uploads scan, attaches metadata, saves',
-          () async {
-        // ignore: invalid_use_of_protected_member
-        viewModel.setParsedRecipe(
-            RecipeFactory.build(id: 'recipe-xyz', title: 'Arvegods'));
-        bridge.setDraft(HeirloomDraft(
-          imageBytes: Uint8List.fromList(List<int>.generate(64, (i) => i)),
-          writerName: 'Farmor Elsa',
-          year: 1972,
-        ));
-        when(() => mockStorage.uploadImageData(
+      test(
+        'pending draft + upload OK → uploads scan, attaches metadata, saves',
+        () async {
+          // ignore: invalid_use_of_protected_member
+          viewModel.setParsedRecipe(
+            RecipeFactory.build(id: 'recipe-xyz', title: 'Arvegods'),
+          );
+          bridge.setDraft(
+            HeirloomDraft(
+              imageBytes: Uint8List.fromList(List<int>.generate(64, (i) => i)),
+              writerName: 'Farmor Elsa',
+              year: 1972,
+            ),
+          );
+          when(
+            () => mockStorage.uploadImageData(
               imageData: any(named: 'imageData'),
               userId: any(named: 'userId'),
               path: any(named: 'path'),
               metadata: any(named: 'metadata'),
               cacheControl: any(named: 'cacheControl'),
-            )).thenAnswer((_) async => 'https://storage/heirloom/abc.jpg');
+            ),
+          ).thenAnswer((_) async => 'https://storage/heirloom/abc.jpg');
 
-        final ok = await viewModel.saveImportedRecipe();
+          final ok = await viewModel.saveImportedRecipe();
 
-        expect(ok, isTrue);
-        expect(viewModel.hasError, isFalse);
-        expect(viewModel.parsedRecipe?.heirloom, isNotNull,
-            reason: 'metadata must be stitched onto the recipe before save');
-        expect(viewModel.parsedRecipe!.heirloom!.writerName, 'Farmor Elsa');
-        expect(viewModel.parsedRecipe!.heirloom!.addedByUserId, 'user-abc');
-        expect(bridge.hasPending, isFalse,
-            reason: 'draft drained after upload');
-        verify(() => mockStorage.uploadImageData(
+          expect(ok, isTrue);
+          expect(viewModel.hasError, isFalse);
+          expect(
+            viewModel.parsedRecipe?.heirloom,
+            isNotNull,
+            reason: 'metadata must be stitched onto the recipe before save',
+          );
+          expect(viewModel.parsedRecipe!.heirloom!.writerName, 'Farmor Elsa');
+          expect(viewModel.parsedRecipe!.heirloom!.addedByUserId, 'user-abc');
+          expect(
+            bridge.hasPending,
+            isFalse,
+            reason: 'draft drained after upload',
+          );
+          verify(
+            () => mockStorage.uploadImageData(
               imageData: any(named: 'imageData'),
               userId: any(named: 'userId'),
               path: any(named: 'path'),
               metadata: any(named: 'metadata'),
               cacheControl: any(named: 'cacheControl'),
-            )).called(1);
-      });
+            ),
+          ).called(1);
+        },
+      );
 
       test(
-          'pending draft + signed out (null uid) → save blocked, no upload, draft restored',
-          () async {
-        (GetIt.instance<PermissionService>() as FakePermissionService)
-            .setPermissionState(currentUserId: null);
-        // ignore: invalid_use_of_protected_member
-        viewModel.setParsedRecipe(RecipeFactory.build(id: 'recipe-xyz'));
-        bridge.setDraft(HeirloomDraft(
-          imageBytes: Uint8List.fromList([1, 2, 3, 4]),
-        ));
+        'pending draft + signed out (null uid) → save blocked, no upload, draft restored',
+        () async {
+          (GetIt.instance<PermissionService>() as FakePermissionService)
+              .setPermissionState(currentUserId: null);
+          // ignore: invalid_use_of_protected_member
+          viewModel.setParsedRecipe(RecipeFactory.build(id: 'recipe-xyz'));
+          bridge.setDraft(
+            HeirloomDraft(
+              imageBytes: Uint8List.fromList([1, 2, 3, 4]),
+            ),
+          );
 
-        final ok = await viewModel.saveImportedRecipe();
+          final ok = await viewModel.saveImportedRecipe();
 
-        expect(ok, isFalse,
-            reason: 'save must fail when the heirloom auth re-check fails');
-        expect(viewModel.hasError, isTrue);
-        expect(viewModel.parsedRecipe?.heirloom, isNull,
-            reason: 'no metadata when upload never ran');
-        verifyNever(() => mockStorage.uploadImageData(
+          expect(
+            ok,
+            isFalse,
+            reason: 'save must fail when the heirloom auth re-check fails',
+          );
+          expect(viewModel.hasError, isTrue);
+          expect(
+            viewModel.parsedRecipe?.heirloom,
+            isNull,
+            reason: 'no metadata when upload never ran',
+          );
+          verifyNever(
+            () => mockStorage.uploadImageData(
               imageData: any(named: 'imageData'),
               userId: any(named: 'userId'),
               path: any(named: 'path'),
               metadata: any(named: 'metadata'),
               cacheControl: any(named: 'cacheControl'),
-            ));
-        expect(bridge.hasPending, isTrue,
-            reason: 'failed auth restores the draft so sign-in + retry works');
-      });
+            ),
+          );
+          expect(
+            bridge.hasPending,
+            isTrue,
+            reason: 'failed auth restores the draft so sign-in + retry works',
+          );
+        },
+      );
     });
   });
 }

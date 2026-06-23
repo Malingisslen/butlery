@@ -49,7 +49,8 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       AppLogger.debug('   Service initialized: ${_menuService.isInitialized}');
       AppLogger.debug('   Current user: $currentUserId');
       AppLogger.debug(
-          '   Is authenticated: ${permissionService.isAuthenticated}');
+        '   Is authenticated: ${permissionService.isAuthenticated}',
+      );
 
       // Initialize menu service if not already initialized, otherwise refresh
       if (!_menuService.isInitialized) {
@@ -67,14 +68,16 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
 
       if (menuCount == 0) {
         AppLogger.warning(
-            '⚠️ [MenuDialog] Menu service initialized but returned 0 menus');
+          '⚠️ [MenuDialog] Menu service initialized but returned 0 menus',
+        );
         AppLogger.debug('   This could mean:');
         AppLogger.debug('   1. User has no menus created yet');
         AppLogger.debug('   2. Firestore query returned empty');
         AppLogger.debug('   3. Parse errors occurred (check logs above)');
       } else {
         AppLogger.success(
-            '✅ [MenuDialog] Successfully loaded $menuCount menus');
+          '✅ [MenuDialog] Successfully loaded $menuCount menus',
+        );
       }
 
       if (mounted) {
@@ -112,8 +115,10 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child:
-              Text(context.l10n.commonCancel, style: AppTextStyles.labelLarge),
+          child: Text(
+            context.l10n.commonCancel,
+            style: AppTextStyles.labelLarge,
+          ),
         ),
       ],
     );
@@ -202,8 +207,9 @@ class _MenuListItem extends StatelessWidget {
             width: AppDimensions.iconSizeXl,
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
-              color:
-                  cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: cs.primary.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
             child: Icon(
@@ -239,8 +245,10 @@ class _MenuListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing:
-          const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: AppDimensions.iconSizeS,
+      ),
       onTap: onTap,
     );
   }

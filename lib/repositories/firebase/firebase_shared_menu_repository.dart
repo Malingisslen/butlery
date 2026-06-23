@@ -73,24 +73,27 @@ class FirebaseSharedMenuRepository
     SharedMenuViewRepository? viewRepository,
     SharedMenuEngagementRepository? engagementRepository,
     SharedMenuDismissalRepository? dismissalRepository,
-  })  : _viewRepository = viewRepository ??
-            SharedMenuViewRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        _engagementRepository = engagementRepository ??
-            SharedMenuEngagementRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        _dismissalRepository = dismissalRepository ??
-            SharedMenuDismissalRepository(
-              firestore: firestore,
-              authRepository: authRepository ?? FirebaseAuthRepository(),
-            ),
-        super(
-          authRepository: authRepository ?? FirebaseAuthRepository(),
-        );
+  }) : _viewRepository =
+           viewRepository ??
+           SharedMenuViewRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       _engagementRepository =
+           engagementRepository ??
+           SharedMenuEngagementRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       _dismissalRepository =
+           dismissalRepository ??
+           SharedMenuDismissalRepository(
+             firestore: firestore,
+             authRepository: authRepository ?? FirebaseAuthRepository(),
+           ),
+       super(
+         authRepository: authRepository ?? FirebaseAuthRepository(),
+       );
 
   @override
   String get collectionName => FirestoreCollections.sharedContent;
@@ -185,7 +188,8 @@ class FirebaseSharedMenuRepository
     // Menu-specific validations
     if (sharedMenu.sharedByUserId != uid) {
       throw PermissionDeniedException(
-          'Cannot create shared menu for another user');
+        'Cannot create shared menu for another user',
+      );
     }
 
     if (recipientIds.isEmpty) {
@@ -201,7 +205,8 @@ class FirebaseSharedMenuRepository
     }
 
     AppLogger.success(
-        '✅ Created shared menu with ${recipientIds.length} members in subcollection');
+      '✅ Created shared menu with ${recipientIds.length} members in subcollection',
+    );
 
     return menuId;
   }
@@ -294,7 +299,8 @@ class FirebaseSharedMenuRepository
 
     if (userId != uid) {
       throw PermissionDeniedException(
-          'Cannot get imported menus for another user');
+        'Cannot get imported menus for another user',
+      );
     }
 
     try {
@@ -333,11 +339,13 @@ class FirebaseSharedMenuRepository
       }
 
       AppLogger.info(
-          '📋 User ${userId.maskedUserId} has imported ${importedMenus.length} shared menus');
+        '📋 User ${userId.maskedUserId} has imported ${importedMenus.length} shared menus',
+      );
       return importedMenus;
     } catch (e) {
       AppLogger.error(
-          'Failed to get imported menus for user ${userId.maskedUserId}: $e');
+        'Failed to get imported menus for user ${userId.maskedUserId}: $e',
+      );
       throw RepositoryException('Failed to get imported menus: $e');
     }
   }

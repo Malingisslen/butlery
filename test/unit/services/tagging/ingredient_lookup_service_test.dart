@@ -21,14 +21,21 @@ void main() {
 
     // CRIT-9: Set up default return values for all methods
     // This prevents 'Null is not a subtype of Future<T?>' errors
-    when(() => mockIngredientRepo.findByName(any()))
-        .thenAnswer((_) async => null);
-    when(() => mockIngredientRepo.findByAlias(any()))
-        .thenAnswer((_) async => []);
-    when(() => mockIngredientRepo.searchIngredients(any(),
-        limit: any(named: 'limit'))).thenAnswer((_) async => []);
-    when(() => mockUserIngredientRepo.findByName(any(), any()))
-        .thenAnswer((_) async => null);
+    when(
+      () => mockIngredientRepo.findByName(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => mockIngredientRepo.findByAlias(any()),
+    ).thenAnswer((_) async => []);
+    when(
+      () => mockIngredientRepo.searchIngredients(
+        any(),
+        limit: any(named: 'limit'),
+      ),
+    ).thenAnswer((_) async => []);
+    when(
+      () => mockUserIngredientRepo.findByName(any(), any()),
+    ).thenAnswer((_) async => null);
 
     service = IngredientLookupService(
       ingredientRepository: mockIngredientRepo,
@@ -44,8 +51,9 @@ void main() {
     group('CRIT-9: LRU Cache', () {
       test('caches lookup results to avoid repeated database calls', () async {
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
 
         // First lookup - should hit database
         await service.lookupIngredients(['tomat']);
@@ -60,27 +68,30 @@ void main() {
         verifyNever(() => mockIngredientRepo.findByName('tomat'));
       });
 
-      test('caches null results (not found) to avoid repeated lookups',
-          () async {
-        // First lookup - should hit database
-        await service.lookupIngredients(['unknown']);
-        verify(() => mockIngredientRepo.findByName('unknown')).called(1);
+      test(
+        'caches null results (not found) to avoid repeated lookups',
+        () async {
+          // First lookup - should hit database
+          await service.lookupIngredients(['unknown']);
+          verify(() => mockIngredientRepo.findByName('unknown')).called(1);
 
-        // Clear interactions to verify second lookup
-        clearInteractions(mockIngredientRepo);
+          // Clear interactions to verify second lookup
+          clearInteractions(mockIngredientRepo);
 
-        // Second lookup - should use cached "not found"
-        await service.lookupIngredients(['unknown']);
-        // No additional calls
-        verifyNever(() => mockIngredientRepo.findByName('unknown'));
-      });
+          // Second lookup - should use cached "not found"
+          await service.lookupIngredients(['unknown']);
+          // No additional calls
+          verifyNever(() => mockIngredientRepo.findByName('unknown'));
+        },
+      );
 
       test('evicts least recently used entries when cache is full', () async {
         // Create 501 unique ingredients (cache max is 500)
         for (var i = 0; i < 501; i++) {
           final name = 'ingredient$i';
-          when(() => mockIngredientRepo.findByName(name))
-              .thenAnswer((_) async => _createIngredient(name, name));
+          when(
+            () => mockIngredientRepo.findByName(name),
+          ).thenAnswer((_) async => _createIngredient(name, name));
           await service.lookupIngredients([name]);
         }
 
@@ -99,8 +110,9 @@ void main() {
         // Fill cache with 500 items
         for (var i = 0; i < 500; i++) {
           final name = 'ingredient$i';
-          when(() => mockIngredientRepo.findByName(name))
-              .thenAnswer((_) async => _createIngredient(name, name));
+          when(
+            () => mockIngredientRepo.findByName(name),
+          ).thenAnswer((_) async => _createIngredient(name, name));
           await service.lookupIngredients([name]);
         }
 
@@ -109,7 +121,8 @@ void main() {
 
         // Add one more item to trigger eviction
         when(() => mockIngredientRepo.findByName('newingredient')).thenAnswer(
-            (_) async => _createIngredient('newingredient', 'newingredient'));
+          (_) async => _createIngredient('newingredient', 'newingredient'),
+        );
         await service.lookupIngredients(['newingredient']);
 
         // First ingredient should still be cached (was accessed recently)
@@ -120,8 +133,9 @@ void main() {
 
       test('clearLookupCache clears all cached entries', () async {
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
 
         await service.lookupIngredients(['tomat']);
         expect(service.cacheSize, 1);
@@ -142,10 +156,12 @@ void main() {
         final userTomato = _createIngredient('tomato-user', 'tomat');
 
         // Global not found → user found
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => null);
-        when(() => mockUserIngredientRepo.findByName('user123', 'tomat'))
-            .thenAnswer((_) async => userTomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockUserIngredientRepo.findByName('user123', 'tomat'),
+        ).thenAnswer((_) async => userTomato);
 
         // Global lookup - not found, stays in cache as null
         final globalResult = await service.lookupIngredients(['tomat']);
@@ -158,8 +174,9 @@ void main() {
           userId: 'user123',
         );
         expect(userResult.matched.first.id, 'tomato-user');
-        verify(() => mockUserIngredientRepo.findByName('user123', 'tomat'))
-            .called(1);
+        verify(
+          () => mockUserIngredientRepo.findByName('user123', 'tomat'),
+        ).called(1);
       });
 
       test('different users have separate cache entries', () async {
@@ -167,12 +184,15 @@ void main() {
         final user2Ingredient = _createIngredient('custom2', 'custom');
 
         // Global not found for 'custom', but user-defined found
-        when(() => mockIngredientRepo.findByName('custom'))
-            .thenAnswer((_) async => null);
-        when(() => mockUserIngredientRepo.findByName('user1', 'custom'))
-            .thenAnswer((_) async => user1Ingredient);
-        when(() => mockUserIngredientRepo.findByName('user2', 'custom'))
-            .thenAnswer((_) async => user2Ingredient);
+        when(
+          () => mockIngredientRepo.findByName('custom'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockUserIngredientRepo.findByName('user1', 'custom'),
+        ).thenAnswer((_) async => user1Ingredient);
+        when(
+          () => mockUserIngredientRepo.findByName('user2', 'custom'),
+        ).thenAnswer((_) async => user2Ingredient);
 
         // User 1 lookup
         final result1 = await service.lookupIngredients(
@@ -189,16 +209,16 @@ void main() {
         expect(result2.matched.first.id, 'custom2');
       });
 
-      test('cache key prevents collision with null character separator',
-          () async {
+      test('cache key prevents collision with null character separator', () async {
         // Edge case: userId that looks like it could collide
         // Key format: "u\x00userId\x00name" vs "g\x00name"
         final globalResult = _createIngredient('test-global', 'test');
         final userResult = _createIngredient('test-user', 'test');
 
         // Global lookup finds global ingredient
-        when(() => mockIngredientRepo.findByName('test'))
-            .thenAnswer((_) async => globalResult);
+        when(
+          () => mockIngredientRepo.findByName('test'),
+        ).thenAnswer((_) async => globalResult);
         // User lookup with userId='g' - global is found first, so user repo not called
         // To verify cache key separation, we need global to NOT be found for user context
 
@@ -213,8 +233,9 @@ void main() {
 
         // For user context, set up to find user ingredient
         // M2 fix: User ingredients are now checked FIRST to allow override
-        when(() => mockUserIngredientRepo.findByName('g', 'test'))
-            .thenAnswer((_) async => userResult);
+        when(
+          () => mockUserIngredientRepo.findByName('g', 'test'),
+        ).thenAnswer((_) async => userResult);
 
         // User lookup with userId='g' - has separate cache key
         final user = await service.lookupIngredients(['test'], userId: 'g');
@@ -227,31 +248,34 @@ void main() {
 
     group('CRIT-3: Cache version invalidation', () {
       test(
-          'clearLookupCache increments version to invalidate in-flight lookups',
-          () async {
-        // This test verifies the cache version mechanism works
-        final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        'clearLookupCache increments version to invalidate in-flight lookups',
+        () async {
+          // This test verifies the cache version mechanism works
+          final tomato = _createIngredient('tomato', 'tomat');
+          when(
+            () => mockIngredientRepo.findByName('tomat'),
+          ).thenAnswer((_) async => tomato);
 
-        await service.lookupIngredients(['tomat']);
-        expect(service.cacheSize, 1);
+          await service.lookupIngredients(['tomat']);
+          expect(service.cacheSize, 1);
 
-        // Clear cache - should increment version
-        service.clearLookupCache();
-        expect(service.cacheSize, 0);
+          // Clear cache - should increment version
+          service.clearLookupCache();
+          expect(service.cacheSize, 0);
 
-        // New lookup should work correctly
-        await service.lookupIngredients(['tomat']);
-        expect(service.cacheSize, 1);
-      });
+          // New lookup should work correctly
+          await service.lookupIngredients(['tomat']);
+          expect(service.cacheSize, 1);
+        },
+      );
     });
 
     group('lookup strategies', () {
       test('finds ingredient by exact name match', () async {
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
 
         final result = await service.lookupIngredients(['tomat']);
 
@@ -261,8 +285,9 @@ void main() {
 
       test('finds ingredient by alias when exact name fails', () async {
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByAlias('krossade tomater'))
-            .thenAnswer((_) async => [tomato]);
+        when(
+          () => mockIngredientRepo.findByAlias('krossade tomater'),
+        ).thenAnswer((_) async => [tomato]);
 
         final result = await service.lookupIngredients(['krossade tomater']);
 
@@ -275,10 +300,12 @@ void main() {
         // User ingredients are fallback when global doesn't match
         final userTomato = _createIngredient('my-tomato', 'min tomat');
 
-        when(() => mockIngredientRepo.findByName('min tomat'))
-            .thenAnswer((_) async => null);
-        when(() => mockUserIngredientRepo.findByName('user1', 'min tomat'))
-            .thenAnswer((_) async => userTomato);
+        when(
+          () => mockIngredientRepo.findByName('min tomat'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockUserIngredientRepo.findByName('user1', 'min tomat'),
+        ).thenAnswer((_) async => userTomato);
 
         final result = await service.lookupIngredients(
           ['min tomat'],
@@ -287,15 +314,17 @@ void main() {
 
         // Should find user ingredient (global wasn't found)
         expect(result.matched.first.id, 'my-tomato');
-        verify(() => mockUserIngredientRepo.findByName('user1', 'min tomat'))
-            .called(1);
+        verify(
+          () => mockUserIngredientRepo.findByName('user1', 'min tomat'),
+        ).called(1);
       });
 
       test('falls back to global if user ingredient not found', () async {
         final globalTomato = _createIngredient('tomato', 'tomat');
 
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => globalTomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => globalTomato);
 
         final result = await service.lookupIngredients(
           ['tomat'],
@@ -310,8 +339,9 @@ void main() {
       test('finds ingredient with space-removed variation', () async {
         // "kyckling bröst" -> "kyckling brost" -> "kycklingbrost"
         final chicken = _createIngredient('chicken-breast', 'kycklingbrost');
-        when(() => mockIngredientRepo.findByName('kycklingbrost'))
-            .thenAnswer((_) async => chicken);
+        when(
+          () => mockIngredientRepo.findByName('kycklingbrost'),
+        ).thenAnswer((_) async => chicken);
 
         final result = await service.lookupIngredients(['kyckling bröst']);
 
@@ -322,8 +352,9 @@ void main() {
       test('finds ingredient with Swedish plural removed', () async {
         // "tomator" -> "tomat"
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
 
         final result = await service.lookupIngredients(['tomator']);
 
@@ -333,8 +364,9 @@ void main() {
       test('finds ingredient with definite form removed', () async {
         // "löken" -> "loken" -> "lok"
         final onion = _createIngredient('onion', 'lok');
-        when(() => mockIngredientRepo.findByName('lok'))
-            .thenAnswer((_) async => onion);
+        when(
+          () => mockIngredientRepo.findByName('lok'),
+        ).thenAnswer((_) async => onion);
 
         final result = await service.lookupIngredients(['löken']);
 
@@ -347,17 +379,21 @@ void main() {
         final apple = _createIngredient('apple', 'apple');
 
         // Exact name not found
-        when(() => mockIngredientRepo.findByName('applar'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('applar'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('applar'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('applar'),
+        ).thenAnswer((_) async => []);
 
         // Correct variation ('apple') is found first due to L3 fix
-        when(() => mockIngredientRepo.findByName('apple'))
-            .thenAnswer((_) async => apple);
+        when(
+          () => mockIngredientRepo.findByName('apple'),
+        ).thenAnswer((_) async => apple);
         // The incorrect variation would return nothing if checked
-        when(() => mockIngredientRepo.findByName('appla'))
-            .thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByName('appla'),
+        ).thenAnswer((_) async => null);
 
         final result = await service.lookupIngredients(['äpplar']);
 
@@ -373,13 +409,16 @@ void main() {
         final mango = _createIngredient('mango', 'mango');
 
         // Main name not found
-        when(() => mockIngredientRepo.findByName('mangosås'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('mangosås'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('mangosås'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('mangosås'),
+        ).thenAnswer((_) async => []);
         // But extracted base is found
-        when(() => mockIngredientRepo.findByName('mango'))
-            .thenAnswer((_) async => mango);
+        when(
+          () => mockIngredientRepo.findByName('mango'),
+        ).thenAnswer((_) async => mango);
 
         final result = await service.lookupIngredients(['mangosås']);
 
@@ -388,26 +427,31 @@ void main() {
         verify(() => mockIngredientRepo.findByName('mango')).called(1);
       });
 
-      test('L4: compound suffix extraction works for various suffixes',
-          () async {
-        // "kycklingfilé" stays "kycklingfilé" after normalization
-        // (SwedishCharacterNormalizer only handles å,ä,ö - NOT é)
-        // The suffix 'file' won't match 'filé', so compound extraction
-        // can't find 'kyckling'. Use 'kycklingfile' (already ASCII) instead.
-        final chicken = _createIngredient('chicken', 'kyckling');
+      test(
+        'L4: compound suffix extraction works for various suffixes',
+        () async {
+          // "kycklingfilé" stays "kycklingfilé" after normalization
+          // (SwedishCharacterNormalizer only handles å,ä,ö - NOT é)
+          // The suffix 'file' won't match 'filé', so compound extraction
+          // can't find 'kyckling'. Use 'kycklingfile' (already ASCII) instead.
+          final chicken = _createIngredient('chicken', 'kyckling');
 
-        when(() => mockIngredientRepo.findByName('kycklingfile'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('kycklingfile'))
-            .thenAnswer((_) async => []);
-        when(() => mockIngredientRepo.findByName('kyckling'))
-            .thenAnswer((_) async => chicken);
+          when(
+            () => mockIngredientRepo.findByName('kycklingfile'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('kycklingfile'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('kyckling'),
+          ).thenAnswer((_) async => chicken);
 
-        final result = await service.lookupIngredients(['kycklingfile']);
+          final result = await service.lookupIngredients(['kycklingfile']);
 
-        expect(result.matchedCount, 1);
-        expect(result.matched.first.id, 'chicken');
-      });
+          expect(result.matchedCount, 1);
+          expect(result.matched.first.id, 'chicken');
+        },
+      );
     });
 
     group('BUG-1: compound suffixes and endings are ASCII-normalized', () {
@@ -416,52 +460,63 @@ void main() {
       // (Swedish) would never match because _cleanForLookup converts ö→o,
       // producing 'brost'. The fix normalizes all entries to ASCII.
 
-      test('should match compound word with suffix "brost" (was "bröst")',
-          () async {
-        // Arrange: "kycklingbrost" is the ASCII form of "kycklingbröst"
-        // _cleanForLookup normalizes ö→o, so input "kycklingbröst" becomes "kycklingbrost"
-        // The suffix "brost" should split it into "kyckling brost"
-        final chicken = _createIngredient('chicken', 'kyckling');
-        when(() => mockIngredientRepo.findByName('kycklingbrost'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('kycklingbrost'))
-            .thenAnswer((_) async => []);
-        // Space-inserted variation: "kyckling brost"
-        when(() => mockIngredientRepo.findByName('kyckling brost'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('kyckling brost'))
-            .thenAnswer((_) async => []);
-        // Compound ending extraction: "kyckling"
-        when(() => mockIngredientRepo.findByName('kyckling'))
-            .thenAnswer((_) async => chicken);
+      test(
+        'should match compound word with suffix "brost" (was "bröst")',
+        () async {
+          // Arrange: "kycklingbrost" is the ASCII form of "kycklingbröst"
+          // _cleanForLookup normalizes ö→o, so input "kycklingbröst" becomes "kycklingbrost"
+          // The suffix "brost" should split it into "kyckling brost"
+          final chicken = _createIngredient('chicken', 'kyckling');
+          when(
+            () => mockIngredientRepo.findByName('kycklingbrost'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('kycklingbrost'),
+          ).thenAnswer((_) async => []);
+          // Space-inserted variation: "kyckling brost"
+          when(
+            () => mockIngredientRepo.findByName('kyckling brost'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('kyckling brost'),
+          ).thenAnswer((_) async => []);
+          // Compound ending extraction: "kyckling"
+          when(
+            () => mockIngredientRepo.findByName('kyckling'),
+          ).thenAnswer((_) async => chicken);
 
-        // Act
-        final result = await service.lookupIngredients(['kycklingbröst']);
+          // Act
+          final result = await service.lookupIngredients(['kycklingbröst']);
 
-        // Assert: Should find "kyckling" via compound extraction
-        expect(result.matchedCount, 1);
-        expect(result.matched.first.id, 'chicken');
-      });
+          // Assert: Should find "kyckling" via compound extraction
+          expect(result.matchedCount, 1);
+          expect(result.matched.first.id, 'chicken');
+        },
+      );
 
-      test('should match compound word with suffix "kott" (was "kött")',
-          () async {
+      test('should match compound word with suffix "kott" (was "kött")', () async {
         // "nötkött" normalizes to "notkott", suffix "kott" should extract "not"
         // but we need a meaningful base (> 2 chars for suffixes, > ending.length + 2 for endings)
         final beef = _createIngredient('beef', 'not');
-        when(() => mockIngredientRepo.findByName('notkott'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('notkott'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('notkott'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('notkott'),
+        ).thenAnswer((_) async => []);
         // Space-removed variation won't help since no spaces
         // Space-inserted variation: "not kott"
-        when(() => mockIngredientRepo.findByName('not kott'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('not kott'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('not kott'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('not kott'),
+        ).thenAnswer((_) async => []);
         // Compound ending extraction yields "not" which is only 3 chars
         // (>= ending.length(4) + 2 = 6, and "notkott" is 7 > 6, so extraction works)
-        when(() => mockIngredientRepo.findByName('not'))
-            .thenAnswer((_) async => beef);
+        when(
+          () => mockIngredientRepo.findByName('not'),
+        ).thenAnswer((_) async => beef);
 
         // Act: "nötkött" gets normalized to "notkott" by _cleanForLookup
         final result = await service.lookupIngredients(['nötkött']);
@@ -471,79 +526,101 @@ void main() {
         expect(result.matched.first.id, 'beef');
       });
 
-      test('should match compound word with suffix "mjolk" (was "mjölk")',
-          () async {
-        // "havremjölk" normalizes to "havremjolk"
-        // suffix "mjolk" should split into "havre mjolk" variation
-        final oats = _createIngredient('oats', 'havre');
-        when(() => mockIngredientRepo.findByName('havremjolk'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('havremjolk'))
-            .thenAnswer((_) async => []);
-        when(() => mockIngredientRepo.findByName('havremjölk'))
-            .thenAnswer((_) async => null);
-        // Space-inserted: "havre mjolk"
-        when(() => mockIngredientRepo.findByName('havre mjolk'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('havre mjolk'))
-            .thenAnswer((_) async => []);
-        // Compound ending extraction: "havre"
-        when(() => mockIngredientRepo.findByName('havre'))
-            .thenAnswer((_) async => oats);
+      test(
+        'should match compound word with suffix "mjolk" (was "mjölk")',
+        () async {
+          // "havremjölk" normalizes to "havremjolk"
+          // suffix "mjolk" should split into "havre mjolk" variation
+          final oats = _createIngredient('oats', 'havre');
+          when(
+            () => mockIngredientRepo.findByName('havremjolk'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('havremjolk'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('havremjölk'),
+          ).thenAnswer((_) async => null);
+          // Space-inserted: "havre mjolk"
+          when(
+            () => mockIngredientRepo.findByName('havre mjolk'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('havre mjolk'),
+          ).thenAnswer((_) async => []);
+          // Compound ending extraction: "havre"
+          when(
+            () => mockIngredientRepo.findByName('havre'),
+          ).thenAnswer((_) async => oats);
 
-        // Act
-        final result = await service.lookupIngredients(['havremjölk']);
+          // Act
+          final result = await service.lookupIngredients(['havremjölk']);
 
-        // Assert
-        expect(result.matchedCount, 1);
-        expect(result.matched.first.id, 'oats');
-      });
+          // Assert
+          expect(result.matchedCount, 1);
+          expect(result.matched.first.id, 'oats');
+        },
+      );
 
-      test('should match compound word with suffix "gradde" (was "grädde")',
-          () async {
-        // "vispgradde" normalizes from "vispgrädde"
-        final cream = _createIngredient('cream', 'visp');
-        when(() => mockIngredientRepo.findByName('vispgradde'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('vispgradde'))
-            .thenAnswer((_) async => []);
-        when(() => mockIngredientRepo.findByName('visp gradde'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('visp gradde'))
-            .thenAnswer((_) async => []);
-        when(() => mockIngredientRepo.findByName('visp'))
-            .thenAnswer((_) async => cream);
+      test(
+        'should match compound word with suffix "gradde" (was "grädde")',
+        () async {
+          // "vispgradde" normalizes from "vispgrädde"
+          final cream = _createIngredient('cream', 'visp');
+          when(
+            () => mockIngredientRepo.findByName('vispgradde'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('vispgradde'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('visp gradde'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('visp gradde'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('visp'),
+          ).thenAnswer((_) async => cream);
 
-        // Act
-        final result = await service.lookupIngredients(['vispgrädde']);
+          // Act
+          final result = await service.lookupIngredients(['vispgrädde']);
 
-        // Assert
-        expect(result.matchedCount, 1);
-        expect(result.matched.first.id, 'cream');
-      });
+          // Assert
+          expect(result.matchedCount, 1);
+          expect(result.matched.first.id, 'cream');
+        },
+      );
 
-      test('should match compound word with suffix "sas" (was "sås")',
-          () async {
-        // "tomatsas" from "tomatsås"
-        final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomatsas'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('tomatsas'))
-            .thenAnswer((_) async => []);
-        when(() => mockIngredientRepo.findByName('tomat sas'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('tomat sas'))
-            .thenAnswer((_) async => []);
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+      test(
+        'should match compound word with suffix "sas" (was "sås")',
+        () async {
+          // "tomatsas" from "tomatsås"
+          final tomato = _createIngredient('tomato', 'tomat');
+          when(
+            () => mockIngredientRepo.findByName('tomatsas'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('tomatsas'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('tomat sas'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('tomat sas'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('tomat'),
+          ).thenAnswer((_) async => tomato);
 
-        // Act
-        final result = await service.lookupIngredients(['tomatsås']);
+          // Act
+          final result = await service.lookupIngredients(['tomatsås']);
 
-        // Assert
-        expect(result.matchedCount, 1);
-        expect(result.matched.first.id, 'tomato');
-      });
+          // Assert
+          expect(result.matchedCount, 1);
+          expect(result.matched.first.id, 'tomato');
+        },
+      );
 
       test('should match compound ending "lok" (was "lök")', () async {
         // "vitlok" from "vitlök" -> ending "lok" extracts "vit"
@@ -551,18 +628,23 @@ void main() {
         // is too short. But "vitlok" also only 6 chars.
         // Use "purjolok" from "purjolök" (8 chars > 6) -> ending "lok" extracts "purjo"
         final leek = _createIngredient('leek', 'purjo');
-        when(() => mockIngredientRepo.findByName('purjolok'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('purjolok'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('purjolok'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('purjolok'),
+        ).thenAnswer((_) async => []);
         // Space-inserted: "purjo lok"
-        when(() => mockIngredientRepo.findByName('purjo lok'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('purjo lok'))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('purjo lok'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('purjo lok'),
+        ).thenAnswer((_) async => []);
         // Compound ending extraction: "purjo" (5 chars > 2)
-        when(() => mockIngredientRepo.findByName('purjo'))
-            .thenAnswer((_) async => leek);
+        when(
+          () => mockIngredientRepo.findByName('purjo'),
+        ).thenAnswer((_) async => leek);
 
         // Act: "purjolök" -> _cleanForLookup -> "purjolok"
         final result = await service.lookupIngredients(['purjolök']);
@@ -583,20 +665,26 @@ void main() {
         //
         // Testing via the lookupIngredients API: a word ending with an
         // ASCII suffix should trigger space-insertion matching.
-        expect(true, isTrue,
-            reason: 'ASCII normalization verified by functional tests above');
+        expect(
+          true,
+          isTrue,
+          reason: 'ASCII normalization verified by functional tests above',
+        );
       });
     });
 
     group('lookupFromRaw', () {
       test('H2: deduplicates ingredients before lookup', () async {
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
-        when(() => mockIngredientRepo.findByName('tomater'))
-            .thenAnswer((_) async => null);
-        when(() => mockIngredientRepo.findByAlias('tomater'))
-            .thenAnswer((_) async => [tomato]);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomater'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('tomater'),
+        ).thenAnswer((_) async => [tomato]);
 
         final result = await service.lookupFromRaw([
           '2 st tomater',
@@ -611,8 +699,9 @@ void main() {
       test('parses raw ingredient strings correctly', () async {
         // "mjölk" -> normalized to "mjolk"
         final milk = _createIngredient('milk', 'mjolk');
-        when(() => mockIngredientRepo.findByName('mjolk'))
-            .thenAnswer((_) async => milk);
+        when(
+          () => mockIngredientRepo.findByName('mjolk'),
+        ).thenAnswer((_) async => milk);
 
         final result = await service.lookupFromRaw(['2 dl mjölk']);
 
@@ -640,10 +729,12 @@ void main() {
         // "lök" -> normalized to "lok"
         final onion = _createIngredient('onion', 'lok');
 
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
-        when(() => mockIngredientRepo.findByName('lok'))
-            .thenAnswer((_) async => onion);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('lok'),
+        ).thenAnswer((_) async => onion);
 
         final result = await service.lookupIngredients(['tomat', 'lök']);
 
@@ -654,8 +745,9 @@ void main() {
       test('50% coverage when half matched', () async {
         final tomato = _createIngredient('tomato', 'tomat');
 
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
         // 'unknown' uses default null response set in setUp
 
         final result = await service.lookupIngredients(['tomat', 'unknown']);
@@ -667,8 +759,10 @@ void main() {
 
       test('0% coverage when none matched', () async {
         // Uses default null responses from setUp
-        final result =
-            await service.lookupIngredients(['unknown1', 'unknown2']);
+        final result = await service.lookupIngredients([
+          'unknown1',
+          'unknown2',
+        ]);
 
         expect(result.coverage, 0.0);
         expect(result.matchedCount, 0);
@@ -686,8 +780,9 @@ void main() {
 
       test('skips empty strings in input', () async {
         final tomato = _createIngredient('tomato', 'tomat');
-        when(() => mockIngredientRepo.findByName('tomat'))
-            .thenAnswer((_) async => tomato);
+        when(
+          () => mockIngredientRepo.findByName('tomat'),
+        ).thenAnswer((_) async => tomato);
 
         final result = await service.lookupIngredients(['', 'tomat', '  ']);
 
@@ -701,24 +796,28 @@ void main() {
           _createIngredient('tomato', 'tomat'),
           _createIngredient('tomato-paste', 'tomatpuré'),
         ];
-        when(() => mockIngredientRepo.searchIngredients('tomat', limit: 20))
-            .thenAnswer((_) async => ingredients);
+        when(
+          () => mockIngredientRepo.searchIngredients('tomat', limit: 20),
+        ).thenAnswer((_) async => ingredients);
 
         final result = await service.search('tomat');
 
         expect(result.length, 2);
-        verify(() => mockIngredientRepo.searchIngredients('tomat', limit: 20))
-            .called(1);
+        verify(
+          () => mockIngredientRepo.searchIngredients('tomat', limit: 20),
+        ).called(1);
       });
 
       test('respects custom limit', () async {
-        when(() => mockIngredientRepo.searchIngredients('test', limit: 5))
-            .thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.searchIngredients('test', limit: 5),
+        ).thenAnswer((_) async => []);
 
         await service.search('test', limit: 5);
 
-        verify(() => mockIngredientRepo.searchIngredients('test', limit: 5))
-            .called(1);
+        verify(
+          () => mockIngredientRepo.searchIngredients('test', limit: 5),
+        ).called(1);
       });
     });
   });
@@ -737,148 +836,196 @@ void main() {
     test('strips leading "en" article before lookup', () async {
       // "en tomat" → cleaned to "tomat" → found
       final tomato = _createIngredient('tomato', 'tomat');
-      when(() => mockIngredientRepo.findByName('tomat'))
-          .thenAnswer((_) async => tomato);
+      when(
+        () => mockIngredientRepo.findByName('tomat'),
+      ).thenAnswer((_) async => tomato);
 
       final result = await service.lookupIngredients(['en tomat']);
 
-      expect(result.matchedCount, 1,
-          reason: '"en tomat" must resolve via article-stripping to "tomat"');
+      expect(
+        result.matchedCount,
+        1,
+        reason: '"en tomat" must resolve via article-stripping to "tomat"',
+      );
       expect(result.matched.first.id, 'tomato');
     });
 
     test('strips leading "ett" article before lookup', () async {
       // "ett ägg" → SwedishCharacterNormalizer: "ett agg" → strip "ett " → "agg"
       final egg = _createIngredient('egg', 'agg');
-      when(() => mockIngredientRepo.findByName('agg'))
-          .thenAnswer((_) async => egg);
+      when(
+        () => mockIngredientRepo.findByName('agg'),
+      ).thenAnswer((_) async => egg);
 
       final result = await service.lookupIngredients(['ett ägg']);
 
-      expect(result.matchedCount, 1,
-          reason: '"ett ägg" must resolve via article-stripping to "agg"');
+      expect(
+        result.matchedCount,
+        1,
+        reason: '"ett ägg" must resolve via article-stripping to "agg"',
+      );
       expect(result.matched.first.id, 'egg');
     });
 
     test('strips leading "den" article before lookup', () async {
       // "den vitlöken" → "den vitloken" → strip "den " → "vitloken"
       final garlic = _createIngredient('garlic', 'vitloken');
-      when(() => mockIngredientRepo.findByName('vitloken'))
-          .thenAnswer((_) async => garlic);
+      when(
+        () => mockIngredientRepo.findByName('vitloken'),
+      ).thenAnswer((_) async => garlic);
 
       final result = await service.lookupIngredients(['den vitlöken']);
 
-      expect(result.matchedCount, 1,
-          reason: '"den vitlöken" must strip "den " before lookup');
+      expect(
+        result.matchedCount,
+        1,
+        reason: '"den vitlöken" must strip "den " before lookup',
+      );
       expect(result.matched.first.id, 'garlic');
     });
   });
 
   group(
-      'BUT-1344 COOK-12: adjective stripping variations (_generateLookupVariations)',
-      () {
-    // The adjective lists in _generateLookupVariations strip leading/trailing
-    // descriptors so "färsk lax" or "lax färsk" resolves the canonical "lax".
-    // Each test would fail if the relevant adjective entry were removed from the list.
+    'BUT-1344 COOK-12: adjective stripping variations (_generateLookupVariations)',
+    () {
+      // The adjective lists in _generateLookupVariations strip leading/trailing
+      // descriptors so "färsk lax" or "lax färsk" resolves the canonical "lax".
+      // Each test would fail if the relevant adjective entry were removed from the list.
 
-    test('strips leading adjective "farsk" (från "färsk") to find ingredient',
+      test(
+        'strips leading adjective "farsk" (från "färsk") to find ingredient',
         () async {
-      // "färsk lax" → _cleanForLookup → "farsk lax"
-      // Exact name not found, alias not found, variations tried:
-      // - "farsk lax" (space-removed: "farsklax" — not matching)
-      // - adjective prefix "farsk ": produces variation "lax" → found
-      final salmon = _createIngredient('salmon', 'lax');
+          // "färsk lax" → _cleanForLookup → "farsk lax"
+          // Exact name not found, alias not found, variations tried:
+          // - "farsk lax" (space-removed: "farsklax" — not matching)
+          // - adjective prefix "farsk ": produces variation "lax" → found
+          final salmon = _createIngredient('salmon', 'lax');
 
-      when(() => mockIngredientRepo.findByName('farsk lax'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('farsk lax'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('farsklax'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('farsklax'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('lax'))
-          .thenAnswer((_) async => salmon);
+          when(
+            () => mockIngredientRepo.findByName('farsk lax'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('farsk lax'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('farsklax'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => mockIngredientRepo.findByAlias('farsklax'),
+          ).thenAnswer((_) async => []);
+          when(
+            () => mockIngredientRepo.findByName('lax'),
+          ).thenAnswer((_) async => salmon);
 
-      final result = await service.lookupIngredients(['färsk lax']);
+          final result = await service.lookupIngredients(['färsk lax']);
 
-      expect(result.matchedCount, 1,
-          reason: '"färsk lax" must find "lax" via adjective-prefix stripping');
-      expect(result.matched.first.id, 'salmon');
-    });
+          expect(
+            result.matchedCount,
+            1,
+            reason:
+                '"färsk lax" must find "lax" via adjective-prefix stripping',
+          );
+          expect(result.matched.first.id, 'salmon');
+        },
+      );
 
-    test('strips leading adjective "torkad" to find ingredient', () async {
-      // "torkad oregano" → _cleanForLookup → "torkad oregano"
-      // adjective prefix "torkad ": produces variation "oregano" → found
-      final oregano = _createIngredient('oregano', 'oregano');
+      test('strips leading adjective "torkad" to find ingredient', () async {
+        // "torkad oregano" → _cleanForLookup → "torkad oregano"
+        // adjective prefix "torkad ": produces variation "oregano" → found
+        final oregano = _createIngredient('oregano', 'oregano');
 
-      when(() => mockIngredientRepo.findByName('torkad oregano'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('torkad oregano'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('torkadoregano'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('torkadoregano'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('oregano'))
-          .thenAnswer((_) async => oregano);
+        when(
+          () => mockIngredientRepo.findByName('torkad oregano'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('torkad oregano'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('torkadoregano'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('torkadoregano'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('oregano'),
+        ).thenAnswer((_) async => oregano);
 
-      final result = await service.lookupIngredients(['torkad oregano']);
+        final result = await service.lookupIngredients(['torkad oregano']);
 
-      expect(result.matchedCount, 1,
+        expect(
+          result.matchedCount,
+          1,
           reason:
-              '"torkad oregano" must find "oregano" via adjective stripping');
-      expect(result.matched.first.id, 'oregano');
-    });
+              '"torkad oregano" must find "oregano" via adjective stripping',
+        );
+        expect(result.matched.first.id, 'oregano');
+      });
 
-    test('strips trailing adjective "riven" to find ingredient', () async {
-      // "parmesan riven" → _cleanForLookup → "parmesan riven"
-      // adjective suffix " riven": produces variation "parmesan" → found
-      final parmesan = _createIngredient('parmesan', 'parmesan');
+      test('strips trailing adjective "riven" to find ingredient', () async {
+        // "parmesan riven" → _cleanForLookup → "parmesan riven"
+        // adjective suffix " riven": produces variation "parmesan" → found
+        final parmesan = _createIngredient('parmesan', 'parmesan');
 
-      when(() => mockIngredientRepo.findByName('parmesan riven'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('parmesan riven'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('parmesanriven'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('parmesanriven'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('parmesan'))
-          .thenAnswer((_) async => parmesan);
+        when(
+          () => mockIngredientRepo.findByName('parmesan riven'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('parmesan riven'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('parmesanriven'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('parmesanriven'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('parmesan'),
+        ).thenAnswer((_) async => parmesan);
 
-      final result = await service.lookupIngredients(['parmesan riven']);
+        final result = await service.lookupIngredients(['parmesan riven']);
 
-      expect(result.matchedCount, 1,
+        expect(
+          result.matchedCount,
+          1,
           reason:
-              '"parmesan riven" must find "parmesan" via adjective-suffix stripping');
-      expect(result.matched.first.id, 'parmesan');
-    });
+              '"parmesan riven" must find "parmesan" via adjective-suffix stripping',
+        );
+        expect(result.matched.first.id, 'parmesan');
+      });
 
-    test('strips trailing adjective "hackad" to find ingredient', () async {
-      // "lök hackad" → adjective suffix " hackad" → variation "lok"
-      final onion = _createIngredient('onion', 'lok');
+      test('strips trailing adjective "hackad" to find ingredient', () async {
+        // "lök hackad" → adjective suffix " hackad" → variation "lok"
+        final onion = _createIngredient('onion', 'lok');
 
-      when(() => mockIngredientRepo.findByName('lok hackad'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('lok hackad'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('lokhackad'))
-          .thenAnswer((_) async => null);
-      when(() => mockIngredientRepo.findByAlias('lokhackad'))
-          .thenAnswer((_) async => []);
-      when(() => mockIngredientRepo.findByName('lok'))
-          .thenAnswer((_) async => onion);
+        when(
+          () => mockIngredientRepo.findByName('lok hackad'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('lok hackad'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('lokhackad'),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockIngredientRepo.findByAlias('lokhackad'),
+        ).thenAnswer((_) async => []);
+        when(
+          () => mockIngredientRepo.findByName('lok'),
+        ).thenAnswer((_) async => onion);
 
-      // "lök hackad" normalises to "lok hackad" (ö→o)
-      final result = await service.lookupIngredients(['lök hackad']);
+        // "lök hackad" normalises to "lok hackad" (ö→o)
+        final result = await service.lookupIngredients(['lök hackad']);
 
-      expect(result.matchedCount, 1,
+        expect(
+          result.matchedCount,
+          1,
           reason:
-              '"lök hackad" must find "lök" via trailing adjective stripping');
-      expect(result.matched.first.id, 'onion');
-    });
-  });
+              '"lök hackad" must find "lök" via trailing adjective stripping',
+        );
+        expect(result.matched.first.id, 'onion');
+      });
+    },
+  );
 }
 
 /// Helper to create test ingredient data

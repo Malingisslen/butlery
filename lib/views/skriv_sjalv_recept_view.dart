@@ -103,37 +103,44 @@ class _SkrivSjalvReceptViewContentState
 
     _titleController = TextEditingController(text: viewModel.title);
     _descriptionController = TextEditingController(text: viewModel.description);
-    _portionsController =
-        TextEditingController(text: (viewModel.portions?.toString()).orEmpty());
+    _portionsController = TextEditingController(
+      text: (viewModel.portions?.toString()).orEmpty(),
+    );
     _timeMinutesController = TextEditingController(
-        text: (viewModel.timeMinutes?.toString()).orEmpty());
-    _ratingController =
-        TextEditingController(text: (viewModel.rating?.toString()).orEmpty());
-    _sourceUrlController =
-        TextEditingController(text: viewModel.sourceUrl.orEmpty());
+      text: (viewModel.timeMinutes?.toString()).orEmpty(),
+    );
+    _ratingController = TextEditingController(
+      text: (viewModel.rating?.toString()).orEmpty(),
+    );
+    _sourceUrlController = TextEditingController(
+      text: viewModel.sourceUrl.orEmpty(),
+    );
     _controllersInitialized = true;
   }
 
   /// Setup upload notification listener for background events
   void _setupUploadNotifications() {
-    _uploadNotificationSubscription =
-        RecipeFormViewModel.uploadNotificationStream.listen(
-      (event) {
-        if (!mounted) return;
+    _uploadNotificationSubscription = RecipeFormViewModel
+        .uploadNotificationStream
+        .listen(
+          (event) {
+            if (!mounted) return;
 
-        _handleUploadNotification(event);
-      },
-      onError: (error) {
-        AppLogger.error(
-            '🔔 NOTIFICATION: Error in upload notification stream: $error');
-      },
-    );
+            _handleUploadNotification(event);
+          },
+          onError: (error) {
+            AppLogger.error(
+              '🔔 NOTIFICATION: Error in upload notification stream: $error',
+            );
+          },
+        );
   }
 
   /// Handle upload notification events with appropriate UI feedback
   void _handleUploadNotification(UploadNotificationEvent event) {
     AppLogger.info(
-        '🔔 NOTIFICATION: Received ${event.trigger.name}: ${event.message}');
+      '🔔 NOTIFICATION: Received ${event.trigger.name}: ${event.message}',
+    );
 
     // Show snackbar notification based on priority
     switch (event.priority) {
@@ -193,12 +200,16 @@ class _SkrivSjalvReceptViewContentState
               final coverage = (tagResult.coverage * 100).toInt();
               UtilityComponents.showSuccessSnackbar(
                 context,
-                context.l10n
-                    .recipeSavedWithTags(tagResult.tags.length, coverage),
+                context.l10n.recipeSavedWithTags(
+                  tagResult.tags.length,
+                  coverage,
+                ),
               );
             } else {
               UtilityComponents.showSuccessSnackbar(
-                  context, context.l10n.recipeSaved);
+                context,
+                context.l10n.recipeSaved,
+              );
             }
           }
           if (mounted) Navigator.of(context).pop(savedRecipe);
@@ -234,10 +245,12 @@ class _SkrivSjalvReceptViewContentState
     // IMMEDIATE FIX: Safe null checking to prevent crashes
     return viewModel.title.isNotEmpty ||
         viewModel.description.isNotEmpty ||
-        viewModel.ingredients
-            .any((ingredient) => ingredient.trim().isNotEmpty) ||
-        viewModel.instructions
-            .any((instruction) => instruction.trim().isNotEmpty) ||
+        viewModel.ingredients.any(
+          (ingredient) => ingredient.trim().isNotEmpty,
+        ) ||
+        viewModel.instructions.any(
+          (instruction) => instruction.trim().isNotEmpty,
+        ) ||
         viewModel.tags.any((tag) => tag.trim().isNotEmpty) ||
         viewModel.imageUrls.isNotEmpty ||
         (viewModel.portions ?? 0) > 0 ||
@@ -277,7 +290,8 @@ class _SkrivSjalvReceptViewContentState
     _initializeControllersIfNeeded(viewModel);
 
     return PopScope(
-      canPop: !_isSaving &&
+      canPop:
+          !_isSaving &&
           !viewModel
               .isSaving, // CRITICAL FIX: Prevent navigation during save operations (check both states)
       onPopInvokedWithResult: (bool didPop, Object? result) async {
@@ -286,7 +300,9 @@ class _SkrivSjalvReceptViewContentState
           if (_isSaving || viewModel.isSaving) {
             if (context.mounted) {
               UtilityComponents.showWarningSnackbar(
-                  context, context.l10n.recipeWaitWhileSaving);
+                context,
+                context.l10n.recipeWaitWhileSaving,
+              );
             }
             return;
           }
@@ -304,7 +320,9 @@ class _SkrivSjalvReceptViewContentState
               // Show warning if save started during dialog
               if (context.mounted) {
                 UtilityComponents.showWarningSnackbar(
-                    context, context.l10n.recipeSaveStartedDuringDialog);
+                  context,
+                  context.l10n.recipeSaveStartedDuringDialog,
+                );
               }
             }
           } else {
@@ -330,15 +348,19 @@ class _SkrivSjalvReceptViewContentState
           actions: [
             if (viewModel.isAutoSaving)
               const Padding(
-                padding:
-                    EdgeInsetsDirectional.only(end: AppDimensions.paddingM),
+                padding: EdgeInsetsDirectional.only(
+                  end: AppDimensions.paddingM,
+                ),
                 child: LoadingIndicator(
-                    size: AppDimensions.iconSizeS, strokeWidth: 2),
+                  size: AppDimensions.iconSizeS,
+                  strokeWidth: 2,
+                ),
               )
             else if (viewModel.hasRecentAutoSave)
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.paddingM),
+                  end: AppDimensions.paddingM,
+                ),
                 child: Icon(
                   Icons.cloud_done_outlined,
                   size: AppDimensions.iconSizeM,
@@ -388,14 +410,14 @@ class _SkrivSjalvReceptViewContentState
                               Text(
                                 context.l10n.recipeMealType,
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(
-                                  height:
-                                      4.0), // Minimal gap between label and dropdown
+                                height: 4.0,
+                              ), // Minimal gap between label and dropdown
                               DropdownButtonFormField<String>(
                                 initialValue: viewModel.mealType,
                                 isExpanded: true,
@@ -410,7 +432,9 @@ class _SkrivSjalvReceptViewContentState
                                 items: RecipeFormViewModel.mealTypes
                                     .map(
                                       (mt) => DropdownMenuItem(
-                                          value: mt, child: Text(mt)),
+                                        value: mt,
+                                        child: Text(mt),
+                                      ),
                                     )
                                     .toList(),
                                 onChanged: (value) {
@@ -429,18 +453,22 @@ class _SkrivSjalvReceptViewContentState
                             onRemoveImage: viewModel.removeImageAt,
                             onSetPrimary: (index) {
                               AppLogger.debug(
-                                  '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}');
+                                '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}',
+                              );
                               if (index < viewModel.imageUrls.length) {
                                 final imageUrl = viewModel.imageUrls[index];
                                 AppLogger.debug(
-                                    '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl');
+                                  '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl',
+                                );
                                 viewModel.setPrimaryImage(imageUrl);
                               } else {
                                 AppLogger.warning(
-                                    '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})');
+                                  '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})',
+                                );
                               }
                             },
-                            userId: ServiceLocator.get<PermissionService>()
+                            userId:
+                                ServiceLocator.get<PermissionService>()
                                     .currentUserId ??
                                 '',
                             onPickImage: () => _pickImage(viewModel),
@@ -486,13 +514,18 @@ class _SkrivSjalvReceptViewContentState
                             validator: FormValidators.combine([
                               FormValidators.required(context.l10n.recipeTitle),
                               FormValidators.minLength(
-                                  3, context.l10n.recipeTitle),
+                                3,
+                                context.l10n.recipeTitle,
+                              ),
                               FormValidators.maxLength(
-                                  100, context.l10n.recipeTitle),
+                                100,
+                                context.l10n.recipeTitle,
+                              ),
                               // BUT-517: block profanity at validator level
                               // (BEFORE the API call).
                               FormValidators.contentFilter(
-                                  context.l10n.recipeTitle),
+                                context.l10n.recipeTitle,
+                              ),
                             ]),
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
@@ -507,10 +540,13 @@ class _SkrivSjalvReceptViewContentState
                             onChanged: viewModel.setDescription,
                             validator: FormValidators.combine([
                               FormValidators.maxLength(
-                                  500, context.l10n.recipeDescription),
+                                500,
+                                context.l10n.recipeDescription,
+                              ),
                               // BUT-517
                               FormValidators.contentFilter(
-                                  context.l10n.recipeDescription),
+                                context.l10n.recipeDescription,
+                              ),
                             ]),
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
@@ -594,7 +630,8 @@ class _SkrivSjalvReceptViewContentState
                             controller: _ratingController,
                             label: context.l10n.recipeRating,
                             keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
+                              decimal: true,
+                            ),
                             textInputAction: TextInputAction.next,
                             onChanged: (value) =>
                                 viewModel.setRating(double.tryParse(value)),
@@ -607,7 +644,8 @@ class _SkrivSjalvReceptViewContentState
                             controller: _sourceUrlController,
                             label: context.l10n.recipeSourceUrl,
                             hint: context.l10n.recipeSourceUrlHint,
-                            helperText: viewModel.sourceUrl ==
+                            helperText:
+                                viewModel.sourceUrl ==
                                     context.l10n.recipeSharedFromApp
                                 ? context.l10n.recipeImportedFromShare
                                 : context.l10n.recipeSourceUrlHelper,
@@ -632,10 +670,9 @@ class _SkrivSjalvReceptViewContentState
             // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
               ColoredBox(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface
-                    .withValues(alpha: AppDimensions.opacityVeryDark),
+                color: Theme.of(context).colorScheme.surface.withValues(
+                  alpha: AppDimensions.opacityVeryDark,
+                ),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -669,8 +706,8 @@ class _SkrivSjalvReceptViewContentState
                 icon: Icons.save,
                 onPressed:
                     (_isSaving || viewModel.isSaving || !viewModel.isValid)
-                        ? null
-                        : _saveRecipe,
+                    ? null
+                    : _saveRecipe,
                 isLoading: _isSaving || viewModel.isSaving,
                 loadingText: context.l10n.statusSaving,
                 isExpanded: true,
@@ -708,8 +745,9 @@ class _SkrivSjalvReceptViewContentState
                 animation: animation,
                 builder: (context, child) => Material(
                   elevation: animation.value * 4,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusS,
+                  ),
                   child: child,
                 ),
                 child: child,
@@ -725,9 +763,12 @@ class _SkrivSjalvReceptViewContentState
                       index: index,
                       child: const Padding(
                         padding: EdgeInsetsDirectional.only(
-                            end: AppDimensions.spacingS),
-                        child: Icon(Icons.drag_handle,
-                            size: AppDimensions.iconSizeM),
+                          end: AppDimensions.spacingS,
+                        ),
+                        child: Icon(
+                          Icons.drag_handle,
+                          size: AppDimensions.iconSizeM,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -747,8 +788,9 @@ class _SkrivSjalvReceptViewContentState
                     if (controllers.length > 1)
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        tooltip: context.l10n
-                            .commonRemoveLabel('$label ${index + 1}'),
+                        tooltip: context.l10n.commonRemoveLabel(
+                          '$label ${index + 1}',
+                        ),
                         onPressed: () => onRemove(index),
                       ),
                   ],
@@ -779,8 +821,9 @@ class _SkrivSjalvReceptViewContentState
                     if (controllers.length > 1)
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        tooltip: context.l10n
-                            .commonRemoveLabel('$label ${index + 1}'),
+                        tooltip: context.l10n.commonRemoveLabel(
+                          '$label ${index + 1}',
+                        ),
                         onPressed: () => onRemove(index),
                       ),
                   ],
@@ -892,7 +935,8 @@ class _SkrivSjalvReceptViewContentState
     _sourceUrlController?.dispose();
 
     AppLogger.debug(
-        'SkrivSjalvReceptView disposed - notification subscription and controllers disposed');
+      'SkrivSjalvReceptView disposed - notification subscription and controllers disposed',
+    );
     super.dispose();
   }
 }

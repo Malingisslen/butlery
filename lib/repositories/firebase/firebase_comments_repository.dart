@@ -16,8 +16,8 @@ import 'package:butlery/repositories/firebase/comments/comment_likes_operations.
 /// Supports recipe access validation via optional [RecipeAccessValidator] constructor parameter.
 /// Callback to validate that a user has access to a recipe before commenting.
 /// Returns true if the user can access the recipe.
-typedef RecipeAccessValidator = Future<bool> Function(
-    String recipeId, String userId);
+typedef RecipeAccessValidator =
+    Future<bool> Function(String recipeId, String userId);
 
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     with CommentLikesOperations
@@ -32,8 +32,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     super.timestampProvider,
     RecipeAccessValidator? recipeAccessValidator,
     RecipeOwnershipResolver? recipeOwnershipResolver,
-  })  : _recipeAccessValidator = recipeAccessValidator,
-        _recipeOwnershipResolver = recipeOwnershipResolver;
+  }) : _recipeAccessValidator = recipeAccessValidator,
+       _recipeOwnershipResolver = recipeOwnershipResolver;
 
   @override
   String get collectionName => FirestoreCollections.recipeComments;
@@ -50,14 +50,19 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   String getId(RecipeComment entity) => entity.id;
   @override
   Future<bool> validateCreatePermission(
-      String userId, RecipeComment entity) async {
+    String userId,
+    RecipeComment entity,
+  ) async {
     // Users can only create comments as themselves
     return entity.authorId == userId;
   }
 
   @override
   Future<bool> validateReadPermission(
-      String userId, String resourceId, RecipeComment? entity) async {
+    String userId,
+    String resourceId,
+    RecipeComment? entity,
+  ) async {
     // All authenticated users can read comments on recipes they have access to
     // The recipe-level access control is enforced separately
     return true;
@@ -65,14 +70,19 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Future<bool> validateUpdatePermission(
-      String userId, String resourceId, RecipeComment entity) async {
+    String userId,
+    String resourceId,
+    RecipeComment entity,
+  ) async {
     // Users can only edit their own comments
     return entity.authorId == userId;
   }
 
   @override
   Future<bool> validateDeletePermission(
-      String userId, String resourceId) async {
+    String userId,
+    String resourceId,
+  ) async {
     // Users can only delete their own comments
     try {
       final comment = await read(resourceId);
@@ -228,8 +238,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
           .doc('comments'),
       {
         'lastWrite': timestampProvider.serverTimestamp(),
-        'expireAt':
-            Timestamp.fromDate(clock.now().add(const Duration(days: 90))),
+        'expireAt': Timestamp.fromDate(
+          clock.now().add(const Duration(days: 90)),
+        ),
       },
       SetOptions(merge: true),
     );
@@ -358,7 +369,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         await storage.deleteImage(url);
       } catch (e) {
         AppLogger.warning(
-            '[Comments] comment-image cleanup failed for $url: $e');
+          '[Comments] comment-image cleanup failed for $url: $e',
+        );
       }
     }
   }
@@ -387,8 +399,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         .orderBy('createdAt', descending: false)
         .limit(50) // Stream max 50 comments (including replies)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => fromFirestore(doc)).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) => fromFirestore(doc)).toList(),
+        );
   }
 
   @override
@@ -407,8 +420,10 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     // Count replies (have parentCommentId)
     // Note: Firestore doesn't support isNotEqualTo: null directly with count,
     // so we calculate replies as total - topLevel
-    final totalCount =
-        await collection.where('recipeId', isEqualTo: recipeId).count().get();
+    final totalCount = await collection
+        .where('recipeId', isEqualTo: recipeId)
+        .count()
+        .get();
 
     final repliesCount = (totalCount.count ?? 0) - (topLevelCount.count ?? 0);
 

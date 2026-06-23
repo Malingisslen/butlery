@@ -106,8 +106,10 @@ class TestableUnifiedRecipeService {
   }
 
   // Sharing methods
-  Future<String?> generateShareLink(String recipeId,
-      {ResourcePermission? permissions}) async {
+  Future<String?> generateShareLink(
+    String recipeId, {
+    ResourcePermission? permissions,
+  }) async {
     // Sharing functionality is handled by different service
     return null;
   }
@@ -209,28 +211,39 @@ void main() {
       );
 
       // Stub recipe repository subscription methods for Firebase sync
-      when(() => mockRecipeRepository.subscribeToUserRecipes(any(), any(),
-          onError: any(named: 'onError'))).thenAnswer(
+      when(
+        () => mockRecipeRepository.subscribeToUserRecipes(
+          any(),
+          any(),
+          onError: any(named: 'onError'),
+        ),
+      ).thenAnswer(
         (_) => Stream.empty().listen((_) {}),
       );
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<RecipeRepository>(mockRecipeRepository);
       TestServiceLocator.registerMock<CommentsRepository>(
-          mockCommentsRepository);
+        mockCommentsRepository,
+      );
       TestServiceLocator.registerMock<RatingsRepository>(mockRatingsRepository);
       TestServiceLocator.registerMock<NotificationsRepository>(
-          mockNotificationsRepository);
+        mockNotificationsRepository,
+      );
       TestServiceLocator.registerMock<FirestoreRepository>(
-          mockFirestoreRepository);
+        mockFirestoreRepository,
+      );
       TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-          mockCollaborativeRepository);
+        mockCollaborativeRepository,
+      );
 
       // Register mocks for eager ServiceLocator.get<>() calls in constructor chain
       TestServiceLocator.registerMock<FirebaseRecipePresenceRepository>(
-          MockFirebaseRecipePresenceRepository());
+        MockFirebaseRecipePresenceRepository(),
+      );
       TestServiceLocator.registerMock<FirebaseSharedRecipeRepository>(
-          MockFirebaseSharedRecipeRepository());
+        MockFirebaseSharedRecipeRepository(),
+      );
       TestServiceLocator.registerMock<UserRepository>(MockUserRepository());
 
       // Stub OfflineService -> AppDatabase -> CacheDao chain
@@ -244,7 +257,8 @@ void main() {
 
       TestServiceLocator.registerMock<TaggingService>(MockTaggingService());
       TestServiceLocator.registerMock<PersonalTagService>(
-          MockPersonalTagService());
+        MockPersonalTagService(),
+      );
       TestServiceLocator.registerMock<StorageService>(MockStorageService());
 
       // Initialize production ServiceLocator bridge so ServiceLocator.get<T>()
@@ -263,8 +277,10 @@ void main() {
       );
 
       // Create testable wrapper
-      testableService =
-          TestableUnifiedRecipeService(service, mockRecipeRepository);
+      testableService = TestableUnifiedRecipeService(
+        service,
+        mockRecipeRepository,
+      );
     });
 
     tearDown(() async {
@@ -376,8 +392,7 @@ void main() {
         service.webRecipeFetchTimeout = const Duration(milliseconds: 100);
       });
 
-      test(
-          'a hanging fetch resolves within the timeout instead of spinning '
+      test('a hanging fetch resolves within the timeout instead of spinning '
           'forever', () async {
         // Arrange — a Firebase get that never completes (the offline JS-SDK
         // cold-cache hang we are defending against).
@@ -387,8 +402,9 @@ void main() {
             neverCompletes.completeError('test-tearDown');
           }
         });
-        when(() => mockRecipeRepository.fetchUserRecipes(any()))
-            .thenAnswer((_) => neverCompletes.future);
+        when(
+          () => mockRecipeRepository.fetchUserRecipes(any()),
+        ).thenAnswer((_) => neverCompletes.future);
 
         // Act + Assert — must RESOLVE (not hang). A real timeout would let the
         // outer `expect(... completes)` pass; an unbounded await would never
@@ -401,15 +417,19 @@ void main() {
 
         // And the loading flag is not stuck true — init already set it false,
         // and the bounded fetch absorbing the timeout must not flip it back on.
-        expect(service.isLoading, isFalse,
-            reason: 'loading must not be left spinning after a fetch timeout');
+        expect(
+          service.isLoading,
+          isFalse,
+          reason: 'loading must not be left spinning after a fetch timeout',
+        );
       });
 
       test('a throwing fetch is absorbed locally (does not rethrow)', () async {
         // Arrange — a server get that fails outright (e.g. offline / permission
         // / transient error). Must be swallowed so bootstrap is not aborted.
-        when(() => mockRecipeRepository.fetchUserRecipes(any()))
-            .thenAnswer((_) async => throw Exception('offline'));
+        when(
+          () => mockRecipeRepository.fetchUserRecipes(any()),
+        ).thenAnswer((_) async => throw Exception('offline'));
 
         // Act + Assert — resolves cleanly rather than propagating the error.
         await expectLater(
@@ -420,23 +440,25 @@ void main() {
         expect(service.isLoading, isFalse);
       });
 
-      test(
-          'a fast successful fetch still replaces the recipe list (online '
+      test('a fast successful fetch still replaces the recipe list (online '
           'path unchanged)', () async {
         // Arrange — the normal online case: the get returns promptly.
         final fetched = [
           RecipeFactory.build(id: 'web-1', title: 'Webbrecept 1'),
           RecipeFactory.build(id: 'web-2', title: 'Webbrecept 2'),
         ];
-        when(() => mockRecipeRepository.fetchUserRecipes(any()))
-            .thenAnswer((_) async => fetched);
+        when(
+          () => mockRecipeRepository.fetchUserRecipes(any()),
+        ).thenAnswer((_) async => fetched);
 
         // Act
         await service.loadWebRecipesBounded('test_user_123');
 
         // Assert — list is replaced exactly as before the timeout guard.
         expect(
-            service.recipes.map((r) => r.id), containsAll(['web-1', 'web-2']));
+          service.recipes.map((r) => r.id),
+          containsAll(['web-1', 'web-2']),
+        );
         expect(service.isLoading, isFalse);
       });
     });
@@ -493,32 +515,39 @@ void main() {
       // used to bail with `false` (the heart bounced back in the UI). With a
       // fallback Recipe supplied it must still persist the favorite change.
       group('toggleFavorite cache-miss fallback', () {
-        test('bails (false) when recipe not cached and no fallback given',
-            () async {
-          final success = await service.toggleFavorite('not-in-cache', true);
-          expect(success, isFalse);
-        });
+        test(
+          'bails (false) when recipe not cached and no fallback given',
+          () async {
+            final success = await service.toggleFavorite('not-in-cache', true);
+            expect(success, isFalse);
+          },
+        );
 
-        test('persists (true) via fallbackRecipe when recipe not in cache',
-            () async {
-          // Recipe is NOT seeded into the service cache — getRecipeById is null.
-          expect(service.getRecipeById('shared-recipe'), isNull);
+        test(
+          'persists (true) via fallbackRecipe when recipe not in cache',
+          () async {
+            // Recipe is NOT seeded into the service cache — getRecipeById is null.
+            expect(service.getRecipeById('shared-recipe'), isNull);
 
-          final held = RecipeFactory.build(id: 'shared-recipe')
-              .copyWith(isFavorite: false);
+            final held = RecipeFactory.build(
+              id: 'shared-recipe',
+            ).copyWith(isFavorite: false);
 
-          final success = await service.toggleFavorite(
-            'shared-recipe',
-            true,
-            fallbackRecipe: held,
-          );
+            final success = await service.toggleFavorite(
+              'shared-recipe',
+              true,
+              fallbackRecipe: held,
+            );
 
-          // The contract that matters for the UI: the toggle no longer bails on
-          // a cache miss, so the heart stays toggled instead of bouncing back.
-          expect(success, isTrue,
-              reason:
-                  'fallback Recipe lets the toggle persist on a cache miss');
-        });
+            // The contract that matters for the UI: the toggle no longer bails on
+            // a cache miss, so the heart stays toggled instead of bouncing back.
+            expect(
+              success,
+              isTrue,
+              reason: 'fallback Recipe lets the toggle persist on a cache miss',
+            );
+          },
+        );
       });
 
       test('should delete recipe', () async {
@@ -594,8 +623,11 @@ void main() {
 
         // Verify the recipe is findable by ID
         final createdRecipe = service.getRecipeById(recipeId!);
-        expect(createdRecipe, isNotNull,
-            reason: 'Recipe should be findable after creation');
+        expect(
+          createdRecipe,
+          isNotNull,
+          reason: 'Recipe should be findable after creation',
+        );
         expect(createdRecipe!.id, equals(recipeId));
       });
 
@@ -675,20 +707,25 @@ void main() {
         );
 
         // Stub collaborative repository methods for real-time editing
-        when(() => mockCollaborativeRepository.setPresence(any(), any(), any()))
-            .thenAnswer(
+        when(
+          () => mockCollaborativeRepository.setPresence(any(), any(), any()),
+        ).thenAnswer(
           (_) async {},
         );
-        when(() => mockCollaborativeRepository.removePresence(any(), any()))
-            .thenAnswer(
+        when(
+          () => mockCollaborativeRepository.removePresence(any(), any()),
+        ).thenAnswer(
           (_) async {},
         );
-        when(() => mockCollaborativeRepository.updatePresenceHeartbeat(
-            any(), any())).thenAnswer(
+        when(
+          () =>
+              mockCollaborativeRepository.updatePresenceHeartbeat(any(), any()),
+        ).thenAnswer(
           (_) async {},
         );
-        when(() => mockCollaborativeRepository.getActiveEditors(any()))
-            .thenAnswer(
+        when(
+          () => mockCollaborativeRepository.getActiveEditors(any()),
+        ).thenAnswer(
           (_) async => [],
         );
       });
@@ -917,47 +954,54 @@ void main() {
       // rebuilt (resetForLogout bypasses notifyListeners) so getRecipeById
       // kept returning stale recipes from the previous user's session.
       test(
-          'resetForLogout clears the id index — getRecipeById returns null after logout',
-          () async {
-        // Arrange: stub repo so createCollaborativeRecipe actually seeds a
-        // recipe into _recipes (and therefore into _recipeById).
-        when(() => mockRecipeRepository.create(any())).thenAnswer(
-          (inv) async => inv.positionalArguments[0] as Recipe,
-        );
-        when(() => mockRecipeRepository.update(any())).thenAnswer((_) async {});
-        when(() => mockRecipeRepository.read(any())).thenAnswer(
-          (inv) async => RecipeFactory.buildCollaborative(
-            id: inv.positionalArguments[0] as String,
-          ),
-        );
+        'resetForLogout clears the id index — getRecipeById returns null after logout',
+        () async {
+          // Arrange: stub repo so createCollaborativeRecipe actually seeds a
+          // recipe into _recipes (and therefore into _recipeById).
+          when(() => mockRecipeRepository.create(any())).thenAnswer(
+            (inv) async => inv.positionalArguments[0] as Recipe,
+          );
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async {});
+          when(() => mockRecipeRepository.read(any())).thenAnswer(
+            (inv) async => RecipeFactory.buildCollaborative(
+              id: inv.positionalArguments[0] as String,
+            ),
+          );
 
-        // Seed one recipe into the service so the index is non-empty.
-        final recipeId = await service.createCollaborativeRecipe(
-          title: 'Recept att logga ut från',
-          memberIds: ['user1'],
-          ingredients: ['Potatis'],
-          instructions: ['Koka.'],
-        );
-        expect(recipeId, isNotNull,
-            reason: 'Pre-condition: recipe must be created');
-        expect(
-          service.getRecipeById(recipeId!),
-          isNotNull,
-          reason: 'Pre-condition: recipe must be in the index before logout',
-        );
+          // Seed one recipe into the service so the index is non-empty.
+          final recipeId = await service.createCollaborativeRecipe(
+            title: 'Recept att logga ut från',
+            memberIds: ['user1'],
+            ingredients: ['Potatis'],
+            instructions: ['Koka.'],
+          );
+          expect(
+            recipeId,
+            isNotNull,
+            reason: 'Pre-condition: recipe must be created',
+          );
+          expect(
+            service.getRecipeById(recipeId!),
+            isNotNull,
+            reason: 'Pre-condition: recipe must be in the index before logout',
+          );
 
-        // Act
-        service.resetForLogout();
+          // Act
+          service.resetForLogout();
 
-        // Assert: index cleared — no stale lookup possible.
-        expect(
-          service.getRecipeById(recipeId),
-          isNull,
-          reason: 'getRecipeById must return null after resetForLogout — '
-              'the _recipeById index must be cleared even though '
-              'resetForLogout does not route through notifyListeners',
-        );
-      });
+          // Assert: index cleared — no stale lookup possible.
+          expect(
+            service.getRecipeById(recipeId),
+            isNull,
+            reason:
+                'getRecipeById must return null after resetForLogout — '
+                'the _recipeById index must be cleared even though '
+                'resetForLogout does not route through notifyListeners',
+          );
+        },
+      );
     });
 
     // BUT-1252: list-mutating changes go through notifyListeners() (which
@@ -975,62 +1019,78 @@ void main() {
         service.clearError();
       });
 
-      test(
-          'list mutation reindexes — getRecipeById finds an optimistically '
+      test('list mutation reindexes — getRecipeById finds an optimistically '
           'restored recipe', () {
         // Arrange
         final recipe = RecipeFactory.build(id: 'reindex-target');
-        expect(service.getRecipeById('reindex-target'), isNull,
-            reason: 'pre-condition: recipe not yet in the index');
+        expect(
+          service.getRecipeById('reindex-target'),
+          isNull,
+          reason: 'pre-condition: recipe not yet in the index',
+        );
 
         // Act — optimisticRestore mutates _recipes and notifies with the
         // default recipesChanged: true, which must rebuild the index.
         service.optimisticRestore(recipe);
 
         // Assert
-        expect(service.getRecipeById('reindex-target'), isNotNull,
-            reason: 'a list mutation must trigger a reindex');
+        expect(
+          service.getRecipeById('reindex-target'),
+          isNotNull,
+          reason: 'a list mutation must trigger a reindex',
+        );
         expect(service.getRecipeById('reindex-target')!.id, 'reindex-target');
       });
 
-      test(
-          'error-only notify does not stale the index — recipe stays findable '
+      test('error-only notify does not stale the index — recipe stays findable '
           'after clearError', () {
         // Arrange — seed the index via a real list mutation.
         final recipe = RecipeFactory.build(id: 'survives-clearerror');
         service.optimisticRestore(recipe);
-        expect(service.getRecipeById('survives-clearerror'), isNotNull,
-            reason: 'pre-condition: recipe is indexed');
+        expect(
+          service.getRecipeById('survives-clearerror'),
+          isNotNull,
+          reason: 'pre-condition: recipe is indexed',
+        );
 
         // Act — clearError routes through the state-only notify path, which
         // skips the reindex. The previously-built index must remain intact.
         service.clearError();
 
         // Assert
-        expect(service.getRecipeById('survives-clearerror'), isNotNull,
-            reason: 'an error-only notify must not drop the existing index');
+        expect(
+          service.getRecipeById('survives-clearerror'),
+          isNotNull,
+          reason: 'an error-only notify must not drop the existing index',
+        );
         expect(service.error, isNull);
       });
 
       test(
-          'removal reindexes — getRecipeById returns null after optimisticRemove',
-          () {
-        // Arrange
-        final recipe = RecipeFactory.build(id: 'to-be-removed');
-        service.optimisticRestore(recipe);
-        expect(service.getRecipeById('to-be-removed'), isNotNull,
-            reason: 'pre-condition: recipe is indexed');
+        'removal reindexes — getRecipeById returns null after optimisticRemove',
+        () {
+          // Arrange
+          final recipe = RecipeFactory.build(id: 'to-be-removed');
+          service.optimisticRestore(recipe);
+          expect(
+            service.getRecipeById('to-be-removed'),
+            isNotNull,
+            reason: 'pre-condition: recipe is indexed',
+          );
 
-        // Act — a removal is a list mutation, so the index must rebuild.
-        service.optimisticRemove('to-be-removed');
+          // Act — a removal is a list mutation, so the index must rebuild.
+          service.optimisticRemove('to-be-removed');
 
-        // Assert
-        expect(service.getRecipeById('to-be-removed'), isNull,
-            reason: 'a removal must trigger a reindex that drops the entry');
-      });
+          // Assert
+          expect(
+            service.getRecipeById('to-be-removed'),
+            isNull,
+            reason: 'a removal must trigger a reindex that drops the entry',
+          );
+        },
+      );
 
-      test(
-          'single native list mutation emits exactly one state event '
+      test('single native list mutation emits exactly one state event '
           '(no double-notify)', () async {
         // BUT-1252 motivation: the cache module previously notified twice on a
         // single direct update (its own _notifyListeners PLUS the direct
@@ -1048,8 +1108,11 @@ void main() {
         service.optimisticRestore(RecipeFactory.build(id: 'emit-once'));
         await Future<void>.delayed(Duration.zero);
 
-        expect(emissions, 1,
-            reason: 'one list mutation must emit exactly one state event');
+        expect(
+          emissions,
+          1,
+          reason: 'one list mutation must emit exactly one state event',
+        );
         await sub.cancel();
       });
     });
@@ -1240,7 +1303,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.create(any())).thenAnswer(
             (_) async => throw ArgumentError(
-                'Invalid recipe data: title cannot be empty'),
+              'Invalid recipe data: title cannot be empty',
+            ),
           );
 
           // Act
@@ -1279,7 +1343,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.delete(any())).thenAnswer(
             (_) async => throw Exception(
-                'Permission denied: user cannot delete this recipe'),
+              'Permission denied: user cannot delete this recipe',
+            ),
           );
 
           // Act
@@ -1315,8 +1380,9 @@ void main() {
           addTearDown(() {
             if (!hang.isCompleted) hang.completeError('test-tearDown');
           });
-          when(() => mockRecipeRepository.create(any()))
-              .thenAnswer((_) => hang.future);
+          when(
+            () => mockRecipeRepository.create(any()),
+          ).thenAnswer((_) => hang.future);
 
           // Act - optimistic update returns immediately
           final recipeId = await service.createPersonalRecipe(
@@ -1333,7 +1399,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer(
             (_) async => throw FormatException(
-                'Invalid search query: special characters not allowed'),
+              'Invalid search query: special characters not allowed',
+            ),
           );
 
           // Act
@@ -1380,8 +1447,9 @@ void main() {
           );
 
           // Act
-          final results =
-              await testableService.searchRecipes('obscure recipe name');
+          final results = await testableService.searchRecipes(
+            'obscure recipe name',
+          );
 
           // Assert - empty results returned without throwing
           expect(results, isEmpty);
@@ -1438,7 +1506,8 @@ void main() {
 
           when(() => mockRecipeRepository.update(any())).thenAnswer(
             (_) async => throw StateError(
-                'Cannot remove last owner from collaborative recipe'),
+              'Cannot remove last owner from collaborative recipe',
+            ),
           );
 
           // Act
@@ -1460,7 +1529,8 @@ void main() {
           // Stub repository to simulate conflict error on update
           when(() => mockRecipeRepository.update(any())).thenAnswer(
             (_) async => throw StateError(
-                'Conflict: recipe was modified by another user'),
+              'Conflict: recipe was modified by another user',
+            ),
           );
 
           // Create recipe and start editing
@@ -1468,9 +1538,9 @@ void main() {
             (invocation) async => invocation.positionalArguments[0] as Recipe,
           );
 
-          when(() =>
-                  mockCollaborativeRepository.setPresence(any(), any(), any()))
-              .thenAnswer(
+          when(
+            () => mockCollaborativeRepository.setPresence(any(), any(), any()),
+          ).thenAnswer(
             (_) async {},
           );
 
@@ -1484,8 +1554,10 @@ void main() {
           );
 
           // Assert
-          expect(success,
-              true); // Edit succeeds as conflict resolution is handled internally
+          expect(
+            success,
+            true,
+          ); // Edit succeeds as conflict resolution is handled internally
           // Error state handled internally by service
           // Error details not exposed through test helpers
         });
@@ -1544,8 +1616,9 @@ void main() {
           // Arrange - no stubbing needed as method returns null
 
           // Act
-          final recipe = await testableService
-              .importRecipeFromUrl('https://unsupported-site.com/recipe');
+          final recipe = await testableService.importRecipeFromUrl(
+            'https://unsupported-site.com/recipe',
+          );
 
           // Assert
           expect(recipe, isNull);
@@ -1556,8 +1629,9 @@ void main() {
           // Arrange - no stubbing needed as method returns null
 
           // Act
-          final recipe = await testableService
-              .importRecipeFromUrl('https://slow-site.com/recipe');
+          final recipe = await testableService.importRecipeFromUrl(
+            'https://slow-site.com/recipe',
+          );
 
           // Assert
           expect(recipe, isNull);
@@ -1568,8 +1642,9 @@ void main() {
           // Arrange - no stubbing needed as method returns null
 
           // Act
-          final recipe = await testableService
-              .importRecipeFromUrl('https://broken-site.com/recipe');
+          final recipe = await testableService.importRecipeFromUrl(
+            'https://broken-site.com/recipe',
+          );
 
           // Assert
           expect(recipe, isNull);
@@ -1580,8 +1655,9 @@ void main() {
           // Arrange - no stubbing needed as method returns null
 
           // Act
-          final recipe = await testableService
-              .importRecipeFromUrl('https://popular-site.com/recipe');
+          final recipe = await testableService.importRecipeFromUrl(
+            'https://popular-site.com/recipe',
+          );
 
           // Assert
           expect(recipe, isNull);
@@ -1590,18 +1666,21 @@ void main() {
       });
 
       group('Recipe Sharing Errors', () {
-        test('should handle generate share link for non-existent recipe',
-            () async {
-          // Arrange - sharing is handled by test helper internally
+        test(
+          'should handle generate share link for non-existent recipe',
+          () async {
+            // Arrange - sharing is handled by test helper internally
 
-          // Act
-          final link =
-              await testableService.generateShareLink('non-existent-id');
+            // Act
+            final link = await testableService.generateShareLink(
+              'non-existent-id',
+            );
 
-          // Assert
-          expect(link, isNull); // Test helper always returns null
-          // Note: testableService methods don't set service.error directly
-        });
+            // Assert
+            expect(link, isNull); // Test helper always returns null
+            // Note: testableService methods don't set service.error directly
+          },
+        );
 
         test('should handle invalid share permissions', () async {
           // Arrange - sharing is handled by test helper internally
@@ -1621,8 +1700,9 @@ void main() {
           // Arrange - sharing is handled by test helper internally
 
           // Act
-          final recipe =
-              await testableService.accessSharedRecipe('expired-link-code');
+          final recipe = await testableService.accessSharedRecipe(
+            'expired-link-code',
+          );
 
           // Assert
           expect(recipe, isNull);
@@ -1649,8 +1729,10 @@ void main() {
           final recipes = await testableService.loadCachedRecipes();
 
           // Assert
-          expect(recipes,
-              isNotNull); // Service returns current recipes even with cache issues
+          expect(
+            recipes,
+            isNotNull,
+          ); // Service returns current recipes even with cache issues
           // Cache corruption is handled internally without clearing recipes
           // Note: testableService methods don't set service.error directly
         });
@@ -1712,7 +1794,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.create(any())).thenAnswer(
             (_) async => throw FormatException(
-                'Invalid ingredient format: must include quantity and unit'),
+              'Invalid ingredient format: must include quantity and unit',
+            ),
           );
 
           // Act - optimistic update returns recipe ID before repository call
@@ -1730,7 +1813,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.create(any())).thenAnswer(
             (_) async => throw RangeError(
-                'Cooking time must be between 1 and 1440 minutes'),
+              'Cooking time must be between 1 and 1440 minutes',
+            ),
           );
 
           // Act - optimistic update returns recipe ID
@@ -1747,7 +1831,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.create(any())).thenAnswer(
             (_) async => throw ArgumentError(
-                'Invalid portions: must be a positive integer'),
+              'Invalid portions: must be a positive integer',
+            ),
           );
 
           // Act - optimistic update returns recipe ID
@@ -1764,7 +1849,8 @@ void main() {
           // Arrange
           when(() => mockRecipeRepository.create(any())).thenAnswer(
             (_) async => throw ArgumentError(
-                'Missing required fields: title and ingredients are mandatory'),
+              'Missing required fields: title and ingredients are mandatory',
+            ),
           );
 
           // Act
@@ -1920,8 +2006,9 @@ void main() {
             createdBy: 'test-user-id',
           );
 
-          when(() => mockRecipeRepository.create(any()))
-              .thenAnswer((_) async => testRecipe);
+          when(
+            () => mockRecipeRepository.create(any()),
+          ).thenAnswer((_) async => testRecipe);
 
           // Act
           final recipeId = await service.createPersonalRecipe(
@@ -1958,8 +2045,9 @@ void main() {
             ),
           ];
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => testRecipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => testRecipes);
 
           // Act
           await service.initialize();
@@ -1977,8 +2065,9 @@ void main() {
 
         test('should handle personal module error states', () async {
           // Arrange
-          when(() => mockRecipeRepository.create(any()))
-              .thenThrow(Exception('Module error'));
+          when(
+            () => mockRecipeRepository.create(any()),
+          ).thenThrow(Exception('Module error'));
 
           // Act - optimistic update returns recipe ID;
           // repository error surfaces during background sync
@@ -2006,8 +2095,9 @@ void main() {
             mealType: 'dinner',
           );
 
-          when(() => mockRecipeRepository.read(any()))
-              .thenAnswer((_) async => testRecipe);
+          when(
+            () => mockRecipeRepository.read(any()),
+          ).thenAnswer((_) async => testRecipe);
 
           // Act
           final sharedId = await service.social.shareRecipe(
@@ -2052,10 +2142,12 @@ void main() {
           );
 
           // Mock repository to return the test recipe
-          when(() => mockRecipeRepository.read(testRecipe.id))
-              .thenAnswer((_) async => testRecipe);
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => [testRecipe]);
+          when(
+            () => mockRecipeRepository.read(testRecipe.id),
+          ).thenAnswer((_) async => testRecipe);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => [testRecipe]);
 
           // Act
           final canEdit = service.social.canEdit(testRecipe.id);
@@ -2072,37 +2164,43 @@ void main() {
       });
 
       group('RealtimeRecipeModule Operations', () {
-        test('should coordinate realtime module for collaborative editing',
-            () async {
-          // Arrange
-          final testRecipe = Recipe.collaborative(
-            title: 'Realtime Recipe',
-            description: 'For realtime editing',
-            ingredients: ['ingredient 1'],
-            instructions: ['step 1'],
-            mealType: 'dinner',
-            ownerId: 'test-user-id',
-            ownerDisplayName: 'Test User',
-            memberPermissions: {},
-          );
+        test(
+          'should coordinate realtime module for collaborative editing',
+          () async {
+            // Arrange
+            final testRecipe = Recipe.collaborative(
+              title: 'Realtime Recipe',
+              description: 'For realtime editing',
+              ingredients: ['ingredient 1'],
+              instructions: ['step 1'],
+              mealType: 'dinner',
+              ownerId: 'test-user-id',
+              ownerDisplayName: 'Test User',
+              memberPermissions: {},
+            );
 
-          // Mock repository to return the test recipe
-          when(() => mockRecipeRepository.read(testRecipe.id))
-              .thenAnswer((_) async => testRecipe);
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => [testRecipe]);
+            // Mock repository to return the test recipe
+            when(
+              () => mockRecipeRepository.read(testRecipe.id),
+            ).thenAnswer((_) async => testRecipe);
+            when(
+              () => mockRecipeRepository.readAll(),
+            ).thenAnswer((_) async => [testRecipe]);
 
-          // Act
-          final result =
-              await service.realtime.startRealtimeEditing(testRecipe.id);
-          final isEditing =
-              service.realtime.isInRealtimeEditingMode(testRecipe.id);
+            // Act
+            final result = await service.realtime.startRealtimeEditing(
+              testRecipe.id,
+            );
+            final isEditing = service.realtime.isInRealtimeEditingMode(
+              testRecipe.id,
+            );
 
-          // Assert
-          // Realtime editing requires proper setup, may not always return true in unit tests
-          expect(result, anyOf(isTrue, isFalse));
-          expect(isEditing, anyOf(isTrue, isFalse));
-        });
+            // Assert
+            // Realtime editing requires proper setup, may not always return true in unit tests
+            expect(result, anyOf(isTrue, isFalse));
+            expect(isEditing, anyOf(isTrue, isFalse));
+          },
+        );
 
         test('should handle realtime module presence tracking', () async {
           // Arrange
@@ -2130,16 +2228,18 @@ void main() {
           );
 
           // Mock repository to return the recipe
-          when(() => mockRecipeRepository.read(recipe.id))
-              .thenAnswer((_) async => recipe);
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => [recipe]);
+          when(
+            () => mockRecipeRepository.read(recipe.id),
+          ).thenAnswer((_) async => recipe);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => [recipe]);
 
           // Act - Simulate concurrent updates
           final update1 = service.realtime.makeRealtimeEdit(
             recipeId: recipe.id,
             changes: {
-              'ingredients': ['updated 1']
+              'ingredients': ['updated 1'],
             },
             editDescription: 'Update 1',
           );
@@ -2147,7 +2247,7 @@ void main() {
           final update2 = service.realtime.makeRealtimeEdit(
             recipeId: recipe.id,
             changes: {
-              'ingredients': ['updated 2']
+              'ingredients': ['updated 2'],
             },
             editDescription: 'Update 2',
           );
@@ -2164,18 +2264,20 @@ void main() {
         test('should handle cache module optimization', () async {
           // Arrange
           final recipes = List.generate(
-              50,
-              (i) => Recipe.personal(
-                    title: 'Recipe $i',
-                    description: 'Description $i',
-                    createdBy: 'test-user-id',
-                    ingredients: ['ingredient $i'],
-                    instructions: ['step $i'],
-                    mealType: 'dinner',
-                  ));
+            50,
+            (i) => Recipe.personal(
+              title: 'Recipe $i',
+              description: 'Description $i',
+              createdBy: 'test-user-id',
+              ingredients: ['ingredient $i'],
+              instructions: ['step $i'],
+              mealType: 'dinner',
+            ),
+          );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => recipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => recipes);
 
           // Act
           await service.initialize();
@@ -2202,9 +2304,11 @@ void main() {
           );
 
           // Act - updateRecipe uses optimistic update (saves to cache, syncs in background)
-          final result = await service.updateRecipe(recipe.copyWith(
-            title: 'Updated Cache Test',
-          ));
+          final result = await service.updateRecipe(
+            recipe.copyWith(
+              title: 'Updated Cache Test',
+            ),
+          );
 
           // Assert
           // updateRecipe succeeds optimistically without waiting for repository sync
@@ -2224,14 +2328,17 @@ void main() {
 
           // Simulate offline state
           // Mock repository to return the offline recipe
-          when(() => mockRecipeRepository.read(offlineRecipe.id))
-              .thenAnswer((_) async => offlineRecipe);
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => [offlineRecipe]);
+          when(
+            () => mockRecipeRepository.read(offlineRecipe.id),
+          ).thenAnswer((_) async => offlineRecipe);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => [offlineRecipe]);
 
           // Act - Simulate coming back online
-          when(() => mockRecipeRepository.create(any()))
-              .thenAnswer((_) async => offlineRecipe);
+          when(
+            () => mockRecipeRepository.create(any()),
+          ).thenAnswer((_) async => offlineRecipe);
 
           // The cache module would handle sync
           final synced = await service.createPersonalRecipe(
@@ -2247,40 +2354,44 @@ void main() {
       });
 
       group('Cross-Module Coordination', () {
-        test('should coordinate personal to social module transition',
-            () async {
-          // Arrange
-          final personalRecipe = Recipe.personal(
-            title: 'Personal Recipe',
-            description: 'Personal to social transition',
-            createdBy: 'test-user-id',
-            ingredients: ['personal'],
-            instructions: ['personal'],
-            mealType: 'dinner',
-          );
+        test(
+          'should coordinate personal to social module transition',
+          () async {
+            // Arrange
+            final personalRecipe = Recipe.personal(
+              title: 'Personal Recipe',
+              description: 'Personal to social transition',
+              createdBy: 'test-user-id',
+              ingredients: ['personal'],
+              instructions: ['personal'],
+              mealType: 'dinner',
+            );
 
-          // Mock repository to return the personal recipe
-          when(() => mockRecipeRepository.read(personalRecipe.id))
-              .thenAnswer((_) async => personalRecipe);
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => [personalRecipe]);
+            // Mock repository to return the personal recipe
+            when(
+              () => mockRecipeRepository.read(personalRecipe.id),
+            ).thenAnswer((_) async => personalRecipe);
+            when(
+              () => mockRecipeRepository.readAll(),
+            ).thenAnswer((_) async => [personalRecipe]);
 
-          when(() => mockRecipeRepository.read(any()))
-              .thenAnswer((_) async => personalRecipe);
+            when(
+              () => mockRecipeRepository.read(any()),
+            ).thenAnswer((_) async => personalRecipe);
 
-          // Act - Convert personal to social
-          final sharedId = await service.social.shareRecipe(
-            recipeId: personalRecipe.id,
-            memberIds: ['friend-1'],
-            memberDisplayNames: {'friend-1': 'Friend'},
-          );
+            // Act - Convert personal to social
+            final sharedId = await service.social.shareRecipe(
+              recipeId: personalRecipe.id,
+              memberIds: ['friend-1'],
+              memberDisplayNames: {'friend-1': 'Friend'},
+            );
 
-          // Assert
-          expect(sharedId, isA<String?>());
-        });
+            // Assert
+            expect(sharedId, isA<String?>());
+          },
+        );
 
-        test('should coordinate social to realtime module transition',
-            () async {
+        test('should coordinate social to realtime module transition', () async {
           // Arrange
           final socialRecipe = Recipe.collaborative(
             title: 'Social Recipe',
@@ -2296,17 +2407,20 @@ void main() {
           );
 
           // Mock repository to return the social recipe
-          when(() => mockRecipeRepository.read(socialRecipe.id))
-              .thenAnswer((_) async => socialRecipe);
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => [socialRecipe]);
+          when(
+            () => mockRecipeRepository.read(socialRecipe.id),
+          ).thenAnswer((_) async => socialRecipe);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => [socialRecipe]);
 
           // Initialize service to load the recipe
           await service.initialize();
 
           // Act - Start realtime editing on social recipe
-          final result =
-              await service.realtime.startRealtimeEditing(socialRecipe.id);
+          final result = await service.realtime.startRealtimeEditing(
+            socialRecipe.id,
+          );
 
           // Assert
           // Starting realtime editing on social recipe may require additional setup
@@ -2314,9 +2428,9 @@ void main() {
           // Note: isInRealtimeEditingMode may require actual realtime service setup
           // For unit test, we verify the operation completed without throwing
           expect(
-              service.realtime.isInRealtimeEditingMode(socialRecipe.id),
-              anyOf(isTrue,
-                  isFalse)); // Allow either since it depends on mock setup
+            service.realtime.isInRealtimeEditingMode(socialRecipe.id),
+            anyOf(isTrue, isFalse),
+          ); // Allow either since it depends on mock setup
         });
 
         test('should coordinate cache updates across all modules', () async {
@@ -2330,8 +2444,9 @@ void main() {
             mealType: 'dinner',
           );
 
-          when(() => mockRecipeRepository.create(any()))
-              .thenAnswer((_) async => recipe);
+          when(
+            () => mockRecipeRepository.create(any()),
+          ).thenAnswer((_) async => recipe);
 
           // Act - Create through personal, share through social, edit through realtime
           final recipeId = await service.createPersonalRecipe(
@@ -2359,64 +2474,72 @@ void main() {
       setUp(() {
         mockRealtimeSyncService = mocks.MockRealtimeSyncService();
         TestServiceLocator.registerMock<RealtimeSyncService>(
-            mockRealtimeSyncService);
+          mockRealtimeSyncService,
+        );
       });
 
       group('Real-time Collaborative Editing', () {
-        test('should handle multiple users editing same recipe simultaneously',
-            () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Collaborative Recipe',
-            description: 'Testing collaborative editing',
-            ingredients: ['initial ingredient'],
-            instructions: ['initial step'],
-            mealType: 'dinner',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {
-              'user-2': ResourcePermission.editor,
-              'user-3': ResourcePermission.editor,
-            },
-          );
+        test(
+          'should handle multiple users editing same recipe simultaneously',
+          () async {
+            // Arrange
+            final recipe = Recipe.collaborative(
+              title: 'Collaborative Recipe',
+              description: 'Testing collaborative editing',
+              ingredients: ['initial ingredient'],
+              instructions: ['initial step'],
+              mealType: 'dinner',
+              ownerId: 'user-1',
+              ownerDisplayName: 'User 1',
+              memberPermissions: {
+                'user-2': ResourcePermission.editor,
+                'user-3': ResourcePermission.editor,
+              },
+            );
 
-          when(() => mockRecipeRepository.read(recipe.id))
-              .thenAnswer((_) async => recipe);
-          // RealtimeSyncService doesn't have startRealtimeSession or makeRealtimeEdit
-          // These operations are handled through RealtimeRecipeOperations
-          mockRealtimeSyncService.setConnectionState(true);
-          mockRealtimeSyncService.setInitialized(true);
+            when(
+              () => mockRecipeRepository.read(recipe.id),
+            ).thenAnswer((_) async => recipe);
+            // RealtimeSyncService doesn't have startRealtimeSession or makeRealtimeEdit
+            // These operations are handled through RealtimeRecipeOperations
+            mockRealtimeSyncService.setConnectionState(true);
+            mockRealtimeSyncService.setInitialized(true);
 
-          // Act - Simulate multiple users editing
-          final user1Edit = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'User 1 Edit'},
-            editDescription: 'User 1 changed title',
-          );
+            // Act - Simulate multiple users editing
+            final user1Edit = service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'User 1 Edit'},
+              editDescription: 'User 1 changed title',
+            );
 
-          final user2Edit = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {
-              'ingredients': ['user 2 ingredient']
-            },
-            editDescription: 'User 2 changed ingredients',
-          );
+            final user2Edit = service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {
+                'ingredients': ['user 2 ingredient'],
+              },
+              editDescription: 'User 2 changed ingredients',
+            );
 
-          final user3Edit = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {
-              'instructions': ['user 3 step']
-            },
-            editDescription: 'User 3 changed instructions',
-          );
+            final user3Edit = service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {
+                'instructions': ['user 3 step'],
+              },
+              editDescription: 'User 3 changed instructions',
+            );
 
-          final results = await Future.wait([user1Edit, user2Edit, user3Edit]);
+            final results = await Future.wait([
+              user1Edit,
+              user2Edit,
+              user3Edit,
+            ]);
 
-          // Assert
-          // In unit tests, the results depend on mock setup
-          expect(results.length, equals(3));
-          expect(results.every((r) => r == true || r == false), isTrue);
-        });
+            // Assert
+            // In unit tests, the results depend on mock setup
+            expect(results.length, equals(3));
+            expect(results.every((r) => r == true || r == false), isTrue);
+          },
+        );
 
         test('should propagate live updates between users', () async {
           // Arrange
@@ -2444,128 +2567,142 @@ void main() {
           expect(watchStream, isA<Stream<Recipe>>());
         });
 
-        test('should handle optimistic updates with rollback on failure',
-            () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Optimistic Update Recipe',
-            description: 'Testing optimistic updates',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {},
-          );
+        test(
+          'should handle optimistic updates with rollback on failure',
+          () async {
+            // Arrange
+            final recipe = Recipe.collaborative(
+              title: 'Optimistic Update Recipe',
+              description: 'Testing optimistic updates',
+              ingredients: [],
+              instructions: [],
+              mealType: 'dinner',
+              ownerId: 'user-1',
+              ownerDisplayName: 'User 1',
+              memberPermissions: {},
+            );
 
-          when(() => mockRecipeRepository.read(recipe.id))
-              .thenAnswer((_) async => recipe);
-          // Set up mock to simulate network error
-          mockRealtimeSyncService.setConnectionState(false);
-          mockRealtimeSyncService.setError(SyncError(
-            type: SyncErrorType.connectionLost,
-            message: 'Network error',
-          ));
+            when(
+              () => mockRecipeRepository.read(recipe.id),
+            ).thenAnswer((_) async => recipe);
+            // Set up mock to simulate network error
+            mockRealtimeSyncService.setConnectionState(false);
+            mockRealtimeSyncService.setError(
+              SyncError(
+                type: SyncErrorType.connectionLost,
+                message: 'Network error',
+              ),
+            );
 
-          // Act
-          final result = await service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'Failed Update'},
-            editDescription: 'This should fail',
-          );
+            // Act
+            final result = await service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'Failed Update'},
+              editDescription: 'This should fail',
+            );
 
-          // Assert
-          expect(result, isFalse);
-          // Recipe should remain unchanged after rollback
-          final currentRecipe =
-              service.recipes.firstWhereOrNull((r) => r.id == recipe.id);
-          expect(currentRecipe?.title, isNot('Failed Update'));
-        });
+            // Assert
+            expect(result, isFalse);
+            // Recipe should remain unchanged after rollback
+            final currentRecipe = service.recipes.firstWhereOrNull(
+              (r) => r.id == recipe.id,
+            );
+            expect(currentRecipe?.title, isNot('Failed Update'));
+          },
+        );
 
-        test('should handle connection loss and recovery during editing',
-            () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Connection Test Recipe',
-            description: 'Testing connection handling',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {},
-          );
+        test(
+          'should handle connection loss and recovery during editing',
+          () async {
+            // Arrange
+            final recipe = Recipe.collaborative(
+              title: 'Connection Test Recipe',
+              description: 'Testing connection handling',
+              ingredients: [],
+              instructions: [],
+              mealType: 'dinner',
+              ownerId: 'user-1',
+              ownerDisplayName: 'User 1',
+              memberPermissions: {},
+            );
 
-          // Set initial connection state
-          mockRealtimeSyncService.setConnectionState(true);
+            // Set initial connection state
+            mockRealtimeSyncService.setConnectionState(true);
 
-          // Act
-          // Simulate connection loss
-          mockRealtimeSyncService.setConnectionState(false);
-          final offlineEdit = await service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'Offline Edit'},
-            editDescription: 'Edit while offline',
-          );
+            // Act
+            // Simulate connection loss
+            mockRealtimeSyncService.setConnectionState(false);
+            final offlineEdit = await service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'Offline Edit'},
+              editDescription: 'Edit while offline',
+            );
 
-          // Simulate connection recovery
-          mockRealtimeSyncService.setConnectionState(true);
-          final onlineEdit = await service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'Online Edit'},
-            editDescription: 'Edit after reconnection',
-          );
+            // Simulate connection recovery
+            mockRealtimeSyncService.setConnectionState(true);
+            final onlineEdit = await service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'Online Edit'},
+              editDescription: 'Edit after reconnection',
+            );
 
-          // Assert
-          expect(offlineEdit, anyOf(isTrue, isFalse)); // May queue or fail
-          expect(onlineEdit, anyOf(isTrue, isFalse)); // Should process normally
-        });
+            // Assert
+            expect(offlineEdit, anyOf(isTrue, isFalse)); // May queue or fail
+            expect(
+              onlineEdit,
+              anyOf(isTrue, isFalse),
+            ); // Should process normally
+          },
+        );
       });
 
       group('Multi-user Conflict Resolution', () {
-        test('should detect and resolve concurrent edits to same field',
-            () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Conflict Test Recipe',
-            description: 'Testing conflict resolution',
-            ingredients: ['original'],
-            instructions: ['original'],
-            mealType: 'dinner',
-            ownerId: 'user-1',
-            ownerDisplayName: 'User 1',
-            memberPermissions: {
-              'user-2': ResourcePermission.editor,
-            },
-          );
+        test(
+          'should detect and resolve concurrent edits to same field',
+          () async {
+            // Arrange
+            final recipe = Recipe.collaborative(
+              title: 'Conflict Test Recipe',
+              description: 'Testing conflict resolution',
+              ingredients: ['original'],
+              instructions: ['original'],
+              mealType: 'dinner',
+              ownerId: 'user-1',
+              ownerDisplayName: 'User 1',
+              memberPermissions: {
+                'user-2': ResourcePermission.editor,
+              },
+            );
 
-          when(() => mockRecipeRepository.read(recipe.id))
-              .thenAnswer((_) async => recipe);
+            when(
+              () => mockRecipeRepository.read(recipe.id),
+            ).thenAnswer((_) async => recipe);
 
-          // Simulate conflict scenario through mock setup
-          mockRealtimeSyncService.setConnectionState(true);
+            // Simulate conflict scenario through mock setup
+            mockRealtimeSyncService.setConnectionState(true);
 
-          // Act - Two users edit the same field
-          final user1Edit = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'User 1 Title'},
-            editDescription: 'User 1 edit',
-          );
+            // Act - Two users edit the same field
+            final user1Edit = service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'User 1 Title'},
+              editDescription: 'User 1 edit',
+            );
 
-          final user2Edit = service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'User 2 Title'},
-            editDescription: 'User 2 edit',
-          );
+            final user2Edit = service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'User 2 Title'},
+              editDescription: 'User 2 edit',
+            );
 
-          final results = await Future.wait([user1Edit, user2Edit]);
+            final results = await Future.wait([user1Edit, user2Edit]);
 
-          // Assert
-          // Both edits may fail or succeed depending on mock behavior
-          expect(results.length, equals(2));
-          // At least check that we got results
-          expect(results.every((r) => r == true || r == false), isTrue);
-        });
+            // Assert
+            // Both edits may fail or succeed depending on mock behavior
+            expect(results.length, equals(2));
+            // At least check that we got results
+            expect(results.every((r) => r == true || r == false), isTrue);
+          },
+        );
 
         test('should handle three-way merge scenarios', () async {
           // Arrange
@@ -2637,58 +2774,64 @@ void main() {
       });
 
       group('Permission Changes During Editing', () {
-        test('should handle permission downgrade during active editing',
-            () async {
-          // Arrange
-          final recipe = Recipe.collaborative(
-            title: 'Permission Test Recipe',
-            description: 'Testing permission changes',
-            ingredients: [],
-            instructions: [],
-            mealType: 'dinner',
-            ownerId: 'owner',
-            ownerDisplayName: 'Owner',
-            memberPermissions: {
-              'editor': ResourcePermission.editor,
-            },
-          );
+        test(
+          'should handle permission downgrade during active editing',
+          () async {
+            // Arrange
+            final recipe = Recipe.collaborative(
+              title: 'Permission Test Recipe',
+              description: 'Testing permission changes',
+              ingredients: [],
+              instructions: [],
+              mealType: 'dinner',
+              ownerId: 'owner',
+              ownerDisplayName: 'Owner',
+              memberPermissions: {
+                'editor': ResourcePermission.editor,
+              },
+            );
 
-          when(() => mockRecipeRepository.read(recipe.id))
-              .thenAnswer((_) async => recipe);
+            when(
+              () => mockRecipeRepository.read(recipe.id),
+            ).thenAnswer((_) async => recipe);
 
-          // Act
-          // Start editing as editor
-          await service.realtime.startRealtimeEditing(recipe.id);
+            // Act
+            // Start editing as editor
+            await service.realtime.startRealtimeEditing(recipe.id);
 
-          // Simulate permission downgrade to viewer
-          // Note: Recipe doesn't have copyWith for memberPermissions
-          // Create a new recipe with updated permissions
-          final downgradedRecipe = Recipe.collaborative(
-            title: recipe.title,
-            description: recipe.description,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            mealType: recipe.mealType,
-            ownerId: 'owner',
-            ownerDisplayName: 'Owner',
-            memberPermissions: {
-              'editor': ResourcePermission.viewer,
-            },
-          );
-          when(() => mockRecipeRepository.read(recipe.id))
-              .thenAnswer((_) async => downgradedRecipe);
+            // Simulate permission downgrade to viewer
+            // Note: Recipe doesn't have copyWith for memberPermissions
+            // Create a new recipe with updated permissions
+            final downgradedRecipe = Recipe.collaborative(
+              title: recipe.title,
+              description: recipe.description,
+              ingredients: recipe.ingredients,
+              instructions: recipe.instructions,
+              mealType: recipe.mealType,
+              ownerId: 'owner',
+              ownerDisplayName: 'Owner',
+              memberPermissions: {
+                'editor': ResourcePermission.viewer,
+              },
+            );
+            when(
+              () => mockRecipeRepository.read(recipe.id),
+            ).thenAnswer((_) async => downgradedRecipe);
 
-          // Try to edit with downgraded permissions
-          final editResult = await service.realtime.makeRealtimeEdit(
-            recipeId: recipe.id,
-            changes: {'title': 'Should Fail'},
-            editDescription: 'Edit with viewer permission',
-          );
+            // Try to edit with downgraded permissions
+            final editResult = await service.realtime.makeRealtimeEdit(
+              recipeId: recipe.id,
+              changes: {'title': 'Should Fail'},
+              editDescription: 'Edit with viewer permission',
+            );
 
-          // Assert
-          expect(editResult,
-              anyOf(isTrue, isFalse)); // May fail or be handled gracefully
-        });
+            // Assert
+            expect(
+              editResult,
+              anyOf(isTrue, isFalse),
+            ); // May fail or be handled gracefully
+          },
+        );
 
         test('should handle member removal during active session', () async {
           // Arrange
@@ -2817,8 +2960,9 @@ void main() {
 
           // Assert
           // Session should transfer smoothly
-          final isUser2Editing =
-              service.realtime.isInRealtimeEditingMode(recipe.id);
+          final isUser2Editing = service.realtime.isInRealtimeEditingMode(
+            recipe.id,
+          );
           expect(isUser2Editing, anyOf(isTrue, isFalse));
         });
 
@@ -2856,7 +3000,8 @@ void main() {
       setUp(() {
         mockRealtimeSyncService = mocks.MockRealtimeSyncService();
         TestServiceLocator.registerMock<RealtimeSyncService>(
-            mockRealtimeSyncService);
+          mockRealtimeSyncService,
+        );
       });
       group('Performance Tests (100+ Recipes)', () {
         test('should handle loading 100+ recipes efficiently', () async {
@@ -2872,13 +3017,14 @@ void main() {
               mealType: i % 3 == 0
                   ? 'dinner'
                   : i % 3 == 1
-                      ? 'lunch'
-                      : 'breakfast',
+                  ? 'lunch'
+                  : 'breakfast',
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => largeRecipeSet);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => largeRecipeSet);
 
           // Act
           final stopwatch = Stopwatch()..start();
@@ -2888,11 +3034,15 @@ void main() {
           // Assert
           // The cache module may optimize the number of recipes loaded
           expect(
-              service.recipes.length, isNonNegative); // Cache may limit count
+            service.recipes.length,
+            isNonNegative,
+          ); // Cache may limit count
           expect(largeRecipeSet.length, equals(150)); // We generated 150
           // Initialization should complete in reasonable time
           expect(
-              stopwatch.elapsedMilliseconds, lessThan(5000)); // 5 seconds max
+            stopwatch.elapsedMilliseconds,
+            lessThan(5000),
+          ); // 5 seconds max
         });
 
         test('should handle concurrent operations on large dataset', () async {
@@ -2909,96 +3059,114 @@ void main() {
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => recipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => recipes);
 
           await service.initialize();
 
           // Act - Simulate concurrent operations
           final operations = <Future>[];
           for (int i = 0; i < 10; i++) {
-            operations.add(service.createPersonalRecipe(
-              title: 'New Recipe $i',
-              ingredients: ['ingredient'],
-              instructions: ['step'],
-              mealType: 'lunch',
-            ));
+            operations.add(
+              service.createPersonalRecipe(
+                title: 'New Recipe $i',
+                ingredients: ['ingredient'],
+                instructions: ['step'],
+                mealType: 'lunch',
+              ),
+            );
           }
 
           final results = await Future.wait(operations);
 
           // Assert
           expect(results.length, equals(10));
-          expect(results.where((r) => r != null).length,
-              greaterThanOrEqualTo(0)); // More flexible
+          expect(
+            results.where((r) => r != null).length,
+            greaterThanOrEqualTo(0),
+          ); // More flexible
         });
 
-        test('should efficiently search through large recipe collection',
-            () async {
-          // Arrange
-          final recipes = List.generate(
-            200,
-            (i) => Recipe.personal(
-              title: i < 100 ? 'Swedish Recipe $i' : 'Italian Recipe $i',
-              description: 'Test recipe for search',
-              createdBy: 'test-user',
-              ingredients: i < 100 ? ['köttbullar'] : ['pasta'],
-              instructions: ['cook'],
-              mealType: 'dinner',
-            ),
-          );
+        test(
+          'should efficiently search through large recipe collection',
+          () async {
+            // Arrange
+            final recipes = List.generate(
+              200,
+              (i) => Recipe.personal(
+                title: i < 100 ? 'Swedish Recipe $i' : 'Italian Recipe $i',
+                description: 'Test recipe for search',
+                createdBy: 'test-user',
+                ingredients: i < 100 ? ['köttbullar'] : ['pasta'],
+                instructions: ['cook'],
+                mealType: 'dinner',
+              ),
+            );
 
-          when(() => mockRecipeRepository.searchRecipes(any()))
-              .thenAnswer((invocation) async {
-            final query = invocation.positionalArguments[0] as String;
-            return recipes
-                .where(
-                    (r) => r.title.toLowerCase().contains(query.toLowerCase()))
-                .toList();
-          });
+            when(() => mockRecipeRepository.searchRecipes(any())).thenAnswer((
+              invocation,
+            ) async {
+              final query = invocation.positionalArguments[0] as String;
+              return recipes
+                  .where(
+                    (r) => r.title.toLowerCase().contains(query.toLowerCase()),
+                  )
+                  .toList();
+            });
 
-          // Act
-          final stopwatch = Stopwatch()..start();
-          final swedishRecipes = await testableService.searchRecipes('Swedish');
-          stopwatch.stop();
+            // Act
+            final stopwatch = Stopwatch()..start();
+            final swedishRecipes = await testableService.searchRecipes(
+              'Swedish',
+            );
+            stopwatch.stop();
 
-          // Assert
-          expect(swedishRecipes.length, equals(100));
-          expect(stopwatch.elapsedMilliseconds,
-              lessThan(1000)); // Search should be fast
-        });
+            // Assert
+            expect(swedishRecipes.length, equals(100));
+            expect(
+              stopwatch.elapsedMilliseconds,
+              lessThan(1000),
+            ); // Search should be fast
+          },
+        );
 
-        test('should handle memory optimization for large collections',
-            () async {
-          // Arrange
-          final hugeRecipeSet = List.generate(
-            500,
-            (i) => Recipe.personal(
-              title: 'Memory Test Recipe $i',
-              description: 'Very long description ' * 50, // Large description
-              createdBy: 'test-user',
-              ingredients: List.generate(20, (j) => 'ingredient ${i}_$j'),
-              instructions: List.generate(
-                  30, (j) => 'step ${i}_$j detailed instructions'),
-              mealType: 'dinner',
-            ),
-          );
+        test(
+          'should handle memory optimization for large collections',
+          () async {
+            // Arrange
+            final hugeRecipeSet = List.generate(
+              500,
+              (i) => Recipe.personal(
+                title: 'Memory Test Recipe $i',
+                description: 'Very long description ' * 50, // Large description
+                createdBy: 'test-user',
+                ingredients: List.generate(20, (j) => 'ingredient ${i}_$j'),
+                instructions: List.generate(
+                  30,
+                  (j) => 'step ${i}_$j detailed instructions',
+                ),
+                mealType: 'dinner',
+              ),
+            );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => hugeRecipeSet);
+            when(
+              () => mockRecipeRepository.readAll(),
+            ).thenAnswer((_) async => hugeRecipeSet);
 
-          // Act
-          await service.initialize();
-          // Clear Firebase sync errors (expected in unit tests)
-          service.clearError();
+            // Act
+            await service.initialize();
+            // Clear Firebase sync errors (expected in unit tests)
+            service.clearError();
 
-          // Assert
-          // Cache module should optimize memory usage
-          expect(service.recipes.length, lessThanOrEqualTo(500));
-          // Service should remain responsive
-          expect(service.isInitialized, isTrue);
-          expect(service.hasError, isFalse);
-        });
+            // Assert
+            // Cache module should optimize memory usage
+            expect(service.recipes.length, lessThanOrEqualTo(500));
+            // Service should remain responsive
+            expect(service.isInitialized, isTrue);
+            expect(service.hasError, isFalse);
+          },
+        );
 
         test('should handle pagination efficiently', () async {
           // Arrange
@@ -3014,8 +3182,9 @@ void main() {
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => allRecipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => allRecipes);
 
           await service.initialize();
 
@@ -3077,8 +3246,9 @@ void main() {
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => recipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => recipes);
 
           await service.initialize();
 
@@ -3088,10 +3258,14 @@ void main() {
 
           // Assert
           // Only the specific recipe should be removed from cache
-          expect(service.recipes.any((r) => r.id == recipes[5].id),
-              anyOf(isTrue, isFalse)); // More flexible
           expect(
-              service.recipes.length, isNonNegative); // Cache may limit count
+            service.recipes.any((r) => r.id == recipes[5].id),
+            anyOf(isTrue, isFalse),
+          ); // More flexible
+          expect(
+            service.recipes.length,
+            isNonNegative,
+          ); // Cache may limit count
         });
 
         test('should maintain cache consistency across modules', () async {
@@ -3105,8 +3279,9 @@ void main() {
             mealType: 'dinner',
           );
 
-          when(() => mockRecipeRepository.create(any()))
-              .thenAnswer((_) async => recipe);
+          when(
+            () => mockRecipeRepository.create(any()),
+          ).thenAnswer((_) async => recipe);
 
           // Act
           // Create through personal module
@@ -3121,8 +3296,10 @@ void main() {
           // Cache should be consistent across modules
           expect(recipeId, isNotNull);
           // The recipe should be accessible from any module
-          expect(service.recipes.any((r) => r.id == recipeId),
-              anyOf(isTrue, isFalse));
+          expect(
+            service.recipes.any((r) => r.id == recipeId),
+            anyOf(isTrue, isFalse),
+          );
         });
 
         test('should handle cache size limits', () async {
@@ -3139,8 +3316,9 @@ void main() {
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => recipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => recipes);
 
           // Act
           await service.initialize();
@@ -3168,8 +3346,9 @@ void main() {
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => initialRecipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => initialRecipes);
 
           await service.initialize();
 
@@ -3204,12 +3383,14 @@ void main() {
 
           // Act
           final operations = <Future>[];
-          operations.add(service.createPersonalRecipe(
-            title: recipe.title,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            mealType: recipe.mealType,
-          ));
+          operations.add(
+            service.createPersonalRecipe(
+              title: recipe.title,
+              ingredients: recipe.ingredients,
+              instructions: recipe.instructions,
+              mealType: recipe.mealType,
+            ),
+          );
           operations.add(service.updateRecipe(recipe));
           operations.add(service.deleteRecipe('some-id'));
 
@@ -3239,8 +3420,10 @@ void main() {
           await Future.delayed(Duration(milliseconds: 100));
 
           // Assert
-          expect(offlineRecipeId,
-              anyOf(isNull, isNotNull)); // More flexible for offline scenarios
+          expect(
+            offlineRecipeId,
+            anyOf(isNull, isNotNull),
+          ); // More flexible for offline scenarios
           expect(mockRealtimeSyncService.isConnected, isTrue);
         });
 
@@ -3336,42 +3519,51 @@ void main() {
       });
 
       group('Error Recovery Pattern Tests', () {
-        test('should implement retry mechanism for failed operations',
-            () async {
-          // Arrange - repository errors are handled in background sync,
-          // not during the optimistic createPersonalRecipe call
-          when(() => mockRecipeRepository.create(any())).thenAnswer((_) async {
-            throw Exception('Transient error');
-          });
+        test(
+          'should implement retry mechanism for failed operations',
+          () async {
+            // Arrange - repository errors are handled in background sync,
+            // not during the optimistic createPersonalRecipe call
+            when(() => mockRecipeRepository.create(any())).thenAnswer((
+              _,
+            ) async {
+              throw Exception('Transient error');
+            });
 
-          // Act - optimistic update always returns a recipe ID
-          final result = await service.createPersonalRecipe(
-            title: 'Retry Test',
-            ingredients: ['test'],
-            instructions: ['test'],
-            mealType: 'dinner',
-          );
+            // Act - optimistic update always returns a recipe ID
+            final result = await service.createPersonalRecipe(
+              title: 'Retry Test',
+              ingredients: ['test'],
+              instructions: ['test'],
+              mealType: 'dinner',
+            );
 
-          // Assert - recipe created optimistically despite repository error
-          expect(result, isNotNull);
-        });
+            // Assert - recipe created optimistically despite repository error
+            expect(result, isNotNull);
+          },
+        );
 
-        test('should provide graceful degradation on service failure',
-            () async {
-          // Arrange
-          when(() => mockRecipeRepository.readAll())
-              .thenThrow(Exception('Service unavailable'));
+        test(
+          'should provide graceful degradation on service failure',
+          () async {
+            // Arrange
+            when(
+              () => mockRecipeRepository.readAll(),
+            ).thenThrow(Exception('Service unavailable'));
 
-          // Act
-          await service.initialize();
+            // Act
+            await service.initialize();
 
-          // Assert
-          // Service should degrade gracefully
-          expect(service.isInitialized, isTrue);
-          expect(service.hasError, anyOf(isTrue, isFalse)); // More flexible
-          expect(
-              service.recipes.length, isNonNegative); // Cache may limit count
-        });
+            // Assert
+            // Service should degrade gracefully
+            expect(service.isInitialized, isTrue);
+            expect(service.hasError, anyOf(isTrue, isFalse)); // More flexible
+            expect(
+              service.recipes.length,
+              isNonNegative,
+            ); // Cache may limit count
+          },
+        );
 
         test('should implement circuit breaker pattern', () async {
           // Arrange
@@ -3399,23 +3591,26 @@ void main() {
         test('should recover error state properly', () async {
           // Arrange
           // First cause an error
-          when(() => mockRecipeRepository.readAll())
-              .thenThrow(Exception('Initial error'));
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenThrow(Exception('Initial error'));
 
           await service.initialize();
           // Error state is set
 
           // Act - Fix the error and recover
-          when(() => mockRecipeRepository.readAll()).thenAnswer((_) async => [
-                Recipe.personal(
-                  title: 'Recovered Recipe',
-                  description: 'After recovery',
-                  createdBy: 'test-user',
-                  ingredients: ['test'],
-                  instructions: ['test'],
-                  mealType: 'dinner',
-                ),
-              ]);
+          when(() => mockRecipeRepository.readAll()).thenAnswer(
+            (_) async => [
+              Recipe.personal(
+                title: 'Recovered Recipe',
+                description: 'After recovery',
+                createdBy: 'test-user',
+                ingredients: ['test'],
+                instructions: ['test'],
+                mealType: 'dinner',
+              ),
+            ],
+          );
 
           service.clearError();
           await service.initialize(); // Re-initialize to refresh
@@ -3440,15 +3635,17 @@ void main() {
             ),
           );
 
-          when(() => mockRecipeRepository.readAll())
-              .thenAnswer((_) async => initialRecipes);
+          when(
+            () => mockRecipeRepository.readAll(),
+          ).thenAnswer((_) async => initialRecipes);
 
           await service.initialize();
           // Initial state captured
 
           // Act - Cause an error during update
-          when(() => mockRecipeRepository.update(any()))
-              .thenThrow(Exception('Update failed'));
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenThrow(Exception('Update failed'));
 
           try {
             await service.updateRecipe(initialRecipes[0]);
@@ -3459,10 +3656,14 @@ void main() {
           // Assert
           // Data should maintain integrity despite error
           expect(
-              service.recipes.length, isNonNegative); // Cache may limit count
+            service.recipes.length,
+            isNonNegative,
+          ); // Cache may limit count
           // After error, recipe presence may vary based on implementation
-          expect(service.recipes.any((r) => r.id == initialRecipes[0].id),
-              anyOf(isTrue, isFalse));
+          expect(
+            service.recipes.any((r) => r.id == initialRecipes[0].id),
+            anyOf(isTrue, isFalse),
+          );
         });
       });
     });

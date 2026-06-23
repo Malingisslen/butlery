@@ -126,7 +126,9 @@ void main() {
       test('should allow owner to edit personal recipe', () async {
         // Act
         final canEdit = await permissionService.canEditRecipe(
-            'personal-recipe-1', 'owner-123');
+          'personal-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(canEdit, isTrue);
@@ -135,7 +137,9 @@ void main() {
       test('should deny non-owner to edit personal recipe', () async {
         // Act
         final canEdit = await permissionService.canEditRecipe(
-            'personal-recipe-1', 'other-user');
+          'personal-recipe-1',
+          'other-user',
+        );
 
         // Assert
         expect(canEdit, isFalse);
@@ -144,9 +148,13 @@ void main() {
       test('should allow admin to edit collaborative recipe', () async {
         // Act
         final ownerCanEdit = await permissionService.canEditRecipe(
-            'collab-recipe-1', 'owner-123');
+          'collab-recipe-1',
+          'owner-123',
+        );
         final adminCanEdit = await permissionService.canEditRecipe(
-            'collab-recipe-1', 'admin-111');
+          'collab-recipe-1',
+          'admin-111',
+        );
 
         // Assert
         expect(ownerCanEdit, isTrue);
@@ -156,7 +164,9 @@ void main() {
       test('should allow editor to edit collaborative recipe', () async {
         // Act
         final canEdit = await permissionService.canEditRecipe(
-            'collab-recipe-1', 'editor-456');
+          'collab-recipe-1',
+          'editor-456',
+        );
 
         // Assert
         expect(canEdit, isTrue);
@@ -165,7 +175,9 @@ void main() {
       test('should deny viewer to edit collaborative recipe', () async {
         // Act
         final canEdit = await permissionService.canEditRecipe(
-            'collab-recipe-1', 'viewer-789');
+          'collab-recipe-1',
+          'viewer-789',
+        );
 
         // Assert
         expect(canEdit, isFalse);
@@ -174,7 +186,9 @@ void main() {
       test('should deny non-member to edit collaborative recipe', () async {
         // Act
         final canEdit = await permissionService.canEditRecipe(
-            'collab-recipe-1', 'non-member-999');
+          'collab-recipe-1',
+          'non-member-999',
+        );
 
         // Assert
         expect(canEdit, isFalse);
@@ -182,8 +196,10 @@ void main() {
 
       test('should return false for non-existent recipe', () async {
         // Act
-        final canEdit =
-            await permissionService.canEditRecipe('non-existent', 'owner-123');
+        final canEdit = await permissionService.canEditRecipe(
+          'non-existent',
+          'owner-123',
+        );
 
         // Assert
         expect(canEdit, isFalse);
@@ -194,7 +210,9 @@ void main() {
       test('should allow owner to manage members', () async {
         // Act
         final canManage = await permissionService.canManageRecipeMembers(
-            'collab-recipe-1', 'owner-123');
+          'collab-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(canManage, isTrue);
@@ -203,7 +221,9 @@ void main() {
       test('should allow admin to manage members', () async {
         // Act
         final canManage = await permissionService.canManageRecipeMembers(
-            'collab-recipe-1', 'admin-111');
+          'collab-recipe-1',
+          'admin-111',
+        );
 
         // Assert
         expect(canManage, isTrue);
@@ -212,7 +232,9 @@ void main() {
       test('should deny editor to manage members', () async {
         // Act
         final canManage = await permissionService.canManageRecipeMembers(
-            'collab-recipe-1', 'editor-456');
+          'collab-recipe-1',
+          'editor-456',
+        );
 
         // Assert
         expect(canManage, isFalse);
@@ -221,7 +243,9 @@ void main() {
       test('should deny viewer to manage members', () async {
         // Act
         final canManage = await permissionService.canManageRecipeMembers(
-            'collab-recipe-1', 'viewer-789');
+          'collab-recipe-1',
+          'viewer-789',
+        );
 
         // Assert
         expect(canManage, isFalse);
@@ -230,7 +254,9 @@ void main() {
       test('should return false for personal recipe', () async {
         // Act
         final canManage = await permissionService.canManageRecipeMembers(
-            'personal-recipe-1', 'owner-123');
+          'personal-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(canManage, isFalse);
@@ -241,7 +267,9 @@ void main() {
       test('should allow owner to view personal recipe', () async {
         // Act
         final canView = await permissionService.canViewRecipe(
-            'personal-recipe-1', 'owner-123');
+          'personal-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(canView, isTrue);
@@ -250,7 +278,9 @@ void main() {
       test('should deny non-owner to view personal recipe', () async {
         // Act
         final canView = await permissionService.canViewRecipe(
-            'personal-recipe-1', 'other-user');
+          'personal-recipe-1',
+          'other-user',
+        );
 
         // Assert
         expect(canView, isFalse);
@@ -259,13 +289,21 @@ void main() {
       test('should allow all members to view collaborative recipe', () async {
         // Act
         final ownerCanView = await permissionService.canViewRecipe(
-            'collab-recipe-1', 'owner-123');
+          'collab-recipe-1',
+          'owner-123',
+        );
         final adminCanView = await permissionService.canViewRecipe(
-            'collab-recipe-1', 'admin-111');
+          'collab-recipe-1',
+          'admin-111',
+        );
         final editorCanView = await permissionService.canViewRecipe(
-            'collab-recipe-1', 'editor-456');
+          'collab-recipe-1',
+          'editor-456',
+        );
         final viewerCanView = await permissionService.canViewRecipe(
-            'collab-recipe-1', 'viewer-789');
+          'collab-recipe-1',
+          'viewer-789',
+        );
 
         // Assert
         expect(ownerCanView, isTrue);
@@ -274,20 +312,26 @@ void main() {
         expect(viewerCanView, isTrue);
       });
 
-      test('should deny non-member to view private collaborative recipe',
-          () async {
-        // Act
-        final canView = await permissionService.canViewRecipe(
-            'collab-recipe-1', 'non-member-999');
+      test(
+        'should deny non-member to view private collaborative recipe',
+        () async {
+          // Act
+          final canView = await permissionService.canViewRecipe(
+            'collab-recipe-1',
+            'non-member-999',
+          );
 
-        // Assert
-        expect(canView, isFalse);
-      });
+          // Assert
+          expect(canView, isFalse);
+        },
+      );
 
       test('should allow guest to view public collaborative recipe', () async {
         // Act
         final canView = await permissionService.canViewRecipe(
-            'public-collab-1', 'guest-user');
+          'public-collab-1',
+          'guest-user',
+        );
 
         // Assert
         expect(canView, isTrue);
@@ -298,7 +342,9 @@ void main() {
       test('should return correct permission level for owner', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'collab-recipe-1', 'owner-123');
+          'collab-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.admin));
@@ -307,7 +353,9 @@ void main() {
       test('should return correct permission level for admin', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'collab-recipe-1', 'admin-111');
+          'collab-recipe-1',
+          'admin-111',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.admin));
@@ -316,7 +364,9 @@ void main() {
       test('should return correct permission level for editor', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'collab-recipe-1', 'editor-456');
+          'collab-recipe-1',
+          'editor-456',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.editor));
@@ -325,7 +375,9 @@ void main() {
       test('should return correct permission level for viewer', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'collab-recipe-1', 'viewer-789');
+          'collab-recipe-1',
+          'viewer-789',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.viewer));
@@ -334,7 +386,9 @@ void main() {
       test('should return null for non-member', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'collab-recipe-1', 'non-member-999');
+          'collab-recipe-1',
+          'non-member-999',
+        );
 
         // Assert
         expect(permission, isNull);
@@ -343,7 +397,9 @@ void main() {
       test('should return admin for personal recipe owner', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'personal-recipe-1', 'owner-123');
+          'personal-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(permission, equals(ResourcePermission.admin));
@@ -352,7 +408,9 @@ void main() {
       test('should return null for non-owner of personal recipe', () async {
         // Act
         final permission = await permissionService.getUserPermissionForRecipe(
-            'personal-recipe-1', 'other-user');
+          'personal-recipe-1',
+          'other-user',
+        );
 
         // Assert
         expect(permission, isNull);
@@ -363,7 +421,9 @@ void main() {
       test('should confirm owner has admin permission', () async {
         // Act
         final hasAdmin = await permissionService.hasAdminPermission(
-            'collab-recipe-1', 'owner-123');
+          'collab-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(hasAdmin, isTrue);
@@ -372,7 +432,9 @@ void main() {
       test('should confirm admin user has admin permission', () async {
         // Act
         final hasAdmin = await permissionService.hasAdminPermission(
-            'collab-recipe-1', 'admin-111');
+          'collab-recipe-1',
+          'admin-111',
+        );
 
         // Assert
         expect(hasAdmin, isTrue);
@@ -381,7 +443,9 @@ void main() {
       test('should deny editor has admin permission', () async {
         // Act
         final hasAdmin = await permissionService.hasAdminPermission(
-            'collab-recipe-1', 'editor-456');
+          'collab-recipe-1',
+          'editor-456',
+        );
 
         // Assert
         expect(hasAdmin, isFalse);
@@ -390,7 +454,9 @@ void main() {
       test('should deny viewer has admin permission', () async {
         // Act
         final hasAdmin = await permissionService.hasAdminPermission(
-            'collab-recipe-1', 'viewer-789');
+          'collab-recipe-1',
+          'viewer-789',
+        );
 
         // Assert
         expect(hasAdmin, isFalse);
@@ -401,7 +467,9 @@ void main() {
       test('should allow owner to share recipe', () async {
         // Act
         final canShare = await permissionService.canShareRecipe(
-            'collab-recipe-1', 'owner-123');
+          'collab-recipe-1',
+          'owner-123',
+        );
 
         // Assert
         expect(canShare, isTrue);
@@ -410,26 +478,34 @@ void main() {
       test('should allow admin to share when member invites allowed', () async {
         // Act
         final canShare = await permissionService.canShareRecipe(
-            'collab-recipe-1', 'admin-111');
+          'collab-recipe-1',
+          'admin-111',
+        );
 
         // Assert
         expect(canShare, isTrue);
       });
 
-      test('should allow editor to share when member invites allowed',
-          () async {
-        // Act
-        final canShare = await permissionService.canShareRecipe(
-            'collab-recipe-1', 'editor-456');
+      test(
+        'should allow editor to share when member invites allowed',
+        () async {
+          // Act
+          final canShare = await permissionService.canShareRecipe(
+            'collab-recipe-1',
+            'editor-456',
+          );
 
-        // Assert
-        expect(canShare, isTrue);
-      });
+          // Assert
+          expect(canShare, isTrue);
+        },
+      );
 
       test('should deny viewer to share recipe', () async {
         // Act
         final canShare = await permissionService.canShareRecipe(
-            'collab-recipe-1', 'viewer-789');
+          'collab-recipe-1',
+          'viewer-789',
+        );
 
         // Assert
         expect(canShare, isFalse);
@@ -438,28 +514,36 @@ void main() {
       test('should deny sharing when member invites disabled', () async {
         // Act
         final canShare = await permissionService.canShareRecipe(
-            'public-collab-1', 'editor-456');
+          'public-collab-1',
+          'editor-456',
+        );
 
         // Assert
         expect(canShare, isFalse);
       });
 
-      test('should always allow owner to share even when invites disabled',
-          () async {
-        // Act
-        final canShare = await permissionService.canShareRecipe(
-            'public-collab-1', 'owner-123');
+      test(
+        'should always allow owner to share even when invites disabled',
+        () async {
+          // Act
+          final canShare = await permissionService.canShareRecipe(
+            'public-collab-1',
+            'owner-123',
+          );
 
-        // Assert
-        expect(canShare, isTrue);
-      });
+          // Assert
+          expect(canShare, isTrue);
+        },
+      );
     });
 
     group('Users With Permission Queries', () {
       test('should return all users with admin permission', () async {
         // Act
         final admins = await permissionService.getUsersWithPermission(
-            'collab-recipe-1', ResourcePermission.admin);
+          'collab-recipe-1',
+          ResourcePermission.admin,
+        );
 
         // Assert
         expect(admins, isNotEmpty);
@@ -471,7 +555,9 @@ void main() {
       test('should return all users with editor permission', () async {
         // Act
         final editors = await permissionService.getUsersWithPermission(
-            'collab-recipe-1', ResourcePermission.editor);
+          'collab-recipe-1',
+          ResourcePermission.editor,
+        );
 
         // Assert
         expect(editors, isNotEmpty);
@@ -482,7 +568,9 @@ void main() {
       test('should return all users with viewer permission', () async {
         // Act
         final viewers = await permissionService.getUsersWithPermission(
-            'collab-recipe-1', ResourcePermission.viewer);
+          'collab-recipe-1',
+          ResourcePermission.viewer,
+        );
 
         // Assert
         expect(viewers, isNotEmpty);
@@ -493,7 +581,9 @@ void main() {
       test('should return empty list for personal recipe', () async {
         // Act
         final users = await permissionService.getUsersWithPermission(
-            'personal-recipe-1', ResourcePermission.admin);
+          'personal-recipe-1',
+          ResourcePermission.admin,
+        );
 
         // Assert
         expect(users, isEmpty);
@@ -502,7 +592,9 @@ void main() {
       test('should return empty list for non-existent recipe', () async {
         // Act
         final users = await permissionService.getUsersWithPermission(
-            'non-existent', ResourcePermission.admin);
+          'non-existent',
+          ResourcePermission.admin,
+        );
 
         // Assert
         expect(users, isEmpty);
@@ -512,10 +604,12 @@ void main() {
     group('Guest and Invite Settings', () {
       test('should check guest viewing correctly', () async {
         // Act
-        final allowsGuest1 =
-            await permissionService.allowsGuestViewing('collab-recipe-1');
-        final allowsGuest2 =
-            await permissionService.allowsGuestViewing('public-collab-1');
+        final allowsGuest1 = await permissionService.allowsGuestViewing(
+          'collab-recipe-1',
+        );
+        final allowsGuest2 = await permissionService.allowsGuestViewing(
+          'public-collab-1',
+        );
 
         // Assert
         expect(allowsGuest1, isFalse);
@@ -524,10 +618,12 @@ void main() {
 
       test('should check member invites correctly', () async {
         // Act
-        final allowsInvites1 =
-            await permissionService.allowsMemberInvites('collab-recipe-1');
-        final allowsInvites2 =
-            await permissionService.allowsMemberInvites('public-collab-1');
+        final allowsInvites1 = await permissionService.allowsMemberInvites(
+          'collab-recipe-1',
+        );
+        final allowsInvites2 = await permissionService.allowsMemberInvites(
+          'public-collab-1',
+        );
 
         // Assert
         expect(allowsInvites1, isTrue);
@@ -536,8 +632,9 @@ void main() {
 
       test('should return false for personal recipe guest viewing', () async {
         // Act
-        final allowsGuest =
-            await permissionService.allowsGuestViewing('personal-recipe-1');
+        final allowsGuest = await permissionService.allowsGuestViewing(
+          'personal-recipe-1',
+        );
 
         // Assert
         expect(allowsGuest, isFalse);
@@ -545,8 +642,9 @@ void main() {
 
       test('should return false for personal recipe member invites', () async {
         // Act
-        final allowsInvites =
-            await permissionService.allowsMemberInvites('personal-recipe-1');
+        final allowsInvites = await permissionService.allowsMemberInvites(
+          'personal-recipe-1',
+        );
 
         // Assert
         expect(allowsInvites, isFalse);
@@ -554,10 +652,12 @@ void main() {
 
       test('should return false for non-existent recipe', () async {
         // Act
-        final allowsGuest =
-            await permissionService.allowsGuestViewing('non-existent');
-        final allowsInvites =
-            await permissionService.allowsMemberInvites('non-existent');
+        final allowsGuest = await permissionService.allowsGuestViewing(
+          'non-existent',
+        );
+        final allowsInvites = await permissionService.allowsMemberInvites(
+          'non-existent',
+        );
 
         // Assert
         expect(allowsGuest, isFalse);
@@ -568,18 +668,30 @@ void main() {
     group('Error Handling', () {
       test('should handle recipe not found gracefully', () async {
         // Act
-        final canEdit =
-            await permissionService.canEditRecipe('non-existent', 'user-123');
+        final canEdit = await permissionService.canEditRecipe(
+          'non-existent',
+          'user-123',
+        );
         final canManage = await permissionService.canManageRecipeMembers(
-            'non-existent', 'user-123');
-        final canView =
-            await permissionService.canViewRecipe('non-existent', 'user-123');
+          'non-existent',
+          'user-123',
+        );
+        final canView = await permissionService.canViewRecipe(
+          'non-existent',
+          'user-123',
+        );
         final permission = await permissionService.getUserPermissionForRecipe(
-            'non-existent', 'user-123');
+          'non-existent',
+          'user-123',
+        );
         final hasAdmin = await permissionService.hasAdminPermission(
-            'non-existent', 'user-123');
-        final canShare =
-            await permissionService.canShareRecipe('non-existent', 'user-123');
+          'non-existent',
+          'user-123',
+        );
+        final canShare = await permissionService.canShareRecipe(
+          'non-existent',
+          'user-123',
+        );
 
         // Assert
         expect(canEdit, isFalse);
@@ -597,23 +709,38 @@ void main() {
         );
 
         // Act
-        final canEdit =
-            await errorService.canEditRecipe('recipe-1', 'user-123');
-        final canManage =
-            await errorService.canManageRecipeMembers('recipe-1', 'user-123');
-        final canView =
-            await errorService.canViewRecipe('recipe-1', 'user-123');
+        final canEdit = await errorService.canEditRecipe(
+          'recipe-1',
+          'user-123',
+        );
+        final canManage = await errorService.canManageRecipeMembers(
+          'recipe-1',
+          'user-123',
+        );
+        final canView = await errorService.canViewRecipe(
+          'recipe-1',
+          'user-123',
+        );
         final permission = await errorService.getUserPermissionForRecipe(
-            'recipe-1', 'user-123');
-        final hasAdmin =
-            await errorService.hasAdminPermission('recipe-1', 'user-123');
-        final canShare =
-            await errorService.canShareRecipe('recipe-1', 'user-123');
+          'recipe-1',
+          'user-123',
+        );
+        final hasAdmin = await errorService.hasAdminPermission(
+          'recipe-1',
+          'user-123',
+        );
+        final canShare = await errorService.canShareRecipe(
+          'recipe-1',
+          'user-123',
+        );
         final users = await errorService.getUsersWithPermission(
-            'recipe-1', ResourcePermission.admin);
+          'recipe-1',
+          ResourcePermission.admin,
+        );
         final allowsGuest = await errorService.allowsGuestViewing('recipe-1');
-        final allowsInvites =
-            await errorService.allowsMemberInvites('recipe-1');
+        final allowsInvites = await errorService.allowsMemberInvites(
+          'recipe-1',
+        );
 
         // Assert - All should return safe defaults
         expect(canEdit, isFalse);

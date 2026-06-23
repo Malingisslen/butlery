@@ -20,7 +20,7 @@ class RealtimeSessionManager {
     required String recipeId,
     required String currentUserId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required void Function(DocumentSnapshot) onRealtimeChange,
     required void Function(String, dynamic) onRealtimeError,
     required Future<void> Function(String, bool) registerActiveEditor,
@@ -62,7 +62,7 @@ class RealtimeSessionManager {
   static Future<bool> stopRealtimeEditing({
     required String recipeId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
     required Future<void> Function(String, bool) registerActiveEditor,
@@ -93,25 +93,26 @@ class RealtimeSessionManager {
   /// Stop all active real-time editing sessions
   static Future<void> stopAllRealtimeSessions({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
     required Future<void> Function(String, bool) registerActiveEditor,
   }) async {
     try {
       AppLogger.info(
-          '🛑 Stopping ${activeEditingSessions.length} active real-time sessions');
+        '🛑 Stopping ${activeEditingSessions.length} active real-time sessions',
+      );
 
       // Stop all sessions
-      final futures = activeEditingSessions.keys
-          .toList()
-          .map((recipeId) => stopRealtimeEditing(
-                recipeId: recipeId,
-                activeEditingSessions: activeEditingSessions,
-                pendingRealtimeEdits: pendingRealtimeEdits,
-                conflictResolutionTimers: conflictResolutionTimers,
-                registerActiveEditor: registerActiveEditor,
-              ));
+      final futures = activeEditingSessions.keys.toList().map(
+        (recipeId) => stopRealtimeEditing(
+          recipeId: recipeId,
+          activeEditingSessions: activeEditingSessions,
+          pendingRealtimeEdits: pendingRealtimeEdits,
+          conflictResolutionTimers: conflictResolutionTimers,
+          registerActiveEditor: registerActiveEditor,
+        ),
+      );
 
       await Future.wait(futures);
       AppLogger.success('✅ All real-time sessions stopped');
@@ -124,7 +125,7 @@ class RealtimeSessionManager {
   static bool isInRealtimeEditingSession({
     required String recipeId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
   }) {
     return activeEditingSessions.containsKey(recipeId);
   }
@@ -155,7 +156,7 @@ class RealtimeSessionManager {
     required String? currentUserId,
     required String recipeId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
   }) {
     if (currentUserId == null) {
       AppLogger.warning('Cannot start real-time editing: No current user');
@@ -175,7 +176,7 @@ class RealtimeSessionManager {
     required String recipeId,
     required String? currentUserId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required void Function(String) setError,
   }) {
     if (currentUserId == null) {
@@ -224,7 +225,7 @@ class RealtimeSessionManager {
   /// Cleanup orphaned sessions
   static Future<void> cleanupOrphanedSessions({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
     required Future<void> Function(String, bool) registerActiveEditor,
@@ -260,14 +261,15 @@ class RealtimeSessionManager {
 
     if (orphanedSessions.isNotEmpty) {
       AppLogger.info(
-          '🧹 Cleaned up ${orphanedSessions.length} orphaned sessions');
+        '🧹 Cleaned up ${orphanedSessions.length} orphaned sessions',
+      );
     }
   }
 
   /// Get detailed session information
   static Map<String, dynamic> getSessionDiagnostics({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
   }) {
@@ -285,8 +287,10 @@ class RealtimeSessionManager {
 
     return {
       'active_sessions_count': activeEditingSessions.length,
-      'total_pending_edits': pendingRealtimeEdits.values
-          .fold<int>(0, (total, edits) => total + edits.length),
+      'total_pending_edits': pendingRealtimeEdits.values.fold<int>(
+        0,
+        (total, edits) => total + edits.length,
+      ),
       'active_conflict_timers': conflictResolutionTimers.values
           .where((timer) => timer.isActive)
           .length,
@@ -297,7 +301,7 @@ class RealtimeSessionManager {
   /// Get session status summary
   static Map<String, dynamic> getSessionStatus({
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
     required Map<String, Timer> conflictResolutionTimers,
   }) {
@@ -315,7 +319,7 @@ class RealtimeSessionManager {
     required String recipeId,
     required String currentUserId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required void Function(DocumentSnapshot) onRealtimeChange,
     required void Function(String, dynamic) onRealtimeError,
     required Future<void> Function(String, bool) registerActiveEditor,
@@ -350,7 +354,8 @@ class RealtimeSessionManager {
 
       if (success) {
         AppLogger.success(
-            '✅ Successfully recovered session for recipe $recipeId');
+          '✅ Successfully recovered session for recipe $recipeId',
+        );
       } else {
         AppLogger.error('❌ Failed to recover session for recipe $recipeId');
       }
@@ -366,7 +371,7 @@ class RealtimeSessionManager {
   static bool needsSessionRecovery({
     required String recipeId,
     required Map<String, StreamSubscription<DocumentSnapshot>>
-        activeEditingSessions,
+    activeEditingSessions,
     required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
   }) {
     final hasSubscription = activeEditingSessions.containsKey(recipeId);

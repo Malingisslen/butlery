@@ -451,8 +451,10 @@ void main() {
         expect(result['recipeIngredient'], hasLength(3));
         expect(result['recipeIngredient'][0], equals('3 dl mjölk'));
         expect(result['recipeInstructions'], hasLength(2));
-        expect(result['recipeInstructions'][0],
-            equals('Vispa samman mjölk och ägg'));
+        expect(
+          result['recipeInstructions'][0],
+          equals('Vispa samman mjölk och ägg'),
+        );
         expect(result['recipeYield'], equals('4 portioner'));
         expect(result['totalTime'], equals('PT20M'));
         expect(result['image'], equals('/pannkakor.jpg'));
@@ -496,7 +498,9 @@ void main() {
         expect(result, isNotNull);
         expect(result!['recipeInstructions'], hasLength(1));
         expect(
-            result['recipeInstructions'][0], equals('Mix everything and bake'));
+          result['recipeInstructions'][0],
+          equals('Mix everything and bake'),
+        );
       });
 
       test('should extract image from content attribute', () {

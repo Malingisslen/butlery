@@ -30,8 +30,9 @@ class PantryItemCard extends StatelessWidget {
     // Captured BEFORE dismissal: onDismissed fires after the row's element
     // is deactivated, so context lookups there would hit a dead element.
     final messenger = ScaffoldMessenger.maybeOf(context);
-    final removedMessage =
-        context.l10n.pantryItemRemovedUndoMessage(item.ingredientName);
+    final removedMessage = context.l10n.pantryItemRemovedUndoMessage(
+      item.ingredientName,
+    );
     final undoLabel = context.l10n.commonUndo;
 
     // BUT-948: in selection mode tap toggles and long-press is a no-op (already
@@ -46,10 +47,15 @@ class PantryItemCard extends StatelessWidget {
         onTap: selectionMode
             ? () => selection.toggleSelection(item.id)
             : () => _showEditSheet(context, viewModel),
-        onLongPress:
-            selectionMode ? null : () => selection.enterSelectionMode(item.id),
-        child: _buildRow(context, cs,
-            selectionMode: selectionMode, selected: selected),
+        onLongPress: selectionMode
+            ? null
+            : () => selection.enterSelectionMode(item.id),
+        child: _buildRow(
+          context,
+          cs,
+          selectionMode: selectionMode,
+          selected: selected,
+        ),
       ),
     );
 
@@ -72,8 +78,9 @@ class PantryItemCard extends StatelessWidget {
       background: Container(
         color: cs.error,
         alignment: AlignmentDirectional.centerEnd,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingLg,
+        ),
         child: Icon(Icons.delete, color: cs.onError),
       ),
       child: tappable,
@@ -116,16 +123,18 @@ class PantryItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.ingredientName,
-                  style: AppTextStyles.bodyLarge
-                      .copyWith(fontWeight: FontWeight.w600),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${item.formattedQuantity} ${item.unit}',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: cs.onSurfaceVariant),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -187,20 +196,20 @@ class _ExpiryBadge extends StatelessWidget {
 
     final (bg, fg, text) = switch (status) {
       PantryExpiryStatus.expired => (
-          cs.errorContainer,
-          cs.onErrorContainer,
-          l10n.pantryExpiryExpired,
-        ),
+        cs.errorContainer,
+        cs.onErrorContainer,
+        l10n.pantryExpiryExpired,
+      ),
       PantryExpiryStatus.expiringSoon => (
-          colors.warningContainer,
-          colors.onWarningContainer,
-          _expiringSoonLabel(context, item.daysUntilExpiry ?? 0),
-        ),
+        colors.warningContainer,
+        colors.onWarningContainer,
+        _expiringSoonLabel(context, item.daysUntilExpiry ?? 0),
+      ),
       PantryExpiryStatus.fresh => (
-          colors.successContainer,
-          colors.onSuccessContainer,
-          _freshLabel(context, item.expiryDate!),
-        ),
+        colors.successContainer,
+        colors.onSuccessContainer,
+        _freshLabel(context, item.expiryDate!),
+      ),
     };
 
     return Container(

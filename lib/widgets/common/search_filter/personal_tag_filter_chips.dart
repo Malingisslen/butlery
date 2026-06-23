@@ -73,8 +73,10 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(Icons.settings,
-                      size: AppDimensions.iconSize18),
+                  icon: const Icon(
+                    Icons.settings,
+                    size: AppDimensions.iconSize18,
+                  ),
                   onPressed: onManageTags,
                   tooltip: context.l10n.filterManageTags,
                   visualDensity: VisualDensity.compact,
@@ -170,8 +172,10 @@ class _PersonalTagFilterChip extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: context.l10n.a11yFilterTag(tag.name,
-          isSelected ? context.l10n.a11yActive : context.l10n.a11yInactive),
+      label: context.l10n.a11yFilterTag(
+        tag.name,
+        isSelected ? context.l10n.a11yActive : context.l10n.a11yInactive,
+      ),
       selected: isSelected,
       button: true,
       child: FilterChip(
@@ -185,8 +189,9 @@ class _PersonalTagFilterChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onSelected(),
         backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.primary
-            .withValues(alpha: AppDimensions.opacityLightMedium),
+        selectedColor: colorScheme.primary.withValues(
+          alpha: AppDimensions.opacityLightMedium,
+        ),
         checkmarkColor: colorScheme.primary,
         side: BorderSide(
           color: isSelected ? colorScheme.primary : colorScheme.outline,
@@ -218,8 +223,10 @@ class _PersonalTagExcludeChip extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: context.l10n.a11yExcludeTag(tag.name,
-          isExcluded ? context.l10n.a11yActive : context.l10n.a11yInactive),
+      label: context.l10n.a11yExcludeTag(
+        tag.name,
+        isExcluded ? context.l10n.a11yActive : context.l10n.a11yInactive,
+      ),
       selected: isExcluded,
       button: true,
       child: FilterChip(
@@ -229,14 +236,16 @@ class _PersonalTagExcludeChip extends StatelessWidget {
             : Icon(
                 Icons.remove_circle_outline,
                 size: AppDimensions.iconSizeS,
-                color: colorScheme.error
-                    .withValues(alpha: AppDimensions.opacityMediumDark),
+                color: colorScheme.error.withValues(
+                  alpha: AppDimensions.opacityMediumDark,
+                ),
               ),
         selected: isExcluded,
         onSelected: (_) => onSelected(),
         backgroundColor: colorScheme.surface,
-        selectedColor: colorScheme.error
-            .withValues(alpha: AppDimensions.opacityLightSubtle),
+        selectedColor: colorScheme.error.withValues(
+          alpha: AppDimensions.opacityLightSubtle,
+        ),
         checkmarkColor: colorScheme.error,
         side: BorderSide(
           color: isExcluded ? colorScheme.error : colorScheme.outline,

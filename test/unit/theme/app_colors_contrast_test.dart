@@ -43,7 +43,8 @@ void main() {
       expect(
         ratio,
         greaterThanOrEqualTo(4.5),
-        reason: 'textLight on cream measured ${ratio.toStringAsFixed(2)}:1, '
+        reason:
+            'textLight on cream measured ${ratio.toStringAsFixed(2)}:1, '
             'WCAG 1.4.3 AA requires >= 4.5:1 for body text',
       );
     });

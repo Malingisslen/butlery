@@ -40,7 +40,7 @@ void main() {
           ['koket.se'],
           ['Lyckade', 'Misslyckade', 'Andel'],
           [
-            [1, 3, 25]
+            [1, 3, 25],
           ],
         ),
       },

@@ -38,14 +38,18 @@ void main() {
     setUp(() {
       analytics = _MockAnalyticsService();
 
-      when(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          )).thenAnswer((_) async {});
-      when(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      ).thenAnswer((_) async {});
+      when(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
 
       assignment = ExperimentAssignment(analytics);
     });
@@ -58,28 +62,33 @@ void main() {
       await BaseUnitTest.teardownUnit();
     });
 
-    test('first call sets user property and logs experiment_assigned',
-        () async {
-      await assignment.setExperimentAssignment(
-        experimentName: 'winback_copy',
-        variant: 'treatment',
-      );
+    test(
+      'first call sets user property and logs experiment_assigned',
+      () async {
+        await assignment.setExperimentAssignment(
+          experimentName: 'winback_copy',
+          variant: 'treatment',
+        );
 
-      verify(() => analytics.setUserProperty(
+        verify(
+          () => analytics.setUserProperty(
             name: 'exp_winback_copy',
             value: 'treatment',
-          )).called(1);
-      verify(() => analytics.logEvent(
+          ),
+        ).called(1);
+        verify(
+          () => analytics.logEvent(
             name: AnalyticsEvents.experimentAssigned,
             parameters: <String, Object>{
               'experiment_name': 'winback_copy',
               'variant': 'treatment',
             },
-          )).called(1);
-    });
+          ),
+        ).called(1);
+      },
+    );
 
-    test(
-        'second call same session same variant re-sets property '
+    test('second call same session same variant re-sets property '
         'but does NOT re-log', () async {
       await assignment.setExperimentAssignment(
         experimentName: 'winback_copy',
@@ -90,14 +99,18 @@ void main() {
         variant: 'treatment',
       );
 
-      verify(() => analytics.setUserProperty(
-            name: 'exp_winback_copy',
-            value: 'treatment',
-          )).called(2);
-      verify(() => analytics.logEvent(
-            name: AnalyticsEvents.experimentAssigned,
-            parameters: any(named: 'parameters'),
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'exp_winback_copy',
+          value: 'treatment',
+        ),
+      ).called(2);
+      verify(
+        () => analytics.logEvent(
+          name: AnalyticsEvents.experimentAssigned,
+          parameters: any(named: 'parameters'),
+        ),
+      ).called(1);
     });
 
     test('mid-session variant change re-logs', () async {
@@ -110,10 +123,12 @@ void main() {
         variant: 'treatment',
       );
 
-      verify(() => analytics.logEvent(
-            name: AnalyticsEvents.experimentAssigned,
-            parameters: any(named: 'parameters'),
-          )).called(2);
+      verify(
+        () => analytics.logEvent(
+          name: AnalyticsEvents.experimentAssigned,
+          parameters: any(named: 'parameters'),
+        ),
+      ).called(2);
     });
 
     test('empty experimentName is a no-op', () async {
@@ -122,14 +137,18 @@ void main() {
         variant: 'treatment',
       );
 
-      verifyNever(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          ));
-      verifyNever(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          ));
+      verifyNever(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      );
+      verifyNever(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      );
     });
 
     test('empty variant is a no-op', () async {
@@ -138,14 +157,18 @@ void main() {
         variant: '',
       );
 
-      verifyNever(() => analytics.setUserProperty(
-            name: any(named: 'name'),
-            value: any(named: 'value'),
-          ));
-      verifyNever(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          ));
+      verifyNever(
+        () => analytics.setUserProperty(
+          name: any(named: 'name'),
+          value: any(named: 'value'),
+        ),
+      );
+      verifyNever(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      );
     });
 
     test('special characters in experimentName are sanitized', () async {
@@ -154,17 +177,21 @@ void main() {
         variant: 'treatment',
       );
 
-      verify(() => analytics.setUserProperty(
-            name: 'exp_winback_copy_2026_q2',
-            value: 'treatment',
-          )).called(1);
-      verify(() => analytics.logEvent(
-            name: AnalyticsEvents.experimentAssigned,
-            parameters: <String, Object>{
-              'experiment_name': 'winback_copy_2026_q2',
-              'variant': 'treatment',
-            },
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'exp_winback_copy_2026_q2',
+          value: 'treatment',
+        ),
+      ).called(1);
+      verify(
+        () => analytics.logEvent(
+          name: AnalyticsEvents.experimentAssigned,
+          parameters: <String, Object>{
+            'experiment_name': 'winback_copy_2026_q2',
+            'variant': 'treatment',
+          },
+        ),
+      ).called(1);
     });
 
     test('over-long experiment name truncated to 20 char suffix', () async {
@@ -176,46 +203,56 @@ void main() {
       // 'super_long_experiment_name_that_overflows' lowercased = same
       // length 41. After cleanup (already valid chars) → 41 chars,
       // truncate to 20 → 'super_long_experimen'.
-      verify(() => analytics.setUserProperty(
-            name: 'exp_super_long_experimen',
-            value: 'a',
-          )).called(1);
+      verify(
+        () => analytics.setUserProperty(
+          name: 'exp_super_long_experimen',
+          value: 'a',
+        ),
+      ).called(1);
     });
 
-    test(
-        'pre-consent gate: when AnalyticsService no-ops, helper '
+    test('pre-consent gate: when AnalyticsService no-ops, helper '
         'completes without throwing and adds nothing to dedup set', () async {
       // Simulate consent gate by having the service throw — the helper
       // logs a warning and proceeds. dedup set should NOT contain the
       // key for the failed event so a later (post-consent) call retries.
-      when(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenThrow(StateError('consent denied'));
+      when(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenThrow(StateError('consent denied'));
 
       await assignment.setExperimentAssignment(
         experimentName: 'winback_copy',
         variant: 'treatment',
       );
 
-      expect(assignment.debugEmittedKeys, isEmpty,
-          reason: 'failed log must not flip dedup → next call retries');
+      expect(
+        assignment.debugEmittedKeys,
+        isEmpty,
+        reason: 'failed log must not flip dedup → next call retries',
+      );
 
       // Reset to success and assert next call DOES emit.
-      when(() => analytics.logEvent(
-            name: any(named: 'name'),
-            parameters: any(named: 'parameters'),
-          )).thenAnswer((_) async {});
+      when(
+        () => analytics.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
 
       await assignment.setExperimentAssignment(
         experimentName: 'winback_copy',
         variant: 'treatment',
       );
 
-      verify(() => analytics.logEvent(
-            name: AnalyticsEvents.experimentAssigned,
-            parameters: any(named: 'parameters'),
-          )).called(2); // once threw, once succeeded
+      verify(
+        () => analytics.logEvent(
+          name: AnalyticsEvents.experimentAssigned,
+          parameters: any(named: 'parameters'),
+        ),
+      ).called(2); // once threw, once succeeded
       expect(assignment.debugEmittedKeys, contains('winback_copy=treatment'));
     });
   });

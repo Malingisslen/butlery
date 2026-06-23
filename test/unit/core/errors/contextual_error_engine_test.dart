@@ -23,8 +23,11 @@ void main() {
     test('every enum value resolves to a non-empty Swedish string', () {
       for (final action in UserActionContext.values) {
         final desc = action.localizedDescription;
-        expect(desc, isNotEmpty,
-            reason: 'UserActionContext.${action.name} should localize');
+        expect(
+          desc,
+          isNotEmpty,
+          reason: 'UserActionContext.${action.name} should localize',
+        );
       }
     });
   });
@@ -78,8 +81,11 @@ void main() {
           actionContext: UserActionContext.recipeSaving,
           connectivity: c,
         );
-        expect(msg, isNotEmpty,
-            reason: 'connectivity ${c.name} should produce a message');
+        expect(
+          msg,
+          isNotEmpty,
+          reason: 'connectivity ${c.name} should produce a message',
+        );
       }
     });
 
@@ -224,30 +230,34 @@ void main() {
       expect(msg, isNotEmpty);
     });
 
-    test('maintenance-window (02:00-04:00 local) routes to maintenance copy',
-        () {
-      withClock(Clock.fixed(DateTime(2026, 5, 22, 3, 0)), () {
-        final msg = ContextualErrorEngine.generateSimpleMessage(
-          errorType: ErrorType.serviceUnavailable,
-          actionContext: UserActionContext.recipeSaving,
-        );
-        expect(msg, isNotEmpty);
-      });
-    });
+    test(
+      'maintenance-window (02:00-04:00 local) routes to maintenance copy',
+      () {
+        withClock(Clock.fixed(DateTime(2026, 5, 22, 3, 0)), () {
+          final msg = ContextualErrorEngine.generateSimpleMessage(
+            errorType: ErrorType.serviceUnavailable,
+            actionContext: UserActionContext.recipeSaving,
+          );
+          expect(msg, isNotEmpty);
+        });
+      },
+    );
   });
 
   group('unknown error message branches', () {
-    test('with technical details + non-minimal severity uses tech-detail copy',
-        () {
-      final ctx = ErrorContext.fromCurrentState(
-        errorType: ErrorType.unknown,
-        actionContext: UserActionContext.recipeSaving,
-        technicalDetails: 'NPE at line 42',
-        severity: ErrorSeverity.diagnostic,
-      );
-      final msg = ContextualErrorEngine.generateMessage(ctx);
-      expect(msg, contains('NPE at line 42'));
-    });
+    test(
+      'with technical details + non-minimal severity uses tech-detail copy',
+      () {
+        final ctx = ErrorContext.fromCurrentState(
+          errorType: ErrorType.unknown,
+          actionContext: UserActionContext.recipeSaving,
+          technicalDetails: 'NPE at line 42',
+          severity: ErrorSeverity.diagnostic,
+        );
+        final msg = ContextualErrorEngine.generateMessage(ctx);
+        expect(msg, contains('NPE at line 42'));
+      },
+    );
 
     test('minimal severity ignores technical details', () {
       final ctx = ErrorContext.fromCurrentState(
@@ -278,8 +288,11 @@ void main() {
       );
       // We don't assert on Swedish exact text but the message should
       // include the bullet/label marker that recovery guidance prepends.
-      expect(msg.length, greaterThan(20),
-          reason: 'recovery guidance should append additional text');
+      expect(
+        msg.length,
+        greaterThan(20),
+        reason: 'recovery guidance should append additional text',
+      );
     });
 
     test('recipeSaving + auth → check-logged-in + permission suggestions', () {

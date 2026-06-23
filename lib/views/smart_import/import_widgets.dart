@@ -87,8 +87,9 @@ class ImportInputSection extends StatelessWidget {
       decoration: InputDecoration(
         hintText: context.l10n.importPasteLinkOrText,
         hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant
-              .withValues(alpha: AppDimensions.opacityMediumDark),
+          color: theme.colorScheme.onSurfaceVariant.withValues(
+            alpha: AppDimensions.opacityMediumDark,
+          ),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -178,8 +179,10 @@ class ImportErrorMessage extends StatelessWidget {
                 if (onPasteText != null)
                   TextButton.icon(
                     onPressed: onPasteText,
-                    icon: const Icon(Icons.content_paste,
-                        size: AppDimensions.iconSizeS),
+                    icon: const Icon(
+                      Icons.content_paste,
+                      size: AppDimensions.iconSizeS,
+                    ),
                     label: Text(context.l10n.importPasteText),
                   ),
                 if (onManualAdd != null)
@@ -227,7 +230,8 @@ class ImportActionSection extends StatelessWidget {
             label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingModerate),
+                vertical: AppDimensions.spacingModerate,
+              ),
             ),
           ),
           const SizedBox(height: AppDimensions.spacingL),
@@ -242,8 +246,9 @@ class ImportActionSection extends StatelessWidget {
           label: context.l10n.importImport,
           child: FilledButton.icon(
             key: const ValueKey('test-smart-import-url'),
-            onPressed:
-                viewModel.canImport && !viewModel.isImporting ? onImport : null,
+            onPressed: viewModel.canImport && !viewModel.isImporting
+                ? onImport
+                : null,
             icon: viewModel.isImporting
                 ? LoadingIndicator(
                     size: 18,
@@ -251,9 +256,11 @@ class ImportActionSection extends StatelessWidget {
                     color: theme.colorScheme.onPrimary,
                   )
                 : const Icon(Icons.download),
-            label: Text(viewModel.isImporting
-                ? context.l10n.importImporting
-                : context.l10n.importImport),
+            label: Text(
+              viewModel.isImporting
+                  ? context.l10n.importImporting
+                  : context.l10n.importImport,
+            ),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),

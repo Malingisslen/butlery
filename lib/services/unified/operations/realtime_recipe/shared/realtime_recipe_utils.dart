@@ -57,7 +57,8 @@ class RealtimeRecipeUtils {
 
     // If it's neither, throw an error
     throw ArgumentError(
-        'Invalid realtimeRecipe type: ${realtimeRecipe.runtimeType}');
+      'Invalid realtimeRecipe type: ${realtimeRecipe.runtimeType}',
+    );
   }
 
   /// Apply changes to realtime recipe data structure
@@ -109,7 +110,7 @@ class RealtimeRecipeUtils {
       rating: local.rating ?? remote.rating,
       personalTagIds: <String>{
         ...(local.personalTagIds ?? []),
-        ...(remote.personalTagIds ?? [])
+        ...(remote.personalTagIds ?? []),
       }.toList(),
       lastEditedByUserId: currentUserId,
       lastEditedByDisplayName: currentUserDisplayName,
@@ -163,8 +164,8 @@ class RealtimeRecipeUtils {
         'collaborationLevel': memberCount > 5
             ? 'high'
             : memberCount > 2
-                ? 'medium'
-                : 'low',
+            ? 'medium'
+            : 'low',
         'editCount': recipe.realtimeData?.editCount ?? 1,
       };
     } catch (e) {
@@ -236,25 +237,31 @@ class RealtimeRecipeUtils {
   static List<Map<String, dynamic>> generateEditHistory(Recipe recipe) {
     final history = <Map<String, dynamic>>[];
 
-    history.add(createEditHistoryEntry(
-      timestamp: recipe.createdAt,
-      userId: recipe.core.createdBy.orEmpty(),
-      userName: recipe.socialData?.ownerDisplayName ?? 'Unknown',
-      action: 'Created recipe',
-      details: 'Initial recipe creation',
-    ));
+    history.add(
+      createEditHistoryEntry(
+        timestamp: recipe.createdAt,
+        userId: recipe.core.createdBy.orEmpty(),
+        userName: recipe.socialData?.ownerDisplayName ?? 'Unknown',
+        action: 'Created recipe',
+        details: 'Initial recipe creation',
+      ),
+    );
 
-    if (recipe.updatedAt
-        .isAfter(recipe.createdAt.add(const Duration(seconds: 1)))) {
-      history.add(createEditHistoryEntry(
-        timestamp: recipe.updatedAt,
-        userId: recipe.realtimeData?.lastEditedByUserId ??
-            recipe.core.createdBy ??
-            '',
-        userName: recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
-        action: 'Updated recipe',
-        details: 'Recipe content modified',
-      ));
+    if (recipe.updatedAt.isAfter(
+      recipe.createdAt.add(const Duration(seconds: 1)),
+    )) {
+      history.add(
+        createEditHistoryEntry(
+          timestamp: recipe.updatedAt,
+          userId:
+              recipe.realtimeData?.lastEditedByUserId ??
+              recipe.core.createdBy ??
+              '',
+          userName: recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
+          action: 'Updated recipe',
+          details: 'Recipe content modified',
+        ),
+      );
     }
 
     // One entry per added collaborator. We don't have per-member join
@@ -262,20 +269,24 @@ class RealtimeRecipeUtils {
     final memberPermissions = recipe.socialData?.memberPermissions;
     if (memberPermissions != null) {
       for (final entry in memberPermissions.entries) {
-        history.add(createEditHistoryEntry(
-          timestamp: recipe.updatedAt,
-          userId: recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '',
-          userName: recipe.socialData?.ownerDisplayName ?? 'Unknown',
-          action: 'Added collaborator',
-          details: 'Granted ${entry.value.name} permission to ${entry.key}',
-          targetUserId: entry.key,
-        ));
+        history.add(
+          createEditHistoryEntry(
+            timestamp: recipe.updatedAt,
+            userId: recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '',
+            userName: recipe.socialData?.ownerDisplayName ?? 'Unknown',
+            action: 'Added collaborator',
+            details: 'Granted ${entry.value.name} permission to ${entry.key}',
+            targetUserId: entry.key,
+          ),
+        );
       }
     }
 
     // Sort by timestamp (newest first)
-    history.sort((a, b) =>
-        (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+    history.sort(
+      (a, b) =>
+          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime),
+    );
 
     return history;
   }

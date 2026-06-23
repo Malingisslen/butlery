@@ -33,49 +33,49 @@ class MetricRenderer extends StatelessWidget {
     final info = AdminMetricInfoButton(metricKey: metricKey);
     return switch (value) {
       final ScalarMetric s => AdminStatCard(
-          label: label,
-          value: formatMetricValue(s.value, desc.format),
-          action: info,
-          deltaPercent: s.deltaPercent,
-        ),
+        label: label,
+        value: formatMetricValue(s.value, desc.format),
+        action: info,
+        deltaPercent: s.deltaPercent,
+      ),
       BreakdownMetric(rows: final rows) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (desc.chart == MetricChart.bar) MetricBarChart(rows: rows),
-            _LabelValueTable(
-              title: label,
-              format: desc.format,
-              action: info,
-              rows: [for (final r in rows) (r.label, r.value)],
-            ),
-          ],
-        ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (desc.chart == MetricChart.bar) MetricBarChart(rows: rows),
+          _LabelValueTable(
+            title: label,
+            format: desc.format,
+            action: info,
+            rows: [for (final r in rows) (r.label, r.value)],
+          ),
+        ],
+      ),
       SeriesMetric(points: final points) => _LabelValueTable(
-          title: label,
-          format: desc.format,
-          action: info,
-          rows: [for (final p in points) (p.label, p.value)],
-        ),
+        title: label,
+        format: desc.format,
+        action: info,
+        rows: [for (final p in points) (p.label, p.value)],
+      ),
       FunnelMetric(stages: final stages) => _LabelValueTable(
-          title: label,
-          format: desc.format,
-          action: info,
-          rows: [for (final s in stages) (s.label, s.value)],
-        ),
+        title: label,
+        format: desc.format,
+        action: info,
+        rows: [for (final s in stages) (s.label, s.value)],
+      ),
       final MatrixMetric m => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (desc.chart == MetricChart.line) MetricLineChart(value: m),
-            _MatrixTable(
-              title: label,
-              value: m,
-              format: desc.format,
-              columnFormats: desc.columnFormats,
-              action: info,
-              drilldown: desc.drilldown,
-            ),
-          ],
-        ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (desc.chart == MetricChart.line) MetricLineChart(value: m),
+          _MatrixTable(
+            title: label,
+            value: m,
+            format: desc.format,
+            columnFormats: desc.columnFormats,
+            action: info,
+            drilldown: desc.drilldown,
+          ),
+        ],
+      ),
     };
   }
 }
@@ -146,12 +146,16 @@ class _LabelValueTable extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(label,
-                        style: AppTextStyles.bodyMedium,
-                        overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      label,
+                      style: AppTextStyles.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  Text(formatMetricValue(value, format),
-                      style: AppTextStyles.bodyMedium),
+                  Text(
+                    formatMetricValue(value, format),
+                    style: AppTextStyles.bodyMedium,
+                  ),
                 ],
               ),
             ),
@@ -206,7 +210,8 @@ class _MatrixTable extends StatelessWidget {
                 const DataColumn(label: Text('')),
                 for (final c in value.colLabels)
                   DataColumn(
-                      label: Text(c, style: AppTextStyles.metadataEmphasized)),
+                    label: Text(c, style: AppTextStyles.metadataEmphasized),
+                  ),
               ],
               rows: [
                 for (var r = 0; r < value.rowLabels.length; r++)
@@ -216,14 +221,24 @@ class _MatrixTable extends StatelessWidget {
                     onSelectChanged: drilldown == null
                         ? null
                         : (_) => handleMetricDrilldown(
-                            context, drilldown!.kind, value.rowLabels[r]),
+                            context,
+                            drilldown!.kind,
+                            value.rowLabels[r],
+                          ),
                     cells: [
-                      DataCell(Text(value.rowLabels[r],
-                          style: AppTextStyles.metadataEmphasized)),
+                      DataCell(
+                        Text(
+                          value.rowLabels[r],
+                          style: AppTextStyles.metadataEmphasized,
+                        ),
+                      ),
                       for (var c = 0; c < value.colLabels.length; c++)
-                        DataCell(Text(
+                        DataCell(
+                          Text(
                             formatMetricValue(value.cells[r][c], _formatFor(c)),
-                            style: AppTextStyles.bodyMedium)),
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        ),
                     ],
                   ),
               ],

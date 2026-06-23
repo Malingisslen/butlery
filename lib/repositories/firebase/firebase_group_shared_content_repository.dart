@@ -26,7 +26,7 @@ class FirebaseGroupSharedContentRepository
   final FirebaseFirestore _firestore;
 
   FirebaseGroupSharedContentRepository({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+    : _firestore = firestore;
 
   /// Builds one query per member-id chunk. `arrayContainsAny` caps at
   /// [kFirestoreWhereInLimit] (30) values, so a group with 30+ members must
@@ -94,14 +94,15 @@ class FirebaseGroupSharedContentRepository
 
   @override
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      streamSharedContent({
+  streamSharedContent({
     required List<String> memberIds,
     required String contentType,
     int limit = 20,
   }) {
     if (memberIds.isEmpty) {
       return Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>.value(
-          const []);
+        const [],
+      );
     }
 
     final streams = _buildQueries(
@@ -113,7 +114,8 @@ class FirebaseGroupSharedContentRepository
     // combineLatestList waits for every chunk's first emission before
     // producing output (no partial-state flashes) and propagates cancel to
     // every inner subscription.
-    return Rx.combineLatestList(streams)
-        .map((snaps) => _mergeChunks(snaps.map((s) => s.docs), limit));
+    return Rx.combineLatestList(
+      streams,
+    ).map((snaps) => _mergeChunks(snaps.map((s) => s.docs), limit));
   }
 }

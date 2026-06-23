@@ -31,13 +31,15 @@ void main() {
 
     setUpAll(() async {
       // Register fallback values for mocktail
-      registerFallbackValue(UserProfile(
-        uid: 'test',
-        email: 'test@example.com',
-        displayName: 'Test User',
-        joinedAt: DateTime.now(),
-        lastActiveAt: DateTime.now(),
-      ));
+      registerFallbackValue(
+        UserProfile(
+          uid: 'test',
+          email: 'test@example.com',
+          displayName: 'Test User',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        ),
+      );
       registerFallbackValue(ResourcePermission.viewer);
     });
 
@@ -75,20 +77,26 @@ void main() {
       mockPresenceRepository = MockFirebaseRecipePresenceRepository();
 
       // Configure presence repository mock to succeed by default
-      when(() => mockPresenceRepository.setUserPresence(
-            recipeId: any(named: 'recipeId'),
-            userId: any(named: 'userId'),
-            displayName: any(named: 'displayName'),
-            avatarUrl: any(named: 'avatarUrl'),
-          )).thenAnswer((_) async => {});
-      when(() => mockPresenceRepository.markUserInactive(
-            recipeId: any(named: 'recipeId'),
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async => {});
-      when(() => mockPresenceRepository.updatePresenceHeartbeat(
-            recipeId: any(named: 'recipeId'),
-            userId: any(named: 'userId'),
-          )).thenAnswer((_) async => {});
+      when(
+        () => mockPresenceRepository.setUserPresence(
+          recipeId: any(named: 'recipeId'),
+          userId: any(named: 'userId'),
+          displayName: any(named: 'displayName'),
+          avatarUrl: any(named: 'avatarUrl'),
+        ),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockPresenceRepository.markUserInactive(
+          recipeId: any(named: 'recipeId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer((_) async => {});
+      when(
+        () => mockPresenceRepository.updatePresenceHeartbeat(
+          recipeId: any(named: 'recipeId'),
+          userId: any(named: 'userId'),
+        ),
+      ).thenAnswer((_) async => {});
 
       // Configure parent service using centralized mock method
       mockParentService.setRecipeState(
@@ -190,25 +198,29 @@ void main() {
         expect(presenceModule.isUserPresent('recipe_1', 'user_123'), isTrue);
       });
 
-      test('should handle presence update for non-authenticated user',
-          () async {
-        // Arrange — reset clears _currentUser
-        mockPermissionService.reset();
-        mockPermissionService.setPermissionState(
-          isAuthenticated: false,
-          currentUserId: null,
-        );
-        mockParentService.setRecipeState(
-          recipes: [testRecipe],
-          currentUserId: null,
-        );
+      test(
+        'should handle presence update for non-authenticated user',
+        () async {
+          // Arrange — reset clears _currentUser
+          mockPermissionService.reset();
+          mockPermissionService.setPermissionState(
+            isAuthenticated: false,
+            currentUserId: null,
+          );
+          mockParentService.setRecipeState(
+            recipes: [testRecipe],
+            currentUserId: null,
+          );
 
-        // Act
-        final result = await presenceModule.updatePresenceHeartbeat('recipe_1');
+          // Act
+          final result = await presenceModule.updatePresenceHeartbeat(
+            'recipe_1',
+          );
 
-        // Assert
-        expect(result, isFalse);
-      });
+          // Assert
+          expect(result, isFalse);
+        },
+      );
     });
 
     group('Presence Tracking', () {
@@ -539,12 +551,14 @@ void main() {
     group('Error Handling', () {
       test('should handle showPresence errors gracefully', () async {
         // Arrange — force an error by making presenceRepository throw
-        when(() => mockPresenceRepository.setUserPresence(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              displayName: any(named: 'displayName'),
-              avatarUrl: any(named: 'avatarUrl'),
-            )).thenThrow(Exception('Firebase unavailable'));
+        when(
+          () => mockPresenceRepository.setUserPresence(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+          ),
+        ).thenThrow(Exception('Firebase unavailable'));
 
         // Act
         final result = await presenceModule.showPresence('recipe_1');
@@ -555,10 +569,12 @@ void main() {
 
       test('should handle hidePresence errors gracefully', () async {
         // Arrange — force an error by making presenceRepository throw
-        when(() => mockPresenceRepository.markUserInactive(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-            )).thenThrow(Exception('Firebase unavailable'));
+        when(
+          () => mockPresenceRepository.markUserInactive(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(Exception('Firebase unavailable'));
 
         // Act
         final result = await presenceModule.hidePresence('recipe_1');

@@ -30,8 +30,11 @@ void main() {
   test('every descriptor key matches its map key and its category', () {
     for (final entry in catalog.entries) {
       expect(entry.value.key, entry.key, reason: 'descriptor key mismatch');
-      expect(entry.value.category, entry.key.category,
-          reason: 'descriptor category must match the key category');
+      expect(
+        entry.value.category,
+        entry.key.category,
+        reason: 'descriptor category must match the key category',
+      );
     }
   });
 }

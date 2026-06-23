@@ -152,8 +152,10 @@ void main() {
         message: 'börja laga?',
       );
 
-      final snap =
-          await firestore.collection('pings/$groupId/pings').doc(ping.id).get();
+      final snap = await firestore
+          .collection('pings/$groupId/pings')
+          .doc(ping.id)
+          .get();
       expect(snap.exists, isTrue, reason: 'doc written to Firestore');
       expect(snap.data()?['fromUserId'], equals(ownerId));
       expect(snap.data()?['toUserId'], equals(memberId));
@@ -258,8 +260,11 @@ void main() {
       final pings = await service.watchGroup(groupId).first;
       final ids = pings.map((p) => p.id).toList();
       expect(ids, contains('fresh'));
-      expect(ids, isNot(contains('stale')),
-          reason: 'expired ping filtered by expiresAt > now');
+      expect(
+        ids,
+        isNot(contains('stale')),
+        reason: 'expired ping filtered by expiresAt > now',
+      );
     });
   });
 
@@ -275,20 +280,24 @@ void main() {
       perm.setUserId(memberId);
       await service.acknowledge(groupId: groupId, pingId: ping.id);
 
-      final doc =
-          await firestore.collection('pings/$groupId/pings').doc(ping.id).get();
+      final doc = await firestore
+          .collection('pings/$groupId/pings')
+          .doc(ping.id)
+          .get();
       expect(doc.data()?['acknowledged'], isTrue);
     });
 
-    test('acknowledge on missing ping is a no-op (not-found swallowed)',
-        () async {
-      // Missing doc — should complete without throwing.
-      await service.acknowledge(
-        groupId: groupId,
-        pingId: 'never-existed',
-      );
-      expect(true, isTrue); // reached here = no throw
-    });
+    test(
+      'acknowledge on missing ping is a no-op (not-found swallowed)',
+      () async {
+        // Missing doc — should complete without throwing.
+        await service.acknowledge(
+          groupId: groupId,
+          pingId: 'never-existed',
+        );
+        expect(true, isTrue); // reached here = no throw
+      },
+    );
   });
 
   group('quiet hours / FCM suppression', () {
@@ -306,8 +315,11 @@ void main() {
       );
 
       await Future<void>.delayed(Duration.zero);
-      expect(notifications.calls, isEmpty,
-          reason: 'FCM suppressed during quiet hours');
+      expect(
+        notifications.calls,
+        isEmpty,
+        reason: 'FCM suppressed during quiet hours',
+      );
 
       // In-app stream still sees it.
       final pings = await service.watchGroup(groupId).first;
@@ -324,8 +336,11 @@ void main() {
       expect(notifications.calls, hasLength(1));
       final targets = notifications.calls.single;
       expect(targets, contains(memberId));
-      expect(targets, isNot(contains(ownerId)),
-          reason: 'sender excluded from broadcast recipients');
+      expect(
+        targets,
+        isNot(contains(ownerId)),
+        reason: 'sender excluded from broadcast recipients',
+      );
     });
   });
 
@@ -347,8 +362,10 @@ void main() {
         type: PingType.nudge,
       );
       await Future<void>.delayed(Duration.zero);
-      expect(notifications.strategiesCalled.single,
-          same(NotificationStrategy.pingNudge));
+      expect(
+        notifications.strategiesCalled.single,
+        same(NotificationStrategy.pingNudge),
+      );
     });
 
     test('PingType.timerAlert → NotificationStrategy.pingTimerAlert', () async {
@@ -358,8 +375,10 @@ void main() {
         type: PingType.timerAlert,
       );
       await Future<void>.delayed(Duration.zero);
-      expect(notifications.strategiesCalled.single,
-          same(NotificationStrategy.pingTimerAlert));
+      expect(
+        notifications.strategiesCalled.single,
+        same(NotificationStrategy.pingTimerAlert),
+      );
     });
 
     test('PingType.helpMe → NotificationStrategy.pingHelpMe', () async {
@@ -369,8 +388,10 @@ void main() {
         type: PingType.helpMe,
       );
       await Future<void>.delayed(Duration.zero);
-      expect(notifications.strategiesCalled.single,
-          same(NotificationStrategy.pingHelpMe));
+      expect(
+        notifications.strategiesCalled.single,
+        same(NotificationStrategy.pingHelpMe),
+      );
     });
 
     test('PingType.unknown falls back to pingNudge (forward-compat)', () async {
@@ -380,47 +401,63 @@ void main() {
         type: PingType.unknown,
       );
       await Future<void>.delayed(Duration.zero);
-      expect(notifications.strategiesCalled.single,
-          same(NotificationStrategy.pingNudge),
-          reason: 'unknown pings render as nudge copy rather than silently '
-              'misattributing a semantic we do not recognize');
+      expect(
+        notifications.strategiesCalled.single,
+        same(NotificationStrategy.pingNudge),
+        reason:
+            'unknown pings render as nudge copy rather than silently '
+            'misattributing a semantic we do not recognize',
+      );
     });
 
-    test('additionalData carries type/pingId/groupId for deep-link round-trip',
-        () async {
-      final ping = await service.sendPing(
-        groupId: groupId,
-        toUserId: memberId,
-        type: PingType.nudge,
-      );
-      await Future<void>.delayed(Duration.zero);
-      final additional = notifications.additionalDataCalled.single;
-      expect(additional, isNotNull);
-      expect(additional!['type'], equals(NotificationPayloadType.ping));
-      expect(additional['pingId'], equals(ping.id),
-          reason: 'recipient deep-link needs pingId to ack');
-      expect(additional['groupId'], equals(groupId),
-          reason: 'recipient deep-link needs groupId to scope the read');
-      expect(additional['pingType'], equals(PingType.nudge.name));
-    });
+    test(
+      'additionalData carries type/pingId/groupId for deep-link round-trip',
+      () async {
+        final ping = await service.sendPing(
+          groupId: groupId,
+          toUserId: memberId,
+          type: PingType.nudge,
+        );
+        await Future<void>.delayed(Duration.zero);
+        final additional = notifications.additionalDataCalled.single;
+        expect(additional, isNotNull);
+        expect(additional!['type'], equals(NotificationPayloadType.ping));
+        expect(
+          additional['pingId'],
+          equals(ping.id),
+          reason: 'recipient deep-link needs pingId to ack',
+        );
+        expect(
+          additional['groupId'],
+          equals(groupId),
+          reason: 'recipient deep-link needs groupId to scope the read',
+        );
+        expect(additional['pingType'], equals(PingType.nudge.name));
+      },
+    );
   });
 
   group('sender display name resolution (BUT-630)', () {
-    test('resolves sender display name from UnifiedFriendsService.friends',
-        () async {
-      friends.setFriends(
-          [testUserProfile(uid: ownerId, displayName: 'Anna Andersson')]);
+    test(
+      'resolves sender display name from UnifiedFriendsService.friends',
+      () async {
+        friends.setFriends([
+          testUserProfile(uid: ownerId, displayName: 'Anna Andersson'),
+        ]);
 
-      await service.sendPing(
-        groupId: groupId,
-        toUserId: memberId,
-        type: PingType.nudge,
-      );
-      await Future<void>.delayed(Duration.zero);
+        await service.sendPing(
+          groupId: groupId,
+          toUserId: memberId,
+          type: PingType.nudge,
+        );
+        await Future<void>.delayed(Duration.zero);
 
-      expect(notifications.variablesCalled.single['senderName'],
-          equals('Anna Andersson'));
-    });
+        expect(
+          notifications.variablesCalled.single['senderName'],
+          equals('Anna Andersson'),
+        );
+      },
+    );
 
     test('falls back to UID when sender is not in friends list', () async {
       // friends list intentionally empty — the sender is unknown to the
@@ -435,8 +472,10 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(
-          notifications.variablesCalled.single['senderName'], equals(ownerId),
-          reason: 'UID fallback beats a blank name in the notification body');
+        notifications.variablesCalled.single['senderName'],
+        equals(ownerId),
+        reason: 'UID fallback beats a blank name in the notification body',
+      );
     });
 
     test('whitespace-only display name treated as missing', () async {
@@ -450,7 +489,9 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(
-          notifications.variablesCalled.single['senderName'], equals(ownerId));
+        notifications.variablesCalled.single['senderName'],
+        equals(ownerId),
+      );
     });
   });
 }

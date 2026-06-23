@@ -30,8 +30,9 @@ void main() {
 
     group('JSON-LD Extraction', () {
       test('should parse professional recipe with complete JSON-LD', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Klassiska svenska köttbullar'));
@@ -43,8 +44,9 @@ void main() {
       });
 
       test('should extract ingredients from JSON-LD', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeIngredient'], isA<List>());
@@ -56,8 +58,9 @@ void main() {
       });
 
       test('should extract instructions from JSON-LD', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeInstructions'], isA<List>());
@@ -80,16 +83,18 @@ void main() {
 
     group('Köket Enhancements', () {
       test('should extract difficulty level', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['difficulty'], equals('Enkel'));
       });
 
       test('should extract user rating with score and count', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['rating'], isA<Map>());
@@ -99,8 +104,9 @@ void main() {
       });
 
       test('should extract high rating (5.0)', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithHighRating);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithHighRating,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['rating'], isA<Map>());
@@ -110,16 +116,18 @@ void main() {
       });
 
       test('should extract author information', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['author'], equals('Kökets Kockar'));
       });
 
       test('should extract cooking tips', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['cookingTips'], isA<List>());
@@ -140,8 +148,9 @@ void main() {
       });
 
       test('should extract user tips from UGC recipe', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.userGeneratedRecipe);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.userGeneratedRecipe,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['cookingTips'], isA<List>());
@@ -157,8 +166,9 @@ void main() {
 
     group('Formatting Cleanup', () {
       test('should clean "ca" and "cirka" from portions', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithKoketQuirks);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithKoketQuirks,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeYield'], equals('4 portioner'));
@@ -167,8 +177,9 @@ void main() {
       });
 
       test('should trim whitespace from ingredients', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithKoketQuirks);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithKoketQuirks,
+        );
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -185,8 +196,9 @@ void main() {
       });
 
       test('should trim whitespace from instructions', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithKoketQuirks);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithKoketQuirks,
+        );
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -202,8 +214,9 @@ void main() {
       });
 
       test('should filter out empty ingredients', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithKoketQuirks);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithKoketQuirks,
+        );
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -222,8 +235,9 @@ void main() {
 
     group('CSS Fallback Extraction', () {
       test('should extract recipe without JSON-LD using CSS selectors', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithoutJsonLd);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithoutJsonLd,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Saftig kladdkaka'));
@@ -231,8 +245,9 @@ void main() {
       });
 
       test('should extract ingredients from HTML when JSON-LD missing', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithoutJsonLd);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithoutJsonLd,
+        );
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -243,8 +258,9 @@ void main() {
       });
 
       test('should extract instructions from HTML when JSON-LD missing', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithoutJsonLd);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithoutJsonLd,
+        );
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -260,13 +276,16 @@ void main() {
         }).toList();
 
         expect(
-            instructionTexts.any((text) => text.contains('Vispa ägg')), isTrue);
+          instructionTexts.any((text) => text.contains('Vispa ägg')),
+          isTrue,
+        );
         expect(instructionTexts.any((text) => text.contains('Grädda')), isTrue);
       });
 
       test('should extract metadata from HTML when JSON-LD missing', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithoutJsonLd);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithoutJsonLd,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeYield'], isNotNull);
@@ -281,16 +300,18 @@ void main() {
 
     group('Error Recovery', () {
       test('should fallback to CSS selectors when JSON-LD is malformed', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithMalformedJson);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithMalformedJson,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Italiensk lasagne'));
       });
 
       test('should extract ingredients from HTML when JSON parse fails', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithMalformedJson);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithMalformedJson,
+        );
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -301,8 +322,9 @@ void main() {
       });
 
       test('should extract instructions from HTML when JSON parse fails', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithMalformedJson);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithMalformedJson,
+        );
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -316,8 +338,9 @@ void main() {
 
     group('Quality Validation', () {
       test('should accept recipe with complete metadata (high quality)', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeCompleteMetadata);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeCompleteMetadata,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], isNotEmpty);
@@ -339,8 +362,9 @@ void main() {
       });
 
       test('should handle user-generated content with variable quality', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.userGeneratedRecipe);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.userGeneratedRecipe,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], contains('pannkakor'));
@@ -358,8 +382,9 @@ void main() {
 
     group('Swedish Text Handling', () {
       test('should preserve Swedish characters (Å, Ä, Ö)', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithSwedishChars);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithSwedishChars,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Ärtsoppa med fläsk'));
@@ -372,8 +397,9 @@ void main() {
       });
 
       test('should clean smart quotes from Swedish text', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         final description = recipe!['description'] as String?;
@@ -386,8 +412,9 @@ void main() {
       });
 
       test('should normalize whitespace in Swedish text', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithSwedishChars);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithSwedishChars,
+        );
 
         expect(recipe, isNotNull);
         final name = recipe!['name'] as String;
@@ -415,8 +442,9 @@ void main() {
 
       test('should handle missing optional fields gracefully', () {
         // Use userGeneratedRecipe which passes quality threshold but has minimal enhancements
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.userGeneratedRecipe);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.userGeneratedRecipe,
+        );
 
         expect(recipe, isNotNull);
         // Some optional fields might be missing (equipment, tags)
@@ -424,8 +452,9 @@ void main() {
       });
 
       test('should handle recipe with complete data and no missing fields', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeCompleteMetadata);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeCompleteMetadata,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], isNotEmpty);
@@ -435,8 +464,9 @@ void main() {
       });
 
       test('should extract image from recipe', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['image'], isNotNull);
@@ -450,8 +480,9 @@ void main() {
 
     group('Time Conversion', () {
       test('should parse ISO 8601 duration from JSON-LD', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.kottbullarProfessional);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.kottbullarProfessional,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['prepTime'], equals('PT20M'));
@@ -467,8 +498,9 @@ void main() {
       });
 
       test('should handle combined hours and minutes', () {
-        final recipe =
-            parser.parseRecipe(KoketTestFixtures.recipeWithSwedishChars);
+        final recipe = parser.parseRecipe(
+          KoketTestFixtures.recipeWithSwedishChars,
+        );
 
         expect(recipe, isNotNull);
         expect(recipe!['totalTime'], equals('PT2H'));

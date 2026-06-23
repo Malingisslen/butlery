@@ -29,8 +29,9 @@ class FilterToggleButton extends StatelessWidget {
             size: AppDimensions.iconSizeAction,
             color: showFilters ? cs.primary : cs.onSurfaceVariant,
           ),
-          tooltip:
-              showFilters ? context.l10n.filterHide : context.l10n.filterShow,
+          tooltip: showFilters
+              ? context.l10n.filterHide
+              : context.l10n.filterShow,
         ),
         // Active filters indicator
         if (hasActiveFilters && !showFilters)

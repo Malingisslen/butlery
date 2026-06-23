@@ -24,13 +24,16 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      registerFallbackValue(UnifiedShoppingList.personal(
-        name: 'fallback',
-        ownerId: 'test-user',
-        ownerDisplayName: 'Test User',
-      ));
       registerFallbackValue(
-          UnifiedShoppingItem.basic(name: 'fallback', amount: 1));
+        UnifiedShoppingList.personal(
+          name: 'fallback',
+          ownerId: 'test-user',
+          ownerDisplayName: 'Test User',
+        ),
+      );
+      registerFallbackValue(
+        UnifiedShoppingItem.basic(name: 'fallback', amount: 1),
+      );
     });
 
     setUp(() async {
@@ -77,28 +80,28 @@ void main() {
         renameList: (listId, newName) => mockParent.renameList(listId, newName),
         deleteList: (listId) => mockParent.deleteList(listId),
         setActiveList: (listId) => mockParent.setActiveList(listId),
-        addItemToActiveList: ({
-          required String name,
-          double? amount,
-          String? unit,
-          String? category,
-          String? note,
-          double? estimatedPrice,
-          int? priority,
-          String? recipeId,
-          String? recipeName,
-        }) =>
-            mockParent.addItemToActiveList(
-          name: name,
-          amount: amount,
-          unit: unit,
-          category: category,
-          note: note,
-          estimatedPrice: estimatedPrice,
-          priority: priority,
-          recipeId: recipeId,
-          recipeName: recipeName,
-        ),
+        addItemToActiveList:
+            ({
+              required String name,
+              double? amount,
+              String? unit,
+              String? category,
+              String? note,
+              double? estimatedPrice,
+              int? priority,
+              String? recipeId,
+              String? recipeName,
+            }) => mockParent.addItemToActiveList(
+              name: name,
+              amount: amount,
+              unit: unit,
+              category: category,
+              note: note,
+              estimatedPrice: estimatedPrice,
+              priority: priority,
+              recipeId: recipeId,
+              recipeName: recipeName,
+            ),
         updateList: (list) => mockParent.updateList(list),
         toggleItemBought: (itemId) => mockParent.toggleItemBought(itemId),
         removeItemFromActiveList: (itemId) =>
@@ -120,18 +123,21 @@ void main() {
     group('List CRUD Operations', () {
       test('should create personal list successfully', () async {
         // Arrange
-        when(() => mockParent.createPersonalList(
-              any(),
-              items: any(named: 'items'),
-            )).thenAnswer((_) async => 'new-list-id');
+        when(
+          () => mockParent.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async => 'new-list-id');
 
         // Act
         final result = await operations.createList('Ny lista');
 
         // Assert
         expect(result, equals('new-list-id'));
-        verify(() => mockParent.createPersonalList('Ny lista', items: null))
-            .called(1);
+        verify(
+          () => mockParent.createPersonalList('Ny lista', items: null),
+        ).called(1);
       });
 
       test('should create list with initial items', () async {
@@ -141,20 +147,24 @@ void main() {
           UnifiedShoppingItem.basic(name: 'Smör', amount: 200, unit: 'g'),
         ];
 
-        when(() => mockParent.createPersonalList(
-              any(),
-              items: any(named: 'items'),
-            )).thenAnswer((_) async => 'new-list-id');
+        when(
+          () => mockParent.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async => 'new-list-id');
 
         // Act
-        final result =
-            await operations.createList('Frukostlista', items: items);
+        final result = await operations.createList(
+          'Frukostlista',
+          items: items,
+        );
 
         // Assert
         expect(result, equals('new-list-id'));
-        verify(() =>
-                mockParent.createPersonalList('Frukostlista', items: items))
-            .called(1);
+        verify(
+          () => mockParent.createPersonalList('Frukostlista', items: items),
+        ).called(1);
       });
 
       test('should get all personal lists', () {
@@ -203,17 +213,21 @@ void main() {
 
       test('should rename list successfully', () async {
         // Arrange
-        when(() => mockParent.renameList(any(), any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockParent.renameList(any(), any()),
+        ).thenAnswer((_) async => true);
 
         // Act
-        final result =
-            await operations.renameList('test-list-1', 'Månadshandling');
+        final result = await operations.renameList(
+          'test-list-1',
+          'Månadshandling',
+        );
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParent.renameList('test-list-1', 'Månadshandling'))
-            .called(1);
+        verify(
+          () => mockParent.renameList('test-list-1', 'Månadshandling'),
+        ).called(1);
       });
 
       test('should fail to rename non-existent list', () async {
@@ -265,8 +279,9 @@ void main() {
 
       test('should set active list successfully', () async {
         // Arrange
-        when(() => mockParent.setActiveList(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockParent.setActiveList(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.setActiveList('test-list-1');
@@ -314,17 +329,20 @@ void main() {
     group('Item Management', () {
       test('should add item to specific list', () async {
         // Arrange
-        when(() => mockParent.setActiveList(any()))
-            .thenAnswer((_) async => true);
-        when(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockParent.setActiveList(any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.addItem(
@@ -338,28 +356,32 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParent.addItemToActiveList(
-              name: 'Ägg',
-              amount: 12,
-              unit: 'st',
-              category: 'Mejeri',
-              note: null,
-              estimatedPrice: null,
-              priority: 2,
-            )).called(1);
+        verify(
+          () => mockParent.addItemToActiveList(
+            name: 'Ägg',
+            amount: 12,
+            unit: 'st',
+            category: 'Mejeri',
+            note: null,
+            estimatedPrice: null,
+            priority: 2,
+          ),
+        ).called(1);
       });
 
       test('should add item to active list when no listId specified', () async {
         // Arrange
-        when(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.addItem(
@@ -370,15 +392,17 @@ void main() {
 
         // Assert — addItem defaults category to ShoppingCategory.other ('other')
         expect(result, isTrue);
-        verify(() => mockParent.addItemToActiveList(
-              name: 'Kaffe',
-              amount: 500,
-              unit: 'g',
-              category: 'other',
-              note: null,
-              estimatedPrice: null,
-              priority: 3,
-            )).called(1);
+        verify(
+          () => mockParent.addItemToActiveList(
+            name: 'Kaffe',
+            amount: 500,
+            unit: 'g',
+            category: 'other',
+            note: null,
+            estimatedPrice: null,
+            priority: 3,
+          ),
+        ).called(1);
       });
 
       test('should update item successfully', () async {
@@ -413,8 +437,9 @@ void main() {
 
       test('should toggle item bought status', () async {
         // Arrange
-        when(() => mockParent.toggleItemBought(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockParent.toggleItemBought(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.toggleItemBought('item-1');
@@ -426,8 +451,9 @@ void main() {
 
       test('should remove item from active list', () async {
         // Arrange
-        when(() => mockParent.removeItemFromActiveList(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockParent.removeItemFromActiveList(any()),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.removeItem('item-1');
@@ -451,8 +477,9 @@ void main() {
 
       test('should clear bought items from specific list', () async {
         // Arrange
-        when(() => mockParent.setActiveList(any()))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockParent.setActiveList(any()),
+        ).thenAnswer((_) async => true);
         when(() => mockParent.clearBoughtItems()).thenAnswer((_) async => true);
 
         // Act
@@ -587,8 +614,10 @@ void main() {
         expect(categoryMap, hasLength(2));
         expect(categoryMap['Mejeri'], hasLength(2));
         expect(categoryMap['Bageri'], hasLength(1));
-        expect(categoryMap['Mejeri']![0].name,
-            equals('Mjölk')); // Sorted by priority
+        expect(
+          categoryMap['Mejeri']![0].name,
+          equals('Mjölk'),
+        ); // Sorted by priority
         expect(categoryMap['Mejeri']![1].name, equals('Yoghurt'));
       });
     });
@@ -721,19 +750,21 @@ void main() {
         // Assert
         expect(result, isTrue);
 
-        final capturedList = verify(() => mockParent.updateList(captureAny()))
-            .captured
-            .single as UnifiedShoppingList;
+        final capturedList =
+            verify(() => mockParent.updateList(captureAny())).captured.single
+                as UnifiedShoppingList;
         expect(capturedList.items, hasLength(1));
         expect(capturedList.items.first.name, equals('Nytt innehåll'));
       });
 
       test('should create list from recipe ingredients', () async {
         // Arrange
-        when(() => mockParent.createPersonalList(
-              any(),
-              items: any(named: 'items'),
-            )).thenAnswer((_) async => 'recipe-list-id');
+        when(
+          () => mockParent.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async => 'recipe-list-id');
 
         final ingredients = [
           '500 g köttfärs',
@@ -752,10 +783,12 @@ void main() {
         // Assert
         expect(result, equals('recipe-list-id'));
 
-        final capturedArgs = verify(() => mockParent.createPersonalList(
-              captureAny(),
-              items: captureAny(named: 'items'),
-            )).captured;
+        final capturedArgs = verify(
+          () => mockParent.createPersonalList(
+            captureAny(),
+            items: captureAny(named: 'items'),
+          ),
+        ).captured;
 
         expect(capturedArgs[0], equals('Inköp för Köttbullar'));
         final items = capturedArgs[1] as List<UnifiedShoppingItem>;
@@ -766,10 +799,12 @@ void main() {
 
       test('should handle recipe creation error', () async {
         // Arrange
-        when(() => mockParent.createPersonalList(
-              any(),
-              items: any(named: 'items'),
-            )).thenThrow(Exception('Database error'));
+        when(
+          () => mockParent.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenThrow(Exception('Database error'));
 
         // Act
         final result = await operations.createListFromRecipe(
@@ -886,8 +921,9 @@ void main() {
       test('should handle batch item operations', () async {
         // Arrange
         when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
-        when(() => mockParent.setActiveList(any()))
-            .thenAnswer((invocation) async {
+        when(() => mockParent.setActiveList(any())).thenAnswer((
+          invocation,
+        ) async {
           mockParent.setShoppingState(
             activeListId: invocation.positionalArguments[0] as String,
             personalLists: mockParent.personalLists,
@@ -895,17 +931,19 @@ void main() {
           );
           return true;
         });
-        when(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-              recipeId: any(named: 'recipeId'),
-              recipeName: any(named: 'recipeName'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+            recipeId: any(named: 'recipeId'),
+            recipeName: any(named: 'recipeName'),
+          ),
+        ).thenAnswer((_) async => true);
 
         final itemsToAdd = [
           'Mjölk 2 liter',
@@ -929,17 +967,19 @@ void main() {
 
         // Assert
         expect(results, everyElement(isTrue));
-        verify(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-              recipeId: any(named: 'recipeId'),
-              recipeName: any(named: 'recipeName'),
-            )).called(5);
+        verify(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+            recipeId: any(named: 'recipeId'),
+            recipeName: any(named: 'recipeName'),
+          ),
+        ).called(5);
       });
 
       test('should manage item priorities correctly', () async {
@@ -957,8 +997,9 @@ void main() {
           ),
         );
 
-        final listWithPrioritizedItems =
-            testList.copyWith(items: prioritizedItems);
+        final listWithPrioritizedItems = testList.copyWith(
+          items: prioritizedItems,
+        );
         mockParent.setShoppingState(
           personalLists: [listWithPrioritizedItems],
           lists: [listWithPrioritizedItems],
@@ -978,8 +1019,9 @@ void main() {
       test('should handle item notes and metadata', () async {
         // Arrange
         when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
-        when(() => mockParent.setActiveList(any()))
-            .thenAnswer((invocation) async {
+        when(() => mockParent.setActiveList(any())).thenAnswer((
+          invocation,
+        ) async {
           mockParent.setShoppingState(
             activeListId: invocation.positionalArguments[0] as String,
             personalLists: mockParent.personalLists,
@@ -987,17 +1029,19 @@ void main() {
           );
           return true;
         });
-        when(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-              recipeId: any(named: 'recipeId'),
-              recipeName: any(named: 'recipeName'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+            recipeId: any(named: 'recipeId'),
+            recipeName: any(named: 'recipeName'),
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.addItem(
@@ -1015,27 +1059,31 @@ void main() {
         expect(result, isTrue);
 
         // Verify the addItemToActiveList was called with correct parameters
-        verify(() => mockParent.addItemToActiveList(
-              name: 'Specialost',
-              amount: 200.0,
-              unit: 'g',
-              category: 'Mejeri',
-              note: 'Endast från Arla, helst lagrad 12 månader',
-              estimatedPrice: 89.90,
-              priority: 4,
-              recipeId: any(named: 'recipeId'),
-              recipeName: any(named: 'recipeName'),
-            )).called(1);
+        verify(
+          () => mockParent.addItemToActiveList(
+            name: 'Specialost',
+            amount: 200.0,
+            unit: 'g',
+            category: 'Mejeri',
+            note: 'Endast från Arla, helst lagrad 12 månader',
+            estimatedPrice: 89.90,
+            priority: 4,
+            recipeId: any(named: 'recipeId'),
+            recipeName: any(named: 'recipeName'),
+          ),
+        ).called(1);
       });
     });
 
     group('Swedish Language Support', () {
       test('should parse Swedish units correctly', () async {
         // Arrange
-        when(() => mockParent.createPersonalList(
-              any(),
-              items: any(named: 'items'),
-            )).thenAnswer((_) async => 'swedish-list');
+        when(
+          () => mockParent.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async => 'swedish-list');
 
         final swedishIngredients = [
           '2 msk smör',
@@ -1055,10 +1103,12 @@ void main() {
         // Assert
         expect(result, equals('swedish-list'));
 
-        final capturedArgs = verify(() => mockParent.createPersonalList(
-              captureAny(),
-              items: captureAny(named: 'items'),
-            )).captured;
+        final capturedArgs = verify(
+          () => mockParent.createPersonalList(
+            captureAny(),
+            items: captureAny(named: 'items'),
+          ),
+        ).captured;
 
         final items = capturedArgs[1] as List<UnifiedShoppingItem>;
         expect(items[0].unit, equals('msk'));
@@ -1073,35 +1123,40 @@ void main() {
         // Arrange
         final swedishItems = [
           UnifiedShoppingItem(
-              id: '1',
-              name: 'Mjölk',
-              category: 'Mejeri',
-              amount: 1.0,
-              bought: false),
+            id: '1',
+            name: 'Mjölk',
+            category: 'Mejeri',
+            amount: 1.0,
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '2',
-              name: 'Bröd',
-              category: 'Bageri',
-              amount: 1.0,
-              bought: false),
+            id: '2',
+            name: 'Bröd',
+            category: 'Bageri',
+            amount: 1.0,
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '3',
-              name: 'Äpplen',
-              category: 'Frukt & Grönt',
-              amount: 1.0,
-              bought: false),
+            id: '3',
+            name: 'Äpplen',
+            category: 'Frukt & Grönt',
+            amount: 1.0,
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '4',
-              name: 'Kött',
-              category: 'Kött & Fisk',
-              amount: 1.0,
-              bought: false),
+            id: '4',
+            name: 'Kött',
+            category: 'Kött & Fisk',
+            amount: 1.0,
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '5',
-              name: 'Öl',
-              category: 'Drycker',
-              amount: 1.0,
-              bought: false),
+            id: '5',
+            name: 'Öl',
+            category: 'Drycker',
+            amount: 1.0,
+            bought: false,
+          ),
         ];
 
         final listWithSwedishItems = testList.copyWith(items: swedishItems);
@@ -1116,14 +1171,15 @@ void main() {
 
         // Assert
         expect(
-            categoryMap.keys,
-            containsAll([
-              'Mejeri',
-              'Bageri',
-              'Frukt & Grönt',
-              'Kött & Fisk',
-              'Drycker',
-            ]));
+          categoryMap.keys,
+          containsAll([
+            'Mejeri',
+            'Bageri',
+            'Frukt & Grönt',
+            'Kött & Fisk',
+            'Drycker',
+          ]),
+        );
 
         // Verify Swedish alphabetical sorting
         final sortedCategories = categoryMap.keys.toList()..sort();
@@ -1176,11 +1232,13 @@ void main() {
         // Arrange
         when(() => mockParent.updateList(any())).thenAnswer((_) async {
           await Future.delayed(
-              Duration(milliseconds: 10)); // Simulate async delay
+            Duration(milliseconds: 10),
+          ); // Simulate async delay
           return true;
         });
-        when(() => mockParent.setActiveList(any()))
-            .thenAnswer((invocation) async {
+        when(() => mockParent.setActiveList(any())).thenAnswer((
+          invocation,
+        ) async {
           mockParent.setShoppingState(
             activeListId: invocation.positionalArguments[0] as String,
             personalLists: mockParent.personalLists,
@@ -1188,17 +1246,19 @@ void main() {
           );
           return true;
         });
-        when(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-              recipeId: any(named: 'recipeId'),
-              recipeName: any(named: 'recipeName'),
-            )).thenAnswer((_) async => true);
+        when(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+            recipeId: any(named: 'recipeId'),
+            recipeName: any(named: 'recipeName'),
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         final operations = PersonalShoppingOperations(
@@ -1211,28 +1271,28 @@ void main() {
               mockParent.renameList(listId, newName),
           deleteList: (listId) => mockParent.deleteList(listId),
           setActiveList: (listId) => mockParent.setActiveList(listId),
-          addItemToActiveList: ({
-            required String name,
-            double? amount,
-            String? unit,
-            String? category,
-            String? note,
-            double? estimatedPrice,
-            int? priority,
-            String? recipeId,
-            String? recipeName,
-          }) =>
-              mockParent.addItemToActiveList(
-            name: name,
-            amount: amount,
-            unit: unit,
-            category: category,
-            note: note,
-            estimatedPrice: estimatedPrice,
-            priority: priority,
-            recipeId: recipeId,
-            recipeName: recipeName,
-          ),
+          addItemToActiveList:
+              ({
+                required String name,
+                double? amount,
+                String? unit,
+                String? category,
+                String? note,
+                double? estimatedPrice,
+                int? priority,
+                String? recipeId,
+                String? recipeName,
+              }) => mockParent.addItemToActiveList(
+                name: name,
+                amount: amount,
+                unit: unit,
+                category: category,
+                note: note,
+                estimatedPrice: estimatedPrice,
+                priority: priority,
+                recipeId: recipeId,
+                recipeName: recipeName,
+              ),
           updateList: (list) => mockParent.updateList(list),
           toggleItemBought: (itemId) => mockParent.toggleItemBought(itemId),
           removeItemFromActiveList: (itemId) =>
@@ -1254,17 +1314,19 @@ void main() {
 
         // Assert
         expect(results, everyElement(isTrue));
-        verify(() => mockParent.addItemToActiveList(
-              name: any(named: 'name'),
-              amount: any(named: 'amount'),
-              unit: any(named: 'unit'),
-              category: any(named: 'category'),
-              note: any(named: 'note'),
-              estimatedPrice: any(named: 'estimatedPrice'),
-              priority: any(named: 'priority'),
-              recipeId: any(named: 'recipeId'),
-              recipeName: any(named: 'recipeName'),
-            )).called(10);
+        verify(
+          () => mockParent.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+            note: any(named: 'note'),
+            estimatedPrice: any(named: 'estimatedPrice'),
+            priority: any(named: 'priority'),
+            recipeId: any(named: 'recipeId'),
+            recipeName: any(named: 'recipeName'),
+          ),
+        ).called(10);
       });
     });
 
@@ -1273,32 +1335,37 @@ void main() {
         // Arrange
         final templateItems = [
           UnifiedShoppingItem(
-              id: '1',
-              name: 'Mjölk',
-              amount: 2.0,
-              unit: 'l',
-              category: 'Mejeri',
-              bought: false),
+            id: '1',
+            name: 'Mjölk',
+            amount: 2.0,
+            unit: 'l',
+            category: 'Mejeri',
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '2',
-              name: 'Bröd',
-              amount: 1.0,
-              unit: 'st',
-              category: 'Bageri',
-              bought: false),
+            id: '2',
+            name: 'Bröd',
+            amount: 1.0,
+            unit: 'st',
+            category: 'Bageri',
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: '3',
-              name: 'Ägg',
-              amount: 12.0,
-              unit: 'st',
-              category: 'Mejeri',
-              bought: false),
+            id: '3',
+            name: 'Ägg',
+            amount: 12.0,
+            unit: 'st',
+            category: 'Mejeri',
+            bought: false,
+          ),
         ];
 
-        when(() => mockParent.createPersonalList(
-              any(),
-              items: any(named: 'items'),
-            )).thenAnswer((_) async => 'template-list-id');
+        when(
+          () => mockParent.createPersonalList(
+            any(),
+            items: any(named: 'items'),
+          ),
+        ).thenAnswer((_) async => 'template-list-id');
 
         // Act - Simulate creating from template
         final result = await operations.createList(
@@ -1309,33 +1376,39 @@ void main() {
         // Assert
         expect(result, equals('template-list-id'));
 
-        final capturedArgs = verify(() => mockParent.createPersonalList(
-              captureAny(),
-              items: captureAny(named: 'items'),
-            )).captured;
+        final capturedArgs = verify(
+          () => mockParent.createPersonalList(
+            captureAny(),
+            items: captureAny(named: 'items'),
+          ),
+        ).captured;
 
         expect(capturedArgs[0], equals('Veckohandling från mall'));
         final items = capturedArgs[1] as List<UnifiedShoppingItem>;
         expect(items.length, equals(3));
-        expect(items.every((item) => !item.bought),
-            isTrue); // All items start unchecked
+        expect(
+          items.every((item) => !item.bought),
+          isTrue,
+        ); // All items start unchecked
       });
 
       test('should save current list as template', () {
         // Arrange
         final currentItems = [
           UnifiedShoppingItem(
-              id: '1',
-              name: 'Standardvara 1',
-              amount: 1.0,
-              bought: true,
-              category: 'Test'),
+            id: '1',
+            name: 'Standardvara 1',
+            amount: 1.0,
+            bought: true,
+            category: 'Test',
+          ),
           UnifiedShoppingItem(
-              id: '2',
-              name: 'Standardvara 2',
-              amount: 2.0,
-              bought: false,
-              category: 'Test'),
+            id: '2',
+            name: 'Standardvara 2',
+            amount: 2.0,
+            bought: false,
+            category: 'Test',
+          ),
         ];
 
         final listToSave = testList.copyWith(items: currentItems);
@@ -1359,24 +1432,28 @@ void main() {
         // Template export includes bought status as-is
         expect(exportedItems[0]['bought'], isTrue); // First item was bought
         expect(
-            exportedItems[1]['bought'], isFalse); // Second item wasn't bought
+          exportedItems[1]['bought'],
+          isFalse,
+        ); // Second item wasn't bought
       });
 
       test('should apply template to existing list', () async {
         // Arrange
         final templateItems = [
           UnifiedShoppingItem(
-              id: 'new-1',
-              name: 'Mall Vara 1',
-              amount: 1.0,
-              category: 'Kategori 1',
-              bought: false),
+            id: 'new-1',
+            name: 'Mall Vara 1',
+            amount: 1.0,
+            category: 'Kategori 1',
+            bought: false,
+          ),
           UnifiedShoppingItem(
-              id: 'new-2',
-              name: 'Mall Vara 2',
-              amount: 2.0,
-              category: 'Kategori 2',
-              bought: false),
+            id: 'new-2',
+            name: 'Mall Vara 2',
+            amount: 2.0,
+            category: 'Kategori 2',
+            bought: false,
+          ),
         ];
 
         when(() => mockParent.updateList(any())).thenAnswer((_) async => true);
@@ -1395,9 +1472,9 @@ void main() {
         // Assert
         expect(result, isTrue);
 
-        final capturedList = verify(() => mockParent.updateList(captureAny()))
-            .captured
-            .single as UnifiedShoppingList;
+        final capturedList =
+            verify(() => mockParent.updateList(captureAny())).captured.single
+                as UnifiedShoppingList;
         expect(capturedList.items.length, greaterThan(testList.items.length));
       });
     });
@@ -1452,8 +1529,9 @@ void main() {
         expect(stats['completionPercentage'], equals(100));
 
         // All milk purchases are weekly
-        final milkItems =
-            historicalItems.where((item) => item.name == 'Mjölk').toList();
+        final milkItems = historicalItems
+            .where((item) => item.name == 'Mjölk')
+            .toList();
         expect(milkItems.length, equals(3));
       });
 
@@ -1461,41 +1539,47 @@ void main() {
         // Arrange
         final frequentItems = [
           UnifiedShoppingItem(
-              id: '1',
-              name: 'Mjölk',
-              amount: 2.0,
-              bought: true,
-              category: 'Mejeri'),
+            id: '1',
+            name: 'Mjölk',
+            amount: 2.0,
+            bought: true,
+            category: 'Mejeri',
+          ),
           UnifiedShoppingItem(
-              id: '2',
-              name: 'Bröd',
-              amount: 1.0,
-              bought: true,
-              category: 'Bageri'),
+            id: '2',
+            name: 'Bröd',
+            amount: 1.0,
+            bought: true,
+            category: 'Bageri',
+          ),
           UnifiedShoppingItem(
-              id: '3',
-              name: 'Mjölk',
-              amount: 2.0,
-              bought: false,
-              category: 'Mejeri'),
+            id: '3',
+            name: 'Mjölk',
+            amount: 2.0,
+            bought: false,
+            category: 'Mejeri',
+          ),
           UnifiedShoppingItem(
-              id: '4',
-              name: 'Ägg',
-              amount: 12.0,
-              bought: true,
-              category: 'Mejeri'),
+            id: '4',
+            name: 'Ägg',
+            amount: 12.0,
+            bought: true,
+            category: 'Mejeri',
+          ),
           UnifiedShoppingItem(
-              id: '5',
-              name: 'Mjölk',
-              amount: 2.0,
-              bought: true,
-              category: 'Mejeri'),
+            id: '5',
+            name: 'Mjölk',
+            amount: 2.0,
+            bought: true,
+            category: 'Mejeri',
+          ),
           UnifiedShoppingItem(
-              id: '6',
-              name: 'Bröd',
-              amount: 1.0,
-              bought: false,
-              category: 'Bageri'),
+            id: '6',
+            name: 'Bröd',
+            amount: 1.0,
+            bought: false,
+            category: 'Bageri',
+          ),
         ];
 
         final listWithFrequent = testList.copyWith(items: frequentItems);
@@ -1513,11 +1597,15 @@ void main() {
         final breadItems = categoryMap['Bageri'] ?? [];
 
         // Mjölk appears 3 times
-        expect(mejeriItems.where((item) => item.name == 'Mjölk').length,
-            equals(3));
+        expect(
+          mejeriItems.where((item) => item.name == 'Mjölk').length,
+          equals(3),
+        );
         // Bröd appears 2 times
         expect(
-            breadItems.where((item) => item.name == 'Bröd').length, equals(2));
+          breadItems.where((item) => item.name == 'Bröd').length,
+          equals(2),
+        );
       });
 
       test('should calculate cost estimation and budget tracking', () {

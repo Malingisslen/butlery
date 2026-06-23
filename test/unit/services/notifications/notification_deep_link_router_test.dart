@@ -161,37 +161,44 @@ void main() {
       expect((args['recipe'] as Recipe).id, 'abc123');
       expect(args['scrollToComments'], isFalse);
 
-      final event = analyticsRepo.events
-          .firstWhere((e) => e.name == 'notification_opened');
+      final event = analyticsRepo.events.firstWhere(
+        (e) => e.name == 'notification_opened',
+      );
       expect(event.parameters?['route'], '/recipe');
       expect(event.parameters?['notificationType'], 'share');
     });
 
-    test('comment_thread route opens recipe with scrollToComments arg',
-        () async {
-      router.handle(
-          '/comment_thread', {'id': 'r1', 'notificationType': 'comment'});
-      await drain();
+    test(
+      'comment_thread route opens recipe with scrollToComments arg',
+      () async {
+        router.handle('/comment_thread', {
+          'id': 'r1',
+          'notificationType': 'comment',
+        });
+        await drain();
 
-      expect(nav.calls.single.route, Routes.recipeDetail);
-      final args = nav.calls.single.arguments as Map<String, dynamic>;
-      expect((args['recipe'] as Recipe).id, 'r1');
-      expect(args['scrollToComments'], isTrue);
-    });
+        expect(nav.calls.single.route, Routes.recipeDetail);
+        final args = nav.calls.single.arguments as Map<String, dynamic>;
+        expect((args['recipe'] as Recipe).id, 'r1');
+        expect(args['scrollToComments'], isTrue);
+      },
+    );
 
-    test('recipe route falls back to home when recipe is not accessible',
-        () async {
-      // `read` is user-scoped → returns null for a recipe the current user
-      // can't see (e.g. a stale notification about a friend's recipe). Must
-      // land on home, never the "page not found" error route.
-      fetchRecipe = (id) async => null;
+    test(
+      'recipe route falls back to home when recipe is not accessible',
+      () async {
+        // `read` is user-scoped → returns null for a recipe the current user
+        // can't see (e.g. a stale notification about a friend's recipe). Must
+        // land on home, never the "page not found" error route.
+        fetchRecipe = (id) async => null;
 
-      router.handle('/recipe', {'id': 'gone', 'notificationType': 'share'});
-      await drain();
+        router.handle('/recipe', {'id': 'gone', 'notificationType': 'share'});
+        await drain();
 
-      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
-      expect(nav.calls.single.route, Routes.home);
-    });
+        expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+        expect(nav.calls.single.route, Routes.home);
+      },
+    );
 
     test('recipe route falls back to home when fetch throws', () async {
       fetchRecipe = (id) async => throw Exception('network down');
@@ -203,8 +210,10 @@ void main() {
     });
 
     test('friend_request route opens friend requests inbox', () async {
-      router.handle('/friend_request',
-          {'id': null, 'notificationType': 'friend_request'});
+      router.handle('/friend_request', {
+        'id': null,
+        'notificationType': 'friend_request',
+      });
       await drain();
 
       expect(nav.calls.single.route, Routes.friendRequests);
@@ -214,8 +223,10 @@ void main() {
       // `targetId` is a cooking-session id, not a recipeId, and no Cloud
       // Function emits this route yet — it must land on home, not the error
       // screen, until a real session→recipe resolver exists.
-      router.handle(
-          '/cooking_session', {'id': 'sess42', 'notificationType': 'cooking'});
+      router.handle('/cooking_session', {
+        'id': 'sess42',
+        'notificationType': 'cooking',
+      });
       await drain();
 
       expect(nav.calls.single.kind, 'pushAndRemoveUntil');
@@ -237,18 +248,20 @@ void main() {
       expect(nav.calls.single.route, Routes.home);
     });
 
-    test('missing route defaults to home and logs missing-route event',
-        () async {
-      // Legacy in-flight notification payload — no `route` field.
-      router.handle(null, {'id': null, 'notificationType': null});
-      await drain();
+    test(
+      'missing route defaults to home and logs missing-route event',
+      () async {
+        // Legacy in-flight notification payload — no `route` field.
+        router.handle(null, {'id': null, 'notificationType': null});
+        await drain();
 
-      expect(nav.calls.single.route, Routes.home);
-      expect(nav.calls.single.kind, 'pushAndRemoveUntil');
-      final names = analyticsRepo.events.map((e) => e.name).toList();
-      expect(names, contains('notification_payload_missing_route'));
-      expect(names, isNot(contains('notification_opened')));
-    });
+        expect(nav.calls.single.route, Routes.home);
+        expect(nav.calls.single.kind, 'pushAndRemoveUntil');
+        final names = analyticsRepo.events.map((e) => e.name).toList();
+        expect(names, contains('notification_payload_missing_route'));
+        expect(names, isNot(contains('notification_opened')));
+      },
+    );
 
     test('empty-string route defaults to home + missing-route event', () async {
       // NotificationService normalizes a null route to '' before forwarding;
@@ -261,21 +274,26 @@ void main() {
       expect(names, contains('notification_payload_missing_route'));
     });
 
-    test('unknown route defaults to home and logs unknown-route event',
-        () async {
-      // Defends against client-server drift: a Cloud Functions sender
-      // could ship a new route string before the client knows about it.
-      router.handle(
-          '/unsupported_route_v9', {'id': 'x', 'notificationType': 'rogue'});
-      await drain();
+    test(
+      'unknown route defaults to home and logs unknown-route event',
+      () async {
+        // Defends against client-server drift: a Cloud Functions sender
+        // could ship a new route string before the client knows about it.
+        router.handle('/unsupported_route_v9', {
+          'id': 'x',
+          'notificationType': 'rogue',
+        });
+        await drain();
 
-      expect(nav.calls.single.route, Routes.home);
-      final names = analyticsRepo.events.map((e) => e.name).toList();
-      expect(names, contains('notification_payload_unknown_route'));
-      final unknown = analyticsRepo.events
-          .firstWhere((e) => e.name == 'notification_payload_unknown_route');
-      expect(unknown.parameters?['route'], '/unsupported_route_v9');
-    });
+        expect(nav.calls.single.route, Routes.home);
+        final names = analyticsRepo.events.map((e) => e.name).toList();
+        expect(names, contains('notification_payload_unknown_route'));
+        final unknown = analyticsRepo.events.firstWhere(
+          (e) => e.name == 'notification_payload_unknown_route',
+        );
+        expect(unknown.parameters?['route'], '/unsupported_route_v9');
+      },
+    );
 
     test('does not crash when navigator is null', () async {
       // Push notification can fire before the navigator has been built
@@ -357,36 +375,38 @@ void main() {
       expect(nav.calls.single.route, Routes.recipeDetail);
     });
 
-    test('skips server-side recording when notificationId is missing',
-        () async {
-      final calls = <_RecordedOpen>[];
-      Future<void> seam({
-        required String notificationId,
-        required String notificationType,
-        String? route,
-      }) async {
-        calls.add(_RecordedOpen(notificationId, notificationType, route));
-      }
+    test(
+      'skips server-side recording when notificationId is missing',
+      () async {
+        final calls = <_RecordedOpen>[];
+        Future<void> seam({
+          required String notificationId,
+          required String notificationType,
+          String? route,
+        }) async {
+          calls.add(_RecordedOpen(notificationId, notificationType, route));
+        }
 
-      final routerWithSeam = NotificationDeepLinkRouter(
-        navigatorResolver: () => nav,
-        analyticsResolver: () => analytics,
-        recordOpened: seam,
-        fetchRecipe: (id) => fetchRecipe(id),
-      );
+        final routerWithSeam = NotificationDeepLinkRouter(
+          navigatorResolver: () => nav,
+          analyticsResolver: () => analytics,
+          recordOpened: seam,
+          fetchRecipe: (id) => fetchRecipe(id),
+        );
 
-      // No `notificationId` key — server-side dedup requires one,
-      // so we must NOT call the recorder at all.
-      routerWithSeam.handle('/recipe', const {
-        'id': 'recipe-1',
-        'notificationType': 'recipe_shared',
-      });
-      await drain();
+        // No `notificationId` key — server-side dedup requires one,
+        // so we must NOT call the recorder at all.
+        routerWithSeam.handle('/recipe', const {
+          'id': 'recipe-1',
+          'notificationType': 'recipe_shared',
+        });
+        await drain();
 
-      expect(calls, isEmpty);
-      // Navigation still happened — analytics path unaffected.
-      expect(nav.calls.single.route, Routes.recipeDetail);
-    });
+        expect(calls, isEmpty);
+        // Navigation still happened — analytics path unaffected.
+        expect(nav.calls.single.route, Routes.recipeDetail);
+      },
+    );
 
     test('navigates even when recordOpened throws', () async {
       // Simulates a rejected Future from the callable — the kind of

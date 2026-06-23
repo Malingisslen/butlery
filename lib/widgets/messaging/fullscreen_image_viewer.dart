@@ -67,9 +67,10 @@ class FullscreenImageViewer extends StatelessWidget {
                   imageUrl: imageUrl,
                   cacheKey: FirebaseUrlUtils.stableCacheKey(imageUrl),
                   fit: BoxFit.contain,
-                  memCacheWidth: (MediaQuery.sizeOf(context).width *
-                          MediaQuery.devicePixelRatioOf(context))
-                      .round(),
+                  memCacheWidth:
+                      (MediaQuery.sizeOf(context).width *
+                              MediaQuery.devicePixelRatioOf(context))
+                          .round(),
                   placeholder: (context, url) => Center(
                     child: LoadingIndicator(
                       color: cs.surfaceContainerHighest,
@@ -87,10 +88,10 @@ class FullscreenImageViewer extends StatelessWidget {
                         const SizedBox(height: AppDimensions.spacingM),
                         Text(
                           context.l10n.messagingImageLoadError,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: cs.outline,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: cs.outline,
+                              ),
                         ),
                       ],
                     ),
@@ -105,8 +106,9 @@ class FullscreenImageViewer extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              color:
-                  cs.onSurface.withValues(alpha: AppDimensions.opacityVeryDark),
+              color: cs.onSurface.withValues(
+                alpha: AppDimensions.opacityVeryDark,
+              ),
               child: SafeArea(
                 top: false,
                 child: Text(

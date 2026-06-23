@@ -44,8 +44,8 @@ class IngredientMatchService extends BaseService {
   IngredientMatchService({
     required IngredientLookupService lookupService,
     required IngredientRepository ingredientRepository,
-  })  : _lookupService = lookupService,
-        _ingredientRepository = ingredientRepository;
+  }) : _lookupService = lookupService,
+       _ingredientRepository = ingredientRepository;
 
   @override
   String get serviceName => 'IngredientMatchService';
@@ -56,16 +56,15 @@ class IngredientMatchService extends BaseService {
   Future<List<IngredientMatchResult>> matchRecipes({
     required Set<String> selectedIngredientIds,
     required List<Recipe> recipes,
-  }) =>
-      _matchWithResolver(
-        selectedIngredientIds: selectedIngredientIds,
-        recipes: recipes,
-        resolveNormalized: (recipe) async {
-          final n = recipe.core.ingredientsNormalized;
-          return (n != null && n.isNotEmpty) ? n.toSet() : null;
-        },
-        operationName: 'matchRecipes',
-      );
+  }) => _matchWithResolver(
+    selectedIngredientIds: selectedIngredientIds,
+    recipes: recipes,
+    resolveNormalized: (recipe) async {
+      final n = recipe.core.ingredientsNormalized;
+      return (n != null && n.isNotEmpty) ? n.toSet() : null;
+    },
+    operationName: 'matchRecipes',
+  );
 
   /// Like [matchRecipes] but handles legacy recipes (null ingredientsNormalized)
   /// by normalizing their raw ingredients in-memory via [IngredientLookupService].
@@ -73,17 +72,16 @@ class IngredientMatchService extends BaseService {
   Future<List<IngredientMatchResult>> matchRecipesWithNormalization({
     required Set<String> selectedIngredientIds,
     required List<Recipe> recipes,
-  }) =>
-      _matchWithResolver(
-        selectedIngredientIds: selectedIngredientIds,
-        recipes: recipes,
-        resolveNormalized: (recipe) async {
-          final n = recipe.core.ingredientsNormalized;
-          if (n != null && n.isNotEmpty) return n.toSet();
-          return _lazyNormalize(recipe);
-        },
-        operationName: 'matchRecipesWithNormalization',
-      );
+  }) => _matchWithResolver(
+    selectedIngredientIds: selectedIngredientIds,
+    recipes: recipes,
+    resolveNormalized: (recipe) async {
+      final n = recipe.core.ingredientsNormalized;
+      if (n != null && n.isNotEmpty) return n.toSet();
+      return _lazyNormalize(recipe);
+    },
+    operationName: 'matchRecipesWithNormalization',
+  );
 
   Future<List<IngredientMatchResult>> _matchWithResolver({
     required Set<String> selectedIngredientIds,
@@ -100,19 +98,22 @@ class IngredientMatchService extends BaseService {
           final normalizedSet = await resolveNormalized(recipe);
           if (normalizedSet == null || normalizedSet.isEmpty) continue;
 
-          final overlap =
-              normalizedSet.intersection(selectedIngredientIds).length;
+          final overlap = normalizedSet
+              .intersection(selectedIngredientIds)
+              .length;
           if (overlap == 0) continue;
 
-          matches.add(IngredientMatchResult(
-            recipe: recipe,
-            matchPercent: overlap / normalizedSet.length,
-            matchedCount: overlap,
-            totalCount: normalizedSet.length,
-            missingIngredientIds: normalizedSet
-                .difference(selectedIngredientIds)
-                .toList(growable: false),
-          ));
+          matches.add(
+            IngredientMatchResult(
+              recipe: recipe,
+              matchPercent: overlap / normalizedSet.length,
+              matchedCount: overlap,
+              totalCount: normalizedSet.length,
+              missingIngredientIds: normalizedSet
+                  .difference(selectedIngredientIds)
+                  .toList(growable: false),
+            ),
+          );
         }
 
         matches.sort((a, b) => b.matchPercent.compareTo(a.matchPercent));
@@ -128,7 +129,8 @@ class IngredientMatchService extends BaseService {
   /// Falls back through: getById → findByName(en) → findByName(sv) → raw ID.
   /// All repository calls are in-memory cache lookups (no Firestore round-trips).
   Future<Map<String, String>> resolveIngredientNames(
-      List<String> ingredientIds) async {
+    List<String> ingredientIds,
+  ) async {
     final names = <String, String>{};
     for (final id in ingredientIds) {
       final data = await _ingredientRepository.getById(id);
@@ -137,8 +139,10 @@ class IngredientMatchService extends BaseService {
         continue;
       }
       // ID might be an English name (from legacy normalization) — try lookup
-      final byEnglish =
-          await _ingredientRepository.findByName(id, language: 'en');
+      final byEnglish = await _ingredientRepository.findByName(
+        id,
+        language: 'en',
+      );
       if (byEnglish != null) {
         names[id] = byEnglish.swedish;
         continue;

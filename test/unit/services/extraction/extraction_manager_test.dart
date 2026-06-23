@@ -98,8 +98,7 @@ void main() {
         expect(result, isA<ExtractionResult?>());
       });
 
-      test('should return ExtractionResult for unsupported platforms',
-          () async {
+      test('should return ExtractionResult for unsupported platforms', () async {
         // Arrange
         const unsupportedUrl = 'https://unsupported-platform.com/content';
 
@@ -221,7 +220,8 @@ void main() {
 
       test('should handle very long URLs', () async {
         // Arrange
-        final longUrl = 'https://www.example.com/recipe?'
+        final longUrl =
+            'https://www.example.com/recipe?'
             'param=${List.filled(1000, 'a').join()}'; // Very long URL
 
         // Act
@@ -271,8 +271,10 @@ void main() {
 
         // Assert - Would parse PDF in production
         expect(result, isA<ExtractionResult>());
-        expect(result.metadata['contentType'],
-            isNull); // PDF parsing not available in tests
+        expect(
+          result.metadata['contentType'],
+          isNull,
+        ); // PDF parsing not available in tests
       });
 
       test('should extract from plain text content URLs', () async {
@@ -329,8 +331,10 @@ void main() {
           // - Extra whitespace removed
           // - Inconsistent units normalized
           // - Special characters handled
-          expect(result.extractedText!.contains('  '),
-              isFalse); // No double spaces
+          expect(
+            result.extractedText!.contains('  '),
+            isFalse,
+          ); // No double spaces
         }
       });
 
@@ -454,22 +458,24 @@ void main() {
     });
 
     group('Swedish Content Support', () {
-      test('should handle Swedish cooking sites with special characters',
-          () async {
-        // Arrange
-        const swedishSites = [
-          'https://www.köket.se/recept/köttbullar-med-gräddsås',
-          'https://www.arla.se/recept/äggakaka',
-          'https://www.ica.se/recept/räksmörgås',
-        ];
+      test(
+        'should handle Swedish cooking sites with special characters',
+        () async {
+          // Arrange
+          const swedishSites = [
+            'https://www.köket.se/recept/köttbullar-med-gräddsås',
+            'https://www.arla.se/recept/äggakaka',
+            'https://www.ica.se/recept/räksmörgås',
+          ];
 
-        // Act & Assert
-        for (final url in swedishSites) {
-          final result = await manager.extractFromUrl(url);
-          expect(result, isA<ExtractionResult>());
-          // Should preserve å, ä, ö characters
-        }
-      });
+          // Act & Assert
+          for (final url in swedishSites) {
+            final result = await manager.extractFromUrl(url);
+            expect(result, isA<ExtractionResult>());
+            // Should preserve å, ä, ö characters
+          }
+        },
+      );
 
       test('should recognize Swedish measurement units', () async {
         // Arrange
@@ -508,8 +514,10 @@ void main() {
 
       test('should handle batch extraction efficiently', () async {
         // Arrange
-        final urls =
-            List.generate(10, (i) => 'https://www.example.com/recipe$i');
+        final urls = List.generate(
+          10,
+          (i) => 'https://www.example.com/recipe$i',
+        );
 
         // Act
         final stopwatch = Stopwatch()..start();

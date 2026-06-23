@@ -26,8 +26,9 @@ class EmptyImageState extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: Border.all(
-          color: cs.outlineVariant
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.outlineVariant.withValues(
+            alpha: AppDimensions.opacityMediumLight,
+          ),
           style: BorderStyle.solid,
         ),
         color: cs.surfaceContainerHighest,
@@ -45,8 +46,9 @@ class EmptyImageState extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children:
-                      isLoading ? _buildLoadingContent() : _buildIdleContent(),
+                  children: isLoading
+                      ? _buildLoadingContent()
+                      : _buildIdleContent(),
                 ),
               ),
             ),
@@ -58,23 +60,24 @@ class EmptyImageState extends StatelessWidget {
 
   List<Widget> _buildLoadingContent() {
     return [
-      Builder(builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return LoadingIndicator(
-          size: AppDimensions.iconSizeXl,
-          strokeWidth: 2,
-          color: cs.primary,
-        );
-      }),
+      Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return LoadingIndicator(
+            size: AppDimensions.iconSizeXl,
+            strokeWidth: 2,
+            color: cs.primary,
+          );
+        },
+      ),
       const SizedBox(height: AppDimensions.spacingSm),
       Builder(
         builder: (context) => Text(
           context.l10n.imageAddingImage,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withValues(alpha: AppDimensions.opacityDark),
+            color: Theme.of(context).colorScheme.onSurface.withValues(
+              alpha: AppDimensions.opacityDark,
+            ),
           ),
         ),
       ),
@@ -83,21 +86,25 @@ class EmptyImageState extends StatelessWidget {
 
   List<Widget> _buildIdleContent() {
     return [
-      Builder(builder: (context) {
-        final cs = Theme.of(context).colorScheme;
-        return Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-          ),
-          child: Icon(
-            Icons.add_photo_alternate_outlined,
-            size: AppDimensions.iconSizeXl,
-            color: cs.primary,
-          ),
-        );
-      }),
+      Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Container(
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: cs.primary.withValues(
+                alpha: AppDimensions.opacityVeryLight,
+              ),
+            ),
+            child: Icon(
+              Icons.add_photo_alternate_outlined,
+              size: AppDimensions.iconSizeXl,
+              color: cs.primary,
+            ),
+          );
+        },
+      ),
       const SizedBox(height: AppDimensions.spacingSm),
       Builder(
         builder: (context) => Text(
@@ -110,10 +117,9 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) => Text(
           context.l10n.imageTapToAddUpTo(maxImages),
           style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withValues(alpha: AppDimensions.opacityDark),
+            color: Theme.of(context).colorScheme.onSurface.withValues(
+              alpha: AppDimensions.opacityDark,
+            ),
           ),
           textAlign: TextAlign.center,
         ),

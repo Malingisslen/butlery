@@ -49,8 +49,9 @@ class SelectionBulkBar extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: AppTextStyles.titleSmall
-                      .copyWith(color: cs.onPrimaryContainer),
+                  style: AppTextStyles.titleSmall.copyWith(
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
               TextButton.icon(

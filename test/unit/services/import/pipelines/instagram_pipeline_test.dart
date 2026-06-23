@@ -115,12 +115,12 @@ class _FakeLlmEnhancement extends Fake implements LlmEnhancementService {
 // ---------------------------------------------------------------------------
 
 Recipe _recipe({String title = 'Pannkakor'}) => Recipe.personal(
-      title: title,
-      description: 'Klassiska svenska pannkakor',
-      mealType: 'breakfast',
-      ingredients: const ['3 ägg', '5 dl mjölk', '3 dl mjöl'],
-      instructions: const ['Vispa.', 'Stek.'],
-    );
+  title: title,
+  description: 'Klassiska svenska pannkakor',
+  mealType: 'breakfast',
+  ingredients: const ['3 ägg', '5 dl mjölk', '3 dl mjöl'],
+  instructions: const ['Vispa.', 'Stek.'],
+);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -208,51 +208,54 @@ void main() {
       expect(pipeline.canHandle('not a url'), isFalse);
     });
 
-    test('rejects instagram.com profile / explore / search pages without /p/',
-        () {
-      // Bug class: profile URL passes the substring check but has no shortcode —
-      // must fail the pattern match. If it passed, we'd attempt extraction on
-      // a user feed, waste a WebScraper run, and confuse the user with a
-      // "no recipe found" error rather than a "this isn't a post" message.
-      expect(
-        pipeline.canHandle('https://www.instagram.com/chefanna/'),
-        isFalse,
-      );
-      expect(
-        pipeline.canHandle('https://www.instagram.com/explore/tags/recept/'),
-        isFalse,
-      );
-    });
-
-    test('canHandle and validateInput agree on every sample (no divergence)',
-        () {
-      // Pin: weakening either one independently lets bad input bypass the
-      // strategy router OR the input-validation guard.
-      const samples = [
-        'https://www.instagram.com/p/ABC123/',
-        'https://www.instagram.com/reel/CxYz/',
-        'https://instagr.am/p/ABC',
-        'https://www.tiktok.com/@a/video/7',
-        '',
-        'random',
-        'https://www.instagram.com/chefanna/',
-      ];
-      for (final s in samples) {
+    test(
+      'rejects instagram.com profile / explore / search pages without /p/',
+      () {
+        // Bug class: profile URL passes the substring check but has no shortcode —
+        // must fail the pattern match. If it passed, we'd attempt extraction on
+        // a user feed, waste a WebScraper run, and confuse the user with a
+        // "no recipe found" error rather than a "this isn't a post" message.
         expect(
-          pipeline.canHandle(s),
-          equals(pipeline.validateInput(s)),
-          reason: 'mismatch on "$s"',
+          pipeline.canHandle('https://www.instagram.com/chefanna/'),
+          isFalse,
         );
-      }
-    });
+        expect(
+          pipeline.canHandle('https://www.instagram.com/explore/tags/recept/'),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'canHandle and validateInput agree on every sample (no divergence)',
+      () {
+        // Pin: weakening either one independently lets bad input bypass the
+        // strategy router OR the input-validation guard.
+        const samples = [
+          'https://www.instagram.com/p/ABC123/',
+          'https://www.instagram.com/reel/CxYz/',
+          'https://instagr.am/p/ABC',
+          'https://www.tiktok.com/@a/video/7',
+          '',
+          'random',
+          'https://www.instagram.com/chefanna/',
+        ];
+        for (final s in samples) {
+          expect(
+            pipeline.canHandle(s),
+            equals(pipeline.validateInput(s)),
+            reason: 'mismatch on "$s"',
+          );
+        }
+      },
+    );
   });
 
   // =========================================================================
   // 2) BUT-1092 sibling — mixed-case host
   // =========================================================================
   group('BUT-1092 sibling: mixed-case host regex case-sensitivity', () {
-    test(
-        'BUT-1113 fix: mixed-case host `Instagram.com` is accepted '
+    test('BUT-1113 fix: mixed-case host `Instagram.com` is accepted '
         '(case-insensitive regex)', () {
       // After BUT-1113 fix: each pattern in `_instagramPatterns` carries
       // `caseSensitive: false`, so shared URLs with uppercase host letters
@@ -286,8 +289,7 @@ void main() {
   // structurally cover the rest by reading the switch arms via the public
   // contract.
   group('legacy import() adapter — NeedsScreenshot conversion', () {
-    test(
-        'unit-test environment forces ImportNeedsScreenshot path; legacy '
+    test('unit-test environment forces ImportNeedsScreenshot path; legacy '
         'wrapper surfaces it as a failure with needsScreenshot=true', () async {
       const url = 'https://www.instagram.com/p/ABC123/';
       final legacy = await pipeline.import(url);
@@ -299,19 +301,30 @@ void main() {
       // and carry `needsScreenshot=true` in metadata so the UI bridge can
       // re-route to the screenshot affordance.
       expect(legacy.isSuccess, isFalse);
-      expect(legacy.needsAssistance, isFalse,
-          reason: 'screenshot is not assistance — different UI branch');
+      expect(
+        legacy.needsAssistance,
+        isFalse,
+        reason: 'screenshot is not assistance — different UI branch',
+      );
       expect(legacy.metadata, isNotNull);
-      expect(legacy.metadata?['needsScreenshot'], isTrue,
-          reason:
-              'UI uses this flag to swap the toast for a screenshot prompt');
+      expect(
+        legacy.metadata?['needsScreenshot'],
+        isTrue,
+        reason: 'UI uses this flag to swap the toast for a screenshot prompt',
+      );
       expect(legacy.metadata?['platform'], 'Instagram');
       expect(legacy.metadata?['url'], url);
-      expect(legacy.errorMessage, isNotEmpty,
-          reason: 'failure message must be present for the toast fallback');
+      expect(
+        legacy.errorMessage,
+        isNotEmpty,
+        reason: 'failure message must be present for the toast fallback',
+      );
       // LLM must NOT have been called — caption was never extracted.
-      expect(llm.seenTranscripts, isEmpty,
-          reason: 'cost contract: no caption ⇒ no LLM call');
+      expect(
+        llm.seenTranscripts,
+        isEmpty,
+        reason: 'cost contract: no caption ⇒ no LLM call',
+      );
     });
   });
 
@@ -346,8 +359,7 @@ void main() {
   // 5) WebScraper no-caption path (drives ImportNeedsScreenshot)
   // =========================================================================
   group('importV2 — no-caption path', () {
-    test(
-        'returns ImportNeedsScreenshot when WebScraper cannot extract a '
+    test('returns ImportNeedsScreenshot when WebScraper cannot extract a '
         'caption (platform-channel unavailable in unit test)', () async {
       const url = 'https://www.instagram.com/p/ABC123/';
       final result = await pipeline.importV2(url);
@@ -359,15 +371,20 @@ void main() {
       // takes when an Instagram post is private / age-gated / login-walled.
       expect(result, isA<ImportNeedsScreenshot>());
       final ns = result as ImportNeedsScreenshot;
-      expect(ns.platform, 'Instagram',
-          reason: 'UI segments screenshot prompts by platform — must be exact');
+      expect(
+        ns.platform,
+        'Instagram',
+        reason: 'UI segments screenshot prompts by platform — must be exact',
+      );
       expect(ns.url, url);
-      expect(ns.message, isNotEmpty,
-          reason: 'message is shown verbatim to the user in Swedish');
+      expect(
+        ns.message,
+        isNotEmpty,
+        reason: 'message is shown verbatim to the user in Swedish',
+      );
     });
 
-    test(
-        'LLM is NEVER invoked when caption extraction fails '
+    test('LLM is NEVER invoked when caption extraction fails '
         '(cost contract)', () async {
       // Pin: a regression where the pipeline calls extractFromTranscript with
       // an empty string would cost real money per import attempt AND
@@ -379,8 +396,7 @@ void main() {
       expect(llm.seenUrls, isEmpty);
     });
 
-    test(
-        'every importV2 call constructs a fresh WebScraper and disposes it '
+    test('every importV2 call constructs a fresh WebScraper and disposes it '
         '(no leak across calls)', () async {
       // Indirect probe: if the second call hung because the first WebScraper
       // wasn't disposed (its HeadlessWebView still pending), the test
@@ -413,21 +429,28 @@ void main() {
   // 7) Type-system safety on result conversion
   // =========================================================================
   group('ImportResult type contract on the screenshot path', () {
-    test(
-        'legacy ImportResult from screenshot path has no recipe, no '
+    test('legacy ImportResult from screenshot path has no recipe, no '
         'extractedText, but full metadata', () async {
       const url = 'https://www.instagram.com/p/ABC123/';
       final legacy = await pipeline.import(url);
 
-      expect(legacy.recipe, isNull,
-          reason: 'screenshot path has no recipe yet');
-      expect(legacy.extractedText, isNull,
-          reason: 'no caption ⇒ no extractedText to surface');
+      expect(
+        legacy.recipe,
+        isNull,
+        reason: 'screenshot path has no recipe yet',
+      );
+      expect(
+        legacy.extractedText,
+        isNull,
+        reason: 'no caption ⇒ no extractedText to surface',
+      );
       expect(legacy.suggestedTitle, isNull);
       expect(legacy.hasMetadata, isTrue);
       // metadata MUST contain the routing flag and platform info.
-      expect(legacy.metadata!.keys,
-          containsAll(['platform', 'url', 'needsScreenshot']));
+      expect(
+        legacy.metadata!.keys,
+        containsAll(['platform', 'url', 'needsScreenshot']),
+      );
     });
   });
 }

@@ -55,7 +55,8 @@ class RecipeShareRequestModule {
           .recipeShareRequestExists(me, ownerId, recipeId);
       if (alreadyRequested) return true;
 
-      final fromUserName = userService.currentDisplayName ??
+      final fromUserName =
+          userService.currentDisplayName ??
           AppLocale.current.displayUnknownUser;
 
       final request = SocialRequest.recipeShareRequest(
@@ -78,7 +79,8 @@ class RecipeShareRequestModule {
         );
       } catch (e) {
         AppLogger.warning(
-            'Recipe share request notification failed (non-fatal): $e');
+          'Recipe share request notification failed (non-fatal): $e',
+        );
       }
       return true;
     } catch (e) {
@@ -105,8 +107,9 @@ class RecipeShareRequestModule {
       // rule both key off the original doc, so a new collaborative copy would
       // leave the requester unable to open the recipe.
       final shared = await ServiceLocator.get<SocialRecipeCoordinator>()
-          .shareRecipeWithUsers(
-              recipeId, [request.fromUserId], ResourcePermission.viewer);
+          .shareRecipeWithUsers(recipeId, [
+            request.fromUserId,
+          ], ResourcePermission.viewer);
       if (!shared) return false;
 
       await socialRequestRepository.updateRequestStatus(
@@ -141,10 +144,14 @@ class RecipeShareRequestModule {
       localization: {
         'title_sv': AppLocale.current.recipeShareRequestNotifTitle,
         'title_en': AppLocale.current.recipeShareRequestNotifTitle,
-        'body_sv': AppLocale.current
-            .recipeShareRequestNotifBody(fromUserName, recipeTitle),
-        'body_en': AppLocale.current
-            .recipeShareRequestNotifBody(fromUserName, recipeTitle),
+        'body_sv': AppLocale.current.recipeShareRequestNotifBody(
+          fromUserName,
+          recipeTitle,
+        ),
+        'body_en': AppLocale.current.recipeShareRequestNotifBody(
+          fromUserName,
+          recipeTitle,
+        ),
       },
     );
 

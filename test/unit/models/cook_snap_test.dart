@@ -190,10 +190,14 @@ void main() {
     });
 
     test('unknown wire value resolves to sameAsRecipe', () {
-      expect(CookSnapVisibility.fromWire('everyone'),
-          CookSnapVisibility.sameAsRecipe);
       expect(
-          CookSnapVisibility.fromWire(null), CookSnapVisibility.sameAsRecipe);
+        CookSnapVisibility.fromWire('everyone'),
+        CookSnapVisibility.sameAsRecipe,
+      );
+      expect(
+        CookSnapVisibility.fromWire(null),
+        CookSnapVisibility.sameAsRecipe,
+      );
       expect(CookSnapVisibility.fromWire('onlyMe'), CookSnapVisibility.onlyMe);
     });
   });
@@ -298,44 +302,49 @@ void main() {
   group('equality + hash', () {
     test('two CookSnaps with same id are equal', () {
       final a = CookSnap(
-          id: 'x',
-          recipeId: 'r1',
-          userId: 'a',
-          userDisplayName: 'A',
-          photoUrl: 'p1');
+        id: 'x',
+        recipeId: 'r1',
+        userId: 'a',
+        userDisplayName: 'A',
+        photoUrl: 'p1',
+      );
       final b = CookSnap(
-          id: 'x',
-          recipeId: 'r2', // different recipe — equality is id-only
-          userId: 'b',
-          userDisplayName: 'B',
-          photoUrl: 'p2');
+        id: 'x',
+        recipeId: 'r2', // different recipe — equality is id-only
+        userId: 'b',
+        userDisplayName: 'B',
+        photoUrl: 'p2',
+      );
       expect(a, b);
       expect(a.hashCode, b.hashCode);
     });
 
     test('different ids → unequal', () {
       final a = CookSnap(
-          id: 'x',
-          recipeId: 'r1',
-          userId: 'a',
-          userDisplayName: 'A',
-          photoUrl: 'p');
+        id: 'x',
+        recipeId: 'r1',
+        userId: 'a',
+        userDisplayName: 'A',
+        photoUrl: 'p',
+      );
       final b = CookSnap(
-          id: 'y',
-          recipeId: 'r1',
-          userId: 'a',
-          userDisplayName: 'A',
-          photoUrl: 'p');
+        id: 'y',
+        recipeId: 'r1',
+        userId: 'a',
+        userDisplayName: 'A',
+        photoUrl: 'p',
+      );
       expect(a, isNot(b));
     });
 
     test('identical short-circuit', () {
       final a = CookSnap(
-          id: 'x',
-          recipeId: 'r1',
-          userId: 'a',
-          userDisplayName: 'A',
-          photoUrl: 'p');
+        id: 'x',
+        recipeId: 'r1',
+        userId: 'a',
+        userDisplayName: 'A',
+        photoUrl: 'p',
+      );
       expect(a == a, isTrue);
     });
   });

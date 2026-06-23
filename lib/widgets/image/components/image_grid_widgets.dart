@@ -88,7 +88,8 @@ class ImageGridWidgets {
         behavior: HitTestBehavior.opaque,
         onTap: () {
           AppLogger.debug(
-              '👆 TOUCH: Image $index tapped! isPrimary: $isPrimary');
+            '👆 TOUCH: Image $index tapped! isPrimary: $isPrimary',
+          );
 
           if (config.enableHapticFeedback) {
             HapticFeedback.lightImpact();
@@ -99,7 +100,8 @@ class ImageGridWidgets {
             onPrimaryImageChanged(index);
           } else {
             AppLogger.debug(
-                '🌟 GRID: Primary image tapped - calling onImageTap');
+              '🌟 GRID: Primary image tapped - calling onImageTap',
+            );
             onImageTap(index);
           }
         },
@@ -144,12 +146,12 @@ class ImageGridWidgets {
                   decoration: BoxDecoration(
                     color: isPrimary
                         ? Theme.of(context).primaryColor
-                        : Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: AppDimensions.opacityMediumDark),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                        : Theme.of(context).colorScheme.onSurface.withValues(
+                            alpha: AppDimensions.opacityMediumDark,
+                          ),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusS,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -159,18 +161,18 @@ class ImageGridWidgets {
                             ? AdaptiveIcons.primaryFilled
                             : AdaptiveIcons.primaryOutline,
                         size: AppDimensions.iconSizeXs,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                       ),
                       if (isPrimary) ...[
                         const SizedBox(width: AppDimensions.spacingXxs),
                         Text(
                           context.l10n.imagePrimary,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -190,7 +192,8 @@ class ImageGridWidgets {
                   child: GestureDetector(
                     onTap: () {
                       AppLogger.debug(
-                          '🗑️ DELETE: Delete button tapped for image $index');
+                        '🗑️ DELETE: Delete button tapped for image $index',
+                      );
                       onRemoveImage(index);
                     },
                     child: buildGridActionButton(
@@ -213,26 +216,28 @@ class ImageGridWidgets {
     required String tooltip,
     bool isDestructive = false,
   }) {
-    return Builder(builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      return Tooltip(
-        message: tooltip,
-        child: Container(
-          width: AppDimensions.iconSizeAction,
-          height: AppDimensions.iconSizeAction,
-          decoration: BoxDecoration(
-            color: isDestructive ? cs.error : cs.surfaceContainerHighest,
-            shape: BoxShape.circle,
-            boxShadow: AppShadows.subtle,
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Tooltip(
+          message: tooltip,
+          child: Container(
+            width: AppDimensions.iconSizeAction,
+            height: AppDimensions.iconSizeAction,
+            decoration: BoxDecoration(
+              color: isDestructive ? cs.error : cs.surfaceContainerHighest,
+              shape: BoxShape.circle,
+              boxShadow: AppShadows.subtle,
+            ),
+            child: Icon(
+              icon,
+              size: AppDimensions.iconSizeS,
+              color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
+            ),
           ),
-          child: Icon(
-            icon,
-            size: AppDimensions.iconSizeS,
-            color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
-          ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   /// Build add image button for grid layout
@@ -256,12 +261,14 @@ class ImageGridWidgets {
               decoration: BoxDecoration(
                 borderRadius: config.effectiveBorderRadius,
                 border: Border.all(
-                  color: cs.primary
-                      .withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: cs.primary.withValues(
+                    alpha: AppDimensions.opacityMediumLight,
+                  ),
                   width: AppDimensions.borderWidthThin,
                 ),
-                color: cs.primary
-                    .withValues(alpha: AppDimensions.opacityExtraVeryLight),
+                color: cs.primary.withValues(
+                  alpha: AppDimensions.opacityExtraVeryLight,
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

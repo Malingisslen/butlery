@@ -78,11 +78,14 @@ class FriendRequestsHeaderBuilder {
                 value: 'accept_all',
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle,
-                        color: context.butleryColors.success),
+                    Icon(
+                      Icons.check_circle,
+                      color: context.butleryColors.success,
+                    ),
                     const SizedBox(width: AppDimensions.spacingSm),
-                    Text(context.l10n
-                        .socialAcceptCount(selectedIncoming.length)),
+                    Text(
+                      context.l10n.socialAcceptCount(selectedIncoming.length),
+                    ),
                   ],
                 ),
               ),
@@ -90,11 +93,14 @@ class FriendRequestsHeaderBuilder {
                 value: 'reject_all',
                 child: Row(
                   children: [
-                    Icon(Icons.cancel,
-                        color: Theme.of(context).colorScheme.error),
+                    Icon(
+                      Icons.cancel,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     const SizedBox(width: AppDimensions.spacingSm),
-                    Text(context.l10n
-                        .socialDeclineCount(selectedIncoming.length)),
+                    Text(
+                      context.l10n.socialDeclineCount(selectedIncoming.length),
+                    ),
                   ],
                 ),
               ),
@@ -184,10 +190,9 @@ class IncomingRequestsTabBuilder {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              color: Theme.of(context)
-                  .colorScheme
-                  .primaryContainer
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
               child: Row(
                 children: [
                   Icon(
@@ -196,8 +201,9 @@ class IncomingRequestsTabBuilder {
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
-                    context.l10n
-                        .socialRequestsSelected(selectedIncoming.length),
+                    context.l10n.socialRequestsSelected(
+                      selectedIncoming.length,
+                    ),
                     style: AppTextStyles.titleSmall.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -253,7 +259,8 @@ class SentRequestsTabBuilder {
   ) {
     if (viewModel.isLoading && viewModel.sentRequests.isEmpty) {
       return StateWidget.loading(
-          message: context.l10n.socialLoadingSentRequests);
+        message: context.l10n.socialLoadingSentRequests,
+      );
     }
 
     if (viewModel.sentRequests.isEmpty) {
@@ -276,10 +283,9 @@ class SentRequestsTabBuilder {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.spacingL),
-              color: Theme.of(context)
-                  .colorScheme
-                  .primaryContainer
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(
+                alpha: AppDimensions.opacityMediumLight,
+              ),
               child: Row(
                 children: [
                   Icon(

@@ -149,12 +149,14 @@ void main() {
     /// increments. If someone refactored `_stages.add(...)` away, this fails.
     test('registerStage adds the stage to the internal list', () {
       final bootstrap = ApplicationBootstrap();
-      bootstrap
-          .registerStage(_RecordingStage('A', priority: 1, executionLog: []));
+      bootstrap.registerStage(
+        _RecordingStage('A', priority: 1, executionLog: []),
+      );
       expect(bootstrap.status['stages_count'], 1);
 
-      bootstrap
-          .registerStage(_RecordingStage('B', priority: 2, executionLog: []));
+      bootstrap.registerStage(
+        _RecordingStage('B', priority: 2, executionLog: []),
+      );
       expect(bootstrap.status['stages_count'], 2);
     });
 
@@ -174,51 +176,63 @@ void main() {
     /// throws — the registry is closed for change. The error must be
     /// `BootstrapException` with the stage name and operation populated so
     /// crash reports identify the culprit.
-    test('registerStage throws after initialization for a new stage type',
-        () async {
-      final log = <String>[];
-      await ApplicationBootstrap.initialize(
-        stages: [_RecordingStage('Init', priority: 1, executionLog: log)],
-      );
-      final bootstrap = ApplicationBootstrap();
-      expect(bootstrap.isInitialized, isTrue);
+    test(
+      'registerStage throws after initialization for a new stage type',
+      () async {
+        final log = <String>[];
+        await ApplicationBootstrap.initialize(
+          stages: [_RecordingStage('Init', priority: 1, executionLog: log)],
+        );
+        final bootstrap = ApplicationBootstrap();
+        expect(bootstrap.isInitialized, isTrue);
 
-      // _UnknownStage is a runtimeType not seen before, so the idempotency
-      // shortcut shouldn't apply.
-      expect(
-        () => bootstrap.registerStage(_SlowStage('Late',
-            delay: Duration.zero, timeout: const Duration(seconds: 1))),
-        throwsA(isA<BootstrapException>()
-            .having((e) => e.stage, 'stage', 'Late')
-            .having((e) => e.operation, 'operation', 'registration')),
-      );
-    });
+        // _UnknownStage is a runtimeType not seen before, so the idempotency
+        // shortcut shouldn't apply.
+        expect(
+          () => bootstrap.registerStage(
+            _SlowStage(
+              'Late',
+              delay: Duration.zero,
+              timeout: const Duration(seconds: 1),
+            ),
+          ),
+          throwsA(
+            isA<BootstrapException>()
+                .having((e) => e.stage, 'stage', 'Late')
+                .having((e) => e.operation, 'operation', 'registration'),
+          ),
+        );
+      },
+    );
 
     /// Proves: hot-restart idempotency — re-registering a stage of a type
     /// already in `_stagesByType` is a silent no-op (does NOT throw, does
     /// NOT double-count). This is load-bearing: hot restart re-runs main(),
     /// which re-registers the same stage instances.
-    test('registerStage of a known stage type after init is a silent no-op',
-        () async {
-      final log = <String>[];
-      await ApplicationBootstrap.initialize(
-        stages: [_RecordingStage('Init', priority: 1, executionLog: log)],
-      );
-      final bootstrap = ApplicationBootstrap();
-      final countBefore = bootstrap.status['stages_count'] as int;
+    test(
+      'registerStage of a known stage type after init is a silent no-op',
+      () async {
+        final log = <String>[];
+        await ApplicationBootstrap.initialize(
+          stages: [_RecordingStage('Init', priority: 1, executionLog: log)],
+        );
+        final bootstrap = ApplicationBootstrap();
+        final countBefore = bootstrap.status['stages_count'] as int;
 
-      // Same runtimeType (_RecordingStage) as the one already registered:
-      // production short-circuits before throwing.
-      expect(
-        () => bootstrap.registerStage(
-            _RecordingStage('Init2', priority: 5, executionLog: log)),
-        returnsNormally,
-      );
+        // Same runtimeType (_RecordingStage) as the one already registered:
+        // production short-circuits before throwing.
+        expect(
+          () => bootstrap.registerStage(
+            _RecordingStage('Init2', priority: 5, executionLog: log),
+          ),
+          returnsNormally,
+        );
 
-      // Critically: must NOT double-count. The whole point of the
-      // hot-restart guard is to skip silently.
-      expect(bootstrap.status['stages_count'], countBefore);
-    });
+        // Critically: must NOT double-count. The whole point of the
+        // hot-restart guard is to skip silently.
+        expect(bootstrap.status['stages_count'], countBefore);
+      },
+    );
   });
 
   group('initialize() — happy path', () {
@@ -245,8 +259,7 @@ void main() {
     /// `compareTo` direction or removes the sort, this test breaks.
     /// Registration order is deliberately reversed from priority order so a
     /// no-sort implementation would produce `['C','B','A']`.
-    test(
-        'stages execute in ascending priority order, regardless of '
+    test('stages execute in ascending priority order, regardless of '
         'registration order', () async {
       final log = <String>[];
       await ApplicationBootstrap.initialize(
@@ -257,16 +270,22 @@ void main() {
         ],
       );
 
-      expect(log, ['A', 'B', 'C'],
-          reason: 'Lower priority numbers must execute first. '
-              'A bug that drops or reverses the sort would surface here.');
+      expect(
+        log,
+        ['A', 'B', 'C'],
+        reason:
+            'Lower priority numbers must execute first. '
+            'A bug that drops or reverses the sort would surface here.',
+      );
     });
 
     /// Proves: empty stages list does NOT throw — the bootstrap warns and
     /// returns cleanly. (A naive `_stages.first` would crash here.)
     test('initialize with empty stages completes without throwing', () async {
       await expectLater(
-          ApplicationBootstrap.initialize(stages: const []), completes);
+        ApplicationBootstrap.initialize(stages: const []),
+        completes,
+      );
       expect(ApplicationBootstrap().isInitialized, isTrue);
     });
 
@@ -291,14 +310,16 @@ void main() {
     /// completed future (no completer needed) — a refactor that always
     /// allocates a completer would still pass, but a refactor that forgets
     /// the early-return would hang.
-    test('initialized future resolves immediately when already initialized',
-        () async {
-      await ApplicationBootstrap.initialize(stages: const []);
-      // Should NOT hang; should complete in microtask.
-      await ApplicationBootstrap()
-          .initialized
-          .timeout(const Duration(milliseconds: 100));
-    });
+    test(
+      'initialized future resolves immediately when already initialized',
+      () async {
+        await ApplicationBootstrap.initialize(stages: const []);
+        // Should NOT hang; should complete in microtask.
+        await ApplicationBootstrap().initialized.timeout(
+          const Duration(milliseconds: 100),
+        );
+      },
+    );
   });
 
   group('initialize() — failure paths', () {
@@ -306,30 +327,38 @@ void main() {
     /// in `BootstrapException` with `stage` = the stage name, `operation` =
     /// 'execution', and `cause` preserving the original error. Crashlytics
     /// needs the original cause; a bug that dropped `e` would fail this.
-    test('non-optional stage throw is wrapped as BootstrapException with cause',
-        () async {
-      final original = StateError('disk full');
-      final stage = _RecordingStage(
-        'Critical',
-        priority: 1,
-        executionLog: <String>[],
-        executeThrows: original,
-      );
+    test(
+      'non-optional stage throw is wrapped as BootstrapException with cause',
+      () async {
+        final original = StateError('disk full');
+        final stage = _RecordingStage(
+          'Critical',
+          priority: 1,
+          executionLog: <String>[],
+          executeThrows: original,
+        );
 
-      await expectLater(
-        ApplicationBootstrap.initialize(stages: [stage]),
-        throwsA(isA<BootstrapException>()
-            .having((e) => e.stage, 'stage', 'Critical')
-            .having((e) => e.operation, 'operation', 'execution')
-            .having((e) => e.cause, 'cause preserved', same(original))),
-      );
+        await expectLater(
+          ApplicationBootstrap.initialize(stages: [stage]),
+          throwsA(
+            isA<BootstrapException>()
+                .having((e) => e.stage, 'stage', 'Critical')
+                .having((e) => e.operation, 'operation', 'execution')
+                .having((e) => e.cause, 'cause preserved', same(original)),
+          ),
+        );
 
-      expect(ApplicationBootstrap().isInitialized, isFalse);
-      expect(ApplicationBootstrap().isInitializing, isFalse,
-          reason: 'After a failure the in-progress flag must be cleared, '
+        expect(ApplicationBootstrap().isInitialized, isFalse);
+        expect(
+          ApplicationBootstrap().isInitializing,
+          isFalse,
+          reason:
+              'After a failure the in-progress flag must be cleared, '
               'otherwise the next initialize() call sees a phantom in-progress '
-              'state and throws "already in progress".');
-    });
+              'state and throws "already in progress".',
+        );
+      },
+    );
 
     /// Proves: an **optional** stage that throws is logged and skipped — the
     /// bootstrap continues. This is the degraded-mode contract: optional
@@ -365,40 +394,52 @@ void main() {
     /// layers so a refactor that loses the 'validation' inner — making it
     /// impossible to distinguish a validate-failure from an execute-throw in
     /// Crashlytics — would fail this test.
-    test('non-optional stage with failing validate() throws BootstrapException',
-        () async {
-      final stage = _RecordingStage(
-        'BadValidate',
-        priority: 1,
-        executionLog: <String>[],
-        validateResult: false,
-      );
+    test(
+      'non-optional stage with failing validate() throws BootstrapException',
+      () async {
+        final stage = _RecordingStage(
+          'BadValidate',
+          priority: 1,
+          executionLog: <String>[],
+          validateResult: false,
+        );
 
-      await expectLater(
-        ApplicationBootstrap.initialize(stages: [stage]),
-        throwsA(isA<BootstrapException>()
-            .having((e) => e.stage, 'stage', 'BadValidate')
-            .having((e) => e.operation, 'operation', 'execution')
-            .having(
-                (e) => e.cause,
-                'inner cause is a validation BootstrapException',
-                isA<BootstrapException>()
-                    .having((c) => c.operation, 'operation', 'validation'))),
-      );
-    });
+        await expectLater(
+          ApplicationBootstrap.initialize(stages: [stage]),
+          throwsA(
+            isA<BootstrapException>()
+                .having((e) => e.stage, 'stage', 'BadValidate')
+                .having((e) => e.operation, 'operation', 'execution')
+                .having(
+                  (e) => e.cause,
+                  'inner cause is a validation BootstrapException',
+                  isA<BootstrapException>().having(
+                    (c) => c.operation,
+                    'operation',
+                    'validation',
+                  ),
+                ),
+          ),
+        );
+      },
+    );
 
     /// Proves: validate()==false on an OPTIONAL stage is swallowed (no
     /// throw, no later-stage cancellation). Distinct from the throw-path.
     test('optional stage with failing validate() is swallowed', () async {
       final log = <String>[];
-      await ApplicationBootstrap.initialize(stages: [
-        _RecordingStage('Opt',
+      await ApplicationBootstrap.initialize(
+        stages: [
+          _RecordingStage(
+            'Opt',
             priority: 1,
             executionLog: log,
             isOptional: true,
-            validateResult: false),
-        _RecordingStage('After', priority: 2, executionLog: log),
-      ]);
+            validateResult: false,
+          ),
+          _RecordingStage('After', priority: 2, executionLog: log),
+        ],
+      );
 
       expect(ApplicationBootstrap().isInitialized, isTrue);
       expect(log, ['Opt', 'After']);
@@ -409,23 +450,30 @@ void main() {
     /// must surface as `BootstrapException` (which wraps the
     /// `TimeoutException`). This pins BUT-1059-adjacent reliability: long
     /// startup tasks can't silently hang the splash.
-    test('stage that exceeds its declared timeout fails initialization',
-        () async {
-      final slow = _SlowStage(
-        'SlowStage',
-        delay: const Duration(milliseconds: 200),
-        timeout: const Duration(milliseconds: 20),
-      );
+    test(
+      'stage that exceeds its declared timeout fails initialization',
+      () async {
+        final slow = _SlowStage(
+          'SlowStage',
+          delay: const Duration(milliseconds: 200),
+          timeout: const Duration(milliseconds: 20),
+        );
 
-      await expectLater(
-        ApplicationBootstrap.initialize(stages: [slow]),
-        throwsA(isA<BootstrapException>()
-            .having((e) => e.stage, 'stage', 'SlowStage')
-            .having((e) => e.operation, 'operation', 'execution')
-            .having((e) => e.cause, 'cause is TimeoutException',
-                isA<TimeoutException>())),
-      );
-    });
+        await expectLater(
+          ApplicationBootstrap.initialize(stages: [slow]),
+          throwsA(
+            isA<BootstrapException>()
+                .having((e) => e.stage, 'stage', 'SlowStage')
+                .having((e) => e.operation, 'operation', 'execution')
+                .having(
+                  (e) => e.cause,
+                  'cause is TimeoutException',
+                  isA<TimeoutException>(),
+                ),
+          ),
+        );
+      },
+    );
 
     /// Proves: when initialization fails, the `initialized` Future
     /// completeErrors so UI splash widgets can react (not hang forever).
@@ -436,14 +484,16 @@ void main() {
       // Fire-and-forget the failing initialize; catch the rethrow so the
       // test framework doesn't see an uncaught async error.
       // ignore: unawaited_futures
-      ApplicationBootstrap.initialize(stages: [
-        _RecordingStage(
-          'WillFail',
-          priority: 1,
-          executionLog: <String>[],
-          executeThrows: StateError('boom'),
-        ),
-      ]).catchError((Object _) {});
+      ApplicationBootstrap.initialize(
+        stages: [
+          _RecordingStage(
+            'WillFail',
+            priority: 1,
+            executionLog: <String>[],
+            executeThrows: StateError('boom'),
+          ),
+        ],
+      ).catchError((Object _) {});
 
       await expectLater(readyFuture, throwsA(isA<BootstrapException>()));
     });
@@ -454,58 +504,72 @@ void main() {
     /// returns to a virgin state. A reset() that forgets to clear `_stages`
     /// would fail this — and that bug would silently double-execute every
     /// stage on the next init.
-    test('reset() clears stages, init flags, and the in-flight completer',
-        () async {
-      final log = <String>[];
-      await ApplicationBootstrap.initialize(
-          stages: [_RecordingStage('S', priority: 1, executionLog: log)]);
-      expect(ApplicationBootstrap().status['stages_count'], 1);
+    test(
+      'reset() clears stages, init flags, and the in-flight completer',
+      () async {
+        final log = <String>[];
+        await ApplicationBootstrap.initialize(
+          stages: [_RecordingStage('S', priority: 1, executionLog: log)],
+        );
+        expect(ApplicationBootstrap().status['stages_count'], 1);
 
-      await ApplicationBootstrap().reset();
+        await ApplicationBootstrap().reset();
 
-      final s = ApplicationBootstrap().status;
-      expect(s['stages_count'], 0);
-      expect(s['initialized'], isFalse);
-      expect(s['initializing'], isFalse);
+        final s = ApplicationBootstrap().status;
+        expect(s['stages_count'], 0);
+        expect(s['initialized'], isFalse);
+        expect(s['initializing'], isFalse);
 
-      // The completer cleared correctly: a fresh `initialized` future
-      // must NOT be the already-resolved one from before, and it must
-      // not have leaked into a completed state.
-      final freshFuture = ApplicationBootstrap().initialized;
-      // It should still be pending (no init done yet after reset).
-      var resolved = false;
-      // ignore: unawaited_futures
-      freshFuture.then<void>((_) {
-        resolved = true;
-      }).onError((_, __) {
-        // Swallow — the future is intentionally never completed in this test.
-      });
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-      expect(resolved, isFalse,
-          reason: 'After reset(), the new initialized future must NOT be '
-              'pre-completed (it should track the next init() cycle).');
-    });
+        // The completer cleared correctly: a fresh `initialized` future
+        // must NOT be the already-resolved one from before, and it must
+        // not have leaked into a completed state.
+        final freshFuture = ApplicationBootstrap().initialized;
+        // It should still be pending (no init done yet after reset).
+        var resolved = false;
+        // ignore: unawaited_futures
+        freshFuture
+            .then<void>((_) {
+              resolved = true;
+            })
+            .onError((_, __) {
+              // Swallow — the future is intentionally never completed in this test.
+            });
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(
+          resolved,
+          isFalse,
+          reason:
+              'After reset(), the new initialized future must NOT be '
+              'pre-completed (it should track the next init() cycle).',
+        );
+      },
+    );
 
     /// Proves: hot restart — calling `initialize(...)` again after a
     /// successful init detects the already-initialized state, calls
     /// `reset()`, and re-runs cleanly. The stages from the SECOND call
     /// must be the ones that ran (i.e. reset cleared the first batch).
-    test('static initialize() during hot restart re-runs with new stages',
-        () async {
-      final log1 = <String>[];
-      await ApplicationBootstrap.initialize(
-          stages: [_RecordingStage('First', priority: 1, executionLog: log1)]);
+    test(
+      'static initialize() during hot restart re-runs with new stages',
+      () async {
+        final log1 = <String>[];
+        await ApplicationBootstrap.initialize(
+          stages: [_RecordingStage('First', priority: 1, executionLog: log1)],
+        );
 
-      final log2 = <String>[];
-      await ApplicationBootstrap.initialize(
-          stages: [_RecordingStage('Second', priority: 1, executionLog: log2)]);
+        final log2 = <String>[];
+        await ApplicationBootstrap.initialize(
+          stages: [_RecordingStage('Second', priority: 1, executionLog: log2)],
+        );
 
-      expect(log2, ['Second'],
-          reason: 'Hot-restart cycle must re-run with the new stage list.');
-      // After reset+re-init there should be exactly one stage registered,
-      // not two (otherwise reset() didn't clear).
-      expect(ApplicationBootstrap().status['stages_count'], 1);
-    });
+        expect(log2, [
+          'Second',
+        ], reason: 'Hot-restart cycle must re-run with the new stage list.');
+        // After reset+re-init there should be exactly one stage registered,
+        // not two (otherwise reset() didn't clear).
+        expect(ApplicationBootstrap().status['stages_count'], 1);
+      },
+    );
   });
 
   group('status map contract', () {
@@ -515,18 +579,20 @@ void main() {
     test('status returns the documented keys with correct types', () async {
       final log = <String>[];
       await ApplicationBootstrap.initialize(
-          stages: [_RecordingStage('S', priority: 1, executionLog: log)]);
+        stages: [_RecordingStage('S', priority: 1, executionLog: log)],
+      );
 
       final s = ApplicationBootstrap().status;
       expect(
-          s.keys,
-          containsAll(<String>[
-            'initialized',
-            'initializing',
-            'modules_count',
-            'stages_count',
-            'di_initialized',
-          ]));
+        s.keys,
+        containsAll(<String>[
+          'initialized',
+          'initializing',
+          'modules_count',
+          'stages_count',
+          'di_initialized',
+        ]),
+      );
       expect(s['initialized'], isA<bool>());
       expect(s['initializing'], isA<bool>());
       expect(s['stages_count'], isA<int>());
@@ -542,8 +608,11 @@ void main() {
     /// until after stages would break the documented invariant.
     test('ServiceLocator is initialized before any stage executes', () async {
       var locatorWasReadyWhenStageRan = false;
-      final probeStage =
-          _RecordingStage('Probe', priority: 1, executionLog: <String>[]);
+      final probeStage = _RecordingStage(
+        'Probe',
+        priority: 1,
+        executionLog: <String>[],
+      );
       // Wrap via a custom stage whose execute() checks the ServiceLocator.
       final checker = _ServiceLocatorChecker(
         onExecute: () {
@@ -553,9 +622,13 @@ void main() {
 
       await ApplicationBootstrap.initialize(stages: [checker, probeStage]);
 
-      expect(locatorWasReadyWhenStageRan, isTrue,
-          reason: 'Stages must be able to rely on ServiceLocator being '
-              'wired before execute() runs.');
+      expect(
+        locatorWasReadyWhenStageRan,
+        isTrue,
+        reason:
+            'Stages must be able to rely on ServiceLocator being '
+            'wired before execute() runs.',
+      );
     });
   });
 }

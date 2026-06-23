@@ -27,38 +27,39 @@ void main() {
 
   group('BUT-697 chunk-7 widget Semantics labels', () {
     testWidgets(
-        'IngredientChipInput — selected chip exposes localized remove label',
-        (tester) async {
-      final handle = tester.ensureSemantics();
+      'IngredientChipInput — selected chip exposes localized remove label',
+      (tester) async {
+        final handle = tester.ensureSemantics();
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Material(
-            child: IngredientChipInput(
-              selectedIngredients: const [
-                IngredientData(
-                  id: 'tomato',
-                  swedish: 'Tomater',
-                  english: 'Tomatoes',
-                  group: 'vegetables',
-                  properties: {},
-                ),
-              ],
-              autocompleteResults: const [],
-              onSearchChanged: (_) {},
-              onIngredientSelected: (_) {},
-              onIngredientRemoved: (_) {},
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Material(
+              child: IngredientChipInput(
+                selectedIngredients: const [
+                  IngredientData(
+                    id: 'tomato',
+                    swedish: 'Tomater',
+                    english: 'Tomatoes',
+                    group: 'vegetables',
+                    properties: {},
+                  ),
+                ],
+                autocompleteResults: const [],
+                onSearchChanged: (_) {},
+                onIngredientSelected: (_) {},
+                onIngredientRemoved: (_) {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Swedish: "Ta bort Tomater"
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Ta bort Tomater')),
-        findsOneWidget,
-      );
-      handle.dispose();
-    });
+        // Swedish: "Ta bort Tomater"
+        expect(
+          find.bySemanticsLabel(RegExp(r'^Ta bort Tomater')),
+          findsOneWidget,
+        );
+        handle.dispose();
+      },
+    );
   });
 }

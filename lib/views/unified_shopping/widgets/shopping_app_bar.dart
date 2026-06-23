@@ -36,8 +36,9 @@ class ShoppingAppBar {
             child: IconButton(
               icon: Icon(
                 AdaptiveIcons.add,
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityDark,
+                ),
               ),
               onPressed: onCreateList,
               tooltip: context.l10n.shoppingNewList,
@@ -49,8 +50,9 @@ class ShoppingAppBar {
             IconButton(
               icon: Icon(
                 Icons.list_alt_outlined,
-                color:
-                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                color: cs.onSurface.withValues(
+                  alpha: AppDimensions.opacityDark,
+                ),
               ),
               onPressed: onBrowseTemplates,
               tooltip: context.l10n.shoppingTemplateBrowse,
@@ -239,7 +241,8 @@ class ShoppingAppBar {
           default:
             // If not in permissions map, check if owner
             return activeList.ownerId == currentUserId
-                ? Icons.admin_panel_settings // No SF Symbol equivalent
+                ? Icons
+                      .admin_panel_settings // No SF Symbol equivalent
                 : AdaptiveIcons.people;
         }
       case ListType.template:
@@ -249,7 +252,9 @@ class ShoppingAppBar {
 
   /// Get the appropriate color for sharing status based on list type and user permissions
   static Color _getSharingStatusColor(
-      BuildContext context, UnifiedShoppingViewModel viewModel) {
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final activeList = viewModel.activeList;
     if (activeList == null) return cs.primary;
@@ -283,7 +288,9 @@ class ShoppingAppBar {
 
   /// Get the appropriate tooltip for sharing status based on list type and user permissions
   static String _getSharingStatusTooltip(
-      BuildContext context, UnifiedShoppingViewModel viewModel) {
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
     final activeList = viewModel.activeList;
     if (activeList == null) return context.l10n.shoppingList;
 
@@ -296,7 +303,8 @@ class ShoppingAppBar {
         if (currentUserId == null) return context.l10n.shoppingSharedList;
 
         final userPermission = activeList.memberPermissions[currentUserId];
-        final memberCount = activeList.memberPermissions.length +
+        final memberCount =
+            activeList.memberPermissions.length +
             (activeList.memberPermissions.containsKey(activeList.ownerId)
                 ? 0
                 : 1);
@@ -319,8 +327,10 @@ class ShoppingAppBar {
                 : context.l10n.shoppingPermissionEdit;
         }
 
-        return context.l10n
-            .shoppingSharedWithMembers(memberCount, permissionText);
+        return context.l10n.shoppingSharedWithMembers(
+          memberCount,
+          permissionText,
+        );
       case ListType.template:
         return context.l10n.shoppingTemplateList;
     }

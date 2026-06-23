@@ -135,8 +135,9 @@ class TagPhase3Complex {
     return advancedKeywords.any((k) {
       // Word boundary matching to avoid false positives
       // (e.g., "emulsionsmaskinen" should not match "emulsion")
-      final pattern =
-          RegExp('(?:^|[\\s,\\.])${RegExp.escape(k)}(?=[\\s,\\.]|\$)');
+      final pattern = RegExp(
+        '(?:^|[\\s,\\.])${RegExp.escape(k)}(?=[\\s,\\.]|\$)',
+      );
       return pattern.hasMatch(instructions);
     });
   }
@@ -197,12 +198,14 @@ class TagPhase3Complex {
   bool _isCheesy(Phase1Result p1, Recipe recipe) {
     // Check for significant cheese content
     final cheeseIngredients = p1.lookup.matched
-        .where((i) =>
-            i.group.contains('protein/dairy') &&
-            (i.swedish.toLowerCase().contains('ost') ||
-                i.swedish.toLowerCase().contains('parmesan') ||
-                i.swedish.toLowerCase().contains('mozzarella') ||
-                i.swedish.toLowerCase().contains('cheddar')))
+        .where(
+          (i) =>
+              i.group.contains('protein/dairy') &&
+              (i.swedish.toLowerCase().contains('ost') ||
+                  i.swedish.toLowerCase().contains('parmesan') ||
+                  i.swedish.toLowerCase().contains('mozzarella') ||
+                  i.swedish.toLowerCase().contains('cheddar')),
+        )
         .toList();
 
     // Check if cheese is in top 5 ingredients (significant position)
@@ -273,7 +276,8 @@ class TagPhase3Complex {
     if (!p2.hasTag('mild')) return false;
     if (p1.getAllergenStatus('alkohol') != TriState.free) return false;
 
-    final hasRecognizableProtein = p1.hasTag('kyckling') ||
+    final hasRecognizableProtein =
+        p1.hasTag('kyckling') ||
         p1.hasTag('köttbullar') ||
         p1.hasTag('fläskkött') ||
         p1.hasTag('nötkött') ||
@@ -342,8 +346,9 @@ class TagPhase3Complex {
   /// must NOT be 'premium'.
   /// Ingredients without price data are excluded from calculation.
   bool _isBudgetvanlig(Phase1Result p1) {
-    final ingredientsWithPriceData =
-        p1.lookup.matched.where((i) => i.priceCategory != null).toList();
+    final ingredientsWithPriceData = p1.lookup.matched
+        .where((i) => i.priceCategory != null)
+        .toList();
 
     // Need at least some ingredients with price data to make a claim
     if (ingredientsWithPriceData.isEmpty) return false;

@@ -151,7 +151,8 @@ ExtractedRecipe _extracted({
     portions: portions,
     prepTimeMinutes: prepTime,
     cookTimeMinutes: cookTime,
-    ingredients: ingredients ??
+    ingredients:
+        ingredients ??
         const [
           ExtractedIngredient(amount: 200, unit: 'g', name: 'spaghetti'),
           ExtractedIngredient(amount: 100, unit: 'g', name: 'pancetta'),
@@ -202,28 +203,41 @@ void main() {
     /// canEnhance contract. We must reject WITHOUT consuming a rate-limit
     /// slot or an LLM call — silently spending budget here is the exact
     /// kind of regression this test exists to catch.
-    test('rejects fast when partial.canEnhance is false (no text and no html)',
-        () async {
-      final partial = _partial(
-        partialData: const {'title': 'x'},
-        extractedText: null,
-        rawHtml: null,
-      );
-      expect(partial.canEnhance, isFalse,
-          reason: 'precondition: partial must not be enhanceable');
+    test(
+      'rejects fast when partial.canEnhance is false (no text and no html)',
+      () async {
+        final partial = _partial(
+          partialData: const {'title': 'x'},
+          extractedText: null,
+          rawHtml: null,
+        );
+        expect(
+          partial.canEnhance,
+          isFalse,
+          reason: 'precondition: partial must not be enhanceable',
+        );
 
-      final result = await service.enhance(partial);
+        final result = await service.enhance(partial);
 
-      expect(result, isA<ImportFailure>());
-      expect(
-          (result as ImportFailure).errorCode, ImportErrorCode.parsingFailed);
-      expect(result.pipeline, partial.pipeline);
-      expect(result.tier, partial.tier);
-      expect(limiter.seenOperations, isEmpty,
-          reason: 'rate-limit slot must NOT be consumed for invalid input');
-      expect(llm.structureCalls, 0,
-          reason: 'LLM must NOT be invoked when canEnhance is false');
-    });
+        expect(result, isA<ImportFailure>());
+        expect(
+          (result as ImportFailure).errorCode,
+          ImportErrorCode.parsingFailed,
+        );
+        expect(result.pipeline, partial.pipeline);
+        expect(result.tier, partial.tier);
+        expect(
+          limiter.seenOperations,
+          isEmpty,
+          reason: 'rate-limit slot must NOT be consumed for invalid input',
+        );
+        expect(
+          llm.structureCalls,
+          0,
+          reason: 'LLM must NOT be invoked when canEnhance is false',
+        );
+      },
+    );
 
     /// A partial with confidence below the canEnhance floor (0.3) is also
     /// rejected — protects against feeding garbage into the model.
@@ -242,24 +256,29 @@ void main() {
     /// When the limiter denies, the failure must (a) carry the limiter's
     /// swedishMessage and retryAfter so the UI can show real copy, and
     /// (b) NEVER call the LLM service.
-    test('short-circuits to ImportFailure.rateLimited; LLM not called',
-        () async {
-      limiter.result = const RateLimitDenied(
-        message: 'too fast',
-        retryAfter: Duration(seconds: 17),
-        limitType: LimitType.perMinute,
-        suggestedAction: FallbackAction.retryLater,
-      );
+    test(
+      'short-circuits to ImportFailure.rateLimited; LLM not called',
+      () async {
+        limiter.result = const RateLimitDenied(
+          message: 'too fast',
+          retryAfter: Duration(seconds: 17),
+          limitType: LimitType.perMinute,
+          suggestedAction: FallbackAction.retryLater,
+        );
 
-      final result = await service.enhance(_partial());
+        final result = await service.enhance(_partial());
 
-      expect(result, isA<ImportFailure>());
-      final failure = result as ImportFailure;
-      expect(failure.errorCode, ImportErrorCode.rateLimited);
-      expect(failure.retryAfter, const Duration(seconds: 17));
-      expect(llm.structureCalls, 0,
-          reason: 'denied limit must never spend an LLM call');
-    });
+        expect(result, isA<ImportFailure>());
+        final failure = result as ImportFailure;
+        expect(failure.errorCode, ImportErrorCode.rateLimited);
+        expect(failure.retryAfter, const Duration(seconds: 17));
+        expect(
+          llm.structureCalls,
+          0,
+          reason: 'denied limit must never spend an LLM call',
+        );
+      },
+    );
 
     /// The operation handed to the limiter must mark itself as LLM with
     /// llmType=enhancement — otherwise rate-limit accounting becomes
@@ -275,8 +294,7 @@ void main() {
   });
 
   group('enhance — happy path mapping', () {
-    test(
-        'success returns ImportSuccess with tier+1, confidence 0.85, '
+    test('success returns ImportSuccess with tier+1, confidence 0.85, '
         'usedLlm/requiresReview true, and metadata block', () async {
       llm.structureResponse = StructureRecipeResponse(
         success: true,
@@ -295,8 +313,11 @@ void main() {
       final success = result as ImportSuccess;
       expect(success.recipe.title, 'Carbonara Deluxe');
       expect(success.confidence, 0.85);
-      expect(success.tier, 3,
-          reason: 'LLM enhancement must bump tier (partial.tier + 1)');
+      expect(
+        success.tier,
+        3,
+        reason: 'LLM enhancement must bump tier (partial.tier + 1)',
+      );
       expect(success.pipeline, partial.pipeline);
       expect(success.method, 'llm-enhancement');
       expect(success.usedLlm, isTrue);
@@ -310,8 +331,7 @@ void main() {
     /// LlmService is invoked with mode=enhance and the partial's
     /// partialData payload — otherwise the model is given no context to
     /// merge with.
-    test(
-        'invokes structureRecipe with mode=enhance and partial.partialData '
+    test('invokes structureRecipe with mode=enhance and partial.partialData '
         'payload', () async {
       llm.structureResponse = StructureRecipeResponse(
         success: true,
@@ -321,7 +341,7 @@ void main() {
       final partial = _partial(
         partialData: const {
           'title': 'X',
-          'ingredients': ['a']
+          'ingredients': ['a'],
         },
         extractedText: 'TEXT-PAYLOAD',
       );
@@ -331,7 +351,7 @@ void main() {
       expect(llm.lastStructureMode, StructureMode.enhance);
       expect(llm.lastStructurePartialData, {
         'title': 'X',
-        'ingredients': ['a']
+        'ingredients': ['a'],
       });
       expect(llm.lastStructureText, 'TEXT-PAYLOAD');
     });
@@ -366,26 +386,40 @@ void main() {
       return result.recipe.mealType;
     }
 
-    test('Swedish "frukost" maps to breakfast',
-        () async => expect(await mealTypeFromTags(['Frukost']), 'breakfast'));
+    test(
+      'Swedish "frukost" maps to breakfast',
+      () async => expect(await mealTypeFromTags(['Frukost']), 'breakfast'),
+    );
 
-    test('English "breakfast" also maps to breakfast',
-        () async => expect(await mealTypeFromTags(['BREAKFAST']), 'breakfast'));
+    test(
+      'English "breakfast" also maps to breakfast',
+      () async => expect(await mealTypeFromTags(['BREAKFAST']), 'breakfast'),
+    );
 
-    test('"lunch" maps to lunch',
-        () async => expect(await mealTypeFromTags(['Lunch']), 'lunch'));
+    test(
+      '"lunch" maps to lunch',
+      () async => expect(await mealTypeFromTags(['Lunch']), 'lunch'),
+    );
 
-    test('Swedish "middag" maps to dinner',
-        () async => expect(await mealTypeFromTags(['middag']), 'dinner'));
+    test(
+      'Swedish "middag" maps to dinner',
+      () async => expect(await mealTypeFromTags(['middag']), 'dinner'),
+    );
 
-    test('"dessert" maps to dessert',
-        () async => expect(await mealTypeFromTags(['Dessert']), 'dessert'));
+    test(
+      '"dessert" maps to dessert',
+      () async => expect(await mealTypeFromTags(['Dessert']), 'dessert'),
+    );
 
-    test('Swedish "efterrätt" maps to dessert',
-        () async => expect(await mealTypeFromTags(['efterrätt']), 'dessert'));
+    test(
+      'Swedish "efterrätt" maps to dessert',
+      () async => expect(await mealTypeFromTags(['efterrätt']), 'dessert'),
+    );
 
-    test('Swedish "mellanmål" maps to snack',
-        () async => expect(await mealTypeFromTags(['mellanmål']), 'snack'));
+    test(
+      'Swedish "mellanmål" maps to snack',
+      () async => expect(await mealTypeFromTags(['mellanmål']), 'snack'),
+    );
 
     test('unknown / empty tags default to dinner (NOT empty string)', () async {
       expect(await mealTypeFromTags(const []), 'dinner');
@@ -397,74 +431,82 @@ void main() {
     /// If LLM omits portions, we must NOT propagate null or 0 (which would
     /// later divide-by-zero in shopping/scaling). We fall back to the
     /// documented ParsingTier.kDefaultPortions constant.
-    test('null portions from LLM falls back to ParsingTier.kDefaultPortions',
-        () async {
-      llm.structureResponse = StructureRecipeResponse(
-        success: true,
-        recipe: _extracted(portions: null),
-        estimatedCost: 0,
-      );
+    test(
+      'null portions from LLM falls back to ParsingTier.kDefaultPortions',
+      () async {
+        llm.structureResponse = StructureRecipeResponse(
+          success: true,
+          recipe: _extracted(portions: null),
+          estimatedCost: 0,
+        );
 
-      final result = await service.enhance(_partial()) as ImportSuccess;
+        final result = await service.enhance(_partial()) as ImportSuccess;
 
-      expect(result.recipe.portions, ParsingTier.kDefaultPortions);
-    });
+        expect(result.recipe.portions, ParsingTier.kDefaultPortions);
+      },
+    );
 
     /// totalTimeMinutes is prep+cook; when both are null the recipe gets
     /// 0 (not crash, not null). Guards against the "0 minutes shown
     /// because we forgot the coalesce" UX bug.
-    test('null prep+cook minutes maps to timeMinutes=0 without crashing',
-        () async {
-      llm.structureResponse = StructureRecipeResponse(
-        success: true,
-        recipe: _extracted(prepTime: null, cookTime: null),
-        estimatedCost: 0,
-      );
+    test(
+      'null prep+cook minutes maps to timeMinutes=0 without crashing',
+      () async {
+        llm.structureResponse = StructureRecipeResponse(
+          success: true,
+          recipe: _extracted(prepTime: null, cookTime: null),
+          estimatedCost: 0,
+        );
 
-      final result = await service.enhance(_partial()) as ImportSuccess;
+        final result = await service.enhance(_partial()) as ImportSuccess;
 
-      expect(result.recipe.timeMinutes, 0);
-    });
+        expect(result.recipe.timeMinutes, 0);
+      },
+    );
 
-    test('ingredients are converted to their formatted string representation',
-        () async {
-      llm.structureResponse = StructureRecipeResponse(
-        success: true,
-        recipe: _extracted(
-          ingredients: const [
-            ExtractedIngredient(amount: 2, unit: 'dl', name: 'mjölk'),
-            ExtractedIngredient(name: 'salt'),
-          ],
-        ),
-        estimatedCost: 0,
-      );
+    test(
+      'ingredients are converted to their formatted string representation',
+      () async {
+        llm.structureResponse = StructureRecipeResponse(
+          success: true,
+          recipe: _extracted(
+            ingredients: const [
+              ExtractedIngredient(amount: 2, unit: 'dl', name: 'mjölk'),
+              ExtractedIngredient(name: 'salt'),
+            ],
+          ),
+          estimatedCost: 0,
+        );
 
-      final result = await service.enhance(_partial()) as ImportSuccess;
+        final result = await service.enhance(_partial()) as ImportSuccess;
 
-      expect(result.recipe.ingredients, ['2 dl mjölk', 'salt']);
-    });
+        expect(result.recipe.ingredients, ['2 dl mjölk', 'salt']);
+      },
+    );
   });
 
   group('enhance — failure mapping', () {
     /// A rate-limited LlmException must map to llmQuotaExceeded (not the
     /// generic parsingFailed) — this distinction drives UI copy and the
     /// retry-later affordance. retryAfter must round-trip.
-    test('LlmException(isRateLimited=true) → llmQuotaExceeded with retryAfter',
-        () async {
-      llm.structureThrow = const LlmException(
-        'quota burned',
-        isRateLimited: true,
-        retryAfter: Duration(minutes: 5),
-      );
+    test(
+      'LlmException(isRateLimited=true) → llmQuotaExceeded with retryAfter',
+      () async {
+        llm.structureThrow = const LlmException(
+          'quota burned',
+          isRateLimited: true,
+          retryAfter: Duration(minutes: 5),
+        );
 
-      final result = await service.enhance(_partial());
+        final result = await service.enhance(_partial());
 
-      expect(result, isA<ImportFailure>());
-      final failure = result as ImportFailure;
-      expect(failure.errorCode, ImportErrorCode.llmQuotaExceeded);
-      expect(failure.retryAfter, const Duration(minutes: 5));
-      expect(failure.message, 'quota burned');
-    });
+        expect(result, isA<ImportFailure>());
+        final failure = result as ImportFailure;
+        expect(failure.errorCode, ImportErrorCode.llmQuotaExceeded);
+        expect(failure.retryAfter, const Duration(minutes: 5));
+        expect(failure.message, 'quota burned');
+      },
+    );
 
     test('LlmException(non-rate-limited) → parsingFailed', () async {
       llm.structureThrow = const LlmException('model said no');
@@ -472,7 +514,9 @@ void main() {
       final result = await service.enhance(_partial());
 
       expect(
-          (result as ImportFailure).errorCode, ImportErrorCode.parsingFailed);
+        (result as ImportFailure).errorCode,
+        ImportErrorCode.parsingFailed,
+      );
     });
 
     /// Unexpected (non-LlmException) errors must be caught — not propagated —
@@ -480,23 +524,23 @@ void main() {
     /// class: someone removes the bare `catch` and a StateError now crashes
     /// the import flow. This assertion would fail in that world.
     test(
-        'non-LlmException error caught, mapped to unknown with technicalDetails',
-        () async {
-      llm.structureThrow = StateError('boom from inside');
+      'non-LlmException error caught, mapped to unknown with technicalDetails',
+      () async {
+        llm.structureThrow = StateError('boom from inside');
 
-      final result = await service.enhance(_partial());
+        final result = await service.enhance(_partial());
 
-      expect(result, isA<ImportFailure>());
-      final failure = result as ImportFailure;
-      expect(failure.errorCode, ImportErrorCode.unknown);
-      expect(failure.technicalDetails, contains('boom from inside'));
-    });
+        expect(result, isA<ImportFailure>());
+        final failure = result as ImportFailure;
+        expect(failure.errorCode, ImportErrorCode.unknown);
+        expect(failure.technicalDetails, contains('boom from inside'));
+      },
+    );
 
     /// LLM responds with success=false. We must NOT fabricate an
     /// ImportSuccess with an empty recipe — the user-visible failure
     /// message must come from the server-provided error string.
-    test(
-        'LLM success=false returns ImportFailure carrying server error '
+    test('LLM success=false returns ImportFailure carrying server error '
         '(no fabricated success)', () async {
       llm.structureResponse = const StructureRecipeResponse(
         success: false,
@@ -515,19 +559,21 @@ void main() {
     /// success=true but recipe=null is a subtler bug — model said OK,
     /// returned no body. Must NOT crash on .recipe! null-bang and must
     /// NOT fabricate success.
-    test('LLM success=true but recipe=null returns ImportFailure (not crash)',
-        () async {
-      llm.structureResponse = const StructureRecipeResponse(
-        success: true,
-        recipe: null,
-        error: 'empty recipe',
-        estimatedCost: 0,
-      );
+    test(
+      'LLM success=true but recipe=null returns ImportFailure (not crash)',
+      () async {
+        llm.structureResponse = const StructureRecipeResponse(
+          success: true,
+          recipe: null,
+          error: 'empty recipe',
+          estimatedCost: 0,
+        );
 
-      final result = await service.enhance(_partial());
+        final result = await service.enhance(_partial());
 
-      expect(result, isA<ImportFailure>());
-    });
+        expect(result, isA<ImportFailure>());
+      },
+    );
   });
 
   group('extractFromImage', () {
@@ -539,8 +585,9 @@ void main() {
         suggestedAction: FallbackAction.retryLater,
       );
 
-      final result =
-          await service.extractFromImage(Uint8List.fromList([1, 2, 3]));
+      final result = await service.extractFromImage(
+        Uint8List.fromList([1, 2, 3]),
+      );
 
       expect((result as ImportFailure).errorCode, ImportErrorCode.rateLimited);
       expect(llm.ocrCalls, 0);
@@ -558,8 +605,9 @@ void main() {
         estimatedCost: 0.04,
       );
 
-      final result =
-          await service.extractFromImage(Uint8List.fromList([1, 2, 3]));
+      final result = await service.extractFromImage(
+        Uint8List.fromList([1, 2, 3]),
+      );
 
       expect(result, isA<ImportSuccess>());
       final success = result as ImportSuccess;
@@ -576,8 +624,7 @@ void main() {
     /// we surface that as ImportNeedsAssistance so the user can fix it
     /// manually. The image bytes must be threaded through unchanged
     /// (the assistance UI shows the photo).
-    test(
-        'raw-text-only response → ImportNeedsAssistance with image bytes '
+    test('raw-text-only response → ImportNeedsAssistance with image bytes '
         'preserved', () async {
       llm.ocrResponse = const OcrRecipeImageResponse(
         success: false,
@@ -594,38 +641,44 @@ void main() {
       expect(assist.imageBytes, bytes);
     });
 
-    test('no structured recipe and no rawText → ImportFailure with ocrFailed',
-        () async {
-      llm.ocrResponse = const OcrRecipeImageResponse(
-        success: false,
-        estimatedCost: 0,
-        error: 'couldnt see anything',
-      );
+    test(
+      'no structured recipe and no rawText → ImportFailure with ocrFailed',
+      () async {
+        llm.ocrResponse = const OcrRecipeImageResponse(
+          success: false,
+          estimatedCost: 0,
+          error: 'couldnt see anything',
+        );
 
-      final result = await service.extractFromImage(Uint8List.fromList([1, 2]));
+        final result = await service.extractFromImage(
+          Uint8List.fromList([1, 2]),
+        );
 
-      expect(result, isA<ImportFailure>());
-      expect((result as ImportFailure).errorCode, ImportErrorCode.ocrFailed);
-      expect(result.message, 'couldnt see anything');
-    });
+        expect(result, isA<ImportFailure>());
+        expect((result as ImportFailure).errorCode, ImportErrorCode.ocrFailed);
+        expect(result.message, 'couldnt see anything');
+      },
+    );
 
-    test('LlmException(rate-limited) maps to llmQuotaExceeded (not ocrFailed)',
-        () async {
-      llm.ocrThrow = const LlmException(
-        'quota',
-        isRateLimited: true,
-        retryAfter: Duration(seconds: 30),
-      );
+    test(
+      'LlmException(rate-limited) maps to llmQuotaExceeded (not ocrFailed)',
+      () async {
+        llm.ocrThrow = const LlmException(
+          'quota',
+          isRateLimited: true,
+          retryAfter: Duration(seconds: 30),
+        );
 
-      final result = await service.extractFromImage(Uint8List.fromList([1]));
+        final result = await service.extractFromImage(Uint8List.fromList([1]));
 
-      expect(result, isA<ImportFailure>());
-      final failure = result as ImportFailure;
-      expect(failure.errorCode, ImportErrorCode.llmQuotaExceeded);
-      expect(failure.retryAfter, const Duration(seconds: 30));
-      expect(failure.tier, 4);
-      expect(failure.pipeline, 'photo');
-    });
+        expect(result, isA<ImportFailure>());
+        final failure = result as ImportFailure;
+        expect(failure.errorCode, ImportErrorCode.llmQuotaExceeded);
+        expect(failure.retryAfter, const Duration(seconds: 30));
+        expect(failure.tier, 4);
+        expect(failure.pipeline, 'photo');
+      },
+    );
 
     test('passes context through to LlmService.ocrRecipeImage', () async {
       await service.extractFromImage(
@@ -639,8 +692,10 @@ void main() {
   group('extractFromHtml', () {
     test('asks limiter with fullExtraction operation type', () async {
       await service.extractFromHtml('<html/>', 'https://x.test');
-      expect(limiter.seenOperations.single.llmType,
-          LlmOperationType.fullExtraction);
+      expect(
+        limiter.seenOperations.single.llmType,
+        LlmOperationType.fullExtraction,
+      );
     });
 
     /// currentTier is the LAST tier that failed; the success result must
@@ -672,25 +727,30 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result =
-          await service.extractFromHtml('<html/>', 'u', currentTier: 5);
+      final result = await service.extractFromHtml(
+        '<html/>',
+        'u',
+        currentTier: 5,
+      );
 
       expect((result as ImportSuccess).tier, 6);
     });
 
-    test('LLM success=false returns ImportFailure with server message',
-        () async {
-      llm.structureResponse = const StructureRecipeResponse(
-        success: false,
-        error: 'no recipe in html',
-        estimatedCost: 0,
-      );
+    test(
+      'LLM success=false returns ImportFailure with server message',
+      () async {
+        llm.structureResponse = const StructureRecipeResponse(
+          success: false,
+          error: 'no recipe in html',
+          estimatedCost: 0,
+        );
 
-      final result = await service.extractFromHtml('<html/>', 'u');
+        final result = await service.extractFromHtml('<html/>', 'u');
 
-      expect(result, isA<ImportFailure>());
-      expect((result as ImportFailure).message, 'no recipe in html');
-    });
+        expect(result, isA<ImportFailure>());
+        expect((result as ImportFailure).message, 'no recipe in html');
+      },
+    );
 
     test('passes sourceUrl through to LlmService', () async {
       await service.extractFromHtml('<html/>', 'https://src.test');
@@ -704,8 +764,7 @@ void main() {
     /// we fall back to ImportNeedsAssistance (NOT ImportFailure) — the
     /// user still has the transcript text to salvage manually. The
     /// videoTitle becomes the suggestedTitle.
-    test(
-        'LLM yields no recipe → ImportNeedsAssistance with transcript + '
+    test('LLM yields no recipe → ImportNeedsAssistance with transcript + '
         'videoTitle as suggested title', () async {
       llm.structureResponse = const StructureRecipeResponse(
         success: false,
@@ -724,27 +783,29 @@ void main() {
       expect(assist.suggestedTitle, 'How to make pasta');
     });
 
-    test('success → ImportSuccess(pipeline=video, tier=5, confidence=0.75)',
-        () async {
-      llm.structureResponse = StructureRecipeResponse(
-        success: true,
-        recipe: _extracted(),
-        estimatedCost: 0.02,
-      );
+    test(
+      'success → ImportSuccess(pipeline=video, tier=5, confidence=0.75)',
+      () async {
+        llm.structureResponse = StructureRecipeResponse(
+          success: true,
+          recipe: _extracted(),
+          estimatedCost: 0.02,
+        );
 
-      final result = await service.extractFromTranscript(
-        'transcript',
-        'https://youtu.be/x',
-        videoTitle: 'My Video',
-      );
+        final result = await service.extractFromTranscript(
+          'transcript',
+          'https://youtu.be/x',
+          videoTitle: 'My Video',
+        );
 
-      final success = result as ImportSuccess;
-      expect(success.pipeline, 'video');
-      expect(success.tier, 5);
-      expect(success.confidence, 0.75);
-      expect(success.method, 'llm-transcript');
-      expect(success.metadata!['videoTitle'], 'My Video');
-    });
+        final success = result as ImportSuccess;
+        expect(success.pipeline, 'video');
+        expect(success.tier, 5);
+        expect(success.confidence, 0.75);
+        expect(success.method, 'llm-transcript');
+        expect(success.metadata!['videoTitle'], 'My Video');
+      },
+    );
 
     test('LlmException(rate-limited) → llmQuotaExceeded', () async {
       llm.structureThrow = const LlmException(
@@ -756,8 +817,10 @@ void main() {
       final result = await service.extractFromTranscript('t', 'https://u.test');
 
       expect(result, isA<ImportFailure>());
-      expect((result as ImportFailure).errorCode,
-          ImportErrorCode.llmQuotaExceeded);
+      expect(
+        (result as ImportFailure).errorCode,
+        ImportErrorCode.llmQuotaExceeded,
+      );
       expect(result.tier, 5);
       expect(result.pipeline, 'video');
     });
@@ -793,13 +856,20 @@ void main() {
 
     void expectStructuredWired(Recipe recipe) {
       final stored = recipe.core.structuredIngredients;
-      expect(stored, isNotNull,
-          reason: 'structured data must be persisted on the core, '
-              'not synthesized by the facade fallback');
+      expect(
+        stored,
+        isNotNull,
+        reason:
+            'structured data must be persisted on the core, '
+            'not synthesized by the facade fallback',
+      );
       expect(stored!.length, recipe.ingredients.length);
       for (var i = 0; i < stored.length; i++) {
-        expect(stored[i].raw, recipe.ingredients[i],
-            reason: 'entry $i must be index-aligned with ingredients[$i]');
+        expect(
+          stored[i].raw,
+          recipe.ingredients[i],
+          reason: 'entry $i must be index-aligned with ingredients[$i]',
+        );
       }
 
       // Facade serves the stored data (proves alignment validation passed).
@@ -807,15 +877,17 @@ void main() {
       expect(facade[0].amount, 2);
       expect(facade[0].unit, 'dl');
       expect(facade[0].name, 'mjölk');
-      expect(facade[1].isStructured, isFalse,
-          reason: 'amount-less line stays a raw-only entry');
+      expect(
+        facade[1].isStructured,
+        isFalse,
+        reason: 'amount-less line stays a raw-only entry',
+      );
       expect(facade[1].name, 'salt');
       expect(facade[2].amount, 1.5);
       expect(facade[2].note, 'siktat');
     }
 
-    test(
-        'extractFromTranscript (TikTok/Instagram path) recipe carries '
+    test('extractFromTranscript (TikTok/Instagram path) recipe carries '
         'index-aligned structuredIngredients', () async {
       llm.structureResponse = StructureRecipeResponse(
         success: true,
@@ -823,16 +895,17 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result = await service.extractFromTranscript(
-        'caption text',
-        'https://www.tiktok.com/@chef/video/1',
-      ) as ImportSuccess;
+      final result =
+          await service.extractFromTranscript(
+                'caption text',
+                'https://www.tiktok.com/@chef/video/1',
+              )
+              as ImportSuccess;
 
       expectStructuredWired(result.recipe);
     });
 
-    test(
-        'extractFromImage (photo LLM fallback) recipe carries '
+    test('extractFromImage (photo LLM fallback) recipe carries '
         'index-aligned structuredIngredients', () async {
       llm.ocrResponse = OcrRecipeImageResponse(
         success: true,
@@ -840,9 +913,11 @@ void main() {
         estimatedCost: 0,
       );
 
-      final result = await service.extractFromImage(
-        Uint8List.fromList([1, 2, 3]),
-      ) as ImportSuccess;
+      final result =
+          await service.extractFromImage(
+                Uint8List.fromList([1, 2, 3]),
+              )
+              as ImportSuccess;
 
       expectStructuredWired(result.recipe);
     });

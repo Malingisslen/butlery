@@ -16,7 +16,7 @@ class AnomalyRepository {
   static const String _anomaliesDoc = 'anomalies';
 
   AnomalyRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// The latest anomaly report (doc id = date, so ordering by id desc yields
   /// newest). Returns an empty report on error or when none exist.

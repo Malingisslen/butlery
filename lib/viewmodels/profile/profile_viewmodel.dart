@@ -35,9 +35,9 @@ class ProfileViewModel extends ChangeNotifier
     required AuthService authService,
     required UserService userService,
     required AccountDeletionService accountDeletionService,
-  })  : _authService = authService,
-        _userService = userService,
-        _accountDeletionService = accountDeletionService;
+  }) : _authService = authService,
+       _userService = userService,
+       _accountDeletionService = accountDeletionService;
 
   String? get currentUserId => _authService.currentUserId;
 
@@ -84,7 +84,8 @@ class ProfileViewModel extends ChangeNotifier
         }
 
         AppLogger.info(
-            'Starting account deletion for user: ${userId.maskedUserId}');
+          'Starting account deletion for user: ${userId.maskedUserId}',
+        );
 
         // Delete all user data and Firebase Auth account
         final result = await _accountDeletionService.deleteUserAccount(

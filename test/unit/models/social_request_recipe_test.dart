@@ -16,40 +16,46 @@ void main() {
       expect(r.recipeTitle, 'Pannkakor');
     });
 
-    test('isRecipeShareRequest is false for friend and groupInvitation types',
-        () {
-      // Proves mutual exclusivity — a refactor collapsing the getter to `true`
-      // or changing which enum value it checks would trip this.
-      final friend =
-          SocialRequest.friendRequest(fromUserId: 'a', toUserId: 'b');
-      expect(friend.isRecipeShareRequest, isFalse);
+    test(
+      'isRecipeShareRequest is false for friend and groupInvitation types',
+      () {
+        // Proves mutual exclusivity — a refactor collapsing the getter to `true`
+        // or changing which enum value it checks would trip this.
+        final friend = SocialRequest.friendRequest(
+          fromUserId: 'a',
+          toUserId: 'b',
+        );
+        expect(friend.isRecipeShareRequest, isFalse);
 
-      final invite = SocialRequest.groupInvitation(
-        fromUserId: 'a',
-        toUserId: 'b',
-        groupId: 'g',
-        groupName: 'Sq',
-        groupEmoji: 'X',
-        fromUserName: 'A',
-      );
-      expect(invite.isRecipeShareRequest, isFalse);
-    });
+        final invite = SocialRequest.groupInvitation(
+          fromUserId: 'a',
+          toUserId: 'b',
+          groupId: 'g',
+          groupName: 'Sq',
+          groupEmoji: 'X',
+          fromUserName: 'A',
+        );
+        expect(invite.isRecipeShareRequest, isFalse);
+      },
+    );
   });
 
   group('serialization', () {
-    test('round-trips through Firestore map preserving recipeId/recipeTitle',
-        () {
-      final r = SocialRequest.recipeShareRequest(
-        fromUserId: 'a',
-        toUserId: 'b',
-        recipeId: 'r1',
-        recipeTitle: 'Pannkakor',
-      );
-      final back = SocialRequest.fromMap(r.id, r.toFirestore());
-      expect(back.type, SocialRequestType.recipeShareRequest);
-      expect(back.recipeId, 'r1');
-      expect(back.recipeTitle, 'Pannkakor');
-    });
+    test(
+      'round-trips through Firestore map preserving recipeId/recipeTitle',
+      () {
+        final r = SocialRequest.recipeShareRequest(
+          fromUserId: 'a',
+          toUserId: 'b',
+          recipeId: 'r1',
+          recipeTitle: 'Pannkakor',
+        );
+        final back = SocialRequest.fromMap(r.id, r.toFirestore());
+        expect(back.type, SocialRequestType.recipeShareRequest);
+        expect(back.recipeId, 'r1');
+        expect(back.recipeTitle, 'Pannkakor');
+      },
+    );
 
     test('toFirestore omits recipe fields for a friend request', () {
       // Mirrors the existing group-field omission test.

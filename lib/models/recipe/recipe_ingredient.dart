@@ -71,12 +71,12 @@ class RecipeIngredient {
   bool get isStructured => amount != null || (unit?.isNotEmpty ?? false);
 
   Map<String, dynamic> toJson() => {
-        if (amount != null) 'amount': amount,
-        if (unit != null) 'unit': unit,
-        'name': name,
-        if (note != null) 'note': note,
-        'raw': raw,
-      };
+    if (amount != null) 'amount': amount,
+    if (unit != null) 'unit': unit,
+    'name': name,
+    if (note != null) 'note': note,
+    'raw': raw,
+  };
 
   factory RecipeIngredient.fromJson(Map<String, dynamic> json) {
     final raw = SerializationUtils.safeString(json, 'raw');

@@ -20,8 +20,16 @@ void main() {
 
       test('PNG header detected', () {
         expect(
-          ImageFormatUtils.detectMimeType(
-              [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+          ImageFormatUtils.detectMimeType([
+            0x89,
+            0x50,
+            0x4E,
+            0x47,
+            0x0D,
+            0x0A,
+            0x1A,
+            0x0A,
+          ]),
           'image/png',
         );
       });
@@ -59,7 +67,9 @@ void main() {
 
       test('unknown bytes return null', () {
         expect(
-            ImageFormatUtils.detectMimeType([0x00, 0x00, 0x00, 0x00]), isNull);
+          ImageFormatUtils.detectMimeType([0x00, 0x00, 0x00, 0x00]),
+          isNull,
+        );
       });
     });
 
@@ -82,7 +92,9 @@ void main() {
     group('mimeTypeFromExtension', () {
       test('.png returns image/png', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('photo.png'), 'image/png');
+          ImageFormatUtils.mimeTypeFromExtension('photo.png'),
+          'image/png',
+        );
       });
 
       test('.gif returns image/gif', () {
@@ -91,22 +103,30 @@ void main() {
 
       test('.webp returns image/webp', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('pic.webp'), 'image/webp');
+          ImageFormatUtils.mimeTypeFromExtension('pic.webp'),
+          'image/webp',
+        );
       });
 
       test('.jpg returns image/jpeg', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('photo.jpg'), 'image/jpeg');
+          ImageFormatUtils.mimeTypeFromExtension('photo.jpg'),
+          'image/jpeg',
+        );
       });
 
       test('.jpeg returns image/jpeg', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('photo.jpeg'), 'image/jpeg');
+          ImageFormatUtils.mimeTypeFromExtension('photo.jpeg'),
+          'image/jpeg',
+        );
       });
 
       test('unknown extension defaults to image/jpeg', () {
         expect(
-            ImageFormatUtils.mimeTypeFromExtension('file.bmp'), 'image/jpeg');
+          ImageFormatUtils.mimeTypeFromExtension('file.bmp'),
+          'image/jpeg',
+        );
       });
     });
 

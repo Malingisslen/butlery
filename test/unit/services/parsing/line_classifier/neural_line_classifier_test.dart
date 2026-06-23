@@ -72,18 +72,20 @@ void main() {
   });
 
   group('fallback behavior', () {
-    test('falls back to SwedishLineClassifier when model unavailable',
-        () async {
-      mockService.setAvailable(false);
+    test(
+      'falls back to SwedishLineClassifier when model unavailable',
+      () async {
+        mockService.setAvailable(false);
 
-      final result = await classifier.parseStructureAsync(
-        'Pannkakor\n\n2 dl mjölk\n3 ägg\n\nBlanda allt.',
-      );
+        final result = await classifier.parseStructureAsync(
+          'Pannkakor\n\n2 dl mjölk\n3 ägg\n\nBlanda allt.',
+        );
 
-      // Should still produce results from rule-based classifier
-      expect(result.ingredients, isNotEmpty);
-      expect(result.instructions, isNotEmpty);
-    });
+        // Should still produce results from rule-based classifier
+        expect(result.ingredients, isNotEmpty);
+        expect(result.instructions, isNotEmpty);
+      },
+    );
 
     test('parseStructureAsync falls back when model unavailable', () async {
       mockService.setAvailable(false);

@@ -176,7 +176,8 @@ class LayoutComponents {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppDimensions.borderRadius16)),
+          top: Radius.circular(AppDimensions.borderRadius16),
+        ),
       ),
       builder: (context) => LoadMenuBottomSheet(
         viewModel: viewModel,
@@ -393,12 +394,13 @@ class LayoutComponents {
   static Widget recipeUploadButtonGrid(
     BuildContext context, {
     required List<Map<String, dynamic>>
-        buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
+    buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
     required Map<String, dynamic> archiveButton, // Archive button config
   }) {
     if (buttons.length != 6) {
       throw ArgumentError(
-          'recipeUploadButtonGrid requires exactly 6 main buttons');
+        'recipeUploadButtonGrid requires exactly 6 main buttons',
+      );
     }
 
     return Expanded(
@@ -422,7 +424,7 @@ class LayoutComponents {
           final buttonSize = [
             maxWidthForTwoButtons,
             maxHeightForFourRows,
-            maxButtonSize
+            maxButtonSize,
           ].reduce((a, b) => a < b ? a : b).clamp(minButtonSize, maxButtonSize);
 
           // Calculate actual layout dimensions
@@ -432,8 +434,10 @@ class LayoutComponents {
           // Center the layout
           final horizontalPadding = ((constraints.maxWidth - layoutWidth) / 2)
               .clamp(0.0, double.infinity);
-          final topPadding = ((constraints.maxHeight - layoutHeight) / 2)
-              .clamp(0.0, double.infinity);
+          final topPadding = ((constraints.maxHeight - layoutHeight) / 2).clamp(
+            0.0,
+            double.infinity,
+          );
 
           return Padding(
             padding: EdgeInsetsDirectional.only(
@@ -445,18 +449,33 @@ class LayoutComponents {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Row 1 - First two buttons
-                _buildButtonRow(context, [buttons[0], buttons[1]], buttonSize,
-                    layoutWidth, buttonSpacing),
+                _buildButtonRow(
+                  context,
+                  [buttons[0], buttons[1]],
+                  buttonSize,
+                  layoutWidth,
+                  buttonSpacing,
+                ),
                 const SizedBox(height: rowSpacing),
 
                 // Row 2 - Second two buttons
-                _buildButtonRow(context, [buttons[2], buttons[3]], buttonSize,
-                    layoutWidth, buttonSpacing),
+                _buildButtonRow(
+                  context,
+                  [buttons[2], buttons[3]],
+                  buttonSize,
+                  layoutWidth,
+                  buttonSpacing,
+                ),
                 const SizedBox(height: rowSpacing),
 
                 // Row 3 - Third two buttons
-                _buildButtonRow(context, [buttons[4], buttons[5]], buttonSize,
-                    layoutWidth, buttonSpacing),
+                _buildButtonRow(
+                  context,
+                  [buttons[4], buttons[5]],
+                  buttonSize,
+                  layoutWidth,
+                  buttonSpacing,
+                ),
                 const SizedBox(height: rowSpacing),
 
                 // Row 4 - Archive button (full width)

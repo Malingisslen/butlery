@@ -87,8 +87,10 @@ class OcrRecipeImageRequest {
     this.mimeType,
     this.context,
     this.locale,
-  }) : assert(imageBase64 != null || imageUrl != null,
-            'Either imageBase64 or imageUrl must be provided');
+  }) : assert(
+         imageBase64 != null || imageUrl != null,
+         'Either imageBase64 or imageUrl must be provided',
+       );
 
   /// Create from image bytes.
   factory OcrRecipeImageRequest.fromBytes(
@@ -142,7 +144,8 @@ class OcrRecipeImageRequest {
       buffer.write(chars[(b1 >> 2) & 0x3F]);
       buffer.write(chars[((b1 << 4) | (b2 >> 4)) & 0x3F]);
       buffer.write(
-          i - 1 < bytes.length ? chars[((b2 << 2) | (b3 >> 6)) & 0x3F] : '=');
+        i - 1 < bytes.length ? chars[((b2 << 2) | (b3 >> 6)) & 0x3F] : '=',
+      );
       buffer.write(i < bytes.length ? chars[b3 & 0x3F] : '=');
     }
     return buffer.toString();
@@ -191,7 +194,8 @@ class ExtractedIngredient {
     if (amount != null) {
       // Format amount nicely (1.0 -> "1", 1.5 -> "1.5")
       parts.add(
-          amount! % 1 == 0 ? amount!.toInt().toString() : amount.toString());
+        amount! % 1 == 0 ? amount!.toInt().toString() : amount.toString(),
+      );
     }
     if (unit != null && unit!.isNotEmpty) {
       parts.add(unit!);
@@ -237,18 +241,21 @@ class ExtractedRecipe {
       portions: json['portions'] as int?,
       prepTimeMinutes: json['prepTimeMinutes'] as int?,
       cookTimeMinutes: json['cookTimeMinutes'] as int?,
-      ingredients: (json['ingredients'] as List<dynamic>?)
-              ?.map((e) =>
-                  ExtractedIngredient.fromJson(e as Map<String, dynamic>))
+      ingredients:
+          (json['ingredients'] as List<dynamic>?)
+              ?.map(
+                (e) => ExtractedIngredient.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
-      instructions: (json['instructions'] as List<dynamic>?)
+      instructions:
+          (json['instructions'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
-              [],
+          [],
       difficulty: json['difficulty'] as String?,
       source: json['source'] as String?,
     );

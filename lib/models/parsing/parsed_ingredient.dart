@@ -44,10 +44,10 @@ class ParsedIngredient {
 
   /// Creates from a simple ingredient string with medium confidence.
   factory ParsedIngredient.simple(String text) => ParsedIngredient(
-        name: text.trim(),
-        originalLine: text,
-        confidence: ParseConfidence.medium,
-      );
+    name: text.trim(),
+    originalLine: text,
+    confidence: ParseConfidence.medium,
+  );
 
   /// Creates a fully structured ingredient with high confidence.
   factory ParsedIngredient.structured({
@@ -57,16 +57,15 @@ class ParsedIngredient {
     String? unit,
     String? size,
     String? preparation,
-  }) =>
-      ParsedIngredient(
-        name: name,
-        originalLine: originalLine,
-        quantity: quantity,
-        unit: unit,
-        size: size,
-        preparation: preparation,
-        confidence: ParseConfidence.high,
-      );
+  }) => ParsedIngredient(
+    name: name,
+    originalLine: originalLine,
+    quantity: quantity,
+    unit: unit,
+    size: size,
+    preparation: preparation,
+    confidence: ParseConfidence.high,
+  );
 
   /// Whether this ingredient has quantity information.
   bool get hasQuantity => quantity != null && quantity!.isNotEmpty;
@@ -100,29 +99,28 @@ class ParsedIngredient {
     String? preparation,
     ParseConfidence? confidence,
     String? notes,
-  }) =>
-      ParsedIngredient(
-        name: name ?? this.name,
-        originalLine: originalLine ?? this.originalLine,
-        quantity: quantity ?? this.quantity,
-        unit: unit ?? this.unit,
-        size: size ?? this.size,
-        preparation: preparation ?? this.preparation,
-        confidence: confidence ?? this.confidence,
-        notes: notes ?? this.notes,
-      );
+  }) => ParsedIngredient(
+    name: name ?? this.name,
+    originalLine: originalLine ?? this.originalLine,
+    quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
+    size: size ?? this.size,
+    preparation: preparation ?? this.preparation,
+    confidence: confidence ?? this.confidence,
+    notes: notes ?? this.notes,
+  );
 
   /// Converts to JSON.
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'originalLine': originalLine,
-        'confidence': confidence.name,
-        if (quantity != null) 'quantity': quantity,
-        if (unit != null) 'unit': unit,
-        if (size != null) 'size': size,
-        if (preparation != null) 'preparation': preparation,
-        if (notes != null) 'notes': notes,
-      };
+    'name': name,
+    'originalLine': originalLine,
+    'confidence': confidence.name,
+    if (quantity != null) 'quantity': quantity,
+    if (unit != null) 'unit': unit,
+    if (size != null) 'size': size,
+    if (preparation != null) 'preparation': preparation,
+    if (notes != null) 'notes': notes,
+  };
 
   /// Creates from JSON.
   factory ParsedIngredient.fromJson(Map<String, dynamic> json) {
@@ -130,8 +128,11 @@ class ParsedIngredient {
     return ParsedIngredient(
       name: name,
       originalLine: json['originalLine']?.toString() ?? name,
-      confidence: SerializationUtils.safeEnumByName(ParseConfidence.values,
-          json['confidence']?.toString() ?? 'medium', ParseConfidence.medium),
+      confidence: SerializationUtils.safeEnumByName(
+        ParseConfidence.values,
+        json['confidence']?.toString() ?? 'medium',
+        ParseConfidence.medium,
+      ),
       quantity: json['quantity']?.toString(),
       unit: json['unit']?.toString(),
       size: json['size']?.toString(),

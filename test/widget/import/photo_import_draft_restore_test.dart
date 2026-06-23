@@ -39,8 +39,8 @@ class _FakePhotoImportViewModel extends ChangeNotifier
     this.draft,
     bool hasImage = false,
     bool hasOcrResult = false,
-  })  : _hasImage = hasImage,
-        _hasOcrResult = hasOcrResult;
+  }) : _hasImage = hasImage,
+       _hasOcrResult = hasOcrResult;
 
   final PhotoImportDraft? draft;
   final bool _hasImage;
@@ -219,27 +219,35 @@ void main() {
 
   Future<AppLocalizations> pumpView(WidgetTester tester) async {
     late AppLocalizations l10n;
-    await tester.pumpWidget(createLocalizedTestApp(
-      wrapInScaffold: false,
-      child: Builder(builder: (context) {
-        l10n = context.l10n;
-        return const PhotoImportView();
-      }),
-    ));
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Builder(
+          builder: (context) {
+            l10n = context.l10n;
+            return const PhotoImportView();
+          },
+        ),
+      ),
+    );
     // First pump renders; second runs the post-frame draft check + dialog.
     await tester.pump();
     await tester.pump();
     return l10n;
   }
 
-  testWidgets('accept → restoreDraft() called, discard NOT called',
-      (tester) async {
+  testWidgets('accept → restoreDraft() called, discard NOT called', (
+    tester,
+  ) async {
     fakeVm = _FakePhotoImportViewModel(draft: draft);
     registerFake(fakeVm);
     final l10n = await pumpView(tester);
 
-    expect(find.text(l10n.draftRecovery), findsOneWidget,
-        reason: 'a persisted draft must surface the recovery dialog');
+    expect(
+      find.text(l10n.draftRecovery),
+      findsOneWidget,
+      reason: 'a persisted draft must surface the recovery dialog',
+    );
     await tester.tap(find.text(l10n.draftRestore));
     await tester.pumpAndSettle();
 
@@ -247,8 +255,7 @@ void main() {
     expect(fakeVm.discardPersistedDraftCalled, isFalse);
   });
 
-  testWidgets(
-      'decline ("Börja om") → discardPersistedDraft() called, '
+  testWidgets('decline ("Börja om") → discardPersistedDraft() called, '
       'restore NOT called', (tester) async {
     fakeVm = _FakePhotoImportViewModel(draft: draft);
     registerFake(fakeVm);
@@ -257,30 +264,41 @@ void main() {
     await tester.tap(find.text(l10n.draftStartFresh));
     await tester.pumpAndSettle();
 
-    expect(fakeVm.discardPersistedDraftCalled, isTrue,
-        reason: 'declining must drop the draft or it re-prompts forever');
+    expect(
+      fakeVm.discardPersistedDraftCalled,
+      isTrue,
+      reason: 'declining must drop the draft or it re-prompts forever',
+    );
     expect(fakeVm.restoreDraftCalled, isFalse);
   });
 
-  testWidgets('back-press (dialog pops null) → NEITHER called; draft survives',
-      (tester) async {
-    fakeVm = _FakePhotoImportViewModel(draft: draft);
-    registerFake(fakeVm);
-    final l10n = await pumpView(tester);
+  testWidgets(
+    'back-press (dialog pops null) → NEITHER called; draft survives',
+    (tester) async {
+      fakeVm = _FakePhotoImportViewModel(draft: draft);
+      registerFake(fakeVm);
+      final l10n = await pumpView(tester);
 
-    expect(find.text(l10n.draftRecovery), findsOneWidget);
-    // System back pops the dialog with null (barrierDismissible is false,
-    // but back navigation still pops the route).
-    final dynamic state = tester.state(find.byType(Navigator));
-    state.maybePop();
-    await tester.pumpAndSettle();
+      expect(find.text(l10n.draftRecovery), findsOneWidget);
+      // System back pops the dialog with null (barrierDismissible is false,
+      // but back navigation still pops the route).
+      final dynamic state = tester.state(find.byType(Navigator));
+      state.maybePop();
+      await tester.pumpAndSettle();
 
-    expect(find.text(l10n.draftRecovery), findsNothing,
-        reason: 'back must close the dialog');
-    expect(fakeVm.restoreDraftCalled, isFalse);
-    expect(fakeVm.discardPersistedDraftCalled, isFalse,
-        reason: 'a reflexive back-press must not destroy the draft');
-  });
+      expect(
+        find.text(l10n.draftRecovery),
+        findsNothing,
+        reason: 'back must close the dialog',
+      );
+      expect(fakeVm.restoreDraftCalled, isFalse);
+      expect(
+        fakeVm.discardPersistedDraftCalled,
+        isFalse,
+        reason: 'a reflexive back-press must not destroy the draft',
+      );
+    },
+  );
 
   testWidgets('no dialog when the VM already has an image', (tester) async {
     fakeVm = _FakePhotoImportViewModel(draft: draft, hasImage: true);
@@ -288,12 +306,16 @@ void main() {
     final l10n = await pumpView(tester);
 
     expect(find.text(l10n.draftRecovery), findsNothing);
-    expect(fakeVm.loadPersistedDraftCalled, isFalse,
-        reason: 'the guard must short-circuit before touching persistence');
+    expect(
+      fakeVm.loadPersistedDraftCalled,
+      isFalse,
+      reason: 'the guard must short-circuit before touching persistence',
+    );
   });
 
-  testWidgets('no dialog when the VM already has an OCR result',
-      (tester) async {
+  testWidgets('no dialog when the VM already has an OCR result', (
+    tester,
+  ) async {
     fakeVm = _FakePhotoImportViewModel(draft: draft, hasOcrResult: true);
     registerFake(fakeVm);
     final l10n = await pumpView(tester);

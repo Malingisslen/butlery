@@ -43,10 +43,10 @@ class AutoSaveManager<T> {
     this.debounce = Duration.zero,
     String? logLabel,
     @visibleForTesting Future<SharedPreferences> Function()? prefsProvider,
-  })  : _encode = encode,
-        _decode = decode,
-        _logLabel = logLabel ?? 'AutoSaveManager($storageKey)',
-        _prefsProvider = prefsProvider ?? SharedPreferences.getInstance;
+  }) : _encode = encode,
+       _decode = decode,
+       _logLabel = logLabel ?? 'AutoSaveManager($storageKey)',
+       _prefsProvider = prefsProvider ?? SharedPreferences.getInstance;
 
   /// The SharedPreferences key this manager owns. Keep it stable across
   /// releases — changing it orphans every in-flight draft.

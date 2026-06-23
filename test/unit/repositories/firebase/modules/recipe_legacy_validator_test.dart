@@ -56,30 +56,32 @@ class _OwnershipCall {
 RecipeLegacyValidator _validator(
   FakeFirebaseFirestore firestore, {
   Future<DocumentSnapshot<Map<String, dynamic>>> Function(String, String)?
-      getUserRecipeDoc,
+  getUserRecipeDoc,
   List<_OwnershipCall>? ownershipCalls,
   bool ownershipThrows = false,
 }) {
   return RecipeLegacyValidator(
     firestore: firestore,
-    getUserRecipeDoc: getUserRecipeDoc ??
+    getUserRecipeDoc:
+        getUserRecipeDoc ??
         (uid, rid) => firestore
             .collection('users')
             .doc(uid)
             .collection('recipes')
             .doc(rid)
             .get(),
-    validateOwnership: ({
-      required String currentUserId,
-      required String resourceOwnerId,
-      required String resourceType,
-      required String resourceId,
-    }) async {
-      ownershipCalls?.add(_OwnershipCall(currentUserId, resourceOwnerId));
-      if (ownershipThrows) {
-        throw PermissionDeniedException('denied');
-      }
-    },
+    validateOwnership:
+        ({
+          required String currentUserId,
+          required String resourceOwnerId,
+          required String resourceType,
+          required String resourceId,
+        }) async {
+          ownershipCalls?.add(_OwnershipCall(currentUserId, resourceOwnerId));
+          if (ownershipThrows) {
+            throw PermissionDeniedException('denied');
+          }
+        },
   );
 }
 
@@ -156,7 +158,12 @@ void main() {
       final r = _recipe(socialData: const RecipeSocialData());
       final ok = await _validator(firestore, ownershipCalls: calls)
           .validateDeletionWithLegacySupport(
-              r, _userId, r.id, false, (_) => 'alice');
+            r,
+            _userId,
+            r.id,
+            false,
+            (_) => 'alice',
+          );
       expect(ok, isTrue);
       expect(calls.single.currentUserId, _userId);
       expect(calls.single.resourceOwnerId, 'alice');
@@ -167,12 +174,12 @@ void main() {
       final r = _recipe(socialData: const RecipeSocialData());
       final ok = await _validator(firestore, ownershipThrows: true)
           .validateDeletionWithLegacySupport(
-        r,
-        _userId,
-        r.id,
-        false,
-        (_) => 'alice',
-      );
+            r,
+            _userId,
+            r.id,
+            false,
+            (_) => 'alice',
+          );
       expect(ok, isFalse);
     });
   });
@@ -188,46 +195,56 @@ void main() {
           .set({'placeholder': true});
 
       final r = _recipe();
-      final ok = await _validator(firestore)
-          .validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
+      final ok = await _validator(
+        firestore,
+      ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
       expect(ok, isTrue);
     });
 
-    test('returns true via personal-inference when doc absent + isPersonal',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      // Don't seed the user collection — Strategy 1 fails, Strategy 2 fires.
-      final r = _recipe(type: RecipeType.personal);
-      final ok = await _validator(firestore)
-          .validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
-      expect(ok, isTrue);
-    });
+    test(
+      'returns true via personal-inference when doc absent + isPersonal',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        // Don't seed the user collection — Strategy 1 fails, Strategy 2 fires.
+        final r = _recipe(type: RecipeType.personal);
+        final ok = await _validator(
+          firestore,
+        ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
+        expect(ok, isTrue);
+      },
+    );
 
-    test('returns true when image URL contains user id (ownership hint)',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final r = _recipe(
-        type: RecipeType.shared,
-        imageUrls: const [
-          'https://storage.example/users/alice/recipes/img.jpg'
-        ],
-      );
-      final ok = await _validator(firestore)
-          .validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
-      expect(ok, isTrue);
-    });
+    test(
+      'returns true when image URL contains user id (ownership hint)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final r = _recipe(
+          type: RecipeType.shared,
+          imageUrls: const [
+            'https://storage.example/users/alice/recipes/img.jpg',
+          ],
+        );
+        final ok = await _validator(
+          firestore,
+        ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
+        expect(ok, isTrue);
+      },
+    );
 
-    test('returns true when lastEditedByUserId == currentUserId (hint)',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final r = _recipe(
-        type: RecipeType.shared,
-        realtimeData: const RecipeRealtimeData(lastEditedByUserId: 'alice'),
-      );
-      final ok = await _validator(firestore)
-          .validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
-      expect(ok, isTrue);
-    });
+    test(
+      'returns true when lastEditedByUserId == currentUserId (hint)',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final r = _recipe(
+          type: RecipeType.shared,
+          realtimeData: const RecipeRealtimeData(lastEditedByUserId: 'alice'),
+        );
+        final ok = await _validator(
+          firestore,
+        ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
+        expect(ok, isTrue);
+      },
+    );
 
     test('returns false when no strategy succeeds', () async {
       final firestore = FakeFirebaseFirestore();
@@ -235,22 +252,25 @@ void main() {
         type: RecipeType.shared, // bypasses Strategy 2
         // no image hints, no realtimeData hints
       );
-      final ok = await _validator(firestore)
-          .validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
+      final ok = await _validator(
+        firestore,
+      ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
       expect(ok, isFalse);
     });
 
-    test('Strategy-1 error is swallowed; subsequent strategies still try',
-        () async {
-      final firestore = FakeFirebaseFirestore();
-      final r = _recipe(type: RecipeType.personal);
-      final ok = await _validator(
-        firestore,
-        getUserRecipeDoc: (_, __) async => throw StateError('boom'),
-      ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
-      // Strategy 1 threw → caught → personal inference (Strategy 2) returns true
-      expect(ok, isTrue);
-    });
+    test(
+      'Strategy-1 error is swallowed; subsequent strategies still try',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final r = _recipe(type: RecipeType.personal);
+        final ok = await _validator(
+          firestore,
+          getUserRecipeDoc: (_, __) async => throw StateError('boom'),
+        ).validateDeletionWithLegacySupport(r, _userId, r.id, true, (_) => '');
+        // Strategy 1 threw → caught → personal inference (Strategy 2) returns true
+        expect(ok, isTrue);
+      },
+    );
   });
 
   group('logLegacyDeletion', () {

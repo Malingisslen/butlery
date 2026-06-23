@@ -23,9 +23,9 @@ class ImportProgressTracker {
     required VoidCallback notifyListeners,
     required void Function(ImportPhase) setPhase,
     required bool Function() isDisposed,
-  })  : _notifyListeners = notifyListeners,
-        _setPhase = setPhase,
-        _isDisposed = isDisposed;
+  }) : _notifyListeners = notifyListeners,
+       _setPhase = setPhase,
+       _isDisposed = isDisposed;
 
   /// Elapsed time since import started. Returns Duration.zero when not running.
   Duration get elapsed => _stopwatch.elapsed;

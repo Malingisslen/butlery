@@ -36,26 +36,34 @@ void main() {
       final tracker = OCRUsageTracker(timeProvider: fixedToday);
       await tracker.loadFromPersistence(prefs: prefs);
 
-      expect(tracker.dailyRequestCount, 7,
-          reason: 'Loaded count from same-day persistence');
+      expect(
+        tracker.dailyRequestCount,
+        7,
+        reason: 'Loaded count from same-day persistence',
+      );
     });
 
-    test('next recordUsage on the same day continues from loaded count',
-        () async {
-      SharedPreferences.setMockInitialValues({
-        'ocr_usage_daily_count': 7,
-        'ocr_usage_daily_date': '2026-05-04',
-      });
-      final prefs = await SharedPreferences.getInstance();
+    test(
+      'next recordUsage on the same day continues from loaded count',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'ocr_usage_daily_count': 7,
+          'ocr_usage_daily_date': '2026-05-04',
+        });
+        final prefs = await SharedPreferences.getInstance();
 
-      final tracker = OCRUsageTracker(timeProvider: fixedToday);
-      await tracker.loadFromPersistence(prefs: prefs);
-      tracker.recordUsage('ocr_space');
+        final tracker = OCRUsageTracker(timeProvider: fixedToday);
+        await tracker.loadFromPersistence(prefs: prefs);
+        tracker.recordUsage('ocr_space');
 
-      expect(tracker.dailyRequestCount, 8,
-          reason: 'Continues from loaded base, not from zero');
-      expect(prefs.getInt('ocr_usage_daily_count'), 8);
-    });
+        expect(
+          tracker.dailyRequestCount,
+          8,
+          reason: 'Continues from loaded base, not from zero',
+        );
+        expect(prefs.getInt('ocr_usage_daily_count'), 8);
+      },
+    );
 
     test('stale-date entry is dropped on load', () async {
       SharedPreferences.setMockInitialValues({
@@ -67,8 +75,11 @@ void main() {
       final tracker = OCRUsageTracker(timeProvider: fixedToday);
       await tracker.loadFromPersistence(prefs: prefs);
 
-      expect(tracker.dailyRequestCount, 0,
-          reason: 'Yesterday\'s count is dropped, fresh day starts at 0');
+      expect(
+        tracker.dailyRequestCount,
+        0,
+        reason: 'Yesterday\'s count is dropped, fresh day starts at 0',
+      );
     });
 
     test('without loadFromPersistence, tracker is in-memory only', () async {
@@ -80,28 +91,33 @@ void main() {
       final tracker = OCRUsageTracker(timeProvider: fixedToday);
       tracker.recordUsage('ocr_space');
       expect(tracker.dailyRequestCount, 1);
-      expect(prefs.getInt('ocr_usage_daily_count'), isNull,
-          reason: '_persistDaily must no-op when _prefs is null');
+      expect(
+        prefs.getInt('ocr_usage_daily_count'),
+        isNull,
+        reason: '_persistDaily must no-op when _prefs is null',
+      );
       expect(prefs.getString('ocr_usage_daily_date'), isNull);
     });
 
-    test('day rollover after load resets daily count and overwrites prefs',
-        () async {
-      // Persistence shows 7 from "yesterday". Wall clock advances to today.
-      SharedPreferences.setMockInitialValues({
-        'ocr_usage_daily_count': 7,
-        'ocr_usage_daily_date': '2026-05-03',
-      });
-      final prefs = await SharedPreferences.getInstance();
+    test(
+      'day rollover after load resets daily count and overwrites prefs',
+      () async {
+        // Persistence shows 7 from "yesterday". Wall clock advances to today.
+        SharedPreferences.setMockInitialValues({
+          'ocr_usage_daily_count': 7,
+          'ocr_usage_daily_date': '2026-05-03',
+        });
+        final prefs = await SharedPreferences.getInstance();
 
-      final tracker = OCRUsageTracker(timeProvider: fixedToday);
-      await tracker.loadFromPersistence(prefs: prefs);
-      tracker.recordUsage('ocr_space');
+        final tracker = OCRUsageTracker(timeProvider: fixedToday);
+        await tracker.loadFromPersistence(prefs: prefs);
+        tracker.recordUsage('ocr_space');
 
-      expect(tracker.dailyRequestCount, 1);
-      expect(prefs.getString('ocr_usage_daily_date'), '2026-05-04');
-      expect(prefs.getInt('ocr_usage_daily_count'), 1);
-    });
+        expect(tracker.dailyRequestCount, 1);
+        expect(prefs.getString('ocr_usage_daily_date'), '2026-05-04');
+        expect(prefs.getInt('ocr_usage_daily_count'), 1);
+      },
+    );
 
     test('yesterday timeProvider behaves consistently', () async {
       SharedPreferences.setMockInitialValues({});

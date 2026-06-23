@@ -22,14 +22,13 @@ class ProfileActions {
     required String subtitle,
     required IconData icon,
     VoidCallback? onTap,
-  }) =>
-      MenuItemBuilders.buildMenuItem(
-        context,
-        title: title,
-        subtitle: subtitle,
-        icon: icon,
-        onTap: onTap,
-      );
+  }) => MenuItemBuilders.buildMenuItem(
+    context,
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    onTap: onTap,
+  );
 
   /// Build notification menu item with badge.
   static Widget buildNotificationMenuItem(
@@ -39,21 +38,23 @@ class ProfileActions {
     required IconData icon,
     VoidCallback? onTap,
     int count = 0,
-  }) =>
-      MenuItemBuilders.buildNotificationMenuItem(
-        context,
-        title: title,
-        subtitle: subtitle,
-        icon: icon,
-        onTap: onTap,
-        count: count,
-      );
+  }) => MenuItemBuilders.buildNotificationMenuItem(
+    context,
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    onTap: onTap,
+    count: count,
+  );
 
   /// Build data backup section.
-  static Widget buildDataBackupSection(BuildContext context,
-          {BuildContext? rootContext}) =>
-      ProfileSectionBuilders.buildDataBackupSection(context,
-          rootContext: rootContext);
+  static Widget buildDataBackupSection(
+    BuildContext context, {
+    BuildContext? rootContext,
+  }) => ProfileSectionBuilders.buildDataBackupSection(
+    context,
+    rootContext: rootContext,
+  );
 
   /// Build logout section.
   static Widget buildLogoutSection(BuildContext context) =>

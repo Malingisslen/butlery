@@ -11,7 +11,8 @@ void main() {
     test('YouTube watch URLs map to the play icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon(
-            'https://www.youtube.com/watch?v=abc123'),
+          'https://www.youtube.com/watch?v=abc123',
+        ),
         Icons.play_circle_outline,
       );
     });
@@ -33,7 +34,8 @@ void main() {
     test('TikTok URLs map to the music icon', () {
       expect(
         RecipeDetailSharedWidgets.sourceIcon(
-            'https://www.tiktok.com/@chef/video/123'),
+          'https://www.tiktok.com/@chef/video/123',
+        ),
         Icons.music_note,
       );
     });

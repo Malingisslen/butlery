@@ -35,36 +35,39 @@ void main() {
   }
 
   testWidgets(
-      'comment_item_widgets — long-press target exposes reaction prompt label',
-      (tester) async {
-    final handle = tester.ensureSemantics();
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (context) => CommentItemWidgets.buildCommentItem(
-            context: context,
-            comment: makeComment(),
-            authorDisplayName: 'Test Author',
-            authorAvatarUrl: null,
-            formattedTime: '2m',
-            onReply: () {},
-            onToggleLike: () {},
-            onShowLikes: () {},
-            currentUserId: 'me',
-            onReactionTap: (_) {},
+    'comment_item_widgets — long-press target exposes reaction prompt label',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => CommentItemWidgets.buildCommentItem(
+              context: context,
+              comment: makeComment(),
+              authorDisplayName: 'Test Author',
+              authorAvatarUrl: null,
+              formattedTime: '2m',
+              onReply: () {},
+              onToggleLike: () {},
+              onShowLikes: () {},
+              currentUserId: 'me',
+              onReactionTap: (_) {},
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(
+      expect(
         find.bySemanticsLabel(RegExp(r'Kommentar, långtryck för att reagera')),
-        findsWidgets);
-    handle.dispose();
-  });
+        findsWidgets,
+      );
+      handle.dispose();
+    },
+  );
 
-  testWidgets('comment_item_widgets — react hint chip exposes label',
-      (tester) async {
+  testWidgets('comment_item_widgets — react hint chip exposes label', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(
       createLocalizedTestApp(
@@ -86,12 +89,15 @@ void main() {
     );
 
     expect(
-        find.bySemanticsLabel(RegExp(r'Reagera på kommentar')), findsWidgets);
+      find.bySemanticsLabel(RegExp(r'Reagera på kommentar')),
+      findsWidgets,
+    );
     handle.dispose();
   });
 
-  testWidgets('comment_item_widgets — like-count text exposes plural label',
-      (tester) async {
+  testWidgets('comment_item_widgets — like-count text exposes plural label', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(
       createLocalizedTestApp(
@@ -112,8 +118,10 @@ void main() {
       ),
     );
 
-    expect(find.bySemanticsLabel(RegExp(r'Visa 3 gilla-markeringar')),
-        findsWidgets);
+    expect(
+      find.bySemanticsLabel(RegExp(r'Visa 3 gilla-markeringar')),
+      findsWidgets,
+    );
     handle.dispose();
   });
 }

@@ -21,7 +21,7 @@ class FirestoreSearchRepository implements SearchRepository {
   final FirebaseFirestore _firestore;
 
   FirestoreSearchRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   bool get usesExternalSearch => false;
@@ -57,8 +57,8 @@ class FirestoreSearchRepository implements SearchRepository {
           .map((doc) {
             final data = doc.data();
             final title = (data['recipeTitle'] as String?).orEmpty();
-            final description =
-                (data['recipeDescription'] as String?).orEmpty();
+            final description = (data['recipeDescription'] as String?)
+                .orEmpty();
 
             // Simple text matching
             if (query.isEmpty ||
@@ -74,8 +74,8 @@ class FirestoreSearchRepository implements SearchRepository {
                 rating: (data['rating'] as num?)?.toDouble(),
                 mealType: (data['mealType'] as String?) ?? 'Middag',
                 tags: (data['tags'] as List<dynamic>?)?.cast<String>() ?? [],
-                ownerDisplayName:
-                    (data['sharedByDisplayName'] as String?).orEmpty(),
+                ownerDisplayName: (data['sharedByDisplayName'] as String?)
+                    .orEmpty(),
                 ownerId: (data['sharedByUserId'] as String?).orEmpty(),
               );
             }

@@ -13,27 +13,26 @@ class MockPantryService extends Mock implements PantryService {}
 class MockUserService extends Mock implements UserService {}
 
 UserProfile _profile({required bool autoAdd}) => UserProfile(
-      uid: 'u1',
-      displayName: 'Test',
-      email: 't@example.com',
-      joinedAt: DateTime(2024, 1, 1),
-      lastActiveAt: DateTime(2024, 1, 1),
-      autoAddBoughtToPantry: autoAdd,
-    );
+  uid: 'u1',
+  displayName: 'Test',
+  email: 't@example.com',
+  joinedAt: DateTime(2024, 1, 1),
+  lastActiveAt: DateTime(2024, 1, 1),
+  autoAddBoughtToPantry: autoAdd,
+);
 
 PantryItem _pantryItem({
   required String name,
   required double qty,
   String unit = 'st',
-}) =>
-    PantryItem(
-      id: 'p_$name',
-      ingredientName: name,
-      quantity: qty,
-      unit: unit,
-      location: PantryLocation.pantry,
-      addedAt: DateTime(2024, 1, 1),
-    );
+}) => PantryItem(
+  id: 'p_$name',
+  ingredientName: name,
+  quantity: qty,
+  unit: unit,
+  location: PantryLocation.pantry,
+  addedAt: DateTime(2024, 1, 1),
+);
 
 UnifiedShoppingItem _shoppingItem({
   required String name,
@@ -61,19 +60,20 @@ void main() {
       userService: users,
     );
     when(() => pantry.updateItem(any(), any())).thenAnswer((_) async {});
-    when(() => pantry.addFromShoppingItem(any(), any()))
-        .thenAnswer((_) async => _pantryItem(name: 'added', qty: 1));
+    when(
+      () => pantry.addFromShoppingItem(any(), any()),
+    ).thenAnswer((_) async => _pantryItem(name: 'added', qty: 1));
   });
 
   group('ShoppingCheckoffPantryService.onItemCheckedOff (BUT-1050)', () {
-    test(
-        'aggregates quantity into a matching pantry item instead of adding a '
+    test('aggregates quantity into a matching pantry item instead of adding a '
         'duplicate (dedup)', () async {
       // Intent: checking off an item already in the pantry (same name + unit)
       // must NOT create a second entry — it grows the existing one's quantity.
       when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
       when(() => pantry.getAll('u1')).thenAnswer(
-          (_) async => [_pantryItem(name: 'Mjölk', qty: 2, unit: 'l')]);
+        (_) async => [_pantryItem(name: 'Mjölk', qty: 2, unit: 'l')],
+      );
 
       await service.onItemCheckedOff(
         'u1',
@@ -82,9 +82,9 @@ void main() {
         wasBought: false,
       );
 
-      final captured = verify(() => pantry.updateItem('u1', captureAny()))
-          .captured
-          .single as PantryItem;
+      final captured =
+          verify(() => pantry.updateItem('u1', captureAny())).captured.single
+              as PantryItem;
       expect(captured.quantity, 5); // 2 existing + 3 bought
       verifyNever(() => pantry.addFromShoppingItem(any(), any()));
     });
@@ -116,23 +116,25 @@ void main() {
     });
 
     test(
-        'does nothing when re-toggling an already-bought item (wasBought=true)',
-        () async {
-      when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
+      'does nothing when re-toggling an already-bought item (wasBought=true)',
+      () async {
+        when(
+          () => users.currentUserProfile,
+        ).thenReturn(_profile(autoAdd: true));
 
-      await service.onItemCheckedOff(
-        'u1',
-        _shoppingItem(name: 'Bröd', bought: true),
-        wasBought: true,
-      );
+        await service.onItemCheckedOff(
+          'u1',
+          _shoppingItem(name: 'Bröd', bought: true),
+          wasBought: true,
+        );
 
-      // Only a genuine false→true checkoff may fire — a re-toggle is a no-op.
-      verifyNever(() => pantry.getAll(any()));
-      verifyNever(() => pantry.addFromShoppingItem(any(), any()));
-    });
+        // Only a genuine false→true checkoff may fire — a re-toggle is a no-op.
+        verifyNever(() => pantry.getAll(any()));
+        verifyNever(() => pantry.addFromShoppingItem(any(), any()));
+      },
+    );
 
-    test(
-        'adds a new item when name matches but unit differs — unit mismatch '
+    test('adds a new item when name matches but unit differs — unit mismatch '
         'must NOT aggregate', () async {
       // Intent: the dedup predicate requires BOTH name (case-insensitive) AND
       // unit to match. A unit mismatch (e.g. pantry has "Mjölk l", we bought
@@ -140,7 +142,8 @@ void main() {
       // Dropping the unit check from the predicate would make this fail.
       when(() => users.currentUserProfile).thenReturn(_profile(autoAdd: true));
       when(() => pantry.getAll('u1')).thenAnswer(
-          (_) async => [_pantryItem(name: 'Mjölk', qty: 2, unit: 'l')]);
+        (_) async => [_pantryItem(name: 'Mjölk', qty: 2, unit: 'l')],
+      );
 
       final item = _shoppingItem(name: 'Mjölk', amount: 1, unit: 'dl');
       await service.onItemCheckedOff('u1', item, wasBought: false);

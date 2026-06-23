@@ -64,8 +64,9 @@ class GdprConsentHandler {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.l10n.profileCouldNotOpenConsentManagement('$e')),
+            content: Text(
+              context.l10n.profileCouldNotOpenConsentManagement('$e'),
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
